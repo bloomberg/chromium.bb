@@ -6,11 +6,11 @@
 
 #include <windows.h>
 
-#include "app/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "remoting/host/capturer.h"
 #include "remoting/proto/event.pb.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 namespace remoting {
 

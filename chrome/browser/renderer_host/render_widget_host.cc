@@ -4,7 +4,6 @@
 
 #include "chrome/browser/renderer_host/render_widget_host.h"
 
-#include "app/keyboard_codes.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
@@ -540,8 +540,8 @@ void RenderWidgetHost::ForwardKeyboardEvent(
     return;
 
   if (key_event.type == WebKeyboardEvent::Char &&
-      (key_event.windowsKeyCode == app::VKEY_RETURN ||
-       key_event.windowsKeyCode == app::VKEY_SPACE)) {
+      (key_event.windowsKeyCode == ui::VKEY_RETURN ||
+       key_event.windowsKeyCode == ui::VKEY_SPACE)) {
     OnUserGesture();
   }
 

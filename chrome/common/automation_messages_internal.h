@@ -364,7 +364,7 @@ IPC_MESSAGE_CONTROL3(AutomationMsg_WindowClick,
 // This message requests that a key press be performed.
 // Request:
 //   int - the handle of the window that's the context for this click
-//   int - the app::KeyboardCode of the key that was pressed.
+//   int - the ui::KeyboardCode of the key that was pressed.
 //   int - the flags which identify the modifiers (shift, ctrl, alt)
 //         associated for, as defined in chrome/views/event.h
 IPC_MESSAGE_CONTROL3(AutomationMsg_WindowKeyPress,

@@ -699,7 +699,7 @@ Browser* GetBrowserNotInSet(std::set<Browser*> excluded_browsers) {
 }
 
 bool SendKeyPressSync(const Browser* browser,
-                      app::KeyboardCode key,
+                      ui::KeyboardCode key,
                       bool control,
                       bool shift,
                       bool alt,
@@ -724,7 +724,7 @@ bool SendKeyPressSync(const Browser* browser,
 }
 
 bool SendKeyPressAndWait(const Browser* browser,
-                         app::KeyboardCode key,
+                         ui::KeyboardCode key,
                          bool control,
                          bool shift,
                          bool alt,

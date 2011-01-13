@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-#include "app/keyboard_codes.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_util.h"
@@ -32,6 +31,7 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "views/view.h"
@@ -487,35 +487,35 @@ bool AutomatedUITest::Options() {
 }
 
 bool AutomatedUITest::PressDownArrow() {
-  return SimulateKeyPressInActiveWindow(app::VKEY_DOWN, 0);
+  return SimulateKeyPressInActiveWindow(ui::VKEY_DOWN, 0);
 }
 
 bool AutomatedUITest::PressEnterKey() {
-  return SimulateKeyPressInActiveWindow(app::VKEY_RETURN, 0);
+  return SimulateKeyPressInActiveWindow(ui::VKEY_RETURN, 0);
 }
 
 bool AutomatedUITest::PressEscapeKey() {
-  return SimulateKeyPressInActiveWindow(app::VKEY_ESCAPE, 0);
+  return SimulateKeyPressInActiveWindow(ui::VKEY_ESCAPE, 0);
 }
 
 bool AutomatedUITest::PressPageDown() {
-  return SimulateKeyPressInActiveWindow(app::VKEY_PRIOR, 0);
+  return SimulateKeyPressInActiveWindow(ui::VKEY_PRIOR, 0);
 }
 
 bool AutomatedUITest::PressPageUp() {
-  return SimulateKeyPressInActiveWindow(app::VKEY_NEXT, 0);
+  return SimulateKeyPressInActiveWindow(ui::VKEY_NEXT, 0);
 }
 
 bool AutomatedUITest::PressSpaceBar() {
-  return SimulateKeyPressInActiveWindow(app::VKEY_SPACE, 0);
+  return SimulateKeyPressInActiveWindow(ui::VKEY_SPACE, 0);
 }
 
 bool AutomatedUITest::PressTabKey() {
-  return SimulateKeyPressInActiveWindow(app::VKEY_TAB, 0);
+  return SimulateKeyPressInActiveWindow(ui::VKEY_TAB, 0);
 }
 
 bool AutomatedUITest::PressUpArrow() {
-  return SimulateKeyPressInActiveWindow(app::VKEY_UP, 0);
+  return SimulateKeyPressInActiveWindow(ui::VKEY_UP, 0);
 }
 
 bool AutomatedUITest::StarPage() {
@@ -605,7 +605,7 @@ bool AutomatedUITest::ForceCrash() {
   return true;
 }
 
-bool AutomatedUITest::SimulateKeyPressInActiveWindow(app::KeyboardCode key,
+bool AutomatedUITest::SimulateKeyPressInActiveWindow(ui::KeyboardCode key,
                                                      int flags) {
   scoped_refptr<WindowProxy> window(automation()->GetActiveWindow());
   if (window.get() == NULL) {

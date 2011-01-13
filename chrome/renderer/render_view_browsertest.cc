@@ -4,7 +4,6 @@
 
 #include "base/basictypes.h"
 
-#include "app/keyboard_codes.h"
 #include "base/file_util.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
@@ -25,6 +24,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/web_io_operators.h"
@@ -643,20 +643,20 @@ TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
         'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
         'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
         'W', 'X', 'Y', 'Z',
-        app::VKEY_OEM_1,
-        app::VKEY_OEM_PLUS,
-        app::VKEY_OEM_COMMA,
-        app::VKEY_OEM_MINUS,
-        app::VKEY_OEM_PERIOD,
-        app::VKEY_OEM_2,
-        app::VKEY_OEM_3,
-        app::VKEY_OEM_4,
-        app::VKEY_OEM_5,
-        app::VKEY_OEM_6,
-        app::VKEY_OEM_7,
+        ui::VKEY_OEM_1,
+        ui::VKEY_OEM_PLUS,
+        ui::VKEY_OEM_COMMA,
+        ui::VKEY_OEM_MINUS,
+        ui::VKEY_OEM_PERIOD,
+        ui::VKEY_OEM_2,
+        ui::VKEY_OEM_3,
+        ui::VKEY_OEM_4,
+        ui::VKEY_OEM_5,
+        ui::VKEY_OEM_6,
+        ui::VKEY_OEM_7,
 #if defined(OS_WIN)
         // Not sure how to handle this key on Linux.
-        app::VKEY_OEM_8,
+        ui::VKEY_OEM_8,
 #endif
       };
 
@@ -884,20 +884,20 @@ TEST_F(RenderViewTest, InsertCharacters) {
         'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
         'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
         'W', 'X', 'Y', 'Z',
-        app::VKEY_OEM_1,
-        app::VKEY_OEM_PLUS,
-        app::VKEY_OEM_COMMA,
-        app::VKEY_OEM_MINUS,
-        app::VKEY_OEM_PERIOD,
-        app::VKEY_OEM_2,
-        app::VKEY_OEM_3,
-        app::VKEY_OEM_4,
-        app::VKEY_OEM_5,
-        app::VKEY_OEM_6,
-        app::VKEY_OEM_7,
+        ui::VKEY_OEM_1,
+        ui::VKEY_OEM_PLUS,
+        ui::VKEY_OEM_COMMA,
+        ui::VKEY_OEM_MINUS,
+        ui::VKEY_OEM_PERIOD,
+        ui::VKEY_OEM_2,
+        ui::VKEY_OEM_3,
+        ui::VKEY_OEM_4,
+        ui::VKEY_OEM_5,
+        ui::VKEY_OEM_6,
+        ui::VKEY_OEM_7,
 #if defined(OS_WIN)
         // Unclear how to handle this on Linux.
-        app::VKEY_OEM_8,
+        ui::VKEY_OEM_8,
 #endif
       };
 

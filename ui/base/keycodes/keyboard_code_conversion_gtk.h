@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,18 +33,18 @@
 
 // WindowsKeyCodeForGdkKeyCode is copied from platform/gtk/KeyEventGtk.cpp
 
-#ifndef APP_KEYBOARD_CODE_CONVERSION_GTK_H_
-#define APP_KEYBOARD_CODE_CONVERSION_GTK_H_
+#ifndef UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_GTK_H_
+#define UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_GTK_H_
 #pragma once
 
-#include "app/keyboard_codes_posix.h"
+#include "ui/base/keycodes/keyboard_codes_posix.h"
 
-namespace app {
+namespace ui {
 
-app::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode);
+KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode);
 
-int GdkKeyCodeForWindowsKeyCode(app::KeyboardCode keycode, bool shift);
+int GdkKeyCodeForWindowsKeyCode(KeyboardCode keycode, bool shift);
 
-} // namespace
+} // namespace ui
 
-#endif  // APP_KEYBOARD_CODE_CONVERSION_GTK_H_
+#endif  // UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_GTK_H_

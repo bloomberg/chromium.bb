@@ -4,7 +4,6 @@
 
 #include "views/widget/widget_win.h"
 
-#include "app/keyboard_code_conversion_win.h"
 #include "app/l10n_util_win.h"
 #include "app/system_monitor.h"
 #include "app/view_prop.h"
@@ -14,6 +13,7 @@
 #include "gfx/canvas_skia.h"
 #include "gfx/native_theme_win.h"
 #include "gfx/path.h"
+#include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "views/accessibility/view_accessibility.h"
 #include "views/controls/native_control_win.h"
 #include "views/focus/focus_util_win.h"
@@ -661,7 +661,7 @@ void WidgetWin::OnInitMenuPopup(HMENU menu,
 }
 
 void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(Event::ET_KEY_PRESSED, app::KeyboardCodeForWindowsKeyCode(c),
+  KeyEvent event(Event::ET_KEY_PRESSED, ui::KeyboardCodeForWindowsKeyCode(c),
                  KeyEvent::GetKeyStateFlags(), rep_cnt, flags,
                  WM_KEYDOWN);
   RootView* root_view = GetFocusedViewRootView();
@@ -672,7 +672,7 @@ void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
 }
 
 void WidgetWin::OnKeyUp(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(Event::ET_KEY_RELEASED, app::KeyboardCodeForWindowsKeyCode(c),
+  KeyEvent event(Event::ET_KEY_RELEASED, ui::KeyboardCodeForWindowsKeyCode(c),
                  KeyEvent::GetKeyStateFlags(), rep_cnt, flags,
                  WM_KEYUP);
   RootView* root_view = GetFocusedViewRootView();

@@ -16,10 +16,11 @@ typedef struct tagNMLVCUSTOMDRAW NMLVCUSTOMDRAW;
 #include <map>
 #include <vector>
 
-#include "app/keyboard_codes.h"
 #include "app/table_model_observer.h"
 #include "base/gtest_prod_util.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/keycodes/keyboard_codes.h"
+
 #if defined(OS_WIN)
 // TODO(port): remove the ifdef when native_control.h is ported.
 #include "views/controls/native_control.h"
@@ -258,7 +259,7 @@ class TableView : public NativeControl,
   virtual void OnMiddleClick();
 
   // Overridden from NativeControl. Notifies the observer.
-  virtual bool OnKeyDown(app::KeyboardCode virtual_keycode);
+  virtual bool OnKeyDown(ui::KeyboardCode virtual_keycode);
 
   // Invoked to customize the colors or font at a particular cell. If you
   // change the colors or font, return true. This is only invoked if

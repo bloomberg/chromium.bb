@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 
-#include "app/keyboard_codes.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/dropdown_bar_view.h"
@@ -12,6 +11,7 @@
 #include "gfx/path.h"
 #include "gfx/scrollbar_size.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "views/focus/external_focus_tracker.h"
 #include "views/focus/view_storage.h"
 #include "views/widget/widget.h"
@@ -305,14 +305,14 @@ void DropdownBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
 
 void DropdownBarHost::RegisterAccelerators() {
   DCHECK(!esc_accel_target_registered_);
-  views::Accelerator escape(app::VKEY_ESCAPE, false, false, false);
+  views::Accelerator escape(ui::VKEY_ESCAPE, false, false, false);
   focus_manager_->RegisterAccelerator(escape, this);
   esc_accel_target_registered_ = true;
 }
 
 void DropdownBarHost::UnregisterAccelerators() {
   DCHECK(esc_accel_target_registered_);
-  views::Accelerator escape(app::VKEY_ESCAPE, false, false, false);
+  views::Accelerator escape(ui::VKEY_ESCAPE, false, false, false);
   focus_manager_->UnregisterAccelerator(escape, this);
   esc_accel_target_registered_ = false;
 }

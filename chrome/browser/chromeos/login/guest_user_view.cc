@@ -23,7 +23,7 @@ class UserEntryButton : public login::WideButton {
 
   // Overridden from views::View:
   virtual bool OnKeyPressed(const views::KeyEvent& e) {
-    if (e.GetKeyCode() == app::VKEY_TAB) {
+    if (e.GetKeyCode() == ui::VKEY_TAB) {
       user_controller_->SelectUserRelative(e.IsShiftDown() ? -1 : 1);
       return true;
     }
@@ -31,7 +31,7 @@ class UserEntryButton : public login::WideButton {
   }
 
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
-    if (e.GetKeyCode() == app::VKEY_TAB)
+    if (e.GetKeyCode() == ui::VKEY_TAB)
       return true;
     return WideButton::SkipDefaultKeyEventProcessing(e);
   }
@@ -49,11 +49,11 @@ GuestUserView::GuestUserView(UserController* uc)
       accel_toggle_accessibility_(
           WizardAccessibilityHelper::GetAccelerator()),
       accel_login_off_the_record_(
-          views::Accelerator(app::VKEY_B, false, false, true)),
+          views::Accelerator(ui::VKEY_B, false, false, true)),
       accel_previous_pod_by_arrow_(
-          views::Accelerator(app::VKEY_LEFT, false, false, false)),
+          views::Accelerator(ui::VKEY_LEFT, false, false, false)),
       accel_next_pod_by_arrow_(
-          views::Accelerator(app::VKEY_RIGHT, false, false, false)) {
+          views::Accelerator(ui::VKEY_RIGHT, false, false, false)) {
   AddAccelerator(accel_toggle_accessibility_);
   AddAccelerator(accel_login_off_the_record_);
   AddAccelerator(accel_previous_pod_by_arrow_);

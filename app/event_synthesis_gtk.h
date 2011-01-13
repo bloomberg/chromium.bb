@@ -14,7 +14,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <vector>
 
-#include "app/keyboard_codes.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 namespace app {
 
@@ -28,7 +28,7 @@ GdkEvent* SynthesizeKeyEvent(GdkWindow* event_window,
 // Ownership of the events in the vector is passed to the caller.
 void SynthesizeKeyPressEvents(
     GdkWindow* window,
-    app::KeyboardCode key,
+    ui::KeyboardCode key,
     bool control, bool shift, bool alt,
     std::vector<GdkEvent*>* events);
 

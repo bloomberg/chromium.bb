@@ -111,7 +111,7 @@ class InstantTest : public InProcessBrowserTest {
         NotificationType::INSTANT_CONTROLLER_SHOWN);
   }
 
-  void SendKey(app::KeyboardCode key) {
+  void SendKey(ui::KeyboardCode key) {
     ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
         browser(), key, false, false, false, false));
   }
@@ -480,7 +480,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
   ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
-  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_RETURN));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN));
 
   // Check that the preview contents have been committed.
   ASSERT_FALSE(browser()->instant()->GetPreviewContents());
@@ -534,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_TabKey) {
   ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
 
   // Pressing tab to convert instant suggest into inline autocomplete.
-  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_TAB));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB));
 
   ASSERT_EQ(L"abcdef", location_bar_->location_entry()->GetText());
 
@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_TabKey) {
       GetSearchStateAsString(preview_));
 
   // Pressing tab again to accept the current instant preview.
-  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_TAB));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB));
 
   // Check that the preview contents have been committed.
   ASSERT_FALSE(browser()->instant()->GetPreviewContents());

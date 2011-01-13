@@ -220,10 +220,10 @@ void MenuButton::OnMouseReleased(const MouseEvent& e,
 }
 
 bool MenuButton::OnKeyPressed(const KeyEvent& e) {
-  if (e.GetKeyCode() == app::VKEY_SPACE ||
-      e.GetKeyCode() == app::VKEY_RETURN ||
-      e.GetKeyCode() == app::VKEY_UP ||
-      e.GetKeyCode() == app::VKEY_DOWN) {
+  if (e.GetKeyCode() == ui::VKEY_SPACE ||
+      e.GetKeyCode() == ui::VKEY_RETURN ||
+      e.GetKeyCode() == ui::VKEY_UP ||
+      e.GetKeyCode() == ui::VKEY_DOWN) {
     bool result = Activate();
     if (GetFocusManager()->GetFocusedView() == NULL)
       RequestFocus();

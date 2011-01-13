@@ -460,13 +460,13 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
   // TODO(cpu) Bug 1109102. Query WebKit land for the actual bindings.
   switch (command_id) {
     case IDC_CUT:
-      *accelerator = views::Accelerator(app::VKEY_X, false, true, false);
+      *accelerator = views::Accelerator(ui::VKEY_X, false, true, false);
       return true;
     case IDC_COPY:
-      *accelerator = views::Accelerator(app::VKEY_C, false, true, false);
+      *accelerator = views::Accelerator(ui::VKEY_C, false, true, false);
       return true;
     case IDC_PASTE:
-      *accelerator = views::Accelerator(app::VKEY_V, false, true, false);
+      *accelerator = views::Accelerator(ui::VKEY_V, false, true, false);
       return true;
   }
   // Else, we retrieve the accelerator information from the frame.

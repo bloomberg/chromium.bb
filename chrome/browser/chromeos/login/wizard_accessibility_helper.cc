@@ -27,7 +27,7 @@ scoped_ptr<views::Accelerator> WizardAccessibilityHelper::accelerator_;
 views::Accelerator WizardAccessibilityHelper::GetAccelerator() {
   if (!WizardAccessibilityHelper::accelerator_.get())
     WizardAccessibilityHelper::accelerator_.reset(
-        new views::Accelerator(app::VKEY_Z, false, true, true));
+        new views::Accelerator(ui::VKEY_Z, false, true, true));
   return *(WizardAccessibilityHelper::accelerator_.get());
 }
 

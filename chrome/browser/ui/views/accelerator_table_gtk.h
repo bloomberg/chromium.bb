@@ -8,14 +8,14 @@
 
 #include <stdio.h>
 
-#include "app/keyboard_codes.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 // This contains the list of accelerators for the Linux toolkit_view
 // implementation.
 namespace browser {
 
   struct AcceleratorMapping {
-    app::KeyboardCode keycode;
+    ui::KeyboardCode keycode;
     bool shift_pressed;
     bool ctrl_pressed;
     bool alt_pressed;

@@ -14,16 +14,16 @@
 
 #include <string>
 
-#include "app/keyboard_codes.h"
 #include "base/basictypes.h"
+#include "base/string16.h"
+#include "gfx/font.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/keycodes/keyboard_codes.h"
+#include "views/view.h"
+
 #if !defined(OS_LINUX)
 #include "base/logging.h"
 #endif
-#include "base/string16.h"
-#include "gfx/font.h"
-#include "views/view.h"
-#include "third_party/skia/include/core/SkColor.h"
-
 #ifdef UNIT_TEST
 #include "gfx/native_widget_types.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"

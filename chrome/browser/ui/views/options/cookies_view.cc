@@ -146,9 +146,9 @@ void CookiesView::ContentsChanged(views::Textfield* sender,
 
 bool CookiesView::HandleKeyEvent(views::Textfield* sender,
                                  const views::KeyEvent& key_event) {
-  if (key_event.GetKeyCode() == app::VKEY_ESCAPE) {
+  if (key_event.GetKeyCode() == ui::VKEY_ESCAPE) {
     ResetSearchQuery();
-  } else if (key_event.GetKeyCode() == app::VKEY_RETURN) {
+  } else if (key_event.GetKeyCode() == ui::VKEY_RETURN) {
     search_update_factory_.RevokeAll();
     UpdateSearchResults();
   }
@@ -241,8 +241,8 @@ void CookiesView::OnTreeViewSelectionChanged(views::TreeView* tree_view) {
   }
 }
 
-void CookiesView::OnTreeViewKeyDown(app::KeyboardCode keycode) {
-  if (keycode == app::VKEY_DELETE)
+void CookiesView::OnTreeViewKeyDown(ui::KeyboardCode keycode) {
+  if (keycode == ui::VKEY_DELETE)
     cookies_tree_->RemoveSelectedItems();
 }
 

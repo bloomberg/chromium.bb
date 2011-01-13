@@ -72,7 +72,7 @@ class CookiesView : public CookiesTreeModel::Observer,
   virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view);
 
   // views::TreeViewController implementation.
-  virtual void OnTreeViewKeyDown(app::KeyboardCode keycode);
+  virtual void OnTreeViewKeyDown(ui::KeyboardCode keycode);
 
   // views::Textfield::Controller implementation.
   virtual void ContentsChanged(views::Textfield* sender,

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/find_bar_host.h"
 
-#include "app/keyboard_codes.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/find_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "views/focus/external_focus_tracker.h"
 #include "views/focus/view_storage.h"
 #include "views/widget/root_view.h"
@@ -47,13 +47,13 @@ bool FindBarHost::MaybeForwardKeyEventToWebpage(
   }
 
   switch (key_event.GetKeyCode()) {
-    case app::VKEY_DOWN:
-    case app::VKEY_UP:
-    case app::VKEY_PRIOR:
-    case app::VKEY_NEXT:
+    case ui::VKEY_DOWN:
+    case ui::VKEY_UP:
+    case ui::VKEY_PRIOR:
+    case ui::VKEY_NEXT:
       break;
-    case app::VKEY_HOME:
-    case app::VKEY_END:
+    case ui::VKEY_HOME:
+    case ui::VKEY_END:
       if (key_event.IsControlDown())
         break;
     // Fall through.
@@ -164,11 +164,11 @@ FindBarTesting* FindBarHost::GetFindBarTesting() {
 // FindBarWin, views::AcceleratorTarget implementation:
 
 bool FindBarHost::AcceleratorPressed(const views::Accelerator& accelerator) {
-  app::KeyboardCode key = accelerator.GetKeyCode();
-  if (key == app::VKEY_RETURN && accelerator.IsCtrlDown()) {
+  ui::KeyboardCode key = accelerator.GetKeyCode();
+  if (key == ui::VKEY_RETURN && accelerator.IsCtrlDown()) {
     // Ctrl+Enter closes the Find session and navigates any link that is active.
     find_bar_controller_->EndFindSession(FindBarController::kActivateSelection);
-  } else if (key == app::VKEY_ESCAPE) {
+  } else if (key == ui::VKEY_ESCAPE) {
     // This will end the Find session and hide the window, causing it to loose
     // focus and in the process unregister us as the handler for the Escape
     // accelerator through the FocusWillChange event.
@@ -288,13 +288,13 @@ void FindBarHost::RegisterAccelerators() {
   DropdownBarHost::RegisterAccelerators();
 
   // Register for Ctrl+Return.
-  views::Accelerator escape(app::VKEY_RETURN, false, true, false);
+  views::Accelerator escape(ui::VKEY_RETURN, false, true, false);
   focus_manager()->RegisterAccelerator(escape, this);
 }
 
 void FindBarHost::UnregisterAccelerators() {
   // Unregister Ctrl+Return.
-  views::Accelerator escape(app::VKEY_RETURN, false, true, false);
+  views::Accelerator escape(ui::VKEY_RETURN, false, true, false);
   focus_manager()->UnregisterAccelerator(escape, this);
 
   DropdownBarHost::UnregisterAccelerators();

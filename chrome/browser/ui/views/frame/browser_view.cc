@@ -620,13 +620,13 @@ bool BrowserView::GetAccelerator(int cmd_id, menus::Accelerator* accelerator) {
   // anywhere so we need to check for them explicitly here.
   switch (cmd_id) {
     case IDC_CUT:
-      *accelerator = views::Accelerator(app::VKEY_X, false, true, false);
+      *accelerator = views::Accelerator(ui::VKEY_X, false, true, false);
       return true;
     case IDC_COPY:
-      *accelerator = views::Accelerator(app::VKEY_C, false, true, false);
+      *accelerator = views::Accelerator(ui::VKEY_C, false, true, false);
       return true;
     case IDC_PASTE:
-      *accelerator = views::Accelerator(app::VKEY_V, false, true, false);
+      *accelerator = views::Accelerator(ui::VKEY_V, false, true, false);
       return true;
   }
   // Else, we retrieve the accelerator information from the accelerator table.
@@ -1213,7 +1213,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 #if defined(OS_WIN)
   // As Alt+F4 is the close-app keyboard shortcut, it needs processing
   // immediately.
-  if (event.windowsKeyCode == app::VKEY_F4 &&
+  if (event.windowsKeyCode == ui::VKEY_F4 &&
       event.modifiers == NativeWebKeyboardEvent::AltKey) {
     DefWindowProc(event.os_event.hwnd, event.os_event.message,
                   event.os_event.wParam, event.os_event.lParam);
@@ -1238,7 +1238,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                  views_event.IsAltDown());
 #else
   views::Accelerator accelerator(
-      static_cast<app::KeyboardCode>(event.windowsKeyCode),
+      static_cast<ui::KeyboardCode>(event.windowsKeyCode),
       (event.modifiers & NativeWebKeyboardEvent::ShiftKey) ==
           NativeWebKeyboardEvent::ShiftKey,
       (event.modifiers & NativeWebKeyboardEvent::ControlKey) ==
@@ -1306,34 +1306,34 @@ void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 // manager to do that.
 #if !defined(OS_MACOSX)
 void BrowserView::Cut() {
-  ui_controls::SendKeyPress(GetNativeHandle(), app::VKEY_X,
+  ui_controls::SendKeyPress(GetNativeHandle(), ui::VKEY_X,
                             true, false, false, false);
 }
 
 void BrowserView::Copy() {
-  ui_controls::SendKeyPress(GetNativeHandle(), app::VKEY_C,
+  ui_controls::SendKeyPress(GetNativeHandle(), ui::VKEY_C,
                             true, false, false, false);
 }
 
 void BrowserView::Paste() {
-  ui_controls::SendKeyPress(GetNativeHandle(), app::VKEY_V,
+  ui_controls::SendKeyPress(GetNativeHandle(), ui::VKEY_V,
                             true, false, false, false);
 }
 #else
 // Mac versions.  Not tested by antyhing yet;
 // don't assume written == works.
 void BrowserView::Cut() {
-  ui_controls::SendKeyPress(GetNativeHandle(), app::VKEY_X,
+  ui_controls::SendKeyPress(GetNativeHandle(), ui::VKEY_X,
                             false, false, false, true);
 }
 
 void BrowserView::Copy() {
-  ui_controls::SendKeyPress(GetNativeHandle(), app::VKEY_C,
+  ui_controls::SendKeyPress(GetNativeHandle(), ui::VKEY_C,
                             false, false, false, true);
 }
 
 void BrowserView::Paste() {
-  ui_controls::SendKeyPress(GetNativeHandle(), app::VKEY_V,
+  ui_controls::SendKeyPress(GetNativeHandle(), ui::VKEY_V,
                             false, false, false, true);
 }
 #endif
@@ -2289,7 +2289,7 @@ void BrowserView::LoadAccelerators() {
     bool ctrl_down = (accelerators[i].fVirt & FCONTROL) == FCONTROL;
     bool shift_down = (accelerators[i].fVirt & FSHIFT) == FSHIFT;
     views::Accelerator accelerator(
-        static_cast<app::KeyboardCode>(accelerators[i].key),
+        static_cast<ui::KeyboardCode>(accelerators[i].key),
         shift_down, ctrl_down, alt_down);
     accelerator_table_[accelerator] = accelerators[i].cmd;
 
@@ -2448,53 +2448,53 @@ void BrowserView::UpdateAcceleratorMetrics(
 #if defined(OS_CHROMEOS)
   // Collect information about the relative popularity of various accelerators
   // on Chrome OS.
-  const app::KeyboardCode key_code = accelerator.GetKeyCode();
+  const ui::KeyboardCode key_code = accelerator.GetKeyCode();
   switch (command_id) {
     case IDC_BACK:
-      if (key_code == app::VKEY_BACK)
+      if (key_code == ui::VKEY_BACK)
         UserMetrics::RecordAction(UserMetricsAction("Accel_Back_Backspace"));
-      else if (key_code == app::VKEY_F1)
+      else if (key_code == ui::VKEY_F1)
         UserMetrics::RecordAction(UserMetricsAction("Accel_Back_F1"));
-      else if (key_code == app::VKEY_LEFT)
+      else if (key_code == ui::VKEY_LEFT)
         UserMetrics::RecordAction(UserMetricsAction("Accel_Back_Left"));
       break;
     case IDC_FORWARD:
-      if (key_code == app::VKEY_BACK)
+      if (key_code == ui::VKEY_BACK)
         UserMetrics::RecordAction(UserMetricsAction("Accel_Forward_Backspace"));
-      else if (key_code == app::VKEY_F2)
+      else if (key_code == ui::VKEY_F2)
         UserMetrics::RecordAction(UserMetricsAction("Accel_Forward_F2"));
-      else if (key_code == app::VKEY_LEFT)
+      else if (key_code == ui::VKEY_LEFT)
         UserMetrics::RecordAction(UserMetricsAction("Accel_Forward_Right"));
       break;
     case IDC_RELOAD:
     case IDC_RELOAD_IGNORING_CACHE:
-      if (key_code == app::VKEY_R)
+      if (key_code == ui::VKEY_R)
         UserMetrics::RecordAction(UserMetricsAction("Accel_Reload_R"));
-      else if (key_code == app::VKEY_F3)
+      else if (key_code == ui::VKEY_F3)
         UserMetrics::RecordAction(UserMetricsAction("Accel_Reload_F3"));
       break;
     case IDC_FULLSCREEN:
-      if (key_code == app::VKEY_F4)
+      if (key_code == ui::VKEY_F4)
         UserMetrics::RecordAction(UserMetricsAction("Accel_Fullscreen_F4"));
       break;
     case IDC_NEW_TAB:
-      if (key_code == app::VKEY_T)
+      if (key_code == ui::VKEY_T)
         UserMetrics::RecordAction(UserMetricsAction("Accel_NewTab_T"));
       break;
     case IDC_SEARCH:
-      if (key_code == app::VKEY_LWIN)
+      if (key_code == ui::VKEY_LWIN)
         UserMetrics::RecordAction(UserMetricsAction("Accel_Search_LWin"));
       break;
     case IDC_FOCUS_LOCATION:
-      if (key_code == app::VKEY_D)
+      if (key_code == ui::VKEY_D)
         UserMetrics::RecordAction(UserMetricsAction("Accel_FocusLocation_D"));
-      else if (key_code == app::VKEY_L)
+      else if (key_code == ui::VKEY_L)
         UserMetrics::RecordAction(UserMetricsAction("Accel_FocusLocation_L"));
       break;
     case IDC_FOCUS_SEARCH:
-      if (key_code == app::VKEY_E)
+      if (key_code == ui::VKEY_E)
         UserMetrics::RecordAction(UserMetricsAction("Accel_FocusSearch_E"));
-      else if (key_code == app::VKEY_K)
+      else if (key_code == ui::VKEY_K)
         UserMetrics::RecordAction(UserMetricsAction("Accel_FocusSearch_K"));
       break;
     default:

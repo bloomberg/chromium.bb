@@ -1,15 +1,15 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "app/keyboard_code_conversion_mac.h"
+#import "ui/base/keycodes/keyboard_code_conversion_mac.h"
 
 #include <algorithm>
 #import <Carbon/Carbon.h>
 
 #include "base/logging.h"
 
-namespace app {
+namespace ui {
 
 namespace {
 
@@ -290,4 +290,4 @@ int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
   return macKeycode;
 }
 
-}  // namespace app
+}  // namespace ui

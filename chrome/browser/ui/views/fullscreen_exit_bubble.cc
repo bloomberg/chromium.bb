@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/fullscreen_exit_bubble.h"
 
-#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
@@ -12,6 +11,7 @@
 #include "gfx/canvas_skia.h"
 #include "grit/generated_resources.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
@@ -147,7 +147,7 @@ FullscreenExitBubble::FullscreenExitBubble(
   size_animation_->Reset(1);
 
   // Create the contents view.
-  views::Accelerator accelerator(app::VKEY_UNKNOWN, false, false, false);
+  views::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
   bool got_accelerator = frame->GetAccelerator(IDC_FULLSCREEN, &accelerator);
   DCHECK(got_accelerator);
   view_ = new FullscreenExitView(

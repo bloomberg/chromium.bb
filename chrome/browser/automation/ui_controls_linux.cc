@@ -96,7 +96,7 @@ void FakeAMouseMotionEvent(gint x, gint y) {
 namespace ui_controls {
 
 bool SendKeyPress(gfx::NativeWindow window,
-                  app::KeyboardCode key,
+                  ui::KeyboardCode key,
                   bool control, bool shift, bool alt, bool command) {
   DCHECK(command == false);  // No command key on Linux
   GdkWindow* event_window = NULL;
@@ -137,7 +137,7 @@ bool SendKeyPress(gfx::NativeWindow window,
 }
 
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
-                                app::KeyboardCode key,
+                                ui::KeyboardCode key,
                                 bool control, bool shift,
                                 bool alt, bool command,
                                 Task* task) {

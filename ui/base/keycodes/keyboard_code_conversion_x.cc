@@ -1,17 +1,17 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/keyboard_code_conversion_x.h"
+#include "ui/base/keycodes/keyboard_code_conversion_x.h"
 
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 
 #include "base/logging.h"
 
-namespace app {
+namespace ui {
 
-// Get an app::KeyboardCode from an X keyevent
+// Get an ui::KeyboardCode from an X keyevent
 KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
   KeySym keysym = XLookupKeysym(&xev->xkey, 0);
 
@@ -269,7 +269,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
     case XK_F22:
     case XK_F23:
     case XK_F24:
-      return static_cast<app::KeyboardCode>(VKEY_F1 + (keysym - XK_F1));
+      return static_cast<KeyboardCode>(VKEY_F1 + (keysym - XK_F1));
 
     // TODO(sad): some keycodes are still missing.
   }
@@ -278,4 +278,4 @@ KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
   return VKEY_UNKNOWN;
 }
 
-}  // namespace app
+}  // namespace ui

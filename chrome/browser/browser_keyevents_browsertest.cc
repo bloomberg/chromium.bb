@@ -4,7 +4,6 @@
 
 #include "build/build_config.h"
 
-#include "app/keyboard_codes.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -23,6 +22,7 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/test/test_server.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 namespace {
 
@@ -61,7 +61,7 @@ const size_t kMaxResultLength = 10;
 // input.
 // Please refer to chrome/test/data/keyevents_test.html for details.
 struct KeyEventTestData {
-  app::KeyboardCode key;
+  ui::KeyboardCode key;
   bool ctrl;
   bool shift;
   bool alt;
@@ -289,13 +289,13 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
   static const KeyEventTestData kTestNoInput[] = {
     // a
-    { app::VKEY_A, false, false, false, false,
+    { ui::VKEY_A, false, false, false, false,
       false, false, false, false, 3,
       { "D 65 0 false false false false",
         "P 97 97 false false false false",
         "U 65 0 false false false false" } },
     // shift-a
-    { app::VKEY_A, false, true, false, false,
+    { ui::VKEY_A, false, true, false, false,
       false, false, false, false, 5,
       { "D 16 0 false true false false",
         "D 65 0 false true false false",
@@ -303,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
         "U 65 0 false true false false",
         "U 16 0 false true false false" } },
     // a, suppress keydown
-    { app::VKEY_A, false, false, false, false,
+    { ui::VKEY_A, false, false, false, false,
       true, false, false, false, 2,
       { "D 65 0 false false false false",
         "U 65 0 false false false false" } },
@@ -311,14 +311,14 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
 
   static const KeyEventTestData kTestWithInput[] = {
     // a
-    { app::VKEY_A, false, false, false, false,
+    { ui::VKEY_A, false, false, false, false,
       false, false, false, false, 4,
       { "D 65 0 false false false false",
         "P 97 97 false false false false",
         "T a",
         "U 65 0 false false false false" } },
     // shift-a
-    { app::VKEY_A, false, true, false, false,
+    { ui::VKEY_A, false, true, false, false,
       false, false, false, false, 6,
       { "D 16 0 false true false false",
         "D 65 0 false true false false",
@@ -327,18 +327,18 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
         "U 65 0 false true false false",
         "U 16 0 false true false false" } },
     // a, suppress keydown
-    { app::VKEY_A, false, false, false, false,
+    { ui::VKEY_A, false, false, false, false,
       true, false, false, false, 2,
       { "D 65 0 false false false false",
         "U 65 0 false false false false" } },
     // a, suppress keypress
-    { app::VKEY_A, false, false, false, false,
+    { ui::VKEY_A, false, false, false, false,
       false, true, false, false, 3,
       { "D 65 0 false false false false",
         "P 97 97 false false false false",
         "U 65 0 false false false false" } },
     // a, suppress textInput
-    { app::VKEY_A, false, false, false, false,
+    { ui::VKEY_A, false, false, false, false,
       false, false, false, true, 4,
       { "D 65 0 false false false false",
         "P 97 97 false false false false",
@@ -384,14 +384,14 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
 #if defined(OS_WIN) || defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
   static const KeyEventTestData kTestCtrlF = {
-    app::VKEY_F, true, false, false, false,
+    ui::VKEY_F, true, false, false, false,
     false, false, false, false, 2,
     { "D 17 0 true false false false",
       "D 70 0 true false false false" }
   };
 
   static const KeyEventTestData kTestCtrlFSuppressKeyDown = {
-    app::VKEY_F, true, false, false, false,
+    ui::VKEY_F, true, false, false, false,
     true, false, false, false, 4,
     { "D 17 0 true false false false",
       "D 70 0 true false false false",
@@ -402,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
   // Ctrl+Z doesn't bind to any accelerators, which then should generate a
   // keypress event with charCode=26.
   static const KeyEventTestData kTestCtrlZ = {
-    app::VKEY_Z, true, false, false, false,
+    ui::VKEY_Z, true, false, false, false,
     false, false, false, false, 5,
     { "D 17 0 true false false false",
       "D 90 0 true false false false",
@@ -412,7 +412,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
   };
 
   static const KeyEventTestData kTestCtrlZSuppressKeyDown = {
-    app::VKEY_Z, true, false, false, false,
+    ui::VKEY_Z, true, false, false, false,
     true, false, false, false, 4,
     { "D 17 0 true false false false",
       "D 90 0 true false false false",
@@ -422,7 +422,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
 
   // Ctrl+Enter shall generate a keypress event with charCode=10 (LF).
   static const KeyEventTestData kTestCtrlEnter = {
-    app::VKEY_RETURN, true, false, false, false,
+    ui::VKEY_RETURN, true, false, false, false,
     false, false, false, false, 5,
     { "D 17 0 true false false false",
       "D 13 0 true false false false",
@@ -447,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
 
   // Press Escape to close the Find box and move the focus back to the web page.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), app::VKEY_ESCAPE, false, false, false, false));
+      browser(), ui::VKEY_ESCAPE, false, false, false, false));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Press Ctrl+F with keydown suppressed shall not open the find box.
@@ -461,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
 #elif defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
   static const KeyEventTestData kTestCmdF = {
-    app::VKEY_F, false, false, false, true,
+    ui::VKEY_F, false, false, false, true,
     false, false, false, false, 2,
     { "D 91 0 false false false true",
       "D 70 0 false false false true" }
@@ -469,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
 
   // On Mac we don't send key up events when command modifier is down.
   static const KeyEventTestData kTestCmdFSuppressKeyDown = {
-    app::VKEY_F, false, false, false, true,
+    ui::VKEY_F, false, false, false, true,
     true, false, false, false, 3,
     { "D 91 0 false false false true",
       "D 70 0 false false false true",
@@ -492,7 +492,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
 
   // Press Escape to close the Find box and move the focus back to the web page.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), app::VKEY_ESCAPE, false, false, false, false));
+      browser(), ui::VKEY_ESCAPE, false, false, false, false));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Press Cmd+F with keydown suppressed shall not open the find box.
@@ -505,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
 #if defined(OS_MACOSX)
   // On Mac, access keys use ctrl+alt modifiers.
   static const KeyEventTestData kTestAccessA = {
-    app::VKEY_A, true, false, true, false,
+    ui::VKEY_A, true, false, true, false,
     false, false, false, false, 6,
     { "D 17 0 true false false false",
       "D 18 0 true false true false",
@@ -516,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
   };
 
   static const KeyEventTestData kTestAccessDSuppress = {
-    app::VKEY_D, true, false, true, false,
+    ui::VKEY_D, true, false, true, false,
     true, true, true, false, 6,
     { "D 17 0 true false false false",
       "D 18 0 true false true false",
@@ -527,7 +527,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
   };
 
   static const KeyEventTestData kTestAccess1 = {
-    app::VKEY_1, true, false, true, false,
+    ui::VKEY_1, true, false, true, false,
     false, false, false, false, 6,
     { "D 17 0 true false false false",
       "D 18 0 true false true false",
@@ -538,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
   };
 #else
   static const KeyEventTestData kTestAccessA = {
-    app::VKEY_A, false, false, true, false,
+    ui::VKEY_A, false, false, true, false,
     false, false, false, false, 4,
     { "D 18 0 false false true false",
       "D 65 0 false false true false",
@@ -547,14 +547,14 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
   };
 
   static const KeyEventTestData kTestAccessD = {
-    app::VKEY_D, false, false, true, false,
+    ui::VKEY_D, false, false, true, false,
     false, false, false, false, 2,
     { "D 18 0 false false true false",
       "D 68 0 false false true false" }
   };
 
   static const KeyEventTestData kTestAccessDSuppress = {
-    app::VKEY_D, false, false, true, false,
+    ui::VKEY_D, false, false, true, false,
     true, true, true, false, 4,
     { "D 18 0 false false true false",
       "D 68 0 false false true false",
@@ -563,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
   };
 
   static const KeyEventTestData kTestAccess1 = {
-    app::VKEY_1, false, false, true, false,
+    ui::VKEY_1, false, false, true, false,
     false, false, false, false, 4,
     { "D 18 0 false false true false",
       "D 49 0 false false true false",
@@ -651,11 +651,11 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_ReservedAccelerators) {
 
   static const KeyEventTestData kTestCtrlOrCmdT = {
 #if defined(OS_MACOSX)
-    app::VKEY_T, false, false, false, true,
+    ui::VKEY_T, false, false, false, true,
     true, false, false, false, 1,
     { "D 91 0 false false false true" }
 #else
-    app::VKEY_T, true, false, false, false,
+    ui::VKEY_T, true, false, false, false,
     true, false, false, false, 1,
     { "D 17 0 true false false false" }
 #endif
@@ -698,10 +698,10 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_ReservedAccelerators) {
   // Press Ctrl/Cmd+W, which will close the tab.
 #if defined(OS_MACOSX)
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), app::VKEY_W, false, false, false, true));
+      browser(), ui::VKEY_W, false, false, false, true));
 #else
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), app::VKEY_W, true, false, false, false));
+      browser(), ui::VKEY_W, true, false, false, false));
 #endif
 
   ASSERT_NO_FATAL_FAILURE(wait_for_tab_closed.Wait());
@@ -712,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_ReservedAccelerators) {
 #if defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, EditorKeyBindings) {
   static const KeyEventTestData kTestCtrlA = {
-    app::VKEY_A, true, false, false, false,
+    ui::VKEY_A, true, false, false, false,
     false, false, false, false, 4,
     { "D 17 0 true false false false",
       "D 65 0 true false false false",
@@ -721,7 +721,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, EditorKeyBindings) {
   };
 
   static const KeyEventTestData kTestCtrlF = {
-    app::VKEY_F, true, false, false, false,
+    ui::VKEY_F, true, false, false, false,
     false, false, false, false, 4,
     { "D 17 0 true false false false",
       "D 70 0 true false false false",
@@ -730,7 +730,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, EditorKeyBindings) {
   };
 
   static const KeyEventTestData kTestCtrlK = {
-    app::VKEY_K, true, false, false, false,
+    ui::VKEY_K, true, false, false, false,
     false, false, false, false, 4,
     { "D 17 0 true false false false",
       "D 75 0 true false false false",
@@ -762,14 +762,14 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, EditorKeyBindings) {
 
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, PageUpDownKeys) {
   static const KeyEventTestData kTestPageUp = {
-    app::VKEY_PRIOR, false, false, false, false,
+    ui::VKEY_PRIOR, false, false, false, false,
     false, false, false, false, 2,
     { "D 33 0 false false false false",
       "U 33 0 false false false false" }
   };
 
   static const KeyEventTestData kTestPageDown = {
-    app::VKEY_NEXT, false, false, false, false,
+    ui::VKEY_NEXT, false, false, false, false,
     false, false, false, false, 2,
     { "D 34 0 false false false false",
       "U 34 0 false false false false" }
@@ -794,21 +794,21 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, PageUpDownKeys) {
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FocusMenuBarByAltKey) {
   static const KeyEventTestData kTestAltKey = {
-    app::VKEY_MENU, false, false, false, false,
+    ui::VKEY_MENU, false, false, false, false,
     false, false, false, false, 2,
     { "D 18 0 false false true false",
       "U 18 0 false false true false" }
   };
 
   static const KeyEventTestData kTestAltKeySuppress = {
-    app::VKEY_MENU, false, false, false, false,
+    ui::VKEY_MENU, false, false, false, false,
     true, false, false, false, 2,
     { "D 18 0 false false true false",
       "U 18 0 false false true false" }
   };
 
   static const KeyEventTestData kTestCtrlAltKey = {
-    app::VKEY_MENU, true, false, false, false,
+    ui::VKEY_MENU, true, false, false, false,
     false, false, false, false, 4,
     { "D 17 0 true false false false",
       "D 18 0 true false true false",

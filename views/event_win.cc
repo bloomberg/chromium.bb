@@ -8,7 +8,7 @@
 
 namespace views {
 
-KeyEvent::KeyEvent(EventType type, app::KeyboardCode key_code,
+KeyEvent::KeyEvent(EventType type, ui::KeyboardCode key_code,
                    int event_flags, int repeat_count, int message_flags,
                    UINT message)
     : Event(type, event_flags),

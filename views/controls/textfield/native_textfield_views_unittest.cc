@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/keyboard_codes.h"
 #include "base/utf_string_conversions.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_views_model.h"
@@ -88,7 +88,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
   }
 
  protected:
-  bool SendKeyEventToTextfieldViews(app::KeyboardCode key_code,
+  bool SendKeyEventToTextfieldViews(ui::KeyboardCode key_code,
                                     bool shift,
                                     bool control,
                                     bool capslock) {
@@ -99,13 +99,13 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     return textfield_->OnKeyPressed(event);
   }
 
-  bool SendKeyEventToTextfieldViews(app::KeyboardCode key_code,
+  bool SendKeyEventToTextfieldViews(ui::KeyboardCode key_code,
                                     bool shift,
                                     bool control) {
     return SendKeyEventToTextfieldViews(key_code, shift, control, false);
   }
 
-  bool SendKeyEventToTextfieldViews(app::KeyboardCode key_code) {
+  bool SendKeyEventToTextfieldViews(ui::KeyboardCode key_code) {
     return SendKeyEventToTextfieldViews(key_code, false, false);
   }
 
@@ -157,21 +157,21 @@ TEST_F(NativeTextfieldViewsTest, ModelChangesTeset) {
 
 TEST_F(NativeTextfieldViewsTest, KeyTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
-  SendKeyEventToTextfieldViews(app::VKEY_C, true, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_C, true, false);
   EXPECT_STR_EQ("C", textfield_->text());
   EXPECT_STR_EQ("C", last_contents_);
   last_contents_.clear();
 
-  SendKeyEventToTextfieldViews(app::VKEY_R, false, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_R, false, false);
   EXPECT_STR_EQ("Cr", textfield_->text());
   EXPECT_STR_EQ("Cr", last_contents_);
 
   textfield_->SetText(ASCIIToUTF16(""));
-  SendKeyEventToTextfieldViews(app::VKEY_C, true, false, true);
-  SendKeyEventToTextfieldViews(app::VKEY_C, false, false, true);
-  SendKeyEventToTextfieldViews(app::VKEY_1, false, false, true);
-  SendKeyEventToTextfieldViews(app::VKEY_1, true, false, true);
-  SendKeyEventToTextfieldViews(app::VKEY_1, true, false, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_C, true, false, true);
+  SendKeyEventToTextfieldViews(ui::VKEY_C, false, false, true);
+  SendKeyEventToTextfieldViews(ui::VKEY_1, false, false, true);
+  SendKeyEventToTextfieldViews(ui::VKEY_1, true, false, true);
+  SendKeyEventToTextfieldViews(ui::VKEY_1, true, false, false);
   EXPECT_STR_EQ("cC1!!", textfield_->text());
   EXPECT_STR_EQ("cC1!!", last_contents_);
 }
@@ -180,34 +180,34 @@ TEST_F(NativeTextfieldViewsTest, ControlAndSelectTest) {
   // Insert a test string in a textfield.
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("one two three"));
-  SendKeyEventToTextfieldViews(app::VKEY_RIGHT,
+  SendKeyEventToTextfieldViews(ui::VKEY_RIGHT,
                               true /* shift */, false /* control */);
-  SendKeyEventToTextfieldViews(app::VKEY_RIGHT, true, false);
-  SendKeyEventToTextfieldViews(app::VKEY_RIGHT, true, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_RIGHT, true, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_RIGHT, true, false);
 
   EXPECT_STR_EQ("one", textfield_->GetSelectedText());
 
   // Test word select.
-  SendKeyEventToTextfieldViews(app::VKEY_RIGHT, true, true);
+  SendKeyEventToTextfieldViews(ui::VKEY_RIGHT, true, true);
   EXPECT_STR_EQ("one two", textfield_->GetSelectedText());
-  SendKeyEventToTextfieldViews(app::VKEY_RIGHT, true, true);
+  SendKeyEventToTextfieldViews(ui::VKEY_RIGHT, true, true);
   EXPECT_STR_EQ("one two three", textfield_->GetSelectedText());
-  SendKeyEventToTextfieldViews(app::VKEY_LEFT, true, true);
+  SendKeyEventToTextfieldViews(ui::VKEY_LEFT, true, true);
   EXPECT_STR_EQ("one two ", textfield_->GetSelectedText());
-  SendKeyEventToTextfieldViews(app::VKEY_LEFT, true, true);
+  SendKeyEventToTextfieldViews(ui::VKEY_LEFT, true, true);
   EXPECT_STR_EQ("one ", textfield_->GetSelectedText());
 
   // Replace the selected text.
-  SendKeyEventToTextfieldViews(app::VKEY_Z, true, false);
-  SendKeyEventToTextfieldViews(app::VKEY_E, true, false);
-  SendKeyEventToTextfieldViews(app::VKEY_R, true, false);
-  SendKeyEventToTextfieldViews(app::VKEY_O, true, false);
-  SendKeyEventToTextfieldViews(app::VKEY_SPACE, false, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_Z, true, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_E, true, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_R, true, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_O, true, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_SPACE, false, false);
   EXPECT_STR_EQ("ZERO two three", textfield_->text());
 
-  SendKeyEventToTextfieldViews(app::VKEY_END, true, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_END, true, false);
   EXPECT_STR_EQ("two three", textfield_->GetSelectedText());
-  SendKeyEventToTextfieldViews(app::VKEY_HOME, true, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_HOME, true, false);
   EXPECT_STR_EQ("ZERO ", textfield_->GetSelectedText());
 }
 
@@ -219,44 +219,44 @@ TEST_F(NativeTextfieldViewsTest, InsertionDeletionTest) {
     // This is ugly and should be replaced by a utility standard function.
     // See comment in NativeTextfieldViews::GetPrintableChar.
     char c = test_str[i];
-    app::KeyboardCode code =
-        c == ' ' ? app::VKEY_SPACE :
-        static_cast<app::KeyboardCode>(app::VKEY_A + c - 'a');
+    ui::KeyboardCode code =
+        c == ' ' ? ui::VKEY_SPACE :
+        static_cast<ui::KeyboardCode>(ui::VKEY_A + c - 'a');
     SendKeyEventToTextfieldViews(code);
   }
   EXPECT_STR_EQ(test_str, textfield_->text());
 
   // Move the cursor around.
   for (int i = 0; i < 6; i++) {
-    SendKeyEventToTextfieldViews(app::VKEY_LEFT);
+    SendKeyEventToTextfieldViews(ui::VKEY_LEFT);
   }
-  SendKeyEventToTextfieldViews(app::VKEY_RIGHT);
+  SendKeyEventToTextfieldViews(ui::VKEY_RIGHT);
 
   // Delete using backspace and check resulting string.
-  SendKeyEventToTextfieldViews(app::VKEY_BACK);
+  SendKeyEventToTextfieldViews(ui::VKEY_BACK);
   EXPECT_STR_EQ("this is  test", textfield_->text());
 
   // Delete using delete key and check resulting string.
   for (int i = 0; i < 5; i++) {
-    SendKeyEventToTextfieldViews(app::VKEY_DELETE);
+    SendKeyEventToTextfieldViews(ui::VKEY_DELETE);
   }
   EXPECT_STR_EQ("this is ", textfield_->text());
 
   // Select all and replace with "k".
   textfield_->SelectAll();
-  SendKeyEventToTextfieldViews(app::VKEY_K);
+  SendKeyEventToTextfieldViews(ui::VKEY_K);
   EXPECT_STR_EQ("k", textfield_->text());
 
   // Delete the previous word from cursor.
   textfield_->SetText(ASCIIToUTF16("one two three four"));
-  SendKeyEventToTextfieldViews(app::VKEY_END);
-  SendKeyEventToTextfieldViews(app::VKEY_BACK, false, true, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_END);
+  SendKeyEventToTextfieldViews(ui::VKEY_BACK, false, true, false);
   EXPECT_STR_EQ("one two three ", textfield_->text());
 
   // Delete upto the beginning of the buffer from cursor in chromeos, do nothing
   // in windows.
-  SendKeyEventToTextfieldViews(app::VKEY_LEFT, false, true, false);
-  SendKeyEventToTextfieldViews(app::VKEY_BACK, true, true, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_LEFT, false, true, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_BACK, true, true, false);
 #if defined(OS_WIN)
   EXPECT_STR_EQ("one two three ", textfield_->text());
 #else
@@ -265,14 +265,14 @@ TEST_F(NativeTextfieldViewsTest, InsertionDeletionTest) {
 
   // Delete the next word from cursor.
   textfield_->SetText(ASCIIToUTF16("one two three four"));
-  SendKeyEventToTextfieldViews(app::VKEY_HOME);
-  SendKeyEventToTextfieldViews(app::VKEY_DELETE, false, true, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_HOME);
+  SendKeyEventToTextfieldViews(ui::VKEY_DELETE, false, true, false);
   EXPECT_STR_EQ(" two three four", textfield_->text());
 
   // Delete upto the end of the buffer from cursor in chromeos, do nothing
   // in windows.
-  SendKeyEventToTextfieldViews(app::VKEY_RIGHT, false, true, false);
-  SendKeyEventToTextfieldViews(app::VKEY_DELETE, true, true, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_RIGHT, false, true, false);
+  SendKeyEventToTextfieldViews(ui::VKEY_DELETE, true, true, false);
 #if defined(OS_WIN)
   EXPECT_STR_EQ(" two three four", textfield_->text());
 #else
@@ -291,11 +291,11 @@ TEST_F(NativeTextfieldViewsTest, PasswordTest) {
 
 TEST_F(NativeTextfieldViewsTest, OnKeyPressReturnValueTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
-  EXPECT_TRUE(SendKeyEventToTextfieldViews(app::VKEY_A));
+  EXPECT_TRUE(SendKeyEventToTextfieldViews(ui::VKEY_A));
   // F24, up/down key won't be handled.
-  EXPECT_FALSE(SendKeyEventToTextfieldViews(app::VKEY_F24));
-  EXPECT_FALSE(SendKeyEventToTextfieldViews(app::VKEY_UP));
-  EXPECT_FALSE(SendKeyEventToTextfieldViews(app::VKEY_DOWN));
+  EXPECT_FALSE(SendKeyEventToTextfieldViews(ui::VKEY_F24));
+  EXPECT_FALSE(SendKeyEventToTextfieldViews(ui::VKEY_UP));
+  EXPECT_FALSE(SendKeyEventToTextfieldViews(ui::VKEY_DOWN));
 }
 
 TEST_F(NativeTextfieldViewsTest, CursorMovement) {
@@ -305,23 +305,23 @@ TEST_F(NativeTextfieldViewsTest, CursorMovement) {
   textfield_->SetText(ASCIIToUTF16("one two hre "));
 
   // Send the cursor at the end.
-  SendKeyEventToTextfieldViews(app::VKEY_END);
+  SendKeyEventToTextfieldViews(ui::VKEY_END);
 
   // Ctrl+Left should move the cursor just before the last word.
-  SendKeyEventToTextfieldViews(app::VKEY_LEFT, false, true);
-  SendKeyEventToTextfieldViews(app::VKEY_T);
+  SendKeyEventToTextfieldViews(ui::VKEY_LEFT, false, true);
+  SendKeyEventToTextfieldViews(ui::VKEY_T);
   EXPECT_STR_EQ("one two thre ", textfield_->text());
   EXPECT_STR_EQ("one two thre ", last_contents_);
 
   // Ctrl+Right should move the cursor to the end of the last word.
-  SendKeyEventToTextfieldViews(app::VKEY_RIGHT, false, true);
-  SendKeyEventToTextfieldViews(app::VKEY_E);
+  SendKeyEventToTextfieldViews(ui::VKEY_RIGHT, false, true);
+  SendKeyEventToTextfieldViews(ui::VKEY_E);
   EXPECT_STR_EQ("one two three ", textfield_->text());
   EXPECT_STR_EQ("one two three ", last_contents_);
 
   // Ctrl+Right again should move the cursor to the end.
-  SendKeyEventToTextfieldViews(app::VKEY_RIGHT, false, true);
-  SendKeyEventToTextfieldViews(app::VKEY_BACK);
+  SendKeyEventToTextfieldViews(ui::VKEY_RIGHT, false, true);
+  SendKeyEventToTextfieldViews(ui::VKEY_BACK);
   EXPECT_STR_EQ("one two three", textfield_->text());
   EXPECT_STR_EQ("one two three", last_contents_);
 
@@ -329,21 +329,21 @@ TEST_F(NativeTextfieldViewsTest, CursorMovement) {
   textfield_->SetText(ASCIIToUTF16(" ne two"));
 
   // Send the cursor at the beginning.
-  SendKeyEventToTextfieldViews(app::VKEY_HOME);
+  SendKeyEventToTextfieldViews(ui::VKEY_HOME);
 
   // Ctrl+Right, then Ctrl+Left should move the cursor to the beginning of the
   // first word.
-  SendKeyEventToTextfieldViews(app::VKEY_RIGHT, false, true);
-  SendKeyEventToTextfieldViews(app::VKEY_LEFT, false, true);
-  SendKeyEventToTextfieldViews(app::VKEY_O);
+  SendKeyEventToTextfieldViews(ui::VKEY_RIGHT, false, true);
+  SendKeyEventToTextfieldViews(ui::VKEY_LEFT, false, true);
+  SendKeyEventToTextfieldViews(ui::VKEY_O);
   EXPECT_STR_EQ(" one two", textfield_->text());
   EXPECT_STR_EQ(" one two", last_contents_);
 
   // Ctrl+Left to move the cursor to the beginning of the first word.
-  SendKeyEventToTextfieldViews(app::VKEY_LEFT, false, true);
+  SendKeyEventToTextfieldViews(ui::VKEY_LEFT, false, true);
   // Ctrl+Left again should move the cursor back to the very beginning.
-  SendKeyEventToTextfieldViews(app::VKEY_LEFT, false, true);
-  SendKeyEventToTextfieldViews(app::VKEY_DELETE);
+  SendKeyEventToTextfieldViews(ui::VKEY_LEFT, false, true);
+  SendKeyEventToTextfieldViews(ui::VKEY_DELETE);
   EXPECT_STR_EQ("one two", textfield_->text());
   EXPECT_STR_EQ("one two", last_contents_);
 }

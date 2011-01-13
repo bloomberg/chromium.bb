@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
@@ -29,6 +28,7 @@
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
 #include "views/widget/widget_gtk.h"
@@ -81,7 +81,7 @@ class UsernameField : public chromeos::TextfieldWithMargin {
 
   // Overridden from views::View:
   virtual bool OnKeyPressed(const views::KeyEvent& e) {
-    if (e.GetKeyCode() == app::VKEY_LEFT) {
+    if (e.GetKeyCode() == ui::VKEY_LEFT) {
       return controller_->NavigateAway();
     }
     return false;
@@ -111,10 +111,10 @@ NewUserView::NewUserView(Delegate* delegate,
       create_account_link_(NULL),
       guest_link_(NULL),
       languages_menubutton_(NULL),
-      accel_focus_pass_(views::Accelerator(app::VKEY_P, false, false, true)),
-      accel_focus_user_(views::Accelerator(app::VKEY_U, false, false, true)),
+      accel_focus_pass_(views::Accelerator(ui::VKEY_P, false, false, true)),
+      accel_focus_user_(views::Accelerator(ui::VKEY_U, false, false, true)),
       accel_login_off_the_record_(
-          views::Accelerator(app::VKEY_B, false, false, true)),
+          views::Accelerator(ui::VKEY_B, false, false, true)),
       accel_toggle_accessibility_(WizardAccessibilityHelper::GetAccelerator()),
       delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
@@ -530,7 +530,7 @@ bool NewUserView::HandleKeyEvent(views::Textfield* sender,
   if (!CrosLibrary::Get()->EnsureLoaded() || login_in_process_)
     return false;
 
-  if (key_event.GetKeyCode() == app::VKEY_RETURN) {
+  if (key_event.GetKeyCode() == ui::VKEY_RETURN) {
     if (!username_field_->text().empty() && !password_field_->text().empty())
       Login();
     // Return true so that processing ends

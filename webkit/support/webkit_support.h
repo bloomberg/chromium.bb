@@ -8,11 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "app/keyboard_codes.h"
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgentClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 class WebURLLoaderMockFactory;
 namespace WebKit {
@@ -161,19 +161,19 @@ void OpenFileSystem(WebKit::WebFrame* frame, WebKit::WebFileSystem::Type type,
 
 // -------- Keyboard code
 enum {
-    VKEY_LEFT = app::VKEY_LEFT,
-    VKEY_RIGHT = app::VKEY_RIGHT,
-    VKEY_UP = app::VKEY_UP,
-    VKEY_DOWN = app::VKEY_DOWN,
-    VKEY_RETURN = app::VKEY_RETURN,
-    VKEY_INSERT = app::VKEY_INSERT,
-    VKEY_DELETE = app::VKEY_DELETE,
-    VKEY_PRIOR = app::VKEY_PRIOR,
-    VKEY_NEXT = app::VKEY_NEXT,
-    VKEY_HOME = app::VKEY_HOME,
-    VKEY_END = app::VKEY_END,
-    VKEY_SNAPSHOT = app::VKEY_SNAPSHOT,
-    VKEY_F1 = app::VKEY_F1,
+    VKEY_LEFT = ui::VKEY_LEFT,
+    VKEY_RIGHT = ui::VKEY_RIGHT,
+    VKEY_UP = ui::VKEY_UP,
+    VKEY_DOWN = ui::VKEY_DOWN,
+    VKEY_RETURN = ui::VKEY_RETURN,
+    VKEY_INSERT = ui::VKEY_INSERT,
+    VKEY_DELETE = ui::VKEY_DELETE,
+    VKEY_PRIOR = ui::VKEY_PRIOR,
+    VKEY_NEXT = ui::VKEY_NEXT,
+    VKEY_HOME = ui::VKEY_HOME,
+    VKEY_END = ui::VKEY_END,
+    VKEY_SNAPSHOT = ui::VKEY_SNAPSHOT,
+    VKEY_F1 = ui::VKEY_F1,
 };
 
 }  // namespace webkit_support

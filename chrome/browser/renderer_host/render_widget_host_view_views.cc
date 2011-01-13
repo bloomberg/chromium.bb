@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <string>
 
-#include "app/keyboard_code_conversion_gtk.h"
 #include "app/l10n_util.h"
 #include "app/x11_util.h"
 #include "base/command_line.h"
@@ -25,6 +24,7 @@
 #include "gfx/canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #include "views/event.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_gtk.h"

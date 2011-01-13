@@ -82,24 +82,24 @@ class ContentView : public views::View {
       : accel_toggle_accessibility_(
             chromeos::WizardAccessibilityHelper::GetAccelerator()) {
 #if defined(OFFICIAL_BUILD)
-    accel_cancel_update_ =  views::Accelerator(app::VKEY_ESCAPE,
+    accel_cancel_update_ =  views::Accelerator(ui::VKEY_ESCAPE,
                                                true, true, true);
 #else
-    accel_cancel_update_ =  views::Accelerator(app::VKEY_ESCAPE,
+    accel_cancel_update_ =  views::Accelerator(ui::VKEY_ESCAPE,
                                                false, false, false);
-    accel_account_screen_ = views::Accelerator(app::VKEY_A,
+    accel_account_screen_ = views::Accelerator(ui::VKEY_A,
                                                false, true, true);
-    accel_login_screen_ = views::Accelerator(app::VKEY_L,
+    accel_login_screen_ = views::Accelerator(ui::VKEY_L,
                                              false, true, true);
-    accel_network_screen_ = views::Accelerator(app::VKEY_N,
+    accel_network_screen_ = views::Accelerator(ui::VKEY_N,
                                                false, true, true);
-    accel_update_screen_ = views::Accelerator(app::VKEY_U,
+    accel_update_screen_ = views::Accelerator(ui::VKEY_U,
                                               false, true, true);
-    accel_image_screen_ = views::Accelerator(app::VKEY_I,
+    accel_image_screen_ = views::Accelerator(ui::VKEY_I,
                                              false, true, true);
-    accel_eula_screen_ = views::Accelerator(app::VKEY_E,
+    accel_eula_screen_ = views::Accelerator(ui::VKEY_E,
                                             false, true, true);
-    accel_register_screen_ = views::Accelerator(app::VKEY_R,
+    accel_register_screen_ = views::Accelerator(ui::VKEY_R,
                                                 false, true, true);
     AddAccelerator(accel_account_screen_);
     AddAccelerator(accel_login_screen_);

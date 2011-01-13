@@ -11,7 +11,6 @@
 #include <richedit.h>
 #include <textserv.h>
 
-#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/win/drag_source.h"
@@ -50,6 +49,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "views/drag_utils.h"
 #include "views/focus/focus_util_win.h"
 #include "views/widget/widget.h"
@@ -957,10 +957,10 @@ void AutocompleteEditViewWin::PasteAndGo(const std::wstring& text) {
 
 bool AutocompleteEditViewWin::SkipDefaultKeyEventProcessing(
     const views::KeyEvent& e) {
-  app::KeyboardCode key = e.GetKeyCode();
+  ui::KeyboardCode key = e.GetKeyCode();
   // We don't process ALT + numpad digit as accelerators, they are used for
   // entering special characters.  We do translate alt-home.
-  if (e.IsAltDown() && (key != app::VKEY_HOME) &&
+  if (e.IsAltDown() && (key != ui::VKEY_HOME) &&
       app::win::IsNumPadDigit(key, e.IsExtendedKey()))
     return true;
 
@@ -972,28 +972,28 @@ bool AutocompleteEditViewWin::SkipDefaultKeyEventProcessing(
   // accelerators (e.g., F5 for reload the page should work even when the
   // Omnibox gets focused).
   switch (key) {
-    case app::VKEY_ESCAPE: {
+    case ui::VKEY_ESCAPE: {
       ScopedFreeze freeze(this, GetTextObjectModel());
       return model_->OnEscapeKeyPressed();
     }
 
-    case app::VKEY_RETURN:
+    case ui::VKEY_RETURN:
       return true;
 
-    case app::VKEY_UP:
-    case app::VKEY_DOWN:
+    case ui::VKEY_UP:
+    case ui::VKEY_DOWN:
       return !e.IsAltDown();
 
-    case app::VKEY_DELETE:
-    case app::VKEY_INSERT:
+    case ui::VKEY_DELETE:
+    case ui::VKEY_INSERT:
       return !e.IsAltDown() && e.IsShiftDown() && !e.IsControlDown();
 
-    case app::VKEY_X:
-    case app::VKEY_V:
+    case ui::VKEY_X:
+    case ui::VKEY_V:
       return !e.IsAltDown() && e.IsControlDown();
 
-    case app::VKEY_BACK:
-    case app::VKEY_OEM_PLUS:
+    case ui::VKEY_BACK:
+    case ui::VKEY_OEM_PLUS:
       return true;
 
     default:
@@ -1795,7 +1795,7 @@ void AutocompleteEditViewWin::HandleKeystroke(UINT message,
   ScopedFreeze freeze(this, GetTextObjectModel());
   OnBeforePossibleChange();
 
-  if (key == app::VKEY_HOME || key == app::VKEY_END) {
+  if (key == ui::VKEY_HOME || key == ui::VKEY_END) {
     // DefWindowProc() might reset the keyboard layout when it receives a
     // keydown event for VKEY_HOME or VKEY_END. When the window was created
     // with WS_EX_LAYOUTRTL and the current keyboard layout is not a RTL one,

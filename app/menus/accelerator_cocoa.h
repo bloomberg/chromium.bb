@@ -20,7 +20,7 @@ namespace menus {
 class AcceleratorCocoa : public Accelerator {
  public:
   AcceleratorCocoa(NSString* key_code, NSUInteger mask)
-      : Accelerator(app::VKEY_UNKNOWN, mask),
+      : Accelerator(ui::VKEY_UNKNOWN, mask),
         characters_([key_code copy]) {
   }
 

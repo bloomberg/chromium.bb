@@ -12,8 +12,8 @@
 #include <gtk/gtk.h>
 #endif
 
-#include "app/keyboard_codes.h"
 #include "base/logging.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "views/accelerator.h"
 #include "views/focus/focus_search.h"
 #include "views/focus/view_storage.h"
@@ -120,11 +120,11 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
 #endif
 
   // Intercept arrow key messages to switch between grouped views.
-  app::KeyboardCode key_code = event.GetKeyCode();
+  ui::KeyboardCode key_code = event.GetKeyCode();
   if (focused_view_ && focused_view_->GetGroup() != -1 &&
-      (key_code == app::VKEY_UP || key_code == app::VKEY_DOWN ||
-       key_code == app::VKEY_LEFT || key_code == app::VKEY_RIGHT)) {
-    bool next = (key_code == app::VKEY_RIGHT || key_code == app::VKEY_DOWN);
+      (key_code == ui::VKEY_UP || key_code == ui::VKEY_DOWN ||
+       key_code == ui::VKEY_LEFT || key_code == ui::VKEY_RIGHT)) {
+    bool next = (key_code == ui::VKEY_RIGHT || key_code == ui::VKEY_DOWN);
     std::vector<View*> views;
     focused_view_->GetParent()->GetViewsWithGroup(focused_view_->GetGroup(),
                                                   &views);
@@ -509,7 +509,7 @@ AcceleratorTarget* FocusManager::GetCurrentTargetForAccelerator(
 
 // static
 bool FocusManager::IsTabTraversalKeyEvent(const KeyEvent& key_event) {
-  return key_event.GetKeyCode() == app::VKEY_TAB &&
+  return key_event.GetKeyCode() == ui::VKEY_TAB &&
          !key_event.IsControlDown();
 }
 

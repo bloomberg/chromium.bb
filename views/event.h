@@ -6,9 +6,9 @@
 #define VIEWS_EVENT_H_
 #pragma once
 
-#include "app/keyboard_codes.h"
 #include "base/basictypes.h"
 #include "gfx/point.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 #if defined(OS_LINUX)
 typedef struct _GdkEventKey GdkEventKey;
@@ -331,14 +331,14 @@ class KeyEvent : public Event {
  public:
   // Create a new key event
   KeyEvent(EventType type,
-           app::KeyboardCode key_code,
+           ui::KeyboardCode key_code,
            int event_flags,
            int repeat_count,
            int message_flags);
 
 #if defined(OS_WIN)
   KeyEvent(EventType type,
-           app::KeyboardCode key_code,
+           ui::KeyboardCode key_code,
            int event_flags,
            int repeat_count,
            int message_flags,
@@ -358,7 +358,7 @@ class KeyEvent : public Event {
   // the Windows value.
   // On GTK, you can use the methods in keyboard_code_conversion_gtk.cc to
   // convert this value back to a GDK value if needed.
-  app::KeyboardCode GetKeyCode() const {
+  ui::KeyboardCode GetKeyCode() const {
     return key_code_;
   }
 
@@ -380,7 +380,7 @@ class KeyEvent : public Event {
 
  private:
 
-  app::KeyboardCode key_code_;
+  ui::KeyboardCode key_code_;
   int repeat_count_;
   int message_flags_;
 #if defined(OS_WIN)

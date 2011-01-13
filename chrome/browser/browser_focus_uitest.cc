@@ -313,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
       ASSERT_TRUE(IsViewFocused(vid));
 
       ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-          browser(), app::VKEY_TAB, true, false, false, false));
+          browser(), ui::VKEY_TAB, true, false, false, false));
     }
 
     // As above, but with ctrl+shift+tab.
@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
       ASSERT_TRUE(IsViewFocused(vid));
 
       ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-          browser(), app::VKEY_TAB, true, true, false, false));
+          browser(), ui::VKEY_TAB, true, true, false, false));
     }
   }
 }
@@ -485,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
         Details<bool> details(&is_editable_node);
 
         ASSERT_TRUE(ui_test_utils::SendKeyPressAndWaitWithDetails(
-            browser(), app::VKEY_TAB, false, false, false, false,
+            browser(), ui::VKEY_TAB, false, false, false, false,
             NotificationType::FOCUS_CHANGED_IN_PAGE,
             NotificationSource(Source<RenderViewHost>(
                 browser()->GetSelectedTabContents()->render_view_host())),
@@ -493,7 +493,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
       } else {
         // On the last tab key press, the focus returns to the browser.
         ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
-            browser(), app::VKEY_TAB, false, false, false, false,
+            browser(), ui::VKEY_TAB, false, false, false, false,
             NotificationType::FOCUS_RETURNED_TO_BROWSER,
             NotificationSource(Source<Browser>(browser()))));
       }
@@ -524,7 +524,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
         Details<bool> details(&is_editable_node);
 
         ASSERT_TRUE(ui_test_utils::SendKeyPressAndWaitWithDetails(
-            browser(), app::VKEY_TAB, false, true, false, false,
+            browser(), ui::VKEY_TAB, false, true, false, false,
             NotificationType::FOCUS_CHANGED_IN_PAGE,
             NotificationSource(Source<RenderViewHost>(
                 browser()->GetSelectedTabContents()->render_view_host())),
@@ -532,7 +532,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
       } else {
         // On the last tab key press, the focus returns to the browser.
         ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
-            browser(), app::VKEY_TAB, false, true, false, false,
+            browser(), ui::VKEY_TAB, false, true, false, false,
             NotificationType::FOCUS_RETURNED_TO_BROWSER,
             NotificationSource(Source<Browser>(browser()))));
       }
@@ -615,7 +615,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
       }
 
       ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
-          browser(), app::VKEY_TAB, false, false, false, false,
+          browser(), ui::VKEY_TAB, false, false, false, false,
           notification_type, notification_source));
     }
 
@@ -646,7 +646,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
       }
 
       ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
-          browser(), app::VKEY_TAB, false, true, false, false,
+          browser(), ui::VKEY_TAB, false, true, false, false,
           notification_type, notification_source));
 
       // Let's make sure the focus is on the expected element in the page.
@@ -715,11 +715,11 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 #if defined(OS_MACOSX)
   // Press Cmd+F, which will make the Find box open and request focus.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), app::VKEY_F, false, false, false, true));
+      browser(), ui::VKEY_F, false, false, false, true));
 #else
   // Press Ctrl+F, which will make the Find box open and request focus.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), app::VKEY_F, true, false, false, false));
+      browser(), ui::VKEY_F, true, false, false, false));
 #endif
 
   // Ideally, we wouldn't sleep here and instead would intercept the
@@ -739,10 +739,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   // Now press Ctrl+F again and focus should move to the Find box.
 #if defined(OS_MACOSX)
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), app::VKEY_F, false, false, false, true));
+      browser(), ui::VKEY_F, false, false, false, true));
 #else
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), app::VKEY_F, true, false, false, false));
+      browser(), ui::VKEY_F, true, false, false, false));
 #endif
   ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
@@ -753,10 +753,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   // Now press Ctrl+F again and focus should move to the Find box.
 #if defined(OS_MACOSX)
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), app::VKEY_F, false, false, false, true));
+      browser(), ui::VKEY_F, false, false, false, true));
 #else
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), app::VKEY_F, true, false, false, false));
+      browser(), ui::VKEY_F, true, false, false, false));
 #endif
 
   // See remark above on why we wait.

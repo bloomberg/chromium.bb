@@ -233,7 +233,7 @@ class TaskManagerView : public views::View,
   // views::TableViewObserver implementation.
   virtual void OnSelectionChanged();
   virtual void OnDoubleClick();
-  virtual void OnKeyDown(app::KeyboardCode keycode);
+  virtual void OnKeyDown(ui::KeyboardCode keycode);
 
   // views::LinkController implementation.
   virtual void LinkActivated(views::Link* source, int event_flags);
@@ -384,7 +384,7 @@ void TaskManagerView::Init() {
   }
   kill_button_ = new views::NativeButton(
       this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL)));
-  kill_button_->AddAccelerator(views::Accelerator(app::VKEY_E,
+  kill_button_->AddAccelerator(views::Accelerator(ui::VKEY_E,
                                                   false, false, false));
   kill_button_->SetAccessibleKeyboardShortcut(L"E");
   about_memory_link_ = new views::Link(UTF16ToWide(
@@ -600,8 +600,8 @@ void TaskManagerView::OnDoubleClick() {
   ActivateFocusedTab();
 }
 
-void TaskManagerView::OnKeyDown(app::KeyboardCode keycode) {
-  if (keycode == app::VKEY_RETURN)
+void TaskManagerView::OnKeyDown(ui::KeyboardCode keycode) {
+  if (keycode == ui::VKEY_RETURN)
     ActivateFocusedTab();
 }
 

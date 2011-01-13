@@ -206,7 +206,7 @@ int RenderViewTest::SendKeyEvent(MockKeyboard::Layout layout,
   // current locale. TODO(estade): fix this to respect |layout|.
   std::vector<GdkEvent*> events;
   app::SynthesizeKeyPressEvents(
-      NULL, static_cast<app::KeyboardCode>(key_code),
+      NULL, static_cast<ui::KeyboardCode>(key_code),
       modifiers & (MockKeyboard::LEFT_CONTROL | MockKeyboard::RIGHT_CONTROL),
       modifiers & (MockKeyboard::LEFT_SHIFT | MockKeyboard::RIGHT_SHIFT),
       modifiers & (MockKeyboard::LEFT_ALT | MockKeyboard::RIGHT_ALT),

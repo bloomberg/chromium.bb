@@ -4,7 +4,6 @@
 
 #include "chrome/browser/automation/automation_provider.h"
 
-#include "app/keyboard_codes.h"
 #include "base/debug/trace_event.h"
 #include "base/json/json_reader.h"
 #include "base/utf_string_conversions.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/ui/views/bookmark_bar_view.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/page_zoom.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"
@@ -203,7 +203,7 @@ void AutomationProvider::WindowSimulateDrag(int handle,
       // Press Escape, making sure we wait until chrome processes the escape.
       // TODO(phajdan.jr): make this use ui_test_utils::SendKeyPressSync.
       ui_controls::SendKeyPressNotifyWhenDone(
-          window, app::VKEY_ESCAPE,
+          window, ui::VKEY_ESCAPE,
           ((flags & views::Event::EF_CONTROL_DOWN) ==
            views::Event::EF_CONTROL_DOWN),
           ((flags & views::Event::EF_SHIFT_DOWN) ==

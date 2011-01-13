@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/utf_string_conversions.h"
-#include "app/keyboard_code_conversion.h"
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -28,6 +27,7 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/keycodes/keyboard_code_conversion.h"
 
 static const char* kTestFormString =
     "<form action=\"http://www.google.com/\" method=\"POST\">"
@@ -157,14 +157,14 @@ class AutoFillTest : public InProcessBrowserTest {
     // Start filling the first name field with "M" and wait for the popup to be
     // shown.
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
-        browser(), app::VKEY_M, false, true, false, false,
+        browser(), ui::VKEY_M, false, true, false, false,
         NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
         Source<RenderViewHost>(rvh())));
 
     // Press the down arrow to select the suggestion and preview the autofilled
     // form.
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
-        browser(), app::VKEY_DOWN, false, false, false, false,
+        browser(), ui::VKEY_DOWN, false, false, false, false,
         NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
         Source<RenderViewHost>(rvh())));
 
@@ -183,7 +183,7 @@ class AutoFillTest : public InProcessBrowserTest {
 
     // Press Enter to accept the autofill suggestions.
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
-        browser(), app::VKEY_RETURN, false, false, false, false,
+        browser(), ui::VKEY_RETURN, false, false, false, false,
         NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
         Source<RenderViewHost>(rvh())));
 

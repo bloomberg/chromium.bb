@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/keyboard_code_conversion.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_window.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/base/keycodes/keyboard_code_conversion.h"
 #include "views/event.h"
 #include "views/widget/root_view.h"
 
@@ -86,8 +86,8 @@ bool SendKeyboardEventInputFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args->GetString(kKeyIdentifier, &identifier));
   TrimWhitespaceASCII(identifier, TRIM_ALL, &identifier);
 
-  app::KeyboardCode code = app::KeyCodeFromKeyIdentifier(identifier);
-  if (code == app::VKEY_UNKNOWN) {
+  ui::KeyboardCode code = ui::KeyCodeFromKeyIdentifier(identifier);
+  if (code == ui::VKEY_UNKNOWN) {
     error_ = kUnknownOrUnsupportedKeyIdentiferError;
     return false;
   }

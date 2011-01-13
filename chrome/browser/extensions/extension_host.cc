@@ -6,7 +6,6 @@
 
 #include <list>
 
-#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
@@ -49,6 +48,7 @@
 #include "chrome/common/view_types.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "webkit/glue/context_menu.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -707,7 +707,7 @@ bool ExtensionHost::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                            bool* is_keyboard_shortcut) {
   if (extension_host_type_ == ViewType::EXTENSION_POPUP &&
       event.type == NativeWebKeyboardEvent::RawKeyDown &&
-      event.windowsKeyCode == app::VKEY_ESCAPE) {
+      event.windowsKeyCode == ui::VKEY_ESCAPE) {
     DCHECK(is_keyboard_shortcut != NULL);
     *is_keyboard_shortcut = true;
   }
@@ -717,7 +717,7 @@ bool ExtensionHost::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 void ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   if (extension_host_type_ == ViewType::EXTENSION_POPUP) {
     if (event.type == NativeWebKeyboardEvent::RawKeyDown &&
-        event.windowsKeyCode == app::VKEY_ESCAPE) {
+        event.windowsKeyCode == ui::VKEY_ESCAPE) {
       NotificationService::current()->Notify(
           NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
           Source<Profile>(profile_),

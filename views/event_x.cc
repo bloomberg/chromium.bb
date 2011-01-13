@@ -9,7 +9,7 @@
 #include <X11/extensions/XInput2.h>
 #endif
 
-#include "app/keyboard_code_conversion_x.h"
+#include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
 
@@ -203,7 +203,7 @@ KeyEvent::KeyEvent(XEvent* xev)
     : Event(xev->type == KeyPress ?
             Event::ET_KEY_PRESSED : Event::ET_KEY_RELEASED,
             GetEventFlagsFromXState(xev->xkey.state)),
-      key_code_(app::KeyboardCodeFromXKeyEvent(xev)),
+      key_code_(ui::KeyboardCodeFromXKeyEvent(xev)),
       repeat_count_(0),
       message_flags_(0),
       native_event_(NULL) {

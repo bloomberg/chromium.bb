@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,15 +33,15 @@
 
 // WindowsKeyCodeForGdkKeyCode is copied from platform/gtk/KeyEventGtk.cpp
 
-#include "app/keyboard_code_conversion_gtk.h"
+#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 
 #include <gdk/gdkkeysyms.h>
 
-#include "app/keyboard_codes_posix.h"
+#include "ui/base/keycodes/keyboard_codes_posix.h"
 
-namespace app {
+namespace ui {
 
-app::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
+KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
   switch (keycode) {
     case GDK_KP_0:
       return VKEY_NUMPAD0;  // (60) Numeric keypad 0 key
@@ -403,14 +403,14 @@ app::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
     case GDK_F22:
     case GDK_F23:
     case GDK_F24:
-      return static_cast<app::KeyboardCode>(VKEY_F1 + (keycode - GDK_F1));
+      return static_cast<KeyboardCode>(VKEY_F1 + (keycode - GDK_F1));
     default:
       return VKEY_UNKNOWN;
     }
 }
 
 // TODO(jcampan): this method might be incomplete.
-int GdkKeyCodeForWindowsKeyCode(app::KeyboardCode keycode, bool shift) {
+int GdkKeyCodeForWindowsKeyCode(KeyboardCode keycode, bool shift) {
   switch (keycode) {
     case VKEY_NUMPAD0:
       return GDK_KP_0;
@@ -614,4 +614,4 @@ int GdkKeyCodeForWindowsKeyCode(app::KeyboardCode keycode, bool shift) {
     }
 }
 
-}  // namespace app
+}  // namespace ui

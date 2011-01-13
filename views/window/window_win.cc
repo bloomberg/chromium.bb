@@ -7,7 +7,6 @@
 #include <dwmapi.h>
 #include <shellapi.h>
 
-#include "app/keyboard_code_conversion_win.h"
 #include "app/theme_provider.h"
 #include "app/win/hwnd_util.h"
 #include "app/win/win_util.h"
@@ -17,6 +16,7 @@
 #include "gfx/font.h"
 #include "gfx/icon_util.h"
 #include "gfx/path.h"
+#include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "views/accessibility/view_accessibility.h"
 #include "views/widget/root_view.h"
 #include "views/window/client_view.h"
@@ -1175,7 +1175,7 @@ void WindowWin::OnSysCommand(UINT notification_code, CPoint click) {
   if ((notification_code & sc_mask) == SC_KEYMENU && click.x == 0) {
     // Retrieve the status of shift and control keys to prevent consuming
     // shift+alt keys, which are used by Windows to change input languages.
-    Accelerator accelerator(app::KeyboardCodeForWindowsKeyCode(VK_MENU),
+    Accelerator accelerator(ui::KeyboardCodeForWindowsKeyCode(VK_MENU),
                             !!(GetKeyState(VK_SHIFT) & 0x8000),
                             !!(GetKeyState(VK_CONTROL) & 0x8000),
                             false);

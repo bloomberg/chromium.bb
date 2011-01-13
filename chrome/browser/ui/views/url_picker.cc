@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/url_picker.h"
 
-#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/table_model.h"
@@ -20,6 +19,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/net_util.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "views/background.h"
 #include "views/controls/label.h"
 #include "views/controls/table/table_view.h"
@@ -113,7 +113,7 @@ UrlPicker::UrlPicker(UrlPickerDelegate* delegate,
 
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  AddAccelerator(views::Accelerator(app::VKEY_RETURN, false, false, false));
+  AddAccelerator(views::Accelerator(ui::VKEY_RETURN, false, false, false));
 }
 
 UrlPicker::~UrlPicker() {

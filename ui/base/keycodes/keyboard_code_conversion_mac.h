@@ -1,15 +1,16 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_KEYBOARD_CODE_CONVERSION_MAC_H_
-#define APP_KEYBOARD_CODE_CONVERSION_MAC_H_
+#ifndef UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_MAC_H_
+#define UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_MAC_H_
 
 #import <Cocoa/Cocoa.h>
-#include "app/keyboard_codes_posix.h"
-#include "base/basictypes.h"
 
-namespace app {
+#include "base/basictypes.h"
+#include "ui/base/keycodes/keyboard_codes_posix.h"
+
+namespace ui {
 
 // We use windows virtual keycodes throughout our keyboard event related code,
 // including unit tests. But Mac uses a different set of virtual keycodes.
@@ -29,6 +30,6 @@ int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
                                 unichar* character,
                                 unichar* characterIgnoringModifiers);
 
-} // namespace app
+} // namespace ui
 
-#endif  // APP_KEYBOARD_CODE_CONVERSION_MAC_H_
+#endif  // UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_MAC_H_

@@ -1,6 +1,6 @@
 include_rules = [
-  "+app",
   "+gfx",
+  "+ui",
 
   "+remoting/protocol",
   "+remoting/jingle_glue",

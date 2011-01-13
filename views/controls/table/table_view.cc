@@ -1503,7 +1503,7 @@ void TableView::OnSelectedStateChanged() {
   }
 }
 
-bool TableView::OnKeyDown(app::KeyboardCode virtual_keycode) {
+bool TableView::OnKeyDown(ui::KeyboardCode virtual_keycode) {
   if (!ignore_listview_change_ && table_view_observer_) {
     table_view_observer_->OnKeyDown(virtual_keycode);
   }

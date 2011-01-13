@@ -12,7 +12,7 @@
 #include "views/controls/textfield/textfield.h"
 
 #if defined(TOUCH_UI)
-#include "app/keyboard_code_conversion_gtk.h"
+#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #endif
 
 views::Widget* DropdownBarHost::CreateHost() {

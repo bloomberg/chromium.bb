@@ -7,8 +7,8 @@
 
 #include <map>
 
-#include "app/keyboard_codes.h"
 #include "chrome/test/automation/window_proxy.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 namespace webdriver {
 
@@ -16,10 +16,10 @@ namespace webdriver {
 class KeyMap {
  public:
   KeyMap();
-  app::KeyboardCode Get(const wchar_t& key) const;
+  ui::KeyboardCode Get(const wchar_t& key) const;
 
   bool Press(const scoped_refptr<WindowProxy>& window,
-             const app::KeyboardCode key_code,
+             const ui::KeyboardCode key_code,
              const wchar_t& key);
 
   // Sets the Shift, Alt, Cntl, and Cmd keys to not pressed.
@@ -30,8 +30,8 @@ class KeyMap {
   bool alt_;
   bool control_;
   bool command_;
-  std::map<wchar_t, app::KeyboardCode> keys_;
-  std::map<wchar_t, app::KeyboardCode> shifted_keys_;
+  std::map<wchar_t, ui::KeyboardCode> keys_;
+  std::map<wchar_t, ui::KeyboardCode> shifted_keys_;
   DISALLOW_COPY_AND_ASSIGN(KeyMap);
 };
 

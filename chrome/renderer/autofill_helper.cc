@@ -4,7 +4,6 @@
 
 #include "chrome/renderer/autofill_helper.h"
 
-#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
@@ -16,6 +15,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"
@@ -219,8 +219,8 @@ void AutoFillHelper::TextDidChangeInTextField(const WebInputElement& element) {
 
 void AutoFillHelper::KeyDownInTextField(const WebInputElement& element,
                                         const WebKeyboardEvent& event) {
-  if (event.windowsKeyCode == app::VKEY_DOWN ||
-      event.windowsKeyCode == app::VKEY_UP)
+  if (event.windowsKeyCode == ui::VKEY_DOWN ||
+      event.windowsKeyCode == ui::VKEY_UP)
     ShowSuggestions(element, true, true, true);
 }
 

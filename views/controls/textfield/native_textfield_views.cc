@@ -427,52 +427,52 @@ void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
 bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
   // TODO(oshima): handle IME.
   if (key_event.GetType() == views::Event::ET_KEY_PRESSED) {
-    app::KeyboardCode key_code = key_event.GetKeyCode();
+    ui::KeyboardCode key_code = key_event.GetKeyCode();
     // TODO(oshima): shift-tab does not work. Figure out why and fix.
-    if (key_code == app::VKEY_TAB)
+    if (key_code == ui::VKEY_TAB)
       return false;
     bool selection = key_event.IsShiftDown();
     bool control = key_event.IsControlDown();
     bool text_changed = false;
     bool cursor_changed = false;
     switch (key_code) {
-      case app::VKEY_A:
+      case ui::VKEY_A:
         if (control) {
           model_->SelectAll();
           cursor_changed = true;
         }
         break;
-      case app::VKEY_X:
+      case ui::VKEY_X:
         if (control)
           text_changed = model_->Cut();
         break;
-      case app::VKEY_C:
+      case ui::VKEY_C:
         if (control)
           model_->Copy();
         break;
-      case app::VKEY_V:
+      case ui::VKEY_V:
         if (control)
           text_changed = model_->Paste();
         break;
-      case app::VKEY_RIGHT:
+      case ui::VKEY_RIGHT:
         control ? model_->MoveCursorToNextWord(selection)
             : model_->MoveCursorRight(selection);
         cursor_changed = true;
         break;
-      case app::VKEY_LEFT:
+      case ui::VKEY_LEFT:
         control ? model_->MoveCursorToPreviousWord(selection)
             : model_->MoveCursorLeft(selection);
         cursor_changed = true;
         break;
-      case app::VKEY_END:
+      case ui::VKEY_END:
         model_->MoveCursorToEnd(selection);
         cursor_changed = true;
         break;
-      case app::VKEY_HOME:
+      case ui::VKEY_HOME:
         model_->MoveCursorToStart(selection);
         cursor_changed = true;
         break;
-      case app::VKEY_BACK:
+      case ui::VKEY_BACK:
         if (!model_->HasSelection()) {
           if (selection && control) {
             // If both shift and control are pressed, then erase upto the
@@ -490,7 +490,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         text_changed = model_->Backspace();
         cursor_changed = true;
         break;
-      case app::VKEY_DELETE:
+      case ui::VKEY_DELETE:
         if (!model_->HasSelection()) {
           if (selection && control) {
             // If both shift and control are pressed, then erase upto the
@@ -507,7 +507,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         }
         text_changed = model_->Delete();
         break;
-      case app::VKEY_INSERT:
+      case ui::VKEY_INSERT:
         insert_ = !insert_;
         cursor_changed = true;
         break;
@@ -544,114 +544,114 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
 char16 NativeTextfieldViews::GetPrintableChar(const KeyEvent& key_event) {
   // TODO(oshima): IME, i18n support.
   // This only works for UCS-2 characters.
-  app::KeyboardCode key_code = key_event.GetKeyCode();
+  ui::KeyboardCode key_code = key_event.GetKeyCode();
   bool shift = key_event.IsShiftDown();
   bool upper = shift ^ key_event.IsCapsLockDown();
   // TODO(oshima): We should have a utility function
   // under app to convert a KeyboardCode to a printable character,
   // probably in keyboard_code_conversion{.h, _x
   switch (key_code) {
-    case app::VKEY_NUMPAD0:
+    case ui::VKEY_NUMPAD0:
       return '0';
-    case app::VKEY_NUMPAD1:
+    case ui::VKEY_NUMPAD1:
       return '1';
-    case app::VKEY_NUMPAD2:
+    case ui::VKEY_NUMPAD2:
       return '2';
-    case app::VKEY_NUMPAD3:
+    case ui::VKEY_NUMPAD3:
       return '3';
-    case app::VKEY_NUMPAD4:
+    case ui::VKEY_NUMPAD4:
       return '4';
-    case app::VKEY_NUMPAD5:
+    case ui::VKEY_NUMPAD5:
       return '5';
-    case app::VKEY_NUMPAD6:
+    case ui::VKEY_NUMPAD6:
       return '6';
-    case app::VKEY_NUMPAD7:
+    case ui::VKEY_NUMPAD7:
       return '7';
-    case app::VKEY_NUMPAD8:
+    case ui::VKEY_NUMPAD8:
       return '8';
-    case app::VKEY_NUMPAD9:
+    case ui::VKEY_NUMPAD9:
       return '9';
-    case app::VKEY_MULTIPLY:
+    case ui::VKEY_MULTIPLY:
       return '*';
-    case app::VKEY_ADD:
+    case ui::VKEY_ADD:
       return '+';
-    case app::VKEY_SUBTRACT:
+    case ui::VKEY_SUBTRACT:
       return '-';
-    case app::VKEY_DECIMAL:
+    case ui::VKEY_DECIMAL:
       return '.';
-    case app::VKEY_DIVIDE:
+    case ui::VKEY_DIVIDE:
       return '/';
-    case app::VKEY_SPACE:
+    case ui::VKEY_SPACE:
       return ' ';
-    case app::VKEY_0:
+    case ui::VKEY_0:
       return shift ? ')' : '0';
-    case app::VKEY_1:
+    case ui::VKEY_1:
       return shift ? '!' : '1';
-    case app::VKEY_2:
+    case ui::VKEY_2:
       return shift ? '@' : '2';
-    case app::VKEY_3:
+    case ui::VKEY_3:
       return shift ? '#' : '3';
-    case app::VKEY_4:
+    case ui::VKEY_4:
       return shift ? '$' : '4';
-    case app::VKEY_5:
+    case ui::VKEY_5:
       return shift ? '%' : '5';
-    case app::VKEY_6:
+    case ui::VKEY_6:
       return shift ? '^' : '6';
-    case app::VKEY_7:
+    case ui::VKEY_7:
       return shift ? '&' : '7';
-    case app::VKEY_8:
+    case ui::VKEY_8:
       return shift ? '*' : '8';
-    case app::VKEY_9:
+    case ui::VKEY_9:
       return shift ? '(' : '9';
 
-    case app::VKEY_A:
-    case app::VKEY_B:
-    case app::VKEY_C:
-    case app::VKEY_D:
-    case app::VKEY_E:
-    case app::VKEY_F:
-    case app::VKEY_G:
-    case app::VKEY_H:
-    case app::VKEY_I:
-    case app::VKEY_J:
-    case app::VKEY_K:
-    case app::VKEY_L:
-    case app::VKEY_M:
-    case app::VKEY_N:
-    case app::VKEY_O:
-    case app::VKEY_P:
-    case app::VKEY_Q:
-    case app::VKEY_R:
-    case app::VKEY_S:
-    case app::VKEY_T:
-    case app::VKEY_U:
-    case app::VKEY_V:
-    case app::VKEY_W:
-    case app::VKEY_X:
-    case app::VKEY_Y:
-    case app::VKEY_Z:
-      return (upper ? 'A' : 'a') + (key_code - app::VKEY_A);
-    case app::VKEY_OEM_1:
+    case ui::VKEY_A:
+    case ui::VKEY_B:
+    case ui::VKEY_C:
+    case ui::VKEY_D:
+    case ui::VKEY_E:
+    case ui::VKEY_F:
+    case ui::VKEY_G:
+    case ui::VKEY_H:
+    case ui::VKEY_I:
+    case ui::VKEY_J:
+    case ui::VKEY_K:
+    case ui::VKEY_L:
+    case ui::VKEY_M:
+    case ui::VKEY_N:
+    case ui::VKEY_O:
+    case ui::VKEY_P:
+    case ui::VKEY_Q:
+    case ui::VKEY_R:
+    case ui::VKEY_S:
+    case ui::VKEY_T:
+    case ui::VKEY_U:
+    case ui::VKEY_V:
+    case ui::VKEY_W:
+    case ui::VKEY_X:
+    case ui::VKEY_Y:
+    case ui::VKEY_Z:
+      return (upper ? 'A' : 'a') + (key_code - ui::VKEY_A);
+    case ui::VKEY_OEM_1:
       return shift ? ':' : ';';
-    case app::VKEY_OEM_PLUS:
+    case ui::VKEY_OEM_PLUS:
       return shift ? '+' : '=';
-    case app::VKEY_OEM_COMMA:
+    case ui::VKEY_OEM_COMMA:
       return shift ? '<' : ',';
-    case app::VKEY_OEM_MINUS:
+    case ui::VKEY_OEM_MINUS:
       return shift ? '_' : '-';
-    case app::VKEY_OEM_PERIOD:
+    case ui::VKEY_OEM_PERIOD:
       return shift ? '>' : '.';
-    case app::VKEY_OEM_2:
+    case ui::VKEY_OEM_2:
       return shift ? '?' : '/';
-    case app::VKEY_OEM_3:
+    case ui::VKEY_OEM_3:
       return shift ? '~' : '`';
-    case app::VKEY_OEM_4:
+    case ui::VKEY_OEM_4:
       return shift ? '}' : ']';
-    case app::VKEY_OEM_5:
+    case ui::VKEY_OEM_5:
       return shift ? '|' : '\\';
-    case app::VKEY_OEM_6:
+    case ui::VKEY_OEM_6:
       return shift ? '{' : '[';
-    case app::VKEY_OEM_7:
+    case ui::VKEY_OEM_7:
       return shift ? '"' : '\'';
     default:
       return 0;

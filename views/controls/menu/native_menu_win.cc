@@ -4,7 +4,6 @@
 
 #include "views/controls/menu/native_menu_win.h"
 
-#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/win/hwnd_util.h"
@@ -13,6 +12,7 @@
 #include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"
 
@@ -554,7 +554,7 @@ void NativeMenuWin::UpdateMenuItemInfoForString(
   menus::MenuModel::ItemType type = model_->GetTypeAt(model_index);
   if (type != menus::MenuModel::TYPE_SUBMENU) {
     // Add accelerator details to the label if provided.
-    views::Accelerator accelerator(app::VKEY_UNKNOWN, false, false, false);
+    views::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
     if (model_->GetAcceleratorAt(model_index, &accelerator)) {
       formatted += L"\t";
       formatted += accelerator.GetShortcutText();

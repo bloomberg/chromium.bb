@@ -19,7 +19,6 @@
 #include <queue>
 #include <vector>
 
-#include "app/keyboard_codes.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -36,6 +35,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebTouchPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_webview_delegate.h"
@@ -215,16 +215,16 @@ bool GetEditCommand(const WebKeyboardEvent& event, std::string* name) {
     return false;
 
   switch (event.windowsKeyCode) {
-    case app::VKEY_LEFT:
+    case ui::VKEY_LEFT:
       *name = "MoveToBeginningOfLine";
       break;
-    case app::VKEY_RIGHT:
+    case ui::VKEY_RIGHT:
       *name = "MoveToEndOfLine";
       break;
-    case app::VKEY_UP:
+    case ui::VKEY_UP:
       *name = "MoveToBeginningOfDocument";
       break;
-    case app::VKEY_DOWN:
+    case ui::VKEY_DOWN:
       *name = "MoveToEndOfDocument";
       break;
     default:
@@ -535,29 +535,29 @@ void EventSendingController::keyDown(
     bool needs_shift_key_modifier = false;
     if (L"\n" == code_str) {
       generate_char = true;
-      text = code = app::VKEY_RETURN;
+      text = code = ui::VKEY_RETURN;
     } else if (L"rightArrow" == code_str) {
-      code = app::VKEY_RIGHT;
+      code = ui::VKEY_RIGHT;
     } else if (L"downArrow" == code_str) {
-      code = app::VKEY_DOWN;
+      code = ui::VKEY_DOWN;
     } else if (L"leftArrow" == code_str) {
-      code = app::VKEY_LEFT;
+      code = ui::VKEY_LEFT;
     } else if (L"upArrow" == code_str) {
-      code = app::VKEY_UP;
+      code = ui::VKEY_UP;
     } else if (L"insert" == code_str) {
-      code = app::VKEY_INSERT;
+      code = ui::VKEY_INSERT;
     } else if (L"delete" == code_str) {
-      code = app::VKEY_DELETE;
+      code = ui::VKEY_DELETE;
     } else if (L"pageUp" == code_str) {
-      code = app::VKEY_PRIOR;
+      code = ui::VKEY_PRIOR;
     } else if (L"pageDown" == code_str) {
-      code = app::VKEY_NEXT;
+      code = ui::VKEY_NEXT;
     } else if (L"home" == code_str) {
-      code = app::VKEY_HOME;
+      code = ui::VKEY_HOME;
     } else if (L"end" == code_str) {
-      code = app::VKEY_END;
+      code = ui::VKEY_END;
     } else if (L"printScreen" == code_str) {
-      code = app::VKEY_SNAPSHOT;
+      code = ui::VKEY_SNAPSHOT;
     } else {
       // Compare the input string with the function-key names defined by the
       // DOM spec (i.e. "F1",...,"F24"). If the input string is a function-key
@@ -567,7 +567,7 @@ void EventSendingController::keyDown(
         function_key_name += L"F";
         function_key_name += UTF8ToWide(base::IntToString(i));
         if (function_key_name == code_str) {
-          code = app::VKEY_F1 + (i - 1);
+          code = ui::VKEY_F1 + (i - 1);
           break;
         }
       }
@@ -783,12 +783,12 @@ MakeMenuItemStringsFor(const WebKit::WebContextMenuData* context_menu,
   // These constants are based on Safari's context menu because tests
   // are made for it.
   static const char* kNonEditableMenuStrings[] = {
-      "Back", "Reload Page", "Open in Dashbaord", "<separator>", 
-      "View Source", "Save Page As", "Print Page", "Inspect Element", 
+      "Back", "Reload Page", "Open in Dashbaord", "<separator>",
+      "View Source", "Save Page As", "Print Page", "Inspect Element",
       0 };
   static const char* kEditableMenuStrings[] = {
       "Cut", "Copy", "<separator>", "Paste", "Spelling and Grammar",
-      "Substitutions, Transformations", "Font", "Speech", 
+      "Substitutions, Transformations", "Font", "Speech",
       "Paragraph Direction", "<separator>", 0 };
 
   // This is possible because mouse events are cancelleable.

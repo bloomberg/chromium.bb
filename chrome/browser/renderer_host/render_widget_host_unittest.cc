@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/keyboard_codes.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
@@ -17,6 +16,7 @@
 #include "chrome/test/testing_profile.h"
 #include "gfx/canvas_skia.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 using base::TimeDelta;
 
@@ -276,7 +276,7 @@ class RenderWidgetHostTest : public testing::Test {
   void SimulateKeyboardEvent(WebInputEvent::Type type) {
     NativeWebKeyboardEvent key_event;
     key_event.type = type;
-    key_event.windowsKeyCode = app::VKEY_L;  // non-null made up value.
+    key_event.windowsKeyCode = ui::VKEY_L;  // non-null made up value.
     host_->ForwardKeyboardEvent(key_event);
   }
 

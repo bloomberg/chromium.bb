@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 
-#include "app/keyboard_code_conversion_win.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #include "views/widget/widget_win.h"
 

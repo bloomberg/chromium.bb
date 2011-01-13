@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "app/keyboard_codes.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/canvas_skia.h"
@@ -14,6 +13,7 @@
 #include "gfx/path.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "views/fill_layout.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
@@ -449,7 +449,7 @@ void InfoBubble::Init(views::Widget* parent,
 
   // Register the Escape accelerator for closing.
   GetFocusManager()->RegisterAccelerator(
-      views::Accelerator(app::VKEY_ESCAPE, false, false, false), this);
+      views::Accelerator(ui::VKEY_ESCAPE, false, false, false), this);
 
   // Done creating the bubble.
   NotificationService::current()->Notify(NotificationType::INFO_BUBBLE_CREATED,
@@ -514,7 +514,7 @@ void InfoBubble::DoClose(bool closed_by_escape) {
     return;
 
   GetFocusManager()->UnregisterAccelerator(
-      views::Accelerator(app::VKEY_ESCAPE, false, false, false), this);
+      views::Accelerator(ui::VKEY_ESCAPE, false, false, false), this);
   if (delegate_)
     delegate_->InfoBubbleClosing(this, closed_by_escape);
   show_status_ = kClosed;

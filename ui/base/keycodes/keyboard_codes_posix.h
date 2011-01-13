@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef APP_KEYBOARD_CODES_POSIX_H_
-#define APP_KEYBOARD_CODES_POSIX_H_
+#ifndef UI_BASE_KEYCODES_KEYBOARD_CODES_POSIX_H_
+#define UI_BASE_KEYCODES_KEYBOARD_CODES_POSIX_H_
 #pragma once
 
-namespace app {
+namespace ui {
 
 typedef enum {
   VKEY_BACK = 0x08,
@@ -205,6 +205,6 @@ typedef enum {
   VKEY_UNKNOWN = 0
 } KeyboardCode;
 
-}  // namespace app
+}  // namespace ui
 
-#endif  // APP_KEYBOARD_CODES_POSIX_H_
+#endif  // UI_BASE_KEYCODES_KEYBOARD_CODES_POSIX_H_

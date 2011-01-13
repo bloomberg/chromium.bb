@@ -10,16 +10,16 @@
 
 #include <string>
 
-#include "app/keyboard_codes.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/insets.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_LINUX)
-#include "app/keyboard_code_conversion_gtk.h"
+#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #elif defined(OS_WIN)
 #include "app/win/win_util.h"
 #include "base/win/win_util.h"
@@ -272,14 +272,14 @@ void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {
 bool Textfield::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
   // TODO(hamaji): Figure out which keyboard combinations we need to add here,
   //               similar to LocationBarView::SkipDefaultKeyEventProcessing.
-  app::KeyboardCode key = e.GetKeyCode();
-  if (key == app::VKEY_BACK)
+  ui::KeyboardCode key = e.GetKeyCode();
+  if (key == ui::VKEY_BACK)
     return true;  // We'll handle BackSpace ourselves.
 
 #if defined(OS_WIN)
   // We don't translate accelerators for ALT + NumPad digit on Windows, they are
   // used for entering special characters.  We do translate alt-home.
-  if (e.IsAltDown() && (key != app::VKEY_HOME) &&
+  if (e.IsAltDown() && (key != ui::VKEY_HOME) &&
       app::win::IsNumPadDigit(key, e.IsExtendedKey()))
     return true;
 #endif

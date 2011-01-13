@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "app/keyboard_codes.h"
-#include "app/keyboard_code_conversion_win.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/win/win_util.h"
@@ -20,6 +18,8 @@
 #include "skia/ext/skia_utils_win.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_win.h"
 #include "views/controls/menu/menu_2.h"
@@ -348,13 +348,13 @@ bool NativeTextfieldWin::GetAcceleratorForCommandId(int command_id,
   // anywhere so we need to check for them explicitly here.
   switch (command_id) {
     case IDS_APP_CUT:
-      *accelerator = views::Accelerator(app::VKEY_X, false, true, false);
+      *accelerator = views::Accelerator(ui::VKEY_X, false, true, false);
       return true;
     case IDS_APP_COPY:
-      *accelerator = views::Accelerator(app::VKEY_C, false, true, false);
+      *accelerator = views::Accelerator(ui::VKEY_C, false, true, false);
       return true;
     case IDS_APP_PASTE:
-      *accelerator = views::Accelerator(app::VKEY_V, false, true, false);
+      *accelerator = views::Accelerator(ui::VKEY_V, false, true, false);
       return true;
   }
   return container_view_->GetWidget()->GetAccelerator(command_id, accelerator);
@@ -915,7 +915,7 @@ void NativeTextfieldWin::HandleKeystroke(UINT message,
         type = Event::ET_KEY_PRESSED;
     }
     KeyEvent key_event(type,
-                       app::KeyboardCodeForWindowsKeyCode(key),
+                       ui::KeyboardCodeForWindowsKeyCode(key),
                        KeyEvent::GetKeyStateFlags(),
                        repeat_count,
                        flags,
@@ -926,7 +926,7 @@ void NativeTextfieldWin::HandleKeystroke(UINT message,
   if (!handled) {
     OnBeforePossibleChange();
 
-    if (key == app::VKEY_HOME || key == app::VKEY_END) {
+    if (key == ui::VKEY_HOME || key == ui::VKEY_END) {
       // DefWindowProc() might reset the keyboard layout when it receives a
       // keydown event for VKEY_HOME or VKEY_END. When the window was created
       // with WS_EX_LAYOUTRTL and the current keyboard layout is not a RTL one,

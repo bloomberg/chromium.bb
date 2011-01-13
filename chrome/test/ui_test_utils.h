@@ -11,7 +11,6 @@
 #include <string>
 #include <set>
 
-#include "app/keyboard_codes.h"
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
@@ -24,6 +23,7 @@
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "gfx/native_widget_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AppModalDialog;
@@ -257,7 +257,7 @@ Browser* GetBrowserNotInSet(std::set<Browser*> excluded_browsers);
 // out. This uses ui_controls::SendKeyPress, see it for details. Returns true
 // if the event was successfully sent and received.
 bool SendKeyPressSync(const Browser* browser,
-                      app::KeyboardCode key,
+                      ui::KeyboardCode key,
                       bool control,
                       bool shift,
                       bool alt,
@@ -268,7 +268,7 @@ bool SendKeyPressSync(const Browser* browser,
 // ui_controls::SendKeyPress, see it for details. Returns true if the event was
 // successfully sent and both the event and notification were received.
 bool SendKeyPressAndWait(const Browser* browser,
-                         app::KeyboardCode key,
+                         ui::KeyboardCode key,
                          bool control,
                          bool shift,
                          bool alt,
@@ -480,7 +480,7 @@ class WindowedNotificationObserverWithDetails
 template <class U>
 bool SendKeyPressAndWaitWithDetails(
     const Browser* browser,
-    app::KeyboardCode key,
+    ui::KeyboardCode key,
     bool control,
     bool shift,
     bool alt,
@@ -492,7 +492,7 @@ bool SendKeyPressAndWaitWithDetails(
 template <class U>
 bool SendKeyPressAndWaitWithDetails(
     const Browser* browser,
-    app::KeyboardCode key,
+    ui::KeyboardCode key,
     bool control,
     bool shift,
     bool alt,

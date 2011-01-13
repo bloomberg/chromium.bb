@@ -4,7 +4,7 @@
 
 #include "app/event_synthesis_gtk.h"
 
-#include "app/keyboard_code_conversion_gtk.h"
+#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 
 namespace app {
 
@@ -39,7 +39,7 @@ GdkEvent* SynthesizeKeyEvent(GdkWindow* window,
 }
 
 void SynthesizeKeyPressEvents(GdkWindow* window,
-                              app::KeyboardCode key,
+                              ui::KeyboardCode key,
                               bool control, bool shift, bool alt,
                               std::vector<GdkEvent*>* events) {
   if (control)

@@ -37,7 +37,6 @@
 #include <fstream>
 #include <vector>
 
-#include "app/keyboard_codes.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -69,6 +68,7 @@
 #include "chrome/test/reliability/page_load_test.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "v8/include/v8-testing.h"
 
 namespace {
@@ -233,9 +233,9 @@ class PageLoadTest : public UITest {
                 // Sleep for 2 seconds between commands.
                 // This used to be settable but the flag went away.
                 int sleep_time_ms = 2000;
-                window->SimulateOSKeyPress(app::VKEY_NEXT, 0);
+                window->SimulateOSKeyPress(ui::VKEY_NEXT, 0);
                 base::PlatformThread::Sleep(sleep_time_ms);
-                window->SimulateOSKeyPress(app::VKEY_NEXT, 0);
+                window->SimulateOSKeyPress(ui::VKEY_NEXT, 0);
                 base::PlatformThread::Sleep(sleep_time_ms);
               }
             }

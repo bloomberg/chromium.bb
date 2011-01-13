@@ -220,11 +220,11 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, MAYBE_Accelerators) {
 
   views::FocusManager* focus_manager =
       controller()->contents()->GetFocusManager();
-  views::Accelerator accel_account_screen(app::VKEY_A, false, true, true);
-  views::Accelerator accel_network_screen(app::VKEY_N, false, true, true);
-  views::Accelerator accel_update_screen(app::VKEY_U, false, true, true);
-  views::Accelerator accel_image_screen(app::VKEY_I, false, true, true);
-  views::Accelerator accel_eula_screen(app::VKEY_E, false, true, true);
+  views::Accelerator accel_account_screen(ui::VKEY_A, false, true, true);
+  views::Accelerator accel_network_screen(ui::VKEY_N, false, true, true);
+  views::Accelerator accel_update_screen(ui::VKEY_U, false, true, true);
+  views::Accelerator accel_image_screen(ui::VKEY_I, false, true, true);
+  views::Accelerator accel_eula_screen(ui::VKEY_E, false, true, true);
 
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_account_screen_, Show()).Times(1);

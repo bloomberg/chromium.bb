@@ -10,14 +10,14 @@
 #include <atlframe.h>
 #include <atlmisc.h>
 
-#include "app/keyboard_code_conversion_win.h"
-#include "app/keyboard_codes.h"
 #include "app/l10n_util_win.h"
 #include "app/win/hwnd_util.h"
 #include "app/view_prop.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "gfx/native_theme_win.h"
+#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/native/native_view_host.h"
@@ -371,7 +371,7 @@ LRESULT CALLBACK NativeControl::NativeControlWndProc(HWND window,
   DCHECK(original_handler);
 
   if (message == WM_KEYDOWN &&
-      native_control->OnKeyDown(app::KeyboardCodeForWindowsKeyCode(w_param))) {
+      native_control->OnKeyDown(ui::KeyboardCodeForWindowsKeyCode(w_param))) {
     return 0;
   } else if (message == WM_SETFOCUS) {
     // Let the focus manager know that the focus changed.

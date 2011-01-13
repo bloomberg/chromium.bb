@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/password_changed_view.h"
 
-#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "views/controls/button/radio_button.h"
 #include "views/controls/label.h"
 #include "views/grid_layout.h"

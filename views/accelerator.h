@@ -24,10 +24,10 @@ class Accelerator : public menus::Accelerator {
  public:
   Accelerator() : menus::Accelerator() {}
 
-  Accelerator(app::KeyboardCode keycode, int modifiers)
+  Accelerator(ui::KeyboardCode keycode, int modifiers)
       : menus::Accelerator(keycode, modifiers) {}
 
-  Accelerator(app::KeyboardCode keycode,
+  Accelerator(ui::KeyboardCode keycode,
               bool shift_pressed, bool ctrl_pressed, bool alt_pressed) {
     key_code_ = keycode;
     modifiers_ = 0;

@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
@@ -87,6 +86,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 namespace {
 

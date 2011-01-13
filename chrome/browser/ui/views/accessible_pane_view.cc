@@ -18,11 +18,11 @@ AccessiblePaneView::AccessiblePaneView()
     : pane_has_focus_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       focus_manager_(NULL),
-      home_key_(app::VKEY_HOME, false, false, false),
-      end_key_(app::VKEY_END, false, false, false),
-      escape_key_(app::VKEY_ESCAPE, false, false, false),
-      left_key_(app::VKEY_LEFT, false, false, false),
-      right_key_(app::VKEY_RIGHT, false, false, false),
+      home_key_(ui::VKEY_HOME, false, false, false),
+      end_key_(ui::VKEY_END, false, false, false),
+      escape_key_(ui::VKEY_ESCAPE, false, false, false),
+      left_key_(ui::VKEY_LEFT, false, false, false),
+      right_key_(ui::VKEY_RIGHT, false, false, false),
       last_focused_view_storage_id_(-1) {
   focus_search_.reset(new views::FocusSearch(this, true, true));
 }
@@ -161,21 +161,21 @@ bool AccessiblePaneView::AcceleratorPressed(
   }
 
   switch (accelerator.GetKeyCode()) {
-    case app::VKEY_ESCAPE:
+    case ui::VKEY_ESCAPE:
       RemovePaneFocus();
       RestoreLastFocusedView();
       return true;
-    case app::VKEY_LEFT:
+    case ui::VKEY_LEFT:
       focus_manager_->AdvanceFocus(true);
       return true;
-    case app::VKEY_RIGHT:
+    case ui::VKEY_RIGHT:
       focus_manager_->AdvanceFocus(false);
       return true;
-    case app::VKEY_HOME:
+    case ui::VKEY_HOME:
       focus_manager_->SetFocusedViewWithReason(
           GetFirstFocusableChild(), views::FocusManager::kReasonFocusTraversal);
       return true;
-    case app::VKEY_END:
+    case ui::VKEY_END:
       focus_manager_->SetFocusedViewWithReason(
           GetLastFocusableChild(), views::FocusManager::kReasonFocusTraversal);
       return true;

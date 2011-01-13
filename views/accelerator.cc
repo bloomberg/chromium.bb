@@ -22,46 +22,46 @@ namespace views {
 string16 Accelerator::GetShortcutText() const {
   int string_id = 0;
   switch(key_code_) {
-    case app::VKEY_TAB:
+    case ui::VKEY_TAB:
       string_id = IDS_APP_TAB_KEY;
       break;
-    case app::VKEY_RETURN:
+    case ui::VKEY_RETURN:
       string_id = IDS_APP_ENTER_KEY;
       break;
-    case app::VKEY_ESCAPE:
+    case ui::VKEY_ESCAPE:
       string_id = IDS_APP_ESC_KEY;
       break;
-    case app::VKEY_PRIOR:
+    case ui::VKEY_PRIOR:
       string_id = IDS_APP_PAGEUP_KEY;
       break;
-    case app::VKEY_NEXT:
+    case ui::VKEY_NEXT:
       string_id = IDS_APP_PAGEDOWN_KEY;
       break;
-    case app::VKEY_END:
+    case ui::VKEY_END:
       string_id = IDS_APP_END_KEY;
       break;
-    case app::VKEY_HOME:
+    case ui::VKEY_HOME:
       string_id = IDS_APP_HOME_KEY;
       break;
-    case app::VKEY_INSERT:
+    case ui::VKEY_INSERT:
       string_id = IDS_APP_INSERT_KEY;
       break;
-    case app::VKEY_DELETE:
+    case ui::VKEY_DELETE:
       string_id = IDS_APP_DELETE_KEY;
       break;
-    case app::VKEY_LEFT:
+    case ui::VKEY_LEFT:
       string_id = IDS_APP_LEFT_ARROW_KEY;
       break;
-    case app::VKEY_RIGHT:
+    case ui::VKEY_RIGHT:
       string_id = IDS_APP_RIGHT_ARROW_KEY;
       break;
-    case app::VKEY_BACK:
+    case ui::VKEY_BACK:
       string_id = IDS_APP_BACKSPACE_KEY;
       break;
-    case app::VKEY_F1:
+    case ui::VKEY_F1:
       string_id = IDS_APP_F1_KEY;
       break;
-    case app::VKEY_F11:
+    case ui::VKEY_F11:
       string_id = IDS_APP_F11_KEY;
       break;
     default:
@@ -86,7 +86,7 @@ string16 Accelerator::GetShortcutText() const {
 #elif defined(OS_LINUX)
     const gchar* name = NULL;
     switch (key_code_) {
-      case app::VKEY_OEM_2:
+      case ui::VKEY_OEM_2:
         name = static_cast<const gchar*>("/");
         break;
       default:

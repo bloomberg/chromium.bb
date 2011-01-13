@@ -4,8 +4,8 @@
 
 #include "views/focus/accelerator_handler.h"
 
-#include "app/keyboard_code_conversion_win.h"
-#include "app/keyboard_codes.h"
+#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "views/event.h"
 #include "views/focus/focus_manager.h"
 
@@ -25,7 +25,7 @@ bool AcceleratorHandler::Dispatch(const MSG& msg) {
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN: {
           KeyEvent event(Event::ET_KEY_PRESSED,
-                         app::KeyboardCodeForWindowsKeyCode(msg.wParam),
+                         ui::KeyboardCodeForWindowsKeyCode(msg.wParam),
                          KeyEvent::GetKeyStateFlags(),
                          msg.lParam & 0xFFFF,
                          (msg.lParam & 0xFFFF0000) >> 16);

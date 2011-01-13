@@ -8,8 +8,6 @@
 #include <map>
 #include <string>
 
-#include "app/keyboard_code_conversion_gtk.h"
-#include "app/keyboard_codes.h"
 #include "app/menus/menu_model.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
@@ -18,6 +16,8 @@
 #include "gfx/font.h"
 #include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/nested_dispatcher_gtk.h"
@@ -388,7 +388,7 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
                               submenu->GetNativeMenu());
   }
 
-  views::Accelerator accelerator(app::VKEY_UNKNOWN, false, false, false);
+  views::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
   if (accel_group && model_->GetAcceleratorAt(index, &accelerator)) {
     int gdk_modifiers = 0;
     if (accelerator.IsShiftDown())
@@ -398,7 +398,7 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
     if (accelerator.IsAltDown())
       gdk_modifiers |= GDK_MOD1_MASK;
     gtk_widget_add_accelerator(menu_item, "activate", accel_group,
-        app::GdkKeyCodeForWindowsKeyCode(accelerator.GetKeyCode(), false),
+        ui::GdkKeyCodeForWindowsKeyCode(accelerator.GetKeyCode(), false),
         static_cast<GdkModifierType>(gdk_modifiers), GTK_ACCEL_VISIBLE);
   }
 
