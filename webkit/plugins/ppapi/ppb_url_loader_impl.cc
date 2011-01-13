@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/plugins/ppapi/common.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_response_info_impl.h"
@@ -232,19 +233,19 @@ PPB_URLLoader_Impl* PPB_URLLoader_Impl::AsPPB_URLLoader_Impl() {
 
 int32_t PPB_URLLoader_Impl::Open(PPB_URLRequestInfo_Impl* request,
                                  PP_CompletionCallback callback) {
+  int32_t rv = ValidateCallback(callback);
+  if (rv != PP_OK)
+    return rv;
+
   if (loader_.get())
     return PP_ERROR_INPROGRESS;
-
-  // We only support non-blocking calls.
-  if (!callback.func)
-    return PP_ERROR_BADARGUMENT;
 
   WebFrame* frame = GetFrame(instance_);
   if (!frame)
     return PP_ERROR_FAILED;
   WebURLRequest web_request(request->ToWebURLRequest(frame));
 
-  int32_t rv = CanRequest(frame, web_request.url());
+  rv = CanRequest(frame, web_request.url());
   if (rv != PP_OK)
     return rv;
 
@@ -263,28 +264,25 @@ int32_t PPB_URLLoader_Impl::Open(PPB_URLRequestInfo_Impl* request,
   loader_->loadAsynchronously(web_request, this);
 
   request_info_ = scoped_refptr<PPB_URLRequestInfo_Impl>(request);
-  pending_callback_ = callback;
 
   // Notify completion when we receive a redirect or response headers.
+  RegisterCallback(callback);
   return PP_ERROR_WOULDBLOCK;
 }
 
 int32_t PPB_URLLoader_Impl::FollowRedirect(PP_CompletionCallback callback) {
-  if (pending_callback_.func)
-    return PP_ERROR_INPROGRESS;
-
-  // We only support non-blocking calls.
-  if (!callback.func)
-    return PP_ERROR_BADARGUMENT;
-
-  WebURL redirect_url = GURL(response_info_->redirect_url());
-
-  int32_t rv = CanRequest(GetFrame(instance_), redirect_url);
+  int32_t rv = ValidateCallback(callback);
   if (rv != PP_OK)
     return rv;
 
-  pending_callback_ = callback;
+  WebURL redirect_url = GURL(response_info_->redirect_url());
+
+  rv = CanRequest(GetFrame(instance_), redirect_url);
+  if (rv != PP_OK)
+    return rv;
+
   loader_->setDefersLoading(false);  // Allow the redirect to continue.
+  RegisterCallback(callback);
   return PP_ERROR_WOULDBLOCK;
 }
 
@@ -316,15 +314,12 @@ bool PPB_URLLoader_Impl::GetDownloadProgress(
 int32_t PPB_URLLoader_Impl::ReadResponseBody(char* buffer,
                                              int32_t bytes_to_read,
                                              PP_CompletionCallback callback) {
+  int32_t rv = ValidateCallback(callback);
+  if (rv != PP_OK)
+    return rv;
   if (!response_info_ || response_info_->body())
     return PP_ERROR_FAILED;
   if (bytes_to_read <= 0 || !buffer)
-    return PP_ERROR_BADARGUMENT;
-  if (pending_callback_.func)
-    return PP_ERROR_INPROGRESS;
-
-  // We only support non-blocking calls.
-  if (!callback.func)
     return PP_ERROR_BADARGUMENT;
 
   user_buffer_ = buffer;
@@ -340,23 +335,24 @@ int32_t PPB_URLLoader_Impl::ReadResponseBody(char* buffer,
     return done_status_;
   }
 
-  pending_callback_ = callback;
+  RegisterCallback(callback);
   return PP_ERROR_WOULDBLOCK;
 }
 
 int32_t PPB_URLLoader_Impl::FinishStreamingToFile(
     PP_CompletionCallback callback) {
+  int32_t rv = ValidateCallback(callback);
+  if (rv != PP_OK)
+    return rv;
   if (!response_info_ || !response_info_->body())
     return PP_ERROR_FAILED;
-  if (pending_callback_.func)
-    return PP_ERROR_INPROGRESS;
 
   // We may have already reached EOF.
   if (done_status_ != PP_ERROR_WOULDBLOCK)
     return done_status_;
 
   // Wait for didFinishLoading / didFail.
-  pending_callback_ = callback;
+  RegisterCallback(callback);
   return PP_ERROR_WOULDBLOCK;
 }
 
@@ -367,6 +363,8 @@ void PPB_URLLoader_Impl::Close() {
     WebFrame* frame = instance_->container()->element().document().frame();
     frame->stopLoading();
   }
+  // TODO(viettrungluu): Check what happens to the callback (probably the
+  // wrong thing). May need to post abort here. crbug.com/69457
 }
 
 void PPB_URLLoader_Impl::GrantUniversalAccess() {
@@ -431,7 +429,7 @@ void PPB_URLLoader_Impl::didReceiveData(WebURLLoader* loader,
   if (user_buffer_) {
     RunCallback(FillUserBuffer());
   } else {
-    DCHECK(!pending_callback_.func);
+    DCHECK(!pending_callback_.get() || pending_callback_->completed());
   }
 }
 
@@ -482,13 +480,31 @@ void PPB_URLLoader_Impl::InstanceDestroyed(PluginInstance* instance) {
   // goes out of scope.
 }
 
-void PPB_URLLoader_Impl::RunCallback(int32_t result) {
-  if (!pending_callback_.func)
-    return;
+int32_t PPB_URLLoader_Impl::ValidateCallback(PP_CompletionCallback callback) {
+  // We only support non-blocking calls.
+  if (!callback.func)
+    return PP_ERROR_BADARGUMENT;
 
-  PP_CompletionCallback callback = {0};
-  std::swap(callback, pending_callback_);
-  PP_RunCompletionCallback(&callback, result);
+  if (pending_callback_.get() && !pending_callback_->completed())
+    return PP_ERROR_INPROGRESS;
+
+  return PP_OK;
+}
+
+void PPB_URLLoader_Impl::RegisterCallback(PP_CompletionCallback callback) {
+  DCHECK(callback.func);
+  DCHECK(!pending_callback_.get() || pending_callback_->completed());
+
+  PP_Resource resource_id = GetReferenceNoAddRef();
+  CHECK(resource_id);
+  pending_callback_ = new TrackedCompletionCallback(
+      module()->GetCallbackTracker(), resource_id, callback);
+}
+
+void PPB_URLLoader_Impl::RunCallback(int32_t result) {
+  scoped_refptr<TrackedCompletionCallback> callback;
+  callback.swap(pending_callback_);
+  callback->Run(result);  // Will complete abortively if necessary.
 }
 
 size_t PPB_URLLoader_Impl::FillUserBuffer() {
