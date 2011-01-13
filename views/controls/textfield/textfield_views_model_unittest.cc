@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/auto_reset.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
@@ -293,7 +294,9 @@ TEST(TextfieldViewsModelTest, SetText) {
 #define MAYBE_Clipboard Clipboard
 #endif
 TEST(TextfieldViewsModelTest, MAYBE_Clipboard) {
-  views::ViewsDelegate::views_delegate = new TestViewsDelegate();
+  scoped_ptr<TestViewsDelegate> test_views_delegate(new TestViewsDelegate());
+  AutoReset<views::ViewsDelegate*> auto_reset(
+      &views::ViewsDelegate::views_delegate, test_views_delegate.get());
   ui::Clipboard* clipboard
       = views::ViewsDelegate::views_delegate->GetClipboard();
   string16 initial_clipboard_text;
