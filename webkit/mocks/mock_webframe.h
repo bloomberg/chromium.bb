@@ -29,6 +29,7 @@ using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
 using WebKit::WebInputElement;
+using WebKit::WebNode;
 using WebKit::WebPasswordAutocompleteListener;
 using WebKit::WebPerformance;
 using WebKit::WebRange;
@@ -266,8 +267,15 @@ class MockWebFrame : public WebKit::WebFrame {
   virtual bool selectWordAroundCaret() {
     return false;
   }
-  virtual int printBegin(const WebSize& pageSize, int printerDPI = 72,
+#if defined(WEBFRAME_PRINTBEGIN_TAKES_NODE)
+  virtual int printBegin(const WebSize& pageSize,
+                         const WebNode& constrainToNode,
+                         int printerDPI = 72,
                          bool* useBrowserOverlays = 0) {
+#else
+virtual int printBegin(const WebSize& pageSize, int printerDPI = 72,
+                         bool* useBrowserOverlays = 0) {
+#endif
     return 0;
   }
   virtual float getPrintPageShrink(int page) {
