@@ -80,7 +80,13 @@ int NativeTableGtk::GetColumnWidth(int column_index) const {
 }
 
 void NativeTableGtk::SetColumnWidth(int column_index, int width) {
-  NOTIMPLEMENTED();
+  GtkTreeViewColumn* column = gtk_tree_view_get_column(tree_view_,
+                                                       column_index);
+  column->width = width;
+  column->resized_width = width;
+  column->use_resized_width = TRUE;
+  // Needed for use_resized_width to be effective.
+  gtk_widget_queue_resize(GTK_WIDGET(tree_view_));
 }
 
 int NativeTableGtk::GetSelectedRowCount() const {
