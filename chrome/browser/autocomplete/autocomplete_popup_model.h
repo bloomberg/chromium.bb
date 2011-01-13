@@ -33,7 +33,8 @@ class AutocompletePopupModel : public NotificationObserver {
   void StartAutocomplete(const std::wstring& text,
                          const std::wstring& desired_tld,
                          bool prevent_inline_autocomplete,
-                         bool prefer_keyword);
+                         bool prefer_keyword,
+                         bool allow_exact_keyword_match);
 
   // Closes the window and cancels any pending asynchronous queries.
   void StopAutocomplete();

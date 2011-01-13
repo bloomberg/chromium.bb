@@ -51,14 +51,15 @@ void AutocompletePopupModel::StartAutocomplete(
     const std::wstring& text,
     const std::wstring& desired_tld,
     bool prevent_inline_autocomplete,
-    bool prefer_keyword) {
+    bool prefer_keyword,
+    bool allow_exact_keyword_match) {
   // The user is interacting with the edit, so stop tracking hover.
   SetHoveredLine(kNoMatch);
 
   manually_selected_match_.Clear();
 
   controller_->Start(text, desired_tld, prevent_inline_autocomplete,
-                     prefer_keyword, true, false);
+                     prefer_keyword, allow_exact_keyword_match, false);
 }
 
 void AutocompletePopupModel::StopAutocomplete() {

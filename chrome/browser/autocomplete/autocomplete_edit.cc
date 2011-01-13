@@ -308,7 +308,8 @@ void AutocompleteEditModel::StartAutocomplete(
   popup_->StartAutocomplete(user_text_, GetDesiredTLD(),
       prevent_inline_autocomplete || just_deleted_text_ ||
       (has_selected_text && inline_autocomplete_text_.empty()) ||
-      (paste_state_ != NONE), keyword_ui_state_ == KEYWORD);
+      (paste_state_ != NONE), keyword_ui_state_ == KEYWORD,
+      keyword_ui_state_ != NO_KEYWORD);
 }
 
 bool AutocompleteEditModel::CanPasteAndGo(const std::wstring& text) const {
@@ -568,11 +569,6 @@ void AutocompleteEditModel::OnUpOrDownKeyPressed(int count) {
     // normally.
     popup_->Move(count);
   }
-
-  // NOTE: We need to reset the keyword_ui_state_ after the popup updates, since
-  // Move() will eventually call back to OnPopupDataChanged(), which needs to
-  // save off the current keyword_ui_state_.
-  keyword_ui_state_ = NORMAL;
 }
 
 void AutocompleteEditModel::OnPopupDataChanged(
@@ -580,12 +576,21 @@ void AutocompleteEditModel::OnPopupDataChanged(
     GURL* destination_for_temporary_text_change,
     const std::wstring& keyword,
     bool is_keyword_hint) {
+  KeywordUIState old_keyword_ui_state = keyword_ui_state_;
+
   // Update keyword/hint-related local state.
   bool keyword_state_changed = (keyword_ != keyword) ||
       ((is_keyword_hint_ != is_keyword_hint) && !keyword.empty());
   if (keyword_state_changed) {
     keyword_ = keyword;
     is_keyword_hint_ = is_keyword_hint;
+  }
+
+  // Update |keyword_ui_state_| only when necessary. It may be changed even if
+  // |keyword_state_changed| is false.
+  if (keyword_ui_state_ != NO_KEYWORD) {
+    keyword_ui_state_ = (is_keyword_hint_ || keyword_.empty()) ?
+        NORMAL : KEYWORD;
   }
 
   // Handle changes to temporary text.
@@ -595,7 +600,8 @@ void AutocompleteEditModel::OnPopupDataChanged(
       // Save the original selection and URL so it can be reverted later.
       has_temporary_text_ = true;
       original_url_ = *destination_for_temporary_text_change;
-      original_keyword_ui_state_ = keyword_ui_state_;
+      original_keyword_ui_state_ = old_keyword_ui_state;
+      inline_autocomplete_text_.clear();
     }
     if (control_key_state_ == DOWN_WITHOUT_CHANGE) {
       // Arrowing around the popup cancels control-enter.
@@ -612,23 +618,15 @@ void AutocompleteEditModel::OnPopupDataChanged(
     return;
   }
 
-  // TODO(suzhe): Instead of messing with |inline_autocomplete_text_| here,
-  // we should probably do it inside Observe(), and save/restore it around
-  // changes to the temporary text.  This will let us remove knowledge of
-  // inline autocompletions from the popup code.
-  //
-  // Handle changes to inline autocomplete text.  Don't make changes if the user
-  // is showing temporary text.  Making display changes would be obviously
-  // wrong; making changes to the inline_autocomplete_text_ itself turns out to
-  // be more subtlely wrong, because it means hitting esc will no longer revert
-  // to the original state before arrowing.
-  if (!has_temporary_text_) {
-    inline_autocomplete_text_ = text;
-    if (view_->OnInlineAutocompleteTextMaybeChanged(
-        DisplayTextFromUserText(user_text_ + inline_autocomplete_text_),
-        DisplayTextFromUserText(user_text_).length()))
-      return;
-  }
+  // All cases that can result in |has_temporary_text_| being set should have
+  // been handled by the conditional above.
+  DCHECK(!has_temporary_text_);
+
+  inline_autocomplete_text_ = text;
+  if (view_->OnInlineAutocompleteTextMaybeChanged(
+      DisplayTextFromUserText(user_text_ + inline_autocomplete_text_),
+      DisplayTextFromUserText(user_text_).length()))
+    return;
 
   // All other code paths that return invoke OnChanged. We need to invoke
   // OnChanged in case the destination url changed (as could happen when control
@@ -636,11 +634,12 @@ void AutocompleteEditModel::OnPopupDataChanged(
   controller_->OnChanged();
 }
 
-bool AutocompleteEditModel::OnAfterPossibleChange(const std::wstring& new_text,
-                                                  bool selection_differs,
-                                                  bool text_differs,
-                                                  bool just_deleted_text,
-                                                  bool at_end_of_edit) {
+bool AutocompleteEditModel::OnAfterPossibleChange(
+    const std::wstring& new_text,
+    bool selection_differs,
+    bool text_differs,
+    bool just_deleted_text,
+    bool allow_keyword_ui_change) {
   // Update the paste state as appropriate: if we're just finishing a paste
   // that replaced all the text, preserve that information; otherwise, if we've
   // made some other edit, clear paste tracking.
@@ -680,24 +679,17 @@ bool AutocompleteEditModel::OnAfterPossibleChange(const std::wstring& new_text,
   }
 
   // Disable the fancy keyword UI if the user didn't already have a visible
-  // keyword and is not at the end of the edit.  This prevents us from showing
-  // the fancy UI (and interrupting the user's editing) if the user happens to
-  // have a keyword for 'a', types 'ab' then puts a space between the 'a' and
-  // the 'b'.
+  // keyword and the view doesn't want us to change the keyword UI state.
+  // This prevents us from showing the fancy UI and interrupting the user's
+  // editing if, for example, the user happens to have a keyword for 'a',
+  // types 'ab' then puts a space between the 'a' and the 'b'.
+  // If |keyword_ui_state_| is set to NORMAL here, then it will be updated
+  // to a proper value in OnPopupDataChanged() method according to the new
+  // match result.
   if (!had_keyword)
-    keyword_ui_state_ = at_end_of_edit ? NORMAL : NO_KEYWORD;
+    keyword_ui_state_ = allow_keyword_ui_change ? NORMAL : NO_KEYWORD;
 
   view_->UpdatePopup();
-
-  if (had_keyword) {
-    if (is_keyword_hint_ || keyword_.empty())
-      keyword_ui_state_ = NORMAL;
-  } else if ((keyword_ui_state_ != NO_KEYWORD) && !is_keyword_hint_ &&
-             !keyword_.empty()) {
-    // Went from no selected keyword to a selected keyword.
-    keyword_ui_state_ = KEYWORD;
-  }
-
   return true;
 }
 
@@ -770,14 +762,13 @@ void AutocompleteEditModel::InternalSetUserText(const std::wstring& text) {
 }
 
 bool AutocompleteEditModel::KeywordIsSelected() const {
-  return ((keyword_ui_state_ != NO_KEYWORD) && !is_keyword_hint_ &&
-          !keyword_.empty());
+  return keyword_ui_state_ == KEYWORD;
 }
 
 std::wstring AutocompleteEditModel::DisplayTextFromUserText(
     const std::wstring& text) const {
   return KeywordIsSelected() ?
-      KeywordProvider::SplitReplacementStringFromInput(text) : text;
+      KeywordProvider::SplitReplacementStringFromInput(text, false) : text;
 }
 
 std::wstring AutocompleteEditModel::UserTextFromDisplayText(

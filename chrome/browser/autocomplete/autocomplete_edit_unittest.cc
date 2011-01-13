@@ -56,6 +56,7 @@ class TestingAutocompleteEditView : public AutocompleteEditView {
   virtual CommandUpdater* GetCommandUpdater() { return NULL; }
   virtual void SetInstantSuggestion(const string16& input) {}
   virtual int TextWidth() const { return 0; }
+  virtual bool IsImeComposing() const { return false; }
 
 #if defined(TOOLKIT_VIEWS)
   virtual views::View* AddToView(views::View* parent) { return NULL; }

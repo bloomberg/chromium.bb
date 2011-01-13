@@ -85,6 +85,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   virtual CommandUpdater* GetCommandUpdater();
   virtual void SetInstantSuggestion(const string16& input);
   virtual int TextWidth() const;
+  virtual bool IsImeComposing() const;
 
   // Implement the AutocompleteTextFieldObserver interface.
   virtual NSRange SelectionRangeForProposedRange(NSRange proposed_range);
@@ -130,6 +131,10 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   // Returns the field's currently selected range.  Only valid if the
   // field has focus.
   NSRange GetSelectedRange() const;
+
+  // Returns the field's currently marked range. Only valid if the field has
+  // focus.
+  NSRange GetMarkedRange() const;
 
   // Returns true if |field_| is first-responder in the window.  Used
   // in various DCHECKS to make sure code is running in appropriate
@@ -185,6 +190,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   // to model_.
   NSRange selection_before_change_;
   std::wstring text_before_change_;
+  NSRange marked_range_before_change_;
 
   // Length of the suggest text.  The suggest text always appears at the end of
   // the field.

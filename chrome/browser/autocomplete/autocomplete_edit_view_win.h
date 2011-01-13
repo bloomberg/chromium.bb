@@ -135,6 +135,8 @@ class AutocompleteEditViewWin
   virtual CommandUpdater* GetCommandUpdater();
   virtual void SetInstantSuggestion(const string16& suggestion);
   virtual int TextWidth() const;
+  virtual bool IsImeComposing() const;
+
   virtual views::View* AddToView(views::View* parent);
   virtual bool CommitInstantSuggestion(const std::wstring& typed_text,
                                        const std::wstring& suggested_text);
@@ -179,7 +181,6 @@ class AutocompleteEditViewWin
     MSG_WM_CUT(OnCut)
     MESSAGE_HANDLER_EX(WM_GETOBJECT, OnGetObject)
     MESSAGE_HANDLER_EX(WM_IME_COMPOSITION, OnImeComposition)
-    MESSAGE_HANDLER_EX(WM_IME_NOTIFY, OnImeNotify)
     MSG_WM_KEYDOWN(OnKeyDown)
     MSG_WM_KEYUP(OnKeyUp)
     MSG_WM_KILLFOCUS(OnKillFocus)
@@ -214,9 +215,6 @@ class AutocompleteEditViewWin
   virtual bool IsItemForCommandIdDynamic(int command_id) const;
   virtual std::wstring GetLabelForCommandId(int command_id) const;
   virtual void ExecuteCommand(int command_id);
-
-  // Returns true if the user is composing something in an IME.
-  bool IsImeComposing() const;
 
  private:
   enum MouseButton {
@@ -275,7 +273,6 @@ class AutocompleteEditViewWin
   void OnCut();
   LRESULT OnGetObject(UINT uMsg, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeComposition(UINT message, WPARAM wparam, LPARAM lparam);
-  LRESULT OnImeNotify(UINT message, WPARAM wparam, LPARAM lparam);
   void OnKeyDown(TCHAR key, UINT repeat_count, UINT flags);
   void OnKeyUp(TCHAR key, UINT repeat_count, UINT flags);
   void OnKillFocus(HWND focus_wnd);
@@ -407,6 +404,11 @@ class AutocompleteEditViewWin
 
   // Returns the width in pixels needed to display |text|.
   int WidthNeededToDisplay(const std::wstring& text) const;
+
+  // Real implementation of OnAfterPossibleChange() method.
+  // If |force_text_changed| is true, then the text_changed code will always be
+  // triggerred no matter if the text is actually changed or not.
+  bool OnAfterPossibleChangeInternal(bool force_text_changed);
 
   scoped_ptr<AutocompleteEditModel> model_;
 

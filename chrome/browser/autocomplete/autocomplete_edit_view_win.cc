@@ -843,6 +843,11 @@ void AutocompleteEditViewWin::OnBeforePossibleChange() {
 }
 
 bool AutocompleteEditViewWin::OnAfterPossibleChange() {
+  return OnAfterPossibleChangeInternal(false);
+}
+
+bool AutocompleteEditViewWin::OnAfterPossibleChangeInternal(
+    bool force_text_changed) {
   // Prevent the user from selecting the "phantom newline" at the end of the
   // edit.  If they try, we just silently move the end of the selection back to
   // the end of the real text.
@@ -863,7 +868,8 @@ bool AutocompleteEditViewWin::OnAfterPossibleChange() {
 
   // See if the text or selection have changed since OnBeforePossibleChange().
   const std::wstring new_text(GetText());
-  const bool text_differs = (new_text != text_before_change_);
+  const bool text_differs = (new_text != text_before_change_) ||
+      force_text_changed;
 
   // When the user has deleted text, we don't allow inline autocomplete.  Make
   // sure to not flag cases like selecting part of the text and then pasting
@@ -875,9 +881,10 @@ bool AutocompleteEditViewWin::OnAfterPossibleChange() {
       (new_sel.cpMin <= std::min(sel_before_change_.cpMin,
                                  sel_before_change_.cpMax));
 
-
+  const bool allow_keyword_ui_change = at_end_of_edit && !IsImeComposing();
   const bool something_changed = model_->OnAfterPossibleChange(new_text,
-      selection_differs, text_differs, just_deleted_text, at_end_of_edit);
+      selection_differs, text_differs, just_deleted_text,
+      allow_keyword_ui_change);
 
   if (selection_differs)
     controller_->OnSelectionBoundsChanged();
@@ -916,6 +923,16 @@ void AutocompleteEditViewWin::SetInstantSuggestion(const string16& suggestion) {
 
 int AutocompleteEditViewWin::TextWidth() const {
   return WidthNeededToDisplay(GetText());
+}
+
+bool AutocompleteEditViewWin::IsImeComposing() const {
+  bool ime_composing = false;
+  HIMC context = ImmGetContext(m_hWnd);
+  if (context) {
+    ime_composing = !!ImmGetCompositionString(context, GCS_COMPSTR, NULL, 0);
+    ImmReleaseContext(m_hWnd, context);
+  }
+  return ime_composing;
 }
 
 views::View* AutocompleteEditViewWin::AddToView(views::View* parent) {
@@ -1301,68 +1318,11 @@ LRESULT AutocompleteEditViewWin::OnImeComposition(UINT message,
   ScopedFreeze freeze(this, GetTextObjectModel());
   OnBeforePossibleChange();
   LRESULT result = DefWindowProc(message, wparam, lparam);
-
-  // Some IMEs insert whitespace characters instead of input characters while
-  // they are composing text, and trimming these whitespace characters at the
-  // beginning of this control (in OnAfterPossibleChange()) prevents users from
-  // inputting text on these IMEs.
-  // To prevent this problem, we should not start auto-complete if the
-  // composition string starts with whitespace characters.
-  // (When we type a space key to insert a whitespace character, IMEs don't
-  // insert the whitespace character to their composition string but their
-  // result string. So, this code doesn't prevent us from updating autocomplete
-  // when we insert a whitespace character.)
-  if (lparam & GCS_COMPSTR) {
-    std::wstring text;
-    HIMC context = ImmGetContext(m_hWnd);
-    if (context) {
-      int size = ImmGetCompositionString(context, GCS_COMPSTR, NULL, 0);
-      if (size > 0) {
-        wchar_t* text_data = WriteInto(&text, size / sizeof(wchar_t) + 1);
-        if (text_data)
-          ImmGetCompositionString(context, GCS_COMPSTR, text_data, size);
-      }
-      ImmReleaseContext(m_hWnd, context);
-    }
-    if (!text.empty() && IsWhitespace(text[0]))
-      return result;
-  }
-
-  if (!OnAfterPossibleChange() && (lparam & GCS_RESULTSTR)) {
-    // The result string changed, but the text in the popup didn't actually
-    // change.  This means the user finalized the composition.  Rerun
-    // autocomplete so that we can now trigger inline autocomplete if
-    // applicable.
-    //
-    // Note that if we're in the midst of losing focus, UpdatePopup() won't
-    // actually rerun autocomplete, but will just set local state correctly.
-    UpdatePopup();
-  }
+  // Force an IME composition confirmation operation to trigger the text_changed
+  // code in OnAfterPossibleChange(), even if identical contents are confirmed,
+  // to make sure the model can update its internal states correctly.
+  OnAfterPossibleChangeInternal((lparam & GCS_RESULTSTR) != 0);
   return result;
-}
-
-LRESULT AutocompleteEditViewWin::OnImeNotify(UINT message,
-                                             WPARAM wparam,
-                                             LPARAM lparam) {
-  // NOTE: I'm not sure this is ever reached with |ignore_ime_messages_| set,
-  // but if it is, the safe thing to do is to only call DefWindowProc().
-  if (!ignore_ime_messages_ && (wparam == IMN_SETOPENSTATUS)) {
-    // A user has activated (or deactivated) IMEs (but not started a
-    // composition).
-    // Some IMEs get confused when we accept keywords while they are composing
-    // text. To prevent this situation, we accept keywords when an IME is
-    // activated.
-    HIMC imm_context = ImmGetContext(m_hWnd);
-    if (imm_context) {
-      if (ImmGetOpenStatus(imm_context) &&
-          model_->is_keyword_hint() && !model_->keyword().empty()) {
-        ScopedFreeze freeze(this, GetTextObjectModel());
-        model_->AcceptKeyword();
-      }
-      ImmReleaseContext(m_hWnd, imm_context);
-    }
-  }
-  return DefWindowProc(message, wparam, lparam);
 }
 
 void AutocompleteEditViewWin::OnKeyDown(TCHAR key,
@@ -2606,14 +2566,4 @@ int AutocompleteEditViewWin::WidthNeededToDisplay(
   // apparently buggy. In both LTR UI and RTL UI with left-to-right layout,
   // PosFromChar(i) might return 0 when i is greater than 1.
   return font_.GetStringWidth(text) + GetHorizontalMargin();
-}
-
-bool AutocompleteEditViewWin::IsImeComposing() const {
-  bool ime_composing = false;
-  HIMC context = ImmGetContext(m_hWnd);
-  if (context) {
-    ime_composing = !!ImmGetCompositionString(context, GCS_COMPSTR, NULL, 0);
-    ImmReleaseContext(m_hWnd, context);
-  }
-  return ime_composing;
 }

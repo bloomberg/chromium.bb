@@ -58,8 +58,11 @@ class KeywordProvider : public AutocompleteProvider,
   // Returns the replacement string from the user input. The replacement
   // string is the portion of the input that does not contain the keyword.
   // For example, the replacement string for "b blah" is blah.
+  // If |trim_leading_whitespace| is true then leading whitespace in
+  // replacement string will be trimmed.
   static std::wstring SplitReplacementStringFromInput(
-      const std::wstring& input);
+      const std::wstring& input,
+      bool trim_leading_whitespace);
 
   // Returns the matching substituting keyword for |input|, or NULL if there
   // is no keyword for the specified input.
@@ -84,14 +87,18 @@ class KeywordProvider : public AutocompleteProvider,
   // extract the keyword and remaining string, and uses
   // TemplateURLModel::CleanUserInputKeyword to remove unnecessary characters.
   // In general use this instead of SplitKeywordFromInput.
+  // Leading whitespace in |*remaining_input| will be trimmed.
   static bool ExtractKeywordFromInput(const AutocompleteInput& input,
                                       std::wstring* keyword,
                                       std::wstring* remaining_input);
 
   // Extracts the next whitespace-delimited token from input and returns it.
   // Sets |remaining_input| to everything after the first token (skipping over
-  // intervening whitespace).
+  // the first intervening whitespace).
+  // If |trim_leading_whitespace| is true then leading whitespace in
+  // |*remaining_input| will be trimmed.
   static std::wstring SplitKeywordFromInput(const std::wstring& input,
+                                            bool trim_leading_whitespace,
                                             std::wstring* remaining_input);
 
   // Fills in the "destination_url" and "contents" fields of |match| with the

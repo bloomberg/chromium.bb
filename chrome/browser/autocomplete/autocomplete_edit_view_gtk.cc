@@ -605,10 +605,7 @@ void AutocompleteEditViewGtk::UpdatePopup() {
   // the text, or in the middle of composition.
   CharRange sel = GetSelection();
   bool no_inline_autocomplete =
-      std::max(sel.cp_max, sel.cp_min) < GetTextLength();
-#if GTK_CHECK_VERSION(2, 20, 0)
-  no_inline_autocomplete = no_inline_autocomplete || preedit_.size();
-#endif
+      std::max(sel.cp_max, sel.cp_min) < GetTextLength() || IsImeComposing();
   model_->StartAutocomplete(sel.cp_min != sel.cp_max, no_inline_autocomplete);
 }
 
@@ -726,8 +723,10 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
 
   delete_at_end_pressed_ = false;
 
+  bool allow_keyword_ui_change = at_end_of_edit && !IsImeComposing();
   bool something_changed = model_->OnAfterPossibleChange(new_text,
-      selection_differs, text_changed_, just_deleted_text, at_end_of_edit);
+      selection_differs, text_changed_, just_deleted_text,
+      allow_keyword_ui_change);
 
   // If only selection was changed, we don't need to call |controller_|'s
   // OnChanged() method, which is called in TextChanged().
@@ -816,6 +815,14 @@ int AutocompleteEditViewGtk::TextWidth() const {
       last_char_end - first_char_start : first_char_end - last_char_start;
 
   return text_width + horizontal_border_size;
+}
+
+bool AutocompleteEditViewGtk::IsImeComposing() const {
+#if GTK_CHECK_VERSION(2, 20, 0)
+  return !preedit_.empty();
+#else
+  return false;
+#endif
 }
 
 #if defined(TOOLKIT_VIEWS)
@@ -1841,9 +1848,7 @@ AutocompleteEditViewGtk::CharRange AutocompleteEditViewGtk::GetSelection() {
 void AutocompleteEditViewGtk::ItersFromCharRange(const CharRange& range,
                                                  GtkTextIter* iter_min,
                                                  GtkTextIter* iter_max) {
-#if GTK_CHECK_VERSION(2, 20, 0)
-  DCHECK(preedit_.empty());
-#endif
+  DCHECK(!IsImeComposing());
   gtk_text_buffer_get_iter_at_offset(text_buffer_, iter_min, range.cp_min);
   gtk_text_buffer_get_iter_at_offset(text_buffer_, iter_max, range.cp_max);
 }

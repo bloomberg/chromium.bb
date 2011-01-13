@@ -145,6 +145,8 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   virtual CommandUpdater* GetCommandUpdater();
   virtual void SetInstantSuggestion(const string16& suggestion);
   virtual int TextWidth() const;
+  virtual bool IsImeComposing() const;
+
 #if defined(TOOLKIT_VIEWS)
   virtual views::View* AddToView(views::View* parent);
   virtual bool CommitInstantSuggestion(const std::wstring& typed_text,

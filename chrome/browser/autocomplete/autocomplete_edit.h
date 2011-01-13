@@ -325,11 +325,16 @@ class AutocompleteEditModel : public NotificationObserver {
   // Called by the AutocompleteEditView after something changes, with details
   // about what state changes occured.  Updates internal state, updates the
   // popup if necessary, and returns true if any significant changes occurred.
+  // If |allow_keyword_ui_change| is false then the change should not affect
+  // keyword ui state, even if the text matches a keyword exactly. This value
+  // may be false when:
+  // 1) The insert caret is not at the end of the edit box
+  // 2) The user is composing a text with an IME
   bool OnAfterPossibleChange(const std::wstring& new_text,
                              bool selection_differs,
                              bool text_differs,
                              bool just_deleted_text,
-                             bool at_end_of_edit);
+                             bool allow_keyword_ui_change);
 
   // Invoked when the popup is going to change its bounds to |bounds|.
   void PopupBoundsChangedTo(const gfx::Rect& bounds);

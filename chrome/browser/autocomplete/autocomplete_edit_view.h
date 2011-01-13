@@ -165,6 +165,9 @@ class AutocompleteEditView {
   // returned value includes margins.
   virtual int TextWidth() const = 0;
 
+  // Returns true if the user is composing something in an IME.
+  virtual bool IsImeComposing() const = 0;
+
 #if defined(TOOLKIT_VIEWS)
   // Adds the autocomplete edit view to view hierarchy and
   // returns the views::View of the edit view.

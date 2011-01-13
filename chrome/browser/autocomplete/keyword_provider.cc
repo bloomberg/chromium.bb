@@ -42,14 +42,16 @@ class KeywordProvider::ScopedEndExtensionKeywordMode {
 
 // static
 std::wstring KeywordProvider::SplitReplacementStringFromInput(
-    const std::wstring& input) {
+    const std::wstring& input,
+    bool trim_leading_whitespace) {
   // The input may contain leading whitespace, strip it.
   std::wstring trimmed_input;
   TrimWhitespace(input, TRIM_LEADING, &trimmed_input);
 
   // And extract the replacement string.
   std::wstring remaining_input;
-  SplitKeywordFromInput(trimmed_input, &remaining_input);
+  SplitKeywordFromInput(trimmed_input, trim_leading_whitespace,
+                        &remaining_input);
   return remaining_input;
 }
 
@@ -275,13 +277,14 @@ bool KeywordProvider::ExtractKeywordFromInput(const AutocompleteInput& input,
     return false;
 
   *keyword = TemplateURLModel::CleanUserInputKeyword(
-      SplitKeywordFromInput(input.text(), remaining_input));
+      SplitKeywordFromInput(input.text(), true, remaining_input));
   return !keyword->empty();
 }
 
 // static
 std::wstring KeywordProvider::SplitKeywordFromInput(
     const std::wstring& input,
+    bool trim_leading_whitespace,
     std::wstring* remaining_input) {
   // Find end of first token.  The AutocompleteController has trimmed leading
   // whitespace, so we need not skip over that.
@@ -292,10 +295,11 @@ std::wstring KeywordProvider::SplitKeywordFromInput(
 
   // Set |remaining_input| to everything after the first token.
   DCHECK(remaining_input != NULL);
-  const size_t first_nonwhite(input.find_first_not_of(kWhitespaceWide,
-                                                      first_white));
-  if (first_nonwhite != std::wstring::npos)
-    remaining_input->assign(input.begin() + first_nonwhite, input.end());
+  const size_t remaining_start = trim_leading_whitespace ?
+    input.find_first_not_of(kWhitespaceWide, first_white) : first_white + 1;
+
+  if (remaining_start < input.length())
+    remaining_input->assign(input.begin() + remaining_start, input.end());
 
   // Return first token as keyword.
   return input.substr(0, first_white);

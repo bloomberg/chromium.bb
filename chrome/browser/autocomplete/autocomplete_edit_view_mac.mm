@@ -329,6 +329,11 @@ NSRange AutocompleteEditViewMac::GetSelectedRange() const {
   return [[field_ currentEditor] selectedRange];
 }
 
+NSRange AutocompleteEditViewMac::GetMarkedRange() const {
+  DCHECK([field_ currentEditor]);
+  return [(NSTextView*)[field_ currentEditor] markedRange];
+}
+
 void AutocompleteEditViewMac::SetSelectedRange(const NSRange range) {
   // This can be called when we don't have focus.  For instance, when
   // the user clicks the "Go" button.
@@ -403,12 +408,6 @@ void AutocompleteEditViewMac::SelectAll(bool reversed) {
 void AutocompleteEditViewMac::RevertAll() {
   ClosePopup();
   model_->Revert();
-
-  // TODO(shess): This should be a no-op, the results from GetText()
-  // could only get there via UpdateAndStyleText() in the first place.
-  // Dig into where this code can be called from and see if this line
-  // can be removed.
-  EmphasizeURLComponents();
   controller_->OnChanged();
   [field_ clearUndoChain];
 }
@@ -424,16 +423,12 @@ void AutocompleteEditViewMac::UpdatePopup() {
   //   * The caret/selection isn't at the end of the text
   //   * The user has just pasted in something that replaced all the text
   //   * The user is trying to compose something in an IME
-  bool prevent_inline_autocomplete = false;
+  bool prevent_inline_autocomplete = IsImeComposing();
   NSTextView* editor = (NSTextView*)[field_ currentEditor];
   if (editor) {
-    if ([editor hasMarkedText])
-      prevent_inline_autocomplete = true;
-
     if (NSMaxRange([editor selectedRange]) <
-        [[editor textStorage] length] - suggest_text_length_) {
+        [[editor textStorage] length] - suggest_text_length_)
       prevent_inline_autocomplete = true;
-    }
   }
 
   model_->StartAutocomplete([editor selectedRange].length != 0,
@@ -605,8 +600,10 @@ void AutocompleteEditViewMac::OnTemporaryTextMaybeChanged(
 }
 
 void AutocompleteEditViewMac::OnStartingIME() {
-  if (model_->is_keyword_hint() && !model_->keyword().empty())
-    model_->AcceptKeyword();
+  // Reset the suggest text just before starting an IME composition session,
+  // otherwise the IME composition may be interrupted when the suggest text
+  // gets reset by the IME composition change.
+  SetInstantSuggestion(string16());
 }
 
 bool AutocompleteEditViewMac::OnInlineAutocompleteTextMaybeChanged(
@@ -614,9 +611,8 @@ bool AutocompleteEditViewMac::OnInlineAutocompleteTextMaybeChanged(
   // TODO(shess): Make sure that this actually works.  The round trip
   // to native form and back may mean that it's the same but not the
   // same.
-  if (display_text == GetText()) {
+  if (display_text == GetText())
     return false;
-  }
 
   DCHECK_LE(user_text_length, display_text.size());
   const NSRange range =
@@ -642,6 +638,7 @@ void AutocompleteEditViewMac::OnBeforePossibleChange() {
 
   selection_before_change_ = GetSelectedRange();
   text_before_change_ = GetText();
+  marked_range_before_change_ = GetMarkedRange();
 }
 
 bool AutocompleteEditViewMac::OnAfterPossibleChange() {
@@ -655,7 +652,8 @@ bool AutocompleteEditViewMac::OnAfterPossibleChange() {
   const bool selection_differs = !NSEqualRanges(new_selection,
                                                 selection_before_change_);
   const bool at_end_of_edit = (length == new_selection.location);
-  const bool text_differs = (new_text != text_before_change_);
+  const bool text_differs = (new_text != text_before_change_) ||
+      !NSEqualRanges(marked_range_before_change_, GetMarkedRange());
 
   // When the user has deleted text, we don't allow inline
   // autocomplete.  This is assumed if the text has gotten shorter AND
@@ -673,8 +671,10 @@ bool AutocompleteEditViewMac::OnAfterPossibleChange() {
 
   delete_at_end_pressed_ = false;
 
+  const bool allow_keyword_ui_change = at_end_of_edit && !IsImeComposing();
   const bool something_changed = model_->OnAfterPossibleChange(new_text,
-      selection_differs, text_differs, just_deleted_text, at_end_of_edit);
+      selection_differs, text_differs, just_deleted_text,
+      allow_keyword_ui_change);
 
   if (delete_was_pressed_ && at_end_of_edit)
     delete_at_end_pressed_ = true;
@@ -727,6 +727,10 @@ int AutocompleteEditViewMac::TextWidth() const {
   // Not used on mac.
   NOTREACHED();
   return 0;
+}
+
+bool AutocompleteEditViewMac::IsImeComposing() const {
+  return [(NSTextView*)[field_ currentEditor] hasMarkedText];
 }
 
 void AutocompleteEditViewMac::OnDidBeginEditing() {
