@@ -30,6 +30,7 @@ class NPAPIUrlRequestManager : public PluginUrlRequestManager,
   int32 Write(NPStream* stream, int32 offset, int32 len, void* buffer);
   NPError DestroyStream(NPStream* stream, NPReason reason);
   void UrlNotify(const char* url, NPReason reason, void* notify_data);
+  void UrlRedirectNotify(const char* url, int status, void* notify_data);
 
  private:
   // PluginUrlRequestManager implementation. Called from AutomationClient.

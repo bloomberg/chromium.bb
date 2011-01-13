@@ -74,6 +74,7 @@ class ChromeFrameNPAPI
   NPError DestroyStream(NPStream* stream, NPReason reason);
 
   void Print(NPPrint* print_info);
+  void URLRedirectNotify(const char* url, int status, void* notify_data);
 
   // NPObject functions, which ensure that the plugin object is scriptable.
   static bool HasMethod(NPObject* obj, NPIdentifier name);

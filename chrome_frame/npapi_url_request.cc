@@ -418,6 +418,18 @@ void NPAPIUrlRequestManager::UrlNotify(const char* url, NPReason reason,
   }
 }
 
+void NPAPIUrlRequestManager::UrlRedirectNotify(const char* url, int status,
+                                               void* notify_data) {
+  NPAPIUrlRequest* request = RequestFromNotifyData(notify_data);
+  if (request) {
+    delegate_->OnResponseStarted(request->id(), "", "", 0, base::Time(),
+                                 url, status);
+  } else {
+    NOTREACHED() << "Received unexpected redirect notification for url:"
+                 << url;
+  }
+}
+
 scoped_refptr<NPAPIUrlRequest> NPAPIUrlRequestManager::LookupRequest(
     int request_id) {
   RequestMap::iterator index = request_map_.find(request_id);

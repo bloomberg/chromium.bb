@@ -140,6 +140,7 @@ NPError PopUpContextMenu(NPP instance, NPMenu* menu);
 NPBool ConvertPoint(NPP instance, double sourceX, double sourceY,
                     NPCoordinateSpace sourceSpace, double *destX,
                     double *destY, NPCoordinateSpace destSpace);
+void URLRedirectResponse(NPP instance, void* notify_data, NPBool allow);
 
 // Helper routine that wraps UTF8FromIdentifier to convert a string identifier
 // to an STL string.  It's not super efficient since it could possibly do two

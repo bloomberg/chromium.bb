@@ -1509,3 +1509,15 @@ int32 ChromeFrameNPAPI::Write(NPStream* stream, int32 offset, int32 len,
 NPError ChromeFrameNPAPI::DestroyStream(NPStream* stream, NPReason reason) {
   return url_fetcher_.DestroyStream(stream, reason);
 }
+
+void ChromeFrameNPAPI::URLRedirectNotify(const char* url, int status,
+                                         void* notify_data) {
+  DVLOG(1) << __FUNCTION__
+           << "Received redirect notification for url:"
+           << url;
+  // Inform chrome about the redirect and disallow the current redirect
+  // attempt.
+  url_fetcher_.UrlRedirectNotify(url, status, notify_data);
+  npapi::URLRedirectResponse(instance_, notify_data, false);
+}
+

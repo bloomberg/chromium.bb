@@ -33,7 +33,8 @@ void NPP_URLNotify(NPP instance, const char* url, NPReason reason,
                    void* notifyData);
 
 void NPP_Print(NPP instance, NPPrint* print_info);
-
+void NPP_URLRedirectNotify(NPP instance, const char* url, int status,
+                           void* notify_data);
 }  // namespace chrome_frame
 
 #endif  // CHROME_FRAME_CHROME_FRAME_NPAPI_ENTRYPOINTS_H_

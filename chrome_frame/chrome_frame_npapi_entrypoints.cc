@@ -37,6 +37,7 @@ NPError NPAPI NP_GetEntryPoints(NPPluginFuncs* plugin_funcs) {
   plugin_funcs->urlnotify = chrome_frame::NPP_URLNotify;
   plugin_funcs->getvalue = chrome_frame::NPP_GetValue;
   plugin_funcs->setvalue = chrome_frame::NPP_SetValue;
+  plugin_funcs->urlredirectnotify = chrome_frame::NPP_URLRedirectNotify;
   return NPERR_NO_ERROR;
 }
 
@@ -194,11 +195,24 @@ void NPP_Print(NPP instance, NPPrint* print_info) {
       ChromeFrameNPAPI::ChromeFrameInstanceFromPluginInstance(instance);
 
   if (plugin_instance == NULL) {
-    NOTREACHED();
+    NOTREACHED() << "Failed to find plugin instance";
     return;
   }
 
   plugin_instance->Print(print_info);
+}
+
+void NPP_URLRedirectNotify(NPP instance, const char* url, int status,
+                           void* notify_data) {
+  ChromeFrameNPAPI* plugin_instance =
+      ChromeFrameNPAPI::ChromeFrameInstanceFromPluginInstance(instance);
+
+  if (plugin_instance == NULL) {
+    NOTREACHED() << "Failed to find plugin instance";
+    npapi::URLRedirectResponse(instance, notify_data, false);
+    return;
+  }
+  plugin_instance->URLRedirectNotify(url, status, notify_data);
 }
 
 }  // namespace chrome_frame

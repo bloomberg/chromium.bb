@@ -75,6 +75,7 @@ NPN_ConstructProcPtr g_construct = NULL;
 NPN_GetValueForURLPtr g_getvalueforurl = NULL;
 NPN_SetValueForURLPtr g_setvalueforurl = NULL;
 NPN_GetAuthenticationInfoPtr g_getauthenticationinfo = NULL;
+NPN_URLRedirectResponsePtr g_urlredirectresponse = NULL;
 
 // Must be called prior to calling any of the browser functions below.
 void InitializeBrowserFunctions(NPNetscapeFuncs* functions) {
@@ -128,6 +129,7 @@ void InitializeBrowserFunctions(NPNetscapeFuncs* functions) {
   g_enumerate = functions->enumerate;
   g_pluginthreadasynccall = functions->pluginthreadasynccall;
   g_construct = functions->construct;
+  g_urlredirectresponse = functions->urlredirectresponse;
 
   if (g_version.v.minor >= NPVERS_HAS_URL_AND_AUTH_INFO) {
     g_getvalueforurl = functions->getvalueforurl;
@@ -492,6 +494,14 @@ NPError GetAuthenticationInfo(NPP instance, const char* protocol,
                                  realm, username, ulen, password, plen);
 }
 
+void URLRedirectResponse(NPP instance, void* notify_data, NPBool allow) {
+  if (!g_urlredirectresponse) {
+    NOTREACHED() << "Unexpected call to NPN_URLRedirectResponse";
+    return;
+  }
+  return g_urlredirectresponse(instance, notify_data, allow);
+}
+
 std::string StringFromIdentifier(NPIdentifier identifier) {
   std::string ret;
   NPUTF8* utf8 = UTF8FromIdentifier(identifier);
@@ -517,4 +527,3 @@ void AllocateStringVariant(const std::string& str, NPVariant* var) {
     NULL_TO_NPVARIANT(*var);
   }
 }
-
