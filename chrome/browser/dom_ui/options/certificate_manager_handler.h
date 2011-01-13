@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_DOM_UI_OPTIONS_CERTIFICATE_MANAGER_HANDLER_H_
 #pragma once
 
+#include <string>
+
 #include "base/scoped_ptr.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/certificate_manager_model.h"
@@ -59,13 +61,15 @@ class CertificateManagerHandler : public OptionsPageUIHandler,
   //  selector
   //  2. user selects file -> ExportPersonalFileSelected -> launches password
   //  dialog
-  //  3. user enters password -> ExportPersonalPasswordSelected -> exports to
-  //  memory buffer -> starts async write operation
-  //  4. write finishes (or fails) -> ExportPersonalFileWritten
+  //  3. user enters password -> ExportPersonalPasswordSelected -> unlock slots
+  //  4. slots unlocked -> ExportPersonalSlotsUnlocked -> exports to memory
+  //  buffer -> starts async write operation
+  //  5. write finishes (or fails) -> ExportPersonalFileWritten
   void ExportPersonal(const ListValue* args);
   void ExportAllPersonal(const ListValue* args);
   void ExportPersonalFileSelected(const FilePath& path);
   void ExportPersonalPasswordSelected(const ListValue* args);
+  void ExportPersonalSlotsUnlocked();
   void ExportPersonalFileWritten(int write_errno, int bytes_written);
 
   // Import from PKCS #12 file.  The sequence goes like:
@@ -75,15 +79,17 @@ class CertificateManagerHandler : public OptionsPageUIHandler,
   //  dialog
   //  3. user enters password -> ImportPersonalPasswordSelected -> starts async
   //  read operation
-  //  4. read operation completes -> ImportPersonalFileRead -> attempts to
+  //  4. read operation completes -> ImportPersonalFileRead -> unlock slot
+  //  5. slot unlocked -> ImportPersonalSlotUnlocked attempts to
   //  import with previously entered password
-  //  5a. if import succeeds -> ImportExportCleanup
-  //  5b. if import fails -> show error, ImportExportCleanup
+  //  6a. if import succeeds -> ImportExportCleanup
+  //  6b. if import fails -> show error, ImportExportCleanup
   //  TODO(mattm): allow retrying with different password
   void StartImportPersonal(const ListValue* args);
   void ImportPersonalFileSelected(const FilePath& path);
   void ImportPersonalPasswordSelected(const ListValue* args);
   void ImportPersonalFileRead(int read_errno, std::string data);
+  void ImportPersonalSlotUnlocked();
 
   // Import Server certificates from file.  Sequence goes like:
   //  1. user clicks on import button -> ImportServer -> launches file selector
@@ -140,8 +146,10 @@ class CertificateManagerHandler : public OptionsPageUIHandler,
   // wait for file to be read, etc.
   FilePath file_path_;
   string16 password_;
+  std::string file_data_;
   net::CertificateList selected_cert_list_;
   scoped_refptr<SelectFileDialog> select_file_dialog_;
+  scoped_refptr<net::CryptoModule> module_;
 
   // Used in reading and writing certificate files.
   CancelableRequestConsumer consumer_;

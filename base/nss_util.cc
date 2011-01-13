@@ -29,6 +29,7 @@
 // use NSS for crypto or certificate verification, and we don't use the NSS
 // certificate and key databases.
 #if defined(USE_NSS)
+#include "base/crypto/pk11_blocking_password_delegate.h"
 #include "base/environment.h"
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
@@ -67,6 +68,26 @@ FilePath GetInitialConfigDirectory() {
 #else
   return GetDefaultConfigDirectory();
 #endif  // defined(OS_CHROMEOS)
+}
+
+// This callback for NSS forwards all requests to a caller-specified
+// PK11BlockingPasswordDelegate object.
+char* PK11PasswordFunc(PK11SlotInfo* slot, PRBool retry, void* arg) {
+  base::PK11BlockingPasswordDelegate* delegate =
+      reinterpret_cast<base::PK11BlockingPasswordDelegate*>(arg);
+  if (delegate) {
+    bool cancelled = false;
+    std::string password = delegate->RequestPassword(PK11_GetTokenName(slot),
+                                                     retry != PR_FALSE,
+                                                     &cancelled);
+    if (cancelled)
+      return NULL;
+    char* result = PORT_Strdup(password.c_str());
+    password.replace(0, password.size(), password.size(), 0);
+    return result;
+  }
+  DLOG(ERROR) << "PK11 password requested with NULL arg";
+  return NULL;
 }
 
 // NSS creates a local cache of the sqlite database if it detects that the
@@ -246,6 +267,8 @@ class NSSInitSingleton {
         return;
       }
     }
+
+    PK11_SetPasswordFunc(PK11PasswordFunc);
 
     // If we haven't initialized the password for the NSS databases,
     // initialize an empty-string password so that we don't need to

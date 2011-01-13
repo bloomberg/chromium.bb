@@ -57,7 +57,8 @@ class CertificateManagerModel {
 
   // Import certificates from PKCS #12 encoded |data|, using the given
   // |password|.  Returns a net error code on failure.
-  int ImportFromPKCS12(const std::string& data, const string16& password);
+  int ImportFromPKCS12(net::CryptoModule* module, const std::string& data,
+                       const string16& password);
 
   // Import CA certificates.
   // Tries to import all the certificates given.  The root will be trusted

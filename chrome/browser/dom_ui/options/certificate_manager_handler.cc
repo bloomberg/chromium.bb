@@ -17,7 +17,9 @@
 #include "chrome/browser/gtk/certificate_dialogs.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/ui/pk11_password_dialog.h"
 #include "grit/generated_resources.h"
+#include "net/base/crypto_module.h"
 #include "net/base/x509_certificate.h"
 
 namespace {
@@ -527,6 +529,21 @@ void CertificateManagerHandler::ExportPersonalPasswordSelected(
     ImportExportCleanup();
     return;
   }
+
+  // Currently, we don't support exporting more than one at a time.  If we do,
+  // this would need some cleanup to handle unlocking multiple slots.
+  DCHECK_EQ(selected_cert_list_.size(), 1U);
+
+  // TODO(mattm): do something smarter about non-extractable keys
+  browser::UnlockCertSlotIfNecessary(
+      selected_cert_list_[0].get(),
+      browser::kPK11PasswordCertExport,
+      "",  // unused.
+      NewCallback(this,
+                  &CertificateManagerHandler::ExportPersonalSlotsUnlocked));
+}
+
+void CertificateManagerHandler::ExportPersonalSlotsUnlocked() {
   std::string output;
   int num_exported = certificate_manager_model_->cert_db().ExportToPKCS12(
       selected_cert_list_,
@@ -605,7 +622,23 @@ void CertificateManagerHandler::ImportPersonalFileRead(
                                   UTF8ToUTF16(safe_strerror(read_errno))));
     return;
   }
-  int result = certificate_manager_model_->ImportFromPKCS12(data, password_);
+
+  file_data_ = data;
+
+  // TODO(mattm): allow user to choose a slot to import to.
+  module_ = certificate_manager_model_->cert_db().GetDefaultModule();
+
+  browser::UnlockSlotIfNecessary(
+      module_.get(),
+      browser::kPK11PasswordCertImport,
+      "",  // unused.
+      NewCallback(this,
+                  &CertificateManagerHandler::ImportPersonalSlotUnlocked));
+}
+
+void CertificateManagerHandler::ImportPersonalSlotUnlocked() {
+  int result = certificate_manager_model_->ImportFromPKCS12(
+      module_, file_data_, password_);
   ImportExportCleanup();
   dom_ui_->CallJavascriptFunction(L"CertificateRestoreOverlay.dismiss");
   switch (result) {
@@ -634,8 +667,10 @@ void CertificateManagerHandler::CancelImportExportProcess(
 void CertificateManagerHandler::ImportExportCleanup() {
   file_path_.clear();
   password_.clear();
+  file_data_.clear();
   selected_cert_list_.clear();
   select_file_dialog_ = NULL;
+  module_ = NULL;
 }
 
 void CertificateManagerHandler::ImportServer(const ListValue* args) {

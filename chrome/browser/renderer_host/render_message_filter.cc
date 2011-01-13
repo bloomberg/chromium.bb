@@ -84,6 +84,9 @@
 #if defined(OS_WIN)
 #include "chrome/common/child_process_host.h"
 #endif
+#if defined(USE_NSS)
+#include "chrome/browser/ui/pk11_password_dialog.h"
+#endif
 #if defined(USE_TCMALLOC)
 #include "chrome/browser/browser_about_handler.h"
 #endif
@@ -1377,6 +1380,13 @@ void RenderMessageFilter::OnKeygenOnWorkerThread(
 
   // Generate a signed public key and challenge, then send it back.
   net::KeygenHandler keygen_handler(key_size_in_bits, challenge_string, url);
+
+#if defined(USE_NSS)
+  // Attach a password delegate so we can authenticate.
+  keygen_handler.set_pk11_password_delegate(
+      browser::NewPK11BlockingDialogDelegate(browser::kPK11PasswordKeygen,
+                                             url.host()));
+#endif  // defined(USE_NSS)
 
   ViewHostMsg_Keygen::WriteReplyParams(
       reply_msg,

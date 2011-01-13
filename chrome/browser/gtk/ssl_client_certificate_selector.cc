@@ -21,6 +21,7 @@
 #include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/pk11_password_dialog.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
@@ -59,6 +60,9 @@ class SSLClientCertificateSelector : public ConstrainedDialogDelegate {
       const std::string& nickname);
   static std::string FormatDetailsText(
       net::X509Certificate::OSCertHandle cert);
+
+  // Callback after unlocking certificate slot.
+  void Unlocked();
 
   CHROMEGTK_CALLBACK_0(SSLClientCertificateSelector, void, OnComboBoxChanged);
   CHROMEGTK_CALLBACK_0(SSLClientCertificateSelector, void, OnViewClicked);
@@ -301,6 +305,15 @@ std::string SSLClientCertificateSelector::FormatDetailsText(
   return rv;
 }
 
+void SSLClientCertificateSelector::Unlocked() {
+  // TODO(mattm): refactor so we don't need to call GetSelectedCert again.
+  net::X509Certificate* cert = GetSelectedCert();
+  delegate_->CertificateSelected(cert);
+  delegate_ = NULL;
+  DCHECK(window_);
+  window_->CloseConstrainedWindow();
+}
+
 void SSLClientCertificateSelector::OnComboBoxChanged(GtkWidget* combo_box) {
   int selected = gtk_combo_box_get_active(
       GTK_COMBO_BOX(cert_combo_box_));
@@ -328,10 +341,12 @@ void SSLClientCertificateSelector::OnCancelClicked(GtkWidget* button) {
 
 void SSLClientCertificateSelector::OnOkClicked(GtkWidget* button) {
   net::X509Certificate* cert = GetSelectedCert();
-  delegate_->CertificateSelected(cert);
-  delegate_ = NULL;
-  DCHECK(window_);
-  window_->CloseConstrainedWindow();
+
+  browser::UnlockCertSlotIfNecessary(
+      cert,
+      browser::kPK11PasswordClientAuth,
+      cert_request_info_->host_and_port,
+      NewCallback(this, &SSLClientCertificateSelector::Unlocked));
 }
 
 void SSLClientCertificateSelector::OnPromptShown(GtkWidget* widget,
