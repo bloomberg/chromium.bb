@@ -338,14 +338,14 @@ void ConstructAboutInformation(ProfileSyncService* service,
                                    "Updates Available",
                                    full_status.updates_available);
     sync_ui_util::AddIntSyncDetail(details,
-                                   "Updates Received",
+                                   "Updates Downloaded (All)",
                                    full_status.updates_received);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Updates Downloaded (Tombstones)",
+                                   full_status.tombstone_updates_received);
     sync_ui_util::AddBoolSyncDetail(details,
                                     "Disk Full",
                                     full_status.disk_full);
-    sync_ui_util::AddBoolSyncDetail(details,
-                                    "Invalid Store",
-                                    full_status.invalid_store);
     sync_ui_util::AddIntSyncDetail(details,
                                    "Max Consecutive Errors",
                                    full_status.max_consecutive_errors);

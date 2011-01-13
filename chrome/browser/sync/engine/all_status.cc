@@ -15,17 +15,8 @@
 
 namespace browser_sync {
 
-const char* AllStatus::GetSyncStatusString(SyncStatus icon) {
-  const char* strings[] = {"OFFLINE", "OFFLINE_UNSYNCED", "SYNCING", "READY",
-      "CONFLICT", "OFFLINE_UNUSABLE"};
-  COMPILE_ASSERT(arraysize(strings) == ICON_STATUS_COUNT, enum_indexed_array);
-  if (icon < 0 || icon >= static_cast<SyncStatus>(arraysize(strings)))
-    LOG(FATAL) << "Illegal Icon State:" << icon;
-  return strings[icon];
-}
-
-static const AllStatus::Status init_status =
-  { AllStatus::OFFLINE };
+static const sync_api::SyncManager::Status init_status =
+  { sync_api::SyncManager::Status::OFFLINE };
 
 AllStatus::AllStatus() : status_(init_status) {
   status_.initial_sync_ended = true;
@@ -35,8 +26,11 @@ AllStatus::AllStatus() : status_(init_status) {
 AllStatus::~AllStatus() {
 }
 
-AllStatus::Status AllStatus::CreateBlankStatus() const {
-  Status status = status_;
+sync_api::SyncManager::Status AllStatus::CreateBlankStatus() const {
+  // Status is initialized with the previous status value.  Variables
+  // whose values accumulate (e.g. lifetime counters like updates_received)
+  // are not to be cleared here.
+  sync_api::SyncManager::Status status = status_;
   status.syncing = true;
   status.unsynced_count = 0;
   status.conflicting_count = 0;
@@ -45,12 +39,12 @@ AllStatus::Status AllStatus::CreateBlankStatus() const {
   status.max_consecutive_errors = 0;
   status.server_broken = false;
   status.updates_available = 0;
-  status.updates_received = 0;
   return status;
 }
 
-AllStatus::Status AllStatus::CalcSyncing(const SyncEngineEvent &event) const {
-  Status status = CreateBlankStatus();
+sync_api::SyncManager::Status AllStatus::CalcSyncing(
+    const SyncEngineEvent &event) const {
+  sync_api::SyncManager::Status status = CreateBlankStatus();
   const sessions::SyncSessionSnapshot* snapshot = event.snapshot;
   status.unsynced_count += static_cast<int>(snapshot->unsynced_count);
   status.conflicting_count += snapshot->errors.num_conflicting_commits;
@@ -72,7 +66,16 @@ AllStatus::Status AllStatus::CalcSyncing(const SyncEngineEvent &event) const {
     status.server_broken = true;
 
   status.updates_available += snapshot->num_server_changes_remaining;
-  status.updates_received += snapshot->max_local_timestamp;
+
+  // Accumulate update count only once per session to avoid double-counting.
+  // TODO(ncarter): Make this realtime by having the syncer_status
+  // counter preserve its value across sessions.  http://crbug.com/26339
+  if (event.what_happened == SyncEngineEvent::SYNC_CYCLE_ENDED) {
+    status.updates_received +=
+        snapshot->syncer_status.num_updates_downloaded_total;
+    status.tombstone_updates_received +=
+        snapshot->syncer_status.num_tombstone_updates_downloaded_total;
+  }
   return status;
 }
 
@@ -82,17 +85,17 @@ void AllStatus::CalcStatusChanges() {
     status_.server_reachable && status_.server_up && !status_.server_broken;
   if (online) {
     if (status_.syncer_stuck)
-      status_.icon = CONFLICT;
+      status_.summary = sync_api::SyncManager::Status::CONFLICT;
     else if (unsynced_changes || status_.syncing)
-      status_.icon = SYNCING;
+      status_.summary = sync_api::SyncManager::Status::SYNCING;
     else
-      status_.icon = READY;
+      status_.summary = sync_api::SyncManager::Status::READY;
   } else if (!status_.initial_sync_ended) {
-    status_.icon = OFFLINE_UNUSABLE;
+    status_.summary = sync_api::SyncManager::Status::OFFLINE_UNUSABLE;
   } else if (unsynced_changes) {
-    status_.icon = OFFLINE_UNSYNCED;
+    status_.summary = sync_api::SyncManager::Status::OFFLINE_UNSYNCED;
   } else {
-    status_.icon = OFFLINE;
+    status_.summary = sync_api::SyncManager::Status::OFFLINE;
   }
 }
 
@@ -134,7 +137,7 @@ void AllStatus::HandleServerConnectionEvent(
   }
 }
 
-AllStatus::Status AllStatus::status() const {
+sync_api::SyncManager::Status AllStatus::status() const {
   AutoLock lock(mutex_);
   return status_;
 }

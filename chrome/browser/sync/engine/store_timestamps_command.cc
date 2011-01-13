@@ -28,27 +28,34 @@ void StoreTimestampsCommand::ExecuteImpl(sessions::SyncSession* session) {
       session->status_controller()->updates_response().get_updates();
 
   sessions::StatusController* status = session->status_controller();
+
+  // Update the progress marker tokens from the server result.  If a marker
+  // was omitted for any one type, that indicates no change from the previous
+  // state.
+  syncable::ModelTypeBitSet forward_progress_types;
+  for (int i = 0; i < updates.new_progress_marker_size(); ++i) {
+    syncable::ModelType model =
+        syncable::GetModelTypeFromExtensionFieldNumber(
+            updates.new_progress_marker(i).data_type_id());
+    if (model == syncable::UNSPECIFIED || model == syncable::TOP_LEVEL_FOLDER) {
+      NOTREACHED() << "Unintelligible server response.";
+      continue;
+    }
+    forward_progress_types[model] = true;
+    dir->SetDownloadProgress(model, updates.new_progress_marker(i));
+  }
+  DCHECK(forward_progress_types.any() ||
+         updates.changes_remaining() == 0);
+  if (VLOG_IS_ON(1)) {
+    VLOG_IF(1, forward_progress_types.any())
+        << "Get Updates got new progress marker for types: "
+        << forward_progress_types.to_string() << " out of possible: "
+        << status->updates_request_types().to_string();
+  }
   if (updates.has_changes_remaining()) {
     int64 changes_left = updates.changes_remaining();
-    VLOG(1) << "Changes remaining:" << changes_left;
+    VLOG(1) << "Changes remaining: " << changes_left;
     status->set_num_server_changes_remaining(changes_left);
-  }
-
-  VLOG_IF(1, updates.has_new_timestamp())
-      << "Get Updates got new timestamp: " << updates.new_timestamp()
-      << " for type mask: "
-      << status->updates_request_parameters().data_types.to_string();
-
-  // Update the saved download timestamp for any items we fetched.
-  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
-    syncable::ModelType model = syncable::ModelTypeFromInt(i);
-    if (status->updates_request_parameters().data_types[i] &&
-        updates.has_new_timestamp() &&
-        (updates.new_timestamp() > dir->last_download_timestamp(model))) {
-      dir->set_last_download_timestamp(model, updates.new_timestamp());
-    }
-    status->set_current_download_timestamp(model,
-        dir->last_download_timestamp(model));
   }
 }
 

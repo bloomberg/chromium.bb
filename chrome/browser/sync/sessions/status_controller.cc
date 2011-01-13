@@ -16,7 +16,6 @@ using syncable::MODEL_TYPE_COUNT;
 StatusController::StatusController(const ModelSafeRoutingInfo& routes)
     : shared_(&is_dirty_),
       per_model_group_deleter_(&per_model_group_),
-      per_model_type_deleter_(&per_model_type_),
       is_dirty_(false),
       group_restriction_in_effect_(false),
       group_restriction_(GROUP_PASSIVE),
@@ -42,24 +41,20 @@ PerModelSafeGroupState* StatusController::GetOrCreateModelSafeGroupState(
   return per_model_group_[group];
 }
 
-PerModelTypeState* StatusController::GetOrCreateModelTypeState(
-    bool restrict, syncable::ModelType model) {
-  if (restrict) {
-    DCHECK(group_restriction_in_effect_) << "No group restriction in effect!";
-    DCHECK_EQ(group_restriction_, GetGroupForModelType(model, routing_info_));
-  }
-  if (per_model_type_.find(model) == per_model_type_.end()) {
-    PerModelTypeState* state = new PerModelTypeState(&is_dirty_);
-    per_model_type_[model] = state;
-    return state;
-  }
-  return per_model_type_[model];
-}
-
 void StatusController::increment_num_conflicting_commits_by(int value) {
   if (value == 0)
     return;
   shared_.error_counters.mutate()->num_conflicting_commits += value;
+}
+
+void StatusController::increment_num_updates_downloaded_by(int value) {
+  shared_.syncer_status.mutate()->num_updates_downloaded_total += value;
+}
+
+void StatusController::increment_num_tombstone_updates_downloaded_by(
+    int value) {
+  shared_.syncer_status.mutate()->num_tombstone_updates_downloaded_total +=
+      value;
 }
 
 void StatusController::reset_num_conflicting_commits() {
@@ -85,14 +80,6 @@ void StatusController::increment_num_consecutive_transient_error_commits_by(
 void StatusController::set_num_consecutive_errors(int value) {
   if (shared_.error_counters.value().consecutive_errors != value)
     shared_.error_counters.mutate()->consecutive_errors = value;
-}
-
-void StatusController::set_current_download_timestamp(
-    syncable::ModelType model,
-    int64 current_timestamp) {
-  PerModelTypeState* state = GetOrCreateModelTypeState(false, model);
-  if (current_timestamp > state->current_download_timestamp.value())
-    *(state->current_download_timestamp.mutate()) = current_timestamp;
 }
 
 void StatusController::set_num_server_changes_remaining(
@@ -181,17 +168,6 @@ bool StatusController::CurrentCommitIdProjectionHasIndex(size_t index) {
   return std::binary_search(proj.begin(), proj.end(), index);
 }
 
-int64 StatusController::ComputeMaxLocalTimestamp() const {
-  std::map<syncable::ModelType, PerModelTypeState*>::const_iterator it =
-      per_model_type_.begin();
-  int64 max_timestamp = 0;
-  for (; it != per_model_type_.end(); ++it) {
-    if (it->second->current_download_timestamp.value() > max_timestamp)
-      max_timestamp = it->second->current_download_timestamp.value();
-  }
-  return max_timestamp;
-}
-
 bool StatusController::HasConflictingUpdates() const {
   DCHECK(!group_restriction_in_effect_)
       << "HasConflictingUpdates applies to all ModelSafeGroups";
@@ -219,23 +195,14 @@ int StatusController::TotalNumConflictingItems() const {
 bool StatusController::ServerSaysNothingMoreToDownload() const {
   if (!download_updates_succeeded())
     return false;
-  // If we didn't request every enabled datatype, then we can't say for
-  // sure that there's nothing left to download.
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    if (!updates_request_parameters().data_types[i] &&
-        routing_info_.count(syncable::ModelTypeFromInt(i)) != 0) {
-      return false;
-    }
+
+  if (!updates_response().get_updates().has_changes_remaining()) {
+    NOTREACHED();  // Server should always send changes remaining.
+    return false;  // Avoid looping forever.
   }
   // Changes remaining is an estimate, but if it's estimated to be
   // zero, that's firm and we don't have to ask again.
-  if (updates_response().get_updates().has_changes_remaining() &&
-      updates_response().get_updates().changes_remaining() == 0) {
-    return true;
-  }
-  // Otherwise, the server can also indicate "you're up to date"
-  // by not sending a new timestamp.
-  return !updates_response().get_updates().has_new_timestamp();
+  return updates_response().get_updates().changes_remaining() == 0;
 }
 
 }  // namespace sessions

@@ -63,6 +63,57 @@ void AddDefaultExtensionValue(syncable::ModelType datatype,
   }
 }
 
+ModelType GetModelTypeFromExtensionFieldNumber(int field_number) {
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    ModelType model_type = ModelTypeFromInt(i);
+    if (GetExtensionFieldNumberFromModelType(model_type) == field_number)
+      return model_type;
+  }
+  NOTREACHED();
+  return UNSPECIFIED;
+}
+
+int GetExtensionFieldNumberFromModelType(ModelType model_type) {
+  switch (model_type) {
+    case BOOKMARKS:
+      return sync_pb::kBookmarkFieldNumber;
+      break;
+    case PASSWORDS:
+      return sync_pb::kPasswordFieldNumber;
+      break;
+    case PREFERENCES:
+      return sync_pb::kPreferenceFieldNumber;
+      break;
+    case AUTOFILL:
+      return sync_pb::kAutofillFieldNumber;
+      break;
+    case AUTOFILL_PROFILE:
+      return sync_pb::kAutofillProfileFieldNumber;
+      break;
+    case THEMES:
+      return sync_pb::kThemeFieldNumber;
+      break;
+    case TYPED_URLS:
+      return sync_pb::kTypedUrlFieldNumber;
+      break;
+    case EXTENSIONS:
+      return sync_pb::kExtensionFieldNumber;
+      break;
+    case NIGORI:
+      return sync_pb::kNigoriFieldNumber;
+      break;
+    case SESSIONS:
+      return sync_pb::kSessionFieldNumber;
+      break;
+    case APPS:
+      return sync_pb::kAppFieldNumber;
+      break;
+    default:
+      NOTREACHED() << "No known extension for model type.";
+      return 0;
+  }
+}
+
 // Note: keep this consistent with GetModelType in syncable.cc!
 ModelType GetModelType(const sync_pb::SyncEntity& sync_pb_entity) {
   const browser_sync::SyncEntity& sync_entity =

@@ -12,13 +12,13 @@ namespace sessions {
 SyncSession::SyncSession(SyncSessionContext* context, Delegate* delegate,
     SyncSourceInfo source,
     const ModelSafeRoutingInfo& routing_info,
-    const std::vector<ModelSafeWorker*>& workers) :
-        context_(context),
-        source_(source),
-        write_transaction_(NULL),
-        delegate_(delegate),
-        workers_(workers),
-        routing_info_(routing_info) {
+    const std::vector<ModelSafeWorker*>& workers)
+    : context_(context),
+      source_(source),
+      write_transaction_(NULL),
+      delegate_(delegate),
+      workers_(workers),
+      routing_info_(routing_info) {
   status_controller_.reset(new StatusController(routing_info_));
 }
 
@@ -32,6 +32,7 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
 
   bool is_share_useable = true;
   syncable::ModelTypeBitSet initial_sync_ended;
+  std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
   for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
     syncable::ModelType type(syncable::ModelTypeFromInt(i));
     if (routing_info_.count(type) != 0) {
@@ -39,6 +40,7 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
         initial_sync_ended.set(type);
       else
         is_share_useable = false;
+      dir->GetDownloadProgressAsString(type, &download_progress_markers[i]);
     }
   }
 
@@ -46,9 +48,9 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       status_controller_->syncer_status(),
       status_controller_->error_counters(),
       status_controller_->num_server_changes_remaining(),
-      status_controller_->ComputeMaxLocalTimestamp(),
       is_share_useable,
       initial_sync_ended,
+      download_progress_markers,
       HasMoreToSync(),
       delegate_->IsSyncingCurrentlySilenced(),
       status_controller_->unsynced_handles().size(),

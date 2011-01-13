@@ -17,36 +17,24 @@ class EntitySpecifics;
 
 namespace browser_sync {
 
-// Pick a subset of the enabled datatypes, download updates for them from
-// the server, place the result in the SyncSession for further processing.
+// Determine the enabled datatypes, download a batch of updates for them
+// from the server, place the result in the SyncSession for further processing.
 //
-// The main inputs to this operation are the last_download_timestamp state
+// The main inputs to this operation are the download_progress state
 // in the syncable::Directory, and the set of enabled types as indicated by
-// the SyncSession. DownloadUpdatesCommand will fetch the enabled type
-// or types having the smallest (oldest) value for last_download_timestamp.
-// DownloadUpdatesCommand will request a download of those types and will
-// store the server response in the SyncSession. Only one server request
-// is performed per Execute operation. A loop that causes multiple Execute
-// operations within a sync session can be found in the Syncer logic.
-// When looping, the DownloadUpdatesCommand consumes the information stored
-// by the StoreTimestampsCommand.
+// the SyncSession. DownloadUpdatesCommand will fetch updates for
+// all the enabled types, using download_progress to indicate the starting
+// point to the server. DownloadUpdatesCommand stores the server response
+// in the SyncSession. Only one server request is performed per Execute
+// operation. A loop that causes multiple Execute operations within a sync
+// session can be found in the Syncer logic. When looping, the
+// DownloadUpdatesCommand consumes the information stored by the
+// StoreTimestampsCommand.
 //
-// In practice, DownloadUpdatesCommand should exhibit one of two behaviors.
-// (a) If one or more datatypes has just been enabled, then they will have the
-//     oldest last_download_timestamp value (0). DownloadUpdatesCommand will
-//     choose to download updates for those types, and likely this will happen
-//     for several invocations of DownloadUpdatesCommand. Once the newly
-//     enabled types have caught up to the timestamp value of any previously
-//     enabled timestamps, DownloadUpdatesCommand will do a fetch for those
-//     datatypes. If nothing has changed on the server in the meantime,
-//     then the timestamp value for the new and old datatypes will now match.
-//     When that happens (and it eventually should), we have entered case (b).
-// (b) The common case is for all enabled datatypes to have the same
-//     last_download_timestamp value. This means that one server request
-//     tells us whether there are updates available to any datatype.  When
-//     the last_download_timestamp values for two datatypes is identical,
-//     those datatypes will never be separately requested, and the values
-//     will stay in lockstep indefinitely.
+// In practice, DownloadUpdatesCommand should loop until all updates are
+// downloaded for all enabled datatypes (i.e., until the server indicates
+// changes_remaining == 0 in the GetUpdates response), or until an error
+// is encountered.
 class DownloadUpdatesCommand : public SyncerCommand {
  public:
   DownloadUpdatesCommand();

@@ -648,32 +648,43 @@ class SyncManager {
       // Can't connect to server, and we haven't completed the initial
       // sync yet.  So there's nothing we can do but wait for the server.
       OFFLINE_UNUSABLE,
-    };
-    Summary summary;
 
-    // Various server related information.
+      SUMMARY_STATUS_COUNT,
+    };
+
+    Summary summary;
     bool authenticated;      // Successfully authenticated via GAIA.
     bool server_up;          // True if we have received at least one good
                              // reply from the server.
     bool server_reachable;   // True if we received any reply from the server.
     bool server_broken;      // True of the syncer is stopped because of server
                              // issues.
-
     bool notifications_enabled;  // True only if subscribed for notifications.
+
+    // Notifications counters updated by the actions in synapi.
     int notifications_received;
     int notifications_sent;
 
-    // Various Syncer data.
+    // The max number of consecutive errors from any component.
+    int max_consecutive_errors;
+
     int unsynced_count;
+
     int conflicting_count;
     bool syncing;
+    // True after a client has done a first sync.
     bool initial_sync_ended;
+    // True if any syncer is stuck.
     bool syncer_stuck;
+
+    // Total updates available.  If zero, nothing left to download.
     int64 updates_available;
-    int64 updates_received;
+    // Total updates received by the syncer since browser start.
+    int updates_received;
+
+    // Of updates_received, how many were tombstones.
+    int tombstone_updates_received;
     bool disk_full;
-    bool invalid_store;
-    int max_consecutive_errors;  // The max number of errors from any component.
   };
 
   // An interface the embedding application implements to receive notifications

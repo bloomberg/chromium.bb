@@ -52,10 +52,12 @@ MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
       next_position_in_parent_(2),
       use_legacy_bookmarks_protocol_(false),
       num_get_updates_requests_(0) {
-    server_reachable_ = true;
+  server_reachable_ = true;
+  SetNewTimestamp(0);
 };
 
 MockConnectionManager::~MockConnectionManager() {
+  EXPECT_TRUE(update_queue_.empty()) << "Unfetched updates.";
 }
 
 void MockConnectionManager::SetCommitTimeRename(string prepend) {
@@ -168,8 +170,11 @@ bool MockConnectionManager::IsUserAuthenticated() {
   return true;
 }
 
-void MockConnectionManager::ResetUpdates() {
-  updates_.Clear();
+sync_pb::GetUpdatesResponse* MockConnectionManager::GetUpdateResponse() {
+  if (update_queue_.empty()) {
+    NextUpdateBatch();
+  }
+  return &update_queue_.back();
 }
 
 void MockConnectionManager::AddDefaultBookmarkData(sync_pb::SyncEntity* entity,
@@ -222,7 +227,7 @@ SyncEntity* MockConnectionManager::AddUpdateBookmark(int id, int parent_id,
 SyncEntity* MockConnectionManager::AddUpdateFull(string id, string parent_id,
                                                  string name, int64 version,
                                                  int64 sync_ts, bool is_dir) {
-  SyncEntity* ent = updates_.add_entries();
+  SyncEntity* ent = GetUpdateResponse()->add_entries();
   ent->set_id_string(id);
   ent->set_parent_id_string(parent_id);
   ent->set_non_unique_name(name);
@@ -262,7 +267,7 @@ SyncEntity* MockConnectionManager::AddUpdateFromLastCommit() {
     AddUpdateTombstone(syncable::Id::CreateFromServerId(
         last_sent_commit().entries(0).id_string()));
   } else {
-    SyncEntity* ent = updates_.add_entries();
+    SyncEntity* ent = GetUpdateResponse()->add_entries();
     ent->CopyFrom(last_sent_commit().entries(0));
     ent->clear_insert_after_item_id();
     ent->clear_old_parent_id();
@@ -281,7 +286,7 @@ SyncEntity* MockConnectionManager::AddUpdateFromLastCommit() {
 
 void MockConnectionManager::AddUpdateTombstone(const syncable::Id& id) {
   // Tombstones have only the ID set and dummy values for the required fields.
-  SyncEntity* ent = updates_.add_entries();
+  SyncEntity* ent = GetUpdateResponse()->add_entries();
   ent->set_id_string(id.GetServerId());
   ent->set_version(0);
   ent->set_name("");
@@ -291,7 +296,7 @@ void MockConnectionManager::AddUpdateTombstone(const syncable::Id& id) {
 void MockConnectionManager::SetLastUpdateDeleted() {
   // Tombstones have only the ID set.  Wipe anything else.
   string id_string = GetMutableLastUpdate()->id_string();
-  updates_.mutable_entries()->RemoveLast();
+  GetUpdateResponse()->mutable_entries()->RemoveLast();
   AddUpdateTombstone(syncable::Id::CreateFromServerId(id_string));
 }
 
@@ -314,12 +319,23 @@ void MockConnectionManager::SetLastUpdatePosition(int64 server_position) {
   GetMutableLastUpdate()->set_position_in_parent(server_position);
 }
 
-void MockConnectionManager::SetNewTimestamp(int64 ts) {
-  updates_.set_new_timestamp(ts);
+void MockConnectionManager::SetNewTimestamp(int ts) {
+  next_token_ = base::StringPrintf("mock connection ts = %d", ts);
+  ApplyToken();
+}
+
+void MockConnectionManager::ApplyToken() {
+  if (!update_queue_.empty()) {
+    GetUpdateResponse()->clear_new_progress_marker();
+    sync_pb::DataTypeProgressMarker* new_marker =
+        GetUpdateResponse()->add_new_progress_marker();
+    new_marker->set_data_type_id(-1);  // Invalid -- clients shouldn't see.
+    new_marker->set_token(next_token_);
+  }
 }
 
 void MockConnectionManager::SetChangesRemaining(int64 timestamp) {
-  updates_.set_changes_remaining(timestamp);
+  GetUpdateResponse()->set_changes_remaining(timestamp);
 }
 
 void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
@@ -328,7 +344,9 @@ void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
   ASSERT_EQ(csm->message_contents(), ClientToServerMessage::GET_UPDATES);
   const GetUpdatesMessage& gu = csm->get_updates();
   num_get_updates_requests_++;
-  EXPECT_TRUE(gu.has_from_timestamp());
+  EXPECT_FALSE(gu.has_from_timestamp());
+  EXPECT_FALSE(gu.has_requested_types());
+
   if (fail_non_periodic_get_updates_) {
     EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::PERIODIC,
               gu.caller_info().source());
@@ -339,7 +357,7 @@ void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     ModelType model_type = syncable::ModelTypeFromInt(i);
     EXPECT_EQ(expected_filter_[i],
-        IsModelTypePresentInSpecifics(gu.requested_types(), model_type))
+      IsModelTypePresentInSpecifics(gu.from_progress_marker(), model_type))
         << "Syncer requested_types differs from test expectation.";
   }
 
@@ -347,19 +365,36 @@ void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
   // the types requested by the client.  If this fails, it probably indicates
   // a test bug.
   EXPECT_TRUE(gu.fetch_folders());
-  EXPECT_TRUE(gu.has_requested_types());
-  for (int i = 0; i < updates_.entries_size(); ++i) {
-    if (!updates_.entries(i).deleted()) {
-      ModelType entry_type = syncable::GetModelType(updates_.entries(i));
+  EXPECT_FALSE(gu.has_requested_types());
+  if (update_queue_.empty()) {
+    GetUpdateResponse();
+  }
+  sync_pb::GetUpdatesResponse* updates = &update_queue_.front();
+  for (int i = 0; i < updates->entries_size(); ++i) {
+    if (!updates->entries(i).deleted()) {
+      ModelType entry_type = syncable::GetModelType(updates->entries(i));
       EXPECT_TRUE(
-          IsModelTypePresentInSpecifics(gu.requested_types(), entry_type))
+        IsModelTypePresentInSpecifics(gu.from_progress_marker(), entry_type))
           << "Syncer did not request updates being provided by the test.";
     }
   }
 
-  // TODO(sync): filter results dependant on timestamp? or check limits?
-  response->mutable_get_updates()->CopyFrom(updates_);
-  ResetUpdates();
+  response->mutable_get_updates()->CopyFrom(*updates);
+
+  // Set appropriate progress markers, overriding the value squirreled
+  // away by ApplyToken().
+  std::string token = response->get_updates().new_progress_marker(0).token();
+  response->mutable_get_updates()->clear_new_progress_marker();
+  for (int i = 0; i < gu.from_progress_marker_size(); ++i) {
+    if (gu.from_progress_marker(i).token() != token) {
+      sync_pb::DataTypeProgressMarker* new_marker =
+          response->mutable_get_updates()->add_new_progress_marker();
+      new_marker->set_data_type_id(gu.from_progress_marker(i).data_type_id());
+      new_marker->set_token(token);
+    }
+  }
+
+  update_queue_.pop_front();
 }
 
 void MockConnectionManager::SetClearUserDataResponseStatus(
@@ -485,8 +520,15 @@ SyncEntity* MockConnectionManager::AddUpdateBookmark(
 }
 
 SyncEntity* MockConnectionManager::GetMutableLastUpdate() {
-  EXPECT_TRUE(updates_.entries_size() > 0);
-  return updates_.mutable_entries()->Mutable(updates_.entries_size() - 1);
+  sync_pb::GetUpdatesResponse* updates = GetUpdateResponse();
+  EXPECT_TRUE(updates->entries_size() > 0);
+  return updates->mutable_entries()->Mutable(updates->entries_size() - 1);
+}
+
+void MockConnectionManager::NextUpdateBatch() {
+  update_queue_.push_back(sync_pb::GetUpdatesResponse::default_instance());
+  SetChangesRemaining(0);
+  ApplyToken();
 }
 
 const CommitMessage& MockConnectionManager::last_sent_commit() const {
@@ -524,14 +566,16 @@ void MockConnectionManager::StopFailingWithAuthInvalid(
 }
 
 bool MockConnectionManager::IsModelTypePresentInSpecifics(
-    const sync_pb::EntitySpecifics& filter, syncable::ModelType value) {
-  // This implementation is a little contorted; it's done this way
-  // to avoid having to switch on the ModelType.  We're basically doing
-  // the protobuf equivalent of ((value & filter) == filter).
-  sync_pb::EntitySpecifics value_filter;
-  syncable::AddDefaultExtensionValue(value, &value_filter);
-  value_filter.MergeFrom(filter);
-  return value_filter.SerializeAsString() == filter.SerializeAsString();
+    const google::protobuf::RepeatedPtrField<
+        sync_pb::DataTypeProgressMarker>& filter,
+    syncable::ModelType value) {
+  int data_type_id = syncable::GetExtensionFieldNumberFromModelType(value);
+  for (int i = 0; i < filter.size(); ++i) {
+    if (filter.Get(i).data_type_id() == data_type_id) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void MockConnectionManager::SetServerReachable() {

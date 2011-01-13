@@ -176,13 +176,21 @@ void Directory::init_kernel(const std::string& name) {
 
 Directory::PersistedKernelInfo::PersistedKernelInfo()
     : next_id(0) {
-  for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
-    last_download_timestamp[i] = 0;
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    reset_download_progress(ModelTypeFromInt(i));
   }
   autofill_migration_state = NOT_DETERMINED;
 }
 
 Directory::PersistedKernelInfo::~PersistedKernelInfo() {}
+
+void Directory::PersistedKernelInfo::reset_download_progress(
+    ModelType model_type) {
+  download_progress[model_type].set_data_type_id(
+      GetExtensionFieldNumberFromModelType(model_type));
+  // An empty-string token indicates no prior knowledge.
+  download_progress[model_type].set_token(std::string());
+}
 
 Directory::SaveChangesSnapshot::SaveChangesSnapshot()
     : kernel_info_status(KERNEL_SHARE_INFO_INVALID) {
@@ -676,7 +684,7 @@ void Directory::PurgeEntriesWithTypeIn(const std::set<ModelType>& types) {
       for (std::set<ModelType>::const_iterator it = types.begin();
            it != types.end(); ++it) {
         set_initial_sync_ended_for_type_unsafe(*it, false);
-        set_last_download_timestamp_unsafe(*it, 0);
+        kernel_->persisted_info.reset_download_progress(*it);
       }
     }
   }
@@ -705,15 +713,27 @@ void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
                                         snapshot.metahandles_to_purge.end());
 }
 
-int64 Directory::last_download_timestamp(ModelType model_type) const {
+void Directory::GetDownloadProgress(
+    ModelType model_type,
+    sync_pb::DataTypeProgressMarker* value_out) const {
   ScopedKernelLock lock(this);
-  return kernel_->persisted_info.last_download_timestamp[model_type];
+  return value_out->CopyFrom(
+      kernel_->persisted_info.download_progress[model_type]);
 }
 
-void Directory::set_last_download_timestamp(ModelType model_type,
-    int64 timestamp) {
+void Directory::GetDownloadProgressAsString(
+    ModelType model_type,
+    std::string* value_out) const {
   ScopedKernelLock lock(this);
-  set_last_download_timestamp_unsafe(model_type, timestamp);
+  kernel_->persisted_info.download_progress[model_type].SerializeToString(
+      value_out);
+}
+
+void Directory::SetDownloadProgress(
+    ModelType model_type,
+    const sync_pb::DataTypeProgressMarker& new_progress) {
+  ScopedKernelLock lock(this);
+  kernel_->persisted_info.download_progress[model_type].CopyFrom(new_progress);
 }
 
 bool Directory::initial_sync_ended_for_type(ModelType type) const {
@@ -808,14 +828,6 @@ void Directory::set_initial_sync_ended_for_type_unsafe(ModelType type,
   if (kernel_->persisted_info.initial_sync_ended[type] == x)
     return;
   kernel_->persisted_info.initial_sync_ended.set(type, x);
-  kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
-}
-
-void Directory::set_last_download_timestamp_unsafe(ModelType model_type,
-                                                   int64 timestamp) {
-  if (kernel_->persisted_info.last_download_timestamp[model_type] == timestamp)
-    return;
-  kernel_->persisted_info.last_download_timestamp[model_type] = timestamp;
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
@@ -1049,7 +1061,7 @@ browser_sync::ChannelHookup<DirectoryChangeEvent>* Directory::AddChangeObserver(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ScopedKernelLocks
+// ScopedKernelLock
 
 ScopedKernelLock::ScopedKernelLock(const Directory* dir)
   :  scoped_lock_(dir->kernel_->mutex), dir_(const_cast<Directory*>(dir)) {

@@ -780,24 +780,18 @@ bool ProfileSyncService::SetupInProgress() const {
 }
 
 std::string ProfileSyncService::BuildSyncStatusSummaryText(
-  const sync_api::SyncManager::Status::Summary& summary) {
-  switch (summary) {
-    case sync_api::SyncManager::Status::OFFLINE:
-      return "OFFLINE";
-    case sync_api::SyncManager::Status::OFFLINE_UNSYNCED:
-      return "OFFLINE_UNSYNCED";
-    case sync_api::SyncManager::Status::SYNCING:
-      return "SYNCING";
-    case sync_api::SyncManager::Status::READY:
-      return "READY";
-    case sync_api::SyncManager::Status::CONFLICT:
-      return "CONFLICT";
-    case sync_api::SyncManager::Status::OFFLINE_UNUSABLE:
-      return "OFFLINE_UNUSABLE";
-    case sync_api::SyncManager::Status::INVALID:  // fall through
-    default:
-      return "UNKNOWN";
+    const sync_api::SyncManager::Status::Summary& summary) {
+  const char* strings[] = {"INVALID", "OFFLINE", "OFFLINE_UNSYNCED", "SYNCING",
+      "READY", "CONFLICT", "OFFLINE_UNUSABLE"};
+  COMPILE_ASSERT(arraysize(strings) ==
+                 sync_api::SyncManager::Status::SUMMARY_STATUS_COUNT,
+                 enum_indexed_array);
+  if (summary < 0 ||
+      summary >= sync_api::SyncManager::Status::SUMMARY_STATUS_COUNT) {
+    LOG(DFATAL) << "Illegal Summary Value: " << summary;
+    return "UNKNOWN";
   }
+  return strings[summary];
 }
 
 bool ProfileSyncService::unrecoverable_error_detected() const {

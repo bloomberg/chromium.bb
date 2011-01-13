@@ -18,10 +18,6 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/notification_source.h"
 
-// The default value for min_timestamp_needed_ when we're not in the
-// WAITING_FOR_UPDATES state.
-static const int kMinTimestampNeededNone = -1;
-
 // The amount of time for which we wait for a live sync operation to complete.
 static const int kLiveSyncOperationTimeoutMs = 45000;
 
@@ -259,7 +255,6 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
         }
         break;
       }
-      GetUpdatedTimestamp();
       SignalStateCompleteWithNextState(FULLY_SYNCED);
       break;
     }
@@ -348,7 +343,6 @@ bool ProfileSyncServiceHarness::AwaitSyncCycleCompletion(
     }
   } else {
     // Client is already synced; don't wait.
-    GetUpdatedTimestamp();
     return true;
   }
 }
@@ -474,11 +468,15 @@ bool ProfileSyncServiceHarness::MatchesOtherClient(
                         other_types.end(),
                         inserter(intersection_types,
                                  intersection_types.begin()));
-  if (intersection_types.empty()) {
-    return true;
+  for (syncable::ModelTypeSet::iterator i = intersection_types.begin();
+       i != intersection_types.end();
+       ++i) {
+    if (!partner->IsSynced() ||
+        partner->GetUpdatedTimestamp(*i) != GetUpdatedTimestamp(*i)) {
+      return false;
+    }
   }
-  return partner->IsSynced() &&
-      partner->GetUpdatedTimestamp() == GetUpdatedTimestamp();
+  return true;
 }
 
 const SyncSessionSnapshot*
@@ -568,10 +566,11 @@ void ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
              "Client " << id_;
 }
 
-int64 ProfileSyncServiceHarness::GetUpdatedTimestamp() {
+std::string ProfileSyncServiceHarness::GetUpdatedTimestamp(
+    syncable::ModelType model_type) {
   const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
   DCHECK(snap != NULL) << "GetUpdatedTimestamp(): Sync snapshot is NULL.";
-  return snap->max_local_timestamp;
+  return snap->download_progress_markers[model_type];
 }
 
 void ProfileSyncServiceHarness::LogClientInfo(std::string message) {
@@ -579,7 +578,8 @@ void ProfileSyncServiceHarness::LogClientInfo(std::string message) {
     const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
     if (snap) {
       VLOG(1) << "Client " << id_ << ": " << message
-              << ": max_local_timestamp: " << snap->max_local_timestamp
+              << ": num_updates_downloaded : "
+              << snap->syncer_status.num_updates_downloaded_total
               << ", has_more_to_sync: " << snap->has_more_to_sync
               << ", unsynced_count: " << snap->unsynced_count
               << ", num_conflicting_updates: " << snap->num_conflicting_updates

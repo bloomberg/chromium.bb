@@ -471,8 +471,8 @@ SyncerThread::WaitInterval SyncerThread::CalculatePollingWaitTime(
   // Determine if the syncer has unfinished work to do.
   SyncSessionSnapshot* snapshot = session_context_->previous_session_snapshot();
   const bool syncer_has_work_to_do = snapshot &&
-      (snapshot->num_server_changes_remaining > snapshot->max_local_timestamp ||
-          snapshot->unsynced_count > 0);
+      (snapshot->num_server_changes_remaining > 0 ||
+       snapshot->unsynced_count > 0);
   VLOG(1) << "syncer_has_work_to_do is " << syncer_has_work_to_do;
 
   // First calculate the expected wait time, figuring in any backoff because of

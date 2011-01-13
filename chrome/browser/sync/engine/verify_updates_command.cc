@@ -52,6 +52,9 @@ void VerifyUpdatesCommand::ModelChangingExecuteImpl(
     VerifyUpdateResult result = VerifyUpdate(&trans, update,
                                              session->routing_info());
     status->mutable_update_progress()->AddVerifyResult(result.value, update);
+    status->increment_num_updates_downloaded_by(1);
+    if (update.deleted())
+      status->increment_num_tombstone_updates_downloaded_by(1);
   }
 }
 

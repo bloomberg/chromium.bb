@@ -10,13 +10,13 @@
 // set for the restricted ModelSafeGroup behind the scenes.  For example, if
 // GROUP_UI is set, then accessors such as conflict_progress() and commit_ids()
 // are implicitly restricted to returning only data pertaining to GROUP_UI.
-// You can see which parts of status fall into this "restricted" category, the
-// global "shared" category for all model types, or the single per-model type
-// category by looking at the struct declarations in session_state.h.
-// If these accessors are invoked without a restriction in place, this is a
-// violation and will cause debug assertions to surface improper use of the API
-// in development.  Likewise for invocation of "shared" accessors when a
-// restriction is in place; for safety's sake, an assertion will fire.
+// You can see which parts of status fall into this "restricted" category, or
+// the global "shared" category for all model types, by looking at the struct
+// declarations in session_state.h. If these accessors are invoked without a
+// restriction in place, this is a violation and will cause debug assertions
+// to surface improper use of the API in development.  Likewise for
+// invocation of "shared" accessors when a restriction is in place; for
+// safety's sake, an assertion will fire.
 //
 // NOTE: There is no concurrent access protection provided by this class. It
 // assumes one single thread is accessing this class for each unique
@@ -87,12 +87,11 @@ class StatusController {
   ClientToServerResponse* mutable_commit_response() {
     return &shared_.commit_response;
   }
-  const syncable::MultiTypeTimeStamp& updates_request_parameters() const {
-    return shared_.updates_request_parameters;
+  const syncable::ModelTypeBitSet& updates_request_types() const {
+    return shared_.updates_request_types;
   }
-  void set_updates_request_parameters(
-      const syncable::MultiTypeTimeStamp& value) {
-    shared_.updates_request_parameters = value;
+  void set_updates_request_types(const syncable::ModelTypeBitSet& value) {
+    shared_.updates_request_types = value;
   }
   const ClientToServerResponse& updates_response() const {
     return shared_.updates_response;
@@ -113,8 +112,6 @@ class StatusController {
   int64 num_server_changes_remaining() const {
     return shared_.num_server_changes_remaining.value();
   }
-  // Aggregate max over all data type timestamps, used for UI reporting.
-  int64 ComputeMaxLocalTimestamp() const;
 
   // Commit path data.
   const std::vector<syncable::Id>& commit_ids() const {
@@ -206,8 +203,6 @@ class StatusController {
   void set_num_consecutive_errors(int value);
   void increment_num_consecutive_errors();
   void increment_num_consecutive_errors_by(int value);
-  void set_current_download_timestamp(syncable::ModelType model,
-                                      int64 current_timestamp);
   void set_num_server_changes_remaining(int64 changes_remaining);
   void set_invalid_store(bool invalid_store);
   void set_syncer_stuck(bool syncer_stuck);
@@ -215,6 +210,8 @@ class StatusController {
   void set_num_successful_bookmark_commits(int value);
   void increment_num_successful_commits();
   void increment_num_successful_bookmark_commits();
+  void increment_num_updates_downloaded_by(int value);
+  void increment_num_tombstone_updates_downloaded_by(int value);
   void set_unsynced_handles(const std::vector<int64>& unsynced_handles);
 
   void set_commit_set(const OrderedCommitSet& commit_set);
@@ -233,18 +230,12 @@ class StatusController {
   // Helper to lazily create objects for per-ModelSafeGroup state.
   PerModelSafeGroupState* GetOrCreateModelSafeGroupState(bool restrict,
                                                          ModelSafeGroup group);
-  // Helper to lazily create objects for per-model type state.
-  PerModelTypeState* GetOrCreateModelTypeState(bool restrict,
-                                               syncable::ModelType model);
 
   AllModelTypeState shared_;
   std::map<ModelSafeGroup, PerModelSafeGroupState*> per_model_group_;
-  std::map<syncable::ModelType, PerModelTypeState*> per_model_type_;
 
   STLValueDeleter<std::map<ModelSafeGroup, PerModelSafeGroupState*> >
       per_model_group_deleter_;
-  STLValueDeleter<std::map<syncable::ModelType, PerModelTypeState*> >
-      per_model_type_deleter_;
 
   // Set to true if any DirtyOnWrite pieces of state we maintain are changed.
   // Reset to false by TestAndClearIsDirty.

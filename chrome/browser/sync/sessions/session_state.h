@@ -34,10 +34,7 @@ class UpdateProgress;
 
 // Data pertaining to the status of an active Syncer object.
 struct SyncerStatus {
-  SyncerStatus()
-      : invalid_store(false), syncer_stuck(false),
-        syncing(false), num_successful_commits(0),
-        num_successful_bookmark_commits(0) {}
+  SyncerStatus();
 
   // True when we get such an INVALID_STORE error from the server.
   bool invalid_store;
@@ -47,13 +44,15 @@ struct SyncerStatus {
   int num_successful_commits;
   // This is needed for monitoring extensions activity.
   int num_successful_bookmark_commits;
+
+  // Download event counters.
+  int num_updates_downloaded_total;
+  int num_tombstone_updates_downloaded_total;
 };
 
 // Counters for various errors that can occur repeatedly during a sync session.
 struct ErrorCounters {
-  ErrorCounters() : num_conflicting_commits(0),
-                    consecutive_transient_error_commits(0),
-                    consecutive_errors(0) {}
+  ErrorCounters();
   int num_conflicting_commits;
 
   // Number of commits hitting transient errors since the last successful
@@ -69,25 +68,26 @@ struct ErrorCounters {
 // An immutable snapshot of state from a SyncSession.  Convenient to use as
 // part of notifications as it is inherently thread-safe.
 struct SyncSessionSnapshot {
-  SyncSessionSnapshot(const SyncerStatus& syncer_status,
+  SyncSessionSnapshot(
+      const SyncerStatus& syncer_status,
       const ErrorCounters& errors,
       int64 num_server_changes_remaining,
-      int64 max_local_timestamp,
       bool is_share_usable,
       const syncable::ModelTypeBitSet& initial_sync_ended,
+      std::string download_progress_markers[syncable::MODEL_TYPE_COUNT],
       bool more_to_sync,
       bool is_silenced,
       int64 unsynced_count,
       int num_conflicting_updates,
-                      bool did_commit_items);
+      bool did_commit_items);
   ~SyncSessionSnapshot();
 
   const SyncerStatus syncer_status;
   const ErrorCounters errors;
   const int64 num_server_changes_remaining;
-  const int64 max_local_timestamp;
   const bool is_share_usable;
   const syncable::ModelTypeBitSet initial_sync_ended;
+  const std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
   const bool has_more_to_sync;
   const bool is_silenced;
   const int64 unsynced_count;
@@ -233,7 +233,7 @@ struct AllModelTypeState {
   ClientToServerResponse commit_response;
   // We GetUpdates for some combination of types at once.
   // requested_update_types stores the set of types which were requested.
-  syncable::MultiTypeTimeStamp updates_request_parameters;
+  syncable::ModelTypeBitSet updates_request_types;
   ClientToServerResponse updates_response;
   // Used to build the shared commit message.
   DirtyOnWrite<std::vector<int64> > unsynced_handles;
@@ -251,14 +251,6 @@ struct PerModelSafeGroupState {
 
   UpdateProgress update_progress;
   ConflictProgress conflict_progress;
-};
-
-// Grouping of all state that applies to a single ModelType.
-struct PerModelTypeState {
-  explicit PerModelTypeState(bool* dirty_flag);
-  ~PerModelTypeState();
-
-  DirtyOnWrite<int64> current_download_timestamp;
 };
 
 }  // namespace sessions

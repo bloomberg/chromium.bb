@@ -175,8 +175,9 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   // Logs message with relevant info about client's sync state (if available).
   void LogClientInfo(std::string message);
 
-  // Gets the current progress indicator of the current sync session.
-  int64 GetUpdatedTimestamp();
+  // Gets the current progress indicator of the current sync session
+  // for a particular datatype.
+  std::string GetUpdatedTimestamp(syncable::ModelType model_type);
 
   WaitState wait_state_;
 

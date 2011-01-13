@@ -47,12 +47,6 @@ TEST_F(StatusControllerTest, GetsDirty) {
   status.increment_num_consecutive_errors_by(0);
   EXPECT_FALSE(status.TestAndClearIsDirty());
 
-  {
-    ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
-    status.set_current_download_timestamp(syncable::BOOKMARKS, 100);
-    EXPECT_TRUE(status.TestAndClearIsDirty());
-  }
-
   status.set_num_server_changes_remaining(30);
   EXPECT_TRUE(status.TestAndClearIsDirty());
 
@@ -129,12 +123,6 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
   EXPECT_EQ(9, status.error_counters().consecutive_errors);
   status.increment_num_consecutive_errors_by(2);
   EXPECT_EQ(11, status.error_counters().consecutive_errors);
-
-  {
-    ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
-    status.set_current_download_timestamp(syncable::BOOKMARKS, 12);
-    EXPECT_EQ(12, status.ComputeMaxLocalTimestamp());
-  }
 
   status.set_num_server_changes_remaining(13);
   EXPECT_EQ(13, status.num_server_changes_remaining());
@@ -226,7 +214,6 @@ TEST_F(StatusControllerTest, Unrestricted) {
   status.error_counters();
   status.syncer_status();
   status.num_server_changes_remaining();
-  status.ComputeMaxLocalTimestamp();
   status.commit_ids();
   status.HasBookmarkCommitActivity();
   status.download_updates_succeeded();

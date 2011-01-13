@@ -41,25 +41,18 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
     return;
   }
 
-  // Pick some subset of the enabled types where all types in the set
-  // are at the same last_download_timestamp.  Do an update for those types.
+  // Request updates for all enabled types.
   syncable::ModelTypeBitSet enabled_types;
   for (ModelSafeRoutingInfo::const_iterator i = session->routing_info().begin();
        i != session->routing_info().end(); ++i) {
+    syncable::ModelType model_type = syncable::ModelTypeFromInt(i->first);
     enabled_types[i->first] = true;
+    dir->GetDownloadProgress(model_type,
+        get_updates->add_from_progress_marker());
   }
-  syncable::MultiTypeTimeStamp target =
-      dir->GetTypesWithOldestLastDownloadTimestamp(enabled_types);
-  VLOG(1) << "Getting updates from ts " << target.timestamp
-          << " for types " << target.data_types.to_string()
-          << " (of possible " << enabled_types.to_string() << ")";
-  DCHECK(target.data_types.any());
-  target.data_types.set(syncable::TOP_LEVEL_FOLDER);  // Always fetched.
 
-  get_updates->set_from_timestamp(target.timestamp);
-
-  // Set the requested_types protobuf field so that we fetch all enabled types.
-  SetRequestedTypes(target.data_types, get_updates->mutable_requested_types());
+  VLOG(1) << "Getting updates for types " << enabled_types.to_string();
+  DCHECK(enabled_types.any());
 
   // We want folders for our associated types, always.  If we were to set
   // this to false, the server would send just the non-container items
@@ -83,7 +76,7 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
       update_response);
 
   StatusController* status = session->status_controller();
-  status->set_updates_request_parameters(target);
+  status->set_updates_request_types(enabled_types);
   if (!ok) {
     status->increment_num_consecutive_errors();
     status->mutable_updates_response()->Clear();
@@ -93,7 +86,7 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
 
   status->mutable_updates_response()->CopyFrom(update_response);
 
-  VLOG(1) << "GetUpdates from ts " << get_updates->from_timestamp()
+  VLOG(1) << "GetUpdates "
           << " returned " << update_response.get_updates().entries_size()
           << " updates and indicated "
           << update_response.get_updates().changes_remaining()

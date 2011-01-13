@@ -3567,7 +3567,7 @@ TEST_F(SyncerTest, MergingExistingItems) {
 TEST_F(SyncerTest, LongChangelistWithApplicationConflict) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
-  const int DEPTH = 400;
+  const int depth = 400;
   syncable::Id folder_id = ids_.FromNumber(1);
 
   // First we an item in a folder in the root. However the folder won't come
@@ -3575,17 +3575,23 @@ TEST_F(SyncerTest, LongChangelistWithApplicationConflict) {
   syncable::Id stuck_entry_id = TestIdFactory::FromNumber(99999);
   mock_server_->AddUpdateDirectory(stuck_entry_id,
       folder_id, "stuck", 1, 1);
-  mock_server_->SetChangesRemaining(DEPTH - 1);
+  mock_server_->SetChangesRemaining(depth - 1);
   syncer_->SyncShare(session_.get());
 
-  // Very long changelist. We should never be stuck.
-  for (int i = 0; i < DEPTH; i++) {
-    mock_server_->SetNewTimestamp(i);
-    mock_server_->SetChangesRemaining(DEPTH - i);
-    syncer_->SyncShare(session_.get());
-    EXPECT_FALSE(session_->status_controller()->syncer_status().syncer_stuck);
+  // Buffer up a very long series of downloads.
+  // We should never be stuck (conflict resolution shouldn't
+  // kick in so long as we're making forward progress).
+  for (int i = 0; i < depth; i++) {
+    mock_server_->NextUpdateBatch();
+    mock_server_->SetNewTimestamp(i + 1);
+    mock_server_->SetChangesRemaining(depth - i);
+  }
 
-    // Ensure our folder hasn't somehow applied.
+  syncer_->SyncShare(session_.get());
+  EXPECT_FALSE(session_->status_controller()->syncer_status().syncer_stuck);
+
+  // Ensure our folder hasn't somehow applied.
+  {
     ReadTransaction trans(dir, __FILE__, __LINE__);
     Entry child(&trans, GET_BY_ID, stuck_entry_id);
     EXPECT_TRUE(child.good());

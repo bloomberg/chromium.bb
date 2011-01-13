@@ -13,13 +13,29 @@ using std::vector;
 namespace browser_sync {
 namespace sessions {
 
+SyncerStatus::SyncerStatus()
+    : invalid_store(false),
+      syncer_stuck(false),
+      syncing(false),
+      num_successful_commits(0),
+      num_successful_bookmark_commits(0),
+      num_updates_downloaded_total(0),
+      num_tombstone_updates_downloaded_total(0) {
+}
+
+ErrorCounters::ErrorCounters()
+    : num_conflicting_commits(0),
+      consecutive_transient_error_commits(0),
+      consecutive_errors(0) {
+}
+
 SyncSessionSnapshot::SyncSessionSnapshot(
     const SyncerStatus& syncer_status,
     const ErrorCounters& errors,
     int64 num_server_changes_remaining,
-    int64 max_local_timestamp,
     bool is_share_usable,
     const syncable::ModelTypeBitSet& initial_sync_ended,
+    std::string download_progress_markers[syncable::MODEL_TYPE_COUNT],
     bool more_to_sync,
     bool is_silenced,
     int64 unsynced_count,
@@ -28,14 +44,18 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     : syncer_status(syncer_status),
       errors(errors),
       num_server_changes_remaining(num_server_changes_remaining),
-      max_local_timestamp(max_local_timestamp),
       is_share_usable(is_share_usable),
       initial_sync_ended(initial_sync_ended),
+      download_progress_markers(),
       has_more_to_sync(more_to_sync),
       is_silenced(is_silenced),
       unsynced_count(unsynced_count),
       num_conflicting_updates(num_conflicting_updates),
       did_commit_items(did_commit_items) {
+  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+    const_cast<std::string&>(this->download_progress_markers[i]).assign(
+        download_progress_markers[i]);
+  }
 }
 
 SyncSessionSnapshot::~SyncSessionSnapshot() {}
@@ -236,13 +256,6 @@ PerModelSafeGroupState::PerModelSafeGroupState(bool* dirty_flag)
 }
 
 PerModelSafeGroupState::~PerModelSafeGroupState() {
-}
-
-PerModelTypeState::PerModelTypeState(bool* dirty_flag)
-    : current_download_timestamp(dirty_flag, 0) {
-}
-
-PerModelTypeState::~PerModelTypeState() {
 }
 
 }  // namespace sessions

@@ -34,7 +34,7 @@ void SyncerEndCommand::ExecuteImpl(sessions::SyncSession* session) {
 
     for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
       syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
-      if (status->updates_request_parameters().data_types[i]) {
+      if (status->updates_request_types()[i]) {
         // This gets persisted to the directory's backing store.
         dir->set_initial_sync_ended_for_type(model_type, true);
       }

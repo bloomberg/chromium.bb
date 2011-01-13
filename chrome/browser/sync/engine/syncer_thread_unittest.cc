@@ -42,11 +42,23 @@ ACTION_P(SignalEvent, event) {
 }
 
 SyncSessionSnapshot SessionSnapshotForTest(
-    int64 num_server_changes_remaining, int64 max_local_timestamp,
+    int64 num_server_changes_remaining,
     int64 unsynced_count) {
+  std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
+  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+       i < syncable::MODEL_TYPE_COUNT;
+       ++i) {
+    syncable::ModelType type(syncable::ModelTypeFromInt(i));
+    sync_pb::DataTypeProgressMarker token;
+    token.set_data_type_id(
+        syncable::GetExtensionFieldNumberFromModelType(type));
+    token.set_token("foobar");
+    token.SerializeToString(&download_progress_markers[i]);
+  }
   return SyncSessionSnapshot(SyncerStatus(), ErrorCounters(),
-      num_server_changes_remaining, max_local_timestamp, false,
-      syncable::ModelTypeBitSet(), false, false, unsynced_count, 0, false);
+      num_server_changes_remaining, false,
+      syncable::ModelTypeBitSet(), download_progress_markers,
+      false, false, unsynced_count, 0, false);
 }
 
 class ListenerMock : public SyncEngineEventListener {
@@ -393,7 +405,7 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   // non-zero.
   {
     // More server changes remaining to download.
-    context->set_last_snapshot(SessionSnapshotForTest(1, 0, 0));
+    context->set_last_snapshot(SessionSnapshotForTest(1, 0));
     bool continue_sync_cycle_param = false;
 
     WaitInterval interval = syncer_thread->CalculatePollingWaitTime(
@@ -441,7 +453,7 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     ASSERT_TRUE(continue_sync_cycle_param);
 
     // Now simulate no more server changes remaining.
-    context->set_last_snapshot(SessionSnapshotForTest(1, 1, 0));
+    context->set_last_snapshot(SessionSnapshotForTest(0, 0));
     interval = syncer_thread->CalculatePollingWaitTime(
         0,
         &user_idle_milliseconds_param,
@@ -458,7 +470,7 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   {
 
     // Now try with unsynced local items.
-    context->set_last_snapshot(SessionSnapshotForTest(0, 0, 1));
+    context->set_last_snapshot(SessionSnapshotForTest(0, 1));
     bool continue_sync_cycle_param = false;
 
     WaitInterval interval = syncer_thread->CalculatePollingWaitTime(
@@ -484,7 +496,7 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_TRUE(continue_sync_cycle_param);
 
-    context->set_last_snapshot(SessionSnapshotForTest(0, 0, 0));
+    context->set_last_snapshot(SessionSnapshotForTest(0, 0));
     interval = syncer_thread->CalculatePollingWaitTime(
         4,
         &user_idle_milliseconds_param,
@@ -501,7 +513,7 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   // Regression for exponential backoff reset when the syncer is nudged.
   {
 
-    context->set_last_snapshot(SessionSnapshotForTest(0, 0, 1));
+    context->set_last_snapshot(SessionSnapshotForTest(0, 1));
     bool continue_sync_cycle_param = false;
 
     // Expect move from default polling interval to exponential backoff due to
@@ -623,7 +635,7 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     ASSERT_TRUE(continue_sync_cycle_param);
 
     // Setting unsynced_count = 0 returns us to the default polling interval.
-    context->set_last_snapshot(SessionSnapshotForTest(0, 0, 0));
+    context->set_last_snapshot(SessionSnapshotForTest(0, 0));
     interval = syncer_thread->CalculatePollingWaitTime(
         4,
         &user_idle_milliseconds_param,

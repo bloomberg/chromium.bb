@@ -1062,16 +1062,7 @@ class SyncManager::SyncInternal
     return share_.name;
   }
 
-  // Note about SyncManager::Status implementation: Status is a trimmed
-  // down AllStatus::Status, augmented with authentication failure information
-  // gathered from the internal AuthWatcher. The sync UI itself hooks up to
-  // various sources like the AuthWatcher individually, but with syncapi we try
-  // to keep everything status-related in one place. This means we have to
-  // privately manage state about authentication failures, and whenever the
-  // status or status summary is requested we aggregate this state with
-  // AllStatus::Status information.
-  Status ComputeAggregatedStatus();
-  Status::Summary ComputeAggregatedStatusSummary();
+  Status GetStatus();
 
   // See SyncManager::Shutdown for information.
   void Shutdown();
@@ -2063,47 +2054,8 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
   }
 }
 
-SyncManager::Status::Summary
-SyncManager::SyncInternal::ComputeAggregatedStatusSummary() {
-  switch (allstatus_.status().icon) {
-    case AllStatus::OFFLINE:
-      return Status::OFFLINE;
-    case AllStatus::OFFLINE_UNSYNCED:
-      return Status::OFFLINE_UNSYNCED;
-    case AllStatus::SYNCING:
-      return Status::SYNCING;
-    case AllStatus::READY:
-      return Status::READY;
-    case AllStatus::CONFLICT:
-      return Status::CONFLICT;
-    case AllStatus::OFFLINE_UNUSABLE:
-      return Status::OFFLINE_UNUSABLE;
-    default:
-      return Status::INVALID;
-  }
-}
-
-SyncManager::Status SyncManager::SyncInternal::ComputeAggregatedStatus() {
-  Status return_status =
-      { ComputeAggregatedStatusSummary(),
-        allstatus_.status().authenticated,
-        allstatus_.status().server_up,
-        allstatus_.status().server_reachable,
-        allstatus_.status().server_broken,
-        allstatus_.status().notifications_enabled,
-        allstatus_.status().notifications_received,
-        allstatus_.status().notifications_sent,
-        allstatus_.status().unsynced_count,
-        allstatus_.status().conflicting_count,
-        allstatus_.status().syncing,
-        allstatus_.status().initial_sync_ended,
-        allstatus_.status().syncer_stuck,
-        allstatus_.status().updates_available,
-        allstatus_.status().updates_received,
-        allstatus_.status().disk_full,
-        false,   // TODO(ncarter): invalid store?
-        allstatus_.status().max_consecutive_errors};
-  return return_status;
+SyncManager::Status SyncManager::SyncInternal::GetStatus() {
+  return allstatus_.status();
 }
 
 void SyncManager::SyncInternal::OnSyncEngineEvent(
@@ -2309,11 +2261,11 @@ void SyncManager::SyncInternal::WriteState(const std::string& state) {
 }
 
 SyncManager::Status::Summary SyncManager::GetStatusSummary() const {
-  return data_->ComputeAggregatedStatusSummary();
+  return data_->GetStatus().summary;
 }
 
 SyncManager::Status SyncManager::GetDetailedStatus() const {
-  return data_->ComputeAggregatedStatus();
+  return data_->GetStatus();
 }
 
 SyncManager::SyncInternal* SyncManager::GetImpl() const { return data_; }

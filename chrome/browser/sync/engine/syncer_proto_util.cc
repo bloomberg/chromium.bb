@@ -167,6 +167,22 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
   return false;
 }
 
+namespace {
+
+// Helper function for an assertion in PostClientToServerMessage.
+bool IsVeryFirstGetUpdates(const ClientToServerMessage& message) {
+  if (!message.has_get_updates())
+    return false;
+  DCHECK_LT(0, message.get_updates().from_progress_marker_size());
+  for (int i = 0; i < message.get_updates().from_progress_marker_size(); ++i) {
+    if (!message.get_updates().from_progress_marker(i).token().empty())
+      return false;
+  }
+  return true;
+}
+
+}  // namespace
+
 // static
 bool SyncerProtoUtil::PostClientToServerMessage(
     const ClientToServerMessage& msg,
@@ -174,9 +190,9 @@ bool SyncerProtoUtil::PostClientToServerMessage(
     SyncSession* session) {
 
   CHECK(response);
-  DCHECK(msg.has_store_birthday() || (msg.has_get_updates() &&
-                                      msg.get_updates().has_from_timestamp() &&
-                                      msg.get_updates().from_timestamp() == 0))
+  DCHECK(!msg.get_updates().has_from_timestamp());  // Deprecated.
+  DCHECK(!msg.get_updates().has_requested_types());  // Deprecated.
+  DCHECK(msg.has_store_birthday() || IsVeryFirstGetUpdates(msg))
       << "Must call AddRequestBirthday to set birthday.";
 
   ScopedDirLookup dir(session->context()->directory_manager(),

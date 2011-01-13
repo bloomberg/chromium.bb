@@ -12,7 +12,6 @@
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using syncable::MultiTypeTimeStamp;
 using syncable::WriteTransaction;
 
 namespace browser_sync {
@@ -30,7 +29,7 @@ class SyncSessionTest : public testing::Test,
   SyncSession* MakeSession() {
     return new SyncSession(context_.get(), this, SyncSourceInfo(), routes_,
                            std::vector<ModelSafeWorker*>());
-  }  
+  }
 
   virtual void SetUp() {
     context_.reset(new SyncSessionContext(NULL, NULL, this,
@@ -77,18 +76,16 @@ class SyncSessionTest : public testing::Test,
       FAIL() << msg;
   }
 
-  MultiTypeTimeStamp ParamsMeaningAllEnabledTypes() {
-    MultiTypeTimeStamp request_params;
-    request_params.timestamp = 2000;
-    request_params.data_types[syncable::BOOKMARKS] = true;
-    request_params.data_types[syncable::AUTOFILL] = true;
+  syncable::ModelTypeBitSet ParamsMeaningAllEnabledTypes() {
+    syncable::ModelTypeBitSet request_params;
+    request_params[syncable::BOOKMARKS] = true;
+    request_params[syncable::AUTOFILL] = true;
     return request_params;
   }
 
-  MultiTypeTimeStamp ParamsMeaningJustOneEnabledType() {
-    MultiTypeTimeStamp request_params;
-    request_params.timestamp = 5000;
-    request_params.data_types[syncable::AUTOFILL] = true;
+  syncable::ModelTypeBitSet ParamsMeaningJustOneEnabledType() {
+    syncable::ModelTypeBitSet request_params;
+    request_params[syncable::AUTOFILL] = true;
     return request_params;
   }
 
@@ -158,7 +155,7 @@ TEST_F(SyncSessionTest, MoreToSyncIfConflictSetsBuilt) {
 }
 
 TEST_F(SyncSessionTest, MoreToDownloadIfDownloadFailed) {
-  status()->set_updates_request_parameters(ParamsMeaningAllEnabledTypes());
+  status()->set_updates_request_types(ParamsMeaningAllEnabledTypes());
 
   // When DownloadUpdatesCommand fails, these should be false.
   EXPECT_FALSE(status()->ServerSaysNothingMoreToDownload());
@@ -169,12 +166,13 @@ TEST_F(SyncSessionTest, MoreToDownloadIfDownloadFailed) {
   EXPECT_FALSE(session_->HasMoreToSync());
 }
 
-TEST_F(SyncSessionTest, MoreToDownloadIfGotTimestamp) {
-  status()->set_updates_request_parameters(ParamsMeaningAllEnabledTypes());
+TEST_F(SyncSessionTest, MoreToDownloadIfGotChangesRemaining) {
+  status()->set_updates_request_types(ParamsMeaningAllEnabledTypes());
 
-  // When the server returns a timestamp, that means there's more to download.
+  // When the server returns changes_remaining, that means there's
+  // more to download.
   status()->mutable_updates_response()->mutable_get_updates()
-      ->set_new_timestamp(1000000L);
+     ->set_changes_remaining(1000L);
   EXPECT_FALSE(status()->ServerSaysNothingMoreToDownload());
   EXPECT_TRUE(status()->download_updates_succeeded());
 
@@ -183,12 +181,12 @@ TEST_F(SyncSessionTest, MoreToDownloadIfGotTimestamp) {
   EXPECT_FALSE(session_->HasMoreToSync());
 }
 
-TEST_F(SyncSessionTest, MoreToDownloadIfGotNoTimestamp) {
-  status()->set_updates_request_parameters(ParamsMeaningAllEnabledTypes());
+TEST_F(SyncSessionTest, MoreToDownloadIfGotNoChangesRemaining) {
+  status()->set_updates_request_types(ParamsMeaningAllEnabledTypes());
 
   // When the server returns a timestamp, that means we're up to date.
   status()->mutable_updates_response()->mutable_get_updates()
-      ->clear_new_timestamp();
+      ->set_changes_remaining(0);
   EXPECT_TRUE(status()->ServerSaysNothingMoreToDownload());
   EXPECT_TRUE(status()->download_updates_succeeded());
 
@@ -197,15 +195,16 @@ TEST_F(SyncSessionTest, MoreToDownloadIfGotNoTimestamp) {
   EXPECT_FALSE(session_->HasMoreToSync());
 }
 
-TEST_F(SyncSessionTest, MoreToDownloadIfGotNoTimestampForSubset) {
-  status()->set_updates_request_parameters(ParamsMeaningJustOneEnabledType());
+TEST_F(SyncSessionTest, MoreToDownloadIfGotNoChangesRemainingForSubset) {
+  status()->set_updates_request_types(ParamsMeaningJustOneEnabledType());
 
   // When the server returns a timestamp, that means we're up to date for that
   // type.  But there may still be more to download if there are other
   // datatypes that we didn't request on this go-round.
   status()->mutable_updates_response()->mutable_get_updates()
-    ->clear_new_timestamp();
-  EXPECT_FALSE(status()->ServerSaysNothingMoreToDownload());
+      ->set_changes_remaining(0);
+
+  EXPECT_TRUE(status()->ServerSaysNothingMoreToDownload());
   EXPECT_TRUE(status()->download_updates_succeeded());
 
   // Download updates has its own loop in the syncer; it shouldn't factor
@@ -213,13 +212,13 @@ TEST_F(SyncSessionTest, MoreToDownloadIfGotNoTimestampForSubset) {
   EXPECT_FALSE(session_->HasMoreToSync());
 }
 
-TEST_F(SyncSessionTest, MoreToDownloadIfGotTimestampAndEntries) {
-  status()->set_updates_request_parameters(ParamsMeaningAllEnabledTypes());
+TEST_F(SyncSessionTest, MoreToDownloadIfGotChangesRemainingAndEntries) {
+  status()->set_updates_request_types(ParamsMeaningAllEnabledTypes());
   // The actual entry count should not factor into the HasMoreToSync
   // determination.
   status()->mutable_updates_response()->mutable_get_updates()->add_entries();
   status()->mutable_updates_response()->mutable_get_updates()
-      ->set_new_timestamp(1000000L);;
+      ->set_changes_remaining(1000000L);;
   EXPECT_FALSE(status()->ServerSaysNothingMoreToDownload());
   EXPECT_TRUE(status()->download_updates_succeeded());
 
@@ -228,6 +227,20 @@ TEST_F(SyncSessionTest, MoreToDownloadIfGotTimestampAndEntries) {
   EXPECT_FALSE(session_->HasMoreToSync());
 }
 
+TEST_F(SyncSessionTest, MoreToDownloadIfGotNoChangesRemainingAndEntries) {
+  status()->set_updates_request_types(ParamsMeaningAllEnabledTypes());
+  // The actual entry count should not factor into the HasMoreToSync
+  // determination.
+  status()->mutable_updates_response()->mutable_get_updates()->add_entries();
+  status()->mutable_updates_response()->mutable_get_updates()
+      ->set_changes_remaining(0);
+  EXPECT_TRUE(status()->ServerSaysNothingMoreToDownload());
+  EXPECT_TRUE(status()->download_updates_succeeded());
+
+  // Download updates has its own loop in the syncer; it shouldn't factor
+  // into HasMoreToSync.
+  EXPECT_FALSE(session_->HasMoreToSync());
+}
 
 TEST_F(SyncSessionTest, MoreToSyncIfConflictsResolved) {
   // Conflict resolution happens after get updates and commit,

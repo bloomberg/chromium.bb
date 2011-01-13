@@ -139,13 +139,14 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
     syncable::ModelTypeBitSet sync_ended;
     ModelSafeRoutingInfo enabled_types;
     GetModelSafeRoutingInfo(&enabled_types);
+    std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
     for (ModelSafeRoutingInfo::const_iterator i = enabled_types.begin();
          i != enabled_types.end(); ++i) {
       sync_ended.set(i->first);
     }
     core_->HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
-        SyncerStatus(), ErrorCounters(), 0, 0, false,
-        sync_ended, false, false, 0, 0, false));
+        SyncerStatus(), ErrorCounters(), 0, false,
+        sync_ended, download_progress_markers, false, false, 0, 0, false));
   }
 
   virtual sync_api::HttpPostProviderFactory* MakeHttpBridgeFactory(

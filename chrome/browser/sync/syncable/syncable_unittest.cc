@@ -323,10 +323,6 @@ class SyncableDirectoryTest : public testing::Test {
     EXPECT_FALSE(dir_->initial_sync_ended_for_type(PREFERENCES));
     EXPECT_FALSE(dir_->initial_sync_ended_for_type(AUTOFILL));
     EXPECT_TRUE(dir_->initial_sync_ended_for_type(BOOKMARKS));
-
-    EXPECT_EQ(0, dir_->last_download_timestamp(PREFERENCES));
-    EXPECT_EQ(0, dir_->last_download_timestamp(AUTOFILL));
-    EXPECT_EQ(1, dir_->last_download_timestamp(BOOKMARKS));
   }
 
   scoped_ptr<Directory> dir_;
@@ -469,12 +465,8 @@ TEST_F(SyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
   AddDefaultExtensionValue(PREFERENCES, &preference_specs);
   AddDefaultExtensionValue(AUTOFILL, &autofill_specs);
   dir_->set_initial_sync_ended_for_type(BOOKMARKS, true);
-  dir_->set_last_download_timestamp(BOOKMARKS, 1);
   dir_->set_initial_sync_ended_for_type(PREFERENCES, true);
-  dir_->set_last_download_timestamp(PREFERENCES, 1);
   dir_->set_initial_sync_ended_for_type(AUTOFILL, true);
-  dir_->set_last_download_timestamp(AUTOFILL, 1);
-
 
   std::set<ModelType> types_to_purge;
   types_to_purge.insert(PREFERENCES);
@@ -1000,29 +992,22 @@ TEST_F(SyncableDirectoryTest, TestCaseChangeRename) {
 }
 
 TEST_F(SyncableDirectoryTest, TestShareInfo) {
-  dir_->set_last_download_timestamp(AUTOFILL, 100);
-  dir_->set_last_download_timestamp(BOOKMARKS, 1000);
   dir_->set_initial_sync_ended_for_type(AUTOFILL, true);
   dir_->set_store_birthday("Jan 31st");
   dir_->SetNotificationState("notification_state");
   {
     ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
-    EXPECT_EQ(100, dir_->last_download_timestamp(AUTOFILL));
-    EXPECT_EQ(1000, dir_->last_download_timestamp(BOOKMARKS));
     EXPECT_TRUE(dir_->initial_sync_ended_for_type(AUTOFILL));
     EXPECT_FALSE(dir_->initial_sync_ended_for_type(BOOKMARKS));
     EXPECT_EQ("Jan 31st", dir_->store_birthday());
     EXPECT_EQ("notification_state", dir_->GetAndClearNotificationState());
     EXPECT_EQ("", dir_->GetAndClearNotificationState());
   }
-  dir_->set_last_download_timestamp(AUTOFILL, 200);
   dir_->set_store_birthday("April 10th");
   dir_->SetNotificationState("notification_state2");
   dir_->SaveChanges();
   {
     ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
-    EXPECT_EQ(200, dir_->last_download_timestamp(AUTOFILL));
-    EXPECT_EQ(1000, dir_->last_download_timestamp(BOOKMARKS));
     EXPECT_TRUE(dir_->initial_sync_ended_for_type(AUTOFILL));
     EXPECT_FALSE(dir_->initial_sync_ended_for_type(BOOKMARKS));
     EXPECT_EQ("April 10th", dir_->store_birthday());
@@ -1034,8 +1019,6 @@ TEST_F(SyncableDirectoryTest, TestShareInfo) {
   SaveAndReloadDir();
   {
     ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
-    EXPECT_EQ(200, dir_->last_download_timestamp(AUTOFILL));
-    EXPECT_EQ(1000, dir_->last_download_timestamp(BOOKMARKS));
     EXPECT_TRUE(dir_->initial_sync_ended_for_type(AUTOFILL));
     EXPECT_FALSE(dir_->initial_sync_ended_for_type(BOOKMARKS));
     EXPECT_EQ("April 10th", dir_->store_birthday());
