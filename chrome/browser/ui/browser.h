@@ -909,8 +909,13 @@ class Browser : public TabHandlerDelegate,
   // Cleans up state appropriately when we are trying to close the browser and
   // the tab has finished firing its unload handler. We also use this in the
   // cases where a tab crashes or hangs even if the beforeunload/unload haven't
-  // successfully fired.
-  void ClearUnloadState(TabContents* tab);
+  // successfully fired. If |process_now| is true |ProcessPendingTabs| is
+  // invoked immediately, otherwise it is invoked after a delay (PostTask).
+  //
+  // Typically you'll want to pass in true for |process_now|. Passing in true
+  // may result in deleting |tab|. If you know that shouldn't happen (because of
+  // the state of the stack), pass in false.
+  void ClearUnloadState(TabContents* tab, bool process_now);
 
   // In-progress download termination handling /////////////////////////////////
 
