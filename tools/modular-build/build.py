@@ -465,12 +465,10 @@ int main() {
 
   # Check that all the Scons tests build, including those that do not
   # yet run successfully.
-  for arch_bits in subarches:
-    AddSconsModule(
-        "scons_compile_tests_%s" % arch_bits,
-        deps=full_glibc_toolchain_deps,
-        scons_args=["MODE=nacl", "--nacl_glibc",
-                    "platform=x86-%s" % arch_bits])
+  AddSconsModule(
+      "scons_compile_tests_32",
+      deps=full_glibc_toolchain_deps,
+      scons_args=["MODE=nacl", "--nacl_glibc", "platform=x86-32"])
 
   return module_list
 
