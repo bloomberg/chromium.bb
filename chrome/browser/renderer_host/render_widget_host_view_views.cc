@@ -721,6 +721,7 @@ bool RenderWidgetHostViewViews::OnTouchEvent(const views::TouchEvent& e) {
 
   // Update the type of the touch event.
   touch_event_.type = TouchEventTypeFromEvent(&e);
+  touch_event_.timeStampSeconds = base::Time::Now().ToDoubleT();
 
   // The event and all the touches have been updated. Dispatch.
   host_->ForwardTouchEvent(touch_event_);
