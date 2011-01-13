@@ -16,7 +16,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/common/pref_names.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"

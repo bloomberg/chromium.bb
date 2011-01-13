@@ -24,7 +24,6 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/test_event_utils.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/model_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"

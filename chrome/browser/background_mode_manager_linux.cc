@@ -19,7 +19,6 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 
 namespace {

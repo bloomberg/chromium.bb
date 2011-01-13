@@ -16,7 +16,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_manager.h"
-#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/cert_status_flags.h"

@@ -21,7 +21,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
-#include "chrome/common/pref_names.h"
 
 namespace history {
 

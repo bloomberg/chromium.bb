@@ -48,7 +48,6 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/pref_names.h"
 #include "net/base/net_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

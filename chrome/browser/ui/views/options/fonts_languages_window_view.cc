@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/views/options/fonts_page_view.h"
 #include "chrome/browser/ui/views/options/languages_page_view.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

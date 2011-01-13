@@ -30,7 +30,6 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/file_test_utils.h"
 #include "chrome/test/profile_mock.h"
@@ -425,4 +424,3 @@ TEST_F(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty) {
 }
 
 }  // namespace browser_sync
-

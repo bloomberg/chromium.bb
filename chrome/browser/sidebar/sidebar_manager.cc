@@ -15,7 +15,6 @@
 #include "chrome/browser/sidebar/sidebar_container.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 
 struct SidebarManager::SidebarStateForTab {

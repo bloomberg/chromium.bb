@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/translate_helper.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -198,7 +197,6 @@ class AutoFillTest : public InProcessBrowserTest {
     ExpectFieldValue(L"zip", "78744");
     ExpectFieldValue(L"country", "US");
     ExpectFieldValue(L"phone", "5125551234");
-
   }
 
  private:

@@ -4,11 +4,12 @@
 
 #include "chrome/browser/plugin_data_remover_helper.h"
 
+#include <string>
+
 #include "base/ref_counted.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/plugin_data_remover.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 

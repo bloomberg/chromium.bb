@@ -39,7 +39,6 @@
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 
 using browser_sync::AppDataTypeController;
 using browser_sync::AutofillChangeProcessor;
@@ -194,7 +193,6 @@ ProfileSyncFactoryImpl::CreateAutofillSyncComponents(
                                   personal_data,
                                   error_handler);
   return SyncComponents(model_associator, change_processor);
-
 }
 
 ProfileSyncFactory::SyncComponents

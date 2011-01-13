@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-
 #include "chrome/browser/plugin_service.h"
+
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/path_service.h"
@@ -32,7 +32,6 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/plugin_messages.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_list.h"

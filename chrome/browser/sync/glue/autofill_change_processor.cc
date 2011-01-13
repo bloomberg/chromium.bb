@@ -21,7 +21,6 @@
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/pref_names.h"
 
 namespace browser_sync {
 

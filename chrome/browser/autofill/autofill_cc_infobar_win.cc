@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/infobars/infobars.h"
 #include "chrome/browser/ui/views/infobars/infobar_text_button.h"
-#include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

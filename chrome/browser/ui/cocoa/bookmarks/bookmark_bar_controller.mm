@@ -41,7 +41,6 @@
 #import "chrome/browser/ui/cocoa/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
-#include "chrome/common/pref_names.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

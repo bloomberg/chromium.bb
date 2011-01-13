@@ -16,7 +16,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "gfx/insets.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -344,4 +343,3 @@ void ClearServerDataView::UpdateClearButtonEnabledState(
       sync_service_->HasSyncSetupCompleted() &&
       !delete_in_progress && allow_clear_);
 }
-

@@ -21,7 +21,6 @@
 #include "chrome/browser/tab_contents/provisional_load_details.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_status_flags.h"
 

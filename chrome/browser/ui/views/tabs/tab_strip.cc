@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 
+#include <algorithm>
+
 #include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -16,7 +18,6 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
-#include "chrome/common/pref_names.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/path.h"
 #include "gfx/size.h"

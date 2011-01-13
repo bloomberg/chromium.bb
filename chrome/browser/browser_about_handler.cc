@@ -49,7 +49,6 @@
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"

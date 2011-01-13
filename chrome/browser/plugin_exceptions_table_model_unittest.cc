@@ -8,7 +8,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/mock_plugin_exceptions_table_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"

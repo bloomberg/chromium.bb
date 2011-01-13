@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/pref_names.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 

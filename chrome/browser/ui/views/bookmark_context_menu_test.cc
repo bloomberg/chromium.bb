@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <vector>
+
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -12,7 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/ui/views/bookmark_context_menu.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -314,4 +316,3 @@ TEST_F(BookmarkContextMenuTest, CutCopyPasteNode) {
   ASSERT_TRUE(model_->GetBookmarkBarNode()->GetChild(1)->is_folder());
   ASSERT_EQ(old_count, model_->GetBookmarkBarNode()->GetChildCount());
 }
-

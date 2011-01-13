@@ -19,7 +19,6 @@
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 
 namespace browser_sync {

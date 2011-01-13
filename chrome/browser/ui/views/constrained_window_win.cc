@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/constrained_window_win.h"
 
+#include <algorithm>
+
 #include "app/resource_bundle.h"
 #include "app/win/hwnd_util.h"
 #include "app/win/win_util.h"
@@ -17,7 +19,6 @@
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/pref_names.h"
 #include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "gfx/path.h"

@@ -13,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "googleurl/src/gurl.h"
 #include "grit/app_resources.h"

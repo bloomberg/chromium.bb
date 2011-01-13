@@ -13,7 +13,6 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "unicode/calendar.h"

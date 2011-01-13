@@ -17,7 +17,6 @@
 #include "chrome/browser/gtk/first_run_dialog.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "googleurl/src/gurl.h"

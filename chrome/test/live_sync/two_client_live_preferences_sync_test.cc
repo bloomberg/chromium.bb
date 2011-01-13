@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/prefs/scoped_pref_update.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/live_sync/live_preferences_sync_test.h"
 
 IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,

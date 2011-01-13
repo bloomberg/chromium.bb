@@ -23,7 +23,6 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
-#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -38,7 +37,7 @@
 // static
 void ProfileManager::ShutdownSessionServices() {
   ProfileManager* pm = g_browser_process->profile_manager();
-  if (!pm) // Is NULL when running unit tests.
+  if (!pm)  // Is NULL when running unit tests.
     return;
   for (ProfileManager::const_iterator i = pm->begin(); i != pm->end(); ++i)
     (*i)->ShutdownSessionService();

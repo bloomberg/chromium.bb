@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/clear_browsing_data.h"
 #include "chrome/browser/ui/views/clear_server_data.h"
-#include "chrome/common/pref_names.h"
 #include "gfx/insets.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -174,4 +173,3 @@ views::View* ClearDataView::GetContentsView() {
 views::View* ClearDataView::GetInitiallyFocusedView() {
   return GetDialogClientView()->cancel_button();
 }
-

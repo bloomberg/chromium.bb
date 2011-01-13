@@ -4,9 +4,10 @@
 
 #include "chrome/browser/extensions/external_policy_extension_provider.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/stateful_external_extension_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -29,7 +30,7 @@ bool CheckExtension(std::string id, std::string update_url) {
   return true;
 }
 
-}
+}  // namespace
 
 ExternalPolicyExtensionProvider::ExternalPolicyExtensionProvider(
     const ListValue* forcelist)

@@ -16,6 +16,7 @@
 #include "base/hash_tables.h"
 #include "base/singleton.h"
 #include "base/synchronization/waitable_event_watcher.h"
+#include "build/build_config.h"
 #include "chrome/browser/plugin_process_host.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"

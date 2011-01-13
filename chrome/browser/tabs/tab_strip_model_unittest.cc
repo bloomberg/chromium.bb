@@ -32,7 +32,6 @@
 #include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/property_bag.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"

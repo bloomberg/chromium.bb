@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
 
+#include <functional>
 #include <vector>
 
 #include "base/task.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/guid.h"
-#include "chrome/common/pref_names.h"
 #include "net/base/escape.h"
 
 using base::TimeTicks;
@@ -576,4 +576,3 @@ bool AutofillModelAssociator::HasNotMigratedYet(
 }
 
 }  // namespace browser_sync
-

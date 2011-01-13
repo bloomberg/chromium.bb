@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ProfileManagerTest : public testing::Test {

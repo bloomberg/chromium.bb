@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/pref_names.h"
 #include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "grit/generated_resources.h"

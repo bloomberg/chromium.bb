@@ -22,7 +22,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/plugin_messages.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/google_update_settings.h"

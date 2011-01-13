@@ -22,7 +22,6 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
-#include "chrome/common/pref_names.h"
 
 class ExtensionNameComparator {
  public:

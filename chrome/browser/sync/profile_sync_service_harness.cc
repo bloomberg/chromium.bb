@@ -17,7 +17,6 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/notification_source.h"
-#include "chrome/common/pref_names.h"
 
 // The default value for min_timestamp_needed_ when we're not in the
 // WAITING_FOR_UPDATES state.

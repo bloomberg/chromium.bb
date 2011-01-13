@@ -7,7 +7,6 @@
 #include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +20,7 @@ namespace {
 class MockPrefService : public TestingPrefService {
  public:
   MockPrefService() {}
-  virtual ~MockPrefService() {};
+  virtual ~MockPrefService() {}
 
   MOCK_METHOD2(AddPrefObserver, void(const char*, NotificationObserver*));
   MOCK_METHOD2(RemovePrefObserver, void(const char*, NotificationObserver*));
