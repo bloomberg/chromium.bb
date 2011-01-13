@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
@@ -263,8 +264,12 @@ void SelectFileDialogImpl::OnDialogClosed(FileBrowseDelegate* delegate,
         std::string path_string;
         if (dict->HasKey(kKeyNamePath) &&
             dict->GetString(kKeyNamePath, &path_string)) {
-          FilePath path = FilePath::FromWStringHack(UTF8ToWide(path_string));
-
+#if defined(OS_WIN)
+          FilePath path(base::SysUTF8ToWide(path_string));
+#else
+          FilePath path(
+              base::SysWideToNativeMB(base::SysUTF8ToWide(path_string)));
+#endif
           listener_->FileSelected(path, kSaveCompletePageIndex,
                                   delegate->params_);
           notification_fired = true;
@@ -280,8 +285,13 @@ void SelectFileDialogImpl::OnDialogClosed(FileBrowseDelegate* delegate,
             std::string path_string;
             if (paths_value->GetString(i, &path_string) &&
                 !path_string.empty()) {
-              paths.push_back(FilePath::FromWStringHack(
-                  UTF8ToWide(path_string)));
+#if defined(OS_WIN)
+              FilePath path(base::SysUTF8ToWide(path_string));
+#else
+              FilePath path(
+                  base::SysWideToNativeMB(base::SysUTF8ToWide(path_string)));
+#endif
+              paths.push_back(path);
             }
           }
 
