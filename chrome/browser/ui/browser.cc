@@ -2837,7 +2837,7 @@ void Browser::CloseContents(TabContents* source) {
     // waiting for unload to fire. Don't actually try to close the tab as it
     // will go down the slow shutdown path instead of the fast path of killing
     // all the renderer processes.
-    ClearUnloadState(source, true);
+    ClearUnloadState(source);
     return;
   }
 
@@ -3198,10 +3198,12 @@ void Browser::Observe(NotificationType type,
   switch (type.value) {
     case NotificationType::TAB_CONTENTS_DISCONNECTED:
       if (is_attempting_to_close_browser_) {
-        // Pass in false so that we delay processing. We need to delay the
-        // processing as it may close the tab, which is currently on the call
-        // stack above us.
-        ClearUnloadState(Source<TabContents>(source).ptr(), false);
+        // Need to do this asynchronously as it will close the tab, which is
+        // currently on the call stack above us.
+        MessageLoop::current()->PostTask(
+            FROM_HERE,
+            method_factory_.NewRunnableMethod(&Browser::ClearUnloadState,
+                Source<TabContents>(source).ptr()));
       }
       break;
 
@@ -3858,7 +3860,7 @@ void Browser::ProcessPendingTabs() {
     if (tab->render_view_host()) {
       tab->render_view_host()->FirePageBeforeUnload(false);
     } else {
-      ClearUnloadState(tab, true);
+      ClearUnloadState(tab);
     }
   } else if (!tabs_needing_unload_fired_.empty()) {
     // We've finished firing all beforeunload events and can proceed with unload
@@ -3875,7 +3877,7 @@ void Browser::ProcessPendingTabs() {
     if (tab->render_view_host()) {
       tab->render_view_host()->ClosePage(false, -1, -1);
     } else {
-      ClearUnloadState(tab, true);
+      ClearUnloadState(tab);
     }
   } else {
     NOTREACHED();
@@ -3915,22 +3917,17 @@ bool Browser::RemoveFromSet(UnloadListenerSet* set, TabContents* tab) {
   return false;
 }
 
-void Browser::ClearUnloadState(TabContents* tab, bool process_now) {
+void Browser::ClearUnloadState(TabContents* tab) {
   // Closing of browser could be canceled (via IsClosingPermitted) between the
   // time when request was initiated and when this method is called, so check
   // for is_attempting_to_close_browser_ flag before proceeding.
   if (is_attempting_to_close_browser_) {
     RemoveFromSet(&tabs_needing_before_unload_fired_, tab);
     RemoveFromSet(&tabs_needing_unload_fired_, tab);
-    if (process_now) {
-      ProcessPendingTabs();
-    } else {
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          method_factory_.NewRunnableMethod(&Browser::ProcessPendingTabs));
-    }
+    ProcessPendingTabs();
   }
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, In-progress download termination handling (private):
@@ -4088,14 +4085,6 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
   if (find_bar_controller_.get() &&
       index == tab_handler_->GetTabStripModel()->selected_index()) {
     find_bar_controller_->ChangeTabContents(NULL);
-  }
-
-  if (is_attempting_to_close_browser_) {
-    // If this is the last tab with unload handlers, then ProcessPendingTabs
-    // would call back into the TabStripModel (which is invoking this method on
-    // us). Avoid that by passing in false so that the call to
-    // ProcessPendingTabs is delayed.
-    ClearUnloadState(contents->tab_contents(), false);
   }
 
   registrar_.Remove(this, NotificationType::TAB_CONTENTS_DISCONNECTED,

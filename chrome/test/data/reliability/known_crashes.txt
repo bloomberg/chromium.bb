@@ -40,6 +40,9 @@ REGEX : `anonymous namespace'::purecall$
 # is the only one on the stack, so ignore that instance
 REGEX : `anonymous namespace'::invalidparameter$
 
+# 15620
+PREFIX : browser::processpendingtabs___browser::clearunloadstate
+
 # 47207
 PREFIX : messageloop::runtask___messageloop::deferorrunpendingtask___messageloop::dodelayedwork___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
 PREFIX : messageloop::runtask___messageloop::dodelayedwork___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
