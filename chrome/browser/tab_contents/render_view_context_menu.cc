@@ -399,6 +399,8 @@ void RenderViewContextMenu::InitMenu() {
     case WebContextMenuData::MediaTypeAudio:
       AppendAudioItems();
       break;
+    default:
+      break;
   }
 
   if (params_.is_editable)
