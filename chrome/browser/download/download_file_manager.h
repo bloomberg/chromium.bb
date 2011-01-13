@@ -115,7 +115,8 @@ class DownloadFileManager
   // Creates DownloadFile on FILE thread and continues starting the download
   // process.
   void CreateDownloadFile(DownloadCreateInfo* info,
-                          DownloadManager* download_manager);
+                          DownloadManager* download_manager,
+                          bool hash_needed);
 
   // Tells the ResourceDispatcherHost to resume a download request
   // that was paused to wait for the on-disk file to be created.

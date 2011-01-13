@@ -117,6 +117,10 @@ class SafeBrowsingService
   // Create an instance of the safe browsing service.
   static SafeBrowsingService* CreateSafeBrowsingService();
 
+  // Called on UI thread to decide if safe browsing related stats
+  // could be reported.
+  bool CanReportStats() const;
+
   // Called on the UI thread to initialize the service.
   void Initialize();
 
@@ -125,6 +129,10 @@ class SafeBrowsingService
 
   // Returns true if the url's scheme can be checked.
   bool CanCheckUrl(const GURL& url) const;
+
+  // Called on UI thread to decide if the download file's sha256 hash
+  // should be calculated for safebrowsing.
+  bool DownloadBinHashNeeded() const;
 
   // Called on the IO thread to check if the given url is safe or not.  If we
   // can synchronously determine that the url is safe, CheckUrl returns true.

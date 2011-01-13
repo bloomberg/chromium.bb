@@ -18,6 +18,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
@@ -74,14 +75,15 @@ void DownloadFileManager::OnShutdown() {
   STLDeleteValues(&downloads_);
 }
 
-void DownloadFileManager::CreateDownloadFile(
-    DownloadCreateInfo* info, DownloadManager* download_manager) {
+void DownloadFileManager::CreateDownloadFile(DownloadCreateInfo* info,
+                                             DownloadManager* download_manager,
+                                             bool get_hash) {
   VLOG(20) << __FUNCTION__ << "()" << " info = " << info->DebugString();
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  scoped_ptr<DownloadFile> download_file(
-      new DownloadFile(info, download_manager));
-  if (!download_file->Initialize()) {
+  scoped_ptr<DownloadFile>
+      download_file(new DownloadFile(info, download_manager));
+  if (!download_file->Initialize(get_hash)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableFunction(&download_util::CancelDownloadRequest,
@@ -177,9 +179,12 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
 
   manager->CreateDownloadItem(info);
 
+  bool hash_needed = resource_dispatcher_host_->safe_browsing_service()->
+      DownloadBinHashNeeded();
+
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &DownloadFileManager::CreateDownloadFile,
-                        info, make_scoped_refptr(manager)));
+                        info, make_scoped_refptr(manager), hash_needed));
 }
 
 // We don't forward an update to the UI thread here, since we want to throttle

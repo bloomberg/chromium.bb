@@ -47,6 +47,7 @@ const char* const kSbDefaultInfoURLPrefix =
 const char* const kSbDefaultMacKeyURLPrefix =
     "https://sb-ssl.google.com/safebrowsing";
 
+// TODO(lzheng): Replace this with Profile* ProfileManager::GetDefaultProfile().
 Profile* GetDefaultProfile() {
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
@@ -152,6 +153,20 @@ bool SafeBrowsingService::CanCheckUrl(const GURL& url) const {
   return url.SchemeIs(chrome::kFtpScheme) ||
          url.SchemeIs(chrome::kHttpScheme) ||
          url.SchemeIs(chrome::kHttpsScheme);
+}
+
+// Only report SafeBrowsing related stats when UMA is enabled and
+// safe browsing is enabled.
+bool SafeBrowsingService::CanReportStats() const {
+  const MetricsService* metrics = g_browser_process->metrics_service();
+  const PrefService* pref_service = GetDefaultProfile()->GetPrefs();
+  return metrics && metrics->reporting_active() &&
+      pref_service && pref_service->GetBoolean(prefs::kSafeBrowsingEnabled);
+}
+
+// Binhash verification is only enabled for UMA users for now.
+bool SafeBrowsingService::DownloadBinHashNeeded() const {
+  return enable_download_protection_ && CanReportStats();
 }
 
 void SafeBrowsingService::CheckDownloadUrlDone(

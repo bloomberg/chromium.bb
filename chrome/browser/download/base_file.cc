@@ -7,6 +7,8 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "base/third_party/nss/blapi.h"
+#include "base/third_party/nss/sha256.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "chrome/browser/browser_thread.h"
@@ -30,7 +32,9 @@ BaseFile::BaseFile(const FilePath& full_path,
       referrer_url_(referrer_url),
       file_stream_(file_stream),
       bytes_so_far_(received_bytes),
-      power_save_blocker_(true) {
+      power_save_blocker_(true),
+      calculate_hash_(false),
+      sha_context_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
@@ -41,8 +45,16 @@ BaseFile::~BaseFile() {
   Close();
 }
 
-bool BaseFile::Initialize() {
+bool BaseFile::Initialize(bool calculate_hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  calculate_hash_ = calculate_hash;
+
+  if (calculate_hash_) {
+    sha_context_.reset(new SHA256Context);
+    SHA256_Begin(sha_context_.get());
+  }
+
   if (!full_path_.empty() ||
       download_util::CreateTemporaryFileForDownload(&full_path_))
     return Open();
@@ -63,7 +75,16 @@ bool BaseFile::AppendDataToFile(const char* data, size_t data_len) {
 
   // TODO(phajdan.jr): handle errors on file writes. http://crbug.com/58355
   size_t written = file_stream_->Write(data, data_len, NULL);
-  return (written == data_len);
+  if (written != data_len)
+    return false;
+
+  if (calculate_hash_) {
+    SHA256_Update(sha_context_.get(),
+                  reinterpret_cast<const unsigned char*>(data),
+                  data_len);
+  }
+
+  return true;
 }
 
 bool BaseFile::Rename(const FilePath& new_path, bool is_final_rename) {
@@ -139,7 +160,19 @@ void BaseFile::Cancel() {
 
 void BaseFile::Finish() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  if (calculate_hash_)
+    SHA256_End(sha_context_.get(), sha256_hash_, NULL, kSha256HashLen);
+
   Close();
+}
+
+bool BaseFile::GetSha256Hash(std::string* hash) {
+  if (!calculate_hash_ || in_progress())
+    return false;
+  hash->assign(reinterpret_cast<const char*>(sha256_hash_),
+               sizeof(sha256_hash_));
+  return true;
 }
 
 void BaseFile::AnnotateWithSourceInformation() {

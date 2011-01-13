@@ -222,7 +222,7 @@ void SaveFileManager::StartSave(SaveFileCreateInfo* info) {
   SaveFile* save_file = new SaveFile(info);
 
   // TODO(phajdan.jr): We should check the return value and handle errors here.
-  save_file->Initialize();
+  save_file->Initialize(false);  // No need to calculate hash.
 
   DCHECK(!LookupSaveFile(info->save_id));
   save_file_map_[info->save_id] = save_file;

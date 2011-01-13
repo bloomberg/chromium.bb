@@ -5,6 +5,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/base_file.h"
 #include "net/base/file_stream.h"
@@ -23,7 +24,8 @@ class BaseFileTest : public testing::Test {
 
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base_file_.reset(new BaseFile(FilePath(), GURL(), GURL(), 0, file_stream_));
+    base_file_.reset(
+        new BaseFile(FilePath(), GURL(), GURL(), 0, file_stream_));
   }
 
   virtual void TearDown() {
@@ -80,7 +82,7 @@ TEST_F(BaseFileTest, CreateDestroy) {
 
 // Cancel the download explicitly.
 TEST_F(BaseFileTest, Cancel) {
-  ASSERT_TRUE(base_file_->Initialize());
+  ASSERT_TRUE(base_file_->Initialize(false));
   EXPECT_TRUE(file_util::PathExists(base_file_->full_path()));
   base_file_->Cancel();
   EXPECT_FALSE(file_util::PathExists(base_file_->full_path()));
@@ -90,7 +92,7 @@ TEST_F(BaseFileTest, Cancel) {
 
 // Write data to the file once.
 TEST_F(BaseFileTest, SingleWrite) {
-  ASSERT_TRUE(base_file_->Initialize());
+  ASSERT_TRUE(base_file_->Initialize(false));
   AppendDataToFile(kTestData1);
   base_file_->Finish();
 
@@ -99,18 +101,52 @@ TEST_F(BaseFileTest, SingleWrite) {
 
 // Write data to the file multiple times.
 TEST_F(BaseFileTest, MultipleWrites) {
-  ASSERT_TRUE(base_file_->Initialize());
+  ASSERT_TRUE(base_file_->Initialize(false));
   AppendDataToFile(kTestData1);
   AppendDataToFile(kTestData2);
   AppendDataToFile(kTestData3);
+  std::string hash;
+  EXPECT_FALSE(base_file_->GetSha256Hash(&hash));
   base_file_->Finish();
 
   EXPECT_FALSE(base_file_->path_renamed());
 }
 
+// Write data to the file once and calculate its sha256 hash.
+TEST_F(BaseFileTest, SingleWriteWithHash) {
+  ASSERT_TRUE(base_file_->Initialize(true));
+  AppendDataToFile(kTestData1);
+  base_file_->Finish();
+
+  EXPECT_FALSE(base_file_->path_renamed());
+
+  std::string hash;
+  base_file_->GetSha256Hash(&hash);
+  EXPECT_EQ("0B2D3F3F7943AD64B860DF94D05CB56A8A97C6EC5768B5B70B930C5AA7FA9ADE",
+            base::HexEncode(hash.data(), hash.size()));
+}
+
+// Write data to the file multiple times and calculate its sha256 hash.
+TEST_F(BaseFileTest, MultipleWritesWithHash) {
+  std::string hash;
+
+  ASSERT_TRUE(base_file_->Initialize(true));
+  AppendDataToFile(kTestData1);
+  AppendDataToFile(kTestData2);
+  AppendDataToFile(kTestData3);
+  // no hash before Finish() is called either.
+  EXPECT_FALSE(base_file_->GetSha256Hash(&hash));
+  base_file_->Finish();
+
+  EXPECT_FALSE(base_file_->path_renamed());
+  EXPECT_TRUE(base_file_->GetSha256Hash(&hash));
+  EXPECT_EQ("CBF68BF10F8003DB86B31343AFAC8C7175BD03FB5FC905650F8C80AF087443A8",
+            base::HexEncode(hash.data(), hash.size()));
+}
+
 // Rename the file after all writes to it.
 TEST_F(BaseFileTest, WriteThenRename) {
-  ASSERT_TRUE(base_file_->Initialize());
+  ASSERT_TRUE(base_file_->Initialize(false));
 
   FilePath initial_path(base_file_->full_path());
   EXPECT_TRUE(file_util::PathExists(initial_path));
@@ -130,7 +166,7 @@ TEST_F(BaseFileTest, WriteThenRename) {
 
 // Rename the file while the download is still in progress.
 TEST_F(BaseFileTest, RenameWhileInProgress) {
-  ASSERT_TRUE(base_file_->Initialize());
+  ASSERT_TRUE(base_file_->Initialize(false));
 
   FilePath initial_path(base_file_->full_path());
   EXPECT_TRUE(file_util::PathExists(initial_path));

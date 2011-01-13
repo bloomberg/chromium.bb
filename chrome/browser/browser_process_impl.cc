@@ -804,15 +804,11 @@ void BrowserProcessImpl::CreateSafeBrowsingDetectionService() {
 
 bool BrowserProcessImpl::IsSafeBrowsingDetectionServiceEnabled() {
   // The safe browsing client-side detection is enabled only if the switch is
-  // enabled, the user has opted in to UMA usage stats and SafeBrowsing
-  // is enabled.
-  Profile* profile = profile_manager() ?
-      profile_manager()->GetDefaultProfile() : NULL;
-  return (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableClientSidePhishingDetection) &&
-          metrics_service() && metrics_service()->reporting_active() &&
-          profile && profile->GetPrefs() &&
-          profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled));
+  // enabled and when safe browsing related stats is allowed to be collected.
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableClientSidePhishingDetection) &&
+      resource_dispatcher_host()->safe_browsing_service() &&
+      resource_dispatcher_host()->safe_browsing_service()->CanReportStats();
 }
 
 // The BrowserProcess object must outlive the file thread so we use traits
