@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -127,6 +127,7 @@
          'source/patched-yasm/modules/objfmts/rdf/rdf-objfmt.c',
          'source/patched-yasm/modules/objfmts/xdf/xdf-objfmt.c',
          'source/patched-yasm/modules/parsers/gas/gas-parse.c',
+         'source/patched-yasm/modules/parsers/gas/gas-parse-intel.c',
          'source/patched-yasm/modules/parsers/gas/gas-parser.c',
          'source/patched-yasm/modules/parsers/nasm/nasm-parse.c',
          'source/patched-yasm/modules/parsers/nasm/nasm-parser.c',
