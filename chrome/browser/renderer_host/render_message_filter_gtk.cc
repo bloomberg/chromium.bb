@@ -46,9 +46,9 @@ static base::LazyInstance<PrintingSequencePathMap>
 // We get null window_ids passed into the two functions below; please see
 // http://crbug.com/9060 for more details.
 
-// Called on the BACKGROUND_X11 thread.
 void RenderMessageFilter::DoOnGetScreenInfo(gfx::NativeViewId view,
                                             IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::BACKGROUND_X11));
   Display* display = x11_util::GetSecondaryDisplay();
   int screen = x11_util::GetDefaultScreen(display);
   WebScreenInfo results = WebScreenInfoFactory::screenInfo(display, screen);
@@ -56,9 +56,9 @@ void RenderMessageFilter::DoOnGetScreenInfo(gfx::NativeViewId view,
   Send(reply_msg);
 }
 
-// Called on the BACKGROUND_X11 thread.
 void RenderMessageFilter::DoOnGetWindowRect(gfx::NativeViewId view,
                                             IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::BACKGROUND_X11));
   // This is called to get the x, y offset (in screen coordinates) of the given
   // view and its width and height.
   gfx::Rect rect;
@@ -92,9 +92,9 @@ static XID GetTopLevelWindow(XID window) {
   return GetTopLevelWindow(parent_window);
 }
 
-// Called on the BACKGROUND_X11 thread.
 void RenderMessageFilter::DoOnGetRootWindowRect(gfx::NativeViewId view,
                                                 IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::BACKGROUND_X11));
   // This is called to get the screen coordinates and size of the browser
   // window itself.
   gfx::Rect rect;
@@ -117,19 +117,19 @@ void RenderMessageFilter::DoOnGetRootWindowRect(gfx::NativeViewId view,
   Send(reply_msg);
 }
 
-// Called on the UI thread.
 void RenderMessageFilter::DoOnClipboardIsFormatAvailable(
     ui::Clipboard::FormatType format, ui::Clipboard::Buffer buffer,
     IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const bool result = GetClipboard()->IsFormatAvailable(format, buffer);
 
   ViewHostMsg_ClipboardIsFormatAvailable::WriteReplyParams(reply_msg, result);
   Send(reply_msg);
 }
 
-// Called on the UI thread.
 void RenderMessageFilter::DoOnClipboardReadText(ui::Clipboard::Buffer buffer,
                                                 IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   string16 result;
   GetClipboard()->ReadText(buffer, &result);
 
@@ -137,9 +137,9 @@ void RenderMessageFilter::DoOnClipboardReadText(ui::Clipboard::Buffer buffer,
   Send(reply_msg);
 }
 
-// Called on the UI thread.
 void RenderMessageFilter::DoOnClipboardReadAsciiText(
     ui::Clipboard::Buffer buffer, IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string result;
   GetClipboard()->ReadAsciiText(buffer, &result);
 
@@ -147,9 +147,9 @@ void RenderMessageFilter::DoOnClipboardReadAsciiText(
   Send(reply_msg);
 }
 
-// Called on the UI thread.
 void RenderMessageFilter::DoOnClipboardReadHTML(ui::Clipboard::Buffer buffer,
                                                 IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string src_url_str;
   string16 markup;
   GetClipboard()->ReadHTML(buffer, &markup, &src_url_str);
@@ -159,21 +159,21 @@ void RenderMessageFilter::DoOnClipboardReadHTML(ui::Clipboard::Buffer buffer,
   Send(reply_msg);
 }
 
-// Called on the UI thread.
 void RenderMessageFilter::DoOnClipboardReadAvailableTypes(
     ui::Clipboard::Buffer buffer, IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Send(reply_msg);
 }
 
-// Called on the UI thread.
 void RenderMessageFilter::DoOnClipboardReadData(ui::Clipboard::Buffer buffer,
                                                 const string16& type,
                                                 IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Send(reply_msg);
 }
-// Called on the UI thread.
 void RenderMessageFilter::DoOnClipboardReadFilenames(
     ui::Clipboard::Buffer buffer, IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Send(reply_msg);
 }
 
@@ -235,37 +235,37 @@ void RenderMessageFilter::DoOnTempFileForPrintingWritten(int sequence_number) {
   map->erase(it);
 }
 
-// Called on the IO thread.
 void RenderMessageFilter::OnGetScreenInfo(gfx::NativeViewId view,
                                           IPC::Message* reply_msg) {
-   BrowserThread::PostTask(
-      BrowserThread::BACKGROUND_X11, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::DoOnGetScreenInfo, view, reply_msg));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
+     BrowserThread::BACKGROUND_X11, FROM_HERE,
+     NewRunnableMethod(
+         this, &RenderMessageFilter::DoOnGetScreenInfo, view, reply_msg));
 }
 
-// Called on the IO thread.
 void RenderMessageFilter::OnGetWindowRect(gfx::NativeViewId view,
                                           IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::BACKGROUND_X11, FROM_HERE,
       NewRunnableMethod(
           this, &RenderMessageFilter::DoOnGetWindowRect, view, reply_msg));
 }
 
-// Called on the IO thread.
 void RenderMessageFilter::OnGetRootWindowRect(gfx::NativeViewId view,
                                               IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::BACKGROUND_X11, FROM_HERE,
       NewRunnableMethod(
           this, &RenderMessageFilter::DoOnGetRootWindowRect, view, reply_msg));
 }
 
-// Called on the IO thread.
 void RenderMessageFilter::OnClipboardIsFormatAvailable(
     ui::Clipboard::FormatType format, ui::Clipboard::Buffer buffer,
     IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
@@ -273,9 +273,9 @@ void RenderMessageFilter::OnClipboardIsFormatAvailable(
           buffer, reply_msg));
 }
 
-// Called on the IO thread.
 void RenderMessageFilter::OnClipboardReadText(ui::Clipboard::Buffer buffer,
                                               IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
@@ -283,9 +283,9 @@ void RenderMessageFilter::OnClipboardReadText(ui::Clipboard::Buffer buffer,
           reply_msg));
 }
 
-// Called on the IO thread.
 void RenderMessageFilter::OnClipboardReadAsciiText(ui::Clipboard::Buffer buffer,
                                                    IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
@@ -293,9 +293,9 @@ void RenderMessageFilter::OnClipboardReadAsciiText(ui::Clipboard::Buffer buffer,
           reply_msg));
 }
 
-// Called on the IO thread.
 void RenderMessageFilter::OnClipboardReadHTML(ui::Clipboard::Buffer buffer,
                                               IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
@@ -303,9 +303,9 @@ void RenderMessageFilter::OnClipboardReadHTML(ui::Clipboard::Buffer buffer,
           reply_msg));
 }
 
-// Called on the IO thread.
 void RenderMessageFilter::OnClipboardReadAvailableTypes(
     ui::Clipboard::Buffer buffer, IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
@@ -313,10 +313,10 @@ void RenderMessageFilter::OnClipboardReadAvailableTypes(
           reply_msg));
 }
 
-// Called on the IO thread.
 void RenderMessageFilter::OnClipboardReadData(ui::Clipboard::Buffer buffer,
                                               const string16& type,
                                               IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
@@ -324,9 +324,9 @@ void RenderMessageFilter::OnClipboardReadData(ui::Clipboard::Buffer buffer,
           reply_msg));
 }
 
-// Called on the IO thread.
 void RenderMessageFilter::OnClipboardReadFilenames(
     ui::Clipboard::Buffer buffer, IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
