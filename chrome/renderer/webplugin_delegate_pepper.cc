@@ -1440,7 +1440,6 @@ void WebPluginDelegatePepper::Paint(WebKit::WebCanvas* canvas,
       DrawSkBitmapToCanvas(committed_bitmap_, canvas, window_rect_,
                            static_cast<int>(CGBitmapContextGetHeight(canvas)));
 #else
-      gfx::Point origin(window_rect_.origin().x(), window_rect_.origin().y());
       canvas->drawBitmap(committed_bitmap_,
                          SkIntToScalar(window_rect_.origin().x()),
                          SkIntToScalar(window_rect_.origin().y()));

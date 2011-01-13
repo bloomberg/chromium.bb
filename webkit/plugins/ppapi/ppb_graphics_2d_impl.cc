@@ -482,6 +482,9 @@ bool PPB_Graphics2D_Impl::BindToInstance(PluginInstance* new_instance) {
   return true;
 }
 
+// The |backing_bitmap| must be clipped to the |plugin_rect| to avoid painting
+// outside the plugin area. This can happen if the plugin has been resized since
+// PaintImageData verified the image is within the plugin size.
 void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
                                 const gfx::Rect& plugin_rect,
                                 const gfx::Rect& paint_rect) {
@@ -509,17 +512,30 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
   CGContextTranslateCTM(canvas, 0, window_height);
   CGContextScaleCTM(canvas, 1.0, -1.0);
 
+  // To avoid painting outside the plugin boundaries and clip instead of
+  // scaling, CGContextDrawImage() must draw the full image using |bitmap_rect|
+  // but the context must be clipped to the plugin using |bounds|.
+
+  CGRect bitmap_rect;
+  bitmap_rect.origin.x = plugin_rect.origin().x();
+  bitmap_rect.origin.y = window_height - plugin_rect.origin().y() -
+      backing_bitmap.height();
+  bitmap_rect.size.width = backing_bitmap.width();
+  bitmap_rect.size.height = backing_bitmap.height();
+
   CGRect bounds;
   bounds.origin.x = plugin_rect.origin().x();
   bounds.origin.y = window_height - plugin_rect.origin().y() -
-      backing_bitmap.height();
-  bounds.size.width = backing_bitmap.width();
-  bounds.size.height = backing_bitmap.height();
+      plugin_rect.height();
+  bounds.size.width = plugin_rect.width();
+  bounds.size.height = plugin_rect.height();
+
+  CGContextClipToRect(canvas, bounds);
 
   // TODO(brettw) bug 56673: do a direct memcpy instead of going through CG
-  // if the is_always_opaque_ flag is set.
+  // if the is_always_opaque_ flag is set. Must ensure bitmap is still clipped.
 
-  CGContextDrawImage(canvas, bounds, image);
+  CGContextDrawImage(canvas, bitmap_rect, image);
   CGContextRestoreGState(canvas);
 #else
   SkPaint paint;
@@ -529,11 +545,17 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
   }
 
-  gfx::Point origin(plugin_rect.origin().x(), plugin_rect.origin().y());
+  canvas->save();
+  SkRect clip_rect = SkRect::MakeXYWH(SkIntToScalar(plugin_rect.origin().x()),
+                                      SkIntToScalar(plugin_rect.origin().y()),
+                                      SkIntToScalar(plugin_rect.width()),
+                                      SkIntToScalar(plugin_rect.height()));
+  canvas->clipRect(clip_rect);
   canvas->drawBitmap(backing_bitmap,
-                     SkIntToScalar(plugin_rect.origin().x()),
-                     SkIntToScalar(plugin_rect.origin().y()),
+                     SkIntToScalar(plugin_rect.x()),
+                     SkIntToScalar(plugin_rect.y()),
                      &paint);
+  canvas->restore();
 #endif
 }
 
