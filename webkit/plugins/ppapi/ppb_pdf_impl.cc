@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "grit/webkit_strings.h"
 #include "skia/ext/platform_canvas.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/private/ppb_pdf.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "unicode/usearch.h"
 #include "webkit/glue/webkit_glue.h"
@@ -19,7 +20,6 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
-#include "webkit/plugins/ppapi/ppb_pdf.h"
 #include "webkit/plugins/ppapi/var.h"
 
 namespace webkit {

@@ -33,6 +33,7 @@
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_audio_config_proxy.h"
@@ -56,7 +57,6 @@
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/ppp_instance_proxy.h"
 #include "ppapi/proxy/var_serialization_rules.h"
-#include "webkit/plugins/ppapi/ppb_pdf.h"
 
 namespace pp {
 namespace proxy {

@@ -302,7 +302,6 @@
         '../plugins/ppapi/ppb_nacl_private_impl.h',
         '../plugins/ppapi/ppb_opengles_impl.cc',
         '../plugins/ppapi/ppb_opengles_impl.h',
-        '../plugins/ppapi/ppb_pdf.h',
         '../plugins/ppapi/ppb_pdf_impl.cc',
         '../plugins/ppapi/ppb_pdf_impl.h',
         '../plugins/ppapi/ppb_scrollbar_impl.cc',

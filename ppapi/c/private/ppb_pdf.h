@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_
-#define WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_
+#ifndef PPAPI_C_PRIVATE_PPB_PDF_H_
+#define PPAPI_C_PRIVATE_PPB_PDF_H_
 
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/pp_instance.h"
@@ -132,4 +132,4 @@ struct PPB_PDF {
   void (*UserMetricsRecordAction)(PP_Var action);
 };
 
-#endif  // WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_
+#endif  // PPAPI_C_PRIVATE_PPB_PDF_H_
