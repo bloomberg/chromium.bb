@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,8 @@
 ExtensionHostMac::~ExtensionHostMac() {
   // If there is a popup open for this host's extension, close it.
   ExtensionPopupController* popup = [ExtensionPopupController popup];
-  if (popup && [popup extensionHost]->extension() == this->extension()) {
+  if ([[popup window] isVisible] &&
+      [popup extensionHost]->extension() == this->extension()) {
     InfoBubbleWindow* window = (InfoBubbleWindow*)[popup window];
     [window setDelayOnClose:NO];
     [popup close];
