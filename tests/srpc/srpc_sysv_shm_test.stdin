@@ -1,2 +1,2 @@
-sysv
-rpc map_sysv_handle h(4) *
+sysv desc_shmem
+rpc map_sysv_handle h(desc_shmem) *

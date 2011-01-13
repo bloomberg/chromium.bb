@@ -44,16 +44,6 @@ static const char* kUsage =
   "After startup the user is prompted for interactive commands.\n"
   "For sample commands have a look at: tests/srpc/srpc_basic_test.stdin\n";
 
-static NaClSrpcError Interpreter(NaClSrpcService* service,
-                                 NaClSrpcChannel* channel,
-                                 uint32_t rpc_number,
-                                 NaClSrpcArg** ins,
-                                 NaClSrpcArg** outs) {
-  UNREFERENCED_PARAMETER(service);
-
-  return NaClSrpcInvokeV(channel, rpc_number, ins, outs);
-}
-
 // NOTE: this used to be stack allocated inside main which cause
 // problems on ARM (probably a tool chain bug).
 // NaClSrpcChannel is pretty big (> 256kB)
@@ -68,9 +58,6 @@ static nacl::string ProcessArguments(int argc,
                                      char* argv[],
                                      vector<nacl::string>* const sel_ldr_argv,
                                      vector<nacl::string>* const app_argv) {
-  int i;
-  NaClSrpcModuleInit();
-
   if (argc == 1) {
     printf("%s", kUsage);
     exit(0);
@@ -78,7 +65,7 @@ static nacl::string ProcessArguments(int argc,
 
   // Extract '-f nacl_file' from args and transfer the rest to sel_ldr_argv
   nacl::string app_name;
-  for (i = 1; i < argc; i++) {
+  for (int i = 1; i < argc; i++) {
     // Check if the argument has the form -f nacl_file
     if (string(argv[i]) == "-f" && i + 1 < argc) {
       app_name = argv[i + 1];
@@ -86,6 +73,8 @@ static nacl::string ProcessArguments(int argc,
     } else if (string(argv[i]) == "--help") {
       printf("%s", kUsage);
       exit(0);
+    } else if (string(argv[i]) == "--debug") {
+      NaClLogSetVerbosity(1);
     } else if (string(argv[i]) == "--") {
       // Done processing sel_ldr args. If no '-f nacl_file' was given earlier,
       // the first argument after '--' is the nacl_file.
@@ -103,8 +92,7 @@ static nacl::string ProcessArguments(int argc,
   }
 
   if (app_name == "") {
-    fprintf(stderr,
-            "sel_universal: '-f nacl_file' or '-- nacl_file' required\n");
+    NaClLog(LOG_FATAL, "missing app\n");
     exit(1);
   }
 
@@ -113,6 +101,11 @@ static nacl::string ProcessArguments(int argc,
 
 
 int main(int  argc, char* argv[]) {
+
+  // Descriptor transfer requires the following
+  NaClSrpcModuleInit();
+  NaClNrdAllModulesInit();
+
   // Get the arguments to sed_ldr and the nexe module
   vector<nacl::string> sel_ldr_argv;
   vector<nacl::string> app_argv;
@@ -123,8 +116,6 @@ int main(int  argc, char* argv[]) {
   sel_ldr_argv.push_back("-X");
   sel_ldr_argv.push_back("5");
 
-  // Descriptor transfer requires the following
-  NaClNrdAllModulesInit();
 
   // Start sel_ldr with the given application and arguments.
   nacl::SelLdrLauncher launcher;
@@ -143,12 +134,11 @@ int main(int  argc, char* argv[]) {
   int height = 480;
   InitializeMultimediaHandler(&channel, width, height, "NaCl Module");
 #endif
+  NaClCommandLoop loop(channel.client,
+                       &channel,
+                       launcher.socket_address());
 
-  NaClSrpcCommandLoop(channel.client,
-                      &channel,
-                      Interpreter,
-                      launcher.socket_address());
-
+  loop.StartInteractiveLoop();
 
   // Close the connections to sel_ldr.
   NaClSrpcDtor(&command_channel);

@@ -115,7 +115,7 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_basic_test',
                        is_broken=is_broken)
 
 trusted_env = env.get('TRUSTED_ENV')
-# TODO: add comment explaining the if
+# NOTE: sel_universal only supports shmem under linux
 if trusted_env and trusted_env.Bit('linux'):
   node = env.CommandSelLdrTestNacl(
       'srpc_sysv_shm_test.out',

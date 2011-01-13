@@ -14,7 +14,9 @@ if env.CrossToolsBuild():
 if env.Bit('linux') and env.Bit('target_x86'):
   env.Append(LIBS=['dl'])
 
-
+extra_srcs = []
+if env.Bit('linux'):
+  extra_srcs.append('rpc_universal_sysv.cc')
 
 # NOTE: we need Cocoa because of the GetPluginDir() implementation
 #       on mac (nonnacl_util_c)
@@ -22,7 +24,8 @@ if env.Bit('linux') and env.Bit('target_x86'):
 env.ComponentProgram('sel_universal',
                     ['sel_universal_new.cc',
                      'rpc_universal.cc',
-                     ],
+                     'parsing.cc',
+                     ] + extra_srcs,
                     EXTRA_LIBS=['nonnacl_util_c',
                                 'nonnacl_srpc',
                                 'nrd_xfer',

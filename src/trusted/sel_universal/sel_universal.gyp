@@ -32,14 +32,17 @@
   'includes': [
     '../../../build/common.gypi',
   ],
+  'variables': {
+      'src_files': ['sel_universal_new.cc',
+                    'rpc_universal.cc',
+                    'parsing.cc',
+                    ],
+  },
   'targets': [
     {
       'target_name': 'sel_universal',
       'type': 'executable',
-      'sources': [
-        'sel_universal_new.cc',
-        'rpc_universal.cc',
-      ],
+      'sources': ['<@(src_files)'],
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
@@ -55,6 +58,7 @@
               '-ldl',
             ],
           },
+          'sources': ['rpc_universal_sysv.cc'],
         }],
       ],
     },
@@ -68,10 +72,7 @@
           'variables': {
             'win_target': 'x64',
           },
-          'sources': [
-            'sel_universal_new.cc',
-            'rpc_universal.cc',
-          ],
+          'sources': ['<@(src_files)'],
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',

@@ -14,7 +14,7 @@ rpc int_array I(5,1,2,3,4,5) * I(5)
 rpc long_array L(5,1,2,3,4,5) * L(5)
 rpc null_method *
 rpc stringret i(0) * s("")
-rpc handle h(3) *
+rpc handle h(stderr) *
 rpc handleret * h(0)
-rpc invalid_handle h(-1) *
+rpc invalid_handle h(invalid) *
 rpc invalid_handle_ret * h(0)
