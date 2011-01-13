@@ -46,7 +46,7 @@ TEST(GtkDndUtilTest, ExtractNamedURLInvalidURL) {
 
   GURL url;
   string16 title;
-  EXPECT_EQ(false, gtk_dnd_util::ExtractNamedURL(&data, &url, &title));
+  EXPECT_FALSE(gtk_dnd_util::ExtractNamedURL(&data, &url, &title));
 }
 
 TEST(GtkDndUtilTest, ExtractNamedURLInvalidInput) {
@@ -56,13 +56,13 @@ TEST(GtkDndUtilTest, ExtractNamedURLInvalidInput) {
   data.data = NULL;
   data.length = 0;
 
-  EXPECT_EQ(false, gtk_dnd_util::ExtractNamedURL(&data, &url, &title));
+  EXPECT_FALSE(gtk_dnd_util::ExtractNamedURL(&data, &url, &title));
 
   guchar empty_data[] = "";
   data.data = empty_data;
   data.length = 0;
 
-  EXPECT_EQ(false, gtk_dnd_util::ExtractNamedURL(&data, &url, &title));
+  EXPECT_FALSE(gtk_dnd_util::ExtractNamedURL(&data, &url, &title));
 
   const std::string kTitle = "title";
   Pickle pickle;
@@ -73,5 +73,5 @@ TEST(GtkDndUtilTest, ExtractNamedURLInvalidInput) {
   data.data = test_data.get();
   data.length = pickle.size();
 
-  EXPECT_EQ(false, gtk_dnd_util::ExtractNamedURL(&data, &url, &title));
+  EXPECT_FALSE(gtk_dnd_util::ExtractNamedURL(&data, &url, &title));
 }

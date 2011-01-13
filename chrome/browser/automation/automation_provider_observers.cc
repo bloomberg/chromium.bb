@@ -1431,7 +1431,7 @@ NTPInfoObserver::NTPInfoObserver(
         : automation_(automation),
           reply_message_(reply_message),
           consumer_(consumer),
-          request_(NULL),
+          request_(0),
           ntp_info_(new DictionaryValue) {
   top_sites_ = automation_->profile()->GetTopSites();
   if (!top_sites_) {

@@ -90,7 +90,7 @@ base::ProcessHandle IPCChannelTest::SpawnChild(ChildType child_type,
     fds_to_map.push_back(std::pair<int, int>(ipcfd, kPrimaryIPCChannel + 3));
   }
 
-  base::ProcessHandle ret = NULL;
+  base::ProcessHandle ret = base::kNullProcessHandle;
   switch (child_type) {
   case TEST_CLIENT:
     ret = MultiProcessTest::SpawnChild("RunTestClient",
@@ -123,7 +123,7 @@ base::ProcessHandle IPCChannelTest::SpawnChild(ChildType child_type,
                                        debug_on_start);
     break;
   default:
-    return NULL;
+    return base::kNullProcessHandle;
     break;
   }
   return ret;
@@ -367,7 +367,7 @@ MULTIPROCESS_TEST_MAIN(RunTestClient) {
   // run message loop
   MessageLoop::current()->Run();
   // return true;
-  return NULL;
+  return 0;
 }
 
 #endif  // !PERFORMANCE_TEST

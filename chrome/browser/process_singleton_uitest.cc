@@ -38,7 +38,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
   explicit ChromeStarter(int timeout_ms, const FilePath& user_data_dir)
       : ready_event_(false /* manual */, false /* signaled */),
         done_event_(false /* manual */, false /* signaled */),
-        process_handle_(NULL),
+        process_handle_(base::kNullProcessHandle),
         process_terminated_(false),
         timeout_ms_(timeout_ms),
         user_data_dir_(user_data_dir) {

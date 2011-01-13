@@ -174,7 +174,7 @@ TEST(StreamsTest, StreamSetReadWrite) {
   courgette::SourceStreamSet subset1;
   bool can_read_1 = in.ReadSet(&subset1);
   EXPECT_EQ(true, can_read_1);
-  EXPECT_EQ(false, in.Empty());
+  EXPECT_FALSE(in.Empty());
 
   courgette::SourceStreamSet subset2;
   bool can_read_2 = in.ReadSet(&subset2);
@@ -183,10 +183,10 @@ TEST(StreamsTest, StreamSetReadWrite) {
 
   courgette::SourceStreamSet subset3;
   bool can_read_3 = in.ReadSet(&subset3);
-  EXPECT_EQ(false, can_read_3);
+  EXPECT_FALSE(can_read_3);
 
-  EXPECT_EQ(false, subset1.Empty());
-  EXPECT_EQ(false, subset1.Empty());
+  EXPECT_FALSE(subset1.Empty());
+  EXPECT_FALSE(subset1.Empty());
 
   uint32 datum;
   EXPECT_EQ(true, subset1.stream(3)->ReadVarint32(&datum));

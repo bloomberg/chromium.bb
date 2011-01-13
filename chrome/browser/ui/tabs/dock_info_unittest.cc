@@ -101,7 +101,7 @@ TEST(DockInfoTest, IsCloseToMonitorPoint) {
 
 TEST(DockInfoTest, IsValidForPoint) {
   DockInfo d;
-  EXPECT_EQ(false, d.IsValidForPoint(gfx::Point(0, 0)));
+  EXPECT_FALSE(d.IsValidForPoint(gfx::Point(0, 0)));
   d.set_monitor_bounds(gfx::Rect(0, 0, kPopupWidth, kPopupHeight));
   d.set_hot_spot(gfx::Point(0, 0));
   d.set_type(DockInfo::LEFT_HALF);
@@ -126,7 +126,7 @@ TEST(DockInfoTest, equals) {
   DockInfo dd;
   EXPECT_EQ(true, d.equals(dd));
   d.set_type(DockInfo::MAXIMIZE);
-  EXPECT_EQ(false, d.equals(dd));
+  EXPECT_FALSE(d.equals(dd));
 }
 
 TEST(DockInfoTest, CheckMonitorPoint) {

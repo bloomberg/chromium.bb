@@ -1087,7 +1087,7 @@ BaseTransaction::BaseTransaction(Directory* directory)
       dirkernel_(NULL),
       name_(NULL),
       source_file_(NULL),
-      line_(NULL),
+      line_(0),
       writer_(INVALID) {
 }
 

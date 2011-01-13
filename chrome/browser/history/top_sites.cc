@@ -443,7 +443,7 @@ void TopSites::DiffMostVisited(const MostVisitedURLList& old_list,
 CancelableRequestProvider::Handle TopSites::StartQueryForMostVisited() {
   DCHECK(loaded_);
   if (!profile_)
-    return NULL;
+    return 0;
 
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   // |hs| may be null during unit tests.
@@ -454,7 +454,7 @@ CancelableRequestProvider::Handle TopSites::StartQueryForMostVisited() {
         &cancelable_consumer_,
         NewCallback(this, &TopSites::OnTopSitesAvailableFromHistory));
   }
-  return NULL;
+  return 0;
 }
 
 TopSites::~TopSites() {

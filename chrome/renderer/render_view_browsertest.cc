@@ -676,7 +676,7 @@ TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
         // We format a string that emulates a DOM-event string produced hy
         // our JavaScript function. (See the above comment for the format.)
         static char expected_result[1024];
-        expected_result[0] = NULL;
+        expected_result[0] = 0;
         base::snprintf(&expected_result[0],
                        sizeof(expected_result),
                        "\n"       // texts in the <input> element

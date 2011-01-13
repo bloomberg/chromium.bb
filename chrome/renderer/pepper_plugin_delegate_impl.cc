@@ -384,7 +384,7 @@ PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
     return module;  // Return the NULL module.
 
   // Out of process: have the browser start the plugin process for us.
-  base::ProcessHandle plugin_process_handle = NULL;
+  base::ProcessHandle plugin_process_handle = base::kNullProcessHandle;
   IPC::ChannelHandle channel_handle;
   render_view_->Send(new ViewHostMsg_OpenChannelToPepperPlugin(
       path, &plugin_process_handle, &channel_handle));
