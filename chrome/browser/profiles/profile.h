@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -226,8 +226,7 @@ class Profile {
   // Retrieves a pointer to the TransportSecurityState associated with
   // this profile.  The TransportSecurityState is lazily created the
   // first time that this method is called.
-  virtual net::TransportSecurityState*
-      GetTransportSecurityState() = 0;
+  virtual net::TransportSecurityState* GetTransportSecurityState() = 0;
 
   // Retrieves a pointer to the FaviconService associated with this
   // profile.  The FaviconService is lazily created the first time
@@ -487,6 +486,11 @@ class Profile {
   virtual policy::ProfilePolicyContext* GetPolicyContext() = 0;
 
 #if defined(OS_CHROMEOS)
+  // Changes application locale.
+  // "Keep local" means that changes should not be propagated to other devices.
+  virtual void ChangeApplicationLocale(
+      const std::string& locale, bool keep_local) = 0;
+
   // Returns ChromeOS's ProxyConfigServiceImpl, creating if not yet created.
   virtual chromeos::ProxyConfigServiceImpl*
       GetChromeOSProxyConfigServiceImpl() = 0;

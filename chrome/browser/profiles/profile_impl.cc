@@ -1340,6 +1340,30 @@ PromoCounter* ProfileImpl::GetInstantPromoCounter() {
 }
 
 #if defined(OS_CHROMEOS)
+void ProfileImpl::ChangeApplicationLocale(
+    const std::string& locale, bool keep_local) {
+  if (locale.empty()) {
+    NOTREACHED();
+    return;
+  }
+  if (keep_local) {
+    GetPrefs()->SetString(prefs::kApplicationLocaleOverride, locale);
+  } else {
+    GetPrefs()->SetString(prefs::kApplicationLocale, locale);
+    GetPrefs()->SetString(prefs::kApplicationLocaleOverride, "");
+  }
+  GetPrefs()->SetString(prefs::kApplicationLocaleBackup, locale);
+  GetPrefs()->ClearPref(prefs::kApplicationLocaleAccepted);
+  // We maintain kApplicationLocale property in both a global storage
+  // and user's profile.  Global property determines locale of login screen,
+  // while user's profile determines his personal locale preference.
+  g_browser_process->local_state()->SetString(
+      prefs::kApplicationLocale, locale);
+
+  GetPrefs()->SavePersistentPrefs();
+  g_browser_process->local_state()->SavePersistentPrefs();
+}
+
 chromeos::ProxyConfigServiceImpl*
     ProfileImpl::GetChromeOSProxyConfigServiceImpl() {
   if (!chromeos_proxy_config_service_impl_) {

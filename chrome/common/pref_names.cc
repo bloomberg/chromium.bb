@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,9 +46,16 @@ const char kURLsToRestoreOnStartup[] = "session.urls_to_restore_on_startup";
 // while user's profile determines his personal locale preference.
 const char kApplicationLocale[] = "intl.app_locale";
 #if defined(OS_CHROMEOS)
-// Non-syncable item.  Used for two-step initialization of locale in ChromeOS
+// Non-syncable item.  Used to detect locale change.
+// Used for two-step initialization of locale in ChromeOS
 // because synchronization of kApplicationLocale is not instant.
 const char kApplicationLocaleBackup[] = "intl.app_locale_backup";
+// Non-syncable item.
+// Used to locally override synchronized kApplicationLocale preference.
+const char kApplicationLocaleOverride[] = "intl.app_locale_override";
+// Locale accepted by user.  Non-syncable.
+// Used to determine whether we need to show Locale Change notification.
+const char kApplicationLocaleAccepted[] = "intl.app_locale_accepted";
 #endif
 
 // The default character encoding to assume for a web page in the

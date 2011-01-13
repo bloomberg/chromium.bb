@@ -73,12 +73,12 @@ class NotificationUIManager
   // be placed on the screen.
   void SetPositionPreference(BalloonCollection::PositionPreference preference);
 
-  // NotificationObserver interface (the event signaling kind of notifications)
+ private:
+  // NotificationObserver override.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
- private:
   // Attempts to display notifications from the show_queue if the user
   // is active.
   void CheckAndShowNotifications();

@@ -13,6 +13,7 @@
 0x307b8a127f85947e	AboutFlags_expose-for-tabs
 0x2c97f94b6aca4a22	AboutFlags_extension-apis
 0x66a2e456dfe783d3	AboutFlags_gpu-canvas-2d
+0x6cb0582a680ffec6	AboutFlags_instant-autocomplete-immediately
 0x67b7031bb00a6917	AboutFlags_instant-type
 0x681dbf08b11af420	AboutFlags_match-preview
 0x0156f26c1be32122	AboutFlags_my-special-feature
@@ -174,6 +175,7 @@
 0xd477cbce1681d404	CloseTab_Mouse
 0x4b31de70a21d7903	CloseWebApp
 0xdf8926d323575ff8	CloseWindow
+0xa0ebbbdb0eca8d89	ConflictBadge
 0x5fb63579fc981698	Copy
 0xb3d0f42456c6eaf6	CopyURLToClipBoard
 0x2aeb39c03cc86464	CreateLink
@@ -379,6 +381,8 @@
 0x204aad0f4a1f0f22	KeywordEditor_AddKeywordJS
 0x37ac83353fd9be1f	KeywordEditor_ModifiedKeyword
 0x2d038477eb20483b	KeywordEditor_RemoveKeyword
+0xab20f097361154dc	LanguageChange_Accept
+0x98ee7b2a2893443f	LanguageChange_Revert
 0xcce20fb4bce11250	LanguageConfigView_Open
 0x6c9d4656451fe020	LanguageMenuButton_InputMethodChanged
 0x9895b811fa1a2f7e	LanguageMenuButton_Open

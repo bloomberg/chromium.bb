@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -289,18 +289,7 @@ void LanguageOptionsHandler::UiLanguageChangeCallback(
   const std::string action = StringPrintf(
       "LanguageOptions_UiLanguageChange_%s", language_code.c_str());
   UserMetrics::RecordComputedAction(action);
-
-  // We maintain kApplicationLocale property in both a global storage
-  // and user's profile.  Global property determines locale of login screen,
-  // while user's profile determines his personal locale preference.
-  PrefService* prefs[] = {
-      g_browser_process->local_state(),
-      dom_ui_->GetProfile()->GetPrefs()
-  };
-  for (size_t i = 0; i < arraysize(prefs); ++i) {
-    prefs[i]->SetString(prefs::kApplicationLocale, language_code);
-    prefs[i]->SavePersistentPrefs();
-  }
+  dom_ui_->GetProfile()->ChangeApplicationLocale(language_code, false);
   dom_ui_->CallJavascriptFunction(
       L"options.LanguageOptions.uiLanguageSaved");
 }

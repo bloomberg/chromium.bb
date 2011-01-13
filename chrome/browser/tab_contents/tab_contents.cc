@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,6 +110,10 @@
 #if defined(OS_MACOSX)
 #include "app/surface/io_surface_support_mac.h"
 #endif  // defined(OS_MACOSX)
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/locale_change_guard.h"
+#endif  // defined(OS_CHROMEOS)
 
 // Cross-Site Navigations
 //
@@ -843,6 +847,9 @@ void TabContents::DidBecomeSelected() {
 
   WebCacheManager::GetInstance()->ObserveActivity(GetRenderProcessHost()->id());
   last_selected_time_ = base::TimeTicks::Now();
+#if defined(OS_CHROMEOS)
+  chromeos::LocaleChangeGuard::Check(this);
+#endif
 }
 
 void TabContents::FadeForInstant(bool animate) {
@@ -1996,9 +2003,8 @@ void TabContents::CloseConstrainedWindows() {
   // Clear out any constrained windows since we are leaving this page entirely.
   // We use indices instead of iterators in case CloseWindow does something
   // that may invalidate an iterator.
-  int size = static_cast<int>(child_windows_.size());
-  for (int i = size - 1; i >= 0; --i) {
-    ConstrainedWindow* window = child_windows_[i];
+  for (size_t i = 0; i < child_windows_.size(); ++i) {
+    ConstrainedWindow* window = child_windows_[child_windows_.size() - 1 - i];
     if (window) {
       window->CloseConstrainedWindow();
       BlockTabContent(false);

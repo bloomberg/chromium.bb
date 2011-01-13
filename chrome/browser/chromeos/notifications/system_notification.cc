@@ -13,21 +13,39 @@
 
 namespace chromeos {
 
+void SystemNotification::Init(int icon_resource_id) {
+  collection_ = static_cast<BalloonCollectionImpl*>(
+       g_browser_process->notification_ui_manager()->balloon_collection());
+  std::string url = dom_ui_util::GetImageDataUrlFromResource(icon_resource_id);
+  DCHECK(!url.empty());
+  GURL tmp_gurl(url);
+  icon_.Swap(&tmp_gurl);
+}
+
+SystemNotification::SystemNotification(Profile* profile,
+                                       NotificationDelegate* delegate,
+                                       int icon_resource_id,
+                                       const string16& title)
+    : profile_(profile),
+      collection_(NULL),
+      delegate_(delegate),
+      title_(title),
+      visible_(false),
+      urgent_(false) {
+  Init(icon_resource_id);
+}
+
 SystemNotification::SystemNotification(Profile* profile,
                                        const std::string& id,
                                        int icon_resource_id,
                                        const string16& title)
     : profile_(profile),
-      collection_(static_cast<BalloonCollectionImpl*>(
-          g_browser_process->notification_ui_manager()->balloon_collection())),
+      collection_(NULL),
       delegate_(new Delegate(id)),
       title_(title),
       visible_(false),
       urgent_(false) {
-  std::string url = dom_ui_util::GetImageDataUrlFromResource(icon_resource_id);
-  DCHECK(!url.empty());
-  GURL tmp_gurl(url);
-  icon_.Swap(&tmp_gurl);
+  Init(icon_resource_id);
 }
 
 SystemNotification::~SystemNotification() {

@@ -27,7 +27,14 @@ class SystemNotification {
   // The profile is the current user profile. The id is any string used
   // to uniquely identify this notification. The title is the title of
   // the message to be displayed. On creation, the message is hidden.
-  SystemNotification(Profile* profile, const std::string& id,
+  SystemNotification(Profile* profile,
+                     const std::string& id,
+                     int icon_resource_id,
+                     const string16& title);
+
+  // Allows to provide custom NotificationDelegate.
+  SystemNotification(Profile* profile,
+                     NotificationDelegate* delegate,
                      int icon_resource_id,
                      const string16& title);
 
@@ -71,9 +78,11 @@ class SystemNotification {
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
+  void Init(int icon_resource_id);
+
   Profile* profile_;
   BalloonCollectionImpl* collection_;
-  scoped_refptr<Delegate> delegate_;
+  scoped_refptr<NotificationDelegate> delegate_;
   GURL icon_;
   string16 title_;
   bool visible_;

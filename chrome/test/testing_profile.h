@@ -298,6 +298,8 @@ class TestingProfile : public Profile {
   }
   virtual void SetupChromeOSEnterpriseExtensionObserver() {
   }
+  virtual void ChangeApplicationLocale(const std::string&, bool) {
+  }
 #endif  // defined(OS_CHROMEOS)
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker();

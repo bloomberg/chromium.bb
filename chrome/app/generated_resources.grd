@@ -4338,6 +4338,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You are using an unsupported command-line flag: <ph name="BAD_FLAG">$1<ex>--no-sandbox</ex></ph>. Stability and security will suffer.
       </message>
 
+      <!-- Locale Change Notification-->
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_LOCALE_CHANGE_MESSAGE" desc="Message shown when locale was changed based on profile content.">
+          Interface language was changed: "<ph name="FROM_LOCALE">$1</ph>" => "<ph name="TO_LOCALE">$2</ph>" based on your preference.
+        </message>
+        <message name="IDS_LOCALE_CHANGE_REVERT_MESSAGE" desc="Link to revert a change.">
+          If you are unhappy about it: click here to close browser, sign out and revert.
+        </message>
+      </if>
+ 
       <if expr="pp_ifdef('chromeos')">
         <!-- about:system strings -->
         <message name="IDS_ABOUT_SYS_TITLE" desc="about:system page title">

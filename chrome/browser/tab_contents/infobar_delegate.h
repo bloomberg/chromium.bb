@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,11 +190,11 @@ class LinkInfoBarDelegate : public InfoBarDelegate {
 class ConfirmInfoBarDelegate : public AlertInfoBarDelegate {
  public:
   enum InfoBarButton {
-    BUTTON_NONE = 0,
-    BUTTON_OK = 1,
-    BUTTON_CANCEL = 2,
+    BUTTON_NONE       = 0,
+    BUTTON_OK         = 1 << 0,
+    BUTTON_CANCEL     = 1 << 1,
     // Specifies that the OK button should be rendered like a default button.
-    BUTTON_OK_DEFAULT = 4
+    BUTTON_OK_DEFAULT = 1 << 2
   };
 
   // Return the buttons to be shown for this InfoBar.
