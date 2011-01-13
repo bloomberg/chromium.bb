@@ -20,6 +20,13 @@ namespace base {
 class Lock;
 class Time;
 
+#if defined(USE_NSS)
+// EarlySetupForNSSInit performs lightweight setup which must occur before the
+// process goes multithreaded. This does not initialise NSS. For test, see
+// EnsureNSSInit.
+void EarlySetupForNSSInit();
+#endif
+
 // Initialize NRPR if it isn't already initialized.  This function is
 // thread-safe, and NSPR will only ever be initialized once.  NSPR will be
 // properly shut down on program exit.

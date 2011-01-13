@@ -99,6 +99,9 @@ char* PK11PasswordFunc(PK11SlotInfo* slot, PRBool retry, void* arg) {
 //
 // TODO(wtc): port this function to other USE_NSS platforms.  It is defined
 // only for OS_LINUX simply because the statfs structure is OS-specific.
+//
+// Because this function sets an environment variable it must be run before we
+// go multi-threaded.
 void UseLocalCacheOfNSSDatabaseIfNFS(const FilePath& database_dir) {
 #if defined(OS_LINUX)
   struct statfs buf;
@@ -240,6 +243,9 @@ class NSSInitSingleton {
 #else
     FilePath database_dir = GetInitialConfigDirectory();
     if (!database_dir.empty()) {
+      // This duplicates the work which should have been done in
+      // EarlySetupForNSSInit. However, this function is idempotent so there's
+      // no harm done.
       UseLocalCacheOfNSSDatabaseIfNFS(database_dir);
 
       // Initialize with a persistent database (likely, ~/.pki/nssdb).
@@ -343,6 +349,14 @@ LazyInstance<NSSInitSingleton, LeakyLazyInstanceTraits<NSSInitSingleton> >
     g_nss_singleton(LINKER_INITIALIZED);
 
 }  // namespace
+
+#if defined(USE_NSS)
+void EarlySetupForNSSInit() {
+  FilePath database_dir = GetInitialConfigDirectory();
+  if (!database_dir.empty())
+    UseLocalCacheOfNSSDatabaseIfNFS(database_dir);
+}
+#endif
 
 void EnsureNSPRInit() {
   g_nspr_singleton.Get();

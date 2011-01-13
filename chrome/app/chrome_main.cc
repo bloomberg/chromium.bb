@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
 #include "base/metrics/stats_table.h"
+#include "base/nss_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
@@ -709,6 +710,10 @@ int ChromeMain(int argc, char** argv) {
 #endif
   }
   SetupCRT(command_line);
+
+#if defined(USE_NSS)
+  base::EarlySetupForNSSInit();
+#endif
 
   // Initialize the Chrome path provider.
   app::RegisterPathProvider();
