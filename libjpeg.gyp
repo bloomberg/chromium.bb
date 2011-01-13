@@ -4,24 +4,19 @@
 
 {
   'variables': {
+    'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/libjpeg_turbo',
     'conditions': [
-      [ 'OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+      ['chromeos==1 or OS=="freebsd" or OS=="openbsd"', {
         # Link to system .so since we already use it due to GTK.
+        # See crbug.com/30288 and 31427 for why we skip OS=="linux" above.
         'use_system_libjpeg%': 1,
-      }, {  # OS!="linux" and OS!="freebsd" and OS!="openbsd"
+      }, {  # chromeos!=1 and OS!="freebsd" and OS!="openbsd"
         'use_system_libjpeg%': 0,
       }],
       [ 'OS=="win"', {
         'object_suffix': 'obj',
       }, {
         'object_suffix': 'o',
-      }],
-      [ 'OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
-        # This is a workaround for GYP issue 102.
-        # TODO(hbono): Delete this workaround when this issue is fixed.
-        'shared_generated_dir': '<(INTERMEDIATE_DIR)/third_party/libjpeg_turbo',
-      }, {
-        'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/libjpeg_turbo',
       }],
     ],
   },
