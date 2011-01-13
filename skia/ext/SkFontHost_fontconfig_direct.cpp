@@ -26,7 +26,7 @@
 
 namespace {
 
-// Equivalence classes, used to match the Liberation and Ascender fonts
+// Equivalence classes, used to match the Liberation and other fonts
 // with their metric-compatible replacements.  See the discussion in
 // GetFontEquivClass().
 enum FontEquivClass
@@ -34,7 +34,13 @@ enum FontEquivClass
     OTHER,
     SANS,
     SERIF,
-    MONO
+    MONO,
+    PMINCHO,
+    MINCHO,
+    PGOTHIC,
+    GOTHIC,
+    SIMSUN,
+    NSIMSUN,
 };
 
 // Match the font name against a whilelist of fonts, returning the equivalence
@@ -51,28 +57,73 @@ FontEquivClass GetFontEquivClass(const char* fontname)
     //   /etc/fonts/conf.d/30-metric-aliases.conf
     // from my Ubuntu system, but we're better off being very conservative.
 
-    // "Ascender Sans", "Ascender Serif" and "Ascender Sans Mono" are the
-    // tentative names of another set of fonts metric-compatible with
+    // Arimo, Tinos and Cousine are a set of fonts metric-compatible with
     // Arial, Times New Roman and Courier New  with a character repertoire
-    // much larger than Liberation. Note that Ascender Sans Mono
-    // is metrically compatible with Courier New, but the former
-    // is sans-serif while ther latter is serif.
-    // Arimo, Tinos and Cousine are the names of new fonts derived from and
-    // expanded upon Ascender Sans, Ascender Serif and Ascender Sans Mono.
-    if (strcasecmp(fontname, "Arial") == 0 ||
-        strcasecmp(fontname, "Liberation Sans") == 0 ||
-        strcasecmp(fontname, "Arimo") == 0 ||
-        strcasecmp(fontname, "Ascender Sans") == 0) {
-        return SANS;
-    } else if (strcasecmp(fontname, "Times New Roman") == 0 ||
-               strcasecmp(fontname, "Liberation Serif") == 0 ||
-               strcasecmp(fontname, "Tinos") == 0 ||
-               strcasecmp(fontname, "Ascender Serif") == 0) {
-        return SERIF;
-    } else if (strcasecmp(fontname, "Courier New") == 0 ||
-               strcasecmp(fontname, "Cousine") == 0 ||
-               strcasecmp(fontname, "Ascender Sans Mono") == 0) {
-        return MONO;
+    // much larger than Liberation. Note that Cousine is metrically
+    // compatible with Courier New, but the former is sans-serif while
+    // the latter is serif.
+
+
+    struct FontEquivMap {
+        FontEquivClass clazz;
+        const char name[40];
+    };
+
+    static const FontEquivMap kFontEquivMap[] = {
+        { SANS, "Arial" },
+        { SANS, "Arimo" },
+        { SANS, "Liberation Sans" },
+
+        { SERIF, "Times New Roman" },
+        { SERIF, "Tinos" },
+        { SERIF, "Liberation Serif" },
+
+        { MONO, "Courier New" },
+        { MONO, "Cousine" },
+        { MONO, "Liberation Mono" },
+
+        // ＭＳ Ｐゴシック
+        { PGOTHIC, "MS PGothic" },
+        { PGOTHIC, "\xef\xbc\xad\xef\xbc\xb3 \xef\xbc\xb0"
+                   "\xe3\x82\xb4\xe3\x82\xb7\xe3\x83\x83\xe3\x82\xaf" },
+        { PGOTHIC, "IPAPGothic" },
+
+        // 宋体
+        { SIMSUN, "Simsun" },
+        { SIMSUN, "\xe5\xae\x8b\xe4\xbd\x93" },
+        { SIMSUN, "Song ASC" },
+
+        // ＭＳ Ｐ明朝
+        { PMINCHO, "MS PMincho" },
+        { PMINCHO, "\xef\xbc\xad\xef\xbc\xb3 \xef\xbc\xb0"
+                   "\xe6\x98\x8e\xe6\x9c\x9d"},
+        { PMINCHO, "IPAPMincho" },
+
+        // ＭＳ ゴシック
+        { GOTHIC, "MS Gothic" },
+        { GOTHIC, "\xef\xbc\xad\xef\xbc\xb3 "
+                  "\xe3\x82\xb4\xe3\x82\xb7\xe3\x83\x83\xe3\x82\xaf" },
+        { GOTHIC, "IPAGothic" },
+
+        // ＭＳ 明朝
+        { MINCHO, "MS Mincho" },
+        { MINCHO, "\xef\xbc\xad\xef\xbc\xb3 \xe6\x98\x8e\xe6\x9c\x9d" },
+        { MINCHO, "IPAMincho" },
+
+        // 新宋体
+        { NSIMSUN, "NSimsun" },
+        { NSIMSUN, "\xe6\x96\xb0\xe5\xae\x8b\xe4\xbd\x93" },
+        { NSIMSUN, "N Song ASC" },
+    };
+
+    static const size_t kFontCount =
+        sizeof(kFontEquivMap)/sizeof(kFontEquivMap[0]);
+
+    // TODO(jungshik): If this loop turns out to be hot, turn
+    // the array to a static (hash)map to speed it up.
+    for (size_t i = 0; i < kFontCount; ++i) {
+        if (strcasecmp(kFontEquivMap[i].name, fontname) == 0)
+            return kFontEquivMap[i].clazz;
     }
     return OTHER;
 }
