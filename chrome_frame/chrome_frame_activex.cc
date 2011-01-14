@@ -682,6 +682,14 @@ HRESULT ChromeFrameActivex::registerBhoIfNeeded() {
     return hr;
   }
 
+  hr = UrlMkSetSessionOption(URLMON_OPTION_USERAGENT_REFRESH, NULL, 0, 0);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to refresh user agent string from registry. "
+                << "UrlMkSetSessionOption returned "
+                << base::StringPrintf("0x%08x", hr);
+    return hr;
+  }
+
   hr = bho->SetSite(web_browser2);
   if (FAILED(hr)) {
     NOTREACHED() << "ChromeFrame BHO SetSite failed. Error:"
@@ -691,12 +699,5 @@ HRESULT ChromeFrameActivex::registerBhoIfNeeded() {
 
   web_browser2->PutProperty(base::win::ScopedBstr(bho_class_id_as_string),
                             base::win::ScopedVariant(bho));
-
-  hr = UrlMkSetSessionOption(URLMON_OPTION_USERAGENT_REFRESH, NULL, 0, 0);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to refresh user agent string from registry. "
-                << "UrlMkSetSessionOption returned "
-                << base::StringPrintf("0x%08x", hr);
-  }
-  return hr;
+  return S_OK;
 }
