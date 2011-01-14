@@ -34,9 +34,6 @@ class WizardInProcessBrowserTest : public CrosInProcessBrowserTest {
   virtual void CleanUpOnMainThread();
 
   WizardController* controller() const { return controller_; }
-  void set_controller(WizardController* controller) {
-    controller_ = controller;
-  }
 
  private:
   std::string screen_name_;

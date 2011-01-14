@@ -199,6 +199,9 @@ class NewUserView : public ThrobberHostView,
   int languages_menubutton_order_;
   int sign_in_button_order_;
 
+  FRIEND_TEST_ALL_PREFIXES(LoginScreenTest, IncognitoLogin);
+  friend class LoginScreenTest;
+
   DISALLOW_COPY_AND_ASSIGN(NewUserView);
 };
 

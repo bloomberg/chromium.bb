@@ -345,6 +345,7 @@ extern const char kZygoteProcess[];
 
 #if defined(OS_CHROMEOS)
 extern const char kEnableGView[];
+extern const char kEnableLoginImages[];
 extern const char kLoginManager[];
 // TODO(avayvod): Remove this flag when it's unnecessary for testing
 // purposes.
