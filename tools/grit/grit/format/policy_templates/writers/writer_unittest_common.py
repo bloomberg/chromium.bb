@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -35,12 +35,11 @@ class DummyOutput(object):
 class WriterUnittestCommon(unittest.TestCase):
   '''Common class for unittesting writers.'''
 
-  def PrepareTest(self, policy_json, grd_messages_text):
+  def PrepareTest(self, policy_json):
     '''Prepares and parses a grit tree along with a data structure of policies.
 
     Args:
       policy_json: The policy data structure in JSON format.
-      grd_messages_text: The messages node of the grit tree in text form.
     '''
     # First create a temporary file that contains the JSON policy list.
     tmp_file_name = 'test.json'
@@ -50,16 +49,14 @@ class WriterUnittestCommon(unittest.TestCase):
     f.write(policy_json.strip())
     f.close()
     # Then assemble the grit tree.
-    grd_begin_text = '''
+    grd_text = '''
     <grit base_dir="." latest_public_release="0" current_release="1" source_lang_id="en">
       <release seq="1">
         <structures>
           <structure name="IDD_POLICY_SOURCE_FILE" file="%s" type="policy_template_metafile" />
-        </structures>''' % json_file_path
-    grd_end_text = '''
+        </structures>
       </release>
-    </grit>'''
-    grd_text = grd_begin_text + grd_messages_text + grd_end_text
+    </grit>''' % json_file_path
     grd_string_io = StringIO.StringIO(grd_text)
     # Parse the grit tree and load the policies' JSON with a gatherer.
     grd = grd_reader.Parse(grd_string_io, dir=tmp_dir_name)

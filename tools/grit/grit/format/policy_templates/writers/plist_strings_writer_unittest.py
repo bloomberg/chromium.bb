@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -30,11 +30,13 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
       {
         'policy_definitions': [],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">$1 preferen"ces</message>
-        </messages>
-      ''')
+        'messages': {
+          'mac_chrome_preferences': {
+            'text': '$1 preferen"ces',
+            'desc': 'blah'
+          }
+        }
+      }''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -54,23 +56,25 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           {
             'name': 'MainGroup',
             'type': 'group',
+            'caption': 'Caption of main.',
+            'desc': 'Description of main.',
             'policies': [{
               'name': 'MainPolicy',
               'type': 'main',
               'supported_on': ['chrome.mac:8-'],
+              'caption': 'Caption of main policy.',
+              'desc': 'Description of main policy.',
             }],
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_MAINGROUP_CAPTION">Caption of main.</message>
-          <message name="IDS_POLICY_MAINGROUP_DESC">Title of main.</message>
-          <message name="IDS_POLICY_MAINPOLICY_CAPTION">Caption of main policy.</message>
-          <message name="IDS_POLICY_MAINPOLICY_DESC">Title of main policy.</message>
-          <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">Preferences of $1</message>
-        </messages>
-      ''')
+        'messages': {
+          'mac_chrome_preferences': {
+            'text': 'Preferences of $1',
+            'desc': 'blah'
+          }
+        }
+      }''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -81,7 +85,7 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'Google_Chrome.pfm_title = "Google Chrome";\n'
         'Google_Chrome.pfm_description = "Preferences of Google Chrome";\n'
         'MainPolicy.pfm_title = "Caption of main policy.";\n'
-        'MainPolicy.pfm_description = "Title of main policy.";')
+        'MainPolicy.pfm_description = "Description of main policy.";')
     self.assertEquals(output.strip(), expected_output.strip())
 
   def testStringPolicy(self):
@@ -93,25 +97,27 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           {
             'name': 'StringGroup',
             'type': 'group',
+            'caption': 'Caption of group.',
+            'desc': """Description of group.
+With a newline.""",
             'policies': [{
               'name': 'StringPolicy',
               'type': 'string',
+              'caption': 'Caption of policy.',
+              'desc': """Description of policy.
+With a newline.""",
               'supported_on': ['chrome.mac:8-'],
             }],
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_STRINGGROUP_CAPTION">Caption of group.</message>
-          <message name="IDS_POLICY_STRINGGROUP_DESC">Description of group.
-With a newline.</message>
-          <message name="IDS_POLICY_STRINGPOLICY_CAPTION">Caption of policy.</message>
-          <message name="IDS_POLICY_STRINGPOLICY_DESC">Description of policy.
-With a newline.</message>
-          <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">Preferences Of $1</message>
-        </messages>
-      ''')
+        'messages': {
+          'mac_chrome_preferences': {
+            'text': 'Preferences of $1',
+            'desc': 'blah'
+          }
+        }
+      }''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -120,7 +126,7 @@ With a newline.</message>
         'en')
     expected_output = (
         'Chromium.pfm_title = "Chromium";\n'
-        'Chromium.pfm_description = "Preferences Of Chromium";\n'
+        'Chromium.pfm_description = "Preferences of Chromium";\n'
         'StringPolicy.pfm_title = "Caption of policy.";\n'
         'StringPolicy.pfm_description = '
             '"Description of policy.\\nWith a newline.";')
@@ -134,29 +140,37 @@ With a newline.</message>
           {
             'name': 'EnumGroup',
             'type': 'group',
+            'desc': '',
+            'caption': '',
             'policies': [{
               'name': 'EnumPolicy',
               'type': 'int-enum',
+              'desc': 'Description of policy.',
+              'caption': 'Caption of policy.',
               'items': [
-                {'name': 'ProxyServerDisabled', 'value': 0},
-                {'name': 'ProxyServerAutoDetect', 'value': 1},
+                {
+                  'name': 'ProxyServerDisabled',
+                  'value': 0,
+                  'caption': 'Option1'
+                },
+                {
+                  'name': 'ProxyServerAutoDetect',
+                  'value': 1,
+                  'caption': 'Option2'
+                },
               ],
               'supported_on': ['chrome.mac:8-'],
             }],
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_ENUMGROUP_CAPTION">Caption of group.</message>
-          <message name="IDS_POLICY_ENUMGROUP_DESC">Description of group.</message>
-          <message name="IDS_POLICY_ENUMPOLICY_CAPTION">Caption of policy.</message>
-          <message name="IDS_POLICY_ENUMPOLICY_DESC">Description of policy.</message>
-          <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">Option1</message>
-          <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">Option2</message>
-          <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">$1 preferences</message>
-        </messages>
-      ''')
+        'messages': {
+          'mac_chrome_preferences': {
+            'text': '$1 preferences',
+            'desc': 'blah'
+          }
+        }
+      }''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -180,29 +194,37 @@ With a newline.</message>
           {
             'name': 'EnumGroup',
             'type': 'group',
+            'desc': '',
+            'caption': '',
             'policies': [{
               'name': 'EnumPolicy',
               'type': 'string-enum',
+              'desc': 'Description of policy.',
+              'caption': 'Caption of policy.',
               'items': [
-                {'name': 'ProxyServerDisabled', 'value': "one"},
-                {'name': 'ProxyServerAutoDetect', 'value': "two"},
+                {
+                  'name': 'ProxyServerDisabled',
+                  'value': 'one',
+                  'caption': 'Option1'
+                },
+                {
+                  'name': 'ProxyServerAutoDetect',
+                  'value': 'two',
+                  'caption': 'Option2'
+                },
               ],
               'supported_on': ['chrome.mac:8-'],
             }],
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_ENUMGROUP_CAPTION">Caption of group.</message>
-          <message name="IDS_POLICY_ENUMGROUP_DESC">Description of group.</message>
-          <message name="IDS_POLICY_ENUMPOLICY_CAPTION">Caption of policy.</message>
-          <message name="IDS_POLICY_ENUMPOLICY_DESC">Description of policy.</message>
-          <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">Option1</message>
-          <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">Option2</message>
-          <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">$1 preferences</message>
-        </messages>
-      ''')
+        'messages': {
+          'mac_chrome_preferences': {
+            'text': '$1 preferences',
+            'desc': 'blah'
+          }
+        }
+      }''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -227,23 +249,25 @@ With a newline.</message>
           {
             'name': 'NonMacGroup',
             'type': 'group',
+            'caption': '',
+            'desc': '',
             'policies': [{
               'name': 'NonMacPolicy',
               'type': 'string',
+              'caption': '',
+              'desc': '',
               'supported_on': ['chrome_os:8-'],
             }],
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_NONMACGROUP_CAPTION">Caption of group.</message>
-          <message name="IDS_POLICY_NONMACGROUP_DESC">Description of group.</message>
-          <message name="IDS_POLICY_NONMACPOLICY_CAPTION">Caption of policy.</message>
-          <message name="IDS_POLICY_NONMACPOLICY_DESC">Description of policy.</message>
-          <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">$1 preferences</message>
-        </messages>
-      ''')
+        'messages': {
+          'mac_chrome_preferences': {
+            'text': '$1 preferences',
+            'desc': 'blah'
+          }
+        }
+      }''')
     output = self.GetOutput(
         grd,
         'fr',

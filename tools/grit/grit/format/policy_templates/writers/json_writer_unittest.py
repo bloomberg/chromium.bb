@@ -39,8 +39,9 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '{'
         '  "policy_definitions": [],'
         '  "placeholders": [],'
-        '}', '<messages></messages>')
-    output = self.GetOutput(grd, 'fr', {'_chromium': '1', }, 'json', 'en')
+        '  "messages": {},'
+        '}')
+    output = self.GetOutput(grd, 'fr', {'_chromium': '1',}, 'json', 'en')
     expected_output = '{\n}'
     self.CompareOutputs(output, expected_output)
 
@@ -52,6 +53,8 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    {'
         '      "name": "MainPolicy",'
         '      "type": "main",'
+        '      "caption": "",'
+        '      "desc": "",'
         '      "supported_on": ["chrome.linux:8-"],'
         '      "annotations": {'
         '        "example_value": True'
@@ -59,11 +62,8 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    },'
         '  ],'
         '  "placeholders": [],'
-        '}',
-        '<messages>'
-        '  <message name="IDS_POLICY_MAINPOLICY_CAPTION"></message>'
-        '  <message name="IDS_POLICY_MAINPOLICY_DESC"></message>'
-        '</messages>')
+        '  "messages": {},'
+        '}')
     output = self.GetOutput(grd, 'fr', {'_google_chrome' : '1'}, 'json', 'en')
     expected_output = (
         '{\n'
@@ -79,6 +79,8 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    {'
         '      "name": "StringPolicy",'
         '      "type": "string",'
+        '      "caption": "",'
+        '      "desc": "",'
         '      "supported_on": ["chrome.linux:8-"],'
         '      "annotations": {'
         '        "example_value": "hello, world!"'
@@ -86,11 +88,8 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    },'
         '  ],'
         '  "placeholders": [],'
-        '}',
-        '<messages>'
-        '  <message name="IDS_POLICY_STRINGPOLICY_CAPTION"></message>'
-        '  <message name="IDS_POLICY_STRINGPOLICY_DESC"></message>'
-        '</messages>')
+        '  "messages": {},'
+        '}')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'json', 'en')
     expected_output = (
         '{\n'
@@ -106,6 +105,8 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    {'
         '      "name": "IntPolicy",'
         '      "type": "int",'
+        '      "caption": "",'
+        '      "desc": "",'
         '      "supported_on": ["chrome.linux:8-"],'
         '      "annotations": {'
         '        "example_value": 15'
@@ -113,11 +114,8 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    },'
         '  ],'
         '  "placeholders": [],'
-        '}',
-        '<messages>'
-        '  <message name="IDS_POLICY_INTPOLICY_CAPTION"></message>'
-        '  <message name="IDS_POLICY_INTPOLICY_DESC"></message>'
-        '</messages>')
+        '  "messages": {},'
+        '}')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'json', 'en')
     expected_output = (
         '{\n'
@@ -133,9 +131,11 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    {'
         '      "name": "EnumPolicy",'
         '      "type": "int-enum",'
+        '      "caption": "",'
+        '      "desc": "",'
         '      "items": ['
-        '        {"name": "ProxyServerDisabled", "value": 0},'
-        '        {"name": "ProxyServerAutoDetect", "value": 1},'
+        '        {"name": "ProxyServerDisabled", "value": 0, "caption": ""},'
+        '        {"name": "ProxyServerAutoDetect", "value": 1, "caption": ""},'
         '      ],'
         '      "supported_on": ["chrome.linux:8-"],'
         '      "annotations": {'
@@ -144,15 +144,8 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    },'
         '  ],'
         '  "placeholders": [],'
-        '}',
-        '<messages>'
-        '  <message name="IDS_POLICY_ENUMPOLICY_CAPTION"></message>'
-        '  <message name="IDS_POLICY_ENUMPOLICY_DESC"></message>'
-        '  <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">'
-        '  </message>'
-        '  <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">'
-        '  </message>'
-        '</messages>')
+        '  "messages": {},'
+        '}')
     output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'json', 'en')
     expected_output = (
         '{\n'
@@ -168,9 +161,13 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    {'
         '      "name": "EnumPolicy",'
         '      "type": "string-enum",'
+        '      "caption": "",'
+        '      "desc": "",'
         '      "items": ['
-        '        {"name": "ProxyServerDisabled", "value": "one"},'
-        '        {"name": "ProxyServerAutoDetect", "value": "two"},'
+        '        {"name": "ProxyServerDisabled", "value": "one",'
+        '         "caption": ""},'
+        '        {"name": "ProxyServerAutoDetect", "value": "two",'
+        '         "caption": ""},'
         '      ],'
         '      "supported_on": ["chrome.linux:8-"],'
         '      "annotations": {'
@@ -179,15 +176,8 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    },'
         '  ],'
         '  "placeholders": [],'
-        '}',
-        '<messages>'
-        '  <message name="IDS_POLICY_ENUMPOLICY_CAPTION"></message>'
-        '  <message name="IDS_POLICY_ENUMPOLICY_DESC"></message>'
-        '  <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">'
-        '  </message>'
-        '  <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">'
-        '  </message>'
-        '</messages>')
+        '  "messages": {},'
+        '}')
     output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'json', 'en')
     expected_output = (
         '{\n'
@@ -203,6 +193,8 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    {'
         '      "name": "ListPolicy",'
         '      "type": "list",'
+        '      "caption": "",'
+        '      "desc": "",'
         '      "supported_on": ["chrome.linux:8-"],'
         '      "annotations": {'
         '        "example_value": ["foo", "bar"]'
@@ -210,12 +202,8 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    },'
         '  ],'
         '  "placeholders": [],'
-        '}',
-        '<messages>'
-        '  <message name="IDS_POLICY_LISTPOLICY_DESC"></message>'
-        '  <message name="IDS_POLICY_LISTPOLICY_CAPTION"></message>'
-        '  <message name="IDS_POLICY_LISTPOLICY_LABEL"></message>'
-        '</messages>')
+        '  "messages": {},'
+        '}')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'json', 'en')
     expected_output = (
         '{\n'
@@ -232,6 +220,8 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    {'
         '      "name": "NonLinuxPolicy",'
         '      "type": "list",'
+        '      "caption": "",'
+        '      "desc": "",'
         '      "supported_on": ["chrome.mac:8-"],'
         '      "annotations": {'
         '        "example_value": ["a"]'
@@ -239,11 +229,8 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    },'
         '  ],'
         '  "placeholders": [],'
-        '}',
-        '<messages>'
-        '  <message name="IDS_POLICY_NONLINUXPOLICY_CAPTION"></message>'
-        '  <message name="IDS_POLICY_NONLINUXPOLICY_DESC"></message>'
-        '</messages>')
+        '  "messages": {},'
+        '}')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'json', 'en')
     expected_output = '{\n}'
     self.CompareOutputs(output, expected_output)
@@ -256,9 +243,13 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    {'
         '      "name": "Group1",'
         '      "type": "group",'
+        '      "caption": "",'
+        '      "desc": "",'
         '      "policies": [{'
         '        "name": "Policy1",'
         '        "type": "list",'
+        '        "caption": "",'
+        '        "desc": "",'
         '        "supported_on": ["chrome.linux:8-"],'
         '        "annotations": {'
         '          "example_value": ["a", "b"]'
@@ -266,6 +257,8 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '      },{'
         '        "name": "Policy2",'
         '        "type": "string",'
+        '        "caption": "",'
+        '        "desc": "",'
         '        "supported_on": ["chrome.linux:8-"],'
         '        "annotations": {'
         '          "example_value": "c"'
@@ -274,15 +267,8 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    },'
         '  ],'
         '  "placeholders": [],'
-        '}',
-        '<messages>'
-        '  <message name="IDS_POLICY_GROUP1_CAPTION"></message>'
-        '  <message name="IDS_POLICY_GROUP1_DESC"></message>'
-        '  <message name="IDS_POLICY_POLICY1_DESC"></message>'
-        '  <message name="IDS_POLICY_POLICY2_DESC"></message>'
-        '  <message name="IDS_POLICY_POLICY1_CAPTION"></message>'
-        '  <message name="IDS_POLICY_POLICY2_CAPTION"></message>'
-        '</messages>')
+        '  "messages": {},'
+        '}')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'json', 'en')
     expected_output = (
         '{\n'

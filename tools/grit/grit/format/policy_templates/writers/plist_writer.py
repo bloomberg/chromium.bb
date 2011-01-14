@@ -8,12 +8,12 @@ from grit.format.policy_templates.writers import plist_helper
 from grit.format.policy_templates.writers import xml_formatted_writer
 
 
-def GetWriter(config, messages):
+def GetWriter(config):
   '''Factory method for creating PListWriter objects.
   See the constructor of TemplateWriter for description of
   arguments.
   '''
-  return PListWriter(['mac'], config, messages)
+  return PListWriter(['mac'], config)
 
 
 class PListWriter(xml_formatted_writer.XMLFormattedWriter):

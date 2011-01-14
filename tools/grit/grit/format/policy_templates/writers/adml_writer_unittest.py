@@ -25,13 +25,14 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     config = {
       'build': 'test',
       'win_supported_os': 'SUPPORTED_TESTOS',
-      'win_supported_os_msg': 'IDS_POLICY_WIN_SUPPORTED_WINXPSP2',
     }
-    # Grid messages
-    messages = {
-      'IDS_POLICY_WIN_SUPPORTED_WINXPSP2': 'Supported on Test OS or higher'
+    self.writer = adml_writer.GetWriter(config)
+    self.writer.messages = {
+      'win_supported_winxpsp2': {
+        'text': 'Supported on Test OS or higher',
+        'desc': 'blah'
+      }
     }
-    self.writer = adml_writer.GetWriter(config, messages)
     self.writer.Init()
 
   def _InitWriterForAddingPolicyGroups(self, writer):

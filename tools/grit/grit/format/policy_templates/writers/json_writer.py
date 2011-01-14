@@ -7,12 +7,12 @@ from xml.dom import minidom
 from grit.format.policy_templates.writers import template_writer
 
 
-def GetWriter(config, messages):
+def GetWriter(config):
   '''Factory method for creating JsonWriter objects.
   See the constructor of TemplateWriter for description of
   arguments.
   '''
-  return JsonWriter(['linux'], config, messages)
+  return JsonWriter(['linux'], config)
 
 
 class JsonWriter(template_writer.TemplateWriter):

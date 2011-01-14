@@ -44,19 +44,9 @@ class TestSuiteAll(unittest.TestSuite):
     from grit.tool import postprocess_unittest
     from grit import shortcuts_unittests
     from grit.gather import muppet_strings_unittest
+    from grit.gather import policy_json_unittest
     from grit.node.custom import filename_unittest
     import grit.format.js_map_format_unittest
-    from grit.format.policy_templates import policy_template_generator_unittest
-    from grit.format.policy_templates.writers import plist_writer_unittest
-    from grit.format.policy_templates.writers \
-        import plist_strings_writer_unittest
-    from grit.format.policy_templates.writers \
-        import adm_writer_unittest
-    from grit.format.policy_templates.writers \
-        import adml_writer_unittest
-    from grit.format.policy_templates.writers \
-        import admx_writer_unittest
-    from grit.format.policy_templates.writers import doc_writer_unittest
 
     test_classes = [
       base_unittest.NodeUnittest,
@@ -86,13 +76,7 @@ class TestSuiteAll(unittest.TestSuite):
       muppet_strings_unittest.MuppetStringsUnittest,
       filename_unittest.WindowsFilenameUnittest,
       grit.format.js_map_format_unittest.JsMapFormatUnittest,
-      policy_template_generator_unittest.PolicyTemplateGeneratorUnittest,
-      plist_writer_unittest.PListWriterUnittest,
-      plist_strings_writer_unittest.PListStringsWriterUnittest,
-      adm_writer_unittest.AdmWriterUnittest,
-      admx_writer_unittest.AdmxWriterUnittest,
-      adml_writer_unittest.AdmlWriterUnittest,
-      doc_writer_unittest.DocWriterUnittest,
+      policy_json_unittest.PolicyJsonUnittest,
       # add test classes here...
     ]
 

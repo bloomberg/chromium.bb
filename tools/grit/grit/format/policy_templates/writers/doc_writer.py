@@ -9,12 +9,12 @@ from xml.dom import minidom
 from grit.format.policy_templates.writers import xml_formatted_writer
 
 
-def GetWriter(config, messages):
+def GetWriter(config):
   '''Factory method for creating DocWriter objects.
   See the constructor of TemplateWriter for description of
   arguments.
   '''
-  return DocWriter(['*'], config, messages)
+  return DocWriter(['*'], config)
 
 
 class DocWriter(xml_formatted_writer.XMLFormattedWriter):
@@ -41,7 +41,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     Returns:
       The localized message.
     '''
-    return self.messages['IDS_POLICY_DOC_' + msg_id.upper()]
+    return self.messages['doc_' + msg_id]['text']
 
   def _MapListToString(self, item_map, items):
     '''Creates a comma-separated list.

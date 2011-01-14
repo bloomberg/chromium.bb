@@ -44,12 +44,13 @@ class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
       {
         'policy_definitions': [],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least "Windows 3.11</message>
-        </messages>
-      ''')
-    output = self.GetOutput(grd, 'fr', {'_chromium': '1', }, 'adm', 'en')
+        'messages': {
+          'win_supported_winxpsp2': {
+            'text': 'At least "Windows 3.11', 'desc': 'blah'
+          }
+        }
+      }''')
+    output = self.GetOutput(grd, 'fr', {'_chromium': '1',}, 'adm', 'en')
     expected_output = '''CLASS MACHINE
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
@@ -69,17 +70,18 @@ chromium="Chromium"'''
           {
             'name': 'MainPolicy',
             'type': 'main',
-            'supported_on': ['chrome.win:8-']
+            'supported_on': ['chrome.win:8-'],
+            'caption': 'Caption of main.',
+            'desc': 'Description of main.',
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_MAINPOLICY_CAPTION">Caption of main.</message>
-          <message name="IDS_POLICY_MAINPOLICY_DESC">Description of main.</message>
-          <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.12</message>
-        </messages>
-      ''')
+        'messages': {
+          'win_supported_winxpsp2': {
+            'text': 'At least Windows 3.12', 'desc': 'blah'
+          }
+        }
+      }''')
     output = self.GetOutput(grd, 'fr', {'_google_chrome' : '1'}, 'adm', 'en')
     expected_output = '''CLASS MACHINE
   CATEGORY !!google
@@ -115,18 +117,19 @@ MainPolicy_Explain="Description of main."'''
           {
             'name': 'StringPolicy',
             'type': 'string',
-            'supported_on': ['chrome.win:8-']
+            'supported_on': ['chrome.win:8-'],
+            'desc': """Description of group.
+With a newline.""",
+            'caption': 'Caption of policy.',
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_STRINGPOLICY_CAPTION">Caption of policy.</message>
-          <message name="IDS_POLICY_STRINGPOLICY_DESC">Description of group.
-With a newline.</message>
-          <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.13</message>
-        </messages>
-      ''')
+        'messages': {
+          'win_supported_winxpsp2': {
+            'text': 'At least Windows 3.13', 'desc': 'blah'
+          }
+        }
+      }''')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
     expected_output = '''CLASS MACHINE
   CATEGORY !!chromium
@@ -162,18 +165,18 @@ StringPolicy_Part="Caption of policy."
           {
             'name': 'IntPolicy',
             'type': 'int',
+            'caption': 'Caption of policy.',
+            'desc': 'Description of policy.',
             'supported_on': ['chrome.win:8-']
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_INTPOLICY_CAPTION">Caption of policy.</message>
-          <message name="IDS_POLICY_INTPOLICY_DESC">Description of group.
-With a newline.</message>
-          <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.13</message>
-        </messages>
-      ''')
+        'messages': {
+          'win_supported_winxpsp2': {
+            'text': 'At least Windows 3.13', 'desc': 'blah'
+          }
+        }
+      }''')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
     expected_output = '''CLASS MACHINE
   CATEGORY !!chromium
@@ -196,7 +199,7 @@ With a newline.</message>
 SUPPORTED_WINXPSP2="At least Windows 3.13"
 chromium="Chromium"
 IntPolicy_Policy="Caption of policy."
-IntPolicy_Explain="Description of group.\\nWith a newline."
+IntPolicy_Explain="Description of policy."
 IntPolicy_Part="Caption of policy."
 '''
     self.CompareOutputs(output, expected_output)
@@ -210,22 +213,29 @@ IntPolicy_Part="Caption of policy."
             'name': 'EnumPolicy',
             'type': 'int-enum',
             'items': [
-              {'name': 'ProxyServerDisabled', 'value': 0},
-              {'name': 'ProxyServerAutoDetect', 'value': 1},
+              {
+                'name': 'ProxyServerDisabled',
+                'value': 0,
+                'caption': 'Option1',
+              },
+              {
+                'name': 'ProxyServerAutoDetect',
+                'value': 1,
+                'caption': 'Option2',
+              },
             ],
+            'desc': 'Description of policy.',
+            'caption': 'Caption of policy.',
             'supported_on': ['chrome.win:8-']
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_ENUMPOLICY_CAPTION">Caption of policy.</message>
-          <message name="IDS_POLICY_ENUMPOLICY_DESC">Description of policy.</message>
-          <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">Option1</message>
-          <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">Option2</message>
-          <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.14</message>
-        </messages>
-      ''')
+        'messages': {
+          'win_supported_winxpsp2': {
+            'text': 'At least Windows 3.14', 'desc': 'blah'
+          }
+        }
+      }''')
     output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'adm', 'en')
     expected_output = '''CLASS MACHINE
   CATEGORY !!google
@@ -270,23 +280,24 @@ ProxyServerAutoDetect_DropDown="Option2"
           {
             'name': 'EnumPolicy',
             'type': 'string-enum',
+            'caption': 'Caption of policy.',
+            'desc': 'Description of policy.',
             'items': [
-              {'name': 'ProxyServerDisabled', 'value': 'one'},
-              {'name': 'ProxyServerAutoDetect', 'value': 'two'},
+              {'name': 'ProxyServerDisabled', 'value': 'one',
+               'caption': 'Option1'},
+              {'name': 'ProxyServerAutoDetect', 'value': 'two',
+               'caption': 'Option2'},
             ],
             'supported_on': ['chrome.win:8-']
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_ENUMPOLICY_CAPTION">Caption of policy.</message>
-          <message name="IDS_POLICY_ENUMPOLICY_DESC">Description of policy.</message>
-          <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">Option1</message>
-          <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">Option2</message>
-          <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.14</message>
-        </messages>
-      ''')
+        'messages': {
+          'win_supported_winxpsp2': {
+            'text': 'At least Windows 3.14', 'desc': 'blah'
+          }
+        }
+      }''')
     output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'adm', 'en')
     expected_output = '''CLASS MACHINE
   CATEGORY !!google
@@ -331,19 +342,20 @@ ProxyServerAutoDetect_DropDown="Option2"
           {
             'name': 'ListPolicy',
             'type': 'list',
-            'supported_on': ['chrome.win:8-']
+            'supported_on': ['chrome.win:8-'],
+            'desc': """Description of list policy.
+With a newline.""",
+            'caption': 'Caption of list policy.',
+            'label': 'Label of list policy.'
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_LISTPOLICY_DESC">Description of list policy.
-With a newline.</message>
-          <message name="IDS_POLICY_LISTPOLICY_CAPTION">Caption of list policy.</message>
-          <message name="IDS_POLICY_LISTPOLICY_LABEL">Value caption of list policy.</message>
-          <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.15</message>
-        </messages>
-      ''')
+        'messages': {
+          'win_supported_winxpsp2': {
+            'text': 'At least Windows 3.15', 'desc': 'blah'
+          }
+        },
+      }''')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
     expected_output = '''CLASS MACHINE
   CATEGORY !!chromium
@@ -368,7 +380,7 @@ SUPPORTED_WINXPSP2="At least Windows 3.15"
 chromium="Chromium"
 ListPolicy_Policy="Caption of list policy."
 ListPolicy_Explain="Description of list policy.\\nWith a newline."
-ListPolicy_Part="Value caption of list policy."
+ListPolicy_Part="Label of list policy."
 '''
     self.CompareOutputs(output, expected_output)
 
@@ -384,20 +396,21 @@ ListPolicy_Part="Value caption of list policy."
             'policies': [{
               'name': 'NonWinPolicy',
               'type': 'list',
-              'supported_on': ['chrome.linux:8-', 'chrome.mac:8-']
+              'supported_on': ['chrome.linux:8-', 'chrome.mac:8-'],
+              'caption': 'Caption of list policy.',
+              'desc': 'Desc of list policy.',
             }],
+            'caption': 'Group caption.',
+            'desc': 'Group description.',
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_NONWINGROUP_CAPTION">Group caption.</message>
-          <message name="IDS_POLICY_NONWINGROUP_DESC">Group description.</message>
-          <message name="IDS_POLICY_NONWINPOLICY_CAPTION">Caption of list policy.</message>
-          <message name="IDS_POLICY_NONWINPOLICY_DESC">Desc of list policy.</message>
-          <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.16</message>
-        </messages>
-      ''')
+        'messages': {
+          'win_supported_winxpsp2': {
+            'text': 'At least Windows 3.16', 'desc': 'blah'
+          }
+        }
+      }''')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
     expected_output = '''CLASS MACHINE
   CATEGORY !!chromium
@@ -419,31 +432,32 @@ chromium="Chromium"
           {
             'name': 'Group1',
             'type': 'group',
+            'desc': 'Description of group.',
+            'caption': 'Caption of group.',
             'policies': [{
               'name': 'Policy1',
               'type': 'list',
-              'supported_on': ['chrome.win:8-']
+              'supported_on': ['chrome.win:8-'],
+              'caption': 'Caption of policy1.',
+              'desc': """Description of policy1.
+With a newline."""
             },{
               'name': 'Policy2',
               'type': 'string',
-              'supported_on': ['chrome.win:8-']
+              'supported_on': ['chrome.win:8-'],
+              'caption': 'Caption of policy2.',
+              'desc': """Description of policy2.
+With a newline."""
             }],
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_GROUP1_CAPTION">Caption of group.</message>
-          <message name="IDS_POLICY_GROUP1_DESC">Description of group.</message>
-          <message name="IDS_POLICY_POLICY1_DESC">Description of policy1.
-With a newline.</message>
-          <message name="IDS_POLICY_POLICY2_DESC">Description of policy2.
-With a newline.</message>
-          <message name="IDS_POLICY_POLICY1_CAPTION">Caption of policy1.</message>
-          <message name="IDS_POLICY_POLICY2_CAPTION">Caption of policy2.</message>
-          <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.16</message>
-        </messages>
-      ''')
+        'messages': {
+          'win_supported_winxpsp2': {
+            'text': 'At least Windows 3.16', 'desc': 'blah'
+          }
+        }
+      }''')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
     expected_output = '''CLASS MACHINE
   CATEGORY !!chromium

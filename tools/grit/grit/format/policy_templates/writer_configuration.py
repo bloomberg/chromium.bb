@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -45,7 +45,6 @@ def GetConfigurationForBuild(defines):
     raise Exception('Unknown build')
   config['win_group_policy_class'] = 'Machine'
   config['win_supported_os'] = 'SUPPORTED_WINXPSP2'
-  config['win_supported_os_msg'] = 'IDS_POLICY_WIN_SUPPORTED_WINXPSP2'
   if 'mac_bundle_id' in defines:
     config['mac_bundle_id'] = defines['mac_bundle_id']
   return config

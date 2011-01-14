@@ -6,12 +6,12 @@ from xml.dom import minidom
 from grit.format.policy_templates.writers import xml_formatted_writer
 
 
-def GetWriter(config, messages):
+def GetWriter(config):
   '''Factory method for instanciating the ADMLWriter. Every Writer needs a
   GetWriter method because the TemplateFormatter uses this method to
   instantiate a Writer.
   '''
-  return ADMLWriter(['win'], config, messages)
+  return ADMLWriter(['win'], config)
 
 
 class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
@@ -132,7 +132,7 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     the ADMX file but not related to any specific Policy-Group or Policy.
     '''
     self._AddString(string_table_elem, self.config['win_supported_os'],
-                    self.messages[self.config['win_supported_os_msg']])
+                    self.messages['win_supported_winxpsp2']['text'])
     if build == 'chrome':
       self._AddString(string_table_elem, self.config['win_category_path'][0],
                       'Google')

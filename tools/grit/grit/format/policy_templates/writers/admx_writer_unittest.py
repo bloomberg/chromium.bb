@@ -32,15 +32,12 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     config = {
       'win_group_policy_class': 'TestClass',
       'win_supported_os': 'SUPPORTED_TESTOS',
-      'win_supported_os_msg': 'IDS_POLICY_WIN_SUPPORTED_WINXPSP2',
       'win_reg_key_name': 'Software\\Policies\\Test',
       'win_category_path': ['test_category'],
       'admx_namespace': 'ADMXWriter.Test.Namespace',
       'admx_prefix': 'test_prefix'
     }
-    # Grit messages.
-    messages = {}
-    self.writer = admx_writer.GetWriter(config, messages)
+    self.writer = admx_writer.GetWriter(config)
     self.writer.Init()
 
   def _GetPoliciesElement(self, doc):

@@ -7,12 +7,12 @@ from xml.dom import minidom
 from grit.format.policy_templates.writers import template_writer
 
 
-def GetWriter(config, messages):
+def GetWriter(config):
   '''Factory method for creating RegWriter objects.
   See the constructor of TemplateWriter for description of
   arguments.
   '''
-  return RegWriter(['win'], config, messages)
+  return RegWriter(['win'], config)
 
 
 class RegWriter(template_writer.TemplateWriter):

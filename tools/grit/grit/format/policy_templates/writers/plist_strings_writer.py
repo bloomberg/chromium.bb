@@ -7,12 +7,12 @@ from grit.format.policy_templates.writers import plist_helper
 from grit.format.policy_templates.writers import template_writer
 
 
-def GetWriter(config, messages):
+def GetWriter(config):
   '''Factory method for creating PListStringsWriter objects.
   See the constructor of TemplateWriter for description of
   arguments.
   '''
-  return PListStringsWriter(['mac'], config, messages)
+  return PListStringsWriter(['mac'], config)
 
 
 class PListStringsWriter(template_writer.TemplateWriter):
@@ -62,7 +62,7 @@ class PListStringsWriter(template_writer.TemplateWriter):
     self._AddToStringTable(
         app_name,
         self.config['app_name'],
-        self.messages['IDS_POLICY_MAC_CHROME_PREFERENCES'])
+        self.messages['mac_chrome_preferences']['text'])
 
   def Init(self):
     # A buffer for the lines of the string table being generated.

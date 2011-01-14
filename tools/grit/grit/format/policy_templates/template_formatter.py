@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -75,33 +75,11 @@ class TemplateFormatter(interface.ItemFormatter):
       to __init__() and Format().
     '''
     policy_generator = policy_template_generator.PolicyTemplateGenerator(
-        self._messages,
-        self._policy_data['policy_definitions'])
-    writer = self._writer_module.GetWriter(self._config, self._messages)
+        self._config,
+        self._policy_data)
+    writer = self._writer_module.GetWriter(self._config)
     str = policy_generator.GetTemplateText(writer)
     return str
-
-  def _ImportMessage(self, message):
-    '''Takes a grit message node and adds its translated content to
-    self._messages.
-
-    Args:
-      message: A <message> node in the grit tree.
-    '''
-    msg_name = message.GetTextualIds()[0]
-    # Get translation of message.
-    msg_txt = message.Translate(self._lang)
-    # Replace the placeholder of app name.
-    msg_txt = msg_txt.replace('$1', self._config['app_name'])
-    msg_txt = msg_txt.replace('$3', self._config['frame_name'])
-    # Replace other placeholders.
-    for placeholder in self._policy_data['placeholders']:
-      msg_txt = msg_txt.replace(placeholder['key'], placeholder['value'])
-    # Strip spaces and escape newlines.
-    lines = msg_txt.split('\n')
-    lines = [line.strip() for line in lines]
-    msg_txt = "\n".join(lines)
-    self._messages[msg_name] = msg_txt
 
   def _ParseGritNodes(self, item):
     '''Collects the necessary information from the grit tree:
@@ -116,8 +94,7 @@ class TemplateFormatter(interface.ItemFormatter):
     if (isinstance(item, structure.StructureNode) and
         item.attrs['type'] == 'policy_template_metafile'):
       assert self._policy_data == None
-      self._policy_data = item.gatherer.GetData()
-    elif (isinstance(item, message.MessageNode)):
-      self._ImportMessage(item)
+      json_text = item.gatherer.Translate(self._lang)
+      self._policy_data = eval(json_text)
     for child in item.children:
       self._ParseGritNodes(child)

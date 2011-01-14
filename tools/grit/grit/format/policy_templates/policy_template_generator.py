@@ -15,7 +15,19 @@ class PolicyTemplateGenerator:
   this data to policy template files using TemplateWriter objects.
   '''
 
-  def __init__(self, messages, policy_definitions):
+  def _ImportMessage(self, msg_txt):
+    # Replace the placeholder of app name.
+    msg_txt = msg_txt.replace('$1', self._config['app_name'])
+    msg_txt = msg_txt.replace('$3', self._config['frame_name'])
+    # Replace other placeholders.
+    for placeholder in self._policy_data['placeholders']:
+      msg_txt = msg_txt.replace(placeholder['key'], placeholder['value'])
+    # Strip spaces and escape newlines.
+    lines = msg_txt.split('\n')
+    lines = [line.strip() for line in lines]
+    return "\n".join(lines)
+
+  def __init__(self, config, policy_data):
     '''Initializes this object with all the data necessary to output a
     policy template.
 
@@ -29,9 +41,14 @@ class PolicyTemplateGenerator:
         content.
     '''
     # List of all the policies:
-    self._policy_definitions = copy.deepcopy(policy_definitions)
+    self._policy_data = copy.deepcopy(policy_data)
     # Localized messages to be inserted to the policy_definitions structure:
-    self._messages = messages
+    self._messages = self._policy_data['messages']
+    self._config = config
+    for key in self._messages.keys():
+      self._messages[key]['text'] = self._ImportMessage(
+          self._messages[key]['text'])
+    self._policy_definitions = self._policy_data['policy_definitions']
     self._ProcessPolicyList(self._policy_definitions)
 
   def _ProcessSupportedOn(self, supported_on):
@@ -84,55 +101,31 @@ class PolicyTemplateGenerator:
       })
     return result
 
-  def _AddMessageToItem(self, item_name, item, message_name, default=None):
-    '''Adds a localized message string to an item of the policy data structure
-
-    Args:
-      item_name: The base of the grd name of the item.
-      item: The policy, group, or enum item.
-      message_name: Identifier of the message: 'desc', 'caption' or 'label'.
-      default: If this is specified and the message is not found for item,
-        then this string will be added to the item.
-
-    Raises:
-      Exception() if the message string was not found and no default was
-      specified.
-    '''
-    # The keys for the item's messages in self._messages:
-    long_message_name = ('IDS_POLICY_%s_%s' %
-                         (item_name.upper(), message_name.upper()))
-    # Copy the messages from self._messages to item:
-    if long_message_name in self._messages:
-      item[message_name] = self._messages[long_message_name]
-    elif default != None:
-      item[message_name] = default
-    else:
-      raise Exception('No localized message for %s (missing %s).' %
-                      (item_name, long_message_name))
-
   def _ProcessPolicy(self, policy):
-    '''Adds localized message strings to a policy or group.
+    '''Processes localized message strings in a policy or a group.
      Also breaks up the content of 'supported_on' attribute into a list.
 
     Args:
       policy: The data structure of the policy or group, that will get message
         strings here.
     '''
-    self._AddMessageToItem(policy['name'], policy, 'caption')
-    self._AddMessageToItem(policy['name'], policy, 'desc')
-    if policy['type'] != 'group':
-      # Real policies (that are not groups) might also have an optional
-      # 'label', that defaults to 'caption'.
-      self._AddMessageToItem(
-          policy['name'], policy, 'label', policy['caption'])
-      policy['supported_on'] = self._ProcessSupportedOn(
-          policy['supported_on'])
+    policy['desc'] = self._ImportMessage(policy['desc'])
+    policy['caption'] = self._ImportMessage(policy['caption'])
+    if 'label' in policy:
+      policy['label'] = self._ImportMessage(policy['label'])
+
     if policy['type'] == 'group':
       self._ProcessPolicyList(policy['policies'])
     elif policy['type'] in ('string-enum', 'int-enum'):
       # Iterate through all the items of an enum-type policy, and add captions.
       for item in policy['items']:
-        self._AddMessageToItem('ENUM_' + item['name'], item, 'caption')
+        item['caption'] = self._ImportMessage(item['caption'])
+    if policy['type'] != 'group':
+      if not 'label' in policy:
+        # If 'label' is not specified, then it defaults to 'caption':
+        policy['label'] = policy['caption']
+      policy['supported_on'] = self._ProcessSupportedOn(
+          policy['supported_on'])
 
   def _ProcessPolicyList(self, policy_list):
     '''Adds localized message strings to each item in a list of policies and
@@ -157,4 +150,4 @@ class PolicyTemplateGenerator:
     Returns:
       The text of the generated template.
     '''
-    return template_writer.WriteTemplate(self._policy_definitions)
+    return template_writer.WriteTemplate(self._policy_data)

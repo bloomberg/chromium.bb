@@ -65,7 +65,8 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
       {
         'policy_definitions': [],
         'placeholders': [],
-      }''', '''<messages />''')
+        'messages': {},
+      }''')
 
     output = self.GetOutput(
         grd,
@@ -88,19 +89,17 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
             'policies': [{
               'name': 'MainPolicy',
               'type': 'main',
+              'desc': '',
+              'caption': '',
               'supported_on': ['chrome.mac:8-'],
             }],
+            'desc': '',
+            'caption': '',
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_MAINGROUP_CAPTION">This is not tested here.</message>
-          <message name="IDS_POLICY_MAINGROUP_DESC">This is not tested here.</message>
-          <message name="IDS_POLICY_MAINPOLICY_CAPTION">This is not tested here.</message>
-          <message name="IDS_POLICY_MAINPOLICY_DESC">This is not tested here.</message>
-        </messages>
-      ''')
+        'messages': {}
+      }''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -134,22 +133,20 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           {
             'name': 'StringGroup',
             'type': 'group',
+            'desc': '',
+            'caption': '',
             'policies': [{
               'name': 'StringPolicy',
               'type': 'string',
               'supported_on': ['chrome.mac:8-'],
+              'desc': '',
+              'caption': '',
             }],
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_STRINGGROUP_CAPTION">This is not tested here.</message>
-          <message name="IDS_POLICY_STRINGGROUP_DESC">This is not tested here.</message>
-          <message name="IDS_POLICY_STRINGPOLICY_CAPTION">This is not tested here.</message>
-          <message name="IDS_POLICY_STRINGPOLICY_DESC">This is not tested here.</message>
-        </messages>
-      ''')
+        'messages': {},
+      }''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -183,22 +180,20 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           {
             'name': 'IntGroup',
             'type': 'group',
+            'caption': '',
+            'desc': '',
             'policies': [{
               'name': 'IntPolicy',
               'type': 'int',
+              'caption': '',
+              'desc': '',
               'supported_on': ['chrome.mac:8-'],
             }],
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_INTGROUP_CAPTION">This is not tested here.</message>
-          <message name="IDS_POLICY_INTGROUP_DESC">This is not tested here.</message>
-          <message name="IDS_POLICY_INTPOLICY_CAPTION">This is not tested here.</message>
-          <message name="IDS_POLICY_INTPOLICY_DESC">This is not tested here.</message>
-        </messages>
-      ''')
+        'messages': {},
+      }''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -232,28 +227,24 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           {
             'name': 'EnumGroup',
             'type': 'group',
+            'caption': '',
+            'desc': '',
             'policies': [{
               'name': 'EnumPolicy',
               'type': 'int-enum',
+              'desc': '',
+              'caption': '',
               'items': [
-                {'name': 'ProxyServerDisabled', 'value': 0},
-                {'name': 'ProxyServerAutoDetect', 'value': 1},
+                {'name': 'ProxyServerDisabled', 'value': 0, 'caption': ''},
+                {'name': 'ProxyServerAutoDetect', 'value': 1, 'caption': ''},
               ],
               'supported_on': ['chrome.mac:8-'],
             }],
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_ENUMGROUP_CAPTION">This is not tested here.</message>
-          <message name="IDS_POLICY_ENUMGROUP_DESC">This is not tested here.</message>
-          <message name="IDS_POLICY_ENUMPOLICY_CAPTION">This is not tested here.</message>
-          <message name="IDS_POLICY_ENUMPOLICY_DESC">This is not tested here.</message>
-          <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">This is not tested here.</message>
-          <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">This is not tested here.</message>
-        </messages>
-      ''')
+        'messages': {},
+      }''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -292,28 +283,24 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           {
             'name': 'EnumGroup',
             'type': 'group',
+            'caption': '',
+            'desc': '',
             'policies': [{
               'name': 'EnumPolicy',
               'type': 'string-enum',
+              'desc': '',
+              'caption': '',
               'items': [
-                {'name': 'ProxyServerDisabled', 'value': 'one'},
-                {'name': 'ProxyServerAutoDetect', 'value': 'two'},
+                {'name': 'ProxyServerDisabled', 'value': 'one', 'caption': ''},
+                {'name': 'ProxyServerAutoDetect', 'value': 'two', 'caption': ''},
               ],
               'supported_on': ['chrome.mac:8-'],
             }],
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_ENUMGROUP_CAPTION">This is not tested here.</message>
-          <message name="IDS_POLICY_ENUMGROUP_DESC">This is not tested here.</message>
-          <message name="IDS_POLICY_ENUMPOLICY_CAPTION">This is not tested here.</message>
-          <message name="IDS_POLICY_ENUMPOLICY_DESC">This is not tested here.</message>
-          <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">This is not tested here.</message>
-          <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">This is not tested here.</message>
-        </messages>
-      ''')
+        'messages': {},
+      }''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -353,22 +340,20 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           {
             'name': 'NonMacGroup',
             'type': 'group',
+            'caption': '',
+            'desc': '',
             'policies': [{
               'name': 'NonMacPolicy',
               'type': 'string',
               'supported_on': ['chrome.linux:8-', 'chrome.win:7-'],
+              'caption': '',
+              'desc': '',
             }],
           },
         ],
         'placeholders': [],
-      }''', '''
-        <messages>
-          <message name="IDS_POLICY_NONMACGROUP_CAPTION">This is not tested here. (1)</message>
-          <message name="IDS_POLICY_NONMACGROUP_DESC">This is not tested here. (2)</message>
-          <message name="IDS_POLICY_NONMACPOLICY_CAPTION">This is not tested here. (3)</message>
-          <message name="IDS_POLICY_NONMACPOLICY_DESC">This is not tested here. (4)</message>
-        </messages>
-      ''')
+        'messages': {},
+      }''')
     output = self.GetOutput(
         grd,
         'fr',

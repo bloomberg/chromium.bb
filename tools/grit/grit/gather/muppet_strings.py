@@ -121,6 +121,7 @@ class MuppetStrings(regexp.RegexpGatherer):
   def Parse(self):
     if (self.have_parsed_):
       return
+    self.have_parsed_ = True
     self._AddNontranslateableChunk(u'<strings>\n')
     stream = StringIO.StringIO(self.text_)
     handler = MuppetStringsContentHandler(self)

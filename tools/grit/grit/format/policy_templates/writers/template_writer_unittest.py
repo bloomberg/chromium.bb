@@ -69,12 +69,12 @@ class TemplateWriterUnittests(unittest.TestCase):
   '''Unit tests for templater_writer.py.'''
 
   def testSortingGroupsFirst(self):
-    tw = template_writer.TemplateWriter(None, None, None)
+    tw = template_writer.TemplateWriter(None, None)
     sorted_list = tw.SortPoliciesGroupsFirst(POLICY_DEFS)
     self.assertEqual(sorted_list, GROUP_FIRST_SORTED_POLICY_DEFS)
 
   def testSortingIgnoreGroups(self):
-    tw = template_writer.TemplateWriter(None, None, None)
+    tw = template_writer.TemplateWriter(None, None)
     sorted_list = tw.FlattenGroupsAndSortPolicies(POLICY_DEFS)
     self.assertEqual(sorted_list, IGNORE_GROUPS_SORTED_POLICY_DEFS)
 

@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,12 +15,12 @@ from grit import constants
 from grit import exception
 from grit import util
 
-import grit.gather.json_loader
 import grit.gather.rc
 import grit.gather.tr_html
 import grit.gather.admin_template
 import grit.gather.txt
 import grit.gather.muppet_strings
+import grit.gather.policy_json
 
 import grit.format.rc
 import grit.format.rc_header
@@ -45,7 +45,7 @@ _GATHERERS = {
   'tr_html' : grit.gather.tr_html.TrHtml,
   'txt'     : grit.gather.txt.TxtFile,
   'version' : grit.gather.rc.Version,
-  'policy_template_metafile' : grit.gather.json_loader.JsonLoader,
+  'policy_template_metafile' : grit.gather.policy_json.PolicyJson,
 }
 
 

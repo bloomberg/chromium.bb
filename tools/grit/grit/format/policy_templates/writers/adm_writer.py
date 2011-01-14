@@ -6,12 +6,12 @@
 from grit.format.policy_templates.writers import template_writer
 
 
-def GetWriter(config, messages):
+def GetWriter(config):
   '''Factory method for creating AdmWriter objects.
   See the constructor of TemplateWriter for description of
   arguments.
   '''
-  return AdmWriter(['win'], config, messages)
+  return AdmWriter(['win'], config)
 
 
 class AdmWriter(template_writer.TemplateWriter):
@@ -125,7 +125,7 @@ class AdmWriter(template_writer.TemplateWriter):
   def BeginTemplate(self):
     category_path = self.config['win_category_path']
     self._AddGuiString(self.config['win_supported_os'],
-                       self.messages[self.config['win_supported_os_msg']])
+                       self.messages['win_supported_winxpsp2']['text'])
     self._PrintLine(
         'CLASS ' + self.config['win_group_policy_class'].upper(),
         1)

@@ -11,7 +11,7 @@ class TemplateWriter(object):
   The methods of this class will be called by PolicyTemplateGenerator.
   '''
 
-  def __init__(self, platforms, config, messages):
+  def __init__(self, platforms, config):
     '''Initializes a TemplateWriter object.
 
     Args:
@@ -31,7 +31,6 @@ class TemplateWriter(object):
     '''
     self.platforms = platforms
     self.config = config
-    self.messages = messages
 
   def IsDeprecatedPolicySupported(self, policy):
     '''Checks if the given deprecated policy is supported by the writer.
@@ -104,10 +103,12 @@ class TemplateWriter(object):
     Returns:
       Generated output for the passed template definition.
     '''
+    self.messages = template['messages']
     self.Init()
-    template = self.PreprocessPolicies(template)
+    template['policy_definitions'] = \
+        self.PreprocessPolicies(template['policy_definitions'])
     self.BeginTemplate()
-    for policy in template:
+    for policy in template['policy_definitions']:
       if policy['type'] == 'group':
         child_policies = self._GetPoliciesForWriter(policy)
         if child_policies:
