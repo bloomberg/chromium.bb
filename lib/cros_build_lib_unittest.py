@@ -20,13 +20,11 @@ class TestRunCommand(unittest.TestCase):
     self.mox = mox.Mox()
     self.mox.StubOutWithMock(subprocess, 'Popen', use_mock_anything=True)
     self.proc_mock = self.mox.CreateMockAnything()
-    self.cmd = 'test cmd'
     self.error = 'test error'
     self.output = 'test output'
 
   def tearDown(self):
     self.mox.UnsetStubs()
-    self.mox.VerifyAll()
 
   def _AssertCrEqual(self, expected, actual):
     """Helper method to compare two CommandResult objects.
@@ -43,16 +41,18 @@ class TestRunCommand(unittest.TestCase):
     self.assertEqual(expected.output, actual.output)
     self.assertEqual(expected.returncode, actual.returncode)
 
-  def _TestCmd(self, cmd, sp_kv=dict(), rc_kv=dict()):
+  def _TestCmd(self, cmd, real_cmd, sp_kv=dict(), rc_kv=dict()):
     """Factor out common setup logic for testing --cmd.
 
     Args:
-      cmd: a string or an array of strings.
+      cmd: a string or an array of strings that will be passed to RunCommand.
+      real_cmd: the real command we expect RunCommand to call (might be
+          modified to have enter_chroot).
       sp_kv: key-value pairs passed to subprocess.Popen().
       rc_kv: key-value pairs passed to RunCommand().
     """
     expected_result = cros_build_lib.CommandResult()
-    expected_result.cmd = self.cmd
+    expected_result.cmd = real_cmd
     expected_result.error = self.error
     expected_result.output = self.output
     if 'exit_code' in rc_kv:
@@ -68,51 +68,61 @@ class TestRunCommand(unittest.TestCase):
         else:
           arg_dict[attr] = None
 
-    subprocess.Popen(self.cmd, **arg_dict).AndReturn(self.proc_mock)
+    subprocess.Popen(real_cmd, **arg_dict).AndReturn(self.proc_mock)
     self.proc_mock.communicate(None).AndReturn((self.output, self.error))
+
     self.mox.ReplayAll()
     actual_result = cros_build_lib.RunCommand(cmd, **rc_kv)
+    self.mox.VerifyAll()
+
     self._AssertCrEqual(expected_result, actual_result)
 
   def testReturnCodeZeroWithArrayCmd(self):
     """--enter_chroot=False and --cmd is an array of strings."""
     self.proc_mock.returncode = 0
     cmd_list = ['foo', 'bar', 'roger']
-    self.cmd = 'foo bar roger'
-    self._TestCmd(cmd_list, rc_kv=dict(exit_code=True))
+    self._TestCmd(cmd_list, cmd_list, rc_kv=dict(exit_code=True))
 
   def testReturnCodeZeroWithArrayCmdEnterChroot(self):
     """--enter_chroot=True and --cmd is an array of strings."""
     self.proc_mock.returncode = 0
     cmd_list = ['foo', 'bar', 'roger']
-    self.cmd = './enter_chroot.sh -- %s' % ' '.join(cmd_list)
-    self._TestCmd(cmd_list, rc_kv=dict(enter_chroot=True))
+    real_cmd = ['./enter_chroot.sh', '--'] + cmd_list
+    self._TestCmd(cmd_list, real_cmd, rc_kv=dict(enter_chroot=True))
 
   def testReturnCodeNotZeroErrorOkNotRaisesError(self):
     """Raise error when proc.communicate() returns non-zero."""
     self.proc_mock.returncode = 1
-    self._TestCmd(self.cmd, rc_kv=dict(error_ok=True))
+    cmd = 'test cmd'
+    self._TestCmd(cmd, cmd, rc_kv=dict(error_ok=True))
 
   def testSubprocessCommunicateExceptionRaisesError(self):
     """Verify error raised by communicate() is caught."""
-    subprocess.Popen(self.cmd, cwd=None, stdin=None, stdout=None, stderr=None,
+    cmd = 'test cmd'
+    subprocess.Popen(cmd, cwd=None, stdin=None, stdout=None, stderr=None,
                      shell=False).AndReturn(self.proc_mock)
     self.proc_mock.communicate(None).AndRaise(ValueError)
+
     self.mox.ReplayAll()
-    self.assertRaises(ValueError, cros_build_lib.RunCommand, self.cmd)
+    self.assertRaises(ValueError, cros_build_lib.RunCommand, cmd)
+    self.mox.VerifyAll()
 
   def testSubprocessCommunicateExceptionNotRaisesError(self):
     """Don't re-raise error from communicate() when --error_ok=True."""
+    cmd = 'test cmd'
+    real_cmd = './enter_chroot.sh -- %s' % cmd
     expected_result = cros_build_lib.CommandResult()
-    cmd_str = './enter_chroot.sh -- %s' % self.cmd
-    expected_result.cmd = cmd_str
+    expected_result.cmd = real_cmd
 
-    subprocess.Popen(cmd_str, cwd=None, stdin=None, stdout=None, stderr=None,
+    subprocess.Popen(real_cmd, cwd=None, stdin=None, stdout=None, stderr=None,
                      shell=False).AndReturn(self.proc_mock)
     self.proc_mock.communicate(None).AndRaise(ValueError)
+
     self.mox.ReplayAll()
-    actual_result = cros_build_lib.RunCommand(self.cmd, error_ok=True,
+    actual_result = cros_build_lib.RunCommand(cmd, error_ok=True,
                                               enter_chroot=True)
+    self.mox.VerifyAll()
+
     self._AssertCrEqual(expected_result, actual_result)
 
 

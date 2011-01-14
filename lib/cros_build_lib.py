@@ -75,7 +75,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   # Print out the command before running.
   if print_cmd:
     Info('RunCommand: %s' % cmd_str)
-  cmd_result.cmd = cmd_str
+  cmd_result.cmd = cmd
 
   try:
     proc = subprocess.Popen(cmd, cwd=cwd, stdin=stdin, stdout=stdout,
