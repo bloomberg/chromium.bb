@@ -137,7 +137,7 @@ void TabContentsViewViews::OnTabCrashed(base::TerminationStatus status,
 
   sad_tab_.reset(new SadTabView(
       tab_contents(),
-      status == TERMINATION_STATUS_PROCESS_WAS_KILLED ?
+      status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
           SadTabView::KILLED : SadTabView::CRASHED));
   RemoveAllChildViews(true);
   AddChildView(sad_tab_.get());
