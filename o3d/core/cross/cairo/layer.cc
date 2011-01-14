@@ -42,16 +42,26 @@ namespace o2d {
 
 O3D_DEFN_CLASS(Layer, ObjectBase);
 
+Layer::~Layer() {
+  Renderer* renderer = service_locator()->GetService<Renderer>();
+  RendererCairo* renderer_cairo = down_cast<RendererCairo*>(renderer);
+  renderer_cairo->RemoveLayer(this);
+}
+
 Layer::Layer(ServiceLocator* service_locator)
     : ObjectBase(service_locator),
       alpha_(1.0),
       x_(0),
       y_(0),
+      z_(0),
       width_(0),
       height_(0),
       scale_x_(1.0),
       scale_y_(1.0) {
   DLOG(INFO) << "Create Layer";
+  Renderer* renderer = service_locator->GetService<Renderer>();
+  RendererCairo* renderer_cairo = down_cast<RendererCairo*>(renderer);
+  renderer_cairo->AddLayer(this);
 }
 
 ObjectBase::Ref Layer::Create(ServiceLocator* service_locator) {
@@ -61,12 +71,9 @@ ObjectBase::Ref Layer::Create(ServiceLocator* service_locator) {
     return ObjectBase::Ref();
   }
 
-  Layer* image = new Layer(service_locator);
+  Layer* layer = new Layer(service_locator);
 
-  RendererCairo* renderer2d = down_cast<RendererCairo*>(renderer);
-  renderer2d->AddLayer(image);
-
-  return ObjectBase::Ref(image);
+  return ObjectBase::Ref(layer);
 }
 
 }  // namespace o2d

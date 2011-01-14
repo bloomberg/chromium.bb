@@ -72,14 +72,28 @@ void RendererCairo::Destroy() {
   display_ = NULL;
 }
 
+// Comparison predicate for STL sort.
+bool LayerZValueLessThan(const Layer* first, const Layer* second) {
+  return first->z() < second->z();
+}
+
 void RendererCairo::Paint() {
+  // TODO(tschmelcher): Don't keep creating and destroying the drawing context.
   cairo_t* current_drawing = cairo_create(main_surface_);
+
+  // Redirect drawing to an off-screen surface (holding only colour information,
+  // without an alpha channel).
+  cairo_push_group_with_content(current_drawing, CAIRO_CONTENT_COLOR);
+
+  // Sort layers by z value.
+  // TODO(tschmelcher): Only sort when changes are made.
+  layer_list_.sort(LayerZValueLessThan);
 
   // Paint the background.
   PaintBackground(current_drawing);
 
   // Core process of painting.
-  for (LayerRefList::iterator i = layer_list_.begin();
+  for (LayerList::iterator i = layer_list_.begin();
        i != layer_list_.end(); i++) {
     // Put the state with no mask to the stack.
     cairo_save(current_drawing);
@@ -93,7 +107,7 @@ void RendererCairo::Paint() {
     }
 
     // Masking areas for other scene.
-    LayerRefList::iterator start_mask_it = i;
+    LayerList::iterator start_mask_it = i;
     start_mask_it++;
     MaskArea(current_drawing, start_mask_it);
 
@@ -109,6 +123,14 @@ void RendererCairo::Paint() {
     // Restore to the state with no mask.
     cairo_restore(current_drawing);
   }
+
+  // Finish off-screen drawing and make the off-screen surface the source for
+  // paints to the screen.
+  cairo_pop_group_to_source(current_drawing);
+
+  // Paint the off-screen surface to the screen.
+  cairo_paint(current_drawing);
+
   cairo_destroy(current_drawing);
 }
 
@@ -122,10 +144,10 @@ void RendererCairo::PaintBackground(cairo_t* cr) {
   cairo_restore(cr);
 }
 
-void RendererCairo::MaskArea(cairo_t* cr,  LayerRefList::iterator it) {
+void RendererCairo::MaskArea(cairo_t* cr,  LayerList::iterator it) {
   cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
 
-  for (LayerRefList::iterator i = it; i != layer_list_.end(); i++) {
+  for (LayerList::iterator i = it; i != layer_list_.end(); i++) {
     // Preparing and updating the Layer.
     Layer* cur_mask = *i;
 
@@ -140,7 +162,11 @@ void RendererCairo::MaskArea(cairo_t* cr,  LayerRefList::iterator it) {
 }
 
 void RendererCairo::AddLayer(Layer* image) {
-  layer_list_.push_front(Layer::Ref(image));
+  layer_list_.push_front(image);
+}
+
+void RendererCairo::RemoveLayer(Layer* image) {
+  layer_list_.remove(image);
 }
 
 void RendererCairo::InitCommon() {
@@ -211,12 +237,6 @@ void RendererCairo::PlatformSpecificFinishRendering() {
 // The platform specific part of Present.
 void RendererCairo::PlatformSpecificPresent() {
   // Don't need to do anything.
-}
-
-// TODO(fransiskusx): DO need to implement before shipped.
-// Removes the Layer from the array.
-void RendererCairo::RemoveLayer(Layer* image) {
-  NOTIMPLEMENTED();
 }
 
 // TODO(fransiskusx): DO need to implement before shipped.

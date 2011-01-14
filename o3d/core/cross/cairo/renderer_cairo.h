@@ -152,7 +152,7 @@ class RendererCairo : public Renderer {
   void PopRenderStates();
 
  protected:
-  typedef std::list<Layer::Ref> LayerRefList;
+  typedef std::list<Layer*> LayerList;
 
   // Keep the constructor protected so only factory methods can create
   // renderers.
@@ -219,7 +219,7 @@ class RendererCairo : public Renderer {
                                    float max_z);
 
   // Mask the area of the current layer that will collide with other images.
-  void MaskArea(cairo_t* cr,  LayerRefList::iterator it);
+  void MaskArea(cairo_t* cr, LayerList::iterator it);
 
   // Paint the background with black color.
   // TODO(fransiskusx): Support changing the background color.
@@ -237,7 +237,7 @@ class RendererCairo : public Renderer {
   cairo_t* bg_drawing_;
 
   // Array of Layer
-  LayerRefList layer_list_;
+  LayerList layer_list_;
 };
 
 }  // namespace o2d

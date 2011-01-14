@@ -50,6 +50,8 @@ class Layer : public ObjectBase {
  public:
   typedef SmartPointer<Layer> Ref;
 
+  virtual ~Layer();
+
   Pattern* pattern() const {
     return pattern_;
   }
@@ -80,6 +82,14 @@ class Layer : public ObjectBase {
 
   void set_y(double y) {
     y_ = y;
+  }
+
+  double z() const {
+    return z_;
+  }
+
+  void set_z(double z) {
+    z_ = z;
   }
 
   double width() const {
@@ -131,6 +141,9 @@ class Layer : public ObjectBase {
 
   // The y coordinate of the top-left corner of this layer.
   double y_;
+
+  // The z coordinate of the layer (used only to determine stacking order).
+  double z_;
 
   // The width of this layer.
   double width_;

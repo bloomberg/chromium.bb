@@ -59,6 +59,11 @@ namespace o2d {
   [getter, setter] double y;
 
   %[
+    The z coordinate of the layer (used only to determine stacking order).
+  %]
+  [getter, setter] double z;
+
+  %[
     The width of this layer.
   %]
   [getter, setter] double width;
