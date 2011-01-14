@@ -71,13 +71,28 @@ bool BookmarkModelVerifier::NodesMatch(const BookmarkNode* node_a,
                                        const BookmarkNode* node_b) {
   if (node_a == NULL || node_b == NULL)
     return node_a == node_b;
-  bool ret_val = true;
-  ret_val = ret_val && (node_a->GetTitle() == node_b->GetTitle());
-  ret_val = ret_val && (node_a->is_folder() == node_b->is_folder());
-  ret_val = ret_val && (node_a->GetURL() == node_b->GetURL());
-  ret_val = ret_val && (node_a->GetParent()->IndexOfChild(node_a) ==
-                        node_b->GetParent()->IndexOfChild(node_b));
-  return ret_val;
+  if (node_a->is_folder() != node_b->is_folder()) {
+    LOG(ERROR) << "Cannot compare folder with bookmark";
+    return false;
+  }
+  if (node_a->GetTitle() != node_b->GetTitle()) {
+    LOG(ERROR) << "Title mismatch: " << node_a->GetTitle() << " vs. "
+               << node_b->GetTitle();
+    return false;
+  }
+  if (node_a->GetURL() != node_b->GetURL()) {
+    LOG(ERROR) << "URL mismatch: " << node_a->GetURL() << " vs. "
+               << node_b->GetURL();
+    return false;
+  }
+  if (node_a->GetParent()->IndexOfChild(node_a) !=
+      node_b->GetParent()->IndexOfChild(node_b)) {
+    LOG(ERROR) << "Index mismatch: "
+               << node_a->GetParent()->IndexOfChild(node_a) << " vs. "
+               << node_b->GetParent()->IndexOfChild(node_b);
+    return false;
+  }
+  return true;
 }
 
 // static
@@ -105,17 +120,25 @@ bool BookmarkModelVerifier::FaviconsMatch(const SkBitmap& bitmap_a,
     return true;
   if ((bitmap_a.getSize() != bitmap_b.getSize()) ||
       (bitmap_a.width() != bitmap_b.width()) ||
-      (bitmap_a.height() != bitmap_b.height()))
+      (bitmap_a.height() != bitmap_b.height())) {
+    LOG(ERROR) << "Favicon size mismatch: " << bitmap_a.getSize() << " ("
+               << bitmap_a.width() << "x" << bitmap_a.height() << ") vs. "
+               << bitmap_b.getSize() << " (" << bitmap_b.width() << "x"
+               << bitmap_b.height() << ")";
     return false;
+  }
   SkAutoLockPixels bitmap_lock_a(bitmap_a);
   SkAutoLockPixels bitmap_lock_b(bitmap_b);
   void* node_pixel_addr_a = bitmap_a.getPixels();
   EXPECT_TRUE(node_pixel_addr_a);
   void* node_pixel_addr_b = bitmap_b.getPixels();
   EXPECT_TRUE(node_pixel_addr_b);
-  return (memcmp(node_pixel_addr_a,
-                 node_pixel_addr_b,
-                 bitmap_a.getSize()) ==  0);
+  if (memcmp(node_pixel_addr_a, node_pixel_addr_b, bitmap_a.getSize()) !=  0) {
+    LOG(ERROR) << "Favicon bitmap mismatch";
+    return false;
+  } else {
+    return true;
+  }
 }
 
 bool BookmarkModelVerifier::ContainsDuplicateBookmarks(BookmarkModel* model) {
