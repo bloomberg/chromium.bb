@@ -23,10 +23,6 @@ message ClientPhishingRequest {
   // Score that was computed on the client.  Value is between 0.0 and 1.0.
   // The larger the value the more likely the url is phishing.
   required float client_score = 2;
-
-  // Thumbnail from the client.  Supports all typical image formats (png, jpg
-  // etc.).
-  required bytes snapshot = 3;
 }
 
 message ClientPhishingResponse {

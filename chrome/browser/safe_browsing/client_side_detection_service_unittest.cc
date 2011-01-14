@@ -23,7 +23,6 @@
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace safe_browsing {
 
@@ -63,12 +62,10 @@ class ClientSideDetectionServiceTest : public testing::Test {
   }
 
   bool SendClientReportPhishingRequest(const GURL& phishing_url,
-                                       double score,
-                                       SkBitmap thumbnail) {
+                                       double score) {
     csd_service_->SendClientReportPhishingRequest(
         phishing_url,
         score,
-        thumbnail,
         NewCallback(this, &ClientSideDetectionServiceTest::SendRequestDone));
     phishing_url_ = phishing_url;
     msg_loop_.Run();  // Waits until callback is called.
@@ -166,33 +163,23 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
   csd_service_.reset(ClientSideDetectionService::Create(
       tmp_dir.path().AppendASCII("model"), NULL));
 
-  // Invalid thumbnail.
-  SkBitmap thumbnail;
   GURL url("http://a.com/");
   double score = 0.4;  // Some random client score.
-  EXPECT_FALSE(SendClientReportPhishingRequest(url, score, thumbnail));
-
-  // Valid thumbnail but the server returns an error.
-  thumbnail.setConfig(SkBitmap::kARGB_8888_Config, 100, 100);
-  ASSERT_TRUE(thumbnail.allocPixels());
-  thumbnail.eraseRGB(255, 0, 0);
-  SetClientReportPhishingResponse("", false /* fail */);
-  EXPECT_FALSE(SendClientReportPhishingRequest(url, score, thumbnail));
 
   // Invalid response body from the server.
   SetClientReportPhishingResponse("invalid proto response", true /* success */);
-  EXPECT_FALSE(SendClientReportPhishingRequest(url, score, thumbnail));
+  EXPECT_FALSE(SendClientReportPhishingRequest(url, score));
 
   // Normal behavior.
   ClientPhishingResponse response;
   response.set_phishy(true);
   SetClientReportPhishingResponse(response.SerializeAsString(),
                                   true /* success */);
-  EXPECT_TRUE(SendClientReportPhishingRequest(url, score, thumbnail));
+  EXPECT_TRUE(SendClientReportPhishingRequest(url, score));
   response.set_phishy(false);
   SetClientReportPhishingResponse(response.SerializeAsString(),
                                   true /* success */);
-  EXPECT_FALSE(SendClientReportPhishingRequest(url, score, thumbnail));
+  EXPECT_FALSE(SendClientReportPhishingRequest(url, score));
 }
 
 }  // namespace safe_browsing
