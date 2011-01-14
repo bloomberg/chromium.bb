@@ -1398,6 +1398,7 @@ int
 wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 {
 	struct wl_event_loop *loop;
+	const char *extensions;
 
 	ec->wl_display = display;
 
@@ -1418,6 +1419,13 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	create_pointer_images(ec);
 
 	screenshooter_create(ec);
+
+	extensions = (const char *) glGetString(GL_EXTENSIONS);
+	if (!strstr(extensions, "GL_EXT_texture_format_BGRA8888")) {
+		fprintf(stderr,
+			"GL_EXT_texture_format_BGRA8888 not available\n");
+		return -1;
+	}
 
 	glGenFramebuffers(1, &ec->fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, ec->fbo);
