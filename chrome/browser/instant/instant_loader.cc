@@ -96,8 +96,10 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
           return;
         }
         loader_->SendBoundsToPage(true);
+        // TODO: support real cursor position.
+        int text_length = static_cast<int>(text_.size());
         tab_contents_->render_view_host()->DetermineIfPageSupportsInstant(
-            text_, verbatim_);
+            text_, verbatim_, text_length, text_length);
         break;
       }
       default:
@@ -478,8 +480,10 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
         preview_tab_contents_delegate_->set_user_typed_before_load();
         return;
       }
+      // TODO: support real cursor position.
+      int text_length = static_cast<int>(user_text_.size());
       preview_contents_->render_view_host()->SearchBoxChange(
-          user_text_, verbatim, 0, 0);
+          user_text_, verbatim, text_length, text_length);
 
       string16 complete_suggested_text_lower = l10n_util::ToLower(
           complete_suggested_text_);

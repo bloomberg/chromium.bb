@@ -822,19 +822,21 @@ IPC_MESSAGE_ROUTED0(ViewMsg_Move_ACK)
 IPC_MESSAGE_ROUTED1(ViewMsg_EnablePreferredSizeChangedMode, int /*flags*/)
 
 IPC_MESSAGE_ROUTED4(ViewMsg_SearchBoxChange,
-                    string16 /*value*/,
-                    bool /*verbatim*/,
-                    int /*selection_start*/,
-                    int /*selection_end*/)
+                    string16 /* value */,
+                    bool /* verbatim */,
+                    int /* selection_start */,
+                    int /* selection_end */)
 IPC_MESSAGE_ROUTED2(ViewMsg_SearchBoxSubmit,
-                    string16 /*value*/,
-                    bool /*verbatim*/)
+                    string16 /* value */,
+                    bool /* verbatim */)
 IPC_MESSAGE_ROUTED0(ViewMsg_SearchBoxCancel)
 IPC_MESSAGE_ROUTED1(ViewMsg_SearchBoxResize,
-                    gfx::Rect /*search_box_bounds*/)
-IPC_MESSAGE_ROUTED2(ViewMsg_DetermineIfPageSupportsInstant,
-                    string16 /*value*/,
-                    bool /* verbatim */)
+                    gfx::Rect /* search_box_bounds */)
+IPC_MESSAGE_ROUTED4(ViewMsg_DetermineIfPageSupportsInstant,
+                    string16 /* value*/,
+                    bool /* verbatim */,
+                    int /* selection_start */,
+                    int /* selection_end */)
 
 // Used to tell the renderer not to add scrollbars with height and
 // width below a threshold.

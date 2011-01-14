@@ -506,7 +506,9 @@ class RenderViewHost : public RenderWidgetHost {
   void SearchBoxCancel();
   void SearchBoxResize(const gfx::Rect& search_box_bounds);
   void DetermineIfPageSupportsInstant(const string16& value,
-                                      bool verbatim);
+                                      bool verbatim,
+                                      int selection_start,
+                                      int selection_end);
 
   // Send a notification to the V8 JavaScript engine to change its parameters
   // while performing stress testing. |cmd| is one of the values defined by

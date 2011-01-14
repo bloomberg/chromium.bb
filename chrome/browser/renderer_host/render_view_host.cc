@@ -1784,9 +1784,11 @@ void RenderViewHost::SearchBoxResize(const gfx::Rect& search_box_bounds) {
 }
 
 void RenderViewHost::DetermineIfPageSupportsInstant(const string16& value,
-                                                    bool verbatim) {
-  Send(new ViewMsg_DetermineIfPageSupportsInstant(routing_id(), value,
-                                                  verbatim));
+                                                    bool verbatim,
+                                                    int selection_start,
+                                                    int selection_end) {
+  Send(new ViewMsg_DetermineIfPageSupportsInstant(
+           routing_id(), value, verbatim, selection_start, selection_end));
 }
 
 void RenderViewHost::FilterURL(ChildProcessSecurityPolicy* policy,

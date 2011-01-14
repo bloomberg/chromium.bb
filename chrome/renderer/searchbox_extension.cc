@@ -73,14 +73,13 @@ static const char kResizeEventName[] = "chrome.searchBox.onresize";
 // Script sent as the user is typing and the provider supports instant.
 // Params:
 // . the text the user typed.
-// TODO: add support for the 3rd param. '46' forces the server to give us
-// verbatim results.
+// '46' forces the server to give us verbatim results.
 static const char kUserInputScript[] =
     "if (window.chrome.userInput)"
     "  window.chrome.userInput("
     "    window.chrome.searchBox.value,"
     "    window.chrome.searchBox.verbatim ? 46 : 0,"
-    "    0);";
+    "    window.chrome.searchBox.selectionStart);";
 
 // Script sent when the page is committed and the provider supports instant.
 // Params:

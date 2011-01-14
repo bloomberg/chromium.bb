@@ -105,8 +105,8 @@ class InstantTest : public InProcessBrowserTest {
 
     // When the page loads, the initial searchBox values are set and only a
     // resize will have been sent.
-    ASSERT_EQ("true 0 0 0 1 a false a false",
-        GetSearchStateAsString(preview_));
+    ASSERT_EQ("true 0 0 0 1 a false a false 1 1",
+              GetSearchStateAsString(preview_));
   }
 
   void SetLocationBarText(const std::wstring& text) {
@@ -177,6 +177,8 @@ class InstantTest : public InProcessBrowserTest {
   // window.beforeLoadSearchBox.verbatim
   // window.chrome.searchBox.value
   // window.chrome.searchBox.verbatim
+  // window.chrome.searchBox.selectionStart
+  // window.chrome.searchBox.selectionEnd
   // If determining any of the values fails, the value is 'fail'.
   std::string GetSearchStateAsString(TabContents* tab_contents) {
     bool sv = false;
@@ -184,6 +186,8 @@ class InstantTest : public InProcessBrowserTest {
     int oncancelcalls = 0;
     int onchangecalls = 0;
     int onresizecalls = 0;
+    int selection_start = 0;
+    int selection_end = 0;
     std::string before_load_value;
     bool before_load_verbatim = false;
     std::string value;
@@ -207,11 +211,17 @@ class InstantTest : public InProcessBrowserTest {
         !GetStringFromJavascript(tab_contents, "window.chrome.searchBox.value",
                                  &value) ||
         !GetBoolFromJavascript(tab_contents, "window.chrome.searchBox.verbatim",
-                               &verbatim)) {
+                               &verbatim) ||
+        !GetIntFromJavascript(tab_contents,
+                              "window.chrome.searchBox.selectionStart",
+                              &selection_start) ||
+        !GetIntFromJavascript(tab_contents,
+                              "window.chrome.searchBox.selectionEnd",
+                              &selection_end)) {
       return "fail";
     }
 
-    return StringPrintf("%s %d %d %d %d %s %s %s %s",
+    return StringPrintf("%s %d %d %d %d %s %s %s %s %d %d",
                         sv ? "true" : "false",
                         onsubmitcalls,
                         oncancelcalls,
@@ -220,7 +230,9 @@ class InstantTest : public InProcessBrowserTest {
                         before_load_value.c_str(),
                         before_load_verbatim ? "true" : "false",
                         value.c_str(),
-                        verbatim ? "true" : "false");
+                        verbatim ? "true" : "false",
+                        selection_start,
+                        selection_end);
   }
 
   void CheckStringValueFromJavascript(
@@ -281,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
 
   // Check that the value is reflected and onchange is called.
-  EXPECT_EQ("true 0 0 1 1 a false abc false",
+  EXPECT_EQ("true 0 0 1 1 a false abc false 3 3",
       GetSearchStateAsString(preview_));
 }
 
@@ -589,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and onsubmit is called.
-  EXPECT_EQ("true 1 0 1 1 a false abc true",
+  EXPECT_EQ("true 1 0 1 1 a false abc true 3 3",
       GetSearchStateAsString(preview_));
 }
 
@@ -613,7 +625,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and oncancel is called.
-  EXPECT_EQ("true 0 1 1 1 a false abc false",
+  EXPECT_EQ("true 0 1 1 1 a false abc false 3 3",
       GetSearchStateAsString(preview_));
 }
 
@@ -638,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_TabKey) {
 
   ASSERT_EQ(L"abcdef", location_bar_->location_entry()->GetText());
 
-  EXPECT_EQ("true 0 0 2 2 a false abcdef false",
+  EXPECT_EQ("true 0 0 2 2 a false abcdef false 6 6",
       GetSearchStateAsString(preview_));
 
   // Pressing tab again to accept the current instant preview.
@@ -651,6 +663,6 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_TabKey) {
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and onsubmit is called.
-  EXPECT_EQ("true 1 0 2 2 a false abcdef true",
+  EXPECT_EQ("true 1 0 2 2 a false abcdef true 6 6",
       GetSearchStateAsString(preview_));
 }
