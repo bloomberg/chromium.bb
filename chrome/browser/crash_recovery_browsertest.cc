@@ -26,16 +26,9 @@ void SimulateRendererCrash(Browser* browser) {
 class CrashRecoveryBrowserTest : public InProcessBrowserTest {
 };
 
-// http://crbug.com/29331 - Causes an OS crash dialog in release mode, needs to
-// be fixed before it can be enabled to not cause the bots issues.
-#if defined(OS_MACOSX)
-#define MAYBE_Reload DISABLED_Reload
-#else
-#define MAYBE_Reload Reload
-#endif
-
 // Test that reload works after a crash.
-IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, MAYBE_Reload) {
+// Disabled, http://crbug.com/29331, http://crbug.com/69637.
+IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, DISABLED_Reload) {
   // The title of the active tab should change each time this URL is loaded.
   GURL url(
       "data:text/html,<script>document.title=new Date().valueOf()</script>");
