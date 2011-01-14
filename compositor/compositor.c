@@ -119,7 +119,6 @@ wlsc_matrix_transform(struct wlsc_matrix *matrix, struct wlsc_vector *v)
 
 static struct wlsc_surface *
 wlsc_surface_create(struct wlsc_compositor *compositor,
-		    struct wl_visual *visual,
 		    int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	struct wlsc_surface *surface;
@@ -140,7 +139,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	surface->compositor = compositor;
-	surface->visual = visual;
+	surface->visual = NULL;
 	surface->x = x;
 	surface->y = y;
 	surface->width = width;
@@ -297,11 +296,9 @@ static struct wlsc_surface *
 background_create(struct wlsc_output *output, const char *filename)
 {
 	struct wlsc_surface *background;
-	struct wlsc_compositor *ec = output->compositor;
 	struct wl_buffer *buffer;
 
 	background = wlsc_surface_create(output->compositor,
-					 &ec->compositor.premultiplied_argb_visual,
 					 output->x, output->y,
 					 output->width, output->height);
 	if (background == NULL)
@@ -770,7 +767,7 @@ compositor_create_surface(struct wl_client *client,
 	struct wlsc_compositor *ec = (struct wlsc_compositor *) compositor;
 	struct wlsc_surface *surface;
 
-	surface = wlsc_surface_create(ec, NULL, 0, 0, 0, 0);
+	surface = wlsc_surface_create(ec, 0, 0, 0, 0);
 	if (surface == NULL) {
 		wl_client_post_no_memory(client);
 		return;
@@ -1244,7 +1241,7 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 	wl_display_add_object(ec->wl_display, &device->input_device.object);
 	wl_display_add_global(ec->wl_display, &device->input_device.object, NULL);
 
-	device->sprite = wlsc_surface_create(ec, &ec->compositor.argb_visual,
+	device->sprite = wlsc_surface_create(ec,
 					     device->input_device.x,
 					     device->input_device.y, 32, 32);
 	device->hotspot_x = 16;
