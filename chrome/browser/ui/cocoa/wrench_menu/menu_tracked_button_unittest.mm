@@ -6,7 +6,7 @@
 
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/menu_tracked_button.h"
+#import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_button.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

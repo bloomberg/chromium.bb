@@ -43,7 +43,7 @@
 #import "chrome/browser/ui/cocoa/reload_button.h"
 #import "chrome/browser/ui/cocoa/toolbar_view.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#import "chrome/browser/ui/cocoa/wrench_menu_controller.h"
+#import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/common/notification_details.h"

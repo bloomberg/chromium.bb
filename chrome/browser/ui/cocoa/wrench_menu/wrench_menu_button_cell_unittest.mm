@@ -5,7 +5,7 @@
 #include "base/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/wrench_menu_button_cell.h"
+#import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_button_cell.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
