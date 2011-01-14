@@ -111,16 +111,6 @@ int SBEntry::Size(Type type, int prefix_count) {
   return sizeof(Data) + prefix_count * PrefixSize(type);
 }
 
-SBEntry* SBEntry::Enlarge(int extra_prefixes) {
-  int new_prefix_count = prefix_count() + extra_prefixes;
-  SBEntry* rv = SBEntry::Create(type(), new_prefix_count);
-  memcpy(rv, this, Size());  // NOTE: Blows away rv.data_!
-  // We have to re-set |rv|'s prefix count since we just copied our own over it.
-  rv->set_prefix_count(new_prefix_count);
-  Destroy();
-  return rv;
-}
-
 int SBEntry::ChunkIdAtPrefix(int index) const {
   if (type() == SUB_PREFIX)
     return sub_prefixes_[index].add_chunk;

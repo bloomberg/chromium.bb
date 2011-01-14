@@ -157,10 +157,6 @@ class SBEntry {
   int chunk_id() const { return data_.chunk_id; }
   int prefix_count() const { return data_.prefix_count; }
 
-  // Returns a new entry that is larger by the given number of prefixes, with
-  // all the existing data already copied over.  The old entry is destroyed.
-  SBEntry* Enlarge(int extra_prefixes);
-
   // Returns true if this is a prefix as opposed to a full hash.
   bool IsPrefix() const {
     return type() == ADD_PREFIX || type() == SUB_PREFIX;
