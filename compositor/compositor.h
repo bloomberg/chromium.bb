@@ -19,7 +19,6 @@
 #ifndef _WAYLAND_SYSTEM_COMPOSITOR_H_
 #define _WAYLAND_SYSTEM_COMPOSITOR_H_
 
-#include <termios.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <libudev.h>
@@ -197,6 +196,12 @@ wayland_compositor_create(struct wl_display *display, int width, int height);
 
 void
 evdev_input_add_devices(struct wlsc_compositor *c, struct udev *udev);
+
+struct tty *
+tty_create(struct wlsc_compositor *compositor);
+
+void
+tty_destroy(struct tty *tty);
 
 void
 screenshooter_create(struct wlsc_compositor *ec);

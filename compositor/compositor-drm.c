@@ -22,11 +22,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <signal.h>
-#include <linux/kd.h>
-#include <linux/vt.h>
-#include <linux/input.h>
-
 #define GL_GLEXT_PROTOTYPES
 #define EGL_EGLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
@@ -42,14 +37,7 @@ struct drm_compositor {
 	struct udev *udev;
 	struct wl_event_source *drm_source;
 
-	/* tty handling state */
-	int tty_fd;
-	uint32_t vt_active : 1;
-
-	struct termios terminal_attributes;
-	struct wl_event_source *tty_input_source;
-	struct wl_event_source *enter_vt_source;
-	struct wl_event_source *leave_vt_source;
+	struct tty *tty;
 };
 
 struct drm_output {
@@ -305,118 +293,6 @@ create_outputs(struct drm_compositor *ec, int option_connector)
 	return 0;
 }
 
-static void on_enter_vt(int signal_number, void *data)
-{
-	struct drm_compositor *ec = data;
-	struct drm_output *output;
-	int ret;
-
-	ret = drmSetMaster(ec->base.drm.fd);
-	if (ret) {
-		fprintf(stderr, "failed to set drm master\n");
-		kill(0, SIGTERM);
-		return;
-	}
-
-	fprintf(stderr, "enter vt\n");
-
-	ioctl(ec->tty_fd, VT_RELDISP, VT_ACKACQ);
-	ret = ioctl(ec->tty_fd, KDSETMODE, KD_GRAPHICS);
-	if (ret)
-		fprintf(stderr, "failed to set KD_GRAPHICS mode on console: %m\n");
-	ec->vt_active = 1;
-
-	wl_list_for_each(output, &ec->base.output_list, base.link) {
-		ret = drmModeSetCrtc(ec->base.drm.fd, output->crtc_id,
-				     output->fb_id[output->current ^ 1], 0, 0,
-				     &output->connector_id, 1, &output->mode);
-		if (ret)
-			fprintf(stderr,
-				"failed to set mode for connector %d: %m\n",
-				output->connector_id);
-	}
-}
-
-static void on_leave_vt(int signal_number, void *data)
-{
-	struct drm_compositor *ec = data;
-	int ret;
-
-	ret = drmDropMaster(ec->base.drm.fd);
-	if (ret) {
-		fprintf(stderr, "failed to drop drm master\n");
-		kill(0, SIGTERM);
-		return;
-	}
-
-	ioctl (ec->tty_fd, VT_RELDISP, 1);
-	ret = ioctl(ec->tty_fd, KDSETMODE, KD_TEXT);
-	if (ret)
-		fprintf(stderr, "failed to set KD_TEXT mode on console: %m\n");
-	ec->vt_active = 0;
-}
-
-static void
-on_tty_input(int fd, uint32_t mask, void *data)
-{
-	struct drm_compositor *ec = data;
-
-	/* Ignore input to tty.  We get keyboard events from evdev
-	 */
-	tcflush(ec->tty_fd, TCIFLUSH);
-}
-
-static int setup_tty(struct drm_compositor *ec, struct wl_event_loop *loop)
-{
-	struct termios raw_attributes;
-	struct vt_mode mode = { 0 };
-	int ret;
-
-	ec->tty_fd = open("/dev/tty0", O_RDWR | O_NOCTTY);
-	if (ec->tty_fd <= 0) {
-		fprintf(stderr, "failed to open active tty: %m\n");
-		return -1;
-	}
-
-	if (tcgetattr(ec->tty_fd, &ec->terminal_attributes) < 0) {
-		fprintf(stderr, "could not get terminal attributes: %m\n");
-		return -1;
-	}
-
-	/* Ignore control characters and disable echo */
-	raw_attributes = ec->terminal_attributes;
-	cfmakeraw(&raw_attributes);
-
-	/* Fix up line endings to be normal (cfmakeraw hoses them) */
-	raw_attributes.c_oflag |= OPOST | OCRNL;
-
-	if (tcsetattr(ec->tty_fd, TCSANOW, &raw_attributes) < 0)
-		fprintf(stderr, "could not put terminal into raw mode: %m\n");
-
-	ec->tty_input_source =
-		wl_event_loop_add_fd(loop, ec->tty_fd,
-				     WL_EVENT_READABLE, on_tty_input, ec);
-
-	ret = ioctl(ec->tty_fd, KDSETMODE, KD_GRAPHICS);
-	if (ret)
-		fprintf(stderr, "failed to set KD_GRAPHICS mode on tty: %m\n");
-
-	ec->vt_active = 1;
-	mode.mode = VT_PROCESS;
-	mode.relsig = SIGUSR1;
-	mode.acqsig = SIGUSR2;
-	if (!ioctl(ec->tty_fd, VT_SETMODE, &mode) < 0) {
-		fprintf(stderr, "failed to take control of vt handling\n");
-	}
-
-	ec->leave_vt_source =
-		wl_event_loop_add_signal(loop, SIGUSR1, on_leave_vt, ec);
-	ec->enter_vt_source =
-		wl_event_loop_add_signal(loop, SIGUSR2, on_enter_vt, ec);
-
-	return 0;
-}
-
 static int
 drm_authenticate(struct wlsc_compositor *c, uint32_t id)
 {
@@ -430,11 +306,9 @@ drm_destroy(struct wlsc_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
 
-	if (tcsetattr(d->tty_fd, TCSANOW, &d->terminal_attributes) < 0)
-		fprintf(stderr,
-			"could not restore terminal to canonical mode\n");
+	tty_destroy(d->tty);
 
-	free(ec);
+	free(d);
 }
 
 struct wlsc_compositor *
@@ -496,7 +370,7 @@ drm_compositor_create(struct wl_display *display, int connector)
 	ec->drm_source =
 		wl_event_loop_add_fd(loop, ec->base.drm.fd,
 				     WL_EVENT_READABLE, on_drm_input, ec);
-	setup_tty(ec, loop);
+	ec->tty = tty_create(&ec->base);
 	ec->base.destroy = drm_destroy;
 	ec->base.authenticate = drm_authenticate;
 	ec->base.present = drm_compositor_present;
