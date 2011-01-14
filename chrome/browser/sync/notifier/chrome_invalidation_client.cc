@@ -126,7 +126,14 @@ void ChromeInvalidationClient::Invalidate(
   VLOG(1) << "Invalidate: " << InvalidationToString(invalidation);
   syncable::ModelType model_type;
   if (ObjectIdToRealModelType(invalidation.object_id(), &model_type)) {
-    listener_->OnInvalidate(model_type);
+    // TODO(akalin): This is a hack to make new sync data types work
+    // with server-issued notifications.  Remove this when it's not
+    // needed anymore.
+    if (model_type == syncable::UNSPECIFIED) {
+      listener_->OnInvalidateAll();
+    } else {
+      listener_->OnInvalidate(model_type);
+    }
   } else {
     LOG(WARNING) << "Could not get invalidation model type; "
                  << "invalidating everything";

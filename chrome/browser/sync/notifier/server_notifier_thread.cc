@@ -66,11 +66,9 @@ void ServerNotifierThread::SendNotification(
 
 void ServerNotifierThread::OnInvalidate(syncable::ModelType model_type) {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  // TODO(akalin): This is a hack to make new sync data types work
-  // with server-issued notifications.  Remove this when it's not
-  // needed anymore.
-  VLOG(1) << "OnInvalidate: " << ((model_type == syncable::UNSPECIFIED) ?
-      "UNKNOWN" : syncable::ModelTypeToString(model_type));
+  DCHECK_GE(model_type, syncable::FIRST_REAL_MODEL_TYPE);
+  DCHECK_LT(model_type, syncable::MODEL_TYPE_COUNT);
+  VLOG(1) << "OnInvalidate: " << syncable::ModelTypeToString(model_type);
 
   syncable::ModelTypeBitSet model_types;
   model_types[model_type] = true;
