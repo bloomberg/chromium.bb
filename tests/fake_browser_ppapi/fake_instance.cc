@@ -19,68 +19,67 @@ namespace fake_browser_ppapi {
 
 namespace {
 
+static Instance* GetInstancePointer(PP_Instance instance) {
+  return reinterpret_cast<Instance*>(static_cast<uintptr_t>(instance));
+}
+
 static PP_Var GetWindowObject(PP_Instance instance) {
-  return GetInstance(instance)->GetWindowObject();
+  return GetInstancePointer(instance)->GetWindowObject();
 }
 
 static PP_Var GetOwnerElementObject(PP_Instance instance) {
-  return GetInstance(instance)->GetOwnerElementObject();
+  return GetInstancePointer(instance)->GetOwnerElementObject();
 }
 
 static PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
-  return static_cast<PP_Bool>(GetInstance(instance)->BindGraphics(device));
+  return
+      static_cast<PP_Bool>(GetInstancePointer(instance)->BindGraphics(device));
 }
 
 static PP_Bool IsFullFrame(PP_Instance instance) {
-  return static_cast<PP_Bool>(GetInstance(instance)->IsFullFrame());
+  return static_cast<PP_Bool>(GetInstancePointer(instance)->IsFullFrame());
 }
 
 static PP_Var ExecuteScript(PP_Instance instance,
                             PP_Var script,
                             PP_Var* exception) {
-  return GetInstance(instance)->ExecuteScript(script, exception);
+  return GetInstancePointer(instance)->ExecuteScript(script, exception);
 }
 
 }  // namespace
 
-Instance Instance::kInvalidInstance;
-
 PP_Var Instance::GetWindowObject() {
-  DebugPrintf("Instance::GetWindowObject: instance=%"NACL_PRId32"\n",
-              instance_id_);
-  if (window_)
-    return window_->FakeWindowObject();
-  else
-    return PP_MakeUndefined();
+  DebugPrintf("Instance::GetWindowObject: instance=%p\n",
+              reinterpret_cast<void*>(this));
+  return window_->FakeWindowObject();
 }
 
 PP_Var Instance::GetOwnerElementObject() {
-  DebugPrintf("Instance::GetOwnerElementObject: instance=%"NACL_PRId32"\n",
-              instance_id_);
+  DebugPrintf("Instance::GetOwnerElementObject: instance=%p\n",
+              reinterpret_cast<void*>(this));
   NACL_UNIMPLEMENTED();
   return PP_MakeUndefined();
 }
 
 bool Instance::BindGraphics(PP_Resource device) {
-  DebugPrintf("Instance::BindGraphicsDeviceContext: instance=%"NACL_PRId32"\n",
-              ", device=%"NACL_PRIu32"\n",
-              instance_id_,
-              device);
+  DebugPrintf("Instance::BindGraphicsDeviceContext: instance=%p"
+              ", device=%"NACL_PRIu64"\n",
+              reinterpret_cast<void*>(this), device);
   NACL_UNIMPLEMENTED();
   return false;
 }
 
 bool Instance::IsFullFrame() {
-  DebugPrintf("Instance::IsFullFrame: instance=%"NACL_PRId32"\n",
-              instance_id_);
+  DebugPrintf("Instance::IsFullFrame: instance=%p\n",
+              reinterpret_cast<void*>(this));
   NACL_UNIMPLEMENTED();
   return false;
 }
 
 PP_Var Instance::ExecuteScript(PP_Var script,
                                PP_Var* exception) {
-  DebugPrintf("Instance::ExecuteScript: instance=%"NACL_PRId32"\n",
-              instance_id_);
+  DebugPrintf("Instance::ExecuteScript: instance=%p\n",
+              reinterpret_cast<void*>(this));
   NACL_UNIMPLEMENTED();
   UNREFERENCED_PARAMETER(script);
   UNREFERENCED_PARAMETER(exception);

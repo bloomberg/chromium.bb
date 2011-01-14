@@ -74,22 +74,19 @@ const void* FakeGetBrowserInterface(const char* interface_name) {
 
 // Module ids are needed for some call APIs, but the fake browser does
 // not implement the storage tracking APIs that would use a real value.
-// Since we have just two modules (browser and plugin), we'll statically
-// assign id of 1 to one, 100 to other.
 // TODO(sehr): implement storage tracking.
-
 // The storage allocated by the browser for the window object, etc., are
 // attributed to the browser's module id.
 PP_Module BrowserModuleId() {
-  static PP_Module id = 100;
-  return id;
+  static void* id;
+  return reinterpret_cast<PP_Module>(&id);
 }
 
 // The storage allocated by the plugin for its scriptable objects are
 // attributed to the its module id.
 PP_Module PluginModuleId() {
-  static PP_Module id = 1;
-  return id;
+  static void* id;
+  return reinterpret_cast<PP_Module>(&id);
 }
 
 bool ParseArgs(const char* str,
@@ -117,39 +114,10 @@ bool ParseArgs(const char* str,
   for (uint32_t i = 0; i < *argc; ++i) {
     (*argn)[i] = strdup(argn_vector[i].c_str());
     (*argv)[i] = strdup(argv_vector[i].c_str());
-    DebugPrintf("ParseArgs(): arg[%u]: '%s' = '%s'\n",
-                i, (*argn)[i], (*argv)[i]);
+    printf("ParseArgs(): arg[%u]: '%s' = '%s'\n", i, (*argn)[i], (*argv)[i]);
   }
   return true;
 }
-
-}  // namespace
-
-namespace fake_browser_ppapi {
-
-PP_Resource TrackResource(Resource* resource) {
-  PP_Resource resource_id = host->TrackResource(resource);
-  DebugPrintf("TrackResource: resource_id=%"NACL_PRId32"\n", resource_id);
-  return resource_id;
-}
-
-Resource* GetResource(PP_Resource resource_id) {
-  return host->GetResource(resource_id);
-}
-
-PP_Instance TrackInstance(Instance* instance) {
-  PP_Instance instance_id = host->TrackInstance(instance);
-  DebugPrintf("TrackInstance: instance_id=%"NACL_PRId32"\n", instance_id);
-  return instance_id;
-}
-
-Instance* GetInstance(PP_Instance instance_id) {
-  return host->GetInstance(instance_id);
-}
-
-}  // namespace fake_browser_ppapi
-
-namespace {
 
 // Test instance execution.
 void TestInstance(PP_Module browser_module_id,
@@ -158,13 +126,15 @@ void TestInstance(PP_Module browser_module_id,
                   uint32_t argc,
                   const char** argn,
                   const char** argv) {
-  DebugPrintf("TestInstance(): page url %s\n", page_url);
+  printf("TestInstance(): page url %s\n", page_url);
   // Create an instance and the corresponding id.
-  fake_browser_ppapi::Instance* instance = new fake_browser_ppapi::Instance;
-  PP_Instance instance_id = TrackInstance(instance);
+  fake_browser_ppapi::Instance browser_instance;
+  PP_Instance instance_id = reinterpret_cast<PP_Instance>(&browser_instance);
+
   // Create a fake window object.
   FakeWindow window(browser_module_id, instance_id, host, page_url);
-  instance->set_window(&window);
+  browser_instance.set_window(&window);
+
   // Create and initialize plugin instance.
   CHECK(instance_interface->DidCreate(instance_id, argc, argn, argv));
   // Test the scriptable object for the instance.
@@ -173,13 +143,28 @@ void TestInstance(PP_Module browser_module_id,
       reinterpret_cast<const PPB_Var_Deprecated*>(
           FakeGetBrowserInterface(PPB_VAR_DEPRECATED_INTERFACE));
   TestScriptableObject(instance_object,
-                       fake_browser_ppapi::Instance::GetInterface(),
+                       browser_instance.GetInterface(),
                        var_interface,
                        instance_id,
                        browser_module_id);
 }
 
 }  // namespace
+
+namespace fake_browser_ppapi {
+
+PP_Resource TrackResource(Resource* resource) {
+  PP_Resource resource_id = host->TrackResource(resource);
+  DebugPrintf("TrackResource: resource_id=%"NACL_PRId64"\n", resource_id);
+  resource->set_resource_id(resource_id);
+  return resource_id;
+}
+
+Resource* GetResource(PP_Resource resource_id) {
+  return host->GetResource(resource_id);
+}
+
+}  // namespace fake_browser_ppapi
 
 int main(int argc, char** argv) {
   // Turn off stdout buffering to aid debugging in case of a crash.

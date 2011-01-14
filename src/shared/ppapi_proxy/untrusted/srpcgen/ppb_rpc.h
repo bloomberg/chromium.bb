@@ -341,7 +341,7 @@ class PpbURLLoaderRpcClient {
       int32_t* pp_error_or_bytes);
   static NaClSrpcError PPB_URLLoader_FinishStreamingToFile(
       NaClSrpcChannel* channel,
-      PP_Resource loader,
+      int64_t loader,
       int32_t callback_id,
       int32_t* pp_error);
   static NaClSrpcError PPB_URLLoader_Close(

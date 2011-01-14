@@ -198,9 +198,9 @@ static void PPB_Audio_Dev_CreateDispatcher(
   PpbAudioDevRpcServer::PPB_Audio_Dev_Create(
       rpc,
       done,
-      inputs[0]->u.ival,
-      inputs[1]->u.ival,
-      &(outputs[0]->u.ival)
+      inputs[0]->u.lval,
+      inputs[1]->u.lval,
+      &(outputs[0]->u.lval)
   );
 }
 
@@ -213,7 +213,7 @@ static void PPB_Audio_Dev_IsAudioDispatcher(
   PpbAudioDevRpcServer::PPB_Audio_Dev_IsAudio(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.ival)
   );
 }
@@ -227,8 +227,8 @@ static void PPB_Audio_Dev_GetCurrentConfigDispatcher(
   PpbAudioDevRpcServer::PPB_Audio_Dev_GetCurrentConfig(
       rpc,
       done,
-      inputs[0]->u.ival,
-      &(outputs[0]->u.ival)
+      inputs[0]->u.lval,
+      &(outputs[0]->u.lval)
   );
 }
 
@@ -241,7 +241,7 @@ static void PPB_Audio_Dev_StopPlaybackDispatcher(
   PpbAudioDevRpcServer::PPB_Audio_Dev_StopPlayback(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.ival)
   );
 }
@@ -255,7 +255,7 @@ static void PPB_Audio_Dev_StartPlaybackDispatcher(
   PpbAudioDevRpcServer::PPB_Audio_Dev_StartPlayback(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.ival)
   );
 }
@@ -269,10 +269,10 @@ static void PPB_AudioConfig_Dev_CreateStereo16BitDispatcher(
   PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_CreateStereo16Bit(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       inputs[1]->u.ival,
       inputs[2]->u.ival,
-      &(outputs[0]->u.ival)
+      &(outputs[0]->u.lval)
   );
 }
 
@@ -285,7 +285,7 @@ static void PPB_AudioConfig_Dev_IsAudioConfigDispatcher(
   PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_IsAudioConfig(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.ival)
   );
 }
@@ -313,7 +313,7 @@ static void PPB_AudioConfig_Dev_GetSampleRateDispatcher(
   PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_GetSampleRate(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.ival)
   );
 }
@@ -327,7 +327,7 @@ static void PPB_AudioConfig_Dev_GetSampleFrameCountDispatcher(
   PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_GetSampleFrameCount(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.ival)
   );
 }
@@ -342,7 +342,7 @@ static void PPB_Core_AddRefResourceDispatcher(
   PpbCoreRpcServer::PPB_Core_AddRefResource(
       rpc,
       done,
-      inputs[0]->u.ival
+      inputs[0]->u.lval
   );
 }
 
@@ -356,7 +356,7 @@ static void PPB_Core_ReleaseResourceDispatcher(
   PpbCoreRpcServer::PPB_Core_ReleaseResource(
       rpc,
       done,
-      inputs[0]->u.ival
+      inputs[0]->u.lval
   );
 }
 
@@ -370,7 +370,7 @@ static void ReleaseResourceMultipleTimesDispatcher(
   PpbCoreRpcServer::ReleaseResourceMultipleTimes(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       inputs[1]->u.ival
   );
 }
@@ -398,10 +398,10 @@ static void PPB_Graphics2D_CreateDispatcher(
   PpbGraphics2DRpcServer::PPB_Graphics2D_Create(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       inputs[1]->u.count, inputs[1]->arrays.carr,
       inputs[2]->u.ival,
-      &(outputs[0]->u.ival)
+      &(outputs[0]->u.lval)
   );
 }
 
@@ -414,7 +414,7 @@ static void PPB_Graphics2D_IsGraphics2DDispatcher(
   PpbGraphics2DRpcServer::PPB_Graphics2D_IsGraphics2D(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.ival)
   );
 }
@@ -428,7 +428,7 @@ static void PPB_Graphics2D_DescribeDispatcher(
   PpbGraphics2DRpcServer::PPB_Graphics2D_Describe(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.count), outputs[0]->arrays.carr,
       &(outputs[1]->u.ival),
       &(outputs[2]->u.ival)
@@ -445,8 +445,8 @@ static void PPB_Graphics2D_PaintImageDataDispatcher(
   PpbGraphics2DRpcServer::PPB_Graphics2D_PaintImageData(
       rpc,
       done,
-      inputs[0]->u.ival,
-      inputs[1]->u.ival,
+      inputs[0]->u.lval,
+      inputs[1]->u.lval,
       inputs[2]->u.count, inputs[2]->arrays.carr,
       inputs[3]->u.count, inputs[3]->arrays.carr
   );
@@ -462,7 +462,7 @@ static void PPB_Graphics2D_ScrollDispatcher(
   PpbGraphics2DRpcServer::PPB_Graphics2D_Scroll(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       inputs[1]->u.count, inputs[1]->arrays.carr,
       inputs[2]->u.count, inputs[2]->arrays.carr
   );
@@ -478,8 +478,8 @@ static void PPB_Graphics2D_ReplaceContentsDispatcher(
   PpbGraphics2DRpcServer::PPB_Graphics2D_ReplaceContents(
       rpc,
       done,
-      inputs[0]->u.ival,
-      inputs[1]->u.ival
+      inputs[0]->u.lval,
+      inputs[1]->u.lval
   );
 }
 
@@ -492,7 +492,7 @@ static void PPB_Graphics2D_FlushDispatcher(
   PpbGraphics2DRpcServer::PPB_Graphics2D_Flush(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       inputs[1]->u.ival,
       &(outputs[0]->u.ival)
   );
@@ -535,11 +535,11 @@ static void PPB_ImageData_CreateDispatcher(
   PpbImageDataRpcServer::PPB_ImageData_Create(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       inputs[1]->u.ival,
       inputs[2]->u.count, inputs[2]->arrays.carr,
       inputs[3]->u.ival,
-      &(outputs[0]->u.ival)
+      &(outputs[0]->u.lval)
   );
 }
 
@@ -552,7 +552,7 @@ static void PPB_ImageData_IsImageDataDispatcher(
   PpbImageDataRpcServer::PPB_ImageData_IsImageData(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.ival)
   );
 }
@@ -566,7 +566,7 @@ static void PPB_ImageData_DescribeDispatcher(
   PpbImageDataRpcServer::PPB_ImageData_Describe(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.count), outputs[0]->arrays.carr,
       &(outputs[1]->u.hval),
       &(outputs[2]->u.ival),
@@ -583,7 +583,7 @@ static void PPB_Instance_GetWindowObjectDispatcher(
   PpbInstanceRpcServer::PPB_Instance_GetWindowObject(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.count), outputs[0]->arrays.carr
   );
 }
@@ -597,7 +597,7 @@ static void PPB_Instance_GetOwnerElementObjectDispatcher(
   PpbInstanceRpcServer::PPB_Instance_GetOwnerElementObject(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.count), outputs[0]->arrays.carr
   );
 }
@@ -611,8 +611,8 @@ static void PPB_Instance_BindGraphicsDispatcher(
   PpbInstanceRpcServer::PPB_Instance_BindGraphics(
       rpc,
       done,
-      inputs[0]->u.ival,
-      inputs[1]->u.ival,
+      inputs[0]->u.lval,
+      inputs[1]->u.lval,
       &(outputs[0]->u.ival)
   );
 }
@@ -626,7 +626,7 @@ static void PPB_Instance_IsFullFrameDispatcher(
   PpbInstanceRpcServer::PPB_Instance_IsFullFrame(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.ival)
   );
 }
@@ -640,7 +640,7 @@ static void PPB_Instance_ExecuteScriptDispatcher(
   PpbInstanceRpcServer::PPB_Instance_ExecuteScript(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       inputs[1]->u.count, inputs[1]->arrays.carr,
       inputs[2]->u.count, inputs[2]->arrays.carr,
       &(outputs[0]->u.count), outputs[0]->arrays.carr,
@@ -657,8 +657,8 @@ static void PPB_URLLoader_CreateDispatcher(
   PpbURLLoaderRpcServer::PPB_URLLoader_Create(
       rpc,
       done,
-      inputs[0]->u.ival,
-      &(outputs[0]->u.ival)
+      inputs[0]->u.lval,
+      &(outputs[0]->u.lval)
   );
 }
 
@@ -671,7 +671,7 @@ static void PPB_URLLoader_IsURLLoaderDispatcher(
   PpbURLLoaderRpcServer::PPB_URLLoader_IsURLLoader(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.ival)
   );
 }
@@ -685,8 +685,8 @@ static void PPB_URLLoader_OpenDispatcher(
   PpbURLLoaderRpcServer::PPB_URLLoader_Open(
       rpc,
       done,
-      inputs[0]->u.ival,
-      inputs[1]->u.ival,
+      inputs[0]->u.lval,
+      inputs[1]->u.lval,
       inputs[2]->u.ival,
       &(outputs[0]->u.ival)
   );
@@ -701,7 +701,7 @@ static void PPB_URLLoader_FollowRedirectDispatcher(
   PpbURLLoaderRpcServer::PPB_URLLoader_FollowRedirect(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       inputs[1]->u.ival,
       &(outputs[0]->u.ival)
   );
@@ -716,7 +716,7 @@ static void PPB_URLLoader_GetUploadProgressDispatcher(
   PpbURLLoaderRpcServer::PPB_URLLoader_GetUploadProgress(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.lval),
       &(outputs[1]->u.lval),
       &(outputs[2]->u.ival)
@@ -732,7 +732,7 @@ static void PPB_URLLoader_GetDownloadProgressDispatcher(
   PpbURLLoaderRpcServer::PPB_URLLoader_GetDownloadProgress(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.lval),
       &(outputs[1]->u.lval),
       &(outputs[2]->u.ival)
@@ -748,8 +748,8 @@ static void PPB_URLLoader_GetResponseInfoDispatcher(
   PpbURLLoaderRpcServer::PPB_URLLoader_GetResponseInfo(
       rpc,
       done,
-      inputs[0]->u.ival,
-      &(outputs[0]->u.ival)
+      inputs[0]->u.lval,
+      &(outputs[0]->u.lval)
   );
 }
 
@@ -762,7 +762,7 @@ static void PPB_URLLoader_ReadResponseBodyDispatcher(
   PpbURLLoaderRpcServer::PPB_URLLoader_ReadResponseBody(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       inputs[1]->u.ival,
       inputs[2]->u.ival,
       &(outputs[0]->u.count), outputs[0]->arrays.carr,
@@ -779,7 +779,7 @@ static void PPB_URLLoader_FinishStreamingToFileDispatcher(
   PpbURLLoaderRpcServer::PPB_URLLoader_FinishStreamingToFile(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       inputs[1]->u.ival,
       &(outputs[0]->u.ival)
   );
@@ -795,7 +795,7 @@ static void PPB_URLLoader_CloseDispatcher(
   PpbURLLoaderRpcServer::PPB_URLLoader_Close(
       rpc,
       done,
-      inputs[0]->u.ival
+      inputs[0]->u.lval
   );
 }
 
@@ -808,8 +808,8 @@ static void PPB_URLRequestInfo_CreateDispatcher(
   PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_Create(
       rpc,
       done,
-      inputs[0]->u.ival,
-      &(outputs[0]->u.ival)
+      inputs[0]->u.lval,
+      &(outputs[0]->u.lval)
   );
 }
 
@@ -822,7 +822,7 @@ static void PPB_URLRequestInfo_IsURLRequestInfoDispatcher(
   PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_IsURLRequestInfo(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.ival)
   );
 }
@@ -836,7 +836,7 @@ static void PPB_URLRequestInfo_SetPropertyDispatcher(
   PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_SetProperty(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       inputs[1]->u.ival,
       inputs[2]->u.count, inputs[2]->arrays.carr,
       &(outputs[0]->u.ival)
@@ -852,7 +852,7 @@ static void PPB_URLRequestInfo_AppendDataToBodyDispatcher(
   PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_AppendDataToBody(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       inputs[1]->u.count, inputs[1]->arrays.carr,
       &(outputs[0]->u.ival)
   );
@@ -867,8 +867,8 @@ static void PPB_URLRequestInfo_AppendFileToBodyDispatcher(
   PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_AppendFileToBody(
       rpc,
       done,
-      inputs[0]->u.ival,
-      inputs[1]->u.ival,
+      inputs[0]->u.lval,
+      inputs[1]->u.lval,
       inputs[2]->u.lval,
       inputs[3]->u.lval,
       inputs[4]->u.dval,
@@ -885,7 +885,7 @@ static void PPB_URLResponseInfo_IsURLResponseInfoDispatcher(
   PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_IsURLResponseInfo(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       &(outputs[0]->u.ival)
   );
 }
@@ -899,7 +899,7 @@ static void PPB_URLResponseInfo_GetPropertyDispatcher(
   PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_GetProperty(
       rpc,
       done,
-      inputs[0]->u.ival,
+      inputs[0]->u.lval,
       inputs[1]->u.ival,
       &(outputs[0]->u.count), outputs[0]->arrays.carr
   );
@@ -914,8 +914,8 @@ static void PPB_URLResponseInfo_GetBodyAsFileRefDispatcher(
   PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_GetBodyAsFileRef(
       rpc,
       done,
-      inputs[0]->u.ival,
-      &(outputs[0]->u.ival)
+      inputs[0]->u.lval,
+      &(outputs[0]->u.lval)
   );
 }
 

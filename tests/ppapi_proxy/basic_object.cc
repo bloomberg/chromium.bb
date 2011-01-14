@@ -658,7 +658,7 @@ PP_Bool DidCreate(PP_Instance instance,
                uint32_t argc,
                const char* argn[],
                const char* argv[]) {
-  printf("basic_object: DidCreate(%"NACL_PRIu32")\n", instance);
+  printf("basic_object: DidCreate(%"NACL_PRIu64")\n", instance);
   for (uint32_t i = 0; i < argc; ++i) {
     printf("  arg[%"NACL_PRIu32"]: '%s' = '%s'\n", i, argn[i], argv[i]);
   }
@@ -666,11 +666,11 @@ PP_Bool DidCreate(PP_Instance instance,
 }
 
 void DidDestroy(PP_Instance instance) {
-  printf("basic_object: DidDestroy(%"NACL_PRIu32")\n", instance);
+  printf("basic_object: DidDestroy(%"NACL_PRIu64")\n", instance);
 }
 
 PP_Var GetInstanceObject(PP_Instance instance) {
-  printf("basic_object: GetInstanceObject(%"NACL_PRIu32")\n", instance);
+  printf("basic_object: GetInstanceObject(%"NACL_PRIu64")\n", instance);
   printf("  g_var_interface = %p\n",
          reinterpret_cast<const void*>(g_var_interface));
   PP_Var retval =
@@ -701,7 +701,7 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module module_id,
   // Save the global module information for later.
   g_module_id = module_id;
   g_get_browser_interface = get_browser_interface;
-  printf("basic_object: PPP_InitializeModule(%"NACL_PRId32", %p)\n",
+  printf("basic_object: PPP_InitializeModule(%"NACL_PRId64", %p)\n",
          module_id,
          get_browser_interface);
 

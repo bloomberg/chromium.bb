@@ -391,7 +391,7 @@ class PpbURLLoaderRpcServer {
   static void PPB_URLLoader_FinishStreamingToFile(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      PP_Resource loader,
+      int64_t loader,
       int32_t callback_id,
       int32_t* pp_error);
   static void PPB_URLLoader_Close(

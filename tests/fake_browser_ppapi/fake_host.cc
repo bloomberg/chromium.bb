@@ -62,16 +62,10 @@ Host::~Host() {
   int rc = dlclose(dl_handle_);
   CHECK(rc == 0);
 
-  ResourceMap::iterator ri;
-  while ((ri = resource_map_.begin()) != resource_map_.end()) {
-    delete(ri->second);
-    resource_map_.erase(ri);
-  }
-
-  InstanceMap::iterator ii;
-  while ((ii = instance_map_.begin()) != instance_map_.end()) {
-    delete(ii->second);
-    instance_map_.erase(ii);
+  ResourceMap::iterator it;
+  while ((it = resource_map_.begin()) != resource_map_.end()) {
+    delete(it->second);
+    resource_map_.erase(it);
   }
 }
 
@@ -91,7 +85,6 @@ const void* Host::GetInterface(const char* interface_name) {
 PP_Resource Host::TrackResource(Resource* resource) {
   PP_Resource resource_id = ++last_resource_id_;
   resource_map_[resource_id] = resource;
-  resource->set_resource_id(resource_id);
   return resource_id;
 }
 
@@ -99,20 +92,6 @@ Resource* Host::GetResource(PP_Resource resource_id) {
   ResourceMap::iterator iter = resource_map_.find(resource_id);
   if (iter == resource_map_.end())
     return Resource::Invalid();
-  return iter->second;
-}
-
-PP_Instance Host::TrackInstance(Instance* instance) {
-  PP_Instance instance_id = ++last_instance_id_;
-  instance_map_[instance_id] = instance;
-  instance->set_instance_id(instance_id);
-  return instance_id;
-}
-
-Instance* Host::GetInstance(PP_Instance instance_id) {
-  InstanceMap::iterator iter = instance_map_.find(instance_id);
-  if (iter == instance_map_.end())
-    return Instance::Invalid();
   return iter->second;
 }
 

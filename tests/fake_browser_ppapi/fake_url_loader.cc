@@ -31,15 +31,15 @@ std::string g_nacl_ppapi_local_path = NACL_NO_FILE_PATH;
 namespace {
 
 PP_Resource Create(PP_Instance instance_id) {
-  DebugPrintf("URLLoader::Create: instance_id=%"NACL_PRId32"\n", instance_id);
+  DebugPrintf("URLLoader::Create: instance_id=%"NACL_PRId64"\n", instance_id);
   URLLoader* loader = new URLLoader(instance_id);
   PP_Resource resource_id = TrackResource(loader);
-  DebugPrintf("URLLoader::Create: resource_id=%"NACL_PRId32"\n", resource_id);
+  DebugPrintf("URLLoader::Create: resource_id=%"NACL_PRId64"\n", resource_id);
   return resource_id;
 }
 
 PP_Bool IsURLLoader(PP_Resource resource_id) {
-  DebugPrintf("URLLoader::IsURLLoader: resource_id=%"NACL_PRId32"\n",
+  DebugPrintf("URLLoader::IsURLLoader: resource_id=%"NACL_PRId64"\n",
               resource_id);
   NACL_UNIMPLEMENTED();
   return PP_FALSE;
@@ -49,7 +49,7 @@ int32_t Open(PP_Resource loader_id,
              PP_Resource request_id,
              struct PP_CompletionCallback callback) {
   DebugPrintf("URLLoader::Open: loader_id=%"NACL_PRIu64
-              " request_id=%"NACL_PRId32"\n", loader_id, request_id);
+              " request_id=%"NACL_PRId64"\n", loader_id, request_id);
 
   URLLoader* loader = GetResource(loader_id)->AsURLLoader();
   URLRequestInfo* request = GetResource(request_id)->AsURLRequestInfo();
@@ -70,7 +70,7 @@ int32_t Open(PP_Resource loader_id,
   response->set_status_code(NACL_HTTP_STATUS_OK);
   loader->set_response(response);
   PP_Resource response_id = TrackResource(response);
-  DebugPrintf("URLLoader::Open: response_id=%"NACL_PRId32"\n", response_id);
+  DebugPrintf("URLLoader::Open: response_id=%"NACL_PRId64"\n", response_id);
 
   // Invoke the callback right away to simplify mocking.
   if (callback.func == NULL)
@@ -81,7 +81,7 @@ int32_t Open(PP_Resource loader_id,
 
 int32_t FollowRedirect(PP_Resource loader_id,
                        struct PP_CompletionCallback callback) {
-  DebugPrintf("URLLoader::FollowRedirect: loader_id=%"NACL_PRId32"\n",
+  DebugPrintf("URLLoader::FollowRedirect: loader_id=%"NACL_PRId64"\n",
               loader_id);
   UNREFERENCED_PARAMETER(callback);
   NACL_UNIMPLEMENTED();
@@ -91,7 +91,7 @@ int32_t FollowRedirect(PP_Resource loader_id,
 PP_Bool GetUploadProgress(PP_Resource loader_id,
                           int64_t* bytes_sent,
                           int64_t* total_bytes_to_be_sent) {
-  DebugPrintf("URLLoader::GetUploadProgress: loader_id=%"NACL_PRId32"\n",
+  DebugPrintf("URLLoader::GetUploadProgress: loader_id=%"NACL_PRId64"\n",
               loader_id);
   UNREFERENCED_PARAMETER(bytes_sent);
   UNREFERENCED_PARAMETER(total_bytes_to_be_sent);
@@ -102,7 +102,7 @@ PP_Bool GetUploadProgress(PP_Resource loader_id,
 PP_Bool GetDownloadProgress(PP_Resource loader_id,
                             int64_t* bytes_received,
                             int64_t* total_bytes_to_be_received) {
-  DebugPrintf("URLLoader::GetDownloadProgress: loader_id=%"NACL_PRId32"\n",
+  DebugPrintf("URLLoader::GetDownloadProgress: loader_id=%"NACL_PRId64"\n",
               loader_id);
   UNREFERENCED_PARAMETER(bytes_received);
   UNREFERENCED_PARAMETER(total_bytes_to_be_received);
@@ -111,7 +111,7 @@ PP_Bool GetDownloadProgress(PP_Resource loader_id,
 }
 
 PP_Resource GetResponseInfo(PP_Resource loader_id) {
-  DebugPrintf("URLLoader::GetResponseInfo: loader_id=%"NACL_PRId32"\n",
+  DebugPrintf("URLLoader::GetResponseInfo: loader_id=%"NACL_PRId64"\n",
               loader_id);
   URLLoader* loader = GetResource(loader_id)->AsURLLoader();
   if (loader == NULL)
@@ -126,7 +126,7 @@ int32_t ReadResponseBody(PP_Resource loader_id,
                          char* buffer,
                          int32_t bytes_to_read,
                          struct PP_CompletionCallback callback) {
-  DebugPrintf("URLLoader::ReadResponseBody: loader_id=%"NACL_PRId32"\n",
+  DebugPrintf("URLLoader::ReadResponseBody: loader_id=%"NACL_PRId64"\n",
               loader_id);
   UNREFERENCED_PARAMETER(buffer);
   UNREFERENCED_PARAMETER(bytes_to_read);
@@ -137,7 +137,7 @@ int32_t ReadResponseBody(PP_Resource loader_id,
 
 int32_t FinishStreamingToFile(PP_Resource loader_id,
                               struct PP_CompletionCallback callback) {
-  DebugPrintf("URLLoader::FinishStreamingToFile: loader_id=%"NACL_PRId32"\n",
+  DebugPrintf("URLLoader::FinishStreamingToFile: loader_id=%"NACL_PRId64"\n",
               loader_id);
 
   URLLoader* loader = GetResource(loader_id)->AsURLLoader();
@@ -158,7 +158,7 @@ int32_t FinishStreamingToFile(PP_Resource loader_id,
   FileRef* file_ref = new FileRef(local_file);
   response->set_body_as_file_ref(file_ref);
   PP_Resource file_ref_id = TrackResource(file_ref);
-  DebugPrintf("URLLoader::FinishStreamingToFile: file_ref_id=%"NACL_PRId32"\n",
+  DebugPrintf("URLLoader::FinishStreamingToFile: file_ref_id=%"NACL_PRId64"\n",
               file_ref_id);
 
   // Call the callback right away to simplify mocking.
@@ -169,7 +169,7 @@ int32_t FinishStreamingToFile(PP_Resource loader_id,
 }
 
 void Close(PP_Resource loader_id) {
-  DebugPrintf("URLLoader::ReadResponseBody: loader_id=%"NACL_PRId32"\n",
+  DebugPrintf("URLLoader::ReadResponseBody: loader_id=%"NACL_PRId64"\n",
               loader_id);
   NACL_UNIMPLEMENTED();
 }
