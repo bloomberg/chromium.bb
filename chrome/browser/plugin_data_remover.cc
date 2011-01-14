@@ -4,11 +4,13 @@
 
 #include "chrome/browser/plugin_data_remover.h"
 
+#include "base/command_line.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/version.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/plugin_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/plugin_messages.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -156,8 +158,11 @@ bool PluginDataRemover::IsSupported() {
   }
   scoped_ptr<Version> version(
       webkit::npapi::PluginGroup::CreateVersionFromString(plugin.version));
-  scoped_ptr<Version> min_version(
-      Version::GetVersionFromString(kMinFlashVersion));
+  scoped_ptr<Version> min_version(Version::GetVersionFromString(
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kMinClearSiteDataFlashVersion)));
+  if (!min_version.get())
+    min_version.reset(Version::GetVersionFromString(kMinFlashVersion));
   return plugin.enabled &&
          version.get() &&
          min_version->CompareTo(*version) == -1;

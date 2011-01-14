@@ -232,6 +232,7 @@ extern const char kMediaCacheSize[];
 extern const char kMemoryProfiling[];
 extern const char kMessageLoopHistogrammer[];
 extern const char kMetricsRecordingOnly[];
+extern const char kMinClearSiteDataFlashVersion[];
 extern const char kNaClDebugIP[];
 extern const char kNaClDebugPorts[];
 extern const char kNaClBrokerProcess[];

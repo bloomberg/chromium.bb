@@ -811,6 +811,9 @@ const char kMessageLoopHistogrammer[]       = "message-loop-histogrammer";
 // and performance tests.
 const char kMetricsRecordingOnly[]          = "metrics-recording-only";
 
+// The minimum version of Flash that implements the NPP_ClearSiteData API.
+const char kMinClearSiteDataFlashVersion[]  = "min-clearsitedata-flash-version";
+
 // Sets the default IP address (interface) for the stub (normally 127.0.0.1).
 const char kNaClDebugIP[]                   = "nacl-debug-ip";
 
