@@ -39,6 +39,7 @@ struct evdev_input_device {
 	int tool, new_x, new_y;
 	int base_x, base_y;
 	int fd;
+	int min_x, max_x, min_y, max_y;
 };
 
 static void evdev_input_device_data(int fd, uint32_t mask, void *data)
@@ -49,6 +50,10 @@ static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 	int len, value, dx, dy, absolute_event;
 	int x, y;
 	uint32_t time;
+
+	/* FIXME: Obviously we need to not hardcode these here, but
+	 * instead get the values from the output it's associated with. */
+	const int screen_width = 1024, screen_height = 600;
 
 	ec = (struct wlsc_compositor *)
 		device->master->base.input_device.compositor;
@@ -88,21 +93,16 @@ static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 			break;
 
 		case EV_ABS:
-			absolute_event = 1;
 			switch (e->code) {
 			case ABS_X:
-				if (device->new_x) {
-					device->base_x = x - value;
-					device->new_x = 0;
-				}
-				x = device->base_x + value;
+				absolute_event = device->tool;
+				x = (value - device->min_x) * screen_width /
+					(device->max_x - device->min_x);
 				break;
 			case ABS_Y:
-				if (device->new_y) {
-					device->base_y = y - value;
-					device->new_y = 0;
-				}
-				y = device->base_y + value;
+				absolute_event = device->tool;
+				y = (value - device->min_y) * screen_height /
+					(device->max_y - device->min_y);
 				break;
 			}
 			break;
@@ -121,10 +121,6 @@ static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 			case BTN_TOOL_FINGER:
 			case BTN_TOOL_MOUSE:
 			case BTN_TOOL_LENS:
-				if (device->tool == 0 && value) {
-					device->new_x = 1;
-					device->new_y = 1;
-				}
 				device->tool = value ? e->code : 0;
 				break;
 
@@ -151,9 +147,11 @@ static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 	if (dx != 0 || dy != 0)
 		notify_motion(&device->master->base.input_device,
 			      time, x + dx, y + dy);
-	if (absolute_event && device->tool)
+	if (absolute_event)
 		notify_motion(&device->master->base.input_device, time, x, y);
 }
+
+#define TEST_BIT(b, i) (b[(i) / 32] & (1 << (i & 31)))
 
 static struct evdev_input_device *
 evdev_input_device_create(struct evdev_input *master,
@@ -161,6 +159,9 @@ evdev_input_device_create(struct evdev_input *master,
 {
 	struct evdev_input_device *device;
 	struct wl_event_loop *loop;
+	struct input_absinfo absinfo;
+	uint32_t ev_bits[EV_MAX];
+	uint32_t key_bits[KEY_MAX];
 
 	device = malloc(sizeof *device);
 	if (device == NULL)
@@ -176,6 +177,21 @@ evdev_input_device_create(struct evdev_input *master,
 		free(device);
 		fprintf(stderr, "couldn't create pointer for %s: %m\n", path);
 		return NULL;
+	}
+
+	ioctl(device->fd, EVIOCGBIT(0, EV_MAX), ev_bits);
+	if (TEST_BIT(ev_bits, EV_ABS)) {
+		ioctl(device->fd, EVIOCGBIT(EV_ABS, EV_MAX), key_bits);
+		if (TEST_BIT(key_bits, ABS_X)) {
+			ioctl(device->fd, EVIOCGABS(ABS_X), &absinfo);
+			device->min_x = absinfo.minimum;
+			device->max_x = absinfo.maximum;
+		}
+		if (TEST_BIT(key_bits, ABS_Y)) {
+			ioctl(device->fd, EVIOCGABS(ABS_Y), &absinfo);
+			device->min_y = absinfo.minimum;
+			device->max_y = absinfo.maximum;
+		}
 	}
 
 	loop = wl_display_get_event_loop(display);
