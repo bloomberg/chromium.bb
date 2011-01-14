@@ -286,6 +286,9 @@ void AutofillProfileChangeProcessor::AddAutofillProfileSyncNode(
   node.SetTitle(UTF8ToWide(profile.guid()));
 
   WriteAutofillProfile(profile, &node);
+
+  std::string guid = profile.guid();
+  model_associator_->Associate(&guid, node.GetId());
 }
 
 void AutofillProfileChangeProcessor::StartObserving() {

@@ -95,9 +95,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
   ASSERT_EQ(5U, GetAllKeys(0).size());
 }
 
-// TODO(lipalani): Enable after http://crbug.com/69173 is fixed.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
-                       DISABLED_PersonalDataManagerSanity) {
+                       PersonalDataManagerSanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Client0 adds a profile.
@@ -227,8 +226,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, MergeProfiles) {
 }
 
 // TestScribe ID - 426756.
-// TODO(lipalani): Enable after http://crbug.com/69173 is fixed.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DISABLED_UpdateFields) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, UpdateFields) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
