@@ -34,7 +34,5 @@
 #endif
 #endif
 
-#define IDS_CEEE_NESTED_BHO_LIST        500
-
 
 #endif  // CEEE_IE_PLUGIN_TOOLBAND_RESOURCE_H_
