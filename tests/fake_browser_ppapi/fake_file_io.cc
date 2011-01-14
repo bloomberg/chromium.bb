@@ -27,15 +27,15 @@ namespace fake_browser_ppapi {
 namespace {
 
 PP_Resource Create(PP_Module module_id) {
-  DebugPrintf("FileIO::Create: module_id=%"NACL_PRId64"\n", module_id);
+  DebugPrintf("FileIO::Create: module_id=%"NACL_PRId32"\n", module_id);
   FileIO* file_io = new FileIO(module_id);
   PP_Resource resource_id = TrackResource(file_io);
-  DebugPrintf("FileIO::Create: resource_id=%"NACL_PRId64"\n", resource_id);
+  DebugPrintf("FileIO::Create: resource_id=%"NACL_PRId32"\n", resource_id);
   return resource_id;
 }
 
 PP_Bool IsFileIO(PP_Resource resource_id) {
-  DebugPrintf("FileIO::IsFileIO: resource_id=%"NACL_PRId64"\n", resource_id);
+  DebugPrintf("FileIO::IsFileIO: resource_id=%"NACL_PRId32"\n", resource_id);
   NACL_UNIMPLEMENTED();
   return PP_FALSE;
 }
@@ -44,8 +44,8 @@ int32_t Open(PP_Resource file_io_id,
              PP_Resource file_ref_id,
              int32_t open_flags,
              struct PP_CompletionCallback callback) {
-  DebugPrintf("FileIO::Open: file_io_id=%"NACL_PRId64
-              " file_ref_id=%"NACL_PRId64" open_flags=%"NACL_PRId32"\n",
+  DebugPrintf("FileIO::Open: file_io_id=%"NACL_PRId32
+              " file_ref_id=%"NACL_PRId32" open_flags=%"NACL_PRId32"\n",
               file_io_id, file_ref_id, open_flags);
   FileIO* file_io = GetResource(file_io_id)->AsFileIO();
   FileRef* file_ref = GetResource(file_ref_id)->AsFileRef();
@@ -73,7 +73,7 @@ int32_t Open(PP_Resource file_io_id,
 int32_t Query(PP_Resource file_io_id,
               PP_FileInfo_Dev* info,
               struct PP_CompletionCallback callback) {
-  DebugPrintf("FileIO::Query: file_io_id=%"NACL_PRId64"\n", file_io_id);
+  DebugPrintf("FileIO::Query: file_io_id=%"NACL_PRId32"\n", file_io_id);
   UNREFERENCED_PARAMETER(info);
   UNREFERENCED_PARAMETER(callback);
   NACL_UNIMPLEMENTED();
@@ -84,7 +84,7 @@ int32_t Touch(PP_Resource file_io_id,
               PP_Time last_access_time,
               PP_Time last_modified_time,
               struct PP_CompletionCallback callback) {
-  DebugPrintf("FileIO::Touch: file_io_id=%"NACL_PRId64"\n", file_io_id);
+  DebugPrintf("FileIO::Touch: file_io_id=%"NACL_PRId32"\n", file_io_id);
   UNREFERENCED_PARAMETER(last_access_time);
   UNREFERENCED_PARAMETER(last_modified_time);
   UNREFERENCED_PARAMETER(callback);
@@ -97,7 +97,7 @@ int32_t Read(PP_Resource file_io_id,
              char* buffer,
              int32_t bytes_to_read,
              struct PP_CompletionCallback callback) {
-  DebugPrintf("FileIO::Read: file_io_id=%"NACL_PRId64"\n", file_io_id);
+  DebugPrintf("FileIO::Read: file_io_id=%"NACL_PRId32"\n", file_io_id);
   UNREFERENCED_PARAMETER(offset);
   UNREFERENCED_PARAMETER(buffer);
   UNREFERENCED_PARAMETER(bytes_to_read);
@@ -111,7 +111,7 @@ int32_t Write(PP_Resource file_io_id,
               const char* buffer,
               int32_t bytes_to_write,
               struct PP_CompletionCallback callback) {
-  DebugPrintf("FileIO::Write: file_io_id=%"NACL_PRId64"\n", file_io_id);
+  DebugPrintf("FileIO::Write: file_io_id=%"NACL_PRId32"\n", file_io_id);
   UNREFERENCED_PARAMETER(offset);
   UNREFERENCED_PARAMETER(buffer);
   UNREFERENCED_PARAMETER(bytes_to_write);
@@ -123,7 +123,7 @@ int32_t Write(PP_Resource file_io_id,
 int32_t SetLength(PP_Resource file_io_id,
                   int64_t length,
                   struct PP_CompletionCallback callback) {
-  DebugPrintf("FileIO::SetLength: file_io_id=%"NACL_PRId64"\n", file_io_id);
+  DebugPrintf("FileIO::SetLength: file_io_id=%"NACL_PRId32"\n", file_io_id);
   UNREFERENCED_PARAMETER(length);
   UNREFERENCED_PARAMETER(callback);
   NACL_UNIMPLEMENTED();
@@ -132,14 +132,14 @@ int32_t SetLength(PP_Resource file_io_id,
 
 int32_t Flush(PP_Resource file_io_id,
               struct PP_CompletionCallback callback) {
-  DebugPrintf("FileIO::Flush: file_io=%"NACL_PRId64"\n", file_io_id);
+  DebugPrintf("FileIO::Flush: file_io=%"NACL_PRId32"\n", file_io_id);
   UNREFERENCED_PARAMETER(callback);
   NACL_UNIMPLEMENTED();
   return PP_ERROR_BADRESOURCE;
 }
 
 void Close(PP_Resource file_io_id) {
-  DebugPrintf("FileIO::Close: file_io=%"NACL_PRId64"\n", file_io_id);
+  DebugPrintf("FileIO::Close: file_io=%"NACL_PRId32"\n", file_io_id);
   NACL_UNIMPLEMENTED();
 }
 

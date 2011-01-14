@@ -27,16 +27,16 @@ namespace fake_browser_ppapi {
 namespace {
 
 PP_Resource Create(PP_Module module_id) {
-  DebugPrintf("URLRequestInfo::Create: module_id=%"NACL_PRId64"\n", module_id);
+  DebugPrintf("URLRequestInfo::Create: module_id=%"NACL_PRId32"\n", module_id);
   URLRequestInfo* request = new URLRequestInfo(module_id);
   PP_Resource resource_id = TrackResource(request);
-  DebugPrintf("URLRequestInfo::Create: resource_id=%"NACL_PRId64"\n",
+  DebugPrintf("URLRequestInfo::Create: resource_id=%"NACL_PRId32"\n",
               resource_id);
   return resource_id;
 }
 
 PP_Bool IsURLRequestInfo(PP_Resource resource_id) {
-  DebugPrintf("URLRequestInfo::IsURLRequestInfo: resource_id=%"NACL_PRId64"\n",
+  DebugPrintf("URLRequestInfo::IsURLRequestInfo: resource_id=%"NACL_PRId32"\n",
               resource_id);
   UNREFERENCED_PARAMETER(resource_id);
   NACL_UNIMPLEMENTED();
@@ -46,7 +46,7 @@ PP_Bool IsURLRequestInfo(PP_Resource resource_id) {
 PP_Bool SetProperty(PP_Resource request_id,
                     PP_URLRequestProperty property,
                     struct PP_Var value) {
-  DebugPrintf("URLRequestInfo::SetProperty: request_id=%"NACL_PRId64
+  DebugPrintf("URLRequestInfo::SetProperty: request_id=%"NACL_PRId32
               " property=%d value.type=%d\n", request_id, property, value.type);
 
   URLRequestInfo* request = GetResource(request_id)->AsURLRequestInfo();
@@ -99,7 +99,7 @@ PP_Bool SetProperty(PP_Resource request_id,
 PP_Bool AppendDataToBody(PP_Resource request_id,
                          const char* data,
                          uint32_t len) {
-  DebugPrintf("URLRequestInfo::AppendDataToBody: request_id=%"NACL_PRId64"\n",
+  DebugPrintf("URLRequestInfo::AppendDataToBody: request_id=%"NACL_PRId32"\n",
               request_id);
   UNREFERENCED_PARAMETER(data);
   UNREFERENCED_PARAMETER(len);
@@ -112,7 +112,7 @@ PP_Bool AppendFileToBody(PP_Resource request_id,
                          int64_t start_offset,
                          int64_t number_of_bytes,
                          PP_Time expected_last_modified_time) {
-  DebugPrintf("URLRequestInfo::AppendFileToBody: request_id=%"NACL_PRId64"\n",
+  DebugPrintf("URLRequestInfo::AppendFileToBody: request_id=%"NACL_PRId32"\n",
               request_id);
   UNREFERENCED_PARAMETER(file_ref);
   UNREFERENCED_PARAMETER(start_offset);

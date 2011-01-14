@@ -8,21 +8,25 @@
 #define NATIVE_CLIENT_TESTS_FAKE_BROWSER_PPAPI_FAKE_INSTANCE_H_
 
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/tests/fake_browser_ppapi/fake_window.h"
+#include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb_instance.h"
 
 namespace fake_browser_ppapi {
 
+class FakeWindow;
 class Host;
 
 // Implements the PPB_Instance interface.
 class Instance {
  public:
   // You must call set_window to complete initialization.
-  explicit Instance() : window_(NULL) {}
+  Instance() : instance_id_(0), window_(NULL) {}
   virtual ~Instance() {}
 
   void set_window(FakeWindow* window) { window_ = window; }
+
+  void set_instance_id(PP_Instance instance_id) { instance_id_ = instance_id; }
+  PP_Instance instance_id() const { return instance_id_; }
 
   // The bindings for the methods invoked by the PPAPI interface.
   virtual PP_Var GetWindowObject();
@@ -32,11 +36,19 @@ class Instance {
   virtual PP_Var ExecuteScript(PP_Var script,
                                PP_Var* exception);
   static const PPB_Instance* GetInterface();
-
+  static Instance* Invalid() { return &kInvalidInstance; }
  private:
+  static Instance kInvalidInstance;
+  PP_Instance instance_id_;
   FakeWindow* window_;
   NACL_DISALLOW_COPY_AND_ASSIGN(Instance);
 };
+
+// These are made global so that C API functions can access them from any file.
+// To be implemented by main.cc.
+PP_Instance TrackInstance(Instance* instance);
+// Returns Instance::Invalid() on error.
+Instance* GetInstance(PP_Instance instance_id);
 
 }  // namespace fake_browser_ppapi
 

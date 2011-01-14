@@ -70,9 +70,9 @@ types = {'bool': ['b', 'bool', 'u.bval', ''],
          'int32_t[]': ['I', 'int32_t*', 'arrays.iarr', 'u.count'],
          'int64_t': ['l', 'int64_t', 'u.lval', ''],
          'int64_t[]': ['L', 'int64_t', 'arrays.larr', 'u.count'],
-         'PP_Instance': ['l', 'PP_Instance', 'u.lval', ''],
-         'PP_Module': ['l', 'PP_Module', 'u.lval', ''],
-         'PP_Resource': ['l', 'PP_Resource', 'u.lval', ''],
+         'PP_Instance': ['l', 'PP_Instance', 'u.ival', ''],
+         'PP_Module': ['l', 'PP_Module', 'u.ival', ''],
+         'PP_Resource': ['l', 'PP_Resource', 'u.ival', ''],
          'string': ['s', 'char*', 'arrays.str', ''],
         }
 

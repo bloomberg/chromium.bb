@@ -201,7 +201,7 @@ static void PPP_InitializeModuleDispatcher(
       rpc,
       done,
       inputs[0]->u.ival,
-      inputs[1]->u.lval,
+      inputs[1]->u.ival,
       inputs[2]->u.hval,
       inputs[3]->arrays.str,
       &(outputs[0]->u.ival),
@@ -247,7 +247,7 @@ static void PPP_Audio_Dev_StreamCreatedDispatcher(
   PppAudioDevRpcServer::PPP_Audio_Dev_StreamCreated(
       rpc,
       done,
-      inputs[0]->u.lval,
+      inputs[0]->u.ival,
       inputs[1]->u.hval,
       inputs[2]->u.ival,
       inputs[3]->u.hval
@@ -263,7 +263,7 @@ static void PPP_Instance_DidCreateDispatcher(
   PppInstanceRpcServer::PPP_Instance_DidCreate(
       rpc,
       done,
-      inputs[0]->u.lval,
+      inputs[0]->u.ival,
       inputs[1]->u.ival,
       inputs[2]->u.count, inputs[2]->arrays.carr,
       inputs[3]->u.count, inputs[3]->arrays.carr,
@@ -281,7 +281,7 @@ static void PPP_Instance_DidDestroyDispatcher(
   PppInstanceRpcServer::PPP_Instance_DidDestroy(
       rpc,
       done,
-      inputs[0]->u.lval
+      inputs[0]->u.ival
   );
 }
 
@@ -295,7 +295,7 @@ static void PPP_Instance_DidChangeViewDispatcher(
   PppInstanceRpcServer::PPP_Instance_DidChangeView(
       rpc,
       done,
-      inputs[0]->u.lval,
+      inputs[0]->u.ival,
       inputs[1]->u.count, inputs[1]->arrays.iarr,
       inputs[2]->u.count, inputs[2]->arrays.iarr
   );
@@ -311,7 +311,7 @@ static void PPP_Instance_DidChangeFocusDispatcher(
   PppInstanceRpcServer::PPP_Instance_DidChangeFocus(
       rpc,
       done,
-      inputs[0]->u.lval,
+      inputs[0]->u.ival,
       inputs[1]->u.bval
   );
 }
@@ -325,7 +325,7 @@ static void PPP_Instance_HandleInputEventDispatcher(
   PppInstanceRpcServer::PPP_Instance_HandleInputEvent(
       rpc,
       done,
-      inputs[0]->u.lval,
+      inputs[0]->u.ival,
       inputs[1]->u.count, inputs[1]->arrays.carr,
       &(outputs[0]->u.ival)
   );
@@ -340,8 +340,8 @@ static void PPP_Instance_HandleDocumentLoadDispatcher(
   PppInstanceRpcServer::PPP_Instance_HandleDocumentLoad(
       rpc,
       done,
-      inputs[0]->u.lval,
-      inputs[1]->u.lval,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
       &(outputs[0]->u.ival)
   );
 }
@@ -355,7 +355,7 @@ static void PPP_Instance_GetInstanceObjectDispatcher(
   PppInstanceRpcServer::PPP_Instance_GetInstanceObject(
       rpc,
       done,
-      inputs[0]->u.lval,
+      inputs[0]->u.ival,
       &(outputs[0]->u.count), outputs[0]->arrays.carr
   );
 }
