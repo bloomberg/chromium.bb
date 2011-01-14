@@ -585,7 +585,7 @@ public:
     long ParseNext(
             const Cluster* pCurr,
             const Cluster*& pNext,
-            long long& pos, 
+            long long& pos,
             long& size);
 
     //This pair parses one cluster, but only changes the state of the
