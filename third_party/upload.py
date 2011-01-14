@@ -402,6 +402,14 @@ class AbstractRpcServer(object):
           response = f.read()
           f.close()
           return response
+        except urllib2.URLError, e:
+          reason = e.reason
+          if isinstance(reason, str) and reason.find("110") != -1:
+            # Connection timeout error.
+            if tries <= 3:
+              # Try again.
+              continue
+          raise
         except urllib2.HTTPError, e:
           if tries > 3:
             raise
