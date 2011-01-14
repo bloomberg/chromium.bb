@@ -436,21 +436,21 @@ HRESULT SetChromeFrameUA(bool is_system, const wchar_t* value) {
   RegKey ua_key;
   if (ua_key.Create(parent_hive, kPostPlatformUAKey, KEY_READ | KEY_WRITE)) {
     // Make sure that we unregister ChromeFrame UA strings registered previously
-    wchar_t name[MAX_PATH + 1] = {};
-    wchar_t value[MAX_PATH + 1] = {};
+    wchar_t value_name[MAX_PATH + 1] = {};
+    wchar_t value_data[MAX_PATH + 1] = {};
 
     DWORD value_index = 0;
     while (value_index < ua_key.ValueCount()) {
-      DWORD name_size = arraysize(name);
-      DWORD value_size = arraysize(value);
+      DWORD name_size = arraysize(value_name);
+      DWORD value_size = arraysize(value_data);
       DWORD type = 0;
-      LRESULT ret = ::RegEnumValue(ua_key.Handle(), value_index, name,
+      LRESULT ret = ::RegEnumValue(ua_key.Handle(), value_index, value_name,
                                    &name_size, NULL, &type,
-                                   reinterpret_cast<BYTE*>(value),
+                                   reinterpret_cast<BYTE*>(value_data),
                                    &value_size);
       if (ret == ERROR_SUCCESS) {
-        if (StartsWith(name, kChromeFramePrefix, false)) {
-          ua_key.DeleteValue(name);
+        if (StartsWith(value_name, kChromeFramePrefix, false)) {
+          ua_key.DeleteValue(value_name);
         } else {
           ++value_index;
         }
