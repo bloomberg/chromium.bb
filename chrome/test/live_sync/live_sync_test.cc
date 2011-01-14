@@ -162,10 +162,6 @@ void LiveSyncTest::TearDown() {
 
   // Stop the local sync test server. This is a no-op if one wasn't started.
   TearDownLocalTestServer();
-
-  // Switch back to using the default URLFetcher factory. This is a no-op if
-  // a fake factory wasn't used.
-  URLFetcher::set_factory(NULL);
 }
 
 void LiveSyncTest::SetUpCommandLine(CommandLine* cl) {
@@ -280,6 +276,10 @@ void LiveSyncTest::SetUpInProcessBrowserTestFixture() {
 
 void LiveSyncTest::TearDownInProcessBrowserTestFixture() {
   mock_host_resolver_override_.reset();
+
+  // Switch back to using the default URLFetcher factory. This is a no-op if
+  // a fake factory wasn't used.
+  URLFetcher::set_factory(NULL);
 }
 
 void LiveSyncTest::ReadPasswordFile() {
