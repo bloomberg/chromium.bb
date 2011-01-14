@@ -956,15 +956,12 @@ TEST_F(CookieApiTests, CookieChangedEventHandler) {
   std::string converted_args;
   // Empty args.
   std::string input_args = "";
-  EXPECT_EQ(false,
-            cookie_changed.EventHandlerImpl(input_args, &converted_args));
+  EXPECT_FALSE(cookie_changed.EventHandlerImpl(input_args, &converted_args));
   // Invalid args.
   input_args = "[false, {hello]";
-  EXPECT_EQ(false,
-            cookie_changed.EventHandlerImpl(input_args, &converted_args));
+  EXPECT_FALSE(cookie_changed.EventHandlerImpl(input_args, &converted_args));
   input_args = "[3]";
-  EXPECT_EQ(false,
-            cookie_changed.EventHandlerImpl(input_args, &converted_args));
+  EXPECT_FALSE(cookie_changed.EventHandlerImpl(input_args, &converted_args));
   // Valid args.
   input_args = "[{\"removed\": false, \"cookie\": {\"storeId\": \"1\"}}]";
 
@@ -973,8 +970,7 @@ TEST_F(CookieApiTests, CookieChangedEventHandler) {
   EXPECT_CALL(*cookie_changed.api_result_,
               GetAnyWindowInStore(StrEq("1"), true, _, _))
       .WillOnce(Return(false));
-  EXPECT_EQ(false,
-            cookie_changed.EventHandlerImpl(input_args, &converted_args));
+  EXPECT_FALSE(cookie_changed.EventHandlerImpl(input_args, &converted_args));
 
   // Cookie store access errors.
   cookie_changed.AllocateApiResult();
@@ -985,8 +981,7 @@ TEST_F(CookieApiTests, CookieChangedEventHandler) {
                       Return(true)));
   EXPECT_CALL(*cookie_changed.api_result_,
               CookieStoreIsRegistered(HWND(5))).WillOnce(Return(E_FAIL));
-  EXPECT_EQ(false,
-            cookie_changed.EventHandlerImpl(input_args, &converted_args));
+  EXPECT_FALSE(cookie_changed.EventHandlerImpl(input_args, &converted_args));
 
   cookie_changed.AllocateApiResult();
   EXPECT_CALL(*cookie_changed.api_result_,
@@ -998,8 +993,7 @@ TEST_F(CookieApiTests, CookieChangedEventHandler) {
               CookieStoreIsRegistered(HWND(5))).WillOnce(Return(S_FALSE));
   EXPECT_CALL(*cookie_changed.api_result_,
               RegisterCookieStore(HWND(5))).WillOnce(Return(E_FAIL));
-  EXPECT_EQ(false,
-            cookie_changed.EventHandlerImpl(input_args, &converted_args));
+  EXPECT_FALSE(cookie_changed.EventHandlerImpl(input_args, &converted_args));
 
   // Registered cookie store.
   cookie_changed.AllocateApiResult();
@@ -1010,8 +1004,7 @@ TEST_F(CookieApiTests, CookieChangedEventHandler) {
                       Return(true)));
   EXPECT_CALL(*cookie_changed.api_result_,
               CookieStoreIsRegistered(HWND(5))).WillOnce(Return(S_OK));
-  EXPECT_EQ(true,
-            cookie_changed.EventHandlerImpl(input_args, &converted_args));
+  EXPECT_TRUE(cookie_changed.EventHandlerImpl(input_args, &converted_args));
 
   // Unregistered cookie store.
   cookie_changed.AllocateApiResult();
@@ -1024,8 +1017,7 @@ TEST_F(CookieApiTests, CookieChangedEventHandler) {
               CookieStoreIsRegistered(HWND(5))).WillOnce(Return(S_FALSE));
   EXPECT_CALL(*cookie_changed.api_result_,
               RegisterCookieStore(HWND(5))).WillOnce(Return(S_OK));
-  EXPECT_EQ(true,
-            cookie_changed.EventHandlerImpl(input_args, &converted_args));
+  EXPECT_TRUE(cookie_changed.EventHandlerImpl(input_args, &converted_args));
 }
 
 }  // namespace

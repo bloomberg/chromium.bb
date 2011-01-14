@@ -1091,7 +1091,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion70To71) {
   std::string model_id = s.ColumnString(0);
   EXPECT_EQ("C2881000", base::HexEncode(model_id.data(), model_id.size()))
       << "Model ID is expected to be the empty BookmarkSpecifics proto.";
-  EXPECT_EQ(true, s.ColumnBool(1));
+  EXPECT_TRUE(s.ColumnBool(1));
   EXPECT_EQ(694, s.ColumnInt64(2));
   ASSERT_FALSE(s.Step());
 }

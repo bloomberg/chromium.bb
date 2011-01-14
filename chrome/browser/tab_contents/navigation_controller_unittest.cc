@@ -1641,7 +1641,7 @@ TEST_F(NavigationControllerTest, ViewSourceRedirect) {
   controller().RendererDidNavigate(params, 0, &details);
 
   EXPECT_EQ(ASCIIToUTF16(kExpected), contents()->GetTitle());
-  EXPECT_EQ(true, contents()->ShouldDisplayURL());
+  EXPECT_TRUE(contents()->ShouldDisplayURL());
 }
 
 // Make sure that on cloning a tabcontents and going back needs_reload is false.

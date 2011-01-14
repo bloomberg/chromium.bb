@@ -95,7 +95,7 @@ void DecodeFuzzTest::FuzzExe(const char* file_name) const {
   std::string base_buffer(reinterpret_cast<const char*>(sink.Buffer()), length);
   std::string base_output;
   bool ok = TryAssemble(base_buffer, &base_output);
-  EXPECT_EQ(true, ok);
+  EXPECT_TRUE(ok);
 
   // Now we have a good serialized EncodedProgram in |base_buffer|. Time to
   // fuzz.

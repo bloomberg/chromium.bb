@@ -418,7 +418,7 @@ TEST_F(OmxCodecTest, NormalFlow) {
   EXPECT_EQ(kBufferCount - 1, static_cast<int>(input_units_.size()));
   EXPECT_EQ(1, static_cast<int>(output_units_.size()));
   EXPECT_EQ(count - 1, static_cast<int>(output_pool_.size()));
-  EXPECT_EQ(true, got_eos_);
+  EXPECT_TRUE(got_eos_);
 
   // Shutdown.
   ExpectStop();
@@ -470,7 +470,7 @@ TEST_F(OmxCodecTest, RecycleInputBuffers) {
   EXPECT_EQ(kBufferCount - 1, static_cast<int>(input_units_.size()));
   EXPECT_EQ(1, static_cast<int>(output_units_.size()));
   EXPECT_EQ(count - 1, static_cast<int>(output_pool_.size()));
-  EXPECT_EQ(true, got_eos_);
+  EXPECT_TRUE(got_eos_);
 
   // Shutdown.
   ExpectStop();

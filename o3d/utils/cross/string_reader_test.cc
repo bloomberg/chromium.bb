@@ -88,7 +88,7 @@ TEST_F(StringReaderTest, ReadsSingleCharacter) {
   StringReader reader(test_string_one_);
   EXPECT_EQ(test_string_one_.substr(0, 1)[0], reader.ReadChar());
   EXPECT_EQ(1U, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_one_.substr(1, 2), reader.PeekString(2));
   EXPECT_EQ(1U, reader.position());
 }
@@ -98,7 +98,7 @@ TEST_F(StringReaderTest, ReadsMultipleCharacters) {
   EXPECT_EQ(test_string_one_.substr(0, 1)[0], reader.ReadChar());
   EXPECT_EQ(test_string_one_.substr(1, 1)[0], reader.ReadChar());
   EXPECT_EQ(2U, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_one_.substr(2, 2), reader.PeekString(2));
   EXPECT_EQ(2U, reader.position());
 }
@@ -107,7 +107,7 @@ TEST_F(StringReaderTest, ReadsString) {
   StringReader reader(test_string_one_);
   EXPECT_EQ(test_string_one_.substr(0, 7), reader.ReadString(7));
   EXPECT_EQ(7U, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_one_.substr(7, 2), reader.PeekString(2));
   EXPECT_EQ(7U, reader.position());
 }
@@ -116,9 +116,9 @@ TEST_F(StringReaderTest, ReadsToEnd) {
   StringReader reader(test_string_lf_);
   EXPECT_EQ(test_string_lf_, reader.ReadToEnd());
   EXPECT_EQ(test_string_lf_.size(), reader.position());
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
   EXPECT_EQ("", reader.ReadString(1));
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
   EXPECT_EQ(test_string_lf_.size(), reader.position());
 }
 
@@ -128,12 +128,12 @@ TEST_F(StringReaderTest, ReadsLinefeedString) {
   std::string line = reader.ReadLine();
   EXPECT_EQ(test_string_one_, line);
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_lf_.substr(test_string_one_.size() + 1, 2),
             reader.PeekString(2));
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
   EXPECT_EQ(test_string_two_, reader.ReadLine());
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
   EXPECT_EQ(test_string_lf_.size(), reader.position());
 }
 
@@ -141,12 +141,12 @@ TEST_F(StringReaderTest, ReadsCarriageReturnString) {
   StringReader reader(test_string_cr_);
   EXPECT_EQ(test_string_one_, reader.ReadLine());
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_cr_.substr(test_string_one_.size() + 1, 2),
             reader.PeekString(2));
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
   EXPECT_EQ(test_string_two_, reader.ReadLine());
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
   EXPECT_EQ(test_string_cr_.size(), reader.position());
 }
 
@@ -155,12 +155,12 @@ TEST_F(StringReaderTest, ReadsCarriageReturnLinefeedString) {
   StringReader reader(test_string_crlf_);
   EXPECT_EQ(test_string_one_, reader.ReadLine());
   EXPECT_EQ(test_string_one_.size() + 2, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_crlf_.substr(test_string_one_.size() + 2, 2),
             reader.PeekString(2));
   EXPECT_EQ(test_string_one_.size() + 2, reader.position());
   EXPECT_EQ(test_string_two_, reader.ReadLine());
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
   EXPECT_EQ(test_string_crlf_.size(), reader.position());
 }
 
@@ -168,16 +168,16 @@ TEST_F(StringReaderTest, ReadsLinefeedCarriageReturnString) {
   StringReader reader(test_string_lfcr_);
   EXPECT_EQ(test_string_one_, reader.ReadLine());
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_lfcr_.substr(test_string_one_.size() + 1, 2),
             reader.PeekString(2));
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
   EXPECT_EQ("", reader.ReadLine());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_two_, reader.ReadLine());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ("", reader.ReadLine());
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
   EXPECT_EQ(test_string_lfcr_.size(), reader.position());
 }
 
@@ -185,16 +185,16 @@ TEST_F(StringReaderTest, ReadsLinefeedLinefeedString) {
   StringReader reader(test_string_lflf_);
   EXPECT_EQ(test_string_one_, reader.ReadLine());
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_lflf_.substr(test_string_one_.size() + 1, 2),
             reader.PeekString(2));
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
   EXPECT_EQ("", reader.ReadLine());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_two_, reader.ReadLine());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ("", reader.ReadLine());
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
   EXPECT_EQ(test_string_lflf_.size(), reader.position());
 }
 }  // namespace o3d

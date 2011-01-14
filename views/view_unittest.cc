@@ -776,11 +776,11 @@ TEST_F(ViewTest, HitTestMasks) {
   gfx::Point v2_origin = v2_bounds.origin();
 
   // Test HitTest
-  EXPECT_EQ(true, v1->HitTest(ConvertPointToView(v1, v1_centerpoint)));
-  EXPECT_EQ(true, v2->HitTest(ConvertPointToView(v2, v2_centerpoint)));
+  EXPECT_TRUE(v1->HitTest(ConvertPointToView(v1, v1_centerpoint)));
+  EXPECT_TRUE(v2->HitTest(ConvertPointToView(v2, v2_centerpoint)));
 
-  EXPECT_EQ(true, v1->HitTest(ConvertPointToView(v1, v1_origin)));
-  EXPECT_EQ(false, v2->HitTest(ConvertPointToView(v2, v2_origin)));
+  EXPECT_TRUE(v1->HitTest(ConvertPointToView(v1, v1_origin)));
+  EXPECT_FALSE(v2->HitTest(ConvertPointToView(v2, v2_origin)));
 
   // Test GetViewForPoint
   EXPECT_EQ(v1, root_view->GetViewForPoint(v1_centerpoint));

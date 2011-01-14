@@ -184,8 +184,8 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {
 
   // Import it.
   CertDatabase::ImportCertFailureList failed;
-  EXPECT_EQ(true, cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_SSL,
-                                         &failed));
+  EXPECT_TRUE(cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_SSL,
+                                     &failed));
 
   EXPECT_EQ(0U, failed.size());
 
@@ -216,8 +216,8 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_EmailTrust) {
 
   // Import it.
   CertDatabase::ImportCertFailureList failed;
-  EXPECT_EQ(true, cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_EMAIL,
-                                         &failed));
+  EXPECT_TRUE(cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_EMAIL,
+                                     &failed));
 
   EXPECT_EQ(0U, failed.size());
 
@@ -247,8 +247,8 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_ObjSignTrust) {
 
   // Import it.
   CertDatabase::ImportCertFailureList failed;
-  EXPECT_EQ(true, cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_OBJ_SIGN,
-                                         &failed));
+  EXPECT_TRUE(cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_OBJ_SIGN,
+                                     &failed));
 
   EXPECT_EQ(0U, failed.size());
 
@@ -278,8 +278,8 @@ TEST_F(CertDatabaseNSSTest, ImportCA_NotCACert) {
 
   // Import it.
   CertDatabase::ImportCertFailureList failed;
-  EXPECT_EQ(true,
-            cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_SSL, &failed));
+  EXPECT_TRUE(cert_db_.ImportCACerts(certs, CertDatabase::TRUSTED_SSL,
+                                     &failed));
   ASSERT_EQ(1U, failed.size());
   // Note: this compares pointers directly.  It's okay in this case because
   // ImportCACerts returns the same pointers that were passed in.  In the
@@ -302,7 +302,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchy) {
   // work (see
   // http://mxr.mozilla.org/mozilla/source/security/nss/lib/certhigh/certvfy.c#752
   // "XXX This choice of trustType seems arbitrary.")
-  EXPECT_EQ(true, cert_db_.ImportCACerts(
+  EXPECT_TRUE(cert_db_.ImportCACerts(
       certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL,
       &failed));
 
@@ -322,7 +322,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyDupeRoot) {
 
   // First import just the root.
   CertDatabase::ImportCertFailureList failed;
-  EXPECT_EQ(true, cert_db_.ImportCACerts(
+  EXPECT_TRUE(cert_db_.ImportCACerts(
       certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL,
       &failed));
 
@@ -337,7 +337,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyDupeRoot) {
   // Now import with the other certs in the list too.  Even though the root is
   // already present, we should still import the rest.
   failed.clear();
-  EXPECT_EQ(true, cert_db_.ImportCACerts(
+  EXPECT_TRUE(cert_db_.ImportCACerts(
       certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL,
       &failed));
 
@@ -360,8 +360,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyUntrusted) {
 
   // Import it.
   CertDatabase::ImportCertFailureList failed;
-  EXPECT_EQ(true, cert_db_.ImportCACerts(certs, CertDatabase::UNTRUSTED,
-                                         &failed));
+  EXPECT_TRUE(cert_db_.ImportCACerts(certs, CertDatabase::UNTRUSTED, &failed));
 
   ASSERT_EQ(1U, failed.size());
   EXPECT_EQ("DOD CA-17", failed[0].certificate->subject().common_name);
@@ -382,7 +381,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyTree) {
 
   // Import it.
   CertDatabase::ImportCertFailureList failed;
-  EXPECT_EQ(true, cert_db_.ImportCACerts(
+  EXPECT_TRUE(cert_db_.ImportCACerts(
       certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL,
       &failed));
 
@@ -406,7 +405,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertNotHierarchy) {
 
   // Import it.
   CertDatabase::ImportCertFailureList failed;
-  EXPECT_EQ(true, cert_db_.ImportCACerts(
+  EXPECT_TRUE(cert_db_.ImportCACerts(
       certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL |
       CertDatabase::TRUSTED_OBJ_SIGN, &failed));
 
@@ -434,7 +433,7 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert) {
   ASSERT_EQ(2U, certs.size());
 
   CertDatabase::ImportCertFailureList failed;
-  EXPECT_EQ(true, cert_db_.ImportServerCert(certs, &failed));
+  EXPECT_TRUE(cert_db_.ImportServerCert(certs, &failed));
 
   EXPECT_EQ(0U, failed.size());
 
@@ -462,7 +461,7 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned) {
   ASSERT_TRUE(ReadCertIntoList("punycodetest.der", &certs));
 
   CertDatabase::ImportCertFailureList failed;
-  EXPECT_EQ(true, cert_db_.ImportServerCert(certs, &failed));
+  EXPECT_TRUE(cert_db_.ImportServerCert(certs, &failed));
 
   EXPECT_EQ(0U, failed.size());
 

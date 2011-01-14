@@ -293,7 +293,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
   virtual void SetUp() {
     ResourceDispatcherTest::SetUp();
     shared_handle_.Delete(kShmemSegmentName);
-    EXPECT_EQ(true, shared_handle_.CreateNamed(kShmemSegmentName, false, 100));
+    EXPECT_TRUE(shared_handle_.CreateNamed(kShmemSegmentName, false, 100));
   }
 
   virtual void TearDown() {

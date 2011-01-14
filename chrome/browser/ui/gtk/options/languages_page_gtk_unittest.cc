@@ -261,7 +261,7 @@ TEST_F(LanguagesPageGtkTest, EnableSpellChecking) {
   gtk_button_clicked(GTK_BUTTON(page.enable_spellchecking_checkbox_));
   EXPECT_EQ(TRUE, gtk_toggle_button_get_active(
       GTK_TOGGLE_BUTTON(page.enable_spellchecking_checkbox_)));
-  EXPECT_EQ(true, profile_->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
+  EXPECT_TRUE(profile_->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
 }
 
 // TODO(mattm): add EnableAutoSpellChecking test

@@ -38,9 +38,9 @@ class SSLConfigServiceWinTest : public testing::Test {
 TEST(SSLConfigServiceWinTest, GetNowTest) {
   // Verify that the constructor sets the correct default values.
   net::SSLConfig config;
-  EXPECT_EQ(true, config.rev_checking_enabled);
-  EXPECT_EQ(true, config.ssl3_enabled);
-  EXPECT_EQ(true, config.tls1_enabled);
+  EXPECT_TRUE(config.rev_checking_enabled);
+  EXPECT_TRUE(config.ssl3_enabled);
+  EXPECT_TRUE(config.tls1_enabled);
 
   bool rv = net::SSLConfigServiceWin::GetSSLConfigNow(&config);
   EXPECT_TRUE(rv);
@@ -151,4 +151,3 @@ TEST(SSLConfigServiceWinTest, ObserverTest) {
   // Restore the original SSL3 setting.
   net::SSLConfigServiceWin::SetSSL3Enabled(config_save.ssl3_enabled);
 }
-

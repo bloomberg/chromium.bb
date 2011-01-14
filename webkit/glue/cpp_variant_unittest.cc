@@ -273,7 +273,7 @@ TEST(CppVariantTest, SetsSimpleTypesAndValues) {
   CppVariant cpp;
   cpp.Set(true);
   EXPECT_EQ(NPVariantType_Bool, cpp.type);
-  EXPECT_EQ(true, cpp.value.boolValue);
+  EXPECT_TRUE(cpp.value.boolValue);
 
   cpp.Set(5);
   EXPECT_EQ(NPVariantType_Int32, cpp.type);

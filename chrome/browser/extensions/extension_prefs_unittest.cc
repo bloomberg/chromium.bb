@@ -178,7 +178,7 @@ class ExtensionPrefsEscalatePermissions : public ExtensionPrefsTest {
   }
 
   virtual void Verify() {
-    EXPECT_EQ(true, prefs()->DidExtensionEscalatePermissions(extension->id()));
+    EXPECT_TRUE(prefs()->DidExtensionEscalatePermissions(extension->id()));
   }
 
  private:

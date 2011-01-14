@@ -121,21 +121,21 @@ TEST_F(FileTextReaderTest, StartAtBeginning) {
   FileTextReader reader(file_pointers_[0]);
   EXPECT_EQ(0U, reader.position());
   EXPECT_EQ(file_pointers_[0], reader.input());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
 }
 
 TEST_F(FileTextReaderTest, TestPeekString) {
   FileTextReader reader(file_pointers_[0]);
   EXPECT_EQ(test_string_one_.substr(0, 6), reader.PeekString(6));
   EXPECT_EQ(0U, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
 }
 
 TEST_F(FileTextReaderTest, ReadsSingleCharacter) {
   FileTextReader reader(file_pointers_[0]);
   EXPECT_EQ(test_string_one_.substr(0, 1)[0], reader.ReadChar());
   EXPECT_EQ(1U, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_one_.substr(1, 2), reader.PeekString(2));
   EXPECT_EQ(1U, reader.position());
 }
@@ -145,7 +145,7 @@ TEST_F(FileTextReaderTest, ReadsMultipleCharacters) {
   EXPECT_EQ(test_string_one_.substr(0, 1)[0], reader.ReadChar());
   EXPECT_EQ(test_string_one_.substr(1, 1)[0], reader.ReadChar());
   EXPECT_EQ(2U, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_one_.substr(2, 2), reader.PeekString(2));
   EXPECT_EQ(2U, reader.position());
 }
@@ -154,7 +154,7 @@ TEST_F(FileTextReaderTest, ReadsFile) {
   FileTextReader reader(file_pointers_[0]);
   EXPECT_EQ(test_string_one_.substr(0, 7), reader.ReadString(7));
   EXPECT_EQ(7U, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_one_.substr(7, 2), reader.PeekString(2));
   EXPECT_EQ(7U, reader.position());
 }
@@ -163,27 +163,27 @@ TEST_F(FileTextReaderTest, EmptyFile) {
   FileTextReader reader(file_pointers_[8]);
   EXPECT_EQ("", reader.PeekString(1));
   EXPECT_EQ(0U, reader.position());
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
   EXPECT_EQ(0, reader.ReadChar());
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
 }
 
 TEST_F(FileTextReaderTest, TinyFile) {
   FileTextReader reader(file_pointers_[7]);
   EXPECT_EQ(test_string_short_.substr(0, 1), reader.PeekString(1));
   EXPECT_EQ(0U, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_short_[0], reader.ReadChar());
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
 }
 
 TEST_F(FileTextReaderTest, ReadsToEnd) {
   FileTextReader reader(file_pointers_[2]);
   EXPECT_EQ(test_string_lf_, reader.ReadToEnd());
   EXPECT_EQ(test_string_lf_.size(), reader.position());
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
   EXPECT_EQ("", reader.ReadString(1));
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
   EXPECT_EQ(test_string_lf_.size(), reader.position());
 }
 
@@ -193,12 +193,12 @@ TEST_F(FileTextReaderTest, ReadsLinefeedFile) {
   std::string line = reader.ReadLine();
   EXPECT_EQ(test_string_one_, line);
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_lf_.substr(test_string_one_.size() + 1, 2),
             reader.PeekString(2));
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
   EXPECT_EQ(test_string_two_, reader.ReadLine());
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
   EXPECT_EQ(test_string_lf_.size(), reader.position());
 }
 
@@ -206,12 +206,12 @@ TEST_F(FileTextReaderTest, ReadsCarriageReturnFile) {
   FileTextReader reader(file_pointers_[3]);
   EXPECT_EQ(test_string_one_, reader.ReadLine());
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_cr_.substr(test_string_one_.size() + 1, 2),
             reader.PeekString(2));
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
   EXPECT_EQ(test_string_two_, reader.ReadLine());
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
   EXPECT_EQ(test_string_cr_.size(), reader.position());
 }
 
@@ -220,12 +220,12 @@ TEST_F(FileTextReaderTest, ReadsCarriageReturnLinefeedFile) {
   FileTextReader reader(file_pointers_[4]);
   EXPECT_EQ(test_string_one_, reader.ReadLine());
   EXPECT_EQ(test_string_one_.size() + 2, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_crlf_.substr(test_string_one_.size() + 2, 2),
             reader.PeekString(2));
   EXPECT_EQ(test_string_one_.size() + 2, reader.position());
   EXPECT_EQ(test_string_two_, reader.ReadLine());
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
   EXPECT_EQ(test_string_crlf_.size(), reader.position());
 }
 
@@ -233,16 +233,16 @@ TEST_F(FileTextReaderTest, ReadsLinefeedCarriageReturnFile) {
   FileTextReader reader(file_pointers_[5]);
   EXPECT_EQ(test_string_one_, reader.ReadLine());
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_lfcr_.substr(test_string_one_.size() + 1, 2),
             reader.PeekString(2));
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
   EXPECT_EQ("", reader.ReadLine());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_two_, reader.ReadLine());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ("", reader.ReadLine());
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
   EXPECT_EQ(test_string_lfcr_.size(), reader.position());
 }
 
@@ -250,16 +250,16 @@ TEST_F(FileTextReaderTest, ReadsLinefeedLinefeedFile) {
   FileTextReader reader(file_pointers_[6]);
   EXPECT_EQ(test_string_one_, reader.ReadLine());
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_lflf_.substr(test_string_one_.size() + 1, 2),
             reader.PeekString(2));
   EXPECT_EQ(test_string_one_.size() + 1, reader.position());
   EXPECT_EQ("", reader.ReadLine());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ(test_string_two_, reader.ReadLine());
-  EXPECT_EQ(false, reader.IsAtEnd());
+  EXPECT_FALSE(reader.IsAtEnd());
   EXPECT_EQ("", reader.ReadLine());
-  EXPECT_EQ(true, reader.IsAtEnd());
+  EXPECT_TRUE(reader.IsAtEnd());
   EXPECT_EQ(test_string_lflf_.size(), reader.position());
 }
 

@@ -45,8 +45,8 @@ class UrlmonMonikerTest : public testing::Test {
 };
 
 TEST_F(UrlmonMonikerTest, MonikerPatch) {
-  EXPECT_EQ(true, MonikerPatch::Initialize());
-  EXPECT_EQ(true, MonikerPatch::Initialize());  // Should be ok to call twice.
+  EXPECT_TRUE(MonikerPatch::Initialize());
+  EXPECT_TRUE(MonikerPatch::Initialize());  // Should be ok to call twice.
   MonikerPatch::Uninitialize();
 }
 
@@ -90,7 +90,7 @@ class RunTestServer : public base::Thread {
 class UrlmonMonikerTestManager {
  public:
   explicit UrlmonMonikerTestManager(const wchar_t* test_url) {
-    EXPECT_EQ(true, MonikerPatch::Initialize());
+    EXPECT_TRUE(MonikerPatch::Initialize());
   }
 
   ~UrlmonMonikerTestManager() {

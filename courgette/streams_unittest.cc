@@ -22,7 +22,7 @@ TEST(StreamsTest, SimpleWriteRead) {
 
   unsigned int value;
   bool can_read = source.ReadVarint32(&value);
-  EXPECT_EQ(true, can_read);
+  EXPECT_TRUE(can_read);
   EXPECT_EQ(kValue1, value);
   EXPECT_EQ(0U, source.Remaining());
 }
@@ -40,7 +40,7 @@ TEST(StreamsTest, SimpleWriteRead2) {
 
   char text[10] = {0};
   bool can_read = source.Read(text, 5);
-  EXPECT_EQ(true, can_read);
+  EXPECT_TRUE(can_read);
   EXPECT_EQ(0, memcmp("Hello", text, 5));
   EXPECT_EQ(0U, source.Remaining());
 }
@@ -62,11 +62,11 @@ TEST(StreamsTest, StreamSetWriteRead) {
 
   courgette::SourceStreamSet in;
   bool can_init = in.Init(collected_buffer, collected_length);
-  EXPECT_EQ(true, can_init);
+  EXPECT_TRUE(can_init);
 
   uint32 value;
   bool can_read = in.stream(3)->ReadVarint32(&value);
-  EXPECT_EQ(true, can_read);
+  EXPECT_TRUE(can_read);
   EXPECT_EQ(kValue1, value);
   EXPECT_EQ(0U, in.stream(3)->Remaining());
   EXPECT_EQ(0U, in.stream(2)->Remaining());
@@ -99,14 +99,14 @@ TEST(StreamsTest, StreamSetWriteRead2) {
 
   courgette::SourceStreamSet in;
   bool can_init = in.Init(collected.Buffer(), collected.Length());
-  EXPECT_EQ(true, can_init);
+  EXPECT_TRUE(can_init);
 
   for (size_t i = 0;  data[i] != kEnd;  i += 2) {
     size_t id = data[i];
     size_t datum = data[i + 1];
     uint32 value = 77;
     bool can_read = in.stream(id)->ReadVarint32(&value);
-    EXPECT_EQ(true, can_read);
+    EXPECT_TRUE(can_read);
     EXPECT_EQ(datum, value);
   }
 
@@ -143,11 +143,11 @@ TEST(StreamsTest, SignedVarint32) {
     int written_value = values[i];
     int32 datum;
     bool can_read = in.ReadVarint32Signed(&datum);
-    EXPECT_EQ(true, can_read);
+    EXPECT_TRUE(can_read);
     EXPECT_EQ(written_value, datum);
   }
 
-  EXPECT_EQ(true, in.Empty());
+  EXPECT_TRUE(in.Empty());
 }
 
 TEST(StreamsTest, StreamSetReadWrite) {
@@ -169,17 +169,17 @@ TEST(StreamsTest, StreamSetReadWrite) {
   out.CopyTo(&collected);
   courgette::SourceStreamSet in;
   bool can_init_in = in.Init(collected.Buffer(), collected.Length());
-  EXPECT_EQ(true, can_init_in);
+  EXPECT_TRUE(can_init_in);
 
   courgette::SourceStreamSet subset1;
   bool can_read_1 = in.ReadSet(&subset1);
-  EXPECT_EQ(true, can_read_1);
+  EXPECT_TRUE(can_read_1);
   EXPECT_FALSE(in.Empty());
 
   courgette::SourceStreamSet subset2;
   bool can_read_2 = in.ReadSet(&subset2);
-  EXPECT_EQ(true, can_read_2);
-  EXPECT_EQ(true, in.Empty());
+  EXPECT_TRUE(can_read_2);
+  EXPECT_TRUE(in.Empty());
 
   courgette::SourceStreamSet subset3;
   bool can_read_3 = in.ReadSet(&subset3);
@@ -189,15 +189,15 @@ TEST(StreamsTest, StreamSetReadWrite) {
   EXPECT_FALSE(subset1.Empty());
 
   uint32 datum;
-  EXPECT_EQ(true, subset1.stream(3)->ReadVarint32(&datum));
+  EXPECT_TRUE(subset1.stream(3)->ReadVarint32(&datum));
   EXPECT_EQ(30000U, datum);
-  EXPECT_EQ(true, subset1.stream(5)->ReadVarint32(&datum));
+  EXPECT_TRUE(subset1.stream(5)->ReadVarint32(&datum));
   EXPECT_EQ(50000U, datum);
-  EXPECT_EQ(true, subset1.Empty());
+  EXPECT_TRUE(subset1.Empty());
 
-  EXPECT_EQ(true, subset2.stream(2)->ReadVarint32(&datum));
+  EXPECT_TRUE(subset2.stream(2)->ReadVarint32(&datum));
   EXPECT_EQ(20000U, datum);
-  EXPECT_EQ(true, subset2.stream(6)->ReadVarint32(&datum));
+  EXPECT_TRUE(subset2.stream(6)->ReadVarint32(&datum));
   EXPECT_EQ(60000U, datum);
-  EXPECT_EQ(true, subset2.Empty());
+  EXPECT_TRUE(subset2.Empty());
 }

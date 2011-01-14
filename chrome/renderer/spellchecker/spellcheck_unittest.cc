@@ -663,7 +663,7 @@ TEST_F(SpellCheckTest, SpellCheckText) {
         &misspelling_start,
         &misspelling_length, NULL);
 
-    EXPECT_EQ(true, result) << kTestCases[i].language;
+    EXPECT_TRUE(result) << kTestCases[i].language;
     EXPECT_EQ(0, misspelling_start);
     EXPECT_EQ(0, misspelling_length);
   }

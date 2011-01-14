@@ -124,7 +124,7 @@ TEST(DockInfoTest, IsValidForPoint) {
 TEST(DockInfoTest, equals) {
   DockInfo d;
   DockInfo dd;
-  EXPECT_EQ(true, d.equals(dd));
+  EXPECT_TRUE(d.equals(dd));
   d.set_type(DockInfo::MAXIMIZE);
   EXPECT_FALSE(d.equals(dd));
 }

@@ -852,7 +852,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestPasswordBulkLookup) {
   ASSERT_EQ(3U, merged_forms.size());
   EXPECT_EQ(ASCIIToUTF16("sekrit"), merged_forms[0]->password_value);
   EXPECT_EQ(ASCIIToUTF16("sekrit"), merged_forms[1]->password_value);
-  EXPECT_EQ(true, merged_forms[2]->blacklisted_by_user);
+  EXPECT_TRUE(merged_forms[2]->blacklisted_by_user);
 
   STLDeleteElements(&database_forms);
   STLDeleteElements(&merged_forms);

@@ -17,14 +17,14 @@ class PagedArrayTest : public testing::Test {
 TEST_F(PagedArrayTest, TestManyAllocationsDestructorFree) {
   for (int i = 0; i < kIterations; ++i) {
     courgette::PagedArray<int> a;
-    EXPECT_EQ(true, a.Allocate(kSize));
+    EXPECT_TRUE(a.Allocate(kSize));
   }
 }
 
 TEST_F(PagedArrayTest, TestManyAllocationsManualFree) {
   courgette::PagedArray<int> a;
   for (int i = 0; i < kIterations; ++i) {
-    EXPECT_EQ(true, a.Allocate(kSize));
+    EXPECT_TRUE(a.Allocate(kSize));
     a.clear();
   }
 }
