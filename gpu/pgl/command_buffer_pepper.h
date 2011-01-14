@@ -29,7 +29,8 @@ class CommandBufferPepper : public gpu::CommandBuffer {
   virtual bool Initialize(int32 size);
   virtual gpu::Buffer GetRingBuffer();
   virtual State GetState();
-  virtual State Flush(int32 put_offset);
+  virtual void Flush(int32 put_offset);
+  virtual State FlushSync(int32 put_offset);
   virtual void SetGetOffset(int32 get_offset);
   virtual int32 CreateTransferBuffer(size_t size);
   virtual void DestroyTransferBuffer(int32 id);

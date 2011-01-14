@@ -140,11 +140,11 @@ void CommandBufferStub::OnAsyncGetState() {
 
 void CommandBufferStub::OnFlush(int32 put_offset,
                                 gpu::CommandBuffer::State* state) {
-  *state = command_buffer_->Flush(put_offset);
+  *state = command_buffer_->FlushSync(put_offset);
 }
 
 void CommandBufferStub::OnAsyncFlush(int32 put_offset) {
-  gpu::CommandBuffer::State state = command_buffer_->Flush(put_offset);
+  gpu::CommandBuffer::State state = command_buffer_->FlushSync(put_offset);
   Send(new GpuCommandBufferMsg_UpdateState(route_id_, state));
 }
 

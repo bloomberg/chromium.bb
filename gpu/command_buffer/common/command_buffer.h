@@ -61,10 +61,17 @@ class CommandBuffer {
   // Returns the current status.
   virtual State GetState() = 0;
 
+  // The writer calls this to update its put offset. This ensures the reader
+  // sees the latest added commands, and will eventually process them.
+  virtual void Flush(int32 put_offset) = 0;
+
   // The writer calls this to update its put offset. This function returns the
   // reader's most recent get offset. Does not return until after the put offset
   // change callback has been invoked. Returns -1 if the put offset is invalid.
-  virtual State Flush(int32 put_offset) = 0;
+  // As opposed to Flush(), this function guarantees that the reader has
+  // processed some commands before returning (assuming the command buffer isn't
+  // empty and there is no error).
+  virtual State FlushSync(int32 put_offset) = 0;
 
   // Sets the current get offset. This can be called from any thread.
   virtual void SetGetOffset(int32 get_offset) = 0;

@@ -83,7 +83,11 @@ CommandBuffer::State CommandBufferPepper::GetState() {
 #endif  // ENABLE_NEW_NPDEVICE_API
 }
 
-CommandBuffer::State CommandBufferPepper::Flush(int32 put_offset) {
+void CommandBufferPepper::Flush(int32 put_offset) {
+  FlushSync(put_offset);
+}
+
+CommandBuffer::State CommandBufferPepper::FlushSync(int32 put_offset) {
 #if defined(ENABLE_NEW_NPDEVICE_API)
   int32 input_attribs[] = {
     NP3DAttrib_PutOffset, put_offset,

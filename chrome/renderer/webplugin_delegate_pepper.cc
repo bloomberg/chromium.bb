@@ -779,7 +779,7 @@ NPError WebPluginDelegatePepper::Device3DFlushContext(
               callback,
               user_data));
     } else {
-      state = command_buffer_->Flush(context->putOffset);
+      state = command_buffer_->FlushSync(context->putOffset);
       Synchronize3DContext(context, state);
     }
   } else {

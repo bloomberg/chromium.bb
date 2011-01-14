@@ -94,7 +94,11 @@ gpu::CommandBuffer::State CommandBufferProxy::GetState() {
   return last_state_;
 }
 
-gpu::CommandBuffer::State CommandBufferProxy::Flush(int32 put_offset) {
+void CommandBufferProxy::Flush(int32 put_offset) {
+  AsyncFlush(put_offset, NULL);
+}
+
+gpu::CommandBuffer::State CommandBufferProxy::FlushSync(int32 put_offset) {
   // Send will flag state with lost context if IPC fails.
   if (last_state_.error == gpu::error::kNoError) {
     Send(new GpuCommandBufferMsg_Flush(route_id_,

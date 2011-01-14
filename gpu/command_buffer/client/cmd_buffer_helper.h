@@ -42,13 +42,18 @@ class CommandBufferHelper {
   //       buffer.
   bool Initialize(int32 ring_buffer_size);
 
+  // Asynchronously flushes the commands, setting the put pointer to let the
+  // buffer interface know that new commands have been added. After a flush
+  // returns, the command buffer service is aware of all pending commands.
+  void Flush();
+
   // Flushes the commands, setting the put pointer to let the buffer interface
   // know that new commands have been added. After a flush returns, the command
   // buffer service is aware of all pending commands and it is guaranteed to
   // have made some progress in processing them. Returns whether the flush was
   // successful. The flush will fail if the command buffer service has
   // disconnected.
-  bool Flush();
+  bool FlushSync();
 
   // Waits until all the commands have been executed. Returns whether it
   // was successful. The function will fail if the command buffer service has
@@ -225,6 +230,7 @@ class CommandBufferHelper {
   int32 last_token_read_;
   int32 get_;
   int32 put_;
+  int32 last_put_sent_;
 
   friend class CommandBufferHelperTest;
   DISALLOW_COPY_AND_ASSIGN(CommandBufferHelper);

@@ -17,7 +17,8 @@ CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
       token_(0),
       last_token_read_(-1),
       get_(0),
-      put_(0) {
+      put_(0),
+      last_put_sent_(0) {
 }
 
 bool CommandBufferHelper::Initialize(int32 ring_buffer_size) {
@@ -45,10 +46,16 @@ bool CommandBufferHelper::Initialize(int32 ring_buffer_size) {
 CommandBufferHelper::~CommandBufferHelper() {
 }
 
-bool CommandBufferHelper::Flush() {
-  CommandBuffer::State state = command_buffer_->Flush(put_);
+bool CommandBufferHelper::FlushSync() {
+  last_put_sent_ = put_;
+  CommandBuffer::State state = command_buffer_->FlushSync(put_);
   SynchronizeState(state);
   return state.error == error::kNoError;
+}
+
+void CommandBufferHelper::Flush() {
+  last_put_sent_ = put_;
+  command_buffer_->Flush(put_);
 }
 
 // Calls Flush() and then waits until the buffer is empty. Break early if the
@@ -57,7 +64,7 @@ bool CommandBufferHelper::Finish() {
   do {
     // Do not loop forever if the flush fails, meaning the command buffer reader
     // has shutdown.
-    if (!Flush())
+    if (!FlushSync())
       return false;
   } while (put_ != get_);
 
@@ -88,9 +95,7 @@ void CommandBufferHelper::WaitForToken(int32 token) {
   // Return immediately if corresponding InsertToken failed.
   if (token < 0)
     return;
-  if (last_token_read_ >= token) return;  // fast path.
   if (token > token_) return;  // we wrapped
-  Flush();
   while (last_token_read_ < token) {
     if (get_ == put_) {
       GPU_LOG(FATAL) << "Empty command buffer while waiting on a token.";
@@ -98,7 +103,7 @@ void CommandBufferHelper::WaitForToken(int32 token) {
     }
     // Do not loop forever if the flush fails, meaning the command buffer reader
     // has shutdown.
-    if (!Flush())
+    if (!FlushSync())
       return;
   }
 }
@@ -116,26 +121,29 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
     // need to make sure get wraps first, actually that get is 1 or more (since
     // put will wrap to 0 after we add the jump).
     GPU_DCHECK_LE(1, put_);
-    Flush();
     while (get_ > put_ || get_ == 0) {
       // Do not loop forever if the flush fails, meaning the command buffer
       // reader has shutdown.
-      if (!Flush())
+      if (!FlushSync())
         return;
     }
     // Insert a jump back to the beginning.
     cmd::Jump::Set(&entries_[put_], 0);
     put_ = 0;
   }
-  // If we have enough room, return immediatly.
-  if (count <= AvailableEntries()) return;
-  // Otherwise flush, and wait until we do have enough room.
-  Flush();
   while (AvailableEntries() < count) {
     // Do not loop forever if the flush fails, meaning the command buffer reader
     // has shutdown.
-    if (!Flush())
+    if (!FlushSync())
       return;
+  }
+  // Force a flush if the buffer is getting half full, or even earlier if the
+  // reader is known to be idle.
+  int32 pending =
+      (put_ + usable_entry_count_ - last_put_sent_) % usable_entry_count_;
+  int32 limit = usable_entry_count_ / ((get_ == last_put_sent_) ? 16 : 2);
+  if (pending > limit) {
+    Flush();
   }
 }
 

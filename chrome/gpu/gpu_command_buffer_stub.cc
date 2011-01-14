@@ -290,11 +290,11 @@ void GpuCommandBufferStub::OnFlush(int32 put_offset,
   if (channel_->IsRenderViewGone(render_view_id_))
     processor_->DidDestroySurface();
 #endif
-  *state = command_buffer_->Flush(put_offset);
+  *state = command_buffer_->FlushSync(put_offset);
 }
 
 void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset) {
-  gpu::CommandBuffer::State state = command_buffer_->Flush(put_offset);
+  gpu::CommandBuffer::State state = command_buffer_->FlushSync(put_offset);
   Send(new GpuCommandBufferMsg_UpdateState(route_id_, state));
 }
 
