@@ -92,7 +92,7 @@ SearchEngineChoice::SearchEngineChoice(views::ButtonListener* listener,
   // screenreaders. It uses the browser name rather than the text of the
   // button "Choose", since it's not obvious to a screenreader user which
   // browser each button corresponds to.
-  SetAccessibleName(search_engine_->short_name());
+  SetAccessibleName(WideToUTF16Hack(search_engine_->short_name()));
 }
 
 int SearchEngineChoice::GetChoiceViewWidth() {

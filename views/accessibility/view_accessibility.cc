@@ -282,7 +282,7 @@ STDMETHODIMP ViewAccessibility::get_accDefaultAction(
   if (!view_)
     return E_FAIL;
 
-  std::wstring temp_action = view_->GetAccessibleDefaultAction();
+  string16 temp_action = view_->GetAccessibleDefaultAction();
 
   if (!temp_action.empty()) {
     *def_action = SysAllocString(temp_action.c_str());
@@ -347,7 +347,7 @@ STDMETHODIMP ViewAccessibility::get_accKeyboardShortcut(
   if (!view_)
     return E_FAIL;
 
-  std::wstring temp_key = view_->GetAccessibleKeyboardShortcut();
+  string16 temp_key = view_->GetAccessibleKeyboardShortcut();
 
   if (!temp_key.empty()) {
     *acc_key = SysAllocString(temp_key.c_str());
@@ -365,7 +365,7 @@ STDMETHODIMP ViewAccessibility::get_accName(VARIANT var_id, BSTR* name) {
   if (!view_)
     return E_FAIL;
 
-  std::wstring temp_name;
+  string16 temp_name;
 
   // Retrieve the current view's name.
   view_->GetAccessibleName(&temp_name);
@@ -457,7 +457,7 @@ STDMETHODIMP ViewAccessibility::get_accValue(VARIANT var_id, BSTR* value) {
     return E_FAIL;
 
   // Retrieve the current view's value.
-  std::wstring temp_value = view_->GetAccessibleValue();
+  string16 temp_value = view_->GetAccessibleValue();
 
   if (!temp_value.empty()) {
     // Return value retrieved.

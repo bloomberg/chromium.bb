@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "gfx/native_theme_win.h"
@@ -50,8 +51,8 @@ OptionsGroupView::OptionsGroupView(views::View* contents,
   description_label_->SetMultiLine(true);
   description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
-  SetAccessibleName(title);
-  contents->SetAccessibleName(title);
+  SetAccessibleName(WideToUTF16Hack(title));
+  contents->SetAccessibleName(WideToUTF16Hack(title));
 }
 
 OptionsGroupView::~OptionsGroupView() {

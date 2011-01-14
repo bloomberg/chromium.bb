@@ -102,8 +102,7 @@ FindBarView::FindBarView(FindBarHost* host)
   find_text_->SetFont(rb.GetFont(ResourceBundle::BaseFont));
   find_text_->set_default_width_in_chars(kDefaultCharWidth);
   find_text_->SetController(this);
-  find_text_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND)));
+  find_text_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
   AddChildView(find_text_);
 
   match_count_text_ = new views::Label();
@@ -128,7 +127,7 @@ FindBarView::FindBarView(FindBarHost* host)
   find_previous_button_->SetTooltipText(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP)));
   find_previous_button_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_PREVIOUS)));
+      l10n_util::GetStringUTF16(IDS_ACCNAME_PREVIOUS));
   AddChildView(find_previous_button_);
 
   find_next_button_ = new views::ImageButton(this);
@@ -143,7 +142,7 @@ FindBarView::FindBarView(FindBarHost* host)
   find_next_button_->SetTooltipText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_NEXT_TOOLTIP)));
   find_next_button_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_NEXT)));
+      l10n_util::GetStringUTF16(IDS_ACCNAME_NEXT));
   AddChildView(find_next_button_);
 
   close_button_ = new views::ImageButton(this);
@@ -158,7 +157,7 @@ FindBarView::FindBarView(FindBarHost* host)
   close_button_->SetTooltipText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP)));
   close_button_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE)));
+      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);
 
   if (kDialog_left == NULL) {

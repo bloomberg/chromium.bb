@@ -153,9 +153,9 @@ std::string AccessibilityEventRouterViews::GetViewName(views::View* view) {
 
   // Otherwise ask the view for its accessible name.
   if (name.empty()) {
-    std::wstring wname;
+    string16 wname;
     view->GetAccessibleName(&wname);
-    name = WideToUTF8(wname);
+    name = UTF16ToUTF8(wname);
   }
 
   return name;

@@ -21,7 +21,7 @@ InfoBarContainer::InfoBarContainer(Delegate* delegate)
       tab_contents_(NULL) {
   SetID(VIEW_ID_INFO_BAR_CONTAINER);
   SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_CONTAINER)));
+      l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_CONTAINER));
 }
 
 InfoBarContainer::~InfoBarContainer() {

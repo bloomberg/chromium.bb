@@ -80,7 +80,7 @@ void NativeButton::SetLabel(const std::wstring& label) {
     native_wrapper_->UpdateLabel();
 
   // Update the accessible name whenever the label changes.
-  SetAccessibleName(label);
+  SetAccessibleName(WideToUTF16Hack(label));
   PreferredSizeChanged();
 }
 

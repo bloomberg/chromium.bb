@@ -30,7 +30,7 @@ void StarView::SetToggled(bool on) {
   // Since StarView is an ImageView, the SetTooltipText changes the accessible
   // name. To keep the accessible name unchanged, we need to set the accessible
   // name right after we modify the tooltip text for this view.
-  SetAccessibleName(UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_STAR)));
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_STAR));
   SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(
       on ? IDR_STAR_LIT : IDR_STAR));
 }

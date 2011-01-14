@@ -1061,15 +1061,15 @@ bool DownloadItemView::InDropDownButtonXCoordinateRange(int x) {
 }
 
 void DownloadItemView::UpdateAccessibleName() {
-  std::wstring current_name;
+  string16 current_name;
   GetAccessibleName(&current_name);
 
-  std::wstring new_name;
+  string16 new_name;
   if (download_->safety_state() == DownloadItem::DANGEROUS) {
-    new_name = dangerous_download_label_->GetText();
+    new_name = WideToUTF16Hack(dangerous_download_label_->GetText());
   } else {
-    new_name = status_text_ + L" " +
-        download_->GetFileNameToReportUser().ToWStringHack();
+    new_name = WideToUTF16Hack(status_text_) + char16(' ') +
+        WideToUTF16Hack(download_->GetFileNameToReportUser().ToWStringHack());
   }
 
   // If the name has changed, call SetAccessibleName and notify

@@ -278,7 +278,7 @@ void BookmarkEditorView::Init() {
 
   title_label_ = new views::Label(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NAME_LABEL)));
-  title_tf_.SetAccessibleName(title_label_->GetText());
+  title_tf_.SetAccessibleName(WideToUTF16Hack(title_label_->GetText()));
 
   string16 url_text;
   if (details_.type == EditDetails::EXISTING_NODE) {
@@ -297,7 +297,7 @@ void BookmarkEditorView::Init() {
 
   url_label_ = new views::Label(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_URL_LABEL)));
-  url_tf_.SetAccessibleName(url_label_->GetText());
+  url_tf_.SetAccessibleName(WideToUTF16Hack(url_label_->GetText()));
 
   if (show_tree_) {
     tree_view_ = new views::TreeView();

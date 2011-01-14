@@ -206,7 +206,8 @@ void BookmarkBubbleView::Init() {
   parent_combobox_ = new Combobox(&parent_model_);
   parent_combobox_->SetSelectedItem(parent_model_.node_parent_index());
   parent_combobox_->set_listener(this);
-  parent_combobox_->SetAccessibleName(combobox_label->GetText());
+  parent_combobox_->SetAccessibleName(
+      WideToUTF16Hack(combobox_label->GetText()));
 
   Label* title_label = new Label(UTF16ToWide(l10n_util::GetStringUTF16(
       newly_bookmarked_ ? IDS_BOOMARK_BUBBLE_PAGE_BOOKMARKED :

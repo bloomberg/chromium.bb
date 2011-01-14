@@ -915,7 +915,7 @@ void BookmarkBarView::Init() {
 
   bookmarks_separator_view_ = new ButtonSeparatorView();
   bookmarks_separator_view_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_SEPARATOR)));
+      l10n_util::GetStringUTF16(IDS_ACCNAME_SEPARATOR));
   AddChildView(bookmarks_separator_view_);
 
   instructions_ = new BookmarkBarInstructionsView(this);
@@ -937,7 +937,7 @@ MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
   button->SetContextMenuController(this);
   button->set_tag(kOtherFolderButtonTag);
   button->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_BOOKMARKED)));
+      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_BOOKMARKED));
   return button;
 }
 
@@ -959,7 +959,7 @@ MenuButton* BookmarkBarView::CreateOverflowButton() {
   button->SetVisible(false);
   // Set accessibility name.
   button->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS_CHEVRON)));
+      l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS_CHEVRON));
   return button;
 }
 
@@ -1288,7 +1288,7 @@ views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
 void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
                                       views::TextButton* button) {
   button->SetText(UTF16ToWide(node->GetTitle()));
-  button->SetAccessibleName(UTF16ToWide(node->GetTitle()));
+  button->SetAccessibleName(node->GetTitle());
   button->SetID(VIEW_ID_BOOKMARK_BAR_ELEMENT);
   // We don't always have a theme provider (ui tests, for example).
   if (GetThemeProvider()) {
@@ -1736,7 +1736,7 @@ views::TextButton* BookmarkBarView::CreateSyncErrorButton() {
   sync_error_button->SetTooltipText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_SYNC_BOOKMARK_BAR_ERROR_DESC)));
   sync_error_button->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_SYNC_ERROR_BUTTON)));
+      l10n_util::GetStringUTF16(IDS_ACCNAME_SYNC_ERROR_BUTTON));
   sync_error_button->SetIcon(
       *ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING));
   return sync_error_button;

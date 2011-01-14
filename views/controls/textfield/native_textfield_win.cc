@@ -395,13 +395,13 @@ void NativeTextfieldWin::InitializeAccessibilityInfo() {
   // Set the accessible name by getting the label text.
   View* parent = textfield_->GetParent();
   int label_index = parent->GetChildIndex(textfield_) - 1;
-  if (label_index  >= 0) {
+  if (label_index >= 0) {
     // Try to find the name of this text field.
     // We expect it to be a Label preceeding this view (if it exists).
-    std::wstring name;
-    View* label_view = parent->GetChildViewAt(label_index );
-    if (label_view ->GetClassName() == Label::kViewClassName &&
-        label_view ->GetAccessibleName(&name)) {
+    string16 name;
+    View* label_view = parent->GetChildViewAt(label_index);
+    if (label_view->GetClassName() == Label::kViewClassName &&
+        label_view->GetAccessibleName(&name)) {
       hr = pAccPropServices->SetHwndPropStr(m_hWnd, OBJID_CLIENT,
           CHILDID_SELF, PROPID_ACC_NAME, name.c_str());
     }

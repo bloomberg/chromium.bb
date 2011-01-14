@@ -306,8 +306,7 @@ SubmenuView* MenuItemView::CreateSubmenu() {
 
 void MenuItemView::SetTitle(const std::wstring& title) {
   title_ = WideToUTF16Hack(title);
-  SetAccessibleName(UTF16ToWideHack(
-      GetAccessibleNameForMenuItem(title_, GetAcceleratorText())));
+  SetAccessibleName(GetAccessibleNameForMenuItem(title_, GetAcceleratorText()));
 }
 
 void MenuItemView::SetSelected(bool selected) {

@@ -168,7 +168,7 @@ void NewUserView::Init() {
   username_field_ = new UsernameField(this);
   username_field_->set_background(new CopyBackground(this));
   username_field_->SetAccessibleName(
-      ASCIIToWide(l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_USERNAME_LABEL)));
+      l10n_util::GetStringUTF16(IDS_CHROMEOS_ACC_USERNAME_LABEL));
   AddChildView(username_field_);
 
   password_field_ = new TextfieldWithMargin(views::Textfield::STYLE_PASSWORD);

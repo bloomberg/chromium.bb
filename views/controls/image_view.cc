@@ -154,7 +154,7 @@ ImageView::Alignment ImageView::GetVerticalAlignment() {
 
 void ImageView::SetTooltipText(const std::wstring& tooltip) {
   tooltip_text_ = WideToUTF16Hack(tooltip);
-  SetAccessibleName(tooltip);
+  SetAccessibleName(WideToUTF16Hack(tooltip));
 }
 
 std::wstring ImageView::GetTooltipText() {

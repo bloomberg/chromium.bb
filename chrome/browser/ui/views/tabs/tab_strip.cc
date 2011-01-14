@@ -149,7 +149,7 @@ void TabStrip::InitTabStripButtons() {
   }
   LoadNewTabButtonImage();
   newtab_button_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_NEWTAB)));
+      l10n_util::GetStringUTF16(IDS_ACCNAME_NEWTAB));
   AddChildView(newtab_button_);
 }
 

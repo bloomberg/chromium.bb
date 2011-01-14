@@ -5,6 +5,8 @@
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 
 #include "base/logging.h"
+// TODO(avi): remove when not needed
+#include "base/utf_string_conversions.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
@@ -36,7 +38,7 @@ void TabbedPane::AddTabAtIndex(int index,
                                bool select_if_first_tab) {
   native_tabbed_pane_->AddTabAtIndex(index, title, contents,
                                      select_if_first_tab);
-  contents->SetAccessibleName(title);
+  contents->SetAccessibleName(WideToUTF16Hack(title));
   PreferredSizeChanged();
 }
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/progress_bar.h"
 
@@ -49,10 +50,10 @@ TEST(ProgressBarTest, Accessibility) {
 
   EXPECT_EQ(AccessibilityTypes::ROLE_PROGRESSBAR, bar.GetAccessibleRole());
 
-  std::wstring name;
+  string16 name;
   EXPECT_FALSE(bar.GetAccessibleName(&name));
-  EXPECT_EQ(std::wstring(), name);
-  std::wstring accessible_name = L"My progress bar";
+  EXPECT_EQ(string16(), name);
+  string16 accessible_name = ASCIIToUTF16("My progress bar");
   bar.SetAccessibleName(accessible_name);
   EXPECT_TRUE(bar.GetAccessibleName(&name));
   EXPECT_EQ(accessible_name, name);

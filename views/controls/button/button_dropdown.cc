@@ -165,8 +165,8 @@ void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-std::wstring ButtonDropDown::GetAccessibleDefaultAction() {
-  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS));
+string16 ButtonDropDown::GetAccessibleDefaultAction() {
+  return l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS);
 }
 
 AccessibilityTypes::Role ButtonDropDown::GetAccessibleRole() {

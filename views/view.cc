@@ -1160,12 +1160,12 @@ bool View::InDrag() {
   return root_view ? (root_view->GetDragView() == this) : false;
 }
 
-bool View::GetAccessibleName(std::wstring* name) {
+bool View::GetAccessibleName(string16* name) {
   DCHECK(name);
 
   if (accessible_name_.empty())
     return false;
-  *name = UTF16ToWideHack(accessible_name_);
+  *name = accessible_name_;
   return true;
 }
 
@@ -1173,8 +1173,8 @@ AccessibilityTypes::Role View::GetAccessibleRole() {
   return AccessibilityTypes::ROLE_CLIENT;
 }
 
-void View::SetAccessibleName(const std::wstring& name) {
-  accessible_name_ = WideToUTF16Hack(name);
+void View::SetAccessibleName(const string16& name) {
+  accessible_name_ = name;
 }
 
 // static

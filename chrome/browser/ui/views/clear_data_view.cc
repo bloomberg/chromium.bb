@@ -51,9 +51,9 @@ ClearDataView::ClearDataView(Profile* profile)
 void ClearDataView::Init() {
   tabs_ = new views::TabbedPane;
 
-  tabs_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringFUTF16(IDS_OPTIONS_DIALOG_TITLE,
-          l10n_util::GetStringUTF16(IDS_OPTIONS_DIALOG_TITLE))));
+  tabs_->SetAccessibleName(l10n_util::GetStringFUTF16(
+      IDS_OPTIONS_DIALOG_TITLE,
+      l10n_util::GetStringUTF16(IDS_OPTIONS_DIALOG_TITLE)));
   AddChildView(tabs_);
 
   int tab_index = 0;

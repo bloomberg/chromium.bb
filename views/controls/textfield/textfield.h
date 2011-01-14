@@ -209,9 +209,9 @@ class Textfield : public View {
   virtual void WillLoseFocus();
 
   // Accessibility accessors, overridden from View:
-  virtual AccessibilityTypes::Role GetAccessibleRole();
-  virtual AccessibilityTypes::State GetAccessibleState();
-  virtual std::wstring GetAccessibleValue();
+  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
+  virtual AccessibilityTypes::State GetAccessibleState() OVERRIDE;
+  virtual string16 GetAccessibleValue() OVERRIDE;
 
  protected:
   virtual void Focus();

@@ -312,7 +312,7 @@ MenuScrollViewContainer* SubmenuView::GetScrollViewContainer() {
     scroll_view_container_->set_parent_owned(false);
 
     // Use the parent menu item accessible name for the menu view.
-    std::wstring accessible_name;
+    string16 accessible_name;
     GetMenuItem()->GetAccessibleName(&accessible_name);
     scroll_view_container_->SetAccessibleName(accessible_name);
     SetAccessibleName(accessible_name);

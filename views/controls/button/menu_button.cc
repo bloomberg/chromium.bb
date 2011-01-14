@@ -256,8 +256,8 @@ void MenuButton::OnMouseExited(const MouseEvent& event) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-std::wstring MenuButton::GetAccessibleDefaultAction() {
-  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS));
+string16 MenuButton::GetAccessibleDefaultAction() {
+  return l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS);
 }
 
 AccessibilityTypes::Role MenuButton::GetAccessibleRole() {

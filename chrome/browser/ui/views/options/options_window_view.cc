@@ -197,9 +197,9 @@ void OptionsWindowView::ViewHierarchyChanged(bool is_add,
 
 void OptionsWindowView::Init() {
   tabs_ = new views::TabbedPane;
-  tabs_->SetAccessibleName(UTF16ToWide(
-      l10n_util::GetStringFUTF16(IDS_OPTIONS_DIALOG_TITLE,
-                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))));
+  tabs_->SetAccessibleName(l10n_util::GetStringFUTF16(
+      IDS_OPTIONS_DIALOG_TITLE,
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   tabs_->SetListener(this);
   AddChildView(tabs_);
 

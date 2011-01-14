@@ -1850,8 +1850,7 @@ void BrowserView::InitTabStrip(TabStripModel* model) {
   else
     tabstrip_ = new TabStrip(tabstrip_controller);
 
-  tabstrip_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_TABSTRIP)));
+  tabstrip_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_TABSTRIP));
   AddChildView(tabstrip_);
 
   tabstrip_controller->InitFromModel(tabstrip_);
@@ -1877,15 +1876,14 @@ void BrowserView::Init() {
   }
 
   LoadAccelerators();
-  SetAccessibleName(UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 
   InitTabStrip(browser_->tabstrip_model());
 
   toolbar_ = new ToolbarView(browser_.get());
   AddChildView(toolbar_);
   toolbar_->Init(browser_->profile());
-  toolbar_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLBAR)));
+  toolbar_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLBAR));
 
   infobar_container_ = new InfoBarContainer(this);
   AddChildView(infobar_container_);
@@ -1909,7 +1907,7 @@ void BrowserView::Init() {
         this);
     sidebar_split_->SetID(VIEW_ID_SIDE_BAR_SPLIT);
     sidebar_split_->SetAccessibleName(
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_SIDE_BAR)));
+        l10n_util::GetStringUTF16(IDS_ACCNAME_SIDE_BAR));
     sidebar_split_->set_background(
         views::Background::CreateSolidBackground(bg_color));
   }
@@ -1929,7 +1927,7 @@ void BrowserView::Init() {
       this);
   contents_split_->SetID(VIEW_ID_CONTENTS_SPLIT);
   contents_split_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_WEB_CONTENTS)));
+      l10n_util::GetStringUTF16(IDS_ACCNAME_WEB_CONTENTS));
   contents_split_->set_background(
       views::Background::CreateSolidBackground(bg_color));
   AddChildView(contents_split_);
@@ -2008,7 +2006,7 @@ bool BrowserView::MaybeShowBookmarkBar(TabContentsWrapper* contents) {
     }
     bookmark_bar_view_->SetPageNavigator(contents->tab_contents());
     bookmark_bar_view_->SetAccessibleName(
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS)));
+        l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS));
     new_bookmark_bar_view = bookmark_bar_view_.get();
   }
   return UpdateChildViewAndLayout(new_bookmark_bar_view, &active_bookmark_bar_);
@@ -2552,7 +2550,7 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   BrowserFrame::Create(view, browser->profile());
 
   view->GetWindow()->GetNonClientView()->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 
   return view;
 }

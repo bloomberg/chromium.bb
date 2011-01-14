@@ -71,7 +71,7 @@ void NativeButtonWin::UpdateDefault() {
 }
 
 void NativeButtonWin::UpdateAccessibleName() {
-  std::wstring name;
+  string16 name;
   if (native_button_->GetAccessibleName(&name)) {
     base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
     HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,

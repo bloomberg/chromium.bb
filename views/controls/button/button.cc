@@ -33,8 +33,8 @@ bool Button::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   return true;
 }
 
-std::wstring Button::GetAccessibleKeyboardShortcut() {
-  return UTF16ToWideHack(accessible_shortcut_);
+string16 Button::GetAccessibleKeyboardShortcut() {
+  return accessible_shortcut_;
 }
 
 AccessibilityTypes::Role Button::GetAccessibleRole() {

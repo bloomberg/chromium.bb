@@ -73,7 +73,7 @@ AppPanelBrowserFrameView::AppPanelBrowserFrameView(BrowserFrame* frame,
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
                           rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
   close_button_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE)));
+      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);
 
   window_icon_ = new TabIconView(this);

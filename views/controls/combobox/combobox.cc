@@ -93,8 +93,8 @@ AccessibilityTypes::Role Combobox::GetAccessibleRole() {
   return AccessibilityTypes::ROLE_COMBOBOX;
 }
 
-std::wstring Combobox::GetAccessibleValue() {
-  return UTF16ToWideHack(model_->GetItemAt(selected_item_));
+string16 Combobox::GetAccessibleValue() {
+  return model_->GetItemAt(selected_item_);
 }
 
 void Combobox::Focus() {

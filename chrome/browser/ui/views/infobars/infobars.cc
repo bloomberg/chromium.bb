@@ -97,12 +97,12 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
 
   switch (delegate->GetInfoBarType()) {
     case InfoBarDelegate::WARNING_TYPE:
-      SetAccessibleName(UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_WARNING)));
+      SetAccessibleName(
+          l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_WARNING));
       break;
     case InfoBarDelegate::PAGE_ACTION_TYPE:
-      SetAccessibleName(UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_PAGE_ACTION)));
+      SetAccessibleName(
+          l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_PAGE_ACTION));
       break;
     default:
       NOTREACHED();
@@ -117,7 +117,7 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
                           rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
   close_button_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE)));
+      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);
 
   animation_.reset(new ui::SlideAnimation(this));
@@ -472,10 +472,10 @@ ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
       initialized_(false) {
   ok_button_ = InfoBarTextButton::Create(this,
       delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
-  ok_button_->SetAccessibleName(ok_button_->text());
+  ok_button_->SetAccessibleName(WideToUTF16Hack(ok_button_->text()));
   cancel_button_ = InfoBarTextButton::Create(this,
       delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
-  cancel_button_->SetAccessibleName(cancel_button_->text());
+  cancel_button_->SetAccessibleName(WideToUTF16Hack(cancel_button_->text()));
 
   // Set up the link.
   link_ = new views::Link;

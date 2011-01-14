@@ -571,18 +571,18 @@ class View : public AcceleratorTarget {
   // describes the default action that will occur when executing
   // IAccessible::DoDefaultAction. For instance, default action of a button is
   // 'Press'.
-  virtual std::wstring GetAccessibleDefaultAction() { return std::wstring(); }
+  virtual string16 GetAccessibleDefaultAction() { return string16(); }
 
   // Returns a string containing the mnemonic, or the keyboard shortcut, for a
   // given control.
-  virtual std::wstring GetAccessibleKeyboardShortcut() {
-    return std::wstring();
+  virtual string16 GetAccessibleKeyboardShortcut() {
+    return string16();
   }
 
   // Returns a brief, identifying string, containing a unique, readable name of
   // a given control. Sets the input string appropriately, and returns true if
   // successful.
-  bool GetAccessibleName(std::wstring* name);
+  bool GetAccessibleName(string16* name);
 
   // Returns the accessibility role of the current view. The role is what
   // assistive technologies (ATs) use to determine what behavior to expect from
@@ -595,12 +595,12 @@ class View : public AcceleratorTarget {
   }
 
   // Returns the current value associated with a view.
-  virtual std::wstring GetAccessibleValue() { return std::wstring(); }
+  virtual string16 GetAccessibleValue() { return string16(); }
 
   // Assigns a string name to the given control. Needed as a View does not know
   // which name will be associated with it until it is created to be a
   // certain type.
-  void SetAccessibleName(const std::wstring& name);
+  void SetAccessibleName(const string16& name);
 
   // Returns an instance of the (platform-specific) accessibility interface for
   // the View.

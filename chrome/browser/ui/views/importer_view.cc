@@ -58,7 +58,8 @@ void ImporterView::SetupControl() {
 
   profile_combobox_ = new views::Combobox(this);
   profile_combobox_->set_listener(this);
-  profile_combobox_->SetAccessibleName(import_from_label_->GetText());
+  profile_combobox_->SetAccessibleName(
+      WideToUTF16Hack(import_from_label_->GetText()));
 
   import_items_label_ = new views::Label(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_IMPORT_ITEMS_LABEL)));

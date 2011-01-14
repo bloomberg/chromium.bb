@@ -153,8 +153,7 @@ void ToolbarView::Init(Profile* profile) {
                            views::ImageButton::ALIGN_TOP);
   back_->SetTooltipText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_BACK)));
-  back_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK)));
+  back_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
   back_->SetID(VIEW_ID_BACK_BUTTON);
 
   forward_ = new views::ButtonDropDown(this, forward_menu_model_.get());
@@ -163,8 +162,7 @@ void ToolbarView::Init(Profile* profile) {
   forward_->set_tag(IDC_FORWARD);
   forward_->SetTooltipText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD)));
-  forward_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD)));
+  forward_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD));
   forward_->SetID(VIEW_ID_FORWARD_BUTTON);
 
   // Have to create this before |reload_| as |reload_|'s constructor needs it.
@@ -178,8 +176,7 @@ void ToolbarView::Init(Profile* profile) {
   reload_->set_tag(IDC_RELOAD);
   reload_->SetTooltipText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_RELOAD)));
-  reload_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD)));
+  reload_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
   reload_->SetID(VIEW_ID_RELOAD_BUTTON);
 
 #if defined(OS_CHROMEOS)
@@ -199,8 +196,7 @@ void ToolbarView::Init(Profile* profile) {
   home_->set_tag(IDC_HOME);
   home_->SetTooltipText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_HOME)));
-  home_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_HOME)));
+  home_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_HOME));
   home_->SetID(VIEW_ID_HOME_BUTTON);
 
   browser_actions_ = new BrowserActionsContainer(browser_, this);
@@ -208,8 +204,7 @@ void ToolbarView::Init(Profile* profile) {
   app_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
   app_menu_->set_border(NULL);
   app_menu_->EnableCanvasFlippingForRTLUI(true);
-  app_menu_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_APP)));
+  app_menu_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_APP));
   app_menu_->SetTooltipText(UTF16ToWide(l10n_util::GetStringFUTF16(
       IDS_APPMENU_TOOLTIP,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))));

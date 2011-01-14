@@ -211,7 +211,7 @@ TextButton::~TextButton() {
 
 void TextButton::SetText(const std::wstring& text) {
   text_ = WideToUTF16Hack(text);
-  SetAccessibleName(text);
+  SetAccessibleName(WideToUTF16Hack(text));
   UpdateTextSize();
 }
 

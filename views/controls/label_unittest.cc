@@ -156,12 +156,12 @@ TEST(LabelTest, TooltipProperty) {
 
 TEST(LabelTest, Accessibility) {
   Label label;
-  std::wstring test_text(L"My special text.");
-  label.SetText(test_text);
+  string16 test_text(ASCIIToUTF16("My special text."));
+  label.SetText(UTF16ToWideHack(test_text));
 
   EXPECT_EQ(AccessibilityTypes::ROLE_STATICTEXT, label.GetAccessibleRole());
 
-  std::wstring name;
+  string16 name;
   EXPECT_TRUE(label.GetAccessibleName(&name));
   EXPECT_EQ(test_text, name);
 

@@ -165,10 +165,10 @@ void BrowserActionButton::UpdateState() {
   }
 
   // If the browser action name is empty, show the extension name instead.
-  std::wstring name = UTF8ToWide(browser_action()->GetTitle(tab_id));
+  string16 name = UTF8ToUTF16(browser_action()->GetTitle(tab_id));
   if (name.empty())
-    name = UTF8ToWide(extension()->name());
-  SetTooltipText(name);
+    name = UTF8ToUTF16(extension()->name());
+  SetTooltipText(UTF16ToWideHack(name));
   SetAccessibleName(name);
   GetParent()->SchedulePaint();
 }
@@ -288,8 +288,8 @@ BrowserActionView::BrowserActionView(const Extension* extension,
   button_->SetDragController(panel_);
   AddChildView(button_);
   button_->UpdateState();
-  SetAccessibleName(UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS_BROWSER_ACTION)));
+  SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS_BROWSER_ACTION));
 }
 
 BrowserActionView::~BrowserActionView() {
@@ -369,19 +369,18 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
   resize_animation_.reset(new ui::SlideAnimation(this));
   resize_area_ = new views::ResizeArea(this);
   resize_area_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_SEPARATOR)));
+      l10n_util::GetStringUTF16(IDS_ACCNAME_SEPARATOR));
   AddChildView(resize_area_);
 
   chevron_ = new views::MenuButton(NULL, std::wstring(), this, false);
   chevron_->set_border(NULL);
   chevron_->EnableCanvasFlippingForRTLUI(true);
   chevron_->SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS_CHEVRON)));
+      l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS_CHEVRON));
   chevron_->SetVisible(false);
   AddChildView(chevron_);
 
-  SetAccessibleName(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS)));
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS));
 }
 
 BrowserActionsContainer::~BrowserActionsContainer() {

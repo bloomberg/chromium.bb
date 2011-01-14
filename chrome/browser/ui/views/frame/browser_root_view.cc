@@ -23,7 +23,7 @@ BrowserRootView::BrowserRootView(BrowserView* browser_view,
     : views::RootView(widget),
       browser_view_(browser_view),
       forwarding_to_tab_strip_(false) {
-  SetAccessibleName(UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 }
 
 bool BrowserRootView::GetDropFormats(

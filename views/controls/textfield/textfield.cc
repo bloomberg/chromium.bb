@@ -327,10 +327,10 @@ AccessibilityTypes::State Textfield::GetAccessibleState() {
   return state;
 }
 
-std::wstring Textfield::GetAccessibleValue() {
+string16 Textfield::GetAccessibleValue() {
   if (!text_.empty())
-    return UTF16ToWide(text_);
-  return std::wstring();
+    return text_;
+  return string16();
 }
 
 void Textfield::SetEnabled(bool enabled) {
