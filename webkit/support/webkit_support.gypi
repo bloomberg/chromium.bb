@@ -102,6 +102,13 @@
         '<(DEPTH)/webkit/tools/test_shell/test_shell_webmimeregistry_impl.cc',
         '<(DEPTH)/webkit/tools/test_shell/test_shell_webmimeregistry_impl.h',
       ],
+      'conditions': [
+        ['inside_chromium_build==0', {
+          'dependencies': [
+            'setup_third_party.gyp:third_party_headers',
+          ],
+        }],
+      ],
     },
   ],
 }
