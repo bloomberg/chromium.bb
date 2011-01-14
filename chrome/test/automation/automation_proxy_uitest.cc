@@ -887,9 +887,7 @@ template <typename T> T** ReceivePointer(scoped_refptr<T>& p) {  // NOLINT
   return reinterpret_cast<T**>(&p);
 }
 
-ExternalTabUITest::ExternalTabUITest() : UITest(MessageLoop::TYPE_UI) {
-  launcher_.reset(CreateProxyLauncher());
-}
+ExternalTabUITest::ExternalTabUITest() : UITest(MessageLoop::TYPE_UI) {}
 
 // Replace the default automation proxy with our mock client.
 ProxyLauncher* ExternalTabUITest::CreateProxyLauncher() {

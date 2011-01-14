@@ -93,7 +93,6 @@ UITestBase::UITestBase()
       shutdown_type_(ProxyLauncher::WINDOW_CLOSE) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
-  launcher_.reset(CreateProxyLauncher());
 }
 
 UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
@@ -110,12 +109,15 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
       shutdown_type_(ProxyLauncher::WINDOW_CLOSE) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
-  launcher_.reset(CreateProxyLauncher());
 }
 
 UITestBase::~UITestBase() {}
 
 void UITestBase::SetUp() {
+  // Some tests (e.g. SessionRestoreUITest) call SetUp() multiple times,
+  // but the ProxyLauncher should be initialized only once per instance.
+  if (!launcher_.get())
+    launcher_.reset(CreateProxyLauncher());
   launcher_->AssertAppNotRunning(L"Please close any other instances "
                                  L"of the app before testing.");
 

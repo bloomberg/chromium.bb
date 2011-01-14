@@ -42,13 +42,13 @@ class ProxyLauncher {
   };
 
   // POD containing state variables that determine how to launch browser.
-  typedef struct {
+  struct LaunchState {
     // If true the profile is cleared before launching.
     bool clear_profile;
 
     // If set, the profiles in this path are copied
     // into the user data directory for the test.
-    FilePath& template_user_data;
+    FilePath template_user_data;
 
     // Profile theme type.
     ProfileType profile_type;
@@ -57,14 +57,14 @@ class ProxyLauncher {
     FilePath browser_directory;
 
     // Command line arguments passed to the browser.
-    CommandLine& arguments;
+    CommandLine arguments;
 
     // Should we supply the testing channel id on the command line?
     bool include_testing_id;
 
     // If true, the window is shown. Otherwise it is hidden.
     bool show_window;
-  } LaunchState;
+  };
 
   ProxyLauncher();
 
