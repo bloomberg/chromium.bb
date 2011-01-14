@@ -8,7 +8,7 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/keyword_editor_cocoa_controller.h"
+#import "chrome/browser/ui/cocoa/options/keyword_editor_cocoa_controller.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/options/preferences_window_controller.h"
+
 #import <Cocoa/Cocoa.h>
 
 #import "base/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/preferences_window_controller.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/custom_home_pages_model.h"
+#import "chrome/browser/ui/cocoa/options/custom_home_pages_model.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"

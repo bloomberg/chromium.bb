@@ -7,7 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/font_language_settings_controller.h"
+#import "chrome/browser/ui/cocoa/options/font_language_settings_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -43,8 +43,8 @@ class FontLanguageSettingsControllerTest : public CocoaTest {
  public:
   FontLanguageSettingsControllerTest() {
     Profile* profile = helper_.profile();
-    font_controller_.reset(
-        [[FontLanguageSettingsControllerForTest alloc] initWithProfile:profile]);
+    font_controller_.reset([[FontLanguageSettingsControllerForTest alloc]
+        initWithProfile:profile]);
    }
   ~FontLanguageSettingsControllerTest() {}
 

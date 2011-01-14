@@ -43,7 +43,7 @@
 #import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/import_settings_dialog.h"
-#import "chrome/browser/ui/cocoa/preferences_window_controller.h"
+#import "chrome/browser/ui/cocoa/options/preferences_window_controller.h"
 #import "chrome/browser/ui/cocoa/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tab_window_controller.h"
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"

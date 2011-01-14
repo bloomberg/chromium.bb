@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/edit_search_engine_cocoa_controller.h"
+#import "chrome/browser/ui/cocoa/options/edit_search_engine_cocoa_controller.h"
 
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"

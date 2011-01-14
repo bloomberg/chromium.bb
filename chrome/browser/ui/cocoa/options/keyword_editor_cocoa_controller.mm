@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/ui/cocoa/keyword_editor_cocoa_controller.h"
+#import "chrome/browser/ui/cocoa/options/keyword_editor_cocoa_controller.h"
 
 #import "base/mac/mac_util.h"
 #include "base/lazy_instance.h"
@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_table_model.h"
-#import "chrome/browser/ui/cocoa/edit_search_engine_cocoa_controller.h"
+#import "chrome/browser/ui/cocoa/options/edit_search_engine_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"

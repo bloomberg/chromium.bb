@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/preferences_window_controller.h"
+#import "chrome/browser/ui/cocoa/options/preferences_window_controller.h"
 
 #include <algorithm>
 
@@ -41,13 +41,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/clear_browsing_data_controller.h"
-#import "chrome/browser/ui/cocoa/content_settings_dialog_controller.h"
-#import "chrome/browser/ui/cocoa/custom_home_pages_model.h"
-#import "chrome/browser/ui/cocoa/font_language_settings_controller.h"
 #import "chrome/browser/ui/cocoa/import_settings_dialog.h"
-#import "chrome/browser/ui/cocoa/keyword_editor_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
-#import "chrome/browser/ui/cocoa/search_engine_list_model.h"
+#import "chrome/browser/ui/cocoa/options/content_settings_dialog_controller.h"
+#import "chrome/browser/ui/cocoa/options/custom_home_pages_model.h"
+#import "chrome/browser/ui/cocoa/options/font_language_settings_controller.h"
+#import "chrome/browser/ui/cocoa/options/keyword_editor_cocoa_controller.h"
+#import "chrome/browser/ui/cocoa/options/search_engine_list_model.h"
 #import "chrome/browser/ui/cocoa/vertical_gradient_view.h"
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 #include "chrome/browser/ui/options/options_util.h"

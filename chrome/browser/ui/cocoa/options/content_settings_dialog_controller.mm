@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/content_settings_dialog_controller.h"
+#import "chrome/browser/ui/cocoa/options/content_settings_dialog_controller.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -20,9 +20,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/content_exceptions_window_controller.h"
-#import "chrome/browser/ui/cocoa/cookies_window_controller.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
+#import "chrome/browser/ui/cocoa/options/content_exceptions_window_controller.h"
+#import "chrome/browser/ui/cocoa/options/cookies_window_controller.h"
 #import "chrome/browser/ui/cocoa/simple_content_exceptions_window_controller.h"
 #import "chrome/browser/ui/cocoa/tab_view_picker_table.h"
 #include "chrome/common/chrome_switches.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/font_language_settings_controller.h"
+#import "chrome/browser/ui/cocoa/options/font_language_settings_controller.h"
 
 #import <Cocoa/Cocoa.h>
 #import "base/mac/mac_util.h"

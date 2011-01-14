@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/cookies_window_controller.h"
+#import "chrome/browser/ui/cocoa/options/cookies_window_controller.h"
 
 #include <queue>
 #include <vector>

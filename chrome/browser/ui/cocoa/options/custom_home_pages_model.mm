@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/custom_home_pages_model.h"
+#import "chrome/browser/ui/cocoa/options/custom_home_pages_model.h"
 
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/net/url_fixer_upper.h"

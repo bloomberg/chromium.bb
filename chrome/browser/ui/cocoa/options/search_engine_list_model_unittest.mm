@@ -7,7 +7,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
-#import "chrome/browser/ui/cocoa/search_engine_list_model.h"
+#import "chrome/browser/ui/cocoa/options/search_engine_list_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
