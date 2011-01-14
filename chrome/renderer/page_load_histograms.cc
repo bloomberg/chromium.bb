@@ -38,6 +38,27 @@ static URLPattern::SchemeMasks GetSupportedSchemeType(const GURL& url) {
   return static_cast<URLPattern::SchemeMasks>(0);
 }
 
+static void DumpWebTiming(const Time& navigation_start,
+                          const Time& load_event_start,
+                          const Time& load_event_end,
+                          NavigationState* navigation_state) {
+  if (navigation_start.is_null() ||
+      load_event_start.is_null() ||
+      load_event_end.is_null())
+    return;
+
+  if (navigation_state->web_timing_histograms_recorded())
+    return;
+  navigation_state->set_web_timing_histograms_recorded(true);
+
+  // TODO(tonyg): There are many new details we can record, add them after the
+  // basic metrics are evaluated.
+  // TODO(simonjam): There is no way to distinguish between abandonment and
+  // intentional Javascript navigation before the load event fires.
+  PLT_HISTOGRAM("PLT.NavStartToLoadStart", load_event_start - navigation_start);
+  PLT_HISTOGRAM("PLT.NavStartToLoadEnd", load_event_end - navigation_start);
+}
+
 enum MissingStartType {
   START_MISSING = 0x1,
   COMMIT_MISSING = 0x2,
@@ -69,15 +90,11 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   if (scheme_type == 0)
     return;
 
-  // If we've already dumped, do nothing.
-  // This simple bool works because we only dump for the main frame.
   NavigationState* navigation_state =
       NavigationState::FromDataSource(frame->dataSource());
-  if (navigation_state->load_histograms_recorded())
-    return;
 
   // Times based on the Web Timing metrics.
-  // https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/NavigationTiming/Overview.html
+  // http://www.w3.org/TR/navigation-timing/
   // TODO(tonyg, jar): We are in the process of vetting these metrics against
   // the existing ones. Once we understand any differences, we will standardize
   // on a single set of metrics.
@@ -85,13 +102,20 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   Time navigation_start = Time::FromDoubleT(performance.navigationStart());
   Time load_event_start = Time::FromDoubleT(performance.loadEventStart());
   Time load_event_end = Time::FromDoubleT(performance.loadEventEnd());
+  DumpWebTiming(navigation_start, load_event_start, load_event_end,
+                navigation_state);
+
+  // If we've already dumped, do nothing.
+  // This simple bool works because we only dump for the main frame.
+  if (navigation_state->load_histograms_recorded())
+    return;
 
   // Collect measurement times.
   Time start = navigation_state->start_load_time();
   Time commit = navigation_state->commit_load_time();
 
-  // TODO(tonyg, jar): We aren't certain why the start is missing sometimes, but
-  // we presume it is a very premature abandonment of the page.
+  // TODO(tonyg, jar): Start can be missing after an in-document navigation and
+  // possibly other cases like a very premature abandonment of the page.
   // The PLT.MissingStart histogram should help us troubleshoot and then we can
   // remove this.
   int missing_start_type = 0;
@@ -103,17 +127,6 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   if (missing_start_type)
     return;
 
-  // Record the new PLT times prior to the faulty abandon check below.
-  // TODO(tonyg): There are many new details we can record, add them after the
-  // basic metrics are evaluated.
-  // TODO(simonjam): There is no way to distinguish between abandonment and
-  // intentional Javascript navigation before the load event fires.
-  if (!load_event_start.is_null())
-    PLT_HISTOGRAM("PLT.NavStartToLoadStart",
-                  load_event_start - navigation_start);
-  if (!load_event_end.is_null())
-    PLT_HISTOGRAM("PLT.NavStartToLoadEnd", load_event_end - navigation_start);
-
   // We properly handle null values for the next 3 variables.
   Time request = navigation_state->request_time();
   Time first_paint = navigation_state->first_paint_time();
@@ -122,7 +135,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   Time finish_all_loads = navigation_state->finish_load_time();
 
   // TODO(tonyg, jar): We suspect a bug in abandonment counting, this temporary
-  // historgram should help us to troubleshoot.
+  // histogram should help us to troubleshoot.
   int abandon_type = 0;
   abandon_type |= finish_doc.is_null() ? FINISH_DOC_MISSING : 0;
   abandon_type |= finish_all_loads.is_null() ? FINISH_ALL_LOADS_MISSING : 0;
