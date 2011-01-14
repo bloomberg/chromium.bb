@@ -6,12 +6,6 @@
 
 Import('env')
 
-# NOTE: the arm emulator does not handle atomic ops properly
-is_broken = env.Bit('target_arm') and env.UsingEmulator()
-
-# Currently, run_simple_srpc_test_nexe does not pass the validator.
-is_broken = env.Bit('target_arm')
-
 env.ComponentProgram('simple_srpc_test.nexe',
                      ['simple_srpc_test.c'],
                      EXTRA_LIBS=['srpc',
@@ -25,8 +19,7 @@ node = env.CommandSelLdrTestNacl(
     command=[env.File('simple_srpc_test.nexe')],
     exit_status='0',
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_srpc_test_nexe',
-                       is_broken=is_broken)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_srpc_test_nexe')
 
 env.ComponentProgram('types_srpc_test.nexe',
                      ['types_srpc_test.c'],
@@ -41,6 +34,5 @@ node = env.CommandSelLdrTestNacl(
     command=[env.File('types_srpc_test.nexe')],
     exit_status='0',
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_types_srpc_test_nexe',
-                       is_broken=is_broken)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_types_srpc_test_nexe')
 
