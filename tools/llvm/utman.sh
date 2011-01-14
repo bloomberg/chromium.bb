@@ -153,8 +153,6 @@ CC=${CC:-}
 # bug that brakes the build if we do that.
 CXX=${CXX:-g++}
 
-## TODO jasonwkim [2010/08/16 23:06:21 PDT (Monday)]
-## change this variable
 readonly CROSS_TARGET_AR=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ar
 readonly CROSS_TARGET_AS=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-as
 readonly CROSS_TARGET_LD=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ld
@@ -632,6 +630,9 @@ rebuild-pnacl-libs() {
 everything() {
 
   PathSanityCheck
+  # This is needed to build misc-tools and run ARM tests.
+  # We check this early so that there are no surprises later, and we can
+  # handle all user interaction early.
   check-for-trusted
 
   hg-checkout
@@ -1388,30 +1389,34 @@ libstdcpp-bitcode-install() {
 
 #+ misc-tools            - Build and install sel_ldr and validator for ARM.
 misc-tools() {
-  StepBanner "MISC-ARM" "Building sel_ldr (ARM)"
+  if has-trusted-toolchain; then
+    StepBanner "MISC-ARM" "Building sel_ldr (ARM)"
 
-   # TODO(robertm): revisit some of these options
-   RunWithLog arm_sel_ldr \
-          ./scons MODE=opt-linux \
-          platform=arm \
-          sdl=none \
-          naclsdk_validate=0 \
-          sysinfo=0 \
-          sel_ldr
-   rm -rf  ${INSTALL_ROOT}/tools-arm
-   mkdir ${INSTALL_ROOT}/tools-arm
-   cp scons-out/opt-linux-arm/obj/src/trusted/service_runtime/sel_ldr\
-     ${INSTALL_ROOT}/tools-arm
+    # TODO(robertm): revisit some of these options
+    RunWithLog arm_sel_ldr \
+      ./scons MODE=opt-linux \
+      platform=arm \
+      sdl=none \
+      naclsdk_validate=0 \
+      sysinfo=0 \
+      sel_ldr
+    rm -rf  "${INSTALL_ROOT}/tools-arm"
+    mkdir "${INSTALL_ROOT}/tools-arm"
+    cp scons-out/opt-linux-arm/obj/src/trusted/service_runtime/sel_ldr \
+      ${INSTALL_ROOT}/tools-arm
+  else
+    StepBanner "MISC-ARM" "Skipping ARM sel_ldr (No trusted ARM toolchain)"
+  fi
 
-   StepBanner "MISC-ARM" "Building validator (ARM)"
-   RunWithLog arm_ncval_core \
-           ./scons MODE=opt-linux \
-           targetplatform=arm \
-           sysinfo=0 \
-           arm-ncval-core
-   rm -rf  ${INSTALL_ROOT}/tools-x86
-   mkdir ${INSTALL_ROOT}/tools-x86
-   cp scons-out/opt-linux-x86-32-to-arm/obj/src/trusted/validator_arm/\
+  StepBanner "MISC-ARM" "Building validator (ARM)"
+  RunWithLog arm_ncval_core \
+    ./scons MODE=opt-linux \
+    targetplatform=arm \
+    sysinfo=0 \
+    arm-ncval-core
+  rm -rf  "${INSTALL_ROOT}/tools-x86"
+  mkdir "${INSTALL_ROOT}/tools-x86"
+  cp scons-out/opt-linux-x86-32-to-arm/obj/src/trusted/validator_arm/\
 arm-ncval-core ${INSTALL_ROOT}/tools-x86
 }
 
@@ -2853,26 +2858,53 @@ help-full() {
   Usage2
 }
 
-check-for-trusted() {
-   if [ ! -f toolchain/linux_arm-trusted/ld_script_arm_trusted ]; then
-     echo '*******************************************************************'
-     echo '*    The trusted toolchains dont appear to be installed yet.      *'
-     echo '*    These must be installed first.                               *'
-     echo '*                                                                 *'
-     echo '*    To download and install the trusted toolchain, run:          *'
-     echo '*                                                                 *'
-     echo '*        $ tools/llvm/utman.sh download-trusted                   *'
-     echo '*                                                                 *'
-     echo '*    To compile the trusted toolchain, use:                       *'
-     echo '*                                                                 *'
-     echo '*        $ tools/llvm/trusted-toolchain-creator.sh trusted_sdk    *'
-     echo '*                (warning: this takes a while)                    *'
-     echo '*******************************************************************'
-
-     exit -1
-   fi
+has-trusted-toolchain() {
+  if [ -f toolchain/linux_arm-trusted/ld_script_arm_trusted ]; then
+    return 0
+  else
+    return 1
+  fi
 }
 
+check-for-trusted() {
+  if ! has-trusted-toolchain; then
+    echo '*******************************************************************'
+    echo '*   The ARM trusted toolchain does not appear to be installed yet *'
+    echo '*   It is needed to run ARM tests.                                *'
+    echo '*                                                                 *'
+    echo '*   To download and install the trusted toolchain, run:           *'
+    echo '*                                                                 *'
+    echo '*       $ tools/llvm/utman.sh download-trusted                    *'
+    echo '*                                                                 *'
+    echo '*   To compile the trusted toolchain, use:                        *'
+    echo '*                                                                 *'
+    echo '*       $ tools/llvm/trusted-toolchain-creator.sh trusted_sdk     *'
+    echo '*               (warning: this takes a while)                     *'
+    echo '*******************************************************************'
+
+    # If building on the bots, do not continue since it needs to run ARM tests.
+    if ${UTMAN_DEBUG} ; then
+      echo "Building on bots --> need ARM trusted toolchain to run tests!"
+      exit -1
+    elif trusted-tc-confirm ; then
+      echo "Continuing without ARM trusted toolchain"
+    else
+      echo "Okay, stopping."
+      exit -1
+    fi
+  fi
+}
+
+trusted-tc-confirm() {
+  local YESNO
+  echo
+  echo "Do you wish to continue without the ARM trusted TC (skip ARM testing)?"
+  echo ""
+  echo -n "Continue? [Y/N] "
+  read YESNO
+  [ "${YESNO}" = "Y" ] || [ "${YESNO}" = "y" ]
+  return $?
+}
 
 Banner() {
   echo "**********************************************************************"
@@ -3126,4 +3158,4 @@ if [ "$(type -t $1)" != "function" ]; then
   exit 1
 fi
 
-eval "$@"
+"$@"
