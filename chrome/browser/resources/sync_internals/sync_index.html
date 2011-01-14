@@ -1,13 +1,23 @@
-<html>
-</html>
-<html id="t">
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
 <head>
-<title>About Sync</title>
+<script>
+function onLoad() {
+  chrome.send('getAboutInfo');
+}
+
+function onGetAboutInfoFinished(aboutInfo) {
+  var aboutInfoDiv = document.getElementById('aboutInfo');
+  jstProcess(new JsEvalContext(aboutInfo), aboutInfoDiv);
+}
+
+function onSyncServiceStateChanged() {
+  chrome.send('getAboutInfo');
+}
+</script>
 
 <style type="text/css">
 body {
-  font-size: 84%;
-  font-family: Arial, Helvetica, sans-serif;
   padding: 0.75em;
   margin: 0;
   min-width: 45em;
@@ -64,16 +74,11 @@ div#header h1 {
   color: white;
 }
 
-.desc {
-  font-size: 84%;
-}
-
 .err {
   color: red;
 }
 
 div#header p {
-  font-size: 84%;
   font-style: italic;
   padding: 0;
   margin: 0;
@@ -85,7 +90,6 @@ div#header p {
 table.list {
   line-height: 200%;
   border-collapse: collapse;
-  font-size: 84%;
   table-layout: fixed;
 }
 table.list:not([class*='filtered']) tr:nth-child(odd) td {
@@ -136,10 +140,14 @@ table.list#details .name {
   background-repeat: no-repeat;
 }
 </style>
+
 </head>
-<body>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
+      onload="onLoad()">
+
+<div id='aboutInfo'>
   <div id='header'>
-    <h1>About Sync</h1>
+    <h1>Sync Internals</h1>
     <p> Sync engine diagnostic data</p>
   </div>
   <div id='content'>
@@ -210,5 +218,7 @@ table.list#details .name {
       </td>
     </table>
   </div>
+</div>
+
 </body>
 </html>

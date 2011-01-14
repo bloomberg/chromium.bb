@@ -64,6 +64,8 @@ const char kAboutMemoryURL[] = "about:memory";
 const char kAboutNetInternalsURL[] = "about:net-internals";
 const char kAboutPluginsURL[] = "about:plugins";
 const char kAboutShorthangURL[] = "about:shorthang";
+const char kAboutSyncURL[] = "about:sync";
+const char kAboutSyncInternalsURL[] = "about:sync-internals";
 const char kAboutTermsURL[] = "about:terms";
 const char kAboutVaporwareURL[] = "about:vaporware";
 const char kAboutVersionURL[] = "about:version";
@@ -132,6 +134,7 @@ const char kChromeUIRemotingResourcesHost[] = "remotingresources";
 const char kChromeUIResourcesHost[] = "resources";
 const char kChromeUIScreenshotPath[] = "screenshots";
 const char kChromeUISettingsHost[] = "settings";
+const char kChromeUISyncInternalsHost[] = "sync-internals";
 const char kChromeUISyncResourcesHost[] = "syncresources";
 const char kChromeUITextfieldsHost[] = "textfields";
 const char kChromeUIThemePath[] = "theme";
@@ -163,6 +166,8 @@ const char kCloudPrintSetupHost[] = "cloudprintsetup";
 
 const char kNetworkViewInternalsURL[] = "chrome://net-internals/";
 const char kNetworkViewCacheURL[] = "chrome://view-http-cache/";
+
+const char kSyncViewInternalsURL[] = "chrome://sync-internals/";
 
 // GPU sub pages
 const char kGpuInternalsURL[] = "chrome://gpu-internals/";

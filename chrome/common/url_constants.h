@@ -57,6 +57,8 @@ extern const char kAboutMemoryURL[];
 extern const char kAboutNetInternalsURL[];
 extern const char kAboutPluginsURL[];
 extern const char kAboutShorthangURL[];
+extern const char kAboutSyncURL[];
+extern const char kAboutSyncInternalsURL[];
 extern const char kAboutTermsURL[];
 extern const char kAboutVaporwareURL[];
 extern const char kAboutVersionURL[];
@@ -123,6 +125,7 @@ extern const char kChromeUIRemotingResourcesHost[];
 extern const char kChromeUIResourcesHost[];
 extern const char kChromeUIScreenshotPath[];
 extern const char kChromeUISettingsHost[];
+extern const char kChromeUISyncInternalsHost[];
 extern const char kChromeUISyncResourcesHost[];
 extern const char kChromeUITextfieldsHost[];
 extern const char kChromeUIThemePath[];
@@ -159,6 +162,9 @@ extern const char kCloudPrintSetupHost[];
 // Network related URLs.
 extern const char kNetworkViewCacheURL[];
 extern const char kNetworkViewInternalsURL[];
+
+// Sync related URLs.
+extern const char kSyncViewInternalsURL[];
 
 // GPU related URLs
 extern const char kGpuInternalsURL[];

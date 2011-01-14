@@ -23,6 +23,7 @@
 #include "chrome/browser/dom_ui/remoting_ui.h"
 #include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/dom_ui/slideshow_ui.h"
+#include "chrome/browser/dom_ui/sync_internals_ui.h"
 #include "chrome/browser/dom_ui/textfields_ui.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -164,6 +165,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return &NewDOMUI<NetInternalsUI>;
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewDOMUI<PluginsUI>;
+  if (url.host() == chrome::kChromeUISyncInternalsHost)
+    return &NewDOMUI<SyncInternalsUI>;
 #if defined(ENABLE_REMOTING)
   if (url.host() == chrome::kChromeUIRemotingHost) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(

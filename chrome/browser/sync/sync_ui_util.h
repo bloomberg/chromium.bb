@@ -56,6 +56,7 @@ void AddBoolSyncDetail(ListValue* details,
                        const std::string& stat_name,
                        bool stat_value);
 
+// |service| can be NULL.
 void ConstructAboutInformation(ProfileSyncService* service,
                                DictionaryValue* strings);
 

@@ -62,7 +62,8 @@
       # it easier for us to reference them internally.
       'browser/resources/component_extension_resources.grd',
       'browser/resources/net_internals_resources.grd',
-      'browser/resources/shared_resources.grd'
+      'browser/resources/shared_resources.grd',
+      'browser/resources/sync_internals_resources.grd',
     ],
     'grit_info_cmd': ['python', '../tools/grit/grit_info.py',
                       '<@(grit_defines)'],
@@ -1510,6 +1511,7 @@
                   '<(grit_out_dir)/component_extension_resources.pak',
                   '<(grit_out_dir)/net_internals_resources.pak',
                   '<(grit_out_dir)/shared_resources.pak',
+                  '<(grit_out_dir)/sync_internals_resources.pak',
                 ],
               },
               'inputs': [

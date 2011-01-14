@@ -127,4 +127,7 @@
   "chrome/browser/autofill/autofill_resources.grd": {
     "messages": [19500],
   },
+  "chrome/browser/resources/sync_internals_resources.grd": {
+    "includes": [20000],
+  },
 }

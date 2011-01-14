@@ -40,8 +40,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/about_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
@@ -80,8 +78,6 @@
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 #endif
 
-using sync_api::SyncManager;
-
 using base::Time;
 using base::TimeDelta;
 
@@ -115,7 +111,6 @@ const char kHistogramsPath[] = "histograms";
 const char kMemoryRedirectPath[] = "memory-redirect";
 const char kMemoryPath[] = "memory";
 const char kStatsPath[] = "stats";
-const char kSyncPath[] = "sync";
 const char kTasksPath[] = "tasks";
 const char kTcmallocPath[] = "tcmalloc";
 const char kTermsPath[] = "terms";
@@ -124,6 +119,7 @@ const char kAboutPath[] = "about";
 // Not about:* pages, but included to make about:about look nicer
 const char kNetInternalsPath[] = "net-internals";
 const char kPluginsPath[] = "plugins";
+const char kSyncInternalsPath[] = "sync-internals";
 
 #if defined(OS_LINUX)
 const char kLinuxProxyConfigPath[] = "linux-proxy-config";
@@ -152,7 +148,7 @@ const char *kAllAboutPaths[] = {
   kNetInternalsPath,
   kPluginsPath,
   kStatsPath,
-  kSyncPath,
+  kSyncInternalsPath,
   kTasksPath,
   kTcmallocPath,
   kTermsPath,
@@ -688,31 +684,6 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
       version_html, localized_strings, "t" /* template root node id */);
 }
 
-
-
-std::string AboutSync() {
-  FilePath user_data_dir;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
-    return std::string();
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
-  ProfileSyncService* service = profile->GetProfileSyncService();
-
-  DictionaryValue strings;
-  if (!service) {
-    strings.SetString("summary", "SYNC DISABLED");
-  } else {
-    sync_ui_util::ConstructAboutInformation(service, &strings);
-  }
-
-  static const base::StringPiece sync_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_ABOUT_SYNC_HTML));
-
-  return jstemplate_builder::GetTemplatesHtml(
-      sync_html, &strings , "t" /* template root node id */);
-}
-
 std::string VersionNumberToString(uint32 value) {
   int hi = (value >> 8) & 0xff;
   int low = value & 0xff;
@@ -801,8 +772,6 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
   } else if (path == kSandboxPath) {
     response = AboutSandbox();
 #endif
-  } else if (path == kSyncPath) {
-    response = AboutSync();
   }
 
   FinishDataRequest(response, request_id);
@@ -1046,6 +1015,14 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   // Rewrite about:appcache-internals/* URLs to chrome://appcache/*
   if (StartsWithAboutSpecifier(*url, chrome::kAboutAppCacheInternalsURL)) {
     *url = RemapAboutURL(chrome::kAppCacheViewInternalsURL, *url);
+    return true;
+  }
+
+  // Rewrite about:sync-internals/* URLs (and about:sync, too, for
+  // legacy reasons) to chrome://sync-internals/*
+  if (StartsWithAboutSpecifier(*url, chrome::kAboutSyncInternalsURL) ||
+      StartsWithAboutSpecifier(*url, chrome::kAboutSyncURL)) {
+    *url = RemapAboutURL(chrome::kSyncViewInternalsURL, *url);
     return true;
   }
 
