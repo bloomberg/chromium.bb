@@ -36,6 +36,7 @@ DownloadResourceHandler::DownloadResourceHandler(
       global_id_(render_process_host_id, request_id),
       render_view_id_(render_view_id),
       url_(url),
+      original_url_(url),
       content_length_(0),
       download_file_manager_(download_file_manager),
       request_(request),
@@ -124,6 +125,7 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   // |download_file_manager_| consumes (deletes):
   DownloadCreateInfo* info = new DownloadCreateInfo;
   info->url = url_;
+  info->original_url = original_url_;
   info->referrer_url = GURL(request_->referrer());
   info->start_time = base::Time::Now();
   info->received_bytes = 0;

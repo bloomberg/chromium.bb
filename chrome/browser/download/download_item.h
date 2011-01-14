@@ -188,6 +188,7 @@ class DownloadItem {
   FilePath full_path() const { return full_path_; }
   void set_path_uniquifier(int uniquifier) { path_uniquifier_ = uniquifier; }
   GURL url() const { return url_; }
+  GURL original_url() const { return original_url_; }
   GURL referrer_url() const { return referrer_url_; }
   std::string mime_type() const { return mime_type_; }
   std::string original_mime_type() const { return original_mime_type_; }
@@ -256,8 +257,12 @@ class DownloadItem {
   // path should be used as is.
   int path_uniquifier_;
 
-  // The URL from whence we came.
+  // The URL from which we are downloading. This is the final URL after any
+  // redirection by the server for |original_url_|.
   GURL url_;
+
+  // The original URL before any redirection by the server for this URL.
+  GURL original_url_;
 
   // The URL of the page that initiated the download.
   GURL referrer_url_;

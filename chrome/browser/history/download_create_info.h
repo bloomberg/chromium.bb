@@ -36,7 +36,11 @@ struct DownloadCreateInfo {
 
   // DownloadItem fields
   FilePath path;
+  // The URL from which we are downloading. This is the final URL after any
+  // redirection by the server for |original_url_|.
   GURL url;
+  // The original URL before any redirection by the server for this URL.
+  GURL original_url;
   GURL referrer_url;
   FilePath suggested_path;
   // A number that should be added to the suggested path to make it unique.
