@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
@@ -216,8 +217,6 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_COOKIES_BLOCK_RADIO));
   localized_strings->SetString("cookies_block_3rd_party",
       l10n_util::GetStringUTF16(IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX));
-  localized_strings->SetString("cookies_clear_on_exit",
-      l10n_util::GetStringUTF16(IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX));
   localized_strings->SetString("cookies_show_cookies",
       l10n_util::GetStringUTF16(IDS_COOKIES_SHOW_COOKIES_BUTTON));
   localized_strings->SetString("flash_storage_settings",
@@ -304,6 +303,11 @@ void ContentSettingsHandler::Initialize() {
   dom_ui_->CallJavascriptFunction(
       L"ContentSettings.setBlockThirdPartyCookies", *block_3rd_party.get());
 
+  clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
+                                      g_browser_process->local_state(),
+                                      this);
+  UpdateClearPluginLSOData();
+
   notification_registrar_.Add(
       this, NotificationType::OTR_PROFILE_CREATED,
       NotificationService::AllSources());
@@ -364,6 +368,8 @@ void ContentSettingsHandler::Observe(NotificationType type,
         UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_GEOLOCATION);
       else if (pref_name == prefs::kGeolocationContentSettings)
         UpdateGeolocationExceptionsView();
+      else if (pref_name == prefs::kClearPluginLSODataEnabled)
+        UpdateClearPluginLSOData();
       break;
     }
 
@@ -380,6 +386,16 @@ void ContentSettingsHandler::Observe(NotificationType type,
     default:
       OptionsPageUIHandler::Observe(type, source, details);
   }
+}
+
+void ContentSettingsHandler::UpdateClearPluginLSOData() {
+  int label_id = clear_plugin_lso_data_enabled_.GetValue() ?
+      IDS_COOKIES_LSO_CLEAR_WHEN_CLOSE_CHKBOX :
+      IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX;
+  scoped_ptr<Value> label(
+      Value::CreateStringValue(l10n_util::GetStringUTF16(label_id)));
+  dom_ui_->CallJavascriptFunction(
+      L"ContentSettings.setClearLocalDataOnShutdownLabel", *label);
 }
 
 void ContentSettingsHandler::UpdateSettingDefaultFromModel(

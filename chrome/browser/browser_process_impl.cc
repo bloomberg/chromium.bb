@@ -539,7 +539,7 @@ void BrowserProcessImpl::Observe(NotificationType type,
     Profile* profile = ProfileManager::GetDefaultProfile();
     if (profile) {
       PrefService* prefs = profile->GetPrefs();
-      if (prefs->GetBoolean(prefs::kClearPluginLSODataOnExit) &&
+      if (prefs->GetBoolean(prefs::kClearSiteDataOnExit) &&
           local_state()->GetBoolean(prefs::kClearPluginLSODataEnabled)) {
         plugin_data_remover_ = new PluginDataRemover();
         plugin_data_remover_->StartRemoving(base::Time(), NULL);
