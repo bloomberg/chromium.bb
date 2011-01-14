@@ -434,13 +434,35 @@ HRESULT SetChromeFrameUA(bool is_system, const wchar_t* value) {
   HKEY parent_hive = is_system ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
 
   RegKey ua_key;
-  if (ua_key.Create(parent_hive, kPostPlatformUAKey, KEY_WRITE)) {
+  if (ua_key.Create(parent_hive, kPostPlatformUAKey, KEY_READ | KEY_WRITE)) {
+    // Make sure that we unregister ChromeFrame UA strings registered previously
+    wchar_t name[MAX_PATH + 1] = {};
+    wchar_t value[MAX_PATH + 1] = {};
+
+    DWORD value_index = 0;
+    while (value_index < ua_key.ValueCount()) {
+      DWORD name_size = arraysize(name);
+      DWORD value_size = arraysize(value);
+      DWORD type = 0;
+      LRESULT ret = ::RegEnumValue(ua_key.Handle(), value_index, name,
+                                   &name_size, NULL, &type,
+                                   reinterpret_cast<BYTE*>(value),
+                                   &value_size);
+      if (ret == ERROR_SUCCESS) {
+        if (StartsWith(name, kChromeFramePrefix, false)) {
+          ua_key.DeleteValue(name);
+        } else {
+          ++value_index;
+        }
+      } else {
+        break;
+      }
+    }
+
     std::wstring chrome_frame_ua_value_name = kChromeFramePrefix;
     chrome_frame_ua_value_name += GetCurrentModuleVersion();
     if (value) {
       ua_key.WriteValue(chrome_frame_ua_value_name.c_str(), value);
-    } else {
-      ua_key.DeleteValue(chrome_frame_ua_value_name.c_str());
     }
     hr = S_OK;
   } else {
