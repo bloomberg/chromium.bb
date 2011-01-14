@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,26 +6,7 @@
 #define CHROME_BROWSER_GTK_DOWNLOAD_IN_PROGRESS_DIALOG_GTK_H_
 #pragma once
 
-#include "app/gtk_signal.h"
-#include "base/basictypes.h"
-
-class Browser;
-
-typedef struct _GtkWidget GtkWidget;
-
-class DownloadInProgressDialogGtk {
- public:
-  explicit DownloadInProgressDialogGtk(Browser* browser);
-
- protected:
-  virtual ~DownloadInProgressDialogGtk() {}
-
- private:
-  CHROMEGTK_CALLBACK_1(DownloadInProgressDialogGtk, void, OnResponse, int);
-
-  Browser* browser_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadInProgressDialogGtk);
-};
+#include "chrome/browser/ui/gtk/download_in_progress_dialog_gtk.h"
+// TODO(msw): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_GTK_DOWNLOAD_IN_PROGRESS_DIALOG_GTK_H_

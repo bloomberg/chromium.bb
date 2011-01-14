@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,28 +6,7 @@
 #define CHROME_BROWSER_GTK_EXTERNAL_PROTOCOL_DIALOG_GTK_H_
 #pragma once
 
-#include "app/gtk_signal.h"
-#include "base/time.h"
-#include "googleurl/src/gurl.h"
-
-class TabContents;
-
-typedef struct _GtkWidget GtkWidget;
-
-class ExternalProtocolDialogGtk {
- public:
-  explicit ExternalProtocolDialogGtk(const GURL& url);
-
- protected:
-  virtual ~ExternalProtocolDialogGtk() {}
-
- private:
-  CHROMEGTK_CALLBACK_1(ExternalProtocolDialogGtk, void, OnDialogResponse, int);
-
-  GtkWidget* dialog_;
-  GtkWidget* checkbox_;
-  GURL url_;
-  base::TimeTicks creation_time_;
-};
+#include "chrome/browser/ui/gtk/external_protocol_dialog_gtk.h"
+// TODO(msw): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_GTK_EXTERNAL_PROTOCOL_DIALOG_GTK_H_

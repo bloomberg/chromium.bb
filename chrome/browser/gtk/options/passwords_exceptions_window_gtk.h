@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_GTK_OPTIONS_PASSWORDS_EXCEPTIONS_WINDOW_GTK_H_
 #pragma once
 
-class Profile;
-
-void ShowPasswordsExceptionsWindow(Profile* profile);
+#include "chrome/browser/ui/gtk/options/passwords_exceptions_window_gtk.h"
+// TODO(msw): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_GTK_OPTIONS_PASSWORDS_EXCEPTIONS_WINDOW_GTK_H_

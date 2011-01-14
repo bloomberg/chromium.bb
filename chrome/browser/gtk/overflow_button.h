@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,33 +6,7 @@
 #define CHROME_BROWSER_GTK_OVERFLOW_BUTTON_H_
 #pragma once
 
-#include "chrome/browser/gtk/owned_widget_gtk.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
-
-typedef struct _GtkWidget GtkWidget;
-class Profile;
-
-// An overflow chevron button. The button itself is a plain gtk_chrome_button,
-// and this class handles theming it.
-class OverflowButton : public NotificationObserver {
- public:
-  explicit OverflowButton(Profile* profile);
-  virtual ~OverflowButton();
-
-  GtkWidget* widget() { return widget_.get(); }
-
- private:
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  OwnedWidgetGtk widget_;
-
-  Profile* profile_;
-
-  NotificationRegistrar registrar_;
-};
+#include "chrome/browser/ui/gtk/overflow_button.h"
+// TODO(msw): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_GTK_OVERFLOW_BUTTON_H_
