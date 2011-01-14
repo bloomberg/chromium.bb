@@ -17,6 +17,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebMenuItemInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRegularExpression.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebTextCaseSensitivity.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webpreferences.h"
@@ -24,12 +26,15 @@
 #include "webkit/plugins/npapi/webview_plugin.h"
 
 using WebKit::WebContextMenuData;
+using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebMenuItemInfo;
+using WebKit::WebNode;
 using WebKit::WebPlugin;
 using WebKit::WebPluginContainer;
 using WebKit::WebPluginParams;
 using WebKit::WebPoint;
+using WebKit::WebRegularExpression;
 using WebKit::WebString;
 using WebKit::WebVector;
 
@@ -148,6 +153,42 @@ void BlockedPlugin::Load(const CppArgumentList& args, CppVariant* result) {
 void BlockedPlugin::HidePlugin() {
   CHECK(plugin_);
   WebPluginContainer* container = plugin_->container();
-  container->element().setAttribute("style", "display: none;");
+  WebElement element = container->element();
+  element.setAttribute("style", "display: none;");
+  // If we have a width and height, search for a parent (often <div>) with the
+  // same dimensions. If we find such a parent, hide that as well.
+  // This makes much more uncovered page content usable (including clickable)
+  // as opposed to merely visible.
+  // TODO(cevans) -- it's a foul heurisitc but we're going to tolerate it for
+  // now for these reasons:
+  // 1) Makes the user experience better.
+  // 2) Foulness is encapsulated within this single function.
+  // 3) Confidence in no fasle positives.
+  // 4) Seems to have a good / low false negative rate at this time.
+  if (element.hasAttribute("width") && element.hasAttribute("height")) {
+    std::string width_str("width:[\\s]*");
+    width_str += element.getAttribute("width").utf8().data();
+    width_str += "[\\s]*px";
+    WebRegularExpression width_regex(WebString::fromUTF8(width_str.c_str()),
+                                     WebKit::WebTextCaseSensitive);
+    std::string height_str("height:[\\s]*");
+    height_str += element.getAttribute("height").utf8().data();
+    height_str += "[\\s]*px";
+    WebRegularExpression height_regex(WebString::fromUTF8(height_str.c_str()),
+                                      WebKit::WebTextCaseSensitive);
+    WebNode parent = element;
+    while (!parent.parentNode().isNull()) {
+      parent = parent.parentNode();
+      if (!parent.isElementNode())
+        continue;
+      element = parent.toConst<WebElement>();
+      if (element.hasAttribute("style")) {
+        WebString style_str = element.getAttribute("style");
+        if (width_regex.match(style_str) >= 0 &&
+            height_regex.match(style_str) >= 0)
+          element.setAttribute("style", "display: none;");
+      }
+    }
+  }
 }
 
