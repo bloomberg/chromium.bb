@@ -29,6 +29,31 @@ PKG_CHECK_MODULES(POPPLER, [poppler-glib gdk-2.0],
 			   [have_poppler=yes], [have_poppler=no])
 AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")
 
+
+AC_ARG_ENABLE(x11-compositor, [  --enable-x11-compositor],,
+	      enable_x11_compositor=yes)
+AM_CONDITIONAL(ENABLE_X11_COMPOSITOR, test x$enable_x11_compositor == xyes)
+if test x$enable_x11_compositor == xyes; then
+  AC_DEFINE([BUILD_X11_COMPOSITOR], [1], [Build the X11 compositor])
+fi
+
+
+AC_ARG_ENABLE(drm-compositor, [  --enable-drm-compositor])
+AM_CONDITIONAL(ENABLE_DRM_COMPOSITOR, test x$enable_drm_compositor == xyes)
+if test x$enable_drm_compositor == xyes; then
+  AC_DEFINE([BUILD_DRM_COMPOSITOR], [1], [Build the DRM compositor])
+fi
+
+
+AC_ARG_ENABLE(wayland-compositor, [  --enable-wayland-compositor])
+AM_CONDITIONAL(ENABLE_WAYLAND_COMPOSITOR,
+	       test x$enable_wayland_compositor == xyes)
+if test x$enable_wayland_compositor == xyes; then
+  AC_DEFINE([BUILD_WAYLAND_COMPOSITOR], [1],
+	    [Build the Wayland (nested) compositor])
+fi
+
+
 PKG_CHECK_MODULES(CAIRO_GL, [cairo-gl],
 		  [have_cairo_gl=yes], [have_cairo_gl=no])
 AS_IF([test "x$have_cairo_gl" = "xyes"],

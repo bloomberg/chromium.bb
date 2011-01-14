@@ -18,6 +18,8 @@
 
 #define _GNU_SOURCE
 
+#include "config.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -1462,12 +1464,22 @@ int main(int argc, char *argv[])
 
 	display = wl_display_create();
 
+	ec = NULL;
+
+#if BUILD_WAYLAND_COMPOSITOR
 	if (getenv("WAYLAND_DISPLAY"))
 		ec = wayland_compositor_create(display, width, height);
-	else if (getenv("DISPLAY"))
+#endif
+
+#if BUILD_X11_COMPOSITOR
+	if (ec == NULL && getenv("DISPLAY"))
 		ec = x11_compositor_create(display, width, height);
-	else
+#endif
+
+#if BUILD_DRM_COMPOSITOR
+	if (ec == NULL)
 		ec = drm_compositor_create(display, option_connector);
+#endif
 
 	if (ec == NULL) {
 		fprintf(stderr, "failed to create compositor\n");
