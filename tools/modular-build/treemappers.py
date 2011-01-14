@@ -171,8 +171,14 @@ def Lib32Symlink(arch):
 
 
 def LibraryPathVar():
+  """
+  Returns the environment variable that the host OS uses for searching
+  for dynamic libraries.
+  """
   if sys.platform == "darwin":
     return "DYLD_LIBRARY_PATH"
+  elif sys.platform == "cygwin":
+    return "PATH"
   else:
     return "LD_LIBRARY_PATH"
 

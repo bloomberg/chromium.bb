@@ -7,17 +7,22 @@ prefix = @prefix@
 
 ifeq ($(shell uname),Darwin)
   shared_flag = -dynamiclib
+  library_suffix = .dylib
+else ifeq ($(shell uname -o),Cygwin)
+  shared_flag = -shared
+  library_suffix = .dll
 else
   shared_flag = -shared
+  library_suffix = .so
 endif
 
 all:
 
-libhello.so: $(srcdir)/libhello.c
+libhello$(library_suffix): $(srcdir)/libhello.c
 	gcc $(shared_flag) -fPIC $< -o $@
 
-install: libhello.so
+install: libhello$(library_suffix)
 	install -d $(DESTDIR)$(prefix)/lib
 	install -d $(DESTDIR)$(prefix)/include
-	install libhello.so $(DESTDIR)$(prefix)/lib
+	install libhello$(library_suffix) $(DESTDIR)$(prefix)/lib
 	install $(srcdir)/libhello.h $(DESTDIR)$(prefix)/include
