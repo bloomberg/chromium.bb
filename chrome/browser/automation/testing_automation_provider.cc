@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2687,9 +2687,9 @@ void TestingAutomationProvider::GetSearchEngineInfo(
   for (std::vector<const TemplateURL*>::const_iterator it =
        template_urls.begin(); it != template_urls.end(); ++it) {
     DictionaryValue* search_engine = new DictionaryValue;
-    search_engine->SetString("short_name", UTF16ToUTF8((*it)->short_name()));
-    search_engine->SetString("description", UTF16ToUTF8((*it)->description()));
-    search_engine->SetString("keyword", UTF16ToUTF8((*it)->keyword()));
+    search_engine->SetString("short_name", WideToUTF8((*it)->short_name()));
+    search_engine->SetString("description", WideToUTF8((*it)->description()));
+    search_engine->SetString("keyword", WideToUTF8((*it)->keyword()));
     search_engine->SetBoolean("in_default_list", (*it)->ShowInDefaultList());
     search_engine->SetBoolean("is_default",
         (*it) == url_model->GetDefaultSearchProvider());
@@ -2700,7 +2700,7 @@ void TestingAutomationProvider::GetSearchEngineInfo(
     search_engine->SetString("host", (*it)->url()->GetHost());
     search_engine->SetString("path", (*it)->url()->GetPath());
     search_engine->SetString("display_url",
-                             UTF16ToUTF8((*it)->url()->DisplayURL()));
+                             WideToUTF8((*it)->url()->DisplayURL()));
     search_engines->Append(search_engine);
   }
   return_value->Set("search_engines", search_engines);
@@ -2726,11 +2726,11 @@ void TestingAutomationProvider::AddOrEditSearchEngine(
     return;
   }
   std::string new_ref_url = TemplateURLRef::DisplayURLToURLRef(
-      UTF8ToUTF16(new_url));
+      UTF8ToWide(new_url));
   scoped_ptr<KeywordEditorController> controller(
       new KeywordEditorController(profile_));
   if (args->GetString("keyword", &keyword)) {
-    template_url = url_model->GetTemplateURLForKeyword(UTF8ToUTF16(keyword));
+    template_url = url_model->GetTemplateURLForKeyword(UTF8ToWide(keyword));
     if (template_url == NULL) {
       AutomationJSONReply(this, reply_message).SendError(
           StringPrintf("No match for keyword: %s", keyword.c_str()));
@@ -2763,7 +2763,7 @@ void TestingAutomationProvider::PerformActionOnSearchEngine(
     return;
   }
   const TemplateURL* template_url(
-      url_model->GetTemplateURLForKeyword(UTF8ToUTF16(keyword)));
+      url_model->GetTemplateURLForKeyword(UTF8ToWide(keyword)));
   if (template_url == NULL) {
     AutomationJSONReply(this, reply_message).SendError(
         StringPrintf("No match for keyword: %s", keyword.c_str()));

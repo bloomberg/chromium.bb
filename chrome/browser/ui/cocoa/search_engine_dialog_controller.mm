@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -205,7 +205,7 @@ void SearchEngineDialogControllerBridge::OnTemplateURLModelChanged() {
     [logoView setEditable:NO];
 
     // Tooltip text provides accessibility.
-    [logoView setToolTip:base::SysUTF16ToNSString(engine->short_name())];
+    [logoView setToolTip:base::SysWideToNSString(engine->short_name())];
     engineIdentifier = logoView;
   } else {
     // No logo -- we must show a text label.
@@ -224,7 +224,7 @@ void SearchEngineDialogControllerBridge::OnTemplateURLModelChanged() {
         paragraphStyle.get(), NSParagraphStyleAttributeName,
         nil];
 
-    NSString* value = base::SysUTF16ToNSString(engine->short_name());
+    NSString* value = base::SysWideToNSString(engine->short_name());
     scoped_nsobject<NSAttributedString> attrValue(
         [[NSAttributedString alloc] initWithString:value
                                         attributes:attrs]);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,11 +87,11 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
     [window setTitle:l10n_util::GetNSString(
       IDS_SEARCH_ENGINES_EDITOR_EDIT_WINDOW_TITLE)];
     [nameField_ setStringValue:
-        base::SysUTF16ToNSString(templateURL_->short_name())];
+        base::SysWideToNSString(templateURL_->short_name())];
     [keywordField_ setStringValue:
-        base::SysUTF16ToNSString(templateURL_->keyword())];
+        base::SysWideToNSString(templateURL_->keyword())];
     [urlField_ setStringValue:
-        base::SysUTF16ToNSString(templateURL_->url()->DisplayURL())];
+        base::SysWideToNSString(templateURL_->url()->DisplayURL())];
     [urlField_ setEnabled:(templateURL_->prepopulate_id() == 0)];
   }
   // When creating a new keyword, this will mark the fields as "invalid" and

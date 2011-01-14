@@ -686,7 +686,7 @@ void GeneralPageGtk::OnTemplateURLModelChanged() {
         default_search_engines_model_, &iter,
         SEARCH_ENGINES_COL_INDEX, i,
         SEARCH_ENGINES_COL_TITLE,
-        UTF16ToUTF8(model_urls[i]->short_name()).c_str(),
+        WideToUTF8(model_urls[i]->short_name()).c_str(),
         -1);
     if (model_urls[i] == default_search_provider) {
       gtk_combo_box_set_active_iter(

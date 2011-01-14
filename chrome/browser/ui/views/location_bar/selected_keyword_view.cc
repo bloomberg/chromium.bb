@@ -59,8 +59,8 @@ void SelectedKeywordView::SetKeyword(const std::wstring& keyword) {
     return;
 
   bool is_extension_keyword;
-  const string16 short_name = profile_->GetTemplateURLModel()->
-      GetKeywordShortName(WideToUTF16Hack(keyword), &is_extension_keyword);
+  const string16 short_name = WideToUTF16(profile_->GetTemplateURLModel()->
+      GetKeywordShortName(keyword, &is_extension_keyword));
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;
   full_label_.SetText(UTF16ToWide(

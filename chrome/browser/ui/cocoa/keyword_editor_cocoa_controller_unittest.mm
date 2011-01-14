@@ -1,10 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/scoped_nsobject.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
@@ -151,16 +150,16 @@ TEST_F(KeywordEditorCocoaControllerTest, IndexInModelForRowMixed) {
   // Add a default engine.
   TemplateURL* t_url = new TemplateURL();
   t_url->SetURL("http://test1/{searchTerms}", 0, 0);
-  t_url->set_keyword(ASCIIToUTF16("test1"));
-  t_url->set_short_name(ASCIIToUTF16("Test1"));
+  t_url->set_keyword(L"test1");
+  t_url->set_short_name(L"Test1");
   t_url->set_show_in_default_list(true);
   template_model->Add(t_url);
 
   // Add a non-default engine.
   t_url = new TemplateURL();
   t_url->SetURL("http://test2/{searchTerms}", 0, 0);
-  t_url->set_keyword(ASCIIToUTF16("test2"));
-  t_url->set_short_name(ASCIIToUTF16("Test2"));
+  t_url->set_keyword(L"test2");
+  t_url->set_short_name(L"Test2");
   t_url->set_show_in_default_list(false);
   template_model->Add(t_url);
 
@@ -194,15 +193,15 @@ TEST_F(KeywordEditorCocoaControllerTest, IndexInModelForDefault) {
   // Add 2 default engines.
   TemplateURL* t_url = new TemplateURL();
   t_url->SetURL("http://test1/{searchTerms}", 0, 0);
-  t_url->set_keyword(ASCIIToUTF16("test1"));
-  t_url->set_short_name(ASCIIToUTF16("Test1"));
+  t_url->set_keyword(L"test1");
+  t_url->set_short_name(L"Test1");
   t_url->set_show_in_default_list(true);
   template_model->Add(t_url);
 
   t_url = new TemplateURL();
   t_url->SetURL("http://test2/{searchTerms}", 0, 0);
-  t_url->set_keyword(ASCIIToUTF16("test2"));
-  t_url->set_short_name(ASCIIToUTF16("Test2"));
+  t_url->set_keyword(L"test2");
+  t_url->set_short_name(L"Test2");
   t_url->set_show_in_default_list(true);
   template_model->Add(t_url);
 

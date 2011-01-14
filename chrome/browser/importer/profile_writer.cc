@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -181,8 +181,8 @@ static std::string BuildHostPathKey(const TemplateURL* t_url,
     if (t_url->url()->SupportsReplacement()) {
       return HostPathKeyForURL(GURL(
           t_url->url()->ReplaceSearchTerms(
-          *t_url, ASCIIToUTF16("random string"),
-          TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())));
+          *t_url, L"random string",
+          TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
     }
   }
   return std::string();

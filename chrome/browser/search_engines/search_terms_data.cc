@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,14 +73,14 @@ std::string UIThreadSearchTermsData::GetApplicationLocale() const {
 }
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
+std::wstring UIThreadSearchTermsData::GetRlzParameterValue() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  string16 rlz_string;
+  std::wstring rlz_string;
   // For organic brandcodes do not use rlz at all. Empty brandcode usually
   // means a chromium install. This is ok.
-  string16 brand;
-  // See http://crbug.com/62337 .
+  std::wstring brand;
+  // See http://crbug.com/62337.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   if (GoogleUpdateSettings::GetBrand(&brand) && !brand.empty() &&
       !GoogleUpdateSettings::IsOrganic(brand))

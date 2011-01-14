@@ -342,7 +342,7 @@ void FirstRunDialog::OnTemplateURLModelChanged() {
       GtkWidget* logo_label = gtk_label_new(NULL);
       char* markup = g_markup_printf_escaped(
           "<span weight='bold' size='x-large' color='black'>%s</span>",
-          UTF16ToUTF8((*search_engine_iter)->short_name()).c_str());
+          WideToUTF8((*search_engine_iter)->short_name()).c_str());
       gtk_label_set_markup(GTK_LABEL(logo_label), markup);
       g_free(markup);
       gtk_widget_set_size_request(logo_label, -1,

@@ -424,8 +424,8 @@ class SearchTermsDataForValidation : public SearchTermsData {
     return "en";
   }
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  virtual string16 GetRlzParameterValue() const {
-    return string16();
+  virtual std::wstring GetRlzParameterValue() const {
+    return std::wstring();
   }
 #endif
  private:

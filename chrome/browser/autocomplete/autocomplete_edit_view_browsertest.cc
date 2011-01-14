@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -224,8 +224,8 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
 
     TemplateURL* template_url = new TemplateURL();
     template_url->SetURL(kSearchURL, 0, 0);
-    template_url->set_keyword(UTF8ToUTF16(kSearchKeyword));
-    template_url->set_short_name(UTF8ToUTF16(kSearchShortName));
+    template_url->set_keyword(UTF8ToWide(kSearchKeyword));
+    template_url->set_short_name(UTF8ToWide(kSearchShortName));
 
     model->Add(template_url);
     model->SetDefaultSearchProvider(template_url);
