@@ -9,6 +9,8 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/instant/instant_controller.h"
+#include "chrome/browser/instant/instant_loader.h"
+#include "chrome/browser/instant/instant_loader_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
@@ -21,6 +23,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+
+#define EXPECT_STR_EQ(ascii, utf16) \
+  EXPECT_EQ(ASCIIToWide(ascii), UTF16ToWide(utf16))
 
 class InstantTest : public InProcessBrowserTest {
  public:
@@ -111,9 +116,24 @@ class InstantTest : public InProcessBrowserTest {
         NotificationType::INSTANT_CONTROLLER_SHOWN);
   }
 
+  const string16& GetSuggestion() const {
+    return browser()->instant()->loader_manager_->
+        current_loader()->complete_suggested_text_;
+  }
+
   void SendKey(ui::KeyboardCode key) {
     ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
         browser(), key, false, false, false, false));
+  }
+
+  void SetSuggestionsJavascriptArgument(TabContents* tab_contents,
+                                        const std::string& argument) {
+    std::string script = StringPrintf(
+        "window.setSuggestionsArgument = %s;", argument.c_str());
+    ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+        tab_contents->render_view_host(),
+        std::wstring(),
+        UTF8ToWide(script)));
   }
 
   bool GetStringFromJavascript(TabContents* tab_contents,
@@ -247,10 +267,9 @@ class InstantTest : public InProcessBrowserTest {
 };
 
 // TODO(tonyg): Add the following tests:
-// 1. Test that setSuggestions() works.
-// 2. Test that the search box API is not populated for pages other than the
-//    default search provider.
-// 3. Test resize events.
+// - Test that the search box API is not populated for pages other than the
+//   default search provider.
+// - Test resize events.
 
 // Verify that the onchange event is dispatched upon typing in the box.
 IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
@@ -264,6 +283,87 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   // Check that the value is reflected and onchange is called.
   EXPECT_EQ("true 0 0 1 1 a false abc false",
       GetSearchStateAsString(preview_));
+}
+
+IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsArrayOfStrings) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+  ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
+  ASSERT_NO_FATAL_FAILURE(SetupPreview());
+
+  SetSuggestionsJavascriptArgument(preview_, "['abcde', 'unused']");
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+  EXPECT_STR_EQ("abcde", GetSuggestion());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyArray) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+  ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
+  ASSERT_NO_FATAL_FAILURE(SetupPreview());
+
+  SetSuggestionsJavascriptArgument(preview_, "[]");
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+  EXPECT_STR_EQ("", GetSuggestion());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsValidJson) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+  ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
+  ASSERT_NO_FATAL_FAILURE(SetupPreview());
+
+  SetSuggestionsJavascriptArgument(
+      preview_,
+      "{suggestions:[{value:'abcdefg'},{value:'unused'}]}");
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+  EXPECT_STR_EQ("abcdefg", GetSuggestion());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsInvalidSuggestions) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+  ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
+  ASSERT_NO_FATAL_FAILURE(SetupPreview());
+
+  SetSuggestionsJavascriptArgument(
+      preview_,
+      "{suggestions:{value:'abcdefg'}}");
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+  EXPECT_STR_EQ("", GetSuggestion());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyJson) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+  ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
+  ASSERT_NO_FATAL_FAILURE(SetupPreview());
+
+  SetSuggestionsJavascriptArgument(preview_, "{}");
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+  EXPECT_STR_EQ("", GetSuggestion());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestions) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+  ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
+  ASSERT_NO_FATAL_FAILURE(SetupPreview());
+
+  SetSuggestionsJavascriptArgument(preview_, "{suggestions:[]}");
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+  EXPECT_STR_EQ("", GetSuggestion());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestion) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+  ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
+  ASSERT_NO_FATAL_FAILURE(SetupPreview());
+
+  SetSuggestionsJavascriptArgument(preview_, "{suggestions:[{}]}");
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+  EXPECT_STR_EQ("", GetSuggestion());
 }
 
 // Verify instant preview is shown correctly for a non-search query.

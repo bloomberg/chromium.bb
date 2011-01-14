@@ -19,7 +19,7 @@ class WebFrame;
 namespace extensions_v8 {
 
 // Reference implementation of the SearchBox API as described in:
-// http://lists.whatwg.org/htdig.cgi/whatwg-whatwg.org/2010-October/028818.html
+// http://dev.chromium.org/searchbox
 class SearchBoxExtension {
  public:
   // Returns the v8::Extension object handling searchbox bindings. Returns null

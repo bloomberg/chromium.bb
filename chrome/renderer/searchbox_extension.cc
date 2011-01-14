@@ -276,25 +276,62 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetHeight(
   return v8::Int32::New(render_view->searchbox().height);
 }
 
+// Accepts a single argument in form:
+// {
+//   suggestions: [
+//     {
+//       value: "..."
+//     }
+//   ]
+// }
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
     const v8::Arguments& args) {
-  if (!args.Length() || !args[0]->IsArray()) return v8::Undefined();
-
   std::vector<std::string> suggestions;
-  v8::Array* suggestions_arg = static_cast<v8::Array*>(*args[0]);
-  uint32_t length = suggestions_arg->Length();
-  for (uint32_t i = 0; i < length; i++) {
-    std::string suggestion = *v8::String::Utf8Value(
-        suggestions_arg->Get(v8::Integer::New(i))->ToString());
-    if (!suggestion.length()) continue;
-    suggestions.push_back(suggestion);
+
+  if (args.Length() && args[0]->IsArray()) {
+    // For backwards compatibility, also accept an array of strings.
+    // TODO(tonyg): Remove this when it is confirmed to be unused.
+    v8::Array* suggestions_array = static_cast<v8::Array*>(*args[0]);
+    uint32_t length = suggestions_array->Length();
+    for (uint32_t i = 0; i < length; i++) {
+      std::string suggestion = *v8::String::Utf8Value(
+          suggestions_array->Get(v8::Integer::New(i))->ToString());
+      if (!suggestion.length()) continue;
+      suggestions.push_back(suggestion);
+    }
+  } else if (args.Length() && args[0]->IsObject()) {
+    // Standard version, object argument.
+    v8::Object* suggestion_json = static_cast<v8::Object*>(*args[0]);
+    v8::Local<v8::Value> suggestions_field =
+        suggestion_json->Get(v8::String::New("suggestions"));
+
+    if (suggestions_field->IsArray()) {
+      v8::Local<v8::Array> suggestions_array =
+          suggestions_field.As<v8::Array>();
+
+      uint32_t length = suggestions_array->Length();
+      for (uint32_t i = 0; i < length; i++) {
+        v8::Local<v8::Value> suggestion_value =
+            suggestions_array->Get(v8::Integer::New(i));
+        if (!suggestion_value->IsObject()) continue;
+
+        v8::Local<v8::Object> suggestion_object =
+            suggestion_value.As<v8::Object>();
+        v8::Local<v8::Value> suggestion_object_value =
+            suggestion_object->Get(v8::String::New("value"));
+        if (!suggestion_object_value->IsString()) continue;
+
+        std::string suggestion = *v8::String::Utf8Value(
+            suggestion_object_value->ToString());
+        if (!suggestion.length()) continue;
+        suggestions.push_back(suggestion);
+      }
+    }
   }
 
-  RenderView* render_view = GetRenderView();
-  if (!render_view) return v8::Undefined();
-
-  render_view->SetSuggestions(suggestions);
+  if (RenderView* render_view = GetRenderView())
+    render_view->SetSuggestions(suggestions);
   return v8::Undefined();
 }
 

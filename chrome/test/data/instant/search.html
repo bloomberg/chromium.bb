@@ -15,18 +15,24 @@ var searchBox = window.chrome.searchBox || {};
 window.beforeLoadSearchBox = {};
 for (var prop in searchBox) window.beforeLoadSearchBox[prop] = searchBox[prop];
 
+window.setSuggestionsArgument = {
+  suggestions: [
+    { value: "abcdef" }
+  ]
+};
+
 window.chrome.searchBox.onsubmit = function() {
-  searchBox.setSuggestions(["abcdef"]);
+  searchBox.setSuggestions(setSuggestionsArgument);
   window.onsubmitcalls++;
 };
 
 window.chrome.searchBox.onchange = function() {
-  searchBox.setSuggestions(["abcdef"]);
+  searchBox.setSuggestions(setSuggestionsArgument);
   window.onchangecalls++;
 };
 
 window.chrome.searchBox.oncancel = function() {
-  searchBox.setSuggestions(["abcdef"]);
+  searchBox.setSuggestions(setSuggestionsArgument);
   window.oncancelcalls++;
 };
 

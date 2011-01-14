@@ -94,6 +94,7 @@ class InstantLoader : public NotificationObserver {
 
  private:
   friend class InstantLoaderManagerTest;
+  friend class InstantTest;
   class FrameLoadObserver;
   class PaintObserverImpl;
   class TabContentsDelegateImpl;
