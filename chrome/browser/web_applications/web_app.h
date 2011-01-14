@@ -24,6 +24,9 @@ namespace web_app {
 // as app id for BrowserWindow, shortcut and jump list.
 std::string GenerateApplicationNameFromURL(const GURL& url);
 
+// Compute a deterministic name based on an extension/apps's id.
+std::string GenerateApplicationNameFromExtensionId(const std::string& id);
+
 // Callback after user dismisses CreateShortcutView. "true" indicates
 // shortcut is created successfully. Otherwise, it is false.
 typedef Callback1<bool>::Type CreateShortcutCallback;
@@ -32,7 +35,7 @@ typedef Callback1<bool>::Type CreateShortcutCallback;
 // |profile_path| is used as root directory for persisted data such as icon.
 // Directory layout is similar to what Gears has, i.e. an web application's
 // file is stored under "#/host_name/scheme_port", where '#' is the
-// |root_dir|.
+// |root_dir|.  A crx based app uses a directory named _crx_<app id>.
 void CreateShortcut(
     const FilePath& profile_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,

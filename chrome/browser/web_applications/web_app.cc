@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_util.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
@@ -90,27 +91,37 @@ FilePath GetSanitizedFileName(const string16& name) {
 #endif  // defined(OS_WIN)
 
 // Returns relative directory of given web app url.
-FilePath GetWebAppDir(const GURL& url) {
-  FilePath::StringType host;
-  FilePath::StringType scheme_port;
+FilePath GetWebAppDir(const ShellIntegration::ShortcutInfo& info) {
+  if (!info.extension_id.empty()) {
+    std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
+        UTF16ToUTF8(info.extension_id));
+#if defined(OS_WIN)
+    return FilePath(UTF8ToWide(app_name));
+#elif defined(OS_POSIX)
+    return FilePath(app_name);
+#endif
+  } else {
+    FilePath::StringType host;
+    FilePath::StringType scheme_port;
 
 #if defined(OS_WIN)
-  host = UTF8ToWide(url.host());
-  scheme_port = (url.has_scheme() ? UTF8ToWide(url.scheme()) : L"http") +
-      FILE_PATH_LITERAL("_") +
-      (url.has_port() ? UTF8ToWide(url.port()) : L"80");
+    host = UTF8ToWide(info.url.host());
+    scheme_port = (info.url.has_scheme() ? UTF8ToWide(info.url.scheme())
+        : L"http") + FILE_PATH_LITERAL("_") +
+        (info.url.has_port() ? UTF8ToWide(info.url.port()) : L"80");
 #elif defined(OS_POSIX)
-  host = url.host();
-  scheme_port = url.scheme() + FILE_PATH_LITERAL("_") + url.port();
+    host = info.url.host();
+    scheme_port = info.url.scheme() + FILE_PATH_LITERAL("_") + info.url.port();
 #endif
 
-  return FilePath(host).Append(scheme_port);
+    return FilePath(host).Append(scheme_port);
+  }
 }
 
 // Returns data directory for given web app url
 FilePath GetWebAppDataDirectory(const FilePath& root_dir,
-                                const GURL& url) {
-  return root_dir.Append(GetWebAppDir(url));
+                                const ShellIntegration::ShortcutInfo& info) {
+  return root_dir.Append(GetWebAppDir(info));
 }
 
 #if defined(TOOLKIT_VIEWS)
@@ -242,8 +253,9 @@ CreateShortcutTask::CreateShortcutTask(
     const FilePath& profile_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
     web_app::CreateShortcutCallback* callback)
-    : web_app_path_(GetWebAppDataDirectory(web_app::GetDataDir(profile_path),
-                                           shortcut_info.url)),
+    : web_app_path_(GetWebAppDataDirectory(
+        web_app::GetDataDir(profile_path),
+        shortcut_info)),
       profile_path_(profile_path),
       shortcut_info_(shortcut_info),
       callback_(callback),
@@ -376,9 +388,16 @@ bool CreateShortcutTask::CreateShortcut() {
     shortcut_info_.description.resize(MAX_PATH - 1);
 
   // Generates app id from web app url and profile path.
+  std::string app_name;
+  if (!shortcut_info_.extension_id.empty()) {
+    app_name = web_app::GenerateApplicationNameFromExtensionId(
+        UTF16ToUTF8(shortcut_info_.extension_id));
+  } else {
+    app_name = web_app::GenerateApplicationNameFromURL(
+        shortcut_info_.url);
+  }
   std::wstring app_id = ShellIntegration::GetAppId(
-      UTF8ToWide(web_app::GenerateApplicationNameFromURL(shortcut_info_.url)),
-      profile_path_);
+      UTF8ToWide(app_name), profile_path_);
 
   FilePath shortcut_to_pin;
 
@@ -615,7 +634,7 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   FilePath web_app_path = GetWebAppDataDirectory(
-      web_app::GetDataDir(profile_path_), shortcut_info_.url);
+      web_app::GetDataDir(profile_path_), shortcut_info_);
 
   // Ensure web_app_path exists. web_app_path could be missing for a legacy
   // shortcut created by gears.
@@ -685,11 +704,25 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(UpdateShortcutWorker);
 
 namespace web_app {
 
+// The following string is used to build the directory name for
+// shortcuts to chrome applications (the kind which are installed
+// from a CRX).  Application shortcuts to URLs use the {host}_{path}
+// for the name of this directory.  Hosts can't include an underscore.
+// By starting this string with an underscore, we ensure that there
+// are no naming conflicts.
+static const char* kCrxAppPrefix = "_crx_";
+
 std::string GenerateApplicationNameFromURL(const GURL& url) {
   std::string t;
   t.append(url.host());
   t.append("_");
   t.append(url.path());
+  return t;
+}
+
+std::string GenerateApplicationNameFromExtensionId(const std::string& id) {
+  std::string t(web_app::kCrxAppPrefix);
+  t.append(id);
   return t;
 }
 

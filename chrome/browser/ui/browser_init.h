@@ -126,6 +126,7 @@ class BrowserInit {
 
    private:
     FRIEND_TEST_ALL_PREFIXES(BrowserTest, RestorePinnedTabs);
+    FRIEND_TEST_ALL_PREFIXES(BrowserTest, AppIdSwitch);
 
     // If the process was launched with the web application command line flags,
     // e.g. --app=http://www.google.com/ or --app_id=... return true.

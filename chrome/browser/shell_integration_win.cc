@@ -36,7 +36,7 @@
 namespace {
 
 // Helper function for ShellIntegration::GetAppId to generates profile id
-// from profile path. "profile_id"  is composed of sanitized basenames of
+// from profile path. "profile_id" is composed of sanitized basenames of
 // user data dir and profile dir joined by a ".".
 std::wstring GetProfileIdFromPath(const FilePath& profile_path) {
   // Return empty string if profile_path is empty
@@ -227,6 +227,9 @@ bool MigrateChromiumShortcutsTask::GetExpectedAppId(
   if (command_line.HasSwitch(switches::kApp)) {
     app_name = UTF8ToWide(web_app::GenerateApplicationNameFromURL(
         GURL(command_line.GetSwitchValueASCII(switches::kApp))));
+  } else if (command_line.HasSwitch(switches::kAppId)) {
+    app_name = UTF8ToWide(web_app::GenerateApplicationNameFromExtensionId(
+        command_line.GetSwitchValueASCII(switches::kAppId)));
   } else {
     app_name = BrowserDistribution::GetDistribution()->GetBrowserAppId();
   }

@@ -537,8 +537,13 @@ TabContents* Browser::OpenApplicationWindow(
     url = extension->GetFullLaunchURL();
   }
 
-  // TODO(erikkay) this can't be correct for extensions
-  std::string app_name = web_app::GenerateApplicationNameFromURL(url);
+  std::string app_name;
+  if (extension)
+    app_name =
+        web_app::GenerateApplicationNameFromExtensionId(extension->id());
+  else
+    app_name = web_app::GenerateApplicationNameFromURL(url);
+
   RegisterAppPrefs(app_name);
 
   bool as_panel = extension && (container == extension_misc::LAUNCH_PANEL);

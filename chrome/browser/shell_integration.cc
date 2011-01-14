@@ -21,7 +21,8 @@ ShellIntegration::ShortcutInfo::ShortcutInfo()
 
 ShellIntegration::ShortcutInfo::~ShortcutInfo() {}
 
-std::string ShellIntegration::GetCommandLineArgumentsCommon(const GURL& url,
+std::string ShellIntegration::GetCommandLineArgumentsCommon(
+    const GURL& url,
     const string16& extension_app_id) {
   const CommandLine cmd = *CommandLine::ForCurrentProcess();
   std::wstring arguments_w;

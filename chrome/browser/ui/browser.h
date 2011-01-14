@@ -721,6 +721,8 @@ class Browser : public TabHandlerDelegate,
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, NoTabsInPopups);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, ConvertTabToAppShortcut);
+  FRIEND_TEST_ALL_PREFIXES(BrowserTest, OpenAppWindowLikeNtp);
+  FRIEND_TEST_ALL_PREFIXES(BrowserTest, AppIdSwitch);
 
   // Used to describe why a tab is being detached. This is used by
   // TabDetachedAtImpl.
