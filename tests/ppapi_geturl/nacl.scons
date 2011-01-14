@@ -36,3 +36,17 @@ env.Publish('ppapi_geturl.nexe', 'run',
             ['ppapi_geturl.html',
              'ppapi_geturl_success.html',
              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+
+node = env.BrowserTester(
+    'ppapi_geturl_browser_test.out',
+     url='ppapi_geturl.html',
+     files=[ppapi_geturl_nexe,
+            env.File('ppapi_geturl.html'),
+            env.File('ppapi_geturl_success.html'),
+            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+            ],
+     )
+env.AddNodeToTestSuite(node,
+                       ['pepper_browser_tests'],
+                       'run_ppapi_geturl_browser_test',
+                       )
