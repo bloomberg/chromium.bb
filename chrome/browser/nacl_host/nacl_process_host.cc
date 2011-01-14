@@ -140,6 +140,8 @@ bool NaClProcessHost::LaunchSelLdr() {
 
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
 
+  SetCrashReporterCommandLine(cmd_line);
+
   // On Windows we might need to start the broker process to launch a new loader
 #if defined(OS_WIN)
   if (running_on_wow64_) {

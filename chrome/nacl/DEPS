@@ -6,6 +6,7 @@ include_rules = [
   # sandbox support code out of chrome/renderer.  (Previously, this
   # header was #included from the native_client directory, which was
   # worse.)
+  "+chrome/app",
   "+chrome/renderer",
   "+chrome/test",
   "+sandbox/src",

@@ -646,7 +646,7 @@ void EnableCrashDumping(const bool unattended) {
   }
 }
 
-// Currently Non-Browser = Renderer and Plugins
+// Currently Non-Browser = Renderer, Plugins and Native Client
 static bool
 NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
                        void* context) {
@@ -747,7 +747,8 @@ void InitCrashReporter() {
     EnableCrashDumping(getenv(env_vars::kHeadless) != NULL);
   } else if (process_type == switches::kRendererProcess ||
              process_type == switches::kPluginProcess ||
-             process_type == switches::kZygoteProcess) {
+             process_type == switches::kZygoteProcess ||
+             process_type == switches::kNaClLoaderProcess) {
     // We might be chrooted in a zygote or renderer process so we cannot call
     // GetCollectStatsConsent because that needs access the the user's home
     // dir. Instead, we set a command line flag for these processes.
