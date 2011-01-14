@@ -19,3 +19,8 @@ PrefsControllerTest.GetPrefsViewForPage
 PrefsControllerTest.GetToolbarItemForPage
 PrefsControllerTest.ShowAndClose
 PrefsControllerTest.SwitchToPage
+
+# MultiProcessNotificationTests crash on the valgrind bot.
+# See http://crbug.com/69641.
+MultiProcessNotificationTest.BasicCreationTest
+MultiProcessNotificationTest.PostInProcessNotification
