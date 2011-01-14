@@ -43,7 +43,7 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-#ifdef HAVE_CAIRO_GL
+#ifdef HAVE_CAIRO_EGL
 #include <cairo-gl.h>
 #endif
 
@@ -181,7 +181,7 @@ struct surface_data {
 #define MULT(_d,c,a,t) \
 	do { t = c * a + 0x7f; _d = ((t >> 8) + t) >> 8; } while (0)
 
-#ifdef HAVE_CAIRO_GL
+#ifdef HAVE_CAIRO_EGL
 
 struct drm_surface_data {
 	struct surface_data data;
@@ -469,7 +469,7 @@ cairo_surface_t *
 display_create_surface(struct display *display,
 		       struct rectangle *rectangle)
 {
-#ifdef HAVE_CAIRO_GL
+#ifdef HAVE_CAIRO_EGL
 	if (display->drm) {
 		return display_create_drm_surface(display, rectangle);
 	}
@@ -482,7 +482,7 @@ display_create_surface_from_file(struct display *display,
 				 const char *filename,
 				 struct rectangle *rectangle)
 {
-#ifdef HAVE_CAIRO_GL
+#ifdef HAVE_CAIRO_EGL
 	if (display->drm) {
 		return display_create_drm_surface_from_file(display, filename, rectangle);
 	}
@@ -536,7 +536,7 @@ display_get_pointer_surface(struct display *display, int pointer,
 	cairo_surface_t *surface;
 
 	surface = display->pointer_surfaces[pointer];
-#if HAVE_CAIRO_GL
+#if HAVE_CAIRO_EGL
 	*width = cairo_gl_surface_get_width(surface);
 	*height = cairo_gl_surface_get_height(surface);
 #else
@@ -630,7 +630,7 @@ window_create_surface(struct window *window)
 	cairo_surface_t *surface;
 
 	switch (window->buffer_type) {
-#ifdef HAVE_CAIRO_GL
+#ifdef HAVE_CAIRO_EGL
 	case WINDOW_BUFFER_TYPE_DRM:
 		surface = display_create_surface(window->display,
 						 &window->allocation);
@@ -1439,7 +1439,7 @@ init_drm(struct display *d)
 		return -1;
 	}
 
-#ifdef HAVE_CAIRO_GL
+#ifdef HAVE_CAIRO_EGL
 	d->device = cairo_egl_device_create(d->dpy, d->ctx);
 	if (d->device == NULL) {
 		fprintf(stderr, "failed to get cairo drm device\n");

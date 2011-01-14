@@ -54,10 +54,10 @@ if test x$enable_wayland_compositor == xyes; then
 fi
 
 
-PKG_CHECK_MODULES(CAIRO_GL, [cairo-gl],
-		  [have_cairo_gl=yes], [have_cairo_gl=no])
-AS_IF([test "x$have_cairo_gl" = "xyes"],
-      [AC_DEFINE([HAVE_CAIRO_GL], [1], [Have cairo-gl])])
+PKG_CHECK_MODULES(CAIRO_EGL, [cairo-egl],
+		  [have_cairo_egl=yes], [have_cairo_egl=no])
+AS_IF([test "x$have_cairo_egl" = "xyes"],
+      [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])])
 
 if test $CC = gcc; then
 	GCC_CFLAGS="-Wall -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden"

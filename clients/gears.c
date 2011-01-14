@@ -212,7 +212,7 @@ allocate_buffer(struct gears *gears)
 	window_draw(gears->window);
 
 	gears->surface[gears->current] = window_get_surface(gears->window);
-#ifdef HAVE_CAIRO_GL
+#ifdef HAVE_CAIRO_EGL
 	image = display_get_image_for_drm_surface(gears->display,
 						  gears->surface[gears->current]);
 #else /* XXX: hack to make Wayland compile, even if this example doesn't run */
