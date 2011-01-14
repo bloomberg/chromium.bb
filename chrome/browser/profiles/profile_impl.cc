@@ -1248,12 +1248,13 @@ TokenService* ProfileImpl::GetTokenService() {
 
 ProfileSyncService* ProfileImpl::GetProfileSyncService() {
 #if defined(OS_CHROMEOS)
-  // If kLoginManager is specified, we shouldn't call this unless login has
-  // completed and specified cros_user. Guard with if (HasProfileSyncService())
-  // where this might legitimately get called before login has completed.
-  if (!sync_service_.get() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager)) {
-    LOG(FATAL) << "GetProfileSyncService() called before login complete.";
+  if (!sync_service_.get()) {
+    // In ChromeOS, sync only gets initialized properly from login, when
+    // kLoginManager is specified. If this gets called before login, or
+    // during a debugging session without kLoginManager, this will return
+    // NULL, so ensure that calls either handle a NULL result, or use
+    // HasProfileSyncService() to guard against the call.
+    return NULL;
   }
 #endif
   return GetProfileSyncService("");

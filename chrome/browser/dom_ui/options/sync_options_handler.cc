@@ -59,10 +59,9 @@ void SyncOptionsHandler::GetLocalizedValues(
 
 void SyncOptionsHandler::Initialize() {
   ProfileSyncService* service =
-      dom_ui_->GetProfile()->GetOriginalProfile()->GetProfileSyncService();
-  // If service is unavailable for some good reason, 'IsEnabled()' method
-  // should return false. Otherwise something is broken.
-  DCHECK(service);
+      dom_ui_->GetProfile()->GetProfileSyncService();
+  if (!service)
+    return;  // Can happen in ChromeOS if called before login.
 
   DictionaryValue args;
   SyncSetupFlow::GetArgsForConfigure(service, &args);

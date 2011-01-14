@@ -154,6 +154,7 @@ void PersonalOptionsHandler::OnStateChanged() {
   string16 status_label;
   string16 link_label;
   ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
+  DCHECK(service);
   bool managed = service->IsManaged();
   bool sync_setup_completed = service->HasSyncSetupCompleted();
   bool status_has_error = sync_ui_util::GetStatusLabels(service,
@@ -275,6 +276,7 @@ void PersonalOptionsHandler::ShowSyncLoginDialog(const ListValue* args) {
       dom_ui_->tab_contents(), UTF8ToUTF16(email), message, this);
 #else
   ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
+  DCHECK(service);
   service->ShowLoginDialog(NULL);
   ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
 #endif
