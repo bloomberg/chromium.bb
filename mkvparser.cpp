@@ -1291,6 +1291,16 @@ long Segment::LoadCluster(
     long long& pos,
     long& len)
 {
+    long long total, avail;
+
+    const int status = m_pReader->Length(&total, &avail);
+
+    if (status < 0)  //error
+        return status;
+
+    assert(total >= 0);
+    assert(avail <= total);
+
     const long long stop = m_start + m_size;
 
     while (m_pos < stop)
@@ -1299,12 +1309,18 @@ long Segment::LoadCluster(
 
         //Read ID
 
+        if ((pos + 1) > avail)
+        {
+            len = 1;
+            return E_BUFFER_NOT_FULL;
+        }
+
         long long result = GetUIntLength(m_pReader, pos, len);
 
         if (result < 0)  //error
             return static_cast<long>(result);
 
-        if (result > 0)
+        if (result > 0)  //weird
         {
             len = 1;
             return E_BUFFER_NOT_FULL;
@@ -1312,6 +1328,9 @@ long Segment::LoadCluster(
 
         if ((pos + len) > stop)
             return E_FILE_FORMAT_INVALID;
+
+        if ((pos + len) > avail)
+            return E_BUFFER_NOT_FULL;
 
         const long long idpos = pos;
         const long long id = ReadUInt(m_pReader, idpos, len);
@@ -1323,12 +1342,18 @@ long Segment::LoadCluster(
 
         //Read Size
 
+        if ((pos + 1) > avail)
+        {
+            len = 1;
+            return E_BUFFER_NOT_FULL;
+        }
+
         result = GetUIntLength(m_pReader, pos, len);
 
         if (result < 0)  //error
             return static_cast<long>(result);
 
-        if (result > 0)
+        if (result > 0)  //weird
         {
             len = 1;
             return E_BUFFER_NOT_FULL;
@@ -1336,6 +1361,9 @@ long Segment::LoadCluster(
 
         if ((pos + len) > stop)
             return E_FILE_FORMAT_INVALID;
+
+        if ((pos + len) > avail)
+            return E_BUFFER_NOT_FULL;
 
         const long long size = ReadUInt(m_pReader, pos, len);
 
@@ -1358,13 +1386,6 @@ long Segment::LoadCluster(
             return E_FILE_FORMAT_INVALID;
 
         len = static_cast<long>(size);
-
-        long long total, avail;
-
-        const int status = m_pReader->Length(&total, &avail);
-        assert(status == 0);  //TODO
-        assert(total >= 0);
-        assert(avail <= total);
 
         if ((pos + size) > avail)
             return E_BUFFER_NOT_FULL;
