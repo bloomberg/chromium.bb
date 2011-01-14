@@ -330,7 +330,6 @@ HRESULT ToolBand::Teardown() {
   if (chrome_frame_) {
     ChromeFrameEvents::DispEventUnadvise(chrome_frame_);
   }
-  chrome_frame_window_ = NULL;
 
   if (web_browser_ && listening_to_browser_events_) {
     HostingBrowserEvents::DispEventUnadvise(web_browser_,
@@ -348,6 +347,11 @@ void ToolBand::OnFinalMessage(HWND window) {
 LRESULT ToolBand::OnCreate(LPCREATESTRUCT lpCreateStruct) {
   // Grab a self-reference.
   GetUnknown()->AddRef();
+
+  if (NULL == chrome_frame_container_window_.Create(m_hWnd)) {
+    LOG(ERROR) << "Failed to create window. " << com::LogWe();
+    return -1;
+  }
 
   // Create a host window instance.
   base::win::ScopedComPtr<IAxWinHostWindow> host;
@@ -372,21 +376,12 @@ LRESULT ToolBand::OnCreate(LPCREATESTRUCT lpCreateStruct) {
   }
 
   // And attach it to our window.
-  hr = host->AttachControl(chrome_frame_, m_hWnd);
+  hr = host->AttachControl(chrome_frame_,
+                           chrome_frame_container_window_.m_hWnd);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to attach Chrome Frame to the host. " <<
         com::LogHr(hr);
     return 1;
-  }
-
-  // Get the GCF window and hide it for now.
-  CComQIPtr<IOleWindow> ole_window(chrome_frame_);
-  DCHECK(ole_window != NULL);
-  if (SUCCEEDED(ole_window->GetWindow(&chrome_frame_window_.m_hWnd))) {
-    // We hide the chrome frame window until onload in order to avoid
-    // seeing the "Aw Snap" that sometimes otherwise occurs during Chrome
-    // initialization.
-    chrome_frame_window_.ShowWindow(SW_HIDE);
   }
 
   // Hook up the chrome frame event listener.
@@ -396,23 +391,6 @@ LRESULT ToolBand::OnCreate(LPCREATESTRUCT lpCreateStruct) {
   }
 
   return 0;
-}
-
-void ToolBand::OnPaint(CDCHandle dc) {
-  RECT rc = {};
-  if (GetUpdateRect(&rc, FALSE)) {
-    PAINTSTRUCT ps = {};
-    BeginPaint(&ps);
-
-    BOOL ret = GetClientRect(&rc);
-    DCHECK(ret);
-    CString text;
-    text.Format(L"Google CEEE. No Chrome Frame found. Instance: 0x%p. ID: %d!)",
-                this, band_id_);
-    ::DrawText(ps.hdc, text, -1, &rc, DT_SINGLELINE | DT_BOTTOM | DT_CENTER);
-
-    EndPaint(&ps);
-  }
 }
 
 void ToolBand::OnSize(UINT type, CSize size) {
@@ -584,9 +562,9 @@ STDMETHODIMP_(void) ToolBand::OnCfGetEnabledExtensionsComplete(
 }
 
 STDMETHODIMP_(void) ToolBand::OnCfOnload(IDispatch* event) {
-  if (chrome_frame_window_.IsWindow()) {
+  if (chrome_frame_container_window_.IsWindow()) {
     VLOG(1) << "Showing the Chrome Frame window.";
-    chrome_frame_window_.ShowWindow(SW_SHOW);
+    chrome_frame_container_window_.ShowWindow(SW_SHOW);
   }
 }
 
