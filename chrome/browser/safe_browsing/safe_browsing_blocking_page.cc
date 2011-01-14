@@ -59,6 +59,11 @@ static const char* const kLearnMoreMalwareUrl =
 static const char* const kLearnMorePhishingUrl =
     "http://www.google.com/support/bin/answer.py?answer=106318";
 
+// URL for the "Safe Browsing Privacy Policies" link on the blocking page.
+// Note: this page is not yet localized.
+static const char* const kSbPrivacyPolicyUrl =
+    "http://www.google.com/intl/en_us/privacy/browsing.html";
+
 static const char* const kSbDiagnosticHtml =
     "<a href=\"\" onclick=\"sendCommand('showDiagnostic'); return false;\" "
     "onmousedown=\"return false;\">%s</a>";
@@ -67,10 +72,15 @@ static const char* const kPLinkHtml =
     "<a href=\"\" onclick=\"sendCommand('proceed'); return false;\" "
     "onmousedown=\"return false;\">%s</a>";
 
+static const char* const kPrivacyLinkHtml =
+    "<a href=\"\" onclick=\"sendCommand('showPrivacy'); return false;\" "
+    "onmousedown=\"return false;\">%s</a>";
+
 // The commands returned by the page when the user performs an action.
 static const char* const kShowDiagnosticCommand = "showDiagnostic";
 static const char* const kReportErrorCommand = "reportError";
 static const char* const kLearnMoreCommand = "learnMore";
+static const char* const kShowPrivacyCommand = "showPrivacy";
 static const char* const kProceedCommand = "proceed";
 static const char* const kTakeMeBackCommand = "takeMeBack";
 static const char* const kDoReportCommand = "doReport";
@@ -327,9 +337,16 @@ void SafeBrowsingBlockingPage::PopulateMalwareStringDictionary(
   } else {
     // Show the checkbox for sending malware details.
     strings->SetBoolean(kDisplayCheckBox, true);
-    strings->SetString(
-        "confirm_text",
-        l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE));
+
+    std::string privacy_link = StringPrintf(
+        kPrivacyLinkHtml,
+        l10n_util::GetStringUTF8(
+            IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
+
+    strings->SetString("confirm_text",
+                       l10n_util::GetStringFUTF16(
+                           IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE,
+                           UTF8ToUTF16(privacy_link)));
 
     const PrefService::Preference* pref =
         tab()->profile()->GetPrefs()->FindPreference(
@@ -396,6 +413,13 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     } else {
       NOTREACHED();
     }
+    tab()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::LINK);
+    return;
+  }
+
+  if (command == kShowPrivacyCommand) {
+    // User pressed "Safe Browsing privacy policy".
+    GURL url(kSbPrivacyPolicyUrl);
     tab()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::LINK);
     return;
   }
