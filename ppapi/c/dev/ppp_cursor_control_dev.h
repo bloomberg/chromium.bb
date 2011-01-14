@@ -7,7 +7,7 @@
 
 #include "ppapi/c/pp_instance.h"
 
-#define PPP_CURSOR_CONTROL_DEV_INTERFACE "PPP_CursorControl(Dev);0.1"
+#define PPP_CURSOR_CONTROL_DEV_INTERFACE "PPP_CursorControl(Dev);0.2"
 
 struct PPP_CursorControl_Dev {
   // Called when the instance looses the cursor lock, e.g. because the user

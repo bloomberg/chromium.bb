@@ -20,7 +20,7 @@ typedef enum {
 } PP_URLResponseProperty;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLResponseProperty, 4);
 
-#define PPB_URLRESPONSEINFO_INTERFACE "PPB_URLResponseInfo;1.1"
+#define PPB_URLRESPONSEINFO_INTERFACE "PPB_URLResponseInfo;0.1"
 
 struct PPB_URLResponseInfo {
   // Returns PP_TRUE if the given resource is an URLResponseInfo. Returns

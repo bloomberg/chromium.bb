@@ -223,6 +223,11 @@ struct PP_VideoCompressedDataBuffer_Dev {
   // Bit mask of PP_VideoFrameInfoFlag.
   uint32_t flags;
 
+  // Padding to ensure the PP_Resource is 8-byte aligned relative to the
+  // start of the struct.  This helps ensure PP_VideoFrameBuffer_Dev has
+  // consistent size and alignment across compilers.
+  int32_t padding;
+
   // Time stamp of the frame in microsecond.
   uint64_t time_stamp_us;
 };
@@ -235,11 +240,6 @@ struct PP_VideoFrameBuffer_Dev {
         int32_t width;
         int32_t height;
         int32_t stride;
-
-        // Padding to ensure the PP_Resource is 8-byte aligned relative to the
-        // start of the struct.  This helps ensure PP_VideoFrameBuffer_Dev has
-        // consistent size and alignment across compilers.
-        int32_t padding;
 
         // TODO(wjia): uint8* would be better for some cases.
         PP_Resource buffer;

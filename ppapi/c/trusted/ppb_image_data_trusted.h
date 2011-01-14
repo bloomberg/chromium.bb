@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_resource.h"
 
-#define PPB_IMAGEDATA_TRUSTED_INTERFACE "PPB_ImageDataTrusted;0.3"
+#define PPB_IMAGEDATA_TRUSTED_INTERFACE "PPB_ImageDataTrusted;0.4"
 
 struct PPB_ImageDataTrusted {
   /**

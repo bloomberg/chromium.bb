@@ -29,7 +29,7 @@
 // core->ReleaseResource(context);
 // core->ReleaseResource(surface);
 
-#define PPB_GRAPHICS_3D_DEV_INTERFACE "PPB_Graphics3D(Dev);0.2"
+#define PPB_GRAPHICS_3D_DEV_INTERFACE "PPB_Graphics3D(Dev);0.3"
 
 struct PPB_Graphics3D_Dev {
   // TODO(alokp): Do these functions need module argument.

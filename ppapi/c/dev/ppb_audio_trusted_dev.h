@@ -9,7 +9,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 
-#define PPB_AUDIO_TRUSTED_DEV_INTERFACE "PPB_AudioTrusted(Dev);0.2"
+#define PPB_AUDIO_TRUSTED_DEV_INTERFACE "PPB_AudioTrusted(Dev);0.3"
 
 /**
  * This interface is to be used by proxy implementations.  All

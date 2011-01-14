@@ -10,7 +10,7 @@
 #include "ppapi/c/pp_stdint.h"
 
 // Interface for the plugin to implement when using a scrollbar widget.
-#define PPP_SCROLLBAR_DEV_INTERFACE "PPP_Scrollbar(Dev);0.1"
+#define PPP_SCROLLBAR_DEV_INTERFACE "PPP_Scrollbar(Dev);0.2"
 
 struct PPP_Scrollbar_Dev {
   // Informs the instance that the scrollbar's value has changed.

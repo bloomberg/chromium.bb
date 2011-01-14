@@ -16,17 +16,10 @@ struct PP_CompletionCallback;
 struct PP_DirectoryEntry_Dev {
   PP_Resource file_ref;
   PP_FileType_Dev file_type;
-
-  /** Ensure that this struct is 16-bytes wide by padding the end.  Because
-   *  PP_Resource is an 8-byte type, some compilers align this struct on 8-byte
-   *  boundaries and pad it to 16 bytes even without @a padding.  This makes its
-   *  size consistent across compilers.
-   */
-  int32_t padding;
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_DirectoryEntry_Dev, 16);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_DirectoryEntry_Dev, 8);
 
-#define PPB_DIRECTORYREADER_DEV_INTERFACE "PPB_DirectoryReader(Dev);0.3"
+#define PPB_DIRECTORYREADER_DEV_INTERFACE "PPB_DirectoryReader(Dev);0.4"
 
 struct PPB_DirectoryReader_Dev {
   // Creates a DirectoryReader for the given directory.  Upon success, the
