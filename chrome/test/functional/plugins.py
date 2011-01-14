@@ -139,6 +139,69 @@ class PluginsTest(pyauto.PyUITest):
                        re.search(plugin_name, x['name'])])
       self.assertTrue(self._IsEnabled(plugin_name), plugin_name)
 
+  def testBlockAllPlugins(self):
+    """Verify that all the plugins can be blocked.
+    Verifying by checking that flash plugin was blocked.
+    """
+    flash_url = self.GetFileURLForPath(os.path.join(
+        self.DataDir(), 'plugin', 'flash-clicktoplay.html'))
+    self.NavigateToURL(flash_url)
+    flash_pid = self._GetPluginPID('Shockwave Flash')
+    self.assertTrue(flash_pid, msg='No plugin process for Shockwave Flash')
+    # Killing the flash process as it takes a while before the plugin
+    # process is terminated even though there are no tabs using it.
+    self.Kill(flash_pid)
+    self.assertTrue(self.WaitUntil(
+        lambda: self._GetPluginPID('Shockwave Flash') is None),
+        msg='Expected Shockwave Flash plugin to die after killing')
+
+    # Set the preference to block all plugins.
+    self.SetPrefs(pyauto.kDefaultContentSettings, {'plugins': 2})
+
+    self.GetBrowserWindow(0).GetTab(0).Reload()
+    self.assertFalse(self._GetPluginPID('Shockwave Flash'),
+                     msg='Plug-in not blocked.')
+
+  def testAllowPluginException(self):
+    """Verify that plugins can be allowed on a domain by adding
+    an exception(s)."""
+    # Set the preference to block all plugins.
+    self.SetPrefs(pyauto.kDefaultContentSettings, {'plugins': 2})
+
+    flash_url = self.GetFileURLForPath(os.path.join(
+        self.DataDir(), 'plugin', 'flash-clicktoplay.html'))
+    self.NavigateToURL(flash_url)
+    # Check that plugins are blocked.
+    self.assertFalse(self._GetPluginPID('Shockwave Flash'),
+                     msg='Plug-in not blocked.')
+
+    # Add an exception to allow plugins on hulu.com.
+    self.SetPrefs(pyauto.kContentSettingsPatterns,
+                 {'[*.]hulu.com': {'plugins': 1}})
+    self.AppendTab(pyauto.GURL('http://www.hulu.com'))
+    self.assertTrue(self._GetPluginPID('Shockwave Flash'),
+                    msg='No plugin process for Shockwave Flash')
+
+  def testBlockPluginException(self):
+    """Verify that plugins can be blocked on a domain by adding
+    an exception(s)."""
+    # We are using the same live site in order to detect if the web page
+    # is using shockwave flash process
+    self.NavigateToURL('http://www.hulu.com')
+    pid = self._GetPluginPID('Shockwave Flash')
+    self.assertTrue(pid, msg='No plugin process for Shockwave Flash')
+    self.Kill(pid)
+    self.assertTrue(self.WaitUntil(
+        lambda: self._GetPluginPID('Shockwave Flash') is None),
+        msg='Expected Shockwave Flash plugin to die after killing')
+
+    # Add an exception to block plugins on hulu.com.
+    self.SetPrefs(pyauto.kContentSettingsPatterns,
+                 {'[*.]hulu.com': {'plugins': 2}})
+    self.GetBrowserWindow(0).GetTab(0).Reload()
+    self.assertFalse(self._GetPluginPID('Shockwave Flash'),
+                     msg='Plug-in not blocked.')
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
