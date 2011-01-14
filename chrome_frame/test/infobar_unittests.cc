@@ -431,9 +431,7 @@ ACTION_P2(AsynchronousHideOnManager, loop, manager) {
 // If the test turns out to be flaky (i.e., because timers are not firing
 // frequently enough to hit all the ranges), increasing the infobar_height
 // should increase the margin (by increasing the time spent in each range).
-//
-// TODO(erikwright): re-enable when sliding is fixed (currently crashes in IE6).
-TEST(InfobarsInfobarWindowTest, DISABLED_SlidingTest) {
+TEST(InfobarsInfobarWindowTest, SlidingTest) {
   int infobar_height = 40;
 
   chrome_frame_test::TimedMsgLoop message_loop;

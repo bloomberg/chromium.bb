@@ -22,7 +22,9 @@ const int kInfobarSlideCloseStep = 6;
 
 }  // namespace
 
-void OnSliderTimer(InfobarWindow::Host* host) {
+VOID CALLBACK OnSliderTimer(InfobarWindow::Host* host,
+                            HWND /*hwnd*/, UINT /*uMsg*/,
+                            UINT_PTR /*idEvent*/, DWORD /*dwTime*/) {
   if (host)
     host->UpdateLayout();
 }
@@ -139,8 +141,6 @@ void InfobarWindow::StartSlidingTowards(int target_height) {
 }
 
 bool InfobarWindow::StartTimer() {
-  return false;  // TODO(erikwright): Diagnose and fix crashes on IE.
-#if 0
   if (timer_id_ != 0)
     return true;
 
@@ -156,7 +156,6 @@ bool InfobarWindow::StartTimer() {
   DPLOG_IF(ERROR, timer_id_ == 0) << "Failure in SetTimer.";
 
   return timer_id_ != 0;
-#endif
 }
 
 bool InfobarWindow::StopTimer() {
