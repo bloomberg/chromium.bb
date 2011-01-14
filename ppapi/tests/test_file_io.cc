@@ -484,5 +484,10 @@ std::string TestFileIO::TestAbortCalls() {
     }
   }
 
+  // TODO(viettrungluu): Also test that Close() aborts callbacks.
+  // crbug.com/69457
+
   PASS();
 }
+
+// TODO(viettrungluu): Test Close(). crbug.com/69457
