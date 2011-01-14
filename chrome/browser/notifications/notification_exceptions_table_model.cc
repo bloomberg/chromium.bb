@@ -5,7 +5,6 @@
 #include "chrome/browser/notifications/notification_exceptions_table_model.h"
 
 #include "app/l10n_util.h"
-#include "app/table_model_observer.h"
 #include "base/auto_reset.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_helper.h"
@@ -14,6 +13,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "ui/base/models/table_model_observer.h"
 
 struct NotificationExceptionsTableModel::Entry {
   Entry(const GURL& origin, ContentSetting setting);
@@ -93,7 +93,7 @@ string16 NotificationExceptionsTableModel::GetText(int row,
 }
 
 void NotificationExceptionsTableModel::SetObserver(
-    TableModelObserver* observer) {
+    ui::TableModelObserver* observer) {
   observer_ = observer;
 }
 

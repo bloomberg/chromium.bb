@@ -8,11 +8,11 @@
 
 #include <set>
 
-#include "app/table_model.h"
+#include "ui/base/models/table_model.h"
 
 // A table model that also supports removing rows. Used for example for the
 // content settings exception dialog for geolocation.
-class RemoveRowsTableModel : public TableModel {
+class RemoveRowsTableModel : public ui::TableModel {
  public:
   typedef std::set<size_t> Rows;
 

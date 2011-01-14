@@ -1,13 +1,15 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/table_model.h"
+#include "ui/base/models/table_model.h"
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_collator.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+namespace ui {
 
 // TableColumn -----------------------------------------------------------------
 
@@ -132,3 +134,5 @@ icu::Collator* TableModel::GetCollator() {
   }
   return collator;
 }
+
+}  // namespace ui

@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_TRANSLATE_LANGUAGES_MENU_MODEL_H_
 #pragma once
 
-#include "app/menus/simple_menu_model.h"
+#include "ui/base/models/simple_menu_model.h"
 
 class TranslateInfoBarDelegate;
 
 // A menu model that builds the contents of the language menus in the translate
 // infobar. This menu has only one level (no submenus).
-class LanguagesMenuModel : public menus::SimpleMenuModel,
-                           public menus::SimpleMenuModel::Delegate {
+class LanguagesMenuModel : public ui::SimpleMenuModel,
+                           public ui::SimpleMenuModel::Delegate {
  public:
   enum LanguageType {
     ORIGINAL,
@@ -23,11 +23,11 @@ class LanguagesMenuModel : public menus::SimpleMenuModel,
                      LanguageType language_type);
   virtual ~LanguagesMenuModel();
 
-  // menus::SimpleMenuModel::Delegate implementation:
+  // ui::SimpleMenuModel::Delegate implementation:
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
+                                          ui::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
  private:

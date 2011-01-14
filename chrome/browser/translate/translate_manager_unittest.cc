@@ -268,7 +268,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   virtual void PlatformInit() { }
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      menus::Accelerator* accelerator) { return false; }
+      ui::Accelerator* accelerator) { return false; }
 
  private:
   TestRenderViewContextMenu(TabContents* tab_contents,

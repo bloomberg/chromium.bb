@@ -339,7 +339,7 @@ void CollectedCookiesWin::OnTreeViewSelectionChanged(
 
 void CollectedCookiesWin::EnableControls() {
   bool enable_allowed_buttons = false;
-  TreeModelNode* node = allowed_cookies_tree_->GetSelectedNode();
+  ui::TreeModelNode* node = allowed_cookies_tree_->GetSelectedNode();
   if (node) {
     CookieTreeNode* cookie_node = static_cast<CookieTreeNode*>(node);
     if (cookie_node->GetDetailedInfo().node_type ==

@@ -8,8 +8,8 @@
 
 #include <string>
 
-#include "app/menus/simple_menu_model.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
+#include "ui/base/models/simple_menu_model.h"
 
 class Browser;
 class Extension;
@@ -20,8 +20,8 @@ class Profile;
 // page actions).
 class ExtensionContextMenuModel
     : public base::RefCounted<ExtensionContextMenuModel>,
-      public menus::SimpleMenuModel,
-      public menus::SimpleMenuModel::Delegate,
+      public ui::SimpleMenuModel,
+      public ui::SimpleMenuModel::Delegate,
       public ExtensionInstallUI::Delegate {
  public:
   // Delegate to handle showing an ExtensionAction popup.
@@ -48,7 +48,7 @@ class ExtensionContextMenuModel
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
+                                          ui::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
   // ExtensionInstallUI::Delegate overrides.

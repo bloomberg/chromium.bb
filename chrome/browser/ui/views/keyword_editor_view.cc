@@ -153,14 +153,14 @@ views::View* KeywordEditorView::GetContentsView() {
 }
 
 void KeywordEditorView::Init() {
-  std::vector<TableColumn> columns;
+  std::vector<ui::TableColumn> columns;
   columns.push_back(
-      TableColumn(IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN,
-                  TableColumn::LEFT, -1, .75));
+      ui::TableColumn(IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN,
+                      ui::TableColumn::LEFT, -1, .75));
   columns.back().sortable = true;
   columns.push_back(
-      TableColumn(IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN,
-                  TableColumn::LEFT, -1, .25));
+      ui::TableColumn(IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN,
+                      ui::TableColumn::LEFT, -1, .25));
   columns.back().sortable = true;
   table_view_ = new views::TableView(controller_->table_model(), columns,
       views::ICON_AND_TEXT, false, true, true);

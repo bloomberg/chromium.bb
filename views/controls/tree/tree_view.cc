@@ -24,6 +24,9 @@
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
+using ui::TreeModel;
+using ui::TreeModelNode;
+
 namespace views {
 
 TreeView::TreeView()

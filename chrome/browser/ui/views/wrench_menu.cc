@@ -37,7 +37,7 @@
 #include "views/controls/menu/submenu_view.h"
 #include "views/window/window.h"
 
-using menus::MenuModel;
+using ui::MenuModel;
 using views::CustomButton;
 using views::ImageButton;
 using views::Label;
@@ -250,7 +250,7 @@ string16 GetAccessibleNameForWrenchMenuItem(
   string16 accessible_name = l10n_util::GetStringUTF16(accessible_string_id);
   string16 accelerator_text;
 
-  menus::Accelerator menu_accelerator;
+  ui::Accelerator menu_accelerator;
   if (model->GetAcceleratorAt(item_index, &menu_accelerator)) {
     accelerator_text =
         views::Accelerator(menu_accelerator.GetKeyCode(),
@@ -569,7 +569,7 @@ WrenchMenu::WrenchMenu(Browser* browser)
       selected_index_(0) {
 }
 
-void WrenchMenu::Init(menus::MenuModel* model) {
+void WrenchMenu::Init(ui::MenuModel* model) {
   DCHECK(!root_.get());
   root_.reset(new MenuItemView(this));
   root_->SetAccessibleName(
@@ -637,7 +637,7 @@ bool WrenchMenu::GetAccelerator(int id, views::Accelerator* accelerator) {
     return false;
   }
 
-  menus::Accelerator menu_accelerator;
+  ui::Accelerator menu_accelerator;
   if (!entry.first->GetAcceleratorAt(entry.second, &menu_accelerator))
     return false;
 

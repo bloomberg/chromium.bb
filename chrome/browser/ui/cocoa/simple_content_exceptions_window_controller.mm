@@ -5,13 +5,13 @@
 #import "chrome/browser/ui/cocoa/simple_content_exceptions_window_controller.h"
 
 #include "app/l10n_util_mac.h"
-#include "app/table_model_observer.h"
 #include "base/logging.h"
 #import "base/mac/mac_util.h"
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/models/table_model_observer.h"
 
 @interface SimpleContentExceptionsWindowController (Private)
 - (id)initWithTableModel:(RemoveRowsTableModel*)model;

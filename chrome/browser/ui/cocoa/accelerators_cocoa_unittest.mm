@@ -4,16 +4,16 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/menus/accelerator_cocoa.h"
 #include "base/singleton.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "ui/base/models/accelerator_cocoa.h"
 
 TEST(AcceleratorsCocoaTest, GetAccelerator) {
   AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
-  const menus::AcceleratorCocoa* accelerator =
+  const ui::AcceleratorCocoa* accelerator =
       keymap->GetAcceleratorForCommand(IDC_COPY);
   ASSERT_TRUE(accelerator);
   EXPECT_NSEQ(@"c", accelerator->characters());
@@ -22,7 +22,7 @@ TEST(AcceleratorsCocoaTest, GetAccelerator) {
 
 TEST(AcceleratorsCocoaTest, GetNullAccelerator) {
   AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
-  const menus::AcceleratorCocoa* accelerator =
+  const ui::AcceleratorCocoa* accelerator =
       keymap->GetAcceleratorForCommand(314159265);
   EXPECT_FALSE(accelerator);
 }

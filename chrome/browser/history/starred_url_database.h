@@ -8,12 +8,12 @@
 
 #include <set>
 
-#include "app/tree_node_model.h"
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/url_database.h"
+#include "ui/base/models/tree_node_model.h"
 
 class FilePath;
 
@@ -115,7 +115,7 @@ class StarredURLDatabase : public URLDatabase {
   StarID CreateStarredEntry(StarredEntry* entry);
 
   // Used when checking integrity of starred table.
-  typedef TreeNodeWithValue<history::StarredEntry> StarredNode;
+  typedef ui::TreeNodeWithValue<history::StarredEntry> StarredNode;
 
   // Returns the max group id, or 0 if there is an error.
   UIStarID GetMaxGroupID();

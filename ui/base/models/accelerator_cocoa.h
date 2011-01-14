@@ -1,17 +1,17 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_MENUS_ACCELERATOR_COCOA_H_
-#define APP_MENUS_ACCELERATOR_COCOA_H_
+#ifndef UI_BASE_MODELS_ACCELERATOR_COCOA_H_
+#define UI_BASE_MODELS_ACCELERATOR_COCOA_H_
 #pragma once
 
 #include <Foundation/Foundation.h>
 
-#include "app/menus/accelerator.h"
 #include "base/scoped_nsobject.h"
+#include "ui/base/models/accelerator.h"
 
-namespace menus {
+namespace ui {
 
 // This is a subclass of the cross-platform Accelerator, but with more direct
 // support for Cocoa key equivalents. Note that the typical use case for this
@@ -54,6 +54,6 @@ class AcceleratorCocoa : public Accelerator {
   scoped_nsobject<NSString> characters_;
 };
 
-}  // namespace menus
+}  // namespace ui
 
-#endif  // APP_MENUS_ACCELERATOR_COCOA_H_
+#endif  // UI_BASE_MODELS_ACCELERATOR_COCOA_H_

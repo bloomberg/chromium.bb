@@ -8,7 +8,6 @@
 #include <cmath>
 
 #include "app/l10n_util.h"
-#include "app/menus/button_menu_item_model.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
@@ -36,6 +35,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/models/button_menu_item_model.h"
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
@@ -59,7 +59,7 @@
 // EncodingMenuModel
 
 EncodingMenuModel::EncodingMenuModel(Browser* browser)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       browser_(browser) {
   Build();
 }
@@ -116,7 +116,7 @@ bool EncodingMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool EncodingMenuModel::GetAcceleratorForCommandId(
     int command_id,
-    menus::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) {
   return false;
 }
 
@@ -127,7 +127,7 @@ void EncodingMenuModel::ExecuteCommand(int command_id) {
 ////////////////////////////////////////////////////////////////////////////////
 // ZoomMenuModel
 
-ZoomMenuModel::ZoomMenuModel(menus::SimpleMenuModel::Delegate* delegate)
+ZoomMenuModel::ZoomMenuModel(ui::SimpleMenuModel::Delegate* delegate)
     : SimpleMenuModel(delegate) {
   Build();
 }
@@ -144,7 +144,7 @@ void ZoomMenuModel::Build() {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolsMenuModel
 
-ToolsMenuModel::ToolsMenuModel(menus::SimpleMenuModel::Delegate* delegate,
+ToolsMenuModel::ToolsMenuModel(ui::SimpleMenuModel::Delegate* delegate,
                                Browser* browser)
     : SimpleMenuModel(delegate) {
   Build(browser);
@@ -189,9 +189,9 @@ void ToolsMenuModel::Build(Browser* browser) {
 ////////////////////////////////////////////////////////////////////////////////
 // WrenchMenuModel
 
-WrenchMenuModel::WrenchMenuModel(menus::AcceleratorProvider* provider,
+WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
                                  Browser* browser)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       provider_(provider),
       browser_(browser),
       tabstrip_model_(browser_->tabstrip_model()) {
@@ -321,7 +321,7 @@ bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
 
 bool WrenchMenuModel::GetAcceleratorForCommandId(
       int command_id,
-      menus::Accelerator* accelerator) {
+      ui::Accelerator* accelerator) {
   return provider_->GetAcceleratorForCommandId(command_id, accelerator);
 }
 
@@ -363,7 +363,7 @@ void WrenchMenuModel::Observe(NotificationType type,
 
 // For testing.
 WrenchMenuModel::WrenchMenuModel()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       provider_(NULL),
       browser_(NULL),
       tabstrip_model_(NULL) {
@@ -380,7 +380,7 @@ void WrenchMenuModel::Build() {
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
   // layout for this menu item in Toolbar.xib. It does, however, use the
   // command_id value from AddButtonItem() to identify this special item.
-  edit_menu_item_model_.reset(new menus::ButtonMenuItemModel(IDS_EDIT, this));
+  edit_menu_item_model_.reset(new ui::ButtonMenuItemModel(IDS_EDIT, this));
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_CUT, IDS_CUT);
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_COPY, IDS_COPY);
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_PASTE, IDS_PASTE);
@@ -394,7 +394,7 @@ void WrenchMenuModel::Build() {
 #if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(TOOLKIT_VIEWS))
   // WARNING: See above comment.
   zoom_menu_item_model_.reset(
-      new menus::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
+      new ui::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
   zoom_menu_item_model_->AddGroupItemWithStringId(
       IDC_ZOOM_MINUS, IDS_ZOOM_MINUS2);
   zoom_menu_item_model_->AddButtonLabel(IDC_ZOOM_PERCENT_DISPLAY,

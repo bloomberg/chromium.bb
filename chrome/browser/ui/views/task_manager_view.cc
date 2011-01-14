@@ -5,7 +5,6 @@
 #include "chrome/browser/task_manager/task_manager.h"
 
 #include "app/l10n_util.h"
-#include "app/table_model_observer.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/stats_table.h"
@@ -22,6 +21,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/models/table_model_observer.h"
 #include "views/accelerator.h"
 #include "views/background.h"
 #include "views/controls/button/native_button.h"
@@ -62,7 +62,7 @@ class TaskManagerTableModel : public views::GroupTableModel,
   string16 GetText(int row, int column) OVERRIDE;
   SkBitmap GetIcon(int row) OVERRIDE;
   void GetGroupRangeForItem(int item, views::GroupRange* range) OVERRIDE;
-  void SetObserver(TableModelObserver* observer) OVERRIDE;
+  void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
   virtual int CompareValues(int row1, int row2, int column_id) OVERRIDE;
 
   // TaskManagerModelObserver.
@@ -73,7 +73,7 @@ class TaskManagerTableModel : public views::GroupTableModel,
 
  private:
   TaskManagerModel* model_;
-  TableModelObserver* observer_;
+  ui::TableModelObserver* observer_;
 };
 
 int TaskManagerTableModel::RowCount() {
@@ -159,7 +159,7 @@ void TaskManagerTableModel::GetGroupRangeForItem(int item,
   range->length = range_pair.second;
 }
 
-void TaskManagerTableModel::SetObserver(TableModelObserver* observer) {
+void TaskManagerTableModel::SetObserver(ui::TableModelObserver* observer) {
   observer_ = observer;
 }
 
@@ -275,7 +275,7 @@ class TaskManagerView : public views::View,
   TaskManagerModel* model_;
 
   // all possible columns, not necessarily visible
-  std::vector<TableColumn> columns_;
+  std::vector<ui::TableColumn> columns_;
 
   scoped_ptr<TaskManagerTableModel> table_model_;
 
@@ -313,42 +313,44 @@ void TaskManagerView::Init() {
   table_model_.reset(new TaskManagerTableModel(model_));
 
   // Page column has no header label.
-  columns_.push_back(TableColumn(IDS_TASK_MANAGER_PAGE_COLUMN,
-                                 TableColumn::LEFT, -1, 1));
+  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_PAGE_COLUMN,
+                                     ui::TableColumn::LEFT, -1, 1));
   columns_.back().sortable = true;
-  columns_.push_back(TableColumn(IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN,
-                                 TableColumn::RIGHT, -1, 0));
+  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN,
+                                     ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
-  columns_.push_back(TableColumn(IDS_TASK_MANAGER_SHARED_MEM_COLUMN,
-                                 TableColumn::RIGHT, -1, 0));
+  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_SHARED_MEM_COLUMN,
+                                     ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
-  columns_.push_back(TableColumn(IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN,
-                                 TableColumn::RIGHT, -1, 0));
+  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN,
+                                     ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
-  columns_.push_back(TableColumn(IDS_TASK_MANAGER_CPU_COLUMN,
-                                 TableColumn::RIGHT, -1, 0));
+  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_CPU_COLUMN,
+                                     ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
-  columns_.push_back(TableColumn(IDS_TASK_MANAGER_NET_COLUMN,
-                                 TableColumn::RIGHT, -1, 0));
+  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_NET_COLUMN,
+                                     ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
-  columns_.push_back(TableColumn(IDS_TASK_MANAGER_PROCESS_ID_COLUMN,
-                                 TableColumn::RIGHT, -1, 0));
+  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_PROCESS_ID_COLUMN,
+                                     ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
-  columns_.push_back(TableColumn(IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN,
-                                 TableColumn::RIGHT, -1, 0));
+  columns_.push_back(ui::TableColumn(
+      IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN,
+      ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
-  columns_.push_back(TableColumn(IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN,
-                                 TableColumn::RIGHT, -1, 0));
+  columns_.push_back(ui::TableColumn(
+      IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN,
+      ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
-  columns_.push_back(TableColumn(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN,
-                                 TableColumn::RIGHT, -1, 0));
+  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN,
+                                     ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
-  columns_.push_back(TableColumn(IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN,
-                                 TableColumn::RIGHT, -1, 0));
+  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN,
+                                     ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
   columns_.push_back(
-      TableColumn(IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN,
-                  TableColumn::RIGHT, -1, 0));
+      ui::TableColumn(IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN,
+                      ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
 
   tab_table_ = new views::GroupTableView(table_model_.get(), columns_,
@@ -408,7 +410,8 @@ void TaskManagerView::UpdateStatsCounters() {
         // stat names not in the string table would be filtered out.
         // TODO(erikkay): Width is hard-coded right now, so many column
         // names are clipped.
-        TableColumn col(i, ASCIIToUTF16(row), TableColumn::RIGHT, 90, 0);
+        ui::TableColumn col(i, ASCIIToUTF16(row), ui::TableColumn::RIGHT, 90,
+                            0);
         col.sortable = true;
         columns_.push_back(col);
         tab_table_->AddColumn(col);
@@ -617,7 +620,7 @@ void TaskManagerView::ShowContextMenu(views::View* source,
   UpdateStatsCounters();
   scoped_ptr<views::Menu> menu(views::Menu::Create(
       this, views::Menu::TOPLEFT, source->GetWidget()->GetNativeView()));
-  for (std::vector<TableColumn>::iterator i =
+  for (std::vector<ui::TableColumn>::iterator i =
        columns_.begin(); i != columns_.end(); ++i) {
     menu->AppendMenuItem(i->id, l10n_util::GetStringUTF16(i->id),
         views::Menu::CHECKBOX);

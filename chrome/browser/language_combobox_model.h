@@ -10,9 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "app/combobox_model.h"
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "ui/base/models/combobox_model.h"
 
 class Profile;
 
@@ -68,7 +68,7 @@ class LanguageList {
 ///////////////////////////////////////////////////////////////////////////////
 // LanguageComboboxModel
 //  The combobox model implementation.
-class LanguageComboboxModel : public LanguageList, public ComboboxModel {
+class LanguageComboboxModel : public LanguageList, public ui::ComboboxModel {
  public:
   LanguageComboboxModel();
 

@@ -5,7 +5,6 @@
 #include "chrome/browser/possible_url_model.h"
 
 #include "app/resource_bundle.h"
-#include "app/table_model_observer.h"
 #include "app/text_elider.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
@@ -20,6 +19,7 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/models/table_model_observer.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -180,7 +180,7 @@ int PossibleURLModel::CompareValues(int row1, int row2, int column_id) {
     return results_[row1].display_url.Compare(
         results_[row2].display_url, GetCollator());
   }
-  return TableModel::CompareValues(row1, row2, column_id);
+  return ui::TableModel::CompareValues(row1, row2, column_id);
 }
 
 void PossibleURLModel::OnFavIconAvailable(
@@ -205,6 +205,6 @@ void PossibleURLModel::OnFavIconAvailable(
   }
 }
 
-void PossibleURLModel::SetObserver(TableModelObserver* observer) {
+void PossibleURLModel::SetObserver(ui::TableModelObserver* observer) {
   observer_ = observer;
 }

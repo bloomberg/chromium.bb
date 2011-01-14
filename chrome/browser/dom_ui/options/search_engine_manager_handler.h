@@ -5,14 +5,14 @@
 #ifndef CHROME_BROWSER_DOM_UI_OPTIONS_SEARCH_ENGINE_MANAGER_HANDLER_H_
 #define CHROME_BROWSER_DOM_UI_OPTIONS_SEARCH_ENGINE_MANAGER_HANDLER_H_
 
-#include "app/table_model_observer.h"
 #include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"
+#include "ui/base/models/table_model_observer.h"
 
 class KeywordEditorController;
 
 class SearchEngineManagerHandler : public OptionsPageUIHandler,
-                                   public TableModelObserver,
+                                   public ui::TableModelObserver,
                                    public EditSearchEngineControllerDelegate {
  public:
   SearchEngineManagerHandler();
@@ -23,7 +23,7 @@ class SearchEngineManagerHandler : public OptionsPageUIHandler,
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
-  // TableModelObserver implementation.
+  // ui::TableModelObserver implementation.
   virtual void OnModelChanged();
   virtual void OnItemsChanged(int start, int length);
   virtual void OnItemsAdded(int start, int length);

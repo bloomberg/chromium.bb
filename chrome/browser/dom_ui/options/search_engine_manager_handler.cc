@@ -141,7 +141,7 @@ void SearchEngineManagerHandler::OnItemsRemoved(int start, int length) {
 
 DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForHeading(
     int group_index) {
-  TableModel::Groups groups = list_controller_->table_model()->GetGroups();
+  ui::TableModel::Groups groups = list_controller_->table_model()->GetGroups();
 
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString("heading", groups[group_index].title);

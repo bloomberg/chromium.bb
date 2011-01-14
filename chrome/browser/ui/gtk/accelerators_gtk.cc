@@ -177,10 +177,10 @@ const struct AcceleratorMapping {
 AcceleratorsGtk::AcceleratorsGtk() {
   for (size_t i = 0; i < arraysize(kAcceleratorMap); ++i) {
     int command_id = kAcceleratorMap[i].command_id;
-    menus::AcceleratorGtk accelerator(kAcceleratorMap[i].keyval,
+    ui::AcceleratorGtk accelerator(kAcceleratorMap[i].keyval,
                                       kAcceleratorMap[i].modifier_type);
     all_accelerators_.push_back(
-        std::pair<int, menus::AcceleratorGtk>(command_id, accelerator));
+        std::pair<int, ui::AcceleratorGtk>(command_id, accelerator));
 
     if (primary_accelerators_.find(command_id) ==
         primary_accelerators_.end()) {
@@ -196,9 +196,9 @@ AcceleratorsGtk* AcceleratorsGtk::GetInstance() {
   return Singleton<AcceleratorsGtk>::get();
 }
 
-const menus::AcceleratorGtk* AcceleratorsGtk::GetPrimaryAcceleratorForCommand(
+const ui::AcceleratorGtk* AcceleratorsGtk::GetPrimaryAcceleratorForCommand(
     int command_id) {
-  base::hash_map<int, menus::AcceleratorGtk>::const_iterator iter =
+  base::hash_map<int, ui::AcceleratorGtk>::const_iterator iter =
       primary_accelerators_.find(command_id);
 
   if (iter == primary_accelerators_.end())

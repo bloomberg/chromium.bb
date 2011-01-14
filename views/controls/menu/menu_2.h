@@ -6,8 +6,8 @@
 #define VIEWS_CONTROLS_MENU_MENU_2_H_
 #pragma once
 
-#include "app/menus/menu_model.h"
 #include "base/scoped_ptr.h"
+#include "ui/base/models/menu_model.h"
 #include "views/controls/menu/menu_wrapper.h"
 
 namespace gfx {
@@ -32,7 +32,7 @@ class Menu2 {
   // from the constructor. EG:
   //   MyClass : menu_(this) {}
   // is likely to have problems.
-  explicit Menu2(menus::MenuModel* model);
+  explicit Menu2(ui::MenuModel* model);
   virtual ~Menu2() {}
 
   // How the menu is aligned relative to the point it is shown at.
@@ -74,7 +74,7 @@ class Menu2 {
   void RemoveMenuListener(MenuListener* listener);
 
   // Accessors.
-  menus::MenuModel* model() const { return model_; }
+  ui::MenuModel* model() const { return model_; }
 
   // Sets the minimum width of the menu.
   void SetMinimumWidth(int width);
@@ -82,7 +82,7 @@ class Menu2 {
  private:
   friend class NativeMenuGtk;
 
-  menus::MenuModel* model_;
+  ui::MenuModel* model_;
 
   // The object that actually implements the menu.
   scoped_ptr<MenuWrapper> wrapper_;

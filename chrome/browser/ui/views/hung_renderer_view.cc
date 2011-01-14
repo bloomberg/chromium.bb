@@ -50,14 +50,14 @@ class HungPagesTableModel : public views::GroupTableModel {
   virtual int RowCount();
   virtual string16 GetText(int row, int column_id);
   virtual SkBitmap GetIcon(int row);
-  virtual void SetObserver(TableModelObserver* observer);
+  virtual void SetObserver(ui::TableModelObserver* observer);
   virtual void GetGroupRangeForItem(int item, views::GroupRange* range);
 
  private:
   typedef std::vector<TabContents*> TabContentsVector;
   TabContentsVector tab_contentses_;
 
-  TableModelObserver* observer_;
+  ui::TableModelObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(HungPagesTableModel);
 };
@@ -106,7 +106,7 @@ SkBitmap HungPagesTableModel::GetIcon(int row) {
   return tab_contentses_.at(row)->GetFavIcon();
 }
 
-void HungPagesTableModel::SetObserver(TableModelObserver* observer) {
+void HungPagesTableModel::SetObserver(ui::TableModelObserver* observer) {
   observer_ = observer;
 }
 

@@ -8,10 +8,10 @@
 
 #include <string>
 
-#include "app/menus/menu_model.h"
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
+#include "ui/base/models/menu_model.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;
@@ -26,7 +26,7 @@ class NavigationEntry;
 // Interface for the showing of the dropdown menu for the Back/Forward buttons.
 // Actual implementations are platform-specific.
 ///////////////////////////////////////////////////////////////////////////////
-class BackForwardMenuModel : public menus::MenuModel {
+class BackForwardMenuModel : public ui::MenuModel {
  public:
   // These are IDs used to identify individual UI elements within the
   // browser window using View::GetViewByID.
@@ -50,11 +50,11 @@ class BackForwardMenuModel : public menus::MenuModel {
   virtual string16 GetLabelAt(int index) const;
   virtual bool IsItemDynamicAt(int index) const;
   virtual bool GetAcceleratorAt(int index,
-                                menus::Accelerator* accelerator) const;
+                                ui::Accelerator* accelerator) const;
   virtual bool IsItemCheckedAt(int index) const;
   virtual int GetGroupIdAt(int index) const;
   virtual bool GetIconAt(int index, SkBitmap* icon) const;
-  virtual menus::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
+  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
   virtual bool IsEnabledAt(int index) const;
   virtual MenuModel* GetSubmenuModelAt(int index) const;
   virtual void HighlightChangedTo(int index);

@@ -5,7 +5,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "app/l10n_util_mac.h"
-#include "app/tree_model.h"
 #import "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
@@ -28,23 +27,24 @@
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#include "ui/base/models/tree_model.h"
 
 // Used to test FindCocoaNode. This only sets the title and node, without
 // initializing any other members.
 @interface FakeCocoaCookieTreeNode : CocoaCookieTreeNode {
-  TreeModelNode* testNode_;
+  ui::TreeModelNode* testNode_;
 }
-- (id)initWithTreeNode:(TreeModelNode*)node;
+- (id)initWithTreeNode:(ui::TreeModelNode*)node;
 @end
 @implementation FakeCocoaCookieTreeNode
-- (id)initWithTreeNode:(TreeModelNode*)node {
+- (id)initWithTreeNode:(ui::TreeModelNode*)node {
   if ((self = [super init])) {
     testNode_ = node;
     children_.reset([[NSMutableArray alloc] init]);
   }
   return self;
 }
-- (TreeModelNode*)treeNode {
+- (ui::TreeModelNode*)treeNode {
   return testNode_;
 }
 @end
@@ -73,11 +73,11 @@ class CookiesWindowControllerTest : public CocoaTest {
     CocoaTest::TearDown();
   }
 
-  CocoaCookieTreeNode* CocoaNodeFromTreeNode(TreeModelNode* node) {
+  CocoaCookieTreeNode* CocoaNodeFromTreeNode(ui::TreeModelNode* node) {
     return [controller_ modelObserver]->CocoaNodeFromTreeNode(node);
   }
 
-  CocoaCookieTreeNode* FindCocoaNode(TreeModelNode* node,
+  CocoaCookieTreeNode* FindCocoaNode(ui::TreeModelNode* node,
                                      CocoaCookieTreeNode* start) {
     return [controller_ modelObserver]->FindCocoaNode(node, start);
   }
@@ -98,16 +98,20 @@ TEST_F(CookiesWindowControllerTest, Construction) {
 }
 
 TEST_F(CookiesWindowControllerTest, FindCocoaNodeRoot) {
-  scoped_ptr< TreeNodeWithValue<int> > search(new TreeNodeWithValue<int>(42));
+  scoped_ptr< ui::TreeNodeWithValue<int> > search(
+      new TreeNodeWithValue<int>(42));
   scoped_nsobject<FakeCocoaCookieTreeNode> node(
       [[FakeCocoaCookieTreeNode alloc] initWithTreeNode:search.get()]);
   EXPECT_EQ(node.get(), FindCocoaNode(search.get(), node.get()));
 }
 
 TEST_F(CookiesWindowControllerTest, FindCocoaNodeImmediateChild) {
-  scoped_ptr< TreeNodeWithValue<int> > parent(new TreeNodeWithValue<int>(100));
-  scoped_ptr< TreeNodeWithValue<int> > child1(new TreeNodeWithValue<int>(10));
-  scoped_ptr< TreeNodeWithValue<int> > child2(new TreeNodeWithValue<int>(20));
+  scoped_ptr< ui::TreeNodeWithValue<int> > parent(
+      new TreeNodeWithValue<int>(100));
+  scoped_ptr< ui::TreeNodeWithValue<int> > child1(
+      new TreeNodeWithValue<int>(10));
+  scoped_ptr< ui::TreeNodeWithValue<int> > child2(
+      new TreeNodeWithValue<int>(20));
   scoped_nsobject<FakeCocoaCookieTreeNode> cocoaParent(
       [[FakeCocoaCookieTreeNode alloc] initWithTreeNode:parent.get()]);
   scoped_nsobject<FakeCocoaCookieTreeNode> cocoaChild1(
@@ -121,9 +125,12 @@ TEST_F(CookiesWindowControllerTest, FindCocoaNodeImmediateChild) {
 }
 
 TEST_F(CookiesWindowControllerTest, FindCocoaNodeRecursive) {
-  scoped_ptr< TreeNodeWithValue<int> > parent(new TreeNodeWithValue<int>(100));
-  scoped_ptr< TreeNodeWithValue<int> > child1(new TreeNodeWithValue<int>(10));
-  scoped_ptr< TreeNodeWithValue<int> > child2(new TreeNodeWithValue<int>(20));
+  scoped_ptr< ui::TreeNodeWithValue<int> > parent(
+      new TreeNodeWithValue<int>(100));
+  scoped_ptr< ui::TreeNodeWithValue<int> > child1(
+      new TreeNodeWithValue<int>(10));
+  scoped_ptr< ui::TreeNodeWithValue<int> > child2(
+      new TreeNodeWithValue<int>(20));
   scoped_nsobject<FakeCocoaCookieTreeNode> cocoaParent(
       [[FakeCocoaCookieTreeNode alloc] initWithTreeNode:parent.get()]);
   scoped_nsobject<FakeCocoaCookieTreeNode> cocoaChild1(
@@ -142,7 +149,8 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeCookie) {
   CookiesTreeModel model(cm, database_helper_, local_storage_helper_, nil, nil);
 
   // Root --> foo.com --> Cookies --> A. Create node for 'A'.
-  TreeModelNode* node = model.GetRoot()->GetChild(0)->GetChild(0)->GetChild(0);
+  ui::TreeModelNode* node =
+      model.GetRoot()->GetChild(0)->GetChild(0)->GetChild(0);
   CocoaCookieTreeNode* cookie = CocoaNodeFromTreeNode(node);
 
   CocoaCookieDetails* details = [cookie details];

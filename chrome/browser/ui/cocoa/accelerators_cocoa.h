@@ -8,7 +8,7 @@
 
 #include <map>
 
-#include "app/menus/accelerator_cocoa.h"
+#include "ui/base/models/accelerator_cocoa.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -26,10 +26,10 @@ template <typename T> struct DefaultSingletonTraits;
 //
 class AcceleratorsCocoa {
  public:
-  typedef std::map<int, menus::AcceleratorCocoa> AcceleratorCocoaMap;
+  typedef std::map<int, ui::AcceleratorCocoa> AcceleratorCocoaMap;
 
   // Returns NULL if there is no accelerator for the command.
-  const menus::AcceleratorCocoa* GetAcceleratorForCommand(int command_id);
+  const ui::AcceleratorCocoa* GetAcceleratorForCommand(int command_id);
 
   // Returns the singleton instance.
   static AcceleratorsCocoa* GetInstance();

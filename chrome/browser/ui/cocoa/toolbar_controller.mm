@@ -9,8 +9,6 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "app/mac/nsimage_cache.h"
-#include "app/menus/accelerator_cocoa.h"
-#include "app/menus/menu_model.h"
 #include "app/resource_bundle.h"
 #include "base/mac/mac_util.h"
 #include "base/singleton.h"
@@ -57,6 +55,8 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/models/accelerator_cocoa.h"
+#include "ui/base/models/menu_model.h"
 
 namespace {
 
@@ -101,16 +101,16 @@ const CGFloat kWrenchMenuLeftPadding = 3.0;
 namespace ToolbarControllerInternal {
 
 // A C++ delegate that handles the accelerators in the wrench menu.
-class WrenchAcceleratorDelegate : public menus::AcceleratorProvider {
+class WrenchAcceleratorDelegate : public ui::AcceleratorProvider {
  public:
   virtual bool GetAcceleratorForCommandId(int command_id,
-      menus::Accelerator* accelerator_generic) {
+      ui::Accelerator* accelerator_generic) {
     // Downcast so that when the copy constructor is invoked below, the key
     // string gets copied, too.
-    menus::AcceleratorCocoa* out_accelerator =
-        static_cast<menus::AcceleratorCocoa*>(accelerator_generic);
+    ui::AcceleratorCocoa* out_accelerator =
+        static_cast<ui::AcceleratorCocoa*>(accelerator_generic);
     AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
-    const menus::AcceleratorCocoa* accelerator =
+    const ui::AcceleratorCocoa* accelerator =
         keymap->GetAcceleratorForCommand(command_id);
     if (accelerator) {
       *out_accelerator = *accelerator;

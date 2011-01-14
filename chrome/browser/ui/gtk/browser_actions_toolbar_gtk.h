@@ -11,7 +11,6 @@
 
 #include "app/gtk_signal.h"
 #include "app/gtk_signal_registrar.h"
-#include "app/menus/simple_menu_model.h"
 #include "base/linked_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/models/simple_menu_model.h"
 
 class Browser;
 class BrowserActionButton;
@@ -36,7 +36,7 @@ typedef struct _GtkWidget GtkWidget;
 class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
                                  public ui::AnimationDelegate,
                                  public MenuGtk::Delegate,
-                                 public menus::SimpleMenuModel::Delegate,
+                                 public ui::SimpleMenuModel::Delegate,
                                  public NotificationObserver {
  public:
   explicit BrowserActionsToolbarGtk(Browser* browser);
@@ -121,7 +121,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      menus::Accelerator* accelerator);
+      ui::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
   // MenuGtk::Delegate implementation.
@@ -186,7 +186,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   // mode. In Chrome theme mode, the overflow button has a separator built in.
   GtkWidget* separator_;
   scoped_ptr<MenuGtk> overflow_menu_;
-  scoped_ptr<menus::SimpleMenuModel> overflow_menu_model_;
+  scoped_ptr<ui::SimpleMenuModel> overflow_menu_model_;
   GtkWidget* overflow_area_;
   // A widget for adding extra padding to the left of the overflow button.
   GtkWidget* overflow_alignment_;

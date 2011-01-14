@@ -1,18 +1,18 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_MENUS_ACCELERATOR_GTK_H_
-#define APP_MENUS_ACCELERATOR_GTK_H_
+#ifndef UI_BASE_MODELS_ACCELERATOR_GTK_H_
+#define UI_BASE_MODELS_ACCELERATOR_GTK_H_
 #pragma once
 
 #include <gdk/gdk.h>
 
-#include "app/menus/accelerator.h"
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #include "ui/base/keycodes/keyboard_codes_posix.h"
+#include "ui/base/models/accelerator.h"
 
-namespace menus {
+namespace ui {
 
 class AcceleratorGtk : public Accelerator {
  public:
@@ -54,6 +54,6 @@ class AcceleratorGtk : public Accelerator {
   guint gdk_keyval_;
 };
 
-}  // namespace menus
+}  // namespace ui
 
-#endif  // APP_MENUS_ACCELERATOR_GTK_H_
+#endif  // UI_BASE_MODELS_ACCELERATOR_GTK_H_

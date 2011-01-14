@@ -8,12 +8,12 @@
 
 #include <string>
 
-#include "app/menus/simple_menu_model.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
@@ -27,7 +27,7 @@ namespace chromeos {
 // create a button widget (e.g. views::MenuButton, chromeos::StatusAreaButton)
 // which shows the dropdown menu on click.
 class InputMethodMenu : public views::ViewMenuDelegate,
-                        public menus::MenuModel,
+                        public ui::MenuModel,
                         public InputMethodLibrary::Observer,
                         public NotificationObserver {
  public:
@@ -39,21 +39,21 @@ class InputMethodMenu : public views::ViewMenuDelegate,
                   bool is_out_of_box_experience_mode);
   virtual ~InputMethodMenu();
 
-  // menus::MenuModel implementation.
+  // ui::MenuModel implementation.
   virtual bool HasIcons() const;
   virtual int GetItemCount() const;
-  virtual menus::MenuModel::ItemType GetTypeAt(int index) const;
+  virtual ui::MenuModel::ItemType GetTypeAt(int index) const;
   virtual int GetCommandIdAt(int index) const;
   virtual string16 GetLabelAt(int index) const;
   virtual bool IsItemDynamicAt(int index) const;
   virtual bool GetAcceleratorAt(int index,
-                                menus::Accelerator* accelerator) const;
+                                ui::Accelerator* accelerator) const;
   virtual bool IsItemCheckedAt(int index) const;
   virtual int GetGroupIdAt(int index) const;
   virtual bool GetIconAt(int index, SkBitmap* icon) const;
-  virtual menus::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
+  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
   virtual bool IsEnabledAt(int index) const;
-  virtual menus::MenuModel* GetSubmenuModelAt(int index) const;
+  virtual ui::MenuModel* GetSubmenuModelAt(int index) const;
   virtual void HighlightChangedTo(int index);
   virtual void ActivatedAt(int index);
   virtual void MenuWillShow();
@@ -152,10 +152,10 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   StringPrefMember previous_input_method_pref_;
   StringPrefMember current_input_method_pref_;
 
-  // We borrow menus::SimpleMenuModel implementation to maintain the current
-  // content of the pop-up menu. The menus::MenuModel is implemented using this
+  // We borrow ui::SimpleMenuModel implementation to maintain the current
+  // content of the pop-up menu. The ui::MenuModel is implemented using this
   // |model_|.
-  scoped_ptr<menus::SimpleMenuModel> model_;
+  scoped_ptr<ui::SimpleMenuModel> model_;
 
   // The language menu which pops up when the button in status area is clicked.
   views::Menu2 input_method_menu_;

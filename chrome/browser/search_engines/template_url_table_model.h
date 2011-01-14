@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "app/table_model.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
+#include "ui/base/models/table_model.h"
 
 class ModelEntry;
 class SkBitmap;
@@ -30,7 +30,7 @@ class TemplateURLModel;
 // the favicon. The entries in the model are sorted such that non-generated
 // appear first (grouped together) and are followed by generated keywords.
 
-class TemplateURLTableModel : public TableModel,
+class TemplateURLTableModel : public ui::TableModel,
                                      TemplateURLModelObserver {
  public:
   explicit TemplateURLTableModel(TemplateURLModel* template_url_model);
@@ -41,11 +41,11 @@ class TemplateURLTableModel : public TableModel,
   // if the TemplateURLModel wasn't initially loaded and has been loaded.
   void Reload();
 
-  // TableModel overrides.
+  // ui::TableModel overrides.
   virtual int RowCount() OVERRIDE;
   virtual string16 GetText(int row, int column) OVERRIDE;
   virtual SkBitmap GetIcon(int row) OVERRIDE;
-  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
+  virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
   virtual bool HasGroups() OVERRIDE;
   virtual Groups GetGroups() OVERRIDE;
   virtual int GetGroupID(int row) OVERRIDE;
@@ -98,7 +98,7 @@ class TemplateURLTableModel : public TableModel,
   // TemplateURLModelObserver notification.
   virtual void OnTemplateURLModelChanged();
 
-  TableModelObserver* observer_;
+  ui::TableModelObserver* observer_;
 
   // The entries.
   std::vector<ModelEntry*> entries_;

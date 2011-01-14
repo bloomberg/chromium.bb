@@ -13,9 +13,9 @@
 
 class DictionaryValue;
 
-namespace menus {
+namespace ui{
 class MenuModel;
-}  // namespace menus
+}  // namespace ui
 
 namespace chromeos {
 
@@ -41,10 +41,10 @@ class MenuUI : public DOMUI {
 
   // A callback method that is invoked when a menu model associated
   // with the DOMUI Menu gets updated.
-  virtual void ModelUpdated(const menus::MenuModel* new_model);
+  virtual void ModelUpdated(const ui::MenuModel* new_model);
 
   // Creates a menu item for the menu item at index in the model.
-  virtual DictionaryValue* CreateMenuItem(const menus::MenuModel* model,
+  virtual DictionaryValue* CreateMenuItem(const ui::MenuModel* model,
                                           int index,
                                           const char* type,
                                           int* max_icon_width,
@@ -86,7 +86,7 @@ class MenuHandlerBase : public DOMMessageHandler {
 
   // Returns the menu model for this menu ui.
   // This may return null when menu is being deleted.
-  menus::MenuModel* GetMenuModel();
+  ui::MenuModel* GetMenuModel();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MenuHandlerBase);

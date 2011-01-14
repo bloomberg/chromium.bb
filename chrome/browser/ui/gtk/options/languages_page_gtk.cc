@@ -27,7 +27,7 @@ namespace {
 
 const int kWrapWidth = 475;
 
-GtkWidget* NewComboboxFromModel(ComboboxModel* model) {
+GtkWidget* NewComboboxFromModel(ui::ComboboxModel* model) {
   GtkWidget* combobox = gtk_combo_box_new_text();
   int count = model->GetItemCount();
   for (int i = 0; i < count; ++i)

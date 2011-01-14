@@ -266,8 +266,8 @@ void CookiesViewHandler::RegisterMessages() {
       NewCallback(this, &CookiesViewHandler::LoadChildren));
 }
 
-void CookiesViewHandler::TreeNodesAdded(TreeModel* model,
-                                        TreeModelNode* parent,
+void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
+                                        ui::TreeModelNode* parent,
                                         int start,
                                         int count) {
   // Skip if there is a batch update in progress.
@@ -286,8 +286,8 @@ void CookiesViewHandler::TreeNodesAdded(TreeModel* model,
   dom_ui_->CallJavascriptFunction(L"CookiesView.onTreeItemAdded", args);
 }
 
-void CookiesViewHandler::TreeNodesRemoved(TreeModel* model,
-                                          TreeModelNode* parent,
+void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
+                                          ui::TreeModelNode* parent,
                                           int start,
                                           int count) {
   // Skip if there is a batch update in progress.

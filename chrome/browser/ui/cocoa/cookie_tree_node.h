@@ -24,7 +24,7 @@
 // Common getters..
 - (NSString*)title;
 - (CocoaCookieDetailsType)nodeType;
-- (TreeModelNode*)treeNode;
+- (ui::TreeModelNode*)treeNode;
 
 // |-mutableChildren| exists so that the CookiesTreeModelObserverBridge can
 // operate on the children. Note that this lazily creates children.

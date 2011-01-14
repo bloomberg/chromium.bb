@@ -69,7 +69,7 @@ WrenchMenuUI::WrenchMenuUI(TabContents* contents)
                  Source<Profile>(GetProfile()));
 }
 
-void WrenchMenuUI::ModelUpdated(const menus::MenuModel* new_model) {
+void WrenchMenuUI::ModelUpdated(const ui::MenuModel* new_model) {
   MenuUI::ModelUpdated(new_model);
   UpdateZoomControls();
 }
@@ -104,7 +104,7 @@ void WrenchMenuUI::UpdateZoomControls() {
   CallJavascriptFunction(L"updateZoomControls", params);
 }
 
-views::Menu2* WrenchMenuUI::CreateMenu2(menus::MenuModel* model) {
+views::Menu2* WrenchMenuUI::CreateMenu2(ui::MenuModel* model) {
   views::Menu2* menu = new views::Menu2(model);
   NativeMenuDOMUI::SetMenuURL(
       menu, GURL(StringPrintf("chrome://%s", chrome::kChromeUIWrenchMenu)));

@@ -71,35 +71,35 @@ void NativeMenuX::SetMinimumWidth(int width) {
 
 bool NativeMenuX::IsItemChecked(int cmd) const {
   int index;
-  menus::MenuModel* model = model_;
-  if (!menus::MenuModel::GetModelAndIndexForCommandId(cmd, &model, &index))
+  ui::MenuModel* model = model_;
+  if (!ui::MenuModel::GetModelAndIndexForCommandId(cmd, &model, &index))
     return false;
   return model->IsItemCheckedAt(index);
 }
 
 bool NativeMenuX::IsCommandEnabled(int cmd) const {
   int index;
-  menus::MenuModel* model = model_;
-  if (!menus::MenuModel::GetModelAndIndexForCommandId(cmd, &model, &index))
+  ui::MenuModel* model = model_;
+  if (!ui::MenuModel::GetModelAndIndexForCommandId(cmd, &model, &index))
     return false;
   return model->IsEnabledAt(index);
 }
 
 void NativeMenuX::ExecuteCommand(int cmd) {
   int index;
-  menus::MenuModel* model = model_;
-  if (!menus::MenuModel::GetModelAndIndexForCommandId(cmd, &model, &index))
+  ui::MenuModel* model = model_;
+  if (!ui::MenuModel::GetModelAndIndexForCommandId(cmd, &model, &index))
     return;
   model->ActivatedAt(index);
 }
 
 bool NativeMenuX::GetAccelerator(int id, views::Accelerator* accelerator) {
   int index;
-  menus::MenuModel* model = model_;
-  if (!menus::MenuModel::GetModelAndIndexForCommandId(id, &model, &index))
+  ui::MenuModel* model = model_;
+  if (!ui::MenuModel::GetModelAndIndexForCommandId(id, &model, &index))
     return false;
 
-  menus::Accelerator menu_accelerator;
+  ui::Accelerator menu_accelerator;
   if (!model->GetAcceleratorAt(index, &menu_accelerator))
     return false;
 
@@ -110,7 +110,7 @@ bool NativeMenuX::GetAccelerator(int id, views::Accelerator* accelerator) {
 
 // private
 void NativeMenuX::AddMenuItemsFromModel(MenuItemView* parent,
-                                        menus::MenuModel* model) {
+                                        ui::MenuModel* model) {
   for (int i = 0; i < model->GetItemCount(); ++i) {
     int index = i + model->GetFirstItemIndex(NULL);
     MenuItemView* child = parent->AppendMenuItemFromModel(model, index,
@@ -123,10 +123,10 @@ void NativeMenuX::AddMenuItemsFromModel(MenuItemView* parent,
 }
 
 void NativeMenuX::UpdateMenuFromModel(SubmenuView* menu,
-                                      menus::MenuModel* model) {
+                                      ui::MenuModel* model) {
   for (int i = 0, sep = 0; i < model->GetItemCount(); ++i) {
     int index = i + model->GetFirstItemIndex(NULL);
-    if (model->GetTypeAt(index) == menus::MenuModel::TYPE_SEPARATOR) {
+    if (model->GetTypeAt(index) == ui::MenuModel::TYPE_SEPARATOR) {
       ++sep;
       continue;
     }
@@ -147,7 +147,7 @@ void NativeMenuX::UpdateMenuFromModel(SubmenuView* menu,
       mitem->SetIcon(icon);
     }
 
-    if (model->GetTypeAt(index) == menus::MenuModel::TYPE_SUBMENU) {
+    if (model->GetTypeAt(index) == ui::MenuModel::TYPE_SUBMENU) {
       DCHECK(mitem->HasSubmenu());
       UpdateMenuFromModel(mitem->GetSubmenu(), model->GetSubmenuModelAt(index));
     }

@@ -121,7 +121,7 @@ void BrowserFrameGtk::SetInitialFocus() {
 }
 
 bool BrowserFrameGtk::GetAccelerator(int cmd_id,
-                                     menus::Accelerator* accelerator) {
+                                     ui::Accelerator* accelerator) {
   return browser_view_->GetAccelerator(cmd_id, accelerator);
 }
 

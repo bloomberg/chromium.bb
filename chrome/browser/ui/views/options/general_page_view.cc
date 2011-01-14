@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "app/combobox_model.h"
 #include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
@@ -36,6 +35,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/models/combobox_model.h"
 #include "views/controls/button/radio_button.h"
 #include "views/controls/label.h"
 #include "views/controls/table/table_view.h"
@@ -76,7 +76,7 @@ class OptionsGroupContents : public views::View {
 ///////////////////////////////////////////////////////////////////////////////
 // SearchEngineListModel
 
-class SearchEngineListModel : public ComboboxModel,
+class SearchEngineListModel : public ui::ComboboxModel,
                               public TemplateURLModelObserver {
  public:
   explicit SearchEngineListModel(Profile* profile);
@@ -86,7 +86,7 @@ class SearchEngineListModel : public ComboboxModel,
   // so that when the TemplateURLModel changes the combobox can be updated.
   void SetCombobox(views::Combobox* combobox);
 
-  // ComboboxModel overrides:
+  // ui::ComboboxModel overrides:
   virtual int GetItemCount();
   virtual string16 GetItemAt(int index);
 

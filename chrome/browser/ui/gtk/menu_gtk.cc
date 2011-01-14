@@ -6,9 +6,6 @@
 
 #include <map>
 
-#include "app/menus/accelerator_gtk.h"
-#include "app/menus/button_menu_item_model.h"
-#include "app/menus/menu_model.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -20,6 +17,9 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/models/accelerator_gtk.h"
+#include "ui/base/models/button_menu_item_model.h"
+#include "ui/base/models/menu_model.h"
 #include "webkit/glue/window_open_disposition.h"
 
 bool MenuGtk::block_activation_ = false;
@@ -47,13 +47,13 @@ bool GetMenuItemID(GtkWidget* menu_item, int* menu_id) {
   return false;
 }
 
-menus::MenuModel* ModelForMenuItem(GtkMenuItem* menu_item) {
-  return reinterpret_cast<menus::MenuModel*>(
+ui::MenuModel* ModelForMenuItem(GtkMenuItem* menu_item) {
+  return reinterpret_cast<ui::MenuModel*>(
       g_object_get_data(G_OBJECT(menu_item), "model"));
 }
 
 void SetupButtonShowHandler(GtkWidget* button,
-                            menus::ButtonMenuItemModel* model,
+                            ui::ButtonMenuItemModel* model,
                             int index) {
   g_object_set_data(G_OBJECT(button), "button-model",
                     model);
@@ -275,7 +275,7 @@ GtkWidget* MenuGtk::Delegate::GetImageForCommandId(int command_id) const {
 }
 
 MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
-                 menus::MenuModel* model)
+                 ui::MenuModel* model)
     : delegate_(delegate),
       model_(model),
       dummy_accel_group_(gtk_accel_group_new()),
@@ -343,7 +343,7 @@ GtkWidget* MenuGtk::AppendMenuItem(int command_id, GtkWidget* menu_item) {
 }
 
 GtkWidget* MenuGtk::AppendMenuItemToMenu(int index,
-                                         menus::MenuModel* model,
+                                         ui::MenuModel* model,
                                          GtkWidget* menu_item,
                                          GtkWidget* menu,
                                          bool connect_to_activate) {
@@ -443,7 +443,7 @@ void MenuGtk::BuildMenuFromModel() {
   BuildSubmenuFromModel(model_, menu_);
 }
 
-void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
+void MenuGtk::BuildSubmenuFromModel(ui::MenuModel* model, GtkWidget* menu) {
   std::map<int, GtkWidget*> radio_groups;
   GtkWidget* menu_item = NULL;
   for (int i = 0; i < model->GetItemCount(); ++i) {
@@ -454,15 +454,15 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
     bool connect_to_activate = true;
 
     switch (model->GetTypeAt(i)) {
-      case menus::MenuModel::TYPE_SEPARATOR:
+      case ui::MenuModel::TYPE_SEPARATOR:
         menu_item = gtk_separator_menu_item_new();
         break;
 
-      case menus::MenuModel::TYPE_CHECK:
+      case ui::MenuModel::TYPE_CHECK:
         menu_item = gtk_check_menu_item_new_with_mnemonic(label.c_str());
         break;
 
-      case menus::MenuModel::TYPE_RADIO: {
+      case ui::MenuModel::TYPE_RADIO: {
         std::map<int, GtkWidget*>::iterator iter =
             radio_groups.find(model->GetGroupIdAt(i));
 
@@ -476,15 +476,15 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
         }
         break;
       }
-      case menus::MenuModel::TYPE_BUTTON_ITEM: {
-        menus::ButtonMenuItemModel* button_menu_item_model =
+      case ui::MenuModel::TYPE_BUTTON_ITEM: {
+        ui::ButtonMenuItemModel* button_menu_item_model =
             model->GetButtonMenuItemAt(i);
         menu_item = BuildButtomMenuItem(button_menu_item_model, menu);
         connect_to_activate = false;
         break;
       }
-      case menus::MenuModel::TYPE_SUBMENU:
-      case menus::MenuModel::TYPE_COMMAND: {
+      case ui::MenuModel::TYPE_SUBMENU:
+      case ui::MenuModel::TYPE_COMMAND: {
         int command_id = model->GetCommandIdAt(i);
         if (model->GetIconAt(i, &icon))
           menu_item = BuildMenuItemWithImage(label, icon);
@@ -500,13 +500,13 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
         NOTREACHED();
     }
 
-    if (model->GetTypeAt(i) == menus::MenuModel::TYPE_SUBMENU) {
+    if (model->GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU) {
       GtkWidget* submenu = gtk_menu_new();
       BuildSubmenuFromModel(model->GetSubmenuModelAt(i), submenu);
       gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
     }
 
-    menus::AcceleratorGtk accelerator;
+    ui::AcceleratorGtk accelerator;
     if (model->GetAcceleratorAt(i, &accelerator)) {
       gtk_widget_add_accelerator(menu_item,
                                  "activate",
@@ -523,7 +523,7 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
   }
 }
 
-GtkWidget* MenuGtk::BuildButtomMenuItem(menus::ButtonMenuItemModel* model,
+GtkWidget* MenuGtk::BuildButtomMenuItem(ui::ButtonMenuItemModel* model,
                                         GtkWidget* menu) {
   GtkWidget* menu_item = gtk_custom_menu_item_new(
       gfx::RemoveWindowsStyleAccelerators(UTF16ToUTF8(model->label())).c_str());
@@ -540,11 +540,11 @@ GtkWidget* MenuGtk::BuildButtomMenuItem(menus::ButtonMenuItemModel* model,
     GtkWidget* button = NULL;
 
     switch (model->GetTypeAt(i)) {
-      case menus::ButtonMenuItemModel::TYPE_SPACE: {
+      case ui::ButtonMenuItemModel::TYPE_SPACE: {
         gtk_custom_menu_item_add_space(GTK_CUSTOM_MENU_ITEM(menu_item));
         break;
       }
-      case menus::ButtonMenuItemModel::TYPE_BUTTON: {
+      case ui::ButtonMenuItemModel::TYPE_BUTTON: {
         button = gtk_custom_menu_item_add_button(
             GTK_CUSTOM_MENU_ITEM(menu_item),
             model->GetCommandIdAt(i));
@@ -562,7 +562,7 @@ GtkWidget* MenuGtk::BuildButtomMenuItem(menus::ButtonMenuItemModel* model,
         SetupButtonShowHandler(button, model, i);
         break;
       }
-      case menus::ButtonMenuItemModel::TYPE_BUTTON_LABEL: {
+      case ui::ButtonMenuItemModel::TYPE_BUTTON_LABEL: {
         button = gtk_custom_menu_item_add_button_label(
             GTK_CUSTOM_MENU_ITEM(menu_item),
             model->GetCommandIdAt(i));
@@ -610,7 +610,7 @@ void MenuGtk::OnMenuItemActivated(GtkWidget* menuitem) {
   if (!GetMenuItemID(menuitem, &id))
     return;
 
-  menus::MenuModel* model = ModelForMenuItem(GTK_MENU_ITEM(menuitem));
+  ui::MenuModel* model = ModelForMenuItem(GTK_MENU_ITEM(menuitem));
 
   // The menu item can still be activated by hotkeys even if it is disabled.
   if (model->IsEnabledAt(id))
@@ -618,8 +618,8 @@ void MenuGtk::OnMenuItemActivated(GtkWidget* menuitem) {
 }
 
 void MenuGtk::OnMenuButtonPressed(GtkWidget* menu_item, int command_id) {
-  menus::ButtonMenuItemModel* model =
-      reinterpret_cast<menus::ButtonMenuItemModel*>(
+  ui::ButtonMenuItemModel* model =
+      reinterpret_cast<ui::ButtonMenuItemModel*>(
           g_object_get_data(G_OBJECT(menu_item), "button-model"));
   if (model && model->IsCommandIdEnabled(command_id)) {
     if (delegate_)
@@ -632,8 +632,8 @@ void MenuGtk::OnMenuButtonPressed(GtkWidget* menu_item, int command_id) {
 gboolean MenuGtk::OnMenuTryButtonPressed(GtkWidget* menu_item,
                                          int command_id) {
   gboolean pressed = FALSE;
-  menus::ButtonMenuItemModel* model =
-      reinterpret_cast<menus::ButtonMenuItemModel*>(
+  ui::ButtonMenuItemModel* model =
+      reinterpret_cast<ui::ButtonMenuItemModel*>(
           g_object_get_data(G_OBJECT(menu_item), "button-model"));
   if (model &&
       model->IsCommandIdEnabled(command_id) &&
@@ -710,7 +710,7 @@ void MenuGtk::PointMenuPositionFunc(GtkMenu* menu,
   *y = CalculateMenuYPosition(&screen_rect, &menu_req, NULL, *y);
 }
 
-void MenuGtk::ExecuteCommand(menus::MenuModel* model, int id) {
+void MenuGtk::ExecuteCommand(ui::MenuModel* model, int id) {
   if (delegate_)
     delegate_->CommandWillBeExecuted();
 
@@ -738,8 +738,8 @@ void MenuGtk::OnMenuHidden(GtkWidget* widget) {
 
 // static
 void MenuGtk::SetButtonItemInfo(GtkWidget* button, gpointer userdata) {
-  menus::ButtonMenuItemModel* model =
-      reinterpret_cast<menus::ButtonMenuItemModel*>(
+  ui::ButtonMenuItemModel* model =
+      reinterpret_cast<ui::ButtonMenuItemModel*>(
           g_object_get_data(G_OBJECT(button), "button-model"));
   int index = GPOINTER_TO_INT(g_object_get_data(
       G_OBJECT(button), "button-model-id"));
@@ -766,7 +766,7 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
   if (!GetMenuItemID(widget, &id))
     return;
 
-  menus::MenuModel* model = ModelForMenuItem(GTK_MENU_ITEM(widget));
+  ui::MenuModel* model = ModelForMenuItem(GTK_MENU_ITEM(widget));
   if (!model) {
     // If we're not providing the sub menu, then there's no model.  For
     // example, the IME submenu doesn't have a model.

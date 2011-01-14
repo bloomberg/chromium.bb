@@ -1036,7 +1036,7 @@ bool AutocompleteEditViewWin::IsCommandIdEnabled(int command_id) const {
 
 bool AutocompleteEditViewWin::GetAcceleratorForCommandId(
     int command_id,
-    menus::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) {
   return parent_view_->GetWidget()->GetAccelerator(command_id, accelerator);
 }
 
@@ -2505,7 +2505,7 @@ void AutocompleteEditViewWin::BuildContextMenu() {
   if (context_menu_contents_.get())
     return;
 
-  context_menu_contents_.reset(new menus::SimpleMenuModel(this));
+  context_menu_contents_.reset(new ui::SimpleMenuModel(this));
   // Set up context menu.
   if (popup_window_mode_) {
     context_menu_contents_->AddItemWithStringId(IDC_COPY, IDS_COPY);

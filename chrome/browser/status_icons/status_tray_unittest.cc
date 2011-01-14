@@ -15,7 +15,7 @@ class MockStatusIcon : public StatusIcon {
   virtual void SetImage(const SkBitmap& image) {}
   virtual void SetPressedImage(const SkBitmap& image) {}
   virtual void SetToolTip(const string16& tool_tip) {}
-  virtual void UpdatePlatformContextMenu(menus::MenuModel* menu) {}
+  virtual void UpdatePlatformContextMenu(ui::MenuModel* menu) {}
   virtual void AddObserver(StatusIcon::Observer* observer) {}
   virtual void RemoveObserver(StatusIcon::Observer* observer) {}
 };
@@ -23,7 +23,7 @@ class MockStatusIcon : public StatusIcon {
 class TestStatusTray : public StatusTray {
  public:
   MOCK_METHOD0(CreatePlatformStatusIcon, StatusIcon*());
-  MOCK_METHOD1(UpdatePlatformContextMenu, void(menus::MenuModel*));
+  MOCK_METHOD1(UpdatePlatformContextMenu, void(ui::MenuModel*));
 };
 
 TEST(StatusTrayTest, Create) {

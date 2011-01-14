@@ -15,16 +15,15 @@
 #include "views/controls/button/button.h"
 #include "views/view.h"
 
+class DefaultEncodingComboboxModel;
+class FontDisplayView;
+
 namespace views {
 class GroupboxView;
 class Label;
 class NativeButton;
 class TableView;
 }
-
-class DefaultEncodingComboboxModel;
-class FontDisplayView;
-class TableModel;
 
 ///////////////////////////////////////////////////////////////////////////////
 // FontsPageView

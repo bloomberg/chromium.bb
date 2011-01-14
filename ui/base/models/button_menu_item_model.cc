@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/menus/button_menu_item_model.h"
+#include "ui/base/models/button_menu_item_model.h"
 
 #include "app/l10n_util.h"
 
-namespace menus {
+namespace ui {
 
 bool ButtonMenuItemModel::Delegate::IsItemForCommandIdDynamic(
     int command_id) const {
@@ -132,4 +132,4 @@ bool ButtonMenuItemModel::DoesCommandIdDismissMenu(int command_id) const {
 }
 
 
-}  // namespace menus
+}  // namespace ui

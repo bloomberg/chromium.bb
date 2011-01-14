@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_UI_GTK_ACCELERATORS_GTK_H_
 #pragma once
 
-#include "app/menus/accelerator_gtk.h"
 #include "base/hash_tables.h"
+#include "ui/base/models/accelerator_gtk.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
 class AcceleratorsGtk {
  public:
-  typedef std::vector<std::pair<int, menus::AcceleratorGtk> >
+  typedef std::vector<std::pair<int, ui::AcceleratorGtk> >
       AcceleratorGtkList;
   typedef AcceleratorGtkList::const_iterator const_iterator;
 
@@ -29,7 +29,7 @@ class AcceleratorsGtk {
   }
 
   // Returns NULL if there is no accelerator for the command.
-  const menus::AcceleratorGtk* GetPrimaryAcceleratorForCommand(int command_id);
+  const ui::AcceleratorGtk* GetPrimaryAcceleratorForCommand(int command_id);
 
  private:
   friend struct DefaultSingletonTraits<AcceleratorsGtk>;
@@ -37,7 +37,7 @@ class AcceleratorsGtk {
   AcceleratorsGtk();
   ~AcceleratorsGtk();
 
-  base::hash_map<int, menus::AcceleratorGtk> primary_accelerators_;
+  base::hash_map<int, ui::AcceleratorGtk> primary_accelerators_;
 
   AcceleratorGtkList all_accelerators_;
 };

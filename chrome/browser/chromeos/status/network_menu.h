@@ -9,11 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "app/menus/menu_model.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "gfx/native_widget_types.h"
-#include "views/controls/menu/view_menu_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/models/simple_menu_model.h"
+#include "views/controls/menu/view_menu_delegate.h"
 
 namespace gfx {
 class Canvas;
@@ -49,7 +49,7 @@ namespace chromeos {
 // <icon> will show the strength of the wifi/cellular networks.
 // The label will be BOLD if the network is currently connected.
 class NetworkMenu : public views::ViewMenuDelegate,
-                    public menus::MenuModel {
+                    public ui::MenuModel {
  public:
   struct NetworkInfo {
     NetworkInfo() :
@@ -87,24 +87,24 @@ class NetworkMenu : public views::ViewMenuDelegate,
                           const std::string& ssid,
                           int remember) const;
 
-  // menus::MenuModel implementation.
+  // ui::MenuModel implementation.
   virtual bool HasIcons() const  { return true; }
   virtual int GetItemCount() const;
-  virtual menus::MenuModel::ItemType GetTypeAt(int index) const;
+  virtual ui::MenuModel::ItemType GetTypeAt(int index) const;
   virtual int GetCommandIdAt(int index) const { return index; }
   virtual string16 GetLabelAt(int index) const;
   virtual bool IsItemDynamicAt(int index) const { return true; }
   virtual const gfx::Font* GetLabelFontAt(int index) const;
   virtual bool GetAcceleratorAt(int index,
-      menus::Accelerator* accelerator) const { return false; }
+      ui::Accelerator* accelerator) const { return false; }
   virtual bool IsItemCheckedAt(int index) const;
   virtual int GetGroupIdAt(int index) const { return 0; }
   virtual bool GetIconAt(int index, SkBitmap* icon) const;
-  virtual menus::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const {
+  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const {
     return NULL;
   }
   virtual bool IsEnabledAt(int index) const;
-  virtual menus::MenuModel* GetSubmenuModelAt(int index) const { return NULL; }
+  virtual ui::MenuModel* GetSubmenuModelAt(int index) const { return NULL; }
   virtual void HighlightChangedTo(int index) {}
   virtual void ActivatedAt(int index);
   virtual void MenuWillShow() {}
@@ -164,9 +164,9 @@ class NetworkMenu : public views::ViewMenuDelegate,
 
   struct MenuItem {
     MenuItem()
-        : type(menus::MenuModel::TYPE_SEPARATOR),
+        : type(ui::MenuModel::TYPE_SEPARATOR),
           flags(0) {}
-    MenuItem(menus::MenuModel::ItemType type, string16 label, SkBitmap icon,
+    MenuItem(ui::MenuModel::ItemType type, string16 label, SkBitmap icon,
              const std::string& wireless_path, int flags)
         : type(type),
           label(label),
@@ -174,7 +174,7 @@ class NetworkMenu : public views::ViewMenuDelegate,
           wireless_path(wireless_path),
           flags(flags) {}
 
-    menus::MenuModel::ItemType type;
+    ui::MenuModel::ItemType type;
     string16 label;
     SkBitmap icon;
     std::string wireless_path;

@@ -14,11 +14,11 @@
 #include <gtk/gtk.h>
 
 #include "app/active_window_watcher_x.h"
-#include "app/menus/simple_menu_model.h"
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "ui/base/models/simple_menu_model.h"
 
 class BrowserWindowGtk;
 class CustomDrawButton;
@@ -29,7 +29,7 @@ class TabContents;
 
 class BrowserTitlebar : public NotificationObserver,
                         public ActiveWindowWatcherX::Observer,
-                        public menus::SimpleMenuModel::Delegate {
+                        public ui::SimpleMenuModel::Delegate {
  public:
   // A default button order string for when we aren't asking gconf for the
   // metacity configuration.
@@ -87,9 +87,9 @@ class BrowserTitlebar : public NotificationObserver,
     int current_waiting_frame_;
   };
 
-  class ContextMenuModel : public menus::SimpleMenuModel {
+  class ContextMenuModel : public ui::SimpleMenuModel {
    public:
-    explicit ContextMenuModel(menus::SimpleMenuModel::Delegate* delegate);
+    explicit ContextMenuModel(ui::SimpleMenuModel::Delegate* delegate);
   };
 
   // Build the titlebar, the space above the tab
@@ -150,7 +150,7 @@ class BrowserTitlebar : public NotificationObserver,
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual void ExecuteCommand(int command_id);
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
+                                          ui::Accelerator* accelerator);
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

@@ -6,8 +6,8 @@
 #define VIEWS_CONTROLS_TABLE_GROUP_TABLE_VIEW_H_
 #pragma once
 
-#include "app/table_model.h"
 #include "base/task.h"
+#include "ui/base/models/table_model.h"
 #include "views/controls/table/table_view.h"
 
 // The GroupTableView adds grouping to the TableView class.

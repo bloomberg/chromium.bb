@@ -9,16 +9,18 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
-#include "app/table_model.h"
 #include "app/win/hwnd_util.h"
 #include "base/logging.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/favicon_size.h"
 #include "gfx/icon_util.h"
 #include "skia/ext/skia_utils_win.h"
+#include "ui/base/models/table_model.h"
 #include "views/controls/table/table_view2.h"
 #include "views/controls/table/table_view_observer.h"
 #include "views/widget/widget.h"
+
+using ui::TableColumn;
 
 namespace views {
 

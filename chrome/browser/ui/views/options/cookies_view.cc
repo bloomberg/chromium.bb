@@ -55,7 +55,7 @@ CookiesTreeView::CookiesTreeView(CookiesTreeModel* cookies_model) {
 }
 
 void CookiesTreeView::RemoveSelectedItems() {
-  TreeModelNode* selected_node = GetSelectedNode();
+  ui::TreeModelNode* selected_node = GetSelectedNode();
   if (selected_node) {
     static_cast<CookiesTreeModel*>(model())->DeleteCookieNode(
         static_cast<CookieTreeNode*>(GetSelectedNode()));
@@ -108,8 +108,8 @@ CookiesView::~CookiesView() {
 ///////////////////////////////////////////////////////////////////////////////
 // CookiesView, TreeModelObserver overrides:
 
-void CookiesView::TreeNodesAdded(TreeModel* model,
-                                 TreeModelNode* parent,
+void CookiesView::TreeNodesAdded(ui::TreeModel* model,
+                                 ui::TreeModelNode* parent,
                                  int start,
                                  int count) {
   UpdateRemoveButtonsState();

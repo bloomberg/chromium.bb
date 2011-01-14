@@ -4,7 +4,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "app/combobox_model.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -12,6 +11,7 @@
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/models/combobox_model.h"
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/button/checkbox.h"
@@ -39,6 +39,8 @@
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #include "views/window/window_gtk.h"
 #endif
+
+using ui::ComboboxModel;  // TODO(beng): remove
 
 namespace {
 const int kWindowWidth = 600;

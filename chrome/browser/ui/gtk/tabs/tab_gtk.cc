@@ -7,7 +7,6 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "app/gtk_dnd_util.h"
-#include "app/menus/accelerator_gtk.h"
 #include "base/singleton.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -17,6 +16,7 @@
 #include "gfx/path.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/models/accelerator_gtk.h"
 
 namespace {
 
@@ -31,7 +31,7 @@ int GetTitleWidth(gfx::Font* font, string16 title) {
 
 }  // namespace
 
-class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate,
+class TabGtk::ContextMenuController : public ui::SimpleMenuModel::Delegate,
                                       public MenuGtk::Delegate {
  public:
   explicit ContextMenuController(TabGtk* tab)
@@ -52,7 +52,7 @@ class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate,
   }
 
  private:
-  // Overridden from menus::SimpleMenuModel::Delegate:
+  // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const {
     return false;
   }
@@ -63,12 +63,12 @@ class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate,
   }
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      menus::Accelerator* accelerator) {
+      ui::Accelerator* accelerator) {
     int browser_command;
     if (!TabStripModel::ContextMenuCommandToBrowserCommand(command_id,
                                                            &browser_command))
       return false;
-    const menus::AcceleratorGtk* accelerator_gtk =
+    const ui::AcceleratorGtk* accelerator_gtk =
         AcceleratorsGtk::GetInstance()->GetPrimaryAcceleratorForCommand(
             browser_command);
     if (accelerator_gtk)

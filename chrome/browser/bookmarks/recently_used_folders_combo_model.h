@@ -8,19 +8,19 @@
 
 #include <vector>
 
-#include "app/combobox_model.h"
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "ui/base/models/combobox_model.h"
 
 // Model for the combobox showing the list of folders to choose from. The
 // list always contains the bookmark bar, other node and parent. The list
 // also contains an extra item that shows the text 'Choose another folder...'.
-class RecentlyUsedFoldersComboModel : public ComboboxModel {
+class RecentlyUsedFoldersComboModel : public ui::ComboboxModel {
  public:
   RecentlyUsedFoldersComboModel(BookmarkModel* model, const BookmarkNode* node);
   virtual ~RecentlyUsedFoldersComboModel();
 
-  // Overridden from ComboboxModel:
+  // Overridden from ui::ComboboxModel:
   virtual int GetItemCount();
   virtual string16 GetItemAt(int index);
 

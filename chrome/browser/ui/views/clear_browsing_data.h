@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_CLEAR_BROWSING_DATA_H_
 #pragma once
 
-#include "app/combobox_model.h"
 #include "chrome/browser/browsing_data_remover.h"
+#include "ui/base/models/combobox_model.h"
 #include "views/controls/button/button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
@@ -35,7 +35,7 @@ class MessageLoop;
 class ClearBrowsingDataView : public views::View,
                               public views::DialogDelegate,
                               public views::ButtonListener,
-                              public ComboboxModel,
+                              public ui::ComboboxModel,
                               public views::Combobox::Listener,
                               public BrowsingDataRemover::Observer,
                               public views::LinkController {
@@ -69,7 +69,7 @@ class ClearBrowsingDataView : public views::View,
   virtual bool GetSizeExtraViewHeightToButtons() { return true; }
   virtual views::View* GetInitiallyFocusedView();
 
-  // Overridden from ComboboxModel:
+  // Overridden from ui::ComboboxModel:
   virtual int GetItemCount();
   virtual string16 GetItemAt(int index);
 

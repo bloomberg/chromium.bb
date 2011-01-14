@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/table_model_observer.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,6 +15,7 @@
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/models/table_model_observer.h"
 
 static const string16 kA(ASCIIToUTF16("a"));
 static const string16 kA1(ASCIIToUTF16("a1"));
@@ -25,7 +25,7 @@ static const string16 kB1(ASCIIToUTF16("b1"));
 // Base class for keyword editor tests. Creates a profile containing an
 // empty TemplateURLModel.
 class KeywordEditorControllerTest : public testing::Test,
-                                    public TableModelObserver {
+                                    public ui::TableModelObserver {
  public:
   // Initializes all of the state.
   void Init(bool simulate_load_failure);

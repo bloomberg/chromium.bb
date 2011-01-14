@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_IMPORTER_VIEW_H_
 #pragma once
 
-#include "app/combobox_model.h"
 #include "base/string16.h"
 #include "chrome/browser/importer/importer.h"
+#include "ui/base/models/combobox_model.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/view.h"
@@ -29,7 +29,7 @@ class Profile;
 class ImporterView : public views::View,
                      public views::DialogDelegate,
                      public views::ButtonListener,
-                     public ComboboxModel,
+                     public ui::ComboboxModel,
                      public views::Combobox::Listener,
                      public ImporterList::Observer,
                      public ImportObserver {
@@ -56,7 +56,7 @@ class ImporterView : public views::View,
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // ComboboxModel implementation.
+  // ui::ComboboxModel implementation.
   virtual int GetItemCount();
   virtual string16 GetItemAt(int index);
 

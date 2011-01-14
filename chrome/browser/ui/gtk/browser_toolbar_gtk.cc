@@ -10,7 +10,6 @@
 
 #include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
-#include "app/menus/accelerator_gtk.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -53,6 +52,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/models/accelerator_gtk.h"
 
 namespace {
 
@@ -332,12 +332,12 @@ bool BrowserToolbarGtk::AlwaysShowIconForCmd(int command_id) const {
          command_id == IDC_VIEW_BACKGROUND_PAGES;
 }
 
-// menus::AcceleratorProvider
+// ui::AcceleratorProvider
 
 bool BrowserToolbarGtk::GetAcceleratorForCommandId(
     int id,
-    menus::Accelerator* accelerator) {
-  const menus::AcceleratorGtk* accelerator_gtk =
+    ui::Accelerator* accelerator) {
+  const ui::AcceleratorGtk* accelerator_gtk =
       AcceleratorsGtk::GetInstance()->GetPrimaryAcceleratorForCommand(id);
   if (accelerator_gtk)
     *accelerator = *accelerator_gtk;

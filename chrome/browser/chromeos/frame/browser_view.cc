@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "app/menus/simple_menu_model.h"
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chromeos/frame/panel_browser_view.h"
@@ -30,6 +29,7 @@
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/menu/menu_2.h"
@@ -373,7 +373,7 @@ void BrowserView::GetAccessiblePanes(
 // BrowserView private:
 
 void BrowserView::InitSystemMenu() {
-  system_menu_contents_.reset(new menus::SimpleMenuModel(this));
+  system_menu_contents_.reset(new ui::SimpleMenuModel(this));
   system_menu_contents_->AddItemWithStringId(IDC_RESTORE_TAB,
                                                IDS_RESTORE_TAB);
   system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);

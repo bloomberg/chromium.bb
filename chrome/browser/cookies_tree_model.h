@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "app/tree_node_model.h"
 #include "base/observer_list.h"
 #include "base/ref_counted.h"
 #include "base/string16.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "net/base/cookie_monster.h"
+#include "ui/base/models/tree_node_model.h"
 
 class CookiesTreeModel;
 class CookieTreeAppCacheNode;
@@ -43,7 +43,7 @@ class CookieTreeOriginNode;
 // view, from which all other types are derived. Specialized from TreeNode in
 // that it has a notion of deleting objects stored in the profile, and being
 // able to have its children do the same.
-class CookieTreeNode : public TreeNode<CookieTreeNode> {
+class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
  public:
   // Used to pull out information for the InfoView (the details display below
   // the tree control.)
@@ -131,7 +131,7 @@ class CookieTreeNode : public TreeNode<CookieTreeNode> {
 
   CookieTreeNode() {}
   explicit CookieTreeNode(const string16& title)
-      : TreeNode<CookieTreeNode>(title) {}
+      : ui::TreeNode<CookieTreeNode>(title) {}
   virtual ~CookieTreeNode() {}
 
   // Delete backend storage for this node, and any children nodes. (E.g. delete
@@ -448,14 +448,14 @@ class CookieTreeIndexedDBsNode : public CookieTreeNode {
 
 
 // CookiesTreeModel -----------------------------------------------------------
-class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
+class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
  public:
   // Because non-cookie nodes are fetched in a background thread, they are not
   // present at the time the Model is created. The Model then notifies its
   // observers for every item added from databases, local storage, and
   // appcache. We extend the Observer interface to add notifications before and
   // after these batch inserts.
-  class Observer : public TreeModelObserver {
+  class Observer : public ui::TreeModelObserver {
    public:
     virtual void TreeModelBeginBatch(CookiesTreeModel* model) {}
     virtual void TreeModelEndBatch(CookiesTreeModel* model) {}
@@ -470,7 +470,7 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
       BrowsingDataIndexedDBHelper* indexed_db_helper);
   virtual ~CookiesTreeModel();
 
-  // TreeModel methods:
+  // ui::TreeModel methods:
   // Returns the set of icons for the nodes in the tree. You only need override
   // this if you don't want to use the default folder icons.
   virtual void GetIcons(std::vector<SkBitmap>* icons);
@@ -478,7 +478,7 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
   // Returns the index of the icon to use for |node|. Return -1 to use the
   // default icon. The index is relative to the list of icons returned from
   // GetIcons.
-  virtual int GetIconIndex(TreeModelNode* node);
+  virtual int GetIconIndex(ui::TreeModelNode* node);
 
   // CookiesTreeModel methods:
   void DeleteAllStoredObjects();

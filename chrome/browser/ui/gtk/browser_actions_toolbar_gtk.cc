@@ -75,7 +75,7 @@ gint WidthForIconCount(gint icon_count) {
 
 }  // namespace
 
-using menus::SimpleMenuModel;
+using ui::SimpleMenuModel;
 
 class BrowserActionButton : public NotificationObserver,
                             public ImageLoadingTracker::Observer,
@@ -660,7 +660,7 @@ bool BrowserActionsToolbarGtk::IsCommandIdEnabled(int command_id) const {
 
 bool BrowserActionsToolbarGtk::GetAcceleratorForCommandId(
     int command_id,
-    menus::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) {
   return false;
 }
 

@@ -18,14 +18,6 @@
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
 
-namespace views {
-
-class Label;
-class NativeButton;
-
-}  // namespace views
-
-
 class AppCacheInfoView;
 class CookieInfoView;
 class CookiesTreeView;
@@ -34,9 +26,16 @@ class IndexedDBInfoView;
 class LocalStorageInfoView;
 class Profile;
 class Timer;
+
+namespace ui {
 class TreeModel;
 class TreeModelNode;
+}  // namespace ui
 
+namespace views {
+class Label;
+class NativeButton;
+}  // namespace views
 
 class CookiesView : public CookiesTreeModel::Observer,
                     public views::View,
@@ -54,15 +53,15 @@ class CookiesView : public CookiesTreeModel::Observer,
   void UpdateSearchResults();
 
   // Begin TreeModelObserver implementation.
-  virtual void TreeNodesAdded(TreeModel* model,
-                              TreeModelNode* parent,
+  virtual void TreeNodesAdded(ui::TreeModel* model,
+                              ui::TreeModelNode* parent,
                               int start,
                               int count);
-  virtual void TreeNodesRemoved(TreeModel* model,
-                                TreeModelNode* parent,
+  virtual void TreeNodesRemoved(ui::TreeModel* model,
+                                ui::TreeModelNode* parent,
                                 int start,
                                 int count) {}
-  virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node) {}
+  virtual void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) {}
   // End TreeModelObserver implementation.
 
   // views::ButtonListener implementation.

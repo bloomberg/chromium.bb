@@ -1,12 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/tree_node_model.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/models/tree_node_model.h"
+
+namespace ui {
 
 class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
  public:
@@ -289,3 +291,5 @@ TEST_F(TreeNodeModelTest, SetTitle) {
   AssertObserverCount(0, 0, 1);
   EXPECT_EQ(title, root->GetTitle());
 }
+
+}  // namespace ui

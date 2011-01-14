@@ -31,7 +31,7 @@ static TabRendererData::NetworkState TabContentsNetworkState(
 }
 
 class BrowserTabStripController::TabContextMenuContents
-    : public menus::SimpleMenuModel::Delegate {
+    : public ui::SimpleMenuModel::Delegate {
  public:
   TabContextMenuContents(BaseTab* tab,
                          BrowserTabStripController* controller)
@@ -57,7 +57,7 @@ class BrowserTabStripController::TabContextMenuContents
     // We could be gone now. Assume |this| is junk!
   }
 
-  // Overridden from menus::SimpleMenuModel::Delegate:
+  // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const {
     return controller_->IsCommandCheckedForTab(
         static_cast<TabStripModel::ContextMenuCommand>(command_id),
@@ -70,7 +70,7 @@ class BrowserTabStripController::TabContextMenuContents
   }
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      menus::Accelerator* accelerator) {
+      ui::Accelerator* accelerator) {
     int browser_cmd;
     return TabStripModel::ContextMenuCommandToBrowserCommand(command_id,
                                                              &browser_cmd) ?

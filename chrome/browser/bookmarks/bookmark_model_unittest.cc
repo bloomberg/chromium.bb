@@ -5,8 +5,6 @@
 #include <string>
 #include <set>
 
-#include "app/tree_node_iterator.h"
-#include "app/tree_node_model.h"
 #include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/hash_tables.h"
@@ -29,6 +27,8 @@
 #include "chrome/test/model_test_utils.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/models/tree_node_model.h"
+#include "ui/base/models/tree_node_iterator.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -566,7 +566,7 @@ TEST_F(BookmarkModelTest, NotifyURLsStarred) {
 namespace {
 
 // See comment in PopulateNodeFromString.
-typedef TreeNodeWithValue<BookmarkNode::Type> TestNode;
+typedef ui::TreeNodeWithValue<BookmarkNode::Type> TestNode;
 
 // Does the work of PopulateNodeFromString. index gives the index of the current
 // element in description to process.
@@ -688,7 +688,7 @@ class BookmarkModelTestWithProfile : public testing::Test,
   }
 
   void VerifyNoDuplicateIDs(BookmarkModel* model) {
-    TreeNodeIterator<const BookmarkNode> it(model->root_node());
+    ui::TreeNodeIterator<const BookmarkNode> it(model->root_node());
     base::hash_set<int64> ids;
     while (it.has_next())
       ASSERT_TRUE(ids.insert(it.Next()->id()).second);

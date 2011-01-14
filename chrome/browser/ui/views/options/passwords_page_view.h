@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "app/table_model.h"
 #include "app/text_elider.h"
 #include "base/compiler_specific.h"
 #include "base/scoped_ptr.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/views/confirm_message_box_dialog.h"
 #include "chrome/browser/ui/views/options/options_page_view.h"
+#include "ui/base/models/table_model.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/table/table_view.h"
@@ -73,7 +73,7 @@ class PasswordsTableModel : public TableModel,
   virtual int RowCount() OVERRIDE;
   virtual string16 GetText(int row, int column) OVERRIDE;
   virtual int CompareValues(int row1, int row2, int column_id) OVERRIDE;
-  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
+  virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
 
   // Delete the PasswordForm at specified row from the database (and remove
   // from view).
@@ -120,7 +120,7 @@ class PasswordsTableModel : public TableModel,
   }
 
   // The TableView observing this model.
-  TableModelObserver* observer_;
+  ui::TableModelObserver* observer_;
 
   // Dispatching row count events specific to this password manager table model
   // to this observer.

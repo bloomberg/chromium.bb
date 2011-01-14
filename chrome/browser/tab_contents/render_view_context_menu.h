@@ -10,11 +10,11 @@
 #include <string>
 #include <vector>
 
-#include "app/menus/simple_menu_model.h"
 #include "base/string16.h"
 #include "base/scoped_vector.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -30,7 +30,7 @@ namespace WebKit {
 struct WebMediaPlayerAction;
 }
 
-class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
+class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate {
  public:
   static const size_t kMaxExtensionItemTitleLength;
   static const size_t kMaxSelectionTextLength;
@@ -55,7 +55,7 @@ class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
   virtual void PlatformInit() = 0;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      menus::Accelerator* accelerator) = 0;
+      ui::Accelerator* accelerator) = 0;
   virtual void LookUpInDictionary();
 
   // Attempts to get an ExtensionMenuItem given the id of a context menu item.
@@ -65,7 +65,7 @@ class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
   TabContents* source_tab_contents_;
   Profile* profile_;
 
-  menus::SimpleMenuModel menu_model_;
+  ui::SimpleMenuModel menu_model_;
 
   // True if we are showing for an external tab contents. The default is false.
   bool external_;
@@ -104,7 +104,7 @@ class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
   void RecursivelyAppendExtensionItems(
       const std::vector<ExtensionMenuItem*>& items,
       bool can_cross_incognito,
-      menus::SimpleMenuModel* menu_model,
+      ui::SimpleMenuModel* menu_model,
       int *index);
   // This will set the icon on the most recently-added item in the menu_model_.
   void SetExtensionIcon(const std::string& extension_id);
@@ -137,9 +137,9 @@ class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
   // a text selection.
   GURL selection_navigation_url_;
 
-  menus::SimpleMenuModel spellcheck_submenu_model_;
-  menus::SimpleMenuModel bidi_submenu_model_;
-  ScopedVector<menus::SimpleMenuModel> extension_menu_models_;
+  ui::SimpleMenuModel spellcheck_submenu_model_;
+  ui::SimpleMenuModel bidi_submenu_model_;
+  ScopedVector<ui::SimpleMenuModel> extension_menu_models_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenu);
 };

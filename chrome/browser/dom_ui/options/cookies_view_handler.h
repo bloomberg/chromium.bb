@@ -20,16 +20,16 @@ class CookiesViewHandler : public OptionsPageUIHandler,
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void RegisterMessages();
 
-  // TreeModel::Observer implementation.
-  virtual void TreeNodesAdded(TreeModel* model,
-                              TreeModelNode* parent,
+  // ui::TreeModel::Observer implementation.
+  virtual void TreeNodesAdded(ui::TreeModel* model,
+                              ui::TreeModelNode* parent,
                               int start,
                               int count);
-  virtual void TreeNodesRemoved(TreeModel* model,
-                                TreeModelNode* parent,
+  virtual void TreeNodesRemoved(ui::TreeModel* model,
+                                ui::TreeModelNode* parent,
                                 int start,
                                 int count);
-  virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node) {}
+  virtual void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) {}
   virtual void TreeModelBeginBatch(CookiesTreeModel* model);
   virtual void TreeModelEndBatch(CookiesTreeModel* model);
 

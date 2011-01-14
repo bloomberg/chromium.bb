@@ -9,17 +9,17 @@
 #include <string>
 #include <vector>
 
-#include "app/combobox_model.h"
 #include "chrome/browser/character_encoding.h"
+#include "ui/base/models/combobox_model.h"
 
 class Profile;
 
-class DefaultEncodingComboboxModel : public ComboboxModel {
+class DefaultEncodingComboboxModel : public ui::ComboboxModel {
  public:
   DefaultEncodingComboboxModel();
   virtual ~DefaultEncodingComboboxModel();
 
-  // Overridden from ComboboxModel.
+  // Overridden from ui::ComboboxModel.
   virtual int GetItemCount();
 
   virtual string16 GetItemAt(int index);

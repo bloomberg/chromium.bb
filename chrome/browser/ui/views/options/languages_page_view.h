@@ -13,17 +13,16 @@
 #include "views/controls/table/table_view_observer.h"
 #include "views/view.h"
 
+class AddLanguageView;
+class LanguageComboboxModel;
+class LanguageOrderTableModel;
+
 namespace views {
 class Checkbox;
 class Label;
 class NativeButton;
 class TableView;
 }
-
-class AddLanguageView;
-class LanguageComboboxModel;
-class LanguageOrderTableModel;
-class TableModel;
 
 ///////////////////////////////////////////////////////////////////////////////
 // LanguagesPageView

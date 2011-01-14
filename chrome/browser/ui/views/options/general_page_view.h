@@ -17,6 +17,10 @@
 #include "views/controls/table/table_view_observer.h"
 #include "views/view.h"
 
+class CustomHomePagesTableModel;
+class OptionsGroupView;
+class SearchEngineListModel;
+
 namespace views {
 class Checkbox;
 class GroupboxView;
@@ -26,10 +30,6 @@ class RadioButton;
 class TableView;
 class Textfield;
 }
-class CustomHomePagesTableModel;
-class OptionsGroupView;
-class SearchEngineListModel;
-class TableModel;
 
 ///////////////////////////////////////////////////////////////////////////////
 // GeneralPageView

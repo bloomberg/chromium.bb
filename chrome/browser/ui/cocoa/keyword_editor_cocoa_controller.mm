@@ -293,7 +293,7 @@ static base::LazyInstance<ProfileControllerMap> g_profile_controller_map(
                           row:(NSInteger)row {
   if ([self tableView:tv isGroupRow:row]) {
     DCHECK(!tableColumn);
-    TableModel::Groups groups = controller_->table_model()->GetGroups();
+    ui::TableModel::Groups groups = controller_->table_model()->GetGroups();
     if (row == 0) {
       return base::SysUTF16ToNSString(groups[0].title);
     } else {

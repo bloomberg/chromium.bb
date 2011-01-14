@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/wrench_menu_controller.h"
 
 #include "app/l10n_util.h"
-#include "app/menus/menu_model.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background_page_tracker.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/models/menu_model.h"
 
 @interface WrenchMenuController (Private)
 - (void)adjustPositioning;
@@ -67,11 +67,11 @@ class ZoomLevelObserver : public NotificationObserver {
 
 - (void)addItemToMenu:(NSMenu*)menu
               atIndex:(NSInteger)index
-            fromModel:(menus::MenuModel*)model
+            fromModel:(ui::MenuModel*)model
            modelIndex:(int)modelIndex {
   // Non-button item types should be built as normal items.
-  menus::MenuModel::ItemType type = model->GetTypeAt(modelIndex);
-  if (type != menus::MenuModel::TYPE_BUTTON_ITEM) {
+  ui::MenuModel::ItemType type = model->GetTypeAt(modelIndex);
+  if (type != ui::MenuModel::TYPE_BUTTON_ITEM) {
     [super addItemToMenu:menu
                  atIndex:index
                fromModel:model

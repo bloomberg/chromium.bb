@@ -10,9 +10,9 @@ namespace gfx {
 class Size;
 }  // namespace gfx
 
-namespace menus {
+namespace ui {
 class MenuModel;
-}  // namespace menus
+}  // namespace ui
 
 namespace chromeos {
 
@@ -29,10 +29,10 @@ class DOMUIMenuControl {
   virtual ~DOMUIMenuControl() {}
 
   // Returns the MenuModel associated with this control.
-  virtual menus::MenuModel* GetMenuModel() = 0;
+  virtual ui::MenuModel* GetMenuModel() = 0;
 
   // Activates an item in the |model| at |index|.
-  virtual void Activate(menus::MenuModel* model,
+  virtual void Activate(ui::MenuModel* model,
                         int index,
                         ActivationMode activation_mode) = 0;
 

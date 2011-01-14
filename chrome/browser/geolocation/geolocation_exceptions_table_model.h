@@ -40,7 +40,7 @@ class GeolocationExceptionsTableModel : public RemoveRowsTableModel {
   // TableModel overrides:
   virtual int RowCount() OVERRIDE;
   virtual string16 GetText(int row, int column_id) OVERRIDE;
-  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
+  virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
   virtual int CompareValues(int row1, int row2, int column_id) OVERRIDE;
 
  private:
@@ -54,7 +54,7 @@ class GeolocationExceptionsTableModel : public RemoveRowsTableModel {
   typedef std::vector<Entry> EntriesVector;
   EntriesVector entries_;
 
-  TableModelObserver* observer_;
+  ui::TableModelObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationExceptionsTableModel);
 };

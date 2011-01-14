@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "build/build_config.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/native_widget_types.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "views/controls/single_split_view.h"
 #include "views/window/client_view.h"
 #include "views/window/window_delegate.h"
@@ -81,7 +81,7 @@ class BrowserView : public BrowserBubbleHost,
                     public BrowserWindowTesting,
                     public NotificationObserver,
                     public TabStripModelObserver,
-                    public menus::SimpleMenuModel::Delegate,
+                    public ui::SimpleMenuModel::Delegate,
                     public views::WindowDelegate,
                     public views::ClientView,
                     public InfoBarContainer::Delegate,
@@ -178,7 +178,7 @@ class BrowserView : public BrowserBubbleHost,
   // command id. This can be used to provide menu item shortcut hints etc.
   // Returns true if an accelerator was found for the specified |cmd_id|, false
   // otherwise.
-  bool GetAccelerator(int cmd_id, menus::Accelerator* accelerator);
+  bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
 
   // Shows the next app-modal dialog box, if there is one to be shown, or moves
   // an existing showing one to the front. Returns true if one was shown or
@@ -360,11 +360,11 @@ class BrowserView : public BrowserBubbleHost,
                              int index);
   virtual void TabStripEmpty();
 
-  // Overridden from menus::SimpleMenuModel::Delegate:
+  // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
+                                          ui::Accelerator* accelerator);
   virtual bool IsItemForCommandIdDynamic(int command_id) const;
   virtual string16 GetLabelForCommandId(int command_id) const;
   virtual void ExecuteCommand(int command_id);

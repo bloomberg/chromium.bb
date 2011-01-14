@@ -176,7 +176,7 @@ InputMethodMenu::~InputMethodMenu() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// menus::MenuModel implementation:
+// ui::MenuModel implementation:
 
 int InputMethodMenu::GetCommandIdAt(int index) const {
   return 0;  // dummy
@@ -188,7 +188,7 @@ bool InputMethodMenu::IsItemDynamicAt(int index) const {
 }
 
 bool InputMethodMenu::GetAcceleratorAt(
-    int index, menus::Accelerator* accelerator) const {
+    int index, ui::Accelerator* accelerator) const {
   // Views for Chromium OS does not support accelerators yet.
   return false;
 }
@@ -240,7 +240,7 @@ bool InputMethodMenu::GetIconAt(int index, SkBitmap* icon) const {
   return false;
 }
 
-menus::ButtonMenuItemModel* InputMethodMenu::GetButtonMenuItemAt(
+ui::ButtonMenuItemModel* InputMethodMenu::GetButtonMenuItemAt(
     int index) const {
   return NULL;
 }
@@ -251,7 +251,7 @@ bool InputMethodMenu::IsEnabledAt(int index) const {
   return true;
 }
 
-menus::MenuModel* InputMethodMenu::GetSubmenuModelAt(int index) const {
+ui::MenuModel* InputMethodMenu::GetSubmenuModelAt(int index) const {
   // We don't use nested menus.
   return NULL;
 }
@@ -273,28 +273,28 @@ int InputMethodMenu::GetItemCount() const {
   return model_->GetItemCount();
 }
 
-menus::MenuModel::ItemType InputMethodMenu::GetTypeAt(int index) const {
+ui::MenuModel::ItemType InputMethodMenu::GetTypeAt(int index) const {
   DCHECK_GE(index, 0);
 
   if (IndexPointsToConfigureImeMenuItem(index)) {
-    return menus::MenuModel::TYPE_COMMAND;  // "Customize language and input"
+    return ui::MenuModel::TYPE_COMMAND;  // "Customize language and input"
   }
 
   if (IndexIsInInputMethodList(index)) {
     return is_out_of_box_experience_mode_ ?
-        menus::MenuModel::TYPE_COMMAND : menus::MenuModel::TYPE_RADIO;
+        ui::MenuModel::TYPE_COMMAND : ui::MenuModel::TYPE_RADIO;
   }
 
   if (GetPropertyIndex(index, &index)) {
     const ImePropertyList& property_list
         = CrosLibrary::Get()->GetInputMethodLibrary()->current_ime_properties();
     if (property_list.at(index).is_selection_item) {
-      return menus::MenuModel::TYPE_RADIO;
+      return ui::MenuModel::TYPE_RADIO;
     }
-    return menus::MenuModel::TYPE_COMMAND;
+    return ui::MenuModel::TYPE_COMMAND;
   }
 
-  return menus::MenuModel::TYPE_SEPARATOR;
+  return ui::MenuModel::TYPE_SEPARATOR;
 }
 
 string16 InputMethodMenu::GetLabelAt(int index) const {
@@ -439,7 +439,7 @@ void InputMethodMenu::UpdateUIFromInputMethod(
 }
 
 void InputMethodMenu::RebuildModel() {
-  model_.reset(new menus::SimpleMenuModel(NULL));
+  model_.reset(new ui::SimpleMenuModel(NULL));
   string16 dummy_label = UTF8ToUTF16("");
   // Indicates if separator's needed before each section.
   bool need_separator = false;
@@ -485,7 +485,7 @@ bool InputMethodMenu::IndexIsInInputMethodList(int index) const {
     return false;
   }
 
-  return ((model_->GetTypeAt(index) == menus::MenuModel::TYPE_RADIO) &&
+  return ((model_->GetTypeAt(index) == ui::MenuModel::TYPE_RADIO) &&
           (model_->GetCommandIdAt(index) == COMMAND_ID_INPUT_METHODS) &&
           input_method_descriptors_.get() &&
           (index < static_cast<int>(input_method_descriptors_->size())));
@@ -499,7 +499,7 @@ bool InputMethodMenu::GetPropertyIndex(int index, int* property_index) const {
     return false;
   }
 
-  if ((model_->GetTypeAt(index) == menus::MenuModel::TYPE_RADIO) &&
+  if ((model_->GetTypeAt(index) == ui::MenuModel::TYPE_RADIO) &&
       (model_->GetCommandIdAt(index) == COMMAND_ID_IME_PROPERTIES)) {
     const int tmp_property_index = model_->GetGroupIdAt(index);
     const ImePropertyList& property_list
@@ -519,7 +519,7 @@ bool InputMethodMenu::IndexPointsToConfigureImeMenuItem(int index) const {
     return false;
   }
 
-  return ((model_->GetTypeAt(index) == menus::MenuModel::TYPE_RADIO) &&
+  return ((model_->GetTypeAt(index) == ui::MenuModel::TYPE_RADIO) &&
           (model_->GetCommandIdAt(index) == COMMAND_ID_CUSTOMIZE_LANGUAGE));
 }
 

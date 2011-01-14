@@ -6,8 +6,8 @@
 #define CHROME_TEST_MENU_MODEL_TEST_H_
 #pragma once
 
-#include "app/menus/accelerator.h"
-#include "app/menus/simple_menu_model.h"
+#include "ui/base/models/accelerator.h"
+#include "ui/base/models/simple_menu_model.h"
 
 // A mix-in class to be used in addition to something that derrives from
 // testing::Test to provide some extra functionality for testing menu models.
@@ -19,8 +19,8 @@ class MenuModelTest {
  protected:
   // A menu delegate that counts the number of times certain things are called
   // to make sure things are hooked up properly.
-  class Delegate : public menus::SimpleMenuModel::Delegate,
-                   public menus::AcceleratorProvider {
+  class Delegate : public ui::SimpleMenuModel::Delegate,
+                   public ui::AcceleratorProvider {
    public:
     Delegate() : execute_count_(0), enable_count_(0) { }
 
@@ -31,7 +31,7 @@ class MenuModelTest {
     }
     virtual bool GetAcceleratorForCommandId(
         int command_id,
-        menus::Accelerator* accelerator) { return false; }
+        ui::Accelerator* accelerator) { return false; }
     virtual void ExecuteCommand(int command_id) { ++execute_count_; }
 
     int execute_count_;
@@ -42,7 +42,7 @@ class MenuModelTest {
   // that's not a separator or a submenu parent item. The returned count should
   // match the number of times the delegate is called to ensure every item
   // works.
-  void CountEnabledExecutable(menus::MenuModel* model, int* count);
+  void CountEnabledExecutable(ui::MenuModel* model, int* count);
 
   Delegate delegate_;
 };

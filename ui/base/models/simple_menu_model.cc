@@ -1,15 +1,15 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/menus/simple_menu_model.h"
+#include "ui/base/models/simple_menu_model.h"
 
 #include "app/l10n_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-static const int kSeparatorId = -1;
+namespace ui {
 
-namespace menus {
+const int kSeparatorId = -1;
 
 struct SimpleMenuModel::Item {
   int command_id;
@@ -218,7 +218,7 @@ bool SimpleMenuModel::IsItemDynamicAt(int index) const {
 }
 
 bool SimpleMenuModel::GetAcceleratorAt(int index,
-                                       menus::Accelerator* accelerator) const {
+                                       ui::Accelerator* accelerator) const {
   if (delegate_) {
     return delegate_->GetAcceleratorForCommandId(GetCommandIdAt(index),
                                                  accelerator);
@@ -311,4 +311,4 @@ void SimpleMenuModel::ValidateItem(const Item& item) {
 #endif  // NDEBUG
 }
 
-}  // namespace menus
+}  // namespace ui

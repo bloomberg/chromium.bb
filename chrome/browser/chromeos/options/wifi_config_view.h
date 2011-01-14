@@ -8,11 +8,11 @@
 
 #include <string>
 
-#include "app/combobox_model.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/shell_dialogs.h"
+#include "ui/base/models/combobox_model.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/image_button.h"
@@ -72,7 +72,7 @@ class WifiConfigView : public views::View,
   bool can_login() const { return can_login_; }
 
  private:
-  class SecurityComboboxModel : public ComboboxModel {
+   class SecurityComboboxModel : public ui::ComboboxModel {
    public:
     SecurityComboboxModel() {}
     virtual ~SecurityComboboxModel() {}

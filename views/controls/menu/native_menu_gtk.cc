@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "app/menus/menu_model.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/time.h"
@@ -18,6 +17,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
+#include "ui/base/models/menu_model.h"
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/nested_dispatcher_gtk.h"
@@ -44,10 +44,10 @@ struct Position {
 };
 
 // Returns true if the menu item type specified can be executed as a command.
-bool MenuTypeCanExecute(menus::MenuModel::ItemType type) {
-  return type == menus::MenuModel::TYPE_COMMAND ||
-      type == menus::MenuModel::TYPE_CHECK ||
-      type == menus::MenuModel::TYPE_RADIO;
+bool MenuTypeCanExecute(ui::MenuModel::ItemType type) {
+  return type == ui::MenuModel::TYPE_COMMAND ||
+      type == ui::MenuModel::TYPE_CHECK ||
+      type == ui::MenuModel::TYPE_RADIO;
 }
 
 // A callback to gtk_container_foreach to remove all children.
@@ -174,10 +174,10 @@ void NativeMenuGtk::Rebuild() {
 
   std::map<int, GtkRadioMenuItem*> radio_groups_;
   for (int i = 0; i < model_->GetItemCount(); ++i) {
-    menus::MenuModel::ItemType type = model_->GetTypeAt(i);
-    if (type == menus::MenuModel::TYPE_SEPARATOR) {
+    ui::MenuModel::ItemType type = model_->GetTypeAt(i);
+    if (type == ui::MenuModel::TYPE_SEPARATOR) {
       AddSeparatorAt(i);
-    } else if (type == menus::MenuModel::TYPE_RADIO) {
+    } else if (type == ui::MenuModel::TYPE_RADIO) {
       const int radio_group_id = model_->GetGroupIdAt(i);
       std::map<int, GtkRadioMenuItem*>::const_iterator iter
           = radio_groups_.find(radio_group_id);
@@ -329,12 +329,12 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
   std::string label = gfx::ConvertAcceleratorsFromWindowsStyle(UTF16ToUTF8(
       model_->GetLabelAt(index)));
 
-  menus::MenuModel::ItemType type = model_->GetTypeAt(index);
+  ui::MenuModel::ItemType type = model_->GetTypeAt(index);
   switch (type) {
-    case menus::MenuModel::TYPE_CHECK:
+    case ui::MenuModel::TYPE_CHECK:
       menu_item = gtk_check_menu_item_new_with_mnemonic(label.c_str());
       break;
-    case menus::MenuModel::TYPE_RADIO:
+    case ui::MenuModel::TYPE_RADIO:
       if (radio_group) {
         menu_item = gtk_radio_menu_item_new_with_mnemonic_from_widget(
             radio_group, label.c_str());
@@ -343,8 +343,8 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
         menu_item = gtk_radio_menu_item_new_with_mnemonic(NULL, label.c_str());
       }
       break;
-    case menus::MenuModel::TYPE_SUBMENU:
-    case menus::MenuModel::TYPE_COMMAND: {
+    case ui::MenuModel::TYPE_SUBMENU:
+    case ui::MenuModel::TYPE_COMMAND: {
       SkBitmap icon;
       // Create menu item with icon if icon exists.
       if (model_->HasIcons() && model_->GetIconAt(index, &icon)) {
@@ -380,7 +380,7 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
     pango_font_description_free(pfd);
   }
 
-  if (type == menus::MenuModel::TYPE_SUBMENU) {
+  if (type == ui::MenuModel::TYPE_SUBMENU) {
     Menu2* submenu = new Menu2(model_->GetSubmenuModelAt(index));
     static_cast<NativeMenuGtk*>(submenu->wrapper_.get())->set_parent(this);
     g_object_set_data(G_OBJECT(menu_item), "submenu", submenu);

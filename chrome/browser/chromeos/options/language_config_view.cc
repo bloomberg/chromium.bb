@@ -246,7 +246,7 @@ string16 LanguageConfigView::GetText(int row, int column_id) {
   return string16();
 }
 
-void LanguageConfigView::SetObserver(TableModelObserver* observer) {
+void LanguageConfigView::SetObserver(ui::TableModelObserver* observer) {
   // We don't need the observer for the table mode, since we implement the
   // table model as part of the LanguageConfigView class.
   // http://crbug.com/38266

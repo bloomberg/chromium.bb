@@ -31,8 +31,8 @@ CookiesTreeModelObserverBridge::CookiesTreeModelObserverBridge(
 }
 
 // Notification that nodes were added to the specified parent.
-void CookiesTreeModelObserverBridge::TreeNodesAdded(TreeModel* model,
-                                                    TreeModelNode* parent,
+void CookiesTreeModelObserverBridge::TreeNodesAdded(ui::TreeModel* model,
+                                                    ui::TreeModelNode* parent,
                                                     int start,
                                                     int count) {
   // We're in for a major rebuild. Ignore this request.
@@ -53,8 +53,8 @@ void CookiesTreeModelObserverBridge::TreeNodesAdded(TreeModel* model,
 }
 
 // Notification that nodes were removed from the specified parent.
-void CookiesTreeModelObserverBridge::TreeNodesRemoved(TreeModel* model,
-                                                      TreeModelNode* parent,
+void CookiesTreeModelObserverBridge::TreeNodesRemoved(ui::TreeModel* model,
+                                                      ui::TreeModelNode* parent,
                                                       int start,
                                                       int count) {
   // We're in for a major rebuild. Ignore this request.
@@ -71,8 +71,8 @@ void CookiesTreeModelObserverBridge::TreeNodesRemoved(TreeModel* model,
 }
 
 // Notification that the contents of a node has changed.
-void CookiesTreeModelObserverBridge::TreeNodeChanged(TreeModel* model,
-                                                     TreeModelNode* node) {
+void CookiesTreeModelObserverBridge::TreeNodeChanged(ui::TreeModel* model,
+                                                     ui::TreeModelNode* node) {
   // If we don't have a Cocoa model, only let the root node change.
   if (batch_update_ || (!HasCocoaModel() && model->GetRoot() != node))
     return;
@@ -107,7 +107,7 @@ void CookiesTreeModelObserverBridge::InvalidateCocoaModel() {
 }
 
 CocoaCookieTreeNode* CookiesTreeModelObserverBridge::CocoaNodeFromTreeNode(
-    TreeModelNode* node) {
+    ui::TreeModelNode* node) {
   CookieTreeNode* cookie_node = static_cast<CookieTreeNode*>(node);
   return [[[CocoaCookieTreeNode alloc] initWithNode:cookie_node] autorelease];
 }
@@ -116,7 +116,7 @@ CocoaCookieTreeNode* CookiesTreeModelObserverBridge::CocoaNodeFromTreeNode(
 // commonly used to find origin/folder nodes, which are at the first level off
 // the root (hence breadth-first search).
 CocoaCookieTreeNode* CookiesTreeModelObserverBridge::FindCocoaNode(
-    TreeModelNode* target, CocoaCookieTreeNode* start) {
+    ui::TreeModelNode* target, CocoaCookieTreeNode* start) {
   if (!start) {
     start = [window_controller_ cocoaTreeModel];
   }

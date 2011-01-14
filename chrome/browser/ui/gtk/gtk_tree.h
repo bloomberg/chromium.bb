@@ -10,12 +10,14 @@
 #include <set>
 #include <vector>
 
-#include "app/table_model_observer.h"
-#include "app/tree_model.h"
 #include "base/basictypes.h"
 #include "chrome/browser/remove_rows_table_model.h"
+#include "ui/base/models/table_model_observer.h"
+#include "ui/base/models/tree_model.h"
 
+namespace ui {
 class TableModel;
+}
 
 namespace gtk_tree {
 
@@ -42,8 +44,8 @@ bool RemoveRecursively(GtkTreeStore* tree_store, GtkTreeIter* iter);
 // Writes all the indexes of selected rows into |out|.
 void GetSelectedIndices(GtkTreeSelection* selection, std::set<int>* out);
 
-// A helper class for populating a GtkListStore from a TableModel.
-class TableAdapter : public TableModelObserver {
+// A helper class for populating a GtkListStore from a ui::TableModel.
+class TableAdapter : public ui::TableModelObserver {
  public:
 
   enum ColumnID {
@@ -61,16 +63,17 @@ class TableAdapter : public TableModelObserver {
     // Should fill in the column and row.
     virtual void SetColumnValues(int row, GtkTreeIter* iter) = 0;
 
-    // Called after any change to the TableModel but before the corresponding
-    // change to the GtkListStore.
+    // Called after any change to the ui::TableModel but before the
+    // corresponding change to the GtkListStore.
     virtual void OnAnyModelUpdateStart() {}
 
-    // Called after any change to the TableModel.
+    // Called after any change to the ui::TableModel.
     virtual void OnAnyModelUpdate() {}
 
-    // When the TableModel has been completely changed, called by OnModelChanged
-    // after clearing the list store.  Can be overriden by the delegate if it
-    // needs to do extra initialization before the list store is populated.
+    // When the ui::TableModel has been completely changed, called by
+    // OnModelChanged after clearing the list store.  Can be overridden by the
+    // delegate if it needs to do extra initialization before the list store is
+    // populated.
     virtual void OnModelChanged() {}
 
    protected:
@@ -80,14 +83,14 @@ class TableAdapter : public TableModelObserver {
   // |table_model| may be NULL.
   TableAdapter(Delegate* delegate,
                GtkListStore* list_store,
-               TableModel* table_model);
+               ui::TableModel* table_model);
   virtual ~TableAdapter() {}
 
-  // Replace the TableModel with a different one.  If the list store currenty
-  // has items this would cause weirdness, so this should generally only be
-  // called during the Delegate's OnModelChanged call, or if the adapter was
-  // created with a NULL |table_model|.
-  void SetModel(TableModel* table_model);
+  // Replace the ui::TableModel with a different one.  If the list store
+  // currently has items this would cause weirdness, so this should generally
+  // only be called during the Delegate's OnModelChanged call, or if the adapter
+  // was created with a NULL |table_model|.
+  void SetModel(ui::TableModel* table_model);
 
   // Add all model rows corresponding to the given list store indices to |rows|.
   void MapListStoreIndicesToModelRows(const std::set<int>& list_store_indices,
@@ -107,7 +110,7 @@ class TableAdapter : public TableModelObserver {
                                     gboolean path_currently_selected,
                                     gpointer user_data);
 
-  // TableModelObserver implementation.
+  // ui::TableModelObserver implementation.
   virtual void OnModelChanged();
   virtual void OnItemsChanged(int start, int length);
   virtual void OnItemsAdded(int start, int length);
@@ -121,19 +124,19 @@ class TableAdapter : public TableModelObserver {
   // Return the index into the list store for the given model row.
   int GetListStoreIndexForModelRow(int model_row) const;
 
-  // Add the values from |row| of the TableModel.
+  // Add the values from |row| of the ui::TableModel.
   void AddNodeToList(int row);
 
   Delegate* delegate_;
   GtkListStore* list_store_;
-  TableModel* table_model_;
+  ui::TableModel* table_model_;
 
   DISALLOW_COPY_AND_ASSIGN(TableAdapter);
 };
 
 // A helper class for populating a GtkTreeStore from a TreeModel.
 // TODO(mattm): support SetRootShown(true)
-class TreeAdapter : public TreeModelObserver {
+class TreeAdapter : public ui::TreeModelObserver {
  public:
   // Column ids for |tree_store_|.
   enum {
@@ -156,7 +159,7 @@ class TreeAdapter : public TreeModelObserver {
     virtual ~Delegate() {}
   };
 
-  TreeAdapter(Delegate* delegate, TreeModel* tree_model);
+  TreeAdapter(Delegate* delegate, ui::TreeModel* tree_model);
   virtual ~TreeAdapter();
 
   // Populate the tree store from the |tree_model_|.
@@ -166,37 +169,37 @@ class TreeAdapter : public TreeModelObserver {
   GtkTreeStore* tree_store() { return tree_store_; }
 
   // Get the TreeModelNode corresponding to iter in the tree store.
-  TreeModelNode* GetNode(GtkTreeIter* iter);
+  ui::TreeModelNode* GetNode(GtkTreeIter* iter);
 
   // Begin TreeModelObserver implementation.
-  virtual void TreeNodesAdded(TreeModel* model,
-                              TreeModelNode* parent,
+  virtual void TreeNodesAdded(ui::TreeModel* model,
+                              ui::TreeModelNode* parent,
                               int start,
                               int count);
-  virtual void TreeNodesRemoved(TreeModel* model,
-                                TreeModelNode* parent,
+  virtual void TreeNodesRemoved(ui::TreeModel* model,
+                                ui::TreeModelNode* parent,
                                 int start,
                                 int count);
-  virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node);
+  virtual void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node);
   // End TreeModelObserver implementation.
 
  private:
   // Fill the tree store values for a given node.
-  void FillRow(GtkTreeIter* iter, TreeModelNode* node);
+  void FillRow(GtkTreeIter* iter, ui::TreeModelNode* node);
 
   // Fill the tree store for a row and all its descendants.
-  void Fill(GtkTreeIter* parent_iter, TreeModelNode* parent_node);
+  void Fill(GtkTreeIter* parent_iter, ui::TreeModelNode* parent_node);
 
   // Get the GtkTreePath in the tree store for the given node.
   // The returned path should be freed with gtk_tree_path_free.
-  GtkTreePath* GetTreePath(TreeModelNode* node);
+  GtkTreePath* GetTreePath(ui::TreeModelNode* node);
 
   // Get the GtkTreeIter in the tree store for the given node.
-  bool GetTreeIter(TreeModelNode* node, GtkTreeIter* iter);
+  bool GetTreeIter(ui::TreeModelNode* node, GtkTreeIter* iter);
 
   Delegate* delegate_;
   GtkTreeStore* tree_store_;
-  TreeModel* tree_model_;
+  ui::TreeModel* tree_model_;
   std::vector<GdkPixbuf*> pixbufs_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeAdapter);

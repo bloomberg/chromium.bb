@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_MENUS_MENU_MODEL_H_
-#define APP_MENUS_MENU_MODEL_H_
+#ifndef UI_BASE_MODELS_MENU_MODEL_H_
+#define UI_BASE_MODELS_MENU_MODEL_H_
 #pragma once
 
 #include "base/scoped_ptr.h"
@@ -13,12 +13,10 @@
 class SkBitmap;
 
 namespace gfx {
-
 class Font;
+}
 
-}  // namespace gfx
-
-namespace menus {
+namespace ui {
 
 class Accelerator;
 class ButtonMenuItemModel;
@@ -76,7 +74,7 @@ class MenuModel {
   // Gets the acclerator information for the specified index, returning true if
   // there is a shortcut accelerator for the item, false otherwise.
   virtual bool GetAcceleratorAt(int index,
-                                menus::Accelerator* accelerator) const = 0;
+                                ui::Accelerator* accelerator) const = 0;
 
   // Returns the checked state of the item at the specified index.
   virtual bool IsItemCheckedAt(int index) const = 0;
@@ -122,6 +120,6 @@ class MenuModel {
                                            int* index);
 };
 
-}  // namespace
+}  // namespace ui
 
-#endif  // APP_MENUS_MENU_MODEL_H_
+#endif  // UI_BASE_MODELS_MENU_MODEL_H_

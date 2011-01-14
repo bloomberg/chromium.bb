@@ -16,23 +16,29 @@ typedef struct tagNMLVCUSTOMDRAW NMLVCUSTOMDRAW;
 #include <map>
 #include <vector>
 
-#include "app/table_model_observer.h"
 #include "base/gtest_prod_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/models/table_model_observer.h"
 
 #if defined(OS_WIN)
 // TODO(port): remove the ifdef when native_control.h is ported.
 #include "views/controls/native_control.h"
 #endif  // defined(OS_WIN)
 
+class SkBitmap;
+
+namespace ui {
+struct TableColumn;
+class TableModel;
+}
+using ui::TableColumn;
+using ui::TableModel;
+using ui::TableModelObserver; // TODO(beng): remove these.
+
 namespace gfx {
 class Font;
 }
-
-struct TableColumn;
-class TableModel;
-class SkBitmap;
 
 // A TableView is a view that displays multiple rows with any number of columns.
 // TableView is driven by a TableModel. The model returns the contents

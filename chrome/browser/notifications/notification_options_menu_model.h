@@ -6,21 +6,21 @@
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_OPTIONS_MENU_MODEL_H_
 #pragma once
 
-#include "app/menus/simple_menu_model.h"
 #include "chrome/browser/notifications/balloon.h"
+#include "ui/base/models/simple_menu_model.h"
 
 // Model for the corner-selection submenu.
-class CornerSelectionMenuModel : public menus::SimpleMenuModel,
-                                 public menus::SimpleMenuModel::Delegate {
+class CornerSelectionMenuModel : public ui::SimpleMenuModel,
+                                 public ui::SimpleMenuModel::Delegate {
  public:
   explicit CornerSelectionMenuModel(Balloon* balloon);
   virtual ~CornerSelectionMenuModel();
 
-  // Overridden from menus::SimpleMenuModel::Delegate:
+  // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
+                                          ui::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
  private:
@@ -31,21 +31,21 @@ class CornerSelectionMenuModel : public menus::SimpleMenuModel,
 };
 
 // Model for the notification options menu itself.
-class NotificationOptionsMenuModel : public menus::SimpleMenuModel,
-                                     public menus::SimpleMenuModel::Delegate {
+class NotificationOptionsMenuModel : public ui::SimpleMenuModel,
+                                     public ui::SimpleMenuModel::Delegate {
  public:
   explicit NotificationOptionsMenuModel(Balloon* balloon);
   virtual ~NotificationOptionsMenuModel();
 
-  // Overridden from menus::SimpleMenuModel:
+  // Overridden from ui::SimpleMenuModel:
   virtual bool IsItemForCommandIdDynamic(int command_id) const;
   virtual string16 GetLabelForCommandId(int command_id) const;
 
-  // Overridden from menus::SimpleMenuModel::Delegate:
+  // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
+                                          ui::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
  private:

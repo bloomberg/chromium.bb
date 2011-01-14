@@ -164,12 +164,14 @@ void ExceptionsView::Init() {
 
   using views::GridLayout;
 
-  std::vector<TableColumn> columns;
+  std::vector<ui::TableColumn> columns;
   columns.push_back(
-      TableColumn(IDS_EXCEPTIONS_PATTERN_HEADER, TableColumn::LEFT, -1, .75));
+      ui::TableColumn(IDS_EXCEPTIONS_PATTERN_HEADER, ui::TableColumn::LEFT, -1,
+                      .75));
   columns.back().sortable = true;
   columns.push_back(
-      TableColumn(IDS_EXCEPTIONS_ACTION_HEADER, TableColumn::LEFT, -1, .25));
+      ui::TableColumn(IDS_EXCEPTIONS_ACTION_HEADER, ui::TableColumn::LEFT, -1,
+                      .25));
   columns.back().sortable = true;
   table_ = new ContentExceptionsTableView(&model_, columns);
   views::TableView::SortDescriptors sort;

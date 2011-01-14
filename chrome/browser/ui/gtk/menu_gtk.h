@@ -17,7 +17,7 @@
 
 class SkBitmap;
 
-namespace menus {
+namespace ui {
 class ButtonMenuItemModel;
 class MenuModel;
 }
@@ -54,7 +54,7 @@ class MenuGtk {
     static GtkWidget* GetDefaultImageForCommandId(int command_id);
   };
 
-  MenuGtk(MenuGtk::Delegate* delegate, menus::MenuModel* model);
+  MenuGtk(MenuGtk::Delegate* delegate, ui::MenuModel* model);
   ~MenuGtk();
 
   // Initialize GTK signal handlers.
@@ -70,7 +70,7 @@ class MenuGtk {
   GtkWidget* AppendSeparator();
   GtkWidget* AppendMenuItem(int command_id, GtkWidget* menu_item);
   GtkWidget* AppendMenuItemToMenu(int index,
-                                  menus::MenuModel* model,
+                                  ui::MenuModel* model,
                                   GtkWidget* menu_item,
                                   GtkWidget* menu,
                                   bool connect_to_activate);
@@ -139,12 +139,12 @@ class MenuGtk {
   // A function that creates a GtkMenu from |model_|.
   void BuildMenuFromModel();
   // Implementation of the above; called recursively.
-  void BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu);
+  void BuildSubmenuFromModel(ui::MenuModel* model, GtkWidget* menu);
   // Builds a menu item with buttons in it from the data in the model.
-  GtkWidget* BuildButtomMenuItem(menus::ButtonMenuItemModel* model,
+  GtkWidget* BuildButtomMenuItem(ui::ButtonMenuItemModel* model,
                                  GtkWidget* menu);
 
-  void ExecuteCommand(menus::MenuModel* model, int id);
+  void ExecuteCommand(ui::MenuModel* model, int id);
 
   // Callback for when a menu item is clicked.
   CHROMEGTK_CALLBACK_0(MenuGtk, void, OnMenuItemActivated);
@@ -174,7 +174,7 @@ class MenuGtk {
 
   // If non-NULL, the MenuModel that we use to populate and control the GTK
   // menu (overriding the delegate as a controller).
-  menus::MenuModel* model_;
+  ui::MenuModel* model_;
 
   // For some menu items, we want to show the accelerator, but not actually
   // explicitly handle it. To this end we connect those menu items' accelerators

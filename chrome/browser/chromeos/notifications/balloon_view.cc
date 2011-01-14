@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -25,6 +24,7 @@
 #include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "views/background.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
@@ -54,7 +54,7 @@ namespace chromeos {
 // overlays on top of renderer view.
 class NotificationControlView : public views::View,
                                 public views::ViewMenuDelegate,
-                                public menus::SimpleMenuModel::Delegate,
+                                public ui::SimpleMenuModel::Delegate,
                                 public views::ButtonListener {
  public:
   explicit NotificationControlView(BalloonViewImpl* view)
@@ -125,7 +125,7 @@ class NotificationControlView : public views::View,
     balloon_view_->Close(true);
   }
 
-  // menus::SimpleMenuModel::Delegate impglements.
+  // ui::SimpleMenuModel::Delegate impglements.
   virtual bool IsCommandIdChecked(int /* command_id */) const {
     // Nothing in the menu is checked.
     return false;
@@ -137,7 +137,7 @@ class NotificationControlView : public views::View,
   }
 
   virtual bool GetAcceleratorForCommandId(
-      int /* command_id */, menus::Accelerator* /* accelerator */) {
+      int /* command_id */, ui::Accelerator* /* accelerator */) {
     // Currently no accelerators.
     return false;
   }
@@ -162,7 +162,7 @@ class NotificationControlView : public views::View,
         IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
         balloon_view_->balloon_->notification().display_source());
 
-    options_menu_contents_.reset(new menus::SimpleMenuModel(this));
+    options_menu_contents_.reset(new ui::SimpleMenuModel(this));
     // TODO(oshima): Showing the source info in the menu for now.
     // Figure out where to show the source info.
     options_menu_contents_->AddItem(kNoopCommand, source_label_text);
@@ -176,7 +176,7 @@ class NotificationControlView : public views::View,
   views::ImageButton* close_button_;
 
   // The options menu.
-  scoped_ptr<menus::SimpleMenuModel> options_menu_contents_;
+  scoped_ptr<ui::SimpleMenuModel> options_menu_contents_;
   scoped_ptr<views::Menu2> options_menu_menu_;
   views::MenuButton* options_menu_button_;
 

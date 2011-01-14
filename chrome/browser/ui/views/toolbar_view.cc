@@ -323,7 +323,7 @@ AccessibilityTypes::Role ToolbarView::GetAccessibleRole() {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, Menu::BaseControllerDelegate overrides:
 
-bool ToolbarView::GetAcceleratorInfo(int id, menus::Accelerator* accel) {
+bool ToolbarView::GetAcceleratorInfo(int id, ui::Accelerator* accel) {
   return GetWidget()->GetAccelerator(id, accel);
 }
 
@@ -451,10 +451,10 @@ void ToolbarView::Observe(NotificationType type,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, menus::AcceleratorProvider implementation:
+// ToolbarView, ui::AcceleratorProvider implementation:
 
 bool ToolbarView::GetAcceleratorForCommandId(int command_id,
-    menus::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) {
   // The standard Ctrl-X, Ctrl-V and Ctrl-C are not defined as accelerators
   // anywhere so we need to check for them explicitly here.
   // TODO(cpu) Bug 1109102. Query WebKit land for the actual bindings.

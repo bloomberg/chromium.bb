@@ -8,10 +8,10 @@
 
 #include <string>
 
-#include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/language_combobox_model.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
@@ -23,7 +23,7 @@ namespace chromeos {
 class ScreenObserver;
 
 class LanguageSwitchMenu : public views::ViewMenuDelegate,
-                           public menus::SimpleMenuModel::Delegate {
+                           public ui::SimpleMenuModel::Delegate {
  public:
   LanguageSwitchMenu();
 
@@ -48,16 +48,16 @@ class LanguageSwitchMenu : public views::ViewMenuDelegate,
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
-  // menus::SimpleMenuModel::Delegate implementation.
+  // ui::SimpleMenuModel::Delegate implementation.
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
+                                          ui::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
   // Dialog controls that we own ourselves.
-  menus::SimpleMenuModel menu_model_;
-  menus::SimpleMenuModel menu_model_submenu_;
+  ui::SimpleMenuModel menu_model_;
+  ui::SimpleMenuModel menu_model_submenu_;
   scoped_ptr<views::Menu2> menu_;
 
   // Language locale name storage.

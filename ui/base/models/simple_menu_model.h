@@ -1,17 +1,17 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_MENUS_SIMPLE_MENU_MODEL_H_
-#define APP_MENUS_SIMPLE_MENU_MODEL_H_
+#ifndef UI_BASE_MODELS_SIMPLE_MENU_MODEL_H_
+#define UI_BASE_MODELS_SIMPLE_MENU_MODEL_H_
 #pragma once
 
 #include <vector>
 
 #include "base/string16.h"
-#include "app/menus/menu_model.h"
+#include "ui/base/models/menu_model.h"
 
-namespace menus {
+namespace ui {
 
 class ButtonMenuItemModel;
 
@@ -32,7 +32,7 @@ class SimpleMenuModel : public MenuModel {
     // command id has a valid accelerator, false otherwise.
     virtual bool GetAcceleratorForCommandId(
         int command_id,
-        menus::Accelerator* accelerator) = 0;
+        ui::Accelerator* accelerator) = 0;
 
     // Some command ids have labels and icons that change over time.
     virtual bool IsItemForCommandIdDynamic(int command_id) const;
@@ -105,11 +105,11 @@ class SimpleMenuModel : public MenuModel {
   virtual string16 GetLabelAt(int index) const;
   virtual bool IsItemDynamicAt(int index) const;
   virtual bool GetAcceleratorAt(int index,
-                                menus::Accelerator* accelerator) const;
+                                ui::Accelerator* accelerator) const;
   virtual bool IsItemCheckedAt(int index) const;
   virtual int GetGroupIdAt(int index) const;
   virtual bool GetIconAt(int index, SkBitmap* icon) const;
-  virtual menus::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
+  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
   virtual bool IsEnabledAt(int index) const;
   virtual bool IsVisibleAt(int index) const;
   virtual void HighlightChangedTo(int index);
@@ -141,6 +141,6 @@ class SimpleMenuModel : public MenuModel {
   DISALLOW_COPY_AND_ASSIGN(SimpleMenuModel);
 };
 
-}  // namespace menus
+}  // namespace ui
 
-#endif  // APP_MENUS_SIMPLE_MENU_MODEL_H_
+#endif  // UI_BASE_MODELS_SIMPLE_MENU_MODEL_H_

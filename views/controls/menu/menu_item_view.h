@@ -21,7 +21,7 @@
 #include "gfx/native_theme_win.h"
 #endif
 
-namespace menus {
+namespace ui {
 class MenuModel;
 }
 
@@ -184,7 +184,7 @@ class MenuItemView : public View {
   // Creates a menu item for the specified entry in the model and appends it as
   // a child. |index| should be offset by GetFirstItemIndex() before calling
   // this function.
-  MenuItemView* AppendMenuItemFromModel(menus::MenuModel* model,
+  MenuItemView* AppendMenuItemFromModel(ui::MenuModel* model,
                                         int index,
                                         int id);
 

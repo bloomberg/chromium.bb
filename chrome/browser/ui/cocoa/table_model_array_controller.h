@@ -8,10 +8,10 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/table_model_observer.h"
 #import "base/mac/cocoa_protocols.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
+#include "ui/base/models/table_model_observer.h"
 
 class RemoveRowsObserverBridge;
 class RemoveRowsTableModel;

@@ -11,17 +11,23 @@
 #include <map>
 #include <vector>
 
-#include "app/table_model_observer.h"
 #include "base/scoped_ptr.h"
 #include "gfx/rect.h"
 #include "views/controls/table/table_view.h"
 #include "views/controls/table/native_table_wrapper.h"
 #include "views/view.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/models/table_model_observer.h"
 
+class SkBitmap;
+
+namespace ui {
 struct TableColumn;
 class TableModel;
-class SkBitmap;
+}
+using ui::TableColumn;
+using ui::TableModel;
+using ui::TableModelObserver; // TODO(beng): remove these.
 
 // A TableView2 is a view that displays multiple rows with any number of
 // columns.

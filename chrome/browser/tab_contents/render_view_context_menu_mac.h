@@ -29,7 +29,7 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
   virtual void PlatformInit();
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      menus::Accelerator* accelerator) {
+      ui::Accelerator* accelerator) {
     return false;
   }
 

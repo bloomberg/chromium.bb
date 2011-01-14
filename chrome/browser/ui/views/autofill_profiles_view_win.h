@@ -10,8 +10,6 @@
 #include <map>
 #include <vector>
 
-#include "app/combobox_model.h"
-#include "app/table_model.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
@@ -19,6 +17,8 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/notification_observer.h"
+#include "ui/base/models/combobox_model.h"
+#include "ui/base/models/table_model.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/link.h"
 #include "views/controls/table/table_view_observer.h"
@@ -358,7 +358,7 @@ class AutoFillProfilesView : public views::View,
     DISALLOW_COPY_AND_ASSIGN(EditableSetViewContents);
   };
 
-  class StringVectorComboboxModel : public ComboboxModel {
+  class StringVectorComboboxModel : public ui::ComboboxModel {
    public:
     StringVectorComboboxModel() {}
     virtual ~StringVectorComboboxModel() {}
@@ -367,7 +367,7 @@ class AutoFillProfilesView : public views::View,
     // |source|.
     void set_cb_strings(std::vector<std::wstring> *source);
 
-    // Overridden from ComboboxModel:
+    // Overridden from ui::ComboboxModel:
     virtual int GetItemCount();
     virtual string16 GetItemAt(int index);
 
@@ -381,7 +381,7 @@ class AutoFillProfilesView : public views::View,
   };
 
   // Model for scrolling credit cards and addresses.
-  class ContentListTableModel : public TableModel {
+  class ContentListTableModel : public ui::TableModel {
    public:
     ContentListTableModel(std::vector<EditableSetInfo>* profiles,
                           std::vector<EditableSetInfo>* credit_cards);
@@ -398,18 +398,18 @@ class AutoFillProfilesView : public views::View,
     void RemoveItem(int index);
     void UpdateItem(int index);
 
-    // TableModel members:
+    // ui::TableModel members:
     virtual int RowCount() OVERRIDE;
     virtual string16 GetText(int row, int column_id) OVERRIDE;
     virtual bool HasGroups() OVERRIDE { return true; }
-    virtual TableModel::Groups GetGroups() OVERRIDE;
+    virtual ui::TableModel::Groups GetGroups() OVERRIDE;
     virtual int GetGroupID(int row) OVERRIDE;
-    virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
+    virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
 
    private:
     std::vector<EditableSetInfo>* profiles_;
     std::vector<EditableSetInfo>* credit_cards_;
-    TableModelObserver* observer_;
+    ui::TableModelObserver* observer_;
 
     DISALLOW_COPY_AND_ASSIGN(ContentListTableModel);
   };

@@ -1278,10 +1278,11 @@ string16 AutoFillProfilesView::ContentListTableModel::GetText(
   }
 }
 
-TableModel::Groups AutoFillProfilesView::ContentListTableModel::GetGroups() {
-  TableModel::Groups groups;
+ui::TableModel::Groups
+    AutoFillProfilesView::ContentListTableModel::GetGroups() {
+  ui::TableModel::Groups groups;
 
-  TableModel::Group profile_group;
+  ui::TableModel::Group profile_group;
   profile_group.title =
       l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESSES_GROUP_NAME);
   profile_group.id = kAddressGroup;
@@ -1303,7 +1304,7 @@ int AutoFillProfilesView::ContentListTableModel::GetGroupID(int row) {
 }
 
 void AutoFillProfilesView::ContentListTableModel::SetObserver(
-    TableModelObserver* observer) {
+    ui::TableModelObserver* observer) {
   observer_ = observer;
 }
 

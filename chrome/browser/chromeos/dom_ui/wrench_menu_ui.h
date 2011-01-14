@@ -14,13 +14,13 @@
 class NotificationSource;
 class NotificationDetails;
 
+namespace ui {
+class MenuModel;
+}  // namespace ui
+
 namespace views {
 class Menu2;
 }  // namespace views
-
-namespace menus {
-class MenuModel;
-} // namespace menus
 
 namespace chromeos {
 
@@ -30,7 +30,7 @@ class WrenchMenuUI : public MenuUI,
   explicit WrenchMenuUI(TabContents* contents);
 
   // MenuUI overrides:
-  virtual void ModelUpdated(const menus::MenuModel* new_model);
+  virtual void ModelUpdated(const ui::MenuModel* new_model);
 
   // NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -41,7 +41,7 @@ class WrenchMenuUI : public MenuUI,
   void UpdateZoomControls();
 
   // A convenient factory method to create Menu2 for wrench menu.
-  static views::Menu2* CreateMenu2(menus::MenuModel* model);
+  static views::Menu2* CreateMenu2(ui::MenuModel* model);
 
  private:
   NotificationRegistrar registrar_;

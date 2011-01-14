@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -13,13 +12,14 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/models/simple_menu_model.h"
 
 class MenuControllerTest : public CocoaTest {
 };
 
 // A menu delegate that counts the number of times certain things are called
 // to make sure things are hooked up properly.
-class Delegate : public menus::SimpleMenuModel::Delegate {
+class Delegate : public ui::SimpleMenuModel::Delegate {
  public:
   Delegate() : execute_count_(0), enable_count_(0) { }
 
@@ -30,7 +30,7 @@ class Delegate : public menus::SimpleMenuModel::Delegate {
   }
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      menus::Accelerator* accelerator) { return false; }
+      ui::Accelerator* accelerator) { return false; }
   virtual void ExecuteCommand(int command_id) { ++execute_count_; }
 
   int execute_count_;
@@ -62,7 +62,7 @@ class DynamicDelegate : public Delegate {
 
 TEST_F(MenuControllerTest, EmptyMenu) {
   Delegate delegate;
-  menus::SimpleMenuModel model(&delegate);
+  ui::SimpleMenuModel model(&delegate);
   scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
   EXPECT_EQ([[menu menu] numberOfItems], 0);
@@ -70,7 +70,7 @@ TEST_F(MenuControllerTest, EmptyMenu) {
 
 TEST_F(MenuControllerTest, BasicCreation) {
   Delegate delegate;
-  menus::SimpleMenuModel model(&delegate);
+  ui::SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
   model.AddItem(2, ASCIIToUTF16("two"));
   model.AddItem(3, ASCIIToUTF16("three"));
@@ -95,9 +95,9 @@ TEST_F(MenuControllerTest, BasicCreation) {
 
 TEST_F(MenuControllerTest, Submenus) {
   Delegate delegate;
-  menus::SimpleMenuModel model(&delegate);
+  ui::SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
-  menus::SimpleMenuModel submodel(&delegate);
+  ui::SimpleMenuModel submodel(&delegate);
   submodel.AddItem(2, ASCIIToUTF16("sub-one"));
   submodel.AddItem(3, ASCIIToUTF16("sub-two"));
   submodel.AddItem(4, ASCIIToUTF16("sub-three"));
@@ -132,9 +132,9 @@ TEST_F(MenuControllerTest, Submenus) {
 
 TEST_F(MenuControllerTest, EmptySubmenu) {
   Delegate delegate;
-  menus::SimpleMenuModel model(&delegate);
+  ui::SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
-  menus::SimpleMenuModel submodel(&delegate);
+  ui::SimpleMenuModel submodel(&delegate);
   model.AddSubMenuWithStringId(2, IDS_ZOOM_MENU, &submodel);
 
   scoped_nsobject<MenuController> menu(
@@ -144,7 +144,7 @@ TEST_F(MenuControllerTest, EmptySubmenu) {
 
 TEST_F(MenuControllerTest, PopUpButton) {
   Delegate delegate;
-  menus::SimpleMenuModel model(&delegate);
+  ui::SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
   model.AddItem(2, ASCIIToUTF16("two"));
   model.AddItem(3, ASCIIToUTF16("three"));
@@ -164,7 +164,7 @@ TEST_F(MenuControllerTest, PopUpButton) {
 
 TEST_F(MenuControllerTest, Execute) {
   Delegate delegate;
-  menus::SimpleMenuModel model(&delegate);
+  ui::SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
   scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
@@ -188,10 +188,10 @@ void Validate(MenuController* controller, NSMenu* menu) {
 
 TEST_F(MenuControllerTest, Validate) {
   Delegate delegate;
-  menus::SimpleMenuModel model(&delegate);
+  ui::SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
   model.AddItem(2, ASCIIToUTF16("two"));
-  menus::SimpleMenuModel submodel(&delegate);
+  ui::SimpleMenuModel submodel(&delegate);
   submodel.AddItem(2, ASCIIToUTF16("sub-one"));
   model.AddSubMenuWithStringId(3, IDS_ZOOM_MENU, &submodel);
 
@@ -204,7 +204,7 @@ TEST_F(MenuControllerTest, Validate) {
 
 TEST_F(MenuControllerTest, DefaultInitializer) {
   Delegate delegate;
-  menus::SimpleMenuModel model(&delegate);
+  ui::SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
   model.AddItem(2, ASCIIToUTF16("two"));
   model.AddItem(3, ASCIIToUTF16("three"));
@@ -230,7 +230,7 @@ TEST_F(MenuControllerTest, Dynamic) {
   // no icon.
   string16 initial = ASCIIToUTF16("initial");
   delegate.SetDynamicLabel(initial);
-  menus::SimpleMenuModel model(&delegate);
+  ui::SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("foo"));
   scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);

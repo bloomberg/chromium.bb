@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -32,6 +31,7 @@
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/models/simple_menu_model.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "views/controls/menu/menu_2.h"
@@ -214,11 +214,11 @@ void TreeViewColumnSetWidth(GtkTreeViewColumn* column, gint width) {
 }  // namespace
 
 class TaskManagerGtk::ContextMenuController
-    : public menus::SimpleMenuModel::Delegate {
+    : public ui::SimpleMenuModel::Delegate {
  public:
   explicit ContextMenuController(TaskManagerGtk* task_manager)
       : task_manager_(task_manager) {
-    menu_model_.reset(new menus::SimpleMenuModel(this));
+    menu_model_.reset(new ui::SimpleMenuModel(this));
     for (int i = kTaskManagerPage; i < kTaskManagerColumnCount; i++) {
       menu_model_->AddCheckItemWithStringId(
           i, TaskManagerColumnIDToResourceID(i));
@@ -252,7 +252,7 @@ class TaskManagerGtk::ContextMenuController
   }
 
  private:
-  // menus::SimpleMenuModel::Delegate implementation:
+  // ui::SimpleMenuModel::Delegate implementation:
   virtual bool IsCommandIdEnabled(int command_id) const {
     if (!task_manager_)
       return false;
@@ -270,7 +270,7 @@ class TaskManagerGtk::ContextMenuController
 
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      menus::Accelerator* accelerator) {
+      ui::Accelerator* accelerator) {
     return false;
   }
 
@@ -284,7 +284,7 @@ class TaskManagerGtk::ContextMenuController
   }
 
   // The model and view for the right click context menu.
-  scoped_ptr<menus::SimpleMenuModel> menu_model_;
+  scoped_ptr<ui::SimpleMenuModel> menu_model_;
 #if defined(TOOLKIT_VIEWS)
   scoped_ptr<views::Menu2> menu_;
 #else

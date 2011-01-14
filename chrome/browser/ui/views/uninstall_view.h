@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_UNINSTALL_VIEW_H_
 #pragma once
 
-#include "app/combobox_model.h"
 #include "base/string16.h"
+#include "ui/base/models/combobox_model.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/window/dialog_delegate.h"
 
@@ -22,7 +22,7 @@ class Label;
 class UninstallView : public views::View,
                       public views::ButtonListener,
                       public views::DialogDelegate,
-                      public ComboboxModel {
+                      public ui::ComboboxModel {
  public:
   explicit UninstallView(int& user_selection);
   virtual ~UninstallView();
@@ -40,7 +40,7 @@ class UninstallView : public views::View,
   virtual std::wstring GetWindowTitle() const;
   virtual views::View* GetContentsView();
 
-  // Overridden from views::Combobox::Model.
+  // Overridden from ui::ComboboxModel.
   virtual int GetItemCount();
   virtual string16 GetItemAt(int index);
 

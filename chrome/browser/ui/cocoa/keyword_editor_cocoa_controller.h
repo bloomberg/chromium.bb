@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/table_model_observer.h"
 #import "base/mac/cocoa_protocols.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/ui/cocoa/table_row_nsimage_cache.h"
+#include "ui/base/models/table_model_observer.h"
 
 class EditSearchEngineControllerDelegate;
 @class KeywordEditorCocoaController;
@@ -21,7 +21,7 @@ class Profile;
 // Very thin bridge that simply pushes notifications from C++ to ObjC.
 class KeywordEditorModelObserver : public TemplateURLModelObserver,
                                    public EditSearchEngineControllerDelegate,
-                                   public TableModelObserver,
+                                   public ui::TableModelObserver,
                                    public TableRowNSImageCache::Table {
  public:
   explicit KeywordEditorModelObserver(KeywordEditorCocoaController* controller);
@@ -40,7 +40,7 @@ class KeywordEditorModelObserver : public TemplateURLModelObserver,
                                const string16& keyword,
                                const std::string& url);
 
-  // TableModelObserver overrides. Invalidate icon cache.
+  // ui::TableModelObserver overrides. Invalidate icon cache.
   virtual void OnModelChanged();
   virtual void OnItemsChanged(int start, int length);
   virtual void OnItemsAdded(int start, int length);

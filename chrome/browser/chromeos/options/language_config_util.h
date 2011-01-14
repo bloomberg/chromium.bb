@@ -6,16 +6,16 @@
 #define CHROME_BROWSER_CHROMEOS_OPTIONS_LANGUAGE_CONFIG_UTIL_H_
 #pragma once
 
-#include "app/combobox_model.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "ui/base/models/combobox_model.h"
 #include "views/controls/combobox/combobox.h"
 
 namespace chromeos {
 
 // The combobox model for Language input method prefs.
 template <typename DataType>
-class LanguageComboboxModel : public ComboboxModel {
+class LanguageComboboxModel : public ui::ComboboxModel {
  public:
   explicit LanguageComboboxModel(
       const language_prefs::LanguageMultipleChoicePreference<DataType>*
@@ -33,12 +33,12 @@ class LanguageComboboxModel : public ComboboxModel {
     }
   }
 
-  // Implements ComboboxModel interface.
+  // Implements ui::ComboboxModel interface.
   virtual int GetItemCount() {
     return num_items_;
   }
 
-  // Implements ComboboxModel interface.
+  // Implements ui::ComboboxModel interface.
   virtual string16 GetItemAt(int index) {
     if (index < 0 || index >= num_items_) {
       LOG(ERROR) << "Index is out of bounds: " << index;
@@ -79,7 +79,7 @@ class LanguageComboboxModel : public ComboboxModel {
 // The combobox for the dialog which has minimum width.
 class LanguageCombobox : public views::Combobox {
  public:
-  explicit LanguageCombobox(ComboboxModel* model) : Combobox(model) {
+  explicit LanguageCombobox(ui::ComboboxModel* model) : Combobox(model) {
   }
 
   virtual gfx::Size GetPreferredSize() {

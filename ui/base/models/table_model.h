@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_TABLE_MODEL_H_
-#define APP_TABLE_MODEL_H_
+#ifndef UI_BASE_MODELS_TABLE_MODEL_H_
+#define UI_BASE_MODELS_TABLE_MODEL_H_
 #pragma once
 
 #include <vector>
@@ -12,6 +12,8 @@
 #include "unicode/coll.h"
 
 class SkBitmap;
+
+namespace ui {
 
 class TableModelObserver;
 
@@ -138,4 +140,6 @@ struct TableColumn {
   bool sortable;
 };
 
-#endif  // APP_TABLE_MODEL_H_
+}  // namespace ui
+
+#endif  // UI_BASE_MODELS_TABLE_MODEL_H_

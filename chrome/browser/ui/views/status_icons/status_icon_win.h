@@ -39,7 +39,7 @@ class StatusIconWin : public StatusIcon {
 
  protected:
   // Overridden from StatusIcon.
-  virtual void UpdatePlatformContextMenu(menus::MenuModel* menu);
+  virtual void UpdatePlatformContextMenu(ui::MenuModel* menu);
 
  private:
   void InitIconData(NOTIFYICONDATA* icon_data);

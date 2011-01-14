@@ -12,7 +12,6 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
-#include "app/table_model.h"
 #include "app/win/hwnd_util.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
@@ -23,8 +22,11 @@
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
+#include "ui/base/models/table_model.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/table/table_view_observer.h"
+
+using ui::TableColumn;
 
 namespace {
 

@@ -15,9 +15,9 @@
 #include <tom.h>  // For ITextDocument, a COM interface to CRichEditCtrl
 #include <vsstyle.h>
 
-#include "app/menus/simple_menu_model.h"
 #include "base/win/scoped_comptr.h"
 #include "gfx/insets.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 
 namespace views {
@@ -35,7 +35,7 @@ class NativeTextfieldWin
                          CWinTraits<kDefaultEditStyle> >,
       public CRichEditCommands<NativeTextfieldWin>,
       public NativeTextfieldWrapper,
-      public menus::SimpleMenuModel::Delegate {
+      public ui::SimpleMenuModel::Delegate {
  public:
   DECLARE_WND_CLASS(L"ViewsTextfieldEdit");
 
@@ -72,11 +72,11 @@ class NativeTextfieldWin
   virtual void HandleDidGainFocus();
   virtual void HandleWillLoseFocus();
 
-  // Overridden from menus::SimpleMenuModel::Delegate:
+  // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
+                                          ui::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
   // Update accessibility information.
@@ -234,7 +234,7 @@ class NativeTextfieldWin
   static bool did_load_library_;
 
   // The contents of the context menu for the edit.
-  scoped_ptr<menus::SimpleMenuModel> context_menu_contents_;
+  scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;
   scoped_ptr<Menu2> context_menu_;
 
   // Border insets.

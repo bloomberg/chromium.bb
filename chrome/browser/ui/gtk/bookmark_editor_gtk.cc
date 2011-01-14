@@ -7,7 +7,6 @@
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
-#include "app/menus/simple_menu_model.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -27,6 +26,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/models/simple_menu_model.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "views/controls/menu/menu_2.h"
@@ -46,12 +46,12 @@ static const int kTreeHeight = 150;
 }  // namespace
 
 class BookmarkEditorGtk::ContextMenuController
-    : public menus::SimpleMenuModel::Delegate {
+    : public ui::SimpleMenuModel::Delegate {
  public:
   explicit ContextMenuController(BookmarkEditorGtk* editor)
       : editor_(editor),
         running_menu_for_root_(false) {
-    menu_model_.reset(new menus::SimpleMenuModel(this));
+    menu_model_.reset(new ui::SimpleMenuModel(this));
     menu_model_->AddItemWithStringId(COMMAND_EDIT, IDS_EDIT);
     menu_model_->AddItemWithStringId(
         COMMAND_NEW_FOLDER,
@@ -90,7 +90,7 @@ class BookmarkEditorGtk::ContextMenuController
     COMMAND_NEW_FOLDER
   };
 
-  // Overridden from menus::SimpleMenuModel::Delegate:
+  // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdEnabled(int command_id) const {
     return !(command_id == COMMAND_EDIT && running_menu_for_root_) &&
         (editor_ != NULL);
@@ -101,7 +101,7 @@ class BookmarkEditorGtk::ContextMenuController
   }
 
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator) {
+                                          ui::Accelerator* accelerator) {
     return false;
   }
 
@@ -165,7 +165,7 @@ class BookmarkEditorGtk::ContextMenuController
   }
 
   // The model and view for the right click context menu.
-  scoped_ptr<menus::SimpleMenuModel> menu_model_;
+  scoped_ptr<ui::SimpleMenuModel> menu_model_;
 #if defined(TOOLKIT_VIEWS)
   scoped_ptr<views::Menu2> menu_;
 #else

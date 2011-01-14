@@ -5,15 +5,15 @@
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 
 #include "app/l10n_util_mac.h"
-#include "app/menus/accelerator_cocoa.h"
-#include "app/menus/simple_menu_model.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/models/accelerator_cocoa.h"
+#include "ui/base/models/simple_menu_model.h"
 
 @interface MenuController (Private)
-- (NSMenu*)menuFromModel:(menus::MenuModel*)model;
+- (NSMenu*)menuFromModel:(ui::MenuModel*)model;
 - (void)addSeparatorToMenu:(NSMenu*)menu
                    atIndex:(int)index;
 @end
@@ -28,7 +28,7 @@
   return self;
 }
 
-- (id)initWithModel:(menus::MenuModel*)model
+- (id)initWithModel:(ui::MenuModel*)model
     useWithPopUpButtonCell:(BOOL)useWithCell {
   if ((self = [super init])) {
     model_ = model;
@@ -45,7 +45,7 @@
 
 // Creates a NSMenu from the given model. If the model has submenus, this can
 // be invoked recursively.
-- (NSMenu*)menuFromModel:(menus::MenuModel*)model {
+- (NSMenu*)menuFromModel:(ui::MenuModel*)model {
   NSMenu* menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
 
   // The indices may not always start at zero (the windows system menu is one
@@ -56,7 +56,7 @@
   const int count = model->GetItemCount();
   for (int index = firstItemIndex; index < firstItemIndex + count; index++) {
     int modelIndex = index - firstItemIndex;
-    if (model->GetTypeAt(modelIndex) == menus::MenuModel::TYPE_SEPARATOR) {
+    if (model->GetTypeAt(modelIndex) == ui::MenuModel::TYPE_SEPARATOR) {
       [self addSeparatorToMenu:menu atIndex:index];
     } else {
       [self addItemToMenu:menu atIndex:index fromModel:model
@@ -80,7 +80,7 @@
 // associated with the entry in the model indentifed by |modelIndex|.
 - (void)addItemToMenu:(NSMenu*)menu
               atIndex:(NSInteger)index
-            fromModel:(menus::MenuModel*)model
+            fromModel:(ui::MenuModel*)model
            modelIndex:(int)modelIndex {
   NSString* label =
       l10n_util::FixUpWindowsStyleLabel(model->GetLabelAt(modelIndex));
@@ -98,14 +98,14 @@
     }
   }
 
-  menus::MenuModel::ItemType type = model->GetTypeAt(modelIndex);
-  if (type == menus::MenuModel::TYPE_SUBMENU) {
+  ui::MenuModel::ItemType type = model->GetTypeAt(modelIndex);
+  if (type == ui::MenuModel::TYPE_SUBMENU) {
     // Recursively build a submenu from the sub-model at this index.
     [item setTarget:nil];
     [item setAction:nil];
-    menus::MenuModel* submenuModel = model->GetSubmenuModelAt(modelIndex);
+    ui::MenuModel* submenuModel = model->GetSubmenuModelAt(modelIndex);
     NSMenu* submenu =
-        [self menuFromModel:(menus::SimpleMenuModel*)submenuModel];
+        [self menuFromModel:(ui::SimpleMenuModel*)submenuModel];
     [item setSubmenu:submenu];
   } else {
     // The MenuModel works on indexes so we can't just set the command id as the
@@ -117,7 +117,7 @@
     [item setTarget:self];
     NSValue* modelObject = [NSValue valueWithPointer:model];
     [item setRepresentedObject:modelObject];  // Retains |modelObject|.
-    menus::AcceleratorCocoa accelerator;
+    ui::AcceleratorCocoa accelerator;
     if (model->GetAcceleratorAt(modelIndex, &accelerator)) {
       [item setKeyEquivalent:accelerator.characters()];
       [item setKeyEquivalentModifierMask:accelerator.modifiers()];
@@ -135,8 +135,8 @@
     return NO;
 
   NSInteger modelIndex = [item tag];
-  menus::MenuModel* model =
-      static_cast<menus::MenuModel*>(
+  ui::MenuModel* model =
+      static_cast<ui::MenuModel*>(
           [[(id)item representedObject] pointerValue]);
   DCHECK(model);
   if (model) {
@@ -164,8 +164,8 @@
 // item chosen.
 - (void)itemSelected:(id)sender {
   NSInteger modelIndex = [sender tag];
-  menus::MenuModel* model =
-      static_cast<menus::MenuModel*>(
+  ui::MenuModel* model =
+      static_cast<ui::MenuModel*>(
           [[sender representedObject] pointerValue]);
   DCHECK(model);
   if (model)

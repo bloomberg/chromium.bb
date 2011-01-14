@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "app/combobox_model.h"
 #include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "ui/base/models/combobox_model.h"
 #include "unicode/timezone.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/native_button.h"
@@ -59,7 +59,7 @@ class DateTimeSection : public SettingsPageSection,
 
  private:
   // The combobox model for the list of timezones.
-  class TimezoneComboboxModel : public ComboboxModel {
+  class TimezoneComboboxModel : public ui::ComboboxModel {
    public:
     TimezoneComboboxModel() {
       // TODO(chocobo): For now, add all the GMT timezones.

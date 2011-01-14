@@ -6,12 +6,10 @@
 #define CHROME_BROWSER_UI_VIEWS_CLEAR_DATA_VIEW_H_
 #pragma once
 
-#include "app/combobox_model.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/ui/views/clear_browsing_data_view.h"
 #include "chrome/browser/ui/views/clear_server_data.h"
 #include "views/controls/button/button.h"
-#include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"

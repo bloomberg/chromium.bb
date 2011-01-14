@@ -9,13 +9,16 @@
 #include <string>
 #include <vector>
 
-#include "app/table_model.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/base/models/table_model.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/table/table_view_observer.h"
 #include "views/controls/table/table_view2.h"
 #include "views/examples/example_base.h"
+
+using ui::TableModel;
+using ui::TableModelObserver;  // TODO(beng): remove these.
 
 namespace examples {
 

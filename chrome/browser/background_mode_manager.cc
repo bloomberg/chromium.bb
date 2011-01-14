@@ -270,7 +270,7 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
     return;
 
   // Create a context menu item for Chrome.
-  menus::SimpleMenuModel* menu = new menus::SimpleMenuModel(this);
+  ui::SimpleMenuModel* menu = new ui::SimpleMenuModel(this);
   // Add About item
   menu->AddItem(IDC_ABOUT, l10n_util::GetStringFUTF16(IDS_ABOUT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
@@ -307,7 +307,7 @@ bool BackgroundModeManager::IsCommandIdEnabled(int command_id) const {
 
 bool BackgroundModeManager::GetAcceleratorForCommandId(
     int command_id,
-    menus::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) {
   // No accelerators for status icon context menus.
   return false;
 }

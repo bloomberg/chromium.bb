@@ -8,11 +8,13 @@
 
 #include <windows.h>
 
-#include "app/table_model.h"
+#include "ui/base/models/table_model.h"
 #include "views/controls/native_control_win.h"
 #include "views/controls/table/native_table_wrapper.h"
 
 typedef struct tagNMLVCUSTOMDRAW NMLVCUSTOMDRAW;
+
+using ui::TableColumn;
 
 namespace views {
 

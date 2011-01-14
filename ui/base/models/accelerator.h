@@ -1,14 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_MENUS_ACCELERATOR_H_
-#define APP_MENUS_ACCELERATOR_H_
+#ifndef UI_BASE_MODELS_ACCELERATOR_H_
+#define UI_BASE_MODELS_ACCELERATOR_H_
 #pragma once
 
 #include "ui/base/keycodes/keyboard_codes.h"
 
-namespace menus {
+namespace ui {
 
 // This is a cross-platform base class for accelerator keys used in menus. It is
 // meant to be subclassed for concrete toolkit implementations.
@@ -77,13 +77,13 @@ class AcceleratorProvider {
   // command id has a valid accelerator, false otherwise.
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      menus::Accelerator* accelerator) = 0;
+      ui::Accelerator* accelerator) = 0;
 
  protected:
   virtual ~AcceleratorProvider() {}
 };
 
-}
+}  // namespace ui
 
-#endif  // APP_MENUS_ACCELERATOR_H_
+#endif  // UI_BASE_MODELS_ACCELERATOR_H_
 

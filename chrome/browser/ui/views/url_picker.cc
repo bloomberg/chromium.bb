@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/table_model.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -20,6 +19,7 @@
 #include "grit/locale_settings.h"
 #include "net/base/net_util.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/models/table_model.h"
 #include "views/background.h"
 #include "views/controls/label.h"
 #include "views/controls/table/table_view.h"
@@ -52,13 +52,11 @@ UrlPicker::UrlPicker(UrlPickerDelegate* delegate,
 
   url_table_model_.reset(new PossibleURLModel());
 
-  TableColumn col1(IDS_ASI_PAGE_COLUMN, TableColumn::LEFT, -1,
-                          50);
+  ui::TableColumn col1(IDS_ASI_PAGE_COLUMN, ui::TableColumn::LEFT, -1, 50);
   col1.sortable = true;
-  TableColumn col2(IDS_ASI_URL_COLUMN, TableColumn::LEFT, -1,
-                          50);
+  ui::TableColumn col2(IDS_ASI_URL_COLUMN, TableColumn::LEFT, -1, 50);
   col2.sortable = true;
-  std::vector<TableColumn> cols;
+  std::vector<ui::TableColumn> cols;
   cols.push_back(col1);
   cols.push_back(col2);
 

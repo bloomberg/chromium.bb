@@ -36,7 +36,7 @@ void RenderViewContextMenuGtk::PlatformInit() {
 
 bool RenderViewContextMenuGtk::GetAcceleratorForCommandId(
     int command_id,
-    menus::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) {
   return false;
 }
 

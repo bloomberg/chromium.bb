@@ -615,7 +615,7 @@ bool BrowserView::AcceleratorPressed(const views::Accelerator& accelerator) {
   return browser_->ExecuteCommandIfEnabled(command_id);
 }
 
-bool BrowserView::GetAccelerator(int cmd_id, menus::Accelerator* accelerator) {
+bool BrowserView::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
   // The standard Ctrl-X, Ctrl-V and Ctrl-C are not defined as accelerators
   // anywhere so we need to check for them explicitly here.
   switch (cmd_id) {
@@ -1517,7 +1517,7 @@ void BrowserView::TabStripEmpty() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserView, menus::SimpleMenuModel::Delegate implementation:
+// BrowserView, ui::SimpleMenuModel::Delegate implementation:
 
 bool BrowserView::IsCommandIdChecked(int command_id) const {
   // TODO(beng): encoding menu.
@@ -1530,7 +1530,7 @@ bool BrowserView::IsCommandIdEnabled(int command_id) const {
 }
 
 bool BrowserView::GetAcceleratorForCommandId(int command_id,
-                                             menus::Accelerator* accelerator) {
+                                             ui::Accelerator* accelerator) {
   // Let's let the ToolbarView own the canonical implementation of this method.
   return toolbar_->GetAcceleratorForCommandId(command_id, accelerator);
 }

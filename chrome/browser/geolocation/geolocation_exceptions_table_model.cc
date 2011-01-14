@@ -6,11 +6,11 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_collator.h"
-#include "app/table_model_observer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/content_settings_helper.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "ui/base/models/table_model_observer.h"
 
 namespace {
 // Return -1, 0, or 1 depending on whether |origin1| should be sorted before,
@@ -180,7 +180,7 @@ string16 GeolocationExceptionsTableModel::GetText(int row,
 }
 
 void GeolocationExceptionsTableModel::SetObserver(
-    TableModelObserver* observer) {
+    ui::TableModelObserver* observer) {
   observer_ = observer;
 }
 

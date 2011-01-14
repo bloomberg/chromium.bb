@@ -59,7 +59,7 @@ int BackForwardMenuModel::GetItemCount() const {
   return items;
 }
 
-menus::MenuModel::ItemType BackForwardMenuModel::GetTypeAt(int index) const {
+ui::MenuModel::ItemType BackForwardMenuModel::GetTypeAt(int index) const {
   return IsSeparator(index) ? TYPE_SEPARATOR : TYPE_COMMAND;
 }
 
@@ -98,7 +98,7 @@ bool BackForwardMenuModel::IsItemDynamicAt(int index) const {
 
 bool BackForwardMenuModel::GetAcceleratorAt(
     int index,
-    menus::Accelerator* accelerator) const {
+    ui::Accelerator* accelerator) const {
   return false;
 }
 
@@ -125,7 +125,7 @@ bool BackForwardMenuModel::GetIconAt(int index, SkBitmap* icon) const {
   return true;
 }
 
-menus::ButtonMenuItemModel* BackForwardMenuModel::GetButtonMenuItemAt(
+ui::ButtonMenuItemModel* BackForwardMenuModel::GetButtonMenuItemAt(
     int index) const {
   return NULL;
 }
@@ -134,7 +134,7 @@ bool BackForwardMenuModel::IsEnabledAt(int index) const {
   return index < GetItemCount() && !IsSeparator(index);
 }
 
-menus::MenuModel* BackForwardMenuModel::GetSubmenuModelAt(int index) const {
+ui::MenuModel* BackForwardMenuModel::GetSubmenuModelAt(int index) const {
   return NULL;
 }
 

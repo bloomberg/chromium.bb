@@ -6,15 +6,15 @@
 #define CHROME_BROWSER_UI_TABS_TAB_MENU_MODEL_H_
 #pragma once
 
-#include "app/menus/simple_menu_model.h"
+#include "ui/base/models/simple_menu_model.h"
 
 // A menu model that builds the contents of the tab context menu. This menu has
 // only one level (no submenus). TabMenuModel caches local state from the
 // tab (such as the pinned state). To make sure the menu reflects the real state
 // of the tab a new TabMenuModel should be created each time the menu is shown.
-class TabMenuModel : public menus::SimpleMenuModel {
+class TabMenuModel : public ui::SimpleMenuModel {
  public:
-  TabMenuModel(menus::SimpleMenuModel::Delegate* delegate, bool is_pinned);
+  TabMenuModel(ui::SimpleMenuModel::Delegate* delegate, bool is_pinned);
   virtual ~TabMenuModel() {}
 
   // Returns true if vertical tabs are enabled.

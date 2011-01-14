@@ -4,7 +4,7 @@
 
 #include "chrome/browser/status_icons/status_icon.h"
 
-#include "app/menus/menu_model.h"
+#include "ui/base/models/menu_model.h"
 
 StatusIcon::StatusIcon()
 {
@@ -29,7 +29,7 @@ void StatusIcon::DispatchClickEvent() {
   FOR_EACH_OBSERVER(Observer, observers_, OnClicked());
 }
 
-void StatusIcon::SetContextMenu(menus::MenuModel* menu) {
+void StatusIcon::SetContextMenu(ui::MenuModel* menu) {
   context_menu_contents_.reset(menu);
   UpdatePlatformContextMenu(menu);
 }

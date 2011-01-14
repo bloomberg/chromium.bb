@@ -10,7 +10,7 @@
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_wrapper.h"
 
-namespace menus {
+namespace ui {
 class MenuModel;
 }
 
@@ -41,11 +41,11 @@ class NativeMenuX : public MenuWrapper,
   virtual bool GetAccelerator(int id, views::Accelerator* accelerator);
 
  private:
-  void AddMenuItemsFromModel(MenuItemView* parent, menus::MenuModel* model);
-  void UpdateMenuFromModel(SubmenuView* menu, menus::MenuModel* model);
+  void AddMenuItemsFromModel(MenuItemView* parent, ui::MenuModel* model);
+  void UpdateMenuFromModel(SubmenuView* menu, ui::MenuModel* model);
 
   // The attached model and delegate. Does not assume ownership.
-  menus::MenuModel* model_;
+  ui::MenuModel* model_;
   scoped_ptr<MenuItemView> root_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMenuX);

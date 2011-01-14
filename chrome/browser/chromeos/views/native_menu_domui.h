@@ -15,13 +15,13 @@
 #include "googleurl/src/gurl.h"
 #include "views/controls/menu/menu_wrapper.h"
 
-class SkBitmap;
 class DictionaryValue;
 class Profile;
+class SkBitmap;
 
-namespace menus {
+namespace ui {
 class MenuModel;
-}  // namespace menus
+}  // namespace ui
 
 namespace views {
 class NestedDispatcherGtk;
@@ -41,7 +41,7 @@ class NativeMenuDOMUI : public views::MenuWrapper,
                         public DOMUIMenuControl,
                         public MessageLoop::Dispatcher {
  public:
-  NativeMenuDOMUI(menus::MenuModel* menu_model, bool root);
+  NativeMenuDOMUI(ui::MenuModel* menu_model, bool root);
   virtual ~NativeMenuDOMUI();
 
   // Returns true if menu is currently shown.
@@ -69,8 +69,8 @@ class NativeMenuDOMUI : public views::MenuWrapper,
 #endif
 
   // Overriden from DOMUIMenuControl;
-  virtual menus::MenuModel* GetMenuModel() { return model_; }
-  virtual void Activate(menus::MenuModel* model,
+  virtual ui::MenuModel* GetMenuModel() { return model_; }
+  virtual void Activate(ui::MenuModel* model,
                         int index,
                         ActivationMode activation_mode);
   virtual void CloseAll();
@@ -120,7 +120,7 @@ class NativeMenuDOMUI : public views::MenuWrapper,
   // Holds the current submenu.
   scoped_ptr<NativeMenuDOMUI> submenu_;
 
-  menus::MenuModel* model_;
+  ui::MenuModel* model_;
 
   // A window widget that draws the content of the menu.
   DOMUIMenuWidget* menu_widget_;
@@ -133,7 +133,7 @@ class NativeMenuDOMUI : public views::MenuWrapper,
   // it from. When an item is selected menu_activated_ on the root ancestor is
   // set to the menu the user selected and after the nested message loop exits
   // Activate is invoked on this menu.
-  menus::MenuModel* activated_menu_;
+  ui::MenuModel* activated_menu_;
 
   // The index of the item the user selected. This is set on the
   // actual menu the user selects and not the root.

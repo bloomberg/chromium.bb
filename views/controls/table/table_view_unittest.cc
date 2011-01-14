@@ -4,13 +4,13 @@
 
 #include <vector>
 
-#include "app/table_model.h"
-#include "app/table_model_observer.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/models/table_model.h"
+#include "ui/base/models/table_model_observer.h"
 #include "views/controls/table/table_view.h"
 #include "views/controls/table/table_view2.h"
 #include "views/window/window_delegate.h"
@@ -19,6 +19,9 @@
 #else
 #include "views/window/window_gtk.h"
 #endif
+
+using ui::TableModel;
+using ui::TableModelObserver; // TODO(beng): remove these
 
 // Put the tests in the views namespace to make it easier to declare them as
 // friend classes.

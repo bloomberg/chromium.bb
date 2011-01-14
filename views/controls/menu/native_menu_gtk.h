@@ -15,7 +15,7 @@
 #include "base/task.h"
 #include "views/controls/menu/menu_wrapper.h"
 
-namespace menus {
+namespace ui {
 class MenuModel;
 }
 
@@ -101,7 +101,7 @@ class NativeMenuGtk : public MenuWrapper,
   // If we're a submenu, this is the parent.
   NativeMenuGtk* parent_;
 
-  menus::MenuModel* model_;
+  ui::MenuModel* model_;
 
   GtkWidget* menu_;
 

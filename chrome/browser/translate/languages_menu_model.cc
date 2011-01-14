@@ -10,7 +10,7 @@
 LanguagesMenuModel::LanguagesMenuModel(
     TranslateInfoBarDelegate* translate_delegate,
     LanguageType language_type)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       translate_infobar_delegate_(translate_delegate),
       language_type_(language_type) {
   for (int i = 0; i < translate_delegate->GetLanguageCount(); ++i)
@@ -35,7 +35,7 @@ bool LanguagesMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool LanguagesMenuModel::GetAcceleratorForCommandId(
     int command_id,
-    menus::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) {
   return false;
 }
 

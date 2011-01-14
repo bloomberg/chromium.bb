@@ -8,6 +8,8 @@
 
 #include "gfx/native_widget_types.h"
 
+using ui::TableColumn;
+
 namespace views {
 
 class TableView2;

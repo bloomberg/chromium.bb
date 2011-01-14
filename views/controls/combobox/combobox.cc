@@ -4,12 +4,14 @@
 
 #include "views/controls/combobox/combobox.h"
 
-#include "app/combobox_model.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/models/combobox_model.h"
 #include "views/controls/combobox/native_combobox_wrapper.h"
 #include "views/controls/native/native_view_host.h"
+
+using ui::ComboboxModel;  // TODO(beng): remove
 
 namespace views {
 

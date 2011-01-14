@@ -24,29 +24,29 @@ class StatusAreaHost;
 // This button shows the current time.
 class ClockMenuButton : public StatusAreaButton,
                         public views::ViewMenuDelegate,
-                        public menus::MenuModel,
+                        public ui::MenuModel,
                         public SystemLibrary::Observer {
  public:
   explicit ClockMenuButton(StatusAreaHost* host);
   virtual ~ClockMenuButton();
 
-  // menus::MenuModel implementation.
+  // ui::MenuModel implementation.
   virtual bool HasIcons() const  { return false; }
   virtual int GetItemCount() const;
-  virtual menus::MenuModel::ItemType GetTypeAt(int index) const;
+  virtual ui::MenuModel::ItemType GetTypeAt(int index) const;
   virtual int GetCommandIdAt(int index) const { return index; }
   virtual string16 GetLabelAt(int index) const;
   virtual bool IsItemDynamicAt(int index) const { return true; }
   virtual bool GetAcceleratorAt(int index,
-      menus::Accelerator* accelerator) const { return false; }
+      ui::Accelerator* accelerator) const { return false; }
   virtual bool IsItemCheckedAt(int index) const { return false; }
   virtual int GetGroupIdAt(int index) const { return 0; }
   virtual bool GetIconAt(int index, SkBitmap* icon) const { return false; }
-  virtual menus::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const {
+  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const {
     return NULL;
   }
   virtual bool IsEnabledAt(int index) const;
-  virtual menus::MenuModel* GetSubmenuModelAt(int index) const { return NULL; }
+  virtual ui::MenuModel* GetSubmenuModelAt(int index) const { return NULL; }
   virtual void HighlightChangedTo(int index) {}
   virtual void ActivatedAt(int index);
   virtual void MenuWillShow() {}

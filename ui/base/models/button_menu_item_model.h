@@ -1,16 +1,16 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_MENUS_BUTTON_MENU_ITEM_MODEL_H_
-#define APP_MENUS_BUTTON_MENU_ITEM_MODEL_H_
+#ifndef UI_BASE_MODELS_BUTTON_MENU_ITEM_MODEL_H_
+#define UI_BASE_MODELS_BUTTON_MENU_ITEM_MODEL_H_
 #pragma once
 
 #include <vector>
 
 #include "base/string16.h"
 
-namespace menus {
+namespace ui {
 
 // A model representing the rows of buttons that should be inserted in a button
 // containing menu item.
@@ -108,6 +108,6 @@ class ButtonMenuItemModel {
   DISALLOW_COPY_AND_ASSIGN(ButtonMenuItemModel);
 };
 
-}  // namespace menus
+}  // namespace ui
 
-#endif  // APP_MENUS_BUTTON_MENU_ITEM_MODEL_H_
+#endif  // UI_BASE_MODELS_BUTTON_MENU_ITEM_MODEL_H_

@@ -12,8 +12,6 @@
 #include "app/active_window_watcher_x.h"
 #include "app/gtk_signal.h"
 #include "app/gtk_signal_registrar.h"
-#include "app/menus/accelerator.h"
-#include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/gtk/custom_button.h"
@@ -23,6 +21,8 @@
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "ui/base/models/accelerator.h"
+#include "ui/base/models/simple_menu_model.h"
 
 class BackForwardButtonGtk;
 class Browser;
@@ -40,7 +40,7 @@ class ToolbarModel;
 // View class that displays the GTK version of the toolbar and routes gtk
 // events back to the Browser.
 class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
-                          public menus::AcceleratorProvider,
+                          public ui::AcceleratorProvider,
                           public MenuGtk::Delegate,
                           public NotificationObserver {
  public:
@@ -93,9 +93,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   virtual GtkIconSet* GetIconSetForId(int idr);
   virtual bool AlwaysShowIconForCmd(int command_id) const;
 
-  // Overridden from menus::AcceleratorProvider:
+  // Overridden from ui::AcceleratorProvider:
   virtual bool GetAcceleratorForCommandId(int id,
-                                          menus::Accelerator* accelerator);
+                                          ui::Accelerator* accelerator);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

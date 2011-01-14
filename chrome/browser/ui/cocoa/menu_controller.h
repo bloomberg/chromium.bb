@@ -10,7 +10,7 @@
 
 #include "base/scoped_nsobject.h"
 
-namespace menus {
+namespace ui {
 class MenuModel;
 }
 
@@ -22,12 +22,12 @@ class MenuModel;
 // as it only maintains weak references.
 @interface MenuController : NSObject {
  @protected
-  menus::MenuModel* model_;  // weak
+  ui::MenuModel* model_;  // weak
   scoped_nsobject<NSMenu> menu_;
   BOOL useWithPopUpButtonCell_;  // If YES, 0th item is blank
 }
 
-@property (nonatomic, assign) menus::MenuModel* model;
+@property (nonatomic, assign) ui::MenuModel* model;
 // Note that changing this will have no effect if you use
 // |-initWithModel:useWithPopUpButtonCell:| or after the first call to |-menu|.
 @property (nonatomic) BOOL useWithPopUpButtonCell;
@@ -42,7 +42,7 @@ class MenuModel;
 // the menu will be displayed by a NSPopUpButtonCell, it needs to be of a
 // slightly different form (0th item is empty). Note this attribute of the menu
 // cannot be changed after it has been created.
-- (id)initWithModel:(menus::MenuModel*)model
+- (id)initWithModel:(ui::MenuModel*)model
     useWithPopUpButtonCell:(BOOL)useWithCell;
 
 // Access to the constructed menu if the complex initializer was used. If the
@@ -60,7 +60,7 @@ class MenuModel;
 @interface MenuController (Protected)
 - (void)addItemToMenu:(NSMenu*)menu
               atIndex:(NSInteger)index
-            fromModel:(menus::MenuModel*)model
+            fromModel:(ui::MenuModel*)model
            modelIndex:(int)modelIndex;
 @end
 

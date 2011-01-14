@@ -14,18 +14,18 @@
 
 #include <string>
 
-#include "app/menus/accelerator.h"
 #include "base/string16.h"
+#include "ui/base/models/accelerator.h"
 #include "views/event.h"
 
 namespace views {
 
-class Accelerator : public menus::Accelerator {
+class Accelerator : public ui::Accelerator {
  public:
-  Accelerator() : menus::Accelerator() {}
+  Accelerator() : ui::Accelerator() {}
 
   Accelerator(ui::KeyboardCode keycode, int modifiers)
-      : menus::Accelerator(keycode, modifiers) {}
+      : ui::Accelerator(keycode, modifiers) {}
 
   Accelerator(ui::KeyboardCode keycode,
               bool shift_pressed, bool ctrl_pressed, bool alt_pressed) {

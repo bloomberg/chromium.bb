@@ -8,8 +8,8 @@
 
 #include <set>
 
-#include "app/menus/simple_menu_model.h"
 #include "base/utf_string_conversions.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
@@ -19,8 +19,8 @@
 
 namespace examples {
 
-class ExampleMenuContents : public menus::SimpleMenuModel,
-                            public menus::SimpleMenuModel::Delegate {
+class ExampleMenuContents : public ui::SimpleMenuModel,
+                            public ui::SimpleMenuModel::Delegate {
   enum {
     kGroupMakeDecision,
   };
@@ -38,7 +38,7 @@ class ExampleMenuContents : public menus::SimpleMenuModel,
 
  public:
   ExampleMenuContents() :
-      ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       current_encoding_command_id_(kCommandSelectAscii) {
 
     AddItem(kCommandDoSomething, WideToUTF16(L"Do Something"));
@@ -56,7 +56,7 @@ class ExampleMenuContents : public menus::SimpleMenuModel,
     AddSeparator();
     AddItem(kCommandGoHome, WideToUTF16(L"Go Home"));
 
-    submenu_.reset(new menus::SimpleMenuModel(this));
+    submenu_.reset(new ui::SimpleMenuModel(this));
     submenu_->AddItem(kCommandDoSomething, WideToUTF16(L"Do Something 2"));
     AddSubMenu(-1, ASCIIToUTF16("Submenu"), submenu_.get());
     menu_.reset(new views::Menu2(this));
@@ -66,7 +66,7 @@ class ExampleMenuContents : public menus::SimpleMenuModel,
     menu_->RunMenuAt(point, views::Menu2::ALIGN_TOPRIGHT);
   }
 
-  // menus::SimpleMenuModel::Delegate implementation.
+  // ui::SimpleMenuModel::Delegate implementation.
   virtual bool IsCommandIdChecked(int command_id) const {
     // Radio items.
     if (command_id == current_encoding_command_id_) {
@@ -87,7 +87,7 @@ class ExampleMenuContents : public menus::SimpleMenuModel,
 
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      menus::Accelerator* accelerator) {
+      ui::Accelerator* accelerator) {
     // We don't use this in the example.
     return false;
   }
@@ -145,7 +145,7 @@ class ExampleMenuContents : public menus::SimpleMenuModel,
 
  private:
   scoped_ptr<views::Menu2> menu_;
-  scoped_ptr<menus::SimpleMenuModel> submenu_;
+  scoped_ptr<ui::SimpleMenuModel> submenu_;
   std::set<int> checked_fruits_;
   int current_encoding_command_id_;
 

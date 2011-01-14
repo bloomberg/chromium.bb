@@ -298,7 +298,7 @@ void KeywordEditorView::OnModelChanged() {
   model_second_group_index_ = table_model_->last_search_engine_index();
   gtk_list_store_clear(list_store_);
 
-  TableModel::Groups groups(table_model_->GetGroups());
+  ui::TableModel::Groups groups(table_model_->GetGroups());
   if (groups.size() != 2) {
     NOTREACHED();
     return;

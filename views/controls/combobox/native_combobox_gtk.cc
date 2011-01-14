@@ -8,9 +8,11 @@
 
 #include <algorithm>
 
-#include "app/combobox_model.h"
 #include "base/utf_string_conversions.h"
+#include "ui/base/models/combobox_model.h"
 #include "views/controls/combobox/combobox.h"
+
+using ui::ComboboxModel;  // TODO(beng): remove
 
 namespace views {
 

@@ -44,7 +44,7 @@ const struct AcceleratorMapping {
 AcceleratorsCocoa::AcceleratorsCocoa() {
   for (size_t i = 0; i < arraysize(kAcceleratorMap); ++i) {
     const AcceleratorMapping& entry = kAcceleratorMap[i];
-    menus::AcceleratorCocoa accelerator(entry.key, entry.modifiers);
+    ui::AcceleratorCocoa accelerator(entry.key, entry.modifiers);
     accelerators_.insert(std::make_pair(entry.command_id, accelerator));
   }
 }
@@ -54,7 +54,7 @@ AcceleratorsCocoa* AcceleratorsCocoa::GetInstance() {
   return Singleton<AcceleratorsCocoa>::get();
 }
 
-const menus::AcceleratorCocoa* AcceleratorsCocoa::GetAcceleratorForCommand(
+const ui::AcceleratorCocoa* AcceleratorsCocoa::GetAcceleratorForCommand(
     int command_id) {
   AcceleratorCocoaMap::iterator it = accelerators_.find(command_id);
   if (it == accelerators_.end())

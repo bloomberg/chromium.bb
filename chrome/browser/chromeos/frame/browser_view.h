@@ -13,19 +13,18 @@
 #include "views/controls/menu/menu_wrapper.h"
 
 class AccessibleToolbarView;
+class Profile;
 class TabStripModel;
 
-namespace menus {
+namespace ui {
 class SimpleMenuModel;
-}  // namespace menus
+}  // namespace ui
 
 namespace views {
 class ImageButton;
 class ImageView;
 class Menu2;
 }  // namespace views
-
-class Profile;
 
 namespace chromeos {
 
@@ -91,7 +90,7 @@ class BrowserView : public ::BrowserView,
   StatusAreaView* status_area_;
 
   // System menus.
-  scoped_ptr<menus::SimpleMenuModel> system_menu_contents_;
+  scoped_ptr<ui::SimpleMenuModel> system_menu_contents_;
   scoped_ptr<views::Menu2> system_menu_menu_;
 
   // Focused native widget before wench menu shows up. We need this to properly

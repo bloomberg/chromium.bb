@@ -10,7 +10,10 @@
 
 #include "views/view.h"
 
+namespace ui {
 class ComboboxModel;
+}
+using ui::ComboboxModel;
 
 namespace views {
 

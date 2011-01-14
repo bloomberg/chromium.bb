@@ -22,7 +22,7 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 class ButtonDropDown : public ImageButton {
  public:
-  ButtonDropDown(ButtonListener* listener, menus::MenuModel* model);
+  ButtonDropDown(ButtonListener* listener, ui::MenuModel* model);
   virtual ~ButtonDropDown();
 
   // Accessibility accessors, overridden from View.
@@ -53,7 +53,7 @@ class ButtonDropDown : public ImageButton {
   void ShowDropDownMenu(gfx::NativeView window);
 
   // The model that populates the attached menu.
-  menus::MenuModel* model_;
+  ui::MenuModel* model_;
   scoped_ptr<Menu2> menu_;
 
   // Y position of mouse when left mouse button is pressed

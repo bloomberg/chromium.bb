@@ -24,7 +24,7 @@ static const int kMenuTimerDelay = 500;
 ////////////////////////////////////////////////////////////////////////////////
 
 ButtonDropDown::ButtonDropDown(ButtonListener* listener,
-                               menus::MenuModel* model)
+                               ui::MenuModel* model)
     : ImageButton(listener),
       model_(model),
       y_position_on_lbuttondown_(0),

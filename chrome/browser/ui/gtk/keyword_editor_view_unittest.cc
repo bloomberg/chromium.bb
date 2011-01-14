@@ -55,7 +55,7 @@ class KeywordEditorViewTest : public testing::Test {
   // Ex: EXPECT_STREQ("!,_,A (Default),_,@,_,B",
   //                  GetDisplayedEngines(editor).c_str());
   std::string GetDisplayedEngines(const KeywordEditorView& editor) {
-    TableModel::Groups groups(editor.table_model_->GetGroups());
+    ui::TableModel::Groups groups(editor.table_model_->GetGroups());
     std::vector<std::string> parts;
     GtkTreeModel* tree_model = GTK_TREE_MODEL(editor.list_store_);
     GtkTreeIter iter;

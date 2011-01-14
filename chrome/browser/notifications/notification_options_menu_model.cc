@@ -41,7 +41,7 @@ const int kCornerLowerRight = 14;
 const int kCornerDefault = 20;
 
 CornerSelectionMenuModel::CornerSelectionMenuModel(Balloon* balloon)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       balloon_(balloon) {
   AddRadioItem(kCornerDefault,
                l10n_util::GetStringUTF16(IDS_NOTIFICATION_POSITION_DEFAULT),
@@ -91,7 +91,7 @@ bool CornerSelectionMenuModel::IsCommandIdEnabled(int command_id) const {
 }
 
 bool CornerSelectionMenuModel::GetAcceleratorForCommandId(
-    int command_id, menus::Accelerator* accelerator) {
+    int command_id, ui::Accelerator* accelerator) {
   // Currently no accelerators.
   return false;
 }
@@ -116,7 +116,7 @@ void CornerSelectionMenuModel::ExecuteCommand(int command_id) {
 }
 
 NotificationOptionsMenuModel::NotificationOptionsMenuModel(Balloon* balloon)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       balloon_(balloon) {
 
   const Notification& notification = balloon->notification();
@@ -205,7 +205,7 @@ bool NotificationOptionsMenuModel::IsCommandIdEnabled(int /* command_id */)
 }
 
 bool NotificationOptionsMenuModel::GetAcceleratorForCommandId(
-    int /* command_id */, menus::Accelerator* /* accelerator */) {
+    int /* command_id */, ui::Accelerator* /* accelerator */) {
   // Currently no accelerators.
   return false;
 }

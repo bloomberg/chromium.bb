@@ -141,9 +141,9 @@ GdkColor PickLuminosityContrastingColor(const GdkColor* base,
 
 // A menu model that builds the contents of the menu shown for popups (when the
 // user clicks on the favicon) and all of its submenus.
-class PopupPageMenuModel : public menus::SimpleMenuModel {
+class PopupPageMenuModel : public ui::SimpleMenuModel {
  public:
-  explicit PopupPageMenuModel(menus::SimpleMenuModel::Delegate* delegate,
+  explicit PopupPageMenuModel(ui::SimpleMenuModel::Delegate* delegate,
                               Browser* browser);
   virtual ~PopupPageMenuModel() { }
 
@@ -161,9 +161,9 @@ class PopupPageMenuModel : public menus::SimpleMenuModel {
 };
 
 PopupPageMenuModel::PopupPageMenuModel(
-    menus::SimpleMenuModel::Delegate* delegate,
+    ui::SimpleMenuModel::Delegate* delegate,
     Browser* browser)
-    : menus::SimpleMenuModel(delegate), browser_(browser) {
+    : ui::SimpleMenuModel(delegate), browser_(browser) {
   Build();
 }
 
@@ -847,8 +847,8 @@ void BrowserTitlebar::ExecuteCommand(int command_id) {
 }
 
 bool BrowserTitlebar::GetAcceleratorForCommandId(
-    int command_id, menus::Accelerator* accelerator) {
-  const menus::AcceleratorGtk* accelerator_gtk =
+    int command_id, ui::Accelerator* accelerator) {
+  const ui::AcceleratorGtk* accelerator_gtk =
       AcceleratorsGtk::GetInstance()->GetPrimaryAcceleratorForCommand(
           command_id);
   if (accelerator_gtk)
@@ -936,7 +936,7 @@ void BrowserTitlebar::Throbber::InitFrames() {
 }
 
 BrowserTitlebar::ContextMenuModel::ContextMenuModel(
-    menus::SimpleMenuModel::Delegate* delegate)
+    ui::SimpleMenuModel::Delegate* delegate)
     : SimpleMenuModel(delegate) {
   AddItemWithStringId(IDC_NEW_TAB, IDS_TAB_CXMENU_NEWTAB);
   AddItemWithStringId(IDC_RESTORE_TAB, IDS_RESTORE_TAB);

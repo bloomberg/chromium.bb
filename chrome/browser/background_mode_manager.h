@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_BACKGROUND_MODE_MANAGER_H_
 #pragma once
 
-#include "app/menus/simple_menu_model.h"
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/background_application_list_model.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "ui/base/models/simple_menu_model.h"
 
 class Browser;
 class CommandLine;
@@ -38,7 +38,7 @@ class StatusTray;
 // background.
 class BackgroundModeManager
     : public NotificationObserver,
-      public menus::SimpleMenuModel::Delegate,
+      public ui::SimpleMenuModel::Delegate,
       public BackgroundApplicationListModel::Observer {
  public:
   BackgroundModeManager(Profile* profile, CommandLine* command_line);
@@ -69,7 +69,7 @@ class BackgroundModeManager
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
+                                          ui::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
   // Open an application in a new tab, opening a new window if needed.
@@ -151,7 +151,7 @@ class BackgroundModeManager
 
   // Reference to our status icon's context menu (if any) - owned by the
   // status_icon_
-  menus::SimpleMenuModel* context_menu_;
+  ui::SimpleMenuModel* context_menu_;
 
   // Set to the position of the first application entry in the status icon's
   // context menu.

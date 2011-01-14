@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/table_model_observer.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
@@ -22,6 +21,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/models/table_model_observer.h"
 
 struct CustomHomePagesTableModel::Entry {
   Entry() : title_handle(0), fav_icon_handle(0) {}
@@ -147,7 +147,7 @@ string16 CustomHomePagesTableModel::GetTooltip(int row) {
                                  entries_[row].title, FormattedURL(row));
 }
 
-void CustomHomePagesTableModel::SetObserver(TableModelObserver* observer) {
+void CustomHomePagesTableModel::SetObserver(ui::TableModelObserver* observer) {
   observer_ = observer;
 }
 

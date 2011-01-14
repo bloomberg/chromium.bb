@@ -14,11 +14,14 @@
 @class CookiesWindowController;
 @class CookieDetailsViewController;
 class Profile;
-class TreeModel;
-class TreeModelNode;
 
 namespace {
 class CookiesWindowControllerTest;
+}
+
+namespace ui {
+class TreeModel;
+class TreeModelNode;
 }
 
 // Thin bridge to the window controller that performs model update actions
@@ -28,15 +31,15 @@ class CookiesTreeModelObserverBridge : public CookiesTreeModel::Observer {
   explicit CookiesTreeModelObserverBridge(CookiesWindowController* controller);
 
   // Begin TreeModelObserver implementation.
-  virtual void TreeNodesAdded(TreeModel* model,
-                              TreeModelNode* parent,
+  virtual void TreeNodesAdded(ui::TreeModel* model,
+                              ui::TreeModelNode* parent,
                               int start,
                               int count);
-  virtual void TreeNodesRemoved(TreeModel* model,
-                                TreeModelNode* parent,
+  virtual void TreeNodesRemoved(ui::TreeModel* model,
+                                ui::TreeModelNode* parent,
                                 int start,
                                 int count);
-  virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node);
+  virtual void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node);
   // End TreeModelObserver implementation.
 
   virtual void TreeModelBeginBatch(CookiesTreeModel* model);
@@ -51,12 +54,12 @@ class CookiesTreeModelObserverBridge : public CookiesTreeModel::Observer {
 
   // Creates a CocoaCookieTreeNode from a platform-independent one.
   // Return value is autoreleased. This creates child nodes recusively.
-  CocoaCookieTreeNode* CocoaNodeFromTreeNode(TreeModelNode* node);
+  CocoaCookieTreeNode* CocoaNodeFromTreeNode(ui::TreeModelNode* node);
 
   // Finds the Cocoa model node based on a platform-independent one. This is
   // done by comparing the treeNode pointers. |start| is the node to start
   // searching at. If |start| is nil, the root is used.
-  CocoaCookieTreeNode* FindCocoaNode(TreeModelNode* node,
+  CocoaCookieTreeNode* FindCocoaNode(ui::TreeModelNode* node,
                                      CocoaCookieTreeNode* start);
 
   // Returns whether or not the Cocoa tree model is built.

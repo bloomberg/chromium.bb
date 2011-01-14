@@ -9,9 +9,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 
-TabMenuModel::TabMenuModel(menus::SimpleMenuModel::Delegate* delegate,
+TabMenuModel::TabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
                            bool is_pinned)
-    : menus::SimpleMenuModel(delegate) {
+    : ui::SimpleMenuModel(delegate) {
   Build(is_pinned);
 }
 

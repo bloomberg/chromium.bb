@@ -1,15 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_TREE_NODE_MODEL_H_
-#define APP_TREE_NODE_MODEL_H_
+#ifndef UI_BASE_MODELS_TREE_NODE_MODEL_H_
+#define UI_BASE_MODELS_TREE_NODE_MODEL_H_
 #pragma once
 
 #include <algorithm>
 #include <vector>
 
-#include "app/tree_model.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
@@ -17,6 +16,9 @@
 #include "base/scoped_vector.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
+#include "ui/base/models/tree_model.h"
+
+namespace ui {
 
 // TreeNodeModel and TreeNodes provide an implementation of TreeModel around
 // TreeNodes. TreeNodes form a directed acyclic graph.
@@ -312,4 +314,6 @@ class TreeNodeModel : public TreeModel {
   DISALLOW_COPY_AND_ASSIGN(TreeNodeModel);
 };
 
-#endif  // APP_TREE_NODE_MODEL_H_
+}  // namespace ui
+
+#endif  // UI_BASE_MODELS_TREE_NODE_MODEL_H_

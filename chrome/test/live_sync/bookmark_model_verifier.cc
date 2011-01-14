@@ -7,7 +7,6 @@
 #include <vector>
 #include <stack>
 
-#include "app/tree_node_iterator.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/models/tree_node_iterator.h"
 
 namespace {
 
@@ -84,8 +84,8 @@ bool BookmarkModelVerifier::NodesMatch(const BookmarkNode* node_a,
 bool BookmarkModelVerifier::ModelsMatch(BookmarkModel* model_a,
                                         BookmarkModel* model_b) {
   bool ret_val = true;
-  TreeNodeIterator<const BookmarkNode> iterator_a(model_a->root_node());
-  TreeNodeIterator<const BookmarkNode> iterator_b(model_b->root_node());
+  ui::TreeNodeIterator<const BookmarkNode> iterator_a(model_a->root_node());
+  ui::TreeNodeIterator<const BookmarkNode> iterator_b(model_b->root_node());
   while (iterator_a.has_next()) {
     const BookmarkNode* node_a = iterator_a.Next();
     EXPECT_TRUE(iterator_b.has_next());
@@ -119,7 +119,7 @@ bool BookmarkModelVerifier::FaviconsMatch(const SkBitmap& bitmap_a,
 }
 
 bool BookmarkModelVerifier::ContainsDuplicateBookmarks(BookmarkModel* model) {
-  TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
+  ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
     if (node->type() != BookmarkNode::URL)
@@ -144,7 +144,7 @@ int BookmarkModelVerifier::CountNodesWithTitlesMatching(
     BookmarkModel* model,
     BookmarkNode::Type node_type,
     const string16& title) {
-  TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
+  ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
   // Walk through the model tree looking for bookmark nodes of node type
   // |node_type| whose titles match |title|.
   int count = 0;

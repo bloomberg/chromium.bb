@@ -62,7 +62,7 @@ void RenderViewContextMenuViews::PlatformInit() {
 
 bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
     int command_id,
-    menus::Accelerator* accel) {
+    ui::Accelerator* accel) {
   // There are no formally defined accelerators we can query so we assume
   // that Ctrl+C, Ctrl+V, Ctrl+X, Ctrl-A, etc do what they normally do.
   switch (command_id) {

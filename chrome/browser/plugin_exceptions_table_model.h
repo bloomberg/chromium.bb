@@ -37,7 +37,7 @@ class PluginExceptionsTableModel : public RemoveRowsTableModel,
   // TableModel methods:
   virtual int RowCount() OVERRIDE;
   virtual string16 GetText(int row, int column_id) OVERRIDE;
-  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
+  virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
   virtual bool HasGroups() OVERRIDE;
   virtual Groups GetGroups() OVERRIDE;
   virtual int GetGroupID(int row) OVERRIDE;
@@ -75,7 +75,7 @@ class PluginExceptionsTableModel : public RemoveRowsTableModel,
 
   NotificationRegistrar registrar_;
   bool updates_disabled_;
-  TableModelObserver* observer_;
+  ui::TableModelObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginExceptionsTableModel);
 };

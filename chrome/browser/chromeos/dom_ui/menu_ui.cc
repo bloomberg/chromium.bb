@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/menus/menu_model.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -32,6 +31,7 @@
 #include "gfx/font.h"
 #include "grit/app_resources.h"
 #include "grit/browser_resources.h"
+#include "ui/base/models/menu_model.h"
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/radio_button_image_gtk.h"
@@ -405,7 +405,7 @@ void MenuHandler::HandleActivate(const ListValue* values) {
   DCHECK(success);
   chromeos::DOMUIMenuControl* control = GetMenuControl();
   if (control) {
-    menus::MenuModel* model = GetMenuModel();
+    ui::MenuModel* model = GetMenuModel();
     DCHECK(model);
     DCHECK_GE(index, 0);
     DCHECK(activation == "close_and_activate" ||
@@ -464,7 +464,7 @@ void MenuHandler::HandleCloseAll(const ListValue* values) {
 }
 
 void MenuHandler::HandleModelUpdated(const ListValue* values) {
-  menus::MenuModel* model = GetMenuModel();
+  ui::MenuModel* model = GetMenuModel();
   if (model)
     static_cast<chromeos::MenuUI*>(dom_ui_)->ModelUpdated(model);
 }
@@ -514,7 +514,7 @@ chromeos::DOMUIMenuControl* MenuHandlerBase::GetMenuControl() {
     return NULL;
 }
 
-menus::MenuModel* MenuHandlerBase::GetMenuModel() {
+ui::MenuModel* MenuHandlerBase::GetMenuModel() {
   DOMUIMenuControl* control = GetMenuControl();
   if (control)
     return control->GetMenuModel();
@@ -553,34 +553,34 @@ MenuUI::MenuUI(TabContents* contents, ChromeURLDataManager::DataSource* source)
           make_scoped_refptr(source)));
 }
 
-void MenuUI::ModelUpdated(const menus::MenuModel* model) {
+void MenuUI::ModelUpdated(const ui::MenuModel* model) {
   DictionaryValue json_model;
   ListValue* items = new ListValue();
   json_model.Set("items", items);
   int max_icon_width = 0;
   bool has_accelerator = false;
   for (int index = 0; index < model->GetItemCount(); ++index) {
-    menus::MenuModel::ItemType type = model->GetTypeAt(index);
+    ui::MenuModel::ItemType type = model->GetTypeAt(index);
     DictionaryValue* item;
     switch (type) {
-      case menus::MenuModel::TYPE_SEPARATOR:
+      case ui::MenuModel::TYPE_SEPARATOR:
         item = CreateMenuItem(model, index, "separator",
                               &max_icon_width, &has_accelerator);
         break;
-      case menus::MenuModel::TYPE_RADIO:
+      case ui::MenuModel::TYPE_RADIO:
         max_icon_width = std::max(max_icon_width, 12);
         item = CreateMenuItem(model, index, "radio",
                               &max_icon_width, &has_accelerator);
         break;
-      case menus::MenuModel::TYPE_SUBMENU:
+      case ui::MenuModel::TYPE_SUBMENU:
         item = CreateMenuItem(model, index, "submenu",
                               &max_icon_width, &has_accelerator);
         break;
-      case menus::MenuModel::TYPE_COMMAND:
+      case ui::MenuModel::TYPE_COMMAND:
         item = CreateMenuItem(model, index, "command",
                               &max_icon_width, &has_accelerator);
         break;
-      case menus::MenuModel::TYPE_CHECK:
+      case ui::MenuModel::TYPE_CHECK:
         // Add space even when unchecked.
         max_icon_width = std::max(max_icon_width, 12);
         item = CreateMenuItem(model, index, "check",
@@ -603,7 +603,7 @@ void MenuUI::ModelUpdated(const menus::MenuModel* model) {
   CallJavascriptFunction(L"updateModel", json_model);
 }
 
-DictionaryValue* MenuUI::CreateMenuItem(const menus::MenuModel* model,
+DictionaryValue* MenuUI::CreateMenuItem(const ui::MenuModel* model,
                                         int index,
                                         const char* type,
                                         int* max_icon_width,

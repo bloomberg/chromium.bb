@@ -28,7 +28,7 @@ class NotificationExceptionsTableModel : public RemoveRowsTableModel,
   // Overridden from TableModel:
   virtual int RowCount() OVERRIDE;
   virtual string16 GetText(int row, int column_id) OVERRIDE;
-  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
+  virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -48,7 +48,7 @@ class NotificationExceptionsTableModel : public RemoveRowsTableModel,
   // that we ourselves caused.
   bool updates_disabled_;
   NotificationRegistrar registrar_;
-  TableModelObserver* observer_;
+  ui::TableModelObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationExceptionsTableModel);
 };

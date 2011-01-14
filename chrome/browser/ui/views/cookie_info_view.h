@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "app/combobox_model.h"
 #include "base/string16.h"
 #include "net/base/cookie_monster.h"
+#include "ui/base/models/combobox_model.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/view.h"
 
@@ -40,7 +40,7 @@ class CookieInfoViewDelegate {
 //  Responsible for displaying a tabular grid of Cookie information.
 class CookieInfoView : public views::View,
                        public views::Combobox::Listener,
-                       public ComboboxModel {
+                       public ui::ComboboxModel {
  public:
   explicit CookieInfoView(bool editable_expiration_date);
   virtual ~CookieInfoView();
@@ -72,7 +72,7 @@ class CookieInfoView : public views::View,
                            int prev_index,
                            int new_index);
 
-  // ComboboxModel overrides for expires_value_combobox_.
+  // ui::ComboboxModel overrides for expires_value_combobox_.
   virtual int GetItemCount();
   virtual string16 GetItemAt(int index);
 

@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "app/combobox_model.h"
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
@@ -27,7 +26,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/button/text_button.h"
-#include "views/controls/combobox/combobox.h"
 
 namespace chromeos {
 using ::testing::AnyNumber;

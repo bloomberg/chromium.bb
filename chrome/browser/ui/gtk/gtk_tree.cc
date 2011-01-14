@@ -4,12 +4,12 @@
 
 #include "chrome/browser/gtk/gtk_tree.h"
 
-#include "app/table_model.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/models/table_model.h"
 
 namespace gtk_tree {
 
@@ -81,13 +81,13 @@ void GetSelectedIndices(GtkTreeSelection* selection, std::set<int>* out) {
 //  TableAdapter
 
 TableAdapter::TableAdapter(Delegate* delegate, GtkListStore* list_store,
-                           TableModel* table_model)
+                           ui::TableModel* table_model)
     : delegate_(delegate), list_store_(list_store), table_model_(table_model) {
   if (table_model)
     table_model->SetObserver(this);
 }
 
-void TableAdapter::SetModel(TableModel* table_model) {
+void TableAdapter::SetModel(ui::TableModel* table_model) {
   table_model_ = table_model;
   table_model_->SetObserver(this);
 }
@@ -125,8 +125,8 @@ void TableAdapter::MapListStoreIndicesToModelRows(
     return;
   }
 
-  const TableModel::Groups& groups = table_model_->GetGroups();
-  TableModel::Groups::const_iterator group_it = groups.begin();
+  const ui::TableModel::Groups& groups = table_model_->GetGroups();
+  ui::TableModel::Groups::const_iterator group_it = groups.begin();
   for (std::set<int>::const_iterator list_store_it = list_store_indices.begin();
        list_store_it != list_store_indices.end();
        ++list_store_it) {
@@ -162,8 +162,8 @@ int TableAdapter::GetListStoreIndexForModelRow(int model_row) const {
   if (!table_model_->HasGroups())
     return model_row;
   int group = table_model_->GetGroupID(model_row);
-  const TableModel::Groups& groups = table_model_->GetGroups();
-  for (TableModel::Groups::const_iterator it = groups.begin();
+  const ui::TableModel::Groups& groups = table_model_->GetGroups();
+  for (ui::TableModel::Groups::const_iterator it = groups.begin();
        it != groups.end(); ++it) {
     if (it->id == group) {
       return model_row + OffsetForGroupIndex(it - groups.begin());
@@ -202,8 +202,8 @@ void TableAdapter::OnModelChanged() {
   delegate_->OnModelChanged();
 
   if (table_model_->HasGroups()) {
-    const TableModel::Groups& groups = table_model_->GetGroups();
-    for (TableModel::Groups::const_iterator it = groups.begin();
+    const ui::TableModel::Groups& groups = table_model_->GetGroups();
+    for (ui::TableModel::Groups::const_iterator it = groups.begin();
          it != groups.end(); ++it) {
       GtkTreeIter iter;
       if (it != groups.begin()) {
@@ -341,7 +341,7 @@ gboolean TableAdapter::OnSelectionFilter(GtkTreeSelection* selection,
 ////////////////////////////////////////////////////////////////////////////////
 //  TreeAdapter
 
-TreeAdapter::TreeAdapter(Delegate* delegate, TreeModel* tree_model)
+TreeAdapter::TreeAdapter(Delegate* delegate, ui::TreeModel* tree_model)
     : delegate_(delegate),
       tree_model_(tree_model) {
   tree_store_ = gtk_tree_store_new(COL_COUNT,
@@ -369,15 +369,15 @@ void TreeAdapter::Init() {
 }
 
 
-TreeModelNode* TreeAdapter::GetNode(GtkTreeIter* iter) {
-  TreeModelNode* node;
+ui::TreeModelNode* TreeAdapter::GetNode(GtkTreeIter* iter) {
+  ui::TreeModelNode* node;
   gtk_tree_model_get(GTK_TREE_MODEL(tree_store_), iter,
                      COL_NODE_PTR, &node,
                      -1);
   return node;
 }
 
-void TreeAdapter::FillRow(GtkTreeIter* iter, TreeModelNode* node) {
+void TreeAdapter::FillRow(GtkTreeIter* iter, ui::TreeModelNode* node) {
   GdkPixbuf* pixbuf = NULL;
   int icon_index = tree_model_->GetIconIndex(node);
   if (icon_index >= 0 && icon_index < static_cast<int>(pixbufs_.size()))
@@ -391,21 +391,22 @@ void TreeAdapter::FillRow(GtkTreeIter* iter, TreeModelNode* node) {
                      -1);
 }
 
-void TreeAdapter::Fill(GtkTreeIter* parent_iter, TreeModelNode* parent_node) {
+void TreeAdapter::Fill(GtkTreeIter* parent_iter,
+                       ui::TreeModelNode* parent_node) {
   if (parent_iter)
     FillRow(parent_iter, parent_node);
   GtkTreeIter iter;
   int child_count = tree_model_->GetChildCount(parent_node);
   for (int i = 0; i < child_count; ++i) {
-    TreeModelNode* node = tree_model_->GetChild(parent_node, i);
+    ui::TreeModelNode* node = tree_model_->GetChild(parent_node, i);
     gtk_tree_store_append(tree_store_, &iter, parent_iter);
     Fill(&iter, node);
   }
 }
 
-GtkTreePath* TreeAdapter::GetTreePath(TreeModelNode* node) {
+GtkTreePath* TreeAdapter::GetTreePath(ui::TreeModelNode* node) {
   GtkTreePath* path = gtk_tree_path_new();
-  TreeModelNode* parent = node;
+  ui::TreeModelNode* parent = node;
   while (parent) {
     parent = tree_model_->GetParent(parent);
     if (parent) {
@@ -417,7 +418,7 @@ GtkTreePath* TreeAdapter::GetTreePath(TreeModelNode* node) {
   return path;
 }
 
-bool TreeAdapter::GetTreeIter(TreeModelNode* node, GtkTreeIter* iter) {
+bool TreeAdapter::GetTreeIter(ui::TreeModelNode* node, GtkTreeIter* iter) {
   GtkTreePath* path = GetTreePath(node);
   bool rv = false;
   // Check the path ourselves since gtk_tree_model_get_iter prints a warning if
@@ -429,8 +430,8 @@ bool TreeAdapter::GetTreeIter(TreeModelNode* node, GtkTreeIter* iter) {
   return rv;
 }
 
-void TreeAdapter::TreeNodesAdded(TreeModel* model,
-                                 TreeModelNode* parent,
+void TreeAdapter::TreeNodesAdded(ui::TreeModel* model,
+                                 ui::TreeModelNode* parent,
                                  int start,
                                  int count) {
   delegate_->OnAnyModelUpdateStart();
@@ -446,8 +447,8 @@ void TreeAdapter::TreeNodesAdded(TreeModel* model,
   delegate_->OnAnyModelUpdate();
 }
 
-void TreeAdapter::TreeNodesRemoved(TreeModel* model,
-                                   TreeModelNode* parent,
+void TreeAdapter::TreeNodesRemoved(ui::TreeModel* model,
+                                   ui::TreeModelNode* parent,
                                    int start,
                                    int count) {
   delegate_->OnAnyModelUpdateStart();
@@ -462,7 +463,8 @@ void TreeAdapter::TreeNodesRemoved(TreeModel* model,
   delegate_->OnAnyModelUpdate();
 }
 
-void TreeAdapter::TreeNodeChanged(TreeModel* model, TreeModelNode* node) {
+void TreeAdapter::TreeNodeChanged(ui::TreeModel* model,
+                                  ui::TreeModelNode* node) {
   delegate_->OnAnyModelUpdateStart();
   GtkTreeIter iter;
   if (GetTreeIter(node, &iter))

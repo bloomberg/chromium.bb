@@ -70,7 +70,7 @@ void NetworkMenuHandler::RegisterMessages() {
 }
 
 void NetworkMenuHandler::HandleAction(const ListValue* values) {
-  menus::MenuModel* model = GetMenuModel();
+  ui::MenuModel* model = GetMenuModel();
   if (model) {
     chromeos::NetworkMenuUI* network_menu_ui =
         static_cast<chromeos::NetworkMenuUI*>(dom_ui_);
@@ -126,7 +126,7 @@ NetworkMenuUI::NetworkMenuUI(TabContents* contents)
           make_scoped_refptr(theme)));
 }
 
-bool NetworkMenuUI::ModelAction(const menus::MenuModel* model,
+bool NetworkMenuUI::ModelAction(const ui::MenuModel* model,
                                 const ListValue* values) {
   const NetworkMenu* network_menu = static_cast<const NetworkMenu*>(model);
   std::string action;
@@ -165,7 +165,7 @@ bool NetworkMenuUI::ModelAction(const menus::MenuModel* model,
   return close_menu;
 }
 
-DictionaryValue* NetworkMenuUI::CreateMenuItem(const menus::MenuModel* model,
+DictionaryValue* NetworkMenuUI::CreateMenuItem(const ui::MenuModel* model,
                                                int index,
                                                const char* type,
                                                int* max_icon_width,
@@ -192,7 +192,7 @@ DictionaryValue* NetworkMenuUI::CreateMenuItem(const menus::MenuModel* model,
   return item;
 }
 
-views::Menu2* NetworkMenuUI::CreateMenu2(menus::MenuModel* model) {
+views::Menu2* NetworkMenuUI::CreateMenu2(ui::MenuModel* model) {
   views::Menu2* menu = new views::Menu2(model);
   NativeMenuDOMUI::SetMenuURL(
       menu, GURL(StringPrintf("chrome://%s", chrome::kChromeUINetworkMenu)));

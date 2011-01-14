@@ -33,7 +33,7 @@
   return [details_.get() type];
 }
 
-- (TreeModelNode*)treeNode {
+- (ui::TreeModelNode*)treeNode {
   return treeNode_;
 }
 

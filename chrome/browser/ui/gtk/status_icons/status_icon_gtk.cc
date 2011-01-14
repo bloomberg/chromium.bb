@@ -47,7 +47,7 @@ void StatusIconGtk::OnClick(GtkWidget* widget) {
   DispatchClickEvent();
 }
 
-void StatusIconGtk::UpdatePlatformContextMenu(menus::MenuModel* model) {
+void StatusIconGtk::UpdatePlatformContextMenu(ui::MenuModel* model) {
   if (!model)
     menu_.reset();
   else

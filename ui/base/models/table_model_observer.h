@@ -1,10 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_TABLE_MODEL_OBSERVER_H_
-#define APP_TABLE_MODEL_OBSERVER_H_
+#ifndef UI_BASE_MODELS_TABLE_MODEL_OBSERVER_H_
+#define UI_BASE_MODELS_TABLE_MODEL_OBSERVER_H_
 #pragma once
+
+namespace ui {
 
 // Observer for a TableModel. Anytime the model changes, it must notify its
 // observer.
@@ -26,4 +28,6 @@ class TableModelObserver {
   virtual ~TableModelObserver() {}
 };
 
-#endif  // APP_TABLE_MODEL_OBSERVER_H_
+}  // namespace ui
+
+#endif  // UI_BASE_MODELS_TABLE_MODEL_OBSERVER_H_

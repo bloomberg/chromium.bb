@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
-#include "app/table_model_observer.h"
 #include "base/command_line.h"
 #import "base/mac/mac_util.h"
 #import "base/scoped_nsobject.h"
@@ -17,6 +16,7 @@
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/models/table_model_observer.h"
 
 @interface ContentExceptionsWindowController (Private)
 - (id)initWithType:(ContentSettingsType)settingsType

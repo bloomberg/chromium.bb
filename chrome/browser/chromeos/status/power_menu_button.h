@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_POWER_MENU_BUTTON_H_
 #pragma once
 
-#include "app/menus/menu_model.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
+#include "ui/base/models/menu_model.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
@@ -24,29 +24,29 @@ namespace chromeos {
 // This class will handle getting the power status and populating the menu.
 class PowerMenuButton : public StatusAreaButton,
                         public views::ViewMenuDelegate,
-                        public menus::MenuModel,
+                        public ui::MenuModel,
                         public PowerLibrary::Observer {
  public:
   PowerMenuButton();
   virtual ~PowerMenuButton();
 
-  // menus::MenuModel implementation.
+  // ui::MenuModel implementation.
   virtual bool HasIcons() const  { return false; }
   virtual int GetItemCount() const;
-  virtual menus::MenuModel::ItemType GetTypeAt(int index) const;
+  virtual ui::MenuModel::ItemType GetTypeAt(int index) const;
   virtual int GetCommandIdAt(int index) const { return index; }
   virtual string16 GetLabelAt(int index) const;
   virtual bool IsItemDynamicAt(int index) const { return true; }
   virtual bool GetAcceleratorAt(int index,
-      menus::Accelerator* accelerator) const { return false; }
+      ui::Accelerator* accelerator) const { return false; }
   virtual bool IsItemCheckedAt(int index) const { return false; }
   virtual int GetGroupIdAt(int index) const { return 0; }
   virtual bool GetIconAt(int index, SkBitmap* icon) const { return false; }
-  virtual menus::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const {
+  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const {
     return NULL;
   }
   virtual bool IsEnabledAt(int index) const { return false; }
-  virtual menus::MenuModel* GetSubmenuModelAt(int index) const { return NULL; }
+  virtual ui::MenuModel* GetSubmenuModelAt(int index) const { return NULL; }
   virtual void HighlightChangedTo(int index) {}
   virtual void ActivatedAt(int index) {}
   virtual void MenuWillShow() {}

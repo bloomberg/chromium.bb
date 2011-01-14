@@ -13,12 +13,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class WrenchMenuModelTest : public BrowserWithTestWindowTest,
-                            public menus::AcceleratorProvider {
+                            public ui::AcceleratorProvider {
  public:
   // Don't handle accelerators.
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      menus::Accelerator* accelerator) { return false; }
+      ui::Accelerator* accelerator) { return false; }
 };
 
 // Copies parts of MenuModelTest::Delegate and combines them with the
@@ -26,7 +26,7 @@ class WrenchMenuModelTest : public BrowserWithTestWindowTest,
 // not derived from SimpleMenuModel.
 class TestWrenchMenuModel : public WrenchMenuModel {
  public:
-  TestWrenchMenuModel(menus::AcceleratorProvider* provider,
+  TestWrenchMenuModel(ui::AcceleratorProvider* provider,
                       Browser* browser)
       : WrenchMenuModel(provider, browser),
         execute_count_(0),
@@ -34,7 +34,7 @@ class TestWrenchMenuModel : public WrenchMenuModel {
         enable_count_(0) {
   }
 
-  // Testing overrides to menus::SimpleMenuModel::Delegate:
+  // Testing overrides to ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const {
     bool val = WrenchMenuModel::IsCommandIdChecked(command_id);
     if (val)
@@ -80,13 +80,13 @@ TEST_F(WrenchMenuModelTest, Basics) {
   // the delegate as well. Use the first submenu as the tools one.
   int toolsModelIndex = -1;
   for (int i = 0; i < itemCount; ++i) {
-    if (model.GetTypeAt(i) == menus::MenuModel::TYPE_SUBMENU) {
+    if (model.GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU) {
       toolsModelIndex = i;
       break;
     }
   }
   EXPECT_GT(toolsModelIndex, -1);
-  menus::MenuModel* toolsModel = model.GetSubmenuModelAt(toolsModelIndex);
+  ui::MenuModel* toolsModel = model.GetSubmenuModelAt(toolsModelIndex);
   EXPECT_TRUE(toolsModel);
   EXPECT_GT(toolsModel->GetItemCount(), 2);
   toolsModel->ActivatedAt(2);

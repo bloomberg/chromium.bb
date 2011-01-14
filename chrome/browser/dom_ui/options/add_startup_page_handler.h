@@ -6,15 +6,15 @@
 #define CHROME_BROWSER_DOM_UI_OPTIONS_ADD_STARTUP_PAGE_HANDLER_H_
 #pragma once
 
-#include "app/table_model_observer.h"
 #include "base/basictypes.h"
 #include "chrome/browser/dom_ui/options/options_ui.h"
+#include "ui/base/models/table_model_observer.h"
 
 class PossibleURLModel;
 
 // Chrome personal options page UI handler.
 class AddStartupPageHandler : public OptionsPageUIHandler,
-                              public TableModelObserver {
+                              public ui::TableModelObserver {
  public:
   AddStartupPageHandler();
   virtual ~AddStartupPageHandler();
@@ -24,7 +24,7 @@ class AddStartupPageHandler : public OptionsPageUIHandler,
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void RegisterMessages();
 
-  // TableModelObserver implementation.
+  // ui::TableModelObserver implementation.
   virtual void OnModelChanged();
   virtual void OnItemsChanged(int start, int length);
   virtual void OnItemsAdded(int start, int length);

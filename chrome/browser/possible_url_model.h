@@ -10,9 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "app/table_model.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/history/history.h"
+#include "ui/base/models/table_model.h"
 
 class SkBitmap;
 
@@ -23,7 +23,7 @@ class SkBitmap;
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class PossibleURLModel : public TableModel {
+class PossibleURLModel : public ui::TableModel {
  public:
   PossibleURLModel();
   virtual ~PossibleURLModel();
@@ -47,14 +47,14 @@ class PossibleURLModel : public TableModel {
   virtual string16 GetText(int row, int col_id) OVERRIDE;
   virtual SkBitmap GetIcon(int row) OVERRIDE;
   virtual int CompareValues(int row1, int row2, int column_id) OVERRIDE;
-  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
+  virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
 
  private:
   // The current profile.
   Profile* profile_;
 
   // Our observer.
-  TableModelObserver* observer_;
+  ui::TableModelObserver* observer_;
 
   // Our consumer for favicon requests.
   CancelableRequestConsumerT<size_t, NULL> consumer_;

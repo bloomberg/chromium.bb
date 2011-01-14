@@ -13,7 +13,6 @@
 #include <atlmisc.h>
 #include <tom.h>  // For ITextDocument, a COM interface to CRichEditCtrl.
 
-#include "app/menus/simple_menu_model.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/common/page_transition_types.h"
 #include "gfx/font.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "views/controls/menu/menu_2.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -45,7 +45,7 @@ class AutocompleteEditViewWin
                          CWinTraits<WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL |
                                     ES_NOHIDESEL> >,
       public CRichEditCommands<AutocompleteEditViewWin>,
-      public menus::SimpleMenuModel::Delegate,
+      public ui::SimpleMenuModel::Delegate,
       public AutocompleteEditView {
  public:
   struct State {
@@ -207,11 +207,11 @@ class AutocompleteEditViewWin
     DEFAULT_REFLECTION_HANDLER()  // avoids black margin area
   END_MSG_MAP()
 
-  // menus::SimpleMenuModel::Delegate
+  // ui::SimpleMenuModel::Delegate
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
+                                          ui::Accelerator* accelerator);
   virtual bool IsItemForCommandIdDynamic(int command_id) const;
   virtual std::wstring GetLabelForCommandId(int command_id) const;
   virtual void ExecuteCommand(int command_id);
@@ -487,7 +487,7 @@ class AutocompleteEditViewWin
   bool delete_at_end_pressed_;
 
   // The context menu for the edit.
-  scoped_ptr<menus::SimpleMenuModel> context_menu_contents_;
+  scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;
   scoped_ptr<views::Menu2> context_menu_;
 
   // Font we're using.  We keep a reference to make sure the font supplied to

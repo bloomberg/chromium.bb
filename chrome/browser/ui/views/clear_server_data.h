@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_CLEAR_SERVER_DATA_H_
 #pragma once
 
-#include "app/combobox_model.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/ui/views/clear_data_view.h"
 #include "chrome/browser/ui/views/confirm_message_box_dialog.h"

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "app/gtk_signal.h"
-#include "app/table_model.h"
+#include "ui/base/models/table_model.h"
 #include "views/controls/native_control_gtk.h"
 #include "views/controls/table/native_table_wrapper.h"
 

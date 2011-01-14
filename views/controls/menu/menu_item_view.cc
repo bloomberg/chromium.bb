@@ -5,10 +5,10 @@
 #include "views/controls/menu/menu_item_view.h"
 
 #include "app/l10n_util.h"
-#include "app/menus/menu_model.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
 #include "grit/app_strings.h"
+#include "ui/base/models/menu_model.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_config.h"
@@ -239,31 +239,31 @@ void MenuItemView::Cancel() {
   }
 }
 
-MenuItemView* MenuItemView::AppendMenuItemFromModel(menus::MenuModel* model,
+MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
                                                     int index,
                                                     int id) {
   SkBitmap icon;
   std::wstring label;
   MenuItemView::Type type;
-  menus::MenuModel::ItemType menu_type = model->GetTypeAt(index);
+  ui::MenuModel::ItemType menu_type = model->GetTypeAt(index);
   switch (menu_type) {
-    case menus::MenuModel::TYPE_COMMAND:
+    case ui::MenuModel::TYPE_COMMAND:
       model->GetIconAt(index, &icon);
       type = MenuItemView::NORMAL;
       label = UTF16ToWide(model->GetLabelAt(index));
       break;
-    case menus::MenuModel::TYPE_CHECK:
+    case ui::MenuModel::TYPE_CHECK:
       type = MenuItemView::CHECKBOX;
       label = UTF16ToWide(model->GetLabelAt(index));
       break;
-    case menus::MenuModel::TYPE_RADIO:
+    case ui::MenuModel::TYPE_RADIO:
       type = MenuItemView::RADIO;
       label = UTF16ToWide(model->GetLabelAt(index));
       break;
-    case menus::MenuModel::TYPE_SEPARATOR:
+    case ui::MenuModel::TYPE_SEPARATOR:
       type = MenuItemView::SEPARATOR;
       break;
-    case menus::MenuModel::TYPE_SUBMENU:
+    case ui::MenuModel::TYPE_SUBMENU:
       type = MenuItemView::SUBMENU;
       label = UTF16ToWide(model->GetLabelAt(index));
       break;

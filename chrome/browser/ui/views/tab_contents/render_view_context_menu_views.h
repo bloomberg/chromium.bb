@@ -36,7 +36,7 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
   // RenderViewContextMenu implementation --------------------------------------
   virtual void PlatformInit();
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
+                                          ui::Accelerator* accelerator);
  private:
   // The context menu itself and its contents.
   scoped_ptr<views::Menu2> menu_;

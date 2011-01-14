@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_DOM_UI_OPTIONS_BROWSER_OPTIONS_HANDLER_H_
 #pragma once
 
-#include "app/table_model_observer.h"
 #include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/shell_integration.h"
+#include "ui/base/models/table_model_observer.h"
 
 class CustomHomePagesTableModel;
 class OptionsManagedBannerHandler;
@@ -19,7 +19,7 @@ class TemplateURLModel;
 class BrowserOptionsHandler : public OptionsPageUIHandler,
                               public ShellIntegration::DefaultBrowserObserver,
                               public TemplateURLModelObserver,
-                              public TableModelObserver {
+                              public ui::TableModelObserver {
  public:
   BrowserOptionsHandler();
   virtual ~BrowserOptionsHandler();
@@ -37,7 +37,7 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // TemplateURLModelObserver implementation.
   virtual void OnTemplateURLModelChanged();
 
-  // TableModelObserver implementation.
+  // ui::TableModelObserver implementation.
   virtual void OnModelChanged();
   virtual void OnItemsChanged(int start, int length);
   virtual void OnItemsAdded(int start, int length);

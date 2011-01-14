@@ -129,7 +129,7 @@ void LanguageSwitchMenu::RunMenu(views::View* source, const gfx::Point& pt) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// menus::SimpleMenuModel::Delegate implementation.
+// ui::SimpleMenuModel::Delegate implementation.
 
 bool LanguageSwitchMenu::IsCommandIdChecked(int command_id) const {
   return false;
@@ -140,7 +140,7 @@ bool LanguageSwitchMenu::IsCommandIdEnabled(int command_id) const {
 }
 
 bool LanguageSwitchMenu::GetAcceleratorForCommandId(
-    int command_id, menus::Accelerator* accelerator) {
+    int command_id, ui::Accelerator* accelerator) {
   return false;
 }
 

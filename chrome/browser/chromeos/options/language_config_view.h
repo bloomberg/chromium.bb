@@ -10,10 +10,10 @@
 #include <set>
 #include <string>
 
-#include "app/table_model.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/options/language_config_model.h"
 #include "chrome/browser/ui/views/options/options_page_view.h"
+#include "ui/base/models/table_model.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
@@ -29,7 +29,7 @@ class InputMethodCheckbox;
 class PreferredLanguageTableModel;
 
 // A dialog box for configuring the languages.
-class LanguageConfigView : public TableModel,
+class LanguageConfigView : public ui::TableModel,
                            public views::ButtonListener,
                            public views::Combobox::Listener,
                            public views::DialogDelegate,
@@ -66,7 +66,7 @@ class LanguageConfigView : public TableModel,
   // TODO(satorux): Implement TableModel as a separate class once the bug
   // is fixed.
   virtual string16 GetText(int row, int column_id) OVERRIDE;
-  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
+  virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
   virtual int RowCount() OVERRIDE;
 
   // views::Combobox::Listener overrides:

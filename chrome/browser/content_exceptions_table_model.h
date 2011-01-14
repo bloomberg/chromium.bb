@@ -8,14 +8,14 @@
 
 #include <string>
 
-#include "app/table_model.h"
 #include "base/compiler_specific.h"
 #include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "ui/base/models/table_model.h"
 
-class ContentExceptionsTableModel : public TableModel {
+class ContentExceptionsTableModel : public ui::TableModel {
  public:
   ContentExceptionsTableModel(HostContentSettingsMap* map,
                               HostContentSettingsMap* off_the_record_map,
@@ -56,7 +56,7 @@ class ContentExceptionsTableModel : public TableModel {
   // TableModel overrides:
   virtual int RowCount() OVERRIDE;
   virtual string16 GetText(int row, int column_id) OVERRIDE;
-  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
+  virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
 
  private:
   HostContentSettingsMap* map(bool is_off_the_record) {
@@ -71,7 +71,7 @@ class ContentExceptionsTableModel : public TableModel {
   ContentSettingsType content_type_;
   HostContentSettingsMap::SettingsForOneType entries_;
   HostContentSettingsMap::SettingsForOneType off_the_record_entries_;
-  TableModelObserver* observer_;
+  ui::TableModelObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentExceptionsTableModel);
 };

@@ -36,7 +36,7 @@ BookmarkContextMenuController::BookmarkContextMenuController(
       model_(profile->GetBookmarkModel()) {
   DCHECK(profile_);
   DCHECK(model_->IsLoaded());
-  menu_model_.reset(new menus::SimpleMenuModel(this));
+  menu_model_.reset(new ui::SimpleMenuModel(this));
   model_->AddObserver(this);
 
   BuildMenu();
@@ -280,7 +280,7 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
 
 bool BookmarkContextMenuController::GetAcceleratorForCommandId(
     int command_id,
-    menus::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) {
   return false;
 }
 

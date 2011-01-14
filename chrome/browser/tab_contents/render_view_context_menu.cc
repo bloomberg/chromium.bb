@@ -230,7 +230,7 @@ void RenderViewContextMenu::AppendExtensionItems(
   if (submenu_items.empty()) {
     menu_model_.AddItem(menu_id, title);
   } else {
-    menus::SimpleMenuModel* submenu = new menus::SimpleMenuModel(this);
+    ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(this);
     extension_menu_models_.push_back(submenu);
     menu_model_.AddSubMenu(menu_id, title, submenu);
     RecursivelyAppendExtensionItems(submenu_items, can_cross_incognito, submenu,
@@ -242,7 +242,7 @@ void RenderViewContextMenu::AppendExtensionItems(
 void RenderViewContextMenu::RecursivelyAppendExtensionItems(
     const ExtensionMenuItem::List& items,
     bool can_cross_incognito,
-    menus::SimpleMenuModel* menu_model,
+    ui::SimpleMenuModel* menu_model,
     int *index) {
   string16 selection_text = PrintableSelectionText();
   ExtensionMenuItem::Type last_type = ExtensionMenuItem::NORMAL;
@@ -273,7 +273,7 @@ void RenderViewContextMenu::RecursivelyAppendExtensionItems(
       if (children.size() == 0) {
         menu_model->AddItem(menu_id, title);
       } else {
-        menus::SimpleMenuModel* submenu = new menus::SimpleMenuModel(this);
+        ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(this);
         extension_menu_models_.push_back(submenu);
         menu_model->AddSubMenu(menu_id, title, submenu);
         RecursivelyAppendExtensionItems(children, can_cross_incognito,

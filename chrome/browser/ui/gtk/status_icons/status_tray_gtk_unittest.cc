@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -12,6 +11,7 @@
 #include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/models/simple_menu_model.h"
 
 namespace {
 
@@ -34,7 +34,7 @@ TEST(StatusTrayGtkTest, CreateIcon) {
   icon->SetImage(*bitmap);
   icon->SetPressedImage(*bitmap);
   icon->SetToolTip(ASCIIToUTF16("tool tip"));
-  menus::SimpleMenuModel* menu = new menus::SimpleMenuModel(NULL);
+  ui::SimpleMenuModel* menu = new ui::SimpleMenuModel(NULL);
   menu->AddItem(0, ASCIIToUTF16("foo"));
   icon->SetContextMenu(menu);
 }

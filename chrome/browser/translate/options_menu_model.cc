@@ -27,7 +27,7 @@ const char kAboutGoogleTranslateUrl[] =
 
 OptionsMenuModel::OptionsMenuModel(
     TranslateInfoBarDelegate* translate_delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       translate_infobar_delegate_(translate_delegate) {
   string16 original_language = translate_delegate->GetLanguageDisplayableNameAt(
       translate_delegate->original_language_index());
@@ -94,7 +94,7 @@ bool OptionsMenuModel::IsCommandIdEnabled(int command_id) const {
 }
 
 bool OptionsMenuModel::GetAcceleratorForCommandId(
-    int command_id, menus::Accelerator* accelerator) {
+    int command_id, ui::Accelerator* accelerator) {
   return false;
 }
 

@@ -8,13 +8,13 @@
 
 #include "chrome/browser/chromeos/dom_ui/menu_ui.h"
 
+namespace ui {
+class MenuModel;
+} // namespace ui
+
 namespace views {
 class Menu2;
 }  // namespace views
-
-namespace menus {
-class MenuModel;
-} // namespace menus
 
 namespace chromeos {
 
@@ -26,18 +26,18 @@ class NetworkMenuUI : public MenuUI {
   // to invoke an action in the model.
   // By convention the first member of 'values' describes the action.
   // Returns true if the menu should be closed.
-  bool ModelAction(const menus::MenuModel* model,
+  bool ModelAction(const ui::MenuModel* model,
                    const ListValue* values);
 
   // MenuUI overrides
-  virtual DictionaryValue* CreateMenuItem(const menus::MenuModel* model,
+  virtual DictionaryValue* CreateMenuItem(const ui::MenuModel* model,
                                           int index,
                                           const char* type,
                                           int* max_icon_width,
                                           bool* has_accel) const;
 
   // A convenient factory method to create Menu2 for the network menu.
-  static views::Menu2* CreateMenu2(menus::MenuModel* model);
+  static views::Menu2* CreateMenu2(ui::MenuModel* model);
 
  private:
 

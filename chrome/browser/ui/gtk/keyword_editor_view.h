@@ -8,20 +8,20 @@
 
 #include <gtk/gtk.h>
 
-#include "app/table_model_observer.h"
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
+#include "ui/base/models/table_model_observer.h"
 
 class AccessibleWidgetHelper;
 class KeywordEditorController;
 class Profile;
 class TemplateURLTableModel;
 
-class KeywordEditorView : public TableModelObserver,
+class KeywordEditorView : public ui::TableModelObserver,
                           public TemplateURLModelObserver,
                           public EditSearchEngineControllerDelegate {
  public:
@@ -77,7 +77,7 @@ class KeywordEditorView : public TableModelObserver,
   // Add the values from |row| of |table_model_|.
   void AddNodeToList(int row);
 
-  // TableModelObserver implementation.
+  // ui::TableModelObserver implementation.
   virtual void OnModelChanged();
   virtual void OnItemsChanged(int start, int length);
   virtual void OnItemsAdded(int start, int length);

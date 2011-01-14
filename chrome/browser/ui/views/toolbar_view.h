@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "app/menus/accelerator.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/command_updater.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/reload_button.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/models/accelerator.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu.h"
 #include "views/controls/menu/menu_wrapper.h"
@@ -37,7 +37,7 @@ class WrenchMenu;
 // The Browser Window's toolbar.
 class ToolbarView : public AccessiblePaneView,
                     public views::ViewMenuDelegate,
-                    public menus::AcceleratorProvider,
+                    public ui::AcceleratorProvider,
                     public LocationBarView::Delegate,
                     public NotificationObserver,
                     public CommandUpdater::CommandObserver,
@@ -90,7 +90,7 @@ class ToolbarView : public AccessiblePaneView,
   virtual AccessibilityTypes::Role GetAccessibleRole();
 
   // Overridden from Menu::BaseControllerDelegate:
-  virtual bool GetAcceleratorInfo(int id, menus::Accelerator* accel);
+  virtual bool GetAcceleratorInfo(int id, ui::Accelerator* accel);
 
   // Overridden from views::MenuDelegate:
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
@@ -111,9 +111,9 @@ class ToolbarView : public AccessiblePaneView,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Overridden from menus::AcceleratorProvider:
+  // Overridden from ui::AcceleratorProvider:
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
+                                          ui::Accelerator* accelerator);
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
@@ -192,7 +192,7 @@ class ToolbarView : public AccessiblePaneView,
   Browser* browser_;
 
   // Contents of the profiles menu to populate with profile names.
-  scoped_ptr<menus::SimpleMenuModel> profiles_menu_contents_;
+  scoped_ptr<ui::SimpleMenuModel> profiles_menu_contents_;
 
   // Controls whether or not a home button should be shown on the toolbar.
   BooleanPrefMember show_home_button_;
@@ -201,7 +201,7 @@ class ToolbarView : public AccessiblePaneView,
   DisplayMode display_mode_;
 
   // The contents of the wrench menu.
-  scoped_ptr<menus::SimpleMenuModel> wrench_menu_model_;
+  scoped_ptr<ui::SimpleMenuModel> wrench_menu_model_;
 
 #if defined(OS_CHROMEOS)
   // Wrench menu using domui menu.

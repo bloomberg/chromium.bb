@@ -11,9 +11,9 @@
 
 #include <map>
 
-#include "app/tree_model.h"
 #include "base/basictypes.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/models/tree_model.h"
 #include "views/controls/native_control.h"
 
 namespace views {
@@ -31,7 +31,7 @@ class TreeViewController {
 
   // Returns true if the node can be edited. This is only used if the
   // TreeView is editable.
-  virtual bool CanEdit(TreeView* tree_view, TreeModelNode* node) {
+  virtual bool CanEdit(TreeView* tree_view, ui::TreeModelNode* node) {
     return true;
   }
 
@@ -44,7 +44,7 @@ class TreeViewController {
 // TreeView displays hierarchical data as returned from a TreeModel. The user
 // can expand, collapse and edit the items. A Controller may be attached to
 // receive notification of selection changes and restrict editing.
-class TreeView : public NativeControl, TreeModelObserver {
+class TreeView : public NativeControl, ui::TreeModelObserver {
  public:
   TreeView();
   virtual ~TreeView();
@@ -54,8 +54,8 @@ class TreeView : public NativeControl, TreeModelObserver {
   bool drag_enabled() const { return drag_enabled_; }
 
   // Sets the model. TreeView does not take ownership of the model.
-  void SetModel(TreeModel* model);
-  TreeModel* model() const { return model_; }
+  void SetModel(ui::TreeModel* model);
+  ui::TreeModel* model() const { return model_; }
 
   // Sets whether to automatically expand children when a parent node is
   // expanded. The default is false. If true, when a node in the tree is
@@ -84,7 +84,7 @@ class TreeView : public NativeControl, TreeModelObserver {
 
   // Edits the specified node. This cancels the current edit and expands
   // all parents of node.
-  void StartEditing(TreeModelNode* node);
+  void StartEditing(ui::TreeModelNode* node);
 
   // Cancels the current edit. Does nothing if not editing.
   void CancelEdit();
@@ -94,26 +94,26 @@ class TreeView : public NativeControl, TreeModelObserver {
 
   // If the user is editing a node, it is returned. If the user is not
   // editing a node, NULL is returned.
-  TreeModelNode* GetEditingNode();
+  ui::TreeModelNode* GetEditingNode();
 
   // Selects the specified node. This expands all the parents of node.
-  void SetSelectedNode(TreeModelNode* node);
+  void SetSelectedNode(ui::TreeModelNode* node);
 
   // Returns the selected node, or NULL if nothing is selected.
-  TreeModelNode* GetSelectedNode();
+  ui::TreeModelNode* GetSelectedNode();
 
   // Make sure node and all its parents are expanded.
-  void Expand(TreeModelNode* node);
+  void Expand(ui::TreeModelNode* node);
 
   // Convenience to expand ALL nodes in the tree.
   void ExpandAll();
 
   // Invoked from ExpandAll(). Expands the supplied node and recursively
   // invokes itself with all children.
-  void ExpandAll(TreeModelNode* node);
+  void ExpandAll(ui::TreeModelNode* node);
 
   // Returns true if the specified node is expanded.
-  bool IsExpanded(TreeModelNode* node);
+  bool IsExpanded(ui::TreeModelNode* node);
 
   // Sets whether the root is shown. If true, the root node of the tree is
   // shown, if false only the children of the root are shown. The default is
@@ -123,15 +123,15 @@ class TreeView : public NativeControl, TreeModelObserver {
   // Begin TreeModelObserver implementation.
   // Don't call these directly, instead your model
   // should notify the observer TreeView adds to it.
-  virtual void TreeNodesAdded(TreeModel* model,
-                              TreeModelNode* parent,
+  virtual void TreeNodesAdded(ui::TreeModel* model,
+                              ui::TreeModelNode* parent,
                               int start,
                               int count);
-  virtual void TreeNodesRemoved(TreeModel* model,
-                                TreeModelNode* parent,
+  virtual void TreeNodesRemoved(ui::TreeModel* model,
+                                ui::TreeModelNode* parent,
                                 int start,
                                 int count);
-  virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node);
+  virtual void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node);
   // End TreeModelObserver implementation.
 
   // Sets the controller, which may be null. TreeView does not take ownership
@@ -186,10 +186,10 @@ class TreeView : public NativeControl, TreeModelObserver {
   virtual void OnContextMenu(const POINT& location);
 
   // Returns the TreeModelNode for |tree_item|.
-  TreeModelNode* GetNodeForTreeItem(HTREEITEM tree_item);
+  ui::TreeModelNode* GetNodeForTreeItem(HTREEITEM tree_item);
 
   // Returns the tree item for |node|.
-  HTREEITEM GetTreeItemForNode(TreeModelNode* node);
+  HTREEITEM GetTreeItemForNode(ui::TreeModelNode* node);
 
  private:
   // See notes in TableView::TableViewWrapper for why this is needed.
@@ -201,7 +201,7 @@ class TreeView : public NativeControl, TreeModelObserver {
   // Internally used to track the state of nodes. NodeDetails are lazily created
   // as the user expands nodes.
   struct NodeDetails {
-    NodeDetails(int id, TreeModelNode* node)
+    NodeDetails(int id, ui::TreeModelNode* node)
         : id(id), node(node), tree_item(NULL), loaded_children(false) {}
 
     // Unique identifier for the node. This corresponds to the lParam of
@@ -209,7 +209,7 @@ class TreeView : public NativeControl, TreeModelObserver {
     const int id;
 
     // The node from the model.
-    TreeModelNode* node;
+    ui::TreeModelNode* node;
 
     // From the native TreeView.
     //
@@ -233,7 +233,8 @@ class TreeView : public NativeControl, TreeModelObserver {
   // parent and is null for root items. after dictates where among the
   // children of parent_item the item is to be created. node is the node from
   // the model.
-  void CreateItem(HTREEITEM parent_item, HTREEITEM after, TreeModelNode* node);
+  void CreateItem(HTREEITEM parent_item, HTREEITEM after,
+                  ui::TreeModelNode* node);
 
   // Removes entries from the map for item. This method will also
   // remove the items from the TreeView because the process of
@@ -242,7 +243,7 @@ class TreeView : public NativeControl, TreeModelObserver {
   void RecursivelyDelete(NodeDetails* node);
 
   // Returns the NodeDetails by node from the model.
-  NodeDetails* GetNodeDetails(TreeModelNode* node);
+  NodeDetails* GetNodeDetails(ui::TreeModelNode* node);
 
   // Returns the NodeDetails by identifier (lparam of the HTREEITEM).
   NodeDetails* GetNodeDetailsByID(int id);
@@ -256,7 +257,7 @@ class TreeView : public NativeControl, TreeModelObserver {
   // Returns the HTREEITEM for |node|. This is intended to be called when a
   // model mutation event occur with |node| as the parent. This returns null
   // if the user has never expanded |node| or all of its parents.
-  HTREEITEM GetTreeItemForNodeDuringMutation(TreeModelNode* node);
+  HTREEITEM GetTreeItemForNodeDuringMutation(ui::TreeModelNode* node);
 
   // The window function installed on the treeview.
   static LRESULT CALLBACK TreeWndProc(HWND window,
@@ -268,13 +269,13 @@ class TreeView : public NativeControl, TreeModelObserver {
   HWND tree_view_;
 
   // The model, may be null.
-  TreeModel* model_;
+  ui::TreeModel* model_;
 
   // Maps from id to NodeDetails.
   std::map<int, NodeDetails*> id_to_details_map_;
 
   // Maps from model entry to NodeDetails.
-  std::map<TreeModelNode*, NodeDetails*> node_to_details_map_;
+  std::map<ui::TreeModelNode*, NodeDetails*> node_to_details_map_;
 
   // Whether to automatically expand children when a parent node is expanded.
   bool auto_expand_children_;
@@ -289,7 +290,7 @@ class TreeView : public NativeControl, TreeModelObserver {
   TreeViewController* controller_;
 
   // Node being edited. If null, not editing.
-  TreeModelNode* editing_node_;
+  ui::TreeModelNode* editing_node_;
 
   // Whether or not the root is shown in the tree.
   bool root_shown_;

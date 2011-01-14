@@ -28,7 +28,7 @@ class StatusIconMac : public StatusIcon {
 
  protected:
   // Overridden from StatusIcon.
-  virtual void UpdatePlatformContextMenu(menus::MenuModel* menu);
+  virtual void UpdatePlatformContextMenu(ui::MenuModel* menu);
 
  private:
   // Getter for item_ that allows lazy initialization.

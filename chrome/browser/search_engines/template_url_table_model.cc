@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/table_model_observer.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/stl_util-inl.h"
@@ -19,6 +18,7 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/models/table_model_observer.h"
 
 // Group IDs used by TemplateURLTableModel.
 static const int kMainGroupID = 0;
@@ -211,7 +211,7 @@ SkBitmap TemplateURLTableModel::GetIcon(int row) {
   return entries_[row]->GetIcon();
 }
 
-void TemplateURLTableModel::SetObserver(TableModelObserver* observer) {
+void TemplateURLTableModel::SetObserver(ui::TableModelObserver* observer) {
   observer_ = observer;
 }
 

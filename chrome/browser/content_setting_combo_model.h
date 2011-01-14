@@ -6,13 +6,12 @@
 #define CHROME_BROWSER_CONTENT_SETTING_COMBO_MODEL_H_
 #pragma once
 
-#include "app/combobox_model.h"
-
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "chrome/common/content_settings.h"
+#include "ui/base/models/combobox_model.h"
 
-class ContentSettingComboModel : public ComboboxModel {
+class ContentSettingComboModel : public ui::ComboboxModel {
  public:
   explicit ContentSettingComboModel(ContentSettingsType content_type);
   virtual ~ContentSettingComboModel();
