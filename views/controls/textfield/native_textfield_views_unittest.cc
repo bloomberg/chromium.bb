@@ -397,7 +397,7 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_FocusTraversalTest) {
 }
 
 void VerifyTextfieldContextMenuContents(bool textfield_has_selection,
-    menus::MenuModel* menu_model) {
+    ui::MenuModel* menu_model) {
   EXPECT_TRUE(menu_model->IsEnabledAt(4 /* Separator */));
   EXPECT_TRUE(menu_model->IsEnabledAt(5 /* SELECT ALL */));
   EXPECT_EQ(textfield_has_selection, menu_model->IsEnabledAt(0 /* CUT */));

@@ -6,10 +6,10 @@
 #define VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_VIEWS_H_
 #pragma once
 
-#include "app/menus/simple_menu_model.h"
 #include "base/string16.h"
 #include "base/task.h"
 #include "gfx/font.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "views/border.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/view.h"
@@ -37,7 +37,7 @@ class TextfieldViewsModel;
 class NativeTextfieldViews : public views::View,
                              public views::ContextMenuController,
                              public NativeTextfieldWrapper,
-                             public menus::SimpleMenuModel::Delegate {
+                             public ui::SimpleMenuModel::Delegate {
  public:
   explicit NativeTextfieldViews(Textfield* parent);
   ~NativeTextfieldViews();
@@ -87,11 +87,11 @@ class NativeTextfieldViews : public views::View,
   virtual void HandleDidGainFocus();
   virtual void HandleWillLoseFocus();
 
-  // menus::SimpleMenuModel::Delegate overrides
+  // ui::SimpleMenuModel::Delegate overrides
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
+                                          ui::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
   // class name of internal
@@ -191,7 +191,7 @@ class NativeTextfieldViews : public views::View,
   ScopedRunnableMethodFactory<NativeTextfieldViews> cursor_timer_;
 
   // Context menu and its content list for the textfield.
-  scoped_ptr<menus::SimpleMenuModel> context_menu_contents_;
+  scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;
   scoped_ptr<Menu2> context_menu_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTextfieldViews);

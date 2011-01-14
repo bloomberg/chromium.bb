@@ -310,7 +310,7 @@ void NativeTextfieldViews::HandleWillLoseFocus() {
 }
 
 /////////////////////////////////////////////////////////////////
-// NativeTextfieldViews, menus::SimpleMenuModel::Delegate overrides:
+// NativeTextfieldViews, ui::SimpleMenuModel::Delegate overrides:
 
 bool NativeTextfieldViews::IsCommandIdChecked(int command_id) const {
   return true;
@@ -338,7 +338,7 @@ bool NativeTextfieldViews::IsCommandIdEnabled(int command_id) const {
 }
 
 bool NativeTextfieldViews::GetAcceleratorForCommandId(int command_id,
-    menus::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) {
   return false;
 }
 
@@ -772,7 +772,7 @@ void NativeTextfieldViews::PropagateTextChange() {
 void NativeTextfieldViews::InitContextMenuIfRequired() {
   if (context_menu_menu_.get())
     return;
-  context_menu_contents_.reset(new menus::SimpleMenuModel(this));
+  context_menu_contents_.reset(new ui::SimpleMenuModel(this));
   context_menu_contents_->AddItemWithStringId(IDS_APP_CUT, IDS_APP_CUT);
   context_menu_contents_->AddItemWithStringId(IDS_APP_COPY, IDS_APP_COPY);
   context_menu_contents_->AddItemWithStringId(IDS_APP_PASTE, IDS_APP_PASTE);
