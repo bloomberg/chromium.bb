@@ -48,6 +48,9 @@ class ATL_NO_VTABLE ViewAccessibility
   // Retrieves the child element or child object at a given point on the screen.
   STDMETHODIMP accHitTest(LONG x_left, LONG y_top, VARIANT* child);
 
+  // Performs the object's default action.
+  STDMETHODIMP accDoDefaultAction(VARIANT var_id);
+
   // Retrieves the specified object's current screen location.
   STDMETHODIMP accLocation(LONG* x_left,
                            LONG* y_top,
@@ -92,9 +95,6 @@ class ATL_NO_VTABLE ViewAccessibility
   STDMETHODIMP get_accValue(VARIANT var_id, BSTR* value);
 
   // Non-supported IAccessible methods.
-
-  // Out-dated and can be safely said to be very rarely used.
-  STDMETHODIMP accDoDefaultAction(VARIANT var_id);
 
   // Selections not applicable to views.
   STDMETHODIMP get_accSelection(VARIANT* selected);
