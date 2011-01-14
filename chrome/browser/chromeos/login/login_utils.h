@@ -17,6 +17,7 @@ class PrefService;
 namespace chromeos {
 
 class Authenticator;
+class BackgroundView;
 class LoginStatusConsumer;
 
 class LoginUtils {
@@ -77,6 +78,11 @@ class LoginUtils {
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
 
+  // Sets the current background view.
+  virtual void SetBackgroundView(BackgroundView* background_view) = 0;
+
+  // Gets the current background view.
+  virtual BackgroundView* GetBackgroundView() = 0;
 };
 
 }  // namespace chromeos

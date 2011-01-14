@@ -10,21 +10,16 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/notifications/balloon_view_host.h"
-#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "views/window/dialog_delegate.h"
-#include "views/window/window.h"
 
 namespace {
 
@@ -44,8 +39,7 @@ bool ShouldShowMobilePlanNotifications() {
 namespace chromeos {
 
 NetworkMessageObserver::NetworkMessageObserver(Profile* profile)
-    : initialized_(false),
-      notification_connection_error_(profile, "network_connection.chromeos",
+    : notification_connection_error_(profile, "network_connection.chromeos",
           IDR_NOTIFICATION_NETWORK_FAILED,
           l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE)),
       notification_low_data_(profile, "network_low_data.chromeos",
@@ -58,7 +52,6 @@ NetworkMessageObserver::NetworkMessageObserver(Profile* profile)
   OnNetworkManagerChanged(netlib);
   // Note that this gets added as a NetworkManagerObserver and a
   // CellularDataPlanObserver in browser_init.cc
-  initialized_ = true;
 }
 
 NetworkMessageObserver::~NetworkMessageObserver() {
@@ -70,20 +63,6 @@ NetworkMessageObserver::~NetworkMessageObserver() {
   notification_no_data_.Hide();
   STLDeleteValues(&cellular_networks_);
   STLDeleteValues(&wifi_networks_);
-}
-
-void NetworkMessageObserver::CreateModalPopup(views::WindowDelegate* view) {
-  Browser* browser = BrowserList::GetLastActive();
-  if (browser && browser->type() != Browser::TYPE_NORMAL) {
-    browser = BrowserList::FindBrowserWithType(browser->profile(),
-                                               Browser::TYPE_NORMAL,
-                                               true);
-  }
-  DCHECK(browser);
-  views::Window* window = browser::CreateViewsWindow(
-      browser->window()->GetNativeHandle(), gfx::Rect(), view);
-  window->SetIsAlwaysOnTop(true);
-  window->Show();
 }
 
 void NetworkMessageObserver::OpenMobileSetupPage(const ListValue* args) {
@@ -108,7 +87,6 @@ void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   const WifiNetworkVector& wifi_networks = obj->wifi_networks();
   const CellularNetworkVector& cellular_networks = obj->cellular_networks();
 
-  NetworkConfigView* view = NULL;
   std::string new_failed_network;
   // Check to see if we have any newly failed wifi network.
   for (WifiNetworkVector::const_iterator it = wifi_networks.begin();
@@ -124,21 +102,6 @@ void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
         continue;
 
       const WifiNetwork* wifi_old = iter->second;
-      // If this network was in a failed state previously, then it's not new.
-      if (wifi_old->failed())
-        continue;
-
-      // Display login box again for bad_passphrase and bad_wepkey errors.
-      if (wifi->error() == ERROR_BAD_PASSPHRASE ||
-          wifi->error() == ERROR_BAD_WEPKEY) {
-        // The NetworkConfigView will show the appropriate error message.
-        view = new NetworkConfigView(wifi);
-        // There should only be one wifi network that failed to connect.
-        // If for some reason, we have more than one failure,
-        // we only display the first one. So we break here.
-        break;
-      }
-
       // If network connection failed, display a notification.
       // We only do this if we were trying to make a new connection.
       // So if a previously connected network got disconnected for any reason,
@@ -183,10 +146,6 @@ void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
         IDS_NETWORK_CONNECTION_ERROR_MESSAGE,
         ASCIIToUTF16(new_failed_network)), false, false);
   }
-
-  // Show login box if necessary.
-  if (view && initialized_)
-    CreateModalPopup(view);
 }
 
 void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* obj) {

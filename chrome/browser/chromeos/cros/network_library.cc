@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/chromeos/network_login_observer.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/time_format.h"
@@ -846,6 +847,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                                 this);
       data_plan_monitor_ = MonitorCellularDataPlan(&DataPlanUpdateHandler,
                                                    this);
+      network_login_observer_.reset(new NetworkLoginObserver(this));
     } else {
       InitTestData();
     }
@@ -1859,6 +1861,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   // For monitoring data plan changes to the connected cellular network.
   DataPlanUpdateMonitor data_plan_monitor_;
+
+  // Network login observer.
+  scoped_ptr<NetworkLoginObserver> network_login_observer_;
 
   // The ethernet network.
   EthernetNetwork* ethernet_;

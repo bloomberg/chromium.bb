@@ -15,6 +15,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/oobe_progress_bar.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
+#include "chrome/browser/ui/views/window.h"
 #include "gfx/gtk_util.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
@@ -37,6 +39,7 @@
 #include "views/controls/label.h"
 #include "views/screen.h"
 #include "views/widget/widget_gtk.h"
+#include "views/window/window.h"
 
 // X Windows headers have "#define Status int". That interferes with
 // NetworkLibrary header which defines enum "Status".
@@ -179,7 +182,16 @@ views::Widget* BackgroundView::CreateWindowContainingView(
   GdkWindow* gdk_window = window->GetNativeView()->window;
   gdk_window_set_back_pixmap(gdk_window, NULL, false);
 
+  LoginUtils::Get()->SetBackgroundView(*view);
+
   return window;
+}
+
+void BackgroundView::CreateModalPopup(views::WindowDelegate* view) {
+  views::Window* window = browser::CreateViewsWindow(
+      GetNativeWindow(), gfx::Rect(), view);
+  window->SetIsAlwaysOnTop(true);
+  window->Show();
 }
 
 void BackgroundView::SetStatusAreaVisible(bool visible) {

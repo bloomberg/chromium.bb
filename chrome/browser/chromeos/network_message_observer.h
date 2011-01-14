@@ -14,9 +14,6 @@
 #include "chrome/browser/chromeos/notifications/system_notification.h"
 
 class Profile;
-namespace views {
-class WindowDelegate;
-}
 
 namespace chromeos {
 
@@ -32,7 +29,6 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
   typedef std::map<std::string, WifiNetwork*> ServicePathWifiMap;
   typedef std::map<std::string, CellularNetwork*> ServicePathCellularMap;
  private:
-  virtual void CreateModalPopup(views::WindowDelegate* view);
   virtual void OpenMobileSetupPage(const ListValue* args);
   virtual void OpenMoreInfoPage(const ListValue* args);
 
@@ -41,7 +37,6 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
   // NetworkLibrary::CellularDataPlanObserver implementation.
   virtual void OnCellularDataPlanChanged(NetworkLibrary* obj);
 
-  bool initialized_;
   // Wifi networks by service path.
   ServicePathWifiMap wifi_networks_;
   // Cellular networks by service path.

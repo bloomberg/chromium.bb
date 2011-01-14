@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
@@ -99,7 +100,8 @@ class ResetDefaultProxyConfigServiceTask : public Task {
 class LoginUtilsImpl : public LoginUtils {
  public:
   LoginUtilsImpl()
-      : browser_launch_enabled_(true) {
+      : browser_launch_enabled_(true),
+        background_view_(NULL) {
   }
 
   // Invoked after the user has successfully logged in. This launches a browser
@@ -143,12 +145,21 @@ class LoginUtilsImpl : public LoginUtils {
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials);
 
+  // Sets the current background view.
+  virtual void SetBackgroundView(chromeos::BackgroundView* background_view);
+
+  // Gets the current background view.
+  virtual chromeos::BackgroundView* GetBackgroundView();
+
  private:
   // Check user's profile for kApplicationLocale setting.
   void RespectLocalePreference(PrefService* pref);
 
   // Indicates if DoBrowserLaunch will actually launch the browser or not.
   bool browser_launch_enabled_;
+
+  // The current background view.
+  chromeos::BackgroundView* background_view_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsImpl);
 };
@@ -531,6 +542,14 @@ void LoginUtilsImpl::PrewarmAuthentication() {
       new WarmingObserver();
     }
   }
+}
+
+void LoginUtilsImpl::SetBackgroundView(BackgroundView* background_view) {
+  background_view_ = background_view;
+}
+
+BackgroundView* LoginUtilsImpl::GetBackgroundView() {
+  return background_view_;
 }
 
 LoginUtils* LoginUtils::Get() {
