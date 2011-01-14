@@ -1,20 +1,20 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/hi_res_timer_manager.h"
+#include "app/hi_res_timer_manager.h"
 
 #include "base/time.h"
 
 HighResolutionTimerManager::HighResolutionTimerManager()
     : hi_res_clock_used_(false) {
-  ui::SystemMonitor* system_monitor = ui::SystemMonitor::Get();
+  SystemMonitor* system_monitor = SystemMonitor::Get();
   system_monitor->AddObserver(this);
   UseHiResClock(!system_monitor->BatteryPower());
 }
 
 HighResolutionTimerManager::~HighResolutionTimerManager() {
-  ui::SystemMonitor::Get()->RemoveObserver(this);
+  SystemMonitor::Get()->RemoveObserver(this);
   UseHiResClock(false);
 }
 

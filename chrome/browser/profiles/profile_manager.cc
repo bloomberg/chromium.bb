@@ -51,7 +51,7 @@ Profile* ProfileManager::GetDefaultProfile() {
 }
 
 ProfileManager::ProfileManager() : logged_in_(false) {
-  ui::SystemMonitor::Get()->AddObserver(this);
+  SystemMonitor::Get()->AddObserver(this);
 #if defined(OS_CHROMEOS)
   registrar_.Add(
       this,
@@ -61,7 +61,7 @@ ProfileManager::ProfileManager() : logged_in_(false) {
 }
 
 ProfileManager::~ProfileManager() {
-  ui::SystemMonitor* system_monitor = ui::SystemMonitor::Get();
+  SystemMonitor* system_monitor = SystemMonitor::Get();
   if (system_monitor)
     system_monitor->RemoveObserver(this);
 

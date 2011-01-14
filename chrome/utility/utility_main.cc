@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "app/app_switches.h"
+#include "app/hi_res_timer_manager.h"
+#include "app/system_monitor.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -13,11 +15,9 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/hi_res_timer_manager.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/utility/utility_thread.h"
-#include "ui/base/system_monitor/system_monitor.h"
 
 #if defined(OS_WIN)
 #include "chrome/common/chrome_switches.h"
@@ -31,7 +31,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
   MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrUtilityMain");
 
-  ui::SystemMonitor system_monitor;
+  SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
 
   ChildProcess utility_process;
