@@ -3030,6 +3030,8 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
   // - One that specifies no file or update URL.
   // - One that has an update URL that is not well formed.
   // - One that contains a malformed version.
+  // - One that has an invalid id.
+  // - One that has a non-dictionary value.
   // The final extension is valid, and we check that it is read to make sure
   // failures don't stop valid records from being read.
   json_data =
@@ -3058,7 +3060,9 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
       "    \"external_crx\": \"RandomExtension3.crx\","
       "    \"external_version\": \"This is not a valid version!\""
       "  },"
-      "  \"hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh\": {"
+      "  \"This is not a valid id!\": {},"
+      "  \"hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh\": true,"
+      "  \"pppppppppppppppppppppppppppppppp\": {"
       "    \"external_crx\": \"RandomValidExtension.crx\","
       "    \"external_version\": \"1.0\""
       "  }"

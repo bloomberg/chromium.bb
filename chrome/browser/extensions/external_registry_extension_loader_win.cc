@@ -57,6 +57,23 @@ void ExternalRegistryExtensionLoader::LoadOnFileThread() {
           std::string id = WideToASCII(iterator.Name());
           StringToLowerASCII(&id);
 
+          if (!Extension::IdIsValid(id)) {
+            LOG(ERROR) << "Invalid id value " << id
+                       << " for key " << key_path << " .";
+            ++iterator;
+            continue;
+          }
+
+          scoped_ptr<Version> version;
+          version.reset(Version::GetVersionFromString(
+                            WideToASCII(extension_version)));
+          if (!version.get()) {
+            LOG(ERROR) << "Invalid version value " << extension_version
+                       << " for key " << key_path << " .";
+            ++iterator;
+            continue;
+          }
+
           prefs->SetString(
               id + "." + ExternalExtensionProviderImpl::kExternalVersion,
               WideToASCII(extension_version));
@@ -66,12 +83,12 @@ void ExternalRegistryExtensionLoader::LoadOnFileThread() {
         } else {
           // TODO(erikkay): find a way to get this into about:extensions
           LOG(ERROR) << "Missing value " << kRegistryExtensionVersion
-                     << " for key " << key_path;
+                     << " for key " << key_path << " .";
         }
       } else {
         // TODO(erikkay): find a way to get this into about:extensions
         LOG(ERROR) << "Missing value " << kRegistryExtensionPath
-                   << " for key " << key_path;
+                   << " for key " << key_path << " .";
       }
     }
     ++iterator;

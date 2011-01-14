@@ -21,26 +21,27 @@ class ExternalExtensionProviderInterface {
   // ExternalExtensionProvider uses this interface to communicate back to the
   // caller what extensions are registered, and which |id|, |version| and |path|
   // they have. See also VisitRegisteredExtension below. Ownership of |version|
-  // is not transferred to the visitor.
+  // is not transferred to the visitor.  Callers of the methods below must
+  // ensure that |id| is a valid extension id (use Extension::IdIsValid(id)).
   class VisitorInterface {
    public:
-     virtual void OnExternalExtensionFileFound(
-         const std::string& id,
-         const Version* version,
-         const FilePath& path,
-         Extension::Location location) = 0;
+    virtual void OnExternalExtensionFileFound(
+        const std::string& id,
+        const Version* version,
+        const FilePath& path,
+        Extension::Location location) = 0;
 
-     virtual void OnExternalExtensionUpdateUrlFound(
-         const std::string& id,
-         const GURL& update_url,
-         Extension::Location location) = 0;
+    virtual void OnExternalExtensionUpdateUrlFound(
+        const std::string& id,
+        const GURL& update_url,
+        Extension::Location location) = 0;
 
      // Called after all the external extensions have been reported through
      // the above two methods.
-     virtual void OnExternalProviderReady() = 0;
+    virtual void OnExternalProviderReady() = 0;
 
    protected:
-     virtual ~VisitorInterface() {}
+    virtual ~VisitorInterface() {}
   };
 
   virtual ~ExternalExtensionProviderInterface() {}

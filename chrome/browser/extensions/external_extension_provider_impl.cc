@@ -69,8 +69,19 @@ void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
        i != prefs_->end_keys(); ++i) {
     const std::string& extension_id = *i;
     DictionaryValue* extension;
-    if (!prefs_->GetDictionaryWithoutPathExpansion(extension_id, &extension))
+
+    if (!Extension::IdIsValid(extension_id)) {
+      LOG(WARNING) << "Malformed extension dictionary: key "
+                   << extension_id.c_str() << " is not a valid id.";
       continue;
+    }
+
+    if (!prefs_->GetDictionaryWithoutPathExpansion(extension_id, &extension)) {
+      LOG(WARNING) << "Malformed extension dictionary: key "
+                   << extension_id.c_str()
+                   << " has a value that is not a dictionary.";
+      continue;
+    }
 
     FilePath::StringType external_crx;
     std::string external_version;
@@ -138,9 +149,9 @@ void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
       GURL update_url(external_update_url);
       if (!update_url.is_valid()) {
         LOG(WARNING) << "Malformed extension dictionary for extension: "
-                     << extension_id.c_str() << ".  " << kExternalUpdateUrl
-                     << " must be a valid URL.  Saw \"" << external_update_url
-                     << "\".";
+                     << extension_id.c_str() << ".  Key " << kExternalUpdateUrl
+                     << " has value \"" << external_update_url
+                     << "\", which is not a valid URL.";
         continue;
       }
       service_->OnExternalExtensionUpdateUrlFound(

@@ -311,7 +311,8 @@ void ExtensionService::OnExternalExtensionUpdateUrlFound(
     const std::string& id,
     const GURL& update_url,
     Extension::Location location) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(Extension::IdIsValid(id));
 
   if (GetExtensionById(id, true)) {
     // Already installed.  Do not change the update URL that the extension set.
@@ -1823,7 +1824,8 @@ void ExtensionService::OnExternalExtensionFileFound(
          const Version* version,
          const FilePath& path,
          Extension::Location location) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(Extension::IdIsValid(id));
   if (extension_prefs_->IsExtensionKilled(id))
     return;
 

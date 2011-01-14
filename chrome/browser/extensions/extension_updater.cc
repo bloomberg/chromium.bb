@@ -766,7 +766,7 @@ void ExtensionUpdater::CheckNow() {
 
   // Start a fetch of the blacklist if needed.
   if (blacklist_checks_enabled_ && service_->HasInstalledExtensions()) {
-    // Note: it is very important that we use the https version of the update
+    // Note: it is very important that we use  the https version of the update
     // url here to avoid DNS hijacking of the blacklist, which is not validated
     // by a public key signature like .crx files are.
     ManifestFetchData* blacklist_fetch =
