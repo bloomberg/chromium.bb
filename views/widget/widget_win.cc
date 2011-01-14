@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -239,6 +239,8 @@ void WidgetWin::GetBounds(gfx::Rect* out, bool including_frame) const {
 }
 
 void WidgetWin::SetBounds(const gfx::Rect& bounds) {
+  if (IsZoomed())
+    ShowWindow(SW_SHOWNOACTIVATE);
   SetWindowPos(NULL, bounds.x(), bounds.y(), bounds.width(), bounds.height(),
                SWP_NOACTIVATE | SWP_NOZORDER);
 }
