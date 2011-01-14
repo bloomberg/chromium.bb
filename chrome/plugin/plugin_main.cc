@@ -9,8 +9,6 @@
 #include <windows.h>
 #endif
 
-#include "app/hi_res_timer_manager.h"
-#include "app/system_monitor.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -20,9 +18,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/default_plugin.h"
 #include "chrome/common/gpu_plugin.h"
+#include "chrome/common/hi_res_timer_manager.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/plugin/plugin_thread.h"
+#include "ui/base/system_monitor/system_monitor.h"
 
 #if defined(OS_WIN)
 #include "chrome/test/injection_test_dll.h"
@@ -94,7 +94,7 @@ int PluginMain(const MainFunctionParams& parameters) {
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
   base::PlatformThread::SetName("CrPluginMain");
 
-  SystemMonitor system_monitor;
+  ui::SystemMonitor system_monitor;
   HighResolutionTimerManager high_resolution_timer_manager;
 
   const CommandLine& parsed_command_line = parameters.command_line_;

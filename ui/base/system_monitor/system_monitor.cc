@@ -1,12 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/system_monitor.h"
+#include "ui/base/system_monitor/system_monitor.h"
 
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/time.h"
+
+namespace ui {
 
 static SystemMonitor* g_system_monitor = NULL;
 
@@ -102,3 +104,5 @@ void SystemMonitor::NotifyResume() {
 void SystemMonitor::BatteryCheck() {
   ProcessPowerMessage(SystemMonitor::POWER_STATE_EVENT);
 }
+
+}  // namespace ui

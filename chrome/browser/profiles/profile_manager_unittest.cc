@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "app/system_monitor.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -18,6 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/system_monitor/system_monitor.h"
 
 class ProfileManagerTest : public testing::Test {
  protected:
@@ -75,7 +75,7 @@ TEST_F(ProfileManagerTest, CreateProfile) {
 
 TEST_F(ProfileManagerTest, DefaultProfileDir) {
   CommandLine *cl = CommandLine::ForCurrentProcess();
-  SystemMonitor dummy;
+  ui::SystemMonitor dummy;
   ProfileManager profile_manager;
   std::string profile_dir("my_user");
 
@@ -91,7 +91,7 @@ TEST_F(ProfileManagerTest, DefaultProfileDir) {
 // This functionality only exists on Chrome OS.
 TEST_F(ProfileManagerTest, LoggedInProfileDir) {
   CommandLine *cl = CommandLine::ForCurrentProcess();
-  SystemMonitor dummy;
+  ui::SystemMonitor dummy;
   ProfileManager profile_manager;
   std::string profile_dir("my_user");
 

@@ -8,10 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "app/hi_res_timer_manager.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/system_monitor.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -78,6 +76,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/common/hi_res_timer_manager.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/logging_chrome.h"
@@ -101,6 +100,7 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_throttler_manager.h"
+#include "ui/base/system_monitor/system_monitor.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "base/linux_util.h"
@@ -469,7 +469,7 @@ void BrowserMainParts::MainMessageLoopStart() {
   main_message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
 
   // TODO(viettrungluu): should these really go before setting the thread name?
-  system_monitor_.reset(new SystemMonitor);
+  system_monitor_.reset(new ui::SystemMonitor);
   hi_res_timer_manager_.reset(new HighResolutionTimerManager);
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
 

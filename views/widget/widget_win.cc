@@ -5,7 +5,6 @@
 #include "views/widget/widget_win.h"
 
 #include "app/l10n_util_win.h"
-#include "app/system_monitor.h"
 #include "app/view_prop.h"
 #include "app/win/hwnd_util.h"
 #include "app/win/win_util.h"
@@ -14,6 +13,7 @@
 #include "gfx/native_theme_win.h"
 #include "gfx/path.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
+#include "ui/base/system_monitor/system_monitor.h"
 #include "views/accessibility/view_accessibility.h"
 #include "views/controls/native_control_win.h"
 #include "views/focus/focus_util_win.h"
@@ -867,7 +867,7 @@ void WidgetWin::OnPaint(HDC dc) {
 }
 
 LRESULT WidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {
-  SystemMonitor* monitor = SystemMonitor::Get();
+  ui::SystemMonitor* monitor = ui::SystemMonitor::Get();
   if (monitor)
     monitor->ProcessWmPowerBroadcastMessage(power_event);
   SetMsgHandled(FALSE);
