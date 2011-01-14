@@ -439,7 +439,7 @@ class ExecuteBrowserCommandObserver : public NotificationObserver {
   bool GetNotificationType(int command, NotificationType::Type* type);
 
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
+  scoped_refptr<AutomationProvider> automation_;
   NotificationType::Type notification_type_;
   IPC::Message* reply_message_;
 

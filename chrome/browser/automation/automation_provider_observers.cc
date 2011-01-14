@@ -823,6 +823,7 @@ void ExecuteBrowserCommandObserver::Observe(
     AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_,
                                                          true);
     automation_->Send(reply_message_);
+    reply_message_ = NULL;
     delete this;
   } else {
     NOTREACHED();
