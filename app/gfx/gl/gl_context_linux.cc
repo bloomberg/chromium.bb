@@ -188,8 +188,8 @@ bool GLContext::InitializeOneOff() {
     return true;
 
   static const GLImplementation kAllowedGLImplementations[] = {
-    kGLImplementationDesktopGL,
     kGLImplementationEGLGLES2,
+    kGLImplementationDesktopGL,
     kGLImplementationOSMesaGL
   };
 

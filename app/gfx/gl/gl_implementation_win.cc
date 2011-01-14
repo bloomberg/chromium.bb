@@ -45,7 +45,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       base::NativeLibrary library = base::LoadNativeLibrary(
           module_path.Append(L"osmesa.dll"));
       if (!library) {
-        VLOG(1) << "osmesa.dll not found";
+        DVLOG(1) << "osmesa.dll not found";
         return false;
       }
 
@@ -78,7 +78,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       base::NativeLibrary gles_library = base::LoadNativeLibrary(
           module_path.Append(L"libglesv2.dll"));
       if (!gles_library) {
-        VLOG(1) << "libglesv2.dll not found";
+        LOG(ERROR) << "libglesv2.dll not found";
         return false;
       }
 
@@ -87,7 +87,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       base::NativeLibrary egl_library = base::LoadNativeLibrary(
           module_path.Append(L"libegl.dll"));
       if (!egl_library) {
-        VLOG(1) << "libegl.dll not found.";
+        LOG(ERROR) << "libegl.dll not found.";
         base::UnloadNativeLibrary(gles_library);
         return false;
       }
