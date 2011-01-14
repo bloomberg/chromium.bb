@@ -26,7 +26,7 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
  public:
   // Takes ownership of |callbacks|.
   RequestDelegate(TemplateURLFetcher* fetcher,
-                  const std::wstring& keyword,
+                  const string16& keyword,
                   const GURL& osdd_url,
                   const GURL& favicon_url,
                   TemplateURLFetcherCallbacks* callbacks,
@@ -48,10 +48,10 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
                                   const std::string& data);
 
   // URL of the OSDD.
-  const GURL& url() const { return osdd_url_; }
+  GURL url() const { return osdd_url_; }
 
   // Keyword to use.
-  const std::wstring keyword() const { return keyword_; }
+  string16 keyword() const { return keyword_; }
 
   // The type of search provider being fetched.
   ProviderType provider_type() const { return provider_type_; }
@@ -62,7 +62,7 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
   URLFetcher url_fetcher_;
   TemplateURLFetcher* fetcher_;
   scoped_ptr<TemplateURL> template_url_;
-  std::wstring keyword_;
+  string16 keyword_;
   const GURL osdd_url_;
   const GURL favicon_url_;
   const ProviderType provider_type_;
@@ -76,7 +76,7 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
 
 TemplateURLFetcher::RequestDelegate::RequestDelegate(
     TemplateURLFetcher* fetcher,
-    const std::wstring& keyword,
+    const string16& keyword,
     const GURL& osdd_url,
     const GURL& favicon_url,
     TemplateURLFetcherCallbacks* callbacks,
@@ -160,7 +160,7 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
     // it gives wrong result when OSDD is located on third party site that
     // has nothing in common with search engine in OSDD.
     GURL keyword_url(template_url_->url()->url());
-    std::wstring new_keyword = TemplateURLModel::GenerateKeyword(
+    string16 new_keyword = TemplateURLModel::GenerateKeyword(
         keyword_url, false);
     if (!new_keyword.empty())
       keyword_ = new_keyword;
@@ -183,13 +183,13 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
     // provider. The keyword isn't as important in this case.
     if (provider_type_ == EXPLICIT_DEFAULT_PROVIDER) {
       // The loop numbers are arbitrary and are simply a strong effort.
-      std::wstring new_keyword;
+      string16 new_keyword;
       for (int i = 0; i < 100; ++i) {
         // Concatenate a number at end of the keyword and try that.
         new_keyword = keyword_;
         // Try the keyword alone the first time
         if (i > 0)
-          new_keyword.append(UTF16ToWide(base::IntToString16(i)));
+          new_keyword.append(base::IntToString16(i));
         if (!model->GetTemplateURLForKeyword(new_keyword) ||
             model->CanReplaceKeyword(new_keyword,
                                      GURL(template_url_->url()->url()),
@@ -268,7 +268,7 @@ TemplateURLFetcher::~TemplateURLFetcher() {
 }
 
 void TemplateURLFetcher::ScheduleDownload(
-    const std::wstring& keyword,
+    const string16& keyword,
     const GURL& osdd_url,
     const GURL& favicon_url,
     TemplateURLFetcherCallbacks* callbacks,

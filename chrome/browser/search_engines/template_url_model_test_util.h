@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 
@@ -70,7 +71,7 @@ class TemplateURLModelTestUtil : public TemplateURLModelObserver {
 
   // Returns the search term from the last invocation of
   // TemplateURLModel::SetKeywordSearchTermsForURL and clears the search term.
-  std::wstring GetAndClearSearchTerm();
+  string16 GetAndClearSearchTerm();
 
   // Set the google base url.
   void SetGoogleBaseURL(const std::string& base_url) const;

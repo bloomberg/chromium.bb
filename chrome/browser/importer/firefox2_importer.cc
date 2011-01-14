@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,9 +140,9 @@ TemplateURL* Firefox2Importer::CreateTemplateURL(const std::wstring& title,
   TemplateURL* t_url = new TemplateURL();
   // We set short name by using the title if it exists.
   // Otherwise, we use the shortcut.
-  t_url->set_short_name(!title.empty() ? title : keyword);
-  t_url->set_keyword(keyword);
-  t_url->SetURL(TemplateURLRef::DisplayURLToURLRef(UTF8ToWide(url.spec())),
+  t_url->set_short_name(WideToUTF16Hack(!title.empty() ? title : keyword));
+  t_url->set_keyword(WideToUTF16Hack(keyword));
+  t_url->SetURL(TemplateURLRef::DisplayURLToURLRef(UTF8ToUTF16(url.spec())),
                 0, 0);
   return t_url;
 }

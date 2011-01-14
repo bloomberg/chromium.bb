@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -607,7 +607,7 @@ void RenderViewContextMenu::AppendSearchProvider() {
     menu_model_.AddItem(
         IDC_CONTENT_CONTEXT_SEARCHWEBFOR,
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
-                                   WideToUTF16(default_provider->short_name()),
+                                   default_provider->short_name(),
                                    printable_selection_text));
   }
 }

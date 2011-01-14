@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,8 +37,8 @@ int KeywordEditorController::AddTemplateURL(const string16& title,
                             profile_);
 
   TemplateURL* template_url = new TemplateURL();
-  template_url->set_short_name(UTF16ToWideHack(title));
-  template_url->set_keyword(UTF16ToWideHack(keyword));
+  template_url->set_short_name(title);
+  template_url->set_keyword(keyword);
   template_url->SetURL(url, 0, 0);
 
   // There's a bug (1090726) in TableView with groups enabled such that newly
@@ -64,8 +64,8 @@ void KeywordEditorController::ModifyTemplateURL(const TemplateURL* template_url,
   }
 
   // Don't do anything if the entry didn't change.
-  if (template_url->short_name() == UTF16ToWideHack(title) &&
-      template_url->keyword() == UTF16ToWideHack(keyword) &&
+  if (template_url->short_name() == title &&
+      template_url->keyword() == keyword &&
       ((url.empty() && !template_url->url()) ||
        (!url.empty() && template_url->url() &&
         template_url->url()->url() == url))) {

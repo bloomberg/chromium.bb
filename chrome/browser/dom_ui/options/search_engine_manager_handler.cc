@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,7 +158,7 @@ DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
   dict->SetString("keyword", table_model->GetText(
     index, IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN));
   const TemplateURL* template_url = list_controller_->GetTemplateURL(index);
-  dict->SetString("url", WideToUTF16Hack(template_url->url()->DisplayURL()));
+  dict->SetString("url", template_url->url()->DisplayURL());
   dict->SetBoolean("urlLocked", template_url->prepopulate_id() > 0);
   GURL icon_url = template_url->GetFavIconURL();
   if (icon_url.is_valid())

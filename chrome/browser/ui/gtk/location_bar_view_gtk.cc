@@ -983,15 +983,16 @@ void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {
     return;
 
   bool is_extension_keyword;
-  const std::wstring short_name = profile_->GetTemplateURLModel()->
-      GetKeywordShortName(keyword, &is_extension_keyword);
+  const string16 short_name = profile_->GetTemplateURLModel()->
+      GetKeywordShortName(WideToUTF16Hack(keyword), &is_extension_keyword);
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;
   string16 full_name = l10n_util::GetStringFUTF16(message_id,
-                                                  WideToUTF16Hack(short_name));
+                                                  short_name);
   string16 partial_name = l10n_util::GetStringFUTF16(
       message_id,
-      WideToUTF16Hack(location_bar_util::CalculateMinString(short_name)));
+      WideToUTF16Hack(
+          location_bar_util::CalculateMinString(UTF16ToWideHack(short_name))));
   gtk_label_set_text(GTK_LABEL(tab_to_search_full_label_),
                      UTF16ToUTF8(full_name).c_str());
   gtk_label_set_text(GTK_LABEL(tab_to_search_partial_label_),
@@ -1002,7 +1003,8 @@ void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {
 
     if (is_extension_keyword) {
       const TemplateURL* template_url =
-          profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
+          profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(
+              WideToUTF16Hack(keyword));
       const SkBitmap& bitmap = profile_->GetExtensionService()->
           GetOmniboxIcon(template_url->GetExtensionId());
       GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
@@ -1025,15 +1027,15 @@ void LocationBarViewGtk::SetKeywordHintLabel(const std::wstring& keyword) {
     return;
 
   bool is_extension_keyword;
-  const std::wstring short_name = profile_->GetTemplateURLModel()->
-      GetKeywordShortName(keyword, &is_extension_keyword);
+  const string16 short_name = profile_->GetTemplateURLModel()->
+      GetKeywordShortName(WideToUTF16Hack(keyword), &is_extension_keyword);
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
   std::vector<size_t> content_param_offsets;
   const string16 keyword_hint = l10n_util::GetStringFUTF16(
       message_id,
       string16(),
-      WideToUTF16Hack(short_name),
+      short_name,
       &content_param_offsets);
   if (content_param_offsets.size() != 2) {
     // See comments on an identical NOTREACHED() in search_provider.cc.

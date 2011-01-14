@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/scoped_vector.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -119,8 +120,8 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
       &prefs, &(t_urls.get()), &default_index);
 
   ASSERT_EQ(1u, t_urls.size());
-  EXPECT_EQ(L"foo", t_urls[0]->short_name());
-  EXPECT_EQ(L"fook", t_urls[0]->keyword());
+  EXPECT_EQ(ASCIIToUTF16("foo"), t_urls[0]->short_name());
+  EXPECT_EQ(ASCIIToUTF16("fook"), t_urls[0]->keyword());
   EXPECT_EQ("foo.com", t_urls[0]->url()->GetHost());
   EXPECT_EQ("foi.com", t_urls[0]->GetFavIconURL().host());
   EXPECT_EQ(1u, t_urls[0]->input_encodings().size());

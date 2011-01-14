@@ -26,7 +26,7 @@
 namespace {
 
 std::string GetDisplayURL(const TemplateURL& turl) {
-  return turl.url() ? WideToUTF8(turl.url()->DisplayURL()) : std::string();
+  return turl.url() ? UTF16ToUTF8(turl.url()->DisplayURL()) : std::string();
 }
 
 // Forces text to lowercase when connected to an editable's "insert-text"
@@ -158,10 +158,10 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
   if (controller_->template_url()) {
     gtk_entry_set_text(
         GTK_ENTRY(title_entry_),
-        WideToUTF8(controller_->template_url()->short_name()).c_str());
+        UTF16ToUTF8(controller_->template_url()->short_name()).c_str());
     gtk_entry_set_text(
         GTK_ENTRY(keyword_entry_),
-        WideToUTF8(controller_->template_url()->keyword()).c_str());
+        UTF16ToUTF8(controller_->template_url()->keyword()).c_str());
     gtk_entry_set_text(
         GTK_ENTRY(url_entry_),
         GetDisplayURL(*controller_->template_url()).c_str());

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -138,7 +138,7 @@ class ParsingContext {
 
   TemplateURL* template_url() { return url_; }
 
-  void AddImageRef(const std::wstring& type, int width, int height) {
+  void AddImageRef(const std::string& type, int width, int height) {
     if (width > 0 && height > 0)
       current_image_.reset(new TemplateURL::ImageRef(type, width, height));
   }
@@ -147,9 +147,9 @@ class ParsingContext {
     current_image_.reset();
   }
 
-  void SetImageURL(const std::wstring& url) {
+  void SetImageURL(const GURL& url) {
     if (current_image_.get()) {
-      current_image_->url = GURL(WideToUTF8(url));
+      current_image_->url = url;
       url_->add_image_ref(*current_image_);
       current_image_.reset();
     }
@@ -159,11 +159,11 @@ class ParsingContext {
     string_.clear();
   }
 
-  void AppendString(const std::wstring& string) {
+  void AppendString(const string16& string) {
     string_ += string;
   }
 
-  const std::wstring& GetString() {
+  const string16& GetString() {
     return string_;
   }
 
@@ -233,7 +233,7 @@ class ParsingContext {
   scoped_ptr<TemplateURL::ImageRef> current_image_;
 
   // Character content for the current element.
-  std::wstring string_;
+  string16 string_;
 
   TemplateURLParser::ParameterFilter* parameter_filter_;
 
@@ -259,12 +259,8 @@ class ParsingContext {
 std::map<std::string, ParsingContext::ElementType>*
     ParsingContext::kElementNameToElementTypeMap = NULL;
 
-std::wstring XMLCharToWide(const xmlChar* value) {
-  return UTF8ToWide(std::string((const char*)value));
-}
-
-std::wstring XMLCharToWide(const xmlChar* value, int length) {
-  return UTF8ToWide(std::string((const char*)value, length));
+string16 XMLCharToUTF16(const xmlChar* value, int length) {
+  return UTF8ToUTF16(std::string((const char*)value, length));
 }
 
 std::string XMLCharToString(const xmlChar* value) {
@@ -344,12 +340,12 @@ void ParseImage(const xmlChar** atts, ParsingContext* context) {
   const xmlChar** attributes = atts;
   int width = 0;
   int height = 0;
-  std::wstring type;
+  std::string type;
   while (*attributes) {
     std::string name(XMLCharToString(*attributes));
     const xmlChar* value = attributes[1];
     if (name == kImageTypeAttribute) {
-      type = XMLCharToWide(value);
+      type = XMLCharToString(value);
     } else if (name == kImageWidthAttribute) {
       base::StringToInt(XMLCharToString(value), &width);
     } else if (name == kImageHeightAttribute) {
@@ -368,7 +364,6 @@ void ParseParam(const xmlChar** atts, ParsingContext* context) {
     return;
 
   const xmlChar** attributes = atts;
-  std::wstring type;
   std::string key, value;
   while (*attributes) {
     std::string name(XMLCharToString(*attributes));
@@ -487,14 +482,14 @@ void EndElementImpl(void *ctx, const xmlChar *name) {
       context->template_url()->set_description(context->GetString());
       break;
     case ParsingContext::IMAGE: {
-      GURL image_url(WideToUTF8(context->GetString()));
+      GURL image_url(UTF16ToUTF8(context->GetString()));
       if (image_url.SchemeIs(chrome::kDataScheme)) {
         // TODO (jcampan): bug 1169256: when dealing with data URL, we need to
         // decode the data URL in the renderer. For now, we'll just point to the
         // fav icon from the URL.
         context->set_derive_image_from_url(true);
       } else {
-        context->SetImageURL(context->GetString());
+        context->SetImageURL(image_url);
       }
       context->EndImage();
       break;
@@ -503,7 +498,7 @@ void EndElementImpl(void *ctx, const xmlChar *name) {
       context->template_url()->add_language(context->GetString());
       break;
     case ParsingContext::INPUT_ENCODING: {
-      std::string input_encoding = WideToASCII(context->GetString());
+      std::string input_encoding = UTF16ToASCII(context->GetString());
       if (IsValidEncodingString(input_encoding))
         context->template_url()->add_input_encoding(input_encoding);
       break;
@@ -520,7 +515,7 @@ void EndElementImpl(void *ctx, const xmlChar *name) {
 
 void CharactersImpl(void *ctx, const xmlChar *ch, int len) {
   ParsingContext* context = reinterpret_cast<ParsingContext*>(ctx);
-  context->AppendString(XMLCharToWide(ch, len));
+  context->AppendString(XMLCharToUTF16(ch, len));
 }
 
 // Returns true if the ref is null, or the url wrapped by ref is

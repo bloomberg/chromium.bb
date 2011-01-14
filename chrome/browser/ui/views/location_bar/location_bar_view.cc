@@ -516,7 +516,8 @@ void LocationBarView::Layout() {
     if (selected_keyword_view_->keyword() != keyword) {
       selected_keyword_view_->SetKeyword(keyword);
       const TemplateURL* template_url =
-          profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
+          profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(
+              WideToUTF16Hack(keyword));
       if (template_url && template_url->IsExtensionKeyword()) {
         const SkBitmap& bitmap = profile_->GetExtensionService()->
             GetOmniboxIcon(template_url->GetExtensionId());

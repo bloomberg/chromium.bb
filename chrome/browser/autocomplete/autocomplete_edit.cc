@@ -400,7 +400,7 @@ void AutocompleteEditModel::OpenURL(const GURL& url,
   TemplateURLModel* template_url_model = profile_->GetTemplateURLModel();
   if (template_url_model && !keyword.empty()) {
     const TemplateURL* const template_url =
-        template_url_model->GetTemplateURLForKeyword(keyword);
+        template_url_model->GetTemplateURLForKeyword(WideToUTF16Hack(keyword));
 
     // Special case for extension keywords. Don't increment usage count for
     // these.

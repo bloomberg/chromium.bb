@@ -637,9 +637,10 @@ class FirefoxObserver : public ProfileWriter,
       // The order might not be deterministic, look in the expected list for
       // that template URL.
       bool found = false;
-      std::wstring keyword = template_urls[i]->keyword();
+      string16 keyword = template_urls[i]->keyword();
       for (size_t j = 0; j < arraysize(kFirefox2Keywords); ++j) {
-        if (template_urls[i]->keyword() == kFirefox2Keywords[j].keyword) {
+        if (template_urls[i]->keyword() ==
+            WideToUTF16Hack(kFirefox2Keywords[j].keyword)) {
           EXPECT_EQ(kFirefox2Keywords[j].url, template_urls[i]->url()->url());
           found = true;
           break;
@@ -652,7 +653,7 @@ class FirefoxObserver : public ProfileWriter,
     if (default_keyword_index != -1) {
       EXPECT_LT(default_keyword_index, static_cast<int>(template_urls.size()));
       TemplateURL* default_turl = template_urls[default_keyword_index];
-      default_keyword_ = default_turl->keyword();
+      default_keyword_ = UTF16ToWideHack(default_turl->keyword());
       default_keyword_url_ = default_turl->url()->url();
     }
 
@@ -844,9 +845,10 @@ class Firefox3Observer : public ProfileWriter,
       // The order might not be deterministic, look in the expected list for
       // that template URL.
       bool found = false;
-      std::wstring keyword = template_urls[i]->keyword();
+      string16 keyword = template_urls[i]->keyword();
       for (size_t j = 0; j < arraysize(kFirefox3Keywords); ++j) {
-        if (template_urls[i]->keyword() == kFirefox3Keywords[j].keyword) {
+        if (template_urls[i]->keyword() ==
+            WideToUTF16Hack(kFirefox3Keywords[j].keyword)) {
           EXPECT_EQ(kFirefox3Keywords[j].url, template_urls[i]->url()->url());
           found = true;
           break;
@@ -859,7 +861,7 @@ class Firefox3Observer : public ProfileWriter,
     if (default_keyword_index != -1) {
       EXPECT_LT(default_keyword_index, static_cast<int>(template_urls.size()));
       TemplateURL* default_turl = template_urls[default_keyword_index];
-      default_keyword_ = default_turl->keyword();
+      default_keyword_ = UTF16ToWideHack(default_turl->keyword());
       default_keyword_url_ = default_turl->url()->url();
     }
 
