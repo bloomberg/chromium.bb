@@ -63,8 +63,7 @@ shm_buffer_attach(struct wl_buffer *buffer_base, struct wl_surface *surface)
 	 * overwrite it.*/
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
 		     0, 0, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
 		     buffer->buffer.width, buffer->buffer.height, 0,
 		     GL_BGRA_EXT, GL_UNSIGNED_BYTE, buffer->data);
 	es->visual = buffer->buffer.visual;
