@@ -60,7 +60,8 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   }
 
   virtual void SetPassphrase(const std::string& passphrase,
-                             bool is_explicit) {
+                             bool is_explicit,
+                             bool is_creation) {
     passphrase_ = passphrase;
   }
 
