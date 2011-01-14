@@ -352,8 +352,7 @@ void AutomationProvider::OnChannelConnected(int pid) {
   LOG(INFO) << "Testing channel connected, sending hello message";
 
   // Send a hello message with our current automation protocol version.
-  chrome::VersionInfo version_info;
-  channel_->Send(new AutomationMsg_Hello(version_info.Version()));
+  channel_->Send(new AutomationMsg_Hello(GetProtocolVersion()));
   if (initial_loads_complete_)
     Send(new AutomationMsg_InitialLoadsComplete());
 }

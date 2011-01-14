@@ -59,8 +59,7 @@ bool TestAutomationProvider::OnMessageReceived(const IPC::Message& msg) {
 bool TestAutomationProvider::Send(IPC::Message* msg) {
   if (msg->type() == AutomationMsg_TabLoaded::ID) {
     DCHECK(tab_handle_ == -1) << "Currently only support one tab";
-    void* iter = NULL;
-    CHECK(msg->ReadInt(&iter, &tab_handle_));
+    tab_handle_ = msg->routing_id();
     DVLOG(1) << "Got tab handle: " << tab_handle_;
     DCHECK(tab_handle_ != -1 && tab_handle_ != 0);
     delegate_->OnInitialTabLoaded();
