@@ -379,18 +379,21 @@ list > [selected]:hover {
 }
 
 list:focus > [lead],
-list:focus > [lead][selected] {
+list:focus > [lead][selected],
+list [lead][selected][editing] {
   border-top: 1px solid #b2b2b2;
   border-bottom: 1px solid #b2b2b2;
 }
 
 list:focus > [lead]:nth-child(2),
-list:focus > [lead][selected]:nth-child(2) {
+list:focus > [lead][selected]:nth-child(2),
+list [lead][selected][editing]:nth-child(2) {
   border-top: 1px solid #f2f2f2;
 }
 
 list:focus > [lead]:nth-last-child(2),
-list:focus > [lead][selected]:nth-last-child(2) {
+list:focus > [lead][selected]:nth-last-child(2),
+list [lead][selected][editing]:nth-last-child(2) {
   border-bottom: 1px solid #f2f2f2;
 }
 
@@ -419,7 +422,7 @@ list .deletable-item {
 list .deletable-item > :first-child {
   -webkit-box-align: center;
   -webkit-box-flex: 1;
-  -webkit-padding-end: 3px;
+  -webkit-padding-end: 5px;
   display: -webkit-box;
 }
 
@@ -434,7 +437,7 @@ list .close-button {
   width: 16px;
 }
 
-list > *:not(:hover) .close-button,
+list > *:not(:hover):not([editing]) .close-button,
 list[disabled] .close-button,
 list .close-button[disabled] {
   opacity: 0;
@@ -447,6 +450,25 @@ list .close-button:hover {
 
 list .close-button:active {
   background-image: url("../../../app/theme/close_bar_p.png");
+}
+
+list .static-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+list > :not([editing]) [editmode=true] {
+  display: none;
+}
+
+list > [editing] [editmode=false] {
+  display: none;
+}
+
+list > [editing] input:invalid {
+  /* TODO(stuartmorgan): Replace with validity badge */
+  background-color: pink;
 }
 
 .left-side-table {

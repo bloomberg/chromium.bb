@@ -70,6 +70,7 @@ void CustomHomePagesTableModel::Add(int index, const GURL& url) {
   DCHECK(index >= 0 && index <= RowCount());
   entries_.insert(entries_.begin() + static_cast<size_t>(index), Entry());
   entries_[index].url = url;
+  LoadTitleAndFavIcon(&(entries_[index]));
   if (observer_)
     observer_->OnItemsAdded(index, 1);
 }

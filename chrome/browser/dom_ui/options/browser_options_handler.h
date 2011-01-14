@@ -57,6 +57,10 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // Called from DOMUI.
   void AddStartupPage(const ListValue* args);
 
+  // Changes the startup page at the given index to the given URL.
+  // Called from DOMUI.
+  void EditStartupPage(const ListValue* args);
+
   // Sets the startup page set to the current pages. Called from DOMUI.
   void SetStartupPagesToCurrentPages(const ListValue* args);
 

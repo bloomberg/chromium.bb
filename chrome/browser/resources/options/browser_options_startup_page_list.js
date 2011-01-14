@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options.browser_options', function() {
-  const DeletableItemList = options.DeletableItemList;
-  const DeletableItem = options.DeletableItem;
+  const InlineEditableItem = options.InlineEditableItem;
+  const InlineEditableItemList = options.InlineEditableItemList;
 
   /**
    * Creates a new startup page list item.
@@ -29,13 +29,20 @@ cr.define('options.browser_options', function() {
   };
 
   StartupPageListItem.prototype = {
-    __proto__: DeletableItem.prototype,
+    __proto__: InlineEditableItem.prototype,
+
+    /**
+     * Input field for editing the page url.
+     * @type {HTMLElement}
+     * @private
+     */
+    urlField_: null,
 
     /** @inheritDoc */
     decorate: function() {
-      DeletableItem.prototype.decorate.call(this);
+      InlineEditableItem.prototype.decorate.call(this);
 
-      var titleEl = this.ownerDocument.createElement('span');
+      var titleEl = this.ownerDocument.createElement('div');
       titleEl.className = 'title';
       titleEl.classList.add('favicon-cell');
       titleEl.textContent = this.pageInfo_['title'];
@@ -44,13 +51,42 @@ cr.define('options.browser_options', function() {
       titleEl.title = this.pageInfo_['tooltip'];
 
       this.contentElement.appendChild(titleEl);
+
+      var urlEl = this.createEditableTextCell(this.pageInfo_['url']);
+      urlEl.className = 'url';
+      this.contentElement.appendChild(urlEl);
+
+      this.urlField_ = urlEl.querySelector('input');
+      this.urlField_.required = true;
+
+      this.addEventListener('commitedit', this.onEditCommitted_.bind(this));
+    },
+
+    /** @inheritDoc */
+    get currentInputIsValid() {
+      return this.urlField_.validity.valid;
+    },
+
+    /** @inheritDoc */
+    get hasBeenEdited() {
+      return this.urlField_.value != this.pageInfo_['url'];
+    },
+
+    /**
+     * Called when committing an edit; updates the model.
+     * @param {Event} e The end event.
+     * @private
+     */
+    onEditCommitted_: function(e) {
+      chrome.send('editStartupPage',
+                  [this.pageInfo_['modelIndex'], this.urlField_.value]);
     },
   };
 
   var StartupPageList = cr.ui.define('list');
 
   StartupPageList.prototype = {
-    __proto__: DeletableItemList.prototype,
+    __proto__: InlineEditableItemList.prototype,
 
     /** @inheritDoc */
     createItem: function(pageInfo) {

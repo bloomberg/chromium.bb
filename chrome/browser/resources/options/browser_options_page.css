@@ -4,6 +4,21 @@
   padding: 5px 10px;
 }
 
+.startup-page-list .title {
+  width: 40%;
+}
+
+.startup-page-list .url {
+  -webkit-box-flex: 1;
+  color: #666;
+}
+
+.startup-page-list .url input {
+  box-sizing: border-box;
+  margin: 0;
+  width: 100%;
+}
+
 #customHomePageGroup {
   display: -webkit-box;
   -webkit-box-orient: horizontal;

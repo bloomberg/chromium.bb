@@ -90,10 +90,12 @@ cr.define('options', function() {
           }, 50);
         }
       } else {
-        if (!this.editCancelled_ && this.hasBeenEdited() &&
+        if (!this.editCancelled_ && this.hasBeenEdited &&
             this.currentInputIsValid) {
+          this.updateStaticValues_();
           cr.dispatchSimpleEvent(this, 'commitedit', true);
         } else {
+          this.resetEditableValues_();
           cr.dispatchSimpleEvent(this, 'canceledit', true);
         }
       }
@@ -114,11 +116,12 @@ cr.define('options', function() {
 
     /**
      * The HTML element that should have focus initially when editing starts.
-     * Should be overriden by subclasses.
+     * Defaults to the first <input> element; can be overriden by subclasses if
+     * a different element should be focused.
      * @type {HTMLElement}
      */
     get initialFocusElement() {
-      return null;
+      return this.contentElement.querySelector('input');
     },
 
     /**
@@ -126,6 +129,7 @@ cr.define('options', function() {
      * when editing would be submitted, either editing will not be ended,
      * or it will be cancelled, depending on the context.
      * Can be overrided by subclasses to perform input validation.
+     * @type {boolean}
      */
     get currentInputIsValid() {
       return true;
@@ -135,9 +139,78 @@ cr.define('options', function() {
      * Returns true if the item has been changed by an edit.
      * Can be overrided by subclasses to return false when nothing has changed
      * to avoid unnecessary commits.
+     * @type {boolean}
      */
-    hasBeenEdited: function() {
+    get hasBeenEdited() {
       return true;
+    },
+
+    /**
+     * Returns a div containing an <input>, as well as static text if
+     * opt_alwaysEditable is not true.
+     * @param {string} text The text of the cell.
+     * @param {bool} opt_alwaysEditable True if the cell always shows the input.
+     * @return {HTMLElement} The HTML element for the cell.
+     * @private
+     */
+    createEditableTextCell: function(text, opt_alwaysEditable) {
+      var container = this.ownerDocument.createElement('div');
+
+      if (!opt_alwaysEditable) {
+        var textEl = this.ownerDocument.createElement('div');
+        textEl.className = 'static-text';
+        textEl.textContent = text;
+        textEl.setAttribute('editmode', false);
+        container.appendChild(textEl);
+      }
+
+      var inputEl = this.ownerDocument.createElement('input');
+      inputEl.type = 'text';
+      inputEl.value = text;
+      if (!opt_alwaysEditable) {
+        inputEl.setAttribute('editmode', true);
+        inputEl.staticVersion = textEl;
+      }
+      container.appendChild(inputEl);
+
+      return container;
+    },
+
+    /**
+     * Resets the editable version of any controls created by createEditable*
+     * to match the static text.
+     * @private
+     */
+    resetEditableValues_: function() {
+      var editFields = this.querySelectorAll('[editmode=true]');
+      for (var i = 0; i < editFields.length; i++) {
+        var staticLabel = editFields[i].staticVersion;
+        if (!staticLabel)
+          continue;
+        if (editFields[i].tagName == 'INPUT')
+          editFields[i].value = staticLabel.textContent;
+        // Add more tag types here as new createEditable* methods are added.
+
+        editFields[i].setCustomValidity('');
+      }
+    },
+
+    /**
+     * Sets the static version of any controls created by createEditable*
+     * to match the current value of the editable version. Called on commit so
+     * that there's no flicker of the old value before the model updates.
+     * @private
+     */
+    updateStaticValues_: function() {
+      var editFields = this.querySelectorAll('[editmode=true]');
+      for (var i = 0; i < editFields.length; i++) {
+        var staticLabel = editFields[i].staticVersion;
+        if (!staticLabel)
+          continue;
+        if (editFields[i].tagName == 'INPUT')
+          staticLabel.textContent = editFields[i].value;
+        // Add more tag types here as new createEditable* methods are added.
+      }
     },
 
     /**

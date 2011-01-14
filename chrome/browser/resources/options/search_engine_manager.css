@@ -81,22 +81,3 @@
   margin: 0;
   width: 100%;
 }
-
-#searchEngineList .static-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-#searchEngineList > :not([editing]) [editmode=true] {
-  display: none;
-}
-
-#searchEngineList > [editing] [editmode=false] {
-  display: none;
-}
-
-#searchEngineList input.invalid {
-  /* TODO(stuartmorgan): Replace with actual badging */
-  background-color: pink;
-}

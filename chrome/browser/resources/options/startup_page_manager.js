@@ -5,7 +5,7 @@
 cr.define('options', function() {
   const OptionsPage = options.OptionsPage;
   const ArrayDataModel = cr.ui.ArrayDataModel;
-  const ListSelectionModel = cr.ui.ListSelectionModel;
+  const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   /**
    * Encapsulated handling of startup page management page.
@@ -30,7 +30,7 @@ cr.define('options', function() {
       var list = $('startupPagesFullList');
       options.browser_options.StartupPageList.decorate(list);
       list.autoExpands = true;
-      list.selectionModel = new ListSelectionModel;
+      list.selectionModel = new ListSingleSelectionModel;
 
       // Wire up controls.
       $('startupAddButton').onclick = function(event) {

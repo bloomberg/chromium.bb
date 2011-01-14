@@ -56,7 +56,3 @@ html[toolkit=gtk] select.exception-setting {
   margin-bottom: 10px;
   margin-top: 4px;
 }
-
-#content-settings-exceptions-area input:invalid {
-  background-color: pink;
-}

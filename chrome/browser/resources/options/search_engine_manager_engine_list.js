@@ -123,16 +123,17 @@ cr.define('options.search_engines', function() {
         nameColEl.appendChild(faviconDivEl);
       }
 
-      var nameEl = this.createEditableTextCell_(nameText);
+      var nameEl = this.createEditableTextCell(nameText, this.isPlaceholder_);
       nameColEl.appendChild(nameEl);
 
       // Then the keyword column.
-      var keywordEl = this.createEditableTextCell_(keywordText);
+      var keywordEl = this.createEditableTextCell(keywordText,
+                                                  this.isPlaceholder_);
       keywordEl.className = 'keyword-column';
       this.contentElement.appendChild(keywordEl);
 
       // And the URL column.
-      var urlEl = this.createEditableTextCell_(urlText);
+      var urlEl = this.createEditableTextCell(urlText, this.isPlaceholder_);
       urlEl.className = 'url-column';
       this.contentElement.appendChild(urlEl);
 
@@ -166,47 +167,13 @@ cr.define('options.search_engines', function() {
       this.addEventListener('commitedit', this.onEditCommitted_.bind(this));
     },
 
-    /**
-     * Returns a div containing an <input>, as well as static text if needed.
-     * @param {string} text The text of the cell.
-     * @return {HTMLElement} The HTML element for the cell.
-     * @private
-     */
-    createEditableTextCell_: function(text) {
-      var container = this.ownerDocument.createElement('div');
-
-      if (!this.isPlaceholder_) {
-        var textEl = this.ownerDocument.createElement('div');
-        textEl.className = 'static-text';
-        textEl.textContent = text;
-        textEl.setAttribute('editmode', false);
-        container.appendChild(textEl);
-      }
-
-      var inputEl = this.ownerDocument.createElement('input');
-      inputEl.type = 'text';
-      inputEl.value = text;
-      if (!this.isPlaceholder_) {
-        inputEl.setAttribute('editmode', true);
-        inputEl.staticVersion = textEl;
-      }
-      container.appendChild(inputEl);
-
-      return container;
-    },
-
-    /** @inheritDoc */
-    get initialFocusElement() {
-      return this.nameField_;
-    },
-
     /** @inheritDoc */
     get currentInputIsValid() {
       return !this.waitingForValidation_ && this.currentlyValid_;
     },
 
     /** @inheritDoc */
-    hasBeenEdited: function(e) {
+    get hasBeenEdited() {
       var engine = this.searchEngine_;
       return this.nameField_.value != engine['name'] ||
              this.keywordField_.value != engine['keyword'] ||
@@ -221,6 +188,7 @@ cr.define('options.search_engines', function() {
     onEditStarted_: function(e) {
       var editIndex = this.searchEngine_['modelIndex'];
       chrome.send('editSearchEngine', [String(editIndex)]);
+      this.startFieldValidation_();
     },
 
     /**
@@ -230,14 +198,6 @@ cr.define('options.search_engines', function() {
      */
     onEditCommitted_: function(e) {
       chrome.send('searchEngineEditCompleted', this.getInputFieldValues_());
-      // Update the static version immediately to prevent flickering before
-      // the model update callback updates the UI.
-      var editFields = [ this.nameField_, this.keywordField_, this.urlField_ ];
-      for (var i = 0; i < editFields.length; i++) {
-        var staticLabel = editFields[i].staticVersion;
-        if (staticLabel)
-          staticLabel.textContent = editFields[i].value;
-      }
     },
 
     /**
@@ -248,14 +208,12 @@ cr.define('options.search_engines', function() {
      */
     onEditCancelled_: function() {
       chrome.send('searchEngineEditCancelled');
-      var engine = this.searchEngine_;
-      this.nameField_.value = engine['name'];
-      this.keywordField_.value = engine['keyword'];
-      this.urlField_.value = engine['url'];
 
-      var editFields = [ this.nameField_, this.keywordField_, this.urlField_ ];
-      for (var i = 0; i < editFields.length; i++) {
-        editFields[i].classList.remove('invalid');
+      if (this.isPlaceholder_) {
+        var engine = this.searchEngine_;
+        this.nameField_.value = '';
+        this.keywordField_.value = '';
+        this.urlField_.value = '';
       }
       this.currentlyValid_ = !this.isPlaceholder_;
     },
@@ -290,21 +248,27 @@ cr.define('options.search_engines', function() {
     validationComplete: function(validity) {
       this.waitingForValidation_ = false;
       // TODO(stuartmorgan): Implement the full validation UI with
-      // checkmark/exclamation mark icons and tooltips.
-      if (validity['name'])
-        this.nameField_.classList.remove('invalid');
-      else
-        this.nameField_.classList.add('invalid');
+      // checkmark/exclamation mark icons and tooltips showing the errors.
+      if (validity['name']) {
+        this.nameField_.setCustomValidity('');
+      } else {
+        this.nameField_.setCustomValidity(
+            templateData.editSearchEngineInvalidTitleToolTip);
+      }
 
-      if (validity['keyword'])
-        this.keywordField_.classList.remove('invalid');
-      else
-        this.keywordField_.classList.add('invalid');
+      if (validity['keyword']) {
+        this.keywordField_.setCustomValidity('');
+      } else {
+        this.keywordField_.setCustomValidity(
+            templateData.editSearchEngineInvalidKeywordToolTip);
+      }
 
-      if (validity['url'])
-        this.urlField_.classList.remove('invalid');
-      else
-        this.urlField_.classList.add('invalid');
+      if (validity['url']) {
+        this.urlField_.setCustomValidity('');
+      } else {
+        this.urlField_.setCustomValidity(
+            templateData.editSearchEngineInvalidURLToolTip);
+      }
 
       this.currentlyValid_ = validity['name'] && validity['keyword'] &&
           validity['url'];

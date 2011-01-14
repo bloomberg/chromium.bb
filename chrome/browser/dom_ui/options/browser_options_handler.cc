@@ -110,6 +110,9 @@ void BrowserOptionsHandler::RegisterMessages() {
       "addStartupPage",
       NewCallback(this, &BrowserOptionsHandler::AddStartupPage));
   dom_ui_->RegisterMessageCallback(
+      "editStartupPage",
+      NewCallback(this, &BrowserOptionsHandler::EditStartupPage));
+  dom_ui_->RegisterMessageCallback(
       "setStartupPagesToCurrentPages",
       NewCallback(this, &BrowserOptionsHandler::SetStartupPagesToCurrentPages));
 }
@@ -285,6 +288,7 @@ void BrowserOptionsHandler::OnModelChanged() {
     entry->SetString("url", urls[i].spec());
     entry->SetString("tooltip",
                      startup_custom_pages_table_model_->GetTooltip(i));
+    entry->SetString("modelIndex", base::IntToString(i));
     startup_pages.Append(entry);
   }
 
@@ -314,8 +318,7 @@ void BrowserOptionsHandler::RemoveStartupPages(const ListValue* args) {
   for (int i = args->GetSize() - 1; i >= 0; --i) {
     std::string string_value;
     if (!args->GetString(i, &string_value)) {
-      NOTREACHED();
-      return;
+      CHECK(false);
     }
     int selected_index;
     base::StringToInt(string_value, &selected_index);
@@ -338,8 +341,7 @@ void BrowserOptionsHandler::AddStartupPage(const ListValue* args) {
       !args->GetString(0, &url_string) ||
       !args->GetString(1, &index_string) ||
       !base::StringToInt(index_string, &index)) {
-    NOTREACHED();
-    return;
+    CHECK(false);
   };
 
   if (index == -1)
@@ -351,6 +353,27 @@ void BrowserOptionsHandler::AddStartupPage(const ListValue* args) {
 
   startup_custom_pages_table_model_->Add(index, url);
   SaveStartupPagesPref();
+}
+
+void BrowserOptionsHandler::EditStartupPage(const ListValue* args) {
+  std::string url_string;
+  std::string index_string;
+  int index;
+  if (args->GetSize() != 2 ||
+      !args->GetString(0, &index_string) ||
+      !base::StringToInt(index_string, &index) ||
+      !args->GetString(1, &url_string)) {
+    CHECK(false);
+  };
+
+  if (index < 0 || index > startup_custom_pages_table_model_->RowCount()) {
+    NOTREACHED();
+    return;
+  }
+
+  std::vector<GURL> urls = startup_custom_pages_table_model_->GetURLs();
+  urls[index] = URLFixerUpper::FixupURL(url_string, std::string());
+  startup_custom_pages_table_model_->SetURLs(urls);
 }
 
 void BrowserOptionsHandler::SaveStartupPagesPref() {
