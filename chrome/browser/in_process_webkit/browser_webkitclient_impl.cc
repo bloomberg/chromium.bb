@@ -148,8 +148,10 @@ int BrowserWebKitClientImpl::databaseDeleteFile(
 }
 
 void BrowserWebKitClientImpl::idbShutdown() {
-  if (indexed_db_key_utility_client_.get())
+  if (indexed_db_key_utility_client_.get()) {
     indexed_db_key_utility_client_->EndUtilityProcess();
+    indexed_db_key_utility_client_ = NULL;
+  }
 }
 
 void BrowserWebKitClientImpl::createIDBKeysFromSerializedValuesAndKeyPath(
