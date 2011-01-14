@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "remoting/protocol/message_reader.h"
 
 namespace remoting {
 
@@ -17,8 +18,6 @@ namespace protocol {
 
 class ClientStub;
 class ControlMessage;
-class InputStub;
-class MessageReader;
 class Session;
 
 // A message dispatcher used to listen for messages received in
@@ -46,7 +45,7 @@ class ClientMessageDispatcher {
   // MessageReader that runs on the control channel. It runs a loop
   // that parses data on the channel and then calls the corresponding handler
   // in this class.
-  scoped_ptr<MessageReader> control_message_reader_;
+  scoped_ptr<ProtobufMessageReader<ControlMessage> > control_message_reader_;
 
   // Stubs for client and input. These objects are not owned.
   // They are called on the thread there data is received, i.e. jingle thread.

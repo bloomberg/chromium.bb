@@ -22,7 +22,6 @@ class RtpVideoReader : public VideoReader {
 
   // VideoReader interface.
   virtual void Init(protocol::Session* session, VideoStub* video_stub);
-  virtual void Close();
 
  private:
   friend class RtpVideoReaderTest;

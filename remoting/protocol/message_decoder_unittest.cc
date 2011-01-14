@@ -69,7 +69,17 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
     // And then prepare an IOBuffer for feeding it.
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(read));
     memcpy(buffer->data(), test_data + i, read);
-    decoder.ParseMessages(buffer, read, &message_list);
+    decoder.AddData(buffer, read);
+    while (true) {
+      CompoundBuffer message;
+      if (!decoder.GetNextMessage(&message))
+        break;
+
+      EventMessage* event = new EventMessage();
+      CompoundBufferInputStream stream(&message);
+      ASSERT_TRUE(event->ParseFromZeroCopyStream(&stream));
+      message_list.push_back(event);
+    }
     i += read;
   }
 

@@ -21,14 +21,13 @@ class ProtobufVideoReader : public VideoReader {
 
   // VideoReader interface.
   virtual void Init(protocol::Session* session, VideoStub* video_stub);
-  virtual void Close();
 
  private:
   void OnNewData(VideoPacket* packet);
 
   VideoPacketFormat::Encoding encoding_;
 
-  MessageReader reader_;
+  ProtobufMessageReader<VideoPacket> reader_;
 
   // The stub that processes all received packets.
   VideoStub* video_stub_;

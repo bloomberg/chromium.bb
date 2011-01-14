@@ -24,10 +24,6 @@ SocketReaderBase::SocketReaderBase()
 
 SocketReaderBase::~SocketReaderBase() { }
 
-void SocketReaderBase::Close() {
-  closed_ = true;
-}
-
 void SocketReaderBase::Init(net::Socket* socket) {
   DCHECK(socket);
   socket_ = socket;
@@ -56,8 +52,11 @@ void SocketReaderBase::HandleReadResult(int result) {
   if (result > 0) {
     OnDataReceived(read_buffer_, result);
   } else {
-    if (result != net::ERR_IO_PENDING)
+    if (result == net::ERR_CONNECTION_CLOSED) {
+      closed_ = true;
+    } else if (result != net::ERR_IO_PENDING) {
       LOG(ERROR) << "Read() returned error " << result;
+    }
   }
 }
 

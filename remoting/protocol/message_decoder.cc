@@ -20,12 +20,12 @@ MessageDecoder::MessageDecoder()
 
 MessageDecoder::~MessageDecoder() {}
 
-void MessageDecoder::AddBuffer(scoped_refptr<net::IOBuffer> data,
-                               int data_size) {
+void MessageDecoder::AddData(scoped_refptr<net::IOBuffer> data,
+                             int data_size) {
   buffer_.Append(data, data_size);
 }
 
-bool MessageDecoder::GetNextMessageData(CompoundBuffer* message_buffer) {
+bool MessageDecoder::GetNextMessage(CompoundBuffer* message_buffer) {
   // Determine the payload size. If we already know it then skip this part.
   // We may not have enough data to determine the payload size so use a
   // utility function to find out.

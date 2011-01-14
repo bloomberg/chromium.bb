@@ -19,14 +19,10 @@ ProtobufVideoReader::~ProtobufVideoReader() { }
 
 void ProtobufVideoReader::Init(protocol::Session* session,
                                VideoStub* video_stub) {
-  reader_.Init<VideoPacket>(
+  reader_.Init(
       session->video_channel(),
       NewCallback(this, &ProtobufVideoReader::OnNewData));
   video_stub_ = video_stub;
-}
-
-void ProtobufVideoReader::Close() {
-  reader_.Close();
 }
 
 void ProtobufVideoReader::OnNewData(VideoPacket* packet) {

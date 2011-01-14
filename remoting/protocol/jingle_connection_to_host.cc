@@ -57,9 +57,6 @@ void JingleConnectionToHost::Disconnect() {
     return;
   }
 
-  control_reader_.Close();
-  video_reader_->Close();
-
   if (session_) {
     session_->Close(
         NewRunnableMethod(this, &JingleConnectionToHost::OnDisconnected));

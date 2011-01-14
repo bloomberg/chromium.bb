@@ -20,9 +20,6 @@ class SocketReaderBase {
   SocketReaderBase();
   virtual ~SocketReaderBase();
 
-  // Stops reading. Must be called on the same thread as Init().
-  void Close();
-
  protected:
   void Init(net::Socket* socket);
   virtual void OnDataReceived(net::IOBuffer* buffer, int data_size) = 0;

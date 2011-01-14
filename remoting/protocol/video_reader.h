@@ -32,9 +32,6 @@ class VideoReader {
   virtual void Init(Session* session,
                     VideoStub* video_stub) = 0;
 
-  // Closes the reader. The stub should not be called after Close().
-  virtual void Close() = 0;
-
  protected:
   VideoReader() { }
 

@@ -33,16 +33,16 @@ void HostMessageDispatcher::Initialize(
     return;
   }
 
-  control_message_reader_.reset(new MessageReader());
-  event_message_reader_.reset(new MessageReader());
+  control_message_reader_.reset(new ProtobufMessageReader<ControlMessage>());
+  event_message_reader_.reset(new ProtobufMessageReader<EventMessage>());
   host_stub_ = host_stub;
   input_stub_ = input_stub;
 
   // Initialize the readers on the sockets provided by channels.
-  event_message_reader_->Init<EventMessage>(
+  event_message_reader_->Init(
       session->event_channel(),
       NewCallback(this, &HostMessageDispatcher::OnEventMessageReceived));
-  control_message_reader_->Init<ControlMessage>(
+  control_message_reader_->Init(
       session->control_channel(),
       NewCallback(this, &HostMessageDispatcher::OnControlMessageReceived));
 }

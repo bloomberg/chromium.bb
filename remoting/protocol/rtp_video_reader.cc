@@ -36,10 +36,6 @@ void RtpVideoReader::Init(protocol::Session* session, VideoStub* video_stub) {
   video_stub_ = video_stub;
 }
 
-void RtpVideoReader::Close() {
-  rtp_reader_.Close();
-}
-
 void RtpVideoReader::ResetQueue() {
   for (PacketsQueue::iterator it = packets_queue_.begin();
        it != packets_queue_.end(); ++it) {

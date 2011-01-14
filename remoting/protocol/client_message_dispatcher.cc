@@ -29,10 +29,10 @@ void ClientMessageDispatcher::Initialize(
     return;
   }
 
-  control_message_reader_.reset(new MessageReader());
+  control_message_reader_.reset(new ProtobufMessageReader<ControlMessage>());
   client_stub_ = client_stub;
 
-  control_message_reader_->Init<ControlMessage>(
+  control_message_reader_->Init(
       session->control_channel(),
       NewCallback(this, &ClientMessageDispatcher::OnControlMessageReceived));
   return;

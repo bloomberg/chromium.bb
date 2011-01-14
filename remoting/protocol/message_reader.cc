@@ -24,23 +24,18 @@ MessageReader::MessageReader()
 }
 
 MessageReader::~MessageReader() {
-  // Destroy MessageReaderPrivate if it was created.
-  if (destruction_callback_.get())
-    destruction_callback_->Run();
 }
 
-void MessageReader::Close() {
-  closed_ = true;
-}
-
-void MessageReader::Init(net::Socket* socket) {
+void MessageReader::Init(net::Socket* socket,
+                         MessageReceivedCallback* callback) {
+  message_received_callback_.reset(callback);
   DCHECK(socket);
   socket_ = socket;
   DoRead();
 }
 
 void MessageReader::DoRead() {
-  while (true) {
+  while (!closed_) {
     read_buffer_ = new net::IOBuffer(kReadBufferSize);
     int result = socket_->Read(
         read_buffer_, kReadBufferSize, &read_callback_);
@@ -59,10 +54,25 @@ void MessageReader::OnRead(int result) {
 
 void MessageReader::HandleReadResult(int result) {
   if (result > 0) {
-    data_received_callback_->Run(read_buffer_, result);
+    OnDataReceived(read_buffer_, result);
   } else {
-    if (result != net::ERR_IO_PENDING)
+    if (result == net::ERR_CONNECTION_CLOSED) {
+      closed_ = true;
+    } else if (result != net::ERR_IO_PENDING) {
       LOG(ERROR) << "Read() returned error " << result;
+    }
+  }
+}
+
+void MessageReader::OnDataReceived(net::IOBuffer* data, int data_size) {
+  message_decoder_.AddData(data, data_size);
+
+  while (true) {
+    CompoundBuffer buffer;
+    if (!message_decoder_.GetNextMessage(&buffer))
+      break;
+
+    message_received_callback_->Run(&buffer);
   }
 }
 
