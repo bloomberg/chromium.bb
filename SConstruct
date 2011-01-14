@@ -1952,6 +1952,7 @@ nacl_env.Append(
     'tests/fib/nacl.scons',
     'tests/file/nacl.scons',
     'tests/gc_instrumentation/nacl.scons',
+    'tests/glibc_longjmp_test/nacl.scons',
     'tests/glibc_static_test/nacl.scons',
     'tests/glibc_syscall_wrappers/nacl.scons',
     'tests/hello_world/nacl.scons',

@@ -1,0 +1,17 @@
+# -*- python -*-
+# Copyright 2008 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+if not env.Bit('nacl_glibc'):
+  Return()
+
+env.ComponentProgram('longjmp.nexe', 'longjmp.c')
+
+longjmp = env.CommandSelLdrTestNacl(
+    'longjmp.out',
+     command=[env.File('longjmp.nexe')])
+
+env.AddNodeToTestSuite(longjmp, ['small_tests'], 'run_longjmp_test')
