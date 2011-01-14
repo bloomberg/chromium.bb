@@ -39,6 +39,16 @@ typedef IDispEventSimpleImpl<0, ToolBand, &DIID_DIChromeFrameEvents>
 typedef IDispEventSimpleImpl<1, ToolBand, &DIID_DWebBrowserEvents2>
     HostingBrowserEvents;
 
+// WS_CHILD | WS_VISIBLE | TBSTYLE_TRANSPARENT | CCS_NODIVIDER are critical for
+// painting toolband background while chrome frame is hidden.
+// TBSTYLE_TRANSPARENT makes toolbar same color as rest of IE controls.
+// CCS_NODIVIDER removes line above toolbar.
+// Rest was copied from IE favorite bar.
+typedef CWinTraits<WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
+                   TBSTYLE_TOOLTIPS | TBSTYLE_TRANSPARENT | TBSTYLE_LIST |
+                   TBSTYLE_FLAT | CCS_NODIVIDER | CCS_NOPARENTALIGN |
+                   CCS_NORESIZE | CCS_TOP, 0> ToolbandWindowTraits;
+
 // Implements an IE toolband which gets instantiated for every IE browser tab
 // and renders by hosting chrome frame as an ActiveX control.
 class ATL_NO_VTABLE ToolBand : public CComObjectRootEx<CComSingleThreadModel>,
@@ -50,15 +60,7 @@ class ATL_NO_VTABLE ToolBand : public CComObjectRootEx<CComSingleThreadModel>,
     public IPersistStream,
     public ChromeFrameEvents,
     public HostingBrowserEvents,
-    // WS_CHILD | WS_VISIBLE | TBSTYLE_TRANSPARENT | CCS_NODIVIDER are critical
-    // for painting toolband background while chrome frame is hidden.
-    // TBSTYLE_TRANSPARENT makes toolbar same color as rest of IE controls.
-    // CCS_NODIVIDER removes line above toolbar.
-    // Rest was copied from IE favorite bar.
-    public CWindowImpl<ToolBand, CWindow, CWinTraits<
-        WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
-        TBSTYLE_TOOLTIPS | TBSTYLE_TRANSPARENT | TBSTYLE_LIST | TBSTYLE_FLAT |
-        CCS_NODIVIDER | CCS_NOPARENTALIGN | CCS_NORESIZE | CCS_TOP, 0>> {
+    public CWindowImpl<ToolBand, CWindow, ToolbandWindowTraits> {
  public:
   ToolBand();
   ~ToolBand();
