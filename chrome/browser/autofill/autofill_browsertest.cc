@@ -21,6 +21,7 @@
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/translate_helper.h"
@@ -29,8 +30,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_code_conversion.h"
 
+static const char* kDataURIPrefix = "data:text/html;charset=utf-8,";
 static const char* kTestFormString =
-    "<form action=\"http://www.google.com/\" method=\"POST\">"
+    "<form action=\"http://www.example.com/\" method=\"POST\">"
     "<label for=\"firstname\">First name:</label>"
     " <input type=\"text\" id=\"firstname\""
     "        onFocus=\"domAutomationController.send(true)\""
@@ -68,7 +70,11 @@ class AutoFillTest : public InProcessBrowserTest {
     EnableDOMAutomation();
   }
 
-  void SetUpProfile() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    URLFetcher::set_factory(&url_fetcher_factory_);
+  }
+
+  void CreateTestProfile() {
     autofill_test::DisableSystemServices(browser()->profile());
 
     AutoFillProfile profile;
@@ -96,13 +102,8 @@ class AutoFillTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_value, value);
   }
 
-  RenderViewHost* rvh() {
+  RenderViewHost* render_view_host() {
     return browser()->GetSelectedTabContents()->render_view_host();
-  }
-
-  virtual void SetUp() {
-    URLFetcher::set_factory(&url_fetcher_factory_);
-    InProcessBrowserTest::SetUp();
   }
 
   void SimulateURLFetch(bool success) {
@@ -144,7 +145,7 @@ class AutoFillTest : public InProcessBrowserTest {
         script);
   }
 
-  void TryBasicFormFillWithMKey() {
+  void FocusFirstNameField() {
     ASSERT_NO_FATAL_FAILURE(ui_test_utils::ClickOnView(browser(),
                                                        VIEW_ID_TAB_CONTAINER));
     ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
@@ -152,21 +153,39 @@ class AutoFillTest : public InProcessBrowserTest {
 
     bool result = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        rvh(), L"", L"document.getElementById('firstname').focus();", &result));
+        render_view_host(), L"",
+        L"document.getElementById('firstname').focus();", &result));
     ASSERT_TRUE(result);
+  }
+
+  void ExpectFilledTestForm() {
+    ExpectFieldValue(L"firstname", "Milton");
+    ExpectFieldValue(L"lastname", "Waddams");
+    ExpectFieldValue(L"address1", "4120 Freidrich Lane");
+    ExpectFieldValue(L"address2", "Basement");
+    ExpectFieldValue(L"city", "Austin");
+    ExpectFieldValue(L"state", "TX");
+    ExpectFieldValue(L"zip", "78744");
+    ExpectFieldValue(L"country", "US");
+    ExpectFieldValue(L"phone", "5125551234");
+  }
+
+  void TryBasicFormFill() {
+    FocusFirstNameField();
+
     // Start filling the first name field with "M" and wait for the popup to be
     // shown.
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_M, false, true, false, false,
         NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
-        Source<RenderViewHost>(rvh())));
+        Source<RenderViewHost>(render_view_host())));
 
     // Press the down arrow to select the suggestion and preview the autofilled
     // form.
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_DOWN, false, false, false, false,
         NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
-        Source<RenderViewHost>(rvh())));
+        Source<RenderViewHost>(render_view_host())));
 
     // The previewed values should not be accessible to JavaScript.
     ExpectFieldValue(L"firstname", "M");
@@ -185,18 +204,10 @@ class AutoFillTest : public InProcessBrowserTest {
     ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
         browser(), ui::VKEY_RETURN, false, false, false, false,
         NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
-        Source<RenderViewHost>(rvh())));
+        Source<RenderViewHost>(render_view_host())));
 
     // The form should be filled.
-    ExpectFieldValue(L"firstname", "Milton");
-    ExpectFieldValue(L"lastname", "Waddams");
-    ExpectFieldValue(L"address1", "4120 Freidrich Lane");
-    ExpectFieldValue(L"address2", "Basement");
-    ExpectFieldValue(L"city", "Austin");
-    ExpectFieldValue(L"state", "TX");
-    ExpectFieldValue(L"zip", "78744");
-    ExpectFieldValue(L"country", "US");
-    ExpectFieldValue(L"phone", "5125551234");
+    ExpectFilledTestForm();
   }
 
  private:
@@ -205,66 +216,123 @@ class AutoFillTest : public InProcessBrowserTest {
 
 // Test that basic form fill is working.
 IN_PROC_BROWSER_TEST_F(AutoFillTest, BasicFormFill) {
-  SetUpProfile();
+  CreateTestProfile();
 
+  // Load the test page.
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
-      GURL("data:text/html;charset=utf-8," + std::string(kTestFormString))));
+      GURL(std::string(kDataURIPrefix) + kTestFormString)));
 
-  TryBasicFormFillWithMKey();
+  // Invoke AutoFill.
+  TryBasicFormFill();
 }
 
-// Test that basic form fill is working.
-IN_PROC_BROWSER_TEST_F(AutoFillTest, TranslateAndFormFill) {
-  SetUpProfile();
+// Test that form filling can be initiated by pressing the down arrow.
+IN_PROC_BROWSER_TEST_F(AutoFillTest, AutoFillViaDownArrow) {
+  CreateTestProfile();
 
-  GURL url("data:text/html;charset=utf-8,"
-              "<form action=\"http://www.google.com/\" method=\"POST\">"
-              "<label for=\"firstname\">なまえ</label>"
-              " <input type=\"text\" id=\"firstname\""
-              "        onFocus=\"domAutomationController.send(true)\""
-              " /><br />"
-              "<label for=\"lastname\">みょうじ</label>"
-              " <input type=\"text\" id=\"lastname\" /><br />"
-              "<label for=\"address1\">Address line 1:</label>"
-              " <input type=\"text\" id=\"address1\" /><br />"
-              "<label for=\"address2\">Address line 2:</label>"
-              " <input type=\"text\" id=\"address2\" /><br />"
-              "<label for=\"city\">City:</label>"
-              " <input type=\"text\" id=\"city\" /><br />"
-              "<label for=\"state\">State:</label>"
-              " <select id=\"state\">"
-              " <option value=\"\" selected=\"yes\">--</option>"
-              " <option value=\"CA\">California</option>"
-              " <option value=\"TX\">Texas</option>"
-              " </select><br />"
-              "<label for=\"zip\">ZIP code:</label>"
-              " <input type=\"text\" id=\"zip\" /><br />"
-              "<label for=\"country\">Country:</label>"
-              " <select id=\"country\">"
-              " <option value=\"\" selected=\"yes\">--</option>"
-              " <option value=\"CA\">Canada</option>"
-              " <option value=\"US\">United States</option>"
-              " </select><br />"
-              "<label for=\"phone\">Phone number:</label>"
-              " <input type=\"text\" id=\"phone\" /><br />"
-              "</form>");
+  // Load the test page.
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
-      browser(), url));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
+      GURL(std::string(kDataURIPrefix) + kTestFormString)));
+
+  // Focus a fillable field.
+  FocusFirstNameField();
+
+  // Press the down arrow to initiate AutoFill and wait for the popup to be
+  // shown.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+      browser(), ui::VKEY_DOWN, false, false, false, false,
+      NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
+      Source<RenderViewHost>(render_view_host())));
+
+  // Press the down arrow to select the suggestion and preview the autofilled
+  // form.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+      browser(), ui::VKEY_DOWN, false, false, false, false,
+      NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
+      Source<RenderViewHost>(render_view_host())));
+
+  // Press Enter to accept the autofill suggestions.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+      browser(), ui::VKEY_RETURN, false, false, false, false,
+      NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
+      Source<RenderViewHost>(render_view_host())));
+
+  // The form should be filled.
+  ExpectFilledTestForm();
+}
+
+// Test that form filling works after reloading the current page.
+// This test brought to you by http://crbug.com/69204
+IN_PROC_BROWSER_TEST_F(AutoFillTest, AutoFillAfterReload) {
+  CreateTestProfile();
+
+  // Load the test page.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
+      GURL(std::string(kDataURIPrefix) + kTestFormString)));
+
+  // Reload the page.
+  NavigationController* controller =
+      &browser()->GetSelectedTabContentsWrapper()->tab_contents()->controller();
+  controller->Reload(false);
+  ui_test_utils::WaitForLoadStop(controller);
+
+  // Invoke AutoFill.
+  TryBasicFormFill();
+}
+
+// Test that autofill works after page translation.
+IN_PROC_BROWSER_TEST_F(AutoFillTest, AutoFillAfterTranslate) {
+  CreateTestProfile();
+
+  GURL url(std::string(kDataURIPrefix) +
+               "<form action=\"http://www.example.com/\" method=\"POST\">"
+               "<label for=\"fn\">なまえ</label>"
+               " <input type=\"text\" id=\"fn\""
+               "        onFocus=\"domAutomationController.send(true)\""
+               " /><br />"
+               "<label for=\"ln\">みょうじ</label>"
+               " <input type=\"text\" id=\"ln\" /><br />"
+               "<label for=\"a1\">Address line 1:</label>"
+               " <input type=\"text\" id=\"a1\" /><br />"
+               "<label for=\"a2\">Address line 2:</label>"
+               " <input type=\"text\" id=\"a2\" /><br />"
+               "<label for=\"ci\">City:</label>"
+               " <input type=\"text\" id=\"ci\" /><br />"
+               "<label for=\"st\">State:</label>"
+               " <select id=\"st\">"
+               " <option value=\"\" selected=\"yes\">--</option>"
+               " <option value=\"CA\">California</option>"
+               " <option value=\"TX\">Texas</option>"
+               " </select><br />"
+               "<label for=\"z\">ZIP code:</label>"
+               " <input type=\"text\" id=\"z\" /><br />"
+               "<label for=\"co\">Country:</label>"
+               " <select id=\"co\">"
+               " <option value=\"\" selected=\"yes\">--</option>"
+               " <option value=\"CA\">Canada</option>"
+               " <option value=\"US\">United States</option>"
+               " </select><br />"
+               "<label for=\"ph\">Phone number:</label>"
+               " <input type=\"text\" id=\"ph\" /><br />"
+               "</form>");
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Get translation bar.
   int page_id = browser()->GetSelectedTabContents()->controller().
       GetLastCommittedEntry()->page_id();
-  rvh()->OnMessageReceived(ViewHostMsg_PageContents(0, url, page_id,
-      UTF8ToUTF16("test"), "ja", true));
+  render_view_host()->OnMessageReceived(ViewHostMsg_PageContents(
+      0, url, page_id, ASCIIToUTF16("test"), "ja", true));
   TranslateInfoBarDelegate* infobar = browser()->GetSelectedTabContents()->
       GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
 
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE, infobar->type());
 
-  // Simulate press translation button.
+  // Simulate translation button press.
   infobar->Translate();
 
   // Simulate the translate script being retrieved.
@@ -275,10 +343,11 @@ IN_PROC_BROWSER_TEST_F(AutoFillTest, TranslateAndFormFill) {
   // But right now, the call stucks here.
   // Once click the text field, it starts again.
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      rvh(), L"", L"cr.googleTranslate.onTranslateElementLoad();"));
+      render_view_host(), L"",
+      L"cr.googleTranslate.onTranslateElementLoad();"));
 
   // Simulate the render notifying the translation has been done.
   ui_test_utils::WaitForNotification(NotificationType::PAGE_TRANSLATED);
 
-  TryBasicFormFillWithMKey();
+  TryBasicFormFill();
 }
