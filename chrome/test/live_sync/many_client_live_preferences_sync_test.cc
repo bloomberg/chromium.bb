@@ -5,7 +5,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/live_sync/live_preferences_sync_test.h"
 
-IN_PROC_BROWSER_TEST_F(ManyClientLivePreferencesSyncTest, Sanity) {
+// TODO(rsimha): Enable once http://crbug.com/69604 is fixed.
+IN_PROC_BROWSER_TEST_F(ManyClientLivePreferencesSyncTest, DISABLED_Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   bool new_value = !GetVerifierPrefs()->GetBoolean(

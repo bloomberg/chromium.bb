@@ -6,7 +6,8 @@
 
 #include "chrome/browser/profiles/profile.h"
 
-IN_PROC_BROWSER_TEST_F(ManyClientLiveBookmarksSyncTest, Sanity) {
+// TODO(rsimha): Enable once http://crbug.com/69604 is fixed.
+IN_PROC_BROWSER_TEST_F(ManyClientLiveBookmarksSyncTest, DISABLED_Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AddURL(0, L"Google URL", GURL("http://www.google.com/")) != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitGroupSyncCycleCompletion(clients()));
