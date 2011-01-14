@@ -81,6 +81,8 @@ UrlLoadRequest::UrlLoadRequest(PP_Instance instance)
       instance_(instance),
       request_(0),
       loader_(0),
+      response_(0),
+      fileio_(0),
       request_interface_(NULL),
       loader_interface_(NULL),
       fileio_interface_(NULL),
@@ -100,6 +102,14 @@ void UrlLoadRequest::Clear() {
   if (0 != loader_) {
     module->ppb_core_interface()->ReleaseResource(loader_);
     loader_ = 0;
+  }
+  if (0 != response_) {
+    module->ppb_core_interface()->ReleaseResource(response_);
+    response_ = 0;
+  }
+  if (0 != fileio_) {
+    module->ppb_core_interface()->ReleaseResource(fileio_);
+    fileio_ = 0;
   }
   url_body_.clear();
 }
