@@ -1,16 +1,23 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/auto_reset.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_views_model.h"
 #include "views/event.h"
 #include "views/focus/focus_manager.h"
+#include "views/test/test_views_delegate.h"
 #include "views/test/views_test_base.h"
 #include "views/widget/widget.h"
+#include "views/views_delegate.h"
 
 namespace views {
 
@@ -85,6 +92,11 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
 
     DCHECK(textfield_view_);
     model_ = textfield_view_->model_.get();
+  }
+
+  views::Menu2* GetContextMenu() {
+    textfield_view_->InitContextMenuIfRequired();
+    return textfield_view_->context_menu_menu_.get();
   }
 
  protected:
@@ -382,6 +394,33 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_FocusTraversalTest) {
   // Request focus should still work.
   textfield_->RequestFocus();
   EXPECT_EQ(1, GetFocusedView()->GetID());
+}
+
+void VerifyTextfieldContextMenuContents(bool textfield_has_selection,
+    menus::MenuModel* menu_model) {
+  EXPECT_TRUE(menu_model->IsEnabledAt(4 /* Separator */));
+  EXPECT_TRUE(menu_model->IsEnabledAt(5 /* SELECT ALL */));
+  EXPECT_EQ(textfield_has_selection, menu_model->IsEnabledAt(0 /* CUT */));
+  EXPECT_EQ(textfield_has_selection, menu_model->IsEnabledAt(1 /* COPY */));
+  EXPECT_EQ(textfield_has_selection, menu_model->IsEnabledAt(3 /* DELETE */));
+  string16 str;
+  views::ViewsDelegate::views_delegate->GetClipboard()
+      ->ReadText(ui::Clipboard::BUFFER_STANDARD, &str);
+  EXPECT_NE(str.empty(), menu_model->IsEnabledAt(2 /* PASTE */));
+}
+
+TEST_F(NativeTextfieldViewsTest, ContextMenuDisplayTest) {
+  scoped_ptr<TestViewsDelegate> test_views_delegate(new TestViewsDelegate());
+  AutoReset<views::ViewsDelegate*> auto_reset(
+      &views::ViewsDelegate::views_delegate, test_views_delegate.get());
+  views::ViewsDelegate::views_delegate = test_views_delegate.get();
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  textfield_->SetText(ASCIIToUTF16("hello world"));
+  EXPECT_TRUE(GetContextMenu());
+  VerifyTextfieldContextMenuContents(false, GetContextMenu()->model());
+
+  textfield_->SelectAll();
+  VerifyTextfieldContextMenuContents(true, GetContextMenu()->model());
 }
 
 }  // namespace views

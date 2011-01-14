@@ -263,6 +263,9 @@ need to be translated for each locale.-->
       <message name="IDS_APP_PASTE" desc="The text label of the Paste menu item">
         &amp;Paste
       </message>
+      <message name="IDS_APP_DELETE" desc="The text label of the Delete menu item">
+        &amp;Delete
+      </message>
       <message name="IDS_APP_SELECT_ALL" desc="The text label of the Select All menu item">
         Select &amp;all
       </message>

@@ -400,24 +400,3 @@ NativeMenuDOMUI* NativeMenuDOMUI::FindMenuAt(const gfx::Point& point) {
 }
 
 }  // namespace chromeos
-
-////////////////////////////////////////////////////////////////////////////////
-// MenuWrapper, public:
-
-namespace views {
-
-// static
-MenuWrapper* MenuWrapper::CreateWrapper(Menu2* menu) {
-  ui::MenuModel* model = menu->model();
-  if (chromeos::MenuUI::IsEnabled()) {
-    return new chromeos::NativeMenuDOMUI(model, true);
-  } else {
-#if defined(TOUCH_UI)
-    return new NativeMenuX(menu);
-#else
-    return new NativeMenuGtk(menu);
-#endif
-  }
-}
-
-}  // namespace views

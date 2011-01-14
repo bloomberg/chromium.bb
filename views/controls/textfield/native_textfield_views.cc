@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,11 +13,15 @@
 #include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/insets.h"
+#include "grit/app_strings.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "views/background.h"
 #include "views/border.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_views_model.h"
 #include "views/event.h"
+#include "views/views_delegate.h"
 
 namespace {
 
@@ -62,6 +66,8 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
   DCHECK_NE(parent->style(), Textfield::STYLE_MULTILINE);
   // Lowercase is not supported.
   DCHECK_NE(parent->style(), Textfield::STYLE_LOWERCASE);
+
+  SetContextMenuController(this);
 }
 
 NativeTextfieldViews::~NativeTextfieldViews() {
@@ -72,10 +78,12 @@ NativeTextfieldViews::~NativeTextfieldViews() {
 
 bool NativeTextfieldViews::OnMousePressed(const views::MouseEvent& e) {
   textfield_->RequestFocus();
-  size_t pos = FindCursorPosition(e.location());
-  if (model_->MoveCursorTo(pos, false)) {
-    UpdateCursorBoundsAndTextOffset();
-    SchedulePaint();
+  if (e.IsLeftMouseButton()) {
+    size_t pos = FindCursorPosition(e.location());
+    if (model_->MoveCursorTo(pos, false)) {
+      UpdateCursorBoundsAndTextOffset();
+      SchedulePaint();
+    }
   }
   return true;
 }
@@ -129,6 +137,15 @@ void NativeTextfieldViews::DidGainFocus() {
 
 void NativeTextfieldViews::WillLoseFocus() {
   NOTREACHED();
+}
+
+/////////////////////////////////////////////////////////////////
+// NativeTextfieldViews, views::ContextMenuController overrides:
+void NativeTextfieldViews::ShowContextMenu(View* source,
+                                           const gfx::Point& p,
+                                           bool is_mouse_gesture) {
+  InitContextMenuIfRequired();
+  context_menu_menu_->RunContextMenuAt(p);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -290,6 +307,65 @@ void NativeTextfieldViews::HandleWillLoseFocus() {
     is_cursor_visible_ = false;
     RepaintCursor();
   }
+}
+
+/////////////////////////////////////////////////////////////////
+// NativeTextfieldViews, menus::SimpleMenuModel::Delegate overrides:
+
+bool NativeTextfieldViews::IsCommandIdChecked(int command_id) const {
+  return true;
+}
+
+bool NativeTextfieldViews::IsCommandIdEnabled(int command_id) const {
+  string16 result;
+  switch (command_id) {
+    case IDS_APP_CUT:
+      return model_->HasSelection();
+    case IDS_APP_COPY:
+      return model_->HasSelection();
+    case IDS_APP_PASTE:
+      views::ViewsDelegate::views_delegate->GetClipboard()
+          ->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+      return !result.empty();
+    case IDS_APP_DELETE:
+      return model_->HasSelection();
+    case IDS_APP_SELECT_ALL:
+      return true;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+bool NativeTextfieldViews::GetAcceleratorForCommandId(int command_id,
+    menus::Accelerator* accelerator) {
+  return false;
+}
+
+void NativeTextfieldViews::ExecuteCommand(int command_id) {
+  bool text_changed = false;
+  switch (command_id) {
+    case IDS_APP_CUT:
+      text_changed = model_->Cut();
+      break;
+    case IDS_APP_COPY:
+      model_->Copy();
+      break;
+    case IDS_APP_PASTE:
+      text_changed = model_->Paste();
+      break;
+    case IDS_APP_DELETE:
+      text_changed = model_->Delete();
+      break;
+    case IDS_APP_SELECT_ALL:
+      SelectAll();
+      break;
+    default:
+      NOTREACHED() << "unknown command: " << command_id;
+      break;
+  }
+  if (text_changed)
+    PropagateTextChange();
 }
 
 // static
@@ -522,12 +598,8 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         model_->Replace(print_char);
       text_changed = true;
     }
-    if (text_changed) {
-      textfield_->SyncText();
-      Textfield::Controller* controller = textfield_->GetController();
-      if (controller)
-        controller->ContentsChanged(textfield_, GetText());
-    }
+    if (text_changed)
+      PropagateTextChange();
     if (cursor_changed) {
       is_cursor_visible_ = true;
       RepaintCursor();
@@ -688,6 +760,27 @@ size_t NativeTextfieldViews::FindCursorPosition(const gfx::Point& point) const {
     }
   }
   return left_pos;
+}
+
+void NativeTextfieldViews::PropagateTextChange() {
+  textfield_->SyncText();
+  Textfield::Controller* controller = textfield_->GetController();
+  if (controller)
+    controller->ContentsChanged(textfield_, GetText());
+}
+
+void NativeTextfieldViews::InitContextMenuIfRequired() {
+  if (context_menu_menu_.get())
+    return;
+  context_menu_contents_.reset(new menus::SimpleMenuModel(this));
+  context_menu_contents_->AddItemWithStringId(IDS_APP_CUT, IDS_APP_CUT);
+  context_menu_contents_->AddItemWithStringId(IDS_APP_COPY, IDS_APP_COPY);
+  context_menu_contents_->AddItemWithStringId(IDS_APP_PASTE, IDS_APP_PASTE);
+  context_menu_contents_->AddItemWithStringId(IDS_APP_DELETE, IDS_APP_DELETE);
+  context_menu_contents_->AddSeparator();
+  context_menu_contents_->AddItemWithStringId(IDS_APP_SELECT_ALL,
+                                              IDS_APP_SELECT_ALL);
+  context_menu_menu_.reset(new Menu2(context_menu_contents_.get()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -156,11 +156,9 @@ void NativeMenuX::UpdateMenuFromModel(SubmenuView* menu,
 
 // MenuWrapper, public:
 
-#if !defined(OS_CHROMEOS)
 // static
 MenuWrapper* MenuWrapper::CreateWrapper(Menu2* menu) {
   return new NativeMenuX(menu);
 }
-#endif
 
 }  // namespace views
