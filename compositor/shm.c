@@ -24,6 +24,12 @@
 
 #include "compositor.h"
 
+struct wlsc_shm_buffer {
+	struct wl_buffer buffer;
+	int32_t stride;
+	void *data;
+};
+
 static void
 destroy_buffer(struct wl_resource *resource, struct wl_client *client)
 {

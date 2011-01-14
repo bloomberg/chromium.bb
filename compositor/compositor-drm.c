@@ -354,7 +354,13 @@ drm_compositor_create(struct wl_display *display, int connector)
 		fprintf(stderr, "failed to initialize egl\n");
 		return NULL;
 	}
-	
+
+	ec->base.destroy = drm_destroy;
+	ec->base.authenticate = drm_authenticate;
+	ec->base.present = drm_compositor_present;
+	ec->base.create_buffer = wlsc_drm_buffer_create;
+	ec->base.focus = 1;
+
 	/* Can't init base class until we have a current egl context */
 	if (wlsc_compositor_init(&ec->base, display) < 0)
 		return NULL;
@@ -371,10 +377,6 @@ drm_compositor_create(struct wl_display *display, int connector)
 		wl_event_loop_add_fd(loop, ec->base.drm.fd,
 				     WL_EVENT_READABLE, on_drm_input, ec);
 	ec->tty = tty_create(&ec->base);
-	ec->base.destroy = drm_destroy;
-	ec->base.authenticate = drm_authenticate;
-	ec->base.present = drm_compositor_present;
-	ec->base.focus = 1;
 
 	return &ec->base;
 }

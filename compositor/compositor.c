@@ -188,33 +188,76 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 	wlsc_compositor_schedule_repaint(compositor);
 }
 
-static int
-texture_from_png(const char *filename, int width, int height)
+static struct wl_buffer *
+create_buffer_from_png(struct wlsc_compositor *ec,
+		       const char *filename, int width, int height)
 {
 	GdkPixbuf *pixbuf;
 	GError *error = NULL;
-	void *data;
-	GLenum format;
+	int stride, i, n_channels;
+	unsigned char *pixels, *end, *argb_pixels, *s, *d;
+	struct wl_buffer *buffer;
 
 	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
 						   width, height,
 						   FALSE, &error);
 	if (error != NULL)
-		return -1;
+		return NULL;
 
-	data = gdk_pixbuf_get_pixels(pixbuf);
+	stride = gdk_pixbuf_get_rowstride(pixbuf);
+	pixels = gdk_pixbuf_get_pixels(pixbuf);
+	n_channels = gdk_pixbuf_get_n_channels(pixbuf);
 
-	if (gdk_pixbuf_get_has_alpha(pixbuf))
-		format = GL_RGBA;
-	else
-		format = GL_RGB;
+	argb_pixels = malloc (height * width * 4);
+	if (argb_pixels == NULL) {
+		gdk_pixbuf_unref(pixbuf);
+		return NULL;
+	}
 
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
-			format, GL_UNSIGNED_BYTE, data);
+	if (n_channels == 4) {
+		for (i = 0; i < height; i++) {
+			s = pixels + i * stride;
+			end = s + width * 4;
+			d = argb_pixels + i * width * 4;
+			while (s < end) {
+				unsigned int t;
+
+#define MULT(_d,c,a,t) \
+	do { t = c * a + 0x7f; _d = ((t >> 8) + t) >> 8; } while (0)
+				
+				MULT(d[0], s[2], s[3], t);
+				MULT(d[1], s[1], s[3], t);
+				MULT(d[2], s[0], s[3], t);
+				d[3] = s[3];
+				s += 4;
+				d += 4;
+			}
+		}
+	} else if (n_channels == 3) {
+		for (i = 0; i < height; i++) {
+			s = pixels + i * stride;
+			end = s + width * 3;
+			d = argb_pixels + i * width * 4;
+			while (s < end) {
+				d[0] = s[2];
+				d[1] = s[1];
+				d[2] = s[0];
+				d[3] = 0xff;
+				s += 3;
+				d += 4;
+			}
+		}
+	}
 
 	gdk_pixbuf_unref(pixbuf);
 
-	return 0;
+	buffer = ec->create_buffer(ec, width, height,
+				   &ec->compositor.premultiplied_argb_visual,
+				   argb_pixels);
+
+	free(argb_pixels);
+
+	return buffer;
 }
 
 static const struct {
@@ -238,25 +281,15 @@ static void
 create_pointer_images(struct wlsc_compositor *ec)
 {
 	int i, count;
-	GLuint texture;
 	const int width = 32, height = 32;
-
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	count = ARRAY_LENGTH(pointer_images);
 	ec->pointer_buffers = malloc(count * sizeof *ec->pointer_buffers);
 	for (i = 0; i < count; i++) {
 		ec->pointer_buffers[i] =
-			wlsc_drm_buffer_create(ec, width, height,
-					       &ec->compositor.argb_visual);
-		glEGLImageTargetTexture2DOES(GL_TEXTURE_2D,
-					     ec->pointer_buffers[i]->image);
-		texture_from_png(pointer_images[i].filename, width, height);
+			create_buffer_from_png(ec,
+					       pointer_images[i].filename,
+					       width, height);
 	}
 }
 
@@ -264,37 +297,20 @@ static struct wlsc_surface *
 background_create(struct wlsc_output *output, const char *filename)
 {
 	struct wlsc_surface *background;
-	GdkPixbuf *pixbuf;
-	GError *error = NULL;
-	void *data;
-	GLenum format;
+	struct wlsc_compositor *ec = output->compositor;
+	struct wl_buffer *buffer;
 
 	background = wlsc_surface_create(output->compositor,
-					 &output->compositor->compositor.rgb_visual,
+					 &ec->compositor.premultiplied_argb_visual,
 					 output->x, output->y,
 					 output->width, output->height);
 	if (background == NULL)
 		return NULL;
 
-	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
-						   output->width,
-						   output->height,
-						   FALSE, &error);
-	if (error != NULL) {
-		free(background);
-		return NULL;
-	}
-
-	data = gdk_pixbuf_get_pixels(pixbuf);
-
-	if (gdk_pixbuf_get_has_alpha(pixbuf))
-		format = GL_RGBA;
-	else
-		format = GL_RGB;
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
-		     output->width, output->height, 0,
-		     format, GL_UNSIGNED_BYTE, data);
+	buffer = create_buffer_from_png(output->compositor,
+					filename,
+					output->width, output->height);
+	buffer->attach(buffer, &background->surface);
 
 	return background;
 }
@@ -500,7 +516,7 @@ wlsc_input_device_set_pointer_image(struct wlsc_input_device *device,
 		(struct wlsc_compositor *) device->input_device.compositor;
 
 	wlsc_input_device_attach(device,
-				 &compositor->pointer_buffers[type]->buffer,
+				 compositor->pointer_buffers[type],
 				 pointer_images[type].hotspot_x,
 				 pointer_images[type].hotspot_y);
 }

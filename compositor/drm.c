@@ -22,6 +22,11 @@
 
 #include "compositor.h"
 
+struct wlsc_drm_buffer {
+	struct wl_buffer buffer;
+	EGLImageKHR image;
+};
+
 static void
 drm_authenticate(struct wl_client *client,
 		 struct wl_drm *drm_base, uint32_t id)
@@ -197,12 +202,13 @@ wlsc_drm_init(struct wlsc_compositor *ec, int fd, const char *filename)
 	return 0;
 }
 
-struct wlsc_drm_buffer *
-wlsc_drm_buffer_create(struct wlsc_compositor *ec,
-		       int width, int height, struct wl_visual *visual)
+struct wl_buffer *
+wlsc_drm_buffer_create(struct wlsc_compositor *ec, int width, int height,
+		       struct wl_visual *visual, const void *data)
 {
 	struct wlsc_drm_buffer *buffer;
 	EGLImageKHR image;
+	GLuint texture;
 
 	EGLint image_attribs[] = {
 		EGL_WIDTH,		0,
@@ -222,5 +228,19 @@ wlsc_drm_buffer_create(struct wlsc_compositor *ec,
 	buffer = wlsc_drm_buffer_create_for_image(ec, image,
 						  width, height, visual);
 
-	return buffer;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, buffer->image);
+
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
+			GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
+
+	glDeleteTextures(1, &texture);
+
+	return &buffer->buffer;
 }
