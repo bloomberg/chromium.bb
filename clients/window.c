@@ -1208,6 +1208,19 @@ window_set_keyboard_focus_handler(struct window *window,
 }
 
 void
+window_set_title(struct window *window, const char *title)
+{
+	free((void*) window->title);
+	window->title = strdup(title);
+}
+
+const char *
+window_get_title(struct window *window)
+{
+	return window->title;
+}
+
+void
 window_damage(struct window *window, int32_t x, int32_t y,
 	      int32_t width, int32_t height)
 {
