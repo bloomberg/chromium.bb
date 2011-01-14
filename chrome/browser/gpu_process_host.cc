@@ -574,6 +574,12 @@ bool GpuProcessHost::CanLaunchGpuProcess() const {
 bool GpuProcessHost::LaunchGpuProcess() {
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
 
+  // TODO(apatrick): This cannot be a UI message pump on Linux because glib is
+  // not thread safe. Changing this to an IO message pump does not completely
+  // resolve the problem, most likely because we're sharing a connection to the
+  // X server with the browser.
+#if !defined(OS_LINUX)
+
   // If the single-process switch is present, just launch the GPU service in a
   // new thread in the browser process.
   if (browser_command_line.HasSwitch(switches::kSingleProcess)) {
@@ -584,50 +590,53 @@ bool GpuProcessHost::LaunchGpuProcess() {
 
     if (!thread->StartWithOptions(options))
       return false;
-  } else {
-    CommandLine::StringType gpu_launcher =
-        browser_command_line.GetSwitchValueNative(switches::kGpuLauncher);
 
-    FilePath exe_path = ChildProcessHost::GetChildPath(gpu_launcher.empty());
-    if (exe_path.empty())
-      return false;
-
-    CommandLine* cmd_line = new CommandLine(exe_path);
-    cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
-    cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
-
-    // Propagate relevant command line switches.
-    static const char* const kSwitchNames[] = {
-      switches::kUseGL,
-      switches::kDisableGpuVsync,
-      switches::kDisableGpuWatchdog,
-      switches::kDisableLogging,
-      switches::kEnableAcceleratedDecoding,
-      switches::kEnableLogging,
-  #if defined(OS_MACOSX)
-      switches::kEnableSandboxLogging,
-  #endif
-      switches::kGpuStartupDialog,
-      switches::kLoggingLevel,
-      switches::kNoGpuSandbox,
-      switches::kNoSandbox,
-    };
-    cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                               arraysize(kSwitchNames));
-
-    // If specified, prepend a launcher program to the command line.
-    if (!gpu_launcher.empty())
-      cmd_line->PrependWrapper(gpu_launcher);
-
-    Launch(
-#if defined(OS_WIN)
-        FilePath(),
-#elif defined(OS_POSIX)
-        false,  // Never use the zygote (GPU plugin can't be sandboxed).
-        base::environment_vector(),
-#endif
-        cmd_line);
+    return true;
   }
+#endif
+
+  CommandLine::StringType gpu_launcher =
+      browser_command_line.GetSwitchValueNative(switches::kGpuLauncher);
+
+  FilePath exe_path = ChildProcessHost::GetChildPath(gpu_launcher.empty());
+  if (exe_path.empty())
+    return false;
+
+  CommandLine* cmd_line = new CommandLine(exe_path);
+  cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
+
+  // Propagate relevant command line switches.
+  static const char* const kSwitchNames[] = {
+    switches::kUseGL,
+    switches::kDisableGpuVsync,
+    switches::kDisableGpuWatchdog,
+    switches::kDisableLogging,
+    switches::kEnableAcceleratedDecoding,
+    switches::kEnableLogging,
+#if defined(OS_MACOSX)
+    switches::kEnableSandboxLogging,
+#endif
+    switches::kGpuStartupDialog,
+    switches::kLoggingLevel,
+    switches::kNoGpuSandbox,
+    switches::kNoSandbox,
+  };
+  cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
+                             arraysize(kSwitchNames));
+
+  // If specified, prepend a launcher program to the command line.
+  if (!gpu_launcher.empty())
+    cmd_line->PrependWrapper(gpu_launcher);
+
+  Launch(
+#if defined(OS_WIN)
+      FilePath(),
+#elif defined(OS_POSIX)
+      false,  // Never use the zygote (GPU plugin can't be sandboxed).
+      base::environment_vector(),
+#endif
+      cmd_line);
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
                             LAUNCED, GPU_PROCESS_LIFETIME_EVENT_MAX);
