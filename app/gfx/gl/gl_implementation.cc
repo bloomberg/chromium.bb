@@ -21,6 +21,16 @@ const char kGLImplementationMockName[]    = "mock";
 
 namespace {
 
+const struct {
+  const char* name;
+  GLImplementation implementation;
+} kGLImplementationNamePairs[] = {
+  { kGLImplementationDesktopName, kGLImplementationDesktopGL },
+  { kGLImplementationOSMesaName, kGLImplementationOSMesaGL },
+  { kGLImplementationEGLName, kGLImplementationEGLGLES2 },
+  { kGLImplementationMockName, kGLImplementationMockGL }
+};
+
 typedef std::vector<base::NativeLibrary> LibraryArray;
 
 GLImplementation g_gl_implementation = kGLImplementationNone;
@@ -40,22 +50,21 @@ void CleanupNativeLibraries(void* unused) {
 }
 
 GLImplementation GetNamedGLImplementation(const std::string& name) {
-  static const struct {
-    const char* name;
-    GLImplementation implemention;
-  } name_pairs[] = {
-    { kGLImplementationDesktopName, kGLImplementationDesktopGL },
-    { kGLImplementationOSMesaName, kGLImplementationOSMesaGL },
-    { kGLImplementationEGLName, kGLImplementationEGLGLES2 },
-    { kGLImplementationMockName, kGLImplementationMockGL }
-  };
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(name_pairs); ++i) {
-    if (name == name_pairs[i].name)
-      return name_pairs[i].implemention;
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kGLImplementationNamePairs); ++i) {
+    if (name == kGLImplementationNamePairs[i].name)
+      return kGLImplementationNamePairs[i].implementation;
   }
 
   return kGLImplementationNone;
+}
+
+const char* GetGLImplementationName(GLImplementation implementation) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kGLImplementationNamePairs); ++i) {
+    if (implementation == kGLImplementationNamePairs[i].implementation)
+      return kGLImplementationNamePairs[i].name;
+  }
+
+  return "unknown";
 }
 
 bool InitializeBestGLBindings(
@@ -69,23 +78,29 @@ bool InitializeBestGLBindings(
     if (std::find(allowed_implementations_begin,
                   allowed_implementations_end,
                   requested_implementation) == allowed_implementations_end) {
-      LOG(ERROR) << "Requested GL implementation is not allowed.";
+      LOG(ERROR) << "Requested GL implementation is not available.";
       return false;
     }
 
-    if (InitializeGLBindings(requested_implementation))
-      return true;
+    InitializeGLBindings(requested_implementation);
   } else {
     for (const GLImplementation* p = allowed_implementations_begin;
          p < allowed_implementations_end;
          ++p) {
       if (InitializeGLBindings(*p))
-        return true;
+        break;
     }
   }
 
-  LOG(ERROR) << "Could not initialize GL.";
-  return false;
+  if (GetGLImplementation() == kGLImplementationNone) {
+    LOG(ERROR) << "Could not initialize GL.";
+    return false;
+  } else {
+    LOG(INFO) << "Using "
+              << GetGLImplementationName(GetGLImplementation())
+              << " GL implementation.";
+    return true;
+  }
 }
 
 void SetGLImplementation(GLImplementation implementation) {

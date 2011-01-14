@@ -49,6 +49,9 @@ GLImplementation GetGLImplementation();
 // Get the GL implementation with a given name.
 GLImplementation GetNamedGLImplementation(const std::wstring& name);
 
+// Get the name of a GL implementation.
+const char* GetGLImplementationName(GLImplementation implementation);
+
 // Initialize the preferred GL binding from the given list. The preferred GL
 // bindings depend on command line switches passed by the user and which GL
 // implementations are available and working on the system
