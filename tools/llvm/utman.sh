@@ -27,15 +27,20 @@
 set -o nounset
 set -o errexit
 
+# Make sure this script is run from the right place
+if [[ $(basename $(pwd)) != "native_client" ]] ; then
+  echo "ERROR: run this script from the native_client/ dir"
+  exit -1
+fi
+
+source tools/llvm/common-tools.sh
+
 # NOTE: gcc and llvm have to be synchronized
 #       we have chosen toolchains which both are based on gcc-4.2.1
 
 # SAFE_MODE: When off, gcc-stage1 is not rebuilt when only llvm is modified.
 #            This should be "ok" most of the time.
 readonly UTMAN_SAFE_MODE=${UTMAN_SAFE_MODE:-false}
-
-# Turn on debugging for this script
-readonly UTMAN_DEBUG=${UTMAN_DEBUG:-false}
 
 # For different levels of make parallelism change this in your env
 readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
@@ -76,8 +81,6 @@ SPECULATIVE_REBUILD_SET=""
 
 readonly TC_SRC="$(pwd)/hg"
 readonly TC_BUILD="$(pwd)/toolchain/hg-build"
-readonly TC_LOG="$(pwd)/toolchain/hg-log"
-readonly TC_LOG_ALL="${TC_LOG}/ALL"
 
 # The location of sources (absolute)
 readonly TC_SRC_LLVM="${TC_SRC}/llvm"
@@ -268,37 +271,14 @@ setup-tools-bitcode() {
 
 #@-------------------------------------------------------------------------
 
-#@ hg-status             - Show status of repositories
-hg-status() {
+#@ hg-info-all         - Show status of repositories
+hg-info-all() {
+  hg-pull-all
 
-  hg-pull
-
-  hg-status-common "${TC_SRC_LLVM}"       ${LLVM_REV}
-  hg-status-common "${TC_SRC_LLVM_GCC}"   ${LLVM_GCC_REV}
-  hg-status-common "${TC_SRC_NEWLIB}"     ${NEWLIB_REV}
-  hg-status-common "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
-}
-
-hg-status-common() {
-  local dir="$1"
-  local rev="$2"
-
-  spushd "$dir"
-  local hg_status=$(hg status -mard)
-  if [ ${#hg_status} -gt 0 ]; then
-    LOCAL_CHANGES="YES"
-  else
-    LOCAL_CHANGES="NO"
-  fi
-
-  echo ""
-  echo "Directory: hg/$(basename ${dir})"
-  echo "  Branch         : $(hg branch)"
-  echo "  Revision       : $(hg identify)"
-  echo "  Local changes  : ${LOCAL_CHANGES}"
-  echo "  Stable Revision: ${rev}"
-  echo ""
-  spopd
+  hg-info "${TC_SRC_LLVM}"       ${LLVM_REV}
+  hg-info "${TC_SRC_LLVM_GCC}"   ${LLVM_GCC_REV}
+  hg-info "${TC_SRC_NEWLIB}"     ${NEWLIB_REV}
+  hg-info "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
 }
 
 #@ hg-freshness-check    - Make sure all repos are at the stable revision
@@ -314,9 +294,7 @@ hg-freshness-check() {
   hg-freshness-check-common "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
 
   if ${FRESHNESS_WARNING}; then
-    echo -n "Continue build [Y/N]? "
-    read YESNO
-    if [ "${YESNO}" != "Y" ] && [ "${YESNO}" != "y" ]; then
+    if ! confirm-yes "Continue build" ; then
       echo "Cancelled build."
       exit -1
     fi
@@ -327,12 +305,8 @@ hg-freshness-check-common() {
   local dir="$1"
   local rev="$2"
   local name=$(basename "${dir}")
-  local YESNO
 
-  spushd "${dir}"
-  local HGREV=($(hg identify | tr -d '+'))
-  spopd
-  if [ "${HGREV[0]}" != "$rev" ]; then
+  if ! hg-at-revision "${dir}" "${rev}" ; then
     echo "*******************************************************************"
     echo "* Warning: hg/${name} is not at the 'stable' revision.             "
     echo "*******************************************************************"
@@ -358,19 +332,19 @@ hg-update-tip() {
 
 hg-update-tip-llvm-gcc() {
   hg-pull-llvm-gcc
-  hg-update-common "${TC_SRC_LLVM_GCC}"
+  hg-update "${TC_SRC_LLVM_GCC}"
 }
 
 hg-update-tip-llvm() {
   hg-pull-llvm
-  hg-update-common "${TC_SRC_LLVM}"
+  hg-update "${TC_SRC_LLVM}"
 }
 
 hg-update-tip-newlib() {
   if hg-update-newlib-confirm; then
     rm -rf "${TC_SRC_NEWLIB}"
-    hg-checkout-common ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
-    hg-update-common "${TC_SRC_NEWLIB}"
+    hg-checkout ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
+    hg-update "${TC_SRC_NEWLIB}"
     newlib-nacl-headers
   else
     echo "Cancelled."
@@ -379,7 +353,7 @@ hg-update-tip-newlib() {
 
 hg-update-tip-binutils() {
   hg-pull-binutils
-  hg-update-common "${TC_SRC_BINUTILS}"
+  hg-update "${TC_SRC_BINUTILS}"
 }
 
 #@ hg-update-stable      - Update all repos to the latest stable rev (may merge)
@@ -394,18 +368,18 @@ hg-update-stable() {
 
 hg-update-stable-llvm-gcc() {
   hg-pull-llvm-gcc
-  hg-update-common "${TC_SRC_LLVM_GCC}"  ${LLVM_GCC_REV}
+  hg-update "${TC_SRC_LLVM_GCC}"  ${LLVM_GCC_REV}
 }
 
 hg-update-stable-llvm() {
   hg-pull-llvm
-  hg-update-common "${TC_SRC_LLVM}"      ${LLVM_REV}
+  hg-update "${TC_SRC_LLVM}"      ${LLVM_REV}
 }
 
 hg-update-stable-newlib() {
   if ${UTMAN_DEBUG} || hg-update-newlib-confirm; then
     rm -rf "${TC_SRC_NEWLIB}"
-    hg-checkout-common ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
+    hg-checkout ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
     newlib-nacl-headers
   else
     echo "Cancelled."
@@ -413,7 +387,6 @@ hg-update-stable-newlib() {
 }
 
 hg-update-newlib-confirm() {
-  local YESNO
   echo
   echo "Due to special header magic, the newlib repository cannot simply be"
   echo "updated in place. Instead, the entire source directory must be"
@@ -421,21 +394,19 @@ hg-update-newlib-confirm() {
   echo ""
   echo "WARNING: Local changes to newlib will be lost."
   echo ""
-  echo -n "Continue? [Y/N] "
-  read YESNO
-  [ "${YESNO}" = "Y" ] || [ "${YESNO}" = "y" ]
+  confirm-yes "Continue"
   return $?
 }
 
 hg-update-stable-binutils() {
   hg-pull-binutils
-  hg-update-common "${TC_SRC_BINUTILS}"  ${BINUTILS_REV}
+  hg-update "${TC_SRC_BINUTILS}"  ${BINUTILS_REV}
 }
 
-#@ hg-pull               - Pull all repos. (but do not update working copy)
+#@ hg-pull-all           - Pull all repos. (but do not update working copy)
 #@ hg-pull-REPO          - Pull repository REPO.
 #@                         (REPO can be llvm-gcc, llvm, newlib, binutils)
-hg-pull() {
+hg-pull-all() {
   StepBanner "HG-PULL" "Running 'hg pull' in all repos..."
   hg-pull-llvm-gcc
   hg-pull-llvm
@@ -444,37 +415,25 @@ hg-pull() {
 }
 
 hg-pull-llvm-gcc() {
-  hg-pull-common "${TC_SRC_LLVM_GCC}"
+  hg-pull "${TC_SRC_LLVM_GCC}"
 }
 
 hg-pull-llvm() {
-  hg-pull-common "${TC_SRC_LLVM}"
+  hg-pull "${TC_SRC_LLVM}"
 }
 
 hg-pull-newlib() {
-  hg-pull-common "${TC_SRC_NEWLIB}"
+  hg-pull "${TC_SRC_NEWLIB}"
 }
 
 hg-pull-binutils() {
-  hg-pull-common "${TC_SRC_BINUTILS}"
+  hg-pull "${TC_SRC_BINUTILS}"
 }
 
-hg-pull-common() {
-  local dir="$1"
-
-  assert-dir "$dir" \
-    "Repository $(basename "${dir}") doesn't exist. First do 'hg-checkout'"
-
-  spushd "$dir"
-  RunWithLog "hg-pull" hg pull
-  spopd
-}
-
-#@ hg-checkout           - check out mercurial repos needed to build toolchain
+#@ hg-checkout-all       - check out mercurial repos needed to build toolchain
 #@                          (skips repos which are already checked out)
-
-hg-checkout() {
-  StepBanner "HG-CHECKOUT"
+hg-checkout-all() {
+  StepBanner "HG-CHECKOUT-ALL"
   hg-checkout-llvm-gcc
   hg-checkout-llvm
   hg-checkout-binutils
@@ -482,15 +441,15 @@ hg-checkout() {
 }
 
 hg-checkout-llvm-gcc() {
-  hg-checkout-common ${REPO_LLVM_GCC} ${TC_SRC_LLVM_GCC} ${LLVM_GCC_REV}
+  hg-checkout ${REPO_LLVM_GCC} ${TC_SRC_LLVM_GCC} ${LLVM_GCC_REV}
 }
 
 hg-checkout-llvm() {
-  hg-checkout-common ${REPO_LLVM}     ${TC_SRC_LLVM}     ${LLVM_REV}
+  hg-checkout ${REPO_LLVM}     ${TC_SRC_LLVM}     ${LLVM_REV}
 }
 
 hg-checkout-binutils() {
-  hg-checkout-common ${REPO_BINUTILS} ${TC_SRC_BINUTILS} ${BINUTILS_REV}
+  hg-checkout ${REPO_BINUTILS} ${TC_SRC_BINUTILS} ${BINUTILS_REV}
 }
 
 hg-checkout-newlib() {
@@ -498,52 +457,10 @@ hg-checkout-newlib() {
   if [ ! -d "${TC_SRC_NEWLIB}" ]; then
     add_headers=true
   fi
-  hg-checkout-common ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
+  hg-checkout ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
   if ${add_headers}; then
     newlib-nacl-headers
   fi
-}
-
-hg-checkout-common() {
-  local repo=$1
-  local dest=$2
-  local rev=$3
-
-  mkdir -p "${TC_SRC}"
-
-  if [ ! -d ${dest} ] ; then
-    StepBanner "HG-CHECKOUT" "Checking out new repository for ${repo} @ ${rev}"
-
-    # Use a temporary directory just in case HG has problems
-    # with long filenames during checkout.
-    local TMPDIR="/tmp/hg-${rev}-$RANDOM"
-
-    hg clone "https://${repo}.googlecode.com/hg/" "${TMPDIR}"
-    spushd "${TMPDIR}"
-    hg up -C ${rev}
-    mv "${TMPDIR}" "${dest}"
-    spopd
-    echo "Done."
-  else
-    StepBanner "HG-CHECKOUT" "Using existing source for ${repo} in ${dest}"
-  fi
-}
-
-hg-update-common() {
-  local dir="$1"
-
-  assert-dir "$dir" \
-    "HG repository $(basename "${dir}") doesn't exist. First do 'hg-checkout'"
-
-  spushd "${dir}"
-  if [ $# == 2 ]; then
-    local rev=$2
-    hg update ${rev}
-  else
-    hg update
-  fi
-
-  spopd
 }
 
 #@ hg-clean              - Remove all repos. (WARNING: local changes are lost)
@@ -629,13 +546,14 @@ rebuild-pnacl-libs() {
 #@ everything            - Build and install untrusted SDK.
 everything() {
 
-  PathSanityCheck
+  mkdir -p "${INSTALL_ROOT}"
+
   # This is needed to build misc-tools and run ARM tests.
   # We check this early so that there are no surprises later, and we can
   # handle all user interaction early.
   check-for-trusted
 
-  hg-checkout
+  hg-checkout-all
   hg-freshness-check
 
   clean-install
@@ -663,24 +581,6 @@ everything() {
 #@ all                   - Alias for 'everything'
 all() {
   everything
-}
-
-#@ progress              - Show build progress (open in another window)
-progress() {
-  StepBanner "PROGRESS WINDOW"
-
-  while true; do
-    if [ -f "${TC_LOG_ALL}" ]; then
-      if tail --version > /dev/null; then
-        # GNU coreutils tail
-        tail -s 0.05 --max-unchanged-stats=20 --follow=name "${TC_LOG_ALL}"
-      else
-        # MacOS tail
-        tail -F "${TC_LOG_ALL}"
-      fi
-    fi
-    sleep 1
-  done
 }
 
 #@ status                - Show status of build directories
@@ -738,11 +638,6 @@ clean() {
   clean-install
 }
 
-#+ clean-logs            - Clean all logs
-clean-logs() {
-  rm -rf "${TC_LOG}"
-}
-
 #+ clean-build           - Clean all build directories
 clean-build() {
   rm -rf "${TC_BUILD}"
@@ -775,18 +670,12 @@ untrusted_sdk() {
     exit 1
   fi
 
-  PathSanityCheck
   clean
   everything
   prune
   install-translators
   prune-translator-install
   tarball $1
-}
-
-
-get_dir_size_in_mb() {
-  du -msc $1 | tail -1 | egrep -o "[0-9]+"
 }
 
 #+ prune                 - Prune toolchain
@@ -1142,11 +1031,6 @@ gcc-stage1-make() {
   ts-touch-commit "${objdir}"
 
   spopd
-}
-
-is-ELF() {
-  local F=$(file "$1")
-  [[ "${F}" =~ "ELF" ]]
 }
 
 #+ xgcc-patch          - Patch xgcc and clean libgcc
@@ -2376,41 +2260,6 @@ driver-install() {
 ######################################################################
 ######################################################################
 
-
-
-
-# some sanity checks to make sure this script is run from the right place
-PathSanityCheck() {
-  if [[ $(basename $(pwd)) != "native_client" ]] ; then
-    echo "ERROR: run this script from the native_client/ dir"
-    exit -1
-  fi
-
-  if ! mkdir -p "${INSTALL_ROOT}" ; then
-     echo "ERROR: ${INSTALL_ROOT} can't be created."
-    exit -1
-  fi
-
-}
-
-PackageCheck() {
-  assert-bin "makeinfo" "makeinfo not found. Please install 'texinfo' package."
-  assert-bin "bison"    "bison not found. Please install 'bison' package."
-  assert-bin "flex"     "flex not found. Please install 'flex' package."
-}
-
-assert-bin() {
-  local exe="$1"
-  local msg="$2"
-
-  if ! which "$exe" > /dev/null; then
-    Banner "ERROR: $msg"
-    exit -1
-  fi
-}
-
-
-
 RecordRevisionInfo() {
   mkdir -p "${INSTALL_ROOT}"
   svn info > "${INSTALL_ROOT}/REV"
@@ -2896,173 +2745,16 @@ check-for-trusted() {
 }
 
 trusted-tc-confirm() {
-  local YESNO
   echo
   echo "Do you wish to continue without the ARM trusted TC (skip ARM testing)?"
   echo ""
-  echo -n "Continue? [Y/N] "
-  read YESNO
-  [ "${YESNO}" = "Y" ] || [ "${YESNO}" = "y" ]
+  confirm-yes "Continue"
   return $?
-}
-
-Banner() {
-  echo "**********************************************************************"
-  echo "**********************************************************************"
-  echo " $@"
-  echo "**********************************************************************"
-  echo "**********************************************************************"
-}
-
-StepBanner() {
-  local module="$1"
-  if [ $# -eq 1 ]; then
-    echo ""
-    echo "-------------------------------------------------------------------"
-    local padding=$(RepeatStr ' ' 28)
-    echo "${padding}${module}"
-    echo "-------------------------------------------------------------------"
-  else
-    shift 1
-    local padding=$(RepeatStr ' ' $((20-${#module})) )
-    echo "${module}${padding}" "$@"
-  fi
-}
-
-Abort() {
-  local module="$1"
-
-  shift 1
-  local padding=$(RepeatStr ' ' $((20-${#module})) )
-  echo
-  echo "${module}${padding} ERROR:" "$@"
-  echo
-  exit -1
-}
-
-RepeatStr() {
-  local str="$1"
-  local count=$2
-  local ret=""
-
-  while [ $count -gt 0 ]; do
-    ret="${ret}${str}"
-    count=$((count-1))
-  done
-  echo "$ret"
-}
-
-SkipBanner() {
-    StepBanner "$1" "Skipping $2, already up to date."
-}
-
-
-SubBanner() {
-  echo "----------------------------------------------------------------------"
-  echo " $@"
-  echo "----------------------------------------------------------------------"
-}
-
-
-Usage() {
-  egrep "^#@" $0 | cut --bytes=3-
-}
-
-Usage2() {
-  egrep "^#(@|\+)" $0 | cut --bytes=3-
 }
 
 DebugRun() {
   if ${UTMAN_DEBUG}; then
     "$@"
-  fi
-}
-
-RunWithLog() {
-  local log="${TC_LOG}/$1"
-
-  mkdir -p "${TC_LOG}"
-
-  shift 1
-  "$@" 2>&1 | tee "${log}" >> "${TC_LOG_ALL}"
-  if [ ${PIPESTATUS[0]} -ne 0 ]; then
-    echo
-    Banner "ERROR"
-    echo -n "COMMAND:"
-    PrettyPrint "$@"
-    echo
-    echo "LOGFILE: ${log}"
-    echo
-    echo "PWD: $(pwd)"
-    echo
-    # TODO(pdox): Make this a separate BUILDBOT flag (currently, this is it)
-    if ${UTMAN_DEBUG}; then
-      echo "BEGIN LOGFILE Contents."
-      cat "${log}"
-      echo "END LOGFILE Contents."
-    fi
-    exit -1
-  fi
-}
-
-PrettyPrint() {
-  # Pretty print, respecting parameter grouping
-  for I in "$@"; do
-    local has_space=$(echo "$I" | grep " ")
-    if [ ${#has_space} -gt 0 ]; then
-      echo -n ' "'
-      echo -n "$I"
-      echo -n '"'
-    else
-      echo -n " $I"
-    fi
-  done
-  echo
-}
-
-# Silent pushd
-spushd() {
-  pushd "$1" > /dev/null
-}
-
-# Silent popd
-spopd() {
-  popd > /dev/null
-}
-
-# Verbose pushd
-vpushd() {
-  echo ""
-  echo "ENTERING: $1"
-  pushd "$1" > /dev/null
-}
-
-# Verbose popd
-vpopd() {
-  #local dir=$(dirs +1)
-  echo "LEAVING: $(pwd)"
-  echo ""
-  popd > /dev/null
-}
-
-
-assert-dir() {
-  local dir="$1"
-  local msg="$2"
-
-  if [ ! -d "${dir}" ]; then
-    Banner "ERROR: ${msg}"
-    exit -1
-  fi
-}
-
-assert-file() {
-  local fn="$1"
-  local msg="$2"
-
-  if [ ! -f "${fn}" ]; then
-    Banner "ERROR: ${fn} does not exist. ${msg}"
-    exit -1
   fi
 }
 
@@ -3145,7 +2837,7 @@ ts-newer-than() {
 ######################################################################
 ######################################################################
 
-PathSanityCheck
+mkdir -p "${INSTALL_ROOT}"
 PackageCheck
 setup-tools-arm
 
