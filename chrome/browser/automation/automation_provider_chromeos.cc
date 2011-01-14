@@ -5,23 +5,18 @@
 #include "chrome/browser/automation/automation_provider.h"
 
 #include "chrome/browser/automation/automation_provider_observers.h"
-#include "chrome/browser/chromeos/login/login_screen.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "views/window/window_gtk.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
+
+using chromeos::ExistingUserController;
 
 void AutomationProvider::LoginWithUserAndPass(const std::string& username,
                                               const std::string& password,
                                               IPC::Message* reply_message) {
-  WizardController* controller = WizardController::default_controller();
-  chromeos::NewUserView* new_user_view =
-        controller->GetLoginScreen()->view();
-
-  new_user_view->SetUsername(username);
-  new_user_view->SetPassword(password);
+  ExistingUserController* controller =
+      ExistingUserController::current_controller();
 
   // Set up an observer (it will delete itself).
   new LoginManagerObserver(this, reply_message);
 
-  new_user_view->Login();
+  controller->LoginNewUser(username, password);
 }

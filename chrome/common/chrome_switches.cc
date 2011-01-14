@@ -1234,9 +1234,6 @@ const char kZygoteProcess[]                 = "zygote";
 // Document Viewer.
 const char kEnableGView[]                   = "enable-gview";
 
-// Should we show the image based login?
-const char kEnableLoginImages[]             = "enable-login-images";
-
 // Enable Chrome-as-a-login-manager behavior.
 const char kLoginManager[]                  = "login-manager";
 
