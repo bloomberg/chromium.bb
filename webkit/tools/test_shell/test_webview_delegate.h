@@ -79,8 +79,14 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   typedef std::vector<CapturedContextMenuEvent> CapturedContextMenuEvents;
 
   // WebKit::WebViewClient
+  // TODO(jochen): remove once webkit side is up to date.
   virtual WebKit::WebView* createView(
       WebKit::WebFrame* creator,
+      const WebKit::WebWindowFeatures& features,
+      const WebKit::WebString& frame_name);
+  virtual WebKit::WebView* createView(
+      WebKit::WebFrame* creator,
+      const WebKit::WebURLRequest& request,
       const WebKit::WebWindowFeatures& features,
       const WebKit::WebString& frame_name);
   virtual WebKit::WebWidget* createPopupMenu(WebKit::WebPopupType popup_type);
