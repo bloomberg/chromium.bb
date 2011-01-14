@@ -248,6 +248,17 @@ var OptionsPage = options.OptionsPage;
     }
   };
 
+  AdvancedOptions.SetRemotingStatus = function(enabled, status) {
+    if (enabled) {
+      $('remotingSetupButton').style.display = 'none';
+      $('remotingStopButton').style.display = 'inline';
+    } else {
+      $('remotingSetupButton').style.display = 'inline';
+      $('remotingStopButton').style.display = 'none';
+    }
+    $('remotingStatus').textContent = status;
+  };
+
   AdvancedOptions.RemoveRemotingSection = function() {
     var proxySectionElm = $('remoting-section');
     proxySectionElm.parentNode.removeChild(proxySectionElm);

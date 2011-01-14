@@ -206,8 +206,15 @@
   <section id="remoting-section">
     <h3 i18n-content="advancedSectionTitleRemoting"></h3>
     <div>
-      <button id="remotingSetupButton"
-              i18n-content="remotingSetupButton"></button>
+      <div id="remotingStatus" class="section-text"></div>
+      <div>
+        <button id="remotingSetupButton"
+                i18n-content="remotingSetupButton"
+                style="display:none;"></button>
+        <button id="remotingStopButton"
+                i18n-content="remotingStopButton"
+                style="display:none;"></button>
+      </div>
     </div>
   </section>
 </if>

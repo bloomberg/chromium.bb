@@ -132,13 +132,19 @@ void ServiceIPCServer::OnSetRemotingHostCredentials(
 
 void ServiceIPCServer::OnEnableRemotingHost() {
   g_service_process->remoting_host_manager()->Enable();
+  SendRemotingHostInfo();
 }
 
-void ServiceIPCServer:: OnDisableRemotingHost() {
+void ServiceIPCServer::OnDisableRemotingHost() {
   g_service_process->remoting_host_manager()->Disable();
+  SendRemotingHostInfo();
 }
 
-void ServiceIPCServer:: OnGetRemotingHostInfo() {
+void ServiceIPCServer::OnGetRemotingHostInfo() {
+  SendRemotingHostInfo();
+}
+
+void ServiceIPCServer::SendRemotingHostInfo() {
   remoting::ChromotingHostInfo host_info;
   g_service_process->remoting_host_manager()->GetHostInfo(&host_info);
   channel_->Send(new ServiceHostMsg_RemotingHost_HostInfo(host_info));

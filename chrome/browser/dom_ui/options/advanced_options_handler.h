@@ -10,6 +10,7 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
+#include "chrome/browser/remoting/remoting_options_handler.h"
 #include "chrome/browser/shell_dialogs.h"
 
 class OptionsManagedBannerHandler;
@@ -151,6 +152,10 @@ class AdvancedOptionsHandler
   BooleanPrefMember enable_metrics_recording_;
   StringPrefMember cloud_print_proxy_email_;
   bool cloud_print_proxy_ui_enabled_;
+#endif
+
+#if defined(ENABLE_REMOTING) && !defined(OS_CHROMEOS)
+  remoting::RemotingOptionsHandler remoting_options_handler_;
 #endif
 
   FilePathPrefMember default_download_location_;

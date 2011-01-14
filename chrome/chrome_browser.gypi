@@ -2112,6 +2112,8 @@
         'browser/profiles/profile_manager.h',
         'browser/remoting/directory_add_request.cc',
         'browser/remoting/directory_add_request.h',
+        'browser/remoting/remoting_options_handler.cc',
+        'browser/remoting/remoting_options_handler.h',
         'browser/remoting/remoting_resources_source.cc',
         'browser/remoting/remoting_resources_source.h',
         'browser/remoting/setup_flow.cc',

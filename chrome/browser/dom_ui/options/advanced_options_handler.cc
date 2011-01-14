@@ -187,6 +187,8 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_SECTION_TITLE_REMOTING));
   localized_strings->SetString("remotingSetupButton",
       l10n_util::GetStringUTF16(IDS_OPTIONS_REMOTING_SETUP_BUTTON));
+  localized_strings->SetString("remotingStopButton",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_REMOTING_STOP_BUTTON));
 #endif
   localized_strings->SetString("enableLogging",
       l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_LOGGING));
@@ -218,6 +220,8 @@ void AdvancedOptionsHandler::Initialize() {
 #if defined(ENABLE_REMOTING) && !defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableRemoting)) {
     RemoveRemotingSection();
+  } else {
+    remoting_options_handler_.Init(dom_ui_);
   }
 #endif
 

@@ -8494,7 +8494,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Remoting
       </message>
       <message name="IDS_OPTIONS_REMOTING_SETUP_BUTTON" desc="Title for the remoting setup button.">
-        Allow remote connections to this computer...
+        Set up remote access...
+      </message>
+      <message name="IDS_OPTIONS_REMOTING_STOP_BUTTON" desc="Title for the remoting stop button.">
+        Disable remote access
       </message>
       <message name="IDS_REMOTING_SETUP_DIALOG_TITLE" desc="Title of the remoting setup dialog.">
         Set up remoting
@@ -8519,6 +8522,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_REMOTING_RETRY_BUTTON_TEXT" desc="Text for retry button">
         Retry
+      </message>
+      <message name="IDS_REMOTING_STATUS_DISABLED_TEXT" desc="Status string shown when remoting is disabled.">
+        Remote access to this computer is disabled.
+      </message>
+      <message name="IDS_REMOTING_STATUS_ENABLED_TEXT" desc="Status string shown when remoting is enabled.">
+        Remote access to this computer is enabled for <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>.
       </message>
 
       <!-- Sync strings -->
