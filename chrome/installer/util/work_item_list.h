@@ -35,31 +35,32 @@ class WorkItemList : public WorkItem {
   // Add a WorkItem to the list.
   // A WorkItem can only be added to the list before the list's DO() is called.
   // Once a WorkItem is added to the list. The list owns the WorkItem.
-  void AddWorkItem(WorkItem* work_item);
+  virtual void AddWorkItem(WorkItem* work_item);
 
   // Add a CopyTreeWorkItem to the list of work items.
-  WorkItem* AddCopyTreeWorkItem(const std::wstring& source_path,
-                                const std::wstring& dest_path,
-                                const std::wstring& temp_dir,
-                                CopyOverWriteOption overwrite_option,
-                                const std::wstring& alternative_path = L"");
+  virtual WorkItem* AddCopyTreeWorkItem(
+      const std::wstring& source_path,
+      const std::wstring& dest_path,
+      const std::wstring& temp_dir,
+      CopyOverWriteOption overwrite_option,
+      const std::wstring& alternative_path = L"");
 
   // Add a CreateDirWorkItem that creates a directory at the given path.
-  WorkItem* AddCreateDirWorkItem(const FilePath& path);
+  virtual WorkItem* AddCreateDirWorkItem(const FilePath& path);
 
   // Add a CreateRegKeyWorkItem that creates a registry key at the given
   // path.
-  WorkItem* AddCreateRegKeyWorkItem(HKEY predefined_root,
-                                    const std::wstring& path);
+  virtual WorkItem* AddCreateRegKeyWorkItem(HKEY predefined_root,
+                                            const std::wstring& path);
 
   // Add a DeleteRegKeyWorkItem that deletes a registry key from the given
   // path.
-  WorkItem* AddDeleteRegKeyWorkItem(HKEY predefined_root,
-                                    const std::wstring& path);
+  virtual WorkItem* AddDeleteRegKeyWorkItem(HKEY predefined_root,
+                                            const std::wstring& path);
 
   // Add a DeleteRegValueWorkItem that deletes registry value of type REG_SZ
   // or REG_DWORD.
-  WorkItem* AddDeleteRegValueWorkItem(HKEY predefined_root,
+  virtual WorkItem* AddDeleteRegValueWorkItem(HKEY predefined_root,
                                       const std::wstring& key_path,
                                       const std::wstring& value_name,
                                       DWORD type);
@@ -67,32 +68,33 @@ class WorkItemList : public WorkItem {
   // Add a DeleteTreeWorkItem that recursively deletes a file system
   // hierarchy at the given root path. A key file can be optionally specified
   // by key_path.
-  WorkItem* AddDeleteTreeWorkItem(const FilePath& root_path,
-                                  const std::vector<FilePath>& key_paths);
+  virtual WorkItem* AddDeleteTreeWorkItem(
+      const FilePath& root_path,
+      const std::vector<FilePath>& key_paths);
 
   // Same as above but without support for key files.
-  WorkItem* AddDeleteTreeWorkItem(const FilePath& root_path);
+  virtual WorkItem* AddDeleteTreeWorkItem(const FilePath& root_path);
 
   // Add a MoveTreeWorkItem to the list of work items.
-  WorkItem* AddMoveTreeWorkItem(const std::wstring& source_path,
-                                const std::wstring& dest_path,
-                                const std::wstring& temp_dir);
+  virtual WorkItem* AddMoveTreeWorkItem(const std::wstring& source_path,
+                                        const std::wstring& dest_path,
+                                        const std::wstring& temp_dir);
 
   // Add a SetRegValueWorkItem that sets a registry value with REG_SZ type
   // at the key with specified path.
-  WorkItem* AddSetRegValueWorkItem(HKEY predefined_root,
-                                   const std::wstring& key_path,
-                                   const std::wstring& value_name,
-                                   const std::wstring& value_data,
-                                   bool overwrite);
+  virtual WorkItem* AddSetRegValueWorkItem(HKEY predefined_root,
+                                           const std::wstring& key_path,
+                                           const std::wstring& value_name,
+                                           const std::wstring& value_data,
+                                           bool overwrite);
 
   // Add a SetRegValueWorkItem that sets a registry value with REG_DWORD type
   // at the key with specified path.
-  WorkItem* AddSetRegValueWorkItem(HKEY predefined_root,
-                                   const std::wstring& key_path,
-                                   const std::wstring& value_name,
-                                   DWORD value_data,
-                                   bool overwrite);
+  virtual WorkItem* AddSetRegValueWorkItem(HKEY predefined_root,
+                                           const std::wstring& key_path,
+                                           const std::wstring& value_name,
+                                           DWORD value_data,
+                                           bool overwrite);
 
   // Add a SetRegValueWorkItem that sets a registry value with REG_QWORD type
   // at the key with specified path.
@@ -105,9 +107,9 @@ class WorkItemList : public WorkItem {
   // Add a SelfRegWorkItem that registers or unregisters a DLL at the
   // specified path. If user_level_registration is true, then alternate
   // registration and unregistration entry point names will be used.
-  WorkItem* AddSelfRegWorkItem(const std::wstring& dll_path,
-                               bool do_register,
-                               bool user_level_registration);
+  virtual WorkItem* AddSelfRegWorkItem(const std::wstring& dll_path,
+                                       bool do_register,
+                                       bool user_level_registration);
 
  protected:
   friend class WorkItem;

@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/installer/setup/install.h"
+#include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"

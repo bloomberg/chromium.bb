@@ -208,6 +208,8 @@
             'installer/setup/chrome_frame_ready_mode.h',
             'installer/setup/install.cc',
             'installer/setup/install.h',
+            'installer/setup/install_worker.cc',
+            'installer/setup/install_worker.h',
             'installer/setup/setup_main.cc',
             'installer/setup/setup.ico',
             'installer/setup/setup.rc',
@@ -311,13 +313,22 @@
             '<(DEPTH)/base/base.gyp:base_i18n',
             '<(DEPTH)/base/base.gyp:test_support_base',
             '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+            '<(DEPTH)/testing/gmock.gyp:gmock',
             '<(DEPTH)/testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
             '<(DEPTH)',
           ],
+          # TODO(robertshield): Move the items marked with "Move to lib"
+          # below into a separate lib and then link both setup.exe and
+          # setup_unittests.exe against that.
           'sources': [
+            'installer/setup/install_worker.cc',    # Move to lib
+            'installer/setup/install_worker.h',     # Move to lib
+            'installer/setup/install_worker_unittest.cc',
             'installer/setup/run_all_unittests.cc',
+            'installer/setup/setup_constants.cc',   # Move to lib
+            'installer/setup/setup_constants.h',    # Move to lib
             'installer/setup/setup_util.cc',
             'installer/setup/setup_util_unittest.cc',
           ],

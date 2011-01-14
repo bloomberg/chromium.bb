@@ -108,28 +108,12 @@ const ProductState* InstallationState::GetMultiPackageState(
   return product_state.version_.get() == NULL ? NULL : &product_state;
 }
 
-// Included for testing.
-void InstallationState::SetMultiPackageState(bool system_install,
-    const ProductState& package_state) {
-  ProductState& target =
-      (system_install ? system_products_ : user_products_)[MULTI_PACKAGE_INDEX];
-  target.CopyFrom(package_state);
-}
-
 const ProductState* InstallationState::GetProductState(
     bool system_install,
     BrowserDistribution::Type type) const {
   const ProductState& product_state = (system_install ? system_products_ :
       user_products_)[IndexFromDistType(type)];
   return product_state.version_.get() == NULL ? NULL : &product_state;
-}
-
-// Included for testing.
-void InstallationState::SetProductState(bool system_install,
-    BrowserDistribution::Type type, const ProductState& product_state) {
-  ProductState& target = (system_install ? system_products_ :
-      user_products_)[IndexFromDistType(type)];
-  target.CopyFrom(product_state);
 }
 
 }  // namespace installer

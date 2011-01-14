@@ -55,22 +55,15 @@ class InstallationState {
 
   // Returns the state of the multi-installer package or NULL if no
   // multi-install products are installed.
+  // Caller does NOT assume ownership of returned pointer.
   const ProductState* GetMultiPackageState(bool system_install) const;
 
-  // Sets the state of the multi-installer package; intended for tests.
-  void SetMultiPackageState(bool system_install,
-                            const ProductState& package_state);
-
   // Returns the state of a product or NULL if not installed.
+  // Caller does NOT assume ownership of returned pointer.
   const ProductState* GetProductState(bool system_install,
                                       BrowserDistribution::Type type) const;
 
-  // Sets the state of a product; indended for tests.
-  void SetProductState(bool system_install,
-                       BrowserDistribution::Type type,
-                       const ProductState& product_state);
-
- private:
+ protected:
   enum {
     CHROME_BROWSER_INDEX,
     CHROME_FRAME_INDEX,
@@ -89,6 +82,7 @@ class InstallationState {
   ProductState user_products_[NUM_PRODUCTS];
   ProductState system_products_[NUM_PRODUCTS];
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(InstallationState);
 };  // class InstallationState
 

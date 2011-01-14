@@ -85,7 +85,6 @@ void InstallerState::Initialize(const MasterPreferences& prefs,
   }
 
   if (operand != NULL) {
-    install_operand_ = operand->GetType();
     state_key_ = operand->GetStateKey();
   }
 }

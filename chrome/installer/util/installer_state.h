@@ -38,22 +38,18 @@ class InstallerState {
 
   Operation operation() const { return operation_; }
 
-  BrowserDistribution::Type GetInstallOperand() const {
-    return install_operand_;
-  }
-
   // The ClientState key by which we interact with Google Update.
   const std::wstring& state_key() const { return state_key_; }
 
- private:
+ protected:
   bool IsMultiInstallUpdate(const MasterPreferences& prefs,
                             const InstallationState& machine_state);
 
   Operation operation_;
-  BrowserDistribution::Type install_operand_;
   std::wstring state_key_;
   bool system_install_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(InstallerState);
 };  // class InstallerState
 

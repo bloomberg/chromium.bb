@@ -51,40 +51,7 @@ InstallStatus InstallOrUpdateProduct(
     const installer::MasterPreferences& prefs, const Version& new_version,
     const Package& package);
 
-// Appends registration or unregistration work items to |work_item_list| for the
-// COM DLLs whose file names are given in |dll_files| and which reside in the
-// path |dll_folder|.
-// |system_level| specifies whether to call the system or user level DLL
-// registration entry points.
-// |do_register| says whether to register or unregister.
-// |may_fail| states whether this is best effort or not. If |may_fail| is true
-// then |work_item_list| will still succeed if the registration fails and
-// no registration rollback will be performed.
-void AddRegisterComDllWorkItems(const FilePath& dll_folder,
-                                const std::vector<FilePath>& dll_files,
-                                bool system_level,
-                                bool do_register,
-                                bool ignore_failures,
-                                WorkItemList* work_item_list);
 
-void AddSetMsiMarkerWorkItem(const Product& product,
-                             bool set,
-                             WorkItemList* work_item_list);
-
-// This method adds work items to create (or update) Chrome uninstall entry in
-// either the Control Panel->Add/Remove Programs list or in the Omaha client
-// state key if running under an MSI installer.
-void AddUninstallShortcutWorkItems(const FilePath& setup_path,
-                                   const Version& new_version,
-                                   WorkItemList* install_list,
-                                   const Product& product);
-
-// Called for either installation or uninstallation. This method updates the
-// registry according to Chrome Frame specific options for the current
-// installation.  This includes handling of the ready-mode option.
-void AddChromeFrameWorkItems(bool install, const FilePath& setup_path,
-                             const Version& new_version, const Product& product,
-                             WorkItemList* list);
 
 }  // namespace installer
 
