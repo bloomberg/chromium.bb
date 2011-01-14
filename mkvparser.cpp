@@ -3967,6 +3967,11 @@ long VideoTrack::Seek(
         assert(pCluster);
         assert(pCluster->GetTime() <= time_ns);
 
+        //TODO:
+        //We need to handle the case when a cluster
+        //contains multiple keyframes.  Simply returning
+        //the largest keyframe on the cluster isn't
+        //good enough.
         pResult = pCluster->GetMaxKey(this);
 
         if ((pResult != 0) && !pResult->EOS())
