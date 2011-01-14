@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -352,8 +352,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
         prefs->GetMutableList(prefs::kExtensionInstallForceList);
     ASSERT_TRUE(forcelist->empty());
     forcelist->Append(Value::CreateStringValue(
-        "ogjcoiohnmldgjemafoockdghcjciccf;"
-        "http://localhost/autoupdate/manifest"));
+        std::string(kExtensionId) +
+        ";http://localhost/autoupdate/manifest"));
   }
 
   // Check if the extension got installed.
@@ -365,6 +365,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   EXPECT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD,
             extensions->at(size_before)->location());
 
-  // Check that emptying the list doesn't cause any trouble.
-  prefs->ClearPref(prefs::kExtensionInstallForceList);
+  // Check that emptying the list triggers uninstall.
+  {
+    ScopedPrefUpdate pref_update(prefs, prefs::kExtensionInstallForceList);
+    prefs->ClearPref(prefs::kExtensionInstallForceList);
+  }
+  EXPECT_EQ(size_before, extensions->size());
+  ExtensionList::const_iterator i;
+  for (i = extensions->begin(); i != extensions->end(); ++i)
+    EXPECT_NE(kExtensionId, (*i)->id());
 }

@@ -659,7 +659,7 @@
           'type': 'list',
           'supported_on': ['chrome.*:9-'],
           'annotations': {
-            'features': {'dynamic_refresh': 0},
+            'features': {'dynamic_refresh': 1},
             'example_value': ['lcncmkcnkcdbbanbjakcencbaoegdjlp;https://clients2.google.com/service/update2/crx'],
           },
           'caption': '''Configure the list of force-installed extensions''',

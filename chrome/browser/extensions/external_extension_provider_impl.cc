@@ -1,44 +1,70 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/stateful_external_extension_provider.h"
+#include "chrome/browser/extensions/external_extension_provider_impl.h"
 
 #include "app/app_paths.h"
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/linked_ptr.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/extensions/external_extension_provider_interface.h"
+#include "chrome/browser/extensions/external_policy_extension_loader.h"
+#include "chrome/browser/extensions/external_pref_extension_loader.h"
+#include "chrome/browser/profiles/profile.h"
 
-namespace {
+#if defined(OS_WIN)
+#include "chrome/browser/extensions/external_registry_extension_loader_win.h"
+#endif
 
-// Constants for keeping track of extension preferences.
-const char kLocation[] = "location";
-const char kState[] = "state";
-const char kExternalCrx[] = "external_crx";
-const char kExternalVersion[] = "external_version";
-const char kExternalUpdateUrl[] = "external_update_url";
+// Constants for keeping track of extension preferences in a dictionary.
+const char ExternalExtensionProviderImpl::kLocation[] = "location";
+const char ExternalExtensionProviderImpl::kState[] = "state";
+const char ExternalExtensionProviderImpl::kExternalCrx[] = "external_crx";
+const char ExternalExtensionProviderImpl::kExternalVersion[] =
+    "external_version";
+const char ExternalExtensionProviderImpl::kExternalUpdateUrl[] =
+    "external_update_url";
 
-}
-
-StatefulExternalExtensionProvider::StatefulExternalExtensionProvider(
+ExternalExtensionProviderImpl::ExternalExtensionProviderImpl(
+    VisitorInterface* service,
+    ExternalExtensionLoader* loader,
     Extension::Location crx_location,
     Extension::Location download_location)
   : crx_location_(crx_location),
-    download_location_(download_location) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    download_location_(download_location),
+    service_(service),
+    prefs_(NULL),
+    ready_(false),
+    loader_(loader) {
+  loader_->Init(this);
 }
 
-StatefulExternalExtensionProvider::~StatefulExternalExtensionProvider() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+ExternalExtensionProviderImpl::~ExternalExtensionProviderImpl() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  loader_->OwnerShutdown();
 }
 
-void StatefulExternalExtensionProvider::VisitRegisteredExtension(
-    Visitor* visitor) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(prefs_.get());
+void ExternalExtensionProviderImpl::VisitRegisteredExtension() const {
+  // The loader will call back to SetPrefs.
+  loader_->StartLoading();
+}
+
+void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Check if the service is still alive. It is possible that it had went
+  // away while |loader_| was working on the FILE thread.
+  if (!service_) return;
+
+  prefs_.reset(prefs);
+  ready_ = true; // Queries for extensions are allowed from this point.
+
+  // Notify ExtensionService about all the extensions this provider has.
   for (DictionaryValue::key_iterator i = prefs_->begin_keys();
        i != prefs_->end_keys(); ++i) {
     const std::string& extension_id = *i;
@@ -100,10 +126,10 @@ void StatefulExternalExtensionProvider::VisitRegisteredExtension(
                      << external_version << "\".";
         continue;
       }
-      visitor->OnExternalExtensionFileFound(extension_id, version.get(), path,
+      service_->OnExternalExtensionFileFound(extension_id, version.get(), path,
                                             crx_location_);
     } else { // if (has_external_update_url)
-      DCHECK(has_external_update_url);  // Checking of keys above ensures this.
+      CHECK(has_external_update_url);  // Checking of keys above ensures this.
       if (download_location_ == Extension::INVALID) {
         LOG(WARNING) << "This provider does not support installing external "
                      << "extensions from update URLs.";
@@ -117,24 +143,36 @@ void StatefulExternalExtensionProvider::VisitRegisteredExtension(
                      << "\".";
         continue;
       }
-      visitor->OnExternalExtensionUpdateUrlFound(
+      service_->OnExternalExtensionUpdateUrlFound(
           extension_id, update_url, download_location_);
     }
   }
+
+  service_->OnExternalProviderReady();
 }
 
-bool StatefulExternalExtensionProvider::HasExtension(
+void ExternalExtensionProviderImpl::ServiceShutdown() {
+  service_ = NULL;
+}
+
+bool ExternalExtensionProviderImpl::IsReady() {
+  return ready_;
+}
+
+bool ExternalExtensionProviderImpl::HasExtension(
     const std::string& id) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(prefs_.get());
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(prefs_.get());
+  CHECK(ready_);
   return prefs_->HasKey(id);
 }
 
-bool StatefulExternalExtensionProvider::GetExtensionDetails(
+bool ExternalExtensionProviderImpl::GetExtensionDetails(
     const std::string& id, Extension::Location* location,
     scoped_ptr<Version>* version) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(prefs_.get());
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(prefs_.get());
+  CHECK(ready_);
   DictionaryValue* extension = NULL;
   if (!prefs_->GetDictionary(id, &extension))
     return false;
@@ -164,6 +202,32 @@ bool StatefulExternalExtensionProvider::GetExtensionDetails(
   return true;
 }
 
-void StatefulExternalExtensionProvider::set_prefs(DictionaryValue* prefs) {
-  prefs_.reset(prefs);
+// static
+void ExternalExtensionProviderImpl::CreateExternalProviders(
+    VisitorInterface* service,
+    Profile* profile,
+    ProviderCollection* provider_list) {
+  provider_list->push_back(
+      linked_ptr<ExternalExtensionProviderInterface>(
+          new ExternalExtensionProviderImpl(
+              service,
+              new ExternalPrefExtensionLoader,
+              Extension::EXTERNAL_PREF,
+              Extension::EXTERNAL_PREF_DOWNLOAD)));
+#if defined(OS_WIN)
+  provider_list->push_back(
+      linked_ptr<ExternalExtensionProviderInterface>(
+          new ExternalExtensionProviderImpl(
+              service,
+              new ExternalRegistryExtensionLoader,
+              Extension::EXTERNAL_REGISTRY,
+              Extension::INVALID)));
+#endif
+  provider_list->push_back(
+      linked_ptr<ExternalExtensionProviderInterface>(
+          new ExternalExtensionProviderImpl(
+              service,
+              new ExternalPolicyExtensionLoader(profile),
+              Extension::INVALID,
+              Extension::EXTERNAL_POLICY_DOWNLOAD)));
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/values_util.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -42,9 +41,8 @@
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
-#include "chrome/browser/extensions/external_extension_provider.h"
-#include "chrome/browser/extensions/external_policy_extension_provider.h"
-#include "chrome/browser/extensions/external_pref_extension_provider.h"
+#include "chrome/browser/extensions/external_extension_provider_interface.h"
+#include "chrome/browser/extensions/external_extension_provider_impl.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -66,10 +64,6 @@
 #include "net/base/registry_controlled_domain.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/extensions/external_registry_extension_provider_win.h"
-#endif
 
 using base::Time;
 
@@ -184,12 +178,10 @@ const char* ExtensionService::kCurrentVersionFileName = "Current Version";
 // Implements IO for the ExtensionService.
 
 class ExtensionServiceBackend
-    : public base::RefCountedThreadSafe<ExtensionServiceBackend>,
-      public ExternalExtensionProvider::Visitor {
+    : public base::RefCountedThreadSafe<ExtensionServiceBackend> {
  public:
   // |install_directory| is a path where to look for extensions to load.
-  ExtensionServiceBackend(PrefService* prefs,
-                           const FilePath& install_directory);
+  explicit ExtensionServiceBackend(const FilePath& install_directory);
 
   // Loads a single extension from |path| where |path| is the top directory of
   // a specific extension where its manifest file lives.
@@ -199,36 +191,6 @@ class ExtensionServiceBackend
   // (presumably into memory) without installing it.
   void LoadSingleExtension(const FilePath &path,
                            scoped_refptr<ExtensionService> frontend);
-
-  // Check externally updated extensions for updates and install if necessary.
-  // Errors are reported through ExtensionErrorReporter. Succcess is not
-  // reported.
-  void CheckForExternalUpdates(scoped_refptr<ExtensionService> frontend);
-
-  // For the extension in |version_path| with |id|, check to see if it's an
-  // externally managed extension.  If so, tell the frontend to uninstall it.
-  void CheckExternalUninstall(scoped_refptr<ExtensionService> frontend,
-                              const std::string& id);
-
-  // Clear all ExternalExtensionProviders.
-  void ClearProvidersForTesting();
-
-  // Adds an ExternalExtensionProvider for the service to use during testing.
-  // Takes ownership of |test_provider|.
-  void AddProviderForTesting(ExternalExtensionProvider* test_provider);
-
-  // ExternalExtensionProvider::Visitor implementation.
-  virtual void OnExternalExtensionFileFound(const std::string& id,
-                                            const Version* version,
-                                            const FilePath& path,
-                                            Extension::Location location);
-
-  virtual void OnExternalExtensionUpdateUrlFound(const std::string& id,
-                                                 const GURL& update_url,
-                                                 Extension::Location location);
-
-  virtual void UpdateExternalPolicyExtensionProvider(
-      scoped_refptr<RefCountedList> forcelist);
 
  private:
   friend class base::RefCountedThreadSafe<ExtensionServiceBackend>;
@@ -261,48 +223,14 @@ class ExtensionServiceBackend
   // Whether errors result in noisy alerts.
   bool alert_on_error_;
 
-  // A collection of external extension providers.  Each provider reads
-  // a source of external extension information.  Examples include the
-  // windows registry and external_extensions.json.
-  typedef std::vector<linked_ptr<ExternalExtensionProvider> >
-      ProviderCollection;
-  ProviderCollection external_extension_providers_;
-  linked_ptr<ExternalPolicyExtensionProvider>
-      external_policy_extension_provider_;
-
-  // Set to true by OnExternalExtensionUpdateUrlFound() when an external
-  // extension URL is found.  Used in CheckForExternalUpdates() to see
-  // if an update check is needed to install pending extensions.
-  bool external_extension_added_;
-
   DISALLOW_COPY_AND_ASSIGN(ExtensionServiceBackend);
 };
 
 ExtensionServiceBackend::ExtensionServiceBackend(
-    PrefService* prefs,
     const FilePath& install_directory)
         : frontend_(NULL),
           install_directory_(install_directory),
-          alert_on_error_(false),
-          external_extension_added_(false) {
-  // TODO(aa): This ends up doing blocking IO on the UI thread because it reads
-  // pref data in the ctor and that is called on the UI thread. Would be better
-  // to re-read data each time we list external extensions, anyway.
-  external_extension_providers_.push_back(
-      linked_ptr<ExternalExtensionProvider>(
-          new ExternalPrefExtensionProvider()));
-#if defined(OS_WIN)
-  external_extension_providers_.push_back(
-      linked_ptr<ExternalExtensionProvider>(
-          new ExternalRegistryExtensionProvider()));
-#endif
-  // The policy-controlled extension provider is also stored in a member
-  // variable so that UpdateExternalPolicyExtensionProvider can access it and
-  // update its extension list later.
-  external_policy_extension_provider_.reset(
-      new ExternalPolicyExtensionProvider(
-          prefs->GetList(prefs::kExtensionInstallForceList)));
-  external_extension_providers_.push_back(external_policy_extension_provider_);
+          alert_on_error_(false) {
 }
 
 ExtensionServiceBackend::~ExtensionServiceBackend() {
@@ -352,108 +280,44 @@ void ExtensionServiceBackend::ReportExtensionLoadError(
           error, NotificationType::EXTENSION_INSTALL_ERROR, alert_on_error_));
 }
 
-// Some extensions will autoupdate themselves externally from Chrome.  These
-// are typically part of some larger client application package.  To support
-// these, the extension will register its location in the the preferences file
-// (and also, on Windows, in the registry) and this code will periodically
-// check that location for a .crx file, which it will then install locally if
-// a new version is available.
-void ExtensionServiceBackend::CheckForExternalUpdates(
-    scoped_refptr<ExtensionService> frontend) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  // Note that this installation is intentionally silent (since it didn't
-  // go through the front-end).  Extensions that are registered in this
-  // way are effectively considered 'pre-bundled', and so implicitly
-  // trusted.  In general, if something has HKLM or filesystem access,
-  // they could install an extension manually themselves anyway.
-  alert_on_error_ = false;
-  frontend_ = frontend;
-  external_extension_added_ = false;
-
-  // Ask each external extension provider to give us a call back for each
-  // extension they know about. See OnExternalExtension(File|UpdateUrl)Found.
-  ProviderCollection::const_iterator i;
-  for (i = external_extension_providers_.begin();
-       i != external_extension_providers_.end(); ++i) {
-    ExternalExtensionProvider* provider = i->get();
-    provider->VisitRegisteredExtension(this);
-  }
-
-  if (external_extension_added_ && frontend->updater()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-            NewRunnableMethod(
-                frontend->updater(), &ExtensionUpdater::CheckNow));
-  }
-}
-
-void ExtensionServiceBackend::CheckExternalUninstall(
-    scoped_refptr<ExtensionService> frontend, const std::string& id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+void ExtensionService::CheckExternalUninstall(const std::string& id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Check if the providers know about this extension.
   ProviderCollection::const_iterator i;
   for (i = external_extension_providers_.begin();
        i != external_extension_providers_.end(); ++i) {
+    DCHECK(i->get()->IsReady());
     if (i->get()->HasExtension(id))
       return;  // Yup, known extension, don't uninstall.
   }
 
   // This is an external extension that we don't have registered.  Uninstall.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          frontend.get(), &ExtensionService::UninstallExtension, id, true));
+  UninstallExtension(id, true);
 }
 
-void ExtensionServiceBackend::UpdateExternalPolicyExtensionProvider(
-    scoped_refptr<RefCountedList> forcelist) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  external_policy_extension_provider_->SetPreferences(forcelist->Get());
-}
-
-void ExtensionServiceBackend::ClearProvidersForTesting() {
+void ExtensionService::ClearProvidersForTesting() {
   external_extension_providers_.clear();
 }
 
-void ExtensionServiceBackend::AddProviderForTesting(
-    ExternalExtensionProvider* test_provider) {
+void ExtensionService::AddProviderForTesting(
+    ExternalExtensionProviderInterface* test_provider) {
   DCHECK(test_provider);
   external_extension_providers_.push_back(
-      linked_ptr<ExternalExtensionProvider>(test_provider));
+      linked_ptr<ExternalExtensionProviderInterface>(test_provider));
 }
 
-void ExtensionServiceBackend::OnExternalExtensionFileFound(
-    const std::string& id, const Version* version, const FilePath& path,
-    Extension::Location location) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  DCHECK(version);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          frontend_, &ExtensionService::OnExternalExtensionFileFound, id,
-          version->GetString(), path, location));
-}
-
-void ExtensionServiceBackend::OnExternalExtensionUpdateUrlFound(
+void ExtensionService::OnExternalExtensionUpdateUrlFound(
     const std::string& id,
     const GURL& update_url,
     Extension::Location location) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (frontend_->GetExtensionById(id, true)) {
+  if (GetExtensionById(id, true)) {
     // Already installed.  Do not change the update URL that the extension set.
     return;
   }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          frontend_,
-          &ExtensionService::AddPendingExtensionFromExternalUpdateUrl,
-          id, update_url, location));
+  AddPendingExtensionFromExternalUpdateUrl(id, update_url, location);
   external_extension_added_ |= true;
 }
 
@@ -570,7 +434,6 @@ ExtensionService::ExtensionService(Profile* profile,
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(prefs::kExtensionInstallAllowList, this);
   pref_change_registrar_.Add(prefs::kExtensionInstallDenyList, this);
-  pref_change_registrar_.Add(prefs::kExtensionInstallForceList, this);
 
   // Set up the ExtensionUpdater
   if (autoupdate_enabled) {
@@ -585,8 +448,10 @@ ExtensionService::ExtensionService(Profile* profile,
                                     update_frequency);
   }
 
-  backend_ = new ExtensionServiceBackend(profile->GetPrefs(),
-                                          install_directory_);
+  backend_ = new ExtensionServiceBackend(install_directory_);
+
+  ExternalExtensionProviderImpl::CreateExternalProviders(
+      this, profile_, &external_extension_providers_);
 
   // Use monochrome icons for Omnibox icons.
   omnibox_popup_icon_manager_.set_monochrome(true);
@@ -620,6 +485,12 @@ ExtensionService::~ExtensionService() {
   UnloadAllExtensions();
   if (updater_.get()) {
     updater_->Stop();
+  }
+  ProviderCollection::const_iterator i;
+  for (i = external_extension_providers_.begin();
+       i != external_extension_providers_.end(); ++i) {
+    ExternalExtensionProviderInterface* provider = i->get();
+    provider->ServiceShutdown();
   }
 }
 
@@ -1205,16 +1076,6 @@ void ExtensionService::LoadInstalledExtension(const ExtensionInfo& info,
     extension_prefs_->UpdateManifest(extension);
 
   OnExtensionLoaded(extension);
-
-  if (Extension::IsExternalLocation(info.extension_location)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(
-            backend_.get(),
-            &ExtensionServiceBackend::CheckExternalUninstall,
-            scoped_refptr<ExtensionService>(this),
-            info.extension_id));
-  }
 }
 
 void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
@@ -1460,31 +1321,69 @@ bool ExtensionService::GetBrowserActionVisibility(const Extension* extension) {
 }
 
 void ExtensionService::SetBrowserActionVisibility(const Extension* extension,
-                                                   bool visible) {
+                                                  bool visible) {
   extension_prefs_->SetBrowserActionVisibility(extension, visible);
 }
 
+// Some extensions will autoupdate themselves externally from Chrome.  These
+// are typically part of some larger client application package.  To support
+// these, the extension will register its location in the the preferences file
+// (and also, on Windows, in the registry) and this code will periodically
+// check that location for a .crx file, which it will then install locally if
+// a new version is available.
+// Errors are reported through ExtensionErrorReporter. Succcess is not
+// reported.
 void ExtensionService::CheckForExternalUpdates() {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          backend_.get(), &ExtensionServiceBackend::CheckForExternalUpdates,
-          scoped_refptr<ExtensionService>(this)));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Note that this installation is intentionally silent (since it didn't
+  // go through the front-end).  Extensions that are registered in this
+  // way are effectively considered 'pre-bundled', and so implicitly
+  // trusted.  In general, if something has HKLM or filesystem access,
+  // they could install an extension manually themselves anyway.
+  external_extension_added_ = false;
+
+  // Ask each external extension provider to give us a call back for each
+  // extension they know about. See OnExternalExtension(File|UpdateUrl)Found.
+  ProviderCollection::const_iterator i;
+  for (i = external_extension_providers_.begin();
+       i != external_extension_providers_.end(); ++i) {
+    ExternalExtensionProviderInterface* provider = i->get();
+    provider->VisitRegisteredExtension();
+  }
+
+  // Uninstall of unclaimed extensions will happen after all the providers
+  // had reported ready. Trigger uninstall even if there are no providers
+  // installed:
+  OnExternalProviderReady();
 }
 
-void ExtensionService::UpdateExternalPolicyExtensionProvider() {
-  const ListValue* list_pref =
-      profile_->GetPrefs()->GetList(prefs::kExtensionInstallForceList);
-  ListValue* list_copy = NULL;
-  if (list_pref)
-    list_copy = static_cast<ListValue*>(list_pref->DeepCopy());
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          backend_.get(),
-          &ExtensionServiceBackend::UpdateExternalPolicyExtensionProvider,
-          scoped_refptr<RefCountedList>(
-              new RefCountedList(list_copy))));
+void ExtensionService::OnExternalProviderReady() {
+  // An external provider has finished loading. We only take action
+  // if all of them are finished. So we check them first.
+  ProviderCollection::const_iterator i;
+  for (i = external_extension_providers_.begin();
+       i != external_extension_providers_.end(); ++i) {
+    ExternalExtensionProviderInterface* provider = i->get();
+    if (!provider->IsReady()) {
+      return;
+    }
+  }
+
+  // All the providers are ready. Install any pending extensions.
+  if (external_extension_added_ && updater()) {
+    external_extension_added_ = false;
+    updater()->CheckNow();
+  }
+
+  // Uninstall all the unclaimed extensions.
+  scoped_ptr<ExtensionPrefs::ExtensionsInfo> extensions_info(
+      extension_prefs_->GetInstalledExtensionsInfo());
+  for (size_t i = 0; i < extensions_info->size(); ++i) {
+    ExtensionInfo* info = extensions_info->at(i).get();
+    if (Extension::IsExternalLocation(info->extension_location))
+      CheckExternalUninstall(info->extension_id);
+  }
 }
 
 void ExtensionService::UnloadExtension(
@@ -1919,38 +1818,23 @@ const SkBitmap& ExtensionService::GetOmniboxPopupIcon(
   return omnibox_popup_icon_manager_.GetIcon(extension_id);
 }
 
-void ExtensionService::ClearProvidersForTesting() {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          backend_.get(), &ExtensionServiceBackend::ClearProvidersForTesting));
-}
-
-void ExtensionService::AddProviderForTesting(
-    ExternalExtensionProvider* test_provider) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          backend_.get(), &ExtensionServiceBackend::AddProviderForTesting,
-          test_provider));
-}
-
 void ExtensionService::OnExternalExtensionFileFound(
          const std::string& id,
-         const std::string& version,
+         const Version* version,
          const FilePath& path,
          Extension::Location location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (extension_prefs_->IsExtensionKilled(id))
     return;
 
+  DCHECK(version);
+
   // Before even bothering to unpack, check and see if we already have this
   // version. This is important because these extensions are going to get
   // installed on every startup.
   const Extension* existing = GetExtensionById(id, true);
-  scoped_ptr<Version> other(Version::GetVersionFromString(version));
   if (existing) {
-    switch (existing->version()->CompareTo(*other)) {
+    switch (existing->version()->CompareTo(*version)) {
       case -1:  // existing version is older, we should upgrade
         break;
       case 0:  // existing version is same, do nothing
@@ -2044,12 +1928,6 @@ void ExtensionService::Observe(NotificationType type,
       if (*pref_name == prefs::kExtensionInstallAllowList ||
           *pref_name == prefs::kExtensionInstallDenyList) {
         CheckAdminBlacklist();
-      } else if (*pref_name == prefs::kExtensionInstallForceList) {
-        UpdateExternalPolicyExtensionProvider();
-        CheckForExternalUpdates();
-        // TODO(gfeher): Also check for external extensions that can be
-        // uninstalled because they were removed from the pref.
-        // (crbug.com/63667)
       } else {
         NOTREACHED() << "Unexpected preference name.";
       }

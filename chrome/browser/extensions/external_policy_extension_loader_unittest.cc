@@ -1,36 +1,41 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/extensions/external_policy_extension_provider.h"
+#include "chrome/browser/extensions/external_extension_provider_interface.h"
+#include "chrome/browser/extensions/external_extension_provider_impl.h"
+#include "chrome/browser/extensions/external_policy_extension_loader.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/testing_pref_service.h"
+#include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ExternalPolicyExtensionProviderTest : public testing::Test {
  public:
   ExternalPolicyExtensionProviderTest()
       : loop_(MessageLoop::TYPE_IO),
-        ui_thread_(BrowserThread::UI, &loop_),
-        file_thread_(BrowserThread::FILE, &loop_) {
+        ui_thread_(BrowserThread::UI, &loop_) {
   }
 
-  virtual ~ExternalPolicyExtensionProviderTest() {
-  }
+  virtual ~ExternalPolicyExtensionProviderTest() {}
 
  private:
+  // We need these to satisfy BrowserThread::CurrentlyOn(BrowserThread::UI)
+  // checks in ExternalExtensionProviderImpl.
   MessageLoop loop_;
   BrowserThread ui_thread_;
-  BrowserThread file_thread_;
 };
 
 class MockExternalPolicyExtensionProviderVisitor
-    : public ExternalExtensionProvider::Visitor {
+    : public ExternalExtensionProviderInterface::VisitorInterface {
  public:
   MockExternalPolicyExtensionProviderVisitor() {
   }
@@ -40,12 +45,20 @@ class MockExternalPolicyExtensionProviderVisitor
   void Visit(ListValue* policy_forcelist,
              ListValue* policy_validlist,
              const std::set<std::string>& ignore_list) {
-    provider_.reset(new ExternalPolicyExtensionProvider(policy_forcelist));
+    profile_.reset(new TestingProfile);
+    profile_->GetTestingPrefService()->SetManagedPref(
+        prefs::kExtensionInstallForceList,
+        policy_forcelist->DeepCopy());
+    provider_.reset(new ExternalExtensionProviderImpl(
+        this,
+        new ExternalPolicyExtensionLoader(profile_.get()),
+        Extension::INVALID,
+        Extension::EXTERNAL_POLICY_DOWNLOAD));
 
     // Extensions will be removed from this list as they visited,
     // so it should be emptied by the end.
     remaining_extensions = policy_validlist;
-    provider_->VisitRegisteredExtension(this);
+    provider_->VisitRegisteredExtension();
     EXPECT_EQ(0u, remaining_extensions->GetSize());
   }
 
@@ -74,10 +87,16 @@ class MockExternalPolicyExtensionProviderVisitor
     EXPECT_NE(-1, remaining_extensions->Remove(ext_str));
  }
 
+ virtual void OnExternalProviderReady() {
+    EXPECT_TRUE(provider_->IsReady());
+ }
+
  private:
   ListValue* remaining_extensions;
 
-  scoped_ptr<ExternalPolicyExtensionProvider> provider_;
+  scoped_ptr<TestingProfile> profile_;
+
+  scoped_ptr<ExternalExtensionProviderImpl> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MockExternalPolicyExtensionProviderVisitor);
 };

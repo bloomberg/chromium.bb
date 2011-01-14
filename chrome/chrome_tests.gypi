@@ -1175,7 +1175,7 @@
         'browser/extensions/extension_updater_unittest.cc',
         'browser/extensions/extension_webnavigation_unittest.cc',
         'browser/extensions/extensions_quota_service_unittest.cc',
-        'browser/extensions/external_policy_extension_provider_unittest.cc',
+        'browser/extensions/external_policy_extension_loader_unittest.cc',
         'browser/extensions/file_reader_unittest.cc',
         'browser/extensions/image_loading_tracker_unittest.cc',
         'browser/extensions/sandboxed_extension_unpacker_unittest.cc',
