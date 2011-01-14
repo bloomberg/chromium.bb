@@ -196,6 +196,9 @@ struct wlsc_compositor *
 wayland_compositor_create(struct wl_display *display, int width, int height);
 
 void
+evdev_input_add_devices(struct wlsc_compositor *c, struct udev *udev);
+
+void
 screenshooter_create(struct wlsc_compositor *ec);
 
 #endif

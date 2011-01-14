@@ -22,6 +22,7 @@ compositor_SOURCES =				\
 	screenshooter.c				\
 	screenshooter-protocol.c		\
 	screenshooter-server-protocol.h		\
+	evdev.c					\
 	drm.c					\
 	shm.c
 
