@@ -186,7 +186,7 @@ class MessageNode(base.ContentNode):
     else:
       return self.attrs['offset']
 
-  def GetDataPackPair(self, output_dir, lang):
+  def GetDataPackPair(self, lang):
     '''Returns a (id, string) pair that represents the string id and the string
     in utf8.  This is used to generate the data pack data file.
     '''

@@ -109,7 +109,7 @@ def main(argv):
       outputs = [posixpath.join(args[0], f) for f in Outputs(f, defines)]
       print '\n'.join(outputs)
   else:
-    PringUsage()
+    PrintUsage()
     return 1
   return 0
 

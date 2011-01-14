@@ -69,19 +69,30 @@ def SrcInlineAsDataURL(src_match, base_path, distribution, inlined_files):
   prefix = src_match.string[src_match.start():src_match.start('filename')-1]
   return "%s\"data:%s;base64,%s\"" % (prefix, mimetype, inline_data)
 
-def InlineFile(input_filename, output_filename, grd_node):
-  """Inlines the resources in a specified file.
+
+class InlinedData:
+  """Helper class holding the results from DoInline().
+
+  Holds the inlined data and the set of filenames of all the inlined
+  files.
+  """
+  def __init__(self, inlined_data, inlined_files):
+    self.inlined_data = inlined_data
+    self.inlined_files = inlined_files
+
+def DoInline(input_filename, grd_node):
+  """Helper function that inlines the resources in a specified file.
 
   Reads input_filename, finds all the src attributes and attempts to
-  inline the files they are referring to, then writes the result
-  to output_filename.
+  inline the files they are referring to, then returns the result and
+  the set of inlined files.
 
   Args:
     input_filename: name of file to read in
-    output_filename: name of file to be written to
     grd_node: html node from the grd file for this include tag
   Returns:
-    a set of filenames of all the inlined files
+    a tuple of the inlined data as a string and the set of filenames
+    of all the inlined files
   """
   input_filepath = os.path.dirname(input_filename)
 
@@ -198,16 +209,45 @@ def InlineFile(input_filename, output_filename, grd_node):
   flat_text = re.sub('<link rel="icon".+?href="(?P<filename>[^"\']*)"',
                      SrcReplace,
                      flat_text)
-  if output_filename:
-    out_file = open(output_filename, 'wb')
-    out_file.writelines(flat_text)
-    out_file.close()
-  return inlined_files
+
+  return InlinedData(flat_text, inlined_files)
+
+
+def InlineToString(input_filename, grd_node):
+  """Inlines the resources in a specified file and returns it as a string.
+
+  Args:
+    input_filename: name of file to read in
+    grd_node: html node from the grd file for this include tag
+  Returns:
+    the inlined data as a string
+  """
+  return DoInline(input_filename, grd_node).inlined_data
+
+
+def InlineToFile(input_filename, output_filename, grd_node):
+  """Inlines the resources in a specified file and writes it.
+
+  Reads input_filename, finds all the src attributes and attempts to
+  inline the files they are referring to, then writes the result
+  to output_filename.
+
+  Args:
+    input_filename: name of file to read in
+    output_filename: name of file to be written to
+    grd_node: html node from the grd file for this include tag
+  Returns:
+    a set of filenames of all the inlined files
+  """
+  inlined_data = InlineToString(input_filename, grd_node)
+  out_file = open(output_filename, 'wb')
+  out_file.writelines(inlined_data)
+  out_file.close()
 
 
 def GetResourceFilenames(filename):
   """For a grd file, returns a set of all the files that would be inline."""
-  return InlineFile(filename, None, None)
+  return DoInline(filename, None).inlined_files
 
 
 def main():
@@ -215,7 +255,7 @@ def main():
     print "Flattens a HTML file by inlining its external resources.\n"
     print "html_inline.py inputfile outputfile"
   else:
-    InlineFile(sys.argv[1], sys.argv[2], None)
+    InlineToFile(sys.argv[1], sys.argv[2], None)
 
 if __name__ == '__main__':
   main()

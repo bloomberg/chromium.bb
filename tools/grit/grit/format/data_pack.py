@@ -29,7 +29,7 @@ class DataPack(interface.ItemFormatter):
     nodes = DataPack.GetDataNodes(item)
     data = {}
     for node in nodes:
-      id, value = node.GetDataPackPair(output_dir, lang)
+      id, value = node.GetDataPackPair(lang)
       data[id] = value
     return DataPack.WriteDataPack(data)
 

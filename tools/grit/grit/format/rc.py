@@ -424,6 +424,8 @@ class RcInclude(interface.ItemFormatter):
     # if needed (e.g. if it is an HTML file include).
     filename = os.path.abspath(item.FileForLanguage(lang, output_dir))
     if self.flatten_html:
+      # TODO(akalin): Flatten to a subdirectory of output_dir, lest we
+      # run into bugs like http://crbug.com/69633.
       item.Flatten(output_dir)
       # The flattened file is in the output dir.
       filename = os.path.basename(filename)

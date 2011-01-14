@@ -20,12 +20,22 @@ class IncludeNode(base.Node):
   def __init__(self):
     base.Node.__init__(self)
 
-    # Keep track of whether we've flattened the file or not.  We don't
-    # want to flatten the same file multiple times.
-    self._is_flattened = False
+    # Cache flattened data so that we don't flatten the same file
+    # multiple times.
+    self._flattened_data = None
+    # Also keep track of the last filename we flattened to, so we can
+    # avoid doing it more than once.
+    self._last_flat_filename = None
 
   def _IsValidChild(self, child):
     return False
+
+  def _GetFlattenedData(self):
+    if not self._flattened_data:
+      filename = self.FilenameToOpen()
+      self._flattened_data = (
+          grit.format.html_inline.InlineToString(filename, self))
+    return self._flattened_data
 
   def MandatoryAttributes(self):
     return ['name', 'type', 'file']
@@ -62,33 +72,36 @@ class IncludeNode(base.Node):
     '''
     return self.FilenameToOpen()
 
-  def GetDataPackPair(self, output_dir, lang):
+  def GetDataPackPair(self, lang):
     '''Returns a (id, string) pair that represents the resource id and raw
     bytes of the data.  This is used to generate the data pack data file.
     '''
     from grit.format import rc_header
     id_map = rc_header.Item.tids_
     id = id_map[self.GetTextualIds()[0]]
-    filename = self.FilenameToOpen()
     if self.attrs['flattenhtml'] == 'true':
-      self.Flatten(output_dir)
-      # The flattened file is in the output dir.
-      filename = os.path.join(output_dir, os.path.split(filename)[1])
-
-    file = open(filename, 'rb')
-    data = file.read()
-    file.close()
+      data = self._GetFlattenedData()
+    else:
+      filename = self.FilenameToOpen()
+      infile = open(filename, 'rb')
+      data = infile.read()
+      infile.close()
 
     return id, data
 
   def Flatten(self, output_dir):
-    if self._is_flattened:
-      return
-
     filename = self.FilenameToOpen()
     flat_filename = os.path.join(output_dir, os.path.split(filename)[1])
-    grit.format.html_inline.InlineFile(filename, flat_filename, self)
-    self._is_flattened = True
+
+    if self._last_flat_filename == flat_filename:
+      return
+
+    outfile = open(flat_filename, 'wb')
+    outfile.write(self._GetFlattenedData())
+    outfile.close()
+
+    self._last_flat_filename = flat_filename
+
 
   def GetHtmlResourceFilenames(self):
     """Returns a set of all filenames inlined by this file."""
