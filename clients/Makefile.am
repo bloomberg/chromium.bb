@@ -7,7 +7,8 @@ noinst_PROGRAMS =				\
 	$(poppler_programs)			\
 	dnd					\
 	smoke					\
-	resizor
+	resizor					\
+	simple-client
 
 noinst_LTLIBRARIES = libtoytoolkit.la
 
@@ -39,6 +40,7 @@ terminal_SOURCES = terminal.c
 image_SOURCES = image.c
 dnd_SOURCES = dnd.c
 resizor_SOURCES = resizor.c
+simple_client_SOURCES = simple-client.c
 
 BUILT_SOURCES =					\
 	screenshooter-client-protocol.h		\

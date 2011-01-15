@@ -251,36 +251,6 @@ wl_connection_data(struct wl_connection *connection, uint32_t mask)
 	char cmsg[128];
 	int len, count, clen;
 
-	if (mask & WL_CONNECTION_READABLE) {
-		wl_buffer_put_iov(&connection->in, iov, &count);
-
-		msg.msg_name = NULL;
-		msg.msg_namelen = 0;
-		msg.msg_iov = iov;
-		msg.msg_iovlen = count;
-		msg.msg_control = cmsg;
-		msg.msg_controllen = sizeof cmsg;
-		msg.msg_flags = 0;
-
-		do {
-			len = recvmsg(connection->fd, &msg, 0);
-		} while (len < 0 && errno == EINTR);
-
-		if (len < 0) {
-			fprintf(stderr,
-				"read error from connection %p: %m (%d)\n",
-				connection, errno);
-			return -1;
-		} else if (len == 0) {
-			/* FIXME: Handle this better? */
-			return -1;
-		}
-
-		decode_cmsg(&connection->fds_in, &msg);
-
-		connection->in.head += len;
-	}	
-
 	if (mask & WL_CONNECTION_WRITABLE) {
 		wl_buffer_get_iov(&connection->out, iov, &count);
 
@@ -313,6 +283,36 @@ wl_connection_data(struct wl_connection *connection, uint32_t mask)
 					   WL_CONNECTION_READABLE,
 					   connection->data);
 	}
+
+	if (mask & WL_CONNECTION_READABLE) {
+		wl_buffer_put_iov(&connection->in, iov, &count);
+
+		msg.msg_name = NULL;
+		msg.msg_namelen = 0;
+		msg.msg_iov = iov;
+		msg.msg_iovlen = count;
+		msg.msg_control = cmsg;
+		msg.msg_controllen = sizeof cmsg;
+		msg.msg_flags = 0;
+
+		do {
+			len = recvmsg(connection->fd, &msg, 0);
+		} while (len < 0 && errno == EINTR);
+
+		if (len < 0) {
+			fprintf(stderr,
+				"read error from connection %p: %m (%d)\n",
+				connection, errno);
+			return -1;
+		} else if (len == 0) {
+			/* FIXME: Handle this better? */
+			return -1;
+		}
+
+		decode_cmsg(&connection->fds_in, &msg);
+
+		connection->in.head += len;
+	}	
 
 	return connection->in.head - connection->in.tail;
 }
