@@ -530,6 +530,11 @@ wayland_compositor_create(struct wl_display *display, int width, int height)
 	if (wayland_compositor_init_egl(c) < 0)
 		return NULL;
 
+	c->base.destroy = wayland_destroy;
+	c->base.authenticate = wayland_authenticate;
+	c->base.present = wayland_compositor_present;
+	c->base.create_buffer = wlsc_drm_buffer_create;
+
 	/* Can't init base class until we have a current egl context */
 	if (wlsc_compositor_init(&c->base, display) < 0)
 		return NULL;
@@ -548,10 +553,6 @@ wayland_compositor_create(struct wl_display *display, int width, int height)
 				     wayland_compositor_handle_event, c);
 	if (c->parent.wl_source == NULL)
 		return NULL;
-
-	c->base.destroy = wayland_destroy;
-	c->base.authenticate = wayland_authenticate;
-	c->base.present = wayland_compositor_present;
 
 	return &c->base;
 }
