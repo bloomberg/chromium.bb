@@ -92,6 +92,7 @@ static const char *vert_shader_text =
 	"}\n";
 
 static const char *frag_shader_text =
+	"precision mediump float;\n"
 	"varying vec4 v_color;\n"
 	"void main() {\n"
 	"  gl_FragColor = v_color;\n"
@@ -100,6 +101,11 @@ static const char *frag_shader_text =
 static void
 init_egl(struct display *display)
 {
+	static const EGLint context_attribs[] = {
+		EGL_CONTEXT_CLIENT_VERSION, 2,
+		EGL_NONE
+	};
+
 	EGLint major, minor;
 	EGLBoolean ret;
 
@@ -108,11 +114,11 @@ init_egl(struct display *display)
 
 	ret = eglInitialize(display->egl.dpy, &major, &minor);
 	assert(ret == EGL_TRUE);
-	ret = eglBindAPI(EGL_OPENGL_API);
+	ret = eglBindAPI(EGL_OPENGL_ES_API);
 	assert(ret == EGL_TRUE);
 
 	display->egl.ctx = eglCreateContext(display->egl.dpy, NULL,
-					    EGL_NO_CONTEXT, NULL);
+					    EGL_NO_CONTEXT, context_attribs);
 	assert(display->egl.ctx);
 	ret = eglMakeCurrent(display->egl.dpy, NULL, NULL, display->egl.ctx);
 	assert(ret == EGL_TRUE);
