@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
-#include "chrome/browser/ui/cocoa/find_bar_bridge.h"
+#include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 
