@@ -175,6 +175,7 @@
 - (NSMenu*)menu {
   if (!menu_ && model_) {
     menu_.reset([[self menuFromModel:model_] retain]);
+    [menu_ setDelegate:self];
     // If this is to be used with a NSPopUpButtonCell, add an item at the 0th
     // position that's empty. Doing it after the menu has been constructed won't
     // complicate creation logic, and since the tags are model indexes, they
@@ -186,6 +187,10 @@
     }
   }
   return menu_.get();
+}
+
+- (void)menuDidClose:(NSMenu*)menu {
+  model_->MenuClosed();
 }
 
 @end

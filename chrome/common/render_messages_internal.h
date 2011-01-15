@@ -126,6 +126,8 @@ IPC_MESSAGE_ROUTED2(ViewMsg_MediaPlayerActionAt,
                     gfx::Point, /* location */
                     WebKit::WebMediaPlayerAction)
 
+IPC_MESSAGE_ROUTED0(ViewMsg_PrintNodeUnderContextMenu)
+
 // Tells the render view to close.
 IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 
@@ -1080,6 +1082,10 @@ IPC_MESSAGE_ROUTED4(ViewMsg_PepperConnectTcpACK,
                     IPC::PlatformFileForTransit /* socket */,
                     PP_Flash_NetAddress /* local_addr */,
                     PP_Flash_NetAddress /* remote_addr */)
+
+// Sent in response to a ViewHostMsg_ContextMenu to let the renderer know that
+// the menu has been closed.
+IPC_MESSAGE_ROUTED0(ViewMsg_ContextMenuClosed)
 
 //-----------------------------------------------------------------------------
 // TabContents messages

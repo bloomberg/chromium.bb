@@ -41,6 +41,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPageSerializerClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNavigationType.h"
@@ -138,7 +139,6 @@ class WebKeyboardEvent;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMouseEvent;
-class WebNode;
 class WebPlugin;
 class WebSpeechInputController;
 class WebSpeechInputListener;
@@ -830,6 +830,7 @@ class RenderView : public RenderWidget,
                        const PP_Flash_NetAddress& local_addr,
                        const PP_Flash_NetAddress& remote_addr);
 #endif
+  void OnContextMenuClosed();
   void OnCopy();
   void OnCopyImageAt(int x, int y);
 #if defined(OS_MACOSX)
@@ -909,6 +910,7 @@ class RenderView : public RenderWidget,
   void OnPrintingDone(int document_cookie, bool success);
   void OnPrintPages();
   void OnPrintPreview();
+  void OnPrintNodeUnderContextMenu();
   void OnRedo();
   void OnReloadFrame();
   void OnReplace(const string16& text);
@@ -1092,7 +1094,11 @@ class RenderView : public RenderWidget,
                                    const WebKit::WebURLError& error,
                                    bool replace);
 
+  // Prints |frame|.
   void Print(WebKit::WebFrame* frame, bool script_initiated, bool is_preview);
+
+  // Returns the PrintWebViewHelper for this class, creating if necessary.
+  PrintWebViewHelper* GetPrintWebViewHelper();
 
   // Returns whether the page associated with |document| is a candidate for
   // translation.  Some pages can explictly specify (via a meta-tag) that they
@@ -1466,6 +1472,9 @@ class RenderView : public RenderWidget,
 
   // The custom menu event listener, if any.
   CustomMenuListener* custom_menu_listener_;
+
+  // The node that the context menu was pressed over.
+  WebKit::WebNode context_menu_node_;
 
   // Reports load progress to the browser.
   scoped_ptr<LoadProgressTracker> load_progress_tracker_;

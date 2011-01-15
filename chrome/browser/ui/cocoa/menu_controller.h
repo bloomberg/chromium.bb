@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/cocoa_protocols.h"
 #include "base/scoped_nsobject.h"
 
 namespace ui {
@@ -20,7 +21,7 @@ class MenuModel;
 // allow for hierarchical menus). The tag is the index into that model for
 // that particular item. It is important that the model outlives this object
 // as it only maintains weak references.
-@interface MenuController : NSObject {
+@interface MenuController : NSObject<NSMenuDelegate> {
  @protected
   ui::MenuModel* model_;  // weak
   scoped_nsobject<NSMenu> menu_;

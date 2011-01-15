@@ -71,10 +71,10 @@ void PrintWebViewHelper::CreatePreviewDocument(
     WebFrame* frame,
     ViewHostMsg_DidPreviewDocument_Params* print_params) {
   ViewMsg_Print_Params printParams = params.params;
-  UpdatePrintableSizeInPrintParameters(frame, &printParams);
+  UpdatePrintableSizeInPrintParameters(frame, NULL, &printParams);
 
   PrepareFrameAndViewForPrint prep_frame_view(printParams,
-                                              frame, frame->view());
+                                              frame, NULL, frame->view());
   int page_count = prep_frame_view.GetExpectedPageCount();
 
   if (!page_count)

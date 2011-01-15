@@ -399,7 +399,8 @@ void RenderViewContextMenu::InitMenu() {
     case WebContextMenuData::MediaTypeAudio:
       AppendAudioItems();
       break;
-    default:
+    case WebContextMenuData::MediaTypePlugin:
+      AppendPluginItems();
       break;
   }
 
@@ -524,6 +525,18 @@ void RenderViewContextMenu::AppendMediaItems() {
                                        IDS_CONTENT_CONTEXT_LOOP);
   menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_CONTROLS,
                                        IDS_CONTENT_CONTEXT_CONTROLS);
+}
+
+void RenderViewContextMenu::AppendPluginItems() {
+  if (params_.page_url == params_.src_url) {
+    // Full page plugin, so show page menu items.
+    if (params_.link_url.is_empty() && params_.selection_text.empty())
+      AppendPageItems();
+  } else {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
+                                    IDS_CONTENT_CONTEXT_SAVEPAGEAS);
+    menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
+  }
 }
 
 void RenderViewContextMenu::AppendPageItems() {
@@ -937,6 +950,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return !params_.misspelled_word.empty();
 
     case IDC_PRINT:
+      return params_.media_type == WebContextMenuData::MediaTypeNone ||
+        params_.media_flags & WebContextMenuData::MediaCanPrint;
+
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL:
     case IDC_SPELLCHECK_SUGGESTION_0:
@@ -1214,7 +1230,11 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       break;
 
     case IDC_PRINT:
-      source_tab_contents_->PrintPreview();
+      if (params_.media_type == WebContextMenuData::MediaTypeNone) {
+        source_tab_contents_->PrintPreview();
+      } else {
+        source_tab_contents_->render_view_host()->PrintNodeUnderContextMenu();
+      }
       break;
 
     case IDC_VIEW_SOURCE:
@@ -1376,6 +1396,10 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       NOTREACHED();
       break;
   }
+}
+
+void RenderViewContextMenu::MenuClosed() {
+  source_tab_contents_->render_view_host()->ContextMenuClosed();
 }
 
 bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {

@@ -15,10 +15,12 @@
 
 using printing::NativeMetafile;
 using WebKit::WebFrame;
+using WebKit::WebNode;
 using WebKit::WebSize;
 
 void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
-                                    WebFrame* frame) {
+                                    WebFrame* frame,
+                                    WebNode* node) {
   // We only can use PDF in the renderer because Cairo needs to create a
   // temporary file for a PostScript surface.
   printing::NativeMetafile metafile(printing::NativeMetafile::PDF);
@@ -33,6 +35,7 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
     // story.
     PrepareFrameAndViewForPrint prep_frame_view(params.params,
                                                 frame,
+                                                node,
                                                 frame->view());
     page_count = prep_frame_view.GetExpectedPageCount();
 

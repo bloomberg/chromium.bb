@@ -984,6 +984,9 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_CaptureSnapshot, OnCaptureSnapshot)
     IPC_MESSAGE_HANDLER(ViewMsg_PrintPages, OnPrintPages)
     IPC_MESSAGE_HANDLER(ViewMsg_PrintingDone, OnPrintingDone)
+    IPC_MESSAGE_HANDLER(ViewMsg_PrintPreview, OnPrintPreview)
+    IPC_MESSAGE_HANDLER(ViewMsg_PrintNodeUnderContextMenu,
+                        OnPrintNodeUnderContextMenu)
     IPC_MESSAGE_HANDLER(ViewMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(ViewMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(ViewMsg_ReloadFrame, OnReloadFrame)
@@ -1107,9 +1110,9 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
 #endif
-    IPC_MESSAGE_HANDLER(ViewMsg_PrintPreview, OnPrintPreview)
     IPC_MESSAGE_HANDLER(ViewMsg_JavaScriptStressTestControl,
                         OnJavaScriptStressTestControl)
+    IPC_MESSAGE_HANDLER(ViewMsg_ContextMenuClosed, OnContextMenuClosed)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
@@ -1189,6 +1192,18 @@ void RenderView::OnPrintPreview() {
     else
       Print(webview()->focusedFrame(), false, true);
   }
+}
+
+void RenderView::OnPrintNodeUnderContextMenu() {
+  if (context_menu_node_.isNull()) {
+    NOTREACHED();
+    return;
+  }
+
+  // Make a copy of the node, since we will do a sync call to the browser and
+  // during that time OnContextMenuClosed might reset context_menu_node_.
+  WebNode context_menu_node(context_menu_node_);
+  GetPrintWebViewHelper()->PrintNode(&context_menu_node, false, false);
 }
 
 void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
@@ -2460,6 +2475,7 @@ void RenderView::showContextMenu(
   //                 data encoded images.  We should have a way to save them.
   if (params.src_url.spec().size() > chrome::kMaxURLChars)
     params.src_url = GURL();
+  context_menu_node_ = data.node;
   Send(new ViewHostMsg_ContextMenu(routing_id_, params));
 }
 
@@ -5309,10 +5325,13 @@ void RenderView::Print(WebFrame* frame,
                        bool script_initiated,
                        bool is_preview) {
   DCHECK(frame);
-  if (print_helper_.get() == NULL) {
+  GetPrintWebViewHelper()->PrintFrame(frame, script_initiated, is_preview);
+}
+
+PrintWebViewHelper* RenderView::GetPrintWebViewHelper() {
+  if (print_helper_.get() == NULL)
     print_helper_.reset(new PrintWebViewHelper(this));
-  }
-  print_helper_->Print(frame, script_initiated, is_preview);
+  return print_helper_.get();
 }
 
 void RenderView::OnSetEditCommandsForNextKeyEvent(
@@ -5700,4 +5719,8 @@ void RenderView::OnJavaScriptStressTestControl(int cmd, int param) {
   } else if (cmd == kJavaScriptStressTestPrepareStressRun) {
     v8::Testing::PrepareStressRun(param);
   }
+}
+
+void RenderView::OnContextMenuClosed() {
+  context_menu_node_.reset();
 }

@@ -48,6 +48,9 @@ class SimpleMenuModel : public MenuModel {
     // Performs the action associated with the specified command id.
     virtual void ExecuteCommand(int command_id) = 0;
 
+    // Notifies the delegate that the menu has closed.
+    virtual void MenuClosed();
+
    protected:
     virtual ~Delegate() {}
   };
@@ -115,6 +118,7 @@ class SimpleMenuModel : public MenuModel {
   virtual void HighlightChangedTo(int index);
   virtual void ActivatedAt(int index);
   virtual MenuModel* GetSubmenuModelAt(int index) const;
+  virtual void MenuClosed();
 
  protected:
   // Some variants of this model (SystemMenuModel) relies on items to be

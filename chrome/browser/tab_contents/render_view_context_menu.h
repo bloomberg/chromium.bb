@@ -47,6 +47,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate {
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual void ExecuteCommand(int command_id);
+  virtual void MenuClosed();
 
  protected:
   void InitMenu();
@@ -85,6 +86,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate {
   void AppendAudioItems();
   void AppendVideoItems();
   void AppendMediaItems();
+  void AppendPluginItems();
   void AppendPageItems();
   void AppendFrameItems();
   void AppendCopyItem();

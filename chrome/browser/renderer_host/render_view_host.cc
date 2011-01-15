@@ -1363,6 +1363,14 @@ void RenderViewHost::MediaPlayerActionAt(const gfx::Point& location,
   Send(new ViewMsg_MediaPlayerActionAt(routing_id(), location, action));
 }
 
+void RenderViewHost::ContextMenuClosed() {
+  Send(new ViewMsg_ContextMenuClosed(routing_id()));
+}
+
+void RenderViewHost::PrintNodeUnderContextMenu() {
+  Send(new ViewMsg_PrintNodeUnderContextMenu(routing_id()));
+}
+
 void RenderViewHost::OnMsgPasswordFormsFound(
     const std::vector<PasswordForm>& forms) {
   delegate_->PasswordFormsFound(forms);

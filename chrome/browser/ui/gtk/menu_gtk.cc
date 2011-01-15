@@ -734,6 +734,7 @@ void MenuGtk::OnMenuShow(GtkWidget* widget) {
 void MenuGtk::OnMenuHidden(GtkWidget* widget) {
   if (delegate_)
     delegate_->StoppedShowing();
+  model_->MenuClosed();
 }
 
 // static

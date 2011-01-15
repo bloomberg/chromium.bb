@@ -8,7 +8,9 @@
 #include "app/l10n_util_win.h"
 #include "app/win/hwnd_util.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/stl_util-inl.h"
+#include "base/task.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -52,7 +54,9 @@ struct NativeMenuWin::ItemData {
 // structure we have constructed in NativeMenuWin.
 class NativeMenuWin::MenuHostWindow {
  public:
-  MenuHostWindow() {
+  MenuHostWindow(NativeMenuWin* parent)
+      : parent_(parent),
+        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
     RegisterClass();
     hwnd_ = CreateWindowEx(l10n_util::GetExtendedStyles(), kWindowClassName,
                            L"", 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
@@ -84,14 +88,6 @@ class NativeMenuWin::MenuHostWindow {
     registered = true;
   }
 
-  NativeMenuWin* GetNativeMenuWinFromHMENU(HMENU hmenu) const {
-    MENUINFO mi = {0};
-    mi.cbSize = sizeof(mi);
-    mi.fMask = MIM_MENUDATA | MIM_STYLE;
-    GetMenuInfo(hmenu, &mi);
-    return reinterpret_cast<NativeMenuWin*>(mi.dwMenuData);
-  }
-
   // Converts the WPARAM value passed to WM_MENUSELECT into an index
   // corresponding to the menu item that was selected.
   int GetMenuItemIndexFromWPARAM(HMENU menu, WPARAM w_param) const {
@@ -120,20 +116,15 @@ class NativeMenuWin::MenuHostWindow {
 
   // Called when the user selects a specific item.
   void OnMenuCommand(int position, HMENU menu) {
-    NativeMenuWin* intergoat = GetNativeMenuWinFromHMENU(menu);
-    ui::MenuModel* model = intergoat->model_;
-    model->ActivatedAt(position);
+    parent_->model_->ActivatedAt(position);
   }
 
   // Called as the user moves their mouse or arrows through the contents of the
   // menu.
   void OnMenuSelect(WPARAM w_param, HMENU menu) {
-    if (!menu)
-      return;  // menu is null when closing on XP.
-
     int position = GetMenuItemIndexFromWPARAM(menu, w_param);
     if (position >= 0)
-      GetNativeMenuWinFromHMENU(menu)->model_->HighlightChangedTo(position);
+      parent_->model_->HighlightChangedTo(position);
   }
 
   // Called by Windows to measure the size of an owner-drawn menu item.
@@ -243,6 +234,10 @@ class NativeMenuWin::MenuHostWindow {
     SetTextColor(dc, prev_text_color);
   }
 
+  void OnMenuClosed() {
+    parent_->model_->MenuClosed();
+  }
+
   bool ProcessWindowMessage(HWND window,
                             UINT message,
                             WPARAM w_param,
@@ -265,6 +260,14 @@ class NativeMenuWin::MenuHostWindow {
         OnDrawItem(w_param, reinterpret_cast<DRAWITEMSTRUCT*>(l_param));
         *l_result = 0;
         return true;
+      case WM_EXITMENULOOP:
+        // WM_MENUCOMMAND comes after this message, but still in the same
+        // callstack.  So use PostTask to guarantee that we'll tell the model
+        // that the menus is closed after any other notifications.
+        MessageLoop::current()->PostTask(
+            FROM_HERE,
+            method_factory_.NewRunnableMethod(&MenuHostWindow::OnMenuClosed));
+        return true;
       // TODO(beng): bring over owner draw from old menu system.
     }
     return false;
@@ -286,6 +289,8 @@ class NativeMenuWin::MenuHostWindow {
   }
 
   HWND hwnd_;
+  NativeMenuWin* parent_;
+  ScopedRunnableMethodFactory<MenuHostWindow> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuHostWindow);
 };
@@ -606,7 +611,7 @@ void NativeMenuWin::CreateHostWindow() {
   // host window per menu hierarchy, no matter how many NativeMenuWin objects
   // exist wrapping submenus.
   if (!host_window_.get())
-    host_window_.reset(new MenuHostWindow());
+    host_window_.reset(new MenuHostWindow(this));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

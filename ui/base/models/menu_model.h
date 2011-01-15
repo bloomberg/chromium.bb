@@ -113,6 +113,9 @@ class MenuModel {
   // Called when the menu is about to be shown.
   virtual void MenuWillShow() {}
 
+  // Called when the menu has been closed.
+  virtual void MenuClosed() {}
+
   // Retrieves the model and index that contains a specific command id. Returns
   // true if an item with the specified command id is found. |model| is inout,
   // and specifies the model to start searching from.

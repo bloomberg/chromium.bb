@@ -326,6 +326,12 @@ class RenderViewHost : public RenderWidgetHost {
   void MediaPlayerActionAt(const gfx::Point& location,
                            const WebKit::WebMediaPlayerAction& action);
 
+  // Notifies the renderer that the context menu has closed.
+  void ContextMenuClosed();
+
+  // Prints the node that's under the context menu.
+  void PrintNodeUnderContextMenu();
+
   // Copies the image at the specified point.
   void CopyImageAt(int x, int y);
 
