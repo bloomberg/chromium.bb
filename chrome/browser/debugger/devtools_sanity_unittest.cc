@@ -288,11 +288,19 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
+// Fails after WebKit roll 75765:75812 (likely 75791), http://crbug.com/69719
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
+        FAILS_TestScriptsTabIsPopulatedOnInspectedPageRefresh
+#else
+#define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
+              TestScriptsTabIsPopulatedOnInspectedPageRefresh
+#endif  // defined(OS_LINUX) || defined(OS_WIN)
 // Tests that scripts tab is populated with inspected scripts even if it
 // hadn't been shown by the moment inspected paged refreshed.
 // @see http://crbug.com/26312
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
+                       MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
   // Clear inspector settings to ensure that Elements will be
   // current panel when DevTools window is open.
   GetInspectedTab()->render_view_host()->delegate()->ClearInspectorSettings();
@@ -314,15 +322,27 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
   RunTest("testNoScriptDuplicatesOnPanelSwitch", kDebuggerTestPage);
 }
 
+// Fails after WebKit roll 75765:75812 (likely 75791), http://crbug.com/69719
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_TestPauseWhenLoadingDevTools FAILS_TestPauseWhenLoadingDevTools
+#else
+#define MAYBE_TestPauseWhenLoadingDevTools TestPauseWhenLoadingDevTools
+#endif  // defined(OS_LINUX) || defined(OS_WIN)
 // Tests that debugger works correctly if pause event occurs when DevTools
 // frontend is being loaded.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenLoadingDevTools) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestPauseWhenLoadingDevTools) {
   RunTest("testPauseWhenLoadingDevTools", kPauseWhenLoadingDevTools);
 }
 
+// Fails after WebKit roll 75765:75812 (likely 75791), http://crbug.com/69719
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_TestPauseWhenScriptIsRunning FAILS_TestPauseWhenScriptIsRunning
+#else
+#define MAYBE_TestPauseWhenScriptIsRunning TestPauseWhenScriptIsRunning
+#endif  // defined(OS_LINUX) || defined(OS_WIN)
 // Tests that pressing 'Pause' will pause script execution if the script
 // is already running.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenScriptIsRunning) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
 }
 
