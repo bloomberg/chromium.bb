@@ -50,9 +50,13 @@ class BlockedPlugin : public CppBoundClass,
   virtual ~BlockedPlugin();
 
   // Javascript callbacks:
-  // Load the blocked plugin by calling LoadPlugin() below.
+  // Load the blocked plugin by calling LoadPlugin().
   // Takes no arguments, and returns nothing.
   void Load(const CppArgumentList& args, CppVariant* result);
+
+  // Hide the blocked plugin by calling HidePlugin().
+  // Takes no arguments, and returns nothing.
+  void Hide(const CppArgumentList& args, CppVariant* result);
 
   // Hide the blocked plugin.
   void HidePlugin();

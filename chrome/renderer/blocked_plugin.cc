@@ -83,6 +83,7 @@ BlockedPlugin::~BlockedPlugin() {
 void BlockedPlugin::BindWebFrame(WebFrame* frame) {
   BindToJavascript(frame, "plugin");
   BindMethod("load", &BlockedPlugin::Load);
+  BindMethod("hide", &BlockedPlugin::Hide);
 }
 
 void BlockedPlugin::WillDestroyPlugin() {
@@ -148,6 +149,10 @@ void BlockedPlugin::LoadPlugin() {
 
 void BlockedPlugin::Load(const CppArgumentList& args, CppVariant* result) {
   LoadPlugin();
+}
+
+void BlockedPlugin::Hide(const CppArgumentList& args, CppVariant* result) {
+  HidePlugin();
 }
 
 void BlockedPlugin::HidePlugin() {

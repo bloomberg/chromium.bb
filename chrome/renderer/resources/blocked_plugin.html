@@ -22,7 +22,7 @@ h1 {
   visibility: hidden;
 }
 
-#outer:hover h1 {
+#outer:hover h1, #outer:hover img {
   visibility: visible;
 }
 
@@ -48,6 +48,14 @@ p {
   top: 50%;
   margin-top: -70px;
 }
+
+#close {
+  visibility: hidden;
+  cursor: pointer;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+}
 </style>
 </head>
 
@@ -58,6 +66,7 @@ p {
 <h1 i18n-content="message">PLUGIN_BLOCKED</h1>
 <p id="debug"> </p>
 </div>
+<img id="close" onclick="plugin.hide();" src="../../app/theme/close_bar_h.png">
 </div>
 </body>
 </html>
