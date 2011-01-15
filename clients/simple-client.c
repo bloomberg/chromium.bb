@@ -226,8 +226,6 @@ create_surface(struct window *window)
 				     window->geometry.width,
 				     window->geometry.height,
 				     stride, visual);
-	/* Process wl_drm_create_buffer. */
-	wl_display_iterate(display->display, WL_DISPLAY_WRITABLE);
 
 	wl_surface_attach(window->drm_surface.surface,
 			  window->drm_surface.buffer, 0, 0);
