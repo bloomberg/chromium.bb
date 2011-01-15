@@ -14,7 +14,6 @@
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/notification_details.h"

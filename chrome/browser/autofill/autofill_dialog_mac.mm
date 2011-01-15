@@ -4,7 +4,6 @@
 
 #import "chrome/browser/autofill/autofill_dialog_controller_mac.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 
 // Mac implementation of |ShowAutoFillDialog| interface defined in

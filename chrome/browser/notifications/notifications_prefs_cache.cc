@@ -4,10 +4,12 @@
 
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 
+#include <string>
+
 #include "base/string_util.h"
+#include "base/values.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
 
 NotificationsPrefsCache::NotificationsPrefsCache()

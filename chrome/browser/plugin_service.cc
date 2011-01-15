@@ -18,7 +18,6 @@
 #include "chrome/browser/chrome_plugin_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/plugin_updater.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/chrome_plugin_lib.h"

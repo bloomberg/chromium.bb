@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/options/options_page_view.h"
 
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "views/widget/widget.h"
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -16,7 +16,6 @@
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/url_database.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"

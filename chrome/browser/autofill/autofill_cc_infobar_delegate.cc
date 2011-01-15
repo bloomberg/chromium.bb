@@ -10,7 +10,6 @@
 #include "chrome/browser/autofill/autofill_cc_infobar.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "grit/chromium_strings.h"
