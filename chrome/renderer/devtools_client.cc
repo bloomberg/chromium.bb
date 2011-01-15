@@ -18,12 +18,12 @@
 using WebKit::WebDevToolsFrontend;
 using WebKit::WebString;
 
-DevToolsClient::DevToolsClient(RenderView* view)
-    : render_view_(view) {
+DevToolsClient::DevToolsClient(RenderView* render_view)
+    : RenderViewObserver(render_view) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   web_tools_frontend_.reset(
       WebDevToolsFrontend::create(
-          view->webview(),
+          render_view->webview(),
           this,
           ASCIIToUTF16(command_line.GetSwitchValueASCII(switches::kLang))));
 }
@@ -31,10 +31,9 @@ DevToolsClient::DevToolsClient(RenderView* view)
 DevToolsClient::~DevToolsClient() {
 }
 
-void DevToolsClient::Send(const IPC::Message& tools_agent_message) {
-  render_view_->Send(new ViewHostMsg_ForwardToDevToolsAgent(
-      render_view_->routing_id(),
-      tools_agent_message));
+void DevToolsClient::SendToAgent(const IPC::Message& tools_agent_message) {
+  Send(new ViewHostMsg_ForwardToDevToolsAgent(
+      routing_id(), tools_agent_message));
 }
 
 bool DevToolsClient::OnMessageReceived(const IPC::Message& message) {
@@ -51,41 +50,36 @@ bool DevToolsClient::OnMessageReceived(const IPC::Message& message) {
 }
 
 void DevToolsClient::sendFrontendLoaded() {
-  Send(DevToolsAgentMsg_FrontendLoaded());
+  SendToAgent(DevToolsAgentMsg_FrontendLoaded());
 }
 
 void DevToolsClient::sendMessageToBackend(const WebString& message)  {
-  Send(DevToolsAgentMsg_DispatchOnInspectorBackend(message.utf8()));
+  SendToAgent(DevToolsAgentMsg_DispatchOnInspectorBackend(message.utf8()));
 }
 
 void DevToolsClient::sendDebuggerCommandToAgent(const WebString& command) {
-  Send(DevToolsAgentMsg_DebuggerCommand(command.utf8()));
+  SendToAgent(DevToolsAgentMsg_DebuggerCommand(command.utf8()));
 }
 
 void DevToolsClient::activateWindow() {
-  render_view_->Send(new ViewHostMsg_ActivateDevToolsWindow(
-      render_view_->routing_id()));
+  Send(new ViewHostMsg_ActivateDevToolsWindow(routing_id()));
 }
 
 void DevToolsClient::closeWindow() {
-  render_view_->Send(new ViewHostMsg_CloseDevToolsWindow(
-      render_view_->routing_id()));
+  Send(new ViewHostMsg_CloseDevToolsWindow(routing_id()));
 }
 
 void DevToolsClient::requestDockWindow() {
-  render_view_->Send(new ViewHostMsg_RequestDockDevToolsWindow(
-      render_view_->routing_id()));
+  Send(new ViewHostMsg_RequestDockDevToolsWindow(routing_id()));
 }
 
 void DevToolsClient::requestUndockWindow() {
-  render_view_->Send(new ViewHostMsg_RequestUndockDevToolsWindow(
-      render_view_->routing_id()));
+  Send(new ViewHostMsg_RequestUndockDevToolsWindow(routing_id()));
 }
 
-void DevToolsClient::OnDispatchOnInspectorFrontend(
-    const std::string& message) {
-      web_tools_frontend_->dispatchOnInspectorFrontend(
-          WebString::fromUTF8(message));
+void DevToolsClient::OnDispatchOnInspectorFrontend(const std::string& message) {
+  web_tools_frontend_->dispatchOnInspectorFrontend(
+      WebString::fromUTF8(message));
 }
 
 bool DevToolsClient::shouldHideScriptsPanel() {

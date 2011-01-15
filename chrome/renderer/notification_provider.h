@@ -7,22 +7,25 @@
 #pragma once
 
 #include "chrome/common/desktop_notifications/active_notification_tracker.h"
-#include "ipc/ipc_channel.h"
+#include "chrome/renderer/render_view_observer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNotification.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
 
-class RenderView;
 namespace WebKit {
 class WebNotificationPermissionCallback;
 }
 
 // NotificationProvider class is owned by the RenderView.  Only
-// to be used on the UI thread.
-class NotificationProvider : public WebKit::WebNotificationPresenter,
-                             public IPC::Channel::Listener {
+// to be used on the main thread.
+class NotificationProvider : public RenderViewObserver,
+                             public WebKit::WebNotificationPresenter {
  public:
-  explicit NotificationProvider(RenderView* view);
+  explicit NotificationProvider(RenderView* render_view);
   virtual ~NotificationProvider();
+
+ private:
+  // RenderView::Observer implementation.
+  bool OnMessageReceived(const IPC::Message& message);
 
   // WebKit::WebNotificationPresenter interface.
   virtual bool show(const WebKit::WebNotification& proxy);
@@ -33,13 +36,6 @@ class NotificationProvider : public WebKit::WebNotificationPresenter,
   virtual void requestPermission(const WebKit::WebSecurityOrigin& origin,
       WebKit::WebNotificationPermissionCallback* callback);
 
-  // IPC::Channel::Listener implementation.
-  bool OnMessageReceived(const IPC::Message& message);
-
-  // Called when the RenderView navigates.
-  void OnNavigate();
-
- private:
   // Internal methods used to show notifications.
   bool ShowHTML(const WebKit::WebNotification& notification, int id);
   bool ShowText(const WebKit::WebNotification& notification, int id);
@@ -50,12 +46,7 @@ class NotificationProvider : public WebKit::WebNotificationPresenter,
   void OnClose(int id, bool by_user);
   void OnClick(int id);
   void OnPermissionRequestComplete(int id);
-
-  bool Send(IPC::Message* message);
-
-  // Non-owned pointer to the RenderView object which created and owns
-  // this object.
-  RenderView* view_;
+  void OnNavigate();
 
   // A tracker object which manages the active notifications and the IDs
   // that are used to refer to them over IPC.

@@ -9,17 +9,12 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
+#include "chrome/renderer/render_view_observer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDOMEventListener.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 
 class PageClickListener;
-class RenderView;
 
-namespace WebKit {
-class WebFrame;
-class WebDOMEvent;
-class WebMouseEvent;
-}
 
 // This class is responsible for tracking clicks on elements in web pages and
 // notifiying the associated listener when a node is clicked.
@@ -33,22 +28,11 @@ class WebMouseEvent;
 // could easily be changed to report click on any type of WebNode.
 //
 // There is one PageClickTracker per RenderView.
-
-class PageClickTracker : public WebKit::WebDOMEventListener {
+class PageClickTracker : public RenderViewObserver,
+                         public WebKit::WebDOMEventListener {
  public:
   explicit PageClickTracker(RenderView* render_view);
   virtual ~PageClickTracker();
-
-  // Starts reporting node clicks for |frame| on the listener previously
-  // specified with SetListener().
-  void StartTrackingFrame(WebKit::WebFrame* frame);
-
-  // Stops reporting node clicks for |frame|.  |frame_detached| should be true
-  // if the frame has already been detached.
-  void StopTrackingFrame(WebKit::WebFrame* frame, bool frame_detached);
-
-  // Called after the mouse event |event| has been processed by WebKit.
-  void DidHandleMouseEvent(const WebKit::WebMouseEvent& event);
 
   // Adds/removes a listener for getting notification when an element is
   // clicked.  Note that the order of insertion is important as a listener when
@@ -58,8 +42,16 @@ class PageClickTracker : public WebKit::WebDOMEventListener {
   void RemoveListener(PageClickListener* listener);
 
  private:
+  // RenderView::Observer implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame);
+  virtual void FrameDetached(WebKit::WebFrame* frame);
+
   // WebKit::WebDOMEventListener implementation.
   virtual void handleEvent(const WebKit::WebDOMEvent& event);
+
+  // Called after the mouse event |event| has been processed by WebKit.
+  void DidHandleMouseEvent(const WebKit::WebMouseEvent& event);
 
   // Returns the currently focused node in the associated render view.
   // That node may be null.
@@ -67,9 +59,6 @@ class PageClickTracker : public WebKit::WebDOMEventListener {
 
   // The last node that was clicked and had focus.
   WebKit::WebNode last_node_clicked_;
-
-  // The render view we are associated with.
-  RenderView* render_view_;
 
   // Whether the last clicked node had focused before it was clicked.
   bool was_focused_;

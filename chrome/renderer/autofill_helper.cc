@@ -7,7 +7,9 @@
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/form_manager.h"
+#include "chrome/renderer/password_autocomplete_manager.h"
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
@@ -36,34 +38,168 @@ const size_t kMaximumTextSizeForAutoFill = 1000;
 
 }  // namespace
 
-AutoFillHelper::AutoFillHelper(RenderView* render_view)
-    : render_view_(render_view),
+AutoFillHelper::AutoFillHelper(
+    RenderView* render_view,
+    PasswordAutocompleteManager* password_autocomplete_manager)
+    : RenderViewObserver(render_view),
+      password_autocomplete_manager_(password_autocomplete_manager),
       autofill_query_id_(0),
       autofill_action_(AUTOFILL_NONE),
       display_warning_if_disabled_(false),
       was_query_node_autofilled_(false),
       suggestions_clear_index_(-1),
-      suggestions_options_index_(-1) {
+      suggestions_options_index_(-1),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
-void AutoFillHelper::RemoveAutocompleteSuggestion(const WebString& name,
-                                                  const WebString& value) {
+bool AutoFillHelper::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(AutoFillHelper, message)
+    IPC_MESSAGE_HANDLER(ViewMsg_AutoFillSuggestionsReturned,
+                        OnSuggestionsReturned)
+    IPC_MESSAGE_HANDLER(ViewMsg_AutoFillFormDataFilled, OnFormDataFilled)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void AutoFillHelper::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
+  // The document has now been fully loaded.  Scan for forms to be sent up to
+  // the browser.
+  form_manager_.ExtractForms(frame);
+  SendForms(frame);
+}
+
+void AutoFillHelper::FrameDetached(WebKit::WebFrame* frame) {
+  form_manager_.ResetFrame(frame);
+}
+
+void AutoFillHelper::FrameWillClose(WebKit::WebFrame* frame) {
+  form_manager_.ResetFrame(frame);
+}
+
+void AutoFillHelper::FrameTranslated(WebKit::WebFrame* frame) {
+  // The page is translated, so try to extract the form data again.
+  DidFinishDocumentLoad(frame);
+}
+
+bool AutoFillHelper::InputElementClicked(const WebInputElement& element,
+                                         bool was_focused,
+                                         bool is_focused) {
+  if (was_focused)
+    ShowSuggestions(element, true, false, true);
+  return false;
+}
+
+void AutoFillHelper::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
+                                             const WebKit::WebString& value,
+                                             const WebKit::WebString& label,
+                                             int unique_id,
+                                             unsigned index) {
+  if (suggestions_options_index_ != -1 &&
+      index == static_cast<unsigned>(suggestions_options_index_)) {
+    // User selected 'AutoFill Options'.
+    Send(new ViewHostMsg_ShowAutoFillDialog(routing_id()));
+  } else if (suggestions_clear_index_ != -1 &&
+             index == static_cast<unsigned>(suggestions_clear_index_)) {
+    // User selected 'Clear form'.
+    form_manager_.ClearFormWithNode(node);
+  } else if (!unique_id) {
+    // User selected an Autocomplete entry, so we fill directly.
+    WebInputElement element = node.toConst<WebInputElement>();
+
+    string16 substring = value;
+    substring = substring.substr(0, element.maxLength());
+    element.setValue(substring);
+
+    WebFrame* webframe = node.document().frame();
+    if (webframe)
+      webframe->notifiyPasswordListenerOfAutocomplete(element);
+  } else {
+    // Fill the values for the whole form.
+    FillAutoFillFormData(node, unique_id, AUTOFILL_FILL);
+  }
+
+  suggestions_clear_index_ = -1;
+  suggestions_options_index_ = -1;
+}
+
+void AutoFillHelper::didSelectAutoFillSuggestion(const WebKit::WebNode& node,
+                                                 const WebKit::WebString& value,
+                                                 const WebKit::WebString& label,
+                                                 int unique_id) {
+  DCHECK_GE(unique_id, 0);
+
+  didClearAutoFillSelection(node);
+  FillAutoFillFormData(node, unique_id, AUTOFILL_PREVIEW);
+}
+
+void AutoFillHelper::didClearAutoFillSelection(const WebKit::WebNode& node) {
+  form_manager_.ClearPreviewedFormWithNode(node, was_query_node_autofilled_);
+}
+
+void AutoFillHelper::didAcceptAutocompleteSuggestion(
+    const WebKit::WebInputElement& user_element) {
+  bool result = password_autocomplete_manager_->FillPassword(user_element);
+  // Since this user name was selected from a suggestion list, we should always
+  // have password for it.
+  DCHECK(result);
+}
+
+void AutoFillHelper::removeAutocompleteSuggestion(
+    const WebKit::WebString& name,
+    const WebKit::WebString& value) {
   // The index of clear & options will have shifted down.
   if (suggestions_clear_index_ != -1)
     suggestions_clear_index_--;
   if (suggestions_options_index_ != -1)
     suggestions_options_index_--;
 
-  render_view_->Send(new ViewHostMsg_RemoveAutocompleteEntry(
-      render_view_->routing_id(), name, value));
+  Send(new ViewHostMsg_RemoveAutocompleteEntry(routing_id(), name, value));
 }
 
-void AutoFillHelper::SuggestionsReceived(int query_id,
-                                         const std::vector<string16>& values,
-                                         const std::vector<string16>& labels,
-                                         const std::vector<string16>& icons,
-                                         const std::vector<int>& unique_ids) {
-  WebKit::WebView* web_view = render_view_->webview();
+void AutoFillHelper::textFieldDidEndEditing(
+    const WebKit::WebInputElement& element) {
+  password_autocomplete_manager_->TextFieldDidEndEditing(element);
+}
+
+void AutoFillHelper::textFieldDidChange(
+    const WebKit::WebInputElement& element) {
+  // We post a task for doing the AutoFill as the caret position is not set
+  // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
+  // it is needed to trigger autofill.
+  method_factory_.RevokeAll();
+  MessageLoop::current()->PostTask(
+        FROM_HERE,
+        method_factory_.NewRunnableMethod(
+            &AutoFillHelper::TextFieldDidChangeImpl, element));
+}
+
+void AutoFillHelper::TextFieldDidChangeImpl(
+    const WebKit::WebInputElement& element) {
+  if (password_autocomplete_manager_->TextDidChangeInTextField(element))
+    return;
+
+  ShowSuggestions(element, false, true, false);
+}
+
+void AutoFillHelper::textFieldDidReceiveKeyDown(
+    const WebKit::WebInputElement& element,
+    const WebKit::WebKeyboardEvent& event) {
+  password_autocomplete_manager_->TextFieldHandlingKeyDown(element, event);
+
+  if (event.windowsKeyCode == ui::VKEY_DOWN ||
+      event.windowsKeyCode == ui::VKEY_UP)
+    ShowSuggestions(element, true, true, true);
+}
+
+void AutoFillHelper::OnSuggestionsReturned(
+    int query_id,
+    const std::vector<string16>& values,
+    const std::vector<string16>& labels,
+    const std::vector<string16>& icons,
+    const std::vector<int>& unique_ids) {
+  WebKit::WebView* web_view = render_view()->webview();
   if (!web_view || query_id != autofill_query_id_)
     return;
 
@@ -131,13 +267,12 @@ void AutoFillHelper::SuggestionsReceived(int query_id,
         autofill_query_node_, v, l, i, ids, separator_index);
   }
 
-  render_view_->Send(new ViewHostMsg_DidShowAutoFillSuggestions(
-      render_view_->routing_id()));
+  Send(new ViewHostMsg_DidShowAutoFillSuggestions(routing_id()));
 }
 
-void AutoFillHelper::FormDataFilled(int query_id,
-                                    const webkit_glue::FormData& form) {
-  if (!render_view_->webview() || query_id != autofill_query_id_)
+void AutoFillHelper::OnFormDataFilled(
+    int query_id, const webkit_glue::FormData& form) {
+  if (!render_view()->webview() || query_id != autofill_query_id_)
     return;
 
   switch (autofill_action_) {
@@ -151,85 +286,7 @@ void AutoFillHelper::FormDataFilled(int query_id,
       NOTREACHED();
   }
   autofill_action_ = AUTOFILL_NONE;
-  render_view_->Send(new ViewHostMsg_DidFillAutoFillFormData(
-      render_view_->routing_id()));
-}
-
-void AutoFillHelper::DidSelectAutoFillSuggestion(const WebNode& node,
-                                                 int unique_id) {
-  DCHECK_GE(unique_id, 0);
-
-  DidClearAutoFillSelection(node);
-  FillAutoFillFormData(node, unique_id, AUTOFILL_PREVIEW);
-}
-
-void AutoFillHelper::DidAcceptAutoFillSuggestion(const WebNode& node,
-                                                 const WebString& value,
-                                                 int unique_id,
-                                                 unsigned index) {
-  if (suggestions_options_index_ != -1 &&
-      index == static_cast<unsigned>(suggestions_options_index_)) {
-    // User selected 'AutoFill Options'.
-    render_view_->Send(new ViewHostMsg_ShowAutoFillDialog(
-        render_view_->routing_id()));
-  } else if (suggestions_clear_index_ != -1 &&
-             index == static_cast<unsigned>(suggestions_clear_index_)) {
-    // User selected 'Clear form'.
-    form_manager_.ClearFormWithNode(node);
-  } else if (!unique_id) {
-    // User selected an Autocomplete entry, so we fill directly.
-    WebInputElement element = node.toConst<WebInputElement>();
-
-    string16 substring = value;
-    substring = substring.substr(0, element.maxLength());
-    element.setValue(substring);
-
-    WebFrame* webframe = node.document().frame();
-    if (webframe)
-      webframe->notifiyPasswordListenerOfAutocomplete(element);
-  } else {
-    // Fill the values for the whole form.
-    FillAutoFillFormData(node, unique_id, AUTOFILL_FILL);
-  }
-
-  suggestions_clear_index_ = -1;
-  suggestions_options_index_ = -1;
-}
-
-void AutoFillHelper::DidClearAutoFillSelection(const WebNode& node) {
-  form_manager_.ClearPreviewedFormWithNode(node, was_query_node_autofilled_);
-}
-
-void AutoFillHelper::FrameContentsAvailable(WebFrame* frame) {
-  form_manager_.ExtractForms(frame);
-  SendForms(frame);
-}
-
-void AutoFillHelper::FrameWillClose(WebFrame* frame) {
-  form_manager_.ResetFrame(frame);
-}
-
-void AutoFillHelper::FrameDetached(WebFrame* frame) {
-  form_manager_.ResetFrame(frame);
-}
-
-void AutoFillHelper::TextDidChangeInTextField(const WebInputElement& element) {
-  ShowSuggestions(element, false, true, false);
-}
-
-void AutoFillHelper::KeyDownInTextField(const WebInputElement& element,
-                                        const WebKeyboardEvent& event) {
-  if (event.windowsKeyCode == ui::VKEY_DOWN ||
-      event.windowsKeyCode == ui::VKEY_UP)
-    ShowSuggestions(element, true, true, true);
-}
-
-bool AutoFillHelper::InputElementClicked(const WebInputElement& element,
-                                         bool was_focused,
-                                         bool is_focused) {
-  if (was_focused)
-    ShowSuggestions(element, true, false, true);
-  return false;
+  Send(new ViewHostMsg_DidFillAutoFillFormData(routing_id()));
 }
 
 void AutoFillHelper::ShowSuggestions(const WebInputElement& element,
@@ -273,8 +330,8 @@ void AutoFillHelper::QueryAutoFillSuggestions(
   if (!FindFormAndFieldForNode(node, &form, &field))
     return;
 
-  render_view_->Send(new ViewHostMsg_QueryFormFieldAutoFill(
-      render_view_->routing_id(), autofill_query_id_, form, field));
+  Send(new ViewHostMsg_QueryFormFieldAutoFill(
+      routing_id(), autofill_query_id_, form, field));
 }
 
 void AutoFillHelper::FillAutoFillFormData(const WebNode& node,
@@ -290,8 +347,8 @@ void AutoFillHelper::FillAutoFillFormData(const WebNode& node,
 
   autofill_action_ = action;
   was_query_node_autofilled_ = field.is_autofilled();
-  render_view_->Send(new ViewHostMsg_FillAutoFillFormData(
-      render_view_->routing_id(), autofill_query_id_, form, field, unique_id));
+  Send(new ViewHostMsg_FillAutoFillFormData(
+      routing_id(), autofill_query_id_, form, field, unique_id));
 }
 
 void AutoFillHelper::SendForms(WebFrame* frame) {
@@ -312,10 +369,8 @@ void AutoFillHelper::SendForms(WebFrame* frame) {
     }
   }
 
-  if (!forms.empty()) {
-    render_view_->Send(new ViewHostMsg_FormsSeen(render_view_->routing_id(),
-                                                 forms));
-  }
+  if (!forms.empty())
+    Send(new ViewHostMsg_FormsSeen(routing_id(), forms));
 }
 
 bool AutoFillHelper::FindFormAndFieldForNode(const WebNode& node,

@@ -10,11 +10,10 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "ipc/ipc_channel.h"
+#include "chrome/renderer/render_view_observer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsFrontendClient.h"
 
 class MessageLoop;
-class RenderView;
 
 namespace WebKit {
 class WebDevToolsFrontend;
@@ -29,14 +28,15 @@ struct DevToolsMessageData;
 // corresponding DevToolsAgent object.
 // TODO(yurys): now the client is almost empty later it will delegate calls to
 // code in glue
-class DevToolsClient : public WebKit::WebDevToolsFrontendClient,
-                       public IPC::Channel::Listener {
+class DevToolsClient : public RenderViewObserver,
+                       public WebKit::WebDevToolsFrontendClient {
  public:
-  explicit DevToolsClient(RenderView* view);
+  explicit DevToolsClient(RenderView* render_view);
   virtual ~DevToolsClient();
 
-  // IPC::Channel::Listener implementation.
-  bool OnMessageReceived(const IPC::Message& message);
+ private:
+  // RenderView::Observer implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // WebDevToolsFrontendClient implementation
   virtual void sendFrontendLoaded();
@@ -50,13 +50,11 @@ class DevToolsClient : public WebKit::WebDevToolsFrontendClient,
 
   virtual bool shouldHideScriptsPanel();
 
- private:
   void OnDispatchOnInspectorFrontend(const std::string& message);
 
   // Sends message to DevToolsAgent.
-  void Send(const IPC::Message& tools_agent_message);
+  void SendToAgent(const IPC::Message& tools_agent_message);
 
-  RenderView* render_view_;  // host render view
   scoped_ptr<WebKit::WebDevToolsFrontend> web_tools_frontend_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsClient);

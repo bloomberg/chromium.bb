@@ -171,45 +171,11 @@ bool DoUsernamesMatch(const string16& username1,
 
 PasswordAutocompleteManager::PasswordAutocompleteManager(
     RenderView* render_view)
-    : render_view_(render_view),
+    : RenderViewObserver(render_view),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
 PasswordAutocompleteManager::~PasswordAutocompleteManager() {
-}
-
-void PasswordAutocompleteManager::ReceivedPasswordFormFillData(
-    WebKit::WebView* view,
-    const webkit_glue::PasswordFormFillData& form_data) {
-  FormElementsList forms;
-  // We own the FormElements* in forms.
-  FindFormElements(view, form_data.basic_data, &forms);
-  FormElementsList::iterator iter;
-  for (iter = forms.begin(); iter != forms.end(); ++iter) {
-    scoped_ptr<FormElements> form_elements(*iter);
-
-    // If wait_for_username is true, we don't want to initially fill the form
-    // until the user types in a valid username.
-    if (!form_data.wait_for_username)
-      FillForm(form_elements.get(), form_data.basic_data);
-
-    // Attach autocomplete listener to enable selecting alternate logins.
-    // First, get pointers to username element.
-    WebKit::WebInputElement username_element =
-        form_elements->input_elements[form_data.basic_data.fields[0].name()];
-
-    // Get pointer to password element. (We currently only support single
-    // password forms).
-    WebKit::WebInputElement password_element =
-        form_elements->input_elements[form_data.basic_data.fields[1].name()];
-
-    DCHECK(login_to_password_info_.find(username_element) ==
-        login_to_password_info_.end());
-    PasswordInfo password_info;
-    password_info.fill_data = form_data;
-    password_info.password_field = password_element;
-    login_to_password_info_[username_element] = password_info;
-  }
 }
 
 void PasswordAutocompleteManager::FrameClosing(const WebKit::WebFrame* frame) {
@@ -376,12 +342,29 @@ void PasswordAutocompleteManager::SendPasswordForms(WebKit::WebFrame* frame,
     return;
 
   if (only_visible) {
-    render_view_->Send(
-        new ViewHostMsg_PasswordFormsVisible(GetRoutingID(), password_forms));
+    Send(new ViewHostMsg_PasswordFormsVisible(routing_id(), password_forms));
   } else {
-    render_view_->Send(
-      new ViewHostMsg_PasswordFormsFound(GetRoutingID(), password_forms));
+    Send(new ViewHostMsg_PasswordFormsFound(routing_id(), password_forms));
   }
+}
+
+bool PasswordAutocompleteManager::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(PasswordAutocompleteManager, message)
+    IPC_MESSAGE_HANDLER(ViewMsg_FillPasswordForm, OnFillPasswordForm)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void PasswordAutocompleteManager::DidFinishDocumentLoad(
+    WebKit::WebFrame* frame) {
+  SendPasswordForms(frame, false);
+}
+
+void PasswordAutocompleteManager::DidFinishLoad(WebKit::WebFrame* frame) {
+  SendPasswordForms(frame, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -393,6 +376,39 @@ bool PasswordAutocompleteManager::InputElementClicked(
     bool is_focused) {
   // TODO(jcivelli): http://crbug.com/51644 Implement behavior.
   return false;
+}
+
+void PasswordAutocompleteManager::OnFillPasswordForm(
+    const webkit_glue::PasswordFormFillData& form_data) {
+  FormElementsList forms;
+  // We own the FormElements* in forms.
+  FindFormElements(render_view()->webview(), form_data.basic_data, &forms);
+  FormElementsList::iterator iter;
+  for (iter = forms.begin(); iter != forms.end(); ++iter) {
+    scoped_ptr<FormElements> form_elements(*iter);
+
+    // If wait_for_username is true, we don't want to initially fill the form
+    // until the user types in a valid username.
+    if (!form_data.wait_for_username)
+      FillForm(form_elements.get(), form_data.basic_data);
+
+    // Attach autocomplete listener to enable selecting alternate logins.
+    // First, get pointers to username element.
+    WebKit::WebInputElement username_element =
+        form_elements->input_elements[form_data.basic_data.fields[0].name()];
+
+    // Get pointer to password element. (We currently only support single
+    // password forms).
+    WebKit::WebInputElement password_element =
+        form_elements->input_elements[form_data.basic_data.fields[1].name()];
+
+    DCHECK(login_to_password_info_.find(username_element) ==
+        login_to_password_info_.end());
+    PasswordInfo password_info;
+    password_info.fill_data = form_data;
+    password_info.password_field = password_element;
+    login_to_password_info_[username_element] = password_info;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -480,8 +496,4 @@ bool PasswordAutocompleteManager::FillUserNameAndPassword(
     password_element->setValue(password);
   SetElementAutofilled(password_element, true);
   return true;
-}
-
-int PasswordAutocompleteManager::GetRoutingID() const {
-  return render_view_->routing_id();
 }

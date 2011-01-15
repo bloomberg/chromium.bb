@@ -7,10 +7,10 @@
 #pragma once
 
 #include "base/scoped_ptr.h"
+#include "chrome/renderer/render_view_observer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGeolocationClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGeolocationController.h"
 
-class RenderView;
 struct Geoposition;
 
 namespace WebKit {
@@ -21,19 +21,17 @@ class WebGeolocationPosition;
 class WebSecurityOrigin;
 }
 
-namespace IPC {
-class Message;
-}
-
 // GeolocationDispatcher is a delegate for Geolocation messages used by
 // WebKit.
 // It's the complement of GeolocationDispatcherHost (owned by RenderViewHost).
-class GeolocationDispatcher : public WebKit::WebGeolocationClient {
+class GeolocationDispatcher : public RenderViewObserver,
+                              public WebKit::WebGeolocationClient {
  public:
   explicit GeolocationDispatcher(RenderView* render_view);
   virtual ~GeolocationDispatcher();
 
-  // IPC
+ private:
+  // RenderView::Observer implementation.
   bool OnMessageReceived(const IPC::Message& message);
 
   // WebGeolocationClient
@@ -48,7 +46,6 @@ class GeolocationDispatcher : public WebKit::WebGeolocationClient {
   virtual void cancelPermissionRequest(
       const WebKit::WebGeolocationPermissionRequest& permissionRequest);
 
- private:
   // Permission for using geolocation has been set.
   void OnGeolocationPermissionSet(int bridge_id, bool is_allowed);
 

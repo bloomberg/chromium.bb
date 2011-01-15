@@ -12,6 +12,7 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
+#include "chrome/renderer/autofill_helper.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/test/render_view_test.h"
 #include "gfx/codec/jpeg_codec.h"
@@ -1025,7 +1026,7 @@ TEST_F(RenderViewTest, SendForms) {
 
   // Verify that "FormsSeen" sends the expected number of fields.
   ProcessPendingMessages();
-  const IPC::Message* message = render_thread_.sink().GetUniqueMessageMatching(
+  const IPC::Message* message = render_thread_.sink().GetFirstMessageMatching(
       ViewHostMsg_FormsSeen::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
   ViewHostMsg_FormsSeen::Param params;
@@ -1065,11 +1066,12 @@ TEST_F(RenderViewTest, SendForms) {
   // Accept suggestion that contains a label.  Labeled items indicate AutoFill
   // as opposed to Autocomplete.  We're testing this distinction below with
   // the |ViewHostMsg_FillAutoFillFormData::ID| message.
-  view_->didAcceptAutoFillSuggestion(firstname,
-                                     WebKit::WebString::fromUTF8("Johnny"),
-                                     WebKit::WebString::fromUTF8("Home"),
-                                     1,
-                                     -1);
+  autofill_helper_->didAcceptAutoFillSuggestion(
+      firstname,
+      WebKit::WebString::fromUTF8("Johnny"),
+      WebKit::WebString::fromUTF8("Home"),
+      1,
+      -1);
 
   ProcessPendingMessages();
   const IPC::Message* message2 = render_thread_.sink().GetUniqueMessageMatching(
@@ -1115,7 +1117,7 @@ TEST_F(RenderViewTest, FillFormElement) {
 
   // Verify that "FormsSeen" sends the expected number of fields.
   ProcessPendingMessages();
-  const IPC::Message* message = render_thread_.sink().GetUniqueMessageMatching(
+  const IPC::Message* message = render_thread_.sink().GetFirstMessageMatching(
       ViewHostMsg_FormsSeen::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
   ViewHostMsg_FormsSeen::Param params;
@@ -1150,11 +1152,12 @@ TEST_F(RenderViewTest, FillFormElement) {
 
   // Accept a suggestion in a form that has been auto-filled.  This triggers
   // the direct filling of the firstname element with value parameter.
-  view_->didAcceptAutoFillSuggestion(firstname,
-                                     WebKit::WebString::fromUTF8("David"),
-                                     WebKit::WebString(),
-                                     0,
-                                     0);
+  autofill_helper_->didAcceptAutoFillSuggestion(
+      firstname,
+      WebKit::WebString::fromUTF8("David"),
+      WebKit::WebString(),
+      0,
+      0);
 
   ProcessPendingMessages();
   const IPC::Message* message2 = render_thread_.sink().GetUniqueMessageMatching(

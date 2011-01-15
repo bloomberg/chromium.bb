@@ -78,6 +78,7 @@
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
+#include "chrome/renderer/render_view_observer.h"
 #include "chrome/renderer/render_view_visitor.h"
 #include "chrome/renderer/render_widget_fullscreen.h"
 #include "chrome/renderer/render_widget_fullscreen_pepper.h"
@@ -520,10 +521,16 @@ struct RenderView::PendingFileChooser {
 };
 
 RenderView::RenderView(RenderThreadBase* render_thread,
-                       const WebPreferences& webkit_preferences,
-                       int64 session_storage_namespace_id)
+                       gfx::NativeViewId parent_hwnd,
+                       int32 opener_id,
+                       const RendererPreferences& renderer_prefs,
+                       const WebPreferences& webkit_prefs,
+                       SharedRenderViewCounter* counter,
+                       int32 routing_id,
+                       int64 session_storage_namespace_id,
+                       const string16& frame_name)
     : RenderWidget(render_thread, WebKit::WebPopupTypeNone),
-      webkit_preferences_(webkit_preferences),
+      webkit_preferences_(webkit_prefs),
       send_content_state_immediately_(false),
       enabled_bindings_(0),
       send_preferred_size_changes_(false),
@@ -548,16 +555,16 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       browser_window_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(page_info_method_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(autofill_method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(accessibility_method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(translate_helper_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          notification_provider_(new NotificationProvider(this))),
+      devtools_client_(NULL),
+      geolocation_dispatcher_(NULL),
+      speech_input_dispatcher_(NULL),
+      device_orientation_dispatcher_(NULL),
       accessibility_ack_pending_(false),
       pending_app_icon_requests_(0),
       session_storage_namespace_id_(session_storage_namespace_id),
-      decrement_shared_popup_at_destruction_(false),
       custom_menu_listener_(NULL) {
 #if defined(OS_MACOSX)
   // On Mac, the select popups are rendered by the browser.
@@ -565,14 +572,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   // in single-process mode.
   WebKit::WebView::setUseExternalPopupMenus(true);
 #endif
-  password_autocomplete_manager_.reset(new PasswordAutocompleteManager(this));
-  autofill_helper_.reset(new AutoFillHelper(this));
-  page_click_tracker_.reset(new PageClickTracker(this));
-  // Note that the order of insertion of the listeners is important.
-  // The password_autocomplete_manager_ takes the first shot at processing the
-  // notification and can stop the propagation.
-  page_click_tracker_->AddListener(password_autocomplete_manager_.get());
-  page_click_tracker_->AddListener(autofill_helper_.get());
+
   ClearBlockedContentSettings();
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClientSidePhishingDetection)) {
@@ -583,6 +583,66 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       phishing_delegate_->SetPhishingScorer(thread->phishing_scorer());
     }
   }
+
+  routing_id_ = routing_id;
+  if (opener_id != MSG_ROUTING_NONE)
+    opener_id_ = opener_id;
+
+  if (counter) {
+    shared_popup_counter_ = counter;
+    shared_popup_counter_->data++;
+    decrement_shared_popup_at_destruction_ = true;
+  } else {
+    shared_popup_counter_ = new SharedRenderViewCounter(0);
+    decrement_shared_popup_at_destruction_ = false;
+  }
+
+  notification_provider_ = new NotificationProvider(this);
+
+  devtools_agent_ = new DevToolsAgent(this);
+  PasswordAutocompleteManager* password_autocomplete_manager =
+      new PasswordAutocompleteManager(this);
+  AutoFillHelper* autofill_helper = new AutoFillHelper(
+      this, password_autocomplete_manager);
+
+  webwidget_ = WebView::create(this, devtools_agent_, autofill_helper);
+  g_view_map.Get().insert(std::make_pair(webview(), this));
+  webkit_preferences_.Apply(webview());
+  webview()->initializeMainFrame(this);
+  if (!frame_name.empty())
+    webview()->mainFrame()->setName(frame_name);
+
+  OnSetRendererPrefs(renderer_prefs);
+
+  render_thread_->AddRoute(routing_id_, this);
+  // Take a reference on behalf of the RenderThread.  This will be balanced
+  // when we receive ViewMsg_Close.
+  AddRef();
+
+  // If this is a popup, we must wait for the CreatingNew_ACK message before
+  // completing initialization.  Otherwise, we can finish it now.
+  if (opener_id == MSG_ROUTING_NONE) {
+    did_show_ = true;
+    CompleteInit(parent_hwnd);
+  }
+
+  host_window_ = parent_hwnd;
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDomAutomationController))
+    enabled_bindings_ |= BindingsPolicy::DOM_AUTOMATION;
+  if (command_line.HasSwitch(switches::kEnableAccessibility))
+    WebAccessibilityCache::enableAccessibility();
+
+  audio_message_filter_ = new AudioMessageFilter(routing_id_);
+  render_thread_->AddFilter(audio_message_filter_);
+
+  PageClickTracker* page_click_tracker = new PageClickTracker(this);
+  // Note that the order of insertion of the listeners is important.
+  // The password_autocomplete_manager takes the first shot at processing the
+  // notification and can stop the propagation.
+  page_click_tracker->AddListener(password_autocomplete_manager);
+  page_click_tracker->AddListener(autofill_helper);
 }
 
 RenderView::~RenderView() {
@@ -624,6 +684,9 @@ RenderView::~RenderView() {
   for (ViewMap::iterator it = views->begin(); it != views->end(); ++it)
     DCHECK_NE(this, it->second) << "Failed to call Close?";
 #endif
+
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, set_render_view(NULL));
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, OnDestruct());
 }
 
 /*static*/
@@ -654,15 +717,16 @@ RenderView* RenderView::Create(
     int64 session_storage_namespace_id,
     const string16& frame_name) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
-  scoped_refptr<RenderView> view(new RenderView(render_thread, webkit_prefs,
-                                                session_storage_namespace_id));
-  view->Init(parent_hwnd,
-             opener_id,
-             renderer_prefs,
-             counter,
-             routing_id,
-             frame_name);  // adds reference
-  return view;
+  return new RenderView(
+      render_thread,
+      parent_hwnd,
+      opener_id,
+      renderer_prefs,
+      webkit_prefs,
+      counter,
+      routing_id,
+      session_storage_namespace_id,
+      frame_name);  // adds reference
 }
 
 // static
@@ -672,6 +736,15 @@ void RenderView::SetNextPageID(int32 next_page_id) {
   DCHECK_EQ(next_page_id_, 1);
   DCHECK(next_page_id >= next_page_id_);
   next_page_id_ = next_page_id;
+}
+
+void RenderView::AddObserver(RenderViewObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void RenderView::RemoveObserver(RenderViewObserver* observer) {
+  observer->set_render_view(NULL);
+  observers_.RemoveObserver(observer);
 }
 
 bool RenderView::RendererAccessibilityNotification::ShouldIncludeChildren() {
@@ -894,86 +967,16 @@ void RenderView::UnregisterBlockedPlugin(BlockedPlugin* blocked_plugin) {
   blocked_plugins_.erase(blocked_plugin);
 }
 
-void RenderView::Init(gfx::NativeViewId parent_hwnd,
-                      int32 opener_id,
-                      const RendererPreferences& renderer_prefs,
-                      SharedRenderViewCounter* counter,
-                      int32 routing_id,
-                      const string16& frame_name) {
-  DCHECK(!webview());
-
-  if (opener_id != MSG_ROUTING_NONE)
-    opener_id_ = opener_id;
-
-  if (counter) {
-    shared_popup_counter_ = counter;
-    shared_popup_counter_->data++;
-    decrement_shared_popup_at_destruction_ = true;
-  } else {
-    shared_popup_counter_ = new SharedRenderViewCounter(0);
-    decrement_shared_popup_at_destruction_ = false;
-  }
-
-  devtools_agent_.reset(new DevToolsAgent(routing_id, this));
-
-  webwidget_ = WebView::create(this, devtools_agent_.get(), this);
-  g_view_map.Get().insert(std::make_pair(webview(), this));
-  webkit_preferences_.Apply(webview());
-  webview()->initializeMainFrame(this);
-  if (!frame_name.empty())
-    webview()->mainFrame()->setName(frame_name);
-
-  OnSetRendererPrefs(renderer_prefs);
-
-  routing_id_ = routing_id;
-  render_thread_->AddRoute(routing_id_, this);
-  // Take a reference on behalf of the RenderThread.  This will be balanced
-  // when we receive ViewMsg_Close.
-  AddRef();
-
-  // If this is a popup, we must wait for the CreatingNew_ACK message before
-  // completing initialization.  Otherwise, we can finish it now.
-  if (opener_id == MSG_ROUTING_NONE) {
-    did_show_ = true;
-    CompleteInit(parent_hwnd);
-  }
-
-  host_window_ = parent_hwnd;
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDomAutomationController))
-    enabled_bindings_ |= BindingsPolicy::DOM_AUTOMATION;
-  if (command_line.HasSwitch(switches::kEnableAccessibility))
-    WebAccessibilityCache::enableAccessibility();
-
-  audio_message_filter_ = new AudioMessageFilter(routing_id_);
-  render_thread_->AddFilter(audio_message_filter_);
-}
-
 bool RenderView::OnMessageReceived(const IPC::Message& message) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   if (main_frame)
     child_process_logging::SetActiveURL(main_frame->url());
 
-  // If this is developer tools renderer intercept tools messages first.
-  if (devtools_client_.get() && devtools_client_->OnMessageReceived(message))
-    return true;
-  if (devtools_agent_.get() && devtools_agent_->OnMessageReceived(message))
-    return true;
-  if (notification_provider_->OnMessageReceived(message))
-    return true;
-  if (geolocation_dispatcher_.get() &&
-      geolocation_dispatcher_->OnMessageReceived(message)) {
-    return true;
-  }
-  if (speech_input_dispatcher_.get() &&
-      speech_input_dispatcher_->OnMessageReceived(message)) {
-    return true;
-  }
-  if (device_orientation_dispatcher_.get() &&
-      device_orientation_dispatcher_->OnMessageReceived(message)) {
-    return true;
-  }
+  ObserverListBase<RenderViewObserver>::Iterator it(observers_);
+  RenderViewObserver* observer;
+  while ((observer = it.GetNext()) != NULL)
+    if (observer->OnMessageReceived(message))
+      return true;
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderView, message)
@@ -1019,7 +1022,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_CSSInsertRequest, OnCSSInsertRequest)
     IPC_MESSAGE_HANDLER(ViewMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewMsg_ReservePageIDRange, OnReservePageIDRange)
-    IPC_MESSAGE_HANDLER(ViewMsg_FillPasswordForm, OnFillPasswordForm)
     IPC_MESSAGE_HANDLER(ViewMsg_DragTargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_HANDLER(ViewMsg_DragTargetDragOver, OnDragTargetDragOver)
     IPC_MESSAGE_HANDLER(ViewMsg_DragTargetDragLeave, OnDragTargetDragLeave)
@@ -1053,10 +1055,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnHandleMessageFromExternalHost)
     IPC_MESSAGE_HANDLER(ViewMsg_DisassociateFromPopupCount,
                         OnDisassociateFromPopupCount)
-    IPC_MESSAGE_HANDLER(ViewMsg_AutoFillSuggestionsReturned,
-                        OnAutoFillSuggestionsReturned)
-    IPC_MESSAGE_HANDLER(ViewMsg_AutoFillFormDataFilled,
-                        OnAutoFillFormDataFilled)
     IPC_MESSAGE_HANDLER(ViewMsg_AllowScriptToClose,
                         OnAllowScriptToClose)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
@@ -1378,12 +1376,6 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
   history_list_offset_ = params.current_history_list_offset;
   history_list_length_ = params.current_history_list_length;
 
-  if (devtools_agent_.get())
-    devtools_agent_->OnNavigate();
-
-  if (notification_provider_.get())
-    notification_provider_->OnNavigate();
-
   child_process_logging::SetActiveURL(params.url);
 
   AboutHandler::MaybeHandle(params.url);
@@ -1504,8 +1496,8 @@ void RenderView::OnExecuteEditCommand(const std::string& name,
 }
 
 void RenderView::OnSetupDevToolsClient() {
-  DCHECK(!devtools_client_.get());
-  devtools_client_.reset(new DevToolsClient(this));
+  DCHECK(!devtools_client_);
+  devtools_client_ = new DevToolsClient(this);
 }
 
 void RenderView::OnUpdateTargetURLAck() {
@@ -1982,21 +1974,6 @@ void RenderView::AddGURLSearchProvider(
                                      provider_type));
 }
 
-void RenderView::OnAutoFillSuggestionsReturned(
-    int query_id,
-    const std::vector<string16>& values,
-    const std::vector<string16>& labels,
-    const std::vector<string16>& icons,
-    const std::vector<int>& unique_ids) {
-  autofill_helper_->SuggestionsReceived(
-      query_id, values, labels, icons, unique_ids);
-}
-
-void RenderView::OnAutoFillFormDataFilled(int query_id,
-                                          const webkit_glue::FormData& form) {
-  autofill_helper_->FormDataFilled(query_id, form);
-}
-
 void RenderView::OnAllowScriptToClose(bool script_can_close) {
   script_can_close_ = script_can_close;
 }
@@ -2195,7 +2172,7 @@ void RenderView::printPage(WebFrame* frame) {
 }
 
 WebKit::WebNotificationPresenter* RenderView::notificationPresenter() {
-  return notification_provider_.get();
+  return notification_provider_;
 }
 
 void RenderView::didStartLoading() {
@@ -2300,29 +2277,6 @@ void RenderView::didExecuteCommand(const WebString& command_name) {
   UserMetricsRecordAction(name);
 }
 
-void RenderView::textFieldDidEndEditing(
-    const WebKit::WebInputElement& element) {
-  password_autocomplete_manager_->TextFieldDidEndEditing(element);
-}
-
-void RenderView::textFieldDidChange(const WebKit::WebInputElement& element) {
-  // We post a task for doing the AutoFill as the caret position is not set
-  // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
-  // it is needed to trigger autofill.
-  autofill_method_factory_.RevokeAll();
-  MessageLoop::current()->PostTask(
-        FROM_HERE,
-        autofill_method_factory_.NewRunnableMethod(
-            &RenderView::TextFieldDidChangeImpl, element));
-}
-
-void RenderView::TextFieldDidChangeImpl(
-    const WebKit::WebInputElement& element) {
-  if (password_autocomplete_manager_->TextDidChangeInTextField(element))
-    return;
-  autofill_helper_->TextDidChangeInTextField(element);
-}
-
 void RenderView::SendPendingAccessibilityNotifications() {
   if (!accessibility_.get())
     return;
@@ -2348,13 +2302,6 @@ void RenderView::SendPendingAccessibilityNotifications() {
   pending_accessibility_notifications_.clear();
   Send(new ViewHostMsg_AccessibilityNotifications(routing_id_, notifications));
   accessibility_ack_pending_ = true;
-}
-
-void RenderView::textFieldDidReceiveKeyDown(
-    const WebKit::WebInputElement& element,
-    const WebKit::WebKeyboardEvent& event) {
-  password_autocomplete_manager_->TextFieldHandlingKeyDown(element, event);
-  autofill_helper_->KeyDownInTextField(element, event);
 }
 
 bool RenderView::handleCurrentKeyboardEvent() {
@@ -2649,43 +2596,6 @@ void RenderView::didUpdateInspectorSetting(const WebString& key,
                                               value.utf8()));
 }
 
-void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
-                                             const WebKit::WebString& value,
-                                             const WebKit::WebString& label,
-                                             int unique_id,
-                                             unsigned index) {
-  autofill_helper_->DidAcceptAutoFillSuggestion(node, value, unique_id, index);
-}
-
-void RenderView::didSelectAutoFillSuggestion(const WebKit::WebNode& node,
-                                             const WebKit::WebString& value,
-                                             const WebKit::WebString& label,
-                                             int unique_id) {
-  autofill_helper_->DidSelectAutoFillSuggestion(node, unique_id);
-}
-
-void RenderView::didClearAutoFillSelection(const WebKit::WebNode& node) {
-  autofill_helper_->DidClearAutoFillSelection(node);
-}
-
-void RenderView::didAcceptAutocompleteSuggestion(
-    const WebKit::WebInputElement& user_element) {
-  bool result = password_autocomplete_manager_->FillPassword(user_element);
-  // Since this user name was selected from a suggestion list, we should always
-  // have password for it.
-  DCHECK(result);
-}
-
-void RenderView::removeAutocompleteSuggestion(const WebKit::WebString& name,
-                                              const WebKit::WebString& value) {
-  autofill_helper_->RemoveAutocompleteSuggestion(name, value);
-}
-
-void RenderView::removeAutofillSuggestions(const WebString& name,
-                                           const WebString& value) {
-  removeAutocompleteSuggestion(name, value);
-}
-
 // WebKit::WebWidgetClient ----------------------------------------------------
 
 void RenderView::didFocus() {
@@ -2941,8 +2851,7 @@ WebCookieJar* RenderView::cookieJar(WebFrame* frame) {
 }
 
 void RenderView::frameDetached(WebFrame* frame) {
-  autofill_helper_->FrameDetached(frame);
-  page_click_tracker_->StopTrackingFrame(frame, true);
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameDetached(frame));
 }
 
 void RenderView::willClose(WebFrame* frame) {
@@ -2952,11 +2861,7 @@ void RenderView::willClose(WebFrame* frame) {
   page_load_histograms_.Dump(frame);
   navigation_state->user_script_idle_scheduler()->Cancel();
 
-  // TODO(jhawkins): Remove once frameDetached is called by WebKit.
-  // NOTE: taking this out results in lots of increased memory usage!  This is
-  // because frameDetached is NOT like wilLClose.  The latter happens between
-  // navigations, but the former only happens when the RenderView is going away.
-  autofill_helper_->FrameWillClose(frame);
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameWillClose(frame));
 }
 
 bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
@@ -3550,11 +3455,8 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
 
   Send(new ViewHostMsg_DocumentLoadedInFrame(routing_id_, frame->identifier()));
 
-  page_click_tracker_->StartTrackingFrame(frame);
-  // The document has now been fully loaded.  Scan for forms to be sent up to
-  // the browser.
-  autofill_helper_->FrameContentsAvailable(frame);
-  password_autocomplete_manager_->SendPasswordForms(frame, false);
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_, DidFinishDocumentLoad(frame));
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
@@ -3605,8 +3507,7 @@ void RenderView::didFinishLoad(WebFrame* frame) {
   navigation_state->set_finish_load_time(Time::Now());
   navigation_state->user_script_idle_scheduler()->DidFinishLoad();
 
-  // Let the password manager know which password forms are actually visible.
-  password_autocomplete_manager_->SendPasswordForms(frame, true);
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidFinishLoad(frame));
 
   Send(new ViewHostMsg_DidFinishLoad(routing_id_, frame->identifier()));
 }
@@ -4720,12 +4621,6 @@ void RenderView::OnDragSourceSystemDragEnded() {
   webview()->dragSourceSystemDragEnded();
 }
 
-void RenderView::OnFillPasswordForm(
-    const webkit_glue::PasswordFormFillData& form_data) {
-  password_autocomplete_manager_->ReceivedPasswordFormFillData(webview(),
-                                                              form_data);
-}
-
 void RenderView::OnDragTargetDragEnter(const WebDropData& drop_data,
                                        const gfx::Point& client_point,
                                        const gfx::Point& screen_point,
@@ -5502,7 +5397,7 @@ void RenderView::DidHandleKeyEvent() {
 }
 
 void RenderView::DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {
-  page_click_tracker_->DidHandleMouseEvent(event);
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidHandleMouseEvent(event));
 }
 
 #if defined(OS_MACOSX)
@@ -5660,27 +5555,26 @@ void RenderView::OnPageTranslated() {
   if (!frame)
     return;
 
-  // The page is translated, so try to extract the form data again.
-  autofill_helper_->FrameContentsAvailable(frame);
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameTranslated(frame));
 }
 
 WebKit::WebGeolocationClient* RenderView::geolocationClient() {
-  if (!geolocation_dispatcher_.get())
-    geolocation_dispatcher_.reset(new GeolocationDispatcher(this));
-  return geolocation_dispatcher_.get();
+  if (!geolocation_dispatcher_)
+    geolocation_dispatcher_ = new GeolocationDispatcher(this);
+  return geolocation_dispatcher_;
 }
 
 WebKit::WebSpeechInputController* RenderView::speechInputController(
     WebKit::WebSpeechInputListener* listener) {
-  if (!speech_input_dispatcher_.get())
-    speech_input_dispatcher_.reset(new SpeechInputDispatcher(this, listener));
-  return speech_input_dispatcher_.get();
+  if (!speech_input_dispatcher_)
+    speech_input_dispatcher_ = new SpeechInputDispatcher(this, listener);
+  return speech_input_dispatcher_;
 }
 
 WebKit::WebDeviceOrientationClient* RenderView::deviceOrientationClient() {
-  if (!device_orientation_dispatcher_.get())
-    device_orientation_dispatcher_.reset(new DeviceOrientationDispatcher(this));
-  return device_orientation_dispatcher_.get();
+  if (!device_orientation_dispatcher_)
+    device_orientation_dispatcher_ = new DeviceOrientationDispatcher(this);
+  return device_orientation_dispatcher_;
 }
 
 void RenderView::zoomLimitsChanged(double minimum_level, double maximum_level) {

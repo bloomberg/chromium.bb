@@ -26,38 +26,17 @@ using WebKit::WebString;
 using WebKit::WebView;
 
 PageClickTracker::PageClickTracker(RenderView* render_view)
-    : render_view_(render_view),
+    : RenderViewObserver(render_view),
       was_focused_(false) {
 }
 
 PageClickTracker::~PageClickTracker() {
-  // Note that even though RenderView calls StopTrackingFrame when notified that
+  // Note that even though RenderView calls FrameDetached when notified that
   // a frame was closed, it might not always get that notification from WebKit
   // for all frames.
   // By the time we get here, the frame could have been destroyed so we cannot
   // unregister listeners in frames remaining in tracked_frames_ as they might
   // be invalid.
-}
-
-void PageClickTracker::StartTrackingFrame(WebFrame* frame) {
-  tracked_frames_.push_back(frame);
-  frame->document().addEventListener("mousedown", this, false);
-}
-
-void PageClickTracker::StopTrackingFrame(WebFrame* frame, bool frame_detached) {
-  FrameList::iterator iter =
-      std::find(tracked_frames_.begin(), tracked_frames_.end(), frame);
-  if (iter == tracked_frames_.end()) {
-    // Some frames might never load contents so we may not have a listener on
-    // them.  Calling removeEventListener() on them would trigger an assert, so
-    // we need to keep track of which frames we are listening to.
-    return;
-  }
-  tracked_frames_.erase(iter);
-  // If the frame has been detached, all event listeners have already been
-  // removed.
-  if (!frame_detached)
-    frame->document().removeEventListener("mousedown", this, false);
 }
 
 void PageClickTracker::DidHandleMouseEvent(const WebMouseEvent& event) {
@@ -98,6 +77,38 @@ void PageClickTracker::RemoveListener(PageClickListener* listener) {
   listeners_.RemoveObserver(listener);
 }
 
+bool PageClickTracker::OnMessageReceived(const IPC::Message& message) {
+  if (message.type() == ViewMsg_HandleInputEvent::ID) {
+    void* iter = NULL;
+    const char* data;
+    int data_length;
+    if (message.ReadData(&iter, &data, &data_length)) {
+      const WebInputEvent* input_event =
+          reinterpret_cast<const WebInputEvent*>(data);
+      if (WebInputEvent::isMouseEventType(input_event->type))
+        DidHandleMouseEvent(*(static_cast<const WebMouseEvent*>(input_event)));
+    }
+  }
+  return false;
+}
+
+void PageClickTracker::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
+  tracked_frames_.push_back(frame);
+  frame->document().addEventListener("mousedown", this, false);
+}
+
+void PageClickTracker::FrameDetached(WebKit::WebFrame* frame) {
+  FrameList::iterator iter =
+      std::find(tracked_frames_.begin(), tracked_frames_.end(), frame);
+  if (iter == tracked_frames_.end()) {
+    // Some frames might never load contents so we may not have a listener on
+    // them.  Calling removeEventListener() on them would trigger an assert, so
+    // we need to keep track of which frames we are listening to.
+    return;
+  }
+  tracked_frames_.erase(iter);
+}
+
 void PageClickTracker::handleEvent(const WebDOMEvent& event) {
   last_node_clicked_.reset();
 
@@ -117,7 +128,7 @@ void PageClickTracker::handleEvent(const WebDOMEvent& event) {
 }
 
 WebNode PageClickTracker::GetFocusedNode() {
-  WebView* web_view = render_view_->webview();
+  WebView* web_view = render_view()->webview();
   if (!web_view)
     return WebNode();
 

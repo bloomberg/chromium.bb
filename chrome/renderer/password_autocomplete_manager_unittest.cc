@@ -4,6 +4,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/renderer/autofill_helper.h"
 #include "chrome/renderer/password_autocomplete_manager.h"
 #include "chrome/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,7 +63,7 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
   void SimulateOnFillPasswordForm(
       const PasswordFormFillData& fill_data) {
     ViewMsg_FillPasswordForm msg(0, fill_data);
-    view_->OnMessageReceived(msg);
+    password_autocomplete_->OnMessageReceived(msg);
   }
 
   virtual void SetUp() {
@@ -117,7 +118,7 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
     username_element_.setValue(WebString::fromUTF8(username));
     if (move_caret_to_end)
       username_element_.setSelectionRange(username.length(), username.length());
-    view_->textFieldDidChange(username_element_);
+    autofill_helper_->textFieldDidChange(username_element_);
     // Processing is delayed because of a WebKit bug, see
     // PasswordAutocompleteManager::TextDidChangeInTextField() for details.
     MessageLoop::current()->RunAllPending();
@@ -127,7 +128,7 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
                             ui::KeyboardCode key_code) {
     WebKit::WebKeyboardEvent key_event;
     key_event.windowsKeyCode = key_code;
-    view_->textFieldDidReceiveKeyDown(element, key_event);
+    autofill_helper_->textFieldDidReceiveKeyDown(element, key_event);
   }
 
   void CheckTextFieldsState(const std::string& username,
@@ -243,16 +244,16 @@ TEST_F(PasswordAutocompleteManagerTest, WaitUsername) {
   // Autocomplete should happen only when the username textfield is blurred with
   // a full match.
   username_element_.setValue("a");
-  view_->textFieldDidEndEditing(username_element_);
+  autofill_helper_->textFieldDidEndEditing(username_element_);
   CheckTextFieldsState("a", false, "", false);
   username_element_.setValue("al");
-  view_->textFieldDidEndEditing(username_element_);
+  autofill_helper_->textFieldDidEndEditing(username_element_);
   CheckTextFieldsState("al", false, "", false);
   username_element_.setValue("alices");
-  view_->textFieldDidEndEditing(username_element_);
+  autofill_helper_->textFieldDidEndEditing(username_element_);
   CheckTextFieldsState("alices", false, "", false);
   username_element_.setValue(ASCIIToUTF16(kAliceUsername));
-  view_->textFieldDidEndEditing(username_element_);
+  autofill_helper_->textFieldDidEndEditing(username_element_);
   CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
 }
 
@@ -326,7 +327,7 @@ TEST_F(PasswordAutocompleteManagerTest, SuggestionSelect) {
   // WebView does: it sets the element value then calls
   // didAcceptAutocompleteSuggestion on the renderer.
   username_element_.setValue(ASCIIToUTF16(kAliceUsername));
-  view_->didAcceptAutocompleteSuggestion(username_element_);
+  autofill_helper_->didAcceptAutocompleteSuggestion(username_element_);
 
   // Autocomplete should have kicked in.
   CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);

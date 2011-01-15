@@ -25,8 +25,8 @@ using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
 using WebKit::WebURL;
 
-NotificationProvider::NotificationProvider(RenderView* view)
-    : view_(view) {
+NotificationProvider::NotificationProvider(RenderView* render_view)
+    : RenderViewObserver(render_view) {
 }
 
 NotificationProvider::~NotificationProvider() {
@@ -46,7 +46,7 @@ void NotificationProvider::cancel(const WebNotification& notification) {
   bool id_found = manager_.GetId(notification, id);
   // Won't be found if the notification has already been closed by the user.
   if (id_found)
-    Send(new ViewHostMsg_CancelDesktopNotification(view_->routing_id(), id));
+    Send(new ViewHostMsg_CancelDesktopNotification(routing_id(), id));
 }
 
 void NotificationProvider::objectDestroyed(
@@ -62,7 +62,7 @@ WebNotificationPresenter::Permission NotificationProvider::checkPermission(
     const WebURL& url) {
   int permission;
   Send(new ViewHostMsg_CheckNotificationPermission(
-          view_->routing_id(),
+          routing_id(),
           url,
           &permission));
   return static_cast<WebNotificationPresenter::Permission>(permission);
@@ -72,12 +72,12 @@ void NotificationProvider::requestPermission(
     const WebSecurityOrigin& origin,
     WebNotificationPermissionCallback* callback) {
   // We only request permission in response to a user gesture.
-  if (!view_->webview()->mainFrame()->isProcessingUserGesture())
+  if (!render_view()->webview()->mainFrame()->isProcessingUserGesture())
     return;
 
   int id = manager_.RegisterPermissionRequest(callback);
 
-  Send(new ViewHostMsg_RequestNotificationPermission(view_->routing_id(),
+  Send(new ViewHostMsg_RequestNotificationPermission(routing_id(),
                                                      GURL(origin.toString()),
                                                      id));
 }
@@ -93,11 +93,11 @@ bool NotificationProvider::OnMessageReceived(const IPC::Message& message) {
                         OnPermissionRequestComplete);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return handled;
-}
 
-void NotificationProvider::OnNavigate() {
-  manager_.Clear();
+  if (message.type() == ViewMsg_Navigate::ID)
+    OnNavigate();  // Don't want to swallow the message.
+
+  return handled;
 }
 
 bool NotificationProvider::ShowHTML(const WebNotification& notification,
@@ -113,13 +113,13 @@ bool NotificationProvider::ShowHTML(const WebNotification& notification,
 
   DCHECK(notification.isHTML());
   ViewHostMsg_ShowNotification_Params params;
-  params.origin = GURL(view_->webview()->mainFrame()->url()).GetOrigin();
+  params.origin =
+      GURL(render_view()->webview()->mainFrame()->url()).GetOrigin();
   params.is_html = true;
   params.contents_url = notification.url();
   params.notification_id = id;
   params.replace_id = notification.replaceId();
-  return Send(new ViewHostMsg_ShowDesktopNotification(view_->routing_id(),
-                                                      params));
+  return Send(new ViewHostMsg_ShowDesktopNotification(routing_id(), params));
 }
 
 bool NotificationProvider::ShowText(const WebNotification& notification,
@@ -127,7 +127,8 @@ bool NotificationProvider::ShowText(const WebNotification& notification,
   DCHECK(!notification.isHTML());
   ViewHostMsg_ShowNotification_Params params;
   params.is_html = false;
-  params.origin = GURL(view_->webview()->mainFrame()->url()).GetOrigin();
+  params.origin = GURL(
+      render_view()->webview()->mainFrame()->url()).GetOrigin();
   params.icon_url = notification.iconURL();
   params.title = notification.title();
   params.body = notification.body();
@@ -135,8 +136,7 @@ bool NotificationProvider::ShowText(const WebNotification& notification,
   params.notification_id = id;
   params.replace_id = notification.replaceId();
 
-  return Send(new ViewHostMsg_ShowDesktopNotification(view_->routing_id(),
-                                                      params));
+  return Send(new ViewHostMsg_ShowDesktopNotification(routing_id(), params));
 }
 
 void NotificationProvider::OnDisplay(int id) {
@@ -184,6 +184,6 @@ void NotificationProvider::OnPermissionRequestComplete(int id) {
   manager_.OnPermissionRequestComplete(id);
 }
 
-bool NotificationProvider::Send(IPC::Message* message) {
-  return RenderThread::current()->Send(message);
+void NotificationProvider::OnNavigate() {
+  manager_.Clear();
 }

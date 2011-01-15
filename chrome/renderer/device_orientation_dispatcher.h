@@ -8,21 +8,21 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientationClient.h"
 
 #include "base/scoped_ptr.h"
-#include "ipc/ipc_channel.h"
+#include "chrome/renderer/render_view_observer.h"
 
-class RenderView;
 namespace WebKit { class WebDeviceOrientation; }
 
 struct ViewMsg_DeviceOrientationUpdated_Params;
 
-class DeviceOrientationDispatcher : public WebKit::WebDeviceOrientationClient,
-                                    public IPC::Channel::Listener {
+class DeviceOrientationDispatcher : public RenderViewObserver,
+                                    public WebKit::WebDeviceOrientationClient {
  public:
-  explicit DeviceOrientationDispatcher(RenderView* render_view);
+  DeviceOrientationDispatcher(RenderView* render_view);
   virtual ~DeviceOrientationDispatcher();
 
-  // IPC::Channel::Implementation.
-  bool OnMessageReceived(const IPC::Message& msg);
+ private:
+  // RenderView::Observer implementation.
+  bool OnMessageReceived(const IPC::Message& message);
 
   // From WebKit::WebDeviceOrientationClient.
   virtual void setController(
@@ -31,11 +31,9 @@ class DeviceOrientationDispatcher : public WebKit::WebDeviceOrientationClient,
   virtual void stopUpdating();
   virtual WebKit::WebDeviceOrientation lastOrientation() const;
 
- private:
   void OnDeviceOrientationUpdated(
       const ViewMsg_DeviceOrientationUpdated_Params& p);
 
-  RenderView* render_view_;
   scoped_ptr<WebKit::WebDeviceOrientationController> controller_;
   scoped_ptr<WebKit::WebDeviceOrientation> last_orientation_;
   bool started_;

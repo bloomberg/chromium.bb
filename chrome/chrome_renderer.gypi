@@ -164,6 +164,8 @@
         'renderer/render_view.cc',
         'renderer/render_view_linux.cc',
         'renderer/render_view.h',
+        'renderer/render_view_observer.cc',
+        'renderer/render_view_observer.h',
         'renderer/render_widget.cc',
         'renderer/render_widget.h',
         'renderer/render_widget_fullscreen.cc',

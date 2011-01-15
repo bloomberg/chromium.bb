@@ -15,8 +15,9 @@
 using WebKit::WebFrame;
 
 SpeechInputDispatcher::SpeechInputDispatcher(
-    RenderView* render_view, WebKit::WebSpeechInputListener* listener)
-    : render_view_(render_view),
+    RenderView* render_view,
+    WebKit::WebSpeechInputListener* listener)
+    : RenderViewObserver(render_view),
       listener_(listener) {
 }
 
@@ -40,11 +41,11 @@ bool SpeechInputDispatcher::startRecognition(
     const WebKit::WebString& language,
     const WebKit::WebString& grammar) {
   VLOG(1) << "SpeechInputDispatcher::startRecognition enter";
-  gfx::Size scroll = render_view_->webview()->mainFrame()->scrollOffset();
+  gfx::Size scroll = render_view()->webview()->mainFrame()->scrollOffset();
   gfx::Rect rect = element_rect;
   rect.Offset(-scroll.width(), -scroll.height());
-  render_view_->Send(new ViewHostMsg_SpeechInput_StartRecognition(
-      render_view_->routing_id(), request_id, rect,
+  Send(new ViewHostMsg_SpeechInput_StartRecognition(
+      routing_id(), request_id, rect,
       UTF16ToUTF8(language), UTF16ToUTF8(grammar)));
   VLOG(1) << "SpeechInputDispatcher::startRecognition exit";
   return true;
@@ -52,15 +53,13 @@ bool SpeechInputDispatcher::startRecognition(
 
 void SpeechInputDispatcher::cancelRecognition(int request_id) {
   VLOG(1) << "SpeechInputDispatcher::cancelRecognition enter";
-  render_view_->Send(new ViewHostMsg_SpeechInput_CancelRecognition(
-      render_view_->routing_id(), request_id));
+  Send(new ViewHostMsg_SpeechInput_CancelRecognition(routing_id(), request_id));
   VLOG(1) << "SpeechInputDispatcher::cancelRecognition exit";
 }
 
 void SpeechInputDispatcher::stopRecording(int request_id) {
   VLOG(1) << "SpeechInputDispatcher::stopRecording enter";
-  render_view_->Send(new ViewHostMsg_SpeechInput_StopRecording(
-      render_view_->routing_id(), request_id));
+  Send(new ViewHostMsg_SpeechInput_StopRecording(routing_id(), request_id));
   VLOG(1) << "SpeechInputDispatcher::stopRecording exit";
 }
 

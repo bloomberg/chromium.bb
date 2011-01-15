@@ -21,7 +21,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 
+class AutoFillHelper;
 class MockRenderProcess;
+class PasswordAutocompleteManager;
 
 class RenderViewTest : public testing::Test {
  public:
@@ -99,6 +101,9 @@ class RenderViewTest : public testing::Test {
   scoped_ptr<MainFunctionParams> params_;
   scoped_ptr<CommandLine> command_line_;
   scoped_ptr<SandboxInitWrapper> sandbox_init_wrapper_;
+
+  PasswordAutocompleteManager* password_autocomplete_;
+  AutoFillHelper* autofill_helper_;
 };
 
 #endif  // CHROME_TEST_RENDER_VIEW_TEST_H_

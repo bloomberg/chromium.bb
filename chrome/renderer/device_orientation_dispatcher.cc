@@ -4,14 +4,14 @@
 
 #include "chrome/renderer/device_orientation_dispatcher.h"
 
+#include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientation.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientationController.h"
 
 DeviceOrientationDispatcher::DeviceOrientationDispatcher(
     RenderView* render_view)
-    : render_view_(render_view),
+    : RenderViewObserver(render_view),
       controller_(NULL),
       started_(false) {
 }
@@ -37,14 +37,12 @@ void DeviceOrientationDispatcher::setController(
 }
 
 void DeviceOrientationDispatcher::startUpdating() {
-  render_view_->Send(new ViewHostMsg_DeviceOrientation_StartUpdating(
-      render_view_->routing_id()));
+  Send(new ViewHostMsg_DeviceOrientation_StartUpdating(routing_id()));
   started_ = true;
 }
 
 void DeviceOrientationDispatcher::stopUpdating() {
-  render_view_->Send(new ViewHostMsg_DeviceOrientation_StopUpdating(
-      render_view_->routing_id()));
+  Send(new ViewHostMsg_DeviceOrientation_StopUpdating(routing_id()));
   started_ = false;
 }
 

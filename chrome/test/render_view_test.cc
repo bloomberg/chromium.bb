@@ -11,11 +11,13 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/renderer_preferences.h"
+#include "chrome/renderer/autofill_helper.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/mock_render_process.h"
+#include "chrome/renderer/password_autocomplete_manager.h"
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
@@ -135,6 +137,12 @@ void RenderViewTest::SetUp() {
 
   // Attach a pseudo keyboard device to this object.
   mock_keyboard_.reset(new MockKeyboard());
+
+  // RenderView doesn't expose it's PasswordAutocompleteManager or
+  // AutoFillHelper objects, because it has no need to store them directly
+  // (they're stored as RenderViewObserver*).  So just create another set.
+  password_autocomplete_ = new PasswordAutocompleteManager(view_);
+  autofill_helper_ = new AutoFillHelper(view_, password_autocomplete_);
 }
 
 void RenderViewTest::TearDown() {
@@ -245,7 +253,7 @@ void RenderViewTest::SendNativeKeyEvent(
   scoped_ptr<IPC::Message> input_message(new ViewMsg_HandleInputEvent(0));
   input_message->WriteData(reinterpret_cast<const char*>(&key_event),
                            sizeof(WebKit::WebKeyboardEvent));
-  view_->OnHandleInputEvent(*input_message);
+  view_->OnMessageReceived(*input_message);
 }
 
 void RenderViewTest::VerifyPageCount(int count) {
@@ -338,8 +346,9 @@ bool RenderViewTest::SimulateElementClick(const std::string& element_id) {
   mouse_event.y = bounds.CenterPoint().y();
   mouse_event.clickCount = 1;
   ViewMsg_HandleInputEvent input_event(0);
-  input_event.WriteData(reinterpret_cast<const char*>(&mouse_event),
-                        sizeof(WebMouseEvent));
-  view_->OnHandleInputEvent(input_event);
+  scoped_ptr<IPC::Message> input_message(new ViewMsg_HandleInputEvent(0));
+  input_message->WriteData(reinterpret_cast<const char*>(&mouse_event),
+                           sizeof(WebMouseEvent));
+  view_->OnMessageReceived(*input_message);
   return true;
 }
