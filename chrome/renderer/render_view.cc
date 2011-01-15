@@ -2054,14 +2054,6 @@ void RenderView::OnMissingPluginStatus(
 
 // WebKit::WebViewClient ------------------------------------------------------
 
-// TODO(jochen): remove once WebKit side is up to date.
-WebView* RenderView::createView(
-    WebFrame* creator,
-    const WebWindowFeatures& features,
-    const WebString& frame_name) {
-  return createView(creator, WebURLRequest(), features, frame_name);
-}
-
 WebView* RenderView::createView(
     WebFrame* creator,
     const WebURLRequest& request,

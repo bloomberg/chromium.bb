@@ -330,14 +330,6 @@ void TestWebViewDelegate::SetAuthorAndUserStylesEnabled(bool is_enabled) {
 }
 
 // WebViewClient -------------------------------------------------------------
-// TODO(jochen): remove once webkit side is up to date.
-WebView* TestWebViewDelegate::createView(
-    WebFrame* creator,
-    const WebWindowFeatures& window_features,
-    const WebString& frame_name) {
-  return createView(creator, WebURLRequest(), window_features, frame_name);
-}
-
 WebView* TestWebViewDelegate::createView(
     WebFrame* creator,
     const WebURLRequest& request,
