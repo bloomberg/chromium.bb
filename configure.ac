@@ -24,6 +24,7 @@ PKG_CHECK_MODULES(FFI, [libffi])
 
 PKG_CHECK_MODULES(COMPOSITOR,
 		  [egl glesv2 gdk-pixbuf-2.0 libudev >= 136 libdrm >= 2.4.17] xcb-dri2 xcb-xfixes)
+PKG_CHECK_MODULES(GLES2, [egl glesv2 libdrm])
 PKG_CHECK_MODULES(CLIENT, [egl gl cairo gdk-pixbuf-2.0 glib-2.0 gobject-2.0 xkbcommon libdrm])
 PKG_CHECK_MODULES(POPPLER, [poppler-glib gdk-2.0],
 			   [have_poppler=yes], [have_poppler=no])
