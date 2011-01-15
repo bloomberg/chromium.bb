@@ -21,6 +21,7 @@
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
+#include "chrome/renderer/renderer_webaudiodevice_impl.h"
 #include "chrome/renderer/renderer_webidbfactory_impl.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/visitedlink_slave.h"
@@ -67,6 +68,7 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
+using WebKit::WebAudioDevice;
 using WebKit::WebBlobRegistry;
 using WebKit::WebFileSystem;
 using WebKit::WebFrame;
@@ -517,6 +519,18 @@ RendererWebKitClientImpl::createGraphicsContext3D() {
     return NULL;
 #endif
   }
+}
+
+WebAudioDevice*
+RendererWebKitClientImpl::createAudioDevice(
+    size_t buffer_size,
+    unsigned channels,
+    double sample_rate,
+    WebAudioDevice::RenderCallback* callback) {
+  return new RendererWebAudioDeviceImpl(buffer_size,
+                                        channels,
+                                        sample_rate,
+                                        callback);
 }
 
 //------------------------------------------------------------------------------

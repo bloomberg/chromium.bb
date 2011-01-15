@@ -94,6 +94,10 @@ IPC_MESSAGE_CONTROL1(ViewMsg_SetNextPageID,
 IPC_MESSAGE_ROUTED1(ViewMsg_SetCSSColors,
                     std::vector<CSSColors::CSSColorMapping>)
 
+// Asks the browser for a unique routing ID.
+IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GenerateRoutingID,
+                            int /* routing_id */)
+
 // Tells the renderer to create a new view.
 // This message is slightly different, the view it takes (via
 // ViewMsg_New_Params) is the view to create, the message itself is sent as a

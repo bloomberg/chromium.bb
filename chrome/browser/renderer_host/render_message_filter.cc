@@ -284,6 +284,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                     OnGetRootWindowRect)
 #endif
 
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GenerateRoutingID, OnGenerateRoutingID)
+
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnMsgCreateWindow)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateFullscreenWidget,
@@ -726,6 +728,10 @@ void RenderMessageFilter::OnLaunchNaCl(
     const std::wstring& url, int channel_descriptor, IPC::Message* reply_msg) {
   NaClProcessHost* host = new NaClProcessHost(resource_dispatcher_host_, url);
   host->Launch(this, channel_descriptor, reply_msg);
+}
+
+void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {
+  *route_id = render_widget_helper_->GetNextRoutingID();
 }
 
 void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
