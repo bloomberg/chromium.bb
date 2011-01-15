@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_INFO_BUBBLE_H_
 #pragma once
 
+#include "chrome/browser/ui/views/bubble_border.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "views/accelerator.h"
 #include "views/view.h"
-#include "chrome/browser/ui/views/bubble_border.h"
 
 #if defined(OS_WIN)
 #include "views/widget/widget_win.h"

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_APPCACHE_INFO_VIEW_H_
 #pragma once
 
-#include "chrome/browser/ui/views/generic_info_view.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
+#include "chrome/browser/ui/views/generic_info_view.h"
 
 // AppCacheInfoView
 // Displays a tabular grid of AppCache information.

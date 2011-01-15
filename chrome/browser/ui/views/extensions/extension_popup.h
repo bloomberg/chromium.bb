@@ -8,8 +8,8 @@
 
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/views/browser_bubble.h"
-#include "chrome/browser/ui/views/extensions/extension_view.h"
 #include "chrome/browser/ui/views/bubble_border.h"
+#include "chrome/browser/ui/views/extensions/extension_view.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/native_widget_types.h"

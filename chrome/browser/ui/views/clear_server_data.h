@@ -7,9 +7,9 @@
 #pragma once
 
 #include "chrome/browser/browsing_data_remover.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/views/clear_data_view.h"
 #include "chrome/browser/ui/views/confirm_message_box_dialog.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "views/controls/button/button.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"

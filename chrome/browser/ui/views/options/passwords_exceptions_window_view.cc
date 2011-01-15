@@ -6,8 +6,8 @@
 
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/views/options/passwords_page_view.h"
 #include "chrome/browser/ui/views/options/exceptions_page_view.h"
+#include "chrome/browser/ui/views/options/passwords_page_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
