@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/find_bar_bridge.h"
+#include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 
 #include "base/sys_string_conversions.h"
-#import "chrome/browser/ui/cocoa/find_bar_cocoa_controller.h"
+#import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 
 // static
 bool FindBarBridge::disable_animations_during_testing_ = false;

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/find_bar_text_field.h"
+#import "chrome/browser/ui/cocoa/find_bar/find_bar_text_field.h"
 
 #include "base/logging.h"
-#import "chrome/browser/ui/cocoa/find_bar_text_field_cell.h"
+#import "chrome/browser/ui/cocoa/find_bar/find_bar_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 
 @implementation FindBarTextField

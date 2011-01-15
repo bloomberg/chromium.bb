@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "chrome/browser/ui/cocoa/find_bar_bridge.h"
+#include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/generated_resources.h"
