@@ -18,11 +18,13 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
+#include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
@@ -51,6 +53,10 @@ ACTION_P(InvokeTask, task) {
 
 class TestModelAssociatorHelper {
  public:
+  TestModelAssociatorHelper(browser_sync::TestIdFactory* id_factory)
+      : id_factory_(id_factory) {
+  }
+
   template <class ModelAssociatorImpl>
   bool GetSyncIdForTaggedNode(ModelAssociatorImpl* associator,
                               const std::string& tag, int64* sync_id) {
@@ -60,10 +66,33 @@ class TestModelAssociatorHelper {
       return false;
     }
 
-    sync_api::WriteTransaction trans(
+    browser_sync::SyncBackendHost::UserShareHandle share(
         associator->sync_service()->backend()->GetUserShareHandle());
+    bool root_exists = false;
+    ModelType type = ModelAssociatorImpl::model_type();
+    {
+      sync_api::WriteTransaction trans(share);
+      sync_api::ReadNode uber_root(&trans);
+      uber_root.InitByRootLookup();
+
+      sync_api::ReadNode root(&trans);
+      root_exists = root.InitByTagLookup(
+          ProfileSyncServiceTestHelper::GetTagForType(type));
+    }
+
+    if (!root_exists) {
+      bool created = ProfileSyncServiceTestHelper::CreateRoot(
+          type,
+          associator->sync_service(),
+          id_factory_);
+      if (!created)
+        return false;
+    }
+
+    sync_api::WriteTransaction trans(share);
     sync_api::ReadNode root(&trans);
-    root.InitByRootLookup();
+    EXPECT_TRUE(root.InitByTagLookup(
+        ProfileSyncServiceTestHelper::GetTagForType(type)));
 
     // First, try to find a node with the title among the root's children.
     // This will be the case if we are testing model persistence, and
@@ -97,6 +126,8 @@ class TestModelAssociatorHelper {
   }
 
   ~TestModelAssociatorHelper() {}
+ private:
+  browser_sync::TestIdFactory* id_factory_;
 };
 
 class ProfileSyncServiceObserverMock : public ProfileSyncServiceObserver {

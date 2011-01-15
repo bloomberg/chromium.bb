@@ -279,8 +279,6 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   ProfileSyncFactoryMock factory_;
   scoped_refptr<HistoryBackendMock> history_backend_;
   scoped_refptr<HistoryServiceMock> history_service_;
-
-  TestIdFactory ids_;
 };
 
 class AddTypedUrlEntriesTask : public Task {

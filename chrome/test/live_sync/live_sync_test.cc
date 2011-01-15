@@ -170,10 +170,6 @@ void LiveSyncTest::SetUpCommandLine(CommandLine* cl) {
   if (!cl->HasSwitch(switches::kEnableSyncSessions))
     cl->AppendSwitch(switches::kEnableSyncSessions);
 
-  // TODO(sync): Remove this once passwords sync is enabled by default.
-  if (!cl->HasSwitch(switches::kEnableSyncPasswords))
-    cl->AppendSwitch(switches::kEnableSyncPasswords);
-
   // Disable non-essential access of external network resources.
   if (!cl->HasSwitch(switches::kDisableBackgroundNetworking))
     cl->AppendSwitch(switches::kDisableBackgroundNetworking);

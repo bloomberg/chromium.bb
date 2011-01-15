@@ -52,6 +52,30 @@ using syncable::WriteTransaction;
 
 class ProfileSyncServiceTestHelper {
  public:
+  static const std::string GetTagForType(ModelType model_type) {
+    switch (model_type) {
+      case syncable::AUTOFILL:
+        return browser_sync::kAutofillTag;
+      case syncable::AUTOFILL_PROFILE:
+        return browser_sync::kAutofillProfileTag;
+      case syncable::PREFERENCES:
+        return browser_sync::kPreferencesTag;
+      case syncable::PASSWORDS:
+        return browser_sync::kPasswordTag;
+      case syncable::NIGORI:
+        return browser_sync::kNigoriTag;
+      case syncable::TYPED_URLS:
+        return browser_sync::kTypedUrlTag;
+      case syncable::SESSIONS:
+        return browser_sync::kSessionsTag;
+      case syncable::BOOKMARKS:
+        return "google_chrome_bookmarks";
+      default:
+        NOTREACHED();
+    }
+    return std::string();
+  }
+
   static bool CreateRoot(ModelType model_type, ProfileSyncService* service,
                          TestIdFactory* ids) {
     UserShare* user_share = service->backend()->GetUserShareHandle();
@@ -61,32 +85,7 @@ class ProfileSyncServiceTestHelper {
     if (!dir.good())
       return false;
 
-    std::string tag_name;
-    switch (model_type) {
-      case syncable::AUTOFILL:
-        tag_name = browser_sync::kAutofillTag;
-        break;
-      case syncable::AUTOFILL_PROFILE:
-        tag_name = browser_sync::kAutofillProfileTag;
-        break;
-      case syncable::PREFERENCES:
-        tag_name = browser_sync::kPreferencesTag;
-        break;
-      case syncable::PASSWORDS:
-        tag_name = browser_sync::kPasswordTag;
-        break;
-      case syncable::NIGORI:
-        tag_name = browser_sync::kNigoriTag;
-        break;
-      case syncable::TYPED_URLS:
-        tag_name = browser_sync::kTypedUrlTag;
-        break;
-      case syncable::SESSIONS:
-        tag_name = browser_sync::kSessionsTag;
-        break;
-      default:
-        return false;
-    }
+    std::string tag_name = GetTagForType(model_type);
 
     WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry node(&wtrans,
@@ -117,7 +116,8 @@ class AbstractProfileSyncServiceTest : public testing::Test {
 
   bool CreateRoot(ModelType model_type) {
     return ProfileSyncServiceTestHelper::CreateRoot(model_type,
-                                                    service_.get(), &ids_);
+                                                    service_.get(),
+                                                    service_->id_factory());
   }
 
  protected:
@@ -127,7 +127,6 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   ProfileSyncFactoryMock factory_;
   TokenService token_service_;
   scoped_ptr<TestProfileSyncService> service_;
-  TestIdFactory ids_;
 };
 
 class CreateRootTask : public Task {

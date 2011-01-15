@@ -547,7 +547,7 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
       item.Put(SPECIFICS, entity_specifics);
       item.Put(SERVER_SPECIFICS, entity_specifics);
       item.Put(BASE_VERSION, 1);
-      syncable::Id server_parent_id = ids_.NewServerId();
+      syncable::Id server_parent_id = service_->id_factory()->NewServerId();
       item.Put(syncable::ID, server_parent_id);
       syncable::Id new_predecessor =
           SyncerUtil::ComputePrevIdFromServerPosition(&trans, &item,
@@ -600,7 +600,6 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
   scoped_ptr<WaitableEvent> *wait_for_syncapi_;
   WaitableEvent is_finished_;
   syncable::Id parent_id_;
-  TestIdFactory ids_;
 };
 
 // TODO(skrul): Test abort startup.

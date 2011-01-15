@@ -178,22 +178,21 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
       service_->Initialize();
       MessageLoop::current()->Run();
 
-      // Only set the passphrase if we actually created the password and nigori
-      // root nodes.
-      if (root_task) {
-        EXPECT_CALL(observer_,
-            Observe(
-                NotificationType(NotificationType::SYNC_PASSPHRASE_ACCEPTED),
-                    _,_)).
-            WillOnce(InvokeTask(node_task));
-        EXPECT_CALL(observer_,
-            Observe(
-                NotificationType(NotificationType::SYNC_CONFIGURE_DONE),
-                    _,_)).
-            WillOnce(QuitUIMessageLoop());
-        service_->SetPassphrase("foo", false, true);
-        MessageLoop::current()->Run();
-      }
+
+      EXPECT_CALL(
+          observer_,
+          Observe(
+              NotificationType(NotificationType::SYNC_PASSPHRASE_ACCEPTED),
+              _,_)).
+          WillOnce(InvokeTask(node_task));
+      EXPECT_CALL(
+          observer_,
+          Observe(
+              NotificationType(NotificationType::SYNC_CONFIGURE_DONE),
+              _,_)).
+          WillOnce(QuitUIMessageLoop());
+      service_->SetPassphrase("foo", false, true);
+      MessageLoop::current()->Run();
     }
   }
 
@@ -263,22 +262,6 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   scoped_refptr<MockPasswordStore> password_store_;
   NotificationRegistrar registrar_;
 
-  TestIdFactory ids_;
-};
-
-class CreatePasswordRootTask : public Task {
- public:
-  explicit CreatePasswordRootTask(AbstractProfileSyncServiceTest* test)
-      : test_(test) {
-  }
-
-  virtual void Run() {
-    test_->CreateRoot(syncable::NIGORI);
-    test_->CreateRoot(syncable::PASSWORDS);
-  }
-
- private:
-  AbstractProfileSyncServiceTest* test_;
 };
 
 class AddPasswordEntriesTask : public Task {
@@ -300,10 +283,7 @@ class AddPasswordEntriesTask : public Task {
 };
 
 TEST_F(ProfileSyncServicePasswordTest, FailModelAssociation) {
-  // Create the nigori root node so that password model association is
-  // attempted, but not the password root node so that it fails.
-  CreateRootTask task(this, syncable::NIGORI);
-  StartSyncService(&task, NULL, 1, 2);
+  StartSyncService(NULL, NULL, 1, 2);
   EXPECT_TRUE(service_->unrecoverable_error_detected());
 }
 
@@ -313,7 +293,7 @@ TEST_F(ProfileSyncServicePasswordTest, EmptyNativeEmptySync) {
   EXPECT_CALL(*password_store_, FillBlacklistLogins(_))
       .WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
-  CreatePasswordRootTask task(this);
+  CreateRootTask task(this, syncable::PASSWORDS);
   StartSyncService(&task, NULL);
   std::vector<PasswordForm> sync_entries;
   GetPasswordEntriesFromSyncDB(&sync_entries);
@@ -343,7 +323,7 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeEntriesEmptySync) {
   EXPECT_CALL(*password_store_, FillBlacklistLogins(_))
       .WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
-  CreatePasswordRootTask task(this);
+  CreateRootTask task(this, syncable::PASSWORDS);
   StartSyncService(&task, NULL);
   std::vector<PasswordForm> sync_forms;
   GetPasswordEntriesFromSyncDB(&sync_forms);
@@ -395,7 +375,7 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeEntriesEmptySyncSameUsername) {
   EXPECT_CALL(*password_store_, FillBlacklistLogins(_))
       .WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
-  CreatePasswordRootTask task(this);
+  CreateRootTask task(this, syncable::PASSWORDS);
   StartSyncService(&task, NULL);
   std::vector<PasswordForm> sync_forms;
   GetPasswordEntriesFromSyncDB(&sync_forms);
@@ -450,7 +430,7 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeHasSyncNoMerge) {
   EXPECT_CALL(*password_store_, FillBlacklistLogins(_)).WillOnce(Return(true));
   EXPECT_CALL(*password_store_, AddLoginImpl(_)).Times(1);
 
-  CreatePasswordRootTask root_task(this);
+  CreateRootTask root_task(this, syncable::PASSWORDS);
   AddPasswordEntriesTask node_task(this, sync_forms);
   StartSyncService(&root_task, &node_task);
 
@@ -523,7 +503,7 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeHasSyncMergeEntry) {
   EXPECT_CALL(*password_store_, FillBlacklistLogins(_)).WillOnce(Return(true));
   EXPECT_CALL(*password_store_, UpdateLoginImpl(_)).Times(1);
 
-  CreatePasswordRootTask root_task(this);
+  CreateRootTask root_task(this, syncable::PASSWORDS);
   AddPasswordEntriesTask node_task(this, sync_forms);
 
   StartSyncService(&root_task, &node_task);

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -30,6 +32,56 @@ class ProfileSyncFactoryImplTest : public testing::Test {
         new ProfileSyncFactoryImpl(profile_.get(), command_line_.get()));
   }
 
+  // Returns the collection of default datatypes.
+  static std::vector<syncable::ModelType> DefaultDatatypes() {
+    std::vector<syncable::ModelType> datatypes;
+    datatypes.push_back(syncable::BOOKMARKS);
+    datatypes.push_back(syncable::PREFERENCES);
+    datatypes.push_back(syncable::AUTOFILL);
+    datatypes.push_back(syncable::THEMES);
+    datatypes.push_back(syncable::EXTENSIONS);
+    datatypes.push_back(syncable::APPS);
+    datatypes.push_back(syncable::AUTOFILL_PROFILE);
+    datatypes.push_back(syncable::PASSWORDS);
+    return datatypes;
+  }
+
+  // Returns the number of default datatypes.
+  static size_t DefaultDatatypesCount() {
+    return DefaultDatatypes().size();
+  }
+
+  // Asserts that all the default datatypes are in |map|, except
+  // for |exception_type|, which unless it is UNDEFINED, is asserted to
+  // not be in |map|.
+  static void CheckDefaultDatatypesInMapExcept(
+      DataTypeController::StateMap* map,
+      syncable::ModelType exception_type) {
+    std::vector<syncable::ModelType> defaults = DefaultDatatypes();
+    std::vector<syncable::ModelType>::iterator iter;
+    for (iter = defaults.begin(); iter != defaults.end(); ++iter) {
+      if (exception_type != syncable::UNSPECIFIED && exception_type == *iter)
+        EXPECT_EQ(0U, map->count(*iter))
+            << *iter << " found in dataypes map, shouldn't be there.";
+      else
+        EXPECT_EQ(1U, map->count(*iter))
+            << *iter << " not found in datatypes map";
+    }
+  }
+
+  // Asserts that if you apply the command line switch |cmd_switch|,
+  // all types are enabled except for |type|, which is disabled.
+  void TestSwitchDisablesType(const char* cmd_switch,
+                              syncable::ModelType type) {
+    command_line_->AppendSwitch(cmd_switch);
+    scoped_ptr<ProfileSyncService> pss(
+        profile_sync_service_factory_->CreateProfileSyncService(""));
+    DataTypeController::StateMap controller_states;
+    pss->GetDataTypeControllerStates(&controller_states);
+    EXPECT_EQ(DefaultDatatypesCount() - 1, controller_states.size());
+    CheckDefaultDatatypesInMapExcept(&controller_states, type);
+  }
+
   MessageLoop message_loop_;
   BrowserThread ui_thread_;
   scoped_ptr<Profile> profile_;
@@ -38,136 +90,50 @@ class ProfileSyncFactoryImplTest : public testing::Test {
 };
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDefault) {
-  scoped_ptr<ProfileSyncService> pss;
-  pss.reset(profile_sync_service_factory_->CreateProfileSyncService(""));
+  scoped_ptr<ProfileSyncService> pss(
+      profile_sync_service_factory_->CreateProfileSyncService(""));
   DataTypeController::StateMap controller_states;
-  DataTypeController::StateMap* controller_states_ptr = &controller_states;
-  pss->GetDataTypeControllerStates(controller_states_ptr);
-  EXPECT_EQ(7U, controller_states_ptr->size());
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PREFERENCES));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::THEMES));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::EXTENSIONS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::APPS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL_PROFILE));
+  pss->GetDataTypeControllerStates(&controller_states);
+  EXPECT_EQ(DefaultDatatypesCount(), controller_states.size());
+  CheckDefaultDatatypesInMapExcept(&controller_states, syncable::UNSPECIFIED);
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableAutofill) {
-  command_line_->AppendSwitch(switches::kDisableSyncAutofill);
-  scoped_ptr<ProfileSyncService> pss;
-  pss.reset(profile_sync_service_factory_->CreateProfileSyncService(""));
-  DataTypeController::StateMap controller_states;
-  DataTypeController::StateMap* controller_states_ptr = &controller_states;
-  pss->GetDataTypeControllerStates(controller_states_ptr);
-  EXPECT_EQ(6U, controller_states_ptr->size());
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PREFERENCES));
-  EXPECT_EQ(0U, controller_states_ptr->count(syncable::AUTOFILL));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::THEMES));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::EXTENSIONS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::APPS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL_PROFILE));
+  TestSwitchDisablesType(switches::kDisableSyncAutofill,
+                         syncable::AUTOFILL);
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableBookmarks) {
-  command_line_->AppendSwitch(switches::kDisableSyncBookmarks);
-  scoped_ptr<ProfileSyncService> pss;
-  pss.reset(profile_sync_service_factory_->CreateProfileSyncService(""));
-  DataTypeController::StateMap controller_states;
-  DataTypeController::StateMap* controller_states_ptr = &controller_states;
-  pss->GetDataTypeControllerStates(controller_states_ptr);
-  EXPECT_EQ(6U, controller_states_ptr->size());
-  EXPECT_EQ(0U, controller_states_ptr->count(syncable::BOOKMARKS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PREFERENCES));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::THEMES));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::EXTENSIONS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::APPS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL_PROFILE));
+  TestSwitchDisablesType(switches::kDisableSyncBookmarks,
+                         syncable::BOOKMARKS);
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisablePreferences) {
-  command_line_->AppendSwitch(switches::kDisableSyncPreferences);
-  scoped_ptr<ProfileSyncService> pss;
-  pss.reset(profile_sync_service_factory_->CreateProfileSyncService(""));
-  DataTypeController::StateMap controller_states;
-  DataTypeController::StateMap* controller_states_ptr = &controller_states;
-  pss->GetDataTypeControllerStates(controller_states_ptr);
-  EXPECT_EQ(6U, controller_states_ptr->size());
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
-  EXPECT_EQ(0U, controller_states_ptr->count(syncable::PREFERENCES));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::THEMES));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::EXTENSIONS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::APPS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL_PROFILE));
+  TestSwitchDisablesType(switches::kDisableSyncPreferences,
+                         syncable::PREFERENCES);
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableThemes) {
-  command_line_->AppendSwitch(switches::kDisableSyncThemes);
-  scoped_ptr<ProfileSyncService> pss;
-  pss.reset(profile_sync_service_factory_->CreateProfileSyncService(""));
-  DataTypeController::StateMap controller_states;
-  DataTypeController::StateMap* controller_states_ptr = &controller_states;
-  pss->GetDataTypeControllerStates(controller_states_ptr);
-  EXPECT_EQ(6U, controller_states_ptr->size());
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PREFERENCES));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL));
-  EXPECT_EQ(0U, controller_states_ptr->count(syncable::THEMES));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::EXTENSIONS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::APPS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL_PROFILE));
+  TestSwitchDisablesType(switches::kDisableSyncThemes,
+                         syncable::THEMES);
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableExtensions) {
-  command_line_->AppendSwitch(switches::kDisableSyncExtensions);
-  scoped_ptr<ProfileSyncService> pss;
-  pss.reset(profile_sync_service_factory_->CreateProfileSyncService(""));
-  DataTypeController::StateMap controller_states;
-  DataTypeController::StateMap* controller_states_ptr = &controller_states;
-  pss->GetDataTypeControllerStates(controller_states_ptr);
-  EXPECT_EQ(6U, controller_states_ptr->size());
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PREFERENCES));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::THEMES));
-  EXPECT_EQ(0U, controller_states_ptr->count(syncable::EXTENSIONS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::APPS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL_PROFILE));
+  TestSwitchDisablesType(switches::kDisableSyncExtensions,
+                         syncable::EXTENSIONS);
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableApps) {
-  command_line_->AppendSwitch(switches::kDisableSyncApps);
-  scoped_ptr<ProfileSyncService> pss;
-  pss.reset(profile_sync_service_factory_->CreateProfileSyncService(""));
-  DataTypeController::StateMap controller_states;
-  DataTypeController::StateMap* controller_states_ptr = &controller_states;
-  pss->GetDataTypeControllerStates(controller_states_ptr);
-  EXPECT_EQ(6U, controller_states_ptr->size());
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PREFERENCES));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::THEMES));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::EXTENSIONS));
-  EXPECT_EQ(0U, controller_states_ptr->count(syncable::APPS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL_PROFILE));
+  TestSwitchDisablesType(switches::kDisableSyncApps,
+                         syncable::APPS);
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableAutofillProfile) {
-  command_line_->AppendSwitch(switches::kDisableSyncAutofillProfile);
-  scoped_ptr<ProfileSyncService> pss;
-  pss.reset(profile_sync_service_factory_->CreateProfileSyncService(""));
-  DataTypeController::StateMap controller_states;
-  DataTypeController::StateMap* controller_states_ptr = &controller_states;
-  pss->GetDataTypeControllerStates(controller_states_ptr);
-  EXPECT_EQ(6U, controller_states_ptr->size());
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PREFERENCES));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::THEMES));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::EXTENSIONS));
-  EXPECT_EQ(1U, controller_states_ptr->count(syncable::APPS));
-  EXPECT_EQ(0U, controller_states_ptr->count(syncable::AUTOFILL_PROFILE));
+  TestSwitchDisablesType(switches::kDisableSyncAutofillProfile,
+                         syncable::AUTOFILL_PROFILE);
+}
+
+TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisablePasswords) {
+  TestSwitchDisablesType(switches::kDisableSyncPasswords,
+                         syncable::PASSWORDS);
 }
