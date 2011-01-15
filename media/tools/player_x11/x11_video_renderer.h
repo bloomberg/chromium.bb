@@ -11,6 +11,8 @@
 #include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"
 
+class MessageLoop;
+
 class X11VideoRenderer : public media::VideoRendererBase {
  public:
   X11VideoRenderer(Display* display, Window window, MessageLoop* message_loop);

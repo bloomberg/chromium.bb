@@ -62,7 +62,8 @@ class MockDecoderCallback {
 class MockDecoderImpl : public media::DecoderBase<
   MockDecoder, MockDecoderOutput> {
  public:
-  MockDecoderImpl() {
+  explicit MockDecoderImpl(MessageLoop* message_loop)
+      : media::DecoderBase<MockDecoder, MockDecoderOutput>(message_loop) {
     media_format_.SetAsString(media::MediaFormat::kMimeType, "mock");
   }
 
@@ -117,12 +118,11 @@ ACTION(CompleteDemuxRequest) {
 //   \ ReadCallback() -> client
 TEST(DecoderBaseTest, FlowControl) {
   MessageLoop message_loop;
-  scoped_refptr<MockDecoderImpl> decoder(new MockDecoderImpl());
+  scoped_refptr<MockDecoderImpl> decoder(new MockDecoderImpl(&message_loop));
   MockDecoderCallback read_callback;
   decoder->set_consume_audio_samples_callback(
       NewCallback(&read_callback, &MockDecoderCallback::OnReadComplete));
   scoped_refptr<MockDemuxerStream> demuxer_stream(new MockDemuxerStream());
-  decoder->set_message_loop(&message_loop);
 
   // Initailize.
   EXPECT_CALL(*decoder, DoInitialize(NotNull(), NotNull(), NotNull()))

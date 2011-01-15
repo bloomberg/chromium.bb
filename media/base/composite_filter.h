@@ -5,39 +5,29 @@
 #ifndef MEDIA_BASE_COMPOSITE_FILTER_H_
 #define MEDIA_BASE_COMPOSITE_FILTER_H_
 
-#include "base/threading/thread.h"
+#include "base/task.h"
 #include "media/base/filter_host.h"
 #include "media/base/filters.h"
+
+class MessageLoop;
 
 namespace media {
 
 class CompositeFilter : public Filter {
  public:
-  typedef base::Thread* (*ThreadFactoryFunction)(const char* thread_name);
-
-  CompositeFilter(MessageLoop* message_loop);
-
-  // Constructor that allows the default thread creation strategy to be
-  // overridden.
-  CompositeFilter(MessageLoop* message_loop,
-                  ThreadFactoryFunction thread_factory);
+  explicit CompositeFilter(MessageLoop* message_loop);
 
   // Adds a filter to the composite. This is only allowed after set_host()
   // is called and before the first state changing operation such as Play(),
   // Flush(), Stop(), or Seek(). True is returned if the filter was successfully
   // added to the composite. False is returned if the filter couldn't be added
-  // because the composite is in the wrong state or the filter needed a thread
-  // and the composite was unable to create one.
+  // because the composite is in the wrong state.
   bool AddFilter(scoped_refptr<Filter> filter);
 
   // media::Filter methods.
   virtual const char* major_mime_type() const;
   virtual void set_host(FilterHost* host);
   virtual FilterHost* host();
-  virtual bool requires_message_loop() const;
-  virtual const char* message_loop_name() const;
-  virtual void set_message_loop(MessageLoop* message_loop);
-  virtual MessageLoop* message_loop();
   virtual void Play(FilterCallback* play_callback);
   virtual void Pause(FilterCallback* pause_callback);
   virtual void Flush(FilterCallback* flush_callback);
@@ -48,9 +38,6 @@ class CompositeFilter : public Filter {
 
  protected:
   virtual ~CompositeFilter();
-
-  /// Default thread factory strategy.
-  static base::Thread* DefaultThreadFactory(const char* thread_name);
 
   void SetError(PipelineError error);
 
@@ -74,9 +61,6 @@ class CompositeFilter : public Filter {
     kStopped,
     kError
   };
-
-  // Initialization method called by constructors.
-  void Init(MessageLoop* message_loop, ThreadFactoryFunction thread_factory);
 
   // Transition to a new state.
   void ChangeState(State new_state);
@@ -124,16 +108,9 @@ class CompositeFilter : public Filter {
   // to the host of this filter.
   bool CanForwardError();
 
-  // Vector of threads owned by the composite and used by filters in |filters_|.
-  typedef std::vector<base::Thread*> FilterThreadVector;
-  FilterThreadVector filter_threads_;
-
   // Vector of the filters added to the composite.
   typedef std::vector<scoped_refptr<Filter> > FilterVector;
   FilterVector filters_;
-
-  // Factory function used to create filter threads.
-  ThreadFactoryFunction thread_factory_;
 
   // Callback for the pending request.
   scoped_ptr<FilterCallback> callback_;

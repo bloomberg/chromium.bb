@@ -5,11 +5,10 @@
 #include "media/base/filters.h"
 
 #include "base/logging.h"
-#include "base/message_loop.h"
 
 namespace media {
 
-Filter::Filter() : host_(NULL), message_loop_(NULL) {}
+Filter::Filter() : host_(NULL) {}
 
 Filter::~Filter() {}
 
@@ -25,24 +24,6 @@ void Filter::set_host(FilterHost* host) {
 
 FilterHost* Filter::host() {
   return host_;
-}
-
-bool Filter::requires_message_loop() const {
-  return false;
-}
-
-const char* Filter::message_loop_name() const {
-  return "FilterThread";
-}
-
-void Filter::set_message_loop(MessageLoop* message_loop) {
-  DCHECK(message_loop);
-  DCHECK(!message_loop_);
-  message_loop_ = message_loop;
-}
-
-MessageLoop* Filter::message_loop() {
-  return message_loop_;
 }
 
 void Filter::Play(FilterCallback* callback) {
@@ -93,24 +74,8 @@ bool DataSource::IsUrlSupported(const std::string& url) {
   return true;
 }
 
-bool Demuxer::requires_message_loop() const {
-  return true;
-}
-
-const char* Demuxer::message_loop_name() const {
-  return "DemuxerThread";
-}
-
 const char* AudioDecoder::major_mime_type() const {
   return mime_type::kMajorTypeAudio;
-}
-
-bool AudioDecoder::requires_message_loop() const {
-  return true;
-}
-
-const char* AudioDecoder::message_loop_name() const {
-  return "AudioDecoderThread";
 }
 
 const char* AudioRenderer::major_mime_type() const {
@@ -119,14 +84,6 @@ const char* AudioRenderer::major_mime_type() const {
 
 const char* VideoDecoder::major_mime_type() const {
   return mime_type::kMajorTypeVideo;
-}
-
-bool VideoDecoder::requires_message_loop() const {
-  return true;
-}
-
-const char* VideoDecoder::message_loop_name() const {
-  return "VideoDecoderThread";
 }
 
 const char* VideoRenderer::major_mime_type() const {

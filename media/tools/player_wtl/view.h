@@ -9,6 +9,7 @@
 #include <process.h>
 #include <string.h>
 
+#include "base/logging.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
 #include "media/tools/player_wtl/movie.h"

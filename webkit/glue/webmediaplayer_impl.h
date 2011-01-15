@@ -62,6 +62,7 @@
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "media/base/filters.h"
+#include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayer.h"
@@ -175,7 +176,8 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   //
   // Callers must call |Initialize()| before they can use the object.
   WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
-                     media::FilterCollection* collection);
+                     media::FilterCollection* collection,
+                     media::MessageLoopFactory* message_loop_factory);
   virtual ~WebMediaPlayerImpl();
 
   // Finalizes initialization of the object.
@@ -288,7 +290,8 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
   // The actual pipeline and the thread it runs on.
   scoped_refptr<media::Pipeline> pipeline_;
-  base::Thread pipeline_thread_;
+
+  scoped_ptr<media::MessageLoopFactory> message_loop_factory_;
 
   // Playback state.
   //

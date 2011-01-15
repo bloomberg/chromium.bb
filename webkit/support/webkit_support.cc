@@ -26,6 +26,7 @@
 #include "base/weak_ptr.h"
 #include "grit/webkit_chromium_resources.h"
 #include "media/base/filter_collection.h"
+#include "media/base/message_loop_factory_impl.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -266,6 +267,9 @@ WebPlugin* CreateWebPlugin(WebFrame* frame,
 
 WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
                                           WebMediaPlayerClient* client) {
+  scoped_ptr<media::MessageLoopFactory> message_loop_factory(
+      new media::MessageLoopFactoryImpl());
+
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
 
@@ -274,7 +278,9 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
   collection->AddVideoRenderer(video_renderer);
 
   scoped_ptr<webkit_glue::WebMediaPlayerImpl> result(
-      new webkit_glue::WebMediaPlayerImpl(client, collection.release()));
+      new webkit_glue::WebMediaPlayerImpl(client,
+                                          collection.release(),
+                                          message_loop_factory.release()));
   if (!result->Initialize(frame, false, video_renderer)) {
     return NULL;
   }

@@ -33,8 +33,6 @@
 #include "media/base/media_format.h"
 #include "media/base/video_frame.h"
 
-class MessageLoop;
-
 namespace media {
 
 class Buffer;
@@ -60,20 +58,6 @@ class Filter : public base::RefCountedThreadSafe<Filter> {
   virtual void set_host(FilterHost* host);
 
   virtual FilterHost* host();
-
-  // Indicates whether this filter requires a message loop to operate.
-  virtual bool requires_message_loop() const;
-
-  // The name to associate with this filter's message loop.
-  virtual const char* message_loop_name() const;
-
-  // Sets the private member |message_loop_|, which is used by filters for
-  // processing asynchronous tasks and maintaining synchronized access to
-  // internal data members.  The message loop should be running and exceed the
-  // lifetime of the filter.
-  virtual void set_message_loop(MessageLoop* message_loop);
-
-  virtual MessageLoop* message_loop();
 
   // The pipeline has resumed playback.  Filters can continue requesting reads.
   // Filters may implement this method if they need to respond to this call.
@@ -114,11 +98,9 @@ class Filter : public base::RefCountedThreadSafe<Filter> {
   virtual ~Filter();
 
   FilterHost* host() const { return host_; }
-  MessageLoop* message_loop() const { return message_loop_; }
 
  private:
   FilterHost* host_;
-  MessageLoop* message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(Filter);
 };
@@ -154,9 +136,6 @@ class DataSource : public Filter {
 
 class Demuxer : public Filter {
  public:
-  virtual bool requires_message_loop() const;
-  virtual const char* message_loop_name() const;
-
   // Initialize a Demuxer with the given DataSource, executing the callback upon
   // completion.
   virtual void Initialize(DataSource* data_source,
@@ -211,9 +190,6 @@ class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
 class VideoDecoder : public Filter {
  public:
   virtual const char* major_mime_type() const;
-  virtual bool requires_message_loop() const;
-  virtual const char* message_loop_name() const;
-
 
   // Initialize a VideoDecoder with the given DemuxerStream, executing the
   // callback upon completion.
@@ -256,8 +232,6 @@ class VideoDecoder : public Filter {
 class AudioDecoder : public Filter {
  public:
   virtual const char* major_mime_type() const;
-  virtual bool requires_message_loop() const;
-  virtual const char* message_loop_name() const;
 
   // Initialize a AudioDecoder with the given DemuxerStream, executing the
   // callback upon completion.

@@ -8,6 +8,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "media/base/filter_collection.h"
+#include "media/base/message_loop_factory_impl.h"
 #include "media/base/pipeline_impl.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
@@ -60,12 +61,17 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
     Close();
   }
 
+  message_loop_factory_.reset(new media::MessageLoopFactoryImpl());
+
   // Create filter collection.
   scoped_ptr<FilterCollection> collection(new FilterCollection());
   collection->AddDataSource(new FileDataSource());
-  collection->AddAudioDecoder(new FFmpegAudioDecoder());
-  collection->AddDemuxer(new FFmpegDemuxer());
-  collection->AddVideoDecoder(new FFmpegVideoDecoder(NULL));
+  collection->AddAudioDecoder(new FFmpegAudioDecoder(
+      message_loop_factory_->GetMessageLoop("AudioDecoderThread")));
+  collection->AddDemuxer(new FFmpegDemuxer(
+      message_loop_factory_->GetMessageLoop("DemuxThread")));
+  collection->AddVideoDecoder(new FFmpegVideoDecoder(
+      message_loop_factory_->GetMessageLoop("VideoDecoderThread"), NULL));
 
   if (enable_audio_) {
     collection->AddAudioRenderer(new AudioRendererImpl());
@@ -74,9 +80,8 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
   }
   collection->AddVideoRenderer(video_renderer);
 
-  thread_.reset(new base::Thread("PipelineThread"));
-  thread_->Start();
-  pipeline_ = new PipelineImpl(thread_->message_loop());
+  pipeline_ = new PipelineImpl(
+      message_loop_factory_->GetMessageLoop("PipelineThread"));
 
   // Create and start our pipeline.
   pipeline_->Start(collection.release(), WideToUTF8(std::wstring(url)), NULL);
@@ -168,10 +173,10 @@ bool Movie::GetDumpYuvFileEnable() {
 void Movie::Close() {
   if (pipeline_) {
     pipeline_->Stop(NULL);
-    thread_->Stop();
     pipeline_ = NULL;
-    thread_.reset();
   }
+
+  message_loop_factory_.reset();
 }
 
 }  // namespace media

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop.h"
 #include "media/base/composite_filter.h"
 #include "media/base/mock_callback.h"
 #include "media/base/mock_filter_host.h"
@@ -297,56 +298,29 @@ void CompositeFilterTest::RunFilter2Callback() {
   delete callback;
 }
 
-static base::Thread* NullThreadFactory(const char* thread_name) {
-  return NULL;
-}
-
 // Test AddFilter() failure cases.
 TEST_F(CompositeFilterTest, TestAddFilterFailCases) {
   // Test adding a null pointer.
   EXPECT_FALSE(composite_->AddFilter(NULL));
 
-  scoped_refptr<StrictMock<MockFilter> > filter =
-      new StrictMock<MockFilter>(true);
+  scoped_refptr<StrictMock<MockFilter> > filter = new StrictMock<MockFilter>();
   EXPECT_EQ(NULL, filter->host());
-  EXPECT_EQ(NULL, filter->message_loop());
 
   // Test failing because set_host() hasn't been called yet.
   EXPECT_FALSE(composite_->AddFilter(filter));
-
-  // Test thread creation failure.
-  composite_ = new CompositeFilter(&message_loop_, &NullThreadFactory);
-  composite_->set_host(mock_filter_host_.get());
-  EXPECT_FALSE(composite_->AddFilter(filter));
-  EXPECT_EQ(NULL, filter->host());
-  EXPECT_EQ(NULL, filter->message_loop());
 }
 
 // Test successful AddFilter() cases.
 TEST_F(CompositeFilterTest, TestAddFilter) {
   composite_->set_host(mock_filter_host_.get());
 
-  // Add a filter that doesn't require a message loop.
+  // Add a filter.
   scoped_refptr<StrictMock<MockFilter> > filter = new StrictMock<MockFilter>();
   EXPECT_EQ(NULL, filter->host());
-  EXPECT_EQ(NULL, filter->message_loop());
 
   EXPECT_TRUE(composite_->AddFilter(filter));
 
   EXPECT_TRUE(filter->host() != NULL);
-  EXPECT_EQ(NULL, filter->message_loop());
-
-  // Add a filter that requires a message loop.
-  scoped_refptr<StrictMock<MockFilter> > filter_2 =
-      new StrictMock<MockFilter>(true);
-
-  EXPECT_EQ(NULL, filter_2->host());
-  EXPECT_EQ(NULL, filter_2->message_loop());
-
-  EXPECT_TRUE(composite_->AddFilter(filter_2));
-
-  EXPECT_TRUE(filter_2->host() != NULL);
-  EXPECT_TRUE(filter_2->message_loop() != NULL);
 }
 
 TEST_F(CompositeFilterTest, TestPlay) {

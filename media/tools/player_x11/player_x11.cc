@@ -17,6 +17,7 @@
 #include "media/base/filter_collection.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
+#include "media/base/message_loop_factory_impl.h"
 #include "media/base/pipeline_impl.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
@@ -83,7 +84,8 @@ bool InitX11() {
 bool InitPipeline(MessageLoop* message_loop,
                   const char* filename, bool enable_audio,
                   scoped_refptr<media::PipelineImpl>* pipeline,
-                  MessageLoop* paint_message_loop) {
+                  MessageLoop* paint_message_loop,
+                  media::MessageLoopFactory* message_loop_factory) {
   // Initialize OpenMAX.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableOpenMax) &&
@@ -102,13 +104,19 @@ bool InitPipeline(MessageLoop* message_loop,
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
   collection->AddDataSource(new media::FileDataSource());
-  collection->AddDemuxer(new media::FFmpegDemuxer());
-  collection->AddAudioDecoder(new media::FFmpegAudioDecoder());
+  collection->AddDemuxer(new media::FFmpegDemuxer(
+      message_loop_factory->GetMessageLoop("DemuxThread")));
+  collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
+      message_loop_factory->GetMessageLoop("AudioDecoderThread")));
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableOpenMax)) {
-    collection->AddVideoDecoder(new media::OmxVideoDecoder(NULL));
+    collection->AddVideoDecoder(new media::OmxVideoDecoder(
+        message_loop_factory->GetMessageLoop("VideoDecoderThread"),
+        NULL));
   } else {
-    collection->AddVideoDecoder(new media::FFmpegVideoDecoder(NULL));
+    collection->AddVideoDecoder(new media::FFmpegVideoDecoder(
+        message_loop_factory->GetMessageLoop("VideoDecoderThread"),
+        NULL));
   }
   collection->AddVideoRenderer(new Renderer(g_display,
                                             g_window,
@@ -244,13 +252,16 @@ int main(int argc, char** argv) {
 
   // Initialize the pipeline thread and the pipeline.
   base::AtExitManager at_exit;
+  scoped_ptr<media::MessageLoopFactory> message_loop_factory(
+      new media::MessageLoopFactoryImpl());
   scoped_ptr<base::Thread> thread;
   scoped_refptr<media::PipelineImpl> pipeline;
   MessageLoop message_loop;
   thread.reset(new base::Thread("PipelineThread"));
   thread->Start();
   if (InitPipeline(thread->message_loop(), filename.c_str(),
-                   enable_audio, &pipeline, &message_loop)) {
+                   enable_audio, &pipeline, &message_loop,
+                   message_loop_factory.get())) {
     // Main loop of the application.
     g_running = true;
 
@@ -266,6 +277,8 @@ int main(int argc, char** argv) {
   }
 
   // Cleanup tasks.
+  message_loop_factory.reset();
+
   thread->Stop();
   XDestroyWindow(g_display, g_window);
   XCloseDisplay(g_display);

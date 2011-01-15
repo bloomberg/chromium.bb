@@ -4,6 +4,7 @@
 
 #include "media/base/composite_filter.h"
 
+#include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "media/base/callback.h"
 
@@ -40,65 +41,27 @@ class CompositeFilter::FilterHostImpl : public FilterHost {
   DISALLOW_COPY_AND_ASSIGN(FilterHostImpl);
 };
 
-CompositeFilter::CompositeFilter(MessageLoop* message_loop) {
-  Init(message_loop, NULL);
-}
-
-CompositeFilter::CompositeFilter(MessageLoop* message_loop,
-                                 ThreadFactoryFunction thread_factory) {
-  DCHECK(thread_factory);
-  Init(message_loop, thread_factory);
-}
-
-void CompositeFilter::Init(MessageLoop* message_loop,
-                           ThreadFactoryFunction thread_factory) {
+CompositeFilter::CompositeFilter(MessageLoop* message_loop)
+    : state_(kCreated),
+      sequence_index_(0),
+      message_loop_(message_loop),
+      error_(PIPELINE_OK) {
   DCHECK(message_loop);
-  message_loop_ = message_loop;
-  thread_factory_ = thread_factory;
   runnable_factory_.reset(
       new ScopedRunnableMethodFactory<CompositeFilter>(this));
-
-  if (!thread_factory_) {
-    thread_factory_ = &CompositeFilter::DefaultThreadFactory;
-  }
-
-  state_ = kCreated;
-  sequence_index_ = 0;
-  error_ = PIPELINE_OK;
 }
 
 CompositeFilter::~CompositeFilter() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK(state_ == kCreated || state_ == kStopped);
 
-  // Stop every running filter thread.
-  for (FilterThreadVector::iterator iter = filter_threads_.begin();
-       iter != filter_threads_.end();
-       ++iter) {
-    (*iter)->Stop();
-  }
-
   filters_.clear();
-  STLDeleteElements(&filter_threads_);
 }
 
 bool CompositeFilter::AddFilter(scoped_refptr<Filter> filter) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   if (!filter.get() || state_ != kCreated || !host())
     return false;
-
-  // Create a dedicated thread for this filter if applicable.
-  if (filter->requires_message_loop()) {
-    scoped_ptr<base::Thread> thread(
-        thread_factory_(filter->message_loop_name()));
-
-    if (!thread.get() || !thread->Start()) {
-      return false;
-    }
-
-    filter->set_message_loop(thread->message_loop());
-    filter_threads_.push_back(thread.release());
-  }
 
   // Register ourselves as the filter's host.
   filter->set_host(host_impl_.get());
@@ -119,22 +82,6 @@ void CompositeFilter::set_host(FilterHost* host) {
 
 FilterHost* CompositeFilter::host() {
   return host_impl_.get() ? host_impl_->host() : NULL;
-}
-
-bool CompositeFilter::requires_message_loop() const {
-  return false;
-}
-
-const char* CompositeFilter::message_loop_name() const {
-  return "CompositeFilter";
-}
-
-void CompositeFilter::set_message_loop(MessageLoop* message_loop) {
-  NOTREACHED() << "Message loop should not be set.";
-}
-
-MessageLoop* CompositeFilter::message_loop() {
-  return NULL;
 }
 
 void CompositeFilter::Play(FilterCallback* play_callback) {
@@ -276,11 +223,6 @@ void CompositeFilter::OnAudioRendererDisabled() {
        ++iter) {
     (*iter)->OnAudioRendererDisabled();
   }
-}
-
-base::Thread* CompositeFilter::DefaultThreadFactory(
-    const char* thread_name) {
-  return new base::Thread(thread_name);
 }
 
 void CompositeFilter::ChangeState(State new_state) {
@@ -529,9 +471,9 @@ void CompositeFilter::SetError(PipelineError error) {
 }
 
 CompositeFilter::FilterHostImpl::FilterHostImpl(CompositeFilter* parent,
-                                                FilterHost* host) :
-    parent_(parent),
-    host_(host) {
+                                                FilterHost* host)
+    : parent_(parent),
+      host_(host) {
 }
 
 FilterHost* CompositeFilter::FilterHostImpl::host() {

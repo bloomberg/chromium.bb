@@ -23,7 +23,8 @@ class VideoFrame;
 class OmxVideoDecoder : public VideoDecoder,
                         public VideoDecodeEngine::EventHandler {
  public:
-  explicit OmxVideoDecoder(VideoDecodeContext* decode_context);
+  OmxVideoDecoder(MessageLoop* message_loop,
+                  VideoDecodeContext* decode_context);
   virtual ~OmxVideoDecoder();
 
   // Filter implementations.
@@ -49,6 +50,8 @@ class OmxVideoDecoder : public VideoDecoder,
   // TODO(hclam): This is very ugly that we keep reference instead of
   // scoped_refptr.
   void DemuxCompleteTask(Buffer* buffer);
+
+  MessageLoop* message_loop_;
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
   scoped_refptr<DemuxerStream> demuxer_stream_;

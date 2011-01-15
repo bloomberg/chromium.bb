@@ -225,13 +225,14 @@ void WebMediaPlayerImpl::Proxy::PutCurrentFrame(
 
 WebMediaPlayerImpl::WebMediaPlayerImpl(
     WebKit::WebMediaPlayerClient* client,
-    media::FilterCollection* collection)
+    media::FilterCollection* collection,
+    media::MessageLoopFactory* message_loop_factory)
     : network_state_(WebKit::WebMediaPlayer::Empty),
       ready_state_(WebKit::WebMediaPlayer::HaveNothing),
       main_loop_(NULL),
       filter_collection_(collection),
       pipeline_(NULL),
-      pipeline_thread_("PipelineThread"),
+      message_loop_factory_(message_loop_factory),
       paused_(true),
       seeking_(false),
       playback_rate_(0.0f),
@@ -247,13 +248,14 @@ bool WebMediaPlayerImpl::Initialize(
     WebKit::WebFrame* frame,
     bool use_simple_data_source,
     scoped_refptr<WebVideoRenderer> web_video_renderer) {
-  // Create the pipeline and its thread.
-  if (!pipeline_thread_.Start()) {
+  MessageLoop* pipeline_message_loop =
+      message_loop_factory_->GetMessageLoop("PipelineThread");
+  if (!pipeline_message_loop) {
     NOTREACHED() << "Could not start PipelineThread";
     return false;
   }
 
-  pipeline_ = new media::PipelineImpl(pipeline_thread_.message_loop());
+  pipeline_ = new media::PipelineImpl(pipeline_message_loop);
 
   // Also we want to be notified of |main_loop_| destruction.
   main_loop_->AddDestructionObserver(this);
@@ -290,9 +292,12 @@ bool WebMediaPlayerImpl::Initialize(
   }
 
   // Add in the default filter factories.
-  filter_collection_->AddDemuxer(new media::FFmpegDemuxer());
-  filter_collection_->AddAudioDecoder(new media::FFmpegAudioDecoder());
-  filter_collection_->AddVideoDecoder(new media::FFmpegVideoDecoder(NULL));
+  filter_collection_->AddDemuxer(new media::FFmpegDemuxer(
+      message_loop_factory_->GetMessageLoop("DemuxThread")));
+  filter_collection_->AddAudioDecoder(new media::FFmpegAudioDecoder(
+      message_loop_factory_->GetMessageLoop("AudioDecoderThread")));
+  filter_collection_->AddVideoDecoder(new media::FFmpegVideoDecoder(
+      message_loop_factory_->GetMessageLoop("VideoDecoderThread"), NULL));
   filter_collection_->AddAudioRenderer(new media::NullAudioRenderer());
 
   return true;
@@ -794,8 +799,9 @@ void WebMediaPlayerImpl::Destroy() {
     pipeline_->Stop(NewCallback(this,
         &WebMediaPlayerImpl::PipelineStoppedCallback));
     pipeline_stopped_.Wait();
-    pipeline_thread_.Stop();
   }
+
+  message_loop_factory_.reset();
 
   // And then detach the proxy, it may live on the render thread for a little
   // longer until all the tasks are finished.

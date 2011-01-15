@@ -19,6 +19,7 @@
 #include "gfx/native_widget_types.h"
 #include "gfx/point.h"
 #include "media/base/filter_collection.h"
+#include "media/base/message_loop_factory_impl.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
@@ -732,6 +733,9 @@ WebWorker* TestWebViewDelegate::createWorker(WebFrame* frame,
 
 WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
     WebFrame* frame, WebMediaPlayerClient* client) {
+  scoped_ptr<media::MessageLoopFactory> message_loop_factory(
+      new media::MessageLoopFactoryImpl());
+
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
 
@@ -740,7 +744,9 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
   collection->AddVideoRenderer(video_renderer);
 
   scoped_ptr<webkit_glue::WebMediaPlayerImpl> result(
-      new webkit_glue::WebMediaPlayerImpl(client, collection.release()));
+      new webkit_glue::WebMediaPlayerImpl(client,
+                                          collection.release(),
+                                          message_loop_factory.release()));
   if (!result->Initialize(frame, false, video_renderer)) {
     return NULL;
   }

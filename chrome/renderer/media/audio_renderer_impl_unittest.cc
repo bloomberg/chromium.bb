@@ -46,7 +46,6 @@ class AudioRendererImplTest : public ::testing::Test {
     // Create and initialize audio renderer.
     renderer_ = new AudioRendererImpl(filter_);
     renderer_->set_host(&host_);
-    renderer_->set_message_loop(message_loop_.get());
     renderer_->Initialize(decoder_, media::NewExpectedCallback());
 
     // Run pending tasks and simulate responding with a created audio stream.

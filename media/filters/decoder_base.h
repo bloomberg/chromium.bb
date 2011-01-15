@@ -26,17 +26,16 @@ namespace media {
 template <class Decoder, class Output>
 class DecoderBase : public Decoder {
  public:
-
   // Filter implementation.
   virtual void Stop(FilterCallback* callback) {
-    this->message_loop()->PostTask(
+    message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &DecoderBase::StopTask, callback));
   }
 
   virtual void Seek(base::TimeDelta time,
                     FilterCallback* callback) {
-    this->message_loop()->PostTask(
+    message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &DecoderBase::SeekTask, time, callback));
   }
@@ -44,7 +43,7 @@ class DecoderBase : public Decoder {
   // Decoder implementation.
   virtual void Initialize(DemuxerStream* demuxer_stream,
                           FilterCallback* callback) {
-    this->message_loop()->PostTask(
+    message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this,
                           &DecoderBase::InitializeTask,
@@ -58,13 +57,14 @@ class DecoderBase : public Decoder {
   // Note that this class is only used by the audio decoder, this will
   // eventually be merged into FFmpegAudioDecoder.
   virtual void ProduceAudioSamples(scoped_refptr<Output> output) {
-    this->message_loop()->PostTask(FROM_HERE,
+    message_loop_->PostTask(FROM_HERE,
         NewRunnableMethod(this, &DecoderBase::ReadTask, output));
   }
 
  protected:
-  DecoderBase()
-      : pending_reads_(0),
+  explicit DecoderBase(MessageLoop* message_loop)
+      : message_loop_(message_loop),
+        pending_reads_(0),
         pending_requests_(0),
         state_(kUninitialized) {
   }
@@ -78,7 +78,7 @@ class DecoderBase : public Decoder {
   // It places an output buffer in the result queue.  It must be called from
   // within the OnDecode method.
   void EnqueueResult(Output* output) {
-    DCHECK_EQ(MessageLoop::current(), this->message_loop());
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     if (!IsStopped()) {
       result_queue_.push_back(output);
     }
@@ -136,6 +136,9 @@ class DecoderBase : public Decoder {
     }
   }
 
+  // Provide access to subclasses.
+  MessageLoop* message_loop() { return message_loop_; }
+
  private:
   bool IsStopped() { return state_ == kStopped; }
 
@@ -146,12 +149,12 @@ class DecoderBase : public Decoder {
     // TODO(scherkus): change the callback format to pass a scoped_refptr<> or
     // better yet see if we can get away with not using reference counting.
     scoped_refptr<Buffer> buffer_ref = buffer;
-    this->message_loop()->PostTask(FROM_HERE,
+    message_loop_->PostTask(FROM_HERE,
         NewRunnableMethod(this, &DecoderBase::ReadCompleteTask, buffer_ref));
   }
 
   void StopTask(FilterCallback* callback) {
-    DCHECK_EQ(MessageLoop::current(), this->message_loop());
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
 
     // Delegate to the subclass first.
     DoStop(NewRunnableMethod(this, &DecoderBase::OnStopComplete, callback));
@@ -169,7 +172,7 @@ class DecoderBase : public Decoder {
   }
 
   void SeekTask(base::TimeDelta time, FilterCallback* callback) {
-    DCHECK_EQ(MessageLoop::current(), this->message_loop());
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     DCHECK_EQ(0u, pending_reads_) << "Pending reads should have completed";
     DCHECK_EQ(0u, pending_requests_) << "Pending requests should be empty";
 
@@ -190,7 +193,7 @@ class DecoderBase : public Decoder {
   }
 
   void InitializeTask(DemuxerStream* demuxer_stream, FilterCallback* callback) {
-    DCHECK_EQ(MessageLoop::current(), this->message_loop());
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     CHECK(kUninitialized == state_);
     CHECK(!demuxer_stream_);
     demuxer_stream_ = demuxer_stream;
@@ -208,7 +211,7 @@ class DecoderBase : public Decoder {
     scoped_ptr<bool> success_deleter(success);
     AutoCallbackRunner done_runner(done_cb);
 
-    DCHECK_EQ(MessageLoop::current(), this->message_loop());
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     // Delegate to subclass first.
     if (!*success) {
       this->host()->SetError(PIPELINE_ERROR_DECODE);
@@ -220,7 +223,7 @@ class DecoderBase : public Decoder {
   }
 
   void ReadTask(scoped_refptr<Output> output) {
-    DCHECK_EQ(MessageLoop::current(), this->message_loop());
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
 
     // TODO(scherkus): should reply with a null operation (empty buffer).
     if (IsStopped())
@@ -239,7 +242,7 @@ class DecoderBase : public Decoder {
   }
 
   void ReadCompleteTask(scoped_refptr<Buffer> buffer) {
-    DCHECK_EQ(MessageLoop::current(), this->message_loop());
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     DCHECK_GT(pending_reads_, 0u);
     --pending_reads_;
     if (IsStopped()) {
@@ -255,7 +258,7 @@ class DecoderBase : public Decoder {
   //
   // Return true if one read request is fulfilled.
   bool FulfillPendingRead() {
-    DCHECK_EQ(MessageLoop::current(), this->message_loop());
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     if (!pending_requests_ || result_queue_.empty()) {
       return false;
     }
@@ -273,6 +276,8 @@ class DecoderBase : public Decoder {
     Decoder::consume_audio_samples_callback()->Run(output);
     return true;
   }
+
+  MessageLoop* message_loop_;
 
   // Tracks the number of asynchronous reads issued to |demuxer_stream_|.
   // Using size_t since it is always compared against deque::size().

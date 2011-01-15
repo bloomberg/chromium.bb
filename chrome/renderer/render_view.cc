@@ -106,6 +106,7 @@
 #include "grit/renderer_resources.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_switches.h"
+#include "media/base/message_loop_factory_impl.h"
 #include "net/base/data_url.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -2811,6 +2812,8 @@ WebSharedWorker* RenderView::createSharedWorker(
 
 WebMediaPlayer* RenderView::createMediaPlayer(
     WebFrame* frame, WebMediaPlayerClient* client) {
+  scoped_ptr<media::MessageLoopFactory> message_loop_factory(
+      new media::MessageLoopFactoryImpl());
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
 
@@ -2846,7 +2849,9 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   video_renderer = renderer;
 
   scoped_ptr<webkit_glue::WebMediaPlayerImpl> result(
-      new webkit_glue::WebMediaPlayerImpl(client, collection.release()));
+      new webkit_glue::WebMediaPlayerImpl(client,
+                                          collection.release(),
+                                          message_loop_factory.release()));
   if (!result->Initialize(frame,
                           cmd_line->HasSwitch(switches::kSimpleDataSource),
                           video_renderer)) {
