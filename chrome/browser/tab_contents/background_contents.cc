@@ -175,16 +175,6 @@ void BackgroundContents::Close(RenderViewHost* render_view_host) {
   delete this;
 }
 
-void BackgroundContents::RenderViewGone(RenderViewHost* rvh,
-                                        base::TerminationStatus status,
-                                        int error_code) {
-  // Our RenderView went away, so we should go away also, so killing the process
-  // via the TaskManager doesn't permanently leave a BackgroundContents hanging
-  // around the system, blocking future instances from being created
-  // (http://crbug.com/65189).
-  delete this;
-}
-
 RendererPreferences BackgroundContents::GetRendererPrefs(
     Profile* profile) const {
   RendererPreferences preferences;

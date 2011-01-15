@@ -84,8 +84,6 @@ class BackgroundContentsService : private NotificationObserver,
                            TestApplicationIDLinkage);
   FRIEND_TEST_ALL_PREFIXES(TaskManagerBrowserTest,
                            NoticeBGContentsChanges);
-  FRIEND_TEST_ALL_PREFIXES(TaskManagerBrowserTest,
-                           KillBGContents);
 
   // Registers for various notifications.
   void StartObserving(Profile* profile);

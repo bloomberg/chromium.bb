@@ -34,15 +34,12 @@ namespace {
 
 const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 
-class ResourceChangeObserver
-    : public TaskManagerModelObserver,
-      public base::RefCountedThreadSafe<ResourceChangeObserver> {
+class ResourceChangeObserver : public TaskManagerModelObserver {
  public:
   ResourceChangeObserver(const TaskManagerModel* model,
                          int target_resource_count)
       : model_(model),
-        target_resource_count_(target_resource_count),
-        check_pending_(false) {
+        target_resource_count_(target_resource_count) {
   }
 
   virtual void OnModelChanged() {
@@ -62,46 +59,13 @@ class ResourceChangeObserver
   }
 
  private:
-  friend class base::RefCountedThreadSafe<ResourceChangeObserver>;
   void OnResourceChange() {
-    // The task manager can churn resources (for example, when a
-    // BackgroundContents navigates, we remove and re-add the resource to
-    // allow the UI to update properly). So check the resource count via
-    // a task to make sure we aren't triggered by a transient change.
-    if (check_pending_)
-      return;
-    check_pending_ = true;
-    MessageLoopForUI::current()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &ResourceChangeObserver::CheckResourceCount));
-  }
-
-  void CheckResourceCount() {
     if (model_->ResourceCount() == target_resource_count_)
       MessageLoopForUI::current()->Quit();
   }
 
   const TaskManagerModel* model_;
   const int target_resource_count_;
-  bool check_pending_;
-};
-
-// Helper class used to wait for a BackgroundContents to finish loading.
-class BackgroundContentsListener : public NotificationObserver {
- public:
-  explicit BackgroundContentsListener(Profile* profile) {
-    registrar_.Add(this, NotificationType::BACKGROUND_CONTENTS_NAVIGATED,
-                   Source<Profile>(profile));
-  }
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    // Quit once the BackgroundContents has been loaded.
-    if (type.value == NotificationType::BACKGROUND_CONTENTS_NAVIGATED)
-      MessageLoopForUI::current()->Quit();
-  }
- private:
-  NotificationRegistrar registrar_;
 };
 
 }  // namespace
@@ -115,17 +79,10 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
   void WaitForResourceChange(int target_count) {
     if (model()->ResourceCount() == target_count)
       return;
-    scoped_refptr<ResourceChangeObserver> observer(
-        new ResourceChangeObserver(model(), target_count));
-    model()->AddObserver(observer.get());
+    ResourceChangeObserver observer(model(), target_count);
+    model()->AddObserver(&observer);
     ui_test_utils::RunMessageLoop();
-    model()->RemoveObserver(observer.get());
-  }
-
-  // Wait for any pending BackgroundContents to finish starting up.
-  void WaitForBackgroundContents() {
-    BackgroundContentsListener listener(browser()->profile());
-    ui_test_utils::RunMessageLoop();
+    model()->RemoveObserver(&observer);
   }
 };
 
@@ -189,45 +146,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeBGContentsChanges) {
 
   // Close the background contents and verify that we notice.
   service->ShutdownAssociatedBackgroundContents(application_id);
-  WaitForResourceChange(2);
-}
-
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillBGContents) {
-  EXPECT_EQ(0, model()->ResourceCount());
-
-  // Show the task manager. This populates the model, and helps with debugging
-  // (you see the task manager).
-  browser()->window()->ShowTaskManager();
-
-  // Browser and the New Tab Page.
-  WaitForResourceChange(2);
-
-  // Open a new background contents and make sure we notice that.
-  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
-                                     FilePath(kTitle1File)));
-
-  BackgroundContentsService* service =
-      browser()->profile()->GetBackgroundContentsService();
-  string16 application_id(ASCIIToUTF16("test_app_id"));
-  service->LoadBackgroundContents(browser()->profile(),
-                                  url,
-                                  ASCIIToUTF16("background_page"),
-                                  application_id);
-  // Wait for the background contents process to finish loading.
-  WaitForBackgroundContents();
-  EXPECT_EQ(3, model()->ResourceCount());
-
-  // Kill the background contents process and verify that it disappears from the
-  // model.
-  bool found = false;
-  for (int i = 0; i < model()->ResourceCount(); ++i) {
-    if (model()->IsBackgroundResource(i)) {
-      TaskManager::GetInstance()->KillProcess(i);
-      found = true;
-      break;
-    }
-  }
-  ASSERT_TRUE(found);
   WaitForResourceChange(2);
 }
 
