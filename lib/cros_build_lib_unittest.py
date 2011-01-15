@@ -7,6 +7,7 @@
 import errno
 import os
 import shutil
+import signal
 import subprocess
 import tempfile
 import unittest
@@ -17,13 +18,19 @@ import mox
 class TestRunCommand(unittest.TestCase):
 
   def setUp(self):
+    # Get the original value for SIGINT so our signal() mock can return the
+    # correct thing.
+    self._old_sigint = signal.getsignal(signal.SIGINT)
+
     self.mox = mox.Mox()
     self.mox.StubOutWithMock(subprocess, 'Popen', use_mock_anything=True)
+    self.mox.StubOutWithMock(signal, 'signal')
     self.proc_mock = self.mox.CreateMockAnything()
     self.error = 'test error'
     self.output = 'test output'
 
   def tearDown(self):
+    # Unset anything that we set with mox.
     self.mox.UnsetStubs()
 
   def _AssertCrEqual(self, expected, actual):
@@ -59,7 +66,7 @@ class TestRunCommand(unittest.TestCase):
       expected_result.returncode = self.proc_mock.returncode
 
     arg_dict = dict()
-    for attr in 'cwd stdin stdout stderr shell'.split():
+    for attr in 'cwd env stdin stdout stderr shell'.split():
       if attr in sp_kv:
         arg_dict[attr] = sp_kv[attr]
       else:
@@ -68,8 +75,16 @@ class TestRunCommand(unittest.TestCase):
         else:
           arg_dict[attr] = None
 
+    # If requested, RunCommand will ignore sigints; record that.
+    if rc_kv.get('ignore_sigint'):
+      signal.signal(signal.SIGINT, signal.SIG_IGN).AndReturn(self._old_sigint)
+
     subprocess.Popen(real_cmd, **arg_dict).AndReturn(self.proc_mock)
     self.proc_mock.communicate(None).AndReturn((self.output, self.error))
+
+    # If it ignored them, RunCommand will restore sigints; record that.
+    if rc_kv.get('ignore_sigint'):
+      signal.signal(signal.SIGINT, self._old_sigint).AndReturn(signal.SIG_IGN)
 
     self.mox.ReplayAll()
     actual_result = cros_build_lib.RunCommand(cmd, **rc_kv)
@@ -77,11 +92,24 @@ class TestRunCommand(unittest.TestCase):
 
     self._AssertCrEqual(expected_result, actual_result)
 
-  def testReturnCodeZeroWithArrayCmd(self):
-    """--enter_chroot=False and --cmd is an array of strings."""
+  def testReturnCodeZeroWithArrayCmd(self, ignore_sigint=False):
+    """--enter_chroot=False and --cmd is an array of strings.
+
+    Parameterized so this can also be used by some other tests w/ alternate
+    params to RunCommand().
+
+    Args:
+      ignore_sigint: If True, we'll tell RunCommand to ignore sigint.
+    """
     self.proc_mock.returncode = 0
     cmd_list = ['foo', 'bar', 'roger']
-    self._TestCmd(cmd_list, cmd_list, rc_kv=dict(exit_code=True))
+    self._TestCmd(cmd_list, cmd_list, rc_kv=dict(exit_code=True,
+                                                 ignore_sigint=ignore_sigint))
+
+  def testSignalRestoreNormalCase(self):
+    """Test RunCommand() properly sets/restores sigint.  Normal case."""
+    self.testReturnCodeZeroWithArrayCmd(ignore_sigint=True)
+
 
   def testReturnCodeZeroWithArrayCmdEnterChroot(self):
     """--enter_chroot=True and --cmd is an array of strings."""
@@ -96,16 +124,38 @@ class TestRunCommand(unittest.TestCase):
     cmd = 'test cmd'
     self._TestCmd(cmd, cmd, rc_kv=dict(error_ok=True))
 
-  def testSubprocessCommunicateExceptionRaisesError(self):
-    """Verify error raised by communicate() is caught."""
+  def testSubprocessCommunicateExceptionRaisesError(self, ignore_sigint=False):
+    """Verify error raised by communicate() is caught.
+
+    Parameterized so this can also be used by some other tests w/ alternate
+    params to RunCommand().
+
+    Args:
+      ignore_sigint: If True, we'll tell RunCommand to ignore sigint.
+    """
     cmd = 'test cmd'
-    subprocess.Popen(cmd, cwd=None, stdin=None, stdout=None, stderr=None,
+
+    # If requested, RunCommand will ignore sigints; record that.
+    if ignore_sigint:
+      signal.signal(signal.SIGINT, signal.SIG_IGN).AndReturn(self._old_sigint)
+
+    subprocess.Popen(cmd, cwd=None, env=None,
+                     stdin=None, stdout=None, stderr=None,
                      shell=False).AndReturn(self.proc_mock)
     self.proc_mock.communicate(None).AndRaise(ValueError)
 
+    # If it ignored them, RunCommand will restore sigints; record that.
+    if ignore_sigint:
+      signal.signal(signal.SIGINT, self._old_sigint).AndReturn(signal.SIG_IGN)
+
     self.mox.ReplayAll()
-    self.assertRaises(ValueError, cros_build_lib.RunCommand, cmd)
+    self.assertRaises(ValueError, cros_build_lib.RunCommand, cmd,
+                      ignore_sigint=ignore_sigint)
     self.mox.VerifyAll()
+
+  def testSignalRestoreExceptionCase(self):
+    """Test RunCommand() properly sets/restores sigint.  Exception case."""
+    self.testSubprocessCommunicateExceptionRaisesError(ignore_sigint=True)
 
   def testSubprocessCommunicateExceptionNotRaisesError(self):
     """Don't re-raise error from communicate() when --error_ok=True."""
@@ -114,7 +164,8 @@ class TestRunCommand(unittest.TestCase):
     expected_result = cros_build_lib.CommandResult()
     expected_result.cmd = real_cmd
 
-    subprocess.Popen(real_cmd, cwd=None, stdin=None, stdout=None, stderr=None,
+    subprocess.Popen(real_cmd, cwd=None, env=None,
+                     stdin=None, stdout=None, stderr=None,
                      shell=False).AndReturn(self.proc_mock)
     self.proc_mock.communicate(None).AndRaise(ValueError)
 
@@ -124,6 +175,22 @@ class TestRunCommand(unittest.TestCase):
     self.mox.VerifyAll()
 
     self._AssertCrEqual(expected_result, actual_result)
+
+  def testEnvWorks(self):
+    """Test RunCommand(..., env=xyz) works."""
+    # We'll put this bogus environment together, just to make sure
+    # subprocess.Popen gets passed it.
+    env = {'Tom': 'Jerry', 'Itchy': 'Scratchy'}
+
+    # This is a simple case, copied from testReturnCodeZeroWithArrayCmd()
+    self.proc_mock.returncode = 0
+    cmd_list = ['foo', 'bar', 'roger']
+
+    # Run.  We expect the env= to be passed through from sp (subprocess.Popen)
+    # to rc (RunCommand).
+    self._TestCmd(cmd_list, cmd_list,
+                  sp_kv=dict(env=env),
+                  rc_kv=dict(env=env, exit_code=True))
 
 
 class TestListFiles(unittest.TestCase):

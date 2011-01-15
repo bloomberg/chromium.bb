@@ -6,6 +6,7 @@
 
 import os
 import re
+import signal
 import subprocess
 import sys
 
@@ -29,7 +30,8 @@ class RunCommandError(Exception):
 
 def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                exit_code=False, redirect_stdout=False, redirect_stderr=False,
-               cwd=None, input=None, enter_chroot=False, shell=False):
+               cwd=None, input=None, enter_chroot=False, shell=False,
+               env=None, ignore_sigint=False):
   """Runs a command.
 
   Args:
@@ -46,6 +48,11 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       cwd must point to the scripts directory.
     shell: If shell is True, the specified command will be executed through
       the shell.
+    env: If non-None, this is the environment for the new process.
+    ignore_sigint: If True, we'll ignore signal.SIGINT before calling the
+      child.  This is the desired behavior if we know our child will handle
+      Ctrl-C.  If we don't do this, I think we and the child will both get
+      Ctrl-C at the same time, which means we'll forcefully kill the child.
 
   Returns:
     A CommandResult object.
@@ -79,8 +86,15 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
 
   try:
     proc = subprocess.Popen(cmd, cwd=cwd, stdin=stdin, stdout=stdout,
-                            stderr=stderr, shell=shell)
-    (cmd_result.output, cmd_result.error) = proc.communicate(input)
+                            stderr=stderr, shell=shell, env=env)
+    if ignore_sigint:
+      old_sigint = signal.signal(signal.SIGINT, signal.SIG_IGN)
+    try:
+      (cmd_result.output, cmd_result.error) = proc.communicate(input)
+    finally:
+      if ignore_sigint:
+        signal.signal(signal.SIGINT, old_sigint)
+
     if exit_code:
       cmd_result.returncode = proc.returncode
 
