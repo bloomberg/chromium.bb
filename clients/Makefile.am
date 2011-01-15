@@ -72,5 +72,5 @@ if HAVE_POPPLER
 poppler_programs = view
 view_SOURCES = view.c
 view_LDADD = $(toolkit_libs) $(POPPLER_LIBS)
-view_CPPFLAGS = $(POPPLER_CFLAGS)
+view_CPPFLAGS = $(AM_CPPFLAGS) $(POPPLER_CFLAGS)
 endif
