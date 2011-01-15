@@ -463,6 +463,19 @@ int main() {
       deps=full_glibc_toolchain_deps,
       scons_args=["--nacl_glibc", "small_tests", "-k", "nacl_static_link=1"])
 
+  if os.uname()[4] == "x86_64":
+    # For x86-64, just do a smoke test of hello_world to ensure that basic
+    # functionality does not regress.  Many other tests do not pass yet.
+    AddSconsModule(
+        "scons_tests_64",
+        deps=full_glibc_toolchain_deps,
+        scons_args=["--nacl_glibc", "platform=x86-64", "run_hello_world_test"])
+    AddSconsModule(
+        "scons_tests_static_64",
+        deps=full_glibc_toolchain_deps,
+        scons_args=["--nacl_glibc", "platform=x86-64", "run_hello_world_test",
+                    "nacl_static_link=1"])
+
   # Check that all the Scons tests build, including those that do not
   # yet run successfully.
   AddSconsModule(
