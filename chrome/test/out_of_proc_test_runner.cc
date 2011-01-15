@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/hash_tables.h"
 #include "base/linked_ptr.h"
@@ -66,6 +67,11 @@ const char kHelpFlag[]   = "help";
 
 const char kTestTerminateTimeoutFlag[] = "test-terminate-timeout";
 
+// The environment variable name for the total number of test shards.
+static const char kTestTotalShards[] = "GTEST_TOTAL_SHARDS";
+// The environment variable name for the test shard index.
+static const char kTestShardIndex[] = "GTEST_SHARD_INDEX";
+
 // How long we wait for the subprocess to exit (with a success/failure code).
 // See http://crbug.com/43862 for some discussion of the value.
 const int kDefaultTestTimeoutMs = 20000;
@@ -73,6 +79,67 @@ const int kDefaultTestTimeoutMs = 20000;
 // The default output file for XML output.
 static const FilePath::CharType kDefaultOutputFile[] = FILE_PATH_LITERAL(
     "test_detail.xml");
+
+// Parses the environment variable var as an Int32.  If it is unset, returns
+// default_val.  If it is set, unsets it then converts it to Int32 before
+// returning it.  If unsetting or converting to an Int32 fails, print an
+// error and exit with failure.
+int32 Int32FromEnvOrDie(const char* const var, int32 default_val) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::string str_val;
+  int32 result;
+  if (!env->GetVar(var, &str_val))
+    return default_val;
+  if (!env->UnSetVar(var)) {
+    LOG(ERROR) << "Invalid environment: we could not unset " << var << ".\n";
+    exit(EXIT_FAILURE);
+  }
+  if (!base::StringToInt(str_val, &result)) {
+    LOG(ERROR) << "Invalid environment: " << var << " is not an integer.\n";
+    exit(EXIT_FAILURE);
+  }
+  return result;
+}
+
+// Checks whether sharding is enabled by examining the relevant
+// environment variable values.  If the variables are present,
+// but inconsistent (i.e., shard_index >= total_shards), prints
+// an error and exits.
+bool ShouldShard(int32* total_shards, int32* shard_index) {
+  *total_shards = Int32FromEnvOrDie(kTestTotalShards, -1);
+  *shard_index = Int32FromEnvOrDie(kTestShardIndex, -1);
+
+  if (*total_shards == -1 && *shard_index == -1) {
+    return false;
+  } else if (*total_shards == -1 && *shard_index != -1) {
+    LOG(ERROR) << "Invalid environment variables: you have "
+               << kTestShardIndex << " = " << *shard_index
+               << ", but have left " << kTestTotalShards << " unset.\n";
+    exit(EXIT_FAILURE);
+  } else if (*total_shards != -1 && *shard_index == -1) {
+    LOG(ERROR) << "Invalid environment variables: you have "
+               << kTestTotalShards << " = " << *total_shards
+               << ", but have left " << kTestShardIndex << " unset.\n";
+    exit(EXIT_FAILURE);
+  } else if (*shard_index < 0 || *shard_index >= *total_shards) {
+    LOG(ERROR) << "Invalid environment variables: we require 0 <= "
+               << kTestShardIndex << " < " << kTestTotalShards
+               << ", but you have " << kTestShardIndex << "=" << *shard_index
+               << ", " << kTestTotalShards << "=" << *total_shards << ".\n";
+    exit(EXIT_FAILURE);
+  }
+
+  return *total_shards > 1;
+}
+
+// Given the total number of shards, the shard index, and the test id, returns
+// true iff the test should be run on this shard.  The test id is some arbitrary
+// but unique non-negative integer assigned by this launcher to each test
+// method.  Assumes that 0 <= shard_index < total_shards, which is first
+// verified in ShouldShard().
+bool ShouldRunTestOnShard(int total_shards, int shard_index, int test_id) {
+  return (test_id % total_shards) == shard_index;
+}
 
 // A helper class to output results.
 // Note: as currently XML is the only supported format by gtest, we don't
@@ -364,9 +431,14 @@ bool RunTests() {
     negative_filter = filter.substr(dash_pos + 1); // Everything after the dash.
   }
 
+  int num_runnable_tests = 0;
   int test_run_count = 0;
   int ignored_failure_count = 0;
   std::vector<std::string> failed_tests;
+
+  int32 total_shards;
+  int32 shard_index;
+  bool should_shard = ShouldShard(&total_shards, &shard_index);
 
   ResultsPrinter printer(*command_line);
   for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
@@ -391,6 +463,17 @@ bool RunTests() {
           MatchesFilter(test_name, negative_filter)) {
         printer.OnTestEnd(test_info->name(), test_case->name(),
                           false, false, false, 0);
+        continue;
+      }
+      // Decide if this test should be run.
+      bool should_run = true;
+      if (should_shard) {
+        should_run = ShouldRunTestOnShard(total_shards, shard_index,
+                                          num_runnable_tests);
+      }
+      num_runnable_tests += 1;
+      // If sharding is enabled and the test should not be run, skip it.
+      if (!should_run) {
         continue;
       }
       base::Time start_time = base::Time::Now();
