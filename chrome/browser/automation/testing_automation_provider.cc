@@ -3774,15 +3774,9 @@ void TestingAutomationProvider::FillAutoFillProfile(
   ListValue* profiles = NULL;
   ListValue* cards = NULL;
 
-  if (!args->GetList("profiles", &profiles)) {
-    reply.SendError("Invalid or missing profiles list");
-    return;
-  }
-
-  if (!args->GetList("credit_cards", &cards)) {
-    reply.SendError("Invalid or missing credit_cards list");
-    return;
-  }
+  // It's ok for profiles/credit_cards elements to be missing.
+  args->GetList("profiles", &profiles);
+  args->GetList("credit_cards", &cards);
 
   std::string error_mesg;
 
