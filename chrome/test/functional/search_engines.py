@@ -8,6 +8,7 @@ import re
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import test_utils
 
 
 class SearchEnginesTest(pyauto.PyUITest):
@@ -50,7 +51,10 @@ class SearchEnginesTest(pyauto.PyUITest):
     # Use omnibox to invoke search engine discovery.
     # Navigating using NavigateToURL does not currently invoke this logic.
     self.SetOmniboxText('http://www.youtube.com')
-    self.OmniboxAcceptInput()
+    # Due to slow navigation to youtube.com on Leopard test machines, waiting
+    # here 1 min (max).
+    test_utils.CallFunctionWithNewTimeout(self, 1 * 60 * 1000,
+                                          self.OmniboxAcceptInput)
     def InfoUpdated(old_info):
       new_info = self.GetSearchEngineInfo()
       if len(new_info) > len(old_info):

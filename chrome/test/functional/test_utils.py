@@ -6,11 +6,13 @@
 
 import copy
 import email
+import logging
 import os
 import smtplib
 import types
 
 import pyauto_functional
+import pyauto
 import pyauto_utils
 
 
@@ -215,3 +217,17 @@ def StringContentCheck(test, content_string, have_list, nothave_list):
     test.assertTrue(s in content_string, s)
   for s in nothave_list:
     test.assertTrue(s not in content_string)
+
+
+def CallFunctionWithNewTimeout(self, new_timeout, function):
+  """Sets the timeout to |new_timeout| and calls |function|.
+
+  This method resets the timeout before returning.
+  """
+  timeout_changer = pyauto.PyUITest.CmdExecutionTimeoutChanger(
+      self, new_timeout)
+  logging.info('Automation execution timeout has been changed to %d. '
+               'If the timeout is large the test might appear to hang.'
+               % new_timeout)
+  function()
+  del timeout_changer

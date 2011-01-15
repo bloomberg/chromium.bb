@@ -15,6 +15,7 @@ import urllib
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
 import pyauto_utils
+import test_utils
 
 
 class DownloadsTest(pyauto.PyUITest):
@@ -92,19 +93,6 @@ class DownloadsTest(pyauto.PyUITest):
     os.close(fd)
     logging.debug('Created temporary file %s of size %d' % (file_path, size))
     return file_path
-
-  def _CallFunctionWithNewTimeout(self, new_timeout, function):
-    """Sets the timeout to |new_timeout| and calls |function|.
-
-    This method resets the timeout before returning.
-    """
-    timeout_changer = pyauto.PyUITest.CmdExecutionTimeoutChanger(
-        self, new_timeout)
-    logging.info('Automation execution timeout has been changed to %d. '
-                 'If the timeout is large the test might appear to hang.'
-                 % new_timeout)
-    function()
-    del timeout_changer
 
   def _GetAllDownloadIDs(self):
     """Return a list of all download ids."""
@@ -221,8 +209,8 @@ class DownloadsTest(pyauto.PyUITest):
     self._DeleteAfterShutdown(downloaded_pkg)
     # Waiting for big file to download might exceed automation timeout.
     # Temporarily increase the automation timeout.
-    self._CallFunctionWithNewTimeout(4 * 60 * 1000,  # 4 min.
-                                     self.WaitForAllDownloadsToComplete)
+    test_utils.CallFunctionWithNewTimeout(self, 4 * 60 * 1000,  # 4 min.
+                                          self.WaitForAllDownloadsToComplete)
     # Verify that the file was correctly downloaded
     self.assertTrue(os.path.exists(downloaded_pkg),
                     'Downloaded file %s missing.' % downloaded_pkg)
@@ -381,8 +369,8 @@ class DownloadsTest(pyauto.PyUITest):
 
     # Waiting for big file to download might exceed automation timeout.
     # Temporarily increase the automation timeout.
-    self._CallFunctionWithNewTimeout(2 * 60 * 1000,  # 2 min.
-                                     self.WaitForAllDownloadsToComplete)
+    test_utils.CallFunctionWithNewTimeout(self, 2 * 60 * 1000,  # 2 min.
+                                          self.WaitForAllDownloadsToComplete)
 
     # Verify that the file was correctly downloaded after pause and resume.
     self.assertTrue(os.path.exists(downloaded_pkg),
@@ -478,12 +466,10 @@ class DownloadsTest(pyauto.PyUITest):
     self.WaitForAllDownloadsToComplete()
     id = self._GetDownloadId()
     self.PerformActionOnDownload(id, 'toggle_open_files_like_this')
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
     # Retesting the flag we set
     file_url2 = self.GetFileURLForDataPath(os.path.join('zip', 'test.zip'))
     unzip_path = os.path.join(self.GetDownloadDirectory().value(),
                               'test', 'foo')
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
     os.path.exists(unzip_path) and pyauto_utils.RemovePath(unzip_path)
     self.DownloadAndWaitForStart(file_url2)
     self.WaitForAllDownloadsToComplete()
