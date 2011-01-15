@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "media/base/mock_callback.h"
 #include "media/base/mock_filters.h"
 #include "media/base/mock_task.h"
 #include "media/filters/decoder_base.h"
@@ -121,15 +122,12 @@ TEST(DecoderBaseTest, FlowControl) {
   decoder->set_consume_audio_samples_callback(
       NewCallback(&read_callback, &MockDecoderCallback::OnReadComplete));
   scoped_refptr<MockDemuxerStream> demuxer_stream(new MockDemuxerStream());
-  StrictMock<MockFilterCallback> callback;
   decoder->set_message_loop(&message_loop);
 
   // Initailize.
-  EXPECT_CALL(callback, OnFilterCallback());
-  EXPECT_CALL(callback, OnCallbackDestroyed());
   EXPECT_CALL(*decoder, DoInitialize(NotNull(), NotNull(), NotNull()))
       .WillOnce(Initialize());
-  decoder->Initialize(demuxer_stream.get(), callback.NewCallback());
+  decoder->Initialize(demuxer_stream.get(), NewExpectedCallback());
   message_loop.RunAllPending();
 
   // Read.
@@ -157,9 +155,7 @@ TEST(DecoderBaseTest, FlowControl) {
   // Stop.
   EXPECT_CALL(*decoder, DoStop(_))
       .WillOnce(WithArg<0>(InvokeRunnable()));
-  EXPECT_CALL(callback, OnFilterCallback());
-  EXPECT_CALL(callback, OnCallbackDestroyed());
-  decoder->Stop(callback.NewCallback());
+  decoder->Stop(NewExpectedCallback());
   message_loop.RunAllPending();
 }
 

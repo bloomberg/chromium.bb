@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/callback.h"
 #include "media/base/filters.h"
+#include "media/base/mock_callback.h"
 #include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
 #include "net/base/net_errors.h"
@@ -59,7 +59,8 @@ class SimpleDataSourceTest : public testing::Test {
     ignore_result(frame_.release());
   }
 
-  void InitializeDataSource(const char* url) {
+  void InitializeDataSource(const char* url,
+                            media::MockCallback* callback) {
     gurl_ = GURL(url);
 
     frame_.reset(new NiceMock<MockWebFrame>());
@@ -72,9 +73,7 @@ class SimpleDataSourceTest : public testing::Test {
     data_source_->set_host(&host_);
     data_source_->SetURLLoaderForTest(url_loader_);
 
-    InSequence s;
-
-    data_source_->Initialize(url, callback_.NewCallback());
+    data_source_->Initialize(url, callback);
     MessageLoop::current()->RunAllPending();
   }
 
@@ -96,8 +95,6 @@ class SimpleDataSourceTest : public testing::Test {
     InSequence s;
     EXPECT_CALL(host_, SetTotalBytes(kDataSize));
     EXPECT_CALL(host_, SetBufferedBytes(kDataSize));
-    EXPECT_CALL(callback_, OnFilterCallback());
-    EXPECT_CALL(callback_, OnCallbackDestroyed());
 
     data_source_->didFinishLoading(NULL, 0);
 
@@ -108,8 +105,6 @@ class SimpleDataSourceTest : public testing::Test {
   void RequestFailed() {
     InSequence s;
     EXPECT_CALL(host_, SetError(media::PIPELINE_ERROR_NETWORK));
-    EXPECT_CALL(callback_, OnFilterCallback());
-    EXPECT_CALL(callback_, OnCallbackDestroyed());
 
     WebURLError error;
     error.reason = net::ERR_FAILED;
@@ -120,11 +115,7 @@ class SimpleDataSourceTest : public testing::Test {
   }
 
   void DestroyDataSource() {
-    StrictMock<media::MockFilterCallback> callback;
-    EXPECT_CALL(callback, OnFilterCallback());
-    EXPECT_CALL(callback, OnCallbackDestroyed());
-
-    data_source_->Stop(callback.NewCallback());
+    data_source_->Stop(media::NewExpectedCallback());
     MessageLoop::current()->RunAllPending();
 
     data_source_ = NULL;
@@ -150,7 +141,6 @@ class SimpleDataSourceTest : public testing::Test {
   NiceMock<MockWebURLLoader>* url_loader_;
   scoped_refptr<SimpleDataSource> data_source_;
   StrictMock<media::MockFilterHost> host_;
-  StrictMock<media::MockFilterCallback> callback_;
   scoped_ptr<NiceMock<MockWebFrame> > frame_;
 
   char data_[kDataSize];
@@ -159,19 +149,19 @@ class SimpleDataSourceTest : public testing::Test {
 };
 
 TEST_F(SimpleDataSourceTest, InitializeHTTP) {
-  InitializeDataSource(kHttpUrl);
+  InitializeDataSource(kHttpUrl, media::NewExpectedCallback());
   RequestSucceeded(false);
   DestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, InitializeHTTPS) {
-  InitializeDataSource(kHttpsUrl);
+  InitializeDataSource(kHttpsUrl, media::NewExpectedCallback());
   RequestSucceeded(false);
   DestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, InitializeFile) {
-  InitializeDataSource(kFileUrl);
+  InitializeDataSource(kFileUrl, media::NewExpectedCallback());
   RequestSucceeded(true);
   DestroyDataSource();
 }
@@ -191,31 +181,34 @@ TEST_F(SimpleDataSourceTest, InitializeData) {
   EXPECT_CALL(host_, SetLoaded(true));
   EXPECT_CALL(host_, SetTotalBytes(sizeof(kDataUrlDecoded)));
   EXPECT_CALL(host_, SetBufferedBytes(sizeof(kDataUrlDecoded)));
-  EXPECT_CALL(callback_, OnFilterCallback());
-  EXPECT_CALL(callback_, OnCallbackDestroyed());
 
-  data_source_->Initialize(kDataUrl, callback_.NewCallback());
+  data_source_->Initialize(kDataUrl, media::NewExpectedCallback());
   MessageLoop::current()->RunAllPending();
 
   DestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, RequestFailed) {
-  InitializeDataSource(kHttpUrl);
+  InitializeDataSource(kHttpUrl, media::NewExpectedCallback());
   RequestFailed();
   DestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, StopWhenDownloading) {
-  InitializeDataSource(kHttpUrl);
+  // The callback should be deleted, but not executed.
+  // TODO(scherkus): should this really be the behaviour?  Seems strange...
+  StrictMock<media::MockCallback>* callback =
+      new StrictMock<media::MockCallback>();
+  EXPECT_CALL(*callback, Destructor());
+
+  InitializeDataSource(kHttpUrl, callback);
 
   EXPECT_CALL(*url_loader_, cancel());
-  EXPECT_CALL(callback_, OnCallbackDestroyed());
   DestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, AsyncRead) {
-  InitializeDataSource(kFileUrl);
+  InitializeDataSource(kFileUrl, media::NewExpectedCallback());
   RequestSucceeded(true);
   AsyncRead();
   DestroyDataSource();

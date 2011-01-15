@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <algorithm>
 
 #include "base/test/test_timeouts.h"
+#include "media/base/mock_callback.h"
 #include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
 #include "net/base/net_errors.h"
@@ -167,7 +168,6 @@ class BufferedDataSourceTest : public testing::Test {
     ON_CALL(*loader_, Read(_, _, _ , _))
         .WillByDefault(DeleteArg<3>());
 
-    StrictMock<media::MockFilterCallback> callback;
     ON_CALL(*loader_, instance_size())
         .WillByDefault(Return(instance_size));
     ON_CALL(*loader_, partial_response())
@@ -188,18 +188,13 @@ class BufferedDataSourceTest : public testing::Test {
       } else {
         EXPECT_CALL(host_, SetStreaming(true));
       }
-
-      EXPECT_CALL(callback, OnFilterCallback());
-      EXPECT_CALL(callback, OnCallbackDestroyed());
     } else {
       EXPECT_CALL(host_, SetError(media::PIPELINE_ERROR_NETWORK));
       EXPECT_CALL(*loader_, Stop());
-      EXPECT_CALL(callback, OnFilterCallback());
-      EXPECT_CALL(callback, OnCallbackDestroyed());
     }
 
     // Actual initialization of the data source.
-    data_source_->Initialize(url, callback.NewCallback());
+    data_source_->Initialize(url, media::NewExpectedCallback());
     message_loop_->RunAllPending();
 
     if (initialized_ok) {
@@ -220,10 +215,7 @@ class BufferedDataSourceTest : public testing::Test {
       EXPECT_CALL(*loader_, Stop());
     }
 
-    StrictMock<media::MockFilterCallback> callback;
-    EXPECT_CALL(callback, OnFilterCallback());
-    EXPECT_CALL(callback, OnCallbackDestroyed());
-    data_source_->Stop(callback.NewCallback());
+    data_source_->Stop(media::NewExpectedCallback());
     message_loop_->RunAllPending();
   }
 

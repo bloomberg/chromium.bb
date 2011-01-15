@@ -1,10 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/callback.h"
 #include "base/stl_util-inl.h"
 #include "media/base/data_buffer.h"
+#include "media/base/mock_callback.h"
 #include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
 #include "media/filters/audio_renderer_base.h"
@@ -70,9 +70,7 @@ class AudioRendererBaseTest : public ::testing::Test {
   virtual ~AudioRendererBaseTest() {
     // Expect a call into the subclass.
     EXPECT_CALL(*renderer_, OnStop());
-    EXPECT_CALL(callback_, OnFilterCallback());
-    EXPECT_CALL(callback_, OnCallbackDestroyed());
-    renderer_->Stop(callback_.NewCallback());
+    renderer_->Stop(NewExpectedCallback());
   }
 
  protected:
@@ -82,7 +80,6 @@ class AudioRendererBaseTest : public ::testing::Test {
   scoped_refptr<MockAudioRendererBase> renderer_;
   scoped_refptr<MockAudioDecoder> decoder_;
   StrictMock<MockFilterHost> host_;
-  StrictMock<MockFilterCallback> callback_;
   MediaFormat decoder_media_format_;
 
   // Number of asynchronous read requests sent to |decoder_|.
@@ -108,12 +105,8 @@ TEST_F(AudioRendererBaseTest, Initialize_Failed) {
   // We expect to receive an error.
   EXPECT_CALL(host_, SetError(PIPELINE_ERROR_INITIALIZATION_FAILED));
 
-  // We expect our callback to be executed.
-  EXPECT_CALL(callback_, OnFilterCallback());
-  EXPECT_CALL(callback_, OnCallbackDestroyed());
-
   // Initialize, we expect to have no reads.
-  renderer_->Initialize(decoder_, callback_.NewCallback());
+  renderer_->Initialize(decoder_, NewExpectedCallback());
   EXPECT_EQ(0u, pending_reads_);
 }
 
@@ -124,26 +117,15 @@ TEST_F(AudioRendererBaseTest, Initialize_Successful) {
   EXPECT_CALL(*renderer_, OnInitialize(_))
       .WillOnce(Return(true));
 
-  // After finishing initialization, we expect our callback to be executed.
-  EXPECT_CALL(callback_, OnFilterCallback());
-  EXPECT_CALL(callback_, OnCallbackDestroyed());
-
-  // Verify the following expectations haven't run until we complete the reads.
-  EXPECT_CALL(*renderer_, CheckPoint(0));
-
-  MockFilterCallback seek_callback;
-  EXPECT_CALL(seek_callback, OnFilterCallback());
-  EXPECT_CALL(seek_callback, OnCallbackDestroyed());
-
   // Initialize, we shouldn't have any reads.
-  renderer_->Initialize(decoder_, callback_.NewCallback());
+  renderer_->Initialize(decoder_, NewExpectedCallback());
   EXPECT_EQ(0u, pending_reads_);
 
-  // Now seek to trigger prerolling.
-  renderer_->Seek(base::TimeDelta(), seek_callback.NewCallback());
+  // Now seek to trigger prerolling, verifying the callback hasn't been
+  // executed yet.
+  EXPECT_CALL(*renderer_, CheckPoint(0));
+  renderer_->Seek(base::TimeDelta(), NewExpectedCallback());
   EXPECT_EQ(kMaxQueueSize, pending_reads_);
-
-  // Verify our seek callback hasn't been executed yet.
   renderer_->CheckPoint(0);
 
   // Now satisfy the read requests.  Our callback should be executed after
@@ -163,26 +145,15 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
   EXPECT_CALL(*renderer_, OnInitialize(_))
       .WillOnce(Return(true));
 
-  // After finishing initialization, we expect our callback to be executed.
-  EXPECT_CALL(callback_, OnFilterCallback());
-  EXPECT_CALL(callback_, OnCallbackDestroyed());
-
-  // Verify the following expectations haven't run until we complete the reads.
-  EXPECT_CALL(*renderer_, CheckPoint(0));
-
-  MockFilterCallback seek_callback;
-  EXPECT_CALL(seek_callback, OnFilterCallback());
-  EXPECT_CALL(seek_callback, OnCallbackDestroyed());
-
   // Initialize, we shouldn't have any reads.
-  renderer_->Initialize(decoder_, callback_.NewCallback());
+  renderer_->Initialize(decoder_, NewExpectedCallback());
   EXPECT_EQ(0u, pending_reads_);
 
-  // Now seek to trigger prerolling.
-  renderer_->Seek(base::TimeDelta(), seek_callback.NewCallback());
+  // Now seek to trigger prerolling, verifying the callback hasn't been
+  // executed yet.
+  EXPECT_CALL(*renderer_, CheckPoint(0));
+  renderer_->Seek(base::TimeDelta(), NewExpectedCallback());
   EXPECT_EQ(kMaxQueueSize, pending_reads_);
-
-  // Verify our seek callback hasn't been executed yet.
   renderer_->CheckPoint(0);
 
   // Now satisfy the read requests.  Our callback should be executed after
@@ -197,12 +168,8 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
     bytes_buffered += kDataSize;
   }
 
-  MockFilterCallback play_callback;
-  EXPECT_CALL(play_callback, OnFilterCallback());
-  EXPECT_CALL(play_callback, OnCallbackDestroyed());
-
   // Then set the renderer to play state.
-  renderer_->Play(play_callback.NewCallback());
+  renderer_->Play(NewExpectedCallback());
   renderer_->SetPlaybackRate(1.0f);
   EXPECT_EQ(1.0f, renderer_->GetPlaybackRate());
 

@@ -1,14 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/callback.h"
 #include "base/process_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
 #include "media/base/data_buffer.h"
 #include "media/base/media_format.h"
+#include "media/base/mock_callback.h"
 #include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,8 +32,6 @@ class AudioRendererImplTest : public ::testing::Test {
     CHECK(shared_mem_.CreateAnonymous(kSize));
 
     // Setup expectations for initialization.
-    EXPECT_CALL(callback_, OnFilterCallback());
-    EXPECT_CALL(callback_, OnCallbackDestroyed());
     decoder_ = new media::MockAudioDecoder();
 
     // Associate media format with decoder
@@ -49,7 +47,7 @@ class AudioRendererImplTest : public ::testing::Test {
     renderer_ = new AudioRendererImpl(filter_);
     renderer_->set_host(&host_);
     renderer_->set_message_loop(message_loop_.get());
-    renderer_->Initialize(decoder_, callback_.NewCallback());
+    renderer_->Initialize(decoder_, media::NewExpectedCallback());
 
     // Run pending tasks and simulate responding with a created audio stream.
     message_loop_->RunAllPending();
@@ -72,8 +70,6 @@ class AudioRendererImplTest : public ::testing::Test {
   scoped_refptr<AudioMessageFilter> filter_;
   base::SharedMemory shared_mem_;
   media::MockFilterHost host_;
-  media::MockFilterCallback callback_;
-  media::MockFilterCallback stop_callback_;
   scoped_refptr<media::MockAudioDecoder> decoder_;
   scoped_refptr<AudioRendererImpl> renderer_;
   media::MediaFormat decoder_media_format_;
@@ -90,16 +86,14 @@ TEST_F(AudioRendererImplTest, SetPlaybackRate) {
   renderer_->SetPlaybackRate(1.0f);
   renderer_->SetPlaybackRate(0.0f);
 
-  EXPECT_CALL(stop_callback_, OnFilterCallback());
-  renderer_->Stop(stop_callback_.NewCallback());
+  renderer_->Stop(media::NewExpectedCallback());
   message_loop_->RunAllPending();
 }
 
 TEST_F(AudioRendererImplTest, SetVolume) {
   // Execute SetVolume() codepath to create an IPC message.
   renderer_->SetVolume(0.5f);
-  EXPECT_CALL(stop_callback_, OnFilterCallback());
-  renderer_->Stop(stop_callback_.NewCallback());
+  renderer_->Stop(media::NewExpectedCallback());
   message_loop_->RunAllPending();
 }
 
@@ -113,8 +107,7 @@ TEST_F(AudioRendererImplTest, Stop) {
       ViewMsg_AudioStreamState_Params::kPaused);
 
   // Execute Stop() codepath to create an IPC message.
-  EXPECT_CALL(stop_callback_, OnFilterCallback());
-  renderer_->Stop(stop_callback_.NewCallback());
+  renderer_->Stop(media::NewExpectedCallback());
   message_loop_->RunAllPending();
 
   // Run AudioMessageFilter::Delegate methods, which can be executed after being
@@ -137,16 +130,14 @@ TEST_F(AudioRendererImplTest, DestroyedMessageLoop_SetPlaybackRate) {
   renderer_->SetPlaybackRate(0.0f);
   renderer_->SetPlaybackRate(1.0f);
   renderer_->SetPlaybackRate(0.0f);
-  EXPECT_CALL(stop_callback_, OnFilterCallback());
-  renderer_->Stop(stop_callback_.NewCallback());
+  renderer_->Stop(media::NewExpectedCallback());
 }
 
 TEST_F(AudioRendererImplTest, DestroyedMessageLoop_SetVolume) {
   // Kill the message loop and verify SetVolume() still works.
   message_loop_.reset();
   renderer_->SetVolume(0.5f);
-  EXPECT_CALL(stop_callback_, OnFilterCallback());
-  renderer_->Stop(stop_callback_.NewCallback());
+  renderer_->Stop(media::NewExpectedCallback());
 }
 
 TEST_F(AudioRendererImplTest, DestroyedMessageLoop_ConsumeAudioSamples) {
@@ -154,6 +145,5 @@ TEST_F(AudioRendererImplTest, DestroyedMessageLoop_ConsumeAudioSamples) {
   message_loop_.reset();
   scoped_refptr<media::Buffer> buffer(new media::DataBuffer(kSize));
   renderer_->ConsumeAudioSamples(buffer);
-  EXPECT_CALL(stop_callback_, OnFilterCallback());
-  renderer_->Stop(stop_callback_.NewCallback());
+  renderer_->Stop(media::NewExpectedCallback());
 }
