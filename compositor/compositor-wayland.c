@@ -60,7 +60,6 @@ struct wayland_compositor {
 		uint32_t event_mask;
 	} parent;
 
-	struct wl_list window_list;
 	struct wl_list input_list;
 };
 
