@@ -847,9 +847,17 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
       uri_container->GetIUri(uri_obj.Receive());
       DCHECK(uri_obj);
 
-      hr = browser_priv2->NavigateWithBindCtx2(uri_obj, NULL, NULL, NULL,
-                                               headers_var.AsInput(), bind_ctx,
-                                               const_cast<wchar_t*>(fragment));
+      if (GetIEVersion() < IE_9) {
+        hr = browser_priv2->NavigateWithBindCtx2(
+            uri_obj, NULL, NULL, NULL, headers_var.AsInput(), bind_ctx,
+            const_cast<wchar_t*>(fragment));
+      } else {
+        IWebBrowserPriv2CommonIE9* browser_priv2_ie9 =
+            reinterpret_cast<IWebBrowserPriv2CommonIE9*>(browser_priv2.get());
+        hr = browser_priv2_ie9->NavigateWithBindCtx2(
+            uri_obj, NULL, NULL, NULL, headers_var.AsInput(), bind_ctx,
+            const_cast<wchar_t*>(fragment), 0);
+      }
       DLOG_IF(WARNING, FAILED(hr))
           << base::StringPrintf(L"NavigateWithBindCtx2 0x%08X", hr);
     }

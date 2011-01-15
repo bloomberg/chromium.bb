@@ -60,6 +60,16 @@ class IWebBrowserPriv2Common : public IUnknown {
                                   LPOLESTR url_fragment);
 };
 
+// The IWebBrowserPriv2Common interface flavor for IE9 preview 2
+// (9.0.8073.6003)
+class IWebBrowserPriv2CommonIE9 : public IUnknown {
+ public:
+  STDMETHOD(NavigateWithBindCtx2)(IUri* uri, VARIANT* flags,
+                                  VARIANT* target_frame, VARIANT* post_data,
+                                  VARIANT* headers, IBindCtx* bind_ctx,
+                                  LPOLESTR url_fragment, DWORD unused1);
+};
+
 // This interface is used to call FireBeforeNavigate with additional
 // information like url. Available on IE7 onwards.
 //
