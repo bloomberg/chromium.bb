@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,8 +84,8 @@ class RenderMessageFilter : public BrowserMessageFilter,
   }
   bool off_the_record() { return off_the_record_; }
 
-  // Returns either the extension URLRequestContext or regular URLRequestContext
-  // depending on whether |url| is an extension URL.
+  // Returns either the extension net::URLRequestContext or regular
+  // net::URLRequestContext depending on whether |url| is an extension URL.
   // Only call on the IO thread.
   ChromeURLRequestContext* GetRequestContextForURL(const GURL& url);
 

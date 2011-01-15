@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,7 +88,7 @@ class ConnectionTesterTest : public PlatformTest {
       : test_server_(net::TestServer::TYPE_HTTP,
             FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest"))),
         client_socket_factory_(net::ClientSocketFactory::GetDefaultFactory()),
-        proxy_script_fetcher_context_(new URLRequestContext),
+        proxy_script_fetcher_context_(new net::URLRequestContext),
         message_loop_(MessageLoop::TYPE_IO),
         io_thread_(BrowserThread::IO, &message_loop_) {
     InitializeRequestContext();
@@ -105,7 +105,7 @@ class ConnectionTesterTest : public PlatformTest {
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
   scoped_ptr<net::HttpTransactionFactory> http_transaction_factory_;
   net::HttpAuthHandlerRegistryFactory http_auth_handler_factory_;
-  scoped_refptr<URLRequestContext> proxy_script_fetcher_context_;
+  scoped_refptr<net::URLRequestContext> proxy_script_fetcher_context_;
 
  private:
   void InitializeRequestContext() {

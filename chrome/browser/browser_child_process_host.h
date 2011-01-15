@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,7 @@ class BrowserChildProcessHost : public ChildProcessHost,
   // |resource_dispatcher_host| may be NULL to indicate none is needed for
   // this process type.
   // |url_request_context_getter| allows derived classes to override the
-  // URLRequestContext.
+  // net::URLRequestContext.
   BrowserChildProcessHost(
       ChildProcessInfo::ProcessType type,
       ResourceDispatcherHost* resource_dispatcher_host,
@@ -68,7 +68,7 @@ class BrowserChildProcessHost : public ChildProcessHost,
           url_request_context_override);
 
   // A convenient constructor for those classes that want to use the default
-  // URLRequestContext.
+  // net::URLRequestContext.
   BrowserChildProcessHost(
       ChildProcessInfo::ProcessType type,
       ResourceDispatcherHost* resource_dispatcher_host);

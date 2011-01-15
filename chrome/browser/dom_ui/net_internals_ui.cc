@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ const int kNetLogEventDelayMilliseconds = 100;
 
 // Returns the HostCache for |context|'s primary HostResolver, or NULL if
 // there is none.
-net::HostCache* GetHostResolverCache(URLRequestContext* context) {
+net::HostCache* GetHostResolverCache(net::URLRequestContext* context) {
   net::HostResolverImpl* host_resolver_impl =
       context->host_resolver()->GetAsHostResolverImpl();
 
@@ -72,7 +72,7 @@ net::HostCache* GetHostResolverCache(URLRequestContext* context) {
 }
 
 // Returns the disk cache backend for |context| if there is one, or NULL.
-disk_cache::Backend* GetDiskCacheBackend(URLRequestContext* context) {
+disk_cache::Backend* GetDiskCacheBackend(net::URLRequestContext* context) {
   if (!context->http_transaction_factory())
     return NULL;
 
@@ -85,7 +85,8 @@ disk_cache::Backend* GetDiskCacheBackend(URLRequestContext* context) {
 
 // Returns the http network session for |context| if there is one.
 // Otherwise, returns NULL.
-net::HttpNetworkSession* GetHttpNetworkSession(URLRequestContext* context) {
+net::HttpNetworkSession* GetHttpNetworkSession(
+    net::URLRequestContext* context) {
   if (!context->http_transaction_factory())
     return NULL;
 
@@ -691,7 +692,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
     const ListValue* list) {
-  URLRequestContext* context = context_getter_->GetURLRequestContext();
+  net::URLRequestContext* context = context_getter_->GetURLRequestContext();
   net::ProxyService* proxy_service = context->proxy_service();
 
   DictionaryValue* dict = new DictionaryValue();
@@ -705,7 +706,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnReloadProxySettings(
     const ListValue* list) {
-  URLRequestContext* context = context_getter_->GetURLRequestContext();
+  net::URLRequestContext* context = context_getter_->GetURLRequestContext();
   context->proxy_service()->ForceReloadProxyConfig();
 
   // Cause the renderer to be notified of the new values.
@@ -714,7 +715,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnReloadProxySettings(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetBadProxies(
     const ListValue* list) {
-  URLRequestContext* context = context_getter_->GetURLRequestContext();
+  net::URLRequestContext* context = context_getter_->GetURLRequestContext();
 
   const net::ProxyRetryInfoMap& bad_proxies_map =
       context->proxy_service()->proxy_retry_info();
@@ -739,7 +740,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetBadProxies(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnClearBadProxies(
     const ListValue* list) {
-  URLRequestContext* context = context_getter_->GetURLRequestContext();
+  net::URLRequestContext* context = context_getter_->GetURLRequestContext();
   context->proxy_service()->ClearBadProxiesCache();
 
   // Cause the renderer to be notified of the new values.
@@ -748,7 +749,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearBadProxies(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
     const ListValue* list) {
-  URLRequestContext* context = context_getter_->GetURLRequestContext();
+  net::URLRequestContext* context = context_getter_->GetURLRequestContext();
   net::HostResolverImpl* host_resolver_impl =
       context->host_resolver()->GetAsHostResolverImpl();
   net::HostCache* cache = GetHostResolverCache(context);
@@ -830,7 +831,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnEnableIPv6(
     const ListValue* list) {
-  URLRequestContext* context = context_getter_->GetURLRequestContext();
+  net::URLRequestContext* context = context_getter_->GetURLRequestContext();
   net::HostResolverImpl* host_resolver_impl =
       context->host_resolver()->GetAsHostResolverImpl();
 

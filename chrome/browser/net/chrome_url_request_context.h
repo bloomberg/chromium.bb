@@ -41,8 +41,8 @@ class NetworkDelegate;
 class ChromeURLRequestContext;
 class ChromeURLRequestContextFactory;
 
-// Subclass of URLRequestContext which can be used to store extra information
-// for requests.
+// Subclass of net::URLRequestContext which can be used to store extra
+// information for requests.
 //
 // All methods of this class must be called from the IO thread,
 // including the constructor and destructor.
@@ -203,8 +203,8 @@ class ChromeURLRequestContext : public net::URLRequestContext {
 };
 
 // A URLRequestContextGetter subclass used by the browser. This returns a
-// subclass of URLRequestContext which can be used to store extra information
-// about requests.
+// subclass of net::URLRequestContext which can be used to store extra
+// information about requests.
 //
 // Most methods are expected to be called on the UI thread, except for
 // the destructor and GetURLRequestContext().
@@ -233,7 +233,7 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   void ReleaseURLRequestContext();
 
   // Convenience overload of GetURLRequestContext() that returns a
-  // ChromeURLRequestContext* rather than a URLRequestContext*.
+  // ChromeURLRequestContext* rather than a net::URLRequestContext*.
   ChromeURLRequestContext* GetIOContext() {
     return reinterpret_cast<ChromeURLRequestContext*>(GetURLRequestContext());
   }
@@ -246,7 +246,7 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
 
   // Create an instance for an original profile for media. This is expected to
   // get called on UI thread. This method takes a profile and reuses the
-  // 'original' URLRequestContext for common files.
+  // 'original' net::URLRequestContext for common files.
   static ChromeURLRequestContextGetter* CreateOriginalForMedia(
       Profile* profile, const FilePath& disk_cache_path, int cache_size);
 
@@ -308,7 +308,7 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   // Access only from the IO thread.
   scoped_ptr<ChromeURLRequestContextFactory> factory_;
 
-  // NULL if not yet initialized. Otherwise, it is the URLRequestContext
+  // NULL if not yet initialized. Otherwise, it is the net::URLRequestContext
   // instance that was lazilly created by GetURLRequestContext.
   // Access only from the IO thread.
   scoped_refptr<net::URLRequestContext> url_request_context_;

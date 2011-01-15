@@ -20,7 +20,7 @@ class URLRequestContext;
 
 struct URLRequestContextGetterTraits;
 
-// Interface for retrieving an URLRequestContext.
+// Interface for retrieving an net::URLRequestContext.
 class URLRequestContextGetter
     : public base::RefCountedThreadSafe<URLRequestContextGetter,
                                         URLRequestContextGetterTraits> {
@@ -31,7 +31,7 @@ class URLRequestContextGetter
   // implementations can override it.
   virtual net::CookieStore* GetCookieStore();
   // Returns a MessageLoopProxy corresponding to the thread on which the
-  // request IO happens (the thread on which the returned URLRequestContext
+  // request IO happens (the thread on which the returned net::URLRequestContext
   // may be used).
   virtual scoped_refptr<base::MessageLoopProxy>
       GetIOMessageLoopProxy() const = 0;

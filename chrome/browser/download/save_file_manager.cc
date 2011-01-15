@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -354,7 +354,8 @@ void SaveFileManager::OnSaveURL(
     int render_view_id,
     URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  URLRequestContext* context = request_context_getter->GetURLRequestContext();
+  net::URLRequestContext* context =
+      request_context_getter->GetURLRequestContext();
   resource_dispatcher_host_->BeginSaveFile(url,
                                            referrer,
                                            render_process_host_id,

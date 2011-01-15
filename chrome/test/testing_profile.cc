@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,7 +114,7 @@ class BookmarkLoadObserver : public BookmarkModelObserver {
   DISALLOW_COPY_AND_ASSIGN(BookmarkLoadObserver);
 };
 
-class TestExtensionURLRequestContext : public URLRequestContext {
+class TestExtensionURLRequestContext : public net::URLRequestContext {
  public:
   TestExtensionURLRequestContext() {
     net::CookieMonster* cookie_monster = new net::CookieMonster(NULL, NULL);
@@ -126,7 +126,7 @@ class TestExtensionURLRequestContext : public URLRequestContext {
 
 class TestExtensionURLRequestContextGetter : public URLRequestContextGetter {
  public:
-  virtual URLRequestContext* GetURLRequestContext() {
+  virtual net::URLRequestContext* GetURLRequestContext() {
     if (!context_)
       context_ = new TestExtensionURLRequestContext();
     return context_.get();
@@ -136,7 +136,7 @@ class TestExtensionURLRequestContextGetter : public URLRequestContextGetter {
   }
 
  private:
-  scoped_refptr<URLRequestContext> context_;
+  scoped_refptr<net::URLRequestContext> context_;
 };
 
 }  // namespace

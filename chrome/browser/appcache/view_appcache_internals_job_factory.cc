@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ bool ViewAppCacheInternalsJobFactory::IsSupportedURL(const GURL& url) {
 // static.
 net::URLRequestJob* ViewAppCacheInternalsJobFactory::CreateJobForRequest(
     net::URLRequest* request) {
-  URLRequestContext* context = request->context();
+  net::URLRequestContext* context = request->context();
   ChromeURLRequestContext* chrome_request_context =
       reinterpret_cast<ChromeURLRequestContext*>(context);
   return new appcache::ViewAppCacheInternalsJob(

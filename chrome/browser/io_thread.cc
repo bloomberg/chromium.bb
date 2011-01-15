@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -176,10 +176,10 @@ class LoggingNetworkChangeObserver
   DISALLOW_COPY_AND_ASSIGN(LoggingNetworkChangeObserver);
 };
 
-scoped_refptr<URLRequestContext>
+scoped_refptr<net::URLRequestContext>
 ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
                                    net::NetLog* net_log) {
-  scoped_refptr<URLRequestContext> context(new URLRequestContext);
+  scoped_refptr<net::URLRequestContext> context(new net::URLRequestContext);
   context->set_net_log(net_log);
   context->set_host_resolver(globals->host_resolver.get());
   context->set_cert_verifier(globals->cert_verifier.get());
@@ -347,14 +347,14 @@ void IOThread::Init() {
           &globals_->network_delegate,
           net_log_));
 
-  scoped_refptr<URLRequestContext> proxy_script_fetcher_context =
+  scoped_refptr<net::URLRequestContext> proxy_script_fetcher_context =
       ConstructProxyScriptFetcherContext(globals_, net_log_);
   globals_->proxy_script_fetcher_context = proxy_script_fetcher_context;
 }
 
 void IOThread::CleanUp() {
   // Step 1: Kill all things that might be holding onto
-  // net::URLRequest/URLRequestContexts.
+  // net::URLRequest/net::URLRequestContexts.
 
 #if defined(USE_NSS)
   net::ShutdownOCSP();
@@ -382,8 +382,8 @@ void IOThread::CleanUp() {
     getter->ReleaseURLRequestContext();
   }
 
-  // Step 2: Release objects that the URLRequestContext could have been pointing
-  // to.
+  // Step 2: Release objects that the net::URLRequestContext could have been
+  // pointing to.
 
   // This must be reset before the ChromeNetLog is destroyed.
   network_change_observer_.reset();

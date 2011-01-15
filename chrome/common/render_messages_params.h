@@ -459,7 +459,7 @@ struct ViewHostMsg_Resource_Request {
   // object).
   ResourceType::Type resource_type;
 
-  // Used by plugin->browser requests to get the correct URLRequestContext.
+  // Used by plugin->browser requests to get the correct net::URLRequestContext.
   uint32 request_context;
 
   // Indicates which frame (or worker context) the request is being loaded into,

@@ -53,7 +53,6 @@ class SocketStreamDispatcherHost : public BrowserMessageFilter,
 
   void DeleteSocketStreamHost(int socket_id);
 
-  // Returns the URLRequestContext.
   net::URLRequestContext* GetURLRequestContext();
 
   IDMap<SocketStreamHost> hosts_;

@@ -122,7 +122,7 @@ class TestCookiePolicy : public net::CookiePolicy {
 
 //-----------------------------------------------------------------------------
 
-class TestURLRequestContext : public URLRequestContext {
+class TestURLRequestContext : public net::URLRequestContext {
  public:
   TestURLRequestContext() {
     host_resolver_ =

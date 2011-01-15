@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,23 +44,23 @@
 namespace {
 
 // Helper class that we pass to SocketStreamDispatcherHost so that it can find
-// the right URLRequestContext for a request.
+// the right net::URLRequestContext for a request.
 class URLRequestContextOverride
     : public ResourceMessageFilter::URLRequestContextOverride {
  public:
   explicit URLRequestContextOverride(
-      URLRequestContext* url_request_context)
+      net::URLRequestContext* url_request_context)
       : url_request_context_(url_request_context) {
   }
   virtual ~URLRequestContextOverride() {}
 
-  virtual URLRequestContext* GetRequestContext(
+  virtual net::URLRequestContext* GetRequestContext(
       uint32 request_id, ResourceType::Type resource_type) {
     return url_request_context_;
   }
 
  private:
-  URLRequestContext* url_request_context_;
+  net::URLRequestContext* url_request_context_;
 };
 
 }  // namespace

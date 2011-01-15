@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,7 @@ void CPBrowsingContextManager::Observe(NotificationType type,
   net::URLRequestContext* context =
       Source<net::URLRequestContext>(source).ptr();
 
-  // Multiple CPBrowsingContexts may refer to the same URLRequestContext.
+  // Multiple CPBrowsingContexts may refer to the same net::URLRequestContext.
   for (Map::iterator it(&map_); !it.IsAtEnd(); it.Advance()) {
     if (it.GetCurrentValue() == context)
       map_.Remove(it.GetCurrentKey());

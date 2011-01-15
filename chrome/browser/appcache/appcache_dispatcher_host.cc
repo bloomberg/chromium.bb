@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "chrome/common/render_messages.h"
 
 AppCacheDispatcherHost::AppCacheDispatcherHost(
-    URLRequestContext* request_context,
+    net::URLRequestContext* request_context,
     int process_id)
     : ALLOW_THIS_IN_INITIALIZER_LIST(frontend_proxy_(this)),
       request_context_(request_context),
@@ -37,7 +37,7 @@ void AppCacheDispatcherHost::OnChannelConnected(int32 peer_pid) {
   DCHECK(request_context_.get() || request_context_getter_.get());
 
   // Get the AppCacheService (it can only be accessed from IO thread).
-  URLRequestContext* context = request_context_.get();
+  net::URLRequestContext* context = request_context_.get();
   if (!context)
     context = request_context_getter_->GetURLRequestContext();
   appcache_service_ =

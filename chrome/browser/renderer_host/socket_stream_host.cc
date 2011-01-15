@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ SocketStreamHost::~SocketStreamHost() {
 }
 
 void SocketStreamHost::Connect(const GURL& url,
-                               URLRequestContext* request_context) {
+                               net::URLRequestContext* request_context) {
   VLOG(1) << "SocketStreamHost::Connect url=" << url;
   socket_ = net::SocketStreamJob::CreateSocketStreamJob(url, delegate_);
   socket_->set_context(request_context);

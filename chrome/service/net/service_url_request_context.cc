@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,7 +148,7 @@ const std::string& ServiceURLRequestContext::GetUserAgent(
   // If the user agent is set explicitly return that, otherwise call the
   // base class method to return default value.
   return user_agent_.empty() ?
-      URLRequestContext::GetUserAgent(url) : user_agent_;
+      net::URLRequestContext::GetUserAgent(url) : user_agent_;
 }
 
 ServiceURLRequestContext::~ServiceURLRequestContext() {
@@ -166,7 +166,7 @@ ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
   user_agent_ = MakeUserAgentForServiceProcess();
 }
 
-URLRequestContext*
+net::URLRequestContext*
 ServiceURLRequestContextGetter::GetURLRequestContext() {
   if (!url_request_context_)
     url_request_context_ = new ServiceURLRequestContext(user_agent_);

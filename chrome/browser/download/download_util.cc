@@ -689,7 +689,8 @@ void DownloadUrl(
     URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  URLRequestContext* context = request_context_getter->GetURLRequestContext();
+  net::URLRequestContext* context =
+      request_context_getter->GetURLRequestContext();
   context->set_referrer_charset(referrer_charset);
 
   rdh->BeginDownload(url,

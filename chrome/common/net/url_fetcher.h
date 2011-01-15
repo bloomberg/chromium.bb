@@ -143,7 +143,7 @@ class URLFetcher {
   // is started.
   void set_extra_request_headers(const std::string& extra_request_headers);
 
-  // Set the URLRequestContext on the request.  Must be called before the
+  // Set the net::URLRequestContext on the request.  Must be called before the
   // request is started.
   void set_request_context(
       URLRequestContextGetter* request_context_getter);

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -561,7 +561,7 @@ void RenderMessageFilter::OnGetRawCookies(
 
 void RenderMessageFilter::OnDeleteCookie(const GURL& url,
                                          const std::string& cookie_name) {
-  URLRequestContext* context = GetRequestContextForURL(url);
+  net::URLRequestContext* context = GetRequestContextForURL(url);
   context->cookie_store()->DeleteCookie(url, cookie_name);
 }
 
@@ -569,7 +569,7 @@ void RenderMessageFilter::OnCookiesEnabled(
     const GURL& url,
     const GURL& first_party_for_cookies,
     IPC::Message* reply_msg) {
-  URLRequestContext* context = GetRequestContextForURL(url);
+  net::URLRequestContext* context = GetRequestContextForURL(url);
   CookiesEnabledCompletion* callback =
       new CookiesEnabledCompletion(reply_msg, this);
   int policy = net::OK;
@@ -737,7 +737,7 @@ void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {
 void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                         const GURL& url,
                                         const GURL& referrer) {
-  URLRequestContext* context = request_context_->GetURLRequestContext();
+  net::URLRequestContext* context = request_context_->GetURLRequestContext();
 
   // Don't show "Save As" UI.
   bool prompt_for_save_location = false;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -158,7 +158,7 @@ class PluginRequestHandler : public PluginHelper,
       : PluginHelper(plugin), cprequest_(cprequest), user_buffer_(NULL) {
     cprequest_->data = this;  // see FromCPRequest().
 
-    URLRequestContext* context = CPBrowsingContextManager::GetInstance()->
+    net::URLRequestContext* context = CPBrowsingContextManager::GetInstance()->
         ToURLRequestContext(cprequest_->context);
     // TODO(mpcomplete): remove fallback case when Gears support is prevalent.
     if (!context)
@@ -388,7 +388,7 @@ void STDCALL CPB_SetKeepProcessAlive(CPID id, CPBool keep_alive) {
 CPError STDCALL CPB_GetCookies(CPID id, CPBrowsingContext bcontext,
                                const char* url, char** cookies) {
   CHECK(ChromePluginLib::IsPluginThread());
-  URLRequestContext* context = CPBrowsingContextManager::GetInstance()->
+  net::URLRequestContext* context = CPBrowsingContextManager::GetInstance()->
       ToURLRequestContext(bcontext);
   // TODO(mpcomplete): remove fallback case when Gears support is prevalent.
   if (!context) {

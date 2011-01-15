@@ -21,7 +21,7 @@ const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 // Lazy getter for TestURLRequestContext instances.
 class TestURLRequestContextGetter : public URLRequestContextGetter {
  public:
-  virtual URLRequestContext* GetURLRequestContext() {
+  virtual net::URLRequestContext* GetURLRequestContext() {
     if (!context_)
       context_ = new TestURLRequestContext;
     return context_;
@@ -33,7 +33,7 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
  private:
   ~TestURLRequestContextGetter() {}
 
-  scoped_refptr<URLRequestContext> context_;
+  scoped_refptr<net::URLRequestContext> context_;
 };
 
 class HttpBridgeTest : public testing::Test {

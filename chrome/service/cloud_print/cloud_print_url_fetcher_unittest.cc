@@ -32,7 +32,7 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
           : io_message_loop_proxy_(io_message_loop_proxy) {
     g_request_context_getter_instances++;
   }
-  virtual URLRequestContext* GetURLRequestContext() {
+  virtual net::URLRequestContext* GetURLRequestContext() {
     if (!context_)
       context_ = new TestURLRequestContext();
     return context_;
@@ -49,7 +49,7 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
     g_request_context_getter_instances--;
   }
 
-  scoped_refptr<URLRequestContext> context_;
+  scoped_refptr<net::URLRequestContext> context_;
 };
 
 class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {

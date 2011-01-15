@@ -34,7 +34,7 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
       base::MessageLoopProxy* io_message_loop_proxy)
           : io_message_loop_proxy_(io_message_loop_proxy) {
   }
-  virtual URLRequestContext* GetURLRequestContext() {
+  virtual net::URLRequestContext* GetURLRequestContext() {
     if (!context_)
       context_ = new TestURLRequestContext();
     return context_;
@@ -49,7 +49,7 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
  private:
   ~TestURLRequestContextGetter() {}
 
-  scoped_refptr<URLRequestContext> context_;
+  scoped_refptr<net::URLRequestContext> context_;
 };
 
 class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
@@ -206,7 +206,7 @@ class CancelTestURLRequestContextGetter : public URLRequestContextGetter {
       : io_message_loop_proxy_(io_message_loop_proxy),
         context_created_(false, false) {
   }
-  virtual URLRequestContext* GetURLRequestContext() {
+  virtual net::URLRequestContext* GetURLRequestContext() {
     if (!context_) {
       context_ = new CancelTestURLRequestContext();
       context_created_.Signal();
@@ -225,7 +225,7 @@ class CancelTestURLRequestContextGetter : public URLRequestContextGetter {
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   base::WaitableEvent context_created_;
-  scoped_refptr<URLRequestContext> context_;
+  scoped_refptr<net::URLRequestContext> context_;
 };
 
 // Version of URLFetcherTest that tests retying the same request twice.
@@ -438,7 +438,7 @@ void URLFetcherCancelTest::CreateFetcher(const GURL& url) {
   fetcher_->set_request_context(context_getter);
   fetcher_->set_max_retries(2);
   fetcher_->Start();
-  // We need to wait for the creation of the URLRequestContext, since we
+  // We need to wait for the creation of the net::URLRequestContext, since we
   // rely on it being destroyed as a signal to end the test.
   context_getter->WaitForContextCreation();
   CancelRequest();

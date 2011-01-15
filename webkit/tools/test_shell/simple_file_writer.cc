@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ using WebKit::WebFileWriterClient;
 using WebKit::WebString;
 using WebKit::WebURL;
 
-URLRequestContext* SimpleFileWriter::request_context_ = NULL;
+net::URLRequestContext* SimpleFileWriter::request_context_ = NULL;
 
 // Helper class to proxy to write and truncate calls to the IO thread,
 // and to proxy the results back to the main thead. There is a one-to-one

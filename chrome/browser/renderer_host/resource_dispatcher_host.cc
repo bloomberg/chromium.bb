@@ -203,7 +203,7 @@ std::vector<int> GetAllNetErrorCodes() {
 // Temporary experiment to help track down http://crbug.com/68766.
 // This should crash if called with an invalid ChromeURLRequestContext.
 // TODO(eroman): Delete this when experiment is complete.
-void CheckContextForBug68766(URLRequestContext* context) {
+void CheckContextForBug68766(net::URLRequestContext* context) {
   if (context)
     static_cast<ChromeURLRequestContext*>(context)->IsExternal();
 }
@@ -692,7 +692,7 @@ void ResourceDispatcherHost::BeginDownload(
     bool prompt_for_save_location,
     int child_id,
     int route_id,
-    URLRequestContext* request_context) {
+    net::URLRequestContext* request_context) {
   if (is_shutdown_)
     return;
 
@@ -749,11 +749,12 @@ void ResourceDispatcherHost::BeginDownload(
 }
 
 // This function is only used for saving feature.
-void ResourceDispatcherHost::BeginSaveFile(const GURL& url,
-                                           const GURL& referrer,
-                                           int child_id,
-                                           int route_id,
-                                           URLRequestContext* request_context) {
+void ResourceDispatcherHost::BeginSaveFile(
+    const GURL& url,
+    const GURL& referrer,
+    int child_id,
+    int route_id,
+    net::URLRequestContext* request_context) {
   if (is_shutdown_)
     return;
 

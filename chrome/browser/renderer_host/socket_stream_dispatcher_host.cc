@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,8 +146,8 @@ void SocketStreamDispatcherHost::DeleteSocketStreamHost(int socket_id) {
   }
 }
 
-URLRequestContext* SocketStreamDispatcherHost::GetURLRequestContext() {
-  URLRequestContext* rv = NULL;
+net::URLRequestContext* SocketStreamDispatcherHost::GetURLRequestContext() {
+  net::URLRequestContext* rv = NULL;
   if (url_request_context_override_.get()) {
     rv = url_request_context_override_->GetRequestContext(
         0, ResourceType::SUB_RESOURCE);

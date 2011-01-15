@@ -25,9 +25,9 @@ namespace base {
 class MessageLoopProxy;
 }
 
-// Subclass of URLRequestContext which can be used to store extra information
-// for requests. This subclass is meant to be used in the service process where
-// the profile is not available.
+// Subclass of net::URLRequestContext which can be used to store extra
+// information for requests. This subclass is meant to be used in the service
+// process where the profile is not available.
 //
 class ServiceURLRequestContext : public net::URLRequestContext {
  public:
@@ -36,7 +36,7 @@ class ServiceURLRequestContext : public net::URLRequestContext {
     cookie_policy_ = policy;
   }
 
-  // URLRequestContext overrides
+  // Overridden from net::URLRequestContext:
   virtual const std::string& GetUserAgent(const GURL& url) const;
 
  protected:

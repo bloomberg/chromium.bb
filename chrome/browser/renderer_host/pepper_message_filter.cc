@@ -171,7 +171,7 @@ void PepperMessageFilter::OnPepperConnectTcp(
     uint16 port) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  URLRequestContext* req_context =
+  net::URLRequestContext* req_context =
       profile_->GetRequestContext()->GetURLRequestContext();
   net::HostResolver::RequestInfo request_info(net::HostPortPair(host, port));
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/render_messages.h"
-
 
 ResourceMessageFilter::ResourceMessageFilter(
     int child_id,
@@ -38,7 +37,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message,
 
 ChromeURLRequestContext* ResourceMessageFilter::GetURLRequestContext(
     uint32 request_id, ResourceType::Type resource_type) {
-  URLRequestContext* rv = NULL;
+  net::URLRequestContext* rv = NULL;
   if (url_request_context_override_.get()) {
     rv = url_request_context_override_->GetRequestContext(
         request_id, resource_type);

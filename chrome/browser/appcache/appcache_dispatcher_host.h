@@ -79,7 +79,7 @@ class AppCacheDispatcherHost : public BrowserMessageFilter {
   appcache::AppCacheBackendImpl backend_impl_;
 
   // Temporary until OnChannelConnected() can be called from the IO thread,
-  // which will extract the AppCacheService from the URLRequestContext.
+  // which will extract the AppCacheService from the net::URLRequestContext.
   scoped_refptr<net::URLRequestContext> request_context_;
   scoped_refptr<URLRequestContextGetter> request_context_getter_;
 

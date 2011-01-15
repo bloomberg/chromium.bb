@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,9 +38,10 @@ namespace {
 // An instance of ExperimentURLRequestContext is created for each experiment
 // run by ConnectionTester. The class initializes network dependencies according
 // to the specified "experiment".
-class ExperimentURLRequestContext : public URLRequestContext {
+class ExperimentURLRequestContext : public net::URLRequestContext {
  public:
-  explicit ExperimentURLRequestContext(URLRequestContext* proxy_request_context)
+  explicit ExperimentURLRequestContext(
+      net::URLRequestContext* proxy_request_context)
       : proxy_request_context_(proxy_request_context) {}
 
   int Init(const ConnectionTester::Experiment& experiment) {
@@ -223,7 +224,7 @@ class ExperimentURLRequestContext : public URLRequestContext {
     return net::ERR_FAILED;
   }
 
-  const scoped_refptr<URLRequestContext> proxy_request_context_;
+  const scoped_refptr<net::URLRequestContext> proxy_request_context_;
 };
 
 }  // namespace
@@ -309,7 +310,7 @@ void ConnectionTester::TestRunner::OnResponseCompleted(
 }
 
 void ConnectionTester::TestRunner::Run(const Experiment& experiment) {
-  // Try to create a URLRequestContext for this experiment.
+  // Try to create a net::URLRequestContext for this experiment.
   scoped_refptr<ExperimentURLRequestContext> context(
       new ExperimentURLRequestContext(tester_->proxy_request_context_));
   int rv = context->Init(experiment);
@@ -327,8 +328,9 @@ void ConnectionTester::TestRunner::Run(const Experiment& experiment) {
 
 // ConnectionTester ----------------------------------------------------------
 
-ConnectionTester::ConnectionTester(Delegate* delegate,
-                                   URLRequestContext* proxy_request_context)
+ConnectionTester::ConnectionTester(
+    Delegate* delegate,
+    net::URLRequestContext* proxy_request_context)
     : delegate_(delegate), proxy_request_context_(proxy_request_context) {
   DCHECK(delegate);
   DCHECK(proxy_request_context);

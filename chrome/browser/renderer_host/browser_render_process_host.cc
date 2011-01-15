@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -229,7 +229,7 @@ class VisitedLinkUpdater {
 namespace {
 
 // Helper class that we pass to ResourceMessageFilter so that it can find the
-// right URLRequestContext for a request.
+// right net::URLRequestContext for a request.
 class RendererURLRequestContextOverride
     : public ResourceMessageFilter::URLRequestContextOverride {
  public:
@@ -238,7 +238,7 @@ class RendererURLRequestContextOverride
         media_request_context_(profile->GetRequestContextForMedia()) {
   }
 
-  virtual URLRequestContext* GetRequestContext(
+  virtual net::URLRequestContext* GetRequestContext(
       uint32 request_id, ResourceType::Type resource_type) {
     URLRequestContextGetter* request_context = request_context_;
     // If the request has resource type of ResourceType::MEDIA, we use a request

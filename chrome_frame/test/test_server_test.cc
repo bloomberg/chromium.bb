@@ -58,7 +58,7 @@ class ScopedInternet {
   HINTERNET h_;
 };
 
-class URLRequestTestContext : public URLRequestContext {
+class URLRequestTestContext : public net::URLRequestContext {
  public:
   URLRequestTestContext() {
     host_resolver_ =

@@ -133,7 +133,7 @@ extern base::LazyInstance<base::StatisticsRecorder> g_statistics_recorder_;
 
 // This class provides HTTP request context information for metrics upload
 // requests initiated by ChromeFrame.
-class ChromeFrameUploadRequestContext : public URLRequestContext {
+class ChromeFrameUploadRequestContext : public net::URLRequestContext {
  public:
   explicit ChromeFrameUploadRequestContext(MessageLoop* io_loop)
       : io_loop_(io_loop) {
@@ -210,7 +210,7 @@ class ChromeFrameUploadRequestContextGetter : public URLRequestContextGetter {
   explicit ChromeFrameUploadRequestContextGetter(MessageLoop* io_loop)
       : io_loop_(io_loop) {}
 
-  virtual URLRequestContext* GetURLRequestContext() {
+  virtual net::URLRequestContext* GetURLRequestContext() {
     if (!context_)
       context_ = new ChromeFrameUploadRequestContext(io_loop_);
     return context_;
@@ -228,7 +228,7 @@ class ChromeFrameUploadRequestContextGetter : public URLRequestContextGetter {
     DVLOG(1) << __FUNCTION__;
   }
 
-  scoped_refptr<URLRequestContext> context_;
+  scoped_refptr<net::URLRequestContext> context_;
   mutable scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   MessageLoop* io_loop_;
 };

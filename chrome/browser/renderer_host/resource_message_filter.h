@@ -24,7 +24,7 @@ class URLRequestContext;
 // will not interfere with browser UI.
 class ResourceMessageFilter : public BrowserMessageFilter {
  public:
-  // Allows overriding the URLRequestContext used to service requests.
+  // Allows overriding the net::URLRequestContext used to service requests.
   class URLRequestContextOverride
       : public base::RefCountedThreadSafe<URLRequestContextOverride> {
    public:
@@ -49,7 +49,7 @@ class ResourceMessageFilter : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
 
-  // Returns the URLRequestContext for the given request.
+  // Returns the net::URLRequestContext for the given request.
   ChromeURLRequestContext* GetURLRequestContext(
       uint32 request_id, ResourceType::Type resource_type);
 

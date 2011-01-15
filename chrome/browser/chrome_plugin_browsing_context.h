@@ -18,10 +18,10 @@ class URLRequestContext;
 }  // namespace net
 
 // This class manages the mapping between CPBrowsingContexts and
-// URLRequestContexts.  It observes when URLRequestContexts go away, and
-// invalidates the corresponding CPBrowsingContexts.  CPBrowsingContexts can be
-// associated with other data as well, so there can be multiple ones referring
-// to a given URLRequestContext.
+// net::URLRequestContexts.  It observes when net::URLRequestContexts go away,
+// and invalidates the corresponding CPBrowsingContexts.  CPBrowsingContexts can
+// be associated with other data as well, so there can be multiple ones
+// referring to a given net::URLRequestContext.
 // Note: This class should be used on the IO thread only.
 class CPBrowsingContextManager : public NotificationObserver {
  public:
@@ -33,16 +33,16 @@ class CPBrowsingContextManager : public NotificationObserver {
   ~CPBrowsingContextManager();
 
   // Generate a new unique CPBrowsingContext ID from the given
-  // URLRequestContext.  Multiple CPBrowsingContexts can map to the same
-  // URLRequestContext.
+  // net::URLRequestContext.  Multiple CPBrowsingContexts can map to the same
+  // net::URLRequestContext.
   CPBrowsingContext Allocate(net::URLRequestContext* context);
 
-  // Return the URLRequestContext that this CPBrowsingContext refers to, or NULL
-  // if not found.
+  // Return the net::URLRequestContext that this CPBrowsingContext refers to, or
+  // NULL if not found.
   net::URLRequestContext* ToURLRequestContext(CPBrowsingContext id);
 
   // Return a CPBrowsingContext ID that corresponds to the given
-  // URLRequestContext. This function differs from Allocate in that calling
+  // net::URLRequestContext. This function differs from Allocate in that calling
   // this multiple times with the same argument gives the same ID.
   CPBrowsingContext Lookup(net::URLRequestContext* context);
 
@@ -57,8 +57,8 @@ class CPBrowsingContextManager : public NotificationObserver {
 
   NotificationRegistrar registrar_;
 
-  Map map_;  // map of CPBrowsingContext -> URLRequestContext
-  ReverseMap reverse_map_;  // map of URLRequestContext -> CPBrowsingContext
+  Map map_;  // map of CPBrowsingContext -> net::URLRequestContext
+  ReverseMap reverse_map_; // map of net::URLRequestContext -> CPBrowsingContext
 };
 
 #endif  // CHROME_BROWSER_CHROME_PLUGIN_BROWSING_CONTEXT_H_

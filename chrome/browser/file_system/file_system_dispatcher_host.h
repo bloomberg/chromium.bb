@@ -94,7 +94,7 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
   OperationsMap operations_;
 
   // This holds the URLRequestContextGetter until Init() can be called from the
-  // IO thread, which will extract the URLRequestContext from it.
+  // IO thread, which will extract the net::URLRequestContext from it.
   scoped_refptr<URLRequestContextGetter> request_context_getter_;
   scoped_refptr<net::URLRequestContext> request_context_;
 

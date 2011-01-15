@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,8 @@
 //
 // This class creates fake UI, file, and IO threads because many objects that
 // are attached to the TestingProfile (and other objects) have traits that limit
-// their destruction to certain threads. For example, the URLRequestContext can
-// only be deleted on the IO thread; without this fake IO thread, the object
+// their destruction to certain threads. For example, the net::URLRequestContext
+// can only be deleted on the IO thread; without this fake IO thread, the object
 // would never be deleted and would report as a leak under Valgrind. Note that
 // these are fake threads and they all share the same MessageLoop.
 //

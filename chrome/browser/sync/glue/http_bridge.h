@@ -45,7 +45,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
    public:
     // |baseline_context| is used to obtain the accept-language,
     // accept-charsets, and proxy service information for bridged requests.
-    // Typically |baseline_context| should be the URLRequestContext of the
+    // Typically |baseline_context| should be the net::URLRequestContext of the
     // currently active profile.
     explicit RequestContext(net::URLRequestContext* baseline_context);
 
@@ -86,7 +86,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
    private:
     ~RequestContextGetter() {}
 
-    // User agent to apply to the URLRequestContext.
+    // User agent to apply to the net::URLRequestContext.
     std::string user_agent_;
 
     scoped_refptr<URLRequestContextGetter> baseline_context_getter_;
@@ -146,7 +146,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // still have a function to statically pass to PostTask.
   void CallMakeAsynchronousPost() { MakeAsynchronousPost(); }
 
-  // Gets a customized URLRequestContext for bridged requests. See
+  // Gets a customized net::URLRequestContext for bridged requests. See
   // RequestContext definition for details.
   scoped_refptr<RequestContextGetter> context_getter_for_request_;
 

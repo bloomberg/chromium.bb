@@ -26,10 +26,11 @@ HttpBridge::RequestContextGetter::RequestContextGetter(
     : baseline_context_getter_(baseline_context_getter) {
 }
 
-URLRequestContext* HttpBridge::RequestContextGetter::GetURLRequestContext() {
+net::URLRequestContext*
+HttpBridge::RequestContextGetter::GetURLRequestContext() {
   // Lazily create the context.
   if (!context_) {
-    URLRequestContext* baseline_context =
+    net::URLRequestContext* baseline_context =
         baseline_context_getter_->GetURLRequestContext();
     context_ = new RequestContext(baseline_context);
     baseline_context_getter_ = NULL;
@@ -67,7 +68,8 @@ void HttpBridgeFactory::Destroy(sync_api::HttpPostProviderInterface* http) {
   static_cast<HttpBridge*>(http)->Release();
 }
 
-HttpBridge::RequestContext::RequestContext(URLRequestContext* baseline_context)
+HttpBridge::RequestContext::RequestContext(
+    net::URLRequestContext* baseline_context)
     : baseline_context_(baseline_context) {
 
   // Create empty, in-memory cookie store.

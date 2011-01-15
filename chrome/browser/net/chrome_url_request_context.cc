@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,7 +93,7 @@ net::ProxyConfigService* CreateProxyConfigService(Profile* profile) {
 // Create a proxy service according to the options on command line.
 net::ProxyService* CreateProxyService(
     net::NetLog* net_log,
-    URLRequestContext* context,
+    net::URLRequestContext* context,
     net::ProxyConfigService* proxy_config_service,
     const CommandLine& command_line) {
   CheckCurrentlyOnIOThread();
@@ -548,7 +548,7 @@ ChromeURLRequestContextGetter::~ChromeURLRequestContextGetter() {
 
   DCHECK(registrar_.IsEmpty()) << "Probably didn't call CleanupOnUIThread";
 
-  // Either we already transformed the factory into a URLRequestContext, or
+  // Either we already transformed the factory into a net::URLRequestContext, or
   // we still have a pending factory.
   DCHECK((factory_.get() && !url_request_context_.get()) ||
          (!factory_.get() && url_request_context_.get()));
@@ -561,7 +561,7 @@ ChromeURLRequestContextGetter::~ChromeURLRequestContextGetter() {
 }
 
 // Lazily create a ChromeURLRequestContext using our factory.
-URLRequestContext* ChromeURLRequestContextGetter::GetURLRequestContext() {
+net::URLRequestContext* ChromeURLRequestContextGetter::GetURLRequestContext() {
   CheckCurrentlyOnIOThread();
 
   if (!url_request_context_) {
@@ -570,7 +570,8 @@ URLRequestContext* ChromeURLRequestContextGetter::GetURLRequestContext() {
     if (is_main()) {
       url_request_context_->set_is_main(true);
 #if defined(USE_NSS)
-      // TODO(ukai): find a better way to set the URLRequestContext for OCSP.
+      // TODO(ukai): find a better way to set the net::URLRequestContext for
+      // OCSP.
       net::SetURLRequestContextForOCSP(url_request_context_);
 #endif
     }
@@ -786,10 +787,10 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
 
 #if defined(USE_NSS)
   if (is_main()) {
-    URLRequestContext* ocsp_context = net::GetURLRequestContextForOCSP();
+    net::URLRequestContext* ocsp_context = net::GetURLRequestContextForOCSP();
     if (ocsp_context) {
       DCHECK_EQ(this, ocsp_context);
-      // We are releasing the URLRequestContext used by OCSP handlers.
+      // We are releasing the net::URLRequestContext used by OCSP handlers.
       net::SetURLRequestContextForOCSP(NULL);
     }
   }
@@ -797,7 +798,7 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
 
   NotificationService::current()->Notify(
       NotificationType::URL_REQUEST_CONTEXT_RELEASED,
-      Source<URLRequestContext>(this),
+      Source<net::URLRequestContext>(this),
       NotificationService::NoDetails());
 
   delete ftp_transaction_factory_;
@@ -805,7 +806,7 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
 
   // cookie_policy_'s lifetime is auto-managed by chrome_cookie_policy_.  We
   // null this out here to avoid a dangling reference to chrome_cookie_policy_
-  // when ~URLRequestContext runs.
+  // when ~net::URLRequestContext runs.
   cookie_policy_ = NULL;
 }
 
