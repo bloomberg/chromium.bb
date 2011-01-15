@@ -97,7 +97,8 @@ bool PageActionDecoration::OnMousePressed(NSRect frame) {
                         arrowLocation:info_bubble::kTopRight
                               devMode:NO];
   } else {
-    ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
+    ExtensionService* service = profile_->GetExtensionService();
+    service->browser_event_router()->PageActionExecuted(
         profile_, page_action_->extension_id(), page_action_->id(),
         current_tab_id_, current_url_.spec(),
         1);

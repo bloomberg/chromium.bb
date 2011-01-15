@@ -4,7 +4,9 @@
 
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
 
+#include <algorithm>
 #include <string>
+#include <vector>
 
 #include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
@@ -1514,7 +1516,8 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     GdkEvent* event) {
   if (event->button.button != 3) {
     if (!ShowPopup(false)) {
-      ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
+      ExtensionService* service = profile_->GetExtensionService();
+      service->browser_event_router()->PageActionExecuted(
           profile_,
           page_action_->extension_id(),
           page_action_->id(),

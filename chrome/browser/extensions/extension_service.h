@@ -34,6 +34,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/property_bag.h"
 
+class ExtensionBrowserEventRouter;
 class ExtensionServiceBackend;
 class ExtensionToolbarModel;
 class ExtensionUpdater;
@@ -395,6 +396,10 @@ class ExtensionService
 
   ExtensionMenuManager* menu_manager() { return &menu_manager_; }
 
+  ExtensionBrowserEventRouter* browser_event_router() {
+    return browser_event_router_.get();
+  }
+
   const std::map<GURL, int>& protected_storage_map() const {
     return protected_storage_map_;
   }
@@ -607,6 +612,8 @@ class ExtensionService
 
   // Flag to make sure event routers are only initialized once.
   bool event_routers_initialized_;
+
+  scoped_ptr<ExtensionBrowserEventRouter> browser_event_router_;
 
   // A collection of external extension providers.  Each provider reads
   // a source of external extension information.  Examples include the

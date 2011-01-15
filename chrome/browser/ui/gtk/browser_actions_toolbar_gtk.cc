@@ -4,6 +4,7 @@
 
 #include "chrome/browser/gtk/browser_actions_toolbar_gtk.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "base/i18n/rtl.h"
@@ -277,7 +278,9 @@ class BrowserActionButton : public NotificationObserver,
     if (action->ShowPopup(false))
       return;
 
-    ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
+    ExtensionService* service =
+        action->toolbar_->browser()->profile()->GetExtensionService();
+    service->browser_event_router()->BrowserActionExecuted(
         action->toolbar_->browser()->profile(), action->extension_->id(),
         action->toolbar_->browser());
   }
@@ -368,7 +371,7 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
   if (!extension_service)
     return;
 
- overflow_button_.reset(new CustomDrawButton(
+  overflow_button_.reset(new CustomDrawButton(
       theme_provider_,
       IDR_BROWSER_ACTIONS_OVERFLOW,
       IDR_BROWSER_ACTIONS_OVERFLOW_P,
@@ -680,7 +683,8 @@ void BrowserActionsToolbarGtk::ExecuteCommand(int command_id) {
         chevron(),
         false);
   } else {
-    ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
+    ExtensionService* service = browser()->profile()->GetExtensionService();
+    service->browser_event_router()->BrowserActionExecuted(
         browser()->profile(), extension->id(), browser());
   }
 }

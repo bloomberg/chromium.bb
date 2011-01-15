@@ -483,7 +483,8 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
   // Popups just display.  No notification to the extension.
   // TODO(erikkay): should there be?
   if (!button->IsPopup()) {
-    ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
+    ExtensionService* service = profile_->GetExtensionService();
+    service->browser_event_router()->BrowserActionExecuted(
         profile_, browser_action->extension_id(), browser_);
     return;
   }

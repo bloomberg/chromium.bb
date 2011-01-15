@@ -947,11 +947,11 @@ void AutomationProvider::ExecuteExtensionActionInActiveTabAsync(
   if (extension && service && message_service && browser) {
     int tab_id = ExtensionTabUtil::GetTabId(browser->GetSelectedTabContents());
     if (extension->page_action()) {
-      ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
+      service->browser_event_router()->PageActionExecuted(
           browser->profile(), extension->id(), "action", tab_id, "", 1);
       success = true;
     } else if (extension->browser_action()) {
-      ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
+      service->browser_event_router()->BrowserActionExecuted(
           browser->profile(), extension->id(), browser);
       success = true;
     }

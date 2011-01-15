@@ -69,7 +69,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   ui_test_utils::NavigateToURL(browser(),
       test_server()->GetURL("files/extensions/test_file.txt"));
 
-  ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
+  ExtensionService* service = browser()->profile()->GetExtensionService();
+  service->browser_event_router()->BrowserActionExecuted(
       browser()->profile(), action->extension_id(), browser());
 
   // Verify the command worked.

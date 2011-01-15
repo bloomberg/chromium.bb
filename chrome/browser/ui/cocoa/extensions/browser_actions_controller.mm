@@ -741,7 +741,8 @@ class ExtensionServiceObserverBridge : public NotificationObserver,
                         arrowLocation:info_bubble::kTopRight
                               devMode:NO];
   } else {
-    ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
+    ExtensionService* service = profile_->GetExtensionService();
+    service->browser_event_router()->BrowserActionExecuted(
        profile_, action->extension_id(), browser_);
   }
 }

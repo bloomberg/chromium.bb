@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 
 #include <algorithm>
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -501,7 +502,8 @@ void ExtensionService::InitEventRouters() {
 
   ExtensionHistoryEventRouter::GetInstance()->ObserveProfile(profile_);
   ExtensionAccessibilityEventRouter::GetInstance()->ObserveProfile(profile_);
-  ExtensionBrowserEventRouter::GetInstance()->Init(profile_);
+  browser_event_router_.reset(new ExtensionBrowserEventRouter(profile_));
+  browser_event_router_->Init();
   ExtensionBookmarkEventRouter::GetInstance()->Observe(
       profile_->GetBookmarkModel());
   ExtensionCookiesEventRouter::GetInstance()->Init();
@@ -1246,6 +1248,7 @@ void ExtensionService::UpdateExtensionBlacklist(
 }
 
 void ExtensionService::DestroyingProfile() {
+  browser_event_router_.reset();
   pref_change_registrar_.RemoveAll();
   profile_ = NULL;
   toolbar_model_.DestroyingProfile();

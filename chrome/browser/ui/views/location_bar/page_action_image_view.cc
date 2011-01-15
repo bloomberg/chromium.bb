@@ -98,7 +98,8 @@ void PageActionImageView::ExecuteAction(int button,
         ExtensionPopup::BUBBLE_CHROME,
         this);  // ExtensionPopup::Observer
   } else {
-    ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
+    ExtensionService* service = profile_->GetExtensionService();
+    service->browser_event_router()->PageActionExecuted(
         profile_, page_action_->extension_id(), page_action_->id(),
         current_tab_id_, current_url_.spec(), button);
   }

@@ -40,7 +40,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
     ResultCatcher catcher;
     int tab_id =
         ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
-    ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
+    ExtensionService* service = browser()->profile()->GetExtensionService();
+    service->browser_event_router()->PageActionExecuted(
         browser()->profile(), extension->id(), "", tab_id, "", 0);
     EXPECT_TRUE(catcher.GetNextResult());
   }
@@ -77,7 +78,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageActionAddPopup) {
   // install a page action popup.
   {
     ResultCatcher catcher;
-    ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
+    ExtensionService* service = browser()->profile()->GetExtensionService();
+    service->browser_event_router()->PageActionExecuted(
         browser()->profile(), extension->id(), "action", tab_id, "", 1);
     ASSERT_TRUE(catcher.GetNextResult());
   }
@@ -152,7 +154,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OldPageActions) {
     ResultCatcher catcher;
     int tab_id =
         ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
-    ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
+    ExtensionService* service = browser()->profile()->GetExtensionService();
+    service->browser_event_router()->PageActionExecuted(
         browser()->profile(), extension->id(), "action", tab_id, "", 1);
     EXPECT_TRUE(catcher.GetNextResult());
   }

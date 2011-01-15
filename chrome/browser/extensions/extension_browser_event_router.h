@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/singleton.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
@@ -36,11 +35,11 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                                     public BrowserList::Observer,
                                     public NotificationObserver {
  public:
-  // Get Browser-Global instance.
-  static ExtensionBrowserEventRouter* GetInstance();
+  explicit ExtensionBrowserEventRouter(Profile* profile);
+  ~ExtensionBrowserEventRouter();
 
   // Must be called once. Subsequent calls have no effect.
-  void Init(Profile* profile);
+  void Init();
 
   // BrowserList::Observer
   virtual void OnBrowserAdded(const Browser* browser);
@@ -129,10 +128,6 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 
   // Removes notifications added in RegisterForTabNotifications.
   void UnregisterForTabNotifications(TabContents* contents);
-
-  ExtensionBrowserEventRouter();
-  ~ExtensionBrowserEventRouter();
-  friend struct DefaultSingletonTraits<ExtensionBrowserEventRouter>;
 
   NotificationRegistrar registrar_;
 
