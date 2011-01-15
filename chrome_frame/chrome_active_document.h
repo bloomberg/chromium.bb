@@ -369,7 +369,7 @@ END_EXEC_COMMAND_MAP()
   // A helper method that updates our internal navigation state
   // as well as IE's navigation state (viz Title and current URL).
   // The navigation_flags is a TabContents::InvalidateTypes enum
-  void UpdateNavigationState(const NavigationInfo& nav_info);
+  void UpdateNavigationState(const NavigationInfo& nav_info, int flags);
 
   TabProxy* GetTabProxy() const {
     if (automation_client_.get())
@@ -442,7 +442,8 @@ END_EXEC_COMMAND_MAP()
 
   // Returns true if the NavigationInfo object passed in represents a new
   // navigation initiated by the renderer.
-  bool IsNewNavigation(const NavigationInfo& new_navigation_info) const;
+  bool IsNewNavigation(const NavigationInfo& new_navigation_info,
+                       int flags) const;
 
  protected:
   typedef std::map<int, OLECMDF> CommandStatusMap;

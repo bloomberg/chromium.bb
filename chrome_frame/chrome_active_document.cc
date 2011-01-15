@@ -33,6 +33,7 @@
 #include "grit/generated_resources.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/common/page_zoom.h"
@@ -627,7 +628,7 @@ void ChromeActiveDocument::OnNavigationStateChanged(
            << ", Relative Offset: " << nav_info.relative_offset
            << ", Index: " << nav_info.navigation_index;
 
-  UpdateNavigationState(nav_info);
+  UpdateNavigationState(nav_info, flags);
 }
 
 void ChromeActiveDocument::OnUpdateTargetUrl(
@@ -692,7 +693,7 @@ void ChromeActiveDocument::OnDidNavigate(const NavigationInfo& nav_info) {
     return;
   }
 
-  UpdateNavigationState(nav_info);
+  UpdateNavigationState(nav_info, 0);
 }
 
 void ChromeActiveDocument::OnCloseTab() {
@@ -707,7 +708,7 @@ void ChromeActiveDocument::OnCloseTab() {
 }
 
 void ChromeActiveDocument::UpdateNavigationState(
-    const NavigationInfo& new_navigation_info) {
+    const NavigationInfo& new_navigation_info, int flags) {
   HRESULT hr = S_OK;
   bool is_title_changed = (navigation_info_.title != new_navigation_info.title);
   bool is_ssl_state_changed =
@@ -754,7 +755,7 @@ void ChromeActiveDocument::UpdateNavigationState(
       cf_url.attach_to_external_tab();
 
   bool is_internal_navigation =
-      IsNewNavigation(new_navigation_info) || is_attach_external_tab_url;
+      IsNewNavigation(new_navigation_info, flags) || is_attach_external_tab_url;
 
   if (new_navigation_info.url.is_valid())
     url_.Allocate(UTF8ToWide(new_navigation_info.url.spec()).c_str());
@@ -1364,14 +1365,20 @@ void ChromeActiveDocument::SetWindowDimensions() {
 }
 
 bool ChromeActiveDocument::IsNewNavigation(
-    const NavigationInfo& new_navigation_info) const {
+    const NavigationInfo& new_navigation_info, int flags) const {
   // A new navigation is typically an internal navigation which is initiated by
   // the renderer(WebKit). Condition 1 below has to be true along with the
   // any of the other conditions below.
-  // 1. The navigation index is greater than 0 which means that a top level
+  // 1. The navigation notification flags passed in as the flags parameter
+  //    is not INVALIDATE_LOAD which indicates that the loading state of the
+  //    tab changed.
+  // 2. The navigation index is greater than 0 which means that a top level
   //    navigation was initiated on the current external tab.
-  // 2. The navigation type has changed.
-  // 3. The url or the referrer are different.
+  // 3. The navigation type has changed.
+  // 4. The url or the referrer are different.
+  if (flags == TabContents::INVALIDATE_LOAD)
+    return false;
+
   if (new_navigation_info.navigation_index <= 0)
     return false;
 
