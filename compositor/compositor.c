@@ -309,6 +309,10 @@ background_create(struct wlsc_output *output, const char *filename)
 	buffer = create_buffer_from_png(output->compositor,
 					filename,
 					output->width, output->height);
+	if (buffer == NULL) {
+		free(background);
+		return NULL;
+	}
 	buffer->attach(buffer, &background->surface);
 
 	return background;
