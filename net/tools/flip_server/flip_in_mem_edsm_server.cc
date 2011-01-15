@@ -270,9 +270,12 @@ SSL* spdy_new_ssl(SSL_CTX* ssl_ctx) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const int kMSS = 1460;
-const int kInitialDataSendersThreshold = (2 * kMSS) - SpdyFrame::size();
-const int kNormalSegmentSize = (2 * kMSS) - SpdyFrame::size();
+const int kMSS = 1400;  // Linux default
+const int kSSLOverhead = 33;
+const int kSpdyOverhead = SpdyFrame::size();
+const int kInitialDataSendersThreshold = (2 * kMSS) - kSpdyOverhead;
+const int kSSLSegmentSize = (1 * kMSS) - kSSLOverhead;
+const int kSpdySegmentSize = kSSLSegmentSize - kSpdyOverhead;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1555,7 +1558,7 @@ class OutputOrdering {
       first_ring.splice(first_ring.end(),
                         first_ring,
                         first_ring.begin());
-      mci.max_segment_size = kNormalSegmentSize;
+      mci.max_segment_size = kSpdySegmentSize;
       return &mci;
     }
     return NULL;
@@ -2071,16 +2074,44 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
     // TODO(mbelshe):  We can't compress here - before going into the
     //                 priority queue.  Compression needs to be done
     //                 with late binding.
-    SpdyDataFrame* fdf = spdy_framer_->CreateDataFrame(stream_id, data, len,
-                                                       flags);
-    DataFrame df;
-    df.size = fdf->length() + SpdyFrame::size();
-    df.data = fdf->data();
-    df.delete_when_done = true;
-    EnqueueDataFrame(df);
 
-    VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: Sending data frame "
-            << stream_id << " [" << len << "] shrunk to " << fdf->length();
+    if (len == 0) {
+      SpdyDataFrame* fdf = spdy_framer_->CreateDataFrame(stream_id, data, len,
+                                                         flags);
+      DataFrame df;
+      df.size = fdf->length() + SpdyFrame::size();
+      df.data = fdf->data();
+      df.delete_when_done = true;
+      EnqueueDataFrame(df);
+      return;
+    }
+
+    // Chop data frames into chunks so that one stream can't monopolize the
+    // output channel.
+    while(len > 0) {
+      int64 size = std::min(len, static_cast<int64>(kSpdySegmentSize));
+      SpdyDataFlags chunk_flags = flags;
+
+      // If we chunked this block, and the FIN flag was set, there is more
+      // data coming.  So, remove the flag.
+      if ((size < len) && (flags & DATA_FLAG_FIN))
+        chunk_flags = static_cast<SpdyDataFlags>(chunk_flags & ~DATA_FLAG_FIN);
+
+      SpdyDataFrame* fdf = spdy_framer_->CreateDataFrame(stream_id, data, size,
+                                                         chunk_flags);
+      DataFrame df;
+      df.size = fdf->length() + SpdyFrame::size();
+      df.data = fdf->data();
+      df.delete_when_done = true;
+      EnqueueDataFrame(df);
+
+      VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: Sending data frame "
+              << stream_id << " [" << size << "] shrunk to " << fdf->length()
+              << ", flags=" << flags;
+
+      data += size;
+      len -= size;
+    }
   }
 
   void EnqueueDataFrame(const DataFrame& df) {
@@ -2521,6 +2552,7 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
       mci->file_data->body.size() - mci->body_bytes_consumed;
     if (num_to_write > mci->max_segment_size)
       num_to_write = mci->max_segment_size;
+
     SendDataFrame(mci->stream_id,
                   mci->file_data->body.data() + mci->body_bytes_consumed,
                   num_to_write, 0, true);
