@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 
 #include "base/file_path.h"
 #include "base/string_number_conversions.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -252,7 +253,7 @@ TEST_F(NPAPIVisiblePluginTester, FLAKY_OpenPopupWindowWithPlugin) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("plugin_popup_with_plugin_target", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                action_timeout_ms());
+                TestTimeouts::action_timeout_ms());
 }
 
 // Test checking the privacy mode is off.

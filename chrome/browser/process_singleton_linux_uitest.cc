@@ -146,7 +146,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessSuccess) {
   int original_tab_count = GetTabCount();
 
   EXPECT_EQ(ProcessSingleton::PROCESS_NOTIFIED,
-            NotifyOtherProcess(url, action_timeout_ms()));
+            NotifyOtherProcess(url, TestTimeouts::action_timeout_ms()));
   EXPECT_EQ(original_tab_count + 1, GetTabCount());
   EXPECT_EQ(url, GetActiveTabURL().spec());
 }
@@ -167,7 +167,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessFailure) {
 
   std::string url("about:blank");
   EXPECT_EQ(ProcessSingleton::PROCESS_NONE,
-            NotifyOtherProcess(url, action_timeout_ms()));
+            NotifyOtherProcess(url, TestTimeouts::action_timeout_ms()));
 
   // Wait for a while to make sure the browser process is actually killed.
   EXPECT_FALSE(CrashAwareSleep(TestTimeouts::action_timeout_ms()));
@@ -195,7 +195,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessNoSuicide) {
 
   std::string url("about:blank");
   EXPECT_EQ(ProcessSingleton::PROCESS_NONE,
-            NotifyOtherProcess(url, action_timeout_ms()));
+            NotifyOtherProcess(url, TestTimeouts::action_timeout_ms()));
   // If we've gotten to this point without killing ourself, the test succeeded.
 }
 
@@ -209,7 +209,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessHostChanged) {
 
   std::string url("about:blank");
   EXPECT_EQ(ProcessSingleton::PROCESS_NOTIFIED,
-            NotifyOtherProcess(url, action_timeout_ms()));
+            NotifyOtherProcess(url, TestTimeouts::action_timeout_ms()));
   EXPECT_EQ(original_tab_count + 1, GetTabCount());
   EXPECT_EQ(url, GetActiveTabURL().spec());
 }
@@ -231,7 +231,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessDifferingHost) {
 
   std::string url("about:blank");
   EXPECT_EQ(ProcessSingleton::PROFILE_IN_USE,
-            NotifyOtherProcess(url, action_timeout_ms()));
+            NotifyOtherProcess(url, TestTimeouts::action_timeout_ms()));
 
   ASSERT_EQ(0, unlink(lock_path_.value().c_str()));
 }
@@ -253,7 +253,7 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessOrCreate_DifferingHost) {
 
   std::string url("about:blank");
   EXPECT_EQ(ProcessSingleton::PROFILE_IN_USE,
-            NotifyOtherProcessOrCreate(url, action_timeout_ms()));
+            NotifyOtherProcessOrCreate(url, TestTimeouts::action_timeout_ms()));
 
   ASSERT_EQ(0, unlink(lock_path_.value().c_str()));
 }
@@ -295,5 +295,5 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessOrCreate_BadCookie) {
 
   std::string url("about:blank");
   EXPECT_EQ(ProcessSingleton::PROFILE_IN_USE,
-            NotifyOtherProcessOrCreate(url, action_timeout_ms()));
+            NotifyOtherProcessOrCreate(url, TestTimeouts::action_timeout_ms()));
 }

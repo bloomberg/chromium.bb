@@ -246,9 +246,6 @@ class UITestBase {
   static int command_execution_timeout_ms() {
     return TestTimeouts::command_execution_timeout_ms();
   }
-  static int action_timeout_ms() {
-    return TestTimeouts::action_timeout_ms();
-  }
   static int action_max_timeout_ms() {
     return TestTimeouts::action_max_timeout_ms();
   }

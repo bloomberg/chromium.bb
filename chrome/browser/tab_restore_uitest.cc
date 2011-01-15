@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -598,14 +599,16 @@ TEST_F(TabRestoreUITest, MAYBE_RestoreWindow) {
   scoped_refptr<TabProxy> restored_tab_proxy(
         browser_proxy->GetTab(initial_tab_count));
   ASSERT_TRUE(restored_tab_proxy.get());
-  ASSERT_TRUE(restored_tab_proxy->WaitForTabToBeRestored(action_timeout_ms()));
+  ASSERT_TRUE(restored_tab_proxy->WaitForTabToBeRestored(
+      TestTimeouts::action_timeout_ms()));
   GURL url;
   ASSERT_TRUE(restored_tab_proxy->GetCurrentURL(&url));
   EXPECT_TRUE(url == url1_);
 
   restored_tab_proxy = browser_proxy->GetTab(initial_tab_count + 1);
   ASSERT_TRUE(restored_tab_proxy.get());
-  ASSERT_TRUE(restored_tab_proxy->WaitForTabToBeRestored(action_timeout_ms()));
+  ASSERT_TRUE(restored_tab_proxy->WaitForTabToBeRestored(
+      TestTimeouts::action_timeout_ms()));
   ASSERT_TRUE(restored_tab_proxy->GetCurrentURL(&url));
   EXPECT_TRUE(url == url2_);
 }
@@ -630,7 +633,7 @@ TEST_F(TabRestoreUITest, RestoreTabWithSpecialURL) {
   RestoreTab(0, 1);
   tab = browser->GetTab(1);
   ASSERT_TRUE(tab.get());
-  ASSERT_TRUE(tab->WaitForTabToBeRestored(action_timeout_ms()));
+  ASSERT_TRUE(tab->WaitForTabToBeRestored(TestTimeouts::action_timeout_ms()));
 
   // See if content is as expected.
   EXPECT_TRUE(tab->FindInPage(std::wstring(L"webkit"), FWD, IGNORE_CASE, false,
@@ -666,7 +669,7 @@ TEST_F(TabRestoreUITest, RestoreTabWithSpecialURLOnBack) {
   RestoreTab(0, 1);
   tab = browser->GetTab(1);
   ASSERT_TRUE(tab.get());
-  ASSERT_TRUE(tab->WaitForTabToBeRestored(action_timeout_ms()));
+  ASSERT_TRUE(tab->WaitForTabToBeRestored(TestTimeouts::action_timeout_ms()));
   GURL url;
   ASSERT_TRUE(tab->GetCurrentURL(&url));
   ASSERT_EQ(http_url, url);
