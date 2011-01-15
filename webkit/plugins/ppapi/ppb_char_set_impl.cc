@@ -13,8 +13,8 @@
 #include "unicode/ucnv_err.h"
 #include "unicode/ustring.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/var.h"
 
 namespace webkit {
@@ -46,7 +46,8 @@ bool PPToBaseConversionError(PP_CharSet_ConversionError on_error,
 // implementation in base, so we partially duplicate the code from
 // icu_string_conversions.cc with the correct error handling setup required
 // by this PPAPI interface.
-char* UTF16ToCharSet(const uint16_t* utf16, uint32_t utf16_len,
+char* UTF16ToCharSet(PP_Instance /* instance */,
+                     const uint16_t* utf16, uint32_t utf16_len,
                      const char* output_char_set,
                      PP_CharSet_ConversionError on_error,
                      uint32_t* output_length) {
@@ -114,7 +115,8 @@ char* UTF16ToCharSet(const uint16_t* utf16, uint32_t utf16_len,
   return encoded;
 }
 
-uint16_t* CharSetToUTF16(const char* input, uint32_t input_len,
+uint16_t* CharSetToUTF16(PP_Instance /* instance */,
+                         const char* input, uint32_t input_len,
                          const char* input_char_set,
                          PP_CharSet_ConversionError on_error,
                          uint32_t* output_length) {
@@ -141,14 +143,13 @@ uint16_t* CharSetToUTF16(const char* input, uint32_t input_len,
   return ret_buf;
 }
 
-PP_Var GetDefaultCharSet(PP_Module pp_module) {
-  PluginModule* module = ResourceTracker::Get()->GetModule(pp_module);
-  if (!module)
+PP_Var GetDefaultCharSet(PP_Instance instance_id) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
     return PP_MakeUndefined();
 
-  std::string encoding =
-      module->GetSomeInstance()->delegate()->GetDefaultEncoding();
-  return StringVar::StringToPPVar(module, encoding);
+  std::string encoding = instance->delegate()->GetDefaultEncoding();
+  return StringVar::StringToPPVar(instance->module(), encoding);
 }
 
 const PPB_CharSet_Dev ppb_charset = {

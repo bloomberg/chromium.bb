@@ -65,8 +65,7 @@ const PPB_Surface3D_Dev ppb_surface3d = {
 }  // namespace
 
 PPB_Surface3D_Impl::PPB_Surface3D_Impl(PluginInstance* instance)
-    : Resource(instance->module()),
-      instance_(instance),
+    : Resource(instance),
       bound_to_instance_(false),
       swap_initiated_(false),
       swap_callback_(PP_BlockUntilComplete()),

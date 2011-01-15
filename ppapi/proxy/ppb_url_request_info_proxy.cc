@@ -26,10 +26,10 @@ class URLRequestInfo : public PluginResource {
 
 namespace {
 
-PP_Resource Create(PP_Module module_id) {
+PP_Resource Create(PP_Instance instance) {
   PP_Resource result;
   PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBURLRequestInfo_Create(
-      INTERFACE_ID_PPB_URL_REQUEST_INFO, module_id, &result));
+      INTERFACE_ID_PPB_URL_REQUEST_INFO, instance, &result));
   if (result) {
     linked_ptr<URLRequestInfo> object(new URLRequestInfo);
     PluginDispatcher::Get()->plugin_resource_tracker()->AddResource(
@@ -128,9 +128,9 @@ bool PPB_URLRequestInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void PPB_URLRequestInfo_Proxy::OnMsgCreate(
-    PP_Module module,
+    PP_Instance instance,
     PP_Resource* result) {
-  *result = ppb_url_request_info_target()->Create(module);
+  *result = ppb_url_request_info_target()->Create(instance);
 }
 
 void PPB_URLRequestInfo_Proxy::OnMsgSetProperty(

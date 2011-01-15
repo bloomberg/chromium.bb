@@ -6,6 +6,7 @@
 #define WEBKIT_PLUGINS_PPAPI_RESOURCE_TRACKER_H_
 
 #include <map>
+#include <set>
 #include <utility>
 
 #include "base/basictypes.h"
@@ -27,6 +28,7 @@ class PluginInstance;
 class PluginModule;
 class Resource;
 class ResourceTrackerTest;
+class Var;
 
 // This class maintains a global list of all live pepper resources. It allows
 // us to check resource ID validity and to map them to a specific module.
@@ -51,9 +53,8 @@ class ResourceTracker {
   bool AddRefResource(PP_Resource res);
   bool UnrefResource(PP_Resource res);
 
-  // Forces the plugin refcount of the given resource to 0. This can be used to
-  // delete an object the plugin has leaked or whose lifetime is otherwise
-  // exceeded.
+  // Forces the plugin refcount of the given resource to 0. This is used when
+  // the instance is destroyed and we want to free all resources.
   //
   // Note that this may not necessarily delete the resource object since the
   // regular refcount is maintained separately from the plugin refcount and
@@ -65,6 +66,13 @@ class ResourceTracker {
   //
   // This is slow, use only for testing.
   uint32 GetLiveObjectsForModule(PluginModule* module) const;
+
+  // PP_Vars -------------------------------------------------------------------
+
+  scoped_refptr<Var> GetVar(int32 var_id) const;
+
+  bool AddRefVar(int32 var_id);
+  bool UnrefVar(int32 var_id);
 
   // PP_Modules ----------------------------------------------------------------
 
@@ -98,6 +106,7 @@ class ResourceTracker {
   friend struct base::DefaultLazyInstanceTraits<ResourceTracker>;
   friend class Resource;
   friend class ResourceTrackerTest;
+  friend class Var;
 
   // Prohibit creation other then by the Singleton class.
   ResourceTracker();
@@ -108,6 +117,9 @@ class ResourceTracker {
   // Resource class.
   PP_Resource AddResource(Resource* resource);
 
+  // The same as AddResource but for Var, and returns the new Var ID.
+  int32 AddVar(Var* var);
+
   // Overrides the singleton object. This is used for tests which want to
   // specify their own tracker (otherwise, you can get cross-talk between
   // tests since the data will live into the subsequent tests).
@@ -117,8 +129,9 @@ class ResourceTracker {
   // See SetSingletonOverride above.
   static ResourceTracker* singleton_override_;
 
-  // Last assigned resource ID.
-  PP_Resource last_id_;
+  // Last assigned resource & var ID.
+  PP_Resource last_resource_id_;
+  int32 last_var_id_;
 
   // For each PP_Resource, keep the Resource* (as refptr) and plugin use count.
   // This use count is different then Resource's RefCount, and is manipulated
@@ -129,6 +142,17 @@ class ResourceTracker {
   typedef std::pair<scoped_refptr<Resource>, size_t> ResourceAndRefCount;
   typedef base::hash_map<PP_Resource, ResourceAndRefCount> ResourceMap;
   ResourceMap live_resources_;
+
+  // Like ResourceAndRefCount but for vars, which are associated with modules.
+  typedef std::pair<scoped_refptr<Var>, size_t> VarAndRefCount;
+  typedef base::hash_map<int32, VarAndRefCount> VarMap;
+  VarMap live_vars_;
+
+  // Tracks all resources associated with each instance. This is used to
+  // delete resources when the instance has been destroyed to avoid leaks.
+  typedef std::set<PP_Resource> ResourceSet;
+  typedef std::map<PP_Instance, ResourceSet> InstanceToResourceMap;
+  InstanceToResourceMap instance_to_resources_;
 
   // Tracks all live instances. The pointers are non-owning, the PluginInstance
   // destructor will notify us when the instance is deleted.

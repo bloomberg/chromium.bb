@@ -6,8 +6,8 @@
 #define PPAPI_C_DEV_PPB_FILE_IO_DEV_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
-#include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_time.h"
@@ -44,7 +44,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileOpenFlags_Dev, 4);
 // Use this interface to operate on a regular file (PP_FileType_Regular).
 struct PPB_FileIO_Dev {
   // Creates a new FileIO object.  Returns 0 if the module is invalid.
-  PP_Resource (*Create)(PP_Module module);
+  PP_Resource (*Create)(PP_Instance instance);
 
   // Returns PP_TRUE if the given resource is a FileIO. Returns PP_FALSE if the
   // resource is invalid or some type other than a FileIO.

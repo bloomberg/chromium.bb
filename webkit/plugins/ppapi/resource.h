@@ -16,7 +16,6 @@ namespace ppapi {
 // If you inherit from resource, make sure you add the class name here.
 #define FOR_ALL_RESOURCES(F) \
   F(MockResource) \
-  F(ObjectVar) \
   F(PPB_AudioConfig_Impl) \
   F(PPB_Audio_Impl) \
   F(PPB_Buffer_Impl) \
@@ -39,10 +38,7 @@ namespace ppapi {
   F(PPB_URLResponseInfo_Impl) \
   F(PPB_VideoDecoder_Impl) \
   F(PPB_Widget_Impl) \
-  F(PrivateFontFile) \
-  F(StringVar) \
-  F(Var) \
-  F(VarObjectClass)
+  F(PrivateFontFile)
 
 // Forward declaration of Resource classes.
 #define DECLARE_RESOURCE_CLASS(RESOURCE) class RESOURCE;
@@ -51,7 +47,7 @@ FOR_ALL_RESOURCES(DECLARE_RESOURCE_CLASS)
 
 class Resource : public base::RefCountedThreadSafe<Resource> {
  public:
-  explicit Resource(PluginModule* module);
+  explicit Resource(PluginInstance* instance);
   virtual ~Resource();
 
   // Returns NULL if the resource is invalid or is a different type.
@@ -61,7 +57,10 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
     return resource ? resource->Cast<T>() : NULL;
   }
 
-  PluginModule* module() const { return module_; }
+  // Returns the instance owning this resource. This is generally to be
+  // non-NULL except if the instance is destroyed and some code internal to the
+  // PPAPI implementation is keeping a reference for some reason.
+  PluginInstance* instance() const { return instance_; }
 
   // Cast the resource into a specified type. This will return NULL if the
   // resource does not match the specified type. Specializations of this
@@ -101,6 +100,22 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
     const PP_Resource id;
   };
 
+  // Called by the resource tracker when the last reference from the plugin
+  // was released. For a few types of resources, the resource could still
+  // stay alive if there are other references held by the PPAPI implementation
+  // (possibly for callbacks and things).
+  //
+  // When the plugin instance is deleted, all resources associated with that
+  // plugin will have their plugin references force-deleted and this function
+  // will be called with instance_destroyed as true. If the plugin normally
+  // Release()s a reference before the instance is destroyed,
+  // instance_destroyed will be false. It's possible in some rare cases for the
+  // plugin to get a new reference to the object in this latter case, if it's
+  // stored internal to the PPAPI implementation and returned by some function.
+  //
+  // If you override this, be sure to call the base class' implementation.
+  virtual void LastPluginRefWasDeleted(bool instance_destroyed);
+
  private:
   // Type-specific getters for individual resource types. These will return
   // NULL if the resource does not match the specified type. Used by the Cast()
@@ -118,13 +133,8 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   // refcount.
   PP_Resource resource_id_;
 
-  // Non-owning pointer to our module.
-  PluginModule* module_;
-
-  // Called by the resource tracker when the last plugin reference has been
-  // dropped.
-  friend class ResourceTracker;
-  void StoppedTracking();
+  // Non-owning pointer to our instance. See getter above.
+  PluginInstance* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(Resource);
 };

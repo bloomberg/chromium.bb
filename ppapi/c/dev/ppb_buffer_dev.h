@@ -6,7 +6,7 @@
 #define PPAPI_C_DEV_PPB_BUFFER_DEV_H_
 
 #include "ppapi/c/pp_bool.h"
-#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
@@ -16,7 +16,7 @@ struct PPB_Buffer_Dev {
   // Allocates a buffer of the given size in bytes. The return value will have
   // a non-zero ID on success, or zero on failure. Failure means the module
   // handle was invalid. The buffer will be initialized to contain zeroes.
-  PP_Resource (*Create)(PP_Module module, uint32_t size_in_bytes);
+  PP_Resource (*Create)(PP_Instance instance, uint32_t size_in_bytes);
 
   // Returns PP_TRUE if the given resource is a Buffer. Returns PP_FALSE if the
   // resource is invalid or some type other than a Buffer.

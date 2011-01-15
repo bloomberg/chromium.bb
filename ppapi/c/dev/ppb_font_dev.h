@@ -6,8 +6,8 @@
 #define PPAPI_C_DEV_PPB_FONT_DEV_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
-#include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
@@ -103,7 +103,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_TextRun_Dev, 24);
 struct PPB_Font_Dev {
   // Returns a font which best matches the given description. The return value
   // will have a non-zero ID on success, or zero on failure.
-  PP_Resource (*Create)(PP_Module module,
+  PP_Resource (*Create)(PP_Instance instance,
                         const struct PP_FontDescription_Dev* description);
 
   // Returns PP_TRUE if the given resource is a Font. Returns PP_FALSE if the

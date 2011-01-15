@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "base/string_util.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/plugin_object.h"
 #include "webkit/plugins/ppapi/var.h"
 #include "third_party/npapi/bindings/npapi.h"
@@ -150,14 +151,15 @@ void PPResultAndExceptionToNPResult::ThrowException() {
 
 // PPVarArrayFromNPVariantArray ------------------------------------------------
 
-PPVarArrayFromNPVariantArray::PPVarArrayFromNPVariantArray(PluginModule* module,
+PPVarArrayFromNPVariantArray::PPVarArrayFromNPVariantArray(
+    PluginInstance* instance,
     size_t size,
     const NPVariant* variants)
     : size_(size) {
   if (size_ > 0) {
     array_.reset(new PP_Var[size_]);
     for (size_t i = 0; i < size_; i++)
-      array_[i] = Var::NPVariantToPPVar(module, &variants[i]);
+      array_[i] = Var::NPVariantToPPVar(instance, &variants[i]);
   }
 }
 
@@ -168,8 +170,8 @@ PPVarArrayFromNPVariantArray::~PPVarArrayFromNPVariantArray() {
 
 // PPVarFromNPObject -----------------------------------------------------------
 
-PPVarFromNPObject::PPVarFromNPObject(PluginModule* module, NPObject* object)
-    : var_(ObjectVar::NPObjectToPPVar(module, object)) {
+PPVarFromNPObject::PPVarFromNPObject(PluginInstance* instance, NPObject* object)
+    : var_(ObjectVar::NPObjectToPPVar(instance, object)) {
 }
 
 PPVarFromNPObject::~PPVarFromNPObject() {
@@ -185,7 +187,8 @@ NPObjectAccessorWithIdentifier::NPObjectAccessorWithIdentifier(
     : object_(PluginObject::FromNPObject(object)),
       identifier_(PP_MakeUndefined()) {
   if (object_) {
-    identifier_ = Var::NPIdentifierToPPVar(object_->module(), identifier);
+    identifier_ = Var::NPIdentifierToPPVar(object_->instance()->module(),
+                                           identifier);
     if (identifier_.type == PP_VARTYPE_INT32 && !allow_integer_identifier)
       identifier_.type = PP_VARTYPE_UNDEFINED;  // Mark it invalid.
   }

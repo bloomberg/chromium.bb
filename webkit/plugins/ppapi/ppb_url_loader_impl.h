@@ -31,9 +31,7 @@ class PluginInstance;
 class PPB_URLRequestInfo_Impl;
 class PPB_URLResponseInfo_Impl;
 
-class PPB_URLLoader_Impl : public Resource,
-                  public WebKit::WebURLLoaderClient,
-                  public PluginInstance::Observer {
+class PPB_URLLoader_Impl : public Resource, public WebKit::WebURLLoaderClient {
  public:
   PPB_URLLoader_Impl(PluginInstance* instance, bool main_document_loader);
   virtual ~PPB_URLLoader_Impl();
@@ -48,6 +46,7 @@ class PPB_URLLoader_Impl : public Resource,
 
   // Resource overrides.
   virtual PPB_URLLoader_Impl* AsPPB_URLLoader_Impl();
+  virtual void LastPluginRefWasDeleted(bool instance_destroyed);
 
   // PPB_URLLoader implementation.
   int32_t Open(PPB_URLRequestInfo_Impl* request,
@@ -85,9 +84,6 @@ class PPB_URLLoader_Impl : public Resource,
   virtual void didFail(WebKit::WebURLLoader* loader,
                        const WebKit::WebURLError& error);
 
-  // PluginInstance::Observer implementation.
-  virtual void InstanceDestroyed(PluginInstance* instance);
-
   PPB_URLResponseInfo_Impl* response_info() const { return response_info_; }
 
  private:
@@ -121,13 +117,6 @@ class PPB_URLLoader_Impl : public Resource,
   // plugins don't depend on access without setting the flag.
   bool RecordDownloadProgress() const;
   bool RecordUploadProgress() const;
-
-  // This will be NULL if the instance has been deleted but this
-  // PPB_URLLoader_Impl was somehow leaked. In general, you should not need to
-  // check this for NULL. However, if you see a NULL pointer crash, that means
-  // somebody is holding a reference to this object longer than the
-  // PluginInstance's lifetime.
-  PluginInstance* instance_;
 
   // If true, then the plugin instance is a full-frame plugin and we're just
   // wrapping the main document's loader (i.e. loader_ is null).

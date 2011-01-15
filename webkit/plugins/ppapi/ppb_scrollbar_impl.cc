@@ -203,8 +203,8 @@ void PPB_Scrollbar_Impl::SetLocationInternal(const PP_Rect* location) {
 
 void PPB_Scrollbar_Impl::valueChanged(WebKit::WebScrollbar* scrollbar) {
   const PPP_Scrollbar_Dev* ppp_scrollbar =
-      static_cast<const PPP_Scrollbar_Dev*>(
-          module()->GetPluginInterface(PPP_SCROLLBAR_DEV_INTERFACE));
+      static_cast<const PPP_Scrollbar_Dev*>(instance()->module()->
+          GetPluginInterface(PPP_SCROLLBAR_DEV_INTERFACE));
   if (!ppp_scrollbar)
     return;
   ScopedResourceId resource(this);

@@ -6,7 +6,7 @@
 #define PPAPI_PROXY_PPB_URL_REQUEST_INFO_PROXY_H_
 
 #include "base/basictypes.h"
-#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
@@ -34,7 +34,7 @@ class PPB_URLRequestInfo_Proxy : public InterfaceProxy {
 
  private:
   // Message handlers.
-  void OnMsgCreate(PP_Module module, PP_Resource* result);
+  void OnMsgCreate(PP_Instance instance, PP_Resource* result);
   void OnMsgSetProperty(PP_Resource request,
                         int32_t property,
                         SerializedVarReceiveInput value);

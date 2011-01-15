@@ -45,7 +45,7 @@ namespace ppapi {
 
 class URLRequestInfoTest : public PpapiUnittest {
  public:
-  URLRequestInfoTest() : info_(new PPB_URLRequestInfo_Impl(module())) {
+  URLRequestInfoTest() : info_(new PPB_URLRequestInfo_Impl(instance())) {
   }
 
   static void SetUpTestCase() {

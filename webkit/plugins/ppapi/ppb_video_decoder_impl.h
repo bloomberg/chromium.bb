@@ -32,8 +32,6 @@ class PPB_VideoDecoder_Impl : public Resource {
   // Resource overrides.
   virtual PPB_VideoDecoder_Impl* AsPPB_VideoDecoder_Impl();
 
-  PluginInstance* instance() { return instance_.get(); }
-
   // PPB_VideoDecoder implementation.
   bool Init(const PP_VideoDecoderConfig_Dev& decoder_config);
   bool Decode(PP_VideoCompressedDataBuffer_Dev& input_buffer);
@@ -44,7 +42,6 @@ class PPB_VideoDecoder_Impl : public Resource {
   // This is NULL before initialization, and if this PPB_VideoDecoder_Impl is
   // swapped with another.
   scoped_ptr<PluginDelegate::PlatformVideoDecoder> platform_video_decoder_;
-  scoped_refptr<PluginInstance> instance_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_VideoDecoder_Impl);
 };

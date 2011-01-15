@@ -26,7 +26,7 @@ void TestBuffer::RunTest() {
 }
 
 std::string TestBuffer::TestInvalidSize() {
-  pp::Buffer_Dev zero_size(0);
+  pp::Buffer_Dev zero_size(instance_, 0);
   if (!zero_size.is_null())
     return "Zero size accepted";
 
@@ -34,7 +34,7 @@ std::string TestBuffer::TestInvalidSize() {
 }
 
 std::string TestBuffer::TestInitToZero() {
-  pp::Buffer_Dev buffer(100);
+  pp::Buffer_Dev buffer(instance_, 100);
   if (buffer.is_null())
     return "Could not create buffer";
 
@@ -66,7 +66,7 @@ std::string TestBuffer::TestIsBuffer() {
     return "Device context was reported as a buffer";
 
   // Make a valid buffer.
-  pp::Buffer_Dev buffer(100);
+  pp::Buffer_Dev buffer(instance_, 100);
   if (buffer.is_null())
     return "Couldn't create buffer";
   if (!buffer_interface_->IsBuffer(buffer.pp_resource()))

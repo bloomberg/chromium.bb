@@ -186,6 +186,7 @@ void ParamTraits<PP_Size>::Log(const param_type& p, std::string* l) {
 void ParamTraits<pp::proxy::PPBFlash_DrawGlyphs_Params>::Write(
     Message* m,
     const param_type& p) {
+  ParamTraits<PP_Instance>::Write(m, p.instance);
   ParamTraits<PP_Resource>::Write(m, p.pp_image_data);
   ParamTraits<pp::proxy::SerializedFontDescription>::Write(m, p.font_desc);
   ParamTraits<uint32_t>::Write(m, p.color);
@@ -210,6 +211,7 @@ bool ParamTraits<pp::proxy::PPBFlash_DrawGlyphs_Params>::Read(
     void** iter,
     param_type* r) {
   return
+      ParamTraits<PP_Instance>::Read(m, iter, &r->instance) &&
       ParamTraits<PP_Resource>::Read(m, iter, &r->pp_image_data) &&
       ParamTraits<pp::proxy::SerializedFontDescription>::Read(m, iter,
                                                               &r->font_desc) &&

@@ -21,7 +21,7 @@ class PluginInstance;
 
 class PPB_Font_Impl : public Resource {
  public:
-  PPB_Font_Impl(PluginModule* module, const PP_FontDescription_Dev& desc);
+  PPB_Font_Impl(PluginInstance* instance, const PP_FontDescription_Dev& desc);
   virtual ~PPB_Font_Impl();
 
   // Returns a pointer to the interface implementing PPB_Font that is exposed to

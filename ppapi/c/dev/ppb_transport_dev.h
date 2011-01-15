@@ -18,7 +18,7 @@
 struct PPB_Transport_Dev {
   // Creates a new transport object with the specified name
   // using the specified protocol.
-  PP_Resource (*CreateTransport)(PP_Module module,
+  PP_Resource (*CreateTransport)(PP_Instance instance,
                                  const char* name,
                                  const char* proto);
 

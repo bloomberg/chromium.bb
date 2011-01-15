@@ -15,6 +15,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/string.h"
 #include "webkit/plugins/ppapi/var.h"
 

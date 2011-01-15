@@ -30,7 +30,7 @@ class PPB_FileRef_Impl;
 
 class PPB_FileIO_Impl : public Resource {
  public:
-  explicit PPB_FileIO_Impl(PluginModule* module);
+  explicit PPB_FileIO_Impl(PluginInstance* instance);
   virtual ~PPB_FileIO_Impl();
 
   // Returns a pointer to the interface implementing PPB_FileIO that is exposed
@@ -98,7 +98,6 @@ class PPB_FileIO_Impl : public Resource {
   void ReadWriteCallback(base::PlatformFileError error_code,
                          int bytes_read_or_written);
 
-  PluginDelegate* delegate_;
   base::ScopedCallbackFactory<PPB_FileIO_Impl> callback_factory_;
 
   base::PlatformFile file_;

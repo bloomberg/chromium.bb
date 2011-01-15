@@ -7,7 +7,8 @@
 
 #include <string>
 
-#include "webkit/plugins/ppapi/resource.h"
+#include "base/compiler_specific.h"
+#include "base/ref_counted.h"
 
 struct PP_Var;
 struct PPB_Var;
@@ -19,17 +20,19 @@ typedef void* NPIdentifier;
 namespace webkit {
 namespace ppapi {
 
+class ObjectVar;
+class PluginInstance;
+class PluginModule;
+class StringVar;
+
 // Var -------------------------------------------------------------------------
 
 // Represents a non-POD var. This is derived from a resource even though it
 // isn't a resource from the plugin's perspective. This allows us to re-use
 // the refcounting and the association with the module from the resource code.
-class Var : public Resource {
+class Var : public base::RefCounted<Var> {
  public:
   virtual ~Var();
-
-  // Resource overrides.
-  virtual Var* AsVar();
 
   // Returns a PP_Var that corresponds to the given NPVariant. The contents of
   // the NPVariant will be copied unless the NPVariant corresponds to an
@@ -38,7 +41,7 @@ class Var : public Resource {
   //
   // The returned PP_Var will have a refcount of 1, this passing ownership of
   // the reference to the caller. This is suitable for returning to a plugin.
-  static PP_Var NPVariantToPPVar(PluginModule* module,
+  static PP_Var NPVariantToPPVar(PluginInstance* instance,
                                  const NPVariant* variant);
 
   // Returns a NPIdentifier that corresponds to the given PP_Var. The contents
@@ -87,11 +90,26 @@ class Var : public Resource {
   // Returns the PPB_Var interface for the plugin to use.
   static const PPB_Var* GetInterface();
 
+  virtual StringVar* AsStringVar();
+  virtual ObjectVar* AsObjectVar();
+
+  PluginModule* module() const { return module_; }
+
+  // Returns the unique ID associated with this string or object. The object
+  // must be a string or an object var, and the return value is guaranteed
+  // nonzero.
+  int32 GetID();
+
  protected:
   // This can only be constructed as a StringVar or an ObjectVar.
   explicit Var(PluginModule* module);
 
  private:
+  PluginModule* module_;
+
+  // This will be 0 if no ID has been assigned (this happens lazily).
+  int32 var_id_;
+
   DISALLOW_COPY_AND_ASSIGN(Var);
 };
 
@@ -114,8 +132,8 @@ class StringVar : public Var {
 
   const std::string& value() const { return value_; }
 
-  // Resource overrides.
-  virtual StringVar* AsStringVar();
+  // Var override.
+  virtual StringVar* AsStringVar() OVERRIDE;
 
   // Helper function to create a PP_Var of type string that contains a copy of
   // the given string. The input data must be valid UTF-8 encoded text, if it
@@ -154,8 +172,8 @@ class ObjectVar : public Var {
  public:
   virtual ~ObjectVar();
 
-  // Resource overrides.
-  virtual ObjectVar* AsObjectVar();
+  // Var overrides.
+  virtual ObjectVar* AsObjectVar() OVERRIDE;
 
   // Returns the underlying NPObject corresponding to this ObjectVar.
   // Guaranteed non-NULL.
@@ -172,19 +190,23 @@ class ObjectVar : public Var {
   //
   // If no ObjectVar currently exists corresponding to the NPObject, one is
   // created associated with the given module.
-  static PP_Var NPObjectToPPVar(PluginModule* module, NPObject* object);
+  static PP_Var NPObjectToPPVar(PluginInstance* instance, NPObject* object);
 
   // Helper function that converts a PP_Var to an object. This will return NULL
   // if the PP_Var is not of object type or the object is invalid.
   static scoped_refptr<ObjectVar> FromPPVar(PP_Var var);
 
+  PluginInstance* instance() const { return instance_; }
+
  protected:
   // You should always use FromNPObject to create an ObjectVar. This function
   // guarantees that we maintain the 1:1 mapping between NPObject and
   // ObjectVar.
-  ObjectVar(PluginModule* module, NPObject* np_object);
+  ObjectVar(PluginInstance* instance, NPObject* np_object);
 
  private:
+  PluginInstance* instance_;
+
   // Guaranteed non-NULL, this is the underlying object used by WebKit. We
   // hold a reference to this object.
   NPObject* np_object_;

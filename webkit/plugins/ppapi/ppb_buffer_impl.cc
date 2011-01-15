@@ -10,10 +10,8 @@
 #include "base/scoped_ptr.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace webkit {
@@ -21,12 +19,12 @@ namespace ppapi {
 
 namespace {
 
-PP_Resource Create(PP_Module module_id, uint32_t size) {
-  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
-  if (!module)
+PP_Resource Create(PP_Instance instance_id, uint32_t size) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
     return 0;
 
-  scoped_refptr<PPB_Buffer_Impl> buffer(new PPB_Buffer_Impl(module));
+  scoped_refptr<PPB_Buffer_Impl> buffer(new PPB_Buffer_Impl(instance));
   if (!buffer->Init(size))
     return 0;
 
@@ -72,8 +70,8 @@ const PPB_Buffer_Dev ppb_buffer = {
 
 }  // namespace
 
-PPB_Buffer_Impl::PPB_Buffer_Impl(PluginModule* module)
-    : Resource(module),
+PPB_Buffer_Impl::PPB_Buffer_Impl(PluginInstance* instance)
+    : Resource(instance),
       size_(0) {
 }
 

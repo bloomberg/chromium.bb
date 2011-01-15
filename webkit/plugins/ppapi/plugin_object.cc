@@ -19,6 +19,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource.h"
 #include "webkit/plugins/ppapi/string.h"
 #include "webkit/plugins/ppapi/var.h"
@@ -73,7 +74,8 @@ bool WrapperClass_Invoke(NPObject* object, NPIdentifier method_name,
 
   PPResultAndExceptionToNPResult result_converter(
       accessor.object()->GetNPObject(), result);
-  PPVarArrayFromNPVariantArray args(accessor.object()->module(), argc, argv);
+  PPVarArrayFromNPVariantArray args(accessor.object()->instance(),
+                                    argc, argv);
 
   return result_converter.SetResult(accessor.object()->ppp_class()->Call(
       accessor.object()->ppp_class_data(), accessor.identifier(),
@@ -86,7 +88,7 @@ bool WrapperClass_InvokeDefault(NPObject* np_object, const NPVariant* argv,
   if (!obj)
     return false;
 
-  PPVarArrayFromNPVariantArray args(obj->module(), argc, argv);
+  PPVarArrayFromNPVariantArray args(obj->instance(), argc, argv);
   PPResultAndExceptionToNPResult result_converter(obj->GetNPObject(), result);
 
   result_converter.SetResult(obj->ppp_class()->Call(
@@ -130,7 +132,8 @@ bool WrapperClass_SetProperty(NPObject* object, NPIdentifier property_name,
 
   PPResultAndExceptionToNPResult result_converter(
       accessor.object()->GetNPObject(), NULL);
-  PP_Var value_var = Var::NPVariantToPPVar(accessor.object()->module(), value);
+  PP_Var value_var = Var::NPVariantToPPVar(accessor.object()->instance(),
+                                           value);
   accessor.object()->ppp_class()->SetProperty(
       accessor.object()->ppp_class_data(), accessor.identifier(), value_var,
       result_converter.exception());
@@ -177,7 +180,7 @@ bool WrapperClass_Enumerate(NPObject* object, NPIdentifier** values,
         if (!((*values)[i] = Var::PPVarToNPIdentifier(properties[i]))) {
           // Throw an exception for the failed convertion.
           *result_converter.exception() = StringVar::StringToPPVar(
-              obj->module(), kInvalidValueException);
+              obj->instance()->module(), kInvalidValueException);
           break;
         }
         (*count)++;
@@ -211,7 +214,7 @@ bool WrapperClass_Construct(NPObject* object, const NPVariant* argv,
   if (!obj)
     return false;
 
-  PPVarArrayFromNPVariantArray args(obj->module(), argc, argv);
+  PPVarArrayFromNPVariantArray args(obj->instance(), argc, argv);
   PPResultAndExceptionToNPResult result_converter(obj->GetNPObject(), result);
   return result_converter.SetResult(obj->ppp_class()->Construct(
       obj->ppp_class_data(), argc, args.array(),
@@ -246,18 +249,18 @@ struct PluginObject::NPObjectWrapper : public NPObject {
   PluginObject* obj;
 };
 
-PluginObject::PluginObject(PluginModule* module,
+PluginObject::PluginObject(PluginInstance* instance,
                            NPObjectWrapper* object_wrapper,
                            const PPP_Class_Deprecated* ppp_class,
                            void* ppp_class_data)
-    : module_(module),
+    : instance_(instance),
       object_wrapper_(object_wrapper),
       ppp_class_(ppp_class),
       ppp_class_data_(ppp_class_data) {
   // Make the object wrapper refer back to this class so our NPObject
   // implementation can call back into the Pepper layer.
   object_wrapper_->obj = this;
-  module_->AddPluginObject(this);
+  instance_->AddPluginObject(this);
 }
 
 PluginObject::~PluginObject() {
@@ -268,10 +271,10 @@ PluginObject::~PluginObject() {
   // delete the NPObject.
   DCHECK(object_wrapper_->obj == this);
   object_wrapper_->obj = NULL;
-  module_->RemovePluginObject(this);
+  instance_->RemovePluginObject(this);
 }
 
-PP_Var PluginObject::Create(PluginModule* module,
+PP_Var PluginObject::Create(PluginInstance* instance,
                             const PPP_Class_Deprecated* ppp_class,
                             void* ppp_class_data) {
   // This will internally end up calling our AllocateObjectWrapper via the
@@ -284,12 +287,12 @@ PP_Var PluginObject::Create(PluginModule* module,
   // PluginModule. The NPObject will normally handle its lifetime, and it
   // will get deleted in the destroy method. It may also get deleted when the
   // plugin module is deallocated.
-  new PluginObject(module, wrapper, ppp_class, ppp_class_data);
+  new PluginObject(instance, wrapper, ppp_class, ppp_class_data);
 
   // We can just use a normal ObjectVar to refer to this object from the
   // plugin. It will hold a ref to the underlying NPObject which will in turn
   // hold our pluginObject.
-  return ObjectVar::NPObjectToPPVar(module, wrapper);
+  return ObjectVar::NPObjectToPPVar(instance, wrapper);
 }
 
 NPObject* PluginObject::GetNPObject() const {

@@ -26,9 +26,9 @@ class VarObjectAccessorWithIdentifier {
  public:
   VarObjectAccessorWithIdentifier(NPObject* object, NPIdentifier identifier)
       : exists_(false),
-        instance_(static_cast<VarObjectClass::InstanceData*>(object)),
+        instance_data_(static_cast<VarObjectClass::InstanceData*>(object)),
         property_(NULL) {
-    if (instance_) {
+    if (instance_data_) {
       const NPUTF8* string_value = NULL;
       int32_t int_value = 0;
       bool is_string = false;
@@ -38,7 +38,7 @@ class VarObjectAccessorWithIdentifier {
         property_name_ = string_value;
 
         const VarObjectClass::PropertyMap& properties =
-            instance_->object_class->properties();
+            instance_data_->object_class->properties();
         VarObjectClass::PropertyMap::const_iterator it =
             properties.find(property_name_);
         if (it != properties.end()) {
@@ -57,15 +57,17 @@ class VarObjectAccessorWithIdentifier {
   bool is_writable() const {
     return exists() && property_->setter && property_->writable;
   }
-  const VarObjectClass::InstanceData* instance() const { return instance_; }
+  const VarObjectClass::InstanceData* instance_data() const {
+    return instance_data_;
+  }
   const VarObjectClass::Property* property() const { return property_; }
-  PluginModule* module() const {
-    return instance_ ? instance_->object_class->module() : NULL;
+  PluginInstance* instance() const {
+    return instance_data_ ? instance_data_->object_class->instance() : NULL;
   }
 
  private:
   bool exists_;
-  const VarObjectClass::InstanceData* instance_;
+  const VarObjectClass::InstanceData* instance_data_;
   std::string property_name_;
   const VarObjectClass::Property* property_;
 
@@ -97,12 +99,12 @@ bool VarObjectClassInvoke(NPObject* np_obj, NPIdentifier name,
     return false;
 
   PPResultAndExceptionToNPResult result_converter(np_obj, result);
-  PPVarArrayFromNPVariantArray arguments(accessor.module(), arg_count, args);
-  PPVarFromNPObject self(accessor.module(), np_obj);
+  PPVarArrayFromNPVariantArray arguments(accessor.instance(), arg_count, args);
+  PPVarFromNPObject self(accessor.instance(), np_obj);
 
   return result_converter.SetResult(accessor.property()->method(
-    accessor.instance()->native_data, self.var(), arguments.array(), arg_count,
-    result_converter.exception()));
+      accessor.instance_data()->native_data, self.var(), arguments.array(),
+      arg_count, result_converter.exception()));
 }
 
 bool VarObjectClassInvokeDefault(NPObject* np_obj,
@@ -115,9 +117,9 @@ bool VarObjectClassInvokeDefault(NPObject* np_obj,
     return false;
 
   PPResultAndExceptionToNPResult result_converter(np_obj, result);
-  PPVarArrayFromNPVariantArray arguments(instance->object_class->module(),
+  PPVarArrayFromNPVariantArray arguments(instance->object_class->instance(),
                                          arg_count, args);
-  PPVarFromNPObject self(instance->object_class->module(), np_obj);
+  PPVarFromNPObject self(instance->object_class->instance(), np_obj);
 
   return result_converter.SetResult(instance->object_class->instance_invoke()(
       instance->native_data, self.var(), arguments.array(), arg_count,
@@ -137,27 +139,27 @@ bool VarObjectClassGetProperty(NPObject* np_obj, NPIdentifier name,
   }
 
   PPResultAndExceptionToNPResult result_converter(np_obj, result);
-  PPVarFromNPObject self(accessor.module(), np_obj);
+  PPVarFromNPObject self(accessor.instance(), np_obj);
 
   return result_converter.SetResult(accessor.property()->getter(
-    accessor.instance()->native_data, self.var(), 0, 0,
-    result_converter.exception()));
+      accessor.instance_data()->native_data, self.var(), 0, 0,
+      result_converter.exception()));
 }
 
 bool VarObjectClassSetProperty(NPObject* np_obj, NPIdentifier name,
-                     const NPVariant* variant) {
+                               const NPVariant* variant) {
   VarObjectAccessorWithIdentifier accessor(np_obj, name);
   if (!accessor.is_writable()) {
     return false;
   }
 
   PPResultAndExceptionToNPResult result_converter(np_obj, NULL);
-  PPVarArrayFromNPVariantArray arguments(accessor.module(), 1, variant);
-  PPVarFromNPObject self(accessor.module(), np_obj);
+  PPVarArrayFromNPVariantArray arguments(accessor.instance(), 1, variant);
+  PPVarFromNPObject self(accessor.instance(), np_obj);
 
   // Ignore return value.
   Var::PluginReleasePPVar(accessor.property()->setter(
-      accessor.instance()->native_data, self.var(), arguments.array(), 1,
+      accessor.instance_data()->native_data, self.var(), arguments.array(), 1,
       result_converter.exception()));
 
   return result_converter.CheckExceptionForNoResult();
@@ -207,12 +209,12 @@ NPClass objectclassvar_class = {
 
 // PPB_Class -------------------------------------------------------------------
 
-PP_Resource Create(PP_Module module, PP_ClassDestructor destruct,
+PP_Resource Create(PP_Instance instance_id, PP_ClassDestructor destruct,
                    PP_ClassFunction invoke, PP_ClassProperty* properties) {
-  PluginModule* plugin_module = ResourceTracker::Get()->GetModule(module);
-  if (!properties || !plugin_module)
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!properties || !instance)
     return 0;
-  scoped_refptr<VarObjectClass> cls = new VarObjectClass(plugin_module,
+  scoped_refptr<VarObjectClass> cls = new VarObjectClass(instance,
                                                          destruct,
                                                          invoke,
                                                          properties);
@@ -232,7 +234,7 @@ PP_Var Instantiate(PP_Resource class_object, void* native_data,
       static_cast<VarObjectClass::InstanceData*>(obj);
   instance_data->object_class = object_class;
   instance_data->native_data = native_data;
-  return ObjectVar::NPObjectToPPVar(object_class->module(), obj);
+  return ObjectVar::NPObjectToPPVar(object_class->instance(), obj);
 }
 
 }  // namespace
@@ -250,11 +252,11 @@ VarObjectClass::Property::Property(const PP_ClassProperty& prop)
 VarObjectClass::InstanceData::InstanceData() : native_data(NULL) {
 }
 
-VarObjectClass::VarObjectClass(PluginModule* module,
+VarObjectClass::VarObjectClass(PluginInstance* instance,
                                PP_ClassDestructor destruct,
                                PP_ClassFunction invoke,
                                PP_ClassProperty* properties)
-    : Resource(module),
+    : Resource(instance),
       instance_native_destructor_(destruct),
       instance_invoke_(invoke) {
   PP_ClassProperty* prop = properties;

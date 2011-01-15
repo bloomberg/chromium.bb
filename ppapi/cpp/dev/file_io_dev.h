@@ -14,10 +14,14 @@ namespace pp {
 
 class CompletionCallback;
 class FileRef_Dev;
+class Instance;
 
 class FileIO_Dev : public Resource {
  public:
+  // Constructs an is_null resource.
   FileIO_Dev();
+
+  FileIO_Dev(Instance* instance);
   FileIO_Dev(const FileIO_Dev& other);
 
     // PPB_FileIO methods:

@@ -26,12 +26,12 @@ namespace ppapi {
 
 namespace {
 
-PP_Resource Create(PP_Module module_id) {
-  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
-  if (!module)
+PP_Resource Create(PP_Instance instance_id) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
     return 0;
 
-  PPB_FileIO_Impl* file_io = new PPB_FileIO_Impl(module);
+  PPB_FileIO_Impl* file_io = new PPB_FileIO_Impl(instance);
   return file_io->GetReference();
 }
 
@@ -200,9 +200,8 @@ int PlatformFileErrorToPepperError(base::PlatformFileError error_code) {
 
 }  // namespace
 
-PPB_FileIO_Impl::PPB_FileIO_Impl(PluginModule* module)
-    : Resource(module),
-      delegate_(module->GetSomeInstance()->delegate()),
+PPB_FileIO_Impl::PPB_FileIO_Impl(PluginInstance* instance)
+    : Resource(instance),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
       file_(base::kInvalidPlatformFileValue),
       callback_(),
@@ -255,7 +254,7 @@ int32_t PPB_FileIO_Impl::Open(PPB_FileRef_Impl* file_ref,
   }
 
   file_system_type_ = file_ref->GetFileSystemType();
-  if (!delegate_->AsyncOpenFile(
+  if (!instance()->delegate()->AsyncOpenFile(
           file_ref->GetSystemPath(), flags,
           callback_factory_.NewCallback(
               &PPB_FileIO_Impl::AsyncOpenFileCallback)))
@@ -278,7 +277,7 @@ int32_t PPB_FileIO_Impl::Query(PP_FileInfo_Dev* info,
   info_ = info;
 
   if (!base::FileUtilProxy::GetFileInfoFromPlatformFile(
-          delegate_->GetFileThreadMessageLoopProxy(), file_,
+          instance()->delegate()->GetFileThreadMessageLoopProxy(), file_,
           callback_factory_.NewCallback(&PPB_FileIO_Impl::QueryInfoCallback)))
     return PP_ERROR_FAILED;
 
@@ -294,7 +293,7 @@ int32_t PPB_FileIO_Impl::Touch(PP_Time last_access_time,
     return rv;
 
   if (!base::FileUtilProxy::Touch(
-          delegate_->GetFileThreadMessageLoopProxy(),
+          instance()->delegate()->GetFileThreadMessageLoopProxy(),
           file_, base::Time::FromDoubleT(last_access_time),
           base::Time::FromDoubleT(last_modified_time),
           callback_factory_.NewCallback(&PPB_FileIO_Impl::StatusCallback)))
@@ -313,7 +312,7 @@ int32_t PPB_FileIO_Impl::Read(int64_t offset,
     return rv;
 
   if (!base::FileUtilProxy::Read(
-          delegate_->GetFileThreadMessageLoopProxy(),
+          instance()->delegate()->GetFileThreadMessageLoopProxy(),
           file_, offset, buffer, bytes_to_read,
           callback_factory_.NewCallback(&PPB_FileIO_Impl::ReadWriteCallback)))
     return PP_ERROR_FAILED;
@@ -331,7 +330,7 @@ int32_t PPB_FileIO_Impl::Write(int64_t offset,
     return rv;
 
   if (!base::FileUtilProxy::Write(
-          delegate_->GetFileThreadMessageLoopProxy(),
+          instance()->delegate()->GetFileThreadMessageLoopProxy(),
           file_, offset, buffer, bytes_to_write,
           callback_factory_.NewCallback(&PPB_FileIO_Impl::ReadWriteCallback)))
     return PP_ERROR_FAILED;
@@ -347,7 +346,7 @@ int32_t PPB_FileIO_Impl::SetLength(int64_t length,
     return rv;
 
   if (!base::FileUtilProxy::Truncate(
-          delegate_->GetFileThreadMessageLoopProxy(),
+          instance()->delegate()->GetFileThreadMessageLoopProxy(),
           file_, length,
           callback_factory_.NewCallback(&PPB_FileIO_Impl::StatusCallback)))
     return PP_ERROR_FAILED;
@@ -362,7 +361,7 @@ int32_t PPB_FileIO_Impl::Flush(PP_CompletionCallback callback) {
     return rv;
 
   if (!base::FileUtilProxy::Flush(
-          delegate_->GetFileThreadMessageLoopProxy(), file_,
+          instance()->delegate()->GetFileThreadMessageLoopProxy(), file_,
           callback_factory_.NewCallback(&PPB_FileIO_Impl::StatusCallback)))
     return PP_ERROR_FAILED;
 
@@ -373,7 +372,7 @@ int32_t PPB_FileIO_Impl::Flush(PP_CompletionCallback callback) {
 void PPB_FileIO_Impl::Close() {
   if (file_ != base::kInvalidPlatformFileValue) {
     base::FileUtilProxy::Close(
-        delegate_->GetFileThreadMessageLoopProxy(), file_, NULL);
+        instance()->delegate()->GetFileThreadMessageLoopProxy(), file_, NULL);
     file_ = base::kInvalidPlatformFileValue;
   }
 }
@@ -430,7 +429,7 @@ void PPB_FileIO_Impl::RegisterCallback(PP_CompletionCallback callback) {
   PP_Resource resource_id = GetReferenceNoAddRef();
   CHECK(resource_id);
   callback_ = new TrackedCompletionCallback(
-      module()->GetCallbackTracker(), resource_id, callback);
+      instance()->module()->GetCallbackTracker(), resource_id, callback);
 }
 
 void PPB_FileIO_Impl::RunPendingCallback(int result) {

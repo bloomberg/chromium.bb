@@ -44,6 +44,7 @@
 #include "webkit/plugins/ppapi/fullscreen_container.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
+#include "webkit/plugins/ppapi/plugin_object.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
@@ -320,7 +321,16 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
 }
 
 PluginInstance::~PluginInstance() {
-  FOR_EACH_OBSERVER(Observer, observers_, InstanceDestroyed(this));
+  // Free all the plugin objects. This will automatically clear the back-
+  // pointer from the NPObject so WebKit can't call into the plugin any more.
+  //
+  // Swap out the set so we can delete from it (the objects will try to
+  // unregister themselves inside the delete call).
+  PluginObjectSet plugin_object_copy;
+  live_plugin_objects_.swap(plugin_object_copy);
+  for (PluginObjectSet::iterator i = live_plugin_objects_.begin();
+       i != live_plugin_objects_.end(); ++i)
+    delete *i;
 
   delegate_->InstanceDeleted(this);
   module_->InstanceDeleted(this);
@@ -349,14 +359,6 @@ const PPB_Fullscreen_Dev* PluginInstance::GetFullscreenInterface() {
 // static
 const PPB_Zoom_Dev* PluginInstance::GetZoomInterface() {
   return &ppb_zoom;
-}
-
-void PluginInstance::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void PluginInstance::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void PluginInstance::Paint(WebCanvas* canvas,
@@ -418,13 +420,13 @@ PP_Var PluginInstance::GetWindowObject() {
   if (!frame)
     return PP_MakeUndefined();
 
-  return ObjectVar::NPObjectToPPVar(module(), frame->windowObject());
+  return ObjectVar::NPObjectToPPVar(this, frame->windowObject());
 }
 
 PP_Var PluginInstance::GetOwnerElementObject() {
   if (!container_)
     return PP_MakeUndefined();
-  return ObjectVar::NPObjectToPPVar(module(),
+  return ObjectVar::NPObjectToPPVar(this,
                                     container_->scriptableObjectForElement());
 }
 
@@ -525,7 +527,7 @@ PP_Var PluginInstance::ExecuteScript(PP_Var script, PP_Var* exception) {
     return PP_MakeUndefined();
   }
 
-  PP_Var ret = Var::NPVariantToPPVar(module_, &result);
+  PP_Var ret = Var::NPVariantToPPVar(this, &result);
   WebBindings::releaseVariantValue(&result);
   return ret;
 }
@@ -1187,6 +1189,46 @@ PPB_Surface3D_Impl* PluginInstance::bound_graphics_3d() const {
     return NULL;
 
   return bound_graphics_->Cast<PPB_Surface3D_Impl>();
+}
+
+void PluginInstance::AddPluginObject(PluginObject* plugin_object) {
+  DCHECK(live_plugin_objects_.find(plugin_object) ==
+         live_plugin_objects_.end());
+  live_plugin_objects_.insert(plugin_object);
+}
+
+void PluginInstance::RemovePluginObject(PluginObject* plugin_object) {
+  // Don't actually verify that the object is in the set since during module
+  // deletion we'll be in the process of freeing them.
+  live_plugin_objects_.erase(plugin_object);
+}
+
+void PluginInstance::AddNPObjectVar(ObjectVar* object_var) {
+  DCHECK(np_object_to_object_var_.find(object_var->np_object()) ==
+         np_object_to_object_var_.end()) << "ObjectVar already in map";
+  np_object_to_object_var_[object_var->np_object()] = object_var;
+}
+
+void PluginInstance::RemoveNPObjectVar(ObjectVar* object_var) {
+  NPObjectToObjectVarMap::iterator found =
+      np_object_to_object_var_.find(object_var->np_object());
+  if (found == np_object_to_object_var_.end()) {
+    NOTREACHED() << "ObjectVar not registered.";
+    return;
+  }
+  if (found->second != object_var) {
+    NOTREACHED() << "ObjectVar doesn't match.";
+    return;
+  }
+  np_object_to_object_var_.erase(found);
+}
+
+ObjectVar* PluginInstance::ObjectVarForNPObject(NPObject* np_object) const {
+  NPObjectToObjectVarMap::const_iterator found =
+      np_object_to_object_var_.find(np_object);
+  if (found == np_object_to_object_var_.end())
+    return NULL;
+  return found->second;
 }
 
 }  // namespace ppapi

@@ -20,7 +20,8 @@
 namespace webkit {
 namespace ppapi {
 
-bool PPB_Flash_Impl::DrawGlyphs(PP_Resource pp_image_data,
+bool PPB_Flash_Impl::DrawGlyphs(PP_Instance,
+                                PP_Resource pp_image_data,
                                 const PP_FontDescription_Dev* font_desc,
                                 uint32_t color,
                                 PP_Point position,

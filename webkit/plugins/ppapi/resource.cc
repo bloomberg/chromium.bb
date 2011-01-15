@@ -6,14 +6,15 @@
 
 #include "base/logging.h"
 #include "webkit/plugins/ppapi/callbacks.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
 namespace webkit {
 namespace ppapi {
 
-Resource::Resource(PluginModule* module)
-    : resource_id_(0), module_(module) {
+Resource::Resource(PluginInstance* instance)
+    : resource_id_(0), instance_(instance) {
 }
 
 Resource::~Resource() {
@@ -32,10 +33,14 @@ PP_Resource Resource::GetReferenceNoAddRef() const {
   return resource_id_;
 }
 
-void Resource::StoppedTracking() {
+void Resource::LastPluginRefWasDeleted(bool instance_destroyed) {
   DCHECK(resource_id_ != 0);
-  module_->GetCallbackTracker()->PostAbortForResource(resource_id_);
+  instance()->module()->GetCallbackTracker()->PostAbortForResource(
+      resource_id_);
   resource_id_ = 0;
+
+  if (instance_destroyed)
+    instance_ = NULL;
 }
 
 #define DEFINE_TYPE_GETTER(RESOURCE)            \

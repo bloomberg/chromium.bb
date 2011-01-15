@@ -23,7 +23,8 @@ class PPB_Flash_Impl {
   // exposed to the plugin.
   static const PPB_Flash* GetInterface();
 
-  static bool DrawGlyphs(PP_Resource pp_image_data,
+  static bool DrawGlyphs(PP_Instance pp_instance,
+                         PP_Resource pp_image_data,
                          const PP_FontDescription_Dev* font_desc,
                          uint32_t color,
                          PP_Point position,
@@ -52,8 +53,6 @@ class PPB_Flash_NetConnector_Impl : public Resource {
   // Resource override.
   virtual PPB_Flash_NetConnector_Impl* AsPPB_Flash_NetConnector_Impl();
 
-  PluginInstance* instance() { return instance_; }
-
   // PPB_Flash_NetConnector implementation.
   int32_t ConnectTcp(const char* host,
                      uint16_t port,
@@ -73,9 +72,6 @@ class PPB_Flash_NetConnector_Impl : public Resource {
                           const PP_Flash_NetAddress& remote_addr);
 
  private:
-  // Plugin instance this connector with which is associated.
-  PluginInstance* instance_;
-
   // Any pending callback (for |ConnectTcp()| or |ConnectTcpAddress()|).
   scoped_refptr<TrackedCompletionCallback> callback_;
 

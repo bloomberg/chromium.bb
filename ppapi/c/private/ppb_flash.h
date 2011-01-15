@@ -11,7 +11,6 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
@@ -19,7 +18,7 @@
 
 // PPB_Flash -------------------------------------------------------------------
 
-#define PPB_FLASH_INTERFACE "PPB_Flash;2"
+#define PPB_FLASH_INTERFACE "PPB_Flash;3"
 
 #ifdef _WIN32
 typedef HANDLE PP_FileHandle;
@@ -49,7 +48,8 @@ struct PPB_Flash {
   // this case.
   void (*SetInstanceAlwaysOnTop)(PP_Instance instance, bool on_top);
 
-  bool (*DrawGlyphs)(PP_Resource pp_image_data,
+  bool (*DrawGlyphs)(PP_Instance instance,
+                     PP_Resource pp_image_data,
                      const PP_FontDescription_Dev* font_desc,
                      uint32_t color,
                      PP_Point position,
@@ -61,21 +61,21 @@ struct PPB_Flash {
 
   // Retrieves the proxy that will be used for the given URL. The result will
   // be a string in PAC format, or an undefined var on error.
-  PP_Var (*GetProxyForURL)(PP_Module module, const char* url);
+  PP_Var (*GetProxyForURL)(PP_Instance instance, const char* url);
 
   // Opens a module-local file, returning a file descriptor (posix) or a HANDLE
   // (win32) into file. Module-local file paths (here and below) are
   // '/'-separated UTF-8 strings, relative to a module-specific root. The return
   // value is the ppapi error, PP_OK if success, one of the PP_ERROR_* in case
   // of failure.
-  int32_t (*OpenModuleLocalFile)(PP_Module module,
+  int32_t (*OpenModuleLocalFile)(PP_Instance instance,
                                  const char* path,
                                  int32_t mode,
                                  PP_FileHandle* file);
 
   // Renames a module-local file. The return value is the ppapi error, PP_OK if
   // success, one of the PP_ERROR_* in case of failure.
-  int32_t (*RenameModuleLocalFile)(PP_Module module,
+  int32_t (*RenameModuleLocalFile)(PP_Instance instance,
                                    const char* path_from,
                                    const char* path_to);
 
@@ -83,17 +83,17 @@ struct PPB_Flash {
   // points to a directory, deletes all the contents of the directory. The
   // return value is the ppapi error, PP_OK if success, one of the PP_ERROR_* in
   // case of failure.
-  int32_t (*DeleteModuleLocalFileOrDir)(PP_Module module,
+  int32_t (*DeleteModuleLocalFileOrDir)(PP_Instance instance,
                                         const char* path,
                                         bool recursive);
 
   // Creates a module-local directory. The return value is the ppapi error,
   // PP_OK if success, one of the PP_ERROR_* in case of failure.
-  int32_t (*CreateModuleLocalDir)(PP_Module module, const char* path);
+  int32_t (*CreateModuleLocalDir)(PP_Instance instance, const char* path);
 
   // Queries information about a module-local file. The return value is the
   // ppapi error, PP_OK if success, one of the PP_ERROR_* in case of failure.
-  int32_t (*QueryModuleLocalFile)(PP_Module module,
+  int32_t (*QueryModuleLocalFile)(PP_Instance instance,
                                   const char* path,
                                   PP_FileInfo_Dev* info);
 
@@ -101,12 +101,12 @@ struct PPB_Flash {
   // value is the ppapi error, PP_OK if success, one of the PP_ERROR_* in case
   // of failure. If non-NULL, the returned contents should be freed with
   // FreeModuleLocalDirContents.
-  int32_t (*GetModuleLocalDirContents)(PP_Module module,
+  int32_t (*GetModuleLocalDirContents)(PP_Instance instance,
                                        const char* path,
                                        PP_DirContents_Dev** contents);
 
   // Frees the data allocated by GetModuleLocalDirContents.
-  void (*FreeModuleLocalDirContents)(PP_Module module,
+  void (*FreeModuleLocalDirContents)(PP_Instance instance,
                                      PP_DirContents_Dev* contents);
 
   // Navigate to URL. May open a new tab if target is not "_self". Return true

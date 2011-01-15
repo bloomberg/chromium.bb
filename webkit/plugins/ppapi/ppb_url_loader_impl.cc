@@ -196,8 +196,7 @@ WebKit::WebFrame* GetFrame(PluginInstance* instance) {
 
 PPB_URLLoader_Impl::PPB_URLLoader_Impl(PluginInstance* instance,
                                        bool main_document_loader)
-    : Resource(instance->module()),
-      instance_(instance),
+    : Resource(instance),
       main_document_loader_(main_document_loader),
       pending_callback_(),
       bytes_sent_(0),
@@ -209,12 +208,9 @@ PPB_URLLoader_Impl::PPB_URLLoader_Impl(PluginInstance* instance,
       done_status_(PP_ERROR_WOULDBLOCK),
       has_universal_access_(false),
       status_callback_(NULL) {
-  instance->AddObserver(this);
 }
 
 PPB_URLLoader_Impl::~PPB_URLLoader_Impl() {
-  if (instance_)
-    instance_->RemoveObserver(this);
 }
 
 // static
@@ -231,6 +227,15 @@ PPB_URLLoader_Impl* PPB_URLLoader_Impl::AsPPB_URLLoader_Impl() {
   return this;
 }
 
+void PPB_URLLoader_Impl::LastPluginRefWasDeleted(bool instance_destroyed) {
+  Resource::LastPluginRefWasDeleted(instance_destroyed);
+  if (instance_destroyed) {
+    // Free the WebKit request when the instance has been destroyed to avoid
+    // using bandwidth just in case this object lives longer than the instance.
+    loader_.reset();
+  }
+}
+
 int32_t PPB_URLLoader_Impl::Open(PPB_URLRequestInfo_Impl* request,
                                  PP_CompletionCallback callback) {
   int32_t rv = ValidateCallback(callback);
@@ -240,7 +245,7 @@ int32_t PPB_URLLoader_Impl::Open(PPB_URLRequestInfo_Impl* request,
   if (loader_.get())
     return PP_ERROR_INPROGRESS;
 
-  WebFrame* frame = GetFrame(instance_);
+  WebFrame* frame = GetFrame(instance());
   if (!frame)
     return PP_ERROR_FAILED;
   WebURLRequest web_request(request->ToWebURLRequest(frame));
@@ -269,7 +274,7 @@ int32_t PPB_URLLoader_Impl::FollowRedirect(PP_CompletionCallback callback) {
 
   WebURL redirect_url = GURL(response_info_->redirect_url());
 
-  rv = CanRequest(GetFrame(instance_), redirect_url);
+  rv = CanRequest(GetFrame(instance()), redirect_url);
   if (rv != PP_OK)
     return rv;
 
@@ -352,7 +357,7 @@ void PPB_URLLoader_Impl::Close() {
   if (loader_.get()) {
     loader_->cancel();
   } else if (main_document_loader_) {
-    WebFrame* frame = instance_->container()->element().document().frame();
+    WebFrame* frame = instance()->container()->element().document().frame();
     frame->stopLoading();
   }
   // TODO(viettrungluu): Check what happens to the callback (probably the
@@ -377,7 +382,7 @@ void PPB_URLLoader_Impl::willSendRequest(
     loader_->setDefersLoading(true);
     RunCallback(PP_OK);
   } else {
-    int32_t rv = CanRequest(GetFrame(instance_), new_request.url());
+    int32_t rv = CanRequest(GetFrame(instance()), new_request.url());
     if (rv != PP_OK) {
       loader_->setDefersLoading(true);
       RunCallback(rv);
@@ -438,40 +443,6 @@ void PPB_URLLoader_Impl::didFail(WebURLLoader* loader,
   RunCallback(done_status_);
 }
 
-void PPB_URLLoader_Impl::InstanceDestroyed(PluginInstance* instance) {
-  // When the instance is destroyed, we force delete any associated loads.
-  DCHECK(instance == instance_);
-  instance_ = NULL;
-
-  // Normally the only ref to this class will be from the plugin which
-  // ForceDeletePluginResourceRefs will free. We don't want our object to be
-  // deleted out from under us until the function completes.
-  scoped_refptr<PPB_URLLoader_Impl> death_grip(this);
-
-  // Force delete any plugin refs to us. If the instance is being deleted, we
-  // don't want to allow the requests to continue to use bandwidth and send us
-  // callbacks (for which we might have no plugin).
-  ResourceTracker *tracker = ResourceTracker::Get();
-  PP_Resource loader_resource = GetReferenceNoAddRef();
-  if (loader_resource)
-    tracker->ForceDeletePluginResourceRefs(loader_resource);
-
-  // Also force free the response from the plugin, both the plugin's ref(s)
-  // and ours.
-  if (response_info_.get()) {
-    PP_Resource response_info_resource = response_info_->GetReferenceNoAddRef();
-    if (response_info_resource)
-      tracker->ForceDeletePluginResourceRefs(response_info_resource);
-    response_info_ = NULL;
-  }
-
-  // Free the WebKit request.
-  loader_.reset();
-
-  // Often, |this| will be deleted at the end of this function when death_grip
-  // goes out of scope.
-}
-
 int32_t PPB_URLLoader_Impl::ValidateCallback(PP_CompletionCallback callback) {
   // We only support non-blocking calls.
   if (!callback.func)
@@ -490,7 +461,7 @@ void PPB_URLLoader_Impl::RegisterCallback(PP_CompletionCallback callback) {
   PP_Resource resource_id = GetReferenceNoAddRef();
   CHECK(resource_id);
   pending_callback_ = new TrackedCompletionCallback(
-      module()->GetCallbackTracker(), resource_id, callback);
+      instance()->module()->GetCallbackTracker(), resource_id, callback);
 }
 
 void PPB_URLLoader_Impl::RunCallback(int32_t result) {
@@ -521,7 +492,7 @@ size_t PPB_URLLoader_Impl::FillUserBuffer() {
 
 void PPB_URLLoader_Impl::SaveResponse(const WebKit::WebURLResponse& response) {
   scoped_refptr<PPB_URLResponseInfo_Impl> response_info(
-      new PPB_URLResponseInfo_Impl(module()));
+      new PPB_URLResponseInfo_Impl(instance()));
   if (response_info->Initialize(response))
     response_info_ = response_info;
 }
@@ -551,7 +522,7 @@ void PPB_URLLoader_Impl::UpdateStatus() {
       // getting download progress when they happen to set the upload progress
       // flag.
       status_callback_(
-          instance_->pp_instance(), pp_resource,
+          instance()->pp_instance(), pp_resource,
           RecordUploadProgress() ? bytes_sent_ : -1,
           RecordUploadProgress() ?  total_bytes_to_be_sent_ : -1,
           RecordDownloadProgress() ? bytes_received_ : -1,

@@ -103,10 +103,10 @@ class FileChooserCompletionImpl : public WebFileChooserCompletion {
 
 }  // namespace
 
-PPB_FileChooser_Impl::PPB_FileChooser_Impl(PluginInstance* instance,
-                         const PP_FileChooserOptions_Dev* options)
-    : Resource(instance->module()),
-      delegate_(instance->delegate()),
+PPB_FileChooser_Impl::PPB_FileChooser_Impl(
+    PluginInstance* instance,
+    const PP_FileChooserOptions_Dev* options)
+    : Resource(instance),
       mode_(options->mode),
       accept_mime_types_(options->accept_mime_types),
       completion_callback_() {
@@ -131,7 +131,7 @@ void PPB_FileChooser_Impl::StoreChosenFiles(
   for (std::vector<std::string>::const_iterator it = files.begin();
        it != end_it; it++) {
     chosen_files_.push_back(make_scoped_refptr(
-        new PPB_FileRef_Impl(module(), FilePath().AppendASCII(*it))));
+        new PPB_FileRef_Impl(instance(), FilePath().AppendASCII(*it))));
   }
 
   if (!completion_callback_.func)
@@ -153,7 +153,7 @@ int32_t PPB_FileChooser_Impl::Show(PP_CompletionCallback callback) {
   params.acceptTypes = WebString::fromUTF8(accept_mime_types_);
   params.directory = false;
 
-  return delegate_->RunFileChooser(
+  return instance()->delegate()->RunFileChooser(
       params, new FileChooserCompletionImpl(this));
 }
 

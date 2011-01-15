@@ -43,7 +43,7 @@ Font::~Font() {
 
 namespace {
 
-PP_Resource Create(PP_Module module_id,
+PP_Resource Create(PP_Instance instance,
                    const PP_FontDescription_Dev* description) {
   PluginDispatcher* dispatcher = PluginDispatcher::Get();
 
@@ -55,7 +55,7 @@ PP_Resource Create(PP_Module module_id,
   std::string out_metrics;
   PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBFont_Create(
       INTERFACE_ID_PPB_FONT,
-      module_id, in_description, &result, &out_description, &out_metrics));
+      instance, in_description, &result, &out_description, &out_metrics));
 
   if (!result)
     return 0;  // Failure creating font.
@@ -206,7 +206,7 @@ bool PPB_Font_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void PPB_Font_Proxy::OnMsgCreate(
-    PP_Module pp_module,
+    PP_Instance instance,
     const SerializedFontDescription& in_description,
     PP_Resource* result,
     SerializedFontDescription* out_description,
@@ -221,7 +221,7 @@ void PPB_Font_Proxy::OnMsgCreate(
   memset(&out_pp_desc, 0, sizeof(PP_FontDescription_Dev));
   out_pp_desc.face = PP_MakeUndefined();
 
-  *result = ppb_font_target()->Create(pp_module, &in_pp_desc);
+  *result = ppb_font_target()->Create(instance, &in_pp_desc);
   if (*result) {
     // Get the metrics and resulting description to return to the browser.
     PP_FontMetrics_Dev metrics;

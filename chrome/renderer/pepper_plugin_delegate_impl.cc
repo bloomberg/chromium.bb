@@ -394,8 +394,10 @@ PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
   }
 
   // Create a new HostDispatcher for the proxying, and hook it to a new
-  // PluginModule.
+  // PluginModule. Note that AddLiveModule must be called before any early
+  // returns since the module's destructor will remove itself.
   module = new webkit::ppapi::PluginModule(PepperPluginRegistry::GetInstance());
+  PepperPluginRegistry::GetInstance()->AddLiveModule(path, module);
   scoped_ptr<DispatcherWrapper> dispatcher(new DispatcherWrapper);
   if (!dispatcher->Init(
           plugin_process_handle, channel_handle,
@@ -403,7 +405,6 @@ PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
           webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc()))
     return scoped_refptr<webkit::ppapi::PluginModule>();
   module->InitAsProxied(dispatcher.release());
-  PepperPluginRegistry::GetInstance()->AddLiveModule(path, module);
   return module;
 }
 

@@ -21,7 +21,7 @@ class URLResponseInfo;
 //
 //   class MyHandler {
 //    public:
-//     MyHandler(const Instance& instance)
+//     MyHandler(Instance* instance)
 //         : factory_(this),
 //           loader_(instance),
 //           did_open_(false) {
@@ -80,8 +80,12 @@ class URLLoader : public Resource {
   // Creates an is_null() URLLoader object.
   URLLoader() {}
 
-  explicit URLLoader(PP_Resource resource);
+  // TODO(brettw) remove this when NaCl is updated to use the new version
+  // that takes a pointer.
   explicit URLLoader(const Instance& instance);
+
+  explicit URLLoader(PP_Resource resource);
+  explicit URLLoader(Instance* instance);
   URLLoader(const URLLoader& other);
 
   // PPB_URLLoader methods:

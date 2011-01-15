@@ -12,10 +12,14 @@
 namespace pp {
 
 class FileRef_Dev;
+class Instance;
 
 class URLRequestInfo : public Resource {
  public:
-  URLRequestInfo();
+  // Creates an is_null resource.
+  URLRequestInfo() {}
+
+  explicit URLRequestInfo(Instance* instance);
   URLRequestInfo(const URLRequestInfo& other);
 
   // PPB_URLRequestInfo methods:

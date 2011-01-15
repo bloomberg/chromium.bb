@@ -17,7 +17,7 @@ typedef struct _NPVariant NPVariant;
 namespace webkit {
 namespace ppapi {
 
-class PluginModule;
+class PluginInstance;
 
 class PluginObject {
  public:
@@ -25,11 +25,11 @@ class PluginObject {
 
   // Allocates a new PluginObject and returns it as a PP_Var with a
   // refcount of 1.
-  static PP_Var Create(PluginModule* module,
+  static PP_Var Create(PluginInstance* instance,
                        const PPP_Class_Deprecated* ppp_class,
                        void* ppp_class_data);
 
-  PluginModule* module() const { return module_; }
+  PluginInstance* instance() const { return instance_; }
 
   const PPP_Class_Deprecated* ppp_class() { return ppp_class_; }
   void* ppp_class_data() { return ppp_class_data_; };
@@ -64,12 +64,12 @@ class PluginObject {
   //
   // The NPObjectWrapper (an NPObject) should already have the reference
   // incremented on it, and this class will take ownership of that reference.
-  PluginObject(PluginModule* module,
+  PluginObject(PluginInstance* instance,
                NPObjectWrapper* object_wrapper,
                const PPP_Class_Deprecated* ppp_class,
                void* ppp_class_data);
 
-  PluginModule* module_;
+  PluginInstance* instance_;
 
   // Holds a pointer to the NPObject wrapper backing the var. This class
   // derives from NPObject and we hold a reference to it, so it must be

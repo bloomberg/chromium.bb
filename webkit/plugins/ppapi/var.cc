@@ -17,6 +17,7 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/plugin_object.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/resource_tracker.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebBindings;
@@ -206,7 +207,7 @@ PP_Var RunJSFunction(PP_Var scope_var,
 
   if (WebBindings::invokeDefault(NULL, NPVARIANT_TO_OBJECT(function_var),
                                  args.get(), argc, &result_var)) {
-    result = Var::NPVariantToPPVar(obj->module(), &result_var);
+    result = Var::NPVariantToPPVar(obj->instance(), &result_var);
   } else {
     DCHECK(try_catch.has_exception());
     result = PP_MakeUndefined();
@@ -377,7 +378,7 @@ PP_Var GetProperty(PP_Var var,
     return PP_MakeUndefined();
   }
 
-  PP_Var ret = Var::NPVariantToPPVar(accessor.object()->module(), &result);
+  PP_Var ret = Var::NPVariantToPPVar(accessor.object()->instance(), &result);
   WebBindings::releaseVariantValue(&result);
   return ret;
 }
@@ -407,8 +408,9 @@ void EnumerateProperties(PP_Var var,
   *property_count = count;
   *properties = static_cast<PP_Var*>(malloc(sizeof(PP_Var) * count));
   for (uint32_t i = 0; i < count; ++i) {
-    (*properties)[i] = Var::NPIdentifierToPPVar(accessor.object()->module(),
-                                                identifiers[i]);
+    (*properties)[i] = Var::NPIdentifierToPPVar(
+        accessor.object()->instance()->module(),
+        identifiers[i]);
   }
   free(identifiers);
 }
@@ -493,7 +495,7 @@ struct PP_Var Call(struct PP_Var object,
     return PP_MakeUndefined();
   }
 
-  PP_Var ret = Var::NPVariantToPPVar(accessor.module(), &result);
+  PP_Var ret = Var::NPVariantToPPVar(accessor.object()->instance(), &result);
   WebBindings::releaseVariantValue(&result);
   return ret;
 }
@@ -551,7 +553,7 @@ PP_Var CallDeprecated(PP_Var var,
     return PP_MakeUndefined();
   }
 
-  PP_Var ret = Var::NPVariantToPPVar(accessor.module(), &result);
+  PP_Var ret = Var::NPVariantToPPVar(accessor.object()->instance(), &result);
   WebBindings::releaseVariantValue(&result);
   return ret;
 }
@@ -584,7 +586,7 @@ PP_Var Construct(PP_Var var,
     return PP_MakeUndefined();
   }
 
-  PP_Var ret = Var::NPVariantToPPVar(accessor.module(), &result);
+  PP_Var ret = Var::NPVariantToPPVar(accessor.object()->instance(), &result);
   WebBindings::releaseVariantValue(&result);
   return ret;
 }
@@ -608,7 +610,7 @@ PP_Var CreateObjectDeprecated(PP_Instance instance_id,
     DLOG(ERROR) << "Create object passed an invalid instance.";
     return PP_MakeNull();
   }
-  return PluginObject::Create(instance->module(), ppp_class, ppp_class_data);
+  return PluginObject::Create(instance, ppp_class, ppp_class_data);
 }
 
 PP_Var CreateObjectWithModuleDeprecated(PP_Module module_id,
@@ -617,7 +619,8 @@ PP_Var CreateObjectWithModuleDeprecated(PP_Module module_id,
   PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return PP_MakeNull();
-  return PluginObject::Create(module, ppp_class, ppp_class_data);
+  return PluginObject::Create(module->GetSomeInstance(),
+                              ppp_class, ppp_class_data);
 }
 
 const PPB_Var_Deprecated var_deprecated_interface = {
@@ -659,18 +662,15 @@ const PPB_Var var_interface = {
 
 // Var -------------------------------------------------------------------------
 
-Var::Var(PluginModule* module) : Resource(module) {
+Var::Var(PluginModule* module) : module_(module), var_id_(0) {
 }
 
 Var::~Var() {
 }
 
-Var* Var::AsVar() {
-  return this;
-}
-
 // static
-PP_Var Var::NPVariantToPPVar(PluginModule* module, const NPVariant* variant) {
+PP_Var Var::NPVariantToPPVar(PluginInstance* instance,
+                             const NPVariant* variant) {
   switch (variant->type) {
     case NPVariantType_Void:
       return PP_MakeUndefined();
@@ -684,11 +684,12 @@ PP_Var Var::NPVariantToPPVar(PluginModule* module, const NPVariant* variant) {
       return PP_MakeDouble(NPVARIANT_TO_DOUBLE(*variant));
     case NPVariantType_String:
       return StringVar::StringToPPVar(
-          module,
+          instance->module(),
           NPVARIANT_TO_STRING(*variant).UTF8Characters,
           NPVARIANT_TO_STRING(*variant).UTF8Length);
     case NPVariantType_Object:
-      return ObjectVar::NPObjectToPPVar(module, NPVARIANT_TO_OBJECT(*variant));
+      return ObjectVar::NPObjectToPPVar(instance,
+                                        NPVARIANT_TO_OBJECT(*variant));
   }
   NOTREACHED();
   return PP_MakeUndefined();
@@ -725,22 +726,16 @@ PP_Var Var::NPIdentifierToPPVar(PluginModule* module, NPIdentifier id) {
 // static
 void Var::PluginAddRefPPVar(PP_Var var) {
   if (var.type == PP_VARTYPE_STRING || var.type == PP_VARTYPE_OBJECT) {
-    // TODO(brettw) consider checking that the ID is actually a var ID rather
-    // than some random other resource ID.
-    PP_Resource resource = static_cast<PP_Resource>(var.value.as_id);
-    if (!ResourceTracker::Get()->AddRefResource(resource))
-      DLOG(WARNING) << "AddRefVar()ing a nonexistant string/object var.";
+    if (!ResourceTracker::Get()->AddRefVar(static_cast<int32>(var.value.as_id)))
+      DLOG(WARNING) << "AddRefVar()ing a nonexistent string/object var.";
   }
 }
 
 // static
 void Var::PluginReleasePPVar(PP_Var var) {
   if (var.type == PP_VARTYPE_STRING || var.type == PP_VARTYPE_OBJECT) {
-    // TODO(brettw) consider checking that the ID is actually a var ID rather
-    // than some random other resource ID.
-    PP_Resource resource = static_cast<PP_Resource>(var.value.as_id);
-    if (!ResourceTracker::Get()->UnrefResource(resource))
-      DLOG(WARNING) << "ReleaseVar()ing a nonexistant string/object var.";
+    if (!ResourceTracker::Get()->UnrefVar(static_cast<int32>(var.value.as_id)))
+      DLOG(WARNING) << "ReleaseVar()ing a nonexistent string/object var.";
   }
 }
 
@@ -751,6 +746,27 @@ const PPB_Var_Deprecated* Var::GetDeprecatedInterface() {
 
 const PPB_Var* Var::GetInterface() {
   return &var_interface;
+}
+
+StringVar* Var::AsStringVar() {
+  return NULL;
+}
+
+ObjectVar* Var::AsObjectVar() {
+  return NULL;
+}
+
+int32 Var::GetID() {
+  // This should only be called for objects and strings. POD vars like integers
+  // have no identifiers.
+  DCHECK(AsStringVar() || AsObjectVar());
+
+  ResourceTracker *tracker = ResourceTracker::Get();
+  if (var_id_)
+    tracker->AddRefVar(var_id_);
+  else
+    var_id_ = tracker->AddVar(this);
+  return var_id_;
 }
 
 // StringVar -------------------------------------------------------------------
@@ -783,29 +799,33 @@ PP_Var StringVar::StringToPPVar(PluginModule* module,
   ret.type = PP_VARTYPE_STRING;
 
   // The caller takes ownership now.
-  ret.value.as_id = str->GetReference();
+  ret.value.as_id = str->GetID();
   return ret;
 }
 
 // static
 scoped_refptr<StringVar> StringVar::FromPPVar(PP_Var var) {
   if (var.type != PP_VARTYPE_STRING)
-    return scoped_refptr<StringVar>(NULL);
-  PP_Resource resource = static_cast<PP_Resource>(var.value.as_id);
-  return Resource::GetAs<StringVar>(resource);
+    return scoped_refptr<StringVar>();
+  scoped_refptr<Var> var_object(
+      ResourceTracker::Get()->GetVar(static_cast<int32>(var.value.as_id)));
+  if (!var_object)
+    return scoped_refptr<StringVar>();
+  return scoped_refptr<StringVar>(var_object->AsStringVar());
 }
 
 // ObjectVar -------------------------------------------------------------
 
-ObjectVar::ObjectVar(PluginModule* module, NPObject* np_object)
-    : Var(module),
+ObjectVar::ObjectVar(PluginInstance* instance, NPObject* np_object)
+    : Var(instance->module()),
+      instance_(instance),
       np_object_(np_object) {
   WebBindings::retainObject(np_object_);
-  module->AddNPObjectVar(this);
+  instance->AddNPObjectVar(this);
 }
 
 ObjectVar::~ObjectVar() {
-  module()->RemoveNPObjectVar(this);
+  instance_->RemoveNPObjectVar(this);
   WebBindings::releaseObject(np_object_);
 }
 
@@ -814,10 +834,10 @@ ObjectVar* ObjectVar::AsObjectVar() {
 }
 
 // static
-PP_Var ObjectVar::NPObjectToPPVar(PluginModule* module, NPObject* object) {
-  scoped_refptr<ObjectVar> object_var(module->ObjectVarForNPObject(object));
+PP_Var ObjectVar::NPObjectToPPVar(PluginInstance* instance, NPObject* object) {
+  scoped_refptr<ObjectVar> object_var(instance->ObjectVarForNPObject(object));
   if (!object_var)  // No object for this module yet, make a new one.
-    object_var = new ObjectVar(module, object);
+    object_var = new ObjectVar(instance, object);
 
   if (!object_var)
     return PP_MakeUndefined();
@@ -825,7 +845,7 @@ PP_Var ObjectVar::NPObjectToPPVar(PluginModule* module, NPObject* object) {
   // Convert to a PP_Var, GetReference will AddRef for us.
   PP_Var result;
   result.type = PP_VARTYPE_OBJECT;
-  result.value.as_id = object_var->GetReference();
+  result.value.as_id = object_var->GetID();
   return result;
 }
 
@@ -833,8 +853,11 @@ PP_Var ObjectVar::NPObjectToPPVar(PluginModule* module, NPObject* object) {
 scoped_refptr<ObjectVar> ObjectVar::FromPPVar(PP_Var var) {
   if (var.type != PP_VARTYPE_OBJECT)
     return scoped_refptr<ObjectVar>(NULL);
-  PP_Resource resource = static_cast<PP_Resource>(var.value.as_id);
-  return Resource::GetAs<ObjectVar>(resource);
+  scoped_refptr<Var> var_object(
+      ResourceTracker::Get()->GetVar(static_cast<int32>(var.value.as_id)));
+  if (!var_object)
+    return scoped_refptr<ObjectVar>();
+  return scoped_refptr<ObjectVar>(var_object->AsObjectVar());
 }
 
 // TryCatch --------------------------------------------------------------------

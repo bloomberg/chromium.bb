@@ -27,6 +27,7 @@ class PpapiUnittest : public testing::Test,
   virtual void SetUp();
   virtual void TearDown();
 
+  MockPluginDelegate* delegate() { return delegate_.get(); }
   PluginModule* module() const { return module_.get(); }
   PluginInstance* instance() const { return instance_.get(); }
 

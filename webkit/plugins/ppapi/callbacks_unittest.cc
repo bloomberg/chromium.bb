@@ -11,6 +11,7 @@
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/mock_resource.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
 namespace webkit {
@@ -60,7 +61,7 @@ TEST_F(CallbackShutdownTest, AbortOnShutdown) {
   EXPECT_EQ(0U, info_did_run().run_count);
   scoped_refptr<TrackedCompletionCallback> callback_did_run =
       new TrackedCompletionCallback(
-          module()->GetCallbackTracker(),
+          instance()->module()->GetCallbackTracker(),
           0,
           PP_MakeCompletionCallback(&TestCallback, &info_did_run()));
   EXPECT_EQ(0U, info_did_run().run_count);
@@ -72,7 +73,7 @@ TEST_F(CallbackShutdownTest, AbortOnShutdown) {
   EXPECT_EQ(0U, info_did_abort().run_count);
   scoped_refptr<TrackedCompletionCallback> callback_did_abort =
       new TrackedCompletionCallback(
-          module()->GetCallbackTracker(),
+          instance()->module()->GetCallbackTracker(),
           0,
           PP_MakeCompletionCallback(&TestCallback, &info_did_abort()));
   EXPECT_EQ(0U, info_did_abort().run_count);
@@ -85,7 +86,7 @@ TEST_F(CallbackShutdownTest, AbortOnShutdown) {
   EXPECT_EQ(0U, info_didnt_run().run_count);
   scoped_refptr<TrackedCompletionCallback> callback_didnt_run =
       new TrackedCompletionCallback(
-          module()->GetCallbackTracker(),
+          instance()->module()->GetCallbackTracker(),
           0,
           PP_MakeCompletionCallback(&TestCallback, &info_didnt_run()));
   EXPECT_EQ(0U, info_didnt_run().run_count);
@@ -109,7 +110,7 @@ namespace {
 
 class CallbackMockResource : public MockResource {
  public:
-  CallbackMockResource(PluginModule* module) : MockResource(module) {}
+  CallbackMockResource(PluginInstance* instance) : MockResource(instance) {}
   ~CallbackMockResource() {}
 
   PP_Resource SetupForTest() {
@@ -117,19 +118,19 @@ class CallbackMockResource : public MockResource {
     EXPECT_NE(0, resource_id);
 
     callback_did_run_ = new TrackedCompletionCallback(
-        module()->GetCallbackTracker(),
+        instance()->module()->GetCallbackTracker(),
         resource_id,
         PP_MakeCompletionCallback(&TestCallback, &info_did_run_));
     EXPECT_EQ(0U, info_did_run_.run_count);
 
     callback_did_abort_ = new TrackedCompletionCallback(
-        module()->GetCallbackTracker(),
+        instance()->module()->GetCallbackTracker(),
         resource_id,
         PP_MakeCompletionCallback(&TestCallback, &info_did_abort_));
     EXPECT_EQ(0U, info_did_abort_.run_count);
 
     callback_didnt_run_ = new TrackedCompletionCallback(
-        module()->GetCallbackTracker(),
+        instance()->module()->GetCallbackTracker(),
         resource_id,
         PP_MakeCompletionCallback(&TestCallback, &info_didnt_run_));
     EXPECT_EQ(0U, info_didnt_run_.run_count);
@@ -187,13 +188,13 @@ TEST_F(CallbackResourceTest, AbortOnNoRef) {
   // Check that the uncompleted one gets aborted, and that the others don't get
   // called again.
   scoped_refptr<CallbackMockResource> resource_1(
-      new CallbackMockResource(module()));
+      new CallbackMockResource(instance()));
   PP_Resource resource_1_id = resource_1->SetupForTest();
 
   // Also do the same for a second resource, and make sure that unref-ing the
   // first resource doesn't much up the second resource.
   scoped_refptr<CallbackMockResource> resource_2(
-      new CallbackMockResource(module()));
+      new CallbackMockResource(instance()));
   PP_Resource resource_2_id = resource_2->SetupForTest();
 
   // Double-check that resource #1 is still okay.
@@ -222,7 +223,7 @@ TEST_F(CallbackResourceTest, Resurrection) {
   ResourceTracker* resource_tracker = ResourceTracker::Get();
 
   scoped_refptr<CallbackMockResource> resource(
-      new CallbackMockResource(module()));
+      new CallbackMockResource(instance()));
   PP_Resource resource_id = resource->SetupForTest();
 
   // Unref it, spin the message loop to run posted calls, and check that things

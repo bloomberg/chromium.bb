@@ -61,12 +61,12 @@ void Buffer::Unmap() {
 
 namespace {
 
-PP_Resource Create(PP_Module module_id, uint32_t size) {
+PP_Resource Create(PP_Instance instance, uint32_t size) {
   PP_Resource result = 0;
   int32_t shm_handle = -1;
   PluginDispatcher::Get()->Send(
       new PpapiHostMsg_PPBBuffer_Create(
-          INTERFACE_ID_PPB_BUFFER, module_id, size,
+          INTERFACE_ID_PPB_BUFFER, instance, size,
           &result, &shm_handle));
   if (!result)
     return 0;
@@ -141,11 +141,11 @@ bool PPB_Buffer_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void PPB_Buffer_Proxy::OnMsgCreate(PP_Module module,
+void PPB_Buffer_Proxy::OnMsgCreate(PP_Instance instance,
                                    uint32_t size,
                                    PP_Resource* result_resource,
                                    int* result_shm_handle) {
-  *result_resource = ppb_buffer_target()->Create(module, size);
+  *result_resource = ppb_buffer_target()->Create(instance, size);
   // TODO(brettw) set the shm handle from a trusted interface.
   *result_shm_handle = 0;
 }

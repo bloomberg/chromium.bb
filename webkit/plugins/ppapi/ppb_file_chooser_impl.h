@@ -23,7 +23,7 @@ class PPB_FileRef_Impl;
 class PPB_FileChooser_Impl : public Resource {
  public:
   PPB_FileChooser_Impl(PluginInstance* instance,
-              const PP_FileChooserOptions_Dev* options);
+                       const PP_FileChooserOptions_Dev* options);
   virtual ~PPB_FileChooser_Impl();
 
   // Returns a pointer to the interface implementing PPB_FileChooser that is
@@ -41,7 +41,6 @@ class PPB_FileChooser_Impl : public Resource {
   scoped_refptr<PPB_FileRef_Impl> GetNextChosenFile();
 
  private:
-  PluginDelegate* delegate_;
   PP_FileChooserMode_Dev mode_;
   std::string accept_mime_types_;
   PP_CompletionCallback completion_callback_;

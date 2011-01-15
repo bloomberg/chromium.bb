@@ -75,7 +75,7 @@ const PPB_FileSystem_Dev ppb_filesystem = {
 
 PPB_FileSystem_Impl::PPB_FileSystem_Impl(PluginInstance* instance,
                                          PP_FileSystemType_Dev type)
-    : Resource(instance->module()),
+    : Resource(instance),
       instance_(instance),
       type_(type),
       opened_(false) {

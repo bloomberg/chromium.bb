@@ -50,6 +50,12 @@ int64 PluginVarTracker::MakeString(const std::string& str) {
   return static_cast<int64>(reinterpret_cast<intptr_t>(out));
 }
 
+int64 PluginVarTracker::MakeString(const char* str, uint32_t len) {
+  RefCountedString* out = new RefCountedString(str, len);
+  out->AddRef();
+  return static_cast<int64>(reinterpret_cast<intptr_t>(out));
+}
+
 std::string PluginVarTracker::GetString(const PP_Var& var) const {
   return PluginStringFromID(var.value.as_id)->value();
 }

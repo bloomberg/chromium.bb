@@ -15,14 +15,15 @@ namespace proxy {
 
 namespace {
 
-char* UTF16ToCharSet(const uint16_t* utf16, uint32_t utf16_len,
+char* UTF16ToCharSet(PP_Instance instance,
+                     const uint16_t* utf16, uint32_t utf16_len,
                      const char* output_char_set,
                      PP_CharSet_ConversionError on_error,
                      uint32_t* output_length) {
   bool output_is_success = false;
   std::string result;
   PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBCharSet_UTF16ToCharSet(
-      INTERFACE_ID_PPB_CHAR_SET,
+      INTERFACE_ID_PPB_CHAR_SET, instance,
       string16(reinterpret_cast<const char16*>(utf16), utf16_len),
       std::string(output_char_set), static_cast<int32_t>(on_error),
       &result, &output_is_success));
@@ -35,14 +36,15 @@ char* UTF16ToCharSet(const uint16_t* utf16, uint32_t utf16_len,
   return ret_val;
 }
 
-uint16_t* CharSetToUTF16(const char* input, uint32_t input_len,
+uint16_t* CharSetToUTF16(PP_Instance instance,
+                         const char* input, uint32_t input_len,
                          const char* input_char_set,
                          PP_CharSet_ConversionError on_error,
                          uint32_t* output_length) {
   bool output_is_success = false;
   string16 result;
   PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBCharSet_CharSetToUTF16(
-      INTERFACE_ID_PPB_CHAR_SET,
+      INTERFACE_ID_PPB_CHAR_SET, instance,
       std::string(input, input_len),
       std::string(input_char_set), static_cast<int32_t>(on_error),
       &result, &output_is_success));
@@ -56,10 +58,10 @@ uint16_t* CharSetToUTF16(const char* input, uint32_t input_len,
   return ret_val;
 }
 
-PP_Var GetDefaultCharSet(PP_Module pp_module) {
+PP_Var GetDefaultCharSet(PP_Instance instance) {
   ReceiveSerializedVarReturnValue result;
   PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBCharSet_GetDefaultCharSet(
-      INTERFACE_ID_PPB_CHAR_SET, pp_module, &result));
+      INTERFACE_ID_PPB_CHAR_SET, instance, &result));
   return result.Return(PluginDispatcher::Get());
 }
 
@@ -102,14 +104,15 @@ bool PPB_CharSet_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void PPB_CharSet_Proxy::OnMsgUTF16ToCharSet(const string16& utf16,
+void PPB_CharSet_Proxy::OnMsgUTF16ToCharSet(PP_Instance instance,
+                                            const string16& utf16,
                                             const std::string& char_set,
                                             int32_t on_error,
                                             std::string* output,
                                             bool* output_is_success) {
   uint32_t output_len = 0;
   char* result = ppb_char_set_target()->UTF16ToCharSet(
-      reinterpret_cast<const uint16_t*>(utf16.c_str()),
+      instance, reinterpret_cast<const uint16_t*>(utf16.c_str()),
       static_cast<uint32_t>(utf16.size()),
       char_set.c_str(), static_cast<PP_CharSet_ConversionError>(on_error),
       &output_len);
@@ -122,14 +125,15 @@ void PPB_CharSet_Proxy::OnMsgUTF16ToCharSet(const string16& utf16,
   }
 }
 
-void PPB_CharSet_Proxy::OnMsgCharSetToUTF16(const std::string& input,
+void PPB_CharSet_Proxy::OnMsgCharSetToUTF16(PP_Instance instance,
+                                            const std::string& input,
                                             const std::string& char_set,
                                             int32_t on_error,
                                             string16* output,
                                             bool* output_is_success) {
   uint32_t output_len = 0;
   uint16_t* result = ppb_char_set_target()->CharSetToUTF16(
-      input.c_str(), static_cast<uint32_t>(input.size()),
+      instance, input.c_str(), static_cast<uint32_t>(input.size()),
       char_set.c_str(), static_cast<PP_CharSet_ConversionError>(on_error),
       &output_len);
   if (result) {
@@ -142,10 +146,10 @@ void PPB_CharSet_Proxy::OnMsgCharSetToUTF16(const std::string& input,
 }
 
 void PPB_CharSet_Proxy::OnMsgGetDefaultCharSet(
-    PP_Module module,
+    PP_Instance instance,
     SerializedVarReturnValue result) {
   result.Return(dispatcher(),
-                ppb_char_set_target()->GetDefaultCharSet(module));
+                ppb_char_set_target()->GetDefaultCharSet(instance));
 }
 
 const PPB_Core* PPB_CharSet_Proxy::GetCoreInterface() {

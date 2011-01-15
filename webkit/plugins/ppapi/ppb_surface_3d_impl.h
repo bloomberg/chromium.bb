@@ -30,9 +30,6 @@ class PPB_Surface3D_Impl : public Resource {
   bool Init(PP_Config3D_Dev config,
             const int32_t* attrib_list);
 
-  PluginInstance* instance() const {
-    return instance_;
-  }
   PluginDelegate::PlatformContext3D* context() const {
     return context_;
   }
@@ -58,8 +55,6 @@ class PPB_Surface3D_Impl : public Resource {
   // Called when SwapBuffers is complete.
   void OnSwapBuffers();
 
-  // Plugin instance this surface is associated with.
-  PluginInstance* instance_;
   bool bound_to_instance_;
 
   // True when the page's SwapBuffers has been issued but not returned yet.

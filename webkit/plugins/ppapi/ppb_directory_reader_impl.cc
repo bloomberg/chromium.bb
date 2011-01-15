@@ -49,7 +49,8 @@ PP_Resource Create(PP_Resource directory_ref_id) {
   if (!directory_ref)
     return 0;
 
-  PPB_DirectoryReader_Impl* reader = new PPB_DirectoryReader_Impl(directory_ref);
+  PPB_DirectoryReader_Impl* reader =
+      new PPB_DirectoryReader_Impl(directory_ref);
   return reader->GetReference();
 }
 
@@ -78,7 +79,7 @@ const PPB_DirectoryReader_Dev ppb_directoryreader = {
 
 PPB_DirectoryReader_Impl::PPB_DirectoryReader_Impl(
     PPB_FileRef_Impl* directory_ref)
-    : Resource(directory_ref->module()),
+    : Resource(directory_ref->instance()),
       directory_ref_(directory_ref),
       has_more_(true),
       entry_(NULL) {
@@ -149,7 +150,7 @@ bool PPB_DirectoryReader_Impl::FillUpEntry() {
     if (entry_->file_ref)
       ResourceTracker::Get()->UnrefResource(entry_->file_ref);
     PPB_FileRef_Impl* file_ref =
-        new PPB_FileRef_Impl(module(), directory_ref_->GetFileSystem(),
+        new PPB_FileRef_Impl(instance(), directory_ref_->GetFileSystem(),
                              FilePathStringToUTF8String(dir_entry.name));
     entry_->file_ref = file_ref->GetReference();
     entry_->file_type =

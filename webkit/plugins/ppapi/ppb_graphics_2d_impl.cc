@@ -14,13 +14,11 @@
 #include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 
@@ -119,8 +117,8 @@ PP_Resource Create(PP_Instance instance_id,
   if (!instance)
     return 0;
 
-  scoped_refptr<PPB_Graphics2D_Impl> context(new PPB_Graphics2D_Impl(
-      instance->module()));
+  scoped_refptr<PPB_Graphics2D_Impl> context(
+      new PPB_Graphics2D_Impl(instance));
   if (!context->Init(size->width, size->height, PPBoolToBool(is_always_opaque)))
     return 0;
   return context->GetReference();
@@ -217,8 +215,8 @@ struct PPB_Graphics2D_Impl::QueuedOperation {
   scoped_refptr<PPB_ImageData_Impl> replace_image;
 };
 
-PPB_Graphics2D_Impl::PPB_Graphics2D_Impl(PluginModule* module)
-    : Resource(module),
+PPB_Graphics2D_Impl::PPB_Graphics2D_Impl(PluginInstance* instance)
+    : Resource(instance),
       bound_instance_(NULL),
       flushed_any_data_(false),
       offscreen_flush_pending_(false),
@@ -235,7 +233,7 @@ const PPB_Graphics2D* PPB_Graphics2D_Impl::GetInterface() {
 
 bool PPB_Graphics2D_Impl::Init(int width, int height, bool is_always_opaque) {
   // The underlying PPB_ImageData_Impl will validate the dimensions.
-  image_data_ = new PPB_ImageData_Impl(module());
+  image_data_ = new PPB_ImageData_Impl(instance());
   if (!image_data_->Init(PPB_ImageData_Impl::GetNativeImageDataFormat(),
                          width, height, true) ||
       !image_data_->Map()) {

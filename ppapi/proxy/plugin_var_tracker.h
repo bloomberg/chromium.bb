@@ -37,6 +37,7 @@ class PluginVarTracker {
 
   // Allocates a string and returns the ID of it. The refcount will be 1.
   int64_t MakeString(const std::string& str);
+  int64_t MakeString(const char* str, uint32_t len);
 
   // Returns the string associated with the given string var. The var must be
   // of type string and must be valid or this function will crash.

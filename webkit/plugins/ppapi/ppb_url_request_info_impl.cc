@@ -81,12 +81,12 @@ bool AreValidHeaders(const std::string& headers) {
   return true;
 }
 
-PP_Resource Create(PP_Module module_id) {
-  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
-  if (!module)
+PP_Resource Create(PP_Instance instance_id) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
     return 0;
 
-  PPB_URLRequestInfo_Impl* request = new PPB_URLRequestInfo_Impl(module);
+  PPB_URLRequestInfo_Impl* request = new PPB_URLRequestInfo_Impl(instance);
 
   return request->GetReference();
 }
@@ -187,8 +187,8 @@ struct PPB_URLRequestInfo_Impl::BodyItem {
   PP_Time expected_last_modified_time;
 };
 
-PPB_URLRequestInfo_Impl::PPB_URLRequestInfo_Impl(PluginModule* module)
-    : Resource(module),
+PPB_URLRequestInfo_Impl::PPB_URLRequestInfo_Impl(PluginInstance* instance)
+    : Resource(instance),
       stream_to_file_(false),
       follow_redirects_(true),
       record_download_progress_(false),

@@ -17,7 +17,7 @@
 namespace webkit {
 namespace ppapi {
 
-class PluginModule;
+class PluginInstance;
 
 class VarObjectClass : public Resource {
  public:
@@ -40,7 +40,7 @@ class VarObjectClass : public Resource {
 
   typedef base::hash_map<std::string, Property> PropertyMap;
 
-  VarObjectClass(PluginModule* module, PP_ClassDestructor destruct,
+  VarObjectClass(PluginInstance* instance, PP_ClassDestructor destruct,
                  PP_ClassFunction invoke, PP_ClassProperty* properties);
   virtual ~VarObjectClass();
 

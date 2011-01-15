@@ -55,7 +55,7 @@ PP_Resource Create(PP_Resource file_system_id, const char* path) {
   TrimTrailingSlash(&validated_path);
 
   PPB_FileRef_Impl* file_ref =
-      new PPB_FileRef_Impl(file_system->instance()->module(),
+      new PPB_FileRef_Impl(file_system->instance(),
                            file_system, validated_path);
   return file_ref->GetReference();
 }
@@ -77,7 +77,8 @@ PP_Var GetName(PP_Resource file_ref_id) {
       Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
   if (!file_ref)
     return PP_MakeUndefined();
-  return StringVar::StringToPPVar(file_ref->module(), file_ref->GetName());
+  return StringVar::StringToPPVar(file_ref->instance()->module(),
+                                  file_ref->GetName());
 }
 
 PP_Var GetPath(PP_Resource file_ref_id) {
@@ -89,7 +90,8 @@ PP_Var GetPath(PP_Resource file_ref_id) {
   if (file_ref->GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL)
     return PP_MakeUndefined();
 
-  return StringVar::StringToPPVar(file_ref->module(), file_ref->GetPath());
+  return StringVar::StringToPPVar(file_ref->instance()->module(),
+                                  file_ref->GetPath());
 }
 
 PP_Resource GetParent(PP_Resource file_ref_id) {
@@ -116,7 +118,8 @@ int32_t MakeDirectory(PP_Resource directory_ref_id,
   if (!directory_ref)
     return PP_ERROR_BADRESOURCE;
 
-  scoped_refptr<PPB_FileSystem_Impl> file_system = directory_ref->GetFileSystem();
+  scoped_refptr<PPB_FileSystem_Impl> file_system =
+      directory_ref->GetFileSystem();
   if (!file_system || !file_system->opened() ||
       (file_system->type() == PP_FILESYSTEMTYPE_EXTERNAL))
     return PP_ERROR_NOACCESS;
@@ -253,17 +256,18 @@ PPB_FileRef_Impl::PPB_FileRef_Impl()
       file_system_(NULL) {
 }
 
-PPB_FileRef_Impl::PPB_FileRef_Impl(PluginModule* module,
-                 scoped_refptr<PPB_FileSystem_Impl> file_system,
-                 const std::string& validated_path)
-    : Resource(module),
+PPB_FileRef_Impl::PPB_FileRef_Impl(
+    PluginInstance* instance,
+    scoped_refptr<PPB_FileSystem_Impl> file_system,
+    const std::string& validated_path)
+    : Resource(instance),
       file_system_(file_system),
       virtual_path_(validated_path) {
 }
 
-PPB_FileRef_Impl::PPB_FileRef_Impl(PluginModule* module,
-                 const FilePath& external_file_path)
-    : Resource(module),
+PPB_FileRef_Impl::PPB_FileRef_Impl(PluginInstance* instance,
+                                   const FilePath& external_file_path)
+    : Resource(instance),
       file_system_(NULL),
       system_path_(external_file_path) {
 }
@@ -317,7 +321,7 @@ scoped_refptr<PPB_FileRef_Impl> PPB_FileRef_Impl::GetParent() {
     pos++;
   std::string parent_path = virtual_path_.substr(0, pos);
 
-  PPB_FileRef_Impl* parent_ref = new PPB_FileRef_Impl(module(), file_system_,
+  PPB_FileRef_Impl* parent_ref = new PPB_FileRef_Impl(instance(), file_system_,
                                                       parent_path);
   return parent_ref;
 }

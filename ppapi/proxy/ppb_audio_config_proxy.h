@@ -6,7 +6,7 @@
 #define PPAPI_PROXY_PPB_AUDIO_CONFIG_PROXY_H_
 
 #include "base/basictypes.h"
-#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
@@ -31,7 +31,7 @@ class PPB_AudioConfig_Proxy : public InterfaceProxy {
 
  private:
   // Message handlers.
-  void OnMsgCreateStereo16Bit(PP_Module module,
+  void OnMsgCreateStereo16Bit(PP_Instance instance,
                               int32_t sample_rate,
                               uint32_t sample_frame_count,
                               PP_Resource* result);

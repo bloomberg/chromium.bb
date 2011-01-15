@@ -28,12 +28,14 @@ Buffer_Dev::Buffer_Dev(const Buffer_Dev& other)
       size_(other.size_) {
 }
 
-Buffer_Dev::Buffer_Dev(uint32_t size) : data_(NULL), size_(0) {
+Buffer_Dev::Buffer_Dev(Instance* instance, uint32_t size)
+    : data_(NULL),
+      size_(0) {
   if (!has_interface<PPB_Buffer_Dev>())
     return;
 
   PassRefFromConstructor(get_interface<PPB_Buffer_Dev>()->Create(
-      Module::Get()->pp_module(), size));
+      instance->pp_instance(), size));
   if (!get_interface<PPB_Buffer_Dev>()->Describe(pp_resource(), &size_) ||
       !(data_ = get_interface<PPB_Buffer_Dev>()->Map(pp_resource())))
     *this = Buffer_Dev();

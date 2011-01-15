@@ -40,7 +40,7 @@ PP_Bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
   return supported;
 }
 
-PP_Resource Create(PP_Module module_id,
+PP_Resource Create(PP_Instance instance,
                    PP_ImageDataFormat format,
                    const PP_Size* size,
                    PP_Bool init_to_zero) {
@@ -49,7 +49,7 @@ PP_Resource Create(PP_Module module_id,
   ImageHandle image_handle = ImageData::NullHandle;
   PluginDispatcher::Get()->Send(
       new PpapiHostMsg_PPBImageData_Create(
-          INTERFACE_ID_PPB_IMAGE_DATA, module_id, format, *size, init_to_zero,
+          INTERFACE_ID_PPB_IMAGE_DATA, instance, format, *size, init_to_zero,
           &result, &image_data_desc, &image_handle));
 
   if (result && image_data_desc.size() == sizeof(PP_ImageDataDesc)) {
@@ -143,7 +143,7 @@ void PPB_ImageData_Proxy::OnMsgIsImageDataFormatSupported(int32 format,
       static_cast<PP_ImageDataFormat>(format));
 }
 
-void PPB_ImageData_Proxy::OnMsgCreate(PP_Module module,
+void PPB_ImageData_Proxy::OnMsgCreate(PP_Instance instance,
                                       int32_t format,
                                       const PP_Size& size,
                                       PP_Bool init_to_zero,
@@ -151,7 +151,7 @@ void PPB_ImageData_Proxy::OnMsgCreate(PP_Module module,
                                       std::string* image_data_desc,
                                       ImageHandle* result_image_handle) {
   *result = ppb_image_data_target()->Create(
-      module, static_cast<PP_ImageDataFormat>(format), &size, init_to_zero);
+      instance, static_cast<PP_ImageDataFormat>(format), &size, init_to_zero);
   *result_image_handle = ImageData::NullHandle;
   if (*result) {
     // The ImageDesc is just serialized as a string.

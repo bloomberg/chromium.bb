@@ -23,7 +23,7 @@ namespace ppapi {
 
 class PPB_ImageData_Impl : public Resource {
  public:
-  explicit PPB_ImageData_Impl(PluginModule* module);
+  explicit PPB_ImageData_Impl(PluginInstance* instance);
   virtual ~PPB_ImageData_Impl();
 
   int width() const { return width_; }

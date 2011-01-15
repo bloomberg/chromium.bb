@@ -18,7 +18,7 @@ class PluginInstance;
 
 class PPB_Buffer_Impl : public Resource {
  public:
-  explicit PPB_Buffer_Impl(PluginModule* module);
+  explicit PPB_Buffer_Impl(PluginInstance* instance);
   virtual ~PPB_Buffer_Impl();
 
   uint32_t size() const { return size_; }

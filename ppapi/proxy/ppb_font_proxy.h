@@ -6,7 +6,7 @@
 #define PPAPI_PROXY_PPB_FONT_PROXY_H_
 
 #include "base/basictypes.h"
-#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
@@ -35,7 +35,7 @@ class PPB_Font_Proxy : public InterfaceProxy {
 
  private:
   // Message handlers.
-  void OnMsgCreate(PP_Module pp_module,
+  void OnMsgCreate(PP_Instance instance,
                    const SerializedFontDescription& in_description,
                    PP_Resource* result,
                    SerializedFontDescription* out_description,

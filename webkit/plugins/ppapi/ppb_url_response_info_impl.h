@@ -22,7 +22,7 @@ class PPB_FileRef_Impl;
 
 class PPB_URLResponseInfo_Impl : public Resource {
  public:
-  explicit PPB_URLResponseInfo_Impl(PluginModule* module);
+  explicit PPB_URLResponseInfo_Impl(PluginInstance* instance);
   virtual ~PPB_URLResponseInfo_Impl();
 
   // Returns a pointer to the interface implementing PPB_URLResponseInfo that

@@ -38,7 +38,7 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnMsgGetNativeImageDataFormat(int32* result);
   void OnMsgIsImageDataFormatSupported(int32 format, PP_Bool* result);
-  void OnMsgCreate(PP_Module module,
+  void OnMsgCreate(PP_Instance instance,
                    int32_t format,
                    const PP_Size& size,
                    PP_Bool init_to_zero,

@@ -19,11 +19,12 @@ template <> const char* interface_name<PPB_Transport_Dev>() {
 
 }  // namespace
 
-Transport_Dev::Transport_Dev(const char* name,
+Transport_Dev::Transport_Dev(Instance* instance,
+                             const char* name,
                              const char* proto) {
   if (has_interface<PPB_Transport_Dev>())
     PassRefFromConstructor(get_interface<PPB_Transport_Dev>()->CreateTransport(
-        Module::Get()->pp_module(), name, proto));
+        instance->pp_instance(), name, proto));
 }
 
 }  // namespace pp

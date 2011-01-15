@@ -296,12 +296,14 @@ PepperPluginRegistry::PepperPluginRegistry() {
     const FilePath& path = plugins[i].path;
     scoped_refptr<webkit::ppapi::PluginModule> module(
         new webkit::ppapi::PluginModule(this));
+    // Must call this before bailing out later since the PluginModule's
+    // destructor will call the corresponding Remove in the "continue" case.
+    AddLiveModule(path, module);
     if (!module->InitAsLibrary(path)) {
       DLOG(ERROR) << "Failed to load pepper module: " << path.value();
       continue;
     }
     module->set_name(plugins[i].name);
     preloaded_modules_[path] = module;
-    AddLiveModule(path, module);
   }
 }

@@ -28,14 +28,6 @@ namespace ppapi {
 
 namespace {
 
-PluginInstance* GetSomeInstance(PP_Module pp_module) {
-  PluginModule* module = ResourceTracker::Get()->GetModule(pp_module);
-  if (!module)
-    return NULL;
-
-  return module->GetSomeInstance();
-}
-
 void SetInstanceAlwaysOnTop(PP_Instance pp_instance, bool on_top) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
@@ -43,8 +35,8 @@ void SetInstanceAlwaysOnTop(PP_Instance pp_instance, bool on_top) {
   instance->set_always_on_top(on_top);
 }
 
-PP_Var GetProxyForURL(PP_Module pp_module, const char* url) {
-  PluginInstance* instance = GetSomeInstance(pp_module);
+PP_Var GetProxyForURL(PP_Instance pp_instance, const char* url) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
     return PP_MakeUndefined();
 
@@ -66,11 +58,11 @@ FilePath GetFilePathFromUTF8(const char* path) {
 #endif
 }
 
-int32_t OpenModuleLocalFile(PP_Module module,
+int32_t OpenModuleLocalFile(PP_Instance pp_instance,
                             const char* path,
                             int32_t mode,
                             PP_FileHandle* file) {
-  PluginInstance* instance = GetSomeInstance(module);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
@@ -106,10 +98,10 @@ int32_t OpenModuleLocalFile(PP_Module module,
 }
 
 
-int32_t RenameModuleLocalFile(PP_Module module,
+int32_t RenameModuleLocalFile(PP_Instance pp_instance,
                               const char* path_from,
                               const char* path_to) {
-  PluginInstance* instance = GetSomeInstance(module);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
@@ -120,10 +112,10 @@ int32_t RenameModuleLocalFile(PP_Module module,
   return PlatformFileErrorToPepperError(result);
 }
 
-int32_t DeleteModuleLocalFileOrDir(PP_Module module,
+int32_t DeleteModuleLocalFileOrDir(PP_Instance pp_instance,
                                    const char* path,
                                    bool recursive) {
-  PluginInstance* instance = GetSomeInstance(module);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
@@ -133,8 +125,8 @@ int32_t DeleteModuleLocalFileOrDir(PP_Module module,
   return PlatformFileErrorToPepperError(result);
 }
 
-int32_t CreateModuleLocalDir(PP_Module module, const char* path) {
-  PluginInstance* instance = GetSomeInstance(module);
+int32_t CreateModuleLocalDir(PP_Instance pp_instance, const char* path) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
@@ -143,10 +135,10 @@ int32_t CreateModuleLocalDir(PP_Module module, const char* path) {
   return PlatformFileErrorToPepperError(result);
 }
 
-int32_t QueryModuleLocalFile(PP_Module module,
+int32_t QueryModuleLocalFile(PP_Instance pp_instance,
                              const char* path,
                              PP_FileInfo_Dev* info) {
-  PluginInstance* instance = GetSomeInstance(module);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
@@ -167,10 +159,10 @@ int32_t QueryModuleLocalFile(PP_Module module,
   return PlatformFileErrorToPepperError(result);
 }
 
-int32_t GetModuleLocalDirContents(PP_Module module,
+int32_t GetModuleLocalDirContents(PP_Instance pp_instance,
                                   const char* path,
                                   PP_DirContents_Dev** contents) {
-  PluginInstance* instance = GetSomeInstance(module);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
@@ -205,7 +197,7 @@ int32_t GetModuleLocalDirContents(PP_Module module,
   return PP_OK;
 }
 
-void FreeModuleLocalDirContents(PP_Module module,
+void FreeModuleLocalDirContents(PP_Instance instance,
                                 PP_DirContents_Dev* contents) {
   DCHECK(contents);
   for (int32_t i = 0; i < contents->count; ++i) {
@@ -305,8 +297,7 @@ const PPB_Flash_NetConnector ppb_flash_netconnector = {
 
 PPB_Flash_NetConnector_Impl::PPB_Flash_NetConnector_Impl(
     PluginInstance* instance)
-    : Resource(instance->module()),
-      instance_(instance) {
+    : Resource(instance) {
 }
 
 PPB_Flash_NetConnector_Impl::~PPB_Flash_NetConnector_Impl() {

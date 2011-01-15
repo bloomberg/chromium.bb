@@ -55,7 +55,6 @@
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/plugin_object.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_audio_impl.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
@@ -367,17 +366,6 @@ PluginModule::PluginModule(PluginDelegate::ModuleLifetime* lifetime_delegate)
 }
 
 PluginModule::~PluginModule() {
-  // Free all the plugin objects. This will automatically clear the back-
-  // pointer from the NPObject so WebKit can't call into the plugin any more.
-  //
-  // Swap out the set so we can delete from it (the objects will try to
-  // unregister themselves inside the delete call).
-  PluginObjectSet plugin_object_copy;
-  live_plugin_objects_.swap(plugin_object_copy);
-  for (PluginObjectSet::iterator i = live_plugin_objects_.begin();
-       i != live_plugin_objects_.end(); ++i)
-    delete *i;
-
   // When the module is being deleted, there should be no more instances still
   // holding a reference to us.
   DCHECK(instances_.empty());
@@ -472,46 +460,6 @@ void PluginModule::InstanceDeleted(PluginInstance* instance) {
   if (out_of_process_proxy_.get())
     out_of_process_proxy_->RemoveInstance(instance->pp_instance());
   instances_.erase(instance);
-}
-
-void PluginModule::AddNPObjectVar(ObjectVar* object_var) {
-  DCHECK(np_object_to_object_var_.find(object_var->np_object()) ==
-         np_object_to_object_var_.end()) << "ObjectVar already in map";
-  np_object_to_object_var_[object_var->np_object()] = object_var;
-}
-
-void PluginModule::RemoveNPObjectVar(ObjectVar* object_var) {
-  NPObjectToObjectVarMap::iterator found =
-      np_object_to_object_var_.find(object_var->np_object());
-  if (found == np_object_to_object_var_.end()) {
-    NOTREACHED() << "ObjectVar not registered.";
-    return;
-  }
-  if (found->second != object_var) {
-    NOTREACHED() << "ObjectVar doesn't match.";
-    return;
-  }
-  np_object_to_object_var_.erase(found);
-}
-
-ObjectVar* PluginModule::ObjectVarForNPObject(NPObject* np_object) const {
-  NPObjectToObjectVarMap::const_iterator found =
-      np_object_to_object_var_.find(np_object);
-  if (found == np_object_to_object_var_.end())
-    return NULL;
-  return found->second;
-}
-
-void PluginModule::AddPluginObject(PluginObject* plugin_object) {
-  DCHECK(live_plugin_objects_.find(plugin_object) ==
-         live_plugin_objects_.end());
-  live_plugin_objects_.insert(plugin_object);
-}
-
-void PluginModule::RemovePluginObject(PluginObject* plugin_object) {
-  // Don't actually verify that the object is in the set since during module
-  // deletion we'll be in the process of freeing them.
-  live_plugin_objects_.erase(plugin_object);
 }
 
 scoped_refptr<CallbackTracker> PluginModule::GetCallbackTracker() {

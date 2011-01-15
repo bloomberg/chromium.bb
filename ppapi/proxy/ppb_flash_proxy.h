@@ -43,31 +43,31 @@ class PPB_Flash_Proxy : public InterfaceProxy {
                                    bool on_top);
   void OnMsgDrawGlyphs(const pp::proxy::PPBFlash_DrawGlyphs_Params& params,
                        bool* result);
-  void OnMsgGetProxyForURL(PP_Module module,
+  void OnMsgGetProxyForURL(PP_Instance instance,
                            const std::string& url,
                            SerializedVarReturnValue result);
-  void OnMsgOpenModuleLocalFile(PP_Module module,
+  void OnMsgOpenModuleLocalFile(PP_Instance instance,
                                 const std::string& path,
                                 int32_t mode,
                                 IPC::PlatformFileForTransit* file_handle,
                                 int32_t* result);
-  void OnMsgRenameModuleLocalFile(PP_Module module,
+  void OnMsgRenameModuleLocalFile(PP_Instance instance,
                                   const std::string& path_from,
                                   const std::string& path_to,
                                   int32_t* result);
-  void OnMsgDeleteModuleLocalFileOrDir(PP_Module module,
+  void OnMsgDeleteModuleLocalFileOrDir(PP_Instance instance,
                                        const std::string& path,
                                        bool recursive,
                                        int32_t* result);
-  void OnMsgCreateModuleLocalDir(PP_Module module,
+  void OnMsgCreateModuleLocalDir(PP_Instance instance,
                                  const std::string& path,
                                  int32_t* result);
-  void OnMsgQueryModuleLocalFile(PP_Module module,
+  void OnMsgQueryModuleLocalFile(PP_Instance instance,
                                  const std::string& path,
                                  PP_FileInfo_Dev* info,
                                  int32_t* result);
   void OnMsgGetModuleLocalDirContents(
-      PP_Module module,
+      PP_Instance instance,
       const std::string& path,
       std::vector<pp::proxy::SerializedDirEntry>* entries,
       int32_t* result);

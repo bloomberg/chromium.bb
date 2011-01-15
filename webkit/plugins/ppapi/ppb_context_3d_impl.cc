@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
 
+#include "base/logging.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -88,7 +89,7 @@ const PPB_Context3D_Dev ppb_context3d = {
 }  // namespace
 
 PPB_Context3D_Impl::PPB_Context3D_Impl(PluginInstance* instance)
-    : Resource(instance->module()),
+    : Resource(instance),
       instance_(instance),
       gles2_impl_(NULL),
       draw_surface_(NULL),

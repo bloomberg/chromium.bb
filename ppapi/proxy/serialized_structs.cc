@@ -63,7 +63,8 @@ void SerializedFontDescription::SetToPPFontDescription(
 }
 
 PPBFlash_DrawGlyphs_Params::PPBFlash_DrawGlyphs_Params()
-    : pp_image_data(0),
+    : instance(0),
+      pp_image_data(0),
       font_desc(),
       color(0) {
 }

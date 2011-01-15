@@ -21,10 +21,10 @@ class PluginModule;
 class PPB_FileRef_Impl : public Resource {
  public:
   PPB_FileRef_Impl();
-  PPB_FileRef_Impl(PluginModule* module,
+  PPB_FileRef_Impl(PluginInstance* instance,
                    scoped_refptr<PPB_FileSystem_Impl> file_system,
                    const std::string& validated_path);
-  PPB_FileRef_Impl(PluginModule* module,
+  PPB_FileRef_Impl(PluginInstance* instance,
                    const FilePath& external_file_path);
   virtual ~PPB_FileRef_Impl();
 

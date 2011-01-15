@@ -15,7 +15,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextRun.h"
 #include "webkit/plugins/ppapi/common.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/string.h"
 #include "webkit/plugins/ppapi/var.h"
@@ -109,16 +109,16 @@ bool PPTextRunToWebTextRun(const PP_TextRun_Dev* run, WebTextRun* output) {
   return true;
 }
 
-PP_Resource Create(PP_Module module_id,
+PP_Resource Create(PP_Instance instance_id,
                    const PP_FontDescription_Dev* description) {
-  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
-  if (!module)
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
     return 0;
 
   if (!IsPPFontDescriptionValid(*description))
     return 0;
 
-  scoped_refptr<PPB_Font_Impl> font(new PPB_Font_Impl(module, *description));
+  scoped_refptr<PPB_Font_Impl> font(new PPB_Font_Impl(instance, *description));
   return font->GetReference();
 }
 
@@ -186,9 +186,9 @@ const PPB_Font_Dev ppb_font = {
 
 }  // namespace
 
-PPB_Font_Impl::PPB_Font_Impl(PluginModule* module,
+PPB_Font_Impl::PPB_Font_Impl(PluginInstance* instance,
                              const PP_FontDescription_Dev& desc)
-    : Resource(module) {
+    : Resource(instance) {
   WebFontDescription web_font_desc = PPFontDescToWebFontDesc(desc);
   font_.reset(WebFont::create(web_font_desc));
 }
@@ -214,7 +214,7 @@ bool PPB_Font_Impl::Describe(PP_FontDescription_Dev* description,
 
   // While converting the other way in PPFontDescToWebFontDesc we validated
   // that the enums can be casted.
-  description->face = StringVar::StringToPPVar(module(),
+  description->face = StringVar::StringToPPVar(instance()->module(),
                                                UTF16ToUTF8(web_desc.family));
   description->family = static_cast<PP_FontFamily_Dev>(web_desc.genericFamily);
   description->size = static_cast<uint32_t>(web_desc.size);

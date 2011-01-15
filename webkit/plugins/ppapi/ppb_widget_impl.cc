@@ -69,8 +69,7 @@ const PPB_Widget_Dev ppb_widget = {
 }  // namespace
 
 PPB_Widget_Impl::PPB_Widget_Impl(PluginInstance* instance)
-    : Resource(instance->module()),
-      instance_(instance) {
+    : Resource(instance) {
 }
 
 PPB_Widget_Impl::~PPB_Widget_Impl() {
@@ -97,7 +96,7 @@ void PPB_Widget_Impl::SetLocation(const PP_Rect* location) {
 
 void PPB_Widget_Impl::Invalidate(const PP_Rect* dirty) {
   const PPP_Widget_Dev* widget = static_cast<const PPP_Widget_Dev*>(
-      module()->GetPluginInterface(PPP_WIDGET_DEV_INTERFACE));
+      instance()->module()->GetPluginInterface(PPP_WIDGET_DEV_INTERFACE));
   if (!widget)
     return;
   ScopedResourceId resource(this);

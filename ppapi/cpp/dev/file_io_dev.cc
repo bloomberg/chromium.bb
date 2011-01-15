@@ -9,6 +9,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/file_ref_dev.h"
+#include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -23,10 +24,13 @@ template <> const char* interface_name<PPB_FileIO_Dev>() {
 }  // namespace
 
 FileIO_Dev::FileIO_Dev() {
+}
+
+FileIO_Dev::FileIO_Dev(Instance* instance) {
   if (!has_interface<PPB_FileIO_Dev>())
     return;
   PassRefFromConstructor(get_interface<PPB_FileIO_Dev>()->Create(
-      Module::Get()->pp_module()));
+      instance->pp_instance()));
 }
 
 FileIO_Dev::FileIO_Dev(const FileIO_Dev& other)

@@ -28,7 +28,7 @@ class PluginModule;
 
 class PPB_Graphics2D_Impl : public Resource {
  public:
-  PPB_Graphics2D_Impl(PluginModule* module);
+  PPB_Graphics2D_Impl(PluginInstance* instance);
   virtual ~PPB_Graphics2D_Impl();
 
   // Returns a pointer to the interface implementing PPB_ImageData that is

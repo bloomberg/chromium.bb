@@ -24,7 +24,7 @@ class PPB_FileRef_Impl;
 
 class PPB_URLRequestInfo_Impl : public Resource {
  public:
-  explicit PPB_URLRequestInfo_Impl(PluginModule* module);
+  explicit PPB_URLRequestInfo_Impl(PluginInstance* instance);
   virtual ~PPB_URLRequestInfo_Impl();
 
   // Returns a pointer to the interface implementing PPB_URLRequestInfo that is

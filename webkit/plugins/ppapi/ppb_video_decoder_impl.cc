@@ -97,8 +97,7 @@ const PPB_VideoDecoder_Dev ppb_videodecoder = {
 }  // namespace
 
 PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PluginInstance* instance)
-    : Resource(instance->module()),
-      instance_(instance) {
+    : Resource(instance) {
 }
 
 PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() {

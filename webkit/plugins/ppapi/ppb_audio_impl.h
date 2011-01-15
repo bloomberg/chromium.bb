@@ -15,7 +15,6 @@
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/shared_impl/audio_impl.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource.h"
 
@@ -23,11 +22,10 @@ namespace webkit {
 namespace ppapi {
 
 class PluginInstance;
-class PluginModule;
 
 class PPB_AudioConfig_Impl : public Resource {
  public:
-  PPB_AudioConfig_Impl(PluginModule* module,
+  PPB_AudioConfig_Impl(PluginInstance* instance,
                        PP_AudioSampleRate sample_rate,
                        uint32_t sample_frame_count);
   size_t BufferSize();
@@ -50,15 +48,11 @@ class PPB_Audio_Impl : public Resource,
                        public pp::shared_impl::AudioImpl,
                        public PluginDelegate::PlatformAudio::Client {
  public:
-  explicit PPB_Audio_Impl(PluginModule* module, PP_Instance instance_id);
+  explicit PPB_Audio_Impl(PluginInstance* instance);
   virtual ~PPB_Audio_Impl();
 
   static const PPB_Audio* GetInterface();
   static const PPB_AudioTrusted* GetTrustedInterface();
-
-  PP_Instance pp_instance() {
-    return pp_instance_;
-  }
 
   // PPB_Audio implementation.
   bool Init(PluginDelegate* plugin_delegate,
@@ -86,9 +80,6 @@ class PPB_Audio_Impl : public Resource,
 
   // AudioConfig used for creating this Audio object.
   scoped_refptr<PPB_AudioConfig_Impl> config_;
-
-  // Plugin instance that owns this audio object.
-  PP_Instance pp_instance_;
 
   // PluginDelegate audio object that we delegate audio IPC through.
   PluginDelegate::PlatformAudio* audio_;

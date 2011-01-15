@@ -11,6 +11,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/plugins/ppapi/common.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/var.h"
 #include "webkit/glue/webkit_glue.h"
@@ -80,8 +81,8 @@ bool IsRedirect(int32_t status) {
 
 }  // namespace
 
-PPB_URLResponseInfo_Impl::PPB_URLResponseInfo_Impl(PluginModule* module)
-    : Resource(module),
+PPB_URLResponseInfo_Impl::PPB_URLResponseInfo_Impl(PluginInstance* instance)
+    : Resource(instance),
       status_code_(-1) {
 }
 
@@ -101,21 +102,21 @@ PPB_URLResponseInfo_Impl::AsPPB_URLResponseInfo_Impl() {
 PP_Var PPB_URLResponseInfo_Impl::GetProperty(PP_URLResponseProperty property) {
   switch (property) {
     case PP_URLRESPONSEPROPERTY_URL:
-      return StringVar::StringToPPVar(module(), url_);
+      return StringVar::StringToPPVar(instance()->module(), url_);
     case PP_URLRESPONSEPROPERTY_REDIRECTURL:
       if (IsRedirect(status_code_))
-        return StringVar::StringToPPVar(module(), redirect_url_);
+        return StringVar::StringToPPVar(instance()->module(), redirect_url_);
       break;
     case PP_URLRESPONSEPROPERTY_REDIRECTMETHOD:
       if (IsRedirect(status_code_))
-        return StringVar::StringToPPVar(module(), status_text_);
+        return StringVar::StringToPPVar(instance()->module(), status_text_);
       break;
     case PP_URLRESPONSEPROPERTY_STATUSCODE:
       return PP_MakeInt32(status_code_);
     case PP_URLRESPONSEPROPERTY_STATUSLINE:
-      return StringVar::StringToPPVar(module(), status_text_);
+      return StringVar::StringToPPVar(instance()->module(), status_text_);
     case PP_URLRESPONSEPROPERTY_HEADERS:
-      return StringVar::StringToPPVar(module(), headers_);
+      return StringVar::StringToPPVar(instance()->module(), headers_);
   }
   // The default is to return an undefined PP_Var.
   return PP_MakeUndefined();
@@ -136,7 +137,7 @@ bool PPB_URLResponseInfo_Impl::Initialize(const WebURLResponse& response) {
 
   WebString file_path = response.downloadFilePath();
   if (!file_path.isEmpty())
-    body_ = new PPB_FileRef_Impl(module(),
+    body_ = new PPB_FileRef_Impl(instance(),
                                  webkit_glue::WebStringToFilePath(file_path));
   return true;
 }

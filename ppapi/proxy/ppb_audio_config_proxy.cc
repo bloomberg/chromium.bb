@@ -35,12 +35,12 @@ class AudioConfig : public PluginResource {
 
 namespace {
 
-PP_Resource CreateStereo16bit(PP_Module module_id,
+PP_Resource CreateStereo16bit(PP_Instance instance,
                               PP_AudioSampleRate sample_rate,
                               uint32_t sample_frame_count) {
   PP_Resource result = 0;
   PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBAudioConfig_Create(
-      INTERFACE_ID_PPB_AUDIO_CONFIG, module_id,
+      INTERFACE_ID_PPB_AUDIO_CONFIG, instance,
       static_cast<int32_t>(sample_rate), sample_frame_count,
       &result));
   if (!result)
@@ -120,12 +120,12 @@ bool PPB_AudioConfig_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void PPB_AudioConfig_Proxy::OnMsgCreateStereo16Bit(PP_Module module,
+void PPB_AudioConfig_Proxy::OnMsgCreateStereo16Bit(PP_Instance instance,
                                                    int32_t sample_rate,
                                                    uint32_t sample_frame_count,
                                                    PP_Resource* result) {
   *result = ppb_audio_config_target()->CreateStereo16Bit(
-      module, static_cast<PP_AudioSampleRate>(sample_rate),
+      instance, static_cast<PP_AudioSampleRate>(sample_rate),
       sample_frame_count);
 }
 

@@ -11,6 +11,7 @@
 #include "base/shared_memory.h"
 #include "build/build_config.h"
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
@@ -88,6 +89,7 @@ struct PPBFlash_DrawGlyphs_Params {
   PPBFlash_DrawGlyphs_Params();
   ~PPBFlash_DrawGlyphs_Params();
 
+  PP_Instance instance;
   PP_Resource pp_image_data;
   SerializedFontDescription font_desc;
   uint32_t color;

@@ -30,12 +30,11 @@ void ReleaseVar(PP_Var var) {
   PluginDispatcher::Get()->plugin_var_tracker()->Release(var);
 }
 
-PP_Var VarFromUtf8(PP_Module module_id, const char* data, uint32_t len) {
+PP_Var VarFromUtf8(PP_Module module, const char* data, uint32_t len) {
   PP_Var ret;
   ret.type = PP_VARTYPE_STRING;
-  // TODO(brettw) avoid this extra copy.
   ret.value.as_id = PluginDispatcher::Get()->plugin_var_tracker()->MakeString(
-      std::string(data, len));
+      data, len);
   return ret;
 }
 
@@ -45,10 +44,9 @@ const char* VarToUtf8(PP_Var var, uint32_t* len) {
   if (str) {
     *len = static_cast<uint32_t>(str->size());
     return str->c_str();
-  } else {
-    *len = 0;
-    return NULL;
   }
+  *len = 0;
+  return NULL;
 }
 
 bool HasProperty(PP_Var var,
@@ -197,7 +195,7 @@ bool IsInstanceOf(PP_Var var,
   return PPBoolToBool(result);
 }
 
-PP_Var CreateObject(PP_Module module_id,
+PP_Var CreateObject(PP_Instance instance,
                     const PPP_Class_Deprecated* ppp_class,
                     void* ppp_class_data) {
   Dispatcher* dispatcher = PluginDispatcher::Get();
@@ -206,7 +204,7 @@ PP_Var CreateObject(PP_Module module_id,
   int64 data_int =
       static_cast<int64>(reinterpret_cast<intptr_t>(ppp_class_data));
   dispatcher->Send(new PpapiHostMsg_PPBVar_CreateObjectDeprecated(
-      INTERFACE_ID_PPB_VAR_DEPRECATED, module_id, class_int, data_int,
+      INTERFACE_ID_PPB_VAR_DEPRECATED, instance, class_int, data_int,
       &result));
   return result.Return(dispatcher);
 }
@@ -377,12 +375,12 @@ void PPB_Var_Deprecated_Proxy::OnMsgIsInstanceOfDeprecated(
 }
 
 void PPB_Var_Deprecated_Proxy::OnMsgCreateObjectDeprecated(
-    PP_Module module_id,
+    PP_Instance instance,
     int64 ppp_class,
     int64 class_data,
     SerializedVarReturnValue result) {
   result.Return(dispatcher(), PPP_Class_Proxy::CreateProxiedObject(
-      ppb_var_target(), dispatcher(), module_id, ppp_class, class_data));
+      ppb_var_target(), dispatcher(), instance, ppp_class, class_data));
 }
 
 }  // namespace proxy

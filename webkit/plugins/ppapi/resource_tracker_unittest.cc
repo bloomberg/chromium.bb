@@ -4,7 +4,10 @@
 
 #include "webkit/plugins/ppapi/ppapi_unittest.h"
 
+#include "ppapi/c/ppp_instance.h"
+#include "webkit/plugins/ppapi/mock_plugin_delegate.h"
 #include "webkit/plugins/ppapi/mock_resource.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
 namespace webkit {
@@ -16,7 +19,7 @@ class TrackedMockResource : public MockResource {
  public:
   static int tracked_objects_alive;
 
-  TrackedMockResource(PluginModule* module) : MockResource(module) {
+  TrackedMockResource(PluginInstance* instance) : MockResource(instance) {
     tracked_objects_alive++;
   }
   ~TrackedMockResource() {
@@ -53,7 +56,7 @@ TEST_F(ResourceTrackerTest, Ref) {
   EXPECT_EQ(0u, tracker().GetLiveObjectsForModule(module()));
   {
     scoped_refptr<TrackedMockResource> new_resource(
-        new TrackedMockResource(module()));
+        new TrackedMockResource(instance()));
     ASSERT_EQ(1, TrackedMockResource::tracked_objects_alive);
 
     // Since we haven't gotten a PP_Resource, it's not associated with the
@@ -66,7 +69,7 @@ TEST_F(ResourceTrackerTest, Ref) {
   PP_Resource resource_id = 0;
   {
     scoped_refptr<TrackedMockResource> new_resource(
-        new TrackedMockResource(module()));
+        new TrackedMockResource(instance()));
     ASSERT_EQ(1, TrackedMockResource::tracked_objects_alive);
     resource_id = new_resource->GetReference();
     EXPECT_EQ(1u, tracker().GetLiveObjectsForModule(module()));
@@ -87,14 +90,20 @@ TEST_F(ResourceTrackerTest, Ref) {
   ASSERT_EQ(0, TrackedMockResource::tracked_objects_alive);
 }
 
-TEST_F(ResourceTrackerTest, ForceDelete) {
-  // Make two resources.
+TEST_F(ResourceTrackerTest, ForceDeleteWithInstance) {
+  // Make a second instance (the test harness already creates & manages one).
+  scoped_refptr<PluginInstance> instance2(
+      new PluginInstance(delegate(), module(),
+                         static_cast<const PPP_Instance*>(
+                             GetMockInterface(PPP_INSTANCE_INTERFACE))));
+
+  // Make two resources and take refs on behalf of the "plugin" for each.
   scoped_refptr<TrackedMockResource> resource1(
-      new TrackedMockResource(module()));
-  PP_Resource pp_resource1 = resource1->GetReference();
+      new TrackedMockResource(instance2));
+  resource1->GetReference();
   scoped_refptr<TrackedMockResource> resource2(
-      new TrackedMockResource(module()));
-  PP_Resource pp_resource2 = resource2->GetReference();
+      new TrackedMockResource(instance2));
+  resource2->GetReference();
 
   // Keep an "internal" ref to only the first (the PP_Resource also holds a
   // ref to each resource on behalf of the plugin).
@@ -103,12 +112,13 @@ TEST_F(ResourceTrackerTest, ForceDelete) {
   ASSERT_EQ(2, TrackedMockResource::tracked_objects_alive);
   EXPECT_EQ(2u, tracker().GetLiveObjectsForModule(module()));
 
-  // Force delete both refs.
-  tracker().ForceDeletePluginResourceRefs(pp_resource1);
-  tracker().ForceDeletePluginResourceRefs(pp_resource2);
+  // Free the instance, this should release both plugin refs.
+  instance2 = NULL;
   EXPECT_EQ(0u, tracker().GetLiveObjectsForModule(module()));
 
-  // The resource we have a scoped_refptr to should still be alive.
+  // The resource we have a scoped_refptr to should still be alive, but it
+  // should have a NULL instance.
+  ASSERT_FALSE(resource1->instance());
   ASSERT_EQ(1, TrackedMockResource::tracked_objects_alive);
   resource1 = NULL;
   ASSERT_EQ(0, TrackedMockResource::tracked_objects_alive);

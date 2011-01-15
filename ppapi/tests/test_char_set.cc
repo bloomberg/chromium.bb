@@ -32,7 +32,7 @@ std::string TestCharSet::TestUTF16ToCharSet() {
   utf16.push_back(0);
   uint32_t utf8result_len = 0;
   char* utf8result = char_set_interface_->UTF16ToCharSet(
-      &utf16[0], 0, "latin1",
+      instance_->pp_instance(), &utf16[0], 0, "latin1",
       PP_CHARSET_CONVERSIONERROR_SUBSTITUTE, &utf8result_len);
   ASSERT_TRUE(utf8result);
   ASSERT_TRUE(utf8result[0] == 0);
@@ -43,8 +43,8 @@ std::string TestCharSet::TestUTF16ToCharSet() {
   std::string utf8source("Hello, world. \xe4\xbd\xa0\xe5\xa5\xbd");
   utf16 = UTF8ToUTF16(utf8source);
   utf8result = char_set_interface_->UTF16ToCharSet(
-      &utf16[0], static_cast<uint32_t>(utf16.size()), "Utf-8",
-      PP_CHARSET_CONVERSIONERROR_FAIL, &utf8result_len);
+      instance_->pp_instance(), &utf16[0], static_cast<uint32_t>(utf16.size()),
+      "Utf-8", PP_CHARSET_CONVERSIONERROR_FAIL, &utf8result_len);
   ASSERT_TRUE(utf8source == std::string(utf8result, utf8result_len));
   pp::Module::Get()->core()->MemFree(utf8result);
 
@@ -54,15 +54,15 @@ std::string TestCharSet::TestUTF16ToCharSet() {
   // Fail mode.
   utf8result_len = 1234;  // Test that this gets 0'ed on failure.
   utf8result = char_set_interface_->UTF16ToCharSet(
-      &utf16[0], static_cast<uint32_t>(utf16.size()), "latin1",
-      PP_CHARSET_CONVERSIONERROR_FAIL, &utf8result_len);
+      instance_->pp_instance(), &utf16[0], static_cast<uint32_t>(utf16.size()),
+      "latin1", PP_CHARSET_CONVERSIONERROR_FAIL, &utf8result_len);
   ASSERT_TRUE(utf8result_len == 0);
   ASSERT_TRUE(utf8result == NULL);
 
   // Skip mode.
   utf8result = char_set_interface_->UTF16ToCharSet(
-      &utf16[0], static_cast<uint32_t>(utf16.size()), "latin1",
-      PP_CHARSET_CONVERSIONERROR_SKIP, &utf8result_len);
+      instance_->pp_instance(), &utf16[0], static_cast<uint32_t>(utf16.size()),
+      "latin1", PP_CHARSET_CONVERSIONERROR_SKIP, &utf8result_len);
   ASSERT_TRUE(utf8result_len == 2);
   ASSERT_TRUE(utf8result[0] == 'h' && utf8result[1] == 'i' &&
               utf8result[2] == 0);
@@ -70,8 +70,8 @@ std::string TestCharSet::TestUTF16ToCharSet() {
 
   // Substitute mode.
   utf8result = char_set_interface_->UTF16ToCharSet(
-      &utf16[0], static_cast<uint32_t>(utf16.size()), "latin1",
-      PP_CHARSET_CONVERSIONERROR_SUBSTITUTE, &utf8result_len);
+      instance_->pp_instance(), &utf16[0], static_cast<uint32_t>(utf16.size()),
+      "latin1", PP_CHARSET_CONVERSIONERROR_SUBSTITUTE, &utf8result_len);
   ASSERT_TRUE(utf8result_len == 3);
   ASSERT_TRUE(utf8result[0] == 'h' && utf8result[1] == '?' &&
               utf8result[2] == 'i' && utf8result[3] == 0);
@@ -82,8 +82,8 @@ std::string TestCharSet::TestUTF16ToCharSet() {
   utf16.push_back(0xD800);  // High surrogate.
   utf16.push_back('A');  // Not a low surrogate.
   utf8result = char_set_interface_->UTF16ToCharSet(
-      &utf16[0], static_cast<uint32_t>(utf16.size()), "latin1",
-      PP_CHARSET_CONVERSIONERROR_SUBSTITUTE, &utf8result_len);
+      instance_->pp_instance(), &utf16[0], static_cast<uint32_t>(utf16.size()),
+      "latin1", PP_CHARSET_CONVERSIONERROR_SUBSTITUTE, &utf8result_len);
   ASSERT_TRUE(utf8result_len == 2);
   ASSERT_TRUE(utf8result[0] == '?' && utf8result[1] == 'A' &&
               utf8result[2] == 0);
@@ -91,8 +91,8 @@ std::string TestCharSet::TestUTF16ToCharSet() {
 
   // Invalid encoding name.
   utf8result = char_set_interface_->UTF16ToCharSet(
-      &utf16[0], static_cast<uint32_t>(utf16.size()), "poopiepants",
-      PP_CHARSET_CONVERSIONERROR_SUBSTITUTE, &utf8result_len);
+      instance_->pp_instance(), &utf16[0], static_cast<uint32_t>(utf16.size()),
+      "poopiepants", PP_CHARSET_CONVERSIONERROR_SUBSTITUTE, &utf8result_len);
   ASSERT_TRUE(!utf8result);
   ASSERT_TRUE(utf8result_len == 0);
 
@@ -103,7 +103,8 @@ std::string TestCharSet::TestCharSetToUTF16() {
   // Empty string.
   uint32_t utf16result_len;
   uint16_t* utf16result = char_set_interface_->CharSetToUTF16(
-      "", 0, "latin1", PP_CHARSET_CONVERSIONERROR_FAIL, &utf16result_len);
+      instance_->pp_instance(), "", 0, "latin1",
+      PP_CHARSET_CONVERSIONERROR_FAIL, &utf16result_len);
   ASSERT_TRUE(utf16result);
   ASSERT_TRUE(utf16result_len == 0);
   ASSERT_TRUE(utf16result[0] == 0);
@@ -111,7 +112,8 @@ std::string TestCharSet::TestCharSetToUTF16() {
   // Basic Latin1.
   char latin1[] = "H\xef";
   utf16result = char_set_interface_->CharSetToUTF16(
-      latin1, 2, "latin1", PP_CHARSET_CONVERSIONERROR_FAIL, &utf16result_len);
+      instance_->pp_instance(), latin1, 2, "latin1",
+      PP_CHARSET_CONVERSIONERROR_FAIL, &utf16result_len);
   ASSERT_TRUE(utf16result);
   ASSERT_TRUE(utf16result_len == 2);
   ASSERT_TRUE(utf16result[0] == 'H' && utf16result[1] == 0xef &&
@@ -120,13 +122,15 @@ std::string TestCharSet::TestCharSetToUTF16() {
   // Invalid input encoding with FAIL.
   char badutf8[] = "A\xe4Z";
   utf16result = char_set_interface_->CharSetToUTF16(
-      badutf8, 3, "utf8", PP_CHARSET_CONVERSIONERROR_FAIL, &utf16result_len);
+      instance_->pp_instance(), badutf8, 3, "utf8",
+      PP_CHARSET_CONVERSIONERROR_FAIL, &utf16result_len);
   ASSERT_TRUE(!utf16result);
   ASSERT_TRUE(utf16result_len == 0);
 
   // Invalid input with SKIP.
   utf16result = char_set_interface_->CharSetToUTF16(
-      badutf8, 3, "utf8", PP_CHARSET_CONVERSIONERROR_SKIP, &utf16result_len);
+      instance_->pp_instance(), badutf8, 3, "utf8",
+      PP_CHARSET_CONVERSIONERROR_SKIP, &utf16result_len);
   ASSERT_TRUE(utf16result);
   ASSERT_TRUE(utf16result_len == 2);
   ASSERT_TRUE(utf16result[0] == 'A' && utf16result[1] == 'Z' &&
@@ -134,8 +138,8 @@ std::string TestCharSet::TestCharSetToUTF16() {
 
   // Invalid input with SUBSTITUTE.
   utf16result = char_set_interface_->CharSetToUTF16(
-      badutf8, 3, "utf8", PP_CHARSET_CONVERSIONERROR_SUBSTITUTE,
-      &utf16result_len);
+      instance_->pp_instance(), badutf8, 3, "utf8",
+      PP_CHARSET_CONVERSIONERROR_SUBSTITUTE, &utf16result_len);
   ASSERT_TRUE(utf16result);
   ASSERT_TRUE(utf16result_len == 3);
   ASSERT_TRUE(utf16result[0] == 'A' && utf16result[1] == 0xFFFD &&
@@ -143,7 +147,7 @@ std::string TestCharSet::TestCharSetToUTF16() {
 
   // Invalid encoding name.
   utf16result = char_set_interface_->CharSetToUTF16(
-      badutf8, 3, "poopiepants",
+      instance_->pp_instance(), badutf8, 3, "poopiepants",
       PP_CHARSET_CONVERSIONERROR_SUBSTITUTE, &utf16result_len);
   ASSERT_TRUE(!utf16result);
   ASSERT_TRUE(utf16result_len == 0);
@@ -154,7 +158,8 @@ std::string TestCharSet::TestCharSetToUTF16() {
 std::vector<uint16_t> TestCharSet::UTF8ToUTF16(const std::string& utf8) {
   uint32_t result_len = 0;
   uint16_t* result = char_set_interface_->CharSetToUTF16(
-      utf8.c_str(), static_cast<uint32_t>(utf8.size()),
+      instance_->pp_instance(), utf8.c_str(),
+      static_cast<uint32_t>(utf8.size()),
       "utf-8", PP_CHARSET_CONVERSIONERROR_FAIL, &result_len);
 
   std::vector<uint16_t> result_vector;

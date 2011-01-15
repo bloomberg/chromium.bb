@@ -7,7 +7,6 @@
 
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 
@@ -83,10 +82,11 @@ struct PP_PrivateFindResult {
 
 struct PPB_PDF {
   // Returns a localized string.
-  PP_Var (*GetLocalizedString)(PP_Module module, PP_ResourceString string_id);
+  PP_Var (*GetLocalizedString)(PP_Instance instance,
+                               PP_ResourceString string_id);
 
   // Returns a resource image.
-  PP_Resource (*GetResourceImage)(PP_Module module,
+  PP_Resource (*GetResourceImage)(PP_Instance instance,
                                   PP_ResourceImage image_id);
 
   // Returns a resource identifying a font file corresponding to the given font
@@ -94,7 +94,7 @@ struct PPB_PDF {
   //
   // Currently Linux-only.
   PP_Resource (*GetFontFileWithFallback)(
-      PP_Module module,
+      PP_Instance instance,
       const PP_FontDescription_Dev* description,
       PP_PrivateFontCharset charset);
 
@@ -108,7 +108,7 @@ struct PPB_PDF {
   // Search the given string using ICU.  Use PPB_Core's MemFree on results when
   // done.
   void (*SearchString)(
-     PP_Module module,
+     PP_Instance instance,
      const unsigned short* string,
      const unsigned short* term,
      bool case_sensitive,

@@ -16,6 +16,7 @@ typedef void* NPIdentifier;
 namespace webkit {
 namespace ppapi {
 
+class PluginInstance;
 class PluginModule;
 class PluginObject;
 
@@ -108,7 +109,7 @@ class PPResultAndExceptionToNPResult {
 // WebKit to the plugin.
 class PPVarArrayFromNPVariantArray {
  public:
-  PPVarArrayFromNPVariantArray(PluginModule* module,
+  PPVarArrayFromNPVariantArray(PluginInstance* instance,
                                size_t size,
                                const NPVariant* variants);
   ~PPVarArrayFromNPVariantArray();
@@ -128,7 +129,7 @@ class PPVarArrayFromNPVariantArray {
 // is used when converting 'this' pointer from WebKit to the plugin.
 class PPVarFromNPObject {
  public:
-  PPVarFromNPObject(PluginModule* module, NPObject* object);
+  PPVarFromNPObject(PluginInstance* instance, NPObject* object);
   ~PPVarFromNPObject();
 
   PP_Var var() const { return var_; }

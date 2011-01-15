@@ -18,7 +18,7 @@ namespace ppapi {
 
 class PPB_Transport_Impl : public Resource {
  public:
-  explicit PPB_Transport_Impl(PluginModule* module);
+  explicit PPB_Transport_Impl(PluginInstance* instance);
   virtual ~PPB_Transport_Impl();
 
   static const PPB_Transport_Dev* GetInterface();
