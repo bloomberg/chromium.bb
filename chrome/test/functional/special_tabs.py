@@ -27,12 +27,14 @@ class SpecialTabsTest(pyauto.PyUITest):
     'about:dns': 'About DNS',
     'about:histograms': 'About Histograms',
     'about:plugins': 'Plug-ins',
-    'about:sync': 'About Sync',
+    'about:sync': 'Sync Internals',
+    'about:sync-internals': 'Sync Internals',
     'about:version': 'About Version',
     'chrome://downloads': 'Downloads',
     'chrome://extensions': 'Extensions',
     'chrome://history': 'History',
     'chrome://newtab': 'New Tab',
+    'chrome://sync-internals': 'Sync Internals',
   }
 
   def _VerifyAppCacheInternals(self):
