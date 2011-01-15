@@ -9,10 +9,10 @@
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
-#include "ppapi/c/dev/ppb_audio_dev.h"
-#include "ppapi/c/dev/ppb_audio_config_dev.h"
-#include "ppapi/c/dev/ppb_audio_trusted_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/ppb_audio.h"
+#include "ppapi/c/ppb_audio_config.h"
+#include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/shared_impl/audio_impl.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -28,19 +28,19 @@ class PluginModule;
 class PPB_AudioConfig_Impl : public Resource {
  public:
   PPB_AudioConfig_Impl(PluginModule* module,
-                       PP_AudioSampleRate_Dev sample_rate,
+                       PP_AudioSampleRate sample_rate,
                        uint32_t sample_frame_count);
   size_t BufferSize();
-  static const PPB_AudioConfig_Dev* GetInterface();
+  static const PPB_AudioConfig* GetInterface();
 
-  PP_AudioSampleRate_Dev sample_rate() { return sample_rate_; }
+  PP_AudioSampleRate sample_rate() { return sample_rate_; }
   uint32_t sample_frame_count() { return sample_frame_count_; }
 
  private:
   // Resource override.
   virtual PPB_AudioConfig_Impl* AsPPB_AudioConfig_Impl();
 
-  PP_AudioSampleRate_Dev sample_rate_;
+  PP_AudioSampleRate sample_rate_;
   uint32_t sample_frame_count_;
 };
 
@@ -53,8 +53,8 @@ class PPB_Audio_Impl : public Resource,
   explicit PPB_Audio_Impl(PluginModule* module, PP_Instance instance_id);
   virtual ~PPB_Audio_Impl();
 
-  static const PPB_Audio_Dev* GetInterface();
-  static const PPB_AudioTrusted_Dev* GetTrustedInterface();
+  static const PPB_Audio* GetInterface();
+  static const PPB_AudioTrusted* GetTrustedInterface();
 
   PP_Instance pp_instance() {
     return pp_instance_;

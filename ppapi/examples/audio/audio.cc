@@ -5,8 +5,10 @@
 #include <cmath>
 #include <limits>
 
-#include "ppapi/cpp/dev/audio_dev.h"
-#include "ppapi/cpp/dev/audio_config_dev.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/cpp/audio.h"
+#include "ppapi/cpp/audio_config.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 
@@ -16,7 +18,7 @@ const double frequency_l = 400;
 const double frequency_r = 1000;
 
 // This sample frequency is guaranteed to work.
-const PP_AudioSampleRate_Dev sample_frequency = PP_AUDIOSAMPLERATE_44100;
+const PP_AudioSampleRate sample_frequency = PP_AUDIOSAMPLERATE_44100;
 const uint32_t sample_count = 4096;
 uint32_t obtained_sample_count = 0;
 
@@ -32,11 +34,11 @@ class MyInstance : public pp::Instance {
   }
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
-    pp::AudioConfig_Dev config;
-    obtained_sample_count = pp::AudioConfig_Dev::RecommendSampleFrameCount(
-        sample_count);
-    config = pp::AudioConfig_Dev(this, sample_frequency, obtained_sample_count);
-    audio_ = pp::Audio_Dev(this, config, SineWaveCallback, this);
+    pp::AudioConfig config;
+    obtained_sample_count = pp::AudioConfig::RecommendSampleFrameCount(
+        sample_frequency, sample_count);
+    config = pp::AudioConfig(this, sample_frequency, obtained_sample_count);
+    audio_ = pp::Audio(this, config, SineWaveCallback, this);
     return audio_.StartPlayback();
   }
 
@@ -67,7 +69,7 @@ class MyInstance : public pp::Instance {
   }
 
   // Audio resource. Allocated in Init(), freed on destruction.
-  pp::Audio_Dev audio_;
+  pp::Audio audio_;
 
   // Current audio wave position, used to prevent sine wave skips
   // on buffer boundaries.

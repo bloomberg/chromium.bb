@@ -12,8 +12,6 @@
 #include "base/logging.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
-#include "ppapi/c/dev/ppb_audio_config_dev.h"
-#include "ppapi/c/dev/ppb_audio_dev.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
@@ -24,6 +22,8 @@
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_audio.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
@@ -229,9 +229,9 @@ void Dispatcher::OnMsgDeclareInterfaces(
 InterfaceProxy* Dispatcher::CreateProxyForInterface(
     const std::string& interface_name,
     const void* interface_functions) {
-  if (interface_name == PPB_AUDIO_CONFIG_DEV_INTERFACE)
+  if (interface_name == PPB_AUDIO_CONFIG_INTERFACE)
     return new PPB_AudioConfig_Proxy(this, interface_functions);
-  if (interface_name == PPB_AUDIO_DEV_INTERFACE)
+  if (interface_name == PPB_AUDIO_INTERFACE)
     return new PPB_Audio_Proxy(this, interface_functions);
   if (interface_name == PPB_BUFFER_DEV_INTERFACE)
     return new PPB_Buffer_Proxy(this, interface_functions);

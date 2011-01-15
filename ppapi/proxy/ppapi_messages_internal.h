@@ -171,8 +171,9 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBAudioConfig_Create,
                            int32_t /* sample_rate */,
                            uint32_t /* sample_frame_count */,
                            PP_Resource /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_1(
+IPC_SYNC_MESSAGE_ROUTED2_1(
     PpapiHostMsg_PPBAudioConfig_RecommendSampleFrameCount,
+    int32_t /* sample_rate */,
     uint32_t /* requested */,
     uint32_t /* result */)
 

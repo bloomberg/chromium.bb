@@ -211,11 +211,11 @@ const PPB_Testing_Dev testing_interface = {
 const void* GetInterface(const char* name) {
   // Please keep alphabetized by interface macro name with "special" stuff at
   // the bottom.
-  if (strcmp(name, PPB_AUDIO_CONFIG_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_AUDIO_CONFIG_INTERFACE) == 0)
     return PPB_AudioConfig_Impl::GetInterface();
-  if (strcmp(name, PPB_AUDIO_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_AUDIO_INTERFACE) == 0)
     return PPB_Audio_Impl::GetInterface();
-  if (strcmp(name, PPB_AUDIO_TRUSTED_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_AUDIO_TRUSTED_INTERFACE) == 0)
     return PPB_Audio_Impl::GetTrustedInterface();
   if (strcmp(name, PPB_BUFFER_DEV_INTERFACE) == 0)
     return PPB_Buffer_Impl::GetInterface();

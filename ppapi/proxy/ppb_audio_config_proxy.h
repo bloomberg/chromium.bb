@@ -10,7 +10,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
-struct PPB_AudioConfig_Dev;
+struct PPB_AudioConfig;
 
 namespace pp {
 namespace proxy {
@@ -20,8 +20,8 @@ class PPB_AudioConfig_Proxy : public InterfaceProxy {
   PPB_AudioConfig_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_AudioConfig_Proxy();
 
-  const PPB_AudioConfig_Dev* ppb_audio_config_target() const {
-    return static_cast<const PPB_AudioConfig_Dev*>(target_interface());
+  const PPB_AudioConfig* ppb_audio_config_target() const {
+    return static_cast<const PPB_AudioConfig*>(target_interface());
   }
 
   // InterfaceProxy implementation.
@@ -35,7 +35,9 @@ class PPB_AudioConfig_Proxy : public InterfaceProxy {
                               int32_t sample_rate,
                               uint32_t sample_frame_count,
                               PP_Resource* result);
-  void OnMsgRecommendSampleFrameCount(uint32_t requested, uint32_t* result);
+  void OnMsgRecommendSampleFrameCount(int32_t sample_rate,
+                                      uint32_t requested,
+                                      uint32_t* result);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_AudioConfig_Proxy);
 };

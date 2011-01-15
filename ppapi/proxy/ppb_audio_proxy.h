@@ -16,7 +16,7 @@
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
 
-struct PPB_Audio_Dev;
+struct PPB_Audio;
 
 namespace pp {
 namespace proxy {
@@ -26,8 +26,8 @@ class PPB_Audio_Proxy : public InterfaceProxy {
   PPB_Audio_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_Audio_Proxy();
 
-  const PPB_Audio_Dev* ppb_audio_target() const {
-    return static_cast<const PPB_Audio_Dev*>(target_interface());
+  const PPB_Audio* ppb_audio_target() const {
+    return static_cast<const PPB_Audio*>(target_interface());
   }
 
   // InterfaceProxy implementation.

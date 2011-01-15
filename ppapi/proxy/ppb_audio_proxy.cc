@@ -5,9 +5,9 @@
 #include "ppapi/proxy/ppb_audio_proxy.h"
 
 #include "base/threading/simple_thread.h"
-#include "ppapi/c/dev/ppb_audio_dev.h"
-#include "ppapi/c/dev/ppb_audio_trusted_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_audio.h"
+#include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/proxy/interface_id.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
@@ -105,7 +105,7 @@ PP_Bool StopPlayback(PP_Resource audio_id) {
   return PP_TRUE;
 }
 
-const PPB_Audio_Dev audio_interface = {
+const PPB_Audio audio_interface = {
   &Create,
   &IsAudio,
   &GetCurrentConfiguration,
@@ -148,9 +148,9 @@ bool PPB_Audio_Proxy::OnMessageReceived(const IPC::Message& msg) {
 void PPB_Audio_Proxy::OnMsgCreate(PP_Instance instance_id,
                                   PP_Resource config_id,
                                   PP_Resource* result) {
-  const PPB_AudioTrusted_Dev* audio_trusted =
-      reinterpret_cast<const PPB_AudioTrusted_Dev*>(
-          dispatcher()->GetLocalInterface(PPB_AUDIO_TRUSTED_DEV_INTERFACE));
+  const PPB_AudioTrusted* audio_trusted =
+      reinterpret_cast<const PPB_AudioTrusted*>(
+          dispatcher()->GetLocalInterface(PPB_AUDIO_TRUSTED_INTERFACE));
   if (!audio_trusted) {
     *result = 0;
     return;
@@ -231,9 +231,9 @@ int32_t PPB_Audio_Proxy::GetAudioConnectedHandles(
     base::SharedMemoryHandle* foreign_shared_memory_handle,
     uint32_t* shared_memory_length) {
   // Get the trusted audio interface which will give us the handles.
-  const PPB_AudioTrusted_Dev* audio_trusted =
-      reinterpret_cast<const PPB_AudioTrusted_Dev*>(
-          dispatcher()->GetLocalInterface(PPB_AUDIO_TRUSTED_DEV_INTERFACE));
+  const PPB_AudioTrusted* audio_trusted =
+      reinterpret_cast<const PPB_AudioTrusted*>(
+          dispatcher()->GetLocalInterface(PPB_AUDIO_TRUSTED_INTERFACE));
   if (!audio_trusted)
     return PP_ERROR_NOINTERFACE;
 

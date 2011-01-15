@@ -9,7 +9,7 @@
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/threading/simple_thread.h"
-#include "ppapi/c/dev/ppb_audio_dev.h"
+#include "ppapi/c/ppb_audio.h"
 
 namespace pp {
 namespace shared_impl {

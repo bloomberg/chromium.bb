@@ -51,6 +51,8 @@
         'c/pp_time.h',
         'c/pp_var.h',
         'c/ppb.h',
+        'c/ppb_audio.h',
+        'c/ppb_audio_config.h',
         'c/ppb_core.h',
         'c/ppb_class.h',
         'c/ppb_graphics_2d.h',
@@ -114,6 +116,7 @@
         'c/dev/ppp_class_deprecated.h',
 
         # Trusted interfaces.
+        'c/trusted/ppb_audio_trusted.h',
         'c/trusted/ppb_image_data_trusted.h',
         'c/trusted/ppb_url_loader_trusted.h',
       ],
@@ -128,6 +131,10 @@
         '..',
       ],
       'sources': [
+        'cpp/audio.cc',
+        'cpp/audio.h',
+        'cpp/audio_config.cc',
+        'cpp/audio_config.h',
         'cpp/common.h',
         'cpp/completion_callback.h',
         'cpp/core.cc',
