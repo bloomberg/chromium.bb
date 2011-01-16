@@ -52,7 +52,7 @@ class MetricsLogBase::XmlWrapper {
         buffer_(NULL),
         writer_(NULL) {
     buffer_ = xmlBufferCreate();
-    DCHECK(buffer_);
+    CHECK(buffer_);
 
     #if defined(OS_CHROMEOS)
       writer_ = xmlNewTextWriterDoc(&doc_, /* compression */ 0);
@@ -151,6 +151,8 @@ void MetricsLogBase::CloseLog() {
 
 int MetricsLogBase::GetEncodedLogSize() {
   DCHECK(locked_);
+  CHECK(xml_wrapper_);
+  CHECK(xml_wrapper_->buffer());
   return xml_wrapper_->buffer()->use;
 }
 
