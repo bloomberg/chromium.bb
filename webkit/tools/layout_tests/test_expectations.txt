@@ -10,7 +10,3 @@
 // TODO(thakis): Remove these after the next webkit roll.
 BUGTHAKIS LINUX : media/video-display-toggle.html = IMAGE
 BUGTHAKIS WIN : media/video-display-toggle.html = IMAGE
-
-// This test found a real bug in the new skia version. I will file a bug for this on reed
-// and submit an upstream suppression.
-BUGTHAKIS_CR68921 WIN LINUX DEBUG : svg/batik/paints/gradientLimit.svg = TIMEOUT FAIL
