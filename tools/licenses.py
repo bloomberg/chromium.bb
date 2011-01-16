@@ -22,42 +22,60 @@ import sys
 # Paths from the root of the tree to directories to skip.
 PRUNE_PATHS = set([
     # Same module occurs in both the top-level third_party and others.
-    "base/third_party/icu",
+    os.path.join('base','third_party','icu'),
 
     # Assume for now that breakpad has their licensing in order.
-    "breakpad",
+    os.path.join('breakpad'),
 
     # This is just a tiny vsprops file, presumably written by the googleurl
     # authors.  Not third-party code.
-    "googleurl/third_party/icu",
+    os.path.join('googleurl','third_party','icu'),
 
     # Assume for now that native client has their licensing in order.
-    "native_client",
+    os.path.join('native_client'),
 
     # Same module occurs in chrome/ and in net/, so skip one of them.
-    "net/third_party/mozilla_security_manager",
+    os.path.join('net','third_party','mozilla_security_manager'),
 
-    # Same module occurs in base/ and in net/, so skip one of them.
-    "net/third_party/nss",
+    # Same module occurs in base/, net/, and src/ so skip all but one of them.
+    os.path.join('third_party','nss'),
+    os.path.join('net','third_party','nss'),
 
     # We don't bundle o3d samples into our resulting binaries.
-    "o3d/samples",
+    os.path.join('o3d','samples'),
 
     # Not in the public Chromium tree.
-    "third_party/adobe",
+    os.path.join('third_party','adobe'),
 
     # Written as part of Chromium.
-    "third_party/fuzzymatch",
+    os.path.join('third_party','fuzzymatch'),
 
     # Same license as Chromium.
-    "third_party/lss",
+    os.path.join('third_party','lss'),
 
     # Only binaries, used during development.
-    "third_party/valgrind",
+    os.path.join('third_party','valgrind'),
 
     # Two directories that are the same as those in base/third_party.
-    "v8/src/third_party/dtoa",
-    "v8/src/third_party/valgrind",
+    os.path.join('v8','src','third_party','dtoa'),
+    os.path.join('v8','src','third_party','valgrind'),
+
+    # Used for development and test, not in the shipping product.
+    os.path.join('third_party','cygwin'),
+    os.path.join('third_party','lighttpd'),
+    # ---- Check with NACL on this one... we're just pulling bin, not LICENSE
+    # ---- in DEPS.
+    os.path.join('third_party','mingw-w64'),
+    os.path.join('third_party','pefile'),
+    os.path.join('third_party','python_26'),
+
+    # Redistribution does not require attribution in documentation.
+    os.path.join('third_party','directxsdk'),
+    os.path.join('third_party','platformsdk_win2008_6_1'),
+    os.path.join('third_party','platformsdk_win7'),
+
+    # Harfbuzz-ng is not currently shipping in any product:
+    os.path.join('third_party','harfbuzz-ng'),
 ])
 
 # Directories we don't scan through.
@@ -68,7 +86,7 @@ PRUNE_DIRS = ('.svn', '.git',             # VCS metadata
 ADDITIONAL_PATHS = (
     # The directory with the word list for Chinese and Japanese segmentation
     # with different license terms than ICU.
-    "third_party/icu/source/data/brkitr",
+    os.path.join('third_party','icu','source','data','brkitr'),
 )
 
 
@@ -101,6 +119,17 @@ SPECIAL_CASES = {
         "URL": "http://webkit.org/",
         # Absolute path here is resolved as relative to the source root.
         "License File": "/webkit/LICENSE",
+    },
+    os.path.join('third_party', 'GTM'): {
+        "Name": "Google Toolbox for Mac",
+        "URL": "http://code.google.com/p/google-toolbox-for-mac/",
+        "License File": "COPYING",
+    },
+    # pdfsqueeze is Apache Licensed, reuse the same file from GTM:
+    os.path.join('third_party', 'pdfsqueeze'): {
+        "Name": "pdfsqueeze",
+        "URL": "http://code.google.com/p/pdfsqueeze/",
+        "License File": os.path.join('..','GTM','COPYING'),
     },
 }
 
