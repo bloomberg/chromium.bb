@@ -197,6 +197,10 @@ const float kAnimateCloseDuration = 0.12;
   // Default implementation does nothing.
 }
 
+- (void)infobarWillClose {
+  // Default implementation does nothing.
+}
+
 - (void)setLabelToMessage:(NSString*)message {
   NSMutableDictionary* attributes = [NSMutableDictionary dictionary];
   NSFont* font = [NSFont labelFontOfSize:

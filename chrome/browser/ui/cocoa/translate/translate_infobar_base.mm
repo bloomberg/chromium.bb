@@ -473,6 +473,11 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   [self updateState];
 }
 
+- (void)infobarWillClose {
+  [[optionsPopUp_ menu] cancelTracking];
+  [super infobarWillClose];
+}
+
 - (void)adjustOptionsButtonSizeAndVisibilityForView:(NSView*)lastView {
   [optionsPopUp_ setHidden:NO];
   [self rebuildOptionsMenu:NO];

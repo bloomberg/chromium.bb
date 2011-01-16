@@ -70,6 +70,10 @@ class InfoBarDelegate;
 // default implementation does nothing.
 - (void)addAdditionalControls;
 
+// Subclasses must override this method to perform cleanup just before the
+// infobar closes.
+- (void)infobarWillClose;
+
 // Sets the info bar message to the specified |message|.
 - (void)setLabelToMessage:(NSString*)message;
 

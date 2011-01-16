@@ -182,6 +182,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
   for (InfoBarController* controller in
        [NSArray arrayWithArray:infobarControllers_.get()]) {
     if ([controller delegate] == delegate) {
+      [controller infobarWillClose];
       if (animate)
         [controller animateClosed];
       else
