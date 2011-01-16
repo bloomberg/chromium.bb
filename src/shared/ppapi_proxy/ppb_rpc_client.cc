@@ -813,7 +813,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_ReadResponseBody(
 
 NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_FinishStreamingToFile(
     NaClSrpcChannel* channel,
-    int64_t loader,
+    PP_Resource loader,
     int32_t callback_id,
     int32_t* pp_error)  {
   NaClSrpcError retval;

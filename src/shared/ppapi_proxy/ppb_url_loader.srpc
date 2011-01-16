@@ -67,7 +67,7 @@
                       ]
           },
           {'name': 'PPB_URLLoader_FinishStreamingToFile',
-           'inputs': [['loader', 'int64_t'],          # PP_Resource
+           'inputs': [['loader', 'PP_Resource'],      # PP_Resource
                       ['callback_id', 'int32_t'],     # PP_CompletionCallback
                      ],
            'outputs': [['pp_error', 'int32_t'],       # int32_t
