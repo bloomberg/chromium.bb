@@ -45,7 +45,7 @@ INSTANTIATE_TEST_CASE_P(HttpHeader, FullTabNavigationTest, testing::Values(
 TEST_P(FullTabNavigationTest, TypeUrl) {
   MockAccEventObserver acc_observer;
   EXPECT_CALL(acc_observer, OnAccDocLoad(_)).Times(testing::AnyNumber());
-  AccObjectMatcher address_matcher(L"Address", L"editable text");
+  AccObjectMatcher address_matcher(L"Address*", L"editable text");
   AccObjectMatcher go_matcher(L"Go*", L"push button");
 
   ie_mock_.ExpectNavigation(IN_IE, GetSimplePageUrl());
@@ -72,7 +72,7 @@ TEST_P(FullTabNavigationTest, TypeUrl) {
 TEST_P(FullTabNavigationTest, TypeAnchorUrl) {
   MockAccEventObserver acc_observer;
   EXPECT_CALL(acc_observer, OnAccDocLoad(_)).Times(testing::AnyNumber());
-  AccObjectMatcher address_matcher(L"Address", L"editable text");
+  AccObjectMatcher address_matcher(L"Address*", L"editable text");
   AccObjectMatcher go_matcher(L"Go*", L"push button");
 
   ie_mock_.ExpectNavigation(IN_IE, GetSimplePageUrl());
