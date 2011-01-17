@@ -544,6 +544,8 @@ bool NewUserView::HandleKeyEvent(views::Textfield* sender,
 void NewUserView::ContentsChanged(views::Textfield* sender,
                                   const string16& new_contents) {
   UpdateSignInButtonState();
+  if (!new_contents.empty())
+    delegate_->ClearErrors();
 }
 
 void NewUserView::EnableInputControls(bool enabled) {

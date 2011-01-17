@@ -305,10 +305,12 @@ void WizardController::Init(const std::string& first_screen_name,
 }
 
 void WizardController::Show() {
-  // In tests we might startup without initial screen
-  // so widget_ hasn't been created yet.
-  if (first_screen_name_ != kTestNoScreenName)
+  // In tests and in case of --login-screen=login there is no screen to show.
+  if (first_screen_name_ != kTestNoScreenName &&
+      first_screen_name_ != kLoginScreenName) {
     DCHECK(widget_);
+  }
+
   if (widget_)
     widget_->Show();
 }

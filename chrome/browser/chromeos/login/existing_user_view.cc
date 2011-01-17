@@ -116,6 +116,8 @@ bool ExistingUserView::HandleKeyEvent(views::Textfield* sender,
 
 void ExistingUserView::ContentsChanged(views::Textfield* sender,
                                        const string16& new_contents) {
+  if (!new_contents.empty())
+    user_controller_->ClearErrors();
 }
 
 void ExistingUserView::EnableInputControls(bool enabled) {
