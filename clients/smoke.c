@@ -45,23 +45,6 @@ struct smoke {
 	struct { float *d, *u, *v; } b[2];
 };
 
-static void set_boundary(struct smoke *smoke, float x, float y, float *p)
-{
-	int i, l;
-
-	l = (smoke->height - 2) * smoke->width;
-	for (i = 1; i < smoke->width - 1; i++) {
-		p[i] = y * p[i + smoke->width];
-		p[l + i + smoke->width] = y * p[l + i];
-	}
-
-	for (i = 1; i < smoke->height - 1; i++) {
-		p[i * smoke->width] = x * p[i * smoke->width + 1];
-		p[i * smoke->width + smoke->width - 1] =
-			x * p[i * smoke->width + smoke->width - 2];
-	}
-}
-
 static void diffuse(struct smoke *smoke, uint32_t time,
 		    float *source, float *dest)
 {
