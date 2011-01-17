@@ -161,8 +161,7 @@ void NetworkScreen::OnConnectionTimeout() {
             IDS_NETWORK_SELECTION_ERROR,
             l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME),
             network_id_)),
-        UTF16ToWide(
-            l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_ERROR_HELP)),
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)),
         this);
     network_control->RequestFocus();
   }
