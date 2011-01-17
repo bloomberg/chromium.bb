@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -56,7 +57,10 @@ FilePath ChildProcessHost::GetChildPath(bool allow_self) {
 #if defined(OS_LINUX)
   // Use /proc/self/exe rather than our known binary path so updates
   // can't swap out the binary from underneath us.
-  if (allow_self)
+  // When running under Valgrind, forking /proc/self/exe ends up forking the
+  // Valgrind executable, which then crashes. However, it's almost safe to
+  // assume that the updates won't happen while testing with Valgrind tools.
+  if (allow_self && !RunningOnValgrind())
     return FilePath("/proc/self/exe");
 #endif
 
