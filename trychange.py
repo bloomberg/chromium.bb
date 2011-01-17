@@ -336,7 +336,9 @@ def _SendChangeHTTP(options):
   logging.info(options.diff)
 
   try:
+    logging.info('Opening connection...')
     connection = urllib.urlopen(url, urllib.urlencode(values), proxies=proxies)
+    logging.info('Done')
   except IOError, e:
     logging.info(str(e))
     if (values.get('bot') and len(e.args) > 2 and
@@ -347,7 +349,9 @@ def _SendChangeHTTP(options):
                                                                   str(e.args)))
   if not connection:
     raise NoTryServerAccess('%s is unaccessible.' % url)
+  logging.info('Reading response...')
   response = connection.read()
+  logging.info('Done')
   if response != 'OK':
     raise NoTryServerAccess('%s is unaccessible. Got:\n%s' % (url, response))
 
