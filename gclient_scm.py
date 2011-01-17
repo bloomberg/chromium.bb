@@ -840,10 +840,12 @@ class SVNWrapper(SCMWrapper):
 
     for file_status in scm.SVN.CaptureStatus(self.checkout_path):
       file_path = os.path.join(self.checkout_path, file_status[1])
-      if file_status[0][0] == 'X':
-        # Ignore externals.
-        logging.info('Ignoring external %s' % file_path)
-        continue
+      # Temporarily forcibly delete externals to make sure chromium can build
+      # without svn:external's.
+      #if file_status[0][0] == 'X':
+      #  # Ignore externals.
+      #  logging.info('Ignoring external %s' % file_path)
+      #  continue
 
       if logging.getLogger().isEnabledFor(logging.INFO):
         logging.info('%s%s' % (file[0], file[1]))
@@ -916,7 +918,10 @@ class SVNWrapper(SCMWrapper):
   def _RunAndGetFileList(self, args, options, file_list, cwd=None):
     """Runs a commands that goes to stdout and grabs the file listed."""
     cwd = cwd or self.checkout_path
-    scm.SVN.RunAndGetFileList(options.verbose, args, cwd=cwd,
+    scm.SVN.RunAndGetFileList(
+        options.verbose,
+        args + ['--ignore-externals'],
+        cwd=cwd,
         file_list=file_list)
 
   @staticmethod
