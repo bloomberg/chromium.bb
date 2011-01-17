@@ -593,12 +593,6 @@ void ExistingUserController::OnOffTheRecordLoginSuccess() {
 
 void ExistingUserController::OnPasswordChangeDetected(
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
-  // When signing in as a "New user" always remove old cryptohome.
-  if (selected_view_index_ == controllers_.size() - 1) {
-    ResyncEncryptedData();
-    return;
-  }
-
   // Must not proceed without signature verification.
   bool trusted_setting_available = user_settings_->RequestTrustedOwner(
       method_factory_.NewRunnableMethod(
