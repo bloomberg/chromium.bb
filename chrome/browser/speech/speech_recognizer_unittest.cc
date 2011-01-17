@@ -38,10 +38,6 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
     audio_packet_.resize(audio_packet_length_bytes);
   }
 
-  void StartTest() {
-    EXPECT_TRUE(recognizer_->StartRecording());
-  }
-
   // SpeechRecognizer::Delegate methods.
   virtual void SetRecognitionResult(int caller_id,
                                     bool error,

@@ -10,21 +10,11 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/url_request_context_getter.h"
-#include "third_party/speex/speex.h"
 
 using media::AudioInputController;
-using std::list;
 using std::string;
 
 namespace {
-const char* const kContentTypeSpeex =
-    "audio/x-speex-with-header-byte; rate=16000";
-const int kSpeexEncodingQuality = 8;
-const int kMaxSpeexFrameLength = 110;  // (44kbps rate sampled at 32kHz).
-
-// Since the frame length gets written out as a byte in the encoded packet,
-// make sure it is within the byte range.
-COMPILE_ASSERT(kMaxSpeexFrameLength <= 0xFF, invalidLength);
 
 // The following constants are related to the volume level indicator shown in
 // the UI for recorded audio.
@@ -45,68 +35,6 @@ const int SpeechRecognizer::kNumBitsPerAudioSample = 16;
 const int SpeechRecognizer::kNoSpeechTimeoutSec = 8;
 const int SpeechRecognizer::kEndpointerEstimationTimeMs = 300;
 
-// Provides a simple interface to encode raw audio using the Speex codec.
-class SpeexEncoder {
- public:
-  SpeexEncoder();
-  ~SpeexEncoder();
-
-  int samples_per_frame() const { return samples_per_frame_; }
-
-  // Encodes each frame of raw audio in |samples| and adds the
-  // encoded frames as a set of strings to the |encoded_frames| list.
-  // Ownership of the newly added strings is transferred to the caller.
-  void Encode(const short* samples,
-              int num_samples,
-              std::list<std::string*>* encoded_frames);
-
- private:
-  SpeexBits bits_;
-  void* encoder_state_;
-  int samples_per_frame_;
-  char encoded_frame_data_[kMaxSpeexFrameLength + 1];  // +1 for the frame size.
-};
-
-SpeexEncoder::SpeexEncoder() {
-  // speex_bits_init() does not initialize all of the |bits_| struct.
-  memset(&bits_, 0, sizeof(bits_));
-  speex_bits_init(&bits_);
-  encoder_state_ = speex_encoder_init(&speex_wb_mode);
-  DCHECK(encoder_state_);
-  speex_encoder_ctl(encoder_state_, SPEEX_GET_FRAME_SIZE, &samples_per_frame_);
-  DCHECK(samples_per_frame_ > 0);
-  int quality = kSpeexEncodingQuality;
-  speex_encoder_ctl(encoder_state_, SPEEX_SET_QUALITY, &quality);
-  int vbr = 1;
-  speex_encoder_ctl(encoder_state_, SPEEX_SET_VBR, &vbr);
-  memset(encoded_frame_data_, 0, sizeof(encoded_frame_data_));
-}
-
-SpeexEncoder::~SpeexEncoder() {
-  speex_bits_destroy(&bits_);
-  speex_encoder_destroy(encoder_state_);
-}
-
-void SpeexEncoder::Encode(const short* samples,
-                          int num_samples,
-                          std::list<std::string*>* encoded_frames) {
-  // Drop incomplete frames, typically those which come in when recording stops.
-  num_samples -= (num_samples % samples_per_frame_);
-  for (int i = 0; i < num_samples; i += samples_per_frame_) {
-    speex_bits_reset(&bits_);
-    speex_encode_int(encoder_state_, const_cast<spx_int16_t*>(samples + i),
-                     &bits_);
-
-    // Encode the frame and place the size of the frame as the first byte. This
-    // is the packet format for MIME type x-speex-with-header-byte.
-    int frame_length = speex_bits_write(&bits_, encoded_frame_data_ + 1,
-                                        kMaxSpeexFrameLength);
-    encoded_frame_data_[0] = static_cast<char>(frame_length);
-    encoded_frames->push_back(new string(encoded_frame_data_,
-                                         frame_length + 1));
-  }
-}
-
 SpeechRecognizer::SpeechRecognizer(Delegate* delegate,
                                    int caller_id,
                                    const std::string& language,
@@ -117,7 +45,8 @@ SpeechRecognizer::SpeechRecognizer(Delegate* delegate,
       language_(language),
       grammar_(grammar),
       hardware_info_(hardware_info),
-      encoder_(new SpeexEncoder()),
+      codec_(AudioEncoder::CODEC_SPEEX),
+      encoder_(NULL),
       endpointer_(kAudioSampleRate),
       num_samples_recorded_(0),
       audio_level_(0.0f) {
@@ -134,7 +63,7 @@ SpeechRecognizer::~SpeechRecognizer() {
   // |StopRecording| being called.
   DCHECK(!audio_controller_.get());
   DCHECK(!request_.get() || !request_->HasPendingRequest());
-  DCHECK(audio_buffers_.empty());
+  DCHECK(!encoder_.get());
   endpointer_.EndSession();
 }
 
@@ -142,14 +71,16 @@ bool SpeechRecognizer::StartRecording() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!audio_controller_.get());
   DCHECK(!request_.get() || !request_->HasPendingRequest());
+  DCHECK(!encoder_.get());
 
   // The endpointer needs to estimate the environment/background noise before
   // starting to treat the audio as user input. In |HandleOnData| we wait until
   // such time has passed before switching to user input mode.
   endpointer_.SetEnvironmentEstimationMode();
 
+  encoder_.reset(AudioEncoder::Create(codec_, kAudioSampleRate,
+                                      kNumBitsPerAudioSample));
   int samples_per_packet = (kAudioSampleRate * kAudioPacketIntervalMs) / 1000;
-  DCHECK((samples_per_packet % encoder_->samples_per_frame()) == 0);
   AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kNumAudioChannels,
                          kAudioSampleRate, kNumBitsPerAudioSample,
                          samples_per_packet);
@@ -174,7 +105,7 @@ void SpeechRecognizer::CancelRecognition() {
   }
 
   VLOG(1) << "SpeechRecognizer canceling recognition.";
-  ReleaseAudioBuffers();
+  encoder_.reset();
   request_.reset();
 }
 
@@ -189,44 +120,29 @@ void SpeechRecognizer::StopRecording() {
   VLOG(1) << "SpeechRecognizer stopping record.";
   audio_controller_->Close();
   audio_controller_ = NULL;  // Releases the ref ptr.
+  encoder_->Flush();
 
   delegate_->DidCompleteRecording(caller_id_);
 
-  // If we haven't got any audio yet end the recognition sequence here.
-  if (audio_buffers_.empty()) {
+  // Since the http request takes a single string as POST data, allocate
+  // one and copy over bytes from the audio buffers to the string.
+  // And If we haven't got any audio yet end the recognition sequence here.
+  string data;
+  if (!encoder_->GetEncodedData(&data)) {
     // Guard against the delegate freeing us until we finish our job.
     scoped_refptr<SpeechRecognizer> me(this);
     delegate_->DidCompleteRecognition(caller_id_);
-    return;
+  } else {
+    DCHECK(!request_.get());
+    request_.reset(new SpeechRecognitionRequest(
+        Profile::GetDefaultRequestContext(), this));
+    request_->Send(language_, grammar_, hardware_info_, encoder_->mime_type(),
+                   data);
   }
-
-  // We now have recorded audio in our buffers, so start a recognition request.
-  // Since the http request takes a single string as POST data, allocate
-  // one and copy over bytes from the audio buffers to the string.
-  int audio_buffer_length = 0;
-  for (AudioBufferQueue::iterator it = audio_buffers_.begin();
-       it != audio_buffers_.end(); it++) {
-    audio_buffer_length += (*it)->length();
-  }
-  string data;
-  data.reserve(audio_buffer_length);
-  for (AudioBufferQueue::iterator it = audio_buffers_.begin();
-       it != audio_buffers_.end(); it++) {
-    data.append(*(*it));
-  }
-
-  DCHECK(!request_.get());
-  request_.reset(new SpeechRecognitionRequest(
-      Profile::GetDefaultRequestContext(), this));
-  request_->Send(language_, grammar_, hardware_info_, kContentTypeSpeex, data);
-  ReleaseAudioBuffers();  // No need to keep the audio anymore.
+  encoder_.reset();
 }
 
 void SpeechRecognizer::ReleaseAudioBuffers() {
-  for (AudioBufferQueue::iterator it = audio_buffers_.begin();
-       it != audio_buffers_.end(); it++)
-    delete *it;
-  audio_buffers_.clear();
 }
 
 // Invoked in the audio thread.
@@ -275,7 +191,7 @@ void SpeechRecognizer::HandleOnData(string* data) {
   DCHECK((data->length() % sizeof(short)) == 0);
   int num_samples = data->length() / sizeof(short);
 
-  encoder_->Encode(samples, num_samples, &audio_buffers_);
+  encoder_->Encode(samples, num_samples);
   float rms;
   endpointer_.ProcessAudio(samples, num_samples, &rms);
   delete data;
