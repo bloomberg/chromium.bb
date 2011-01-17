@@ -2,9 +2,11 @@ dnd
 flower
 gears
 image
+resizor
 screenshooter-client-protocol.h
 screenshooter-protocol.c
 screenshot
+simple-client
 smoke
 terminal
 view
