@@ -1093,6 +1093,8 @@ handle_configure(void *data, struct wl_shell *shell,
 	if(width <= 0 || height <= 0)
 		return;
 
+	window->resize_edges = edges;
+
 	if (window->resize_handler) {
 		child_width = width - 20 - window->margin * 2;
 		child_height = height - 60 - window->margin * 2;
@@ -1101,7 +1103,6 @@ handle_configure(void *data, struct wl_shell *shell,
 					  child_width, child_height,
 					  window->user_data);
 	} else {
-		window->resize_edges = edges;
 		window->allocation.width = width;
 		window->allocation.height = height;
 
