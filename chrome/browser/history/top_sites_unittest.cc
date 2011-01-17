@@ -5,6 +5,7 @@
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/format_macros.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
@@ -382,6 +383,16 @@ class TopSitesMigrationTest : public TopSitesTest {
                   const FilePath& db_path) {
     std::string sql;
     ASSERT_TRUE(file_util::ReadFileToString(sql_path, &sql));
+
+    // Replace the 'last_visit_time', 'visit_time', 'time_slot' values in this
+    // SQL with the current time.
+    int64 now = base::Time::Now().ToInternalValue();
+    std::vector<std::string> sql_time;
+    sql_time.push_back(StringPrintf("%" PRId64, now));  // last_visit_time
+    sql_time.push_back(StringPrintf("%" PRId64, now));  // visit_time
+    sql_time.push_back(StringPrintf("%" PRId64, now));  // time_slot
+    sql = ReplaceStringPlaceholders(sql, sql_time, NULL);
+
     sql::Connection connection;
     ASSERT_TRUE(connection.Open(db_path));
     ASSERT_TRUE(connection.Execute(sql.c_str()));
