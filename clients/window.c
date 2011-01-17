@@ -1087,6 +1087,12 @@ handle_configure(void *data, struct wl_shell *shell,
 	struct window *window = wl_surface_get_user_data(surface);
 	int32_t child_width, child_height;
 
+	/* FIXME this is probably the wrong place to check for width or
+	   height <= 0, but it prevents the compositor from crashing
+	*/
+	if(width <= 0 || height <= 0)
+		return;
+
 	if (window->resize_handler) {
 		child_width = width - 20 - window->margin * 2;
 		child_height = height - 60 - window->margin * 2;
