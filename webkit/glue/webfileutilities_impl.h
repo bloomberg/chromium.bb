@@ -6,7 +6,7 @@
 #define WEBFILEUTILITIES_IMPL_H_
 
 #include "base/platform_file.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileUtilities.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileUtilities.h"
 
 namespace webkit_glue {
 

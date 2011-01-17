@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURLLoader.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoader.h"
 
 namespace WebKit {
 class WebData;

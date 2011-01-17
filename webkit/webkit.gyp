@@ -4,7 +4,7 @@
 
 {
   'includes': [
-    '../third_party/WebKit/WebKit/chromium/features.gypi',
+    '../third_party/WebKit/Source/WebKit/chromium/features.gypi',
     'tools/test_shell/test_shell.gypi',
   ],
   'variables': {
@@ -15,14 +15,14 @@
       'target_name': 'pull_in_webkit_unit_tests',
       'type': 'none',
       'dependencies': [
-        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit_unit_tests'
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit_unit_tests'
       ],
     },
     {
       'target_name': 'pull_in_DumpRenderTree',
       'type': 'none',
       'dependencies': [
-        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:DumpRenderTree'
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:DumpRenderTree'
       ],
     },
   ], # targets

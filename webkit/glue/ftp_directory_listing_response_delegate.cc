@@ -18,8 +18,8 @@
 #include "net/base/net_util.h"
 #include "net/ftp/ftp_directory_listing_parser.h"
 #include "net/ftp/ftp_server_type_histograms.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"
 
 using net::FtpDirectoryListingEntry;
 

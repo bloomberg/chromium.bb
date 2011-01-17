@@ -4,7 +4,7 @@
 
 #include "base/pickle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
 

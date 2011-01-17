@@ -19,8 +19,8 @@
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 
 class GURL;
 

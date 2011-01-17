@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
 // A class that implements NotificationPresenter for the test shell.

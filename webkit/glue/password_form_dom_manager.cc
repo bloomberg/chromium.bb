@@ -5,8 +5,8 @@
 #include "webkit/glue/password_form_dom_manager.h"
 
 #include "base/logging.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPasswordFormData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPasswordFormData.h"
 #include "webkit/glue/form_field.h"
 
 using WebKit::WebFormElement;

@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_SITE_ISOLATION_METRICS_H_
 #define WEBKIT_GLUE_SITE_ISOLATION_METRICS_H_
 
-#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 
 namespace WebKit {
 class WebFrame;

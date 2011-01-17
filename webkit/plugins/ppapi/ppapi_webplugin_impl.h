@@ -12,7 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "gfx/rect.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPlugin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 
 namespace WebKit {
 struct WebPluginParams;

@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebRegularExpression.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebTextCaseSensitivity.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRegularExpression.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCaseSensitivity.h"
 
 using namespace WebKit;
 

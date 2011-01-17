@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_graphics_2d.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #include "webkit/plugins/ppapi/resource.h"
 
 struct PPB_Graphics2D;

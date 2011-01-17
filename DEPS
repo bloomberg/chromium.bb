@@ -4,7 +4,7 @@ vars = {
   "googlecode_url": "http://%s.googlecode.com/svn",
   "webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
-  "webkit_revision": "75905",
+  "webkit_revision": "75910",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
   "nacl_revision": "4139",
@@ -75,14 +75,8 @@ deps = {
   "src/third_party/WebKit/LayoutTests":
     Var("webkit_trunk") + "/LayoutTests@" + Var("webkit_revision"),
 
-  "src/third_party/WebKit/Source/JavaScriptCore":
-    Var("webkit_trunk") + "/Source/JavaScriptCore@" + Var("webkit_revision"),
-
-  "src/third_party/WebKit/Source/WebCore":
-    Var("webkit_trunk") + "/Source/WebCore@" + Var("webkit_revision"),
-
-  "src/third_party/WebKit/WebKit/chromium":
-    Var("webkit_trunk") + "/WebKit/chromium@" + Var("webkit_revision"),
+  "src/third_party/WebKit/Source":
+    Var("webkit_trunk") + "/Source@" + Var("webkit_revision"),
 
   "src/third_party/WebKit/Tools/DumpRenderTree":
     Var("webkit_trunk") + "/Tools/DumpRenderTree@" + Var("webkit_revision"),
@@ -245,8 +239,6 @@ deps_os = {
     "src/third_party/lighttpd":
       "/trunk/deps/third_party/lighttpd@33737",
 
-    "src/third_party/WebKit/WebKit/mac":
-      Var("webkit_trunk") + "/WebKit/mac@" + Var("webkit_revision"),
     "src/third_party/WebKit/WebKitLibraries":
       Var("webkit_trunk") + "/WebKitLibraries@" + Var("webkit_revision"),
 

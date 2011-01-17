@@ -4,7 +4,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebImageDecoder.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebImageDecoder.h"
 #include "webkit/tools/test_shell/image_decoder_unittest.h"
 
 using WebKit::WebImageDecoder;

@@ -11,7 +11,7 @@
 #include <string>
 
 #include "net/ftp/ftp_directory_listing_buffer.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 
 namespace WebKit {
 class WebURLLoader;

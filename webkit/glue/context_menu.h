@@ -12,7 +12,7 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/webmenuitem.h"
 
-#include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 
 // Parameters structure for ViewHostMsg_ContextMenu.
 // FIXME(beng): This would be more useful in the future and more efficient

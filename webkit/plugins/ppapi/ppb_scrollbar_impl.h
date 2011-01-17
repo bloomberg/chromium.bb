@@ -9,8 +9,8 @@
 
 #include "gfx/rect.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebScrollbarClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScrollbarClient.h"
 #include "webkit/plugins/ppapi/ppb_widget_impl.h"
 
 namespace webkit {

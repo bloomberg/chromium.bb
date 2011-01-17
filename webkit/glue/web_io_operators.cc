@@ -6,12 +6,12 @@
 
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPoint.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 
 #if defined(WCHAR_T_IS_UTF32)
 #include "base/string16.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #endif  // defined(WCHAR_T_IS_UTF32)
 
 namespace WebKit {

@@ -12,7 +12,7 @@
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/pp_var.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/plugin_object.h"

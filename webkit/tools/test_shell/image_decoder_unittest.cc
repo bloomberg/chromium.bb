@@ -10,10 +10,10 @@
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebData.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebImage.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebImageDecoder.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebImage.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebImageDecoder.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 
 using base::Time;
 

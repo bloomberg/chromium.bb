@@ -9,8 +9,8 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "gfx/rect.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/webwidget_host.h"
 

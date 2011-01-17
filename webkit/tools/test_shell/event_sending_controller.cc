@@ -28,20 +28,20 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDragData.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebTouchPoint.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPoint.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTouchPoint.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
 #if defined(OS_WIN)
-#include "third_party/WebKit/WebKit/chromium/public/win/WebInputEventFactory.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/win/WebInputEventFactory.h"
 using WebKit::WebInputEventFactory;
 #endif
 
@@ -164,7 +164,7 @@ bool ApplyKeyModifier(const std::string& key, WebInputEvent* event) {
 #if !defined(OS_MACOSX)
     // On Windows all keys with Alt modifier will be marked as system key.
     // We keep the same behavior on Linux and everywhere non-Mac, see:
-    // third_party/WebKit/WebKit/chromium/src/gtk/WebInputEventFactory.cpp
+    // third_party/WebKit/Source/WebKit/chromium/src/gtk/WebInputEventFactory.cpp
     // If we want to change this behavior on Linux, this piece of code must be
     // kept in sync with the related code in above file.
     system_key = true;
@@ -174,7 +174,7 @@ bool ApplyKeyModifier(const std::string& key, WebInputEvent* event) {
     event->modifiers |= WebInputEvent::MetaKey;
     // On Mac only command key presses are marked as system key.
     // See the related code in:
-    // third_party/WebKit/WebKit/chromium/src/mac/WebInputEventFactory.cpp
+    // third_party/WebKit/Source/WebKit/chromium/src/mac/WebInputEventFactory.cpp
     // It must be kept in sync with the related code in above file.
     system_key = true;
 #else
@@ -207,7 +207,7 @@ bool GetEditCommand(const WebKeyboardEvent& event, std::string* name) {
   // We only cares about Left,Right,Up,Down keys with Command or Command+Shift
   // modifiers. These key events correspond to some special movement and
   // selection editor commands, and was supposed to be handled in
-  // third_party/WebKit/WebKit/chromium/src/EditorClientImpl.cpp. But these keys
+  // third_party/WebKit/Source/WebKit/chromium/src/EditorClientImpl.cpp. But these keys
   // will be marked as system key, which prevents them from being handled.
   // Thus they must be handled specially.
   if ((event.modifiers & ~WebKeyboardEvent::ShiftKey) !=
@@ -620,7 +620,7 @@ void EventSendingController::keyDown(
     // the command will be dispatched to the renderer just before dispatching
     // the keyboard event, and then it will be executed in the
     // RenderView::handleCurrentKeyboardEvent() method, which is called from
-    // third_party/WebKit/WebKit/chromium/src/EditorClientImpl.cpp.
+    // third_party/WebKit/Source/WebKit/chromium/src/EditorClientImpl.cpp.
     // We just simulate the same behavior here.
     std::string edit_command;
     if (GetEditCommand(event_down, &edit_command))

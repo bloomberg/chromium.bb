@@ -6,7 +6,7 @@
 
 #include "base/callback.h"
 #include "gfx/size.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "webkit/glue/image_decoder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

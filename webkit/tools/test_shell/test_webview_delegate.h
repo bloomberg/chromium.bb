@@ -17,19 +17,19 @@
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
 #include "build/build_config.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
 #include "webkit/tools/test_shell/mock_spellcheck.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 
 #if defined(OS_MACOSX)
-#include "third_party/WebKit/WebKit/chromium/public/WebPopupMenuInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenuInfo.h"
 #endif
 
 #if defined(OS_WIN)

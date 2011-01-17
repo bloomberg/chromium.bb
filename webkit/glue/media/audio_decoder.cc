@@ -9,7 +9,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "media/filters/audio_file_reader.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebAudioBus.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioBus.h"
 
 using media::AudioFileReader;
 using media::InMemoryDataReader;

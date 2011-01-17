@@ -10,8 +10,8 @@
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {

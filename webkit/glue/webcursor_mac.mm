@@ -10,9 +10,9 @@
 #include "app/mac/nsimage_cache.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebImage.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebImage.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 
 using WebKit::WebCursorInfo;
 using WebKit::WebImage;

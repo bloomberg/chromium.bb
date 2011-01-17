@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgentClient.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgentClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 class WebURLLoaderMockFactory;

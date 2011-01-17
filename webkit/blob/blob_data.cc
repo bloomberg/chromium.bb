@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "base/time.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebBlobData.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBlobData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebBlobData;

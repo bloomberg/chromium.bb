@@ -5,7 +5,7 @@
 #include "webkit/glue/webvideoframe_impl.h"
 
 #include "media/base/video_frame.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebVideoFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
 
 using namespace WebKit;
 

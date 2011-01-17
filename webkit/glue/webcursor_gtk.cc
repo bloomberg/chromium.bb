@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "gfx/gtk_util.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 
 using WebKit::WebCursorInfo;
 

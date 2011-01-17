@@ -11,7 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/utf_string_conversion_utils.h"
 #include "ppapi/c/pp_input_event.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/plugins/ppapi/common.h"
 
 using WebKit::WebInputEvent;

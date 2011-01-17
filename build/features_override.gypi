@@ -3,7 +3,8 @@
 # found in the LICENSE file.
 
 # This file is only included in full-chromium builds, and overrides the
-# feature_defines variable in third_party/WebKit/WebKit/chromium/features.gypi.
+# feature_defines variable in
+# third_party/WebKit/Source/WebKit/chromium/features.gypi.
 {
   'variables': {
     # WARNING: This list of strings completely replaces the list in

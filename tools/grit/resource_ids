@@ -52,7 +52,7 @@
   },
   # WebKit.grd can be in two different places depending on whether we are
   # in a chromium checkout or a webkit-only checkout.
-  "third_party/WebKit/WebKit/chromium/WebKit.grd": {
+  "third_party/WebKit/Source/WebKit/chromium/WebKit.grd": {
     "includes": [7000],
   },
   "WebKit.grd": {

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
 
 namespace webkit_glue {
 

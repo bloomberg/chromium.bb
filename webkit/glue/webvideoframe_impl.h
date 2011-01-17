@@ -6,7 +6,7 @@
 #define WEBKIT_GLUE_WEBVIDEOFRAME_IMPL_H_
 
 #include "media/base/video_frame.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebVideoFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
 
 using namespace WebKit;
 

@@ -9,10 +9,10 @@
 #include "base/string_util.h"
 #include "net/base/net_util.h"
 #include "net/http/http_util.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebHTTPHeaderVisitor.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebHTTPHeaderVisitor.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"
 
 using WebKit::WebHTTPHeaderVisitor;
 using WebKit::WebString;

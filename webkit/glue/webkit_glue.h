@@ -17,8 +17,8 @@
 #include "base/file_path.h"
 #include "base/platform_file.h"
 #include "base/string16.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
 #include "ui/base/clipboard/clipboard.h"
 
 class GURL;

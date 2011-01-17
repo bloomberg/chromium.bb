@@ -5,8 +5,8 @@
 {
   'variables': {
     'setup_third_party_cmd': ['python', 'setup_third_party.py'],
-    'destination': '<(SHARED_INTERMEDIATE_DIR)/webkit/third_party/WebKit/WebKit/chromium/public',
-    'destination_mac': '<(SHARED_INTERMEDIATE_DIR)/webkit/third_party/WebKit/WebKit/mac/WebCoreSupport',
+    'destination': '<(SHARED_INTERMEDIATE_DIR)/webkit/third_party/WebKit/Source/WebKit/chromium/public',
+    'destination_mac': '<(SHARED_INTERMEDIATE_DIR)/webkit/third_party/WebKit/Source/WebKit/mac/WebCoreSupport',
   },
   'targets': [
     {
@@ -33,7 +33,7 @@
             '<(DEPTH)/public',
             '<(destination)',
           ],
-          'message': 'Generating forwarding headers for third_party/WebKit/WebKit/chromium/public',
+          'message': 'Generating forwarding headers for third_party/WebKit/Source/WebKit/chromium/public',
         },
       ],
       'conditions': [
@@ -54,7 +54,7 @@
                 '<(DEPTH)/../mac/WebCoreSupport',
                 '<(destination_mac)',
               ],
-              'message': 'Generating forwarding headers for third_party/WebKit/WebKit/mac/WebCoreSupport',
+              'message': 'Generating forwarding headers for third_party/WebKit/Source/WebKit/mac/WebCoreSupport',
             },
           ],
         }],

@@ -13,7 +13,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_pump_mac.h"
-#include "third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
+#include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_shell_platform_delegate.h"
 #include "webkit/tools/test_shell/test_shell_switches.h"

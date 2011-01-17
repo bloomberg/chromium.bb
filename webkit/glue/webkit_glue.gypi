@@ -6,7 +6,7 @@
   'variables': {
     'conditions': [
       ['inside_chromium_build==0', {
-        'webkit_src_dir': '../../../..',
+        'webkit_src_dir': '../../../../..',
       },{
         'webkit_src_dir': '../../third_party/WebKit',
       }],
@@ -45,7 +45,7 @@
         {
           'action_name': 'webkit_chromium_resources',
           'variables': {
-            'input_path': '<(webkit_src_dir)/WebKit/chromium/WebKit.grd',
+            'input_path': '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.grd',
           },
           'inputs': [
             '<!@(<(grit_info_cmd) --inputs <(input_path))',
@@ -512,11 +512,11 @@
           'conditions': [
             ['inside_chromium_build==1 and component=="shared_library"', {
               'dependencies': [
-                '<(DEPTH)/third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
+                '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                ],
                'export_dependent_settings': [
-                 '<(DEPTH)/third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
+                 '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
                  '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                ],
             }],

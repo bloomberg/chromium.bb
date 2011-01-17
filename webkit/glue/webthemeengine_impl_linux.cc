@@ -6,8 +6,8 @@
 
 #include "gfx/native_theme_linux.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebColor;

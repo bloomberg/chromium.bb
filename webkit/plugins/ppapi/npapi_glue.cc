@@ -12,7 +12,7 @@
 #include "webkit/plugins/ppapi/var.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
 using WebKit::WebBindings;
 

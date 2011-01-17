@@ -13,7 +13,7 @@
 #include "gfx/native_widget_types.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #include "webkit/plugins/npapi/webplugin_2d_device_delegate.h"
 #include "webkit/plugins/npapi/webplugin_3d_device_delegate.h"
 #include "webkit/plugins/npapi/webplugin_audio_device_delegate.h"

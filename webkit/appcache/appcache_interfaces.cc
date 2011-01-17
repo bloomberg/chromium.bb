@@ -6,8 +6,8 @@
 
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebApplicationCacheHost.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebApplicationCacheHost.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebConsoleMessage;

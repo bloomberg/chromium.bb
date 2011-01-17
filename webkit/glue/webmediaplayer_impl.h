@@ -65,8 +65,8 @@
 #include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayer.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
 
 class GURL;
 

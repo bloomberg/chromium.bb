@@ -6,7 +6,7 @@
 #define WEBMENUITEM_H_
 
 #include "base/string16.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebMenuItemInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebMenuItemInfo.h"
 
 // Container for information about entries in an HTML select popup menu and
 // custom entries of the context menu.

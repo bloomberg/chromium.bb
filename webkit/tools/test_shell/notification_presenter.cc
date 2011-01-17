@@ -7,11 +7,11 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebNotification.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebNotificationPermissionCallback.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotification.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPermissionCallback.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 
 using WebKit::WebNotification;
 using WebKit::WebNotificationPresenter;

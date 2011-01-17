@@ -8,7 +8,7 @@
 #include "base/metrics/stats_table.h"
 #include "base/time.h"
 #include "net/http/http_network_layer.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebCache;

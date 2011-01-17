@@ -13,8 +13,8 @@
 #include "app/gfx/gl/gl_context.h"
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/logging.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 using WebKit::WebGLId;
 using WebKit::WebGraphicsContext3D;

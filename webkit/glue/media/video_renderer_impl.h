@@ -16,7 +16,7 @@
 #include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 #include "webkit/glue/media/web_video_renderer.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 

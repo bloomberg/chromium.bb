@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 
 namespace gfx {
 class Rect;

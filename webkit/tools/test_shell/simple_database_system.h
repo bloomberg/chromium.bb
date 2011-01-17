@@ -12,7 +12,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDatabaseObserver.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabaseObserver.h"
 #include "webkit/database/database_connections.h"
 #include "webkit/database/database_tracker.h"
 

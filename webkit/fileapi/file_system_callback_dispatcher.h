@@ -12,7 +12,7 @@
 namespace fileapi {
 
 // This class mirrors the callbacks in
-// third_party/WebKit/WebKit/chromium/public/WebFileSystemCallbacks.h,
+// third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h,
 // but uses chromium types.
 class FileSystemCallbackDispatcher {
  public:

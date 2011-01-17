@@ -6,8 +6,8 @@
 
 #include <Carbon/Carbon.h>
 
-#include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebRect;

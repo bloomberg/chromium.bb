@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 
 namespace WebKit {
 class WebAccessibilityCache;
