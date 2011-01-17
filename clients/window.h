@@ -105,10 +105,11 @@ typedef void (*window_resize_handler_t)(struct window *window,
 					int32_t width, int32_t height,
 					void *data);
 typedef void (*window_redraw_handler_t)(struct window *window, void *data);
-typedef void (*window_frame_handler_t)(struct window *window, uint32_t frame, uint32_t timestamp, void *data);
+
 typedef void (*window_key_handler_t)(struct window *window, struct input *input,
 				     uint32_t time, uint32_t key, uint32_t unicode,
 				     uint32_t state, void *data);
+
 typedef void (*window_keyboard_focus_handler_t)(struct window *window,
 						struct input *device, void *data);
 
@@ -194,9 +195,6 @@ window_set_decoration(struct window *window, int decoration);
 void
 window_set_resize_handler(struct window *window,
 			  window_resize_handler_t handler);
-void
-window_set_frame_handler(struct window *window,
-			 window_frame_handler_t handler);
 
 void
 window_set_key_handler(struct window *window,
@@ -213,10 +211,6 @@ window_set_motion_handler(struct window *window,
 void
 window_set_keyboard_focus_handler(struct window *window,
 				  window_keyboard_focus_handler_t handler);
-
-void
-window_set_frame_handler(struct window *window,
-			 window_frame_handler_t handler);
 
 void
 display_set_global_handler(struct display *display,
