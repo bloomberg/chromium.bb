@@ -33,7 +33,7 @@
 #include "grit/theme_resources.h"
 
 #if defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/extension_installed_bubble_bridge.h"
+#include "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_bridge.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_EXTENSION_VIEW_MAC_H_
-#define CHROME_BROWSER_UI_COCOA_EXTENSION_VIEW_MAC_H_
+#ifndef CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_VIEW_MAC_H_
+#define CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_VIEW_MAC_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -85,4 +85,4 @@ class ExtensionViewMac {
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewMac);
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_EXTENSION_VIEW_MAC_H_
+#endif  // CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_VIEW_MAC_H_

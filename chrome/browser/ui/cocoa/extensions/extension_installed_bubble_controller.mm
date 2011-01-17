@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "extension_installed_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
 
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"

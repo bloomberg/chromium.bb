@@ -4,9 +4,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "extension_installed_bubble_bridge.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_bridge.h"
 
-#import "chrome/browser/ui/cocoa/extension_installed_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 

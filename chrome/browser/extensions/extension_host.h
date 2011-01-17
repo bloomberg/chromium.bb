@@ -18,7 +18,7 @@
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/extensions/extension_view.h"
 #elif defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/extension_view_mac.h"
+#include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #elif defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/extension_view_gtk.h"
 #endif

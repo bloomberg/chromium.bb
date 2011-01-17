@@ -13,7 +13,7 @@
 #import "chrome/browser/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/extension_installed_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"

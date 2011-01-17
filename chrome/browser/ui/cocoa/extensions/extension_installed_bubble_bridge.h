@@ -5,8 +5,8 @@
 // C++ bridge function to connect ExtensionInstallUI to the Cocoa-based
 // extension installed bubble.
 
-#ifndef CHROME_BROWSER_UI_COCOA_EXTENSION_INSTALLED_BUBBLE_BRIDGE_H_
-#define CHROME_BROWSER_UI_COCOA_EXTENSION_INSTALLED_BUBBLE_BRIDGE_H_
+#ifndef CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_BRIDGE_H_
+#define CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_BRIDGE_H_
 #pragma once
 
 #include "gfx/native_widget_types.h"
@@ -25,4 +25,4 @@ void ShowExtensionInstalledBubble(gfx::NativeWindow window,
                                   SkBitmap icon);
 }
 
-#endif  // CHROME_BROWSER_UI_COCOA_EXTENSION_INSTALLED_BUBBLE_BRIDGE_H_
+#endif  // CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_BRIDGE_H_
