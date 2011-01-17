@@ -8,7 +8,7 @@
 #include "chrome/browser/autofill/form_structure.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 

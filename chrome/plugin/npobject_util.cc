@@ -9,7 +9,7 @@
 #include "chrome/plugin/npobject_proxy.h"
 #include "chrome/plugin/plugin_channel_base.h"
 #include "third_party/npapi/bindings/nphostapi.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/npapi/plugin_host.h"
 #include "webkit/glue/webkit_glue.h"
 

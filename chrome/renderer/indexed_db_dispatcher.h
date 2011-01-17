@@ -9,10 +9,10 @@
 #include "base/id_map.h"
 #include "base/nullable_string16.h"
 #include "ipc/ipc_channel.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebExceptionCode.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabase.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
 
 class IndexedDBKey;
 class SerializedScriptValue;

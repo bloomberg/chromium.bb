@@ -14,8 +14,8 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "chrome/renderer/pepper_widget.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebScrollbarClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScrollbarClient.h"
 
 // An implementation of a horizontal/vertical scrollbar.
 class PepperScrollbarWidget : public PepperWidget,

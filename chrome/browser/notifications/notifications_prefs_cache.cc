@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
 NotificationsPrefsCache::NotificationsPrefsCache()
         : default_content_setting_(CONTENT_SETTING_DEFAULT),

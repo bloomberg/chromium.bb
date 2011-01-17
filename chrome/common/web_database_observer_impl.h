@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ipc/ipc_message.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDatabaseObserver.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabaseObserver.h"
 #include "webkit/database/database_connections.h"
 
 class WebDatabaseObserverImpl : public WebKit::WebDatabaseObserver {

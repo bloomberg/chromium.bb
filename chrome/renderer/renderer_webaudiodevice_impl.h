@@ -9,8 +9,8 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/renderer/audio_device.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebAudioDevice.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioDevice.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 
 class RendererWebAudioDeviceImpl : public WebKit::WebAudioDevice,
                                    public AudioDevice::RenderCallback {

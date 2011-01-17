@@ -6,7 +6,7 @@
 #define CHROME_COMMON_FILE_SYSTEM_WEBFILESYSTEM_IMPL_H_
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 
 namespace WebKit {
 class WebFileWriter;

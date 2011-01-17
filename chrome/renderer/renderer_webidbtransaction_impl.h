@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBTransaction.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
 
 namespace WebKit {
 class WebIDBObjectStore;

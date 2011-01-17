@@ -11,7 +11,7 @@
 #include "base/threading/platform_thread.h"
 #include "gfx/point.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 
 class DragDropThread;

@@ -13,8 +13,8 @@
 #include "chrome/browser/autofill/fax_field.h"
 #include "chrome/browser/autofill/name_field.h"
 #include "chrome/browser/autofill/phone_field.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebRegularExpression.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRegularExpression.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "grit/autofill_resources.h"
 
 // Field names from the ECML specification; see RFC 3106.  We've

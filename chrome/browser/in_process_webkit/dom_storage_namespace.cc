@@ -8,8 +8,8 @@
 #include "chrome/browser/in_process_webkit/dom_storage_area.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/dom_storage_message_filter.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebStorageNamespace.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebStorageArea;

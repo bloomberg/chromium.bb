@@ -493,7 +493,7 @@
         'chrome_mesa',
         'default_plugin/default_plugin.gyp:default_plugin',
         '../ppapi/ppapi.gyp:ppapi_tests',
-        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:copy_TestNetscapePlugIn',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:copy_TestNetscapePlugIn',
       ],
       'include_dirs': [
         '..',
@@ -1005,7 +1005,7 @@
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
-        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'include_dirs': [
         '..',
@@ -2504,7 +2504,7 @@
         'theme_resources',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
-        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'include_dirs': [
         '..',
@@ -2849,7 +2849,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',
-        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'include_dirs': [
         '..',

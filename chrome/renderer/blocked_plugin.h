@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/renderer/custom_menu_listener.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "webkit/glue/cpp_bound_class.h"
 #include "webkit/plugins/npapi/webview_plugin.h"
 

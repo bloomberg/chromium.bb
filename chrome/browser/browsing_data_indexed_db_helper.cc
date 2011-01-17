@@ -12,9 +12,9 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profiles/profile.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebSecurityOrigin;

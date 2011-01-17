@@ -22,7 +22,7 @@
 #include "base/timer.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "net/url_request/url_request_job_tracker.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class Extension;
 class SkBitmap;

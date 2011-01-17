@@ -12,12 +12,12 @@
 #include "chrome/renderer/renderer_webidbindex_impl.h"
 #include "chrome/renderer/renderer_webidbobjectstore_impl.h"
 #include "chrome/renderer/renderer_webidbtransaction_impl.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabaseError.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBKeyRange.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyRange.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebExceptionCode;
 using WebKit::WebFrame;

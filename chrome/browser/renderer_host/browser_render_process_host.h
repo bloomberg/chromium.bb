@@ -22,7 +22,7 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class CommandLine;
 class GURL;

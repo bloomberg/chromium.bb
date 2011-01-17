@@ -5,7 +5,7 @@
 #ifndef CHROME_RENDERER_DEVICE_ORIENTATION_DISPATCHER_H_
 #define CHROME_RENDERER_DEVICE_ORIENTATION_DISPATCHER_H_
 
-#include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientationClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDeviceOrientationClient.h"
 
 #include "base/scoped_ptr.h"
 #include "chrome/renderer/render_view_observer.h"

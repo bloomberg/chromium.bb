@@ -12,7 +12,7 @@
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/common/window_container_type.h"
 #include "gfx/rect.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/window_open_disposition.h"
 

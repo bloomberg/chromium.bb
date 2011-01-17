@@ -16,9 +16,9 @@
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/worker/worker_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebBlobRegistry.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBlobRegistry.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
 

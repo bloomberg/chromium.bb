@@ -23,9 +23,9 @@
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "ipc/ipc_channel.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebTextInputType.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
 
 namespace gfx {
 class Rect;

@@ -32,7 +32,7 @@
       'worker',
       'service',
       '../printing/printing.gyp:printing',
-      '../third_party/WebKit/WebKit/chromium/WebKit.gyp:inspector_resources',
+      '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:inspector_resources',
     ],
     'nacl_win64_dependencies': [
       'common_nacl_win64',
@@ -795,7 +795,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
-        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
         'worker/nativewebworker_impl.cc',

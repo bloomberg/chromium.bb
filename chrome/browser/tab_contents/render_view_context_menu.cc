@@ -53,9 +53,9 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/webmenuitem.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;

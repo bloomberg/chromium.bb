@@ -8,7 +8,7 @@
 
 #include "app/win/drop_target.h"
 #include "base/scoped_ptr.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 
 class InterstitialDropTarget;
 class RenderViewHost;

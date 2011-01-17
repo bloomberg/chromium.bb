@@ -4,8 +4,8 @@
 
 #include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/common/render_messages.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
-#include "third_party/WebKit/WebKit/chromium/public/win/WebScreenInfoFactory.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/win/WebScreenInfoFactory.h"
 
 using WebKit::WebScreenInfo;
 using WebKit::WebScreenInfoFactory;

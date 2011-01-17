@@ -11,7 +11,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "grit/webkit_strings.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 
 namespace {
 

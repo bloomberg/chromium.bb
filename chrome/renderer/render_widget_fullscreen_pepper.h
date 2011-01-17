@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
 
 #include "chrome/renderer/render_widget_fullscreen.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebWidget.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
 
 namespace webkit {

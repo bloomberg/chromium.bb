@@ -31,7 +31,7 @@
 #include "chrome/common/unix_domain_socket_posix.h"
 #include "skia/ext/SkFontHost_fontconfig_direct.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
-#include "third_party/WebKit/WebKit/chromium/public/gtk/WebFontInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebFontInfo.h"
 
 using WebKit::WebCString;
 using WebKit::WebFontInfo;

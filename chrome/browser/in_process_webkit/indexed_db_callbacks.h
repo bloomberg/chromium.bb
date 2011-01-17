@@ -10,11 +10,11 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "chrome/common/indexed_db_messages.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBCursor.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabaseError.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBTransaction.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
 
 // Template magic to figure out what message to send to the renderer based on
 // which (overloaded) onSuccess method we expect to be called.

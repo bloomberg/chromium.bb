@@ -38,8 +38,8 @@
 #include "chrome/common/render_messages.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/WebKit/WebKit/chromium/public/mac/WebInputEventFactory.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebInputEventFactory.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #import "third_party/mozilla/ComplexTextInputPanel.h"
@@ -92,7 +92,7 @@ WebKit::WebColor WebColorFromNSColor(NSColor *color) {
 }
 
 // Extract underline information from an attributed string.
-// Mostly copied from third_party/WebKit/WebKit/mac/WebView/WebHTMLView.mm
+// Mostly copied from third_party/WebKit/Source/WebKit/mac/WebView/WebHTMLView.mm
 void ExtractUnderlines(
     NSAttributedString* string,
     std::vector<WebKit::WebCompositionUnderline>* underlines) {

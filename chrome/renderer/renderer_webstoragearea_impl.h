@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 class RendererWebStorageAreaImpl : public WebKit::WebStorageArea {
  public:

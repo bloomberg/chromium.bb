@@ -7,7 +7,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/common/worker_messages.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 
 WebSharedWorkerProxy::WebSharedWorkerProxy(ChildThread* child_thread,
                                            unsigned long long document_id,

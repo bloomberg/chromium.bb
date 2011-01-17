@@ -13,9 +13,9 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebTextInputType.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
 
 namespace gfx {
 class Rect;

@@ -11,7 +11,7 @@
 #include "chrome/common/serialized_script_value.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebExceptionCode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 
 #define IPC_MESSAGE_START IndexedDBMsgStart
 

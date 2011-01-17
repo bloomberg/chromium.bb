@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/scoped_ptr.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebMimeRegistry.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebMimeRegistry.h"
 #include "webkit/glue/webkitclient_impl.h"
 
 class WebFileSystemImpl;

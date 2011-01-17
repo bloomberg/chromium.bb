@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBKey.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
 
 class IndexedDBKey {
  public:

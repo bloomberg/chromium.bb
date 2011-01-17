@@ -10,7 +10,7 @@
 #include "base/id_map.h"
 #include "chrome/browser/browser_message_filter.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebExceptionCode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 
 class HostContentSettingsMap;
 class IndexedDBKey;

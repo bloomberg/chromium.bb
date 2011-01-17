@@ -12,8 +12,8 @@
 #include "base/time.h"
 #include "gfx/size.h"
 #include "printing/native_metafile.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 
 #if defined(OS_MACOSX)
 #include "base/shared_memory.h"

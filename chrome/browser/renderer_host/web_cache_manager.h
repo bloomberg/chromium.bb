@@ -17,7 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 template<typename Type>
 struct DefaultSingletonTraits;

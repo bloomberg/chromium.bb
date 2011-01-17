@@ -8,8 +8,8 @@
 
 #include "ipc/ipc_message.h"
 // TODO(darin): WebCookieJar.h is missing a WebString.h include!
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCookieJar.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCookieJar.h"
 
 namespace IPC {
 class SyncMessage;

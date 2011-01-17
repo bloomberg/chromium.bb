@@ -13,8 +13,8 @@
 #include "base/time.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/page_transition_types.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 
 namespace webkit_glue {
 struct PasswordForm;

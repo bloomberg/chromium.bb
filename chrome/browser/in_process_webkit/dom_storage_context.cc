@@ -15,8 +15,8 @@
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/url_constants.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebSecurityOrigin;

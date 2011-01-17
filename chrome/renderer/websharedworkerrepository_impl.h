@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_WEBSHAREDWORKERREPOSITORY_IMPL_H_
 #pragma once
 
-#include "third_party/WebKit/WebKit/chromium/public/WebSharedWorkerRepository.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorkerRepository.h"
 
 #include "base/hash_tables.h"
 

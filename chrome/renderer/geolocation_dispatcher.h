@@ -8,8 +8,8 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/renderer/render_view_observer.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationClient.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationController.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationController.h"
 
 struct Geoposition;
 

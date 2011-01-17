@@ -6,7 +6,7 @@
 
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebWidget.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 
 using WebKit::WebWidget;
 

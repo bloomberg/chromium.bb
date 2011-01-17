@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/web_io_operators.h"
 #include "webkit/glue/webaccessibility.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 
 TEST(RenderMessagesUnittest, WebAccessibility) {
   // Test a simple case.

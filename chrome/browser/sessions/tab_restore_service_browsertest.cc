@@ -12,7 +12,7 @@
 #include "chrome/test/render_view_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 
 // Create subclass that overrides TimeNow so that we can control the time used
 // for closed tabs and windows.

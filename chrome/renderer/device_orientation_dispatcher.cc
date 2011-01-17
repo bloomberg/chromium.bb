@@ -6,8 +6,8 @@
 
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientation.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientationController.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDeviceOrientation.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDeviceOrientationController.h"
 
 DeviceOrientationDispatcher::DeviceOrientationDispatcher(
     RenderView* render_view)

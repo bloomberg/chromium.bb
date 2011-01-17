@@ -25,8 +25,8 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/content_settings.h"
 #include "gfx/native_widget_types.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/base/clipboard/clipboard.h"
 
 class ChromeURLRequestContext;

@@ -14,7 +14,7 @@
 #include "chrome/common/sandbox_methods_linux.h"
 #include "chrome/common/unix_domain_socket_posix.h"
 
-#include "third_party/WebKit/WebKit/chromium/public/linux/WebFontRenderStyle.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontRenderStyle.h"
 
 static int GetSandboxFD() {
   return kSandboxIPCChannel + base::GlobalDescriptors::kBaseDescriptor;

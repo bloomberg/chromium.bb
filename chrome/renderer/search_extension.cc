@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_view.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebFrame;

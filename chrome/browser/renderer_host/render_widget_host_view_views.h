@@ -14,7 +14,7 @@
 #include "base/time.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "gfx/native_widget_types.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/event.h"
 #include "views/view.h"

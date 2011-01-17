@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
 TEST(NotificationsPrefsCacheTest, CanCreate) {
   scoped_refptr<NotificationsPrefsCache> cache(new NotificationsPrefsCache());

@@ -240,7 +240,7 @@ void PromiseWriterTask::Run() {
     position.y -= [dragImage_.get() size].height - imageOffset_.y;
   }
   // Per kwebster, offset arg is ignored, see -_web_DragImageForElement: in
-  // third_party/WebKit/WebKit/mac/Misc/WebNSViewExtras.m.
+  // third_party/WebKit/Source/WebKit/mac/Misc/WebNSViewExtras.m.
   [window dragImage:[self dragImage]
                  at:position
              offset:NSZeroSize

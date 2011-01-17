@@ -12,7 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "webkit/glue/webdropdata.h"
 
 class TabContents;

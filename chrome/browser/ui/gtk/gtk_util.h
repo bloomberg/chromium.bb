@@ -14,7 +14,7 @@
 #include "base/string16.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "webkit/glue/window_open_disposition.h"
 
 typedef struct _cairo cairo_t;

@@ -7,7 +7,7 @@
 
 #include "chrome/renderer/render_widget.h"
 
-#include "third_party/WebKit/WebKit/chromium/public/WebWidget.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 
 // TODO(boliu): Override non-supported methods with no-op? eg setWindowRect().
 class RenderWidgetFullscreen : public RenderWidget {

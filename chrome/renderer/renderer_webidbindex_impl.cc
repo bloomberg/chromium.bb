@@ -8,8 +8,8 @@
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/indexed_db_dispatcher.h"
 #include "chrome/renderer/renderer_webidbtransaction_impl.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 
 using WebKit::WebExceptionCode;
 using WebKit::WebDOMStringList;

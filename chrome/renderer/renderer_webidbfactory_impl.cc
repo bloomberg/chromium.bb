@@ -7,8 +7,8 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/indexed_db_dispatcher.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDOMStringList.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMStringList.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebDOMStringList;
 using WebKit::WebFrame;

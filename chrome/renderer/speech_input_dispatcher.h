@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "chrome/common/speech_input_result.h"
 #include "chrome/renderer/render_view_observer.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSpeechInputController.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechInputController.h"
 
 class GURL;
 

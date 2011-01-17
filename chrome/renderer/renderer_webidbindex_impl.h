@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBIndex.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBIndex.h"
 
 class RendererWebIDBIndexImpl : public WebKit::WebIDBIndex {
  public:

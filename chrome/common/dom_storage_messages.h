@@ -10,7 +10,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
 
 #define IPC_MESSAGE_START DOMStorageMsgStart
 

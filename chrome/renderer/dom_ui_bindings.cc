@@ -8,8 +8,8 @@
 #include "base/stl_util-inl.h"
 #include "base/values.h"
 #include "chrome/common/render_messages.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 
 DOMBoundBrowserObject::DOMBoundBrowserObject()
     : sender_(NULL),

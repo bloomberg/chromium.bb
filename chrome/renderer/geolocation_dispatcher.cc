@@ -5,12 +5,12 @@
 #include "chrome/renderer/geolocation_dispatcher.h"
 
 #include "chrome/common/render_messages.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationPermissionRequest.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationPermissionRequestManager.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationClient.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationPosition.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationError.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationPermissionRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationPermissionRequestManager.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationPosition.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 
 using namespace WebKit;
 

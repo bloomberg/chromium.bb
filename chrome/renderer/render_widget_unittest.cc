@@ -9,7 +9,7 @@
 #include "chrome/renderer/mock_render_thread.h"
 #include "chrome/renderer/render_widget.h"
 #include "chrome/renderer/render_thread.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 
 namespace {
 

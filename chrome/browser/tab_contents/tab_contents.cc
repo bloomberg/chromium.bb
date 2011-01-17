@@ -102,7 +102,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/glue/webpreferences.h"

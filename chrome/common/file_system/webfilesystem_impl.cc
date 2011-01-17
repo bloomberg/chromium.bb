@@ -8,9 +8,9 @@
 #include "chrome/common/file_system/webfilesystem_callback_dispatcher.h"
 #include "chrome/common/file_system/webfilewriter_impl.h"
 #include "chrome/common/child_thread.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileInfo.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileSystemCallbacks.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFileInfo;

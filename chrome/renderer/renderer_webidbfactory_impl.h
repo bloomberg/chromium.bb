@@ -6,9 +6,9 @@
 #define CHROME_RENDERER_RENDERER_WEBIDBFACTORY_IMPL_H_
 #pragma once
 
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 
 namespace WebKit {
 class WebDOMStringList;

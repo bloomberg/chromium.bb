@@ -6,8 +6,8 @@
 #define CHROME_RENDERER_EXTERNAL_POPUP_MENU_H_
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebExternalPopupMenu.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPopupMenuInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebExternalPopupMenu.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenuInfo.h"
 
 class RenderView;
 namespace WebKit {

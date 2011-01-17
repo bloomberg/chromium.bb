@@ -11,7 +11,7 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
-#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
 // A simple MessageFilter that will ignore all messages and respond to sync
 // messages with an error when is_listening_ is false.

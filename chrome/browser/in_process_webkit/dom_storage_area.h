@@ -13,7 +13,7 @@
 #include "base/string16.h"
 #include "chrome/common/dom_storage_common.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
 
 class DOMStorageNamespace;
 class HostContentSettingsMap;

@@ -5,7 +5,7 @@
 #include "chrome/common/indexed_db_key.h"
 
 #include "base/logging.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebIDBKey;
 

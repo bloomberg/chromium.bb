@@ -9,8 +9,8 @@
 #include "base/basictypes.h"
 #include "base/task.h"
 #include "ipc/ipc_channel.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebWorkerClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebWorkerClient.h"
 
 namespace WebKit {
 class WebApplicationCacheHost;

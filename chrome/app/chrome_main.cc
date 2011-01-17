@@ -56,7 +56,7 @@
 #include "chrome/browser/mach_broker_mac.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "grit/chromium_strings.h"
-#include "third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
+#include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #endif
 
 #if defined(OS_POSIX)

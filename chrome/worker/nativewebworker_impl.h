@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebWorker.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebWorkerClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebWorker.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebWorkerClient.h"
 
 
 // Forward declaration for the listener thread pointer.

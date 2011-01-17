@@ -12,8 +12,8 @@
 #include "chrome/renderer/navigation_state.h"
 #include "chrome/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPerformance.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPerformance.h"
 
 using base::Time;
 using base::TimeDelta;

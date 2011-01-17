@@ -19,7 +19,7 @@
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
 class AutoFillHelper;
 class MockRenderProcess;

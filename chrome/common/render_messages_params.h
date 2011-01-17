@@ -30,7 +30,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_param_traits.h"
 #include "media/audio/audio_parameters.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/resource_type.h"
 #include "webkit/glue/webaccessibility.h"

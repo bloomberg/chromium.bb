@@ -21,8 +21,8 @@
 #include "chrome/common/render_messages.h"
 #include "gfx/gtk_native_view_id_manager.h"
 #include "grit/generated_resources.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
-#include "third_party/WebKit/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
 #include "ui/base/clipboard/clipboard.h"
 
 using WebKit::WebScreenInfo;

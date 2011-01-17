@@ -20,7 +20,7 @@
 #include "gfx/blit.h"
 #include "gfx/canvas.h"
 #include "skia/ext/platform_device.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 #if defined(OS_MACOSX)

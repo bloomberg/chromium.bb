@@ -6,7 +6,7 @@
 
 #import <AppKit/AppKit.h>
 
-#include "third_party/WebKit/WebKit/chromium/public/mac/WebInputEventFactory.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebInputEventFactory.h"
 
 using WebKit::WebInputEventFactory;
 

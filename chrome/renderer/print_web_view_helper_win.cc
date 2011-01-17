@@ -15,7 +15,7 @@
 #include "printing/units.h"
 #include "skia/ext/vector_canvas.h"
 #include "skia/ext/vector_platform_device.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
 using printing::ConvertUnitDouble;
 using printing::kPointsPerInch;

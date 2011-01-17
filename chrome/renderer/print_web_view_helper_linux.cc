@@ -10,8 +10,8 @@
 #include "chrome/common/render_messages_params.h"
 #include "printing/native_metafile.h"
 #include "skia/ext/vector_canvas.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 
 using printing::NativeMetafile;
 using WebKit::WebFrame;

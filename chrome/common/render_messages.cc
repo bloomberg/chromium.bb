@@ -18,7 +18,7 @@
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "ppapi/c/private/ppb_flash.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/blob/blob_data.h"

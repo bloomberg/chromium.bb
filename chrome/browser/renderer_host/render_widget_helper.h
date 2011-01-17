@@ -16,7 +16,7 @@
 #include "base/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/common/window_container_type.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 
 namespace IPC {
 class Message;

@@ -7,7 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCookie.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCookie.h"
 #include "webkit/glue/webcookie.h"
 
 using WebKit::WebCookie;

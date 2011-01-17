@@ -8,8 +8,8 @@
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "chrome/common/database_messages.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 WebDatabaseObserverImpl::WebDatabaseObserverImpl(
     IPC::Message::Sender* sender)

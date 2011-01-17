@@ -36,7 +36,7 @@
 #if defined(OS_MACOSX)
 #include "base/eintr_wrapper.h"
 #include "chrome/app/breakpad_mac.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #endif  // OS_MACOSX
 
 #if defined(USE_LINUX_BREAKPAD)

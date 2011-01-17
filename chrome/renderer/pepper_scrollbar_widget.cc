@@ -10,7 +10,7 @@
 #include "chrome/renderer/pepper_devices.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_device.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebScrollbar.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScrollbar.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/glue/webkit_glue.h"
 

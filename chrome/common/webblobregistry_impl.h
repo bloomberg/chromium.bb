@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ipc/ipc_message.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebBlobRegistry.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBlobRegistry.h"
 
 namespace WebKit {
 class WebBlobData;

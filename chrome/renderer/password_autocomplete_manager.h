@@ -13,7 +13,7 @@
 #include "chrome/renderer/page_click_listener.h"
 #include "chrome/renderer/render_view_observer.h"
 #include "webkit/glue/password_form_dom_manager.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 
 namespace WebKit {
 class WebInputElement;
