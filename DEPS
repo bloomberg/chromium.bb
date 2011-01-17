@@ -180,6 +180,9 @@ deps = {
 
   "src/third_party/libjpeg_turbo":
     "/trunk/deps/third_party/libjpeg_turbo@66929",
+
+  "src/third_party/flac":
+    "/trunk/deps/third_party/flac@71053",
 }
 
 
