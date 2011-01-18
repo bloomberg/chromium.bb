@@ -3581,3 +3581,12 @@
    ...
    fun:*SpeexEncoderC1Ei
 }
+{
+   Bug_69919
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:_ZN3gfx15OSMesaGLContext10InitializeEjPNS_9GLContextE
+   fun:_ZN3gfx9GLContext24CreateOffscreenGLContextEPS0_
+   fun:*InitializeGLContextEv
+}
