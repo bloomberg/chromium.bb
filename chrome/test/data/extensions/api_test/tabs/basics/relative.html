@@ -5,7 +5,6 @@ window.onload = function() {
   chrome.extension.getViews({type:"tab"}).forEach(function(view) {
     if (view.relativePageLoaded) {
       view.relativePageLoaded();
-      break;
     }
   });
 }
