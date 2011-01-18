@@ -10,13 +10,19 @@ cr.define('mobile', function() {
 
   cr.addSingletonGetter(MobileSetup);
 
-  MobileSetup.PLAN_ACTIVATION_LOADING = -1;
-  MobileSetup.PLAN_ACTIVATION_START = 0;
-  MobileSetup.PLAN_ACTIVATION_INITIATING_ACTIVATION = 1;
-  MobileSetup.PLAN_ACTIVATION_RECONNECTING = 2;
-  MobileSetup.PLAN_ACTIVATION_SHOWING_PAYMENT = 3;
-  MobileSetup.PLAN_ACTIVATION_DONE = 4;
-  MobileSetup.PLAN_ACTIVATION_ERROR = 5;
+  MobileSetup.PLAN_ACTIVATION_PAGE_LOADING            = -1;
+  MobileSetup.PLAN_ACTIVATION_START                   = 0;
+  MobileSetup.PLAN_ACTIVATION_TRYING_OTASP            = 1;
+  MobileSetup.PLAN_ACTIVATION_RECONNECTING_OTASP_TRY  = 2;
+  MobileSetup.PLAN_ACTIVATION_INITIATING_ACTIVATION   = 3;
+  MobileSetup.PLAN_ACTIVATION_RECONNECTING            = 4;
+  MobileSetup.PLAN_ACTIVATION_SHOWING_PAYMENT         = 5;
+  MobileSetup.PLAN_ACTIVATION_DELAY_OTASP             = 6;
+  MobileSetup.PLAN_ACTIVATION_START_OTASP             = 7;
+  MobileSetup.PLAN_ACTIVATION_OTASP                   = 8;
+  MobileSetup.PLAN_ACTIVATION_RECONNECTING_OTASP      = 9;
+  MobileSetup.PLAN_ACTIVATION_DONE                    = 10;
+  MobileSetup.PLAN_ACTIVATION_ERROR                   = 0xFF;
 
   MobileSetup.ACTIVATION_PAGE_URL =
     'file:///usr/share/chromeos-assets/mobile/activation.html';
@@ -69,7 +75,7 @@ cr.define('mobile', function() {
         }
       });
 
-      this.changeState_(MobileSetup.PLAN_ACTIVATION_LOADING);
+      this.changeState_({state: MobileSetup.PLAN_ACTIVATION_PAGE_LOADING});
       setInterval(mobile.MobileSetup.drawProgress, 100);
       // Kick off activation process.
       chrome.send('startActivation', []);
@@ -105,9 +111,13 @@ cr.define('mobile', function() {
       var main = $('mainbody');
       // Map handler state to UX.
       switch(new_state) {
-        case MobileSetup.PLAN_ACTIVATION_LOADING:
+        case MobileSetup.PLAN_ACTIVATION_PAGE_LOADING:
         case MobileSetup.PLAN_ACTIVATION_START:
+        case MobileSetup.PLAN_ACTIVATION_DELAY_OTASP:
+        case MobileSetup.PLAN_ACTIVATION_START_OTASP:
         case MobileSetup.PLAN_ACTIVATION_RECONNECTING:
+        case MobileSetup.PLAN_ACTIVATION_RECONNECTING_OTASP_TRY:
+        case MobileSetup.PLAN_ACTIVATION_RECONNECTING_OTASP:
           $('statusHeader').textContent =
               MobileSetup.localStrings_.getString('connecting_header');
           $('auxHeader').textContent =
@@ -120,7 +130,9 @@ cr.define('mobile', function() {
           $('canvas').classList.remove('hidden');
           $('carrierPage').classList.remove('hidden');
           break;
+        case MobileSetup.PLAN_ACTIVATION_TRYING_OTASP:
         case MobileSetup.PLAN_ACTIVATION_INITIATING_ACTIVATION:
+        case MobileSetup.PLAN_ACTIVATION_OTASP:
           $('statusHeader').textContent =
               MobileSetup.localStrings_.getString('activating_header');
           $('auxHeader').textContent =

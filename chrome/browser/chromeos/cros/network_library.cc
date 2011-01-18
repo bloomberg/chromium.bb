@@ -85,6 +85,9 @@ static const char* kRoamingStateHome = "home";
 static const char* kRoamingStateRoaming = "roaming";
 static const char* kRoamingStateUnknown = "unknown";
 
+// How long we should remember that cellular plan payment was received.
+const int kRecentPlanPaymentHours = 6;
+
 static ConnectionState ParseState(const std::string& state) {
   if (state == kStateIdle)
     return STATE_IDLE;
@@ -1137,6 +1140,18 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     RequestCellularDataPlanUpdate(network->service_path().c_str());
   }
 
+  // Records information that cellular play payment had happened.
+  virtual void SignalCellularPlanPayment() {
+    DCHECK(!HasRecentCellularPlanPayment());
+    cellular_plan_payment_time_ = base::Time::Now();
+  }
+
+  // Returns true if cellular plan payment had been recorded recently.
+  virtual bool HasRecentCellularPlanPayment() {
+    return (base::Time::Now() -
+              cellular_plan_payment_time_).InHours() < kRecentPlanPaymentHours;
+  }
+
   virtual void DisconnectFromWirelessNetwork(const WirelessNetwork* network) {
     DCHECK(network);
     if (!EnsureCrosLoaded() || !network)
@@ -1623,7 +1638,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     cellular1->set_service_path("fc1");
     cellular1->set_name("Fake Cellular 1");
     cellular1->set_strength(70);
-    cellular1->set_connected(true);
+    cellular1->set_connected(false);
     cellular1->set_activation_state(ACTIVATION_STATE_ACTIVATED);
     cellular1->set_payment_url(std::string("http://www.google.com"));
     cellular1->set_network_technology(NETWORK_TECHNOLOGY_EVDO);
@@ -1770,7 +1785,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     bool boolval = false;
     int intval = 0;
     std::string stringval;
-    Network* network;
+    Network* network = NULL;
     if (ethernet_->service_path() == path) {
       network = ethernet_;
     } else {
@@ -1781,7 +1796,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       if (cellular == NULL && wifi == NULL)
         return;
 
-      WirelessNetwork* wireless;
+      WirelessNetwork* wireless = NULL;
       if (wifi != NULL)
         wireless = static_cast<WirelessNetwork*>(wifi);
       else
@@ -1824,7 +1839,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         network->InitIPAddress();
       }
     }
-    NotifyNetworkChanged(network);
+    if (network)
+      NotifyNetworkChanged(network);
   }
 
   void UpdateCellularDataPlan(const CellularDataPlanList* data_plans) {
@@ -1900,6 +1916,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   // Delayed task to retrieve the network information.
   CancelableTask* update_task_;
+
+  // Cellular plan payment time.
+  base::Time cellular_plan_payment_time_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLibraryImpl);
 };
@@ -1984,6 +2003,8 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
     return true;
   }
   virtual void RefreshCellularDataPlans(const CellularNetwork* network) {}
+  virtual void SignalCellularPlanPayment() {}
+  virtual bool HasRecentCellularPlanPayment() { return false; }
   virtual void DisconnectFromWirelessNetwork(const WirelessNetwork* network) {}
   virtual void SaveCellularNetwork(const CellularNetwork* network) {}
   virtual void SaveWifiNetwork(const WifiNetwork* network) {}

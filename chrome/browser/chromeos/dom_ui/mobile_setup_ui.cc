@@ -19,6 +19,7 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/timer.h"
 #include "base/values.h"
 #include "base/weak_ptr.h"
 #include "chrome/browser/browser_list.h"
@@ -57,6 +58,8 @@ const char kErrorNoEVDO[] = "no_evdo";
 const char kErrorRoamingActivation[] = "roaming_activation";
 const char kErrorRoamingPartiallyActivated[] = "roaming_partially_activated";
 const char kErrorNoService[] = "no_service";
+const char kErrorDisabled[] = "disabled";
+const char kErrorNoDevice[] = "no_device";
 const char kFailedPaymentError[] = "failed_payment";
 const char kFailedConnectivity[] = "connectivity";
 
@@ -72,9 +75,23 @@ const char kErrorsField[] = "errors";
 // there is no connectivity in the restricted pool.
 const int kMaxActivationAttempt = 3;
 // Number of times we will retry to reconnect if connection fails.
-const int kMaxConnectionRetry = 3;
+const int kMaxConnectionRetry = 10;
+// Number of times we will retry to reconnect if connection fails.
+const int kMaxConnectionRetryOTASP = 30;
+// Number of times we will retry to reconnect after payment is processed.
+const int kMaxReconnectAttemptOTASP = 30;
+// Reconnect retry delay (after payment is processed).
+const int kPostPaymentReconnectDelayMS = 30000;   // 30s.
 // Connection timeout in seconds.
-const int kConnectionTimeoutSeconds = 30;
+const int kConnectionTimeoutSeconds = 45;
+// Reconnect delay.
+const int kReconnectDelayMS = 3000;
+// Reconnect timer delay.
+const int kReconnectTimerDelayMS = 1000;
+// Reconnect delay after previous failure.
+const int kFailedReconnectDelayMS = 10000;
+// Retry delay after failed OTASP attempt.
+const int kOTASPRetryDelay = 10000;
 
 chromeos::CellularNetwork* GetCellularNetwork() {
   chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
@@ -156,19 +173,25 @@ class MobileSetupHandler
 
  private:
   typedef enum PlanActivationState {
-    PLAN_ACTIVATION_PAGE_LOADING = -1,
-    PLAN_ACTIVATION_START = 0,
-    PLAN_ACTIVATION_INITIATING_ACTIVATION = 1,
-    PLAN_ACTIVATION_RECONNECTING = 2,
-    PLAN_ACTIVATION_SHOWING_PAYMENT = 3,
-    PLAN_ACTIVATION_DONE = 4,
-    PLAN_ACTIVATION_ERROR = 5,
+    PLAN_ACTIVATION_PAGE_LOADING            = -1,
+    PLAN_ACTIVATION_START                   = 0,
+    PLAN_ACTIVATION_TRYING_OTASP            = 1,
+    PLAN_ACTIVATION_RECONNECTING_OTASP_TRY  = 2,
+    PLAN_ACTIVATION_INITIATING_ACTIVATION   = 3,
+    PLAN_ACTIVATION_RECONNECTING            = 4,
+    PLAN_ACTIVATION_SHOWING_PAYMENT         = 5,
+    PLAN_ACTIVATION_DELAY_OTASP             = 6,
+    PLAN_ACTIVATION_START_OTASP             = 7,
+    PLAN_ACTIVATION_OTASP                   = 8,
+    PLAN_ACTIVATION_RECONNECTING_OTASP      = 9,
+    PLAN_ACTIVATION_DONE                    = 10,
+    PLAN_ACTIVATION_ERROR                   = 0xFF,
   } PlanActivationState;
 
   class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
    public:
-    explicit TaskProxy(const base::WeakPtr<MobileSetupHandler>& handler)
-        : handler_(handler) {
+    TaskProxy(const base::WeakPtr<MobileSetupHandler>& handler, int delay)
+        : handler_(handler), delay_(delay) {
     }
     TaskProxy(const base::WeakPtr<MobileSetupHandler>& handler,
               const std::string& status)
@@ -182,13 +205,18 @@ class MobileSetupHandler
       if (handler_)
         handler_->SetTransactionStatus(status_);
     }
-    void ContinueActivation() {
+    void ContinueConnecting() {
       if (handler_)
-        handler_->ContinueActivation();
+        handler_->ContinueConnecting(delay_);
+    }
+    void RetryOTASP() {
+      if (handler_)
+        handler_->RetryOTASP();
     }
    private:
     base::WeakPtr<MobileSetupHandler> handler_;
     std::string status_;
+    int delay_;
     DISALLOW_COPY_AND_ASSIGN(TaskProxy);
   };
 
@@ -200,17 +228,29 @@ class MobileSetupHandler
   void InitiateActivation();
   // Starts activation.
   void StartActivation();
+  // Retried OTASP.
+  void RetryOTASP();
   // Continues activation process. This method is called after we disconnect
   // due to detected connectivity issue to kick off reconnection.
-  void ContinueActivation();
+  void ContinueConnecting(int delay);
 
   // Sends message to host registration page with system/user info data.
   void SendDeviceInfo();
 
+  // Callback for when |reconnect_timer_| fires.
+  void ReconnectTimerFired();
+  // Starts OTASP process.
+  void StartOTASP();
+  // Checks if we need to reconnect due to failed connection attempt.
+  bool NeedsReconnecting(chromeos::CellularNetwork* network,
+                         PlanActivationState* new_state,
+                         std::string* error_description);
+  // Disconnect from network.
+  void DisconnectFromNetwork(chromeos::CellularNetwork* network);
   // Connects to cellular network, resets connection timer.
-  void ConnectToNetwork(chromeos::CellularNetwork* network);
+  bool ConnectToNetwork(chromeos::CellularNetwork* network, int delay);
   // Forces disconnect / reconnect when we detect portal connectivity issues.
-  void ForceReconnect(chromeos::CellularNetwork* network);
+  void ForceReconnect(chromeos::CellularNetwork* network, int delay);
   // Reports connection timeout.
   bool ConnectionTimeout();
   // Verify the state of cellular network and modify internal state.
@@ -253,6 +293,8 @@ class MobileSetupHandler
   static std::string GetErrorMessage(const std::string& code);
   static void LoadCellularConfig();
 
+  // Returns next reconnection state based on the current activation phase.
+  static PlanActivationState GetNextReconnectState(PlanActivationState state);
   static const char* GetStateDescription(PlanActivationState state);
 
   static scoped_ptr<CellularConfigDocument> cellular_config_;
@@ -266,15 +308,18 @@ class MobileSetupHandler
   bool reenable_wifi_;
   bool reenable_ethernet_;
   bool reenable_cert_check_;
-  bool transaction_complete_signalled_;
-  bool activation_status_test_;
   bool evaluating_;
   // Connection retry counter.
   int connection_retry_count_;
+  // Post payment reconnect wait counters.
+  int reconnect_wait_count_;
   // Activation retry attempt count;
   int activation_attempt_;
   // Connection start time.
   base::Time connection_start_time_;
+  // Timer that monitors reconnection timeouts.
+  base::RepeatingTimer<MobileSetupHandler> reconnect_timer_;
+
   DISALLOW_COPY_AND_ASSIGN(MobileSetupHandler);
 };
 
@@ -369,8 +414,9 @@ void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_MOBILE_SETUP_PAGE_HTML));
-  const std::string full_html = jstemplate_builder::GetTemplatesHtml(
-      html, &strings, "t" /* template root node id */);
+
+  const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
+      html, &strings);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
   html_bytes->data.resize(full_html.size());
@@ -391,14 +437,14 @@ MobileSetupHandler::MobileSetupHandler(const std::string& service_path)
       reenable_wifi_(false),
       reenable_ethernet_(false),
       reenable_cert_check_(false),
-      transaction_complete_signalled_(false),
-      activation_status_test_(false),
       evaluating_(false),
       connection_retry_count_(0),
+      reconnect_wait_count_(0),
       activation_attempt_(0) {
 }
 
 MobileSetupHandler::~MobileSetupHandler() {
+  reconnect_timer_.Stop();
   chromeos::NetworkLibrary* lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   lib->RemoveNetworkManagerObserver(this);
@@ -463,32 +509,53 @@ void MobileSetupHandler::HandleSetTransactionStatus(const ListValue* args) {
 }
 
 void MobileSetupHandler::InitiateActivation() {
-  scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr());
+  scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(), 0);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(task.get(), &TaskProxy::HandleStartActivation));
 }
 
 void MobileSetupHandler::StartActivation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
-  if (!network) {
-    ChangeState(NULL, PLAN_ACTIVATION_ERROR, std::string());
-    return;
-  }
-  // Start monitoring network property changes.
   chromeos::NetworkLibrary* lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+
+  chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
+  // Check if we can start activation process.
+  if (!network) {
+    std::string error(kErrorNoService);
+    if (!lib->cellular_available())
+      error = kErrorNoDevice;
+    else if (!lib->cellular_enabled())
+      error = kErrorDisabled;
+    ChangeState(NULL, PLAN_ACTIVATION_ERROR, GetErrorMessage(error));
+    return;
+  }
+
+  // Start monitoring network property changes.
   lib->AddNetworkManagerObserver(this);
   lib->RemoveObserverForAllNetworks(this);
   lib->AddNetworkObserver(network->service_path(), this);
-  state_ = PLAN_ACTIVATION_START;
+  // Try to start with OTASP immediately if we have received payment recently.
+  state_ = lib->HasRecentCellularPlanPayment() ?
+               PLAN_ACTIVATION_START_OTASP :
+               PLAN_ACTIVATION_START;
   EvaluateCellularNetwork(network);
 }
 
-void MobileSetupHandler::ContinueActivation() {
+void MobileSetupHandler::RetryOTASP() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(state_ == PLAN_ACTIVATION_DELAY_OTASP);
+  StartOTASP();
+}
+
+void MobileSetupHandler::ContinueConnecting(int delay) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
-  EvaluateCellularNetwork(network);
+  if (network && network->connecting_or_connected()) {
+    EvaluateCellularNetwork(network);
+  } else {
+    ConnectToNetwork(network, delay);
+  }
 }
 
 void MobileSetupHandler::SetTransactionStatus(const std::string& status) {
@@ -497,42 +564,111 @@ void MobileSetupHandler::SetTransactionStatus(const std::string& status) {
   // again.
   if (LowerCaseEqualsASCII(status, "ok") &&
       state_ == PLAN_ACTIVATION_SHOWING_PAYMENT) {
+    chromeos::NetworkLibrary* lib =
+        chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+    lib->SignalCellularPlanPayment();
     UMA_HISTOGRAM_COUNTS("Cellular.PaymentReceived", 1);
-    if (transaction_complete_signalled_) {
-      LOG(WARNING) << "Transaction completion signaled more than once!?";
-      return;
-    }
-    transaction_complete_signalled_ = true;
-    activation_status_test_ = false;
-    state_ = PLAN_ACTIVATION_START;
-    chromeos::CellularNetwork* network = GetCellularNetwork();
-    if (network &&
-        network->activation_state() == chromeos::ACTIVATION_STATE_ACTIVATED) {
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-          DisconnectFromWirelessNetwork(network);
-    } else {
-      EvaluateCellularNetwork(network);
-    }
+    StartOTASP();
   } else {
     UMA_HISTOGRAM_COUNTS("Cellular.PaymentFailed", 1);
   }
 }
 
-
-void MobileSetupHandler::ConnectToNetwork(chromeos::CellularNetwork* network) {
-  DCHECK(network);
-  LOG(INFO) << "Connecting to " <<
-      network->service_path().c_str();
-  connection_retry_count_++;
-  connection_start_time_ = base::Time::Now();
-  if (!chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-          ConnectToCellularNetwork(network)) {
-    LOG(WARNING) << "Connect failed for service "
-                 << network->service_path().c_str();
+void MobileSetupHandler::StartOTASP() {
+  state_ = PLAN_ACTIVATION_START_OTASP;
+  chromeos::CellularNetwork* network = GetCellularNetwork();
+  if (network &&
+      network->connected() &&
+      network->activation_state() == chromeos::ACTIVATION_STATE_ACTIVATED) {
+    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+        DisconnectFromWirelessNetwork(network);
+  } else {
+    EvaluateCellularNetwork(network);
   }
 }
 
-void MobileSetupHandler::ForceReconnect(chromeos::CellularNetwork* network) {
+void MobileSetupHandler::ReconnectTimerFired() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Permit network connection changes only in reconnecting states.
+  if (state_ != PLAN_ACTIVATION_RECONNECTING_OTASP_TRY &&
+      state_ != PLAN_ACTIVATION_RECONNECTING &&
+      state_ != PLAN_ACTIVATION_RECONNECTING_OTASP)
+    return;
+  chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
+  if (!network) {
+    ChangeState(NULL, PLAN_ACTIVATION_ERROR,
+                GetErrorMessage(kFailedConnectivity));
+    return;
+  }
+  EvaluateCellularNetwork(network);
+}
+
+void MobileSetupHandler::DisconnectFromNetwork(
+    chromeos::CellularNetwork* network) {
+  LOG(INFO) << "Disconnecting from " <<
+      network->service_path().c_str();
+  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+      DisconnectFromWirelessNetwork(network);
+  // Disconnect will force networks to be reevaluated, so
+  // we don't want to continue processing on this path anymore.
+  evaluating_ = false;
+}
+
+bool MobileSetupHandler::NeedsReconnecting(chromeos::CellularNetwork* network,
+                                           PlanActivationState* new_state,
+                                           std::string* error_description) {
+  if (!network->failed() && !ConnectionTimeout())
+    return false;
+
+  // Try to reconnect again if reconnect failed, or if for some
+  // reasons we are still not connected after 45 seconds.
+  int max_retries = (state_ == PLAN_ACTIVATION_RECONNECTING_OTASP) ?
+                        kMaxConnectionRetryOTASP : kMaxConnectionRetry;
+  if (connection_retry_count_ < max_retries) {
+    UMA_HISTOGRAM_COUNTS("Cellular.ConnectionRetry", 1);
+    ConnectToNetwork(network, kFailedReconnectDelayMS);
+    return true;
+  }
+  // We simply can't connect anymore after all these tries.
+  UMA_HISTOGRAM_COUNTS("Cellular.ConnectionFailed", 1);
+  *new_state = PLAN_ACTIVATION_ERROR;
+  *error_description = GetErrorMessage(kFailedConnectivity);
+  return false;
+}
+
+bool MobileSetupHandler::ConnectToNetwork(chromeos::CellularNetwork* network,
+                                          int delay) {
+  if (network && network->connecting_or_connected())
+    return true;
+  // Permit network connection changes only in reconnecting states.
+  if (state_ != PLAN_ACTIVATION_RECONNECTING_OTASP_TRY &&
+      state_ != PLAN_ACTIVATION_RECONNECTING &&
+      state_ != PLAN_ACTIVATION_RECONNECTING_OTASP)
+    return false;
+  if (network) {
+    LOG(INFO) << "Connecting to " <<
+        network->service_path().c_str();
+  }
+  connection_retry_count_++;
+  connection_start_time_ = base::Time::Now();
+  if (!network || !chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+          ConnectToCellularNetwork(network)) {
+    LOG(WARNING) << "Connect failed"
+                 << network->service_path().c_str();
+    // If we coudn't connect during reconnection phase, try to reconnect
+    // with a delay (and try to reconnect if needed).
+    scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(),
+                                                  delay);
+    BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(task.get(), &TaskProxy::ContinueConnecting),
+        delay);
+    return false;
+  }
+  return true;
+}
+
+void MobileSetupHandler::ForceReconnect(chromeos::CellularNetwork* network,
+                                        int delay) {
   DCHECK(network);
   UMA_HISTOGRAM_COUNTS("Cellular.ActivationRetry", 1);
   // Reset reconnect metrics.
@@ -545,11 +681,10 @@ void MobileSetupHandler::ForceReconnect(chromeos::CellularNetwork* network) {
       DisconnectFromWirelessNetwork(network);
   // Check the network state 3s after we disconnect to make sure.
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(),
-                                                std::string());
-  const int kReconnectDelayMS = 3000;
+                                                delay);
   BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(task.get(), &TaskProxy::ContinueActivation),
-      kReconnectDelayMS);
+      NewRunnableMethod(task.get(), &TaskProxy::ContinueConnecting),
+      delay);
 }
 
 bool MobileSetupHandler::ConnectionTimeout() {
@@ -565,7 +700,9 @@ void MobileSetupHandler::EvaluateCellularNetwork(
   PlanActivationState new_state = state_;
   if (!network) {
     LOG(WARNING) << "Cellular service lost";
-    if (state_ == PLAN_ACTIVATION_RECONNECTING) {
+    if (state_ == PLAN_ACTIVATION_RECONNECTING_OTASP_TRY ||
+        state_ == PLAN_ACTIVATION_RECONNECTING ||
+        state_ == PLAN_ACTIVATION_RECONNECTING_OTASP) {
       // This might be the legit case when service is lost after activation.
       // We need to make sure we force reconnection as soon as it shows up.
       LOG(INFO) << "Force service reconnection";
@@ -581,13 +718,13 @@ void MobileSetupHandler::EvaluateCellularNetwork(
   evaluating_ = true;
   std::string error_description;
 
-  LOG(INFO) << "Cellular:\n  service=" << network->GetStateString().c_str()
-            << "\n  ui=" << GetStateDescription(state_)
-            << "\n  activation=" << network->GetActivationStateString().c_str()
-            << "\n  connectivity="
-            << network->GetConnectivityStateString().c_str()
-            << "\n  error=" << network->GetErrorString().c_str()
-            << "\n  setvice_path=" << network->service_path().c_str();
+  LOG(WARNING) << "Cellular:\n  service=" << network->GetStateString().c_str()
+      << "\n  ui=" << GetStateDescription(state_)
+      << "\n  activation=" << network->GetActivationStateString().c_str()
+      << "\n  connectivity="
+      << network->GetConnectivityStateString().c_str()
+      << "\n  error=" << network->GetErrorString().c_str()
+      << "\n  setvice_path=" << network->service_path().c_str();
   switch (state_) {
     case PLAN_ACTIVATION_START: {
       switch (network->activation_state()) {
@@ -603,58 +740,54 @@ void MobileSetupHandler::EvaluateCellularNetwork(
           }
           break;
         }
-        case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED: {
-          if (!activation_status_test_) {
-            if (network->failed_or_disconnected()) {
-              activation_status_test_ = true;
-              new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
-            } else if (network->connected()) {
-              LOG(INFO) << "Disconnecting from " <<
-                  network->service_path().c_str();
-              chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-                  DisconnectFromWirelessNetwork(network);
-              // Disconnect will force networks to be reevaluated, so
-              // we don't want to continue processing on this path anymore.
-              evaluating_ = false;
-              return;
-            }
-          } else {
-            if (network->connected()) {
-              if (network->restricted_pool())
-                new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
-            } else {
-              new_state = PLAN_ACTIVATION_RECONNECTING;
-            }
-            break;
-          }
-          break;
-        }
-        case chromeos::ACTIVATION_STATE_UNKNOWN:
-        case chromeos::ACTIVATION_STATE_NOT_ACTIVATED: {
+        default: {
           if (network->failed_or_disconnected()) {
-            new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
+            new_state = (network->activation_state() ==
+                         chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED) ?
+                            PLAN_ACTIVATION_TRYING_OTASP :
+                            PLAN_ACTIVATION_INITIATING_ACTIVATION;
           } else if (network->connected()) {
-            LOG(INFO) << "Disconnecting from " <<
-                network->service_path().c_str();
-            chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-                DisconnectFromWirelessNetwork(network);
-            // Disconnect will force networks to be reevaluated, so
-            // we don't want to continue processing on this path anymore.
-            evaluating_ = false;
+            DisconnectFromNetwork(network);
             return;
           }
           break;
         }
-        default:
-          break;
       }
       break;
     }
-    case PLAN_ACTIVATION_INITIATING_ACTIVATION: {
+    case PLAN_ACTIVATION_START_OTASP: {
+      switch (network->activation_state()) {
+        case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED: {
+          if (network->failed_or_disconnected()) {
+            new_state = PLAN_ACTIVATION_OTASP;
+          } else if (network->connected()) {
+            DisconnectFromNetwork(network);
+            return;
+          }
+          break;
+        }
+        case chromeos::ACTIVATION_STATE_ACTIVATED:
+          new_state = PLAN_ACTIVATION_RECONNECTING_OTASP;
+          break;
+        default: {
+          LOG(WARNING) << "Unexpected activation state for device "
+                       << network->service_path().c_str();
+          break;
+        }
+      }
+      break;
+    }
+    case PLAN_ACTIVATION_DELAY_OTASP:
+      // Just ignore any changes until the OTASP retry timer kicks in.
+      evaluating_ = false;
+      return;
+    case PLAN_ACTIVATION_INITIATING_ACTIVATION:
+    case PLAN_ACTIVATION_OTASP:
+    case PLAN_ACTIVATION_TRYING_OTASP: {
       switch (network->activation_state()) {
         case chromeos::ACTIVATION_STATE_ACTIVATED:
           if (network->failed_or_disconnected()) {
-            new_state = PLAN_ACTIVATION_RECONNECTING;
+            new_state = GetNextReconnectState(state_);
           } else if (network->connected()) {
             if (network->restricted_pool()) {
               new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
@@ -668,19 +801,19 @@ void MobileSetupHandler::EvaluateCellularNetwork(
             if (network->restricted_pool())
               new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
           } else {
-            new_state = PLAN_ACTIVATION_RECONNECTING;
+            new_state = GetNextReconnectState(state_);
           }
           break;
         case chromeos::ACTIVATION_STATE_NOT_ACTIVATED:
-          // Wait in this state until activation state changes.
-          break;
         case chromeos::ACTIVATION_STATE_ACTIVATING:
+          // Wait in this state until activation state changes.
           break;
         default:
           break;
       }
       break;
     }
+    case PLAN_ACTIVATION_RECONNECTING_OTASP_TRY:
     case PLAN_ACTIVATION_RECONNECTING: {
       if (network->connected()) {
         // Make sure other networks are not interfering with our detection of
@@ -696,18 +829,20 @@ void MobileSetupHandler::EvaluateCellularNetwork(
                            << network->service_path().c_str();
               // If we are connected but there is no connectivity at all,
               // restart the whole process again.
-              new_state = PLAN_ACTIVATION_ERROR;
               if (activation_attempt_ < kMaxActivationAttempt) {
                 activation_attempt_++;
-                ForceReconnect(network);
+                ForceReconnect(network, kFailedReconnectDelayMS);
                 evaluating_ = false;
                 return;
               } else {
+                new_state = PLAN_ACTIVATION_ERROR;
                 UMA_HISTOGRAM_COUNTS("Cellular.ActivationRetryFailure", 1);
                 error_description = GetErrorMessage(kFailedConnectivity);
               }
             } else if (network->connectivity_state() ==
-                chromeos::CONN_STATE_RESTRICTED) {
+                           chromeos::CONN_STATE_RESTRICTED) {
+              // If we have already received payment, don't show the payment
+              // page again. We should try to reconnect after some time instead.
               new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
             } else if (network->activation_state() ==
                            chromeos::ACTIVATION_STATE_ACTIVATED) {
@@ -717,20 +852,49 @@ void MobileSetupHandler::EvaluateCellularNetwork(
           default:
             break;
         }
-      } else if (network->failed() || ConnectionTimeout()) {
-        // Try to reconnect again if reconnect failed, or if for some
-        // reasons we are still not connected after 30 seconds.
-        if (connection_retry_count_ < kMaxConnectionRetry) {
-          UMA_HISTOGRAM_COUNTS("Cellular.ConnectionRetry", 1);
-          ConnectToNetwork(network);
-          evaluating_ = false;
-          return;
-        } else {
-          // We simply can't connect anymore after all these tries.
-          UMA_HISTOGRAM_COUNTS("Cellular.ConnectionFailed", 1);
-          new_state = PLAN_ACTIVATION_ERROR;
-          error_description = GetErrorMessage(kFailedConnectivity);
+      } else if (NeedsReconnecting(network, &new_state, &error_description)) {
+        evaluating_ = false;
+        return;
+      }
+      break;
+    }
+    case PLAN_ACTIVATION_RECONNECTING_OTASP: {
+      if (network->connected()) {
+        // Make sure other networks are not interfering with our detection of
+        // restricted pool.
+        DisableOtherNetworks();
+        // Wait until the service shows up and gets activated.
+        switch (network->activation_state()) {
+          case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
+          case chromeos::ACTIVATION_STATE_ACTIVATED:
+            if (network->connectivity_state() == chromeos::CONN_STATE_NONE ||
+                network->connectivity_state() ==
+                    chromeos::CONN_STATE_RESTRICTED) {
+              LOG(WARNING) << "Still no connectivity after OTASP for device "
+                           << network->service_path().c_str();
+              // If we have already received payment, don't show the payment
+              // page again. We should try to reconnect after some time instead.
+              if (reconnect_wait_count_ < kMaxReconnectAttemptOTASP) {
+                reconnect_wait_count_++;
+                ForceReconnect(network, kPostPaymentReconnectDelayMS);
+                evaluating_ = false;
+                return;
+              } else {
+                new_state = PLAN_ACTIVATION_ERROR;
+                UMA_HISTOGRAM_COUNTS("Cellular.PostPaymentConnectFailure", 1);
+                error_description = GetErrorMessage(kFailedConnectivity);
+              }
+            } else if (network->connectivity_state() ==
+                           chromeos::CONN_STATE_UNRESTRICTED) {
+              new_state = PLAN_ACTIVATION_DONE;
+            }
+            break;
+          default:
+            break;
         }
+      } else if (NeedsReconnecting(network, &new_state, &error_description)) {
+        evaluating_ = false;
+        return;
       }
       break;
     }
@@ -753,18 +917,55 @@ void MobileSetupHandler::EvaluateCellularNetwork(
             chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED ||
         network->activation_state() == chromeos::ACTIVATION_STATE_ACTIVATING) &&
         (network->error() == chromeos::ERROR_UNKNOWN ||
-            network->error() == chromeos::ERROR_OTASP_FAILED)&&
-        (state_ == PLAN_ACTIVATION_INITIATING_ACTIVATION ||
-            state_ == PLAN_ACTIVATION_RECONNECTING) &&
-        activation_status_test_ &&
+            network->error() == chromeos::ERROR_OTASP_FAILED) &&
         network->connection_state() == chromeos::STATE_ACTIVATION_FAILURE) {
-      new_state = PLAN_ACTIVATION_RECONNECTING;
+      LOG(WARNING) << "Activation failure detected "
+                   << network->service_path().c_str();
+      switch (state_) {
+        case PLAN_ACTIVATION_OTASP:
+        case PLAN_ACTIVATION_RECONNECTING_OTASP:
+          new_state = PLAN_ACTIVATION_DELAY_OTASP;
+          break;
+        case PLAN_ACTIVATION_TRYING_OTASP:
+          new_state = PLAN_ACTIVATION_RECONNECTING_OTASP_TRY;
+          break;
+        case PLAN_ACTIVATION_INITIATING_ACTIVATION:
+          new_state = PLAN_ACTIVATION_RECONNECTING;
+          break;
+        case PLAN_ACTIVATION_DELAY_OTASP:
+        case PLAN_ACTIVATION_RECONNECTING_OTASP_TRY:
+        case PLAN_ACTIVATION_RECONNECTING:
+          new_state = state_;
+          break;
+        default:
+          new_state = PLAN_ACTIVATION_ERROR;
+          break;
+      }
     } else {
       new_state = PLAN_ACTIVATION_ERROR;
     }
   }
+
+  if (new_state == PLAN_ACTIVATION_ERROR && !error_description.length())
+    error_description = GetErrorMessage(kErrorDefault);
+
   ChangeState(network, new_state, error_description);
   evaluating_ = false;
+}
+
+MobileSetupHandler::PlanActivationState
+    MobileSetupHandler::GetNextReconnectState(
+        MobileSetupHandler::PlanActivationState state) {
+  switch (state) {
+    case PLAN_ACTIVATION_INITIATING_ACTIVATION:
+      return PLAN_ACTIVATION_RECONNECTING;
+    case PLAN_ACTIVATION_OTASP:
+      return PLAN_ACTIVATION_RECONNECTING_OTASP;
+    case PLAN_ACTIVATION_TRYING_OTASP:
+      return PLAN_ACTIVATION_RECONNECTING_OTASP_TRY;
+    default:
+      return PLAN_ACTIVATION_RECONNECTING;
+  }
 }
 
 // Debugging helper function, will take it out at the end.
@@ -775,12 +976,24 @@ const char* MobileSetupHandler::GetStateDescription(
       return "PAGE_LOADING";
     case PLAN_ACTIVATION_START:
       return "ACTIVATION_START";
+    case PLAN_ACTIVATION_TRYING_OTASP:
+      return "TRYING_OTASP";
+    case PLAN_ACTIVATION_RECONNECTING_OTASP_TRY:
+      return "RECONNECTING_OTASP_TRY";
     case PLAN_ACTIVATION_INITIATING_ACTIVATION:
       return "INITIATING_ACTIVATION";
     case PLAN_ACTIVATION_RECONNECTING:
       return "RECONNECTING";
     case PLAN_ACTIVATION_SHOWING_PAYMENT:
       return "SHOWING_PAYMENT";
+    case PLAN_ACTIVATION_START_OTASP:
+      return "START_OTASP";
+    case PLAN_ACTIVATION_DELAY_OTASP:
+      return "DELAY_OTASP";
+    case PLAN_ACTIVATION_OTASP:
+      return "OTASP";
+    case PLAN_ACTIVATION_RECONNECTING_OTASP:
+      return "RECONNECTING_OTASP";
     case PLAN_ACTIVATION_DONE:
       return "DONE";
     case PLAN_ACTIVATION_ERROR:
@@ -819,39 +1032,74 @@ void MobileSetupHandler::UpdatePage(chromeos::CellularNetwork* network,
       kJsDeviceStatusChangedHandler, device_dict);
 }
 
+
 void MobileSetupHandler::ChangeState(chromeos::CellularNetwork* network,
                                      PlanActivationState new_state,
                                      const std::string& error_description) {
   static bool first_time = true;
   if (state_ == new_state && !first_time)
     return;
-  LOG(INFO) << "Activation state flip old = " <<
-          GetStateDescription(state_) << ", new = " <<
-          GetStateDescription(new_state);
+  LOG(WARNING) << "Activation state flip old = "
+      << GetStateDescription(state_)
+      << ", new = " << GetStateDescription(new_state);
   first_time = false;
+
+  // Pick action that should happen on leaving the old state.
+  switch (state_) {
+    case PLAN_ACTIVATION_RECONNECTING_OTASP_TRY:
+    case PLAN_ACTIVATION_RECONNECTING:
+    case PLAN_ACTIVATION_RECONNECTING_OTASP:
+      if (reconnect_timer_.IsRunning()) {
+        reconnect_timer_.Stop();
+      }
+      break;
+    default:
+      break;
+  }
   state_ = new_state;
 
   // Signal to JS layer that the state is changing.
   UpdatePage(network, error_description);
 
-  // Decide what to do with network object as a result of the new state.
+  // Pick action that should happen on entering the new state.
   switch (new_state) {
     case PLAN_ACTIVATION_START:
       break;
+    case PLAN_ACTIVATION_DELAY_OTASP: {
+      UMA_HISTOGRAM_COUNTS("Cellular.RetryOTASP", 1);
+      scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(), 0);
+      BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(task.get(), &TaskProxy::RetryOTASP),
+          kOTASPRetryDelay);
+      break;
+    }
     case PLAN_ACTIVATION_INITIATING_ACTIVATION:
+    case PLAN_ACTIVATION_TRYING_OTASP:
+    case PLAN_ACTIVATION_OTASP:
       DCHECK(network);
-      LOG(INFO) << "Activating service " << network->service_path().c_str();
+      LOG(WARNING) << "Activating service " << network->service_path().c_str();
       UMA_HISTOGRAM_COUNTS("Cellular.ActivationTry", 1);
       if (!network->StartActivation()) {
         UMA_HISTOGRAM_COUNTS("Cellular.ActivationFailure", 1);
-        ChangeState(network, PLAN_ACTIVATION_ERROR, std::string());
+        ChangeState(network, PLAN_ACTIVATION_ERROR,
+                    GetErrorMessage(kFailedConnectivity));
       }
       break;
-    case PLAN_ACTIVATION_RECONNECTING: {
+    case PLAN_ACTIVATION_RECONNECTING_OTASP_TRY:
+    case PLAN_ACTIVATION_RECONNECTING:
+    case PLAN_ACTIVATION_RECONNECTING_OTASP: {
+      // Start reconnect timer. This will ensure that we are not left in
+      // limbo by the network library.
+      if (!reconnect_timer_.IsRunning()) {
+        reconnect_timer_.Start(
+            base::TimeDelta::FromMilliseconds(kReconnectTimerDelayMS),
+            this, &MobileSetupHandler::ReconnectTimerFired);
+      }
       // Reset connection metrics and try to connect.
+      reconnect_wait_count_ = 0;
       connection_retry_count_ = 0;
       connection_start_time_ = base::Time::Now();
-      ConnectToNetwork(network);
+      ConnectToNetwork(network, kReconnectDelayMS);
       break;
     }
     case PLAN_ACTIVATION_PAGE_LOADING:
@@ -865,11 +1113,10 @@ void MobileSetupHandler::ChangeState(chromeos::CellularNetwork* network,
       CompleteActivation(network);
       UMA_HISTOGRAM_COUNTS("Cellular.MobileSetupSucceeded", 1);
       break;
-    case PLAN_ACTIVATION_ERROR: {
+    case PLAN_ACTIVATION_ERROR:
       CompleteActivation(NULL);
       UMA_HISTOGRAM_COUNTS("Cellular.PlanFailed", 1);
       break;
-    }
     default:
       break;
   }

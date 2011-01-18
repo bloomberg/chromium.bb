@@ -578,6 +578,12 @@ class NetworkLibrary {
   // Network::Observer::CellularDataPlanChanged callback.
   virtual void RefreshCellularDataPlans(const CellularNetwork* network) = 0;
 
+  // Records information that cellular play payment had happened.
+  virtual void SignalCellularPlanPayment() = 0;
+
+  // Returns true if cellular plan payment had been recorded recently.
+  virtual bool HasRecentCellularPlanPayment() = 0;
+
   // Disconnect from the specified wireless (either cellular or wifi) network.
   virtual void DisconnectFromWirelessNetwork(
       const WirelessNetwork* network) = 0;

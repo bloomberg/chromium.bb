@@ -62,6 +62,8 @@ class MockNetworkLibrary : public NetworkLibrary {
                                           bool));
   MOCK_METHOD1(ConnectToCellularNetwork, bool(const CellularNetwork*));
   MOCK_METHOD1(RefreshCellularDataPlans, void(const CellularNetwork* network));
+  MOCK_METHOD0(SignalCellularPlanPayment, void(void));
+  MOCK_METHOD0(HasRecentCellularPlanPayment, bool(void));
 
   MOCK_METHOD1(DisconnectFromWirelessNetwork, void(const WirelessNetwork*));
   MOCK_METHOD1(SaveCellularNetwork, void(const CellularNetwork*));
