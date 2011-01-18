@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_TRANSLATE_TRANSLATE_MESSAGE_INFOBAR_GTK_H_
 #pragma once
 
-#include "chrome/browser/gtk/translate/translate_infobar_base_gtk.h"
+#include "chrome/browser/ui/gtk/translate/translate_infobar_base_gtk.h"
 
 class TranslateInfoBarDelegate;
 

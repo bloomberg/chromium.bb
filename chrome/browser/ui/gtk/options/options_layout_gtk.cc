@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/options/options_layout_gtk.h"
+#include "chrome/browser/ui/gtk/options/options_layout_gtk.h"
 
-#include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 
 // If the height of screen is equal or shorter than this, we will use
 // a more compact option layout.

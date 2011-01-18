@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/options/content_filter_page_gtk.h"
+#include "chrome/browser/ui/gtk/options/content_filter_page_gtk.h"
 
 #include "app/l10n_util.h"
 #include "base/command_line.h"
@@ -13,13 +13,13 @@
 #include "chrome/browser/plugin_exceptions_table_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/gtk/browser_window_gtk.h"
-#include "chrome/browser/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/options/content_exceptions_window_gtk.h"
-#include "chrome/browser/gtk/options/simple_content_exceptions_window.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification_exceptions_table_model.h"
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/options/content_exceptions_window_gtk.h"
+#include "chrome/browser/ui/gtk/options/simple_content_exceptions_window.h"
 #include "chrome/browser/ui/options/show_options_url.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"

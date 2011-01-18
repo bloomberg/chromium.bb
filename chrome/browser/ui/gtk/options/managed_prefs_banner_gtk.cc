@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/options/managed_prefs_banner_gtk.h"
+#include "chrome/browser/ui/gtk/options/managed_prefs_banner_gtk.h"
 
 #include "app/l10n_util.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/generated_resources.h"
 
 namespace {

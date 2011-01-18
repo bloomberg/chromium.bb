@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/notifications/balloon_view_host_gtk.h"
+#include "chrome/browser/ui/gtk/notifications/balloon_view_host_gtk.h"
 
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/renderer_host/render_view_host.h"

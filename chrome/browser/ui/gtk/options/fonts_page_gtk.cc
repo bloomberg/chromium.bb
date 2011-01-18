@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/options/fonts_page_gtk.h"
+#include "chrome/browser/ui/gtk/options/fonts_page_gtk.h"
 
 #include <string>
 
@@ -10,9 +10,9 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/default_encoding_combo_model.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/options/options_layout_gtk.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/font.h"
 #include "grit/generated_resources.h"

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/options/cookie_filter_page_gtk.h"
+#include "chrome/browser/ui/gtk/options/cookie_filter_page_gtk.h"
 
 #include "app/l10n_util.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/gtk/browser_window_gtk.h"
-#include "chrome/browser/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/options/content_exceptions_window_gtk.h"
-#include "chrome/browser/gtk/options/cookies_view.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/options/content_exceptions_window_gtk.h"
+#include "chrome/browser/ui/gtk/options/cookies_view.h"
 #include "chrome/browser/ui/options/show_options_url.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"

@@ -11,8 +11,8 @@
 #include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/ui/gtk/gtk_tree.h"
 
 class AccessibleWidgetHelper;
 class GURL;

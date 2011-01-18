@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/options/content_exceptions_window_gtk.h"
+#include "chrome/browser/ui/gtk/options/content_exceptions_window_gtk.h"
 
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"

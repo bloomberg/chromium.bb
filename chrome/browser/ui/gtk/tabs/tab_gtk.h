@@ -9,8 +9,8 @@
 #include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/message_loop.h"
-#include "chrome/browser/gtk/tabs/tab_renderer_gtk.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
 
 namespace gfx {
 class Path;

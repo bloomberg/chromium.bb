@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/options/passwords_exceptions_window_gtk.h"
+#include "chrome/browser/ui/gtk/options/passwords_exceptions_window_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -10,11 +10,11 @@
 
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
-#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/options/passwords_exceptions_page_gtk.h"
-#include "chrome/browser/gtk/options/passwords_page_gtk.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/options/passwords_exceptions_page_gtk.h"
+#include "chrome/browser/ui/gtk/options/passwords_page_gtk.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

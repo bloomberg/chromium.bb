@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/tabs/tab_renderer_gtk.h"
+#include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
 
 #include <algorithm>
 #include <utility>
@@ -11,13 +11,13 @@
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/gtk/bookmark_utils_gtk.h"
-#include "chrome/browser/gtk/custom_button.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/gtk/bookmark_utils_gtk.h"
+#include "chrome/browser/ui/gtk/custom_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/canvas_skia_paint.h"
 #include "gfx/favicon_size.h"

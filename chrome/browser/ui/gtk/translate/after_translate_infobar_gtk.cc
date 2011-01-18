@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/translate/after_translate_infobar_gtk.h"
+#include "chrome/browser/ui/gtk/translate/after_translate_infobar_gtk.h"
 
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/generated_resources.h"
 
 AfterTranslateInfoBar::AfterTranslateInfoBar(

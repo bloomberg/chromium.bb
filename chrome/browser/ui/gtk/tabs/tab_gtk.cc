@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/tabs/tab_gtk.h"
+#include "chrome/browser/ui/gtk/tabs/tab_gtk.h"
 
 #include <gdk/gdkkeysyms.h>
 
@@ -10,8 +10,8 @@
 #include "base/singleton.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/gtk/accelerators_gtk.h"
-#include "chrome/browser/gtk/menu_gtk.h"
+#include "chrome/browser/ui/gtk/accelerators_gtk.h"
+#include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "gfx/path.h"
 #include "grit/generated_resources.h"

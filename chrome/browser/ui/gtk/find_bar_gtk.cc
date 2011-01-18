@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/find_bar_gtk.h"
+#include "chrome/browser/ui/gtk/find_bar_gtk.h"
 
 #include <gdk/gdkkeysyms.h>
 
@@ -16,23 +16,23 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/gtk/browser_window_gtk.h"
-#include "chrome/browser/gtk/cairo_cached_surface.h"
-#include "chrome/browser/gtk/custom_button.h"
-#include "chrome/browser/gtk/gtk_floating_container.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/nine_box.h"
-#include "chrome/browser/gtk/slide_animator_gtk.h"
-#include "chrome/browser/gtk/tab_contents_container_gtk.h"
-#include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
-#include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/cairo_cached_surface.h"
+#include "chrome/browser/ui/gtk/custom_button.h"
+#include "chrome/browser/ui/gtk/gtk_floating_container.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/nine_box.h"
+#include "chrome/browser/ui/gtk/slide_animator_gtk.h"
+#include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
+#include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
+#include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"

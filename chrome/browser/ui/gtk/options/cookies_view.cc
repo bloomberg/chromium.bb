@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/options/cookies_view.h"
+#include "chrome/browser/ui/gtk/options/cookies_view.h"
 
 #include <gdk/gdkkeysyms.h>
 #include <set>
@@ -12,8 +12,8 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/cookies_tree_model.h"
-#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

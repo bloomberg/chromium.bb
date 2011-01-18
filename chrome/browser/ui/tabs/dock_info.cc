@@ -7,7 +7,7 @@
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/tabs/tab.h"
 #else
-#include "chrome/browser/gtk/tabs/tab_gtk.h"
+#include "chrome/browser/ui/gtk/tabs/tab_gtk.h"
 #endif
 
 namespace {

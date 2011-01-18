@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/task.h"
-#include "chrome/browser/gtk/translate/translate_infobar_base_gtk.h"
+#include "chrome/browser/ui/gtk/translate/translate_infobar_base_gtk.h"
 
 class TranslateInfoBarDelegate;
 

@@ -10,9 +10,9 @@
 
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/gtk/options/cookie_filter_page_gtk.h"
-#include "chrome/browser/gtk/options/content_filter_page_gtk.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/ui/gtk/options/content_filter_page_gtk.h"
+#include "chrome/browser/ui/gtk/options/cookie_filter_page_gtk.h"
 #include "chrome/common/content_settings_types.h"
 
 class AccessibleWidgetHelper;

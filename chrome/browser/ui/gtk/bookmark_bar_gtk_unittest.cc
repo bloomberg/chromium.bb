@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/bookmark_bar_gtk.h"
+#include "chrome/browser/ui/gtk/bookmark_bar_gtk.h"
 
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/gtk/tabstrip_origin_provider.h"
+#include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

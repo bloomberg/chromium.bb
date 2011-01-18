@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/options/advanced_contents_gtk.h"
+#include "chrome/browser/ui/gtk/options/advanced_contents_gtk.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -26,17 +26,17 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
-#include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
-#include "chrome/browser/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/options/content_settings_window_gtk.h"
-#include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
+#include "chrome/browser/ui/gtk/clear_browsing_data_dialog_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/options/content_settings_window_gtk.h"
+#include "chrome/browser/ui/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/ui/options/options_page_base.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/browser/ui/options/show_options_url.h"

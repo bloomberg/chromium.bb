@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/gtk/owned_widget_gtk.h"
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/canvas.h"

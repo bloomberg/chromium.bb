@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/options/content_settings_window_gtk.h"
+#include "chrome/browser/ui/gtk/options/content_settings_window_gtk.h"
 
 #include <string>
 
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
-#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
-#include "chrome/browser/gtk/browser_window_gtk.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_tree.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"

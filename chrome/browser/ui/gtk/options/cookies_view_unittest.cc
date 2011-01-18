@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/options/cookies_view.h"
+#include "chrome/browser/ui/gtk/options/cookies_view.h"
 
 #include <string>
 #include <vector>
@@ -14,7 +14,7 @@
 #include "chrome/browser/mock_browsing_data_database_helper.h"
 #include "chrome/browser/mock_browsing_data_indexed_db_helper.h"
 #include "chrome/browser/mock_browsing_data_local_storage_helper.h"
-#include "chrome/browser/gtk/gtk_chrome_cookie_view.h"
+#include "chrome/browser/ui/gtk/gtk_chrome_cookie_view.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/test/testing_profile.h"
 #include "net/url_request/url_request_context.h"

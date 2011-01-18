@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/status_icons/status_tray_gtk.h"
+#include "chrome/browser/ui/gtk/status_icons/status_tray_gtk.h"
 
-#include "chrome/browser/gtk/status_icons/status_icon_gtk.h"
+#include "chrome/browser/ui/gtk/status_icons/status_icon_gtk.h"
 
 StatusTrayGtk::StatusTrayGtk() {
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/options/internet_page_view.h"
 #include "chrome/browser/chromeos/options/system_page_view.h"
-#include "chrome/browser/gtk/options/advanced_page_gtk.h"
-#include "chrome/browser/gtk/options/content_page_gtk.h"
-#include "chrome/browser/gtk/options/general_page_gtk.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/gtk/options/advanced_page_gtk.h"
+#include "chrome/browser/ui/gtk/options/content_page_gtk.h"
+#include "chrome/browser/ui/gtk/options/general_page_gtk.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "chrome/browser/ui/views/accessible_view_helper.h"
 #include "chrome/browser/ui/views/window.h"

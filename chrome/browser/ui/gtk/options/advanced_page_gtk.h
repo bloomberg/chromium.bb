@@ -9,9 +9,9 @@
 #include <gtk/gtk.h>
 
 #include "app/gtk_signal.h"
-#include "chrome/browser/gtk/options/advanced_contents_gtk.h"
-#include "chrome/browser/gtk/options/managed_prefs_banner_gtk.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/ui/gtk/options/advanced_contents_gtk.h"
+#include "chrome/browser/ui/gtk/options/managed_prefs_banner_gtk.h"
 #include "chrome/browser/ui/options/options_page_base.h"
 
 class Profile;
