@@ -109,7 +109,8 @@ COMPILE_ASSERT(kMaxSpeexFrameLength <= 0xFF, invalidLength);
 
 class SpeexEncoder : public speech_input::AudioEncoder {
  public:
-  SpeexEncoder(int sampling_rate);
+  explicit SpeexEncoder(int sampling_rate);
+  virtual ~SpeexEncoder();
   virtual void Encode(const short* samples, int num_samples);
   virtual void Flush() {}
 
@@ -136,6 +137,11 @@ SpeexEncoder::SpeexEncoder(int sampling_rate)
    int vbr = 1;
    speex_encoder_ctl(encoder_state_, SPEEX_SET_VBR, &vbr);
    memset(encoded_frame_data_, 0, sizeof(encoded_frame_data_));
+}
+
+SpeexEncoder::~SpeexEncoder() {
+  speex_bits_destroy(&bits_);
+  speex_encoder_destroy(encoder_state_);
 }
 
 void SpeexEncoder::Encode(const short* samples, int num_samples) {
