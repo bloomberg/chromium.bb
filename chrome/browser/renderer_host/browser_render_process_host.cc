@@ -967,12 +967,6 @@ bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
   if (deleting_soon_)
     return false;
 
-#if defined(OS_CHROMEOS)
-  // To troubleshoot crosbug.com/7327.
-  CHECK(this);
-  CHECK(&msg);
-#endif
-
   mark_child_process_activity_time();
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
     // Dispatch control messages.
