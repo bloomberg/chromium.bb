@@ -192,23 +192,26 @@ html[hide-menu=true] #mainview {
 }
 
 .subpage-sheet-container {
-  padding: 8px;
-  -webkit-padding-start: 60px;
+  -webkit-margin-start: 60px;
   box-sizing: border-box;
   height: 100%;
+  padding: 8px;
+  /* Must come after padding. */
+  -webkit-padding-start: 0;
   position: absolute;
-  top: 0;
+  /* We set both left and right for the sake of RTL. */
   left: 0;
+  right: 0;
+  top: 0;
+  width: 688px;
 }
 
 #subpage-sheet-container-1 {
-  width: 748px;
   z-index: 5;
 }
 
 #subpage-sheet-container-2 {
-  left: 60px;
-  width: 688px;
+  -webkit-padding-start: 60px;
   z-index: 10;
 }
 

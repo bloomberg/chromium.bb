@@ -319,14 +319,25 @@ cr.define('options', function() {
       var containerId = 'subpage-sheet-container-' + level;
       $(containerId).onclick = this.subPageClosingClickHandler_(level);
     }
-    // Hook up the close buttons.
+
     var self = this;
+    // Close subpages if the user clicks on the html body. Listen in the
+    // capturing phase so that we can stop the click from doing anything.
+    document.body.addEventListener('click',
+                                   this.bodyMouseEventHandler_.bind(this),
+                                   true);
+    // We also need to cancel mousedowns on non-subpage content.
+    document.body.addEventListener('mousedown',
+                                   this.bodyMouseEventHandler_.bind(this),
+                                   true);
+
+    // Hook up the close buttons.
     subpageCloseButtons = document.querySelectorAll('.close-subpage');
     for (var i = 0; i < subpageCloseButtons.length; i++) {
       subpageCloseButtons[i].onclick = function() {
         self.closeTopSubPage();
       };
-    }
+    };
 
     // Close the top overlay or sub-page on esc.
     document.addEventListener('keydown', function(e) {
@@ -343,18 +354,50 @@ cr.define('options', function() {
    * Returns a function to handle clicks behind a subpage at level |level| by
    * closing all subpages down to |level| - 1.
    * @param {number} level The level of the subpage being handled.
-   * @return {function} a function to handle clicks outside the given subpage.
+   * @return {Function} a function to handle clicks outside the given subpage.
    * @private
    */
   OptionsPage.subPageClosingClickHandler_ = function(level) {
     var self = this;
     return function(event) {
-      // Clicks on the visible part of the parent page should close the overlay,
+      // Clicks on the narrow strip between the left of the subpage sheet and
+      // that shows part of the parent page should close the overlay, but
       // not fall through to the parent page.
       if (!$('subpage-sheet-' + level).contains(event.target))
         self.closeSubPagesToLevel(level - 1);
       event.stopPropagation();
+      event.preventDefault();
     };
+  };
+
+  /**
+   * A function to handle mouse events (mousedown or click) on the html body by
+   * closing subpages and/or stopping event propagation.
+   * @return {Event} a mousedown or click event.
+   * @private
+   */
+  OptionsPage.bodyMouseEventHandler_ = function(event) {
+    // Do nothing if a subpage isn't showing.
+    var topPage = this.getTopmostVisiblePage();
+    if (!(topPage && topPage.parentPage))
+      return;
+
+    // If the click was within a subpage, do nothing.
+    for (var level = 1; level <= 2; level++) {
+      if ($('subpage-sheet-container-' + level).contains(event.target))
+        return;
+    }
+
+    // Close all subpages on click.
+    if (event.type == 'click')
+      this.closeSubPagesToLevel(0);
+
+    // Events should not fall through to the main view,
+    // but they can fall through for the sidebar.
+    if ($('mainview-content').contains(event.target)) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
   };
 
   /**
