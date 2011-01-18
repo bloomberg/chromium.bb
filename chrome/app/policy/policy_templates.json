@@ -22,9 +22,9 @@
 #     NOTE: Currently nesting groups inside other groups is not supported.
 #   'string' - a string value
 #   'int' - an integer value
-#   'int-enum' - the user can select an integer value from a collection of 
+#   'int-enum' - the user can select an integer value from a collection of
 #     items
-#   'string-enum' - the user can select a string value from a collection of 
+#   'string-enum' - the user can select a string value from a collection of
 #     items
 #   'main' - a boolean value
 #   'list' - a list of string values
@@ -60,10 +60,6 @@
 #     e.g. the name of the caption of ProxyServerDisabled:
 #       IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION
 #
-# Annotations:
-#   Each policy has metadata under the key 'annotations'.
-#   These values are only used for the generated documentation.
-#
 # Products and versions:
 #   Each policy has the list of products and version numbers where it is
 #   supported under the key 'supported_on'. Each item of this list has the
@@ -85,6 +81,11 @@
 #     chrome.*, chrome.mac -> plist, plist_strings,doc
 #     everything else -> doc
 #
+# Annotations: 
+#   Additional information is specified under keys 'features' and
+#   'example_value'. These are used in the generated documentation and example
+#   policy configuration files.
+#
   'policy_definitions': [
     {
       'name': 'Homepage',
@@ -98,36 +99,32 @@
           'name': 'HomepageLocation',
           'type': 'string',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 'http://chromium.org',
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 'http://chromium.org',
           'caption': '''Configure the home page URL''',
           'desc': '''Configures the default home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
 
-      The home page type can either be set to a URL you specify here or set to the New Tab Page.
+          The home page type can either be set to a URL you specify here or set to the New Tab Page.
 
-      If you select the New Tab Page, then this policy is ignored.
+          If you select the New Tab Page, then this policy is ignored.
 
-      If you enable this setting, users cannot change their home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, but they can still can choose the New Tab Page as their home page.''',
+          If you enable this setting, users cannot change their home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, but they can still can choose the New Tab Page as their home page.''',
           'label': '''Home page URL''',
         },
         {
           'name': 'HomepageIsNewTabPage',
           'type': 'main',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': True,
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': True,
           'caption': '''Use New Tab Page as homepage''',
           'desc': '''Configures the type of the default home page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing home page preferences. The home page can either be set to a URL you specify or set to the New Tab Page.
 
-      If you enable this setting, always the New Tab Page is used for the home page, and the home page URL location is ignored.
+          If you enable this setting, always the New Tab Page is used for the home page, and the home page URL location is ignored.
 
-      If you disable this setting, the user's homepage will never be the New Tab Page, unless its URL is set to 'chrome://newtab'.
+          If you disable this setting, the user's homepage will never be the New Tab Page, unless its URL is set to 'chrome://newtab'.
 
-      If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+          If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
         },
       ],
     },
@@ -135,10 +132,8 @@
       'name': 'ApplicationLocaleValue',
       'type': 'string',
       'supported_on': ['chrome.win:8-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 0},
-        'example_value': 'en',
-      },
+      'features': {'dynamic_refresh': 0},
+      'example_value': 'en',
       'caption': '''Application locale''',
       'desc': '''Configures the application locale in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing the locale.
 
@@ -151,10 +146,8 @@
       'name': 'AlternateErrorPagesEnabled',
       'type': 'main',
       'supported_on': ['chrome.*:8-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 1},
-        'example_value': True,
-      },
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
       'caption': '''Enable alternate error pages''',
       'desc': '''Enables the use of alternate error pages that are built into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> (such as 'page not found') and prevents users from changing this setting.
 
@@ -168,10 +161,8 @@
       'name': 'SearchSuggestEnabled',
       'type': 'main',
       'supported_on': ['chrome.*:8-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 1},
-        'example_value': True,
-      },
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
       'caption': '''Enable search suggestions''',
       'desc': '''Enables search suggestions in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Omnibox and prevents users from changing this setting.
 
@@ -185,10 +176,8 @@
       'name': 'DnsPrefetchingEnabled',
       'type': 'main',
       'supported_on': ['chrome.*:8-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 1},
-        'example_value': True,
-      },
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
       'caption': '''Enable DNS prefetching''',
       'desc': '''Enables DNS prefetching in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -198,10 +187,8 @@
       'name': 'DisableSpdy',
       'type': 'main',
       'supported_on': ['chrome.*:8-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 1},
-        'example_value': True,
-      },
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
       'caption': '''Disable SPDY protocol''',
       'desc': '''Disables use of the SPDY protocol in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
     },
@@ -209,10 +196,8 @@
       'name': 'JavascriptEnabled',
       'type': 'main',
       'supported_on': ['chrome.*:8-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 0},
-        'example_value': True,
-      },
+      'features': {'dynamic_refresh': 0},
+      'example_value': True,
       'caption': '''Enable JavaScript''',
       'desc': '''Enables JavaScript in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -224,10 +209,8 @@
       'name': 'SavingBrowserHistoryDisabled',
       'type': 'main',
       'supported_on': ['chrome.*:8-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 1},
-        'example_value': True,
-      },
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
       'caption': '''Disable saving browser history''',
       'desc': '''Disables saving browser history in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -239,10 +222,8 @@
       'name': 'PrintingEnabled',
       'type': 'main',
       'supported_on': ['chrome.*:8-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 1},
-        'example_value': True,
-      },
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
       'caption': '''Enable printing''',
       'desc': '''Enables printing in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -254,10 +235,8 @@
       'name': 'SafeBrowsingEnabled',
       'type': 'main',
       'supported_on': ['chrome.*:8-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 0},
-        'example_value': True,
-      },
+      'features': {'dynamic_refresh': 0},
+      'example_value': True,
       'caption': '''Enable Safe Browsing''',
       'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Safe Browsing feature and prevents users from changing this setting.
 
@@ -271,10 +250,8 @@
       'name': 'MetricsReportingEnabled',
       'type': 'main',
       'supported_on': ['chrome.*:8-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 0},
-        'example_value': True,
-      },
+      'features': {'dynamic_refresh': 0},
+      'example_value': True,
       'caption': '''Enable reporting of usage and crash-related data''',
       'desc': '''Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to Google and prevents users from changing this setting.
 
@@ -294,33 +271,29 @@
           'name': 'PasswordManagerEnabled',
           'type': 'main',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': True,
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': True,
           'caption': '''Enable the password manager''',
           'desc': '''Enables saving passwords and using saved passwords in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If you enable this setting, users can have <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> memorize passwords and provide them automatically the next time they log in to a site.
+          If you enable this setting, users can have <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> memorize passwords and provide them automatically the next time they log in to a site.
 
-      If you disable this setting, users are not able to save passwords or use already saved passwords.
+          If you disable this setting, users are not able to save passwords or use already saved passwords.
 
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+          If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
         },
         {
           'name': 'PasswordManagerAllowShowPasswords',
           'type': 'main',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': False,
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': False,
           'caption': '''Allow users to show passwords in Password Manager''',
           'desc': '''Controls whether the user may show passwords in clear text in the password manager.
 
-      If you disable this setting, the password manager does not allow showing stored passwords in clear text in the password manager window.
+          If you disable this setting, the password manager does not allow showing stored passwords in clear text in the password manager window.
 
-      If you enable or do not configure this setting, users can view their passwords in clear text in the password manager.''',
+          If you enable or do not configure this setting, users can view their passwords in clear text in the password manager.''',
         },
       ],
     },
@@ -328,25 +301,21 @@
       'name': 'AutoFillEnabled',
       'type': 'main',
       'supported_on': ['chrome.*:8-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 1},
-        'example_value': False,
-      },
+      'features': {'dynamic_refresh': 1},
+      'example_value': False,
       'caption': '''Enable AutoFill''',
       'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s AutoFill feature and allows users to auto complete web forms using previously stored information such as address or credit card information.
 
-    If you disable this setting, AutoFill will be inaccessible to users.
+      If you disable this setting, AutoFill will be inaccessible to users.
 
-    If you enable this setting or do not configure a value, AutoFill will remain under the control of the user. This will allow them to configure AutoFill profiles and to switch AutoFill on or off at their own discretion.''',
+      If you enable this setting or do not configure a value, AutoFill will remain under the control of the user. This will allow them to configure AutoFill profiles and to switch AutoFill on or off at their own discretion.''',
     },
     {
       'name': 'DisabledPlugins',
       'type': 'list',
       'supported_on': ['chrome.*:8-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 1},
-        'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
-      },
+      'features': {'dynamic_refresh': 1},
+      'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
       'caption': '''Specify a list of disabled plugins''',
       'desc': '''Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -359,10 +328,8 @@
       'name': 'SyncDisabled',
       'type': 'main',
       'supported_on': ['chrome.*:8-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 1},
-        'example_value': True,
-      },
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
       'caption': '''Disable synchronization of data with Google''',
       'desc': '''Disables data synchronization in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> using Google-hosted synchronization services and prevents users from changing this setting.
 
@@ -386,53 +353,51 @@
         {
           'name': 'ProxyMode',
           'type': 'string-enum',
-          'caption': '''Choose how to specify proxy server settings''',
-          'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
-
-      If you choose to never use a proxy server and always connect directly, all other options are ignored.
-
-      If you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.
-
-      If you choose fixed server proxy mode, you can specify further options in 'Address or URL of proxy server' and 'Comma-separated list of proxy bypass rules'.
-
-      If you choose to use a .pac proxy script, you must specify the URL to the script in 'URL to a proxy .pac file'.
-
-      For detailed examples, visit:
-      <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>   
-
-      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.''',
           'items': [
             {
               'name': 'ProxyDisabled',
               'value': 'direct',
-              'caption': '''Never use a proxy''',
+              'caption': '''Never use a proxy'''
             },
             {
               'name': 'ProxyAutoDetect',
               'value': 'auto_detect',
-              'caption': '''Auto detect proxy settings''',
+              'caption': '''Auto detect proxy settings'''
             },
             {
               'name': 'ProxyPacScript',
               'value': 'pac_script',
-              'caption': '''Use a .pac proxy script''',
+              'caption': '''Use a .pac proxy script'''
             },
             {
               'name': 'ProxyFixedServers',
               'value': 'fixed_servers',
-              'caption': '''Use fixed proxy servers''',
+              'caption': '''Use fixed proxy servers'''
             },
             {
               'name': 'ProxyUseSystem',
               'value': 'system',
-              'caption': '''Use system proxy settings''',
+              'caption': '''Use system proxy settings'''
             },
           ],
           'supported_on': ['chrome.*:10-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 'direct'
-          }
+          'features': {'dynamic_refresh': 1},
+          'example_value': 'direct',
+          'caption': '''Choose how to specify proxy server settings''',
+          'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
+
+          If you choose to never use a proxy server and always connect directly, all other options are ignored.
+
+          If you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.
+
+          If you choose fixed server proxy mode, you can specify further options in 'Address or URL of proxy server' and 'Comma-separated list of proxy bypass rules'.
+
+          If you choose to use a .pac proxy script, you must specify the URL to the script in 'URL to a proxy .pac file'.
+
+          For detailed examples, visit:
+          <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
+
+          If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.''',
         },
         {
           'name': 'ProxyServerMode',
@@ -460,74 +425,65 @@
             },
           ],
           'supported_on': ['chrome.*:8-'],
-          'deprecated' : True,
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 2,
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 2,
           'caption': '''Choose how to specify proxy server settings''',
-          'desc': '''This policy is deprecated, use ProxyMode instead.      
+          'desc': '''This policy is deprecated, use ProxyMode instead.
 
-      Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
+          Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
 
-      If you choose to never use a proxy server and always connect directly, all other options are ignored.
+          If you choose to never use a proxy server and always connect directly, all other options are ignored.
 
-      If you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.
+          If you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.
 
-      If you choose manual proxy settings, you can specify further options in 'Address or URL of proxy server', 'URL to a proxy .pac file' and 'Comma-separated list of proxy bypass rules'.
+          If you choose manual proxy settings, you can specify further options in 'Address or URL of proxy server', 'URL to a proxy .pac file' and 'Comma-separated list of proxy bypass rules'.
 
-      For detailed examples, visit:
-      <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
+          For detailed examples, visit:
+          <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
 
-      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.''',
+          If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.''',
         },
         {
           'name': 'ProxyServer',
           'type': 'string',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': '123.123.123.123:8080',
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': '123.123.123.123:8080',
           'caption': '''Address or URL of proxy server''',
           'desc': '''You can specify the URL of the proxy server here.
 
-      This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
 
-      For more options and detailed examples, visit:
-      <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
+          For more options and detailed examples, visit:
+          <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
         },
         {
           'name': 'ProxyPacUrl',
           'type': 'string',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 'http://internal.site/example.pac',
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 'http://internal.site/example.pac',
           'caption': '''URL to a proxy .pac file''',
           'desc': '''You can specify a URL to a proxy .pac file here.
 
-      This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
 
-      For detailed examples, visit:
-      <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
+          For detailed examples, visit:
+          <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
         },
         {
           'name': 'ProxyBypassList',
           'type': 'string',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 'http://www.example1.com,http://www.example2.com,http://internalsite/',
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 'http://www.example1.com,http://www.example2.com,http://internalsite/',
           'caption': '''Proxy bypass rules''',
           'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will bypass any proxy for the list of hosts given here.
 
-      This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
 
-      For more detailed examples, visit:
-      <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
+          For more detailed examples, visit:
+          <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
           'label': '''Comma-separated list of proxy bypass rules''',
         },
       ],
@@ -542,66 +498,56 @@
           'name': 'AuthSchemes',
           'type': 'string',
           'supported_on': ['chrome.*:9-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 0},
-            'example_value': 'basic,digest,ntlm,negotiate',
-          },
+          'features': {'dynamic_refresh': 0},
+          'example_value': 'basic,digest,ntlm,negotiate',
           'caption': '''Supported authentication schemes''',
           'desc': '''Specifies which HTTP Authentication schemes are supported by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      Possible values are 'basic', 'digest', 'ntlm' and 'negotiate'. Separate multiple values with commas.''',
+          Possible values are 'basic', 'digest', 'ntlm' and 'negotiate'. Separate multiple values with commas.''',
         },
         {
           'name': 'DisableAuthNegotiateCnameLookup',
           'type': 'main',
           'supported_on': ['chrome.*:9-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 0},
-            'example_value': False,
-          },
+          'features': {'dynamic_refresh': 0},
+          'example_value': False,
           'caption': '''Disable CNAME lookup when negotiating Kerberos authentication''',
           'desc': '''Specifies whether the generated Kerberos SPN is based on the canonical DNS name or the original name entered.
 
-      If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
+          If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
 
-      If you enable this setting, the canonical name of the server will be determined via CNAME lookup.''',
+          If you enable this setting, the canonical name of the server will be determined via CNAME lookup.''',
         },
         {
           'name': 'EnableAuthNegotiatePort',
           'type': 'main',
           'supported_on': ['chrome.*:9-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 0},
-            'example_value': False,
-          },
+          'features': {'dynamic_refresh': 0},
+          'example_value': False,
           'caption': '''Include non-standard port in Kerberos SPN''',
           'desc': '''Specifies whether the generated Kerberos SPN should include a non-standard port.
 
-      If you enable this setting, and a non-standard port (i.e., a port other than 80 or 443) is entered, it will be included in the generated Kerberos SPN.
+          If you enable this setting, and a non-standard port (i.e., a port other than 80 or 443) is entered, it will be included in the generated Kerberos SPN.
 
-      If you disable this setting, the generated Kerberos SPN will not include a port in any case.''',
+          If you disable this setting, the generated Kerberos SPN will not include a port in any case.''',
         },
         {
           'name': 'AuthServerWhitelist',
           'type': 'string',
           'supported_on': ['chrome.*:9-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 0},
-            'example_value': '*example.com,foobar.com,*baz',
-          },
+          'features': {'dynamic_refresh': 0},
+          'example_value': '*example.com,foobar.com,*baz',
           'caption': '''Authentication server whitelist''',
           'desc': '''Specifies which servers should be whitelisted for integrated authentication. Integrated authentication is only enabled when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> receives an authentication challenge from a proxy or from a server which is in this permitted list.
 
-      Separate multiple server names with commas. Wildcards (*) are allowed.''',
+          Separate multiple server names with commas. Wildcards (*) are allowed.''',
         },
         {
           'name': 'AuthNegotiateDelegateWhitelist',
           'type': 'string',
           'supported_on': ['chrome.*:9-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 0},
-            'example_value': 'foobar.example.com',
-          },
+          'features': {'dynamic_refresh': 0},
+          'example_value': 'foobar.example.com',
           'caption': '''Kerberos delegation server whitelist''',
           'desc': '''Servers that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may delegate to.''',
         },
@@ -609,10 +555,8 @@
           'name': 'GSSAPILibraryName',
           'type': 'string',
           'supported_on': ['chrome.linux:9-', 'chrome.mac:9-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 0},
-            'example_value': 'libgssapi_krb5.so.2',
-          },
+          'features': {'dynamic_refresh': 0},
+          'example_value': 'libgssapi_krb5.so.2',
           'caption': '''GSSAPI library name''',
           'desc': '''Specifies which GSSAPI library to use for HTTP Authentication. You can set either just a library name, or a full path. If no setting is provided, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will fall back to using a default library name.''',
         },
@@ -628,46 +572,40 @@
           'name': 'ExtensionInstallBlacklist',
           'type': 'list',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': ['extension_id1', 'extension_id2'],
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': ['extension_id1', 'extension_id2'],
           'caption': '''Configure extension installation blacklist''',
           'desc': '''Allows you to specify which extensions the users can NOT install.
 
-      A blacklist value of * means all extensions are blacklisted unless they are explicitly listed in the whitelist.''',
+          A blacklist value of * means all extensions are blacklisted unless they are explicitly listed in the whitelist.''',
           'label': '''Extension IDs the user should be prevented from installing (or * for all)''',
         },
         {
           'name': 'ExtensionInstallWhitelist',
           'type': 'list',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': ['extension_id1', 'extension_id2'],
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': ['extension_id1', 'extension_id2'],
           'caption': '''Configure extension installation whitelist''',
           'desc': '''Allows you to specify which extensions are not subject to the blacklist.
 
-      A blacklist value of * means all extensions are blacklisted and users can only install extensions listed in the whitelist.
+          A blacklist value of * means all extensions are blacklisted and users can only install extensions listed in the whitelist.
 
-      By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.''',
+          By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.''',
           'label': '''Extension IDs to exempt from the blacklist''',
         },
         {
           'name': 'ExtensionInstallForcelist',
           'type': 'list',
           'supported_on': ['chrome.*:9-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': ['lcncmkcnkcdbbanbjakcencbaoegdjlp;https://clients2.google.com/service/update2/crx'],
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': ['lcncmkcnkcdbbanbjakcencbaoegdjlp;https://clients2.google.com/service/update2/crx'],
           'caption': '''Configure the list of force-installed extensions''',
           'desc': '''Allows you to specify a list of extensions that will be installed silently, without user interaction.
 
-      Each item of the list is a string, that contains an extension ID and an update URL delimited by a semicolon (<ph name="SEMICOLON">;</ph>). For example: <ph name="EXTENSION_POLICY_EXAMPLE">lcncmkcnkcdbbanbjakcencbaoegdjlp;https://clients2.google.com/service/update2/crx</ph>. For each item, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will retrieve the extension specified by the ID from the specified URL and silently install it. The following pages explain how you can host extensions on your own server. About update URLs: <ph name="LINK_TO_EXTENSION_DOC1">http://code.google.com/chrome/extensions/autoupdate.html</ph> , about hosting extensions in general: <ph name="LINK_TO_EXTENSION_DOC2">http://code.google.com/chrome/extensions/hosting.html</ph>.
+          Each item of the list is a string, that contains an extension ID and an update URL delimited by a semicolon (<ph name="SEMICOLON">;</ph>). For example: <ph name="EXTENSION_POLICY_EXAMPLE">lcncmkcnkcdbbanbjakcencbaoegdjlp;https://clients2.google.com/service/update2/crx</ph>. For each item, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will retrieve the extension specified by the ID from the specified URL and silently install it. The following pages explain how you can host extensions on your own server. About update URLs: <ph name="LINK_TO_EXTENSION_DOC1">http://code.google.com/chrome/extensions/autoupdate.html</ph> , about hosting extensions in general: <ph name="LINK_TO_EXTENSION_DOC2">http://code.google.com/chrome/extensions/hosting.html</ph>.
 
-      Users will be unable to uninstall extensions that are specified by this policy. If you remove an extension from this list, then it will be automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Extensions that are blacklisted in 'ExtensionInstallBlacklist' and not whitelisted, cannot be force-installed by this policy.''',
+          Users will be unable to uninstall extensions that are specified by this policy. If you remove an extension from this list, then it will be automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Extensions that are blacklisted in 'ExtensionInstallBlacklist' and not whitelisted, cannot be force-installed by this policy.''',
           'label': '''Extension IDs and update URLs to be silently installed''',
         },
       ],
@@ -676,28 +614,24 @@
       'name': 'ShowHomeButton',
       'type': 'main',
       'supported_on': ['chrome.*:8-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 1},
-        'example_value': True,
-      },
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
       'caption': '''Show Home button on toolbar''',
       'desc': '''Shows the Home button on <ph name="PRODUCT_NAME">$1<ex>Google
-        Chrome</ex></ph>'s toolbar.
+      Chrome</ex></ph>'s toolbar.
 
-    If you enable this setting, the Home button is always shown.
+      If you enable this setting, the Home button is always shown.
 
-    If you disable this setting, the Home button is never shown.
+      If you disable this setting, the Home button is never shown.
 
-    If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
     },
     {
       'name': 'DeveloperToolsDisabled',
       'type': 'main',
       'supported_on': ['chrome.*:9-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 1},
-        'example_value': False,
-      },
+      'features': {'dynamic_refresh': 1},
+      'example_value': False,
       'caption': '''Disable Developer Tools''',
       'desc': '''Disables the Developer Tools and the JavaScript console.
 
@@ -732,29 +666,25 @@
             },
           ],
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 4,
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 4,
           'caption': '''Action on startup''',
           'desc': '''Allows you to specify the behavior on startup.
 
-      If you choose 'Open home page' the home page will always be opened when you start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+          If you choose 'Open home page' the home page will always be opened when you start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If you choose 'Reopen the URLs that were open last', the URLs that were open last time <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> was closed will be reopened.
+          If you choose 'Reopen the URLs that were open last', the URLs that were open last time <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> was closed will be reopened.
 
-      If you choose 'Open a list of URLs', the list of 'URLs to open on startup' will be opened when a user starts <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+          If you choose 'Open a list of URLs', the list of 'URLs to open on startup' will be opened when a user starts <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+          If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
         },
         {
           'name': 'RestoreOnStartupURLs',
           'type': 'list',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': ['http://example.com', 'http://chromium.org'],
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': ['http://example.com', 'http://chromium.org'],
           'caption': '''URLs to open on startup''',
           'desc': '''If 'Open a list of URLs' is selected as the startup action, this allows you to specify the list of URLs that are opened.''',
         },
@@ -770,31 +700,27 @@
           'name': 'DefaultSearchProviderEnabled',
           'type': 'main',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': True,
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': True,
           'caption': '''Enable the default search provider''',
           'desc': '''Enables the use of a default search provider.
 
-      If you enable this setting, a default search is performed when the user types text in the omnibox that is not a URL.
+          If you enable this setting, a default search is performed when the user types text in the omnibox that is not a URL.
 
-      You can specify the default search provider to be used by setting the rest of the default search policies. If these are left empty, the user can choose the default provider.
+          You can specify the default search provider to be used by setting the rest of the default search policies. If these are left empty, the user can choose the default provider.
 
-      If you diable this setting, no search is performed when the user enters non-URL text in the omnibox.
+          If you diable this setting, no search is performed when the user enters non-URL text in the omnibox.
 
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">
-        $1<ex>Google Chrome</ex>
-      </ph>.''',
+          If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">
+          $1<ex>Google Chrome</ex>
+          </ph>.''',
         },
         {
           'name': 'DefaultSearchProviderName',
           'type': 'string',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 'My Intranet Search',
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 'My Intranet Search',
           'caption': '''Default search provider name''',
           'desc': '''Specifies the name of the default search provider. If left empty, the host name specified by the search URL will be used.''',
         },
@@ -802,10 +728,8 @@
           'name': 'DefaultSearchProviderKeyword',
           'type': 'string',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 'mis',
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 'mis',
           'caption': '''Default search provider keyword''',
           'desc': '''Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider. Optional.''',
         },
@@ -813,10 +737,8 @@
           'name': 'DefaultSearchProviderSearchURL',
           'type': 'string',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 'http://search.my.company/search?q={searchTerms}',
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 'http://search.my.company/search?q={searchTerms}',
           'caption': '''Default search provider search URL''',
           'desc': '''Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the terms the user is searching for.''',
         },
@@ -824,10 +746,8 @@
           'name': 'DefaultSearchProviderSuggestURL',
           'type': 'string',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 'http://search.my.company/suggest?q={searchTerms}',
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 'http://search.my.company/suggest?q={searchTerms}',
           'caption': '''Default search provider suggest URL''',
           'desc': '''Specifies the URL of the search engine used to provide search suggestions. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the text the user has entered so far. Optional.''',
         },
@@ -835,10 +755,8 @@
           'name': 'DefaultSearchProviderInstantURL',
           'type': 'string',
           'supported_on': ['chrome.*:10-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 'http://search.my.company/suggest?q={searchTerms}',
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 'http://search.my.company/suggest?q={searchTerms}',
           'caption': '''Default search provider instant URL''',
           'desc': '''Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, which will be replaced at query time by the text the user has entered so far. Optional.''',
         },
@@ -846,10 +764,8 @@
           'name': 'DefaultSearchProviderIconURL',
           'type': 'string',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 'http://search.my.company/favicon.ico',
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 'http://search.my.company/favicon.ico',
           'caption': '''Default search provider icon''',
           'desc': '''Specifies the favorite icon URL of the default search provider. Optional.''',
         },
@@ -857,10 +773,8 @@
           'name': 'DefaultSearchProviderEncodings',
           'type': 'list',
           'supported_on': ['chrome.*:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': ['UTF-8', 'UTF-16', 'GB2312', 'ISO-8859-1'],
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': ['UTF-8', 'UTF-16', 'GB2312', 'ISO-8859-1'],
           'caption': '''Default search provider encodings''',
           'desc': '''Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided. The default is UTF-8.''',
         },
@@ -888,10 +802,8 @@
             },
           ],
           'supported_on': ['chrome.*:10-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 0,
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 0,
           'caption': '''Default cookies setting''',
           'desc': '''Allows you to set whether websites are allowed to set local data. Setting local data can be either allowed for all websites or denied for all websites.''',
         },
@@ -911,10 +823,8 @@
             },
           ],
           'supported_on': ['chrome.*:10-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 0,
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 0,
           'caption': '''Default images setting''',
           'desc': '''Allows you to set whether websites are allowed to display images. Displaying images can be either allowed for all websites or denied for all websites.''',
         },
@@ -934,10 +844,8 @@
             },
           ],
           'supported_on': ['chrome.*:10-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 0,
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 0,
           'caption': '''Default JavaScript setting''',
           'desc': '''Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.''',
         },
@@ -957,10 +865,8 @@
             },
           ],
           'supported_on': ['chrome.*:10-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 0,
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 0,
           'caption': '''Default plugins setting''',
           'desc': '''Allows you to set whether websites are allowed to automatically run plugins. Automatically running plugins can be either allowed for all websites or denied for all websites.''',
         },
@@ -980,10 +886,8 @@
             },
           ],
           'supported_on': ['chrome.*:10-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 1,
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 1,
           'caption': '''Default popups setting''',
           'desc': '''Allows you to set whether websites are allowed to show pop-ups. Showing popups can be either allowed for all websites or denied for all websites.''',
         },
@@ -1008,10 +912,8 @@
             },
           ],
           'supported_on': ['chrome.*:10-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 2,
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 2,
           'caption': '''Default notification setting''',
           'desc': '''Allows you to set whether websites are allowed to display desktop notifications. Displaying desktop notifications can be allowed by default, denied by default or the user can be asked everytime a website wants to show desktop notifications.''',
         },
@@ -1036,10 +938,8 @@
             },
           ],
           'supported_on': ['chrome.*:10-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 1},
-            'example_value': 0,
-          },
+          'features': {'dynamic_refresh': 1},
+          'example_value': 0,
           'caption': '''Default geolocation setting''',
           'desc': '''Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked everytime a website requests the pysical location.''',
         },
@@ -1049,10 +949,8 @@
       'name': 'Disable3DAPIs',
       'type': 'main',
       'supported_on': ['chrome.*:9-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 0},
-        'example_value': False,
-      },
+      'features': {'dynamic_refresh': 0},
+      'example_value': False,
       'caption': '''Disable support for 3D graphics APIs''',
       'desc': '''Disable support for 3D graphics APIs.
 
@@ -1068,7 +966,7 @@
       </ph> is installed.
       The default setting is to allow the host browser do the rendering, but you
       can optionally override this and have <ph name="PRODUCT_FRAME_NAME">$3<ex>
-        Google Chrome Frame</ex></ph> render HTML pages by default.''',
+      Google Chrome Frame</ex></ph> render HTML pages by default.''',
       'policies': [
         {
           'name': 'ChromeFrameRendererSettings',
@@ -1086,41 +984,35 @@
             },
           ],
           'supported_on': ['chrome_frame:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 0},
-            'example_value': 1,
-          },
+          'features': {'dynamic_refresh': 0},
+          'example_value': 1,
           'caption': '''Default HTML renderer for <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
           'desc': '''Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex>
-      </ph> is installed.
-      The default setting is to allow the host browser do the rendering, but you
-      can optionally override this and have <ph name="PRODUCT_FRAME_NAME">$3<ex>
-        Google Chrome Frame</ex></ph> render HTML pages by default.''',
+          </ph> is installed.
+          The default setting is to allow the host browser do the rendering, but you
+          can optionally override this and have <ph name="PRODUCT_FRAME_NAME">$3<ex>
+          Google Chrome Frame</ex></ph> render HTML pages by default.''',
         },
         {
           'name': 'RenderInChromeFrameList',
           'type': 'list',
           'supported_on': ['chrome_frame:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 0},
-            'example_value': ['http://www.example.com', 'http://www.example.edu'],
-          },
+          'features': {'dynamic_refresh': 0},
+          'example_value': ['http://www.example.com', 'http://www.example.edu'],
           'caption': '''Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
           'desc': '''Customize the list of URL patterns that should always be rendered by <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>.
 
-      For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.''',
+          For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.''',
         },
         {
           'name': 'RenderInHostList',
           'type': 'list',
           'supported_on': ['chrome_frame:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 0},
-            'example_value': ['http://www.example.com', 'http://www.example.edu'],
-          },
+          'features': {'dynamic_refresh': 0},
+          'example_value': ['http://www.example.com', 'http://www.example.edu'],
           'caption': '''Always render the following URL patterns in the host browser''',
           'desc': '''Customize the list of URL patterns that should always be rendered by the host browser.
-      For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.''',
+          For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.''',
         },
       ],
     },
@@ -1134,10 +1026,8 @@
           'name': 'ChromeFrameContentTypes',
           'type': 'list',
           'supported_on': ['chrome_frame:8-'],
-          'annotations': {
-            'features': {'dynamic_refresh': 0},
-            'example_value': ['text/xml', 'application/xml'],
-          },
+          'features': {'dynamic_refresh': 0},
+          'example_value': ['text/xml', 'application/xml'],
           'caption': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the following content types.''',
           'desc': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the following content types.''',
         },
@@ -1147,10 +1037,8 @@
       'name': 'ChromeOsLockOnIdleSuspend',
       'type': 'main',
       'supported_on': ['chrome_os:0.9.79.0-'],
-      'annotations': {
-        'features': {'dynamic_refresh': 1},
-        'example_value': True,
-      },
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
       'caption': '''Enable lock when ChromeOS devices become idle or suspended.''',
       'desc': '''Enable lock when ChromeOS devices become idle or suspended.
 
@@ -1213,7 +1101,7 @@
 
       You don't need to change these settings by hand!  You can download easy-to-use templates from
       <ph name="POLICY_TEMPLATE_DOWNLOAD_URL">$5<ex>
-        http://www.chromium.org/administrators/policy-templates</ex></ph>.
+      http://www.chromium.org/administrators/policy-templates</ex></ph>.
 
       The list of supported policies is the same for Chromium and Google Chrome, but their Windows registry locations differ.
 

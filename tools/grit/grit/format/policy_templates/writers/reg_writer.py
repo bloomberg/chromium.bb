@@ -50,7 +50,7 @@ class RegWriter(template_writer.TemplateWriter):
     return (is_list, policy['name'])
 
   def WritePolicy(self, policy):
-    example_value = policy['annotations']['example_value']
+    example_value = policy['example_value']
 
     if policy['type'] == 'list':
       self._StartBlock(policy['name'])

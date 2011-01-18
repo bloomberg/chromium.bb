@@ -26,7 +26,7 @@ class JsonWriter(template_writer.TemplateWriter):
     return self.FlattenGroupsAndSortPolicies(policy_list)
 
   def WritePolicy(self, policy):
-    example_value = policy['annotations']['example_value']
+    example_value = policy['example_value']
     if policy['type'] == 'string':
       example_value_str = '"' + example_value + '"'
     elif policy['type'] == 'int':

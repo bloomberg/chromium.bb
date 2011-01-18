@@ -196,9 +196,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
   def testAddFeatures(self):
     # Test if the list of features of a policy is handled correctly.
     policy = {
-      'annotations': {
-        'features': {'spaceship_docking': 0, 'dynamic_refresh': 1}
-      }
+      'features': {'spaceship_docking': 0, 'dynamic_refresh': 1}
     }
     self.writer._FEATURE_MAP = {
       'spaceship_docking': 'Spaceship Docking',
@@ -215,9 +213,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
   def testAddListExample(self):
     policy = {
       'name': 'PolicyName',
-      'annotations': {
-        'example_value': ['Foo', 'Bar']
-      }
+      'example_value': ['Foo', 'Bar']
     }
     self.writer._AddListExample(self.doc_root, policy)
     self.assertEquals(
@@ -248,9 +244,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     policy = {
       'name': 'PolicyName',
       'type': 'main',
-      'annotations': {
-        'example_value': True
-      }
+      'example_value': True
     }
     e1 = self.writer.AddElement(self.doc_root, 'e1')
     self.writer._AddExample(e1, policy)
@@ -261,9 +255,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     policy = {
       'name': 'PolicyName',
       'type': 'main',
-      'annotations': {
-        'example_value': False
-      }
+      'example_value': False
     }
     e2 = self.writer.AddElement(self.doc_root, 'e2')
     self.writer._AddExample(e2, policy)
@@ -276,9 +268,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     policy = {
       'name': 'PolicyName',
       'type': 'int-enum',
-      'annotations': {
-        'example_value': 16
-      }
+      'example_value': 16
     }
     self.writer._AddExample(self.doc_root, policy)
     self.assertEquals(
@@ -290,9 +280,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     policy = {
       'name': 'PolicyName',
       'type': 'string-enum',
-      'annotations': {
-        'example_value': "wacky"
-      }
+      'example_value': "wacky"
     }
     self.writer._AddExample(self.doc_root, policy)
     self.assertEquals(
@@ -304,9 +292,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     policy = {
       'name': 'PolicyName',
       'type': 'string',
-      'annotations': {
-        'example_value': 'awesome-example'
-      }
+      'example_value': 'awesome-example'
     }
     self.writer._AddExample(self.doc_root, policy)
     self.assertEquals(
@@ -318,9 +304,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     policy = {
       'name': 'PolicyName',
       'type': 'int',
-      'annotations': {
-        'example_value': 26
-      }
+      'example_value': 26
     }
     self.writer._AddExample(self.doc_root, policy)
     self.assertEquals(
@@ -351,10 +335,8 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         'since_version': '8',
         'until_version': '',
       }],
-      'annotations': {
-        'features': {'dynamic_refresh': 0},
-        'example_value': False
-      }
+      'features': {'dynamic_refresh': 0},
+      'example_value': False
     }
     self.writer.messages['doc_since_version'] = {'text': '...$6...'}
     self.writer._AddPolicyDetails(self.doc_root, policy)
@@ -380,11 +362,11 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       '</dl></root>')
 
   def testAddPolicyNote(self):
+    # TODO(jkummerow): The functionality tested by this test is currently not
+    # used for anything and will probably soon be removed.
     # Test if nodes are correctly added to policies.
     policy = {
-      'annotations': {
-        'problem_href': 'http://www.example.com/5'
-      }
+      'problem_href': 'http://www.example.com/5'
     }
     self.writer.messages['doc_note'] = {'text': '...$6...'}
     self.writer._AddPolicyNote(self.doc_root, policy)
@@ -440,10 +422,8 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         'since_version': '7',
         'until_version': '',
       }],
-      'annotations': {
-        'features': {'dynamic_refresh': 0},
-        'example_value': False
-      }
+      'features': {'dynamic_refresh': 0},
+      'example_value': False
     }
     self.writer.messages['doc_since_version'] = {'text': '..$6..'}
     self.writer._AddPolicySection(self.doc_root, policy)

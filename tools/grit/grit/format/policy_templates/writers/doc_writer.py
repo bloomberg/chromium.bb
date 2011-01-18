@@ -136,7 +136,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       policy: The data structure of a policy.
     '''
     features = []
-    for key, value in policy['annotations']['features'].iteritems():
+    for key, value in policy['features'].iteritems():
       key_name = self._FEATURE_MAP[key]
       if value == 0:
         value_name = self._GetLocalizedMessage('not_supported')
@@ -153,7 +153,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       policy: A policy of type 'list', for which the Mac example value
         is generated.
     '''
-    example_value = policy['annotations']['example_value']
+    example_value = policy['example_value']
     self.AddElement(parent, 'dt', {}, 'Mac:')
     mac = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre'])
 
@@ -171,7 +171,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       policy: A policy of type 'list', for which the Windows example value
         is generated.
     '''
-    example_value = policy['annotations']['example_value']
+    example_value = policy['example_value']
     self.AddElement(parent, 'dt', {}, 'Windows:')
     win = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre'])
     win_text = []
@@ -191,7 +191,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       policy: A policy of type 'list', for which the Linux example value
         is generated.
     '''
-    example_value = policy['annotations']['example_value']
+    example_value = policy['example_value']
     self.AddElement(parent, 'dt', {}, 'Linux:')
     linux = self._AddStyledElement(parent, 'dd', ['.monospace'])
     linux_text = []
@@ -223,7 +223,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       parent: The DOM node for which the example will be added.
       policy: The data structure of a policy.
     '''
-    example_value = policy['annotations']['example_value']
+    example_value = policy['example_value']
     examples = self._AddStyledElement(parent, 'dl', ['dd dl'])
     self._AddListExampleWindows(examples, policy)
     self._AddListExampleLinux(examples, policy)
@@ -244,7 +244,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       Exception: If the type of the policy is unknown or the example value
         of the policy is out of its expected range.
     '''
-    example_value = policy['annotations']['example_value']
+    example_value = policy['example_value']
     policy_type = policy['type']
     if policy_type == 'main':
       if example_value == True:
@@ -330,7 +330,6 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       parent: A DOM element for which the list will be added.
       policy: The data structure of the policy.
     '''
-    annotations = policy['annotations']
 
     dl = self.AddElement(parent, 'dl')
     self._AddPolicyAttribute(
@@ -363,9 +362,9 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     Args:
       policy: The data structure of the policy.
     '''
-    if 'problem_href' not in policy['annotations']:
+    if 'problem_href' not in policy:
       return
-    problem_href = policy['annotations']['problem_href']
+    problem_href = policy['problem_href']
     div = self._AddStyledElement(parent, 'div', ['div.note'])
     note = self._GetLocalizedMessage('note').replace('$6', problem_href)
     self._AddTextWithLinks(div, note)

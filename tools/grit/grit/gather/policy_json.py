@@ -178,7 +178,7 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
     else:
       str_val = item[key]
       if type(str_val) == types.StringType:
-        str_val = "'%s'" % str_val
+        str_val = "'%s'" % self.Escape(str_val)
       else:
         str_val = str(str_val)
       self._AddNontranslateableChunk(str_val + ',\n')
