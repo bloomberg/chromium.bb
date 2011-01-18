@@ -66,7 +66,7 @@ void PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_GetBodyAsFileRef(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   *file_ref = PPBURLResponseInfoInterface()->GetBodyAsFileRef(response);
-  DebugPrintf("PPB_URLResponseInfo::GetBodyAsFileRef: file_ref="NACL_PRIx64"\n",
+  DebugPrintf("PPB_URLResponseInfo::GetBodyAsFileRef: file_ref="NACL_PRIx32"\n",
               *file_ref);
 
   rpc->result = NACL_SRPC_RESULT_OK;

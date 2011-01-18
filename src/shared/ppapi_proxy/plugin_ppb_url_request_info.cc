@@ -23,7 +23,7 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Resource Create(PP_Module module) {
-  DebugPrintf("PPB_URLRequestInfo::Create: module=%"NACL_PRIx64"\n", module);
+  DebugPrintf("PPB_URLRequestInfo::Create: module=%"NACL_PRIx32"\n", module);
 
   PP_Resource resource;
   NaClSrpcError srpc_result =
@@ -38,7 +38,7 @@ PP_Resource Create(PP_Module module) {
 }
 
 PP_Bool IsURLRequestInfo(PP_Resource resource) {
-  DebugPrintf("PPB_URLRequestInfo::IsURLRequestInfo: resource=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_URLRequestInfo::IsURLRequestInfo: resource=%"NACL_PRIx32"\n",
               resource);
 
   int32_t success;
@@ -56,7 +56,7 @@ PP_Bool IsURLRequestInfo(PP_Resource resource) {
 PP_Bool SetProperty(PP_Resource request,
                     PP_URLRequestProperty property,
                     struct PP_Var value) {
-  DebugPrintf("PPB_URLRequestInfo::SetProperty: request=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_URLRequestInfo::SetProperty: request=%"NACL_PRIx32"\n",
               request);
 
   nacl_abi_size_t value_size = kMaxVarSize;
@@ -80,7 +80,7 @@ PP_Bool SetProperty(PP_Resource request,
 }
 
 PP_Bool AppendDataToBody(PP_Resource request, const char* data, uint32_t len) {
-  DebugPrintf("PPB_URLRequestInfo::AppendDataToBody: request=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_URLRequestInfo::AppendDataToBody: request=%"NACL_PRIx32"\n",
               request);
   NACL_UNTESTED();
 
@@ -105,7 +105,7 @@ PP_Bool AppendFileToBody(PP_Resource request,
                          int64_t start_offset,
                          int64_t number_of_bytes,
                          PP_Time expected_last_modified_time) {
-  DebugPrintf("PPB_URLRequestInfo::AppendFileToBody: request=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_URLRequestInfo::AppendFileToBody: request=%"NACL_PRIx32"\n",
               request);
   NACL_UNTESTED();
 

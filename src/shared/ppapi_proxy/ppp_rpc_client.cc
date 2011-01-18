@@ -224,7 +224,7 @@ NaClSrpcError PppRpcClient::PPP_InitializeModule(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPP_InitializeModule:ilhs:ii",
+      "PPP_InitializeModule:iihs:ii",
       pid,
       module,
       upcall_channel_desc,
@@ -268,7 +268,7 @@ NaClSrpcError PppAudioDevRpcClient::PPP_Audio_Dev_StreamCreated(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPP_Audio_Dev_StreamCreated:lhih:",
+      "PPP_Audio_Dev_StreamCreated:ihih:",
       instance,
       out_shm,
       out_shm_size,
@@ -287,7 +287,7 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidCreate(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPP_Instance_DidCreate:liCC:i",
+      "PPP_Instance_DidCreate:iiCC:i",
       instance,
       argc,
       argn_bytes, argn,
@@ -303,7 +303,7 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidDestroy(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPP_Instance_DidDestroy:l:",
+      "PPP_Instance_DidDestroy:i:",
       instance
   );
   return retval;
@@ -317,7 +317,7 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidChangeView(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPP_Instance_DidChangeView:lII:",
+      "PPP_Instance_DidChangeView:iII:",
       instance,
       position_bytes, position,
       clip_bytes, clip
@@ -332,7 +332,7 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidChangeFocus(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPP_Instance_DidChangeFocus:lb:",
+      "PPP_Instance_DidChangeFocus:ib:",
       instance,
       has_focus
   );
@@ -347,7 +347,7 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_HandleInputEvent(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPP_Instance_HandleInputEvent:lC:i",
+      "PPP_Instance_HandleInputEvent:iC:i",
       instance,
       event_data_bytes, event_data,
       success
@@ -363,7 +363,7 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_HandleDocumentLoad(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPP_Instance_HandleDocumentLoad:ll:i",
+      "PPP_Instance_HandleDocumentLoad:ii:i",
       instance,
       url_loader,
       success
@@ -378,7 +378,7 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_GetInstanceObject(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPP_Instance_GetInstanceObject:l:C",
+      "PPP_Instance_GetInstanceObject:i:C",
       instance,
       capability_bytes, capability
   );

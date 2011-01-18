@@ -27,7 +27,7 @@ namespace fake_browser_ppapi {
 namespace {
 
 PP_Bool IsURLResponseInfo(PP_Resource resource_id) {
-  DebugPrintf("URLRequestInfo::IsURLResponseInfo: resource_id=%"NACL_PRId64"\n",
+  DebugPrintf("URLRequestInfo::IsURLResponseInfo: resource_id=%"NACL_PRId32"\n",
               resource_id);
   NACL_UNIMPLEMENTED();
   return PP_FALSE;
@@ -35,7 +35,7 @@ PP_Bool IsURLResponseInfo(PP_Resource resource_id) {
 
 PP_Var GetProperty(PP_Resource response_id,
                    PP_URLResponseProperty property) {
-  DebugPrintf("URLRequestInfo::GetProperty: response_id=%"NACL_PRId64"\n",
+  DebugPrintf("URLRequestInfo::GetProperty: response_id=%"NACL_PRId32"\n",
               response_id);
   URLResponseInfo* response = GetResource(response_id)->AsURLResponseInfo();
   if (response == NULL)
@@ -56,7 +56,7 @@ PP_Var GetProperty(PP_Resource response_id,
 }
 
 PP_Resource GetBodyAsFileRef(PP_Resource response_id) {
-  DebugPrintf("URLRequestInfo::GetBodyAsFileRef: response_id=%"NACL_PRId64"\n",
+  DebugPrintf("URLRequestInfo::GetBodyAsFileRef: response_id=%"NACL_PRId32"\n",
               response_id);
   URLResponseInfo* response = GetResource(response_id)->AsURLResponseInfo();
   if (response == NULL)

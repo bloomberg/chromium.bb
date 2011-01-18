@@ -33,7 +33,7 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_Create(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   *resource = PPBURLLoaderInterface()->Create(instance);
-  DebugPrintf("PPB_URLLoader::Create: resource=%"NACL_PRIx64"\n", *resource);
+  DebugPrintf("PPB_URLLoader::Create: resource=%"NACL_PRIx32"\n", *resource);
 
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -160,7 +160,7 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_GetResponseInfo(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   *response = PPBURLLoaderInterface()->GetResponseInfo(loader);
-  DebugPrintf("PPB_URLLoader::GetResponseInfo: response=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_URLLoader::GetResponseInfo: response=%"NACL_PRIx32"\n",
               *response);
 
   rpc->result = NACL_SRPC_RESULT_OK;

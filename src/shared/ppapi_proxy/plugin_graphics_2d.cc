@@ -36,7 +36,7 @@ const nacl_abi_size_t kPpRectBytes =
 PP_Resource Create(PP_Instance instance,
                    const struct PP_Size* size,
                    PP_Bool is_always_opaque) {
-  DebugPrintf("PPB_Graphics2D::Create: instance=%"NACL_PRIx64"\n", instance);
+  DebugPrintf("PPB_Graphics2D::Create: instance=%"NACL_PRIx32"\n", instance);
   char* size_as_char_ptr =
       reinterpret_cast<char*>(const_cast<struct PP_Size*>(size));
   int32_t is_always_opaque_as_int = static_cast<int32_t>(is_always_opaque);
@@ -57,7 +57,7 @@ PP_Resource Create(PP_Instance instance,
 }
 
 PP_Bool IsGraphics2D(PP_Resource resource) {
-  DebugPrintf("PPB_Graphics2D::IsGraphics2D: resource=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_Graphics2D::IsGraphics2D: resource=%"NACL_PRIx32"\n",
               resource);
   return PluginResource::GetAs<PluginGraphics2D>(resource).get()
       ? PP_TRUE : PP_FALSE;
@@ -66,7 +66,7 @@ PP_Bool IsGraphics2D(PP_Resource resource) {
 PP_Bool Describe(PP_Resource graphics_2d,
                  struct PP_Size* size,
                  PP_Bool* is_always_opaque) {
-  DebugPrintf("PPB_Graphics2D::Describe: graphics_2d=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_Graphics2D::Describe: graphics_2d=%"NACL_PRIx32"\n",
               graphics_2d);
   int32_t is_always_opaque_as_int;
   nacl_abi_size_t size_ret = kPpSizeBytes;
@@ -91,7 +91,7 @@ void PaintImageData(PP_Resource graphics_2d,
                     PP_Resource image,
                     const struct PP_Point* top_left,
                     const struct PP_Rect* src_rect) {
-    DebugPrintf("PPB_Graphics2D::PaintImageData: graphics_2d=%"NACL_PRIx64"\n",
+    DebugPrintf("PPB_Graphics2D::PaintImageData: graphics_2d=%"NACL_PRIx32"\n",
                 graphics_2d);
   // TODO(sehr,polina): there is no way to report a failure through this
   // interface design other than crash.  Let's find one.
@@ -108,7 +108,7 @@ void PaintImageData(PP_Resource graphics_2d,
 void Scroll(PP_Resource graphics_2d,
             const struct PP_Rect* clip_rect,
             const struct PP_Point* amount) {
-  DebugPrintf("PPB_Graphics2D::Scroll: graphics_2d=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_Graphics2D::Scroll: graphics_2d=%"NACL_PRIx32"\n",
               graphics_2d);
   // TODO(sehr,polina): there is no way to report a failure through this
   // interface design other than crash.  Let's find one.
@@ -122,7 +122,7 @@ void Scroll(PP_Resource graphics_2d,
 }
 
 void ReplaceContents(PP_Resource graphics_2d, PP_Resource image) {
-  DebugPrintf("PPB_Graphics2D::ReplaceContents: graphics_2d=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_Graphics2D::ReplaceContents: graphics_2d=%"NACL_PRIx32"\n",
               graphics_2d);
   (void) PpbGraphics2DRpcClient::PPB_Graphics2D_ReplaceContents(
       GetMainSrpcChannel(), graphics_2d, image);
@@ -130,7 +130,7 @@ void ReplaceContents(PP_Resource graphics_2d, PP_Resource image) {
 
 int32_t Flush(PP_Resource graphics_2d,
               struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_Graphics2D::Flush: graphics_2d=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_Graphics2D::Flush: graphics_2d=%"NACL_PRIx32"\n",
               graphics_2d);
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);

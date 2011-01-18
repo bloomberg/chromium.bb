@@ -129,7 +129,7 @@ bool PluginImageData::InitFromBrowserResource(PP_Resource resource) {
   NaClSrpcError result =
       PpbImageDataRpcClient::PPB_ImageData_Describe(
           GetMainSrpcChannel(),
-          static_cast<int64_t>(resource),
+          resource,
           &desc_size,
           reinterpret_cast<char*>(&desc_),
           &shm_fd_,

@@ -51,7 +51,7 @@ const char* const kNexesAttribute = "nexes";
 namespace plugin {
 
 PluginPpapi* PluginPpapi::New(PP_Instance pp_instance) {
-  PLUGIN_PRINTF(("PluginPpapi::New (pp_instance=%"NACL_PRId64")\n",
+  PLUGIN_PRINTF(("PluginPpapi::New (pp_instance=%"NACL_PRId32")\n",
                  pp_instance));
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
   if (!NaClHandlePassBrowserCtor()) {
@@ -134,7 +134,7 @@ PluginPpapi::PluginPpapi(PP_Instance pp_instance)
       ppapi_proxy_(NULL),
       replayDidChangeView(false) {
   PLUGIN_PRINTF(("PluginPpapi::PluginPpapi (this=%p, pp_instance=%"
-                 NACL_PRId64")\n", static_cast<void*>(this), pp_instance));
+                 NACL_PRId32")\n", static_cast<void*>(this), pp_instance));
   NaClSrpcModuleInit();
   url_downloader_.Initialize(this);
   callback_factory_.Initialize(this);
@@ -306,8 +306,10 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
   // Check that the .nexe exports the PPAPI intialization method.
   NaClSrpcService* client_service = srpc_channel->client;
   if (NaClSrpcServiceMethodIndex(client_service,
-                                 "PPP_InitializeModule:ilhs:ii") ==
+                                 "PPP_InitializeModule:iihs:ii") ==
       kNaClSrpcInvalidMethodIndex) {
+    PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution failed - "
+                   "cannot find PPP_InitializeModule method.\n"));
     return;
   }
   ppapi_proxy_ =

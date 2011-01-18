@@ -23,7 +23,7 @@ namespace {
 
 PP_Var GetWindowObject(PP_Instance instance) {
   DebugPrintf("PPB_Instance::GetWindowObject: instance=%"
-              NACL_PRIx64"\n", instance);
+              NACL_PRId32"\n", instance);
   NaClSrpcChannel* channel = GetMainSrpcChannel();
 
   PP_Var window = PP_MakeUndefined();
@@ -33,7 +33,7 @@ PP_Var GetWindowObject(PP_Instance instance) {
   NaClSrpcError srpc_result =
       PpbInstanceRpcClient::PPB_Instance_GetWindowObject(
           channel,
-          static_cast<int64_t>(instance),
+          instance,
           &window_size,
           window_bytes.get());
   if (srpc_result == NACL_SRPC_RESULT_OK)
@@ -43,7 +43,7 @@ PP_Var GetWindowObject(PP_Instance instance) {
 
 PP_Var GetOwnerElementObject(PP_Instance instance) {
   DebugPrintf("PPB_Instance::GetOwnerElementObject: instance=%"
-              NACL_PRIx64 "\n", instance);
+              NACL_PRIx32 "\n", instance);
   NACL_UNTESTED();
   NaClSrpcChannel* channel = GetMainSrpcChannel();
 
@@ -54,7 +54,7 @@ PP_Var GetOwnerElementObject(PP_Instance instance) {
   NaClSrpcError srpc_result =
       PpbInstanceRpcClient::PPB_Instance_GetOwnerElementObject(
           channel,
-          static_cast<int64_t>(instance),
+          instance,
           &owner_size,
           owner_bytes.get());
   if (srpc_result == NACL_SRPC_RESULT_OK)
@@ -64,14 +64,14 @@ PP_Var GetOwnerElementObject(PP_Instance instance) {
 
 PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
   DebugPrintf("PPB_Instance::BindGraphicsDeviceContext: instance=%"
-              NACL_PRIx64 ", device=%" NACL_PRIu64 "\n", instance, device);
+              NACL_PRIx32 ", device=%" NACL_PRIu32 "\n", instance, device);
   int32_t success = 0;
 
   NaClSrpcError srpc_result =
       PpbInstanceRpcClient::PPB_Instance_BindGraphics(
           GetMainSrpcChannel(),
-          static_cast<int64_t>(instance),
-          static_cast<int64_t>(device),
+          instance,
+          device,
           &success);
   if (srpc_result == NACL_SRPC_RESULT_OK && success)
     return PP_TRUE;
@@ -80,7 +80,7 @@ PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
 }
 
 PP_Bool IsFullFrame(PP_Instance instance) {
-  DebugPrintf("PPB_Instance::IsFullFrame: instance=%" NACL_PRIx64 "\n",
+  DebugPrintf("PPB_Instance::IsFullFrame: instance=%" NACL_PRIx32 "\n",
               instance);
   NACL_UNTESTED();
   int32_t is_full_frame = 0;
@@ -88,7 +88,7 @@ PP_Bool IsFullFrame(PP_Instance instance) {
   NaClSrpcError srpc_result =
       PpbInstanceRpcClient::PPB_Instance_IsFullFrame(
           GetMainSrpcChannel(),
-          static_cast<int64_t>(instance),
+          instance,
           &is_full_frame);
   if (srpc_result == NACL_SRPC_RESULT_OK && is_full_frame)
     return PP_TRUE;
@@ -98,7 +98,7 @@ PP_Bool IsFullFrame(PP_Instance instance) {
 
 PP_Var ExecuteScript(PP_Instance instance, PP_Var script, PP_Var* exception) {
   DebugPrintf("PPB_Instance::ExecuteScript: instance=%"
-              NACL_PRIx64"\n", instance);
+              NACL_PRIx32"\n", instance);
   NACL_UNTESTED();
   NaClSrpcChannel* channel = GetMainSrpcChannel();
 
@@ -119,7 +119,7 @@ PP_Var ExecuteScript(PP_Instance instance, PP_Var script, PP_Var* exception) {
   NaClSrpcError srpc_result =
       PpbInstanceRpcClient::PPB_Instance_ExecuteScript(
           channel,
-          static_cast<int64_t>(instance),
+          instance,
           script_size,
           script_bytes.get(),
           exception_in_size,

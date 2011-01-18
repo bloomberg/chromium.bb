@@ -219,7 +219,7 @@ NaClSrpcError PpbAudioDevRpcClient::PPB_Audio_Dev_Create(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Audio_Dev_Create:ll:l",
+      "PPB_Audio_Dev_Create:ii:i",
       instance,
       config,
       out_resource
@@ -234,7 +234,7 @@ NaClSrpcError PpbAudioDevRpcClient::PPB_Audio_Dev_IsAudio(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Audio_Dev_IsAudio:l:i",
+      "PPB_Audio_Dev_IsAudio:i:i",
       resource,
       out_bool
   );
@@ -248,7 +248,7 @@ NaClSrpcError PpbAudioDevRpcClient::PPB_Audio_Dev_GetCurrentConfig(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Audio_Dev_GetCurrentConfig:l:l",
+      "PPB_Audio_Dev_GetCurrentConfig:i:i",
       resource,
       out_resource
   );
@@ -262,7 +262,7 @@ NaClSrpcError PpbAudioDevRpcClient::PPB_Audio_Dev_StopPlayback(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Audio_Dev_StopPlayback:l:i",
+      "PPB_Audio_Dev_StopPlayback:i:i",
       resource,
       out_bool
   );
@@ -276,7 +276,7 @@ NaClSrpcError PpbAudioDevRpcClient::PPB_Audio_Dev_StartPlayback(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Audio_Dev_StartPlayback:l:i",
+      "PPB_Audio_Dev_StartPlayback:i:i",
       resource,
       out_bool
   );
@@ -292,7 +292,7 @@ NaClSrpcError PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_CreateStereo16Bit(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_AudioConfig_Dev_CreateStereo16Bit:lii:l",
+      "PPB_AudioConfig_Dev_CreateStereo16Bit:iii:i",
       instance,
       sample_rate,
       sample_frame_count,
@@ -308,7 +308,7 @@ NaClSrpcError PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_IsAudioConfig(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_AudioConfig_Dev_IsAudioConfig:l:i",
+      "PPB_AudioConfig_Dev_IsAudioConfig:i:i",
       resource,
       out_bool
   );
@@ -336,7 +336,7 @@ NaClSrpcError PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_GetSampleRate(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_AudioConfig_Dev_GetSampleRate:l:i",
+      "PPB_AudioConfig_Dev_GetSampleRate:i:i",
       resource,
       sample_rate
   );
@@ -350,7 +350,7 @@ NaClSrpcError PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_GetSampleFrameCoun
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_AudioConfig_Dev_GetSampleFrameCount:l:i",
+      "PPB_AudioConfig_Dev_GetSampleFrameCount:i:i",
       resource,
       sample_frame_count
   );
@@ -363,7 +363,7 @@ NaClSrpcError PpbCoreRpcClient::PPB_Core_AddRefResource(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Core_AddRefResource:l:",
+      "PPB_Core_AddRefResource:i:",
       resource
   );
   return retval;
@@ -375,7 +375,7 @@ NaClSrpcError PpbCoreRpcClient::PPB_Core_ReleaseResource(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Core_ReleaseResource:l:",
+      "PPB_Core_ReleaseResource:i:",
       resource
   );
   return retval;
@@ -388,7 +388,7 @@ NaClSrpcError PpbCoreRpcClient::ReleaseResourceMultipleTimes(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "ReleaseResourceMultipleTimes:li:",
+      "ReleaseResourceMultipleTimes:ii:",
       resource,
       count
   );
@@ -416,7 +416,7 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Create(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Graphics2D_Create:lCi:l",
+      "PPB_Graphics2D_Create:iCi:i",
       instance,
       size_bytes, size,
       is_always_opaque,
@@ -432,7 +432,7 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_IsGraphics2D(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Graphics2D_IsGraphics2D:l:i",
+      "PPB_Graphics2D_IsGraphics2D:i:i",
       resource,
       success
   );
@@ -448,7 +448,7 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Describe(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Graphics2D_Describe:l:Cii",
+      "PPB_Graphics2D_Describe:i:Cii",
       graphics_2d,
       size_bytes, size,
       is_always_opaque,
@@ -466,7 +466,7 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_PaintImageData(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Graphics2D_PaintImageData:llCC:",
+      "PPB_Graphics2D_PaintImageData:iiCC:",
       graphics_2d,
       image,
       top_left_bytes, top_left,
@@ -483,7 +483,7 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Scroll(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Graphics2D_Scroll:lCC:",
+      "PPB_Graphics2D_Scroll:iCC:",
       graphics_2d,
       clip_rect_bytes, clip_rect,
       amount_bytes, amount
@@ -498,7 +498,7 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_ReplaceContents(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Graphics2D_ReplaceContents:ll:",
+      "PPB_Graphics2D_ReplaceContents:ii:",
       graphics_2d,
       image
   );
@@ -513,7 +513,7 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Flush(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Graphics2D_Flush:li:i",
+      "PPB_Graphics2D_Flush:ii:i",
       graphics_2d,
       callback_id,
       pp_error
@@ -557,7 +557,7 @@ NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_Create(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_ImageData_Create:liCi:l",
+      "PPB_ImageData_Create:iiCi:i",
       instance,
       format,
       size_bytes, size,
@@ -574,7 +574,7 @@ NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_IsImageData(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_ImageData_IsImageData:l:i",
+      "PPB_ImageData_IsImageData:i:i",
       resource,
       success
   );
@@ -591,7 +591,7 @@ NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_Describe(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_ImageData_Describe:l:Chii",
+      "PPB_ImageData_Describe:i:Chii",
       resource,
       desc_bytes, desc,
       shm,
@@ -608,7 +608,7 @@ NaClSrpcError PpbInstanceRpcClient::PPB_Instance_GetWindowObject(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Instance_GetWindowObject:l:C",
+      "PPB_Instance_GetWindowObject:i:C",
       instance,
       window_bytes, window
   );
@@ -622,7 +622,7 @@ NaClSrpcError PpbInstanceRpcClient::PPB_Instance_GetOwnerElementObject(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Instance_GetOwnerElementObject:l:C",
+      "PPB_Instance_GetOwnerElementObject:i:C",
       instance,
       owner_bytes, owner
   );
@@ -637,7 +637,7 @@ NaClSrpcError PpbInstanceRpcClient::PPB_Instance_BindGraphics(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Instance_BindGraphics:ll:i",
+      "PPB_Instance_BindGraphics:ii:i",
       instance,
       graphics_device,
       success
@@ -652,7 +652,7 @@ NaClSrpcError PpbInstanceRpcClient::PPB_Instance_IsFullFrame(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Instance_IsFullFrame:l:i",
+      "PPB_Instance_IsFullFrame:i:i",
       instance,
       is_full_frame
   );
@@ -669,7 +669,7 @@ NaClSrpcError PpbInstanceRpcClient::PPB_Instance_ExecuteScript(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Instance_ExecuteScript:lCC:CC",
+      "PPB_Instance_ExecuteScript:iCC:CC",
       instance,
       script_bytes, script,
       exception_in_bytes, exception_in,
@@ -686,7 +686,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_Create(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLLoader_Create:l:l",
+      "PPB_URLLoader_Create:i:i",
       instance,
       resource
   );
@@ -700,7 +700,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_IsURLLoader(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLLoader_IsURLLoader:l:i",
+      "PPB_URLLoader_IsURLLoader:i:i",
       resource,
       is_url_loader
   );
@@ -716,7 +716,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_Open(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLLoader_Open:lli:i",
+      "PPB_URLLoader_Open:iii:i",
       loader,
       request,
       callback_id,
@@ -733,7 +733,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_FollowRedirect(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLLoader_FollowRedirect:li:i",
+      "PPB_URLLoader_FollowRedirect:ii:i",
       loader,
       callback_id,
       pp_error
@@ -750,7 +750,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_GetUploadProgress(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLLoader_GetUploadProgress:l:lli",
+      "PPB_URLLoader_GetUploadProgress:i:lli",
       loader,
       bytes_sent,
       total_bytes_to_be_sent,
@@ -768,7 +768,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_GetDownloadProgress(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLLoader_GetDownloadProgress:l:lli",
+      "PPB_URLLoader_GetDownloadProgress:i:lli",
       loader,
       bytes_received,
       total_bytes_to_be_received,
@@ -784,7 +784,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_GetResponseInfo(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLLoader_GetResponseInfo:l:l",
+      "PPB_URLLoader_GetResponseInfo:i:i",
       loader,
       response
   );
@@ -801,7 +801,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_ReadResponseBody(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLLoader_ReadResponseBody:lii:Ci",
+      "PPB_URLLoader_ReadResponseBody:iii:Ci",
       loader,
       bytes_to_read,
       callback_id,
@@ -819,7 +819,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_FinishStreamingToFile(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLLoader_FinishStreamingToFile:li:i",
+      "PPB_URLLoader_FinishStreamingToFile:ii:i",
       loader,
       callback_id,
       pp_error
@@ -833,7 +833,7 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_Close(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLLoader_Close:l:",
+      "PPB_URLLoader_Close:i:",
       loader
   );
   return retval;
@@ -846,7 +846,7 @@ NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_Create(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLRequestInfo_Create:l:l",
+      "PPB_URLRequestInfo_Create:i:i",
       module,
       resource
   );
@@ -860,7 +860,7 @@ NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_IsURLRequestInfo(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLRequestInfo_IsURLRequestInfo:l:i",
+      "PPB_URLRequestInfo_IsURLRequestInfo:i:i",
       resource,
       success
   );
@@ -876,7 +876,7 @@ NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_SetProperty(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLRequestInfo_SetProperty:liC:i",
+      "PPB_URLRequestInfo_SetProperty:iiC:i",
       request,
       property,
       value_bytes, value,
@@ -893,7 +893,7 @@ NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_AppendDataToBody(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLRequestInfo_AppendDataToBody:lC:i",
+      "PPB_URLRequestInfo_AppendDataToBody:iC:i",
       request,
       data_bytes, data,
       success
@@ -912,7 +912,7 @@ NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_AppendFileToBody(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLRequestInfo_AppendFileToBody:lllld:i",
+      "PPB_URLRequestInfo_AppendFileToBody:iilld:i",
       request,
       file_ref,
       start_offset,
@@ -930,7 +930,7 @@ NaClSrpcError PpbURLResponseInfoRpcClient::PPB_URLResponseInfo_IsURLResponseInfo
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLResponseInfo_IsURLResponseInfo:l:i",
+      "PPB_URLResponseInfo_IsURLResponseInfo:i:i",
       resource,
       success
   );
@@ -945,7 +945,7 @@ NaClSrpcError PpbURLResponseInfoRpcClient::PPB_URLResponseInfo_GetProperty(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLResponseInfo_GetProperty:li:C",
+      "PPB_URLResponseInfo_GetProperty:ii:C",
       response,
       property,
       value_bytes, value
@@ -960,7 +960,7 @@ NaClSrpcError PpbURLResponseInfoRpcClient::PPB_URLResponseInfo_GetBodyAsFileRef(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_URLResponseInfo_GetBodyAsFileRef:l:l",
+      "PPB_URLResponseInfo_GetBodyAsFileRef:i:i",
       response,
       file_ref
   );

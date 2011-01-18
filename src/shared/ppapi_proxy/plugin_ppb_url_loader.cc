@@ -24,7 +24,7 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Resource Create(PP_Instance instance) {
-  DebugPrintf("PPB_URLLoader::Create: instance=%"NACL_PRIx64"\n", instance);
+  DebugPrintf("PPB_URLLoader::Create: instance=%"NACL_PRIx32"\n", instance);
 
   PP_Resource resource;
   NaClSrpcError srpc_result =
@@ -38,7 +38,7 @@ PP_Resource Create(PP_Instance instance) {
 }
 
 PP_Bool IsURLLoader(PP_Resource resource) {
-  DebugPrintf("PPB_URLLoader::IsURLLoader: resource=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_URLLoader::IsURLLoader: resource=%"NACL_PRIx32"\n",
               resource);
 
   int32_t is_url_loader;
@@ -56,7 +56,7 @@ PP_Bool IsURLLoader(PP_Resource resource) {
 int32_t Open(PP_Resource loader,
              PP_Resource request,
              struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_URLLoader::Open: loader=%"NACL_PRIx64"\n", loader);
+  DebugPrintf("PPB_URLLoader::Open: loader=%"NACL_PRIx32"\n", loader);
 
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
@@ -76,7 +76,7 @@ int32_t Open(PP_Resource loader,
 
 int32_t FollowRedirect(PP_Resource loader,
                        struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_URLLoader::FollowRedirect: loader=%"NACL_PRIx64"\n", loader);
+  DebugPrintf("PPB_URLLoader::FollowRedirect: loader=%"NACL_PRIx32"\n", loader);
   NACL_UNTESTED();
 
   int32_t callback_id =
@@ -99,7 +99,7 @@ int32_t FollowRedirect(PP_Resource loader,
 PP_Bool GetUploadProgress(PP_Resource loader,
                           int64_t* bytes_sent,
                           int64_t* total_bytes_to_be_sent) {
-  DebugPrintf("PPB_URLLoader::GetUploadProgress: loader=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_URLLoader::GetUploadProgress: loader=%"NACL_PRIx32"\n",
               loader);
   NACL_UNTESTED();
 
@@ -122,7 +122,7 @@ PP_Bool GetUploadProgress(PP_Resource loader,
 PP_Bool GetDownloadProgress(PP_Resource loader,
                             int64_t* bytes_received,
                             int64_t* total_bytes_to_be_received) {
-  DebugPrintf("PPB_URLLoader::GetDownloadProgress: loader=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_URLLoader::GetDownloadProgress: loader=%"NACL_PRIx32"\n",
               loader);
   NACL_UNTESTED();
 
@@ -143,7 +143,7 @@ PP_Bool GetDownloadProgress(PP_Resource loader,
 }
 
 PP_Resource GetResponseInfo(PP_Resource loader) {
-  DebugPrintf("PPB_URLLoader::GetResponseInfo: loader=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_URLLoader::GetResponseInfo: loader=%"NACL_PRIx32"\n",
               loader);
 
   PP_Resource response;
@@ -162,7 +162,7 @@ int32_t ReadResponseBody(PP_Resource loader,
                          char* buffer,
                          int32_t bytes_to_read,
                          struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_URLLoader::ReadResponseBody: loader=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_URLLoader::ReadResponseBody: loader=%"NACL_PRIx32"\n",
               loader);
   if (bytes_to_read < 0)
     bytes_to_read = 0;
@@ -193,7 +193,7 @@ int32_t ReadResponseBody(PP_Resource loader,
 
 int32_t FinishStreamingToFile(PP_Resource loader,
                               struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_URLLoader::FinishStreamingToFile: loader=%"NACL_PRIx64"\n",
+  DebugPrintf("PPB_URLLoader::FinishStreamingToFile: loader=%"NACL_PRIx32"\n",
               loader);
 
   int32_t callback_id =
@@ -212,7 +212,7 @@ int32_t FinishStreamingToFile(PP_Resource loader,
 }
 
 void Close(PP_Resource loader) {
-  DebugPrintf("PPB_URLLoader::Close: loader=%"NACL_PRIx64"\n", loader);
+  DebugPrintf("PPB_URLLoader::Close: loader=%"NACL_PRIx32"\n", loader);
   NACL_UNTESTED();
 
   NaClSrpcError srpc_result =

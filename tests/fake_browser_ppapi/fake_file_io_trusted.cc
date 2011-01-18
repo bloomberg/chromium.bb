@@ -24,7 +24,7 @@ namespace fake_browser_ppapi {
 namespace {
 
 int32_t GetOSFileDescriptor(PP_Resource file_io_id) {
-  DebugPrintf("FileIOTrusted::GetOSFileDescriptor: file_io_id=%"NACL_PRId64"\n",
+  DebugPrintf("FileIOTrusted::GetOSFileDescriptor: file_io_id=%"NACL_PRId32"\n",
               file_io_id);
   FileIO* file_io = GetResource(file_io_id)->AsFileIO();
   if (file_io == NULL)
@@ -45,7 +45,7 @@ int32_t WillWrite(PP_Resource file_io_id,
                   int64_t offset,
                   int32_t bytes_to_write,
                   struct PP_CompletionCallback callback) {
-  DebugPrintf("FileIOTrusted::WillWrite: file_io_id=%"NACL_PRId64"\n",
+  DebugPrintf("FileIOTrusted::WillWrite: file_io_id=%"NACL_PRId32"\n",
               file_io_id);
   UNREFERENCED_PARAMETER(offset);
   UNREFERENCED_PARAMETER(bytes_to_write);
@@ -57,7 +57,7 @@ int32_t WillWrite(PP_Resource file_io_id,
 int32_t WillSetLength(PP_Resource file_io_id,
                       int64_t length,
                       struct PP_CompletionCallback callback) {
-  DebugPrintf("FileIOTrusted::WillSetLength: file_io_id=%"NACL_PRId64"\n",
+  DebugPrintf("FileIOTrusted::WillSetLength: file_io_id=%"NACL_PRId32"\n",
               file_io_id);
   UNREFERENCED_PARAMETER(length);
   UNREFERENCED_PARAMETER(callback);

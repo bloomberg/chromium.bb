@@ -29,7 +29,7 @@ int32_t BrowserPpp::InitializeModule(
     PP_Module module_id,
     PPB_GetInterface get_browser_interface,
     PP_Instance instance) {
-  DebugPrintf("PPP_InitializeModule(%"NACL_PRIu64", %p)\n",
+  DebugPrintf("PPP_InitializeModule(%"NACL_PRIu32", %p)\n",
               module_id, get_browser_interface);
   SetPPBGetInterface(get_browser_interface);
   SetBrowserPppForInstance(instance, this);
