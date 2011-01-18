@@ -32,24 +32,6 @@ cr.define('options', function() {
       var selectionModel = new ListSingleSelectionModel;
       this.list_.selectionModel = selectionModel;
       this.list_.autoExpands = true;
-
-      selectionModel.addEventListener('change',
-          this.selectionChanged_.bind(this));
-
-      var self = this;
-      // This is a temporary hack to allow the "Make Default" button to
-      // continue working despite the new list behavior of removing selection
-      // on focus loss.
-      // Once drag-and-drop is supported, so items can be moved into the default
-      // section, this button will go away entirely.
-      $('makeDefaultSearchEngineButton').onmousedown = function(event) {
-        self.pendingDefaultEngine_ = self.list_.selectedItem;
-      };
-      $('makeDefaultSearchEngineButton').onclick = function(event) {
-        chrome.send('managerSetDefaultSearchEngine',
-                    [self.pendingDefaultEngine_['modelIndex']]);
-        self.pendingDefaultEngine_ = null;
-      };
     },
 
     /**
@@ -63,17 +45,6 @@ cr.define('options', function() {
         'modelIndex': '-1'
       });
       this.list_.dataModel = model;
-    },
-
-    /**
-     * Callback from the selection model when the selection changes.
-     * @private
-     * @param {!cr.Event} e Event with change info.
-     */
-    selectionChanged_: function(e) {
-      var engine = this.list_.selectedItem || this.pendingDefaultEngine_;
-      $('makeDefaultSearchEngineButton').disabled =
-          !(engine && engine['canBeDefault']);
     },
   };
 

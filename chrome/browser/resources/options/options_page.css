@@ -458,22 +458,6 @@ list > [editing] input:invalid {
   background-color: pink;
 }
 
-.left-side-table {
-  display: -webkit-box;
-}
-
-.left-side-table > div:first-child {
-  -webkit-box-flex: 1;
-}
-
-.left-side-table > :last-child {
-  -webkit-padding-start: 20px;
-}
-
-.left-side-table > :last-child button {
-  width: 100%;
-}
-
 .option-name {
   padding-right: 5px;
 }

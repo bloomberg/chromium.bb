@@ -134,8 +134,25 @@ cr.define('options.search_engines', function() {
 
       // And the URL column.
       var urlEl = this.createEditableTextCell(urlText, this.isPlaceholder_);
-      urlEl.className = 'url-column';
-      this.contentElement.appendChild(urlEl);
+      var urlWithButtonEl = this.ownerDocument.createElement('div');
+      urlWithButtonEl.appendChild(urlEl);
+      urlWithButtonEl.className = 'url-column';
+      this.contentElement.appendChild(urlWithButtonEl);
+      // Add the Make Default button. Temporary until drag-and-drop re-ordering
+      // is implemented. When this is removed, remove the extra div above.
+      if (engine['canBeDefault']) {
+        var makeDefaultButtonEl = this.ownerDocument.createElement('button');
+        makeDefaultButtonEl.textContent =
+            templateData.makeDefaultSearchEngineButton;
+        makeDefaultButtonEl.onclick = function(e) {
+          chrome.send('managerSetDefaultSearchEngine', [engine['modelIndex']]);
+        };
+        // Don't select the row when clicking the button.
+        makeDefaultButtonEl.onmousedown = function(e) {
+          e.stopPropagation();
+        };
+        urlWithButtonEl.appendChild(makeDefaultButtonEl);
+      }
 
       // Do final adjustment to the input fields.
       if (!engine['heading']) {

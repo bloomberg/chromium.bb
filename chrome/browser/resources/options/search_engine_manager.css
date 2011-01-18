@@ -4,10 +4,6 @@
   height: auto;
 }
 
-#searchEngineManagerPage .left-side-table {
-  margin-top: 12px;
-}
-
 #searchEngineList .heading {
   -webkit-border-radius: 2px;
   color: black;
@@ -81,3 +77,34 @@
   margin: 0;
   width: 100%;
 }
+
+/* For temporary Make Default button */
+#searchEngineList .url-column {
+  display: -webkit-box;
+  -webkit-box-align: center;
+}
+
+#searchEngineList .url-column :first-child {
+  -webkit-box-flex: 1;
+}
+
+#searchEngineList .url-column button {
+  background-color: #aab6e1;
+  border: none;
+  border-radius: 3px;
+  color: white;
+  -webkit-margin-start: 3px;
+}
+
+#searchEngineList .url-column button:hover {
+  background-color: #9aa6d1;
+}
+
+#searchEngineList .url-column button:active {
+  background-color: #8a96c1;
+}
+
+#searchEngineList > :not(:hover):not([editing]) .url-column button {
+  display: none;
+}
+/* End temporary Make Default button styling */
