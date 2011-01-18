@@ -13,7 +13,14 @@ namespace {
 class DummyPrerenderContents : public PrerenderContents {
  public:
   DummyPrerenderContents(PrerenderManager* prerender_manager, const GURL& url)
-      : PrerenderContents(prerender_manager, NULL, url),
+      : PrerenderContents(prerender_manager, NULL, url,
+                          std::vector<GURL>()),
+        has_started_(false) {
+  }
+
+  DummyPrerenderContents(PrerenderManager* prerender_manager, const GURL& url,
+                         const std::vector<GURL> alias_urls)
+      : PrerenderContents(prerender_manager, NULL, url, alias_urls),
         has_started_(false) {
   }
 
@@ -43,6 +50,11 @@ class TestPrerenderManager : public PrerenderManager {
     next_pc_.reset(pc);
   }
 
+  // Shorthand to add a simple preload with no aliases.
+  void AddSimplePreload(const GURL& url) {
+    AddPreload(url, std::vector<GURL>());
+  }
+
   PrerenderContents* next_pc() { return next_pc_.get(); }
 
  protected:
@@ -54,7 +66,9 @@ class TestPrerenderManager : public PrerenderManager {
     return time_;
   }
 
-  virtual PrerenderContents* CreatePrerenderContents(const GURL& url) {
+  virtual PrerenderContents* CreatePrerenderContents(
+      const GURL& url,
+      const std::vector<GURL>& alias_urls) {
     return next_pc_.release();
   }
 
@@ -83,7 +97,7 @@ TEST_F(PrerenderManagerTest, FoundTest) {
   DummyPrerenderContents* pc =
       new DummyPrerenderContents(prerender_manager_.get(), url);
   prerender_manager_->SetNextPrerenderContents(pc);
-  prerender_manager_->AddPreload(url);
+  prerender_manager_->AddSimplePreload(url);
   EXPECT_TRUE(pc->has_started());
   EXPECT_EQ(pc, prerender_manager_->GetEntry(url));
   delete pc;
@@ -97,13 +111,13 @@ TEST_F(PrerenderManagerTest, DropSecondRequestTest) {
       new DummyPrerenderContents(prerender_manager_.get(), url);
   DummyPrerenderContents* null = NULL;
   prerender_manager_->SetNextPrerenderContents(pc);
-  prerender_manager_->AddPreload(url);
+  prerender_manager_->AddSimplePreload(url);
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc->has_started());
   DummyPrerenderContents* pc1 =
       new DummyPrerenderContents(prerender_manager_.get(), url);
   prerender_manager_->SetNextPrerenderContents(pc1);
-  prerender_manager_->AddPreload(url);
+  prerender_manager_->AddSimplePreload(url);
   EXPECT_EQ(pc1, prerender_manager_->next_pc());
   EXPECT_FALSE(pc1->has_started());
   EXPECT_EQ(pc, prerender_manager_->GetEntry(url));
@@ -117,7 +131,7 @@ TEST_F(PrerenderManagerTest, ExpireTest) {
       new DummyPrerenderContents(prerender_manager_.get(), url);
   DummyPrerenderContents* null = NULL;
   prerender_manager_->SetNextPrerenderContents(pc);
-  prerender_manager_->AddPreload(url);
+  prerender_manager_->AddSimplePreload(url);
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc->has_started());
   prerender_manager_->AdvanceTime(prerender_manager_->max_prerender_age()
@@ -133,14 +147,14 @@ TEST_F(PrerenderManagerTest, DropOldestRequestTest) {
       new DummyPrerenderContents(prerender_manager_.get(), url);
   DummyPrerenderContents* null = NULL;
   prerender_manager_->SetNextPrerenderContents(pc);
-  prerender_manager_->AddPreload(url);
+  prerender_manager_->AddSimplePreload(url);
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc->has_started());
   GURL url1("http://news.google.com/");
   DummyPrerenderContents* pc1 =
       new DummyPrerenderContents(prerender_manager_.get(), url1);
   prerender_manager_->SetNextPrerenderContents(pc1);
-  prerender_manager_->AddPreload(url1);
+  prerender_manager_->AddSimplePreload(url1);
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc1->has_started());
   EXPECT_EQ(null, prerender_manager_->GetEntry(url));
@@ -157,21 +171,21 @@ TEST_F(PrerenderManagerTest, TwoElementPrerenderTest) {
       new DummyPrerenderContents(prerender_manager_.get(), url);
   DummyPrerenderContents* null = NULL;
   prerender_manager_->SetNextPrerenderContents(pc);
-  prerender_manager_->AddPreload(url);
+  prerender_manager_->AddSimplePreload(url);
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc->has_started());
   GURL url1("http://news.google.com/");
   DummyPrerenderContents* pc1 =
       new DummyPrerenderContents(prerender_manager_.get(),  url1);
   prerender_manager_->SetNextPrerenderContents(pc1);
-  prerender_manager_->AddPreload(url1);
+  prerender_manager_->AddSimplePreload(url1);
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc1->has_started());
   GURL url2("http://images.google.com/");
   DummyPrerenderContents* pc2 =
       new DummyPrerenderContents(prerender_manager_.get(), url2);
   prerender_manager_->SetNextPrerenderContents(pc2);
-  prerender_manager_->AddPreload(url2);
+  prerender_manager_->AddSimplePreload(url2);
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc2->has_started());
   EXPECT_EQ(null, prerender_manager_->GetEntry(url));
@@ -179,4 +193,27 @@ TEST_F(PrerenderManagerTest, TwoElementPrerenderTest) {
   EXPECT_EQ(pc2, prerender_manager_->GetEntry(url2));
   delete pc1;
   delete pc2;
+}
+
+TEST_F(PrerenderManagerTest, AliasURLTest) {
+  GURL url("http://www.google.com/");
+  GURL alias_url1("http://www.google.com/index.html");
+  GURL alias_url2("http://google.com/");
+  GURL not_an_alias_url("http://google.com/index.html");
+  std::vector<GURL> alias_urls;
+  alias_urls.push_back(alias_url1);
+  alias_urls.push_back(alias_url2);
+  DummyPrerenderContents* pc =
+      new DummyPrerenderContents(prerender_manager_.get(), url, alias_urls);
+  prerender_manager_->SetNextPrerenderContents(pc);
+  prerender_manager_->AddSimplePreload(url);
+  EXPECT_EQ(NULL, prerender_manager_->GetEntry(not_an_alias_url));
+  EXPECT_EQ(pc, prerender_manager_->GetEntry(alias_url1));
+  prerender_manager_->SetNextPrerenderContents(pc);
+  prerender_manager_->AddSimplePreload(url);
+  EXPECT_EQ(pc, prerender_manager_->GetEntry(alias_url2));
+  prerender_manager_->SetNextPrerenderContents(pc);
+  prerender_manager_->AddSimplePreload(url);
+  EXPECT_EQ(pc, prerender_manager_->GetEntry(url));
+  delete pc;
 }

@@ -71,7 +71,8 @@ class PrerenderResourceHandler : public ResourceHandler {
 
  private:
   friend class PrerenderResourceHandlerTest;
-  typedef Callback1<const GURL&>::Type PrerenderCallback;
+  typedef Callback2<const GURL&, const std::vector<GURL>&>::Type
+      PrerenderCallback;
 
   static const int kDefaultPrerenderDurationSeconds;
 
@@ -81,11 +82,16 @@ class PrerenderResourceHandler : public ResourceHandler {
                            PrerenderCallback* callback);
   virtual ~PrerenderResourceHandler();
 
-  void RunCallbackFromUIThread(const GURL& url);
-  void StartPrerender(const GURL& url);
+  void RunCallbackFromUIThread(const GURL& url,
+                               const std::vector<GURL>& alias_urls);
+  void StartPrerender(const GURL& url,
+                      const std::vector<GURL>& alias_urls);
   void set_prerender_duration(base::TimeDelta prerender_duration);
   void set_get_current_time_function(GetCurrentTimeFunction get_current_time);
 
+  // The set of URLs that are aliases to the URL to be prerendered,
+  // as a result of redirects.
+  std::vector<GURL> alias_urls_;
   GURL url_;
   scoped_refptr<ResourceHandler> next_handler_;
   scoped_refptr<PrerenderManager> prerender_manager_;

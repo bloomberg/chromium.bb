@@ -39,7 +39,8 @@ PrerenderManager::~PrerenderManager() {
   }
 }
 
-void PrerenderManager::AddPreload(const GURL& url) {
+void PrerenderManager::AddPreload(const GURL& url,
+                                  const std::vector<GURL>& alias_urls) {
   DCHECK(CalledOnValidThread());
   DeleteOldEntries();
   // If the URL already exists in the set of preloaded URLs, don't do anything.
@@ -49,7 +50,7 @@ void PrerenderManager::AddPreload(const GURL& url) {
     if (it->url_ == url)
       return;
   }
-  PrerenderContentsData data(CreatePrerenderContents(url),
+  PrerenderContentsData data(CreatePrerenderContents(url, alias_urls),
                              GetCurrentTime(), url);
   prerender_list_.push_back(data);
   data.contents_->StartPrerendering();
@@ -75,7 +76,8 @@ PrerenderContents* PrerenderManager::GetEntry(const GURL& url) {
   for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
        it != prerender_list_.end();
        ++it) {
-    if (it->url_ == url) {
+    PrerenderContents* pc = it->contents_;
+    if (pc->MatchesURL(url)) {
       PrerenderContents* pc = it->contents_;
       prerender_list_.erase(it);
       return pc;
@@ -129,6 +131,8 @@ bool PrerenderManager::IsPrerenderElementFresh(const base::Time start) const {
   return (now - start < max_prerender_age_);
 }
 
-PrerenderContents* PrerenderManager::CreatePrerenderContents(const GURL& url) {
-  return new PrerenderContents(this, profile_, url);
+PrerenderContents* PrerenderManager::CreatePrerenderContents(
+    const GURL& url,
+    const std::vector<GURL>& alias_urls) {
+  return new PrerenderContents(this, profile_, url, alias_urls);
 }

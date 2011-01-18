@@ -37,7 +37,7 @@ class PrerenderContents : public RenderViewHostDelegate,
                           public JavaScriptAppModalDialogDelegate {
  public:
   PrerenderContents(PrerenderManager* prerender_manager, Profile* profile,
-                    const GURL& url);
+                    const GURL& url, const std::vector<GURL>& alias_urls);
   virtual ~PrerenderContents();
   virtual void StartPrerendering();
 
@@ -51,6 +51,10 @@ class PrerenderContents : public RenderViewHostDelegate,
   }
   string16 title() const { return title_; }
   int32 page_id() const { return page_id_; }
+
+  // Indicates whether this prerendered page can be used for the provided
+  // URL, i.e. whether there is a match.
+  bool MatchesURL(const GURL& url) const;
 
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();
@@ -133,7 +137,21 @@ class PrerenderContents : public RenderViewHostDelegate,
                                       const std::string& value);
   virtual void ClearInspectorSettings();
 
+ protected:
+  // from RenderViewHostDelegate.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
  private:
+  // Message handlers.
+  void OnDidStartProvisionalLoadForFrame(int64 frame_id,
+                                         bool main_frame,
+                                         const GURL& url);
+  void OnDidRedirectProvisionalLoad(int32 page_id,
+                                    const GURL& source_url,
+                                    const GURL& target_url);
+
+  void AddAliasURL(const GURL& url);
+
   // The prerender manager owning this object.
   PrerenderManager* prerender_manager_;
 
@@ -161,6 +179,11 @@ class PrerenderContents : public RenderViewHostDelegate,
   int32 page_id_;
   GURL url_;
   NotificationRegistrar registrar_;
+
+  // A vector of URLs that this prerendered page matches against.
+  // This array can contain more than element as a result of redirects,
+  // such as HTTP redirects or javascript redirects.
+  std::vector<GURL> alias_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };

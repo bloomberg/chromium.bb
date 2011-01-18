@@ -16,18 +16,26 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_types.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "gfx/rect.h"
 
 PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
                                      Profile* profile,
-                                     const GURL& url)
+                                     const GURL& url,
+                                     const std::vector<GURL>& alias_urls)
     : prerender_manager_(prerender_manager),
       render_view_host_(NULL),
       prerender_url_(url),
       profile_(profile),
       page_id_(0) {
   DCHECK(prerender_manager != NULL);
+  AddAliasURL(prerender_url_);
+  for (std::vector<GURL>::const_iterator it = alias_urls.begin();
+       it != alias_urls.end();
+       ++it) {
+    AddAliasURL(*it);
+  }
 }
 
 void PrerenderContents::StartPrerendering() {
@@ -87,6 +95,8 @@ void PrerenderContents::DidNavigate(
   navigate_params_.reset(p);
 
   url_ = params.url;
+
+  AddAliasURL(url_);
 }
 
 void PrerenderContents::UpdateTitle(RenderViewHost* render_view_host,
@@ -214,4 +224,40 @@ void PrerenderContents::ShowCreatedWidget(int route_id,
 
 void PrerenderContents::ShowCreatedFullscreenWidget(int route_id) {
   NOTIMPLEMENTED();
+}
+
+bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  bool message_is_ok = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(PrerenderContents, message, message_is_ok)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
+                        OnDidStartProvisionalLoadForFrame)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidRedirectProvisionalLoad,
+                        OnDidRedirectProvisionalLoad)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP_EX()
+
+  return handled;
+}
+
+void PrerenderContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
+                                                          bool is_main_frame,
+                                                          const GURL& url) {
+  if (is_main_frame)
+    AddAliasURL(url);
+}
+
+void PrerenderContents::OnDidRedirectProvisionalLoad(int32 page_id,
+                                                     const GURL& source_url,
+                                                     const GURL& target_url) {
+  AddAliasURL(target_url);
+}
+
+void PrerenderContents::AddAliasURL(const GURL& url) {
+  alias_urls_.push_back(url);
+}
+
+bool PrerenderContents::MatchesURL(const GURL& url) const {
+  return std::find(alias_urls_.begin(), alias_urls_.end(), url)
+      != alias_urls_.end();
 }

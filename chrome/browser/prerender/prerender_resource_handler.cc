@@ -100,8 +100,10 @@ bool PrerenderResourceHandler::OnRequestRedirected(int request_id,
                                                    bool* defer) {
   bool will_redirect = next_handler_->OnRequestRedirected(
       request_id, url, response, defer);
-  if (will_redirect)
+  if (will_redirect) {
+    alias_urls_.push_back(url);
     url_ = url;
+  }
   return will_redirect;
 }
 
@@ -117,7 +119,8 @@ bool PrerenderResourceHandler::OnResponseStarted(int request_id,
         NewRunnableMethod(
             this,
             &PrerenderResourceHandler::RunCallbackFromUIThread,
-            url_));
+            url_,
+            alias_urls_));
   }
   return next_handler_->OnResponseStarted(request_id, response);
 }
@@ -126,8 +129,10 @@ bool PrerenderResourceHandler::OnWillStart(int request_id,
                                            const GURL& url,
                                            bool* defer) {
   bool will_start = next_handler_->OnWillStart(request_id, url, defer);
-  if (will_start)
+  if (will_start) {
+    alias_urls_.push_back(url);
     url_ = url;
+  }
   return will_start;
 }
 
@@ -154,14 +159,18 @@ void PrerenderResourceHandler::OnRequestClosed() {
   next_handler_->OnRequestClosed();
 }
 
-void PrerenderResourceHandler::RunCallbackFromUIThread(const GURL& url) {
+void PrerenderResourceHandler::RunCallbackFromUIThread(const GURL& url,
+                                                       const std::vector<GURL>&
+                                                       alias_urls) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  prerender_callback_->Run(url);
+  prerender_callback_->Run(url, alias_urls);
 }
 
-void PrerenderResourceHandler::StartPrerender(const GURL& url) {
+void PrerenderResourceHandler::StartPrerender(const GURL& url,
+                                              const std::vector<GURL>&
+                                              alias_urls) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  prerender_manager_->AddPreload(url);
+  prerender_manager_->AddPreload(url, alias_urls);
 }
 
 void PrerenderResourceHandler::set_prerender_duration(base::TimeDelta dt) {

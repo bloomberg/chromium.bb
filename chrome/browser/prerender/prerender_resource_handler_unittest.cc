@@ -100,8 +100,9 @@ class PrerenderResourceHandlerTest : public testing::Test {
     pre_handler_->set_get_current_time_function(&FixedGetCurrentTime);
   }
 
-  void SetLastHandledURL(const GURL& url) {
+  void SetLastHandledURL(const GURL& url, const std::vector<GURL>& alias_urls) {
     last_handled_url_ = url;
+    alias_urls_ = alias_urls;
   }
 
   // Common logic shared by many of the tests
@@ -125,6 +126,12 @@ class PrerenderResourceHandlerTest : public testing::Test {
     loop_.RunAllPending();
   }
 
+  // Test whether a given URL is part of alias_urls_.
+  bool ContainsAliasURL(const GURL& url) {
+    return std::find(alias_urls_.begin(), alias_urls_.end(), url)
+        != alias_urls_.end();
+  }
+
   base::TimeDelta prerender_duration_;
   scoped_refptr<MockResourceHandler> mock_handler_;
   scoped_refptr<PrerenderResourceHandler> pre_handler_;
@@ -132,6 +139,7 @@ class PrerenderResourceHandlerTest : public testing::Test {
   BrowserThread ui_thread_;
   GURL last_handled_url_;
   GURL default_url_;
+  std::vector<GURL> alias_urls_;
 };
 
 namespace {
@@ -208,7 +216,9 @@ TEST_F(PrerenderResourceHandlerTest, PrerenderRedirect) {
   EXPECT_TRUE(last_handled_url_.is_empty());
   loop_.RunAllPending();
   EXPECT_EQ(url_redirect, last_handled_url_);
+  EXPECT_EQ(true, ContainsAliasURL(url_redirect));
+  EXPECT_EQ(true, ContainsAliasURL(default_url_));
+  EXPECT_EQ(2, static_cast<int>(alias_urls_.size()));
 }
 
 }
-

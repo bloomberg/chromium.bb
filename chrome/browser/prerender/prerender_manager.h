@@ -7,6 +7,7 @@
 #pragma once
 
 #include <list>
+#include <vector>
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -26,8 +27,9 @@ class PrerenderManager : public base::RefCounted<PrerenderManager>,
   // Owned by a Profile object for the lifetime of the profile.
   explicit PrerenderManager(Profile* profile);
 
-  // Preloads the URL supplied.
-  void AddPreload(const GURL& url);
+  // Preloads the URL supplied.  alias_urls indicates URLs that redirect
+  // to the same URL to be preloaded.
+  void AddPreload(const GURL& url, const std::vector<GURL>& alias_urls);
 
   // For a given TabContents that wants to navigate to the URL supplied,
   // determines whether a preloaded version of the URL can be used,
@@ -60,7 +62,9 @@ class PrerenderManager : public base::RefCounted<PrerenderManager>,
   bool IsPrerenderElementFresh(const base::Time start) const;
   void DeleteOldEntries();
   virtual base::Time GetCurrentTime() const;
-  virtual PrerenderContents* CreatePrerenderContents(const GURL& url);
+  virtual PrerenderContents* CreatePrerenderContents(
+      const GURL& url,
+      const std::vector<GURL>& alias_urls);
 
   Profile* profile_;
 
