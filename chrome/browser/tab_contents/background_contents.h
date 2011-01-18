@@ -75,6 +75,9 @@ class BackgroundContents : public RenderViewHostDelegate,
                                     bool* did_suppress_message);
   virtual void Close(RenderViewHost* render_view_host);
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
+  virtual void RenderViewGone(RenderViewHost* rvh,
+                              base::TerminationStatus status,
+                              int error_code);
 
   // RenderViewHostDelegate::View
   virtual void CreateNewWindow(
