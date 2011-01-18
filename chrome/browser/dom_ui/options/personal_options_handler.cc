@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/options/options_page_base.h"
@@ -124,6 +125,30 @@ void PersonalOptionsHandler::GetLocalizedValues(
           l10n_util::GetStringUTF8(IDS_SYNC_OPTIONS_SELECT_EVERYTHING)));
   sync_select_list->Append(everything);
   localized_strings->Set("syncSelectList", sync_select_list);
+
+  // Sync page.
+  localized_strings->SetString("syncPage",
+      l10n_util::GetStringUTF16(IDS_SYNC_NTP_SYNC_SECTION_TITLE));
+  localized_strings->SetString("sync_title",
+      l10n_util::GetStringUTF16(IDS_CUSTOMIZE_SYNC_DESCRIPTION));
+  localized_strings->SetString("syncsettings",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_PREFERENCES));
+  localized_strings->SetString("syncbookmarks",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_BOOKMARKS));
+  localized_strings->SetString("synctypedurls",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_TYPED_URLS));
+  localized_strings->SetString("syncpasswords",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_PASSWORDS));
+  localized_strings->SetString("syncextensions",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_EXTENSIONS));
+  localized_strings->SetString("syncautofill",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_AUTOFILL));
+  localized_strings->SetString("syncthemes",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_THEMES));
+  localized_strings->SetString("syncapps",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_APPS));
+  localized_strings->SetString("syncsessions",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_SESSIONS));
 }
 
 void PersonalOptionsHandler::RegisterMessages() {
@@ -139,6 +164,8 @@ void PersonalOptionsHandler::RegisterMessages() {
       "themesSetGTK",
       NewCallback(this, &PersonalOptionsHandler::ThemesSetGTK));
 #endif
+  dom_ui_->RegisterMessageCallback("updatePreferredDataTypes",
+      NewCallback(this, &PersonalOptionsHandler::OnPreferredDataTypesUpdated));
 }
 
 void PersonalOptionsHandler::Observe(NotificationType type,
@@ -225,6 +252,15 @@ void PersonalOptionsHandler::OnStateChanged() {
 #endif
 }
 
+void PersonalOptionsHandler::OnLoginSuccess() {
+  OnStateChanged();
+}
+
+void PersonalOptionsHandler::OnLoginFailure(
+    const GoogleServiceAuthError& error) {
+  OnStateChanged();
+}
+
 void PersonalOptionsHandler::ObserveThemeChanged() {
   Profile* profile = dom_ui_->GetProfile();
 #if defined(TOOLKIT_GTK)
@@ -261,6 +297,12 @@ void PersonalOptionsHandler::Initialize() {
   if (sync_service) {
     sync_service->AddObserver(this);
     OnStateChanged();
+
+    DictionaryValue args;
+    SyncSetupFlow::GetArgsForConfigure(sync_service, &args);
+
+    dom_ui_->CallJavascriptFunction(
+        L"PersonalOptions.setRegisteredDataTypes", args);
   } else {
     dom_ui_->CallJavascriptFunction(L"options.PersonalOptions.hideSyncSection");
   }
@@ -294,11 +336,10 @@ void PersonalOptionsHandler::ThemesSetGTK(const ListValue* args) {
 }
 #endif
 
-void PersonalOptionsHandler::OnLoginSuccess() {
-  OnStateChanged();
-}
-
-void PersonalOptionsHandler::OnLoginFailure(
-    const GoogleServiceAuthError& error) {
-  OnStateChanged();
+void PersonalOptionsHandler::OnPreferredDataTypesUpdated(
+    const ListValue* args) {
+  NotificationService::current()->Notify(
+      NotificationType::SYNC_DATA_TYPES_UPDATED,
+      Source<Profile>(dom_ui_->GetProfile()),
+      NotificationService::NoDetails());
 }
