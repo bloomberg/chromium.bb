@@ -74,6 +74,7 @@ int PluginMain() {
   if (!NaClSrpcModuleInit()) {
     return 1;
   }
+  NaClLogModuleInit();  // Enable NaClLog'ing used by CHECK().
   // Designate this as the main thread for PPB_Core::IsMainThread().
   ppapi_proxy::PluginCore::MarkMainThread();
   if (!NaClSrpcAcceptClientConnection(PppRpcs::srpc_methods)) {
