@@ -76,7 +76,6 @@ ExternalTestingExtensionLoader::ExternalTestingExtensionLoader(
 
 void ExternalTestingExtensionLoader::StartLoading() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  prefs_.reset(
-      static_cast<DictionaryValue*>(testing_prefs_->DeepCopy()));
+  prefs_.reset(testing_prefs_->DeepCopy());
   LoadFinished();
 }

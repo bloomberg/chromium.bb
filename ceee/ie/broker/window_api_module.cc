@@ -265,7 +265,7 @@ void CreateWindowFunc::Execute(const ListValue& args, int request_id) {
         return;
       }
       // Remember the arguments so that we can use them later.
-      input_dict.reset(static_cast<DictionaryValue*>(args_dict->DeepCopy()));
+      input_dict.reset(args_dict->DeepCopy());
     }
   }
 

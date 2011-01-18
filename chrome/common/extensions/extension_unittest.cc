@@ -112,7 +112,7 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   scoped_ptr<DictionaryValue> input_value;
 
   // Test missing and invalid versions
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value.reset(valid_value->DeepCopy());
   input_value->Remove(keys::kVersion, NULL);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_EQ(errors::kInvalidVersion, error);
@@ -122,7 +122,7 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_EQ(errors::kInvalidVersion, error);
 
   // Test missing and invalid names.
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value.reset(valid_value->DeepCopy());
   input_value->Remove(keys::kName, NULL);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_EQ(errors::kInvalidName, error);
@@ -132,19 +132,19 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_EQ(errors::kInvalidName, error);
 
   // Test invalid description
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value.reset(valid_value->DeepCopy());
   input_value->SetInteger(keys::kDescription, 42);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_EQ(errors::kInvalidDescription, error);
 
   // Test invalid icons
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value.reset(valid_value->DeepCopy());
   input_value->SetInteger(keys::kIcons, 42);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_EQ(errors::kInvalidIcons, error);
 
   // Test invalid icon paths
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value.reset(valid_value->DeepCopy());
   DictionaryValue* icons = NULL;
   input_value->GetDictionary(keys::kIcons, &icons);
   ASSERT_FALSE(NULL == icons);
@@ -153,13 +153,13 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidIconPath));
 
   // Test invalid user scripts list
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value.reset(valid_value->DeepCopy());
   input_value->SetInteger(keys::kContentScripts, 42);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_EQ(errors::kInvalidContentScriptsList, error);
 
   // Test invalid user script item
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value.reset(valid_value->DeepCopy());
   ListValue* content_scripts = NULL;
   input_value->GetList(keys::kContentScripts, &content_scripts);
   ASSERT_FALSE(NULL == content_scripts);
@@ -168,7 +168,7 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidContentScript));
 
   // Test missing and invalid matches array
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value.reset(valid_value->DeepCopy());
   input_value->GetList(keys::kContentScripts, &content_scripts);
   DictionaryValue* user_script = NULL;
   content_scripts->GetDictionary(0, &user_script);
@@ -195,7 +195,7 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidMatch));
 
   // Test missing and invalid files array
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value.reset(valid_value->DeepCopy());
   input_value->GetList(keys::kContentScripts, &content_scripts);
   content_scripts->GetDictionary(0, &user_script);
   user_script->Remove(keys::kJs, NULL);
@@ -237,7 +237,7 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidCss));
 
   // Test missing and invalid permissions array
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value.reset(valid_value->DeepCopy());
   EXPECT_TRUE(extension.InitFromValue(*input_value, true, &error));
   ListValue* permissions = NULL;
   input_value->GetList(keys::kPermissions, &permissions);
@@ -251,7 +251,7 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidPermissions));
 
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value.reset(valid_value->DeepCopy());
   input_value->GetList(keys::kPermissions, &permissions);
   permissions->Set(0, Value::CreateIntegerValue(24));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
@@ -263,7 +263,7 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_TRUE(extension.InitFromValue(*input_value, true, &error));
 
   // Multiple page actions are not allowed.
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value.reset(valid_value->DeepCopy());
   DictionaryValue* action = new DictionaryValue;
   action->SetString(keys::kPageActionId, "MyExtensionActionId");
   action->SetString(keys::kName, "MyExtensionActionName");
@@ -275,13 +275,13 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_STREQ(errors::kInvalidPageActionsListSize, error.c_str());
 
   // Test invalid options page url.
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value.reset(valid_value->DeepCopy());
   input_value->Set(keys::kOptionsPage, Value::CreateNullValue());
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidOptionsPage));
 
   // Test invalid/empty default locale.
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value.reset(valid_value->DeepCopy());
   input_value->Set(keys::kDefaultLocale, Value::CreateIntegerValue(5));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidDefaultLocale));
@@ -291,7 +291,7 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidDefaultLocale));
 
   // Test invalid minimum_chrome_version.
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value.reset(valid_value->DeepCopy());
   input_value->Set(keys::kMinimumChromeVersion, Value::CreateIntegerValue(42));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidMinimumChromeVersion));
@@ -486,13 +486,13 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   scoped_ptr<DictionaryValue> copy;
 
   // First remove id key.
-  copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
+  copy.reset(input.DeepCopy());
   copy->Remove(keys::kPageActionId, NULL);
   action.reset(extension.LoadExtensionActionHelper(copy.get(), &error_msg));
   ASSERT_TRUE(NULL != action.get());
 
   // Then remove the name key. It's optional, so no error.
-  copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
+  copy.reset(input.DeepCopy());
   copy->Remove(keys::kName, NULL);
   action.reset(extension.LoadExtensionActionHelper(copy.get(), &error_msg));
   ASSERT_TRUE(NULL != action.get());
@@ -500,7 +500,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   ASSERT_TRUE(error_msg.empty());
 
   // Then remove the icon paths key.
-  copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
+  copy.reset(input.DeepCopy());
   copy->Remove(keys::kPageActionIcons, NULL);
   action.reset(extension.LoadExtensionActionHelper(copy.get(), &error_msg));
   ASSERT_TRUE(NULL != action.get());

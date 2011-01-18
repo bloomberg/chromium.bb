@@ -263,7 +263,7 @@ Value* PreferenceModelAssociator::MergeListValues(const Value& from_value,
   DCHECK(to_value.GetType() == Value::TYPE_LIST);
   const ListValue& from_list_value = static_cast<const ListValue&>(from_value);
   const ListValue& to_list_value = static_cast<const ListValue&>(to_value);
-  ListValue* result = static_cast<ListValue*>(to_list_value.DeepCopy());
+  ListValue* result = to_list_value.DeepCopy();
 
   for (ListValue::const_iterator i = from_list_value.begin();
        i != from_list_value.end(); ++i) {
@@ -288,8 +288,7 @@ Value* PreferenceModelAssociator::MergeDictionaryValues(
       static_cast<const DictionaryValue&>(from_value);
   const DictionaryValue& to_dict_value =
       static_cast<const DictionaryValue&>(to_value);
-  DictionaryValue* result =
-      static_cast<DictionaryValue*>(to_dict_value.DeepCopy());
+  DictionaryValue* result = to_dict_value.DeepCopy();
 
   for (DictionaryValue::key_iterator key = from_dict_value.begin_keys();
        key != from_dict_value.end_keys(); ++key) {

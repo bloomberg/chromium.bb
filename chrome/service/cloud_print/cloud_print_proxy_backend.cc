@@ -269,8 +269,7 @@ CloudPrintProxyBackend::Core::Core(CloudPrintProxyBackend* backend,
       job_poll_scheduled_(false) {
   if (print_system_settings) {
     // It is possible to have no print settings specified.
-    print_system_settings_.reset(
-        reinterpret_cast<DictionaryValue*>(print_system_settings->DeepCopy()));
+    print_system_settings_.reset(print_system_settings->DeepCopy());
   }
 }
 

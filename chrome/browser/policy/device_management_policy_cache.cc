@@ -135,7 +135,7 @@ bool DeviceManagementPolicyCache::SetPolicy(
 
 DictionaryValue* DeviceManagementPolicyCache::GetPolicy() {
   AutoLock lock(lock_);
-  return static_cast<DictionaryValue*>(policy_->DeepCopy());
+  return policy_->DeepCopy();
 }
 
 void DeviceManagementPolicyCache::SetDeviceUnmanaged(bool is_device_unmanaged) {

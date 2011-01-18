@@ -325,8 +325,7 @@ DictionaryValue* SandboxedExtensionUnpacker::RewriteManifestFile(
   // Add the public key extracted earlier to the parsed manifest and overwrite
   // the original manifest. We do this to ensure the manifest doesn't contain an
   // exploitable bug that could be used to compromise the browser.
-  scoped_ptr<DictionaryValue> final_manifest(
-      static_cast<DictionaryValue*>(manifest.DeepCopy()));
+  scoped_ptr<DictionaryValue> final_manifest(manifest.DeepCopy());
   final_manifest->SetString(extension_manifest_keys::kPublicKey, public_key_);
 
   std::string manifest_json;

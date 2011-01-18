@@ -1253,8 +1253,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   }
 
   // Make a copy of the manifest so we can store it in prefs.
-  manifest_value_.reset(
-      static_cast<DictionaryValue*>(source.DeepCopy()));
+  manifest_value_.reset(source.DeepCopy());
 
   // Initialize the URL.
   extension_url_ =
@@ -1426,8 +1425,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
           return false;
         }
       }
-      theme_images_.reset(
-          static_cast<DictionaryValue*>(images_value->DeepCopy()));
+      theme_images_.reset(images_value->DeepCopy());
     }
 
     DictionaryValue* colors_value;
@@ -1455,8 +1453,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
           return false;
         }
       }
-      theme_colors_.reset(
-          static_cast<DictionaryValue*>(colors_value->DeepCopy()));
+      theme_colors_.reset(colors_value->DeepCopy());
     }
 
     DictionaryValue* tints_value;
@@ -1476,15 +1473,14 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
           return false;
         }
       }
-      theme_tints_.reset(
-          static_cast<DictionaryValue*>(tints_value->DeepCopy()));
+      theme_tints_.reset(tints_value->DeepCopy());
     }
 
     DictionaryValue* display_properties_value;
     if (theme_value->GetDictionary(keys::kThemeDisplayProperties,
         &display_properties_value)) {
       theme_display_properties_.reset(
-          static_cast<DictionaryValue*>(display_properties_value->DeepCopy()));
+          display_properties_value->DeepCopy());
     }
 
     return true;
@@ -2296,8 +2292,7 @@ ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,
       extension_path(path),
       extension_location(location) {
   if (manifest)
-    extension_manifest.reset(
-        static_cast<DictionaryValue*>(manifest->DeepCopy()));
+    extension_manifest.reset(manifest->DeepCopy());
 }
 
 ExtensionInfo::~ExtensionInfo() {}

@@ -40,7 +40,7 @@ AsyncExtensionFunction::~AsyncExtensionFunction() {
 
 void AsyncExtensionFunction::SetArgs(const ListValue* args) {
   DCHECK(!args_.get());  // Should only be called once.
-  args_.reset(static_cast<ListValue*>(args->DeepCopy()));
+  args_.reset(args->DeepCopy());
 }
 
 const std::string AsyncExtensionFunction::GetResult() {

@@ -128,8 +128,7 @@ ExternalProcessImporterBridge::ExternalProcessImporterBridge(
     : profile_import_thread_(profile_import_thread) {
   // Bridge needs to make its own copy because OS 10.6 autoreleases the
   // localized_strings value that is passed in (see http://crbug.com/46003 ).
-  localized_strings_.reset(
-      static_cast<DictionaryValue*>(localized_strings.DeepCopy()));
+  localized_strings_.reset(localized_strings.DeepCopy());
 }
 
 void ExternalProcessImporterBridge::AddBookmarkEntries(
