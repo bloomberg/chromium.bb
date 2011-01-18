@@ -327,8 +327,13 @@ void AutoFillHelper::QueryAutoFillSuggestions(
 
   webkit_glue::FormData form;
   webkit_glue::FormField field;
-  if (!FindFormAndFieldForNode(node, &form, &field))
-    return;
+  if (!FindFormAndFieldForNode(node, &form, &field)) {
+    // If we didn't find the cached form, at least let autocomplete have a shot
+    // at providing suggestions.
+    FormManager::WebFormControlElementToFormField(
+        node.toConst<WebFormControlElement>(), FormManager::EXTRACT_VALUE,
+        &field);
+  }
 
   Send(new ViewHostMsg_QueryFormFieldAutoFill(
       routing_id(), autofill_query_id_, form, field));
