@@ -449,6 +449,9 @@ INSTANTIATE_TEST_CASE_P(
             key::kShowHomeButton),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyPrintingEnabled,
-            key::kPrintingEnabled)));
+            key::kPrintingEnabled),
+        PolicyTestParams::ForIntegerPolicy(
+            kPolicyPolicyRefreshRate,
+            key::kPolicyRefreshRate)));
 
 }  // namespace policy

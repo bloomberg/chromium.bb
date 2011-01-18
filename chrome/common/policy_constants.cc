@@ -76,6 +76,7 @@ const char kAuthServerWhitelist[] = "AuthServerWhitelist";
 const char kAuthNegotiateDelegateWhitelist[] = "AuthNegotiateDelegateWhitelist";
 const char kGSSAPILibraryName[] = "GSSAPILibraryName";
 const char kDisable3DAPIs[] = "Disable3DAPIs";
+const char kPolicyRefreshRate[] = "PolicyRefreshRate";
 
 // Chrome Frame specific policy constants
 const char kChromeFrameRendererSettings[] = "ChromeFrameRendererSettings";

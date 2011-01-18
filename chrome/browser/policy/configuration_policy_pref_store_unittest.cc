@@ -220,7 +220,9 @@ INSTANTIATE_TEST_CASE_P(
     ConfigurationPolicyPrefStoreIntegerTest,
     testing::Values(
         TypeAndName(kPolicyRestoreOnStartup,
-                    prefs::kRestoreOnStartup)));
+                    prefs::kRestoreOnStartup),
+        TypeAndName(kPolicyPolicyRefreshRate,
+                    prefs::kPolicyRefreshRate)));
 
 // Test cases for the proxy policy settings.
 class ConfigurationPolicyPrefStoreProxyTest : public testing::Test {

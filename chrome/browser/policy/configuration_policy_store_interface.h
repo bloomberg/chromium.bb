@@ -68,7 +68,8 @@ enum ConfigurationPolicyType {
   kPolicyAuthServerWhitelist,
   kPolicyAuthNegotiateDelegateWhitelist,
   kPolicyGSSAPILibraryName,
-  kPolicyDisable3DAPIs
+  kPolicyDisable3DAPIs,
+  kPolicyPolicyRefreshRate,
 };
 
 
