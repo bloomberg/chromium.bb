@@ -37,6 +37,8 @@ class PDFTest(pyauto.PyUITest):
     properties = self.GetBrowserInfo()['properties']
     if properties['branding'] != 'Google Chrome':
       return
+    breakpad_folder = properties['DIR_CRASH_DUMPS']
+    old_dmp_files = glob.glob(os.path.join(breakpad_folder, '*.dmp'))
     pdf_files_path = os.path.join(self.DataDir(), 'pyauto_private', 'pdf')
     pdf_files = glob.glob(os.path.join(pdf_files_path, '*.pdf'))
     for pdf_file in pdf_files:
@@ -52,6 +54,10 @@ class PDFTest(pyauto.PyUITest):
     # Assert that there is at least 1 browser window.
     self.assertTrue(self.GetBrowserWindowCount(),
                     'Browser crashed, no window is open')
+    # Verify there're no crash dump files
+    for dmp_file in glob.glob(os.path.join(breakpad_folder, '*.dmp')):
+      self.assertTrue(dmp_file in old_dmp_files,
+          msg='Crash dump %s found' % dmp_file)
 
 
 if __name__ == '__main__':
