@@ -361,9 +361,9 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, FLAKY_BrowserAccelerators) {
 #endif
 }
 
-// Flake on Win only.  http://crbug.com/69941
+// Flakily fails and times out on Win only.  http://crbug.com/69941
 #if defined(OS_WIN)
-#define MAYBE_PopupAccelerators FLAKY_PopupAccelerators
+#define MAYBE_PopupAccelerators DISABLED_PopupAccelerators
 #else
 #define MAYBE_PopupAccelerators PopupAccelerators
 #endif
