@@ -487,14 +487,21 @@ static const struct wl_drag_offer_listener drag_offer_listener = {
 };
 
 static void
-drag_offer_handler(struct wl_drag_offer *offer, struct display *display)
+global_handler(struct display *display,
+	       const char *interface, uint32_t id, uint32_t version)
 {
+	struct wl_drag_offer *offer;
 	struct dnd_offer *dnd_offer;
+
+	if (strcmp(interface, "drag_offer") != 0)
+		return;
+
+	offer = wl_drag_offer_create(display_get_display(display), id);
 
 	dnd_offer = malloc(sizeof *dnd_offer);
 	if (dnd_offer == NULL)
 		return;
-	
+
 	dnd_offer->refcount = 1;
 
 	wl_drag_offer_add_listener(offer, &drag_offer_listener, dnd_offer);
@@ -681,7 +688,7 @@ main(int argc, char *argv[])
 		return -1;
 	}
 
-	display_set_drag_offer_handler(d, drag_offer_handler);
+	display_set_global_handler(d, global_handler);
 
 	dnd = dnd_create (d);
 

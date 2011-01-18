@@ -124,11 +124,9 @@ typedef int (*window_motion_handler_t)(struct window *window,
 				       int32_t x, int32_t y,
 				       int32_t sx, int32_t sy, void *data);
 
-typedef void (*display_drag_offer_handler_t)(struct wl_drag_offer *offer,
-					     struct display *display);
-
 typedef void (*display_global_handler_t)(struct display *display,
 					 const char *interface,
+					 uint32_t id,
 					 uint32_t version);
 
 struct window *
@@ -223,10 +221,6 @@ window_set_keyboard_focus_handler(struct window *window,
 void
 window_set_frame_handler(struct window *window,
 			 window_frame_handler_t handler);
-
-void
-display_set_drag_offer_handler(struct display *display,
-			       display_drag_offer_handler_t handler);
 
 void
 display_set_global_handler(struct display *display,

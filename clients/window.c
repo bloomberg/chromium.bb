@@ -79,7 +79,6 @@ struct display {
 	struct xkb_desc *xkb;
 	cairo_surface_t **pointer_surfaces;
 
-	display_drag_offer_handler_t drag_offer_handler;
 	display_global_handler_t global_handler;
 };
 
@@ -1317,7 +1316,6 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
 {
 	struct display *d = data;
-	struct wl_drag_offer *offer;
 
 	if (strcmp(interface, "compositor") == 0) {
 		d->compositor = wl_compositor_create(display, id);
@@ -1334,13 +1332,8 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		wl_drm_add_listener(d->drm, &drm_listener, d);
 	} else if (strcmp(interface, "shm") == 0) {
 		d->shm = wl_shm_create(display, id);
-	} else if (strcmp(interface, "drag_offer") == 0) {
-		if (d->drag_offer_handler) {
-			offer = wl_drag_offer_create(display, id);
-			d->drag_offer_handler(offer, d);
-		}
 	} else if (d->global_handler) {
-		d->global_handler(d, interface, version);
+		d->global_handler(d, interface, id, version);
 	}
 }
 
@@ -1539,13 +1532,6 @@ void
 display_run(struct display *d)
 {
 	g_main_loop_run(d->loop);
-}
-
-void
-display_set_drag_offer_handler(struct display *display,
-			       display_drag_offer_handler_t handler)
-{
-	display->drag_offer_handler = handler;
 }
 
 void
