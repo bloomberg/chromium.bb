@@ -80,6 +80,7 @@ struct display {
 	cairo_surface_t **pointer_surfaces;
 
 	display_drag_offer_handler_t drag_offer_handler;
+	display_global_handler_t global_handler;
 };
 
 struct window {
@@ -1338,6 +1339,8 @@ display_handle_global(struct wl_display *display, uint32_t id,
 			offer = wl_drag_offer_create(display, id);
 			d->drag_offer_handler(offer, d);
 		}
+	} else if (d->global_handler) {
+		d->global_handler(d, interface, version);
 	}
 }
 
@@ -1543,4 +1546,11 @@ display_set_drag_offer_handler(struct display *display,
 			       display_drag_offer_handler_t handler)
 {
 	display->drag_offer_handler = handler;
+}
+
+void
+display_set_global_handler(struct display *display,
+			   display_global_handler_t handler)
+{
+	display->global_handler = handler;
 }
