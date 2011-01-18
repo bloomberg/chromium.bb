@@ -13,7 +13,7 @@
 #import "chrome/browser/translate/translate_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/infobar.h"
+#import "chrome/browser/ui/cocoa/infobars/infobar.h"
 #import "chrome/browser/ui/cocoa/translate/translate_infobar_base.h"
 #import "chrome/browser/ui/cocoa/translate/before_translate_infobar_controller.h"
 #import "testing/gmock/include/gmock/gmock.h"

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_INFOBAR_CONTROLLER_H_
 #pragma once
 
-#import "chrome/browser/ui/cocoa/infobar_controller.h"
+#import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 
 #import <Cocoa/Cocoa.h>
 

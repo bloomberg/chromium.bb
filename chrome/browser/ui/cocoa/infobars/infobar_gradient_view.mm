@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/infobar_gradient_view.h"
+#include "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/themes/browser_theme_provider.h"

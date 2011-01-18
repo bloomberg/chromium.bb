@@ -7,7 +7,7 @@
 #pragma once
 
 #import <Cocoa/Cocoa.h>
-#import "chrome/browser/ui/cocoa/infobar_controller.h"
+#import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 
 #import "base/mac/cocoa_protocols.h"
 #import "base/scoped_nsobject.h"

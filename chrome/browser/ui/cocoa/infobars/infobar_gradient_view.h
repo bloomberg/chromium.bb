@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_INFOBAR_GRADIENT_VIEW_H_
-#define CHROME_BROWSER_UI_COCOA_INFOBAR_GRADIENT_VIEW_H_
+#ifndef CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_GRADIENT_VIEW_H_
+#define CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_GRADIENT_VIEW_H_
 #pragma once
 
 #import "chrome/browser/ui/cocoa/vertical_gradient_view.h"
@@ -16,4 +16,4 @@
 
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_INFOBAR_GRADIENT_VIEW_H_
+#endif  // CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_GRADIENT_VIEW_H_

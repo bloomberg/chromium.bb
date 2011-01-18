@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_INFOBAR_H_
-#define CHROME_BROWSER_UI_COCOA_INFOBAR_H_
+#ifndef CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_H_
+#define CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_H_
 #pragma once
 
 #include "base/logging.h"  // for DCHECK
@@ -45,4 +45,4 @@ class InfoBar {
   DISALLOW_COPY_AND_ASSIGN(InfoBar);
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_INFOBAR_H_
+#endif  // CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_H_

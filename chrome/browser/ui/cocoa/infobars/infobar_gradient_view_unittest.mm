@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/infobar_gradient_view.h"
+#import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 
 namespace {

@@ -13,7 +13,7 @@
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
-#include "chrome/browser/ui/cocoa/infobar.h"
+#include "chrome/browser/ui/cocoa/infobars/infobar.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
