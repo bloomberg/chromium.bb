@@ -113,10 +113,24 @@ void BackgroundContentsService::Observe(NotificationType type,
       DCHECK(IsTracked(Details<BackgroundContents>(details).ptr()));
       RegisterBackgroundContents(Details<BackgroundContents>(details).ptr());
       break;
-    case NotificationType::EXTENSION_UNLOADED:
-      ShutdownAssociatedBackgroundContents(
-          ASCIIToUTF16(
-              Details<UnloadedExtensionInfo>(details)->extension->id()));
+   case NotificationType::EXTENSION_UNLOADED:
+      switch (Details<UnloadedExtensionInfo>(details)->reason) {
+        case UnloadedExtensionInfo::DISABLE:  // Intentionally fall through.
+        case UnloadedExtensionInfo::UNINSTALL:
+          ShutdownAssociatedBackgroundContents(
+              ASCIIToUTF16(
+                  Details<UnloadedExtensionInfo>(details)->extension->id()));
+          break;
+        case UnloadedExtensionInfo::UPDATE:
+          // Leave BackgroundContents in place
+          break;
+        default:
+          NOTREACHED();
+          ShutdownAssociatedBackgroundContents(
+              ASCIIToUTF16(
+                  Details<UnloadedExtensionInfo>(details)->extension->id()));
+          break;
+      }
       break;
     default:
       NOTREACHED();
