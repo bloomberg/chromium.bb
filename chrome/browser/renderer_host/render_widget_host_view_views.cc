@@ -669,9 +669,11 @@ TODO(bryeung): key bindings
   host_->ForwardKeyboardEvent(event);
 }
 
-bool RenderWidgetHostViewViews::OnTouchEvent(const views::TouchEvent& e) {
+views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
+    const views::TouchEvent& e) {
   // Update the list of touch points first.
   WebKit::WebTouchPoint* point = NULL;
+  TouchStatus status = TOUCH_STATUS_UNKNOWN;
 
   switch (e.GetType()) {
     case views::Event::ET_TOUCH_PRESSED:
@@ -680,6 +682,11 @@ bool RenderWidgetHostViewViews::OnTouchEvent(const views::TouchEvent& e) {
           WebTouchEvent::touchPointsLengthCap) {
         point = &touch_event_.touchPoints[touch_event_.touchPointsLength++];
         point->id = e.identity();
+
+        if (touch_event_.touchPointsLength == 1) {
+          // A new touch sequence has started.
+          status = TOUCH_STATUS_START;
+        }
       }
       break;
     case views::Event::ET_TOUCH_RELEASED:
@@ -696,7 +703,6 @@ bool RenderWidgetHostViewViews::OnTouchEvent(const views::TouchEvent& e) {
         }
         point = NULL;
       }
-      DCHECK(point != NULL) << "Touchpoint not found for event " << e.GetType();
       break;
     }
     default:
@@ -705,7 +711,10 @@ bool RenderWidgetHostViewViews::OnTouchEvent(const views::TouchEvent& e) {
   }
 
   if (!point)
-    return false;
+    return TOUCH_STATUS_UNKNOWN;
+
+  if (status != TOUCH_STATUS_START)
+    status = TOUCH_STATUS_CONTINUE;
 
   // Update the location and state of the point.
   UpdateTouchPointPosition(&e, GetPosition(), point);
@@ -734,9 +743,13 @@ bool RenderWidgetHostViewViews::OnTouchEvent(const views::TouchEvent& e) {
          ++i) {
       touch_event_.touchPoints[i] = touch_event_.touchPoints[i + 1];
     }
+    if (touch_event_.touchPointsLength == 0)
+      status = TOUCH_STATUS_END;
+  } else if (e.GetType() == views::Event::ET_TOUCH_CANCELLED) {
+    status = TOUCH_STATUS_CANCEL;
   }
 
-  return true;
+  return status;
 }
 
 // static

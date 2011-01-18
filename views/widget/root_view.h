@@ -98,7 +98,7 @@ class RootView : public View,
   virtual void OnMouseMoved(const MouseEvent& e);
   virtual void SetMouseHandler(View* new_mouse_handler);
 #if defined(TOUCH_UI)
-  virtual bool OnTouchEvent(const TouchEvent& e);
+  virtual TouchStatus OnTouchEvent(const TouchEvent& e);
 #endif
 
   // Invoked By the Widget if the mouse drag is interrupted by

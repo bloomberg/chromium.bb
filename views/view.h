@@ -133,6 +133,19 @@ class View : public AcceleratorTarget {
     APPLY_MIRRORING_TRANSFORMATION
   };
 
+#if defined(TOUCH_UI)
+  enum TouchStatus {
+    TOUCH_STATUS_UNKNOWN = 0,  // Unknown touch status. This is used to indicate
+                               // that the touch event was not handled.
+    TOUCH_STATUS_START,        // The touch event initiated a touch sequence.
+    TOUCH_STATUS_CONTINUE,     // The touch event is part of a previously
+                               // started touch sequence.
+    TOUCH_STATUS_END,          // The touch event ended the touch sequence.
+    TOUCH_STATUS_CANCEL        // The touch event was cancelled, but didn't
+                               // terminate the touch sequence.
+  };
+#endif
+
   // The view class name.
   static char kViewClassName[];
 
@@ -699,7 +712,7 @@ class View : public AcceleratorTarget {
 #if defined(TOUCH_UI)
   // This method is invoked for each touch event. Default implementation
   // does nothing. Override as needed.
-  virtual bool OnTouchEvent(const TouchEvent& event);
+  virtual TouchStatus OnTouchEvent(const TouchEvent& event);
 #endif
 
   // Set the MouseHandler for a drag session.
@@ -1159,9 +1172,8 @@ class View : public AcceleratorTarget {
 
 #if defined(TOUCH_UI)
   // RootView will invoke this with incoming TouchEvents. Returns the
-  // the result of OnTouchEvent: true if the event was handled by the
-  // callee.
-  bool ProcessTouchEvent(const TouchEvent& e);
+  // the result of OnTouchEvent.
+  TouchStatus ProcessTouchEvent(const TouchEvent& e);
 #endif
 
   // Starts a drag and drop operation originating from this view. This invokes

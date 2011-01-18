@@ -97,7 +97,7 @@ bool DispatchX2Event(RootView* root, XEvent* xev) {
     // can be used (if desired) as a mouse event.
 
     TouchEvent touch(xev);
-    if (root->OnTouchEvent(touch))
+    if (root->OnTouchEvent(touch) != views::View::TOUCH_STATUS_UNKNOWN)
       return true;
   }
 

@@ -154,7 +154,7 @@ class TestView : public View {
   virtual bool OnMouseDragged(const MouseEvent& event);
   virtual void OnMouseReleased(const MouseEvent& event, bool canceled);
 #if defined(TOUCH_UI)
-  virtual bool OnTouchEvent(const TouchEvent& event);
+  virtual TouchStatus OnTouchEvent(const TouchEvent& event);
 #endif
   virtual void Paint(gfx::Canvas* canvas);
   virtual bool AcceleratorPressed(const Accelerator& accelerator);
@@ -429,10 +429,11 @@ bool MockGestureManager::ProcessTouchEventForGesture(
 MockGestureManager::MockGestureManager() {
 }
 
-bool TestView::OnTouchEvent(const TouchEvent& event) {
+View::TouchStatus TestView::OnTouchEvent(const TouchEvent& event) {
   last_touch_event_type_ = event.GetType();
   location_.SetPoint(event.x(), event.y());
-  return last_touch_event_was_handled_;
+  return last_touch_event_was_handled_ ? TOUCH_STATUS_CONTINUE :
+                                         TOUCH_STATUS_UNKNOWN;
 }
 
 TEST_F(ViewTest, TouchEvent) {

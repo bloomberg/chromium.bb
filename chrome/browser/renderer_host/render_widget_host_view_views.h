@@ -107,7 +107,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   // Views touch events, overridden from views::View.
-  virtual bool OnTouchEvent(const views::TouchEvent& e);
+  virtual View::TouchStatus OnTouchEvent(const views::TouchEvent& e);
 
  private:
   friend class RenderWidgetHostViewViewsWidget;

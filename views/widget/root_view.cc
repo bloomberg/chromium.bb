@@ -306,16 +306,19 @@ void RootView::SetFocusOnMousePressed(bool f) {
 }
 
 #if defined(TOUCH_UI)
-bool RootView::OnTouchEvent(const TouchEvent& e) {
+View::TouchStatus RootView::OnTouchEvent(const TouchEvent& e) {
   // If touch_pressed_handler_ is non null, we are currently processing
   // a touch down on the screen situation. In that case we send the
   // event to touch_pressed_handler_
+  View::TouchStatus status = TOUCH_STATUS_UNKNOWN;
 
   if (touch_pressed_handler_) {
     TouchEvent touch_event(e, this, touch_pressed_handler_);
-    touch_pressed_handler_->ProcessTouchEvent(touch_event);
+    status = touch_pressed_handler_->ProcessTouchEvent(touch_event);
     gesture_manager_->ProcessTouchEventForGesture(e, this, true);
-    return true;
+    if (status == TOUCH_STATUS_END)
+      touch_pressed_handler_ = NULL;
+    return status;
   }
 
   bool handled = false;
@@ -327,12 +330,20 @@ bool RootView::OnTouchEvent(const TouchEvent& e) {
       // Disabled views eat events but are treated as not handled by the
       // the GestureManager.
       handled = false;
+      status = TOUCH_STATUS_UNKNOWN;
       break;
     }
 
     // See if this view wants to handle the touch
     TouchEvent touch_event(e, this, touch_pressed_handler_);
-    handled = touch_pressed_handler_->ProcessTouchEvent(touch_event);
+    status = touch_pressed_handler_->ProcessTouchEvent(touch_event);
+
+    // If the touch didn't initiate a touch-sequence, then reset the touch event
+    // handler.
+    if (status != TOUCH_STATUS_START)
+      touch_pressed_handler_ = NULL;
+
+    handled = status != TOUCH_STATUS_UNKNOWN;
 
     // The view could have removed itself from the tree when handling
     // OnTouchEvent(). So handle as per OnMousePressed. NB: we
@@ -348,7 +359,7 @@ bool RootView::OnTouchEvent(const TouchEvent& e) {
     // forwarded to that view.
     if (handled) {
       gesture_manager_->ProcessTouchEventForGesture(e, this, handled);
-      return true;
+      return status;
     }
   }
 
@@ -357,7 +368,7 @@ bool RootView::OnTouchEvent(const TouchEvent& e) {
 
   // Give the touch event to the gesture manager.
   gesture_manager_->ProcessTouchEventForGesture(e, this, handled);
-  return handled;
+  return status;
 }
 #endif
 

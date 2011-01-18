@@ -25,6 +25,7 @@ class GestureManager {
 
   static GestureManager* GetInstance();
 
+  // TODO(sad): Use TouchStatus instead of bool for previouslyHandled.
   // Invoked for each touch event that could contribute to the current gesture.
   // Takes the event and the View that originated it and which will also
   // be the target of any generated synthetic event. Finally, handled
