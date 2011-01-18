@@ -34,9 +34,7 @@ void ConfigurationPolicyProvider::DecodePolicyValueTree(
 
 // Class ConfigurationPolicyObserverRegistrar.
 
-ConfigurationPolicyObserverRegistrar::ConfigurationPolicyObserverRegistrar()
-  : provider_(NULL),
-    observer_(NULL) {}
+ConfigurationPolicyObserverRegistrar::ConfigurationPolicyObserverRegistrar() {}
 
 ConfigurationPolicyObserverRegistrar::~ConfigurationPolicyObserverRegistrar() {
   if (provider_)

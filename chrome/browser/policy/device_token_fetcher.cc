@@ -65,7 +65,6 @@ DeviceTokenFetcher::ObserverRegistrar::~ObserverRegistrar() {
 
 void DeviceTokenFetcher::ObserverRegistrar::Init(
     DeviceTokenFetcher* token_fetcher) {
-  RemoveAll();
   token_fetcher_ = token_fetcher;
 }
 
@@ -193,11 +192,7 @@ void DeviceTokenFetcher::OnError(DeviceManagementBackend::ErrorCode code) {
 }
 
 void DeviceTokenFetcher::Restart() {
-  // Complain if there's currently an asynchronous operation going on.
-  DCHECK(state_ == kStateNotStarted ||
-         state_ == kStateHasDeviceToken ||
-         state_ == kStateFailure ||
-         state_ == kStateNotManaged);
+  DCHECK(!IsTokenPending());
   device_token_.clear();
   device_token_load_complete_event_.Reset();
   MakeReadyToRequestDeviceToken();
