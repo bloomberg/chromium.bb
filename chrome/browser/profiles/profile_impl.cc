@@ -1351,7 +1351,7 @@ void ProfileImpl::ChangeApplicationLocale(
     GetPrefs()->SetString(prefs::kApplicationLocaleOverride, locale);
   } else {
     GetPrefs()->SetString(prefs::kApplicationLocale, locale);
-    GetPrefs()->SetString(prefs::kApplicationLocaleOverride, "");
+    GetPrefs()->ClearPref(prefs::kApplicationLocaleOverride);
   }
   GetPrefs()->SetString(prefs::kApplicationLocaleBackup, locale);
   GetPrefs()->ClearPref(prefs::kApplicationLocaleAccepted);

@@ -33,15 +33,27 @@ LocaleChangeGuard::LocaleChangeGuard()
 }
 
 void LocaleChangeGuard::RevertLocaleChange(const ListValue* list) {
+  if (note_ == NULL ||
+      tab_contents_ == NULL ||
+      from_locale_.empty() ||
+      to_locale_.empty()) {
+    NOTREACHED();
+    return;
+  }
+  if (reverted_)
+    return;
+
+  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+  if (prefs == NULL)
+    return;
+
   reverted_ = true;
   UserMetrics::RecordAction(UserMetricsAction("LanguageChange_Revert"));
   tab_contents_->profile()->ChangeApplicationLocale(from_locale_, true);
-  PrefService* prefs = tab_contents_->profile()->GetPrefs();
-  if (prefs) {
-    prefs->SetString(prefs::kApplicationLocaleBackup, from_locale_);
-    prefs->ClearPref(prefs::kApplicationLocaleAccepted);
-    prefs->ScheduleSavePersistentPrefs();
-  }
+  prefs->SetString(prefs::kApplicationLocaleBackup, from_locale_);
+  prefs->ClearPref(prefs::kApplicationLocaleAccepted);
+  prefs->ScheduleSavePersistentPrefs();
+
   Browser* browser = Browser::GetBrowserForController(
       &tab_contents_->controller(), NULL);
   if (browser)
@@ -52,37 +64,58 @@ void LocaleChangeGuard::CheckLocaleChange(TabContents* tab_contents) {
   // We want notification to be shown no more than once per session.
   if (note_ != NULL)
     return;
+  DCHECK(note_ == NULL && tab_contents_ == NULL);
+  DCHECK(from_locale_.empty() && to_locale_.empty());
+
   // We check profile Id because:
   // (1) we want to exit fast in common case when nothing should be done.
   // (2) on ChromeOS this guard may be invoked for a dummy profile first time.
   ProfileId cur_profile_id = tab_contents->profile()->GetRuntimeId();
-  if (cur_profile_id == profile_id_)
+  if (cur_profile_id == profile_id_) {
+    // We have already checked this profile, exiting fast.
     return;
+  }
   profile_id_ = cur_profile_id;
+
   std::string cur_locale = g_browser_process->GetApplicationLocale();
-  if (cur_locale.empty())
+  if (cur_locale.empty()) {
+    NOTREACHED();
     return;
+  }
+
   PrefService* prefs = tab_contents->profile()->GetPrefs();
   if (prefs == NULL)
     return;
-  to_locale_ = prefs->GetString(prefs::kApplicationLocaleOverride);
-  if (!to_locale_.empty()) {
-    DCHECK(to_locale_ == cur_locale);
+
+  std::string to_locale = prefs->GetString(prefs::kApplicationLocaleOverride);
+  if (!to_locale.empty()) {
+    DCHECK(to_locale == cur_locale);
     return;
   }
-  to_locale_ = prefs->GetString(prefs::kApplicationLocale);
-  if (to_locale_ != cur_locale)
+
+  to_locale = prefs->GetString(prefs::kApplicationLocale);
+  if (to_locale != cur_locale) {
+    // This conditional branch can occur in case kApplicationLocale
+    // preference was modified by synchronization.
     return;
-  from_locale_ = prefs->GetString(prefs::kApplicationLocaleBackup);
-  if (from_locale_.empty() || from_locale_ == to_locale_)
+  }
+
+  std::string from_locale = prefs->GetString(prefs::kApplicationLocaleBackup);
+  if (from_locale.empty() || from_locale == to_locale) {
+    // No locale change was detected, just exit.
     return;
+  }
+
+  // Locale change detected, showing notification.
+  from_locale_ = from_locale;
+  to_locale_ = to_locale;
+  tab_contents_ = tab_contents;
   note_.reset(new chromeos::SystemNotification(
       tab_contents->profile(),
       new Delegate(this),
       IDR_DEFAULT_FAVICON,
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE)));
-  tab_contents_ = tab_contents;
   note_->Show(
       l10n_util::GetStringFUTF16(
           IDS_LOCALE_CHANGE_MESSAGE,
@@ -95,10 +128,16 @@ void LocaleChangeGuard::CheckLocaleChange(TabContents* tab_contents) {
 }
 
 void LocaleChangeGuard::AcceptLocaleChange() {
+  if (note_ == NULL ||
+      tab_contents_ == NULL ||
+      from_locale_.empty() ||
+      to_locale_.empty()) {
+    NOTREACHED();
+    return;
+  }
+
   // Check whether locale has been reverted or changed.
   // If not: mark current locale as accepted.
-  if (tab_contents_ == NULL)
-    return;
   if (reverted_)
     return;
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
