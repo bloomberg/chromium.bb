@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -6,7 +6,7 @@
   'variables': {
     'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/libjpeg_turbo',
     'conditions': [
-      ['chromeos==1 or OS=="freebsd" or OS=="openbsd"', {
+      [ 'chromeos==1 or OS=="freebsd" or OS=="openbsd"', {
         # Link to system .so since we already use it due to GTK.
         # See crbug.com/30288 and 31427 for why we skip OS=="linux" above.
         'use_system_libjpeg%': 1,
@@ -31,9 +31,6 @@
           ],
           'defines': [
             'WITH_SIMD',
-          ],
-          'dependencies': [
-            'libjpeg_asm',
           ],
           'sources': [
             'jconfig.h',
@@ -104,71 +101,6 @@
             [ 'target_arch=="ia32"', {
               'sources': [
                 'simd/jsimd_i386.c',
-                # Object files assembled by the 'libjpeg_asm' project.
-                '<(shared_generated_dir)/jsimdcpu.<(object_suffix)',
-                '<(shared_generated_dir)/jccolmmx.<(object_suffix)',
-                '<(shared_generated_dir)/jdcolmmx.<(object_suffix)',
-                '<(shared_generated_dir)/jcsammmx.<(object_suffix)',
-                '<(shared_generated_dir)/jdsammmx.<(object_suffix)',
-                '<(shared_generated_dir)/jdmermmx.<(object_suffix)',
-                '<(shared_generated_dir)/jcqntmmx.<(object_suffix)',
-                '<(shared_generated_dir)/jfmmxfst.<(object_suffix)',
-                '<(shared_generated_dir)/jfmmxint.<(object_suffix)',
-                '<(shared_generated_dir)/jimmxred.<(object_suffix)',
-                '<(shared_generated_dir)/jimmxint.<(object_suffix)',
-                '<(shared_generated_dir)/jimmxfst.<(object_suffix)',
-                '<(shared_generated_dir)/jcqnt3dn.<(object_suffix)',
-                '<(shared_generated_dir)/jf3dnflt.<(object_suffix)',
-                '<(shared_generated_dir)/ji3dnflt.<(object_suffix)',
-                '<(shared_generated_dir)/jcqntsse.<(object_suffix)',
-                '<(shared_generated_dir)/jfsseflt.<(object_suffix)',
-                '<(shared_generated_dir)/jisseflt.<(object_suffix)',
-                '<(shared_generated_dir)/jccolss2.<(object_suffix)',
-                '<(shared_generated_dir)/jdcolss2.<(object_suffix)',
-                '<(shared_generated_dir)/jcsamss2.<(object_suffix)',
-                '<(shared_generated_dir)/jdsamss2.<(object_suffix)',
-                '<(shared_generated_dir)/jdmerss2.<(object_suffix)',
-                '<(shared_generated_dir)/jcqnts2i.<(object_suffix)',
-                '<(shared_generated_dir)/jfss2fst.<(object_suffix)',
-                '<(shared_generated_dir)/jfss2int.<(object_suffix)',
-                '<(shared_generated_dir)/jiss2red.<(object_suffix)',
-                '<(shared_generated_dir)/jiss2int.<(object_suffix)',
-                '<(shared_generated_dir)/jiss2fst.<(object_suffix)',
-                '<(shared_generated_dir)/jcqnts2f.<(object_suffix)',
-                '<(shared_generated_dir)/jiss2flt.<(object_suffix)',
-              ],
-            }],
-            [ 'target_arch=="x64"', {
-              'sources': [
-                'simd/jsimd_x86_64.c',
-                # Object files assembled by the 'libjpeg_asm' project.
-                '<(shared_generated_dir)/jfsseflt-64.<(object_suffix)',
-                '<(shared_generated_dir)/jccolss2-64.<(object_suffix)',
-                '<(shared_generated_dir)/jdcolss2-64.<(object_suffix)',
-                '<(shared_generated_dir)/jcsamss2-64.<(object_suffix)',
-                '<(shared_generated_dir)/jdsamss2-64.<(object_suffix)',
-                '<(shared_generated_dir)/jdmerss2-64.<(object_suffix)',
-                '<(shared_generated_dir)/jcqnts2i-64.<(object_suffix)',
-                '<(shared_generated_dir)/jfss2fst-64.<(object_suffix)',
-                '<(shared_generated_dir)/jfss2int-64.<(object_suffix)',
-                '<(shared_generated_dir)/jiss2red-64.<(object_suffix)',
-                '<(shared_generated_dir)/jiss2int-64.<(object_suffix)',
-                '<(shared_generated_dir)/jiss2fst-64.<(object_suffix)',
-                '<(shared_generated_dir)/jcqnts2f-64.<(object_suffix)',
-                '<(shared_generated_dir)/jiss2flt-64.<(object_suffix)',
-              ],
-            }],
-          ],
-        },
-        {
-          # A project that assembles asm files and creates object files.
-          'target_name': 'libjpeg_asm',
-          'type': 'none',
-          'conditions': [
-            # Add platform-dependent source files.
-            [ 'target_arch=="ia32"', {
-              'sources': [
-                # The asm files for ia32.
                 'simd/jsimdcpu.asm',
                 'simd/jccolmmx.asm',
                 'simd/jdcolmmx.asm',
@@ -204,7 +136,7 @@
             }],
             [ 'target_arch=="x64"', {
               'sources': [
-                # The asm files for x64.
+                'simd/jsimd_x86_64.c',
                 'simd/jfsseflt-64.asm',
                 'simd/jccolss2-64.asm',
                 'simd/jdcolss2-64.asm',
@@ -233,7 +165,7 @@
                 {
                   'rule_name': 'assemble',
                   'extension': 'asm',
-                  'inputs': [ '<(yasm_path)', ],
+                  'inputs': [ '<(RULE_INPUT_PATH)', ],
                   'outputs': [
                     '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
                   ],
@@ -242,12 +174,13 @@
                     '-fwin32',
                     '-DWIN32',
                     '-DMSVC',
+                    '-DRGBX_FILLER_0XFF',
                     '-Iwin/',
                     '-Isimd/',
                     '-o', '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
                     '<(RULE_INPUT_PATH)',
                   ],
-                  'process_outputs_as_sources': 0,
+                  'process_outputs_as_sources': 1,
                   'message': 'Building <(RULE_INPUT_ROOT).<(object_suffix)',
                 },
               ],
@@ -271,12 +204,13 @@
                     '<(yasm_path)',
                     '-fmacho',
                     '-DMACHO',
+                    '-DRGBX_FILLER_0XFF',
                     '-Imac/',
                     '-Isimd/',
                     '-o', '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
                     '<(RULE_INPUT_PATH)',
                   ],
-                  'process_outputs_as_sources': 0,
+                  'process_outputs_as_sources': 1,
                   'message': 'Building <(RULE_INPUT_ROOT).<(object_suffix)',
                 },
               ],
@@ -301,7 +235,7 @@
                 {
                   'rule_name': 'assemble',
                   'extension': 'asm',
-                  'inputs': [ '<(yasm_path)', ],
+                  'inputs': [ '<(RULE_INPUT_PATH)', ],
                   'outputs': [
                     '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
                   ],
@@ -310,12 +244,13 @@
                     '<(yasm_format)',
                     '-DELF',
                     '<(yasm_flag)',
+                    '-DRGBX_FILLER_0XFF',
                     '-Ilinux/',
                     '-Isimd/',
                     '-o', '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
                     '<(RULE_INPUT_PATH)',
                   ],
-                  'process_outputs_as_sources': 0,
+                  'process_outputs_as_sources': 1,
                   'message': 'Building <(RULE_INPUT_ROOT).<(object_suffix)',
                 },
               ],
