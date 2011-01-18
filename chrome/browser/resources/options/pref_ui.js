@@ -138,18 +138,13 @@ cr.define('options', function() {
             }
           });
     },
-
-    /**
-     * The name of the preference.
-     * @type {string}
-     */
-    get pref() {
-      return this.getAttribute('pref');
-    },
-    set pref(name) {
-      this.setAttribute('pref', name);
-    }
   };
+
+  /**
+   * The preference name.
+   * @type {string}
+   */
+  cr.defineProperty(PrefRadio, 'pref', cr.PropertyKind.ATTR);
 
   /**
    * The user metric string.
@@ -434,17 +429,6 @@ cr.define('options', function() {
             }
           });
     },
-
-    /**
-     * The data type for the preference options.
-     * @type {string}
-     */
-    get dataType() {
-      return this.getAttribute('dataType');
-    },
-    set dataType(name) {
-      this.setAttribute('dataType', name);
-    }
   };
 
   /**
@@ -458,6 +442,12 @@ cr.define('options', function() {
    * @type {string}
    */
   cr.defineProperty(PrefSelect, 'metric', cr.PropertyKind.ATTR);
+
+  /**
+   * The data type for the preference options.
+   * @type {string}
+   */
+  cr.defineProperty(PrefSelect, 'dataType', cr.PropertyKind.ATTR);
 
   /////////////////////////////////////////////////////////////////////////////
   // PrefTextField class:

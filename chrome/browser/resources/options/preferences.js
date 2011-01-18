@@ -44,9 +44,9 @@ cr.define('options', function() {
    * @param {string} metric User metrics identifier.
    */
   Preferences.setBooleanPref = function (name, value, metric) {
-    var arguments = [name, value ? 'true' : 'false'];
-    if (metric != undefined) arguments.push(metric);
-    chrome.send('setBooleanPref', arguments);
+    var argumentList = [name, value ? 'true' : 'false'];
+    if (metric != undefined) argumentList.push(metric);
+    chrome.send('setBooleanPref', argumentList);
   };
 
   /**
@@ -57,9 +57,9 @@ cr.define('options', function() {
    * @param {string} metric User metrics identifier.
    */
   Preferences.setIntegerPref = function(name, value, metric) {
-    var arguments = [name, String(value)];
-    if (metric != undefined) arguments.push(metric);
-    chrome.send('setIntegerPref', arguments);
+    var argumentList = [name, String(value)];
+    if (metric != undefined) argumentList.push(metric);
+    chrome.send('setIntegerPref', argumentList);
   };
 
   /**
@@ -70,9 +70,9 @@ cr.define('options', function() {
    * @param {string} metric User metrics identifier.
    */
   Preferences.setRealPref = function(name, value, metric) {
-    var arguments = [name, String(value)];
-    if (metric != undefined) arguments.push(metric);
-    chrome.send('setRealPref', arguments);
+    var argumentList = [name, String(value)];
+    if (metric != undefined) argumentList.push(metric);
+    chrome.send('setRealPref', argumentList);
   };
 
   /**
@@ -83,9 +83,9 @@ cr.define('options', function() {
    * @param {string} metric User metrics identifier.
    */
   Preferences.setStringPref = function(name, value, metric) {
-    var arguments = [name, value];
-    if (metric != undefined) arguments.push(metric);
-    chrome.send('setStringPref', arguments);
+    var argumentList = [name, value];
+    if (metric != undefined) argumentList.push(metric);
+    chrome.send('setStringPref', argumentList);
   };
 
   /**
@@ -96,9 +96,9 @@ cr.define('options', function() {
    * @param {string} metric User metrics identifier.
    */
   Preferences.setObjectPref = function(name, value, metric) {
-    var arguments = [name, JSON.stringify(value)];
-    if (metric != undefined) arguments.push(metric);
-    chrome.send('setObjectPref', arguments);
+    var argumentList = [name, JSON.stringify(value)];
+    if (metric != undefined) argumentList.push(metric);
+    chrome.send('setObjectPref', argumentList);
   };
 
   /**
@@ -107,9 +107,9 @@ cr.define('options', function() {
    * @param {string} metric User metrics identifier.
    */
   Preferences.clearPref = function(name, metric) {
-    var arguments = [name];
-    if (metric != undefined) arguments.push(metric);
-    chrome.send('clearPref', arguments);
+    var argumentList = [name];
+    if (metric != undefined) argumentList.push(metric);
+    chrome.send('clearPref', argumentList);
   };
 
   Preferences.prototype = {
