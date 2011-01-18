@@ -9,10 +9,11 @@ for more details about the presubmit API built into gcl.
 """
 
 _EXCLUDED_PATHS = (
-    r"breakpad[\\\/].*",
-    r"net/tools/spdyshark/[\\\/].*",
-    r"skia[\\\/].*",
-    r"v8[\\\/].*",
+    r"^breakpad[\\\/].*",
+    r"^net/tools/spdyshark/[\\\/].*",
+    r"^skia[\\\/].*",
+    r"^v8[\\\/].*",
+    r".*MakeFile$",
 )
 
 _TEXT_FILES = (
@@ -106,10 +107,6 @@ def _CommonChecks(input_api, output_api):
       input_api, output_api, source_file_filter=sources))
   results.extend(input_api.canned_checks.CheckChangeHasNoStrayWhitespace(
       input_api, output_api, source_file_filter=sources))
-  results.extend(input_api.canned_checks.CheckChangeHasBugField(
-      input_api, output_api))
-  results.extend(input_api.canned_checks.CheckChangeHasTestField(
-      input_api, output_api))
   results.extend(input_api.canned_checks.CheckChangeSvnEolStyle(
       input_api, output_api, source_file_filter=text_files))
   results.extend(input_api.canned_checks.CheckSvnForCommonMimeTypes(
@@ -171,6 +168,10 @@ def CheckChangeOnCommit(input_api, output_api):
       'http://build.chromium.org/p/chromium/json/builders?filter=1',
       6,
       IGNORED_BUILDERS))
+  results.extend(input_api.canned_checks.CheckChangeHasBugField(
+      input_api, output_api))
+  results.extend(input_api.canned_checks.CheckChangeHasTestField(
+      input_api, output_api))
   return results
 
 
