@@ -100,7 +100,7 @@ void PPB_Widget_Impl::Invalidate(const PP_Rect* dirty) {
   if (!widget)
     return;
   ScopedResourceId resource(this);
-  widget->Invalidate(instance_->pp_instance(), resource.id, dirty);
+  widget->Invalidate(instance()->pp_instance(), resource.id, dirty);
 }
 
 }  // namespace ppapi

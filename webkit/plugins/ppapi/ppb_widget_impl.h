@@ -39,14 +39,12 @@ class PPB_Widget_Impl : public Resource  {
 
   // Notifies the plugin instance that the given rect needs to be repainted.
   void Invalidate(const PP_Rect* dirty);
-  PluginInstance* instance() { return instance_; }
 
  protected:
   virtual void SetLocationInternal(const PP_Rect* location) = 0;
   PP_Rect location() const { return location_; }
 
  private:
-  scoped_refptr<PluginInstance> instance_;
   PP_Rect location_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Widget_Impl);
