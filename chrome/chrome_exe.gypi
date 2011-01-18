@@ -141,6 +141,7 @@
       'msvs_guid': '7B219FAA-E360-43C8-B341-804A94EEFFAC',
       'variables': {
         'chrome_exe_target': 1,
+        'use_system_xdg_utils%': 0,
       },
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
@@ -187,6 +188,27 @@
                 ],
               },
             ],
+            ['use_system_xdg_utils==0', {
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)',
+                  'files': ['tools/build/linux/chrome-wrapper',
+                            '../third_party/xdg-utils/scripts/xdg-mime',
+                            '../third_party/xdg-utils/scripts/xdg-settings',
+                            ],
+                  # The wrapper script above may need to generate a .desktop
+                  # file, which requires an icon. So, copy one next to the
+                  # script.
+                  'conditions': [
+                    ['branding=="Chrome"', {
+                      'files': ['app/theme/google_chrome/product_logo_48.png']
+                    }, { # else: 'branding!="Chrome"
+                      'files': ['app/theme/chromium/product_logo_48.png']
+                    }],
+                  ],
+                },
+              ],
+            }],
           ],
           'dependencies': [
             # On Linux, link the dependencies (libraries) that make up actual
@@ -202,24 +224,6 @@
           'sources': [
             'app/chrome_main.cc',
             'app/chrome_dll_resource.h',
-          ],
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)',
-              'files': ['tools/build/linux/chrome-wrapper',
-                        '../third_party/xdg-utils/scripts/xdg-mime',
-                        '../third_party/xdg-utils/scripts/xdg-settings',
-                        ],
-              # The wrapper script above may need to generate a .desktop file,
-              # which requires an icon. So, copy one next to the script.
-              'conditions': [
-                ['branding=="Chrome"', {
-                  'files': ['app/theme/google_chrome/product_logo_48.png']
-                }, { # else: 'branding!="Chrome"
-                  'files': ['app/theme/chromium/product_logo_48.png']
-                }],
-              ],
-            },
           ],
         }],
         ['OS=="mac"', {
