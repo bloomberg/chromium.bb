@@ -171,6 +171,11 @@ function load() {
     document.documentElement.setAttribute('toolkit', 'gtk');
   if (cr.isViews)
     document.documentElement.setAttribute('toolkit', 'views');
+
+  // Clicking on the Settings title brings up the 'Basics' page.
+  $('settings-title').onclick = function() {
+    OptionsPage.showPageByName(BrowserOptions.getInstance().name);
+  };
 }
 
 document.addEventListener('DOMContentLoaded', load);

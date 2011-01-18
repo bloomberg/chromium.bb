@@ -6,6 +6,7 @@ body {
 #settings-title {
   -webkit-padding-end: 24px;
   color: #53637d;
+  cursor: pointer;
   font-size: 200%;
   font-weight: normal;
   margin: 0;
@@ -120,7 +121,6 @@ html[toolkit=views] .button-strip {
   background: -webkit-linear-gradient(rgba(234, 238, 243, 0), #eaeef3),
               -webkit-linear-gradient(left, #eaeef3, #eaeef3 97%, #d3d7db);
   bottom: 0;
-  cursor: pointer;
   display: none;
   left: 0;
   position: fixed;
@@ -130,24 +130,14 @@ html[toolkit=views] .button-strip {
 }
 
 html[dir='rtl'] #navbar-container {
-  background: -webkit-linear-gradient(rgba(255, 255, 255, 0)),
-                                      rgba(255, 255, 255, 0) 70%,
-                                      white),
-              -webkit-linear-gradient(right, white, white 80%, #f3f3f3);
+  background: -webkit-linear-gradient(rgba(234, 238, 243, 0), #EAEEF3),
+              -webkit-linear-gradient(right, #EAEEF3, #EAEEF3 97%, #D3D7DB);
   left: auto;
   right: 0;
 }
 
 html[hide-menu=false] #navbar-container {
   display: block;
-}
-
-#navbar-container > hr {
-  -webkit-margin-start: 35%;
-  background-color: #dbdbdb;
-  border: 0;
-  height: 1px;
-  width: 65%;
 }
 
 #navbar-container > ul {
@@ -157,7 +147,10 @@ html[hide-menu=false] #navbar-container {
 }
 
 .navbar-item, .navbar-item2 {
+  border-bottom: 1px solid transparent;
+  border-top: 1px solid transparent;
   color: #426dc9;
+  cursor: pointer;
   display: block;
   font-size: 105%;
   outline: none;
@@ -167,15 +160,10 @@ html[hide-menu=false] #navbar-container {
 }
 
 .navbar-item-selected {
-  background: #bbcee9;
+  background: -webkit-linear-gradient(left, #bbcee9, #bbcee9 97%, #96b1cd);
   border-bottom: 1px solid #8faad9;
   border-top: 1px solid #8faad9;
   color: black;
-  font-weight: bold;
-}
-
-.navbar-item-normal {
-  background-color: #dfdfdf;
 }
 
 #mainview {
