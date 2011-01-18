@@ -142,6 +142,9 @@ struct wlsc_surface {
 };
 
 void
+wlsc_surface_update_matrix(struct wlsc_surface *es);
+
+void
 notify_motion(struct wl_input_device *device,
 	      uint32_t time, int x, int y);
 void
@@ -155,6 +158,15 @@ void
 wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs);
 void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor);
+
+void
+wlsc_input_device_set_pointer_image(struct wlsc_input_device *device,
+				    enum wlsc_pointer_type type);
+struct wlsc_surface *
+pick_surface(struct wl_input_device *device, int32_t *sx, int32_t *sy);
+
+uint32_t
+get_time(void);
 
 struct wl_buffer *
 wlsc_drm_buffer_create(struct wlsc_compositor *ec,
@@ -174,6 +186,19 @@ wlsc_drm_init(struct wlsc_compositor *ec, int fd, const char *filename);
 
 int
 wlsc_shm_init(struct wlsc_compositor *ec);
+
+int
+wlsc_shell_init(struct wlsc_compositor *ec);
+
+void
+shell_move(struct wl_client *client, struct wl_shell *shell,
+	   struct wl_surface *surface,
+	   struct wl_input_device *device, uint32_t time);
+
+void
+shell_resize(struct wl_client *client, struct wl_shell *shell,
+	     struct wl_surface *surface,
+	     struct wl_input_device *device, uint32_t time, uint32_t edges);
 
 struct wl_buffer *
 wl_buffer_create_drm(struct wlsc_compositor *compositor,

@@ -31,6 +31,7 @@ endif
 compositor_SOURCES =				\
 	compositor.c				\
 	compositor.h				\
+	shell.c					\
 	screenshooter.c				\
 	screenshooter-protocol.c		\
 	screenshooter-server-protocol.h		\
