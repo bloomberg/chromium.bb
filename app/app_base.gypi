@@ -441,7 +441,6 @@
             ],
           },
           'sources': [
-            'l10n_util_dummy.cc',
             'resource_bundle_dummy.cc',
           ],
           'include_dirs': [

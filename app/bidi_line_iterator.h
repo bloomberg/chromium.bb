@@ -11,6 +11,7 @@
 #include "unicode/ubidi.h"
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 
 // A simple wrapper class for the bidirectional iterator of ICU.
 // This class uses the bidirectional iterator of ICU to split a line of
@@ -22,7 +23,7 @@ class BiDiLineIterator {
 
   // Initializes the bidirectional iterator with the specified text.  Returns
   // whether initialization succeeded.
-  UBool Open(const std::wstring& text, bool right_to_left, bool url);
+  UBool Open(const string16& text, bool right_to_left, bool url);
 
   // Returns the number of visual runs in the text, or zero on error.
   int CountRuns();

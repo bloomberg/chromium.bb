@@ -60,5 +60,5 @@ ResourceBundle::~ResourceBundle() {
 
 
 string16 ResourceBundle::GetLocalizedString(int message_id) {
-  return std::wstring();
+  return string16();
 }

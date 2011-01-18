@@ -15,7 +15,7 @@ BiDiLineIterator::~BiDiLineIterator() {
   }
 }
 
-UBool BiDiLineIterator::Open(const std::wstring& text,
+UBool BiDiLineIterator::Open(const string16& text,
                              bool right_to_left,
                              bool url) {
   DCHECK(bidi_ == NULL);
@@ -25,12 +25,7 @@ UBool BiDiLineIterator::Open(const std::wstring& text,
     return false;
   if (right_to_left && url)
     ubidi_setReorderingMode(bidi_, UBIDI_REORDER_RUNS_ONLY);
-#if defined(WCHAR_T_IS_UTF32)
-  const string16 text_utf16 = WideToUTF16(text);
-#else
-  const std::wstring &text_utf16 = text;
-#endif  // U_SIZEOF_WCHAR_T != 4
-  ubidi_setPara(bidi_, text_utf16.data(), static_cast<int>(text_utf16.length()),
+  ubidi_setPara(bidi_, text.data(), static_cast<int>(text.length()),
                 right_to_left ? UBIDI_DEFAULT_RTL : UBIDI_DEFAULT_LTR,
                 NULL, &error);
   return U_SUCCESS(error);

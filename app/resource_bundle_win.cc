@@ -159,7 +159,7 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
       // See http://crbug.com/21925.
       base::debug::StackTrace().PrintBacktrace();
       NOTREACHED() << "unable to find resource: " << message_id;
-      return std::wstring();
+      return string16();
     }
   }
   // Copy into a string16 and return.

@@ -559,7 +559,7 @@ int AutocompleteResultView::DrawString(
   // unintended ways, e.g. by removing directional markings or by adding an
   // ellipsis that's not enclosed in appropriate markings.
   BiDiLineIterator bidi_line;
-  if (!bidi_line.Open(text, base::i18n::IsRTL(), is_url))
+  if (!bidi_line.Open(WideToUTF16Hack(text), base::i18n::IsRTL(), is_url))
     return x;
   const int num_runs = bidi_line.CountRuns();
   Runs runs;

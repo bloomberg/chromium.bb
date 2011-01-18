@@ -32,7 +32,7 @@ void DrawTextAndPositionUrl(gfx::Canvas* canvas,
   // initialize a bidirectional ICU line iterator and split the text into
   // runs that are either strictly LTR or strictly RTL, with no mix.
   BiDiLineIterator bidi_line;
-  if (!bidi_line.Open(text.c_str(), true, false))
+  if (!bidi_line.Open(WideToUTF16Hack(text), true, false))
     return;
 
   // Iterate over each run and draw it.
