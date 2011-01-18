@@ -47,7 +47,7 @@ class ChromeFrameTestSuite : public base::TestSuite {
       ret = base::TestSuite::Run();
     }
 
-    _except(EXCEPTION_EXECUTE_HANDLER) {
+    __except(EXCEPTION_EXECUTE_HANDLER) {
       ret = -1;
     }
     return ret;
