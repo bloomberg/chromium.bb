@@ -1,0 +1,28 @@
+# This spec is used to prime the ConfigParser before reading any chroot specs.
+#
+# It can be thought of as the "superclass" of all chroot specs.
+#
+# It can refer to $(name)s to get the name of the chroot spec without the
+# ".spec" suffix (AKA the subclass's name).
+#
+# Use RFC 822 format
+
+
+[CHROOT]
+
+# The path to the chroot.  If relative, this is relative to the base of your
+# chromium source tree.  This is passed to make_chroot and enter_chroot as the
+# --chroot option.
+#
+# DEFAULT: the name of the subclass spec file, without the suffix
+path: %(name)s
+
+# Flags to pass to make_chroot (other than --chroot).
+#
+# DEFAULT: nothing
+make_chroot_flags:
+
+# Flags to pass to enter_chroot (other than --chroot).
+#
+# DEFAULT: nothing
+enter_chroot_flags:

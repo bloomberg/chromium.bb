@@ -1,0 +1,39 @@
+# This spec is used to prime the ConfigParser before reading any build specs.
+#
+# It can be thought of as the "superclass" of all build specs.
+#
+# It can refer to $(name)s to get the name of the build spec without the
+# ".spec" suffix (AKA the subclass's name).
+#
+# Use RFC 822 format
+
+
+[BUILD]
+
+# The target name that will be passed to various commands.
+#
+# Could be a board (in legacy mode), or a portage profile in the future.
+#
+# DEFAULT: the name of the subclass spec file, without the suffix
+target: %(name)s
+
+# Flags to pass to setup_board (other than --board).  Note that setup_board is
+# only called once per board, unless you use "chromite clean" to clean your
+# board out.
+#
+# DEFAULT: nothing
+setup_board_flags:
+
+# Flags to pass to build_packages (other than --board).
+#
+# DEFAULT: nothing
+#build_packages_flags: --oldchromebinary
+build_packages_flags:
+
+
+[IMAGE]
+
+# Flags to pass to build_image (other than --board)
+#
+# DEFAULT: nothing
+build_image_flags:
