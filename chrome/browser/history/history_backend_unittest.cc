@@ -18,7 +18,6 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/in_memory_database.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_details.h"
@@ -415,45 +414,6 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
       backend_->thumbnail_db_->GetFavIconIDForFavIconURL(favicon_url1));
 }
 
-TEST_F(HistoryBackendTest, GetPageThumbnailAfterRedirects) {
-  ASSERT_TRUE(backend_.get());
-  if (history::TopSites::IsEnabled())
-    return;
-
-  const char* base_url = "http://mail";
-  const char* thumbnail_url = "http://mail.google.com";
-  const char* first_chain[] = {
-    base_url,
-    thumbnail_url,
-    NULL
-  };
-  AddRedirectChain(first_chain, 0);
-
-  // Add a thumbnail for the end of that redirect chain.
-  scoped_ptr<SkBitmap> thumbnail(
-      gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
-  backend_->SetPageThumbnail(GURL(thumbnail_url), *thumbnail,
-                             ThumbnailScore(0.25, true, true));
-
-  // Write a second URL chain so that if you were to simply check what
-  // "http://mail" redirects to, you wouldn't see the URL that has
-  // contains the thumbnail.
-  const char* second_chain[] = {
-    base_url,
-    "http://mail.google.com/somewhere/else",
-    NULL
-  };
-  AddRedirectChain(second_chain, 1);
-
-  // Now try to get the thumbnail for the base url. It shouldn't be
-  // distracted by the second chain and should return the thumbnail
-  // attached to thumbnail_url_.
-  scoped_refptr<RefCountedBytes> data;
-  backend_->GetPageThumbnailDirectly(GURL(base_url), &data);
-
-  EXPECT_TRUE(data.get());
-}
-
 // Tests a handful of assertions for a navigation with a type of
 // KEYWORD_GENERATED.
 TEST_F(HistoryBackendTest, KeywordGenerated) {
@@ -614,15 +574,6 @@ TEST_F(HistoryBackendTest, StripUsernamePasswordTest) {
 
   // Check if stripped url is stored in database.
   ASSERT_EQ(1U, visits.size());
-}
-
-TEST_F(HistoryBackendTest, DeleteThumbnailsDatabaseTest) {
-  if (history::TopSites::IsEnabled())
-    return;
-
-  EXPECT_TRUE(backend_->thumbnail_db_->NeedsMigrationToTopSites());
-  backend_->delegate_->StartTopSitesMigration();
-  EXPECT_FALSE(backend_->thumbnail_db_->NeedsMigrationToTopSites());
 }
 
 TEST_F(HistoryBackendTest, AddPageVisitSource) {

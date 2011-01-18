@@ -791,7 +791,7 @@ void HistoryService::OnDBLoaded() {
   NotificationService::current()->Notify(NotificationType::HISTORY_LOADED,
                                          Source<Profile>(profile_),
                                          Details<HistoryService>(this));
-  if (thread_ && profile_ && history::TopSites::IsEnabled()) {
+  if (thread_ && profile_) {
     // We don't want to force creation of TopSites.
     history::TopSites* ts = profile_->GetTopSitesWithoutCreating();
     if (ts)
@@ -801,7 +801,7 @@ void HistoryService::OnDBLoaded() {
 
 void HistoryService::StartTopSitesMigration() {
   needs_top_sites_migration_ = true;
-  if (thread_ && profile_ && history::TopSites::IsEnabled()) {
+  if (thread_ && profile_) {
     // We don't want to force creation of TopSites.
     history::TopSites* ts = profile_->GetTopSitesWithoutCreating();
     if (ts)

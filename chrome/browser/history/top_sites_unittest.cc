@@ -133,7 +133,6 @@ class TopSitesTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableTopSites);
     profile_.reset(new TestingProfile);
     if (CreateHistoryAndTopSites()) {
       profile_->CreateHistoryService(false, false);

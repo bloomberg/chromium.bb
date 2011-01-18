@@ -583,7 +583,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
 
   // Thumbnail database.
   thumbnail_db_.reset(new ThumbnailDatabase());
-  if (history::TopSites::IsEnabled() && !db_->GetNeedsThumbnailMigration()) {
+  if (!db_->GetNeedsThumbnailMigration()) {
     // No convertion needed - use new filename right away.
     thumbnail_name = GetFaviconsFileName();
   }
@@ -598,7 +598,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
     thumbnail_db_.reset();
   }
 
-  if (history::TopSites::IsEnabled() && db_->GetNeedsThumbnailMigration()) {
+  if (db_->GetNeedsThumbnailMigration()) {
     VLOG(1) << "Starting TopSites migration";
     delegate_->StartTopSitesMigration();
   }

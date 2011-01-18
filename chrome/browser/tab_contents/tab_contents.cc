@@ -2715,16 +2715,9 @@ void TabContents::UpdateThumbnail(const GURL& url,
     return;
 
   // Tell History about this thumbnail
-  if (history::TopSites::IsEnabled()) {
-    history::TopSites* ts = profile()->GetTopSites();
-    if (ts)
-      ts->SetPageThumbnail(url, bitmap, score);
-  } else {
-    HistoryService* hs =
-        profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
-    if (hs)
-      hs->SetPageThumbnail(url, bitmap, score);
-  }
+  history::TopSites* ts = profile()->GetTopSites();
+  if (ts)
+    ts->SetPageThumbnail(url, bitmap, score);
 }
 
 void TabContents::UpdateInspectorSetting(const std::string& key,

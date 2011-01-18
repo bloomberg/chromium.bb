@@ -73,13 +73,6 @@ class MostVisitedHandler : public DOMMessageHandler,
   // Send a request to the HistoryService to get the most visited pages.
   void StartQueryForMostVisited();
 
-  // Callback from the history system when the most visited list is available.
-  void OnSegmentUsageAvailable(CancelableRequestProvider::Handle handle,
-                               std::vector<PageUsageData*>* data);
-
-  // Sets pages_value_ from a vector of URLs.
-  void SetPagesValue(std::vector<PageUsageData*>* data);
-
   // Sets pages_value_ from a format produced by TopSites.
   void SetPagesValueFromTopSites(const history::MostVisitedURLList& data);
 
@@ -105,11 +98,6 @@ class MostVisitedHandler : public DOMMessageHandler,
 
   // Returns true if we should treat this as the first run of the new tab page.
   bool IsFirstRun();
-
-  // Adds the fields in the page to the dictionary.
-  static void SetMostVisistedPage(
-      DictionaryValue* dict,
-      const MostVisitedHandler::MostVisitedPage& page);
 
   static const std::vector<MostVisitedPage>& GetPrePopulatedPages();
 

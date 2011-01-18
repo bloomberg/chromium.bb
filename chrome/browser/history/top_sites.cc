@@ -153,14 +153,6 @@ TopSites::TopSites(Profile* profile)
       GetMutableDictionary(prefs::kNTPMostVisitedPinnedURLs);
 }
 
-// static
-bool TopSites::IsEnabled() {
-  std::string switch_value =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kEnableTopSites);
-  return switch_value.empty() || switch_value == "true";
-}
-
 void TopSites::Init(const FilePath& db_name) {
   backend_->Init(db_name);
   backend_->GetMostVisitedThumbnails(

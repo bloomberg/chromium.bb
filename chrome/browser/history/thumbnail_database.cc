@@ -123,18 +123,7 @@ sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
 
 bool ThumbnailDatabase::InitThumbnailTable() {
   if (!db_.DoesTableExist("thumbnails")) {
-    if (history::TopSites::IsEnabled()) {
-      use_top_sites_ = true;
-      return true;
-    }
-    if (!db_.Execute("CREATE TABLE thumbnails ("
-        "url_id INTEGER PRIMARY KEY,"
-        "boring_score DOUBLE DEFAULT 1.0,"
-        "good_clipping INTEGER DEFAULT 0,"
-        "at_top INTEGER DEFAULT 0,"
-        "last_updated INTEGER DEFAULT 0,"
-        "data BLOB)"))
-      return false;
+    use_top_sites_ = true;
   }
   return true;
 }

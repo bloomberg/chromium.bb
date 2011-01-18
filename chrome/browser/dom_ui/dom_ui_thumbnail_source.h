@@ -10,9 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "base/ref_counted_memory.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
-#include "chrome/browser/history/history.h"
-#include "chrome/common/notification_registrar.h"
 
 class Profile;
 
@@ -36,10 +35,6 @@ class DOMUIThumbnailSource : public ChromeURLDataManager::DataSource {
 
   virtual MessageLoop* MessageLoopForRequestPath(const std::string& path) const;
 
-  // Called when thumbnail data is available from the history backend.
-  void OnThumbnailDataAvailable(HistoryService::Handle request_handle,
-                                scoped_refptr<RefCountedBytes> data);
-
  private:
   virtual ~DOMUIThumbnailSource();
 
@@ -48,13 +43,11 @@ class DOMUIThumbnailSource : public ChromeURLDataManager::DataSource {
 
   Profile* profile_;
 
-  CancelableRequestConsumerT<int, 0> cancelable_consumer_;
-
   // Raw PNG representation of the thumbnail to show when the thumbnail
   // database doesn't have a thumbnail for a webpage.
   scoped_refptr<RefCountedMemory> default_thumbnail_;
 
-  // TopSites. If non-null we're using TopSites.
+  // TopSites.
   scoped_refptr<history::TopSites> top_sites_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMUIThumbnailSource);

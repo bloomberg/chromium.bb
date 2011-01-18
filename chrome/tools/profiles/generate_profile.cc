@@ -139,8 +139,7 @@ void InsertURLBatch(Profile* profile,
   GURL previous_url;
   PageTransition::Type transition = PageTransition::TYPED;
   const int end_page_id = page_id + batch_size;
-  history::TopSites* top_sites =
-      history::TopSites::IsEnabled() ? profile->GetTopSites() : NULL;
+  history::TopSites* top_sites = profile->GetTopSites();
   for (; page_id < end_page_id; ++page_id) {
     // Randomly decide whether this new URL simulates following a link or
     // whether it's a jump to a new URL.

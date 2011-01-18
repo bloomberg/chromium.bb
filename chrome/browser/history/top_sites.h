@@ -51,9 +51,6 @@ class TopSites
  public:
   explicit TopSites(Profile* profile);
 
-  // Returns whether top sites is enabled.
-  static bool IsEnabled();
-
   // Initializes TopSites.
   void Init(const FilePath& db_name);
 

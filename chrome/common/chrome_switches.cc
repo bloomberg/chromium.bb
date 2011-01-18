@@ -577,9 +577,6 @@ const char kEnableSyncTypedUrls[]           = "enable-sync-typed-urls";
 // SYN packet.
 const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
 
-// Enables TopSites.
-const char kEnableTopSites[]                = "enable-top-sites";
-
 // Whether or not the touch events API is exposed.
 const char kEnableTouch[]                   = "enable-touch";
 

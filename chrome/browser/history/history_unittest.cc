@@ -45,7 +45,6 @@
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/page_usage_data.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
@@ -111,19 +110,6 @@ class HistoryTest : public testing::Test {
         db_(NULL) {
   }
   ~HistoryTest() {
-  }
-
-  // Thumbnail callback: we save the data and exit the message loop so the
-  // unit test can read the data
-  void OnThumbnailDataAvailable(
-      HistoryService::Handle request_handle,
-      scoped_refptr<RefCountedBytes> jpeg_data) {
-    got_thumbnail_callback_ = true;
-    if (jpeg_data.get()) {
-      std::copy(jpeg_data->data.begin(), jpeg_data->data.end(),
-                std::back_inserter(thumbnail_data_));
-    }
-    MessageLoop::current()->Quit();
   }
 
   // Creates the HistoryBackend and HistoryDatabase on the current thread,
@@ -680,73 +666,6 @@ TEST_F(HistoryTest, Segments) {
 
   // However, the score should have increased.
   EXPECT_GT(page_usage_data_[0]->GetScore(), 5.0);
-}
-
-// This just tests history system -> thumbnail database integration, the actual
-// thumbnail tests are in its own file.
-TEST_F(HistoryTest, Thumbnails) {
-  if (history::TopSites::IsEnabled())
-    return;  // TopSitesTest replaces this.
-
-  scoped_refptr<HistoryService> history(new HistoryService);
-  history_service_ = history;
-  ASSERT_TRUE(history->Init(history_dir_, NULL));
-
-  scoped_ptr<SkBitmap> thumbnail(
-      gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
-  static const double boringness = 0.25;
-
-  const GURL url("http://www.google.com/thumbnail_test/");
-  // Must be visited before adding a thumbnail.
-  history->AddPage(url, history::SOURCE_BROWSED);
-  history->SetPageThumbnail(url, *thumbnail,
-                            ThumbnailScore(boringness, true, true));
-
-  // Make sure we get the correct thumbnail data.
-  EXPECT_TRUE(history->GetPageThumbnail(url, &consumer_,
-      NewCallback(static_cast<HistoryTest*>(this),
-                  &HistoryTest::OnThumbnailDataAvailable)));
-  thumbnail_data_.clear();
-  MessageLoop::current()->Run();
-  // Make sure we got a valid JPEG back. This isn't equivalent to
-  // being correct, but when we're roundtripping through JPEG
-  // compression and we don't have a similarity measure.
-  EXPECT_TRUE(thumbnail_data_.size());
-  scoped_ptr<SkBitmap> decoded_thumbnail(
-      gfx::JPEGCodec::Decode(&thumbnail_data_[0], thumbnail_data_.size()));
-  EXPECT_TRUE(decoded_thumbnail.get());
-
-  // Request a nonexistent thumbnail and make sure we get
-  // a callback and no data.
-  EXPECT_TRUE(history->GetPageThumbnail(GURL("http://asdfasdf.com/"),
-              &consumer_,
-                  NewCallback(static_cast<HistoryTest*>(this),
-                              &HistoryTest::OnThumbnailDataAvailable)));
-  thumbnail_data_.clear();
-  MessageLoop::current()->Run();
-  EXPECT_EQ(0U, thumbnail_data_.size());
-
-  // Request the thumbnail and cancel the request..
-  got_thumbnail_callback_ = false;
-  thumbnail_data_.clear();
-  HistoryService::Handle handle = history->GetPageThumbnail(url, &consumer_,
-      NewCallback(static_cast<HistoryTest*>(this),
-                  &HistoryTest::OnThumbnailDataAvailable));
-  EXPECT_TRUE(handle);
-
-  history->CancelRequest(handle);
-
-  // We create a task with a timeout so we can make sure we don't get and
-  // data in that time.
-  class QuitMessageLoop : public Task {
-   public:
-    virtual void Run() {
-      MessageLoop::current()->Quit();
-    }
-  };
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, new QuitMessageLoop, 2000);
-  MessageLoop::current()->Run();
-  EXPECT_FALSE(got_thumbnail_callback_);
 }
 
 TEST_F(HistoryTest, MostVisitedURLs) {
