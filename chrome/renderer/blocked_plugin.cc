@@ -9,6 +9,7 @@
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/common/jstemplate_builder.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
@@ -49,9 +50,10 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
                              const WebPreferences& preferences,
                              int template_id,
                              const string16& message)
-    : render_view_(render_view),
+    : RenderViewObserver(render_view),
       frame_(frame),
-      plugin_params_(params) {
+      plugin_params_(params),
+      custom_menu_showing_(false) {
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(template_id));
 
@@ -71,13 +73,9 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
                                                  preferences,
                                                  html_data,
                                                  GURL(kBlockedPluginDataURL));
-
-  render_view_->RegisterBlockedPlugin(this);
 }
 
 BlockedPlugin::~BlockedPlugin() {
-  render_view_->CustomMenuListenerDestroyed(this);
-  render_view_->UnregisterBlockedPlugin(this);
 }
 
 void BlockedPlugin::BindWebFrame(WebFrame* frame) {
@@ -118,11 +116,29 @@ void BlockedPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {
 
   menu_data.customItems.swap(custom_items);
   menu_data.mousePosition = WebPoint(event.windowX, event.windowY);
-  render_view_->showContextMenu(NULL, menu_data);
-  render_view_->CustomMenuListenerInstall(this);
+  render_view()->showContextMenu(NULL, menu_data);
+  custom_menu_showing_ = true;
 }
 
-void BlockedPlugin::MenuItemSelected(unsigned id) {
+bool BlockedPlugin::OnMessageReceived(const IPC::Message& message) {
+  if (custom_menu_showing_ &&
+      message.type() == ViewMsg_CustomContextMenuAction::ID) {
+    ViewMsg_CustomContextMenuAction::Dispatch(
+        &message, this, this, &BlockedPlugin::OnMenuItemSelected);
+    return true;
+  }
+
+  // Don't want to swallow these messages.
+  if (message.type() == ViewMsg_LoadBlockedPlugins::ID) {
+    LoadPlugin();
+  } else if (message.type() == ViewMsg_ContextMenuClosed::ID) {
+    custom_menu_showing_ = false;
+  }
+
+  return false;
+}
+
+void BlockedPlugin::OnMenuItemSelected(unsigned id) {
   if (id == kMenuActionLoad) {
     LoadPlugin();
   } else if (id == kMenuActionRemove) {
@@ -136,8 +152,7 @@ void BlockedPlugin::LoadPlugin() {
   CHECK(plugin_);
   WebPluginContainer* container = plugin_->container();
   WebPlugin* new_plugin =
-      render_view_->CreatePluginNoCheck(frame_,
-                                        plugin_params_);
+      render_view()->CreatePluginNoCheck(frame_, plugin_params_);
   if (new_plugin && new_plugin->initialize(container)) {
     container->setPlugin(new_plugin);
     container->invalidate();

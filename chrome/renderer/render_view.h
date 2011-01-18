@@ -57,7 +57,6 @@
 
 class AudioMessageFilter;
 class BlockedPlugin;
-class CustomMenuListener;
 class DictionaryValue;
 class DeviceOrientationDispatcher;
 class DevToolsAgent;
@@ -352,15 +351,6 @@ class RenderView : public RenderWidget,
   // only by gears and this function can be deleted when we remove gears.
   uint32 GetCPBrowsingContext();
 
-  // Handles registering and deregistering customer handlers for custom
-  // context menu events.
-  // To install a custom context menu, call showContextMenu() with your
-  // custom entries, followed immediately by CustomMenuListenerInstall() to
-  // register a listener for when a custom menu item is selected. Note that
-  // subsequent calls to showContextMenu() will clear the custom listener.
-  void CustomMenuListenerInstall(CustomMenuListener* listening);
-  void CustomMenuListenerDestroyed(CustomMenuListener* dead);
-
 #if defined(OS_MACOSX)
   // Enables/disabled plugin IME for the given plugin.
   void SetPluginImeEnabled(bool enabled, int plugin_id);
@@ -386,9 +376,6 @@ class RenderView : public RenderWidget,
 
   void RegisterPluginDelegate(WebPluginDelegateProxy* delegate);
   void UnregisterPluginDelegate(WebPluginDelegateProxy* delegate);
-
-  void RegisterBlockedPlugin(BlockedPlugin* blocked_plugin);
-  void UnregisterBlockedPlugin(BlockedPlugin* blocked_plugin);
 
   // IPC::Channel::Listener implementation -------------------------------------
 
@@ -892,7 +879,6 @@ class RenderView : public RenderWidget,
                                        const std::string& origin,
                                        const std::string& target);
   void OnInstallMissingPlugin();
-  void OnLoadBlockedPlugins();
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const WebKit::WebMediaPlayerAction& action);
   void OnMoveOrResizeStarted();
@@ -1332,9 +1318,6 @@ class RenderView : public RenderWidget,
   // destroyed yet. Pepper v2 plugins are tracked by the pepper_delegate_.
   std::set<WebPluginDelegatePepper*> current_oldstyle_pepper_plugins_;
 
-  // A list of all BlockedPlugins so they can all be loaded if needed.
-  std::set<BlockedPlugin*> blocked_plugins_;
-
   // Helper objects ------------------------------------------------------------
 
   ScopedRunnableMethodFactory<RenderView> page_info_method_factory_;
@@ -1464,9 +1447,6 @@ class RenderView : public RenderWidget,
 
   // The external popup for the currently showing select popup.
   scoped_ptr<ExternalPopupMenu> external_popup_menu_;
-
-  // The custom menu event listener, if any.
-  CustomMenuListener* custom_menu_listener_;
 
   // The node that the context menu was pressed over.
   WebKit::WebNode context_menu_node_;

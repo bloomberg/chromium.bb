@@ -565,8 +565,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       device_orientation_dispatcher_(NULL),
       accessibility_ack_pending_(false),
       pending_app_icon_requests_(0),
-      session_storage_namespace_id_(session_storage_namespace_id),
-      custom_menu_listener_(NULL) {
+      session_storage_namespace_id_(session_storage_namespace_id) {
 #if defined(OS_MACOSX)
   // On Mac, the select popups are rendered by the browser.
   // Note that we don't do this in RenderMain otherwise this would not be called
@@ -931,15 +930,6 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
   return CreateNPAPIPlugin(frame, params, info.path, mime_type);
 }
 
-void RenderView::CustomMenuListenerInstall(CustomMenuListener* listening) {
-  custom_menu_listener_ = listening;
-}
-
-void RenderView::CustomMenuListenerDestroyed(CustomMenuListener* dead) {
-  if (custom_menu_listener_ == dead)
-    custom_menu_listener_ = NULL;
-}
-
 void RenderView::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
   plugin_delegates_.insert(delegate);
   // If the renderer is visible, set initial visibility and focus state.
@@ -958,14 +948,6 @@ void RenderView::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
 
 void RenderView::UnregisterPluginDelegate(WebPluginDelegateProxy* delegate) {
   plugin_delegates_.erase(delegate);
-}
-
-void RenderView::RegisterBlockedPlugin(BlockedPlugin* blocked_plugin) {
-  blocked_plugins_.insert(blocked_plugin);
-}
-
-void RenderView::UnregisterBlockedPlugin(BlockedPlugin* blocked_plugin) {
-  blocked_plugins_.erase(blocked_plugin);
 }
 
 bool RenderView::OnMessageReceived(const IPC::Message& message) {
@@ -1043,7 +1025,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
     IPC_MESSAGE_HANDLER(ViewMsg_SetAltErrorPageURL, OnSetAltErrorPageURL)
     IPC_MESSAGE_HANDLER(ViewMsg_InstallMissingPlugin, OnInstallMissingPlugin)
-    IPC_MESSAGE_HANDLER(ViewMsg_LoadBlockedPlugins, OnLoadBlockedPlugins)
     IPC_MESSAGE_HANDLER(ViewMsg_RunFileChooserResponse, OnFileChooserResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
@@ -2448,7 +2429,6 @@ bool RenderView::runModalBeforeUnloadDialog(
 
 void RenderView::showContextMenu(
     WebFrame* frame, const WebContextMenuData& data) {
-  custom_menu_listener_ = NULL;
   ContextMenuParams params = ContextMenuParams(data);
   if (!params.misspelled_word.empty() && RenderThread::current()) {
     int misspelled_offset, misspelled_length;
@@ -4678,10 +4658,7 @@ void RenderView::OnSetAltErrorPageURL(const GURL& url) {
 }
 
 void RenderView::OnCustomContextMenuAction(unsigned action) {
-  if (custom_menu_listener_)
-    custom_menu_listener_->MenuItemSelected(action);
-  else
-    webview()->performCustomContextMenuAction(action);
+  webview()->performCustomContextMenuAction(action);
 }
 
 void RenderView::OnTranslatePage(int page_id,
@@ -4700,11 +4677,6 @@ void RenderView::OnInstallMissingPlugin() {
   // This could happen when the first default plugin is deleted.
   if (first_default_plugin_)
     first_default_plugin_->InstallMissingPlugin();
-}
-
-void RenderView::OnLoadBlockedPlugins() {
-  while (!blocked_plugins_.empty())
-    (*blocked_plugins_.begin())->LoadPlugin();
 }
 
 void RenderView::OnFileChooserResponse(const std::vector<FilePath>& paths) {
