@@ -160,35 +160,41 @@ class NewTabUIStartupTest : public UIPerfTest {
   }
 };
 
-TEST_F(NewTabUIStartupTest, PerfRefCold) {
+// FLAKY: http://crbug.com/69940
+TEST_F(NewTabUIStartupTest, FLAKY_PerfRefCold) {
   UseReferenceBuild();
   RunStartupTest("tab_cold_ref", false /* cold */, true /* important */,
                  ProxyLauncher::DEFAULT_THEME);
 }
 
-TEST_F(NewTabUIStartupTest, PerfCold) {
+// FLAKY: http://crbug.com/69940
+TEST_F(NewTabUIStartupTest, FLAKY_PerfCold) {
   RunStartupTest("tab_cold", false /* cold */, true /* important */,
                  ProxyLauncher::DEFAULT_THEME);
 }
 
-TEST_F(NewTabUIStartupTest, PerfRefWarm) {
+// FLAKY: http://crbug.com/69940
+TEST_F(NewTabUIStartupTest, FLAKY_PerfRefWarm) {
   UseReferenceBuild();
   RunStartupTest("tab_warm_ref", true /* warm */, true /* not important */,
                  ProxyLauncher::DEFAULT_THEME);
 }
 
-TEST_F(NewTabUIStartupTest, PerfWarm) {
+// FLAKY: http://crbug.com/69940
+TEST_F(NewTabUIStartupTest, FLAKY_PerfWarm) {
   RunStartupTest("tab_warm", true /* warm */, true /* not important */,
                  ProxyLauncher::DEFAULT_THEME);
 }
 
-TEST_F(NewTabUIStartupTest, ComplexThemeCold) {
+// FLAKY: http://crbug.com/69940
+TEST_F(NewTabUIStartupTest, FLAKY_ComplexThemeCold) {
   RunStartupTest("tab_complex_theme_cold", false /* cold */,
                  false /* not important */,
                  ProxyLauncher::COMPLEX_THEME);
 }
 
-TEST_F(NewTabUIStartupTest, NewTabTimingTestsCold) {
+// FLAKY: http://crbug.com/69940
+TEST_F(NewTabUIStartupTest, FLAKY_NewTabTimingTestsCold) {
   RunNewTabTimingTest();
 }
 
