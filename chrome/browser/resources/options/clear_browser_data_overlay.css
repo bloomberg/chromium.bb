@@ -1,0 +1,51 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+
+/* TODO(estade): these rules override some more general style rules. We
+ * should unify these rules instead of overriding them, but first we need
+ * to update existing overlays. Since a lot of the overlays are going away,
+ * I'm making these rules specific to this overlay for now. */
+
+#clearBrowserDataOverlay {
+  -webkit-box-shadow: 0px 0px 40px -5px #888;
+  border: 1px solid #c8cdda;
+  border-radius: 0;
+  padding: 0;
+}
+
+#cbdTitle {
+  background: -webkit-linear-gradient(white, #F8F8F8);
+  border-bottom: 1px solid #bbbbbb;
+  display: block;
+  font-size: 105%;
+  font-weight: bold;
+  padding: 12px;
+}
+
+#cbdContentArea {
+  padding: 5px 15px;
+}
+
+#cbdContentArea label {
+  margin: 5px 0;
+}
+
+#cbdThrobber {
+  background-image: url("../../../../app/resources/throbber.png");
+  display: inline-block;
+  height: 16px;
+  margin: -3px 10px;
+  visibility: hidden;
+  width: 16px;
+}
+
+#cbdActionArea {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  border-top: 1px solid #eeeeee;
+  display: -webkit-box;
+  padding: 12px;
+}

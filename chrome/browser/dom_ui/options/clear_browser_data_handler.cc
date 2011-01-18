@@ -36,11 +36,9 @@ void ClearBrowserDataHandler::Initialize() {
 void ClearBrowserDataHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  localized_strings->SetString("clearBrowsingDataTitle",
+  localized_strings->SetString("clearBrowserDataTitle",
       l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_TITLE));
-  localized_strings->SetString("clearBrowsingDataSectionHeader",
-      l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_SECTION_HEADER));
-  localized_strings->SetString("clearBrowsingDataLabel",
+  localized_strings->SetString("clearBrowserDataLabel",
       l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_LABEL));
   localized_strings->SetString("deleteBrowsingHistoryCheckbox",
       l10n_util::GetStringUTF16(IDS_DEL_BROWSING_HISTORY_CHKBOX));
@@ -54,7 +52,7 @@ void ClearBrowserDataHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_DEL_PASSWORDS_CHKBOX));
   localized_strings->SetString("deleteFormDataCheckbox",
       l10n_util::GetStringUTF16(IDS_DEL_FORM_DATA_CHKBOX));
-  localized_strings->SetString("clearBrowsingDataCommit",
+  localized_strings->SetString("clearBrowserDataCommit",
       l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_COMMIT));
   localized_strings->SetString("flashStorageSettings",
       l10n_util::GetStringUTF16(IDS_FLASH_STORAGE_SETTINGS));
@@ -88,7 +86,7 @@ void ClearBrowserDataHandler::GetLocalizedValues(
     option->Append(Value::CreateStringValue(label_string));
     time_list->Append(option);
   }
-  localized_strings->Set("clearBrowsingDataTimeList", time_list);
+  localized_strings->Set("clearBrowserDataTimeList", time_list);
 }
 
 void ClearBrowserDataHandler::RegisterMessages() {
@@ -140,7 +138,7 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
   int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
 
   FundamentalValue state(true);
-  dom_ui_->CallJavascriptFunction(L"ClearBrowserDataPage.setClearingState",
+  dom_ui_->CallJavascriptFunction(L"ClearBrowserDataOverlay.setClearingState",
                                   state);
 
   // BrowsingDataRemover deletes itself when done.
@@ -158,7 +156,7 @@ void ClearBrowserDataHandler::UpdateClearPluginLSOData() {
   scoped_ptr<Value> label(
       Value::CreateStringValue(l10n_util::GetStringUTF16(label_id)));
   dom_ui_->CallJavascriptFunction(
-      L"ClearBrowserDataPage.setClearLocalDataLabel", *label);
+      L"ClearBrowserDataOverlay.setClearLocalDataLabel", *label);
 }
 
 void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
@@ -166,6 +164,5 @@ void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
   // itself after we return.
   remover_ = NULL;
   DCHECK(dom_ui_);
-  dom_ui_->CallJavascriptFunction(L"ClearBrowserDataPage.dismiss");
+  dom_ui_->CallJavascriptFunction(L"ClearBrowserDataOverlay.doneClearing");
 }
-

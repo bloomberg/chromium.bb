@@ -1,0 +1,52 @@
+<div id="clearBrowserDataOverlay" class="page hidden">
+  <span i18n-content="clearBrowserDataTitle" id="cbdTitle"></span>
+  <div id="cbdContentArea">
+    <span i18n-content="clearBrowserDataLabel"></span>
+    <select id="clearBrowserDataTimePeriod"
+        i18n-options="clearBrowserDataTimeList"
+        pref="browser.clear_data.time_period"
+        dataType="number">
+    </select>
+    <label class="checkbox">
+      <input id="deleteBrowsingHistoryCheckbox"
+          pref="browser.clear_data.browsing_history" type="checkbox">
+      <span i18n-content="deleteBrowsingHistoryCheckbox"></span>
+    </label>
+    <label class="checkbox">
+      <input id="deleteDownloadHistoryCheckbox"
+          pref="browser.clear_data.download_history" type="checkbox">
+      <span i18n-content="deleteDownloadHistoryCheckbox"></span>
+    </label>
+    <label class="checkbox">
+      <input id="deleteCacheCheckbox"
+          pref="browser.clear_data.cache" type="checkbox">
+      <span i18n-content="deleteCacheCheckbox"></span>
+    </label>
+    <label class="checkbox">
+      <input id="deleteCookiesCheckbox"
+          pref="browser.clear_data.cookies" type="checkbox">
+      <span id="deleteCookiesLabel"></span>
+    </label>
+    <label class="checkbox">
+      <input id="deletePasswordsCheckbox"
+          pref="browser.clear_data.passwords" type="checkbox">
+      <span i18n-content="deletePasswordsCheckbox"></span>
+    </label>
+    <label class="checkbox">
+      <input id="deleteFormDataCheckbox"
+          pref="browser.clear_data.form_data" type="checkbox">
+      <span i18n-content="deleteFormDataCheckbox"></span>
+    </label>
+  </div>
+  <div id="cbdActionArea">
+    <a target="_blank" i18n-content="flash_storage_settings"
+        i18n-values="href:flash_storage_url"></a>
+    <span id="cbdThrobber"></span>
+    <div class="button-strip">
+      <button id="clearBrowserDataDismiss" i18n-content="cancel"></button>
+      <button id="clearBrowserDataCommit"
+          i18n-content="clearBrowserDataCommit">
+      </button>
+    </div>
+  </div>
+</div>

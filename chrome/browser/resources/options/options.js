@@ -9,7 +9,7 @@ var AutoFillEditAddressOverlay = options.AutoFillEditAddressOverlay;
 var AutoFillEditCreditCardOverlay = options.AutoFillEditCreditCardOverlay;
 var AutoFillOptions = options.AutoFillOptions;
 var BrowserOptions = options.BrowserOptions;
-var ClearBrowserDataPage = options.ClearBrowserDataPage;
+var ClearBrowserDataOverlay = options.ClearBrowserDataOverlay;
 var ContentSettings = options.ContentSettings;
 var ContentSettingsExceptionsArea =
     options.contentSettings.ContentSettingsExceptionsArea;
@@ -105,9 +105,6 @@ function load() {
   OptionsPage.registerSubPage(FontSettings.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('fontSettingsCustomizeFontsButton')]);
-  OptionsPage.registerSubPage(ClearBrowserDataPage.getInstance(),
-                              AdvancedOptions.getInstance(),
-                              [$('privacyClearDataButton')]);
   if (!cr.isWindows && !cr.isMac) {
     OptionsPage.registerSubPage(CertificateManager.getInstance(),
                                 AdvancedOptions.getInstance(),
@@ -121,6 +118,8 @@ function load() {
   OptionsPage.registerOverlay(AlertOverlay.getInstance());
   OptionsPage.registerOverlay(AutoFillEditAddressOverlay.getInstance());
   OptionsPage.registerOverlay(AutoFillEditCreditCardOverlay.getInstance());
+  OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance(),
+                              [$('privacyClearDataButton')]);
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance());
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance());
 

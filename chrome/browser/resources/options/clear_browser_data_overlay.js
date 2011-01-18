@@ -7,22 +7,22 @@ cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
 
   /**
-   * ClearBrowserData class
+   * ClearBrowserDataOverlay class
    * Encapsulated handling of the 'Clear Browser Data' overlay page.
    * @class
    */
-  function ClearBrowserDataPage() {
-    OptionsPage.call(this, 'clearBrowserDataPage',
+  function ClearBrowserDataOverlay() {
+    OptionsPage.call(this, 'clearBrowserDataOverlay',
                      templateData.clearBrowserDataTitle,
-                     'clearBrowserDataPage');
+                     'clearBrowserDataOverlay');
   }
 
-  ClearBrowserDataPage.throbIntervalId = 0;
+  ClearBrowserDataOverlay.throbIntervalId = 0;
 
-  cr.addSingletonGetter(ClearBrowserDataPage);
+  cr.addSingletonGetter(ClearBrowserDataOverlay);
 
-  ClearBrowserDataPage.prototype = {
-    // Inherit ClearBrowserDataPage from OptionsPage.
+  ClearBrowserDataOverlay.prototype = {
+    // Inherit ClearBrowserDataOverlay from OptionsPage.
     __proto__: OptionsPage.prototype,
 
     /**
@@ -44,14 +44,16 @@ cr.define('options', function() {
       });
 
       var checkboxes = document.querySelectorAll(
-          '#checkboxListData input[type=checkbox]');
+          '#cbdContentArea input[type=checkbox]');
       for (var i = 0; i < checkboxes.length; i++) {
         checkboxes[i].onclick = f;
       }
       this.updateCommitButtonState_();
 
-      // Setup click handler for the clear(Ok) button.
-      $('clearBrowsingDataCommit').onclick = function(event) {
+      $('clearBrowserDataDismiss').onclick = function(event) {
+        ClearBrowserDataOverlay.dismiss();
+      };
+      $('clearBrowserDataCommit').onclick = function(event) {
         chrome.send('performClearBrowserData');
       };
     },
@@ -59,7 +61,7 @@ cr.define('options', function() {
     // Set the enabled state of the commit button.
     updateCommitButtonState_: function() {
       var checkboxes = document.querySelectorAll(
-          '#checkboxListData input[type=checkbox]');
+          '#cbdContentArea input[type=checkbox]');
       var isChecked = false;
       for (var i = 0; i < checkboxes.length; i++) {
         if (checkboxes[i].checked) {
@@ -67,27 +69,27 @@ cr.define('options', function() {
           break;
         }
       }
-      $('clearBrowsingDataCommit').disabled = !isChecked;
+      $('clearBrowserDataCommit').disabled = !isChecked;
     },
   };
 
   //
   // Chrome callbacks
   //
-  ClearBrowserDataPage.setClearingState = function(state) {
+  ClearBrowserDataOverlay.setClearingState = function(state) {
     $('deleteBrowsingHistoryCheckbox').disabled = state;
     $('deleteDownloadHistoryCheckbox').disabled = state;
     $('deleteCacheCheckbox').disabled = state;
     $('deleteCookiesCheckbox').disabled = state;
     $('deletePasswordsCheckbox').disabled = state;
     $('deleteFormDataCheckbox').disabled = state;
-    $('clearBrowsingDataTimePeriod').disabled = state;
+    $('clearBrowserDataTimePeriod').disabled = state;
     $('cbdThrobber').style.visibility = state ? 'visible' : 'hidden';
 
     if (state)
-      $('clearBrowsingDataCommit').disabled = true;
+      $('clearBrowserDataCommit').disabled = true;
     else
-      ClearBrowserDataPage.getInstance().updateCommitButtonState_();
+      ClearBrowserDataOverlay.getInstance().updateCommitButtonState_();
 
     function advanceThrobber() {
       var throbber = $('cbdThrobber');
@@ -97,26 +99,33 @@ cr.define('options', function() {
           576) + 'px';
     }
     if (state) {
-      ClearBrowserDataPage.throbIntervalId =
+      ClearBrowserDataOverlay.throbIntervalId =
           setInterval(advanceThrobber, 30);
     } else {
-      clearInterval(ClearBrowserDataPage.throbIntervalId);
+      clearInterval(ClearBrowserDataOverlay.throbIntervalId);
     }
-  }
+  };
 
-  ClearBrowserDataPage.setClearLocalDataLabel = function(label) {
+  ClearBrowserDataOverlay.setClearLocalDataLabel = function(label) {
     $('deleteCookiesLabel').innerText = label;
   };
 
-  ClearBrowserDataPage.dismiss = function() {
+  ClearBrowserDataOverlay.doneClearing = function() {
+    // The delay gives the user some feedback that the clearing
+    // actually worked. Otherwise the dialog just vanishes instantly in most
+    // cases.
+    window.setTimeout(function() {
+      ClearBrowserDataOverlay.dismiss();
+    }, 200);
+  };
+
+  ClearBrowserDataOverlay.dismiss = function() {
     OptionsPage.clearOverlays();
     this.setClearingState(false);
-  }
+  };
 
   // Export
   return {
-    ClearBrowserDataPage: ClearBrowserDataPage
+    ClearBrowserDataOverlay: ClearBrowserDataOverlay
   };
-
 });
-

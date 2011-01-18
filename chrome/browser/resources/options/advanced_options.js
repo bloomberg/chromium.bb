@@ -36,7 +36,7 @@ var OptionsPage = options.OptionsPage;
             ['Options_ContentSettings']);
       };
       $('privacyClearDataButton').onclick = function(event) {
-        OptionsPage.showPageByName('clearBrowserDataPage');
+        OptionsPage.showOverlay('clearBrowserDataOverlay');
         chrome.send('coreOptionsUserMetricsAction', ['Options_ClearData']);
       };
 
