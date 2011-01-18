@@ -45,6 +45,9 @@ download() {
 fetch_logs() {
   # Fetch Valgrind logs from the waterfall {{{1
 
+  # TODO(timurrrr,maruel): use JSON, see
+  # http://build.chromium.org/p/chromium.memory/json/help
+
   rm -rf "$LOGS_DIR" # Delete old logs
   mkdir "$LOGS_DIR"
 
@@ -64,25 +67,42 @@ fetch_logs() {
     # We speed up the 'fetch' step by skipping the builds/tests which succeeded.
     # TODO(timurrrr): OTOH, we won't be able to check
     # if some suppression is not used anymore.
-    LIST_OF_BUILDS=$(grep "<a href=\"\.\./builders/.*/builds/[0-9]\+.*failed" \
-                     "$LOGS_DIR/slave_$S" | grep -v "failed compile" | \
-                     sed "s/.*\/builds\///" | sed "s/\".*//" | head -n 2)
+    LIST_OF_BUILDS=$(grep "rev.*<a href=\"\.\./builders/.*/builds/[0-9]\+" \
+                     "$LOGS_DIR/slave_$S" | head -n 2 | \
+                     grep "failed" | grep -v "failed compile" | \
+                     sed "s/.*\/builds\///" | sed "s/\".*//")
 
     for BUILD in $LIST_OF_BUILDS
     do
-      BUILD_RESULTS="$LOGS_DIR/slave_${S}_build_${BUILD}"
-      download $SLAVE_URL/builds/$BUILD "$BUILD_RESULTS"
-      LIST_OF_TESTS=$(grep "<a href=\"[0-9]\+/steps/memory.*/logs/stdio\"" \
-                      "$BUILD_RESULTS" | \
-                      sed "s/.*a href=\"//" | sed "s/\".*//")
-      for TEST in $LIST_OF_TESTS
+      # We'll fetch a few tiny URLs now, let's use a temp file.
+      TMPFILE=$(mktemp)
+      download $SLAVE_URL/builds/$BUILD "$TMPFILE"
+
+      REPORT_FILE="$LOGS_DIR/report_${S}_${BUILD}"
+      rm -f $REPORT_FILE 2>/dev/null || true  # make sure it doesn't exist
+
+      REPORT_URLS=$(grep -o "[0-9]\+/steps/memory.*/logs/[0-9A-F]\{16\}" \
+                    "$TMPFILE" || true)  # `true` is to succeed on empty output
+      FAILED_TESTS=$(grep -o "[0-9]\+/steps/memory.*/logs/[A-Za-z0-9.]\+" \
+                     "$TMPFILE" | grep -v "[0-9A-F]\{16\}" | grep -v "stdio" \
+                     || true)
+
+      for REPORT in $REPORT_URLS
       do
-        REPORT_FILE=$(echo "report_${S}_$TEST" | sed "s/\/logs\/stdio//" | \
-                    sed "s/\/steps//" | sed "s/\//_/g")
-        echo -n "."
-        download $SLAVE_URL/builds/$TEST "$LOGS_DIR/$REPORT_FILE"
-        echo $SLAVE_URL/builds/$TEST >> "$LOGS_DIR/$REPORT_FILE"
+        download "$SLAVE_URL/builds/$REPORT/text" "$TMPFILE"
+        echo "" >> "$TMPFILE"  # Add a newline at the end
+        cat "$TMPFILE" | tr -d '\r' >> "$REPORT_FILE"
       done
+
+      for FAILURE in $FAILED_TESTS
+      do
+        echo -n "FAILED:" >> "$REPORT_FILE"
+        echo "$FAILURE" | sed -e "s/.*\/logs\///" -e "s/\/.*//" \
+          >> "$REPORT_FILE"
+      done
+
+      rm "$TMPFILE"
+      echo $SLAVE_URL/builds/$BUILD >> "$REPORT_FILE"
     done
     echo " DONE"
   done
@@ -99,10 +119,9 @@ match_gtest_excludes() {
   do
     echo
     echo "Test failures on ${PLATFORM}:" | sed "s/%20/ /"
-    grep "\[  FAILED  \] .* ([0-9]\+ ms)" -R "$LOGS_DIR"/*${PLATFORM}* | \
-         grep -v "FAILS\|FLAKY" | \
-         sed -e "s/.*%20//" -e "s/_[1-9]\+:/:/" \
-             -e "s/\[  FAILED  \] //" -e "s/ ([0-9]\+ ms)//" -e "s/^/  /"
+    grep -h -o "^FAILED:.*" -R "$LOGS_DIR"/*${PLATFORM}* | \
+         grep -v "FAILS\|FLAKY" | sort | uniq | \
+         sed -e "s/^FAILED://" -e "s/^/  /"
     # Don't put any operators between "grep | sed" and "RESULT=$PIPESTATUS"
     RESULT=$PIPESTATUS
 
