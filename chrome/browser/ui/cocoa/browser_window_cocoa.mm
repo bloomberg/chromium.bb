@@ -29,7 +29,7 @@
 #import "chrome/browser/ui/cocoa/collected_cookies_mac.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #import "chrome/browser/ui/cocoa/html_dialog_window_controller.h"
-#import "chrome/browser/ui/cocoa/import_settings_dialog.h"
+#import "chrome/browser/ui/cocoa/importer/import_settings_dialog.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/options/content_settings_dialog_controller.h"
 #import "chrome/browser/ui/cocoa/options/edit_search_engine_cocoa_controller.h"

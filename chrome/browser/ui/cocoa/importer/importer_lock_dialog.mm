@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "importer_lock_dialog.h"
+#import "chrome/browser/ui/cocoa/importer/importer_lock_dialog.h"
 
 #include "app/l10n_util_mac.h"
 #include "base/message_loop.h"

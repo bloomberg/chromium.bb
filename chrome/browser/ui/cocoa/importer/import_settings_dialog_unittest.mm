@@ -8,7 +8,7 @@
 #include "chrome/browser/importer/importer.h"
 #import "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/import_settings_dialog.h"
+#import "chrome/browser/ui/cocoa/importer/import_settings_dialog.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

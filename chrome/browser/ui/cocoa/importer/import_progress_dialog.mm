@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/import_progress_dialog.h"
+#import "chrome/browser/ui/cocoa/importer/import_progress_dialog.h"
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
