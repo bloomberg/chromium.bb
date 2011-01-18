@@ -6,89 +6,20 @@
 #define CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_CONTAINER_H_
 #pragma once
 
-#include "chrome/browser/ui/views/tab_contents/native_tab_contents_container.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
-#include "views/view.h"
-
-class NativeTabContentsContainer;
-class RenderViewHost;
-class RenderWidgetHostView;
-class TabContents;
-
-class TabContentsContainer : public views::View,
-                             public NotificationObserver {
- public:
-  TabContentsContainer();
-  virtual ~TabContentsContainer();
-
-  // Changes the TabContents associated with this view.
-  void ChangeTabContents(TabContents* contents);
-
-  View* GetFocusView() { return native_container_->GetView(); }
-
-  // Accessor for |tab_contents_|.
-  TabContents* tab_contents() const { return tab_contents_; }
-
-  // Called by the BrowserView to notify that |tab_contents| got the focus.
-  void TabContentsFocused(TabContents* tab_contents);
-
-  // Tells the container to update less frequently during resizing operations
-  // so performance is better.
-  void SetFastResize(bool fast_resize);
-
-  // Updates the current reserved rect in view coordinates where contents
-  // should not be rendered to draw the resize corner, sidebar mini tabs etc.
-  void SetReservedContentsRect(const gfx::Rect& reserved_rect);
-
-  // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  // Overridden from views::View:
-  virtual void Layout();
-  virtual AccessibilityTypes::Role GetAccessibleRole();
-
- protected:
-  // Overridden from views::View:
-  virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
-                                    views::View* child);
-
- private:
-  // Add or remove observers for events that we care about.
-  void AddObservers();
-  void RemoveObservers();
-
-  // Called when the RenderViewHost of the hosted TabContents has changed, e.g.
-  // to show an interstitial page.
-  void RenderViewHostChanged(RenderViewHost* old_host,
-                             RenderViewHost* new_host);
-
-  // Called when a TabContents is destroyed. This gives us a chance to clean
-  // up our internal state if the TabContents is somehow destroyed before we
-  // get notified.
-  void TabContentsDestroyed(TabContents* contents);
-
-  // Called when the RenderWidgetHostView of the hosted TabContents has changed.
-  void RenderWidgetHostViewChanged(RenderWidgetHostView* new_view);
-
-  // An instance of a NativeTabContentsContainer object that holds the native
-  // view handle associated with the attached TabContents.
-  NativeTabContentsContainer* native_container_;
-
-  // The attached TabContents.
-  TabContents* tab_contents_;
-
-  // Handles registering for our notifications.
-  NotificationRegistrar registrar_;
-
-  // The current reserved rect in view coordinates where contents should not be
-  // rendered to draw the resize corner, sidebar mini tabs etc.
-  // Cached here to update ever changing renderers.
-  gfx::Rect cached_reserved_rect_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabContentsContainer);
-};
+// There are two strategies implemented for embedding the actual tab contents
+// which are to use a views implementaiton all the way down, or to use a
+// NativeViewHost to encapsulate a native widget that then contains another
+// views heirarchy rooted at that widget. The TOUCH_UI is currently the only UI
+// that uses the pure views approach.
+//
+// Common code to the two approaches is in tab_contents_container.cc, while
+// views-only code is in tab_contents_container_views.cc and native-widget only
+// code is in tab_contents_container_native.cc. The headers are distinct
+// because the classes have different member variables.
+#if defined(TOUCH_UI)
+#include "chrome/browser/ui/views/tab_contents/tab_contents_container_views.h"
+#else
+#include "chrome/browser/ui/views/tab_contents/tab_contents_container_native.h"
+#endif
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_CONTAINER_H_
