@@ -69,6 +69,9 @@ void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
   switch (node.GetDetailedInfo().node_type) {
     case CookieTreeNode::DetailedInfo::TYPE_ORIGIN: {
       dict->SetString(kKeyType, "origin");
+#if defined(OS_MAC)
+      dict->SetString(kKeyIcon, "chrome://theme/IDR_BOOKMARK_BAR_FOLDER");
+#endif
       break;
     }
     case CookieTreeNode::DetailedInfo::TYPE_COOKIE: {
@@ -168,6 +171,9 @@ void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
       break;
     }
     default:
+#if defined(OS_MAC)
+      dict->SetString(kKeyIcon, "chrome://theme/IDR_BOOKMARK_BAR_FOLDER");
+#endif
       break;
   }
 }
