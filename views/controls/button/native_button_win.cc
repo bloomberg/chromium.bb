@@ -111,7 +111,7 @@ gfx::NativeView NativeButtonWin::GetTestingHandle() const {
 // NativeButtonWin, View overrides:
 
 gfx::Size NativeButtonWin::GetPreferredSize() {
-  if (!button_size_valid_) {
+  if (!button_size_valid_ && native_view()) {
     SIZE sz = {0};
     Button_GetIdealSize(native_view(), reinterpret_cast<LPARAM>(&sz));
     button_size_.SetSize(sz.cx, sz.cy);
