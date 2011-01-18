@@ -57,6 +57,10 @@ UNINITIALIZED READ
 ...
 SHELL32.dll!ILSaveToStream*
 
+LEAK
+...
+SHELL32.dll!SHFileOperation*
+
 # http://code.google.com/p/drmemory/issues/detail?id=14
 UNINITIALIZED READ
 ...
@@ -349,50 +353,50 @@ CRYPT32.dll!I_CertSyncStore
 UNADDRESSABLE ACCESS
 base_unittests.exe!*ReadValueOutOfArrayBoundsLeft
 base_unittests.exe!*MakeSomeErrors
-base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
+base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
 base_unittests.exe!*ReadValueOutOfArrayBoundsRight
 base_unittests.exe!*MakeSomeErrors
-base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
+base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
 base_unittests.exe!*WriteValueOutOfArrayBoundsLeft
 base_unittests.exe!*MakeSomeErrors
-base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
+base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
 base_unittests.exe!*WriteValueOutOfArrayBoundsRight
 base_unittests.exe!*MakeSomeErrors
-base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
+base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 UNINITIALIZED READ
 base_unittests.exe!*ReadUninitializedValue
 base_unittests.exe!*MakeSomeErrors
-base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
+base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 # Write after free
 UNADDRESSABLE ACCESS
-base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
+base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
 base_unittests.exe!*ReadValueOutOfArrayBoundsLeft
 base_unittests.exe!*MakeSomeErrors
-base_unittests.exe!ToolsSanityTest_AccessesToNewMemory_Test::TestBody
+base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
 base_unittests.exe!*ReadValueOutOfArrayBoundsRight
 base_unittests.exe!*MakeSomeErrors
-base_unittests.exe!ToolsSanityTest_AccessesToNewMemory_Test::TestBody
+base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
 UNINITIALIZED READ
 base_unittests.exe!*ReadUninitializedValue
 base_unittests.exe!*MakeSomeErrors
-base_unittests.exe!ToolsSanityTest_AccessesToNewMemory_Test::TestBody
+base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
 # Write after delete []
 UNADDRESSABLE ACCESS
-base_unittests.exe!ToolsSanityTest_AccessesToNewMemory_Test::TestBody
+base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
 ############################
 # Real issues in Chromium
