@@ -411,6 +411,13 @@ UNINITIALIZED READ
 ...
 *!vp8_*
 
+# http://crbug.com/57910
+LEAK
+...
+*!*inflateInit*
+*!remoting::DecompressorZlib::InitStream
+*!remoting::DecompressorZlib::Reset
+
 # http://crbug.com/68307
 LEAK
 ...
