@@ -44,10 +44,6 @@ void PasswordManagerHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_REMOVE_BUTTON));
   localized_strings->SetString("passwordsRemoveAllButton",
       l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON));
-  localized_strings->SetString("passwordsShowButton",
-      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON));
-  localized_strings->SetString("passwordsHideButton",
-      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON));
   localized_strings->SetString("passwordsRemoveAllTitle",
       l10n_util::GetStringUTF16(
           IDS_PASSWORDS_PAGE_VIEW_CAPTION_DELETE_ALL_PASSWORDS));
