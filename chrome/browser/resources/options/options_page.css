@@ -424,7 +424,7 @@ list .close-button {
   width: 16px;
 }
 
-list > *:not(:hover):not([editing]) .close-button,
+list > *:not(:hover):not([lead]) .close-button,
 list[disabled] .close-button,
 list .close-button[disabled] {
   opacity: 0;
