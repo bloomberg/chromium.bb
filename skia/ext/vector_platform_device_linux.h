@@ -6,6 +6,7 @@
 #define SKIA_EXT_VECTOR_PLATFORM_DEVICE_LINUX_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -45,40 +46,42 @@ class VectorPlatformDevice : public PlatformDevice {
   virtual SkDeviceFactory* getDeviceFactory();
 
   // Overridden from PlatformDevice:
-  virtual bool IsVectorial();
-  virtual PlatformSurface beginPlatformPaint();
-  virtual void drawBitmap(const SkDraw& draw, const SkBitmap& bitmap,
-                          const SkIRect* srcRectOrNull,
-                          const SkMatrix& matrix, const SkPaint& paint);
-  virtual void drawDevice(const SkDraw& draw, SkDevice*, int x, int y,
-                          const SkPaint&);
-  virtual void drawPaint(const SkDraw& draw, const SkPaint& paint);
+  virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) OVERRIDE;
+  virtual void drawPoints(const SkDraw& draw, SkCanvas::PointMode mode,
+                          size_t count, const SkPoint[],
+                          const SkPaint& paint) OVERRIDE;
+  virtual void drawRect(const SkDraw& draw, const SkRect& r,
+                        const SkPaint& paint) OVERRIDE;
   virtual void drawPath(const SkDraw& draw, const SkPath& path,
                         const SkPaint& paint,
                         const SkMatrix* prePathMatrix = NULL,
-                        bool pathIsMutable = false);
-  virtual void drawPoints(const SkDraw& draw, SkCanvas::PointMode mode,
-                          size_t count, const SkPoint[], const SkPaint& paint);
+                        bool pathIsMutable = false) OVERRIDE;
+  virtual void drawBitmap(const SkDraw& draw, const SkBitmap& bitmap,
+                          const SkIRect* srcRectOrNull,
+                          const SkMatrix& matrix,
+                          const SkPaint& paint) OVERRIDE;
+  virtual void drawSprite(const SkDraw& draw, const SkBitmap& bitmap,
+                          int x, int y, const SkPaint& paint) OVERRIDE;
+  virtual void drawText(const SkDraw& draw, const void* text, size_t len,
+                        SkScalar x, SkScalar y, const SkPaint& paint) OVERRIDE;
   virtual void drawPosText(const SkDraw& draw, const void* text, size_t len,
                            const SkScalar pos[], SkScalar constY,
-                           int scalarsPerPos, const SkPaint& paint);
-  virtual void drawRect(const SkDraw& draw, const SkRect& r,
-                        const SkPaint& paint);
-  virtual void drawSprite(const SkDraw& draw, const SkBitmap& bitmap,
-                          int x, int y, const SkPaint& paint);
-  virtual void drawText(const SkDraw& draw, const void* text, size_t len,
-                        SkScalar x, SkScalar y, const SkPaint& paint);
+                           int scalarsPerPos, const SkPaint& paint) OVERRIDE;
   virtual void drawTextOnPath(const SkDraw& draw, const void* text, size_t len,
                               const SkPath& path, const SkMatrix* matrix,
-                              const SkPaint& paint);
+                              const SkPaint& paint) OVERRIDE;
   virtual void drawVertices(const SkDraw& draw, SkCanvas::VertexMode,
                             int vertexCount,
                             const SkPoint verts[], const SkPoint texs[],
                             const SkColor colors[], SkXfermode* xmode,
                             const uint16_t indices[], int indexCount,
-                            const SkPaint& paint);
-  virtual void setMatrixClip(const SkMatrix& transform,
-                             const SkRegion& region);
+                            const SkPaint& paint) OVERRIDE;
+  virtual void drawDevice(const SkDraw& draw, SkDevice*, int x, int y,
+                          const SkPaint&) OVERRIDE;
+
+  virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region);
+  virtual PlatformSurface beginPlatformPaint();
+  virtual bool IsVectorial();
 
  protected:
   explicit VectorPlatformDevice(PlatformSurface context,
