@@ -100,12 +100,8 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
     targets_mask |= gtk_dnd_util::DIRECT_SAVE_FILE;
   }
 
-  // Short-circuit execution if no targets present.
-  if (targets_mask == 0) {
-    if (tab_contents()->render_view_host())
-      tab_contents()->render_view_host()->DragSourceSystemDragEnded();
-    return;
-  }
+  // NOTE: Begin a drag even if no targets present. Otherwise, things like
+  // draggable list elements will not work.
 
   drop_data_.reset(new WebDropData(drop_data));
 
