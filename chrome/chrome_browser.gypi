@@ -3116,6 +3116,7 @@
         'browser/ui/options/show_options_url.h',
         'browser/ui/pk11_password_dialog.h',
         'browser/ui/pk11_password_dialog_nss.cc',
+        'browser/ui/pk11_password_dialog_openssl.cc',
         'browser/ui/status_bubble.h',
         'browser/ui/tab_contents/tab_contents_wrapper.cc',
         'browser/ui/tab_contents/tab_contents_wrapper.h',
@@ -4413,8 +4414,11 @@
             'browser/importer/nss_decryptor_system_nss.cc',
             'browser/importer/nss_decryptor_system_nss.h',
             'browser/ui/pk11_password_dialog_nss.cc',
-          ],
-        }],
+          ]}, {
+           'sources!': [
+             'browser/ui/pk11_password_dialog_openssl.cc',
+          ]},
+        ],
       ],
     },
     {
