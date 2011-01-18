@@ -39,7 +39,7 @@ class PluginsTest(pyauto.PyUITest):
     if self.IsWin() or self.IsMac():
       plugins = plugins + [
          ('silverlight_new.html', 'Silverlight'),
-         ('quicktime.html', 'QuickTime'),
+         ('quicktime.html', 'Quicktime'),
          ('wmp_new.html', 'Windows Media'),
          ('real.html', 'RealPlayer'),
       ]
