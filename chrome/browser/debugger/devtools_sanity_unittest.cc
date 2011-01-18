@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 
 // Fails after WebKit roll 75765:75812 (likely 75791), http://crbug.com/69719
 #if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_TestPauseWhenLoadingDevTools FAILS_TestPauseWhenLoadingDevTools
+#define MAYBE_TestPauseWhenLoadingDevTools DISABLED_TestPauseWhenLoadingDevTools
 #else
 #define MAYBE_TestPauseWhenLoadingDevTools TestPauseWhenLoadingDevTools
 #endif  // defined(OS_LINUX) || defined(OS_WIN)
@@ -336,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestPauseWhenLoadingDevTools) {
 
 // Fails after WebKit roll 75765:75812 (likely 75791), http://crbug.com/69719
 #if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_TestPauseWhenScriptIsRunning FAILS_TestPauseWhenScriptIsRunning
+#define MAYBE_TestPauseWhenScriptIsRunning DISABLED_TestPauseWhenScriptIsRunning
 #else
 #define MAYBE_TestPauseWhenScriptIsRunning TestPauseWhenScriptIsRunning
 #endif  // defined(OS_LINUX) || defined(OS_WIN)
