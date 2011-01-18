@@ -416,6 +416,14 @@ class AbstractRpcServer(object):
             url = e.info()["location"]
           else:
             raise
+        except urllib2.URLError, e:
+          reason = getattr(e, 'reason', None)
+          if isinstance(reason, str) and reason.find("110") != -1:
+            # Connection timeout error.
+            if tries <= 3:
+              # Try again.
+              continue
+          raise
     finally:
       socket.setdefaulttimeout(old_timeout)
 
