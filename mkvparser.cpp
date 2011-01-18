@@ -4825,11 +4825,11 @@ SegmentInfo::SegmentInfo(
     m_pSegment(pSegment),
     m_start(start),
     m_size(size_),
+    m_element_start(element_start),
+    m_element_size(element_size),
     m_pMuxingAppAsUTF8(NULL),
     m_pWritingAppAsUTF8(NULL),
-    m_pTitleAsUTF8(NULL),
-    m_element_start(element_start),
-    m_element_size(element_size)
+    m_pTitleAsUTF8(NULL)
 {
     IMkvReader* const pReader = m_pSegment->m_pReader;
 
@@ -4942,9 +4942,9 @@ Track::Track(
     long long element_start,
     long long element_size) :
     m_pSegment(pSegment),
-    m_info(i),
     m_element_start(element_start),
-    m_element_size(element_size)
+    m_element_size(element_size),
+    m_info(i)
 {
 }
 
@@ -5601,10 +5601,10 @@ Tracks::Tracks(
     m_pSegment(pSegment),
     m_start(start),
     m_size(size_),
-    m_trackEntries(NULL),
-    m_trackEntriesEnd(NULL),
     m_element_start(element_start),
-    m_element_size(element_size)
+    m_element_size(element_size),
+    m_trackEntries(NULL),
+    m_trackEntriesEnd(NULL)
 {
     long long stop = m_start + m_size;
     IMkvReader* const pReader = m_pSegment->m_pReader;
@@ -5704,9 +5704,11 @@ void Tracks::ParseTrackEntry(
 
     Track::Settings videoSettings;
     videoSettings.start = -1;
+    videoSettings.size = -1;
 
     Track::Settings audioSettings;
     audioSettings.start = -1;
+    audioSettings.size = -1;
 
     long long lacing = 1;  //default is true
 
@@ -5743,7 +5745,7 @@ void Tracks::ParseTrackEntry(
             long len;
 
             const long long idpos = pos;
-            idpos;
+            (void)idpos;
 
             const long long id = ReadUInt(pReader, pos, len);
             assert(id >= 0);  //TODO: handle error case
@@ -6751,7 +6753,6 @@ Cluster::Cluster() :
     m_pSegment(NULL),
     m_index(0),
     m_pos(0),
-    //m_size(0),
     m_element_start(0),
     m_element_size(0),
     m_timecode(0),
@@ -6772,7 +6773,6 @@ Cluster::Cluster(
     m_pos(element_start),
     m_element_start(element_start),
     m_element_size(-1 /* element_size */ ),
-    //m_size(-1),
     m_timecode(-1),
     m_entries(NULL),
     m_entries_size(0),
@@ -6845,7 +6845,7 @@ bool Cluster::HasBlockEntries(
         long len;
 
         const long long id = ReadUInt(pReader, pos, len);
-        id;
+        (void)id;
         assert(id >= 0);
         assert(id == 0x0F43B675);  //Cluster ID
 
