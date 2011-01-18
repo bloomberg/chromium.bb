@@ -682,6 +682,10 @@ notify_button(struct wl_input_device *device,
 	if (state && device->grab == NULL) {
 		wlsc_surface_raise(surface);
 
+		if (wd->selection)
+			wlsc_selection_set_focus(wd->selection,
+						 &surface->surface, time);
+
 		wl_input_device_start_grab(device,
 					   &device->motion_grab,
 					   button, time);

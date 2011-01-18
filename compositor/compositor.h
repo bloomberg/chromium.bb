@@ -69,6 +69,7 @@ struct wlsc_input_device {
 	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
 	uint32_t modifier_state;
+	struct wl_selection *selection;
 };
 
 struct wlsc_drm {
@@ -164,6 +165,10 @@ wlsc_input_device_set_pointer_image(struct wlsc_input_device *device,
 				    enum wlsc_pointer_type type);
 struct wlsc_surface *
 pick_surface(struct wl_input_device *device, int32_t *sx, int32_t *sy);
+
+void
+wlsc_selection_set_focus(struct wl_selection *selection,
+			 struct wl_surface *surface, uint32_t time);
 
 uint32_t
 get_time(void);

@@ -207,11 +207,6 @@ shell_resize(struct wl_client *client, struct wl_shell *shell,
 }
 
 static void
-wl_drag_set_pointer_focus(struct wl_drag *drag,
-			  struct wl_surface *surface, uint32_t time,
-			  int32_t x, int32_t y, int32_t sx, int32_t sy);
-
-static void
 destroy_drag(struct wl_resource *resource, struct wl_client *client)
 {
 	struct wl_drag *drag =
@@ -458,10 +453,176 @@ shell_create_drag(struct wl_client *client,
 	wl_client_add_resource(client, &drag->resource);
 }
 
+void
+wlsc_selection_set_focus(struct wl_selection *selection,
+			 struct wl_surface *surface, uint32_t time)
+{
+	char **p, **end;
+
+	if (selection->selection_focus == surface)
+		return;
+
+	if (selection->selection_focus != NULL)
+		wl_client_post_event(selection->selection_focus->client,
+				     &selection->selection_offer.object,
+				     WL_SELECTION_OFFER_KEYBOARD_FOCUS,
+				     NULL);
+
+	if (surface) {
+		wl_client_post_global(surface->client,
+				      &selection->selection_offer.object);
+
+		end = selection->types.data + selection->types.size;
+		for (p = selection->types.data; p < end; p++)
+			wl_client_post_event(surface->client,
+					     &selection->selection_offer.object,
+					     WL_SELECTION_OFFER_OFFER, *p);
+
+		wl_list_remove(&selection->selection_focus_listener.link);
+		wl_list_insert(surface->destroy_listener_list.prev,
+			       &selection->selection_focus_listener.link);
+
+		wl_client_post_event(surface->client,
+				     &selection->selection_offer.object,
+				     WL_SELECTION_OFFER_KEYBOARD_FOCUS,
+				     selection->input_device);
+	}
+
+	selection->selection_focus = surface;
+
+	wl_list_remove(&selection->selection_focus_listener.link);
+	if (surface)
+		wl_list_insert(surface->destroy_listener_list.prev,
+			       &selection->selection_focus_listener.link);
+}
+
+static void
+selection_offer_receive(struct wl_client *client,
+			struct wl_selection_offer *offer,
+			const char *mime_type, int fd)
+{
+	struct wl_selection *selection =
+		container_of(offer, struct wl_selection, selection_offer);
+
+	wl_client_post_event(selection->client,
+			     &selection->resource.object,
+			     WL_SELECTION_SEND, mime_type, fd);
+	close(fd);
+}
+
+static const struct wl_selection_offer_interface selection_offer_interface = {
+	selection_offer_receive
+};
+
+static void
+selection_offer(struct wl_client *client,
+		struct wl_selection *selection, const char *type)
+{
+	char **p;
+
+	p = wl_array_add(&selection->types, sizeof *p);
+	if (p)
+		*p = strdup(type);
+	if (!p || !*p)
+		wl_client_post_no_memory(client);
+}
+
+static void
+selection_activate(struct wl_client *client,
+		   struct wl_selection *selection,
+		   struct wl_input_device *device, uint32_t time)
+{
+	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
+	struct wl_display *display = wl_client_get_display (client);
+
+	selection->input_device = device;
+
+	selection->selection_offer.object.interface =
+		&wl_selection_offer_interface;
+	selection->selection_offer.object.implementation =
+		(void (**)(void)) &selection_offer_interface;
+
+	wl_display_add_object(display, &selection->selection_offer.object);
+
+	if (wd->selection) {
+		wl_client_post_event(wd->selection->client,
+				     &wd->selection->resource.object,
+				     WL_SELECTION_CANCELLED);
+	}
+	wd->selection = selection;
+
+	wlsc_selection_set_focus(selection, device->keyboard_focus, time);
+}
+
+static void
+selection_destroy(struct wl_client *client, struct wl_selection *selection)
+{
+	wl_resource_destroy(&selection->resource, client);
+}
+
+static const struct wl_selection_interface selection_interface = {
+	selection_offer,
+	selection_activate,
+	selection_destroy
+};
+
+static void
+destroy_selection(struct wl_resource *resource, struct wl_client *client)
+{
+	struct wl_selection *selection =
+		container_of(resource, struct wl_selection, resource);
+	struct wlsc_input_device *wd =
+		(struct wlsc_input_device *) selection->input_device;
+
+	if (wd && wd->selection == selection) {
+		wd->selection = NULL;
+		wlsc_selection_set_focus(selection, NULL, get_time());
+	}
+
+	wl_list_remove(&selection->selection_focus_listener.link);
+	free(selection);
+}
+
+static void
+selection_handle_surface_destroy(struct wl_listener *listener,
+				 struct wl_surface *surface, uint32_t time)
+{
+}
+
+static void
+shell_create_selection(struct wl_client *client,
+		       struct wl_shell *shell, uint32_t id)
+{
+	struct wl_selection *selection;
+
+	selection = malloc(sizeof *selection);
+	if (selection == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	memset(selection, 0, sizeof *selection);
+	selection->resource.object.id = id;
+	selection->resource.object.interface = &wl_selection_interface;
+	selection->resource.object.implementation =
+		(void (**)(void)) &selection_interface;
+
+	selection->client = client;
+	selection->resource.destroy = destroy_selection;
+	selection->selection_focus = NULL;
+
+	selection->selection_focus_listener.func =
+		selection_handle_surface_destroy;
+	wl_list_init(&selection->selection_focus_listener.link);
+
+	wl_client_add_resource(client, &selection->resource);
+}
+
 const static struct wl_shell_interface shell_interface = {
 	shell_move,
 	shell_resize,
-	shell_create_drag
+	shell_create_drag,
+	shell_create_selection
 };
 
 int
