@@ -29,6 +29,7 @@ class BackgroundView;
 class EulaScreen;
 class ExistingUserController;
 class HTMLPageScreen;
+class LoginScreen;
 class NetworkScreen;
 class RegistrationScreen;
 class StartupCustomizationDocument;
@@ -105,6 +106,7 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Lazy initializers and getters for screens.
   chromeos::NetworkScreen* GetNetworkScreen();
+  chromeos::LoginScreen* GetLoginScreen();
   chromeos::AccountScreen* GetAccountScreen();
   chromeos::UpdateScreen* GetUpdateScreen();
   chromeos::UserImageScreen* GetUserImageScreen();
@@ -120,8 +122,9 @@ class WizardController : public chromeos::ScreenObserver,
   void ShowEulaScreen();
   void ShowRegistrationScreen();
   void ShowHTMLPageScreen();
-  // Shows images login screen and returns the corresponding controller
-  // instance for optional tweaking.
+  // Shows the default login screen and returns NULL or shows images login
+  // screen and returns the corresponding controller instance for optional
+  // tweaking.
   chromeos::ExistingUserController* ShowLoginScreen();
 
   // Returns a pointer to the current screen or NULL if there's no such
@@ -166,6 +169,9 @@ class WizardController : public chromeos::ScreenObserver,
 
  private:
   // Exit handlers:
+  void OnLoginSignInSelected();
+  void OnLoginGuestUser();
+  void OnLoginCreateAccount();
   void OnNetworkConnected();
   void OnNetworkOffline();
   void OnAccountCreateBack();
@@ -184,11 +190,6 @@ class WizardController : public chromeos::ScreenObserver,
   // Shows update screen and starts update process.
   void InitiateOOBEUpdate();
 
-  // Overridden from chromeos::ScreenObserver:
-  virtual void OnExit(ExitCodes exit_code);
-  virtual void OnSetUserNamePassword(const std::string& username,
-                                     const std::string& password);
-
   // Creates wizard screen window with the specified |bounds|.
   // If |initial_show| initial animation (window & background) is shown.
   // Otherwise only window is animated.
@@ -204,6 +205,11 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Changes status area visibility.
   void SetStatusAreaVisible(bool visible);
+
+  // Overridden from chromeos::ScreenObserver:
+  virtual void OnExit(ExitCodes exit_code);
+  virtual void OnSetUserNamePassword(const std::string& username,
+                                     const std::string& password);
 
   // Overridden from WizardScreenDelegate:
   virtual views::View* GetWizardView();
@@ -231,6 +237,7 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Screens.
   scoped_ptr<chromeos::NetworkScreen> network_screen_;
+  scoped_ptr<chromeos::LoginScreen> login_screen_;
   scoped_ptr<chromeos::AccountScreen> account_screen_;
   scoped_ptr<chromeos::UpdateScreen> update_screen_;
   scoped_ptr<chromeos::UserImageScreen> user_image_screen_;
@@ -249,6 +256,10 @@ class WizardController : public chromeos::ScreenObserver,
 
   // True if full OOBE flow should be shown.
   bool is_out_of_box_;
+
+  // True if this is run under automation test and we need to show only
+  // login screen.
+  bool is_test_mode_;
 
   // Value of the screen name that WizardController was started with.
   std::string first_screen_name_;
