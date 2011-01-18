@@ -88,6 +88,40 @@ static INLINE uint32_t state_modrm_reg(const struct NCDecoderState* mstate) {
   return index;
 }
 
+/* Returns the index for the first instruction opcode byte. */
+static INLINE int NCOpcodeOffset(const struct NCDecoderState* mstate) {
+  return mstate->inst.prefixbytes;
+}
+
+/* Returns the index for the modrm byte. */
+static INLINE int NCMrmOffset(const struct NCDecoderState* mstate) {
+  return NCOpcodeOffset(mstate) + mstate->inst.num_opbytes;
+}
+
+/* Returns the index of the sib byte (if it has one). */
+static INLINE int NCSibOffset(const struct NCDecoderState* mstate) {
+  /* Note: The sib byte follows the mrm byte. */
+  return NCMrmOffset(mstate) + 1;
+}
+
+/* Returns the beginning index for the displacement (if it has one). */
+static int NCDispOffset(const struct NCDecoderState* mstate) {
+  if (mstate->opinfo->hasmrmbyte) {
+    if (mstate->inst.hassibbyte) {
+      return NCSibOffset(mstate) + 1;
+    } else {
+      return NCMrmOffset(mstate) + 1;
+    }
+  } else {
+    return NCOpcodeOffset(mstate) + mstate->inst.num_opbytes;
+  }
+}
+
+/* Returns the beginning index for the immediate value. */
+static INLINE int NCImmedOffset(const struct NCDecoderState* mstate) {
+  return NCDispOffset(mstate) + mstate->inst.dispbytes;
+}
+
 /* later this will make decoding x87 instructions a bit more concise. */
 static const char** kDisasmX87Op[8] = {kDisasm87D8,
                                        kDisasm87D9,
@@ -104,47 +138,121 @@ const char** kDummyUsesToAvoidCompilerWarning[] = {kDisasm660F38Op,
 
 /* disassembler stuff */
 static const char* DisFmt(const struct NCDecoderState *mstate) {
-  static const uint8_t kWAITOp = 0x9b;
-  uint8_t *opbyte = &mstate->inst.maddr[mstate->inst.prefixbytes];
+  NCInstBytesPtr opbyte;
+  uint8_t opbyte0;
+  uint8_t opbyte1;
   uint8_t pm = mstate->inst.prefixmask;
+  NCInstBytesPtrInitInc(&opbyte, &mstate->inst_bytes, NCOpcodeOffset(mstate));
+  opbyte0 = NCInstBytesByte(&opbyte, 0);
 
   if (mstate->opinfo->insttype == NACLi_X87) {
-    if (opbyte[0] != kWAITOp) {
-      return kDisasmX87Op[opbyte[0]-0xd8][mstate->inst.mrm];
+    if (opbyte0 != kWAITOp) {
+      return kDisasmX87Op[opbyte0 - kFirstX87Opcode][mstate->inst.mrm];
     }
   }
   if (mstate->opinfo->insttype == NACLi_FCMOV) {
-    return kDisasmX87Op[opbyte[0]-0xd8][mstate->inst.mrm];
+    return kDisasmX87Op[opbyte0 - kFirstX87Opcode][mstate->inst.mrm];
   }
   if (mstate->opinfo->insttype == NACLi_NOP) return "nop";
-  if (*opbyte != kTwoByteOpcodeByte1) return kDisasm1ByteOp[opbyte[0]];
-  if (opbyte[1] == 0x0f) return kDisasm0F0FOp[opbyte[mstate->inst.length - 1]];
-  if (opbyte[1] == 0x38) return kDisasm0F38Op[opbyte[2]];
-  if (opbyte[1] == 0x3A) return kDisasm0F3AOp[opbyte[2]];
-  if (! (pm & (kPrefixDATA16 | kPrefixREPNE | kPrefixREP))) {
-    return kDisasm0FXXOp[opbyte[1]];
+  if (opbyte0 != kTwoByteOpcodeByte1) return kDisasm1ByteOp[opbyte0];
+  opbyte1 = NCInstBytesByte(&opbyte, 1);
+  if (opbyte1 == 0x0f) {
+    return kDisasm0F0FOp[
+        NCInstBytesByte(&opbyte, mstate->inst.bytes.length - 1)];
   }
-  if (pm & kPrefixDATA16) return kDisasm660FXXOp[opbyte[1]];
-  if (pm & kPrefixREPNE)  return kDisasmF20FXXOp[opbyte[1]];
-  if (pm & kPrefixREP)    return kDisasmF30FXXOp[opbyte[1]];
+  if (opbyte1 == 0x38) {
+    return kDisasm0F38Op[NCInstBytesByte(&opbyte, 2)];
+  }
+  if (opbyte1 == 0x3A) {
+    return kDisasm0F3AOp[NCInstBytesByte(&opbyte, 2)];
+  }
+  if (! (pm & (kPrefixDATA16 | kPrefixREPNE | kPrefixREP))) {
+    return kDisasm0FXXOp[opbyte1];
+  }
+  if (pm & kPrefixDATA16) return kDisasm660FXXOp[opbyte1];
+  if (pm & kPrefixREPNE)  return kDisasmF20FXXOp[opbyte1];
+  if (pm & kPrefixREP)    return kDisasmF30FXXOp[opbyte1];
 
   /* no update; should be invalid */
   return "internal error";
 }
 
-static int ByteImmediate(const uint8_t* byte_array) {
-  return (char) byte_array[0];
+/* Returns the byte value stored in the first byte of the given
+ * byte pointer.
+ */
+static int ByteImmediate(const NCInstBytesPtr* byte_array) {
+  return (char) NCInstBytesByte(byte_array, 0);
 }
 
-static int WordImmediate(const uint8_t* byte_array) {
-  return (short) (byte_array[0] + (byte_array[1] << 8));
+/* Returns the byte value of the byte at the given offset for the
+ * instruction parsed in the given decoder state.
+ */
+static int ByteImmedAtOffset(const struct NCDecoderState* mstate,
+                             int offset) {
+  NCInstBytesPtr addr;
+  NCInstBytesPtrInitInc(&addr, &mstate->inst_bytes, offset);
+  return ByteImmediate(&addr);
 }
 
-static int DwordImmediate(const uint8_t* byte_array) {
-  return (byte_array[0] +
-          (byte_array[1] << 8) +
-          (byte_array[2] << 16) +
-          (byte_array[3] << 24));
+/* Returns the word value stored in the first two bytes of the
+ * given byte pointer.
+ */
+static int WordImmediate(const NCInstBytesPtr* byte_array) {
+  return (short) (NCInstBytesByte(byte_array, 0) +
+                  (NCInstBytesByte(byte_array, 1) << 8));
+}
+
+/* Returns the double word value stored in the first 4 bytes of the
+ * given byte pointer.
+ */
+static int DwordImmediate(const NCInstBytesPtr* byte_array) {
+  return NCInstBytesInt32(byte_array);
+}
+
+/* Returns the double word value stored at the given offset for
+ * the instruction parsed in the given decoder state.
+ */
+static int DwordImmedAtOffset(const struct NCDecoderState* mstate,
+                             int offset) {
+  NCInstBytesPtr addr;
+  NCInstBytesPtrInitInc(&addr, &mstate->inst_bytes, offset);
+  return DwordImmediate(&addr);
+}
+
+/* Returns the quad word value stored in the first 8 bytes of the
+ * given byte pointer.
+ */
+static int64_t QwordImmediate(const NCInstBytesPtr* byte_array) {
+  NCInstBytesPtr byte_array_4;
+  NCInstBytesPtrInitInc(&byte_array_4, byte_array, 4);
+  return ((int64_t) (DwordImmediate(&byte_array_4)) << 32) |
+      ((int64_t) DwordImmediate(byte_array));
+}
+
+/* Return the immediate value stored in the given byte array, given that the
+ * value takes size bytes.
+ */
+static int64_t ValueImmediate(const NCInstBytesPtr* byte_array, uint8_t size) {
+  switch (size) {
+    case 1:
+      return (int64_t) ByteImmediate(byte_array);
+    case 2:
+      return (int64_t) WordImmediate(byte_array);
+    case 4:
+      return (int64_t) DwordImmediate(byte_array);
+    case 8:
+      return QwordImmediate(byte_array);
+    default:
+      /* Don't know how to translate, return 0. */
+      return 0;
+  }
+}
+
+/* Return the immediate value defined by the instruction in the decoder state. */
+static int64_t NCValueImmediate(const struct NCDecoderState* mstate) {
+  NCInstBytesPtr addr;
+  NCInstBytesPtrInitInc(&addr, &mstate->inst_bytes, NCImmedOffset(mstate));
+  return ValueImmediate(&addr, mstate->inst.immbytes);
 }
 
 /* Defines the set of available general purpose registers. */
@@ -175,15 +283,19 @@ static const char* seg_regs[] = {
   "%es", "%cs", "%ss", "%ds", "%fs", "%gs"
 };
 
-static void SibPrint(const struct NCDecoderState *mstate,
-                     uint32_t sib_offset,
+/* Print out the sib byte of the parsed instruction in the given decoder state
+ * to the given file.
+ */
+static void SibPrint(const struct NCDecoderState* mstate,
                      FILE* fp) {
-  uint8_t sib = mstate->inst.maddr[sib_offset];
+  uint8_t sib = NCInstBytesByte(&mstate->inst_bytes, NCSibOffset(mstate));
 
-  if (sib_ss(sib) == 0) {
+  if (!mstate->inst.hassibbyte) {
+    /* This should not happen. */
+    fprintf(fp, "?");
+  } else if (sib_ss(sib) == 0) {
     if (sib_base(sib) == 5) {
-      const uint8_t* disp_addr = mstate->inst.maddr + sib_offset + 1;
-      fprintf(fp, "[0x%x]", DwordImmediate(disp_addr));
+      fprintf(fp, "[0x%x]", DwordImmedAtOffset(mstate, NCDispOffset(mstate)));
     } else {
       /* Has a base register */
       if (sib_index(sib) == 4) {
@@ -207,7 +319,6 @@ static void SibPrint(const struct NCDecoderState *mstate,
     }
   }
 }
-
 
 static void SegPrefixPrint(const struct NCDecoderState *mstate,
                            FILE* fp) {
@@ -233,35 +344,27 @@ static void RegMemPrint(const struct NCDecoderState *mstate,
                         const char* reg_names[],
                         const uint8_t is_gp_regs,
                         FILE* fp) {
-  uint32_t sib_offset =
-      mstate->inst.prefixbytes +
-      1 +
-      mstate->inst.hasopbyte2 +
-      mstate->inst.hasopbyte3 +
-      1;
-  const uint8_t* disp_addr = mstate->inst.maddr +
-                             sib_offset +
-                             mstate->inst.hassibbyte;
-
   DEBUG( printf(
-             "reg mem print: sib_offset = %d, disp_addr = %p, mrm.mod = %02x\n",
-             sib_offset, disp_addr, modrm_mod(mstate->inst.mrm)) );
+             "reg mem print: sib_offset = %d, "
+             "disp_offset = %d, mrm.mod = %02x\n",
+             NCSibOffset(mstate), (int) NCDispOffset(mstate),
+             modrm_mod(mstate->inst.mrm)) );
   switch (modrm_mod(mstate->inst.mrm)) {
     case 0:
      SegPrefixPrint(mstate, fp);
       if (4 == modrm_rm(mstate->inst.mrm)) {
-        SibPrint(mstate, sib_offset, fp);
+        SibPrint(mstate, fp);
       } else if (5 == modrm_rm(mstate->inst.mrm)) {
-        fprintf(fp, "[0x%x]", DwordImmediate(disp_addr));
+        fprintf(fp, "[0x%x]", DwordImmedAtOffset(mstate, NCDispOffset(mstate)));
       } else {
         fprintf(fp, "[%s]", gp_regs[modrm_rm(mstate->inst.mrm)]);
       }
       break;
     case 1: {
         SegPrefixPrint(mstate, fp);
-        fprintf(fp, "0x%x", ByteImmediate(disp_addr));
+        fprintf(fp, "0x%x", ByteImmedAtOffset(mstate, NCDispOffset(mstate)));
         if (4 == modrm_rm(mstate->inst.mrm)) {
-          SibPrint(mstate, sib_offset, fp);
+          SibPrint(mstate, fp);
         } else {
           fprintf(fp, "[%s]", gp_regs[modrm_rm(mstate->inst.mrm)]);
         }
@@ -269,9 +372,9 @@ static void RegMemPrint(const struct NCDecoderState *mstate,
       break;
     case 2: {
         SegPrefixPrint(mstate, fp);
-        fprintf(fp, "0x%x", DwordImmediate(disp_addr));
+        fprintf(fp, "0x%x", DwordImmedAtOffset(mstate, NCDispOffset(mstate)));
         if (4 == modrm_rm(mstate->inst.mrm)) {
-          SibPrint(mstate, sib_offset, fp);
+          SibPrint(mstate, fp);
         } else {
           fprintf(fp, "[%s]", gp_regs[modrm_rm(mstate->inst.mrm)]);
         }
@@ -403,52 +506,22 @@ static void InstFormat(const char* format,
           case 'G':
             fprintf(fp, "%s", gp_regs[modrm_reg(mstate->inst.mrm)]);
             break;
-          case 'I': {
-              const uint8_t* imm_addr = mstate->inst.maddr +
-                  mstate->inst.prefixbytes +
-                  1 +
-                  mstate->inst.hasopbyte2 +
-                  mstate->inst.hasopbyte3 +
-                  mstate->opinfo->hasmrmbyte +
-                  mstate->inst.hassibbyte +
-                  mstate->inst.dispbytes;
-              if ('b' == token[2]) {
-                fprintf(fp, "0x%x", ByteImmediate(imm_addr));
-              } else if ('w' == token[2]) {
-                fprintf(fp, "0x%x", WordImmediate(imm_addr));
-              } else {
-                fprintf(fp, "0x%x", DwordImmediate(imm_addr));
-              }
+          case 'I':
+            fprintf(fp, "0x%"NACL_PRIx64, NCValueImmediate(mstate));
+            break;
+          case 'J':
+            if ('b' == token[2]) {
+              fprintf(fp, "0x%"NACL_PRIxNaClPcAddress,
+                      mstate->inst.vaddr + mstate->inst.bytes.length +
+                      ByteImmedAtOffset(mstate, NCImmedOffset(mstate)));
+            } else {
+              fprintf(fp, "0x%"NACL_PRIxNaClPcAddress,
+                      mstate->inst.vaddr + mstate->inst.bytes.length +
+                      DwordImmedAtOffset(mstate, NCImmedOffset(mstate)));
             }
             break;
-          case 'J': {
-              const uint8_t* imm_addr = mstate->inst.maddr +
-                  mstate->inst.prefixbytes +
-                  1 +
-                  mstate->inst.hasopbyte2 +
-                  mstate->inst.hasopbyte3 +
-                  mstate->opinfo->hasmrmbyte +
-                  mstate->inst.hassibbyte +
-                  mstate->inst.dispbytes;
-              if ('b' == token[2]) {
-                fprintf(fp, "0x%"NACL_PRIxNaClPcAddress,
-                        mstate->inst.vaddr + mstate->inst.length +
-                        ByteImmediate(imm_addr));
-              } else {
-                fprintf(fp, "0x%"NACL_PRIxNaClPcAddress,
-                        mstate->inst.vaddr + mstate->inst.length +
-                        DwordImmediate(imm_addr));
-              }
-            }
-            break;
-          case 'O': {
-              const uint8_t* imm_addr = mstate->inst.maddr +
-                  mstate->inst.prefixbytes +
-                  1 +
-                  mstate->inst.hasopbyte2 +
-                  mstate->inst.hasopbyte3;
-              fprintf(fp, "[0x%x]", DwordImmediate(imm_addr));
-            }
+          case 'O':
+            fprintf(fp, "[0x%"NACL_PRIx64"]", NCValueImmediate(mstate));
             break;
           case 'P':
             if ('R' == token[2]) {
@@ -501,11 +574,11 @@ void PrintInst(const struct NCDecoderState *mstate, FILE* fp) {
   int i;
   DEBUG( printf("use format: %s\n", DisFmt(mstate)) );
   fprintf(fp, " %"NACL_PRIxNaClPcAddress":\t%02x", mstate->inst.vaddr,
-          mstate->inst.maddr[0]);
-  for (i = 1; i < mstate->inst.length; i++) {
-    fprintf(fp, " %02x", mstate->inst.maddr[i]);
+          NCInstBytesByte(&mstate->inst_bytes, 0));
+  for (i = 1; i < mstate->inst.bytes.length; i++) {
+    fprintf(fp, " %02x", NCInstBytesByte(&mstate->inst_bytes, i));
   }
-  for (i = mstate->inst.length; i < 7; i++) fprintf(fp, "   ");
+  for (i = mstate->inst.bytes.length; i < 7; i++) fprintf(fp, "   ");
   fprintf(fp, "\t");
   InstFormat(DisFmt(mstate), mstate, fp);
   fprintf(fp, "\n");

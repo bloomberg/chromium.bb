@@ -12,8 +12,8 @@
  */
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_H_
-#include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/validator_x86/types_memory_model.h"
+
+#include "native_client/src/trusted/validator_x86/ncinstbuffer.h"
 
 struct NCDecoderState;
 struct NCValidatorState;
@@ -245,6 +245,15 @@ static const uint8_t kImmTypeToSize67[kNCDecodeImmediateTypeRange] =
 static const uint8_t kImmTypeToSize[kNCDecodeImmediateTypeRange] =
   { 0, 0, 1, 2, 3, 4, 4, (NACL_TARGET_SUBARCH == 64 ? 8 : 4), 0, 0, 6, 4 };
 
+/* Defines the range of possible (initial) opcodes for x87 instructions. */
+static const uint8_t kFirstX87Opcode = 0xd8;
+static const uint8_t kLastX87Opcode = 0xdf;
+
+/* Defines the opcode for the WAIT instruction.
+ * Note: WAIT is an x87 instruction but not in the coproc opcode space.
+ */
+static const uint8_t kWAITOp = 0x9b;
+
 #define NCDTABLESIZE 256
 
 /* Defines how to decode operands for byte codes. */
@@ -283,32 +292,49 @@ typedef struct NCNopTrieNode {
   struct NCNopTrieNode* fail;
 } NCNopTrieNode;
 
-/* Models a matched x86-32 bit instruction. */
+/* Models a parsed x86-32 bit instruction. */
 struct InstInfo {
+  /* The bytes used to parse the x86-32 instruction (may have added
+   * zero filler if the instruction straddles the memory segment).
+   */
+  NCInstBytes bytes;
+  /* The corresponding virtual address of the instruction. */
   NaClPcAddress vaddr;
-  uint8_t *maddr;
+  /* The number of prefix bytes in the instruction. */
   uint8_t prefixbytes;  /* 0..4 */
-  uint8_t hasopbyte2;
-  uint8_t hasopbyte3;
+  /* Number of opcode bytes in the instruction. */
+  uint8_t num_opbytes;
+  /* non-zero if the instruction contains an SIB byte. */
   uint8_t hassibbyte;
+  /* The ModRm byte. */
   uint8_t mrm;
+  /* A NCDecodeImmediateType describing the type of immediate value(s)
+   * the instruction has.
+   */
   uint8_t immtype;
+  /* The number of bytes that define the immediate value(s). */
+  uint8_t immbytes;
+  /* The number of displacement bytes defined by the instruction. */
   uint8_t dispbytes;
-  uint8_t length;
+  /* The set of prefix masks defined by the prefix bytes. */
   uint32_t prefixmask;
+  /* True if it has a rex prefix. */
   uint8_t rexprefix;
 };
 
 typedef struct NCDecoderState {
-  uint8_t *mpc;      /* Pointer to beginning of instruction. */
-  uint8_t *nextbyte; /* Pointer to next byte to read. */
-  uint8_t length;    /* number of bytes read. */
-  uint8_t overflow;  /* number of bytes past limit read. */
-  uint8_t *mlimit;   /* Pointer to end of memory. */
+  /* Remaining memory to decode. It is allocated on
+   * the stack to make it thread-local, and included here
+   * so that all decoder states have access to it.
+   */
+  NCRemainingMemory* memory;
   uint8_t dbindex;   /* index into decodebuffer */
   NaClPcAddress vpc;
   const struct OpInfo *opinfo;
   struct InstInfo inst;
+  /* Pointer to bytes of the parsed instruction (int inst) for easier access. */
+  const NCInstBytesPtr inst_bytes;
+  /* The validator state (or NULL) associated with the decoder state. */
   struct NCValidatorState *vstate;
   /* The decodebuffer is an array of size kDecodeBufferSize */
   /* of NCDecoderState records, used to allow the validator */

@@ -48,6 +48,7 @@
         'sources': [
           'nacl_cpuid.c',
           'ncdecode.c',
+          'ncinstbuffer.c',
           'nc_segment.c',
           'nc_inst_iter.c',
           'nc_inst_state.c',

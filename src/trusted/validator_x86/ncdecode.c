@@ -121,61 +121,32 @@ static void ErrorInternal(struct NCValidatorState* vstate) {
   g_InternalError(vstate);
 }
 
-/* Overflow buffer to handle lookahead while decoding instructions. */
-static const uint8_t overflow = 0;
-
-/* Get the next byte of the current parsed instruction. */
-#define GetNextByte(mstate) *(mstate->nextbyte)
-
-/* Return the nth byte of the current parsed instruction. */
-static uint8_t GetByte(struct NCDecoderState* mstate, uint8_t n) {
-  if (n < mstate->length) {
-    return mstate->mpc[n];
-  } else {
-    return overflow;
-  }
-}
-
-/* Read one byte while parsing the current instruction. */
-static void ReadNextByte(struct NCDecoderState* mstate) {
-  if (mstate->nextbyte < mstate->mlimit) {
-    /* Still in valid memory, read data. */
-    mstate->length += 1;
-    mstate->nextbyte += 1;
-  } else {
-    /* At end of memory, switch to overflow buffer, so
-     * that we don't accidentally read outside of valid
-     * memory.
-     */
-    mstate->overflow += 1;
-    mstate->nextbyte = (uint8_t*) &overflow;
-  }
-}
-
-/* Read n bytes while parsing the current instruction. */
-static void ReadBytes(struct NCDecoderState* mstate, ssize_t n) {
-  ssize_t i;
-  for (i = 0; i < n; ++i) {
-    ReadNextByte(mstate);
+/* Defines how to handle errors found while parsing the memory segment. */
+static void NCRemainingMemoryInternalError(NCRemainingMemoryError error,
+                                           struct NCRemainingMemory* memory) {
+  /* Don't do anything for memory overflow! Let NCDecodeSegment generate
+   * the corresponding segmentation error. This allows us to back out overflow
+   * if a predefined nop is matched.
+   */
+  if (NCRemainingMemoryOverflow != error) {
+    NCRemainingMemoryReportError(error, memory);
+    ErrorInternal(memory->vstate);
   }
 }
 
 void InitDecoder(struct NCDecoderState* mstate) {
+  NCInstBytesInit(&mstate->inst.bytes);
   mstate->inst.vaddr = mstate->vpc;
-  mstate->inst.maddr = mstate->mpc;
   mstate->inst.prefixbytes = 0;
   mstate->inst.prefixmask = 0;
-  mstate->inst.hasopbyte2 = 0;
-  mstate->inst.hasopbyte3 = 0;
+  mstate->inst.num_opbytes = 1;  /* unless proven otherwise. */
   mstate->inst.hassibbyte = 0;
   mstate->inst.mrm = 0;
   mstate->inst.immtype = IMM_UNKNOWN;
+  mstate->inst.immbytes = 0;
   mstate->inst.dispbytes = 0;
-  mstate->inst.length = 0;
   mstate->inst.rexprefix = 0;
   mstate->opinfo = NULL;
-  mstate->length = 0;
-  mstate->overflow = 0;
 }
 
 /* Returns the number of bytes defined for the operand of the instruction. */
@@ -197,14 +168,14 @@ void ConsumePrefixBytes(struct NCDecoderState* mstate) {
   uint32_t prefix_form;
 
   for (ii = 0; ii < kMaxPrefixBytes; ++ii) {
-    nb = GetNextByte(mstate);
+    nb = NCRemainingMemoryGetNext(mstate->memory);
     prefix_form = kPrefixTable[nb];
     if (prefix_form == 0) return;
     DEBUG( printf("Consume prefix[%d]: %02x => %x\n", ii, nb, prefix_form) );
     mstate->inst.prefixmask |= prefix_form;
     mstate->inst.prefixmask |= kPrefixTable[nb];
     mstate->inst.prefixbytes += 1;
-    ReadNextByte(mstate);
+    NCInstBytesRead(&mstate->inst.bytes);
     DEBUG( printf("  prefix mask: %08x\n", mstate->inst.prefixmask) );
     if (NACL_TARGET_SUBARCH == 64 && prefix_form == kPrefixREX) {
       mstate->inst.rexprefix = nb;
@@ -233,10 +204,7 @@ static const struct OpInfo *GetExtendedOpInfo(struct NCDecoderState* mstate,
 
 static void GetX87OpInfo(struct NCDecoderState* mstate) {
   /* WAIT is an x87 instruction but not in the coproc opcode space. */
-  const uint8_t kWAITOp = 0x9b;
-  uint8_t kFirstX87Opcode = 0xd8;
-  uint8_t kLastX87Opcode = 0xdf;
-  uint8_t op1 = mstate->inst.maddr[mstate->inst.prefixbytes];
+  uint8_t op1 = NCInstBytesByte(&mstate->inst_bytes, mstate->inst.prefixbytes);
   if (op1 < kFirstX87Opcode || op1 > kLastX87Opcode) {
     if (op1 != kWAITOp) ErrorInternal(mstate->vstate);
     return;
@@ -247,24 +215,21 @@ static void GetX87OpInfo(struct NCDecoderState* mstate) {
 }
 
 void ConsumeOpcodeBytes(struct NCDecoderState* mstate) {
-  uint8_t opcode = GetNextByte(mstate);
+  uint8_t opcode = NCInstBytesRead(&mstate->inst.bytes);
   mstate->opinfo = &kDecode1ByteOp[opcode];
   DEBUG( printf("NACLi_1BYTE: opcode = %02x, ", opcode);
          PrintOpInfo(mstate->opinfo) );
-  ReadNextByte(mstate);
   if (opcode == kTwoByteOpcodeByte1) {
-    uint8_t opcode2 = GetNextByte(mstate);
+    uint8_t opcode2 = NCInstBytesRead(&mstate->inst.bytes);
     mstate->opinfo = GetExtendedOpInfo(mstate, opcode2);
     DEBUG( printf("NACLi_2BYTE: opcode2 = %02x, ", opcode2);
            PrintOpInfo(mstate->opinfo) );
-    mstate->inst.hasopbyte2 = 1;
-    ReadNextByte(mstate);
+    mstate->inst.num_opbytes = 2;
     if (mstate->opinfo->insttype == NACLi_3BYTE) {
-      uint8_t opcode3 = GetNextByte(mstate);
+      uint8_t opcode3 = NCInstBytesRead(&mstate->inst.bytes);
       uint32_t pm;
       pm = mstate->inst.prefixmask;
-      ReadNextByte(mstate);
-      mstate->inst.hasopbyte3 = 1;
+      mstate->inst.num_opbytes = 3;
 
       DEBUG( printf("NACLi_3BYTE: opcode3 = %02x, ", opcode3) );
       switch (opcode2) {
@@ -307,10 +272,9 @@ void ConsumeOpcodeBytes(struct NCDecoderState* mstate) {
 
 void ConsumeModRM(struct NCDecoderState* mstate) {
   if (mstate->opinfo->hasmrmbyte != 0) {
-    const uint8_t mrm = GetNextByte(mstate);
+    const uint8_t mrm = NCInstBytesRead(&mstate->inst.bytes);
     DEBUG( printf("Mod/RM byte: %02x\n", mrm) );
     mstate->inst.mrm = mrm;
-    ReadNextByte(mstate);
     if (mstate->opinfo->insttype == NACLi_X87) {
       GetX87OpInfo(mstate);
     }
@@ -383,8 +347,7 @@ void ConsumeModRM(struct NCDecoderState* mstate) {
 
 void ConsumeSIB(struct NCDecoderState* mstate) {
   if (mstate->inst.hassibbyte != 0) {
-    const uint8_t sib = GetNextByte(mstate);
-    ReadNextByte(mstate);
+    const uint8_t sib = NCInstBytesRead(&mstate->inst.bytes);
     if (sib_base(sib) == 0x05) {
       switch (modrm_mod(mstate->inst.mrm)) {
       case 0: mstate->inst.dispbytes = 4; break;
@@ -400,49 +363,39 @@ void ConsumeSIB(struct NCDecoderState* mstate) {
   }
 }
 
-static void SetInstLength(struct NCDecoderState* mstate,
-                          ssize_t inst_length) {
-  /* Truncate length to size allowed by field length. */
-  if (inst_length <= 0xff) {
-    /* Value fits, update value. */
-    mstate->inst.length = (uint8_t)(inst_length & 0xff);
-  } else {
-    /* Too big! Truncate value to limit allowed in field length. */
-    mstate->inst.length = 0xff;
-    fprintf(stdout, "Unexpected instruction length\n");
-    ErrorInternal(mstate->vstate);
-  }
-}
-
 void ConsumeID(struct NCDecoderState* mstate) {
-  uint8_t old_length = mstate->length;
   if (mstate->inst.immtype == IMM_UNKNOWN) {
     ErrorInternal(mstate->vstate);
   }
   /* NOTE: NaCl allows at most one prefix byte (for 32-bit mode) */
   if (mstate->inst.immtype == IMM_MOV_DATAV) {
-    ReadBytes(mstate, ExtractOperandSize(mstate));
+    mstate->inst.immbytes = ExtractOperandSize(mstate);
   } else if (mstate->inst.prefixmask & kPrefixDATA16) {
-    ReadBytes(mstate, kImmTypeToSize66[mstate->inst.immtype]);
+    mstate->inst.immbytes = kImmTypeToSize66[mstate->inst.immtype];
   } else if (mstate->inst.prefixmask & kPrefixADDR16) {
-    ReadBytes(mstate, kImmTypeToSize67[mstate->inst.immtype]);
+    mstate->inst.immbytes = kImmTypeToSize67[mstate->inst.immtype];
   } else {
-    ReadBytes(mstate, kImmTypeToSize[mstate->inst.immtype]);
+    mstate->inst.immbytes = kImmTypeToSize[mstate->inst.immtype];
   }
-  ReadBytes(mstate, mstate->inst.dispbytes);
-  SetInstLength(mstate, mstate->length);
-  DEBUG( printf("ID: consume %d bytes\n",
-                (mstate->length - old_length)) );
+  NCInstBytesReadBytes((ssize_t) mstate->inst.immbytes,
+                       &mstate->inst.bytes);
+  NCInstBytesReadBytes((ssize_t) mstate->inst.dispbytes,
+                       &mstate->inst.bytes);
+  DEBUG(printf("ID: %d disp bytes, %d imm bytes\n",
+               mstate->inst.dispbytes, mstate->inst.immbytes));
 }
 
 /* Actually this routine is special for 3DNow instructions */
 void MaybeGet3ByteOpInfo(struct NCDecoderState* mstate) {
   if (mstate->opinfo->insttype == NACLi_3DNOW) {
-    uint8_t opbyte1 = GetByte(mstate, mstate->inst.prefixbytes);
-    uint8_t opbyte2 = GetByte(mstate, mstate->inst.prefixbytes + 1);
-    uint8_t immbyte = GetByte(mstate, mstate->inst.length - 1);
+    uint8_t opbyte1 = NCInstBytesByte(&mstate->inst_bytes,
+                                      mstate->inst.prefixbytes);
+    uint8_t opbyte2 = NCInstBytesByte(&mstate->inst_bytes,
+                                      mstate->inst.prefixbytes + 1);
     if (opbyte1 == kTwoByteOpcodeByte1 &&
         opbyte2 == k3DNowOpcodeByte2) {
+      uint8_t immbyte =
+          NCInstBytesByte(&mstate->inst_bytes, mstate->inst.bytes.length - 1);
       mstate->opinfo = &kDecode0F0FOp[immbyte];
       DEBUG( printf(
                  "NACLi_3DNOW: byte1 = %02x, byte2 = %02x, immbyte = %02x,\n  ",
@@ -484,22 +437,25 @@ struct NCDecoderState *PreviousInst(const struct NCDecoderState* mstate,
 static void InitDecodeBuffer(uint8_t *mbase, NaClPcAddress vbase,
                              NaClMemorySize size,
                              struct NCValidatorState* vstate,
+                             NCRemainingMemory* memory,
                              struct NCDecoderState* decodebuffer,
                              struct NCDecoderState** mstate) {
   int dbindex;
+  NCRemainingMemoryInit(mbase, size, memory);
+  memory->error_fn = NCRemainingMemoryInternalError;
+  memory->vstate = vstate;
   for (dbindex = 0; dbindex < kDecodeBufferSize; ++dbindex) {
+    decodebuffer[dbindex].memory       = memory;
     decodebuffer[dbindex].vstate       = vstate;
     decodebuffer[dbindex].decodebuffer = decodebuffer;
     decodebuffer[dbindex].dbindex      = dbindex;
-    decodebuffer[dbindex].inst.length  = 0;  /* indicates no instruction */
     decodebuffer[dbindex].vpc          = 0;
-    decodebuffer[dbindex].mpc          = 0;
-    decodebuffer[dbindex].mlimit       = mbase + size;
-    decodebuffer[dbindex].overflow     = 0;
+    NCInstBytesInitMemory(&decodebuffer[dbindex].inst.bytes, memory);
+    NCInstBytesPtrInit((NCInstBytesPtr*) &decodebuffer[dbindex].inst_bytes,
+                       &decodebuffer[dbindex].inst.bytes);
+
   }
   (*mstate)           = &decodebuffer[0];
-  (*mstate)->mpc      = (uint8_t *)mbase;
-  (*mstate)->nextbyte = mbase;
   (*mstate)->vpc      = vbase;
 }
 
@@ -511,28 +467,39 @@ static void IncrementDecodeBuffer(struct NCDecoderState** mstate) {
    * better to keep the buffer switching logic in one place
    */
   struct NCDecoderState* mnextstate = PreviousInst(*mstate, 1);
-  mnextstate->vpc      =
-      (*mstate)->vpc + (*mstate)->inst.length + (*mstate)->overflow;
-  mnextstate->mpc      = (*mstate)->mpc + (*mstate)->inst.length;
-  mnextstate->nextbyte = (*mstate)->nextbyte;
+  mnextstate->vpc = (*mstate)->vpc + (*mstate)->inst.bytes.length;
   *mstate = mnextstate;
 }
 
+/* Get the i-th byte of the current instruction being parsed. */
+static uint8_t GetInstByte(struct NCDecoderState* mstate, ssize_t i) {
+  if (i < mstate->inst.bytes.length) {
+    return mstate->inst.bytes.byte[i];
+  } else {
+    return NCRemainingMemoryLookahead(mstate->memory,
+                                      i - mstate->inst.bytes.length);
+  }
+}
+
+/* Consume a predefined nop byte sequence, if a match can be found.
+ * Further, if found, replace the currently matched instruction with
+ * the consumed predefined nop.
+ */
 static void ConsumePredefinedNop(struct NCDecoderState* mstate) {
-  /* Do maximal match of possible nops. */
-  uint8_t* nextbyte = mstate->mpc;
+  /* Do maximal match of possible nops */
+  uint8_t pos = 0;
   struct OpInfo* matching_opinfo = NULL;
   ssize_t matching_length = 0;
   NCNopTrieNode* next = (NCNopTrieNode*) (kNcNopTrieNode + 0);
-  uint8_t byte = *nextbyte;
+  uint8_t byte = GetInstByte(mstate, pos);
   while (NULL != next) {
     if (byte == next->matching_byte) {
       DEBUG(printf("NOP match byte: 0x%02x\n", (int) byte));
-      byte = *(++nextbyte);
+      byte = GetInstByte(mstate, ++pos);
       if (NULL != next->matching_opinfo) {
-        DEBUG(printf("NOP matched rule!\n"));
+        DEBUG(printf("NOP matched rule! %d\n", pos));
         matching_opinfo = next->matching_opinfo;
-        matching_length = nextbyte - mstate->mpc;
+        matching_length = pos;
       }
       next = next->success;
     } else {
@@ -543,10 +510,10 @@ static void ConsumePredefinedNop(struct NCDecoderState* mstate) {
     DEBUG(printf("NOP match failed!\n"));
   } else {
     DEBUG(printf("NOP match succeeds! Using last matched rule.\n"));
+    NCRemainingMemoryReset(mstate->memory);
     InitDecoder(mstate);
-    mstate->nextbyte = nextbyte;
+    NCInstBytesReadBytes(matching_length, &mstate->inst.bytes);
     mstate->opinfo = matching_opinfo;
-    SetInstLength(mstate, matching_length);
   }
 }
 
@@ -566,10 +533,8 @@ static void MaybeConsumePredefinedNop(struct NCDecoderState* mstate) {
 }
 
 /* All of the actions needed to read one additional instruction into mstate.
- * Returns the vpc of the next,next instruction.
  */
-static NaClPcAddress ConsumeNextInstruction(struct NCDecoderState* mstate) {
-  NaClPcAddress newpc;
+static void ConsumeNextInstruction(struct NCDecoderState* mstate) {
   DEBUG( printf("Decoding instruction at %"NACL_PRIxNaClPcAddress":\n",
                 mstate->vpc) );
   InitDecoder(mstate);
@@ -580,10 +545,6 @@ static NaClPcAddress ConsumeNextInstruction(struct NCDecoderState* mstate) {
   ConsumeID(mstate);
   MaybeGet3ByteOpInfo(mstate);
   MaybeConsumePredefinedNop(mstate);
-  /* now scrutinize this instruction */
-  newpc = mstate->vpc + mstate->inst.length + mstate->overflow;
-  DEBUG( printf("new pc = %"NACL_PRIxNaClPcAddress"\n", newpc) );
-  return newpc;
 }
 
 /* The actual decoder */
@@ -593,17 +554,20 @@ void NCDecodeSegment(uint8_t *mbase, NaClPcAddress vbase,
   const NaClPcAddress vlimit = vbase + size;
   struct NCDecoderState decodebuffer[kDecodeBufferSize];
   struct NCDecoderState *mstate;
-  InitDecodeBuffer(mbase, vbase, size, vstate, decodebuffer, &mstate);
+  NCRemainingMemory memory;
+  InitDecodeBuffer(mbase, vbase, size, vstate, &memory, decodebuffer, &mstate);
 
-  DEBUG( printf("DecodeSegment(%"NACL_PRIxNaClPcAddress
-                "-%"NACL_PRIxNaClPcAddress")\n",
-                vbase, vlimit) );
+  DEBUG( printf("DecodeSegment(%p[%"NACL_PRIxNaClPcAddress
+                "-%"NACL_PRIxNaClPcAddress"])\n",
+                (void*) mbase, vbase, vlimit) );
   g_NewSegment(mstate->vstate);
   while (mstate->vpc < vlimit) {
-    NaClPcAddress newpc = ConsumeNextInstruction(mstate);
-    if (newpc > vlimit) {
-      fprintf(stdout, "%"NACL_PRIxNaClPcAddress" > %"NACL_PRIxNaClPcAddress"\n",
-              newpc, vlimit);
+    ConsumeNextInstruction(mstate);
+    if (memory.overflow_count) {
+      NaClPcAddress newpc = mstate->vpc + mstate->inst.bytes.length;
+      fprintf(stdout, "%"NACL_PRIxNaClPcAddress" > %"NACL_PRIxNaClPcAddress
+              " (read overflow of %d bytes)\n",
+              newpc, vlimit, memory.overflow_count);
       ErrorSegmentation(vstate);
       break;
     }
@@ -623,9 +587,14 @@ void NCDecodeSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
   struct NCDecoderState decodebuffer_new[kDecodeBufferSize];
   struct NCDecoderState *mstate_old;
   struct NCDecoderState *mstate_new;
-  InitDecodeBuffer(mbase_old, vbase, size, vstate,
+  NCRemainingMemory memory_old;
+  NCRemainingMemory memory_new;
+  NaClPcAddress newpc_old;
+  NaClPcAddress newpc_new;
+
+  InitDecodeBuffer(mbase_old, vbase, size, vstate, &memory_old,
                    decodebuffer_old, &mstate_old);
-  InitDecodeBuffer(mbase_new, vbase, size, vstate,
+  InitDecodeBuffer(mbase_new, vbase, size, vstate, &memory_new,
                    decodebuffer_new, &mstate_new);
 
   DEBUG( printf("DecodeSegmentPair(%"NACL_PRIxNaClPcAddress
@@ -633,8 +602,10 @@ void NCDecodeSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
                 vbase, vlimit) );
   g_NewSegment(mstate_new->vstate);
   while (mstate_old->vpc < vlimit && mstate_new->vpc < vlimit) {
-    NaClPcAddress newpc_old = ConsumeNextInstruction(mstate_old);
-    NaClPcAddress newpc_new = ConsumeNextInstruction(mstate_new);
+    ConsumeNextInstruction(mstate_old);
+    ConsumeNextInstruction(mstate_new);
+    newpc_old = mstate_old->vpc + mstate_old->inst.bytes.length;
+    newpc_new = mstate_new->vpc + mstate_old->inst.bytes.length;
 
     if (newpc_old != newpc_new) {
       fprintf(stdout, "misaligned replacement code "

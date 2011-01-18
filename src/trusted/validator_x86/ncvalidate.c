@@ -71,7 +71,7 @@ static void BadInstructionError(const struct NCDecoderState *mstate,
                                 const char *msg) {
   ValidatePrintError(mstate->inst.vaddr, msg, mstate->vstate);
   if (mstate->vstate->do_stub_out) {
-    memset(mstate->inst.maddr, kNaClFullStop, mstate->inst.length);
+    memset(mstate->memory->mpc, kNaClFullStop, mstate->memory->read_length);
   }
 }
 
@@ -439,7 +439,7 @@ void NCValidateFreeState(struct NCValidatorState **vstate) {
 /* ValidateSFenceClFlush is called for the sfence/clflush opcode 0f ae /7 */
 /* It returns 0 if the current instruction is implemented, and 1 if not.  */
 static int ValidateSFenceClFlush(const struct NCDecoderState *mstate) {
-  uint8_t mrm = (uint8_t)mstate->inst.maddr[2];
+  uint8_t mrm = NCInstBytesByte(&mstate->inst_bytes, 2);
 
   if (modrm_mod(mrm) == 3) {
     /* this is an sfence */
@@ -453,7 +453,7 @@ static int ValidateSFenceClFlush(const struct NCDecoderState *mstate) {
 }
 
 static void ValidateCallAlignment(const struct NCDecoderState *mstate) {
-  NaClPcAddress fallthru = mstate->inst.vaddr + mstate->inst.length;
+  NaClPcAddress fallthru = mstate->inst.vaddr + mstate->inst.bytes.length;
   if (fallthru & mstate->vstate->alignmask) {
     ValidatePrintError(mstate->inst.vaddr, "Bad call alignment",
                        mstate->vstate);
@@ -463,9 +463,12 @@ static void ValidateCallAlignment(const struct NCDecoderState *mstate) {
 }
 
 static void ValidateJmp8(const struct NCDecoderState *mstate) {
-  uint8_t opcode = (uint8_t)mstate->inst.maddr[mstate->inst.prefixbytes];
-  int8_t offset = (int8_t)mstate->inst.maddr[mstate->inst.prefixbytes+1];
-  NaClPcAddress target = mstate->inst.vaddr + mstate->inst.length + offset;
+  uint8_t opcode = NCInstBytesByte(&mstate->inst_bytes,
+                                   mstate->inst.prefixbytes);
+  int8_t offset = NCInstBytesByte(&mstate->inst_bytes,
+                                  mstate->inst.prefixbytes+1);
+  NaClPcAddress target =
+      mstate->inst.vaddr + mstate->inst.bytes.length + offset;
   Stats_CheckTarget(mstate->vstate);
   if ((opcode & 0xf0) == 0x70 || opcode == 0xeb ||
       opcode == 0xe0 || opcode == 0xe1 || opcode == 0xe2 || opcode == 0xe3) {
@@ -479,26 +482,36 @@ static void ValidateJmp8(const struct NCDecoderState *mstate) {
 }
 
 static void ValidateJmpz(const struct NCDecoderState *mstate) {
-  uint8_t *opcode = mstate->inst.maddr + mstate->inst.prefixbytes;
+  NCInstBytesPtr opcode;
+  uint8_t opcode0;
   int32_t offset;
   NaClPcAddress target;
+  NCInstBytesPtrInitInc(&opcode, &mstate->inst_bytes,
+                        mstate->inst.prefixbytes);
+  opcode0 = NCInstBytesByte(&opcode, 0);
   Stats_CheckTarget(mstate->vstate);
-  if (*opcode == 0xe8 || *opcode == 0xe9) {
-    offset = *(int32_t *)&opcode[1];
-    target = mstate->inst.vaddr + mstate->inst.length + offset;
+  if (opcode0 == 0xe8 || opcode0 == 0xe9) {
+    NCInstBytesPtr opcode_1;
+    NCInstBytesPtrInitInc(&opcode_1, &opcode, 1);
+    offset = NCInstBytesInt32(&opcode_1);
+    target = mstate->inst.vaddr + mstate->inst.bytes.length + offset;
     RememberTP(mstate->inst.vaddr, target, mstate->vstate);
     /* as a courtesy, check call alignment correctness */
-    if (*opcode == 0xe8) ValidateCallAlignment(mstate);
-  } else if (*opcode == 0x0f) {
-    if ((opcode[1] & 0xf0) == 0x80) {
-      offset = *(int32_t *)&opcode[2];
-      target = mstate->inst.vaddr + mstate->inst.length + offset;
+    if (opcode0 == 0xe8) ValidateCallAlignment(mstate);
+  } else if (opcode0 == 0x0f) {
+    uint8_t opcode1 = NCInstBytesByte(&opcode, 1);
+    if ((opcode1 & 0xf0) == 0x80) {
+      NCInstBytesPtr opcode_2;
+      NCInstBytesPtrInitInc(&opcode_2, &opcode, 2);
+      offset = NCInstBytesInt32(&opcode_2);
+      target = mstate->inst.vaddr + mstate->inst.bytes.length + offset;
       RememberTP(mstate->inst.vaddr, target, mstate->vstate);
     }
   } else {
     /* If this ever happens, it's probably a decoder bug. */
+    uint8_t opcode1 = NCInstBytesByte(&opcode, 1);
     vprint(("ERROR: JMPZ %"NACL_PRIxNaClPcAddress": %x %x\n",
-             mstate->inst.vaddr, opcode[0], opcode[1]));
+             mstate->inst.vaddr, opcode0, opcode1));
     Stats_InternalError(mstate->vstate);
   }
 }
@@ -513,22 +526,24 @@ static void ValidateJmpz(const struct NCDecoderState *mstate) {
  * TODO(brad): validate or write the masks.
  */
 static void ValidateIndirect5(const struct NCDecoderState *mstate) {
-  uint8_t               *jmpopcode;
-  uint8_t               *andopcode;
+  NCInstBytesPtr jmpopcode;
+  NCInstBytesPtr andopcode;
   uint8_t               mrm;
   uint8_t               targetreg;
   const uint8_t         kReg_ESP = 4;
 
   struct NCDecoderState *andinst = PreviousInst(mstate, -1);
   assert(andinst != NULL);
-  if (andinst->inst.length == 0) {
+  if (andinst->inst.bytes.length == 0) {
     BadInstructionError(mstate, "Unsafe indirect jump");
     Stats_UnsafeIndirect(mstate->vstate);
     return;
   }
-  jmpopcode = mstate->inst.maddr;   /* note: no prefixbytes allowed */
-  andopcode = andinst->inst.maddr;  /* note: no prefixbytes allowed */
-  mrm = jmpopcode[1];
+  /* note: no prefixbytes allowed */
+  NCInstBytesPtrInitInc(&jmpopcode, &mstate->inst_bytes, 0);
+  /* note: no prefixbytes allowed */
+  NCInstBytesPtrInitInc(&andopcode, &andinst->inst_bytes, 0);
+  mrm = NCInstBytesByte(&jmpopcode, 1);
   targetreg = modrm_rm(mrm);  /* Note that the modrm_rm field holds the   */
                               /* target addr the modrm_reg is the opcode. */
 
@@ -540,18 +555,19 @@ static void ValidateIndirect5(const struct NCDecoderState *mstate) {
     if (andinst->inst.prefixbytes != 0) break;
     /* Check all the opcodes. */
     /* In GROUP5, 2 => call, 4 => jmp */
-    if (jmpopcode[0] != 0xff) break;
+    if (NCInstBytesByte(&jmpopcode, 0) != 0xff) break;
     if ((modrm_reg(mrm) != 2) && (modrm_reg(mrm) != 4)) break;
     /* Issue 32: disallow unsafe call/jump indirection */
     /* example:    ff 12     call (*edx)               */
     /* Reported by defend.the.world on 11 Dec 2008     */
     if (modrm_mod(mrm) != 3) break;
     if (targetreg == kReg_ESP) break;
-    if (andopcode[0] != 0x83) break;
+    if (NCInstBytesByte(&andopcode, 0) != 0x83) break;
     /* check modrm bytes of or and and instructions */
-    if (andopcode[1] != (0xe0 | targetreg)) break;
+    if (NCInstBytesByte(&andopcode, 1) != (0xe0 | targetreg)) break;
     /* check mask */
-    if (andopcode[2] != (0x0ff & ~mstate->vstate->alignmask)) break;
+    if (NCInstBytesByte(&andopcode, 2) !=
+        (0x0ff & ~mstate->vstate->alignmask)) break;
     /* All checks look good. Make the sequence 'atomic.' */
     ForgetIP(mstate->inst.vaddr, mstate->vstate);
     /* as a courtesy, check call alignment correctness */
@@ -576,14 +592,14 @@ void ValidateInst(const struct NCDecoderState *mstate) {
       (uint32_t)mstate, (uint32_t)mstate->vstate, mstate->inst.vaddr)); */
   if (mstate == NULL) return;
   if (mstate->vstate == NULL) return;
-  OpcodeHisto(mstate->inst.maddr[mstate->inst.prefixbytes],
+  OpcodeHisto(NCInstBytesByte(&mstate->inst_bytes, mstate->inst.prefixbytes),
               mstate->vstate);
   RememberIP(mstate->inst.vaddr, mstate->vstate);
   cpufeatures = &(mstate->vstate->cpufeatures);
   do {
     if (mstate->inst.prefixbytes == 0) break;
     if (mstate->inst.prefixbytes <= kMaxValidPrefixBytes) {
-      if (mstate->inst.hasopbyte2) {
+      if (mstate->inst.num_opbytes >= 2) {
         if (mstate->inst.prefixmask & kPrefixLOCK) {
           /* For two byte opcodes, check for use of the lock prefix.   */
           if (mstate->opinfo->insttype == NACLi_386L) break;
@@ -606,7 +622,7 @@ void ValidateInst(const struct NCDecoderState *mstate) {
     Stats_BadPrefix(mstate->vstate);
   } while (0);
   if ((mstate->opinfo->insttype != NACLi_NOP) &&
-      ((size_t) (mstate->inst.length - mstate->inst.prefixbytes)
+      ((size_t) (mstate->inst.bytes.length - mstate->inst.prefixbytes)
        > kMaxValidInstLength)) {
     BadInstructionError(mstate, "Instruction too long");
     Stats_BadInstLength(mstate->vstate);
@@ -717,13 +733,11 @@ void ValidateInst(const struct NCDecoderState *mstate) {
     case NACLi_OPINMRM:
     case NACLi_3BYTE:
     case NACLi_CMPXCHG16B: {
-        /* uint8_t *opcode = mstate->inst.maddr + mstate->inst.prefixbytes; */
         BadInstructionError(mstate, "Illegal instruction");
         Stats_IllegalInst(mstate->vstate);
         break;
       }
     case NACLi_UNDEFINED: {
-        /* uint8_t *opcode = mstate->inst.maddr + mstate->inst.prefixbytes; */
         BadInstructionError(mstate, "Undefined instruction");
         Stats_IllegalInst(mstate->vstate);
         Stats_InternalError(mstate->vstate);
@@ -734,7 +748,8 @@ void ValidateInst(const struct NCDecoderState *mstate) {
       Stats_InternalError(mstate->vstate);
       break;
   }
-  if (squashme) memset(mstate->inst.maddr, kNaClFullStop, mstate->inst.length);
+  if (squashme) memset(mstate->memory->mpc, kNaClFullStop,
+                       mstate->memory->read_length);
 }
 
 /*
@@ -748,14 +763,16 @@ void ValidateIndirect5Replacement(const struct NCDecoderState *mstate_old,
     /* check that the and-guard is 3 bytes and bit-for-bit identical */
     struct NCDecoderState *andinst_old = PreviousInst(mstate_old, -1);
     struct NCDecoderState *andinst_new = PreviousInst(mstate_new, -1);
-    if (andinst_old->inst.length != 3) break;
-    if (andinst_new->inst.length != 3) break;
-    if (memcmp(andinst_old->inst.maddr, andinst_new->inst.maddr, 3) != 0) break;
+    if (andinst_old->inst.bytes.length != 3) break;
+    if (andinst_new->inst.bytes.length != 3) break;
+    if (memcmp(andinst_old->inst.bytes.byte,
+               andinst_new->inst.bytes.byte, 3) != 0) break;
 
     /* check that the indirect-jmp is 2 bytes and bit-for-bit identical */
-    if (mstate_old->inst.length != 2) break;
-    if (mstate_new->inst.length != 2) break;
-    if (memcmp(mstate_old->inst.maddr, mstate_new->inst.maddr, 2) != 0) break;
+    if (mstate_old->inst.bytes.length != 2) break;
+    if (mstate_new->inst.bytes.length != 2) break;
+    if (memcmp(mstate_old->inst.bytes.byte,
+               mstate_new->inst.bytes.byte, 2) != 0) break;
 
     return;
   } while (0);
@@ -774,7 +791,7 @@ void ValidateInstReplacement(const struct NCDecoderState *mstate_old,
   ValidateInst(mstate_new);
 
   /* Location/length must match */
-  if (mstate_old->inst.length != mstate_new->inst.length
+  if (mstate_old->inst.bytes.length != mstate_new->inst.bytes.length
     || mstate_old->vpc != mstate_new->vpc) {
     BadInstructionError(mstate_new,
                         "New instruction does not match old instruction size");

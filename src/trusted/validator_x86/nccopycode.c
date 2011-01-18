@@ -230,11 +230,11 @@ void CopyInstructionInternal(uint8_t *dst,
  */
 void CopyInstruction(const struct NCDecoderState *mstate_old,
                      const struct NCDecoderState *mstate_new) {
-  CHECK(mstate_new->inst.length == mstate_old->inst.length);
+  CHECK(mstate_new->memory->read_length == mstate_old->memory->read_length);
 
-  CopyInstructionInternal(mstate_old->inst.maddr,
-                          mstate_new->inst.maddr,
-                          mstate_old->inst.length);
+  CopyInstructionInternal(mstate_old->memory->mpc,
+                          mstate_new->memory->mpc,
+                          mstate_old->memory->read_length);
 }
 
 int NCCopyCode(uint8_t *dst, uint8_t *src, NaClPcAddress vbase,
@@ -299,4 +299,3 @@ int NaClCopyCodeIter(uint8_t *dst, uint8_t *src,
 #else
 #error "Unknown Platform"
 #endif
-
