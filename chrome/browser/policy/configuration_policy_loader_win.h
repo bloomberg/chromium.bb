@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,7 @@ namespace policy {
 // reload when Group Policy changes.
 class ConfigurationPolicyLoaderWin
     : public AsynchronousPolicyLoader,
-      public base::win::ObjectWatcher::Delegate,
-      public MessageLoop::DestructionObserver {
+      public base::win::ObjectWatcher::Delegate {
  public:
   ConfigurationPolicyLoaderWin(
       AsynchronousPolicyProvider::Delegate* delegate,
@@ -38,9 +37,6 @@ class ConfigurationPolicyLoaderWin
 
   // ObjectWatcher::Delegate overrides:
   virtual void OnObjectSignaled(HANDLE object);
-
-  // MessageLoop::DestructionObserver overrides:
-  virtual void WillDestroyCurrentMessageLoop();
 
   base::WaitableEvent user_policy_changed_event_;
   base::WaitableEvent machine_policy_changed_event_;

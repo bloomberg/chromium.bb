@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,13 +31,11 @@ ConfigurationPolicyLoaderWin::ConfigurationPolicyLoaderWin(
 void ConfigurationPolicyLoaderWin::InitOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   AsynchronousPolicyLoader::InitOnFileThread();
-  MessageLoop::current()->AddDestructionObserver(this);
   SetupWatches();
 }
 
 void ConfigurationPolicyLoaderWin::StopOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  MessageLoop::current()->RemoveDestructionObserver(this);
   user_policy_watcher_.StopWatching();
   machine_policy_watcher_.StopWatching();
   AsynchronousPolicyLoader::StopOnFileThread();
@@ -79,12 +77,6 @@ void ConfigurationPolicyLoaderWin::OnObjectSignaled(HANDLE object) {
       << "unexpected object signaled policy reload, obj = "
       << std::showbase << std::hex << object;
   Reload();
-}
-
-void ConfigurationPolicyLoaderWin::
-    WillDestroyCurrentMessageLoop() {
-  CancelReloadTask();
-  MessageLoop::current()->RemoveDestructionObserver(this);
 }
 
 }  // namespace policy
