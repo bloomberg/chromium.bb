@@ -141,13 +141,8 @@ void GpuChannel::OnCreateViewCommandBuffer(
   // "render target" the GpuCommandBufferStub targets.
   handle = gfx::NativeViewFromId(view_id);
 #elif defined(OS_LINUX)
-  ChildThread* gpu_thread = ChildThread::current();
   // Ask the browser for the view's XID.
-  // TODO(piman): This assumes that it doesn't change. It can change however
-  // when tearing off tabs. This needs a fix in the browser UI code. A possible
-  // alternative would be to add a socket/plug pair like with plugins but that
-  // has issues with events and focus.
-  gpu_thread->Send(new GpuHostMsg_GetViewXID(view_id, &handle));
+  gpu_thread_->Send(new GpuHostMsg_GetViewXID(view_id, &handle));
 #elif defined(OS_MACOSX)
   // On Mac OS X we currently pass a (fake) PluginWindowHandle for the
   // NativeViewId. We could allocate fake NativeViewIds on the browser

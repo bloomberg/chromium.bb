@@ -4,11 +4,14 @@
 
 #include <EGL/egl.h>
 
-#include "build/build_config.h"
 #if defined(OS_LINUX)
-#include "app/x11_util.h"
+extern "C" {
+#include <X11/Xlib.h>
+}
 #define EGL_HAS_PBUFFERS 1
 #endif
+
+#include "build/build_config.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "app/gfx/gl/gl_bindings.h"
@@ -80,7 +83,7 @@ bool BaseEGLContext::InitializeOneOff() {
     return true;
 
 #ifdef OS_LINUX
-  EGLNativeDisplayType native_display = x11_util::GetXDisplay();
+  EGLNativeDisplayType native_display = XOpenDisplay(NULL);
 #else
   EGLNativeDisplayType native_display = EGL_DEFAULT_DISPLAY;
 #endif

@@ -574,26 +574,23 @@ bool GpuProcessHost::CanLaunchGpuProcess() const {
 bool GpuProcessHost::LaunchGpuProcess() {
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
 
-  // TODO(apatrick): This cannot be a UI message pump on Linux because glib is
-  // not thread safe. Changing this to an IO message pump does not completely
-  // resolve the problem, most likely because we're sharing a connection to the
-  // X server with the browser.
-#if !defined(OS_LINUX)
-
   // If the single-process switch is present, just launch the GPU service in a
   // new thread in the browser process.
   if (browser_command_line.HasSwitch(switches::kSingleProcess)) {
     GpuMainThread* thread = new GpuMainThread(channel_id());
 
     base::Thread::Options options;
+#if defined(OS_LINUX)
+    options.message_loop_type = MessageLoop::TYPE_IO;
+#else
     options.message_loop_type = MessageLoop::TYPE_UI;
+#endif
 
     if (!thread->StartWithOptions(options))
       return false;
 
     return true;
   }
-#endif
 
   CommandLine::StringType gpu_launcher =
       browser_command_line.GetSwitchValueNative(switches::kGpuLauncher);

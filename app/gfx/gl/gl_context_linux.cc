@@ -28,16 +28,14 @@ Display* GetXDisplayHelper() {
   static Display* display = NULL;
 
   if (!display) {
-    if (x11_util::XDisplayExists()) {
-      display = x11_util::GetXDisplay();
-    } else {
-      display = XOpenDisplay(NULL);
-    }
+    display = XOpenDisplay(NULL);
+    CHECK(display);
   }
+
   return display;
 }
 
-}
+}  // namespace
 
 namespace gfx {
 
