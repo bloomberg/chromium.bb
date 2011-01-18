@@ -63,8 +63,8 @@ PRUNE_PATHS = set([
     # Used for development and test, not in the shipping product.
     os.path.join('third_party','cygwin'),
     os.path.join('third_party','lighttpd'),
-    # ---- Check with NACL on this one... we're just pulling bin, not LICENSE
-    # ---- in DEPS.
+    # Filed http://code.google.com/p/nativeclient/issues/detail?id=1323
+    # to get clarification about using mingw-w64 from NaCl in Chromium:
     os.path.join('third_party','mingw-w64'),
     os.path.join('third_party','pefile'),
     os.path.join('third_party','python_26'),
@@ -125,6 +125,8 @@ SPECIAL_CASES = {
         "URL": "http://code.google.com/p/google-toolbox-for-mac/",
         "License File": "COPYING",
     },
+    # Filed issue pdfsqueeze:2 with dmaclach to get an honest LICESNE
+    # file in the pdfsqueeze repo.
     # pdfsqueeze is Apache Licensed, reuse the same file from GTM:
     os.path.join('third_party', 'pdfsqueeze'): {
         "Name": "pdfsqueeze",
