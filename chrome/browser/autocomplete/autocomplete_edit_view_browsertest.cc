@@ -361,7 +361,14 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, FLAKY_BrowserAccelerators) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, PopupAccelerators) {
+// Flake on Win only.  http://crbug.com/69941
+#if defined(OS_WIN)
+#define MAYBE_PopupAccelerators FLAKY_PopupAccelerators
+#else
+#define MAYBE_PopupAccelerators PopupAccelerators
+#endif
+
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_PopupAccelerators) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   // Create a popup.
