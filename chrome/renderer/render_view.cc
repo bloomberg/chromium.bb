@@ -3181,8 +3181,16 @@ void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
     }
   }
 
-  state->set_user_script_idle_scheduler(
-      new UserScriptIdleScheduler(this, frame));
+  // If this datasource already has a UserScriptIdleScheduler, reuse that one.
+  // This is for navigations within a page (didNavigateWithinPage). See
+  // http://code.google.com/p/chromium/issues/detail?id=64093
+  NavigationState* old_state = NavigationState::FromDataSource(ds);
+  if (old_state && old_state->user_script_idle_scheduler()) {
+    state->swap_user_script_idle_scheduler(old_state);
+  } else {
+    state->set_user_script_idle_scheduler(
+        new UserScriptIdleScheduler(this, frame));
+  }
   ds->setExtraData(state);
 }
 
@@ -3507,11 +3515,6 @@ void RenderView::didFinishLoad(WebFrame* frame) {
 
 void RenderView::didNavigateWithinPage(
     WebFrame* frame, bool is_new_navigation) {
-  // Determine if the UserScriptIdleScheduler already ran scripts on this page,
-  // since a new one gets created by didCreateDataSource.
-  NavigationState* state = NavigationState::FromDataSource(frame->dataSource());
-  bool idle_scheduler_ran = state->user_script_idle_scheduler()->has_run();
-
   // If this was a reference fragment navigation that we initiated, then we
   // could end up having a non-null pending navigation state.  We just need to
   // update the ExtraData on the datasource so that others who read the
@@ -3524,11 +3527,6 @@ void RenderView::didNavigateWithinPage(
   NavigationState* new_state =
       NavigationState::FromDataSource(frame->dataSource());
   new_state->set_was_within_same_page(true);
-
-  if (idle_scheduler_ran) {
-    // Update the new UserScriptIdleScheduler so we don't re-run scripts.
-    new_state->user_script_idle_scheduler()->set_has_run(true);
-  }
 
   didCommitProvisionalLoad(frame, is_new_navigation);
 

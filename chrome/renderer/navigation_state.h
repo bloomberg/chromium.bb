@@ -66,6 +66,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     return user_script_idle_scheduler_.get();
   }
   void set_user_script_idle_scheduler(UserScriptIdleScheduler* scheduler);
+  void swap_user_script_idle_scheduler(NavigationState* state);
 
   // Contains the page_id for this navigation or -1 if there is none yet.
   int32 pending_page_id() const { return pending_page_id_; }

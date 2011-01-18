@@ -31,8 +31,6 @@ class UserScriptIdleScheduler {
 
   bool has_run() { return has_run_; }
 
-  void set_has_run(bool has_run) { has_run_ = has_run; }
-
   // Called when the DOM has been completely constructed.
   void DidFinishDocumentLoad();
 

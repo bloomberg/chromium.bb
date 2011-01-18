@@ -15,6 +15,11 @@ void NavigationState::set_user_script_idle_scheduler(
   user_script_idle_scheduler_.reset(scheduler);
 }
 
+void NavigationState::swap_user_script_idle_scheduler(
+    NavigationState* state) {
+  user_script_idle_scheduler_.swap(state->user_script_idle_scheduler_);
+}
+
 void NavigationState::set_password_form_data(webkit_glue::PasswordForm* data) {
   password_form_data_.reset(data);
 }
