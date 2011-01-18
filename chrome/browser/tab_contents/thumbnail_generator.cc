@@ -180,7 +180,7 @@ void ThumbnailGenerator::MonitorRenderer(RenderWidgetHost* renderer,
         this,
         NotificationType::RENDER_WIDGET_HOST_WILL_DESTROY_BACKING_STORE,
         renderer_source);
-  if (monitor |= currently_monitored) {
+  if (monitor != currently_monitored) {
     if (monitor) {
       registrar_.Add(
           this,
