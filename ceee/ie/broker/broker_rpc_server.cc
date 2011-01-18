@@ -106,7 +106,7 @@ bool BrokerRpcServer::Stop() {
   // Unregister RPC interface.
   status = ::RpcServerUnregisterIf(
       BrokerRpcServer_CeeeBroker_v1_1_s_ifspec, NULL, FALSE);
-  LOG_IF(WARNING, RPC_S_OK != status || RPC_S_UNKNOWN_MGR_TYPE != status ||
+  LOG_IF(WARNING, RPC_S_OK != status && RPC_S_UNKNOWN_MGR_TYPE != status &&
                   RPC_S_UNKNOWN_IF != status) <<
       "Failed to unregister interface. RPC_STATUS=0x" << com::LogWe(status);
 
