@@ -9,6 +9,7 @@ import re
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import test_utils
 
 
 class PluginsTest(pyauto.PyUITest):
@@ -186,8 +187,11 @@ class PluginsTest(pyauto.PyUITest):
     """Verify that plugins can be blocked on a domain by adding
     an exception(s)."""
     # We are using the same live site in order to detect if the web page
-    # is using shockwave flash process
-    self.NavigateToURL('http://www.hulu.com')
+    # is using shockwave flash process.
+    # On few test machines navigation takes more than the default time so
+    # setting 1 min of wait time here.
+    test_utils.CallFunctionWithNewTimeout(self, 1 * 60 * 1000,
+        lambda: self.NavigateToURL('http://vimeo.com'))
     pid = self._GetPluginPID('Shockwave Flash')
     self.assertTrue(pid, msg='No plugin process for Shockwave Flash')
     self.Kill(pid)
@@ -197,7 +201,7 @@ class PluginsTest(pyauto.PyUITest):
 
     # Add an exception to block plugins on hulu.com.
     self.SetPrefs(pyauto.kContentSettingsPatterns,
-                 {'[*.]hulu.com': {'plugins': 2}})
+                 {'[*.]vimeo.com': {'plugins': 2}})
     self.GetBrowserWindow(0).GetTab(0).Reload()
     self.assertFalse(self._GetPluginPID('Shockwave Flash'),
                      msg='Plug-in not blocked.')
