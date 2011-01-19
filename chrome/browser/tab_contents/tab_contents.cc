@@ -1635,6 +1635,10 @@ void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
     if (!is_error_page)
       content_settings_delegate_->ClearCookieSpecificContentSettings();
     content_settings_delegate_->ClearGeolocationContentSettings();
+
+    // Check if the URL we are about to load has been prerendered by any chance,
+    // and use it if possible.
+    MaybeUsePreloadedPage(url);
   }
 }
 
@@ -1649,6 +1653,10 @@ void TabContents::OnDidRedirectProvisionalLoad(int32 page_id,
   if (!entry || entry->url() != source_url)
     return;
   entry->set_url(target_url);
+
+  // Check if the URL we are about to load has been prerendered by any chance,
+  // and use it if possible.
+  MaybeUsePreloadedPage(target_url);
 }
 
 void TabContents::OnDidFailProvisionalLoadWithError(
@@ -2563,14 +2571,8 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
   int extra_invalidate_flags = 0;
 
   if (PageTransition::IsMainFrame(params.transition)) {
-    PrerenderManager* pm = profile()->GetPrerenderManager();
-    if (pm != NULL) {
-      if (pm->MaybeUsePreloadedPage(this, params.url)) {
-        // TODO(tburkard): If the preloaded page has not finished preloading
-        // yet, we should not do this.
-        DidStopLoading();
-        return;
-      }
+    if (MaybeUsePreloadedPage(params.url)) {
+      return;
     }
 
     bool was_bookmark_bar_visible = ShouldShowBookmarkBar();
@@ -3377,4 +3379,17 @@ void TabContents::SwapInRenderViewHost(RenderViewHost* rvh) {
 void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
   RenderWidgetHostView* rwh_view = view()->CreateViewForWidget(rvh);
   rwh_view->SetSize(view()->GetContainerSize());
+}
+
+bool TabContents::MaybeUsePreloadedPage(const GURL& url) {
+  PrerenderManager* pm = profile()->GetPrerenderManager();
+  if (pm != NULL) {
+    if (pm->MaybeUsePreloadedPage(this, url)) {
+      // TODO(tburkard): If the preloaded page has not finished preloading
+      // yet, we should not do this.
+      DidStopLoading();
+      return true;
+    }
+  }
+  return false;
 }

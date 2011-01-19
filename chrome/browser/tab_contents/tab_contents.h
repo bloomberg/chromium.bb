@@ -1089,6 +1089,11 @@ class TabContents : public PageNavigator,
   virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
                              int index);
 
+  // Checks with the PrerenderManager if the specified URL has been preloaded,
+  // and if so, swap the RenderViewHost with the preload into this TabContents
+  // object.
+  bool MaybeUsePreloadedPage(const GURL& url);
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
