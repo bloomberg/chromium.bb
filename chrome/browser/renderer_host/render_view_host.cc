@@ -168,21 +168,11 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
 
   renderer_initialized_ = true;
 
-  // Force local storage to be enabled for extensions. This is so that we can
-  // enable extensions by default before databases, if necessary.
-  // TODO(aa): This should be removed when local storage and databases are
-  // enabled by default (bugs 4359 and 4360).
-  WebPreferences webkit_prefs = delegate_->GetWebkitPrefs();
-  if (delegate_->GetURL().SchemeIs(chrome::kExtensionScheme)) {
-    webkit_prefs.local_storage_enabled = true;
-    webkit_prefs.databases_enabled = true;
-  }
-
   ViewMsg_New_Params params;
   params.parent_window = GetNativeViewId();
   params.renderer_preferences =
       delegate_->GetRendererPrefs(process()->profile());
-  params.web_preferences = webkit_prefs;
+  params.web_preferences = delegate_->GetWebkitPrefs();
   params.view_id = routing_id();
   params.session_storage_namespace_id = session_storage_namespace_->id();
   params.frame_name = frame_name;
