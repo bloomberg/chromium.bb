@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1202,6 +1202,7 @@ bool WebDatabase::GetIDAndCountOfFormElement(
   s.BindString16(0, element.name());
   s.BindString16(1, element.value());
 
+  *pair_id = 0;
   *count = 0;
 
   if (s.Step()) {

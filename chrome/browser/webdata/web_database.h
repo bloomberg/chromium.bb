@@ -183,7 +183,8 @@ class WebDatabase {
   bool AddToCountOfFormElement(int64 pair_id, int delta, bool* was_removed);
 
   // Gets the pair_id and count entries from name and value specified in
-  // |element|.  Sets *count to 0 if there is no such row in the table.
+  // |element|.  Sets *pair_id and *count to 0 if there is no such row in
+  // the table.
   bool GetIDAndCountOfFormElement(const webkit_glue::FormField& element,
                                   int64* pair_id,
                                   int* count);
