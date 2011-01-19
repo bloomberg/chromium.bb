@@ -548,23 +548,16 @@ class UDPChannelTester : public ChannelTesterBase {
 
 // Mac needs to implement X509Certificate::CreateSelfSigned to enable these
 // tests.
-// TODO(hclam): Run these tests on Windows.
-#if defined(USE_NSS)
+#if defined(USE_NSS) || defined(OS_WIN)
 
 // Verify that we can create and destory server objects without a connection.
 TEST_F(JingleSessionTest, CreateAndDestoy) {
-  if (!base::CheckNSSVersion("3.12.8"))
-    return;
-
   CreateServerPair();
 }
 
 // Verify that incoming session can be rejected, and that the status
 // of the connection is set to CLOSED in this case.
 TEST_F(JingleSessionTest, RejectConnection) {
-  if (!base::CheckNSSVersion("3.12.8"))
-    return;
-
   CreateServerPair();
 
   // Reject incoming session.
@@ -594,18 +587,12 @@ TEST_F(JingleSessionTest, RejectConnection) {
 
 // Verify that we can connect two endpoints.
 TEST_F(JingleSessionTest, Connect) {
-  if (!base::CheckNSSVersion("3.12.8"))
-    return;
-
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
 }
 
 // Verify that data can be transmitted over the event channel.
 TEST_F(JingleSessionTest, TestControlChannel) {
-  if (!base::CheckNSSVersion("3.12.8"))
-    return;
-
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
@@ -621,9 +608,6 @@ TEST_F(JingleSessionTest, TestControlChannel) {
 
 // Verify that data can be transmitted over the video channel.
 TEST_F(JingleSessionTest, TestVideoChannel) {
-  if (!base::CheckNSSVersion("3.12.8"))
-    return;
-
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
@@ -639,9 +623,6 @@ TEST_F(JingleSessionTest, TestVideoChannel) {
 
 // Verify that data can be transmitted over the event channel.
 TEST_F(JingleSessionTest, TestEventChannel) {
-  if (!base::CheckNSSVersion("3.12.8"))
-    return;
-
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
@@ -657,9 +638,6 @@ TEST_F(JingleSessionTest, TestEventChannel) {
 
 // Verify that data can be transmitted over the video RTP channel.
 TEST_F(JingleSessionTest, TestVideoRtpChannel) {
-  if (!base::CheckNSSVersion("3.12.8"))
-    return;
-
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<UDPChannelTester> tester(
