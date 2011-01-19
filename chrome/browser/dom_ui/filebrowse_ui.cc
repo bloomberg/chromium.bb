@@ -126,7 +126,7 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
 
   // DownloadItem::Observer interface
   virtual void OnDownloadUpdated(DownloadItem* download);
-  virtual void OnDownloadFileCompleted(DownloadItem* download) { }
+  virtual void OnDownloadFileCompleted(DownloadItem* download);
   virtual void OnDownloadOpened(DownloadItem* download) { }
 
   // DownloadManager::Observer interface
@@ -195,6 +195,9 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   void FireOnValidatedSavePathOnUIThread(bool valid, const FilePath& save_path);
 
  private:
+
+  // Retrieves downloads from the DownloadManager and updates the page.
+  void UpdateDownloadList();
 
   void OpenNewWindow(const ListValue* args, bool popup);
 
@@ -901,10 +904,17 @@ void FilebrowseHandler::HandleGetMetadata(const ListValue* args) {
 }
 
 void FilebrowseHandler::HandleGetDownloads(const ListValue* args) {
-  ModelChanged();
+  UpdateDownloadList();
 }
 
 void FilebrowseHandler::ModelChanged() {
+  if (!currentpath_.empty())
+    GetChildrenForPath(currentpath_, true);
+  else
+    UpdateDownloadList();
+}
+
+void FilebrowseHandler::UpdateDownloadList() {
   ClearDownloadItems();
 
   std::vector<DownloadItem*> downloads;
@@ -1111,6 +1121,10 @@ void FilebrowseHandler::SendCurrentDownloads() {
   }
 
   dom_ui_->CallJavascriptFunction(L"downloadsList", results_value);
+}
+
+void FilebrowseHandler::OnDownloadFileCompleted(DownloadItem* download) {
+  GetChildrenForPath(currentpath_, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
