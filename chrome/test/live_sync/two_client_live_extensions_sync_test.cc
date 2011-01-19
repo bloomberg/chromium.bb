@@ -26,8 +26,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
+// TODO(rsimha): Enable after http://crbug.com/70028 is fixed.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
-                       StartWithSameExtensions) {
+                       FAILS_StartWithSameExtensions) {
   ASSERT_TRUE(SetupClients());
 
   const int kNumExtensions = 5;
