@@ -3636,11 +3636,4 @@
    fun:_ZN22DefaultSingletonTraitsI13PluginServiceE3NewEv
    fun:_ZN9SingletonI13PluginService22DefaultSingletonTraitsIS0_ES0_E3getEv
    fun:_ZN13PluginService11GetInstanceEv
-   fun:_ZN18BrowserProcessImpl14CreateIOThreadEv
-   fun:_ZN18BrowserProcessImpl9io_threadEv
-   fun:_ZN59_GLOBAL__N_chrome_browser_browser_main.cc_00000000_7C6A03C718CreateChildThreadsEP18BrowserProcessImpl
-   fun:_Z11BrowserMainRK18MainFunctionParams
-   fun:_ZN54_GLOBAL__N_chrome_app_chrome_main.cc_00000000_3219A84B23RunNamedProcessTypeMainERKSsRK18MainFunctionParams
-   fun:ChromeMain
-   fun:main
 }
