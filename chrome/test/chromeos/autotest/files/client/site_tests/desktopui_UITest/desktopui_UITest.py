@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from autotest_lib.client.bin import site_chrome_test
+from autotest_lib.client.cros import chrome_test
 
-class desktopui_UITest(site_chrome_test.ChromeTestBase):
+class desktopui_UITest(chrome_test.ChromeTestBase):
     version = 1
 
     binary_to_run='ui_tests'

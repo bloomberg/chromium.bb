@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 import os
-from autotest_lib.client.bin import site_chrome_test
+from autotest_lib.client.cros import chrome_test
 
-class desktopui_PyAutoFunctionalTests(site_chrome_test.ChromeTestBase):
+class desktopui_PyAutoFunctionalTests(chrome_test.ChromeTestBase):
     """Wrapper for running Chrome's PyAuto-based functional tests."""
     version = 1
 

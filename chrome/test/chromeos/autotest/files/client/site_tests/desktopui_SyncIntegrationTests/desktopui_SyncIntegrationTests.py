@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from autotest_lib.client.bin import site_chrome_test
+from autotest_lib.client.cros import chrome_test
 
-class desktopui_SyncIntegrationTests(site_chrome_test.ChromeTestBase):
+class desktopui_SyncIntegrationTests(chrome_test.ChromeTestBase):
     version = 1
 
     def run_once(self):
