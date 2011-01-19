@@ -397,7 +397,7 @@ class SpdySessionDependencies {
   }
 };
 
-class SpdyURLRequestContext : public net::URLRequestContext {
+class SpdyURLRequestContext : public URLRequestContext {
  public:
   SpdyURLRequestContext() {
     host_resolver_ = new MockHostResolver();
@@ -406,7 +406,7 @@ class SpdyURLRequestContext : public net::URLRequestContext {
     ssl_config_service_ = new SSLConfigServiceDefaults;
     http_auth_handler_factory_ = HttpAuthHandlerFactory::CreateDefault(
         host_resolver_);
-    http_transaction_factory_ = new net::HttpCache(
+    http_transaction_factory_ = new HttpCache(
         new HttpNetworkLayer(&socket_factory_,
                              host_resolver_,
                              cert_verifier_,
@@ -420,7 +420,7 @@ class SpdyURLRequestContext : public net::URLRequestContext {
                              network_delegate_,
                              NULL),
         NULL /* net_log */,
-        net::HttpCache::DefaultBackend::InMemory(0));
+        HttpCache::DefaultBackend::InMemory(0));
   }
 
   MockClientSocketFactory& socket_factory() { return socket_factory_; }

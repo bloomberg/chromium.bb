@@ -177,7 +177,7 @@ class MockCookiePolicy : public CookiePolicy,
   CompletionCallback* callback_;
 };
 
-class MockURLRequestContext : public net::URLRequestContext {
+class MockURLRequestContext : public URLRequestContext {
  public:
   MockURLRequestContext(CookieStore* cookie_store,
                         CookiePolicy* cookie_policy) {
