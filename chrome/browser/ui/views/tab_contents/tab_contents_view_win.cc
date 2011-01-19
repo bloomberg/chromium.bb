@@ -283,6 +283,10 @@ void TabContentsViewWin::CancelDragAndCloseTab() {
   close_tab_after_drag_ends_ = true;
 }
 
+void TabContentsViewWin::GetViewBounds(gfx::Rect* out) const {
+  GetBounds(out, true);
+}
+
 void TabContentsViewWin::UpdateDragCursor(WebDragOperation operation) {
   drop_target_->set_drag_cursor(operation);
 }

@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/views/find_bar_host.h"
 
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_gtk.h"
 #include "views/widget/widget_gtk.h"
 
 void FindBarHost::AudibleAlert() {
@@ -19,8 +19,7 @@ void FindBarHost::GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect) {
   gfx::Rect frame_rect, webcontents_rect;
   host()->GetRootWidget()->GetBounds(&frame_rect, true);
   TabContentsView* tab_view = find_bar_controller_->tab_contents()->view();
-  static_cast<TabContentsViewGtk*>(tab_view)->GetBounds(&webcontents_rect,
-                                                        true);
+  tab_view->GetViewBounds(&webcontents_rect);
   avoid_overlapping_rect->Offset(0, webcontents_rect.y() - frame_rect.y());
 }
 

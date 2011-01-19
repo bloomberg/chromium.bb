@@ -221,6 +221,10 @@ void TabContentsViewViews::RestoreFocus() {
   }
 }
 
+void TabContentsViewViews::GetViewBounds(gfx::Rect* out) const {
+  out->SetRect(x(), y(), width(), height());
+}
+
 void TabContentsViewViews::DidChangeBounds(const gfx::Rect& previous,
                                            const gfx::Rect& current) {
   if (IsVisibleInRootView())

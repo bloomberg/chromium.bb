@@ -323,6 +323,10 @@ void TabContentsViewGtk::RestoreFocus() {
   }
 }
 
+void TabContentsViewGtk::GetViewBounds(gfx::Rect* out) const {
+  GetBounds(out, true);
+}
+
 void TabContentsViewGtk::UpdateDragCursor(WebDragOperation operation) {
   if (drag_dest_.get())
     drag_dest_->UpdateDragStatus(operation);

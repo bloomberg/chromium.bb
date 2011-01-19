@@ -154,6 +154,9 @@ class TabContentsView : public RenderViewHostDelegate::View {
   virtual bool IsEventTracking() const;
   virtual void CloseTabAfterEventTracking() {}
 
+  // Get the bounds of the View, relative to the parent.
+  virtual void GetViewBounds(gfx::Rect* out) const = 0;
+
  protected:
   TabContentsView();  // Abstract interface.
 

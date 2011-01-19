@@ -322,6 +322,11 @@ void TabContentsViewMac::CloseTabAfterEventTracking() {
                     afterDelay:0.0];
 }
 
+void TabContentsViewMac::GetViewBounds(gfx::Rect* out) const {
+  // This method is noth currently used on mac.
+  NOTIMPLEMENTED();
+}
+
 void TabContentsViewMac::CloseTab() {
   tab_contents()->Close(tab_contents()->render_view_host());
 }

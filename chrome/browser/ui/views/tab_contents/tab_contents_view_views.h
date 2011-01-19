@@ -59,6 +59,7 @@ class TabContentsViewViews : public TabContentsView, public views::View {
   virtual void SetInitialFocus();
   virtual void StoreFocus();
   virtual void RestoreFocus();
+  virtual void GetViewBounds(gfx::Rect* out) const;
 
   // views::View implementation
   virtual void DidChangeBounds(const gfx::Rect& previous,

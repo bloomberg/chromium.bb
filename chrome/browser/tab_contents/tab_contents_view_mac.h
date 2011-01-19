@@ -75,6 +75,7 @@ class TabContentsViewMac : public TabContentsView,
                                          const gfx::Rect& initial_pos);
   virtual bool IsEventTracking() const;
   virtual void CloseTabAfterEventTracking();
+  virtual void GetViewBounds(gfx::Rect* out) const;
 
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void ShowContextMenu(const ContextMenuParams& params);

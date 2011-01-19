@@ -57,6 +57,7 @@ class TabContentsViewWin : public TabContentsView,
   virtual void RestoreFocus();
   virtual bool IsDoingDrag() const;
   virtual void CancelDragAndCloseTab();
+  virtual void GetViewBounds(gfx::Rect* out) const;
 
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void ShowContextMenu(const ContextMenuParams& params);
