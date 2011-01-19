@@ -779,9 +779,9 @@ void CertificateManagerHandler::ImportCAFileRead(int read_errno,
 
 void CertificateManagerHandler::ImportCATrustSelected(const ListValue* args) {
   bool fail = false;
-  bool trust_ssl;
-  bool trust_email;
-  bool trust_obj_sign;
+  bool trust_ssl = false;
+  bool trust_email = false;
+  bool trust_obj_sign = false;
   fail |= !CallbackArgsToBool(args, 0, &trust_ssl);
   fail |= !CallbackArgsToBool(args, 1, &trust_email);
   fail |= !CallbackArgsToBool(args, 2, &trust_obj_sign);
