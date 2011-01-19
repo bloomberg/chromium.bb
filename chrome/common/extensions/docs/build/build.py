@@ -42,9 +42,9 @@ from directory import Sample
 from directory import ApiManifest
 from directory import SamplesManifest
 
-def RenderPages(names, test_shell):
+def RenderPages(names, dump_render_tree):
   """
-  Calls test_shell --layout-tests .../generator.html?<names> and writes the
+  Calls DumpRenderTree .../generator.html?<names> and writes the
   results to .../docs/<name>.html
   """
   if not names:
@@ -67,11 +67,11 @@ def RenderPages(names, test_shell):
 
     shutil.copy(_page_shell_html, input_file)
 
-  # Run test_shell and capture result
-  test_shell_timeout = 1000 * 60 * 5  # five minutes
+  # Run DumpRenderTree and capture result
+  dump_render_tree_timeout = 1000 * 60 * 5  # five minutes
   p = Popen(
-      [test_shell, "--layout-tests", "--time-out-ms=%s" % test_shell_timeout,
-          generator_url],
+      [dump_render_tree, "--test-shell",
+       "%s %s" % (generator_url, dump_render_tree_timeout)],
       stdout=PIPE)
 
   # The remaining output will be the content of the generated pages.
@@ -82,21 +82,22 @@ def RenderPages(names, test_shell):
   end = output.rfind(_expected_output_postamble)
 
   if (begin < 0 or end < 0):
-    raise Exception ("test_shell returned invalid output:\n\n" + output)
+    raise Exception("%s returned invalid output:\n\n%s" %
+        (dump_render_tree, output))
 
   begin += len(_expected_output_preamble)
 
   try:
     output_parsed = json.loads(output[begin:end])
   except ValueError, msg:
-   raise Exception("Could not parse test_shell output as JSON. Error: " + msg +
-                   "\n\nOutput was:\n" + output)
+   raise Exception("Could not parse DumpRenderTree output as JSON. Error: " +
+                   msg + "\n\nOutput was:\n" + output)
 
   changed_files = []
   for name in names:
     result = output_parsed[name].encode("utf8") + '\n'
 
-    # Remove CRs that are appearing from captured test_shell output.
+    # Remove CRs that are appearing from captured DumpRenderTree output.
     result = result.replace('\r', '')
 
     # Remove page_shell
@@ -111,8 +112,8 @@ def RenderPages(names, test_shell):
   return changed_files
 
 
-def FindTestShell():
-  # This is hacky. It is used to guess the location of the test_shell
+def FindDumpRenderTree():
+  # This is hacky. It is used to guess the location of the DumpRenderTree
   chrome_dir = os.path.normpath(_base_dir + "/../../../")
   src_dir = os.path.normpath(chrome_dir + "/../")
 
@@ -120,34 +121,36 @@ def FindTestShell():
 
   if (sys.platform in ('cygwin', 'win32')):
     home_dir = os.path.normpath(os.getenv("HOMEDRIVE") + os.getenv("HOMEPATH"))
-    search_locations.append(chrome_dir + "/Release/test_shell.exe")
-    search_locations.append(chrome_dir + "/Debug/test_shell.exe")
-    search_locations.append(home_dir + "/bin/test_shell/" +
-                            "test_shell.exe")
+    search_locations.append(chrome_dir + "/Release/DumpRenderTree.exe")
+    search_locations.append(chrome_dir + "/Debug/DumpRenderTree.exe")
+    search_locations.append(home_dir + "/bin/DumpRenderTree/"
+                            "DumpRenderTree.exe")
 
   if (sys.platform in ('linux', 'linux2')):
-    search_locations.append(src_dir + "/sconsbuild/Release/test_shell")
-    search_locations.append(src_dir + "/out/Release/test_shell")
-    search_locations.append(src_dir + "/sconsbuild/Debug/test_shell")
-    search_locations.append(src_dir + "/out/Debug/test_shell")
-    search_locations.append(os.getenv("HOME") + "/bin/test_shell/test_shell")
+    search_locations.append(src_dir + "/sconsbuild/Release/DumpRenderTree")
+    search_locations.append(src_dir + "/out/Release/DumpRenderTree")
+    search_locations.append(src_dir + "/sconsbuild/Debug/DumpRenderTree")
+    search_locations.append(src_dir + "/out/Debug/DumpRenderTree")
+    search_locations.append(os.getenv("HOME") + "/bin/DumpRenderTree/"
+                            "DumpRenderTree")
 
   if (sys.platform == 'darwin'):
     search_locations.append(src_dir +
-        "/xcodebuild/Release/TestShell.app/Contents/MacOS/TestShell")
+        "/xcodebuild/Release/DumpRenderTree.app/Contents/MacOS/DumpRenderTree")
     search_locations.append(src_dir +
-        "/xcodebuild/Debug/TestShell.app/Contents/MacOS/TestShell")
-    search_locations.append(os.getenv("HOME") + "/bin/test_shell/" +
-                            "TestShell.app/Contents/MacOS/TestShell")
+        "/xcodebuild/Debug/DumpRenderTree.app/Contents/MacOS/DumpRenderTree")
+    search_locations.append(os.getenv("HOME") + "/bin/DumpRenderTree/" +
+                            "DumpRenderTree.app/Contents/MacOS/DumpRenderTree")
 
   for loc in search_locations:
     if os.path.isfile(loc):
       return loc
 
-  raise Exception("Could not find test_shell executable\n" +
-                  "**test_shell may need to be built**\n" +
-                  "Searched: \n" + "\n".join(search_locations) + "\n" +
-                  "To specify a path to test_shell use --test-shell-path")
+  raise Exception("Could not find DumpRenderTree executable\n"
+                  "**DumpRenderTree may need to be built**\n"
+                  "Searched: \n" + "\n".join(search_locations) + "\n"
+                  "To specify a path to DumpRenderTree use "
+                  "--dump-render-tree-path")
 
 def GetStaticFileNames():
   static_files = os.listdir(_static_dir)
@@ -162,20 +165,21 @@ def main():
              "build.sh script instead, which uses depot_tools python.")
 
   parser = OptionParser()
-  parser.add_option("--test-shell-path", dest="test_shell_path",
+  parser.add_option("--dump-render-tree-path", dest="dump_render_tree_path",
                     metavar="PATH",
-                    help="path to test_shell executable")
+                    help="path to DumpRenderTree executable")
   parser.add_option("--page-name", dest="page_name", metavar="PAGE",
                     help="only generate docs for PAGE.html")
   parser.add_option("--nozip", dest="zips", action="store_false",
                     help="do not generate zip files for samples",
                     default=True)
-  (options, args) = parser.parse_args()
+  options, args = parser.parse_args()
 
-  if (options.test_shell_path and os.path.isfile(options.test_shell_path)):
-    test_shell = options.test_shell_path
+  if (options.dump_render_tree_path and
+      os.path.isfile(options.dump_render_tree_path)):
+    dump_render_tree = options.dump_render_tree_path
   else:
-    test_shell = FindTestShell()
+    dump_render_tree = FindDumpRenderTree()
 
   # Load the manifest of existing API Methods
   api_manifest = ApiManifest(_extension_api_json)
@@ -208,7 +212,7 @@ def main():
   else:
     modified_zips = []
 
-  modified_files = RenderPages(page_names, test_shell)
+  modified_files = RenderPages(page_names, dump_render_tree)
   modified_files.extend(modified_zips)
 
   if len(modified_files) == 0:

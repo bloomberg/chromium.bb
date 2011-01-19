@@ -27,7 +27,7 @@ if [ "$(uname | cut -b1-6)" == "CYGWIN" ] ; then
   # The output from build.py doesn't seem seem to print to the console until
   # it's finished, so print a message so people don't think it's hung.
   echo "Running - this can take about a minute"
-  echo "(it goes faster if you have a Release build of test_shell)"
+  echo "(it goes faster if you have a Release build of DumpRenderTree)"
 
   $PYTHON_PATH $BUILD_DIR/build.py $*
 else
