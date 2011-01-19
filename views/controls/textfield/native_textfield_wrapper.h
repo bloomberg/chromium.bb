@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@ namespace views {
 
 class KeyEvent;
 class Textfield;
+class TextRange;
 class View;
 
 // An interface implemented by an object that provides a platform-native
@@ -90,6 +91,15 @@ class NativeTextfieldWrapper {
 
   // Returns whether or not an IME is composing text.
   virtual bool IsIMEComposing() const = 0;
+
+  // Gets the selected range.
+  virtual void GetSelectedRange(TextRange* range) const = 0;
+
+  // Selects the text given by |range|.
+  virtual void SelectRange(const TextRange& range) = 0;
+
+  // Returns the currnet cursor position.
+  virtual size_t GetCursorPosition() const = 0;
 
   // Following methods are to forward key/focus related events to the
   // views wrapper so that TextfieldViews can handle key inputs without

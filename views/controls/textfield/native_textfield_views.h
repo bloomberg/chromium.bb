@@ -81,6 +81,9 @@ class NativeTextfieldViews : public views::View,
   virtual View* GetView();
   virtual gfx::NativeView GetTestingHandle() const;
   virtual bool IsIMEComposing() const;
+  virtual void GetSelectedRange(TextRange* range) const;
+  virtual void SelectRange(const TextRange& range);
+  virtual size_t GetCursorPosition() const;
   virtual bool HandleKeyPressed(const views::KeyEvent& e);
   virtual bool HandleKeyReleased(const views::KeyEvent& e);
   virtual void HandleWillGainFocus();

@@ -274,12 +274,24 @@ bool NativeTextfieldViews::IsIMEComposing() const {
   return false;
 }
 
+void NativeTextfieldViews::GetSelectedRange(TextRange* range) const {
+  model_->GetSelectedRange(range);
+}
+
+void NativeTextfieldViews::SelectRange(const TextRange& range) {
+  model_->SelectRange(range);
+  SchedulePaint();
+}
+
+size_t NativeTextfieldViews::GetCursorPosition() const {
+  return model_->cursor_pos();
+}
+
 bool NativeTextfieldViews::HandleKeyPressed(const views::KeyEvent& e) {
   Textfield::Controller* controller = textfield_->GetController();
   bool handled = false;
-  if (controller) {
+  if (controller)
     handled = controller->HandleKeyEvent(textfield_, e);
-  }
   return handled || HandleKeyEvent(e);
 }
 

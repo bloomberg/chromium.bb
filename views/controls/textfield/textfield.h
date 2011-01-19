@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,8 +32,56 @@
 namespace views {
 
 class KeyEvent;
-
 class NativeTextfieldWrapper;
+
+// TextRange specifies the range of text in the Textfield.  This is
+// used to specify selected text and will be used to change the
+// attributes of characters in the textfield. The range preserves the
+// direction, and selecting from the end to the begining is considered
+// "reverse" order.
+class TextRange {
+ public:
+  TextRange() : start_(0), end_(0) {}
+  TextRange(size_t start, size_t end);
+
+  // Allow copy so that the omnibox can save the view state
+  // for each tabs.
+  explicit TextRange(const TextRange& range)
+      : start_(range.start_), end_(range.end_) {}
+
+  // Returns the start position;
+  size_t start() const { return start_; }
+
+  // Returns the end position.
+  size_t end() const { return end_; }
+
+  // Returns true if the selected text is empty.
+  bool is_empty() const { return start_ == end_; }
+
+  // Returns true if the selection is made in reverse order.
+  bool is_reverse() const { return start_ > end_; }
+
+  // Returns the min of selected range.
+  size_t GetMin() const;
+
+  // Returns the max of selected range.
+  size_t GetMax() const;
+
+  // Returns true if |range| has same start, end position.
+  bool Equals(const TextRange& range) const {
+    return start_ == range.start_ && end_ == range.end_;
+  }
+
+  // Set the range with |start| and |end|.
+  void SetRange(size_t start, size_t end);
+
+ private:
+  size_t start_;
+  size_t end_;
+
+  // No assign.
+  void operator=(const TextRange&);
+};
 
 // This class implements a ChromeView that wraps a native text (edit) field.
 class Textfield : public View {
@@ -184,6 +232,18 @@ class Textfield : public View {
 
   // Returns whether or not an IME is composing text.
   bool IsIMEComposing() const;
+
+  // Gets the selected range. This is views-implementation only and
+  // has to be called after the wrapper is created.
+  void GetSelectedRange(TextRange* range) const;
+
+  // Selects the text given by |range|. This is views-implementation only and
+  // has to be called after the wrapper is created.
+  void SelectRange(const TextRange& range);
+
+  // Returns the current cursor position. This is views-implementation
+  // only and has to be called after the wrapper is created.
+  size_t GetCursorPosition() const;
 
 #ifdef UNIT_TEST
   gfx::NativeView GetTestingHandle() const {

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -303,6 +303,19 @@ bool NativeTextfieldWin::IsIMEComposing() const {
                                                        NULL, 0);
   ImmReleaseContext(m_hWnd, imm_context);
   return composition_size > 0;
+}
+
+void NativeTextfieldWin::GetSelectedRange(TextRange* range) const {
+  NOTREACHED();
+}
+
+void NativeTextfieldWin::SelectRange(const TextRange& range) {
+  NOTREACHED();
+}
+
+size_t NativeTextfieldWin::GetCursorPosition() const {
+  NOTREACHED();
+  return 0U;
 }
 
 bool NativeTextfieldWin::HandleKeyPressed(const views::KeyEvent& e) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,27 @@ namespace views {
 
 // static
 const char Textfield::kViewClassName[] = "views/Textfield";
+
+/////////////////////////////////////////////////////////////////////////////
+// TextRange
+
+TextRange::TextRange(size_t start, size_t end)
+    : start_(start),
+      end_(end) {
+}
+
+size_t TextRange::GetMin() const {
+  return std::min(start_, end_);
+}
+
+size_t TextRange::GetMax() const {
+  return std::max(start_, end_);
+}
+
+void TextRange::SetRange(size_t start, size_t end) {
+  start_ = start;
+  end_ = end;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // Textfield
@@ -240,6 +261,23 @@ void Textfield::SyncText() {
 
 bool Textfield::IsIMEComposing() const {
   return native_wrapper_ && native_wrapper_->IsIMEComposing();
+}
+
+void Textfield::GetSelectedRange(TextRange* range) const {
+  DCHECK(native_wrapper_);
+  if (native_wrapper_)
+    native_wrapper_->GetSelectedRange(range);
+}
+
+void Textfield::SelectRange(const TextRange& range) {
+  DCHECK(native_wrapper_);
+  if (native_wrapper_)
+    native_wrapper_->SelectRange(range);
+}
+
+size_t Textfield::GetCursorPosition() const {
+  DCHECK(native_wrapper_);
+  return native_wrapper_ ? native_wrapper_->GetCursorPosition() : 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

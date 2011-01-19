@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,16 +9,28 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_views_model.h"
 #include "views/test/test_views_delegate.h"
+#include "views/test/views_test_base.h"
 #include "views/views_delegate.h"
 
 namespace views {
 
+#include "views/test/views_test_base.h"
+
+class TextfieldViewsModelTest : public ViewsTestBase {
+ public:
+  TextfieldViewsModelTest() : ViewsTestBase() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TextfieldViewsModelTest);
+};
+
 #define EXPECT_STR_EQ(ascii, utf16) \
   EXPECT_EQ(ASCIIToWide(ascii), UTF16ToWide(utf16))
 
-TEST(TextfieldViewsModelTest, EditString) {
+TEST_F(TextfieldViewsModelTest, EditString) {
   TextfieldViewsModel model;
   // append two strings
   model.Append(ASCIIToUTF16("HILL"));
@@ -58,7 +70,7 @@ TEST(TextfieldViewsModelTest, EditString) {
   EXPECT_STR_EQ("HELLORL", model.text());
 }
 
-TEST(TextfieldViewsModelTest, EmptyString) {
+TEST_F(TextfieldViewsModelTest, EmptyString) {
   TextfieldViewsModel model;
   EXPECT_EQ(string16(), model.text());
   EXPECT_EQ(string16(), model.GetSelectedText());
@@ -75,7 +87,7 @@ TEST(TextfieldViewsModelTest, EmptyString) {
   EXPECT_FALSE(model.Backspace());
 }
 
-TEST(TextfieldViewsModelTest, Selection) {
+TEST_F(TextfieldViewsModelTest, Selection) {
   TextfieldViewsModel model;
   model.Append(ASCIIToUTF16("HELLO"));
   model.MoveCursorRight(false);
@@ -113,7 +125,7 @@ TEST(TextfieldViewsModelTest, Selection) {
   EXPECT_EQ(5U, model.cursor_pos());
 }
 
-TEST(TextfieldViewsModelTest, SelectionAndEdit) {
+TEST_F(TextfieldViewsModelTest, SelectionAndEdit) {
   TextfieldViewsModel model;
   model.Append(ASCIIToUTF16("HELLO"));
   model.MoveCursorRight(false);
@@ -142,7 +154,7 @@ TEST(TextfieldViewsModelTest, SelectionAndEdit) {
   EXPECT_STR_EQ("BEE", model.text());
 }
 
-TEST(TextfieldViewsModelTest, Password) {
+TEST_F(TextfieldViewsModelTest, Password) {
   TextfieldViewsModel model;
   model.set_is_password(true);
   model.Append(ASCIIToUTF16("HELLO"));
@@ -163,7 +175,7 @@ TEST(TextfieldViewsModelTest, Password) {
   EXPECT_STR_EQ("X", model.text());
 }
 
-TEST(TextfieldViewsModelTest, Word) {
+TEST_F(TextfieldViewsModelTest, Word) {
   TextfieldViewsModel model;
   model.Append(
       ASCIIToUTF16("The answer to Life, the Universe, and Everything"));
@@ -210,7 +222,7 @@ TEST(TextfieldViewsModelTest, Word) {
   EXPECT_STR_EQ("42", model.GetVisibleText());
 }
 
-TEST(TextfieldViewsModelTest, TextFragment) {
+TEST_F(TextfieldViewsModelTest, TextFragment) {
   TextfieldViewsModel model;
   TextfieldViewsModel::TextFragments fragments;
   // Empty string
@@ -267,7 +279,7 @@ TEST(TextfieldViewsModelTest, TextFragment) {
   EXPECT_TRUE(fragments[1].selected);
 }
 
-TEST(TextfieldViewsModelTest, SetText) {
+TEST_F(TextfieldViewsModelTest, SetText) {
   TextfieldViewsModel model;
   model.Append(ASCIIToUTF16("HELLO"));
   model.MoveCursorToEnd(false);
@@ -288,12 +300,7 @@ TEST(TextfieldViewsModelTest, SetText) {
   EXPECT_EQ(0U, model.cursor_pos());
 }
 
-#if defined(OS_WIN)
-#define MAYBE_Clipboard DISABLED_Clipboard
-#else
-#define MAYBE_Clipboard Clipboard
-#endif
-TEST(TextfieldViewsModelTest, MAYBE_Clipboard) {
+TEST_F(TextfieldViewsModelTest, Clipboard) {
   scoped_ptr<TestViewsDelegate> test_views_delegate(new TestViewsDelegate());
   AutoReset<views::ViewsDelegate*> auto_reset(
       &views::ViewsDelegate::views_delegate, test_views_delegate.get());
@@ -346,6 +353,115 @@ TEST(TextfieldViewsModelTest, MAYBE_Clipboard) {
   EXPECT_STR_EQ("HELLO HELLO WORLD", clipboard_text);
   EXPECT_STR_EQ("HELLO HELLO HELLO HELLO WORLD", model.text());
   EXPECT_EQ(29U, model.cursor_pos());
+}
+
+TEST_F(TextfieldViewsModelTest, RangeTest) {
+  TextfieldViewsModel model;
+  model.Append(ASCIIToUTF16("HELLO WORLD"));
+  model.MoveCursorToStart(false);
+  TextRange range;
+  model.GetSelectedRange(&range);
+  EXPECT_TRUE(range.is_empty());
+  EXPECT_EQ(0U, range.start());
+  EXPECT_EQ(0U, range.end());
+
+  model.MoveCursorToNextWord(true);
+  model.GetSelectedRange(&range);
+  EXPECT_FALSE(range.is_empty());
+  EXPECT_FALSE(range.is_reverse());
+  EXPECT_EQ(0U, range.start());
+  EXPECT_EQ(5U, range.end());
+
+  model.MoveCursorLeft(true);
+  model.GetSelectedRange(&range);
+  EXPECT_FALSE(range.is_empty());
+  EXPECT_EQ(0U, range.start());
+  EXPECT_EQ(4U, range.end());
+
+  model.MoveCursorToPreviousWord(true);
+  model.GetSelectedRange(&range);
+  EXPECT_TRUE(range.is_empty());
+  EXPECT_EQ(0U, range.start());
+  EXPECT_EQ(0U, range.end());
+
+  // now from the end.
+  model.MoveCursorToEnd(false);
+  model.GetSelectedRange(&range);
+  EXPECT_TRUE(range.is_empty());
+  EXPECT_EQ(11U, range.start());
+  EXPECT_EQ(11U, range.end());
+
+  model.MoveCursorToPreviousWord(true);
+  model.GetSelectedRange(&range);
+  EXPECT_FALSE(range.is_empty());
+  EXPECT_TRUE(range.is_reverse());
+  EXPECT_EQ(11U, range.start());
+  EXPECT_EQ(6U, range.end());
+
+  model.MoveCursorRight(true);
+  model.GetSelectedRange(&range);
+  EXPECT_FALSE(range.is_empty());
+  EXPECT_TRUE(range.is_reverse());
+  EXPECT_EQ(11U, range.start());
+  EXPECT_EQ(7U, range.end());
+
+  model.MoveCursorToNextWord(true);
+  model.GetSelectedRange(&range);
+  EXPECT_TRUE(range.is_empty());
+  EXPECT_EQ(11U, range.start());
+  EXPECT_EQ(11U, range.end());
+
+  // Select All
+  model.MoveCursorToStart(true);
+  model.GetSelectedRange(&range);
+  EXPECT_FALSE(range.is_empty());
+  EXPECT_TRUE(range.is_reverse());
+  EXPECT_EQ(11U, range.start());
+  EXPECT_EQ(0U, range.end());
+}
+
+TEST_F(TextfieldViewsModelTest, SelectRangeTest) {
+  TextfieldViewsModel model;
+  model.Append(ASCIIToUTF16("HELLO WORLD"));
+  TextRange range(0, 6);
+  EXPECT_FALSE(range.is_reverse());
+  model.SelectRange(range);
+  EXPECT_STR_EQ("HELLO ", model.GetSelectedText());
+
+  range.SetRange(6, 1);
+  EXPECT_TRUE(range.is_reverse());
+  model.SelectRange(range);
+  EXPECT_STR_EQ("ELLO ", model.GetSelectedText());
+
+  range.SetRange(2, 1000);
+  EXPECT_FALSE(range.is_reverse());
+  model.SelectRange(range);
+  EXPECT_STR_EQ("LLO WORLD", model.GetSelectedText());
+
+  range.SetRange(1000, 3);
+  EXPECT_TRUE(range.is_reverse());
+  model.SelectRange(range);
+  EXPECT_STR_EQ("LO WORLD", model.GetSelectedText());
+
+  range.SetRange(0, 0);
+  EXPECT_TRUE(range.is_empty());
+  model.SelectRange(range);
+  EXPECT_TRUE(model.GetSelectedText().empty());
+
+  range.SetRange(3, 3);
+  EXPECT_TRUE(range.is_empty());
+  model.SelectRange(range);
+  EXPECT_TRUE(model.GetSelectedText().empty());
+
+  range.SetRange(1000, 100);
+  EXPECT_FALSE(range.is_empty());
+  model.SelectRange(range);
+  EXPECT_TRUE(model.GetSelectedText().empty());
+
+  range.SetRange(1000, 1000);
+  EXPECT_TRUE(range.is_empty());
+  model.SelectRange(range);
+  EXPECT_TRUE(model.GetSelectedText().empty());
 }
 
 }  // namespace views

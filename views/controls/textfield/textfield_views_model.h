@@ -18,6 +18,8 @@ class Font;
 
 namespace views {
 
+class TextRange;
+
 // A model that represents a text content for TextfieldViews.
 // It supports editing, selection and cursor manipulation.
 class TextfieldViewsModel {
@@ -114,6 +116,10 @@ class TextfieldViewsModel {
   // Returns the selected text.
   string16 GetSelectedText() const;
 
+  void GetSelectedRange(TextRange* range) const;
+
+  void SelectRange(const TextRange& range);
+
   // Selects all text.
   void SelectAll();
 
@@ -148,6 +154,10 @@ class TextfieldViewsModel {
 
   // Returns the visible text given |start| and |end|.
   string16 GetVisibleText(size_t start, size_t end) const;
+
+  // Returns the normalized cursor position that does not exceed the
+  // text length.
+  size_t GetSafePosition(size_t position) const;
 
   // The text in utf16 format.
   string16 text_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -341,6 +341,19 @@ gfx::NativeView NativeTextfieldGtk::GetTestingHandle() const {
 
 bool NativeTextfieldGtk::IsIMEComposing() const {
   return false;
+}
+
+void NativeTextfieldGtk::GetSelectedRange(TextRange* range) const {
+  NOTREACHED();
+}
+
+void NativeTextfieldGtk::SelectRange(const TextRange& range) {
+  NOTREACHED();
+}
+
+size_t NativeTextfieldGtk::GetCursorPosition() const {
+  NOTREACHED();
+  return 0U;
 }
 
 bool NativeTextfieldGtk::HandleKeyPressed(const views::KeyEvent& e) {

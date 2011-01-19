@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "views/views_delegate.h"
+#include "views/controls/textfield/textfield.h"
 
 namespace views {
 
@@ -219,6 +220,15 @@ string16 TextfieldViewsModel::GetSelectedText() const {
       std::abs(static_cast<long>(cursor_pos_ - selection_begin_)));
 }
 
+void TextfieldViewsModel::GetSelectedRange(TextRange* range) const {
+  range->SetRange(selection_begin_, cursor_pos_);
+}
+
+void TextfieldViewsModel::SelectRange(const TextRange& range) {
+  selection_begin_ = GetSafePosition(range.start());
+  cursor_pos_ = GetSafePosition(range.end());
+}
+
 void TextfieldViewsModel::SelectAll() {
   cursor_pos_ = 0;
   selection_begin_ = text_.length();
@@ -279,6 +289,13 @@ string16 TextfieldViewsModel::GetVisibleText(size_t begin, size_t end) const {
     return string16(end - begin, '*');
   }
   return text_.substr(begin, end - begin);
+}
+
+size_t TextfieldViewsModel::GetSafePosition(size_t position) const {
+  if (position > text_.length()) {
+    return text_.length();
+  }
+  return position;
 }
 
 }  // namespace views

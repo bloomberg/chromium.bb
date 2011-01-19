@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ namespace views {
 class Menu2;
 class NativeViewHost;
 class Textfield;
+class TextRange;
 
 static const int kDefaultEditStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN |
     WS_CLIPSIBLINGS;
@@ -66,6 +67,9 @@ class NativeTextfieldWin
   virtual View* GetView();
   virtual gfx::NativeView GetTestingHandle() const;
   virtual bool IsIMEComposing() const;
+  virtual void GetSelectedRange(TextRange* range) const;
+  virtual void SelectRange(const TextRange& range);
+  virtual size_t GetCursorPosition() const;
   virtual bool HandleKeyPressed(const views::KeyEvent& e);
   virtual bool HandleKeyReleased(const views::KeyEvent& e);
   virtual void HandleWillGainFocus();
