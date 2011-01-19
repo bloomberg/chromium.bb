@@ -24,6 +24,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/options/options_window.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -98,6 +99,9 @@ void BrowserOptionsHandler::GetLocalizedValues(
 
 void BrowserOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(
+      "setHomePage",
+      NewCallback(this, &BrowserOptionsHandler::SetHomePage));
+  dom_ui_->RegisterMessageCallback(
       "becomeDefaultBrowser",
       NewCallback(this, &BrowserOptionsHandler::BecomeDefaultBrowser));
   dom_ui_->RegisterMessageCallback(
@@ -118,14 +122,17 @@ void BrowserOptionsHandler::RegisterMessages() {
 }
 
 void BrowserOptionsHandler::Initialize() {
+  Profile* profile = dom_ui_->GetProfile();
+
   // Create our favicon data source.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           ChromeURLDataManager::GetInstance(),
           &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(new DOMUIFavIconSource(dom_ui_->GetProfile()))));
+          make_scoped_refptr(new DOMUIFavIconSource(profile))));
 
+  homepage_.Init(prefs::kHomePage, profile->GetPrefs(), NULL);
   UpdateDefaultBrowserState();
   UpdateStartupPages();
   UpdateSearchEngines();
@@ -133,6 +140,24 @@ void BrowserOptionsHandler::Initialize() {
       new OptionsManagedBannerHandler(dom_ui_,
                                       ASCIIToUTF16("BrowserOptions"),
                                       OPTIONS_PAGE_GENERAL));
+}
+
+void BrowserOptionsHandler::SetHomePage(const ListValue* args) {
+  std::string url_string;
+  std::string do_fixup_string;
+  int do_fixup;
+  if (args->GetSize() != 2 ||
+      !args->GetString(0, &url_string) ||
+      !args->GetString(1, &do_fixup_string) ||
+      !base::StringToInt(do_fixup_string, &do_fixup)) {
+    CHECK(false);
+  };
+
+  if (do_fixup) {
+    GURL fixed_url = URLFixerUpper::FixupURL(url_string, std::string());
+    url_string = fixed_url.spec();
+  }
+  homepage_.SetValueIfNotManaged(url_string);
 }
 
 void BrowserOptionsHandler::UpdateDefaultBrowserState() {

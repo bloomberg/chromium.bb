@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,8 +69,8 @@ cr.define('options', function() {
           this.handleHomepageUseNTPButtonChange_.bind(this);
       $('homepageUseURLButton').onchange =
           this.handleHomepageUseURLButtonChange_.bind(this);
-      homepageField.onchange =
-          this.handleHomepageURLChange_.bind(this);
+      homepageField.onchange = this.handleHomepageURLChange_.bind(this);
+      homepageField.oninput = this.handleHomepageURLChange_.bind(this);
 
       // Ensure that changes are committed when closing the page.
       window.addEventListener('unload', function() {
@@ -203,12 +203,13 @@ cr.define('options', function() {
     },
 
     /**
-     * Handles change events of the text field 'homepageURL'.
+     * Handles input and change events of the text field 'homepageURL'.
      * @private
-     * @param {event} change event.
+     * @param {event} input/change event.
      */
     handleHomepageURLChange_: function(event) {
-      Preferences.setStringPref('homepage', $('homepageURL').value);
+      var doFixup = event.type == 'change' ? '1' : '0';
+      chrome.send('setHomePage', [$('homepageURL').value, doFixup]);
     },
 
     /**

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,14 @@
 #pragma once
 
 #include "chrome/browser/dom_ui/options/options_ui.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/shell_integration.h"
 #include "ui/base/models/table_model_observer.h"
 
 class CustomHomePagesTableModel;
 class OptionsManagedBannerHandler;
+class StringPrefMember;
 class TemplateURLModel;
 
 // Chrome browser options page UI handler.
@@ -44,6 +46,9 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   virtual void OnItemsRemoved(int start, int length);
 
  private:
+  // Sets the home page to the given string. Called from DOMUI.
+  void SetHomePage(const ListValue* args);
+
   // Makes this the default browser. Called from DOMUI.
   void BecomeDefaultBrowser(const ListValue* args);
 
@@ -84,6 +89,8 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   void SaveStartupPagesPref();
 
   scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
+
+  StringPrefMember homepage_;
 
   TemplateURLModel* template_url_model_;  // Weak.
 
