@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/pk11_password_dialog.h"
+#include "chrome/browser/ui/crypto_module_password_dialog.h"
 
 #include <pk11pub.h>
 
@@ -19,7 +19,7 @@ namespace {
 class SlotUnlocker {
  public:
   SlotUnlocker(net::CryptoModule* module,
-               browser::PK11PasswordReason reason,
+               browser::CryptoModulePasswordReason reason,
                const std::string& host,
                Callback0::Type* callback);
 
@@ -30,14 +30,14 @@ class SlotUnlocker {
   void Done();
 
   scoped_refptr<net::CryptoModule> module_;
-  browser::PK11PasswordReason reason_;
+  browser::CryptoModulePasswordReason reason_;
   std::string host_;
   Callback0::Type* callback_;
   PRBool retry_;
 };
 
 SlotUnlocker::SlotUnlocker(net::CryptoModule* module,
-                           browser::PK11PasswordReason reason,
+                           browser::CryptoModulePasswordReason reason,
                            const std::string& host,
                            Callback0::Type* callback)
     : module_(module),
@@ -51,7 +51,7 @@ SlotUnlocker::SlotUnlocker(net::CryptoModule* module,
 void SlotUnlocker::Start() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ShowPK11PasswordDialog(
+  ShowCryptoModulePasswordDialog(
       module_->GetTokenName(),
       retry_,
       reason_,
@@ -98,7 +98,7 @@ void SlotUnlocker::Done() {
 namespace browser {
 
 void UnlockSlotIfNecessary(net::CryptoModule* module,
-                           browser::PK11PasswordReason reason,
+                           browser::CryptoModulePasswordReason reason,
                            const std::string& host,
                            Callback0::Type* callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -112,7 +112,7 @@ void UnlockSlotIfNecessary(net::CryptoModule* module,
 }
 
 void UnlockCertSlotIfNecessary(net::X509Certificate* cert,
-                               browser::PK11PasswordReason reason,
+                               browser::CryptoModulePasswordReason reason,
                                const std::string& host,
                                Callback0::Type* callback) {
   scoped_refptr<net::CryptoModule> module(net::CryptoModule::CreateFromHandle(

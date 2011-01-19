@@ -18,7 +18,7 @@
 #include "chrome/browser/gtk/certificate_dialogs.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
-#include "chrome/browser/ui/pk11_password_dialog.h"
+#include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "grit/generated_resources.h"
 #include "net/base/crypto_module.h"
 #include "net/base/x509_certificate.h"
@@ -538,7 +538,7 @@ void CertificateManagerHandler::ExportPersonalPasswordSelected(
   // TODO(mattm): do something smarter about non-extractable keys
   browser::UnlockCertSlotIfNecessary(
       selected_cert_list_[0].get(),
-      browser::kPK11PasswordCertExport,
+      browser::kCryptoModulePasswordCertExport,
       "",  // unused.
       NewCallback(this,
                   &CertificateManagerHandler::ExportPersonalSlotsUnlocked));
@@ -631,7 +631,7 @@ void CertificateManagerHandler::ImportPersonalFileRead(
 
   browser::UnlockSlotIfNecessary(
       module_.get(),
-      browser::kPK11PasswordCertImport,
+      browser::kCryptoModulePasswordCertImport,
       "",  // unused.
       NewCallback(this,
                   &CertificateManagerHandler::ImportPersonalSlotUnlocked));

@@ -29,7 +29,7 @@
 // use NSS for crypto or certificate verification, and we don't use the NSS
 // certificate and key databases.
 #if defined(USE_NSS)
-#include "base/crypto/pk11_blocking_password_delegate.h"
+#include "base/crypto/crypto_module_blocking_password_delegate.h"
 #include "base/environment.h"
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
@@ -71,10 +71,10 @@ FilePath GetInitialConfigDirectory() {
 }
 
 // This callback for NSS forwards all requests to a caller-specified
-// PK11BlockingPasswordDelegate object.
-char* PK11PasswordFunc(PK11SlotInfo* slot, PRBool retry, void* arg) {
-  base::PK11BlockingPasswordDelegate* delegate =
-      reinterpret_cast<base::PK11BlockingPasswordDelegate*>(arg);
+// CryptoModuleBlockingPasswordDelegate object.
+char* PKCS11PasswordFunc(PK11SlotInfo* slot, PRBool retry, void* arg) {
+  base::CryptoModuleBlockingPasswordDelegate* delegate =
+      reinterpret_cast<base::CryptoModuleBlockingPasswordDelegate*>(arg);
   if (delegate) {
     bool cancelled = false;
     std::string password = delegate->RequestPassword(PK11_GetTokenName(slot),
@@ -274,7 +274,7 @@ class NSSInitSingleton {
       }
     }
 
-    PK11_SetPasswordFunc(PK11PasswordFunc);
+    PK11_SetPasswordFunc(PKCS11PasswordFunc);
 
     // If we haven't initialized the password for the NSS databases,
     // initialize an empty-string password so that we don't need to

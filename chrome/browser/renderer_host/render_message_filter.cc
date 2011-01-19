@@ -85,7 +85,7 @@
 #include "chrome/common/child_process_host.h"
 #endif
 #if defined(USE_NSS)
-#include "chrome/browser/ui/pk11_password_dialog.h"
+#include "chrome/browser/ui/crypto_module_password_dialog.h"
 #endif
 #if defined(USE_TCMALLOC)
 #include "chrome/browser/browser_about_handler.h"
@@ -1389,9 +1389,9 @@ void RenderMessageFilter::OnKeygenOnWorkerThread(
 
 #if defined(USE_NSS)
   // Attach a password delegate so we can authenticate.
-  keygen_handler.set_pk11_password_delegate(
-      browser::NewPK11BlockingDialogDelegate(browser::kPK11PasswordKeygen,
-                                             url.host()));
+  keygen_handler.set_crypto_module_password_delegate(
+      browser::NewCryptoModuleBlockingDialogDelegate(
+          browser::kCryptoModulePasswordKeygen, url.host()));
 #endif  // defined(USE_NSS)
 
   ViewHostMsg_Keygen::WriteReplyParams(

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/pk11_password_dialog.h"
+#include "chrome/browser/ui/crypto_module_password_dialog.h"
 
 #include <gtk/gtk.h>
 
 #include "app/gtk_signal.h"
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
-#include "base/crypto/pk11_blocking_password_delegate.h"
+#include "base/crypto/crypto_module_blocking_password_delegate.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
@@ -20,10 +20,11 @@
 
 namespace {
 
-class PK11BlockingDialogDelegate : public base::PK11BlockingPasswordDelegate {
+class CryptoModuleBlockingDialogDelegate
+    : public base::CryptoModuleBlockingPasswordDelegate {
  public:
-  PK11BlockingDialogDelegate(browser::PK11PasswordReason reason,
-                             const std::string& server)
+  CryptoModuleBlockingDialogDelegate(browser::CryptoModulePasswordReason reason,
+                                     const std::string& server)
       : event_(false, false),
         reason_(reason),
         server_(server),
@@ -31,11 +32,11 @@ class PK11BlockingDialogDelegate : public base::PK11BlockingPasswordDelegate {
         cancelled_(false) {
   }
 
-  ~PK11BlockingDialogDelegate() {
+  ~CryptoModuleBlockingDialogDelegate() {
     password_.replace(0, password_.size(), password_.size(), 0);
   }
 
-  // base::PK11BlockingDialogDelegate implementation.
+  // base::CryptoModuleBlockingDialogDelegate implementation.
   virtual std::string RequestPassword(const std::string& slot_name, bool retry,
                                       bool* cancelled) {
     DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -43,8 +44,10 @@ class PK11BlockingDialogDelegate : public base::PK11BlockingPasswordDelegate {
     event_.Reset();
     if (BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            NewRunnableMethod(this, &PK11BlockingDialogDelegate::ShowDialog,
-                              slot_name, retry))) {
+            NewRunnableMethod(this,
+                              &CryptoModuleBlockingDialogDelegate::ShowDialog,
+                              slot_name,
+                              retry))) {
       event_.Wait();
     }
     *cancelled = cancelled_;
@@ -54,9 +57,9 @@ class PK11BlockingDialogDelegate : public base::PK11BlockingPasswordDelegate {
  private:
   void ShowDialog(const std::string& slot_name, bool retry) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    ShowPK11PasswordDialog(
+    ShowCryptoModulePasswordDialog(
         slot_name, retry, reason_, server_,
-        NewCallback(this, &PK11BlockingDialogDelegate::GotPassword));
+        NewCallback(this, &CryptoModuleBlockingDialogDelegate::GotPassword));
   }
   void GotPassword(const char* password) {
     if (password)
@@ -66,45 +69,46 @@ class PK11BlockingDialogDelegate : public base::PK11BlockingPasswordDelegate {
     event_.Signal();
   }
   base::WaitableEvent event_;
-  browser::PK11PasswordReason reason_;
+  browser::CryptoModulePasswordReason reason_;
   std::string server_;
   std::string password_;
   bool cancelled_;
 
-  DISALLOW_COPY_AND_ASSIGN(PK11BlockingDialogDelegate);
+  DISALLOW_COPY_AND_ASSIGN(CryptoModuleBlockingDialogDelegate);
 };
 
 // TODO(mattm): change into a constrained dialog.
-class PK11PasswordDialog {
+class CryptoModulePasswordDialog {
  public:
-  PK11PasswordDialog(const std::string& slot_name,
-                     bool retry,
-                     browser::PK11PasswordReason reason,
-                     const std::string& server,
-                     browser::PK11PasswordCallback* callback);
+  CryptoModulePasswordDialog(const std::string& slot_name,
+                             bool retry,
+                             browser::CryptoModulePasswordReason reason,
+                             const std::string& server,
+                             browser::CryptoModulePasswordCallback* callback);
 
   void Show();
 
  private:
-  CHROMEGTK_CALLBACK_1(PK11PasswordDialog, void, OnResponse, int);
-  CHROMEGTK_CALLBACK_0(PK11PasswordDialog, void, OnWindowDestroy);
+  CHROMEGTK_CALLBACK_1(CryptoModulePasswordDialog, void, OnResponse, int);
+  CHROMEGTK_CALLBACK_0(CryptoModulePasswordDialog, void, OnWindowDestroy);
 
-  scoped_ptr<browser::PK11PasswordCallback> callback_;
+  scoped_ptr<browser::CryptoModulePasswordCallback> callback_;
 
   GtkWidget* dialog_;
   GtkWidget* password_entry_;
 
-  DISALLOW_COPY_AND_ASSIGN(PK11PasswordDialog);
+  DISALLOW_COPY_AND_ASSIGN(CryptoModulePasswordDialog);
 };
 
-PK11PasswordDialog::PK11PasswordDialog(const std::string& slot_name,
-                                       bool retry,
-                                       browser::PK11PasswordReason reason,
-                                       const std::string& server,
-                                       browser::PK11PasswordCallback* callback)
+CryptoModulePasswordDialog::CryptoModulePasswordDialog(
+    const std::string& slot_name,
+    bool retry,
+    browser::CryptoModulePasswordReason reason,
+    const std::string& server,
+    browser::CryptoModulePasswordCallback* callback)
     : callback_(callback) {
   dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDS_PK11_AUTH_DIALOG_TITLE).c_str(),
+      l10n_util::GetStringUTF8(IDS_CRYPTO_MODULE_AUTH_DIALOG_TITLE).c_str(),
       NULL,
       GTK_DIALOG_NO_SEPARATOR,
       NULL);  // Populate the buttons later, for control over the OK button.
@@ -112,7 +116,8 @@ PK11PasswordDialog::PK11PasswordDialog(const std::string& slot_name,
                         GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT);
   GtkWidget* ok_button = gtk_util::AddButtonToDialog(
       dialog_,
-      l10n_util::GetStringUTF8(IDS_PK11_AUTH_DIALOG_OK_BUTTON_LABEL).c_str(),
+      l10n_util::GetStringUTF8(
+          IDS_CRYPTO_MODULE_AUTH_DIALOG_OK_BUTTON_LABEL).c_str(),
       GTK_STOCK_OK,
       GTK_RESPONSE_ACCEPT);
   GTK_WIDGET_SET_FLAGS(ok_button, GTK_CAN_DEFAULT);
@@ -123,25 +128,25 @@ PK11PasswordDialog::PK11PasswordDialog(const std::string& slot_name,
   const string16& server16 = UTF8ToUTF16(server);
   const string16& slot16 = UTF8ToUTF16(slot_name);
   switch (reason) {
-    case browser::kPK11PasswordKeygen:
-      text = l10n_util::GetStringFUTF8(IDS_PK11_AUTH_DIALOG_TEXT_KEYGEN,
-                                       slot16, server16);
-      break;
-    case browser::kPK11PasswordCertEnrollment:
+    case browser::kCryptoModulePasswordKeygen:
       text = l10n_util::GetStringFUTF8(
-          IDS_PK11_AUTH_DIALOG_TEXT_CERT_ENROLLMENT, slot16, server16);
+          IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_KEYGEN, slot16, server16);
       break;
-    case browser::kPK11PasswordClientAuth:
-      text = l10n_util::GetStringFUTF8(IDS_PK11_AUTH_DIALOG_TEXT_CLIENT_AUTH,
-                                       slot16, server16);
+    case browser::kCryptoModulePasswordCertEnrollment:
+      text = l10n_util::GetStringFUTF8(
+          IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_ENROLLMENT, slot16, server16);
       break;
-    case browser::kPK11PasswordCertImport:
-      text = l10n_util::GetStringFUTF8(IDS_PK11_AUTH_DIALOG_TEXT_CERT_IMPORT,
-                                       slot16);
+    case browser::kCryptoModulePasswordClientAuth:
+      text = l10n_util::GetStringFUTF8(
+          IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CLIENT_AUTH, slot16, server16);
       break;
-    case browser::kPK11PasswordCertExport:
-      text = l10n_util::GetStringFUTF8(IDS_PK11_AUTH_DIALOG_TEXT_CERT_EXPORT,
-                                       slot16);
+    case browser::kCryptoModulePasswordCertImport:
+      text = l10n_util::GetStringFUTF8(
+          IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_IMPORT, slot16);
+      break;
+    case browser::kCryptoModulePasswordCertExport:
+      text = l10n_util::GetStringFUTF8(
+          IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_EXPORT, slot16);
       break;
     default:
       NOTREACHED();
@@ -159,7 +164,7 @@ PK11PasswordDialog::PK11PasswordDialog(const std::string& slot_name,
   GtkWidget* password_box = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   gtk_box_pack_start(GTK_BOX(password_box),
                      gtk_label_new(l10n_util::GetStringUTF8(
-                         IDS_PK11_AUTH_DIALOG_PASSWORD_FIELD).c_str()),
+                         IDS_CRYPTO_MODULE_AUTH_DIALOG_PASSWORD_FIELD).c_str()),
                      FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(password_box), password_entry_,
                      TRUE, TRUE, 0);
@@ -173,11 +178,12 @@ PK11PasswordDialog::PK11PasswordDialog(const std::string& slot_name,
                    G_CALLBACK(OnWindowDestroyThunk), this);
 }
 
-void PK11PasswordDialog::Show() {
+void CryptoModulePasswordDialog::Show() {
   gtk_util::ShowDialog(dialog_);
 }
 
-void PK11PasswordDialog::OnResponse(GtkWidget* dialog, int response_id) {
+void CryptoModulePasswordDialog::OnResponse(GtkWidget* dialog,
+                                            int response_id) {
   if (response_id == GTK_RESPONSE_ACCEPT)
     callback_->Run(gtk_entry_get_text(GTK_ENTRY(password_entry_)));
   else
@@ -190,29 +196,31 @@ void PK11PasswordDialog::OnResponse(GtkWidget* dialog, int response_id) {
   gtk_widget_destroy(GTK_WIDGET(dialog_));
 }
 
-void PK11PasswordDialog::OnWindowDestroy(GtkWidget* widget) {
+void CryptoModulePasswordDialog::OnWindowDestroy(GtkWidget* widget) {
   delete this;
 }
 
 }  // namespace
 
 // Every post-task we do blocks, so there's no need to ref-count.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(PK11BlockingDialogDelegate);
+DISABLE_RUNNABLE_METHOD_REFCOUNT(CryptoModuleBlockingDialogDelegate);
 
 namespace browser {
 
-void ShowPK11PasswordDialog(const std::string& slot_name,
-                            bool retry,
-                            PK11PasswordReason reason,
-                            const std::string& server,
-                            PK11PasswordCallback* callback) {
-  (new PK11PasswordDialog(slot_name, retry, reason, server, callback))->Show();
+void ShowCryptoModulePasswordDialog(const std::string& slot_name,
+                                    bool retry,
+                                    CryptoModulePasswordReason reason,
+                                    const std::string& server,
+                                    CryptoModulePasswordCallback* callback) {
+  (new CryptoModulePasswordDialog(slot_name, retry, reason, server,
+                                  callback))->Show();
 }
 
-base::PK11BlockingPasswordDelegate* NewPK11BlockingDialogDelegate(
-    PK11PasswordReason reason,
-    const std::string& server) {
-  return new PK11BlockingDialogDelegate(reason, server);
+base::CryptoModuleBlockingPasswordDelegate*
+    NewCryptoModuleBlockingDialogDelegate(
+        CryptoModulePasswordReason reason,
+        const std::string& server) {
+  return new CryptoModuleBlockingDialogDelegate(reason, server);
 }
 
 }  // namespace browser

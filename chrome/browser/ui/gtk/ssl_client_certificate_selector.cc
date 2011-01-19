@@ -21,7 +21,7 @@
 #include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/pk11_password_dialog.h"
+#include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
@@ -344,7 +344,7 @@ void SSLClientCertificateSelector::OnOkClicked(GtkWidget* button) {
 
   browser::UnlockCertSlotIfNecessary(
       cert,
-      browser::kPK11PasswordClientAuth,
+      browser::kCryptoModulePasswordClientAuth,
       cert_request_info_->host_and_port,
       NewCallback(this, &SSLClientCertificateSelector::Unlocked));
 }

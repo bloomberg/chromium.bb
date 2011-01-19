@@ -6523,29 +6523,29 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Select a certificate to authenticate yourself to <ph name="HOST_NAME">$1<ex>www.google.com</ex></ph>
       </message>
 
-      <!-- NSS PK11 password dialog -->
-      <message name="IDS_PK11_AUTH_DIALOG_TITLE" desc="The title in the dialog that prompts for security device password.">
+      <!-- NSS PKCS #11 password dialog -->
+      <message name="IDS_CRYPTO_MODULE_AUTH_DIALOG_TITLE" desc="The title in the dialog that prompts for security device password.">
        Sign in to Security Device
       </message>
-      <message name="IDS_PK11_AUTH_DIALOG_TEXT_KEYGEN" desc="The text in the dialog that prompts for security device password for key generation.">
+      <message name="IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_KEYGEN" desc="The text in the dialog that prompts for security device password for key generation.">
        Please sign in to <ph name="TOKEN_NAME">$1<ex>Software Security Device</ex></ph> to generate a key for <ph name="HOST_NAME">$2<ex>www.google.com</ex></ph>.
       </message>
-      <message name="IDS_PK11_AUTH_DIALOG_TEXT_CERT_ENROLLMENT" desc="The text in the dialog that prompts for security device password for cert enrollment.">
+      <message name="IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_ENROLLMENT" desc="The text in the dialog that prompts for security device password for cert enrollment.">
        Please sign in to <ph name="TOKEN_NAME">$1<ex>Software Security Device</ex></ph> to import client certificate from <ph name="HOST_NAME">$2<ex>www.google.com</ex></ph>.
       </message>
-      <message name="IDS_PK11_AUTH_DIALOG_TEXT_CLIENT_AUTH" desc="The text in the dialog that prompts for security device password when doing key generation.">
+      <message name="IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CLIENT_AUTH" desc="The text in the dialog that prompts for security device password when doing key generation.">
        Please sign in to <ph name="TOKEN_NAME">$1<ex>Software Security Device</ex></ph> to authenticate to <ph name="HOST_NAME">$2<ex>www.google.com</ex></ph> with your certificate.
       </message>
-      <message name="IDS_PK11_AUTH_DIALOG_TEXT_CERT_IMPORT" desc="The text in the dialog that prompts for security device password when using the certificate manager to import a client certificate.">
+      <message name="IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_IMPORT" desc="The text in the dialog that prompts for security device password when using the certificate manager to import a client certificate.">
        Please sign in to <ph name="TOKEN_NAME">$1<ex>Software Security Device</ex></ph> to import the client certificate.
       </message>
-      <message name="IDS_PK11_AUTH_DIALOG_TEXT_CERT_EXPORT" desc="The text in the dialog that prompts for security device password when using the certificate manager to export a client certificate.">
+      <message name="IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_EXPORT" desc="The text in the dialog that prompts for security device password when using the certificate manager to export a client certificate.">
        Please sign in to <ph name="TOKEN_NAME">$1<ex>Software Security Device</ex></ph> to export the client certificate.
       </message>
-      <message name="IDS_PK11_AUTH_DIALOG_PASSWORD_FIELD" desc="Label for password entry in the dialog that prompts for security device password.">
+      <message name="IDS_CRYPTO_MODULE_AUTH_DIALOG_PASSWORD_FIELD" desc="Label for password entry in the dialog that prompts for security device password.">
        Password:
       </message>
-      <message name="IDS_PK11_AUTH_DIALOG_OK_BUTTON_LABEL" desc="Label for OK button in the dialog that prompts for security device password.">
+      <message name="IDS_CRYPTO_MODULE_AUTH_DIALOG_OK_BUTTON_LABEL" desc="Label for OK button in the dialog that prompts for security device password.">
        Unlock
       </message>
 
