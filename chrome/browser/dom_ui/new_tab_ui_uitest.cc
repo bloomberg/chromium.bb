@@ -52,7 +52,8 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
       action_max_timeout_ms()));
 }
 
-TEST_F(NewTabUITest, NTPHasLoginName) {
+// Sometimes hangs: http://crbug.com/70157
+TEST_F(NewTabUITest, DISABLED_NTPHasLoginName) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
 
