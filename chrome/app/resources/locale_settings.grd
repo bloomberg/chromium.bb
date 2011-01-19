@@ -309,29 +309,6 @@
         27
       </message>
 
-      <!-- The width and height of the Sync Options (customize sync) dialog box in -->
-      <!-- characters and lines (See above for defns of char width and height). -->
-      <message name="IDS_CUSTOMIZE_SYNC_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        60
-      </message>
-      <message name="IDS_CUSTOMIZE_SYNC_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        10
-      </message>
-
-      <!-- The width and height of the Bug Reporting dialog box in characters and lines -->
-      <!-- (See above). -->
-      <message name="IDS_BUGREPORT_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        85
-      </message>
-      <message name="IDS_BUGREPORT_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        20
-      </message>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_CHROMEOS_BUGREPORT_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-          24
-        </message>
-      </if>
-
       <!-- The width and height of the Clear Browsing Data dialog box in characters and -->
       <!-- lines (See above). -->
       <message name="IDS_CLEARDATA_DIALOG_WIDTH_CHARS" use_name_for_id="true">
@@ -394,15 +371,6 @@
         25
       </message>
 
-      <!-- The width and height of the Shelf Item dialog box in characters and -->
-      <!-- lines (See above). -->
-      <message name="IDS_SHELFITEM_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        80
-      </message>
-      <message name="IDS_SHELFITEM_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        30
-      </message>
-
       <!-- The width and height of the Edit Bookmark dialog box in characters and lines -->
       <!-- (See above). -->
       <message name="IDS_EDITBOOKMARK_DIALOG_WIDTH_CHARS" use_name_for_id="true">
@@ -410,24 +378,6 @@
       </message>
       <message name="IDS_EDITBOOKMARK_DIALOG_HEIGHT_LINES" use_name_for_id="true">
         25
-      </message>
-
-      <!-- The width and height of the First Run dialog box in characters and lines -->
-      <!-- (See above). -->
-      <message name="IDS_FIRSTRUN_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        90
-      </message>
-      <message name="IDS_FIRSTRUN_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        16
-      </message>
-
-      <!-- The width and height of the First Run Customize dialog box in characters and -->
-      <!-- lines (See above). -->
-      <message name="IDS_FIRSTRUNCUSTOMIZE_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        90
-      </message>
-      <message name="IDS_FIRSTRUNCUSTOMIZE_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        17
       </message>
 
       <!-- The width and height of the First Run Search Engine Selection dialog box in characters and -->
@@ -446,15 +396,6 @@
           14
         </message>
       </if>
-
-      <!-- The width and height of the Cookies dialog box in characters and lines -->
-      <!-- (See above). -->
-      <message name="IDS_COOKIES_PROMPT_WIDTH_CHARS" use_name_for_id="true">
-        82
-      </message>
-      <message name="IDS_COOKIES_PROMPT_HEIGHT_LINES" use_name_for_id="true">
-        25
-      </message>
 
       <!-- The width and height of the Cookies dialog box in characters and lines -->
       <!-- (See above). -->
@@ -523,15 +464,6 @@
       <!-- The URL for the the Welcome to Chrome page shown on first run. -->
       <message name="IDS_WELCOME_PAGE_URL" translateable="false">
         http://tools.google.com/chrome/intl/[GRITLANGCODE]/welcome.html
-      </message>
-
-      <!-- The width and height of the bookmark manager in characters and lines -->
-      <!-- (See above). -->
-      <message name="IDS_BOOKMARK_MANAGER_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        150
-      </message>
-      <message name="IDS_BOOKMARK_MANAGER_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        40
       </message>
 
       <!-- The language dependent download view size. -->

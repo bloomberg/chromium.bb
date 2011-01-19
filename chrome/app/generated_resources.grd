@@ -201,19 +201,12 @@ each locale. -->
       <message name="IDS_EXTENSIONS_TITLE" desc="Title for the extensions tab.">
         Extensions
       </message>
-      <message name="IDS_SESSIONS_TITLE" desc="Title for the sessions tab.">
-        Sessions
-      </message>
       <message name="IDS_DEFAULT_TAB_TITLE" desc="The default title in a tab.">
         Untitled
       </message>
       <message name="IDS_TAB_LOADING_TITLE" desc="The text to be displayed in the title of a tab before a title is discovered.">
         Loading...
       </message>
-      <message name="IDS_VIEW_SOURCE_TITLE" desc="The ViewSource tab title.">
-        Source of <ph name="PAGE_URL">%s</ph>
-      </message>
-
 
       <message name="IDS_HISTORY_START_EDITING_HISTORY" desc="Title of the link that allows the user to enable controls for deleting single history items">
         Edit items...
@@ -417,12 +410,6 @@ each locale. -->
           Show &amp;Controls
         </message>
 
-        <message name="IDS_CONTENT_CONTEXT_FULLSCREEN" desc="The name of the Fullscreen command for the video element in the content area context menu">
-          &amp;Full Screen
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS" desc="The name of the Copy Screenshot As command the video element in the content area context menu">
-          Save &amp;Screenshot...
-        </message>
         <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="The name of the Save Video As command in the content area context menu">
           Sa&amp;ve video as...
         </message>
@@ -679,14 +666,8 @@ each locale. -->
         <message name="IDS_CONTENT_CONTEXT_GOTOURL" desc="In Title Case: The name of the Go to url for 'string' command in the content area context menu">
           &amp;Go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
         </message>
-        <message name="IDS_CONTENT_CONTEXT_ADDSEARCHENGINE" desc="In Title Case: The name of the Add as Search Engine command in the content area context menu">
-          Add As Search En&amp;gine...
-        </message>
         <message name="IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU" desc="In Title Case: The name of the input method submenu in the content area context menu">
           Input &amp;Methods
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_TRANSLATE_SELECTION" desc="In Title Case: The name of the Translate 'string' to English command of the content area context menu">
-          &amp;Translate '<ph name="TEXT">$1<ex>les fleurs bleues</ex></ph>' to <ph name="LANGUAGE">$2<ex>English</ex></ph>
         </message>
         <message name="IDS_CONTENT_CONTEXT_PLUGIN_RUN" desc="In Title Case: The name of the Run command on the blocked plugin context menu">
           Run This Plugin
@@ -905,10 +886,8 @@ each locale. -->
       <message name="IDS_ENCODING_VIETNAMESE" desc="The text label of Vietnamese encoding">
         Vietnamese
       </message>
+
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_DEVELOPER_MENU" desc="The text label of the Developer submenu">
-          Developer
-        </message>
         <message name="IDS_VIEW_SOURCE" desc="The text label of the View Page Source menu item">
           View s&amp;ource
         </message>
@@ -1075,9 +1054,6 @@ each locale. -->
           E&amp;xit
         </message>
       </if>
-      <message name="IDS_BACKGROUND_PAGE_BADGE_OVERFLOW" desc="The character displayed in the background page badge, if the count of background pages is too large to fit in the badge. Should be only a single character to ensure it will always fit in the badge.">
-        !
-      </message>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_SIGN_OUT" desc="The text label of the Sign Out menu item">
           Sign out
@@ -1132,10 +1108,6 @@ each locale. -->
       <message name="IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN"
                desc="Title of the description column in the search engines editor">
         Name
-      </message>
-      <message name="IDS_SEARCH_ENGINES_EDITOR_URL_COLUMN"
-               desc="Title of the URL column in the search engines editor">
-        URL
       </message>
       <message name="IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_LABEL"
                desc="Prefix before the search engine description text field">
@@ -2115,10 +2087,6 @@ each locale. -->
                desc="Temporary status shown when a user has clicked to open a downloaded file.">
         Opening <ph name="FILE">$1<ex>image.jpg</ex></ph>...
       </message>
-      <message name="IDS_DOWNLOAD_STATUS_COMPLETE"
-               desc="Size and units downloaded.">
-        <ph name="DOWNLOAD_SIZE">$1<ex>54kB</ex></ph>, Complete
-      </message>
       <message name="IDS_DOWNLOAD_STATUS_CANCELED" desc="Canceled text.">
         Canceled
       </message>
@@ -2151,9 +2119,6 @@ each locale. -->
       </message>
       <message name="IDS_DOWNLOAD_SEARCH_BUTTON" desc="Title of the button in the download page that triggers a search">
         Search downloads
-      </message>
-      <message name="IDS_DOWNLOAD_NO_RESULTS" desc="Descriptive text when no results are found.">
-        No results
       </message>
       <message name="IDS_DOWNLOAD_SEARCHRESULTSFOR" desc="Format string for search results">
         Search results for '<ph name="SEARCH_STRING">$1</ph>'
@@ -2213,14 +2178,6 @@ each locale. -->
 
       <!-- Download Context Menu Items -->
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_DOWNLOAD_MENU_COPY_PATH"
-                       desc="Download context menu copy file path to clipboard">
-          Copy file &amp;path
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_COPY_FILE"
-                       desc="Download context menu copy file to clipboard">
-          Copy &amp;file
-        </message>
         <message name="IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE"
                  desc="Download context menu open when download is finished">
           Open when &amp;done
@@ -2247,14 +2204,6 @@ each locale. -->
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_DOWNLOAD_MENU_COPY_PATH"
-                       desc="In Title Case: Download context menu copy file path to clipboard">
-          Copy File &amp;Path
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_COPY_FILE"
-                       desc="In Title Case: Download context menu copy file to clipboard">
-          Copy &amp;File
-        </message>
         <message name="IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE"
                  desc="In Title Case: Download context menu open when download is finished">
           Open When &amp;Done
@@ -2475,11 +2424,6 @@ each locale. -->
         Run all plug-ins this time
       </message>
 
-      <!-- SSL error strings -->
-      <message name="IDS_SEVERAL_SSL_ERRORS" desc="Bubble info header text when there is more than 1 error">
-        There are several SSL errors on this page:
-      </message>
-
       <!-- Certificate error strings -->
       <message name="IDS_CERT_ERROR_EXTRA_INFO_TITLE" desc="The title for the extra information section displayed when a page contains a certificate error">
         Help me understand
@@ -2621,9 +2565,6 @@ each locale. -->
 
 
       <!-- Certificate selector dialog strings.  These are only used on platforms that don't have a native certificate selection dialog, such as Linux. -->
-      <message name="IDS_CERT_SELECTOR_DIALOG_TITLE" desc="Title of dialog asking user to select a certificate for SSL client certificate authentication">
-        Client Certificate Request: <ph name="REQUESTING_HOST_AND_PORT">$1<ex>pip.verisignlabs.com:443</ex></ph>
-      </message>
       <message name="IDS_CERT_SELECTOR_SITE_DESCRIPTION_LABEL" desc="Text in the certificate selection dialog before the site">
         This site has requested that you identify yourself with a certificate:
       </message>
@@ -2738,9 +2679,6 @@ each locale. -->
       </message>
       <message name="IDS_CERT_INFO_SHA1_FINGERPRINT_LABEL" desc="The label of the SHA-1 Fingerprint field in the general page of the certificate info dialog">
         SHA-1 Fingerprint
-      </message>
-      <message name="IDS_CERT_INFO_MD5_FINGERPRINT_LABEL" desc="The label of the MD5 Fingerprint field in the general page of the certificate info dialog">
-        MD5 Fingerprint
       </message>
       <message name="IDS_CERT_INFO_FIELD_NOT_PRESENT" desc="The text displayed in the certificate info dialog for a given field when the certificate does not contain that field">
         &lt;Not Part Of Certificate&gt;
@@ -3350,9 +3288,6 @@ each locale. -->
       <message name="IDS_ADD_CERT_DIALOG_ADD" desc="Title of the button that adds the certificate in the Add Client Certificate dialog">
         Add Certificate
       </message>
-      <message name="IDS_ADD_CERT_FAILURE_TITLE" desc="Title of add-certificate error dialog">
-        Client Certificate Error
-      </message>
       <message name="IDS_ADD_CERT_ERR_INVALID_CERT" desc="Error message when the server returns an invalid client certificate after key generation">
         The server returned an invalid client certificate. Error <ph name="ERROR_number">$1<ex>207</ex></ph> (<ph name="ERROR_NAME">$2<ex>net::ERR_CERT_INVALID</ex></ph>).
       </message>
@@ -3387,28 +3322,6 @@ each locale. -->
       <message name="IDS_LOGIN_DIALOG_OK_BUTTON_LABEL" desc="The label of the 'Log In' button on the login prompt dialog">
         Log In
       </message>
-      <!-- Account Creation Dialog -->
-      <message name="IDS_ACCOUNT_CREATION_TITLE" desc="String to be displayed in the title bar of the account creation dialog">
-        Create a Google Account
-      </message>
-      <message name="IDS_ACCOUNT_CREATION_FIRSTNAME" desc="The label of the firstname field in the account creation dialog">
-        First name:
-      </message>
-      <message name="IDS_ACCOUNT_CREATION_LASTNAME" desc="The label of the lastname field in the account creation dialog">
-        Last name:
-      </message>
-      <message name="IDS_ACCOUNT_CREATION_EMAIL" desc="The label of the email address field in the account creation dialog">
-        Choose a username:
-      </message>
-      <message name="IDS_ACCOUNT_CREATION_PASSWORD" desc="The label of the password field in the account creation dialog">
-        Choose a password:
-      </message>
-      <message name="IDS_ACCOUNT_CREATION_REENTER_PASSWORD" desc="The label of the second password field in the account creation dialog">
-        Re-enter password:
-      </message>
-      <message name="IDS_ACCOUNT_CREATION_BUTTON" desc="The label of the 'Create Account' button on the account creation dialog">
-        Create Account
-      </message>
       <!-- User Image Selection Dialog -->
       <message name="IDS_USER_IMAGE_SCREEN_TITLE" desc="String to be displayed in the title bar of the user image selection dialog">
         Smile! Take a picture of yourself and set it as your account picture.
@@ -3436,9 +3349,6 @@ each locale. -->
       <!-- FindInPage strings -->
       <message name="IDS_FIND_IN_PAGE_COUNT" desc="How many matches found and what item we are showing">
         <ph name="ACTIVE_MATCH">$1<ex>1</ex></ph> of <ph name="TOTAL_MATCHCOUNT">$2<ex>5</ex></ph>
-      </message>
-      <message name="IDS_FIND_IN_PAGE_HINT_LABEL" desc="A hint label to show in the Find box when the Find box is empty on open">
-        Find in page
       </message>
       <message name="IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP" desc="The tooltip for the previous button">
         Previous
@@ -3554,9 +3464,6 @@ each locale. -->
       </message>
       <message name="IDS_TASK_MANAGER_UTILITY_PREFIX" desc="The prefix for a utility process row">
         Utility:
-      </message>
-      <message name="IDS_TASK_MANAGER_PROFILE_IMPORT_PREFIX" desc="The prefix for a profile import process row">
-        Profile Import:
       </message>
       <message name="IDS_TASK_MANAGER_NACL_PREFIX" desc="The prefix for a Task Manager Native Client module row">
         Native Client module: <ph name="NEXE_NAME">$1<ex>Unknown Native Client module</ex></ph>
@@ -3678,9 +3585,6 @@ each locale. -->
       <message name="IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_OUTPUT" desc="Warning displayed in pack dialog when outputing a private key failed.">
         Failed to output private key.
       </message>
-      <message name="IDS_EXTENSION_PRIVATE_KEY_FAILED_TO_WRITE" desc="Warning displayed in pack dialog when writting a private key failed.">
-        Failed to write private key.
-      </message>
       <message name="IDS_EXTENSION_FAILED_DURING_PACKAGING" desc="Warning displayed in pack dialog when was not possible to create a zip file.">
         Failed to create temporary zip file during packaging.
       </message>
@@ -3704,9 +3608,6 @@ each locale. -->
       </message>
       <message name="IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED" desc="">
         Localization used, but default_locale wasn't specified in the manifest.
-      </message>
-      <message name="IDS_EXTENSION_LOCALES_TREE_MISSING" desc="">
-        Default locale was specified, but _locales subtree is missing.
       </message>
       <message name="IDS_EXTENSION_INVALID_IMAGE_PATH" desc="">
         Could not load '<ph name="IMAGE_PATH">$1<ex>/path/to/file</ex></ph>' for theme.
@@ -3784,9 +3685,6 @@ each locale. -->
       </message>
       <message name="IDS_ACCNAME_INFOBAR_WARNING" desc="The accessible name for the warning infobar type.">
         Warning
-      </message>
-      <message name="IDS_ACCNAME_INFOBAR_ERROR" desc="The accessible name for the error infobar type.">
-        Error
       </message>
       <message name="IDS_ACCNAME_INFOBAR_PAGE_ACTION" desc="The accessible name for page action infobar type.">
         Page Action
@@ -3910,9 +3808,6 @@ each locale. -->
       <message name="IDS_EXTENSION_PACK_DIALOG_ERROR_KEY_INVALID" desc="Error message in pack extension dialog when the user speciifes an invalid key file.">
         Private key file is invalid.
       </message>
-      <message name="IDS_EXTENSION_PACK_DIALOG_SUCCESS_TITLE" desc="Message shown on titlebar of window after successful packing of a new extension.">
-        Extension Packaging Success
-      </message>
       <message name="IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_NEW" desc="Message shown on successful packing of a new extension.">
         Created the following files:
 
@@ -3926,9 +3821,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
 <ph name="EXTENSION_FILE">$1<ex>c:\users\aa\myextension.crx</ex></ph>
       </message>
-      <message name="IDS_EXTENSION_PACK_DIALOG_FAILURE_TITLE" desc="Message shown on titlebar of window after unsucessful packing of an extension.">
-        Extension Packaging Failure
-      </message>
       <message name="IDS_EXTENSION_INSTALL_FAILURE_TITLE" desc="Message shown in titlebar/header of the dialog informing the user that an extension failed to install.">
         Extension Install Failure
       </message>
@@ -3938,9 +3830,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON" desc="Text for the uninstall button on the extension uninstall prompt">
         Uninstall
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_ENABLE_INCOGNITO_BUTTON" desc="Text for the allow button on the extension run-in-incognito prompt">
-        Allow
       </message>
       <message name="IDS_EXTENSION_GET_MORE_APPS" desc="Promo text for button to the Web Store">
         Get More Apps
@@ -3971,9 +3860,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGINS_NONE_INSTALLED" desc="Text that lets the user know that no plug-ins are installed.">
         No plug-ins installed.
       </message>
-      <message name="IDS_PLUGINS_RUNNING_PLUGIN" desc="Text that signifies that the plug-in is currently running.">
-        (Running)
-      </message>
       <message name="IDS_PLUGINS_DISABLED_PLUGIN" desc="Text that signifies that the plug-in is currently disabled.">
         (Disabled)
       </message>
@@ -3982,9 +3868,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY" desc="Text that indicates a plug-in cannot be enabled because it has been disabled by enterprise policy.">
         Cannot enable plug-ins that are disabled by enterprise policy
-      </message>
-      <message name="IDS_PLUGINS_DISABLED_RUNNING_PLUGIN" desc="Text that signifies that the plug-in is disabled but still running, and that it will be fully disabled after a browser restart.">
-        (Still running; will be fully disabled after browser restart)
       </message>
       <message name="IDS_PLUGINS_VERSION" desc="The label in front of a plug-in version number.">
         Version:
@@ -4075,23 +3958,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SIDE_TABS_DESCRIPTION" desc="Description of the 'Left Tabs' lab.">
         Adds a "Use Side Tabs" entry to the tabstrip's context menu. Use this to toggle between tabs on top (default) and tabs on the side. Useful on widescreen monitors.
       </message>
-      <message name="IDS_FLAGS_TABBED_OPTIONS_NAME" desc="Description of the 'Tabbed Settings' lab.">
-        Tabbed Settings
-      </message>
-      <message name="IDS_FLAGS_TABBED_OPTIONS_DESCRIPTION" desc="Description of the 'Tabbed Settings' lab.">
-        Uses an in-tab UI for the Settings (Options/Preferences) dialog instead of a stand-alone window.
-      </message>
       <message name="IDS_FLAGS_INSTANT_AUTOCOMPLETE_IMMEDIATELY_NAME" desc="Name of the 'Instant Autocomplete Immediately' lab.">
         Instant Autocomplete Immediately
       </message>
       <message name="IDS_FLAGS_INSTANT_AUTOCOMPLETE_IMMEDIATELY_DESCRIPTION" desc="Description of the 'Instant Autocomplete Immediately' lab.">
         Whether the search provider suggestion should be autocompleted immediately when instant is enabled.
-      </message>
-      <message name="IDS_FLAGS_PREDICTIVE_INSTANT_NAME" desc="Description of the predictive 'Instant' lab.">
-        Instant
-      </message>
-      <message name="IDS_FLAGS_PREDICTIVE_INSTANT_DESCRIPTION" desc="Description of the predictive 'Instant' lab.">
-        Makes the address bar load urls as you type. Search results are shown for the best match.
       </message>
       <message name="IDS_FLAGS_INSTANT_TYPE_NAME" desc="Description of the 'Instant Type' lab.">
         Instant Type
@@ -4116,12 +3987,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_REMOTING_HOST_DESCRIPTION" desc="Description of the 'Remoting' host lab.">
         Enable Remoting Host support.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_OUTDATED_PLUGINS_NAME" desc="Name of the 'Disable outdated plug-ins' lab">
-        Block outdated plug-ins
-      </message>
-      <message name="IDS_FLAGS_DISABLE_OUTDATED_PLUGINS_DESCRIPTION" desc="Description of the 'Disable outdated plug-ins' lab">
-        Automatically blocks plug-ins with known security vulnerabilities from running and offers update links for them.
       </message>
       <message name="IDS_FLAGS_ENABLE_NACL_NAME" desc="Description of the 'Enable Native Client' lab.">
         Native Client
@@ -4194,12 +4059,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_CONFIRM_TO_QUIT_DESCRIPTION" desc="Description of the 'Confirm to Quit' lab.">
         Receive a prompt before quitting to confirm the action.
-      </message>
-      <message name="IDS_FLAGS_SNAP_START_NAME" desc="Name of the 'Snap Start' lab.">
-        Snap Start
-      </message>
-      <message name="IDS_FLAGS_SNAP_START_DESCRIPTION" desc="Description of the 'Snap Start' lab.">
-        Enables an experimental TLS extension which removes a round trip from HTTPS handshakes.
       </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME" desc="Name of the 'Experimental Extension APIs' lab.">
         Experimental Extension APIs
@@ -4427,12 +4286,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE" desc="Title for Javascript prompt and confirm originating from a web page">
         The page at <ph name="SITE">$1<ex>http://www.google.com</ex></ph> says:
       </message>
-      <message name="IDS_EXTENSION_ALERT_DEFAULT_TITLE" desc="Title for Javascript alert originating from an extension if there is no extension name to display">
-        Extension Alert
-      </message>
-      <message name="IDS_EXTENSION_MESSAGEBOX_DEFAULT_TITLE" desc="Title for Javascript prompt and confirm originating from an extension if there is no extension name to display">
-        Extension
-      </message>
       <message name="IDS_EXTENSION_ALERT_TITLE" desc="Title for Javascript alert originating from an extension">
         The <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> extension says:
       </message>
@@ -4477,14 +4330,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Recently visited sites
       </message>
 
-      <!-- Drag and Drop strings-->
-      <message name="IDS_UNTITLED_SHORTCUT_FILE_NAME" desc="The name of the Internet Shortcut file created for URLs dragged that have no title">
-        Untitled Web Page
-      </message>
-      <message name="IDS_UNTITLED_IMAGE_FILE_NAME" desc="The name of the Image file created for dragged images that have no file name">
-        Untitled Web Image
-      </message>
-
       <!-- Omnibox -->
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PASTE_AND_GO" desc="The text label of the Paste And Go menu item when the clipboard contains a URL">
@@ -4507,9 +4352,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OMNIBOX_EXTENSION_KEYWORD_HINT" desc="Shown to the user when the word(s) in the omnibox has an extension keyword associated with it. $1 is replaced with an image showing the tab key and is labelled with IDS_OMNIBOX_KEYWORD_HINT_KEY. $2 is replaced with the description of the keyword.">
         Press <ph name="SEARCH_KEY">$1<ex>Tab</ex></ph> to send commands to <ph name="EXTENSION_NAME">$2<ex>Google Talk</ex></ph>
-      </message>
-      <message name="IDS_OMNIBOX_KEYWORD_HINT_KEY">
-        Tab
       </message>
       <message name="IDS_OMNIBOX_KEYWORD_TEXT" desc="Text shown in the search button at the front of the omnibox when the user has selected a keyword">
         Search <ph name="SITE_NAME">$1<ex>google.com</ex></ph>:
@@ -4568,9 +4410,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!--Accessible name/action strings-->
       <message name="IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT" desc="The format for the accessible title of an incognito window">
         <ph name="WINDOW_TITLE">$1</ph> (Incognito)
-      </message>
-      <message name="IDS_ACCACTION_PRESS" desc="The accessible default action for a button.">
-        Press
       </message>
       <message name="IDS_ACCNAME_BACK" desc="The accessible name for the back button.">
         Back
@@ -4655,9 +4494,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_BROWSER_HANGMONITOR" desc="A plugin on a page has hung">
         The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1\n<ex>Shockwave\n</ex></ph>Would you like to stop it?
-      </message>
-      <message name="IDS_BROWSER_HANGMONITOR_PLUGIN_END" desc="The label of the 'kill plugin' button">
-        Kill plug-in
       </message>
       <message name="IDS_BROWSER_HANGMONITOR_RENDERER_TITLE" desc="The title of the 'A renderer has hung' dialog">
         Page(s) Unresponsive
@@ -4769,9 +4605,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_IMPORT_FAVORITES_CHKBOX" desc="Checkbox for importing favorites">
         Favorites/Bookmarks
-      </message>
-      <message name="IDS_IMPORT_COOKIES_CHKBOX" desc="Checkbox for importing cookies">
-        Cookies
       </message>
       <message name="IDS_IMPORT_PASSWORDS_CHKBOX" desc="Checkbox for importing saved passwords">
         Saved passwords
