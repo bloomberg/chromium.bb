@@ -158,6 +158,12 @@ def GetTargets():
   # install locations and there are various inconsistencies.
   arch = "nacl64"
   subarches = ["32", "64"]
+  if os.uname()[4] == "x86_64":
+    # On Linux at least, a 64-bit system can run both x86-32 and x86-64
+    # versions of NaCl, if we have 32-bit multilib libraries installed.
+    runnable_subarches = ["32", "64"]
+  else:
+    runnable_subarches = ["32"]
   # The default subarch usually goes into "lib".
   subarch_to_libdir = {"32": "lib32", "64": "lib"}
 
@@ -451,37 +457,26 @@ int main() {
       compiler=["%s-gcc" % arch, "-m32"])
   module_list.append(modules["hello_glibc"])
 
-  # TODO(mseaborn): Extend the steps below to run against x86-64
-  # nacl-glibc.  Many tests currently pass only for x86-32 nacl-glibc.
-
-  AddSconsModule(
-      "scons_tests",
-      deps=full_glibc_toolchain_deps,
-      scons_args=["--nacl_glibc", "small_tests", "-k"])
-  AddSconsModule(
-      "scons_tests_static",
-      deps=full_glibc_toolchain_deps,
-      scons_args=["--nacl_glibc", "small_tests", "-k", "nacl_static_link=1"])
-
-  if os.uname()[4] == "x86_64":
-    # For x86-64, just do a smoke test of hello_world to ensure that basic
-    # functionality does not regress.  Many other tests do not pass yet.
+  for arch_bits in runnable_subarches:
     AddSconsModule(
-        "scons_tests_64",
+        "scons_tests_%s" % arch_bits,
         deps=full_glibc_toolchain_deps,
-        scons_args=["--nacl_glibc", "platform=x86-64", "run_hello_world_test"])
+        scons_args=["--nacl_glibc", "small_tests", "-k",
+                    "platform=x86-%s" % arch_bits])
     AddSconsModule(
-        "scons_tests_static_64",
+        "scons_tests_static_%s" % arch_bits,
         deps=full_glibc_toolchain_deps,
-        scons_args=["--nacl_glibc", "platform=x86-64", "run_hello_world_test",
-                    "nacl_static_link=1"])
+        scons_args=["--nacl_glibc", "small_tests", "-k", "nacl_static_link=1",
+                    "platform=x86-%s" % arch_bits])
 
   # Check that all the Scons tests build, including those that do not
   # yet run successfully.
-  AddSconsModule(
-      "scons_compile_tests_32",
-      deps=full_glibc_toolchain_deps,
-      scons_args=["MODE=nacl", "--nacl_glibc", "platform=x86-32"])
+  for arch_bits in subarches:
+    AddSconsModule(
+        "scons_compile_tests_%s" % arch_bits,
+        deps=full_glibc_toolchain_deps,
+        scons_args=["MODE=nacl", "--nacl_glibc",
+                    "platform=x86-%s" % arch_bits])
 
   return module_list
 

@@ -18,7 +18,7 @@ env.AddNodeToTestSuite(node,
 
 
 def CheckFileSize(target, source, env):
-  expected_max = 10000
+  expected_max = 12000
   actual_size = os.stat(source[0].abspath).st_size
   if actual_size > expected_max:
     raise Exception("File %s larger than expected: expected upto %i but got %i"
