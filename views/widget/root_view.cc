@@ -315,13 +315,12 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& e) {
   if (touch_pressed_handler_) {
     TouchEvent touch_event(e, this, touch_pressed_handler_);
     status = touch_pressed_handler_->ProcessTouchEvent(touch_event);
-    gesture_manager_->ProcessTouchEventForGesture(e, this, true);
+    gesture_manager_->ProcessTouchEventForGesture(e, this, status);
     if (status == TOUCH_STATUS_END)
       touch_pressed_handler_ = NULL;
     return status;
   }
 
-  bool handled = false;
   // Walk up the tree until we find a view that wants the touch event.
   for (touch_pressed_handler_ = GetViewForPoint(e.location());
        touch_pressed_handler_ && (touch_pressed_handler_ != this);
@@ -329,7 +328,6 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& e) {
     if (!touch_pressed_handler_->IsEnabled()) {
       // Disabled views eat events but are treated as not handled by the
       // the GestureManager.
-      handled = false;
       status = TOUCH_STATUS_UNKNOWN;
       break;
     }
@@ -343,8 +341,6 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& e) {
     if (status != TOUCH_STATUS_START)
       touch_pressed_handler_ = NULL;
 
-    handled = status != TOUCH_STATUS_UNKNOWN;
-
     // The view could have removed itself from the tree when handling
     // OnTouchEvent(). So handle as per OnMousePressed. NB: we
     // assume that the RootView itself cannot be so removed.
@@ -357,8 +353,8 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& e) {
     // If the view handled the event, leave touch_pressed_handler_ set and
     // return true, which will cause subsequent drag/release events to get
     // forwarded to that view.
-    if (handled) {
-      gesture_manager_->ProcessTouchEventForGesture(e, this, handled);
+    if (status != TOUCH_STATUS_UNKNOWN) {
+      gesture_manager_->ProcessTouchEventForGesture(e, this, status);
       return status;
     }
   }
@@ -367,7 +363,7 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& e) {
   touch_pressed_handler_ = NULL;
 
   // Give the touch event to the gesture manager.
-  gesture_manager_->ProcessTouchEventForGesture(e, this, handled);
+  gesture_manager_->ProcessTouchEventForGesture(e, this, status);
   return status;
 }
 #endif

@@ -178,6 +178,7 @@ class TestView : public View {
   // TouchEvent
   int last_touch_event_type_;
   bool last_touch_event_was_handled_;
+  bool in_touch_sequence_;
 #endif
 
   // Painting
@@ -201,7 +202,7 @@ class MockGestureManager : public GestureManager {
 
   bool ProcessTouchEventForGesture(const TouchEvent& event,
                                    View* source,
-                                   bool previouslyHandled);
+                                   View::TouchStatus status);
   MockGestureManager();
 
   bool previously_handled_flag_;
@@ -414,14 +415,14 @@ TEST_F(ViewTest, MouseEvent) {
 bool MockGestureManager::ProcessTouchEventForGesture(
     const TouchEvent& event,
     View* source,
-    bool previouslyHandled) {
-  if (previouslyHandled) {
+    View::TouchStatus status) {
+  if (status != View::TOUCH_STATUS_UNKNOWN) {
     dispatched_synthetic_event_ = false;
     return false;
   }
   last_touch_event_ =  event.GetType();
   last_view_ = source;
-  previously_handled_flag_ = previouslyHandled;
+  previously_handled_flag_ = status != View::TOUCH_STATUS_UNKNOWN;
   dispatched_synthetic_event_ = true;
   return true;
 }
@@ -432,6 +433,18 @@ MockGestureManager::MockGestureManager() {
 View::TouchStatus TestView::OnTouchEvent(const TouchEvent& event) {
   last_touch_event_type_ = event.GetType();
   location_.SetPoint(event.x(), event.y());
+  if (!in_touch_sequence_) {
+    if (event.GetType() == Event::ET_TOUCH_PRESSED) {
+      in_touch_sequence_ = true;
+      return TOUCH_STATUS_START;
+    }
+  } else {
+    if (event.GetType() == Event::ET_TOUCH_RELEASED) {
+      in_touch_sequence_ = false;
+      return TOUCH_STATUS_END;
+    }
+    return TOUCH_STATUS_CONTINUE;
+  }
   return last_touch_event_was_handled_ ? TOUCH_STATUS_CONTINUE :
                                          TOUCH_STATUS_UNKNOWN;
 }

@@ -22,9 +22,9 @@ GestureManager* GestureManager::GetInstance() {
 
 bool GestureManager::ProcessTouchEventForGesture(const TouchEvent& event,
                                                  View* source,
-                                                 bool previouslyHandled) {
-  if (previouslyHandled)
-    return false;
+                                                 View::TouchStatus status) {
+  if (status != View::TOUCH_STATUS_UNKNOWN)
+    return false;  // The event was consumed by a touch sequence.
 
   // TODO(rjkroege): A realistic version of the GestureManager will
   // appear in a subsequent CL. This interim version permits verifying that the

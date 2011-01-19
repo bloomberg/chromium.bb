@@ -7,11 +7,10 @@
 #pragma once
 
 #include "base/singleton.h"
+#include "views/view.h"
 
 namespace views {
-class View;
 class TouchEvent;
-
 
 // A GestureManager singleton detects gestures occurring in the
 // incoming feed of touch events across all of the RootViews in
@@ -25,17 +24,16 @@ class GestureManager {
 
   static GestureManager* GetInstance();
 
-  // TODO(sad): Use TouchStatus instead of bool for previouslyHandled.
   // Invoked for each touch event that could contribute to the current gesture.
   // Takes the event and the View that originated it and which will also
-  // be the target of any generated synthetic event. Finally, handled
-  // specifies if the event was actually handled explicitly by a view so that
+  // be the target of any generated synthetic event. Finally, status
+  // specifies if a touch sequence is in progress or not, so that the
   // GestureManager state can correctly reflect events that are handled
   // already.
   // Returns true if the event resulted in firing a synthetic event.
   virtual bool ProcessTouchEventForGesture(const TouchEvent& event,
                                            View* source,
-                                           bool previouslyHandled);
+                                           View::TouchStatus status);
 
   // TODO(rjkroege): Write the remainder of this class.
   // It will appear in a subsequent CL.
