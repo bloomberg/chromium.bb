@@ -196,7 +196,8 @@ void UITestBase::ConnectToRunningBrowser() {
 }
 
 void UITestBase::CloseBrowserAndServer() {
-  launcher_->CloseBrowserAndServer(shutdown_type_);
+  if (launcher_.get())
+    launcher_->CloseBrowserAndServer(shutdown_type_);
 }
 
 void UITestBase::LaunchBrowser(const CommandLine& arguments,
