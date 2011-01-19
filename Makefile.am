@@ -129,6 +129,8 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/module_comparer.cc \
 	src/processor/module_comparer.h \
 	src/processor/module_factory.h \
+	src/processor/module_serializer.cc \
+	src/processor/module_serializer.h \
 	src/processor/network_interface.h \
 	src/processor/network_source_line_resolver.cc \
 	src/processor/network_source_line_server.cc \

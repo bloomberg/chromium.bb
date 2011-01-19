@@ -229,6 +229,8 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 	src/processor/minidump_processor.cc \
 	src/processor/module_comparer.cc \
 	src/processor/module_comparer.h src/processor/module_factory.h \
+	src/processor/module_serializer.cc \
+	src/processor/module_serializer.h \
 	src/processor/network_interface.h \
 	src/processor/network_source_line_resolver.cc \
 	src/processor/network_source_line_server.cc \
@@ -281,6 +283,7 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/module_comparer.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/module_serializer.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.$(OBJEXT) \
@@ -1173,6 +1176,8 @@ lib_LIBRARIES = $(am__append_1) $(am__append_3)
 @DISABLE_PROCESSOR_FALSE@	src/processor/module_comparer.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/module_comparer.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/module_factory.h \
+@DISABLE_PROCESSOR_FALSE@	src/processor/module_serializer.cc \
+@DISABLE_PROCESSOR_FALSE@	src/processor/module_serializer.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/network_interface.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.cc \
@@ -2165,6 +2170,9 @@ src/processor/minidump_processor.$(OBJEXT):  \
 src/processor/module_comparer.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/module_serializer.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/network_source_line_resolver.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
@@ -2764,6 +2772,7 @@ mostlyclean-compile:
 	-rm -f src/processor/minidump_processor.$(OBJEXT)
 	-rm -f src/processor/minidump_stackwalk.$(OBJEXT)
 	-rm -f src/processor/module_comparer.$(OBJEXT)
+	-rm -f src/processor/module_serializer.$(OBJEXT)
 	-rm -f src/processor/network_source_line_resolver.$(OBJEXT)
 	-rm -f src/processor/network_source_line_server.$(OBJEXT)
 	-rm -f src/processor/pathname_stripper.$(OBJEXT)
@@ -2922,6 +2931,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_processor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_stackwalk.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/module_comparer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/module_serializer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/network_source_line_resolver.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/network_source_line_server.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/pathname_stripper.Po@am__quote@
