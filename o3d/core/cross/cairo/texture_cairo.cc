@@ -114,6 +114,8 @@ TextureCairo* TextureCairo::Create(ServiceLocator* service_locator,
     goto fail2;
   }
 
+  cairo_set_operator(image_surface_context, CAIRO_OPERATOR_SOURCE);
+
   return new TextureCairo(service_locator,
                           image_surface,
                           image_surface_context,
@@ -154,6 +156,11 @@ void TextureCairo::SetRect(int level,
                            int src_pitch) {
   DLOG(INFO) << "Texture2DCairo SetRect";
 
+  if (0 != level) {
+    // Cairo does not support/need mip-maps.
+    return;
+  }
+
   // Create image surface to represent the source.
   cairo_surface_t* source_image_surface = cairo_image_surface_create_for_data(
       const_cast<unsigned char*>(
@@ -175,9 +182,7 @@ void TextureCairo::SetRect(int level,
   // Discard our reference to the source surface.
   cairo_surface_destroy(source_image_surface);
 
-  if (level == 0) {
-    TextureUpdated();
-  }
+  TextureUpdated();
 }
 
 // Locks the given mipmap level of this texture for loading from main memory,
