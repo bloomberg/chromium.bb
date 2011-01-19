@@ -758,7 +758,8 @@ static void TestCondvar() {
   CHECK_OK(pthread_cond_init(&cv, NULL));
 
   /* We just need the condvar to expire, so we use the current time */
-  gettimeofday(&tv, NULL);
+  res = gettimeofday(&tv, NULL);
+  EXPECT_EQ(res, 0);
   ts.tv_sec = tv.tv_sec;
   ts.tv_nsec = 0;
 
