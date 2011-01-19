@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/search_engines/search_provider_install_data.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -23,11 +24,11 @@
 
 // Create a TemplateURL. The caller owns the returned TemplateURL*.
 static TemplateURL* CreateTemplateURL(const std::string& url,
-                                      const std::wstring& keyword) {
+                                      const std::string& keyword) {
   TemplateURL* t_url = new TemplateURL();
   t_url->SetURL(url, 0, 0);
-  t_url->set_keyword(keyword);
-  t_url->set_short_name(keyword);
+  t_url->set_keyword(UTF8ToUTF16(keyword));
+  t_url->set_short_name(UTF8ToUTF16(keyword));
   return t_url;
 }
 
@@ -225,7 +226,7 @@ TEST_F(SearchProviderInstallDataTest, GetInstallState) {
   util_.ChangeModelToLoadState();
   std::string host = "www.unittest.com";
   TemplateURL* t_url = CreateTemplateURL("http://" + host + "/path",
-                                         L"unittest");
+                                         "unittest");
   util_.model()->Add(t_url);
 
   // Wait for the changes to be saved.
@@ -240,7 +241,7 @@ TEST_F(SearchProviderInstallDataTest, GetInstallState) {
   // Set-up a default and try it all one more time.
   std::string default_host = "www.mmm.com";
   TemplateURL* default_url = CreateTemplateURL("http://" + default_host + "/",
-                                               L"mmm");
+                                               "mmm");
   util_.model()->Add(default_url);
   util_.model()->SetDefaultSearchProvider(default_url);
   test_get_install_state->set_default_search_provider_host(default_host);
@@ -253,7 +254,7 @@ TEST_F(SearchProviderInstallDataTest, ManagedDefaultSearch) {
   util_.ChangeModelToLoadState();
   std::string host = "www.unittest.com";
   TemplateURL* t_url = CreateTemplateURL("http://" + host + "/path",
-                                         L"unittest");
+                                         "unittest");
   util_.model()->Add(t_url);
 
   // Set a managed preference that establishes a default search provider.
@@ -287,10 +288,10 @@ TEST_F(SearchProviderInstallDataTest, GoogleBaseUrlChange) {
   TemplateURLModelTestUtil::BlockTillIOThreadProcessesRequests();
 
   TemplateURL* t_url = CreateTemplateURL("{google:baseURL}?q={searchTerms}",
-                                         L"t");
+                                         "t");
   util_.model()->Add(t_url);
   TemplateURL* default_url = CreateTemplateURL("http://d.com/",
-                                               L"d");
+                                               "d");
   util_.model()->Add(default_url);
   util_.model()->SetDefaultSearchProvider(default_url);
 

@@ -1,8 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/scoped_nsobject.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -32,14 +33,14 @@ class SearchEngineListModelTest : public PlatformTest {
     template_model_.reset(new TemplateURLModel(helper_.profile()));
     TemplateURL* t_url = new TemplateURL();
     t_url->SetURL("http://www.google.com/?q={searchTerms}", 0, 0);
-    t_url->set_keyword(L"keyword");
-    t_url->set_short_name(L"google");
+    t_url->set_keyword(ASCIIToUTF16("keyword"));
+    t_url->set_short_name(ASCIIToUTF16("google"));
     t_url->set_show_in_default_list(true);
     template_model_->Add(t_url);
     t_url = new TemplateURL();
     t_url->SetURL("http://www.google2.com/?q={searchTerms}", 0, 0);
-    t_url->set_keyword(L"keyword2");
-    t_url->set_short_name(L"google2");
+    t_url->set_keyword(ASCIIToUTF16("keyword2"));
+    t_url->set_short_name(ASCIIToUTF16("google2"));
     t_url->set_show_in_default_list(true);
     template_model_->Add(t_url);
     EXPECT_EQ(template_model_->GetTemplateURLs().size(), 2U);
@@ -83,14 +84,14 @@ TEST_F(SearchEngineListModelTest, Default) {
   // Add two more URLs, neither of which are shown in the default list.
   TemplateURL* t_url = new TemplateURL();
   t_url->SetURL("http://www.google3.com/?q={searchTerms}", 0, 0);
-  t_url->set_keyword(L"keyword3");
-  t_url->set_short_name(L"google3 not eligible");
+  t_url->set_keyword(ASCIIToUTF16("keyword3"));
+  t_url->set_short_name(ASCIIToUTF16("google3 not eligible"));
   t_url->set_show_in_default_list(false);
   template_model_->Add(t_url);
   t_url = new TemplateURL();
   t_url->SetURL("http://www.google4.com/?q={searchTerms}", 0, 0);
-  t_url->set_keyword(L"keyword4");
-  t_url->set_short_name(L"google4");
+  t_url->set_keyword(ASCIIToUTF16("keyword4"));
+  t_url->set_short_name(ASCIIToUTF16("google4"));
   t_url->set_show_in_default_list(false);
   template_model_->Add(t_url);
 
@@ -116,14 +117,14 @@ TEST_F(SearchEngineListModelTest, DefaultChosenFromUI) {
   // Add two more URLs, the first one not shown in the default list.
   TemplateURL* t_url = new TemplateURL();
   t_url->SetURL("http://www.google3.com/?q={searchTerms}", 0, 0);
-  t_url->set_keyword(L"keyword3");
-  t_url->set_short_name(L"google3 not eligible");
+  t_url->set_keyword(ASCIIToUTF16("keyword3"));
+  t_url->set_short_name(ASCIIToUTF16("google3 not eligible"));
   t_url->set_show_in_default_list(false);
   template_model_->Add(t_url);
   t_url = new TemplateURL();
   t_url->SetURL("http://www.google4.com/?q={searchTerms}", 0, 0);
-  t_url->set_keyword(L"keyword4");
-  t_url->set_short_name(L"google4");
+  t_url->set_keyword(ASCIIToUTF16("keyword4"));
+  t_url->set_short_name(ASCIIToUTF16("google4"));
   t_url->set_show_in_default_list(true);
   template_model_->Add(t_url);
 
@@ -143,8 +144,8 @@ TEST_F(SearchEngineListModelTest, Notification) {
   // Add one more item to force a notification.
   TemplateURL* t_url = new TemplateURL();
   t_url->SetURL("http://www.google3.com/foo/bar", 0, 0);
-  t_url->set_keyword(L"keyword3");
-  t_url->set_short_name(L"google3");
+  t_url->set_keyword(ASCIIToUTF16("keyword3"));
+  t_url->set_short_name(ASCIIToUTF16("google3"));
   t_url->set_show_in_default_list(true);
   template_model_->Add(t_url);
 

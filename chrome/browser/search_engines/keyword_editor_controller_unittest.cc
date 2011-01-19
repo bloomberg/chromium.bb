@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,8 +137,8 @@ TEST_F(KeywordEditorControllerTest, Add) {
 
   // Verify the entry is what we added.
   const TemplateURL* turl = model_->GetTemplateURLs()[0];
-  EXPECT_EQ(L"a", turl->short_name());
-  EXPECT_EQ(L"b", turl->keyword());
+  EXPECT_EQ(ASCIIToUTF16("a"), turl->short_name());
+  EXPECT_EQ(ASCIIToUTF16("b"), turl->keyword());
   ASSERT_TRUE(turl->url() != NULL);
   EXPECT_EQ("http://c", turl->url()->url());
 }
@@ -154,8 +154,8 @@ TEST_F(KeywordEditorControllerTest, Modify) {
 
   // Make sure it was updated appropriately.
   VerifyChangeCount(0, 1, 0, 0);
-  EXPECT_EQ(L"a1", turl->short_name());
-  EXPECT_EQ(L"b1", turl->keyword());
+  EXPECT_EQ(ASCIIToUTF16("a1"), turl->short_name());
+  EXPECT_EQ(ASCIIToUTF16("b1"), turl->keyword());
   ASSERT_TRUE(turl->url() != NULL);
   EXPECT_EQ("http://c1", turl->url()->url());
 }
@@ -186,9 +186,11 @@ TEST_F(KeywordEditorControllerTest, CannotSetDefaultWhileManaged) {
   controller_->AddTemplateURL(kA1, kB1, "http://d{searchTerms}");
   ClearChangeCount();
 
-  const TemplateURL* turl1 = model_->GetTemplateURLForKeyword(L"b");
+  const TemplateURL* turl1 =
+      model_->GetTemplateURLForKeyword(ASCIIToUTF16("b"));
   ASSERT_TRUE(turl1 != NULL);
-  const TemplateURL* turl2 = model_->GetTemplateURLForKeyword(L"b1");
+  const TemplateURL* turl2 =
+      model_->GetTemplateURLForKeyword(ASCIIToUTF16("b1"));
   ASSERT_TRUE(turl2 != NULL);
 
   EXPECT_TRUE(controller_->CanMakeDefault(turl1));
@@ -208,9 +210,11 @@ TEST_F(KeywordEditorControllerTest, EditManagedDefault) {
   controller_->AddTemplateURL(kA1, kB1, "http://d{searchTerms}");
   ClearChangeCount();
 
-  const TemplateURL* turl1 = model_->GetTemplateURLForKeyword(L"b");
+  const TemplateURL* turl1 =
+      model_->GetTemplateURLForKeyword(ASCIIToUTF16("b"));
   ASSERT_TRUE(turl1 != NULL);
-  const TemplateURL* turl2 = model_->GetTemplateURLForKeyword(L"b1");
+  const TemplateURL* turl2 =
+      model_->GetTemplateURLForKeyword(ASCIIToUTF16("b1"));
   ASSERT_TRUE(turl2 != NULL);
 
   EXPECT_TRUE(controller_->CanEdit(turl1));
@@ -241,8 +245,8 @@ TEST_F(KeywordEditorControllerTest, MakeDefaultNoWebData) {
 // appropriately.
 TEST_F(KeywordEditorControllerTest, MutateTemplateURLModel) {
   TemplateURL* turl = new TemplateURL();
-  turl->set_keyword(L"a");
-  turl->set_short_name(L"b");
+  turl->set_keyword(ASCIIToUTF16("a"));
+  turl->set_short_name(ASCIIToUTF16("b"));
   model_->Add(turl);
 
   // Table model should have updated.

@@ -2175,7 +2175,7 @@ void TabContents::GenerateKeywordIfNecessary(
 
   GURL keyword_url = previous_entry->user_typed_url().is_valid() ?
           previous_entry->user_typed_url() : previous_entry->url();
-  std::wstring keyword =
+  string16 keyword =
       TemplateURLModel::GenerateKeyword(keyword_url, true);  // autodetected
   if (keyword.empty())
     return;
@@ -2996,7 +2996,7 @@ void TabContents::PageHasOSDD(
   if (!keyword_url.is_valid())
     return;
 
-  std::wstring keyword = TemplateURLModel::GenerateKeyword(
+  string16 keyword = TemplateURLModel::GenerateKeyword(
       keyword_url,
       provider_type == TemplateURLFetcher::AUTODETECTED_PROVIDER);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ static const char kTemplateParameter[] = "%s";
 // Term used when generating a search url. Use something obscure so that on
 // the rare case the term replaces the URL it's unlikely another keyword would
 // have the same url.
-static const wchar_t kReplacementTerm[] = L"blah.blah.blah.blah.blah";
+static const char kReplacementTerm[] = "blah.blah.blah.blah.blah";
 
 
 // Removes from the vector any template URL that was created because of
@@ -129,8 +129,8 @@ TemplateURLModel::~TemplateURLModel() {
 }
 
 // static
-std::wstring TemplateURLModel::GenerateKeyword(const GURL& url,
-                                               bool autodetected) {
+string16 TemplateURLModel::GenerateKeyword(const GURL& url,
+                                           bool autodetected) {
   // Don't autogenerate keywords for referrers that are the result of a form
   // submission (TODO: right now we approximate this by checking for the URL
   // having a query, but we should replace this with a call to WebCore to see if
@@ -143,44 +143,43 @@ std::wstring TemplateURLModel::GenerateKeyword(const GURL& url,
   if (!url.is_valid() ||
       (autodetected && (url.has_query() || !url.SchemeIs(chrome::kHttpScheme) ||
                         ((url.path() != "") && (url.path() != "/")))))
-    return std::wstring();
+    return string16();
 
   // Strip "www." off the front of the keyword; otherwise the keyword won't work
   // properly.  See http://code.google.com/p/chromium/issues/detail?id=6984 .
-  return UTF16ToWideHack(net::StripWWW(UTF8ToUTF16(url.host())));
+  return net::StripWWW(UTF8ToUTF16(url.host()));
 }
 
 // static
-std::wstring TemplateURLModel::CleanUserInputKeyword(
-    const std::wstring& keyword) {
+string16 TemplateURLModel::CleanUserInputKeyword(const string16& keyword) {
   // Remove the scheme.
-  std::wstring result(UTF16ToWide(l10n_util::ToLower(WideToUTF16(keyword))));
+  string16 result(l10n_util::ToLower(keyword));
   url_parse::Component scheme_component;
-  if (url_parse::ExtractScheme(WideToUTF8(keyword).c_str(),
+  if (url_parse::ExtractScheme(UTF16ToUTF8(keyword).c_str(),
                                static_cast<int>(keyword.length()),
                                &scheme_component)) {
     // If the scheme isn't "http" or "https", bail.  The user isn't trying to
     // type a web address, but rather an FTP, file:, or other scheme URL, or a
     // search query with some sort of initial operator (e.g. "site:").
     if (result.compare(0, scheme_component.end(),
-                       ASCIIToWide(chrome::kHttpScheme)) &&
+                       ASCIIToUTF16(chrome::kHttpScheme)) &&
         result.compare(0, scheme_component.end(),
-                       ASCIIToWide(chrome::kHttpsScheme)))
-      return std::wstring();
+                       ASCIIToUTF16(chrome::kHttpsScheme)))
+      return string16();
 
     // Include trailing ':'.
     result.erase(0, scheme_component.end() + 1);
     // Many schemes usually have "//" after them, so strip it too.
-    const std::wstring after_scheme(L"//");
+    const string16 after_scheme(ASCIIToUTF16("//"));
     if (result.compare(0, after_scheme.length(), after_scheme) == 0)
       result.erase(0, after_scheme.length());
   }
 
   // Remove leading "www.".
-  result = UTF16ToWideHack(net::StripWWW(WideToUTF16(result)));
+  result = net::StripWWW(result);
 
   // Remove trailing "/".
-  return (result.length() > 0 && result[result.length() - 1] == L'/') ?
+  return (result.length() > 0 && result[result.length() - 1] == '/') ?
       result.substr(0, result.length() - 1) : result;
 }
 
@@ -206,12 +205,13 @@ GURL TemplateURLModel::GenerateSearchURLUsingTermsData(
     return GURL(search_ref->url());
 
   return GURL(search_ref->ReplaceSearchTermsUsingTermsData(
-      *t_url, kReplacementTerm, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
-      std::wstring(), search_terms_data));
+      *t_url, ASCIIToUTF16(kReplacementTerm),
+      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
+      string16(), search_terms_data));
 }
 
 bool TemplateURLModel::CanReplaceKeyword(
-    const std::wstring& keyword,
+    const string16& keyword,
     const GURL& url,
     const TemplateURL** template_url_to_replace) {
   DCHECK(!keyword.empty());  // This should only be called for non-empty
@@ -237,9 +237,9 @@ bool TemplateURLModel::CanReplaceKeyword(
 }
 
 void TemplateURLModel::FindMatchingKeywords(
-    const std::wstring& prefix,
+    const string16& prefix,
     bool support_replacement_only,
-    std::vector<std::wstring>* matches) const {
+    std::vector<string16>* matches) const {
   // Sanity check args.
   if (prefix.empty())
     return;
@@ -265,7 +265,7 @@ void TemplateURLModel::FindMatchingKeywords(
 }
 
 const TemplateURL* TemplateURLModel::GetTemplateURLForKeyword(
-                                     const std::wstring& keyword) const {
+                                     const string16& keyword) const {
   KeywordToTemplateMap::const_iterator elem(
       keyword_to_template_map_.find(keyword));
   return (elem == keyword_to_template_map_.end()) ? NULL : elem->second;
@@ -320,10 +320,10 @@ void TemplateURLModel::RegisterExtensionKeyword(const Extension* extension) {
   }
 
   const TemplateURL* existing_url = GetTemplateURLForExtension(extension);
-  std::wstring keyword = UTF8ToWide(extension->omnibox_keyword());
+  string16 keyword = UTF8ToUTF16(extension->omnibox_keyword());
 
   scoped_ptr<TemplateURL> template_url(new TemplateURL);
-  template_url->set_short_name(UTF8ToWide(extension->name()));
+  template_url->set_short_name(UTF8ToUTF16(extension->name()));
   template_url->set_keyword(keyword);
   // This URL is not actually used for navigation. It holds the extension's
   // ID, as well as forcing the TemplateURL to be treated as a search keyword.
@@ -372,8 +372,8 @@ void TemplateURLModel::IncrementUsageCount(const TemplateURL* url) {
 }
 
 void TemplateURLModel::ResetTemplateURL(const TemplateURL* url,
-                                        const std::wstring& title,
-                                        const std::wstring& keyword,
+                                        const string16& title,
+                                        const string16& keyword,
                                         const std::string& search_url) {
   TemplateURL new_url(*url);
   new_url.set_short_name(title);
@@ -538,8 +538,8 @@ void TemplateURLModel::OnWebDataServiceRequestDone(
   NotifyLoaded();
 }
 
-std::wstring TemplateURLModel::GetKeywordShortName(const std::wstring& keyword,
-                                                   bool* is_extension_keyword) {
+string16 TemplateURLModel::GetKeywordShortName(const string16& keyword,
+                                               bool* is_extension_keyword) {
   const TemplateURL* template_url = GetTemplateURLForKeyword(keyword);
 
   // TODO(sky): Once LocationBarView adds a listener to the TemplateURLModel
@@ -549,7 +549,7 @@ std::wstring TemplateURLModel::GetKeywordShortName(const std::wstring& keyword,
     return template_url->AdjustedShortNameForLocaleDirection();
   }
   *is_extension_keyword = false;
-  return std::wstring();
+  return string16();
 }
 
 void TemplateURLModel::Observe(NotificationType type,
@@ -602,12 +602,12 @@ void TemplateURLModel::RegisterUserPrefs(PrefService* prefs) {
 
 void TemplateURLModel::SetKeywordSearchTermsForURL(const TemplateURL* t_url,
                                                    const GURL& url,
-                                                   const std::wstring& term) {
+                                                   const string16& term) {
   HistoryService* history = profile_  ?
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS) : NULL;
   if (!history)
     return;
-  history->SetKeywordSearchTermsForURL(url, t_url->id(), WideToUTF16Hack(term));
+  history->SetKeywordSearchTermsForURL(url, t_url->id(), term);
 }
 
 void TemplateURLModel::Init(const Initializer* initializers,
@@ -640,15 +640,15 @@ void TemplateURLModel::Init(const Initializer* initializers,
 
       size_t template_position =
           std::string(initializers[i].url).find(kTemplateParameter);
-      DCHECK(template_position != std::wstring::npos);
+      DCHECK(template_position != std::string::npos);
       std::string osd_url(initializers[i].url);
       osd_url.replace(template_position, arraysize(kTemplateParameter) - 1,
                       kSearchTermParameter);
 
       // TemplateURLModel ends up owning the TemplateURL, don't try and free it.
       TemplateURL* template_url = new TemplateURL();
-      template_url->set_keyword(initializers[i].keyword);
-      template_url->set_short_name(initializers[i].content);
+      template_url->set_keyword(UTF8ToUTF16(initializers[i].keyword));
+      template_url->set_short_name(UTF8ToUTF16(initializers[i].content));
       template_url->SetURL(osd_url, 0, 0);
       AddNoNotify(template_url);
     }
@@ -777,8 +777,8 @@ void TemplateURLModel::SaveDefaultSearchProviderToPrefs(
     if (!icon_gurl.is_empty())
       icon_url = icon_gurl.spec();
     encodings = JoinString(t_url->input_encodings(), ';');
-    short_name = WideToUTF8(t_url->short_name());
-    keyword = WideToUTF8(t_url->keyword());
+    short_name = UTF16ToUTF8(t_url->short_name());
+    keyword = UTF16ToUTF8(t_url->keyword());
     id_string = base::Int64ToString(t_url->id());
     prepopulate_id = base::Int64ToString(t_url->prepopulate_id());
   }
@@ -822,10 +822,10 @@ bool TemplateURLModel::LoadDefaultSearchProviderFromPrefs(
     return true;
   }
 
-  std::wstring name =
-      UTF8ToWide(prefs->GetString(prefs::kDefaultSearchProviderName));
-  std::wstring keyword =
-      UTF8ToWide(prefs->GetString(prefs::kDefaultSearchProviderKeyword));
+  string16 name =
+      UTF8ToUTF16(prefs->GetString(prefs::kDefaultSearchProviderName));
+  string16 keyword =
+      UTF8ToUTF16(prefs->GetString(prefs::kDefaultSearchProviderKeyword));
   std::string icon_url =
       prefs->GetString(prefs::kDefaultSearchProviderIconURL);
   std::string encodings =
@@ -983,7 +983,7 @@ void TemplateURLModel::UpdateKeywordSearchTermsForURL(
       if (terms_iterator != query_terms.end() &&
           !terms_iterator->second.empty()) {
         SetKeywordSearchTermsForURL(
-            *i, row.url(), search_ref->SearchTermToWide(*(*i),
+            *i, row.url(), search_ref->SearchTermToString16(*(*i),
             terms_iterator->second));
       }
     }
@@ -1006,7 +1006,8 @@ void TemplateURLModel::AddTabToSearchVisit(const TemplateURL& t_url) {
   if (!history)
     return;
 
-  GURL url(URLFixerUpper::FixupURL(WideToUTF8(t_url.keyword()), std::string()));
+  GURL url(URLFixerUpper::FixupURL(UTF16ToUTF8(t_url.keyword()),
+                                   std::string()));
   if (!url.is_valid())
     return;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "unicode/ubidi.h"
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
@@ -207,7 +208,7 @@ bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
 
   // If the current match is a keyword, return that as the selected keyword.
   if (TemplateURL::SupportsReplacement(match.template_url)) {
-    keyword->assign(match.template_url->keyword());
+    keyword->assign(UTF16ToWideHack(match.template_url->keyword()));
     return false;
   }
 
@@ -215,8 +216,8 @@ bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
   if (!profile_->GetTemplateURLModel())
     return false;
   profile_->GetTemplateURLModel()->Load();
-  const std::wstring keyword_hint(
-      TemplateURLModel::CleanUserInputKeyword(match.fill_into_edit));
+  const string16 keyword_hint(TemplateURLModel::CleanUserInputKeyword(
+      WideToUTF16Hack(match.fill_into_edit)));
   if (keyword_hint.empty())
     return false;
 
@@ -236,7 +237,7 @@ bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
       return false;
   }
 
-  keyword->assign(keyword_hint);
+  keyword->assign(UTF16ToWideHack(keyword_hint));
   return true;
 }
 

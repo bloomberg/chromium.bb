@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_parser.h"
 #include "chrome/common/chrome_paths.h"
@@ -84,7 +85,7 @@ TEST_F(TemplateURLParserTest, TestDictionary) {
     return;
   ParseFile("dictionary.xml", NULL);
   ASSERT_TRUE(parse_result_);
-  EXPECT_EQ(L"Dictionary.com", template_url_.short_name());
+  EXPECT_EQ(ASCIIToUTF16("Dictionary.com"), template_url_.short_name());
   EXPECT_TRUE(template_url_.GetFavIconURL() ==
               GURL("http://cache.lexico.com/g/d/favicon.ico"));
   EXPECT_TRUE(template_url_.url() != NULL);
@@ -98,7 +99,7 @@ TEST_F(TemplateURLParserTest, TestMSDN) {
     return;
   ParseFile("msdn.xml", NULL);
   ASSERT_TRUE(parse_result_);
-  EXPECT_EQ(L"Search \" MSDN", template_url_.short_name());
+  EXPECT_EQ(ASCIIToUTF16("Search \" MSDN"), template_url_.short_name());
   EXPECT_TRUE(template_url_.GetFavIconURL() ==
               GURL("http://search.msdn.microsoft.com/search/favicon.ico"));
   EXPECT_TRUE(template_url_.url() != NULL);
@@ -112,7 +113,7 @@ TEST_F(TemplateURLParserTest, TestWikipedia) {
     return;
   ParseFile("wikipedia.xml", NULL);
   ASSERT_TRUE(parse_result_);
-  EXPECT_EQ(L"Wikipedia (English)", template_url_.short_name());
+  EXPECT_EQ(ASCIIToUTF16("Wikipedia (English)"), template_url_.short_name());
   EXPECT_TRUE(template_url_.GetFavIconURL() ==
               GURL("http://en.wikipedia.org/favicon.ico"));
   EXPECT_TRUE(template_url_.url() != NULL);
@@ -163,7 +164,7 @@ TEST_F(TemplateURLParserTest, TestFirefoxEbay) {
   ParamFilterImpl filter("ebay", "ebay");
   ParseFile("firefox_ebay.xml", &filter);
   ASSERT_TRUE(parse_result_);
-  EXPECT_EQ(L"eBay", template_url_.short_name());
+  EXPECT_EQ(ASCIIToUTF16("eBay"), template_url_.short_name());
   EXPECT_TRUE(template_url_.url() != NULL);
   EXPECT_TRUE(template_url_.url()->SupportsReplacement());
   std::string exp_url =
@@ -184,7 +185,7 @@ TEST_F(TemplateURLParserTest, TestFirefoxWebster) {
   ParamFilterImpl filter("", "Mozilla");
   ParseFile("firefox_webster.xml", &filter);
   ASSERT_TRUE(parse_result_);
-  EXPECT_EQ(L"Webster", template_url_.short_name());
+  EXPECT_EQ(ASCIIToUTF16("Webster"), template_url_.short_name());
   EXPECT_TRUE(template_url_.url() != NULL);
   EXPECT_TRUE(template_url_.url()->SupportsReplacement());
   EXPECT_EQ("http://www.webster.com/cgi-bin/dictionary?va={searchTerms}",
@@ -202,7 +203,7 @@ TEST_F(TemplateURLParserTest, TestFirefoxYahoo) {
   ParamFilterImpl filter("", "Mozilla");
   ParseFile("firefox_yahoo.xml", &filter);
   ASSERT_TRUE(parse_result_);
-  EXPECT_EQ(L"Yahoo", template_url_.short_name());
+  EXPECT_EQ(ASCIIToUTF16("Yahoo"), template_url_.short_name());
   EXPECT_TRUE(template_url_.url() != NULL);
   EXPECT_TRUE(template_url_.url()->SupportsReplacement());
   EXPECT_EQ("http://ff.search.yahoo.com/gossip?"
@@ -225,7 +226,7 @@ TEST_F(TemplateURLParserTest, TestPostSuggestion) {
   ParamFilterImpl filter("", "Mozilla");
   ParseFile("post_suggestion.xml", &filter);
   ASSERT_TRUE(parse_result_);
-  EXPECT_EQ(L"Yahoo", template_url_.short_name());
+  EXPECT_EQ(ASCIIToUTF16("Yahoo"), template_url_.short_name());
   EXPECT_TRUE(template_url_.url() != NULL);
   EXPECT_TRUE(template_url_.url()->SupportsReplacement());
   EXPECT_TRUE(template_url_.suggestions_url() == NULL);

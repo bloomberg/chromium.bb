@@ -79,7 +79,7 @@ class SearchEngineObserver : public TemplateURLModelObserver {
   TemplateURLs modelURLs = model_->GetTemplateURLs();
   for (size_t i = 0; i < modelURLs.size(); ++i) {
     if (modelURLs[i]->ShowInDefaultList())
-      [engines addObject:base::SysWideToNSString(modelURLs[i]->short_name())];
+      [engines addObject:base::SysUTF16ToNSString(modelURLs[i]->short_name())];
   }
 
   [self setSearchEngines:engines.get()];

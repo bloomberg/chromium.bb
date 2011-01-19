@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,8 +51,8 @@ bool EditSearchEngineController::IsURLValid(
   // If the url has a search term, replace it with a random string and make
   // sure the resulting URL is valid. We don't check the validity of the url
   // with the search term as that is not necessarily valid.
-  return GURL(template_ref.ReplaceSearchTerms(TemplateURL(), L"a",
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())).is_valid();
+  return GURL(template_ref.ReplaceSearchTerms(TemplateURL(), ASCIIToUTF16("a"),
+      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())).is_valid();
 }
 
 bool EditSearchEngineController::IsKeywordValid(
@@ -62,7 +62,7 @@ bool EditSearchEngineController::IsKeywordValid(
     return false;  // Do not allow empty keyword.
   const TemplateURL* turl_with_keyword =
       profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(
-          UTF16ToWideHack(keyword_input_trimmed));
+          keyword_input_trimmed);
   return (turl_with_keyword == NULL || turl_with_keyword == template_url_);
 }
 
@@ -75,7 +75,7 @@ void EditSearchEngineController::AcceptAddOrEdit(
 
   const TemplateURL* existing =
       profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(
-          UTF16ToWideHack(keyword_input));
+          keyword_input);
   if (existing &&
       (!edit_keyword_delegate_ || existing != template_url_)) {
     // An entry may have been added with the same keyword string while the
@@ -96,8 +96,8 @@ void EditSearchEngineController::AcceptAddOrEdit(
     // does in a similar situation (updating an existing TemplateURL with
     // data from a new one).
     TemplateURL* modifiable_url = const_cast<TemplateURL*>(template_url_);
-    modifiable_url->set_short_name(UTF16ToWideHack(title_input));
-    modifiable_url->set_keyword(UTF16ToWideHack(keyword_input));
+    modifiable_url->set_short_name(title_input);
+    modifiable_url->set_keyword(keyword_input);
     modifiable_url->SetURL(url_string, 0, 0);
     // TemplateURLModel takes ownership of template_url_.
     profile_->GetTemplateURLModel()->Add(modifiable_url);
@@ -124,7 +124,7 @@ void EditSearchEngineController::CleanUpCancelledAdd() {
 std::string EditSearchEngineController::GetFixedUpURL(
     const std::string& url_input) const {
   std::string url;
-  TrimWhitespace(TemplateURLRef::DisplayURLToURLRef(UTF8ToWide(url_input)),
+  TrimWhitespace(TemplateURLRef::DisplayURLToURLRef(UTF8ToUTF16(url_input)),
                  TRIM_ALL, &url);
   if (url.empty())
     return url;
@@ -135,7 +135,7 @@ std::string EditSearchEngineController::GetFixedUpURL(
   TemplateURL t_url;
   t_url.SetURL(url, 0, 0);
   std::string expanded_url =
-      t_url.url()->ReplaceSearchTerms(t_url, L"x", 0, std::wstring());
+      t_url.url()->ReplaceSearchTerms(t_url, ASCIIToUTF16("x"), 0, string16());
   url_parse::Parsed parts;
   std::string scheme(
       URLFixerUpper::SegmentURL(expanded_url, &parts));

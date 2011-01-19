@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_fetcher_callbacks.h"
@@ -76,7 +77,7 @@ class TemplateURLFetcherTest : public testing::Test {
 
  protected:
   // Schedules the download of the url.
-  void StartDownload(const std::wstring& keyword,
+  void StartDownload(const string16& keyword,
                      const std::string& osdd_file_name,
                      TemplateURLFetcher::ProviderType provider_type,
                      bool check_that_file_exists);
@@ -154,7 +155,7 @@ void TemplateURLFetcherTest::ConfirmAddSearchProvider(
 }
 
 void TemplateURLFetcherTest::StartDownload(
-    const std::wstring& keyword,
+    const string16& keyword,
     const std::string& osdd_file_name,
     TemplateURLFetcher::ProviderType provider_type,
     bool check_that_file_exists) {
@@ -183,7 +184,7 @@ void TemplateURLFetcherTest::WaitForDownloadToFinish() {
 }
 
 TEST_F(TemplateURLFetcherTest, BasicAutodetectedTest) {
-  std::wstring keyword(L"test");
+  string16 keyword(ASCIIToUTF16("test"));
 
   test_util_.ChangeModelToLoadState();
   ASSERT_FALSE(test_util_.model()->GetTemplateURLForKeyword(keyword));
@@ -203,13 +204,13 @@ TEST_F(TemplateURLFetcherTest, BasicAutodetectedTest) {
   const TemplateURL* t_url = test_util_.model()->GetTemplateURLForKeyword(
       keyword);
   ASSERT_TRUE(t_url);
-  EXPECT_STREQ(L"http://example.com/%s/other_stuff",
-               t_url->url()->DisplayURL().c_str());
+  EXPECT_EQ(ASCIIToUTF16("http://example.com/%s/other_stuff"),
+            t_url->url()->DisplayURL());
   EXPECT_TRUE(t_url->safe_for_autoreplace());
 }
 
 TEST_F(TemplateURLFetcherTest, DuplicatesThrownAway) {
-  std::wstring keyword(L"test");
+  string16 keyword(ASCIIToUTF16("test"));
 
   test_util_.ChangeModelToLoadState();
   ASSERT_FALSE(test_util_.model()->GetTemplateURLForKeyword(keyword));
@@ -224,7 +225,7 @@ TEST_F(TemplateURLFetcherTest, DuplicatesThrownAway) {
   struct {
     std::string description;
     std::string osdd_file_name;
-    std::wstring keyword;
+    string16 keyword;
     TemplateURLFetcher::ProviderType provider_type;
   } test_cases[] = {
       { "Duplicate keyword and osdd url with autodetected provider.",
@@ -232,7 +233,8 @@ TEST_F(TemplateURLFetcherTest, DuplicatesThrownAway) {
       { "Duplicate keyword and osdd url with explicit provider.",
         osdd_file_name, keyword, TemplateURLFetcher::EXPLICIT_PROVIDER },
       { "Duplicate osdd url with explicit provider.",
-        osdd_file_name, keyword + L"1", TemplateURLFetcher::EXPLICIT_PROVIDER },
+        osdd_file_name, keyword + ASCIIToUTF16("1"),
+        TemplateURLFetcher::EXPLICIT_PROVIDER },
       { "Duplicate keyword with explicit provider.",
         osdd_file_name + "1", keyword, TemplateURLFetcher::EXPLICIT_PROVIDER }
   };
@@ -255,7 +257,7 @@ TEST_F(TemplateURLFetcherTest, DuplicatesThrownAway) {
 }
 
 TEST_F(TemplateURLFetcherTest, BasicExplicitTest) {
-  std::wstring keyword(L"test");
+  string16 keyword(ASCIIToUTF16("test"));
 
   test_util_.ChangeModelToLoadState();
   ASSERT_FALSE(test_util_.model()->GetTemplateURLForKeyword(keyword));
@@ -273,13 +275,13 @@ TEST_F(TemplateURLFetcherTest, BasicExplicitTest) {
   ASSERT_EQ(1, callbacks_destroyed_);
 
   ASSERT_TRUE(last_callback_template_url_.get());
-  EXPECT_STREQ(L"http://example.com/%s/other_stuff",
-               last_callback_template_url_->url()->DisplayURL().c_str());
+  EXPECT_EQ(ASCIIToUTF16("http://example.com/%s/other_stuff"),
+            last_callback_template_url_->url()->DisplayURL());
   EXPECT_FALSE(last_callback_template_url_->safe_for_autoreplace());
 }
 
 TEST_F(TemplateURLFetcherTest, BasicExplicitDefaultTest) {
-  std::wstring keyword(L"test");
+  string16 keyword(ASCIIToUTF16("test"));
 
   test_util_.ChangeModelToLoadState();
   ASSERT_FALSE(test_util_.model()->GetTemplateURLForKeyword(keyword));
@@ -297,13 +299,13 @@ TEST_F(TemplateURLFetcherTest, BasicExplicitDefaultTest) {
   ASSERT_EQ(1, callbacks_destroyed_);
 
   ASSERT_TRUE(last_callback_template_url_.get());
-  EXPECT_STREQ(L"http://example.com/%s/other_stuff",
-               last_callback_template_url_->url()->DisplayURL().c_str());
+  EXPECT_EQ(ASCIIToUTF16("http://example.com/%s/other_stuff"),
+            last_callback_template_url_->url()->DisplayURL());
   EXPECT_FALSE(last_callback_template_url_->safe_for_autoreplace());
 }
 
 TEST_F(TemplateURLFetcherTest, AutodetectedBeforeLoadTest) {
-  std::wstring keyword(L"test");
+  string16 keyword(ASCIIToUTF16("test"));
   ASSERT_FALSE(test_util_.model()->GetTemplateURLForKeyword(keyword));
 
   std::string osdd_file_name("simple_open_search.xml");
@@ -315,7 +317,7 @@ TEST_F(TemplateURLFetcherTest, AutodetectedBeforeLoadTest) {
 }
 
 TEST_F(TemplateURLFetcherTest, ExplicitBeforeLoadTest) {
-  std::wstring keyword(L"test");
+  string16 keyword(ASCIIToUTF16("test"));
   ASSERT_FALSE(test_util_.model()->GetTemplateURLForKeyword(keyword));
 
   std::string osdd_file_name("simple_open_search.xml");
@@ -327,7 +329,7 @@ TEST_F(TemplateURLFetcherTest, ExplicitBeforeLoadTest) {
 }
 
 TEST_F(TemplateURLFetcherTest, ExplicitDefaultBeforeLoadTest) {
-  std::wstring keyword(L"test");
+  string16 keyword(ASCIIToUTF16("test"));
   ASSERT_FALSE(test_util_.model()->GetTemplateURLForKeyword(keyword));
 
   std::string osdd_file_name("simple_open_search.xml");
@@ -343,13 +345,13 @@ TEST_F(TemplateURLFetcherTest, ExplicitDefaultBeforeLoadTest) {
   ASSERT_EQ(1, callbacks_destroyed_);
 
   ASSERT_TRUE(last_callback_template_url_.get());
-  EXPECT_STREQ(L"http://example.com/%s/other_stuff",
-               last_callback_template_url_->url()->DisplayURL().c_str());
+  EXPECT_EQ(ASCIIToUTF16("http://example.com/%s/other_stuff"),
+            last_callback_template_url_->url()->DisplayURL());
   EXPECT_FALSE(last_callback_template_url_->safe_for_autoreplace());
 }
 
 TEST_F(TemplateURLFetcherTest, DuplicateKeywordsTest) {
-  std::wstring keyword(L"test");
+  string16 keyword(ASCIIToUTF16("test"));
 
   TemplateURL* t_url = new TemplateURL();
   t_url->SetURL("http://example.com/", 0, 0);
@@ -384,5 +386,5 @@ TEST_F(TemplateURLFetcherTest, DuplicateKeywordsTest) {
   ASSERT_EQ(0, add_provider_called_);
   ASSERT_EQ(3, callbacks_destroyed_);
   ASSERT_TRUE(last_callback_template_url_.get());
-  ASSERT_STRNE(keyword.c_str(), last_callback_template_url_->keyword().c_str());
+  ASSERT_NE(keyword, last_callback_template_url_->keyword());
 }

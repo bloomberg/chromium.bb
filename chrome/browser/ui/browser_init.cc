@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -886,8 +886,8 @@ std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
       DCHECK(search_url->SupportsReplacement());
       std::wstring search_term = param.ToWStringHack().substr(2);
       urls.push_back(GURL(search_url->ReplaceSearchTerms(
-          *default_provider, search_term,
-          TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
+          *default_provider, WideToUTF16Hack(search_term),
+          TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())));
     } else {
       // This will create a file URL or a regular URL.
       // This call can (in rare circumstances) block the UI thread.

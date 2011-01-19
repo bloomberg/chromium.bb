@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -3379,11 +3379,11 @@ TemplateURL* MakePrepopulatedTemplateURL(const wchar_t* name,
     new_turl->SetSuggestionsURL(WideToUTF8(suggest_url), 0, 0);
   if (instant_url)
     new_turl->SetInstantURL(WideToUTF8(instant_url), 0, 0);
-  new_turl->set_short_name(name);
+  new_turl->set_short_name(WideToUTF16Hack(name));
   if (keyword == NULL)
     new_turl->set_autogenerate_keyword(true);
   else
-    new_turl->set_keyword(keyword);
+    new_turl->set_keyword(WideToUTF16Hack(keyword));
   new_turl->set_show_in_default_list(true);
   new_turl->set_safe_for_autoreplace(true);
   new_turl->set_date_created(Time());

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -222,7 +222,7 @@ struct ParamTraits<TemplateURL::ImageRef> {
     WriteParam(m, p.url);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
-    std::wstring type;
+    std::string type;
     int width;
     int height;
     GURL url;
@@ -275,17 +275,17 @@ struct ParamTraits<TemplateURL> {
     WriteParam(m, p.prepopulate_id());
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
-    std::wstring short_name;
-    std::wstring description;
+    string16 short_name;
+    string16 description;
     bool includes_suggestions_url;
     TemplateURLRef suggestions_url;
     TemplateURLRef url;
     GURL originating_url;
-    std::wstring keyword;
+    string16 keyword;
     bool autogenerate_keyword;
     bool show_in_default_list;
     bool safe_for_autoreplace;
-    std::vector<std::wstring> languages;
+    std::vector<string16> languages;
     std::vector<std::string> input_encodings;
     base::Time date_created;
     int usage_count;
@@ -314,7 +314,7 @@ struct ParamTraits<TemplateURL> {
 
     *p = TemplateURL();
     for (size_t i = 0; i < image_refs_size; ++i) {
-      std::wstring type;
+      std::string type;
       int width;
       int height;
       GURL url;
@@ -344,7 +344,7 @@ struct ParamTraits<TemplateURL> {
     p->set_show_in_default_list(show_in_default_list);
     p->set_safe_for_autoreplace(safe_for_autoreplace);
 
-    std::vector<std::wstring>::const_iterator lang_iter;
+    std::vector<string16>::const_iterator lang_iter;
     for (lang_iter = languages.begin();
          lang_iter != languages.end();
          ++lang_iter) {

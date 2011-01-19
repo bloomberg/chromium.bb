@@ -417,8 +417,8 @@ URLFetcher* SearchProvider::CreateSuggestFetcher(int id,
   DCHECK(suggestions_url->SupportsReplacement());
   URLFetcher* fetcher = URLFetcher::Create(id,
       GURL(suggestions_url->ReplaceSearchTerms(
-           provider, text, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
-           std::wstring())),
+           provider, WideToUTF16Hack(text),
+           TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())),
       URLFetcher::GET, this);
   fetcher->set_request_context(profile_->GetRequestContext());
   fetcher->Start();
@@ -778,7 +778,8 @@ void SearchProvider::AddMatchToMap(const std::wstring& query_string,
     ++search_start;
   }
   if (is_keyword) {
-    match.fill_into_edit.append(providers_.keyword_provider().keyword() + L" ");
+    match.fill_into_edit.append(UTF16ToWideHack(
+        providers_.keyword_provider().keyword() + char16(' ')));
     match.template_url = &providers_.keyword_provider();
   }
   match.fill_into_edit.append(query_string);
@@ -792,9 +793,9 @@ void SearchProvider::AddMatchToMap(const std::wstring& query_string,
   DCHECK(search_url->SupportsReplacement());
   match.destination_url =
       GURL(search_url->ReplaceSearchTerms(provider,
-                                          query_string,
+                                          WideToUTF16Hack(query_string),
                                           accepted_suggestion,
-                                          input_text));
+                                          WideToUTF16Hack(input_text)));
 
   // Search results don't look like URLs.
   match.transition =
@@ -872,8 +873,8 @@ void SearchProvider::UpdateFirstSearchMatchDescription() {
         match.description.assign(
             UTF16ToWideHack(l10n_util::GetStringFUTF16(
                 IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION,
-                WideToUTF16Hack(providers_.default_provider().
-                                AdjustedShortNameForLocaleDirection()))));
+                providers_.default_provider().
+                    AdjustedShortNameForLocaleDirection())));
         match.description_class.push_back(
             ACMatchClassification(0, ACMatchClassification::DIM));
         // Only the first search match gets a description.

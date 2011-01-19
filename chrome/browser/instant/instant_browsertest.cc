@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,8 +58,8 @@ class InstantTest : public InProcessBrowserTest {
         page.c_str());
     template_url->SetURL(url, 0, 0);
     template_url->SetInstantURL(url, 0, 0);
-    template_url->set_keyword(UTF8ToWide("foo"));
-    template_url->set_short_name(UTF8ToWide("foo"));
+    template_url->set_keyword(ASCIIToUTF16("foo"));
+    template_url->set_short_name(ASCIIToUTF16("foo"));
 
     model->Add(template_url);
     model->SetDefaultSearchProvider(template_url);

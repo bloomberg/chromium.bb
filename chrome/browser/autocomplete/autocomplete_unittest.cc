@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -177,8 +177,8 @@ void AutocompleteProviderTest::
 
   // Create another TemplateURL for KeywordProvider.
   TemplateURL* keyword_t_url = new TemplateURL();
-  keyword_t_url->set_short_name(L"k");
-  keyword_t_url->set_keyword(L"k");
+  keyword_t_url->set_short_name(ASCIIToUTF16("k"));
+  keyword_t_url->set_keyword(ASCIIToUTF16("k"));
   keyword_t_url->SetURL("http://keyword/{searchTerms}", 0, 0);
   profile_.GetTemplateURLModel()->Add(keyword_t_url);
   ASSERT_NE(0, keyword_t_url->id());

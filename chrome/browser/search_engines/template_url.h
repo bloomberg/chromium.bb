@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,18 +72,18 @@ class TemplateURLRef {
   // The TemplateURL is used to determine the input encoding for the term.
   std::string ReplaceSearchTerms(
       const TemplateURL& host,
-      const std::wstring& terms,
+      const string16& terms,
       int accepted_suggestion,
-      const std::wstring& original_query_for_suggestion) const;
+      const string16& original_query_for_suggestion) const;
 
   // Just like ReplaceSearchTerms except that it takes SearchTermsData to supply
   // the data for some search terms. Most of the time ReplaceSearchTerms should
   // be called.
   std::string ReplaceSearchTermsUsingTermsData(
       const TemplateURL& host,
-      const std::wstring& terms,
+      const string16& terms,
       int accepted_suggestion,
-      const std::wstring& original_query_for_suggestion,
+      const string16& original_query_for_suggestion,
       const SearchTermsData& search_terms_data) const;
 
   // Returns the raw URL. None of the parameters will have been replaced.
@@ -104,11 +104,11 @@ class TemplateURLRef {
 
   // Returns a string representation of this TemplateURLRef suitable for
   // display. The display format is the same as the format used by Firefox.
-  std::wstring DisplayURL() const;
+  string16 DisplayURL() const;
 
   // Converts a string as returned by DisplayURL back into a string as
   // understood by TemplateURLRef.
-  static std::string DisplayURLToURLRef(const std::wstring& display_url);
+  static std::string DisplayURLToURLRef(const string16& display_url);
 
   // If this TemplateURLRef is valid and contains one search term, this returns
   // the host/path of the URL, otherwise this returns an empty string.
@@ -120,8 +120,8 @@ class TemplateURLRef {
   const std::string& GetSearchTermKey() const;
 
   // Converts the specified term in the encoding of the host TemplateURL to a
-  // wide string.
-  std::wstring SearchTermToWide(const TemplateURL& host,
+  // string16.
+  string16 SearchTermToString16(const TemplateURL& host,
                                 const std::string& term) const;
 
   // Returns true if this TemplateURLRef has a replacement term of
@@ -259,17 +259,17 @@ class TemplateURL {
   // If a TemplateURL has no images, the favicon for the generated URL
   // should be used.
   struct ImageRef {
-    ImageRef(const std::wstring& type, int width, int height)
+    ImageRef(const std::string& type, int width, int height)
         : type(type), width(width), height(height) {
     }
 
-    ImageRef(const std::wstring& type, int width, int height, const GURL& url)
+    ImageRef(const std::string& type, int width, int height, const GURL& url)
       : type(type), width(width), height(height), url(url) {
     }
 
     // Mime type for the image.
     // ICO image will have the format: image/x-icon or image/vnd.microsoft.icon
-    std::wstring type;
+    std::string type;
 
     // Size of the image
     int width;
@@ -297,20 +297,20 @@ class TemplateURL {
   // A short description of the template. This is the name we show to the user
   // in various places that use keywords. For example, the location bar shows
   // this when the user selects the keyword.
-  void set_short_name(const std::wstring& short_name) {
+  void set_short_name(const string16& short_name) {
     short_name_ = short_name;
   }
-  const std::wstring& short_name() const { return short_name_; }
+  string16 short_name() const { return short_name_; }
 
   // An accessor for the short_name, but adjusted so it can be appropriately
   // displayed even if it is LTR and the UI is RTL.
-  std::wstring AdjustedShortNameForLocaleDirection() const;
+  string16 AdjustedShortNameForLocaleDirection() const;
 
   // A description of the template; this may be empty.
-  void set_description(const std::wstring& description) {
+  void set_description(const string16& description) {
     description_ = description;
   }
-  const std::wstring& description() const { return description_; }
+  string16 description() const { return description_; }
 
   // URL providing JSON results. This is typically used to provide suggestions
   // as your type. If NULL, this url does not support suggestions.
@@ -350,8 +350,8 @@ class TemplateURL {
   const GURL& originating_url() const { return originating_url_; }
 
   // The shortcut for this template url. May be empty.
-  void set_keyword(const std::wstring& keyword);
-  const std::wstring& keyword() const;
+  void set_keyword(const string16& keyword);
+  string16 keyword() const;
 
   // Whether to autogenerate a keyword from the url() in GetKeyword().  Most
   // consumers should not need this.
@@ -410,10 +410,10 @@ class TemplateURL {
   GURL GetFavIconURL() const;
 
   // Set of languages supported. This may be empty.
-  void add_language(const std::wstring& language) {
+  void add_language(const string16& language) {
     languages_.push_back(language);
   }
-  const std::vector<std::wstring>& languages() const { return languages_; }
+  std::vector<string16> languages() const { return languages_; }
 
   // Date this keyword was created.
   //
@@ -487,13 +487,13 @@ class TemplateURL {
   // Unique identifier, used when archived to the database.
   void set_id(TemplateURLID id) { id_ = id;}
 
-  std::wstring short_name_;
-  std::wstring description_;
+  string16 short_name_;
+  string16 description_;
   TemplateURLRef suggestions_url_;
   TemplateURLRef url_;
   TemplateURLRef instant_url_;
   GURL originating_url_;
-  mutable std::wstring keyword_;
+  mutable string16 keyword_;
   bool autogenerate_keyword_;  // If this is set, |keyword_| holds the cached
                                // generated keyword if available.
   mutable bool keyword_generated_;  // True if the keyword was generated. This
@@ -502,7 +502,7 @@ class TemplateURL {
   bool show_in_default_list_;
   bool safe_for_autoreplace_;
   std::vector<ImageRef> image_refs_;
-  std::vector<std::wstring> languages_;
+  std::vector<string16> languages_;
   // List of supported input encodings.
   std::vector<std::string> input_encodings_;
   TemplateURLID id_;

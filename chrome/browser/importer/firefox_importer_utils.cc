@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -312,7 +312,7 @@ int GetFirefoxDefaultSearchEngineIndex(
   int default_se_index = -1;
   for (std::vector<TemplateURL*>::const_iterator iter = search_engines.begin();
        iter != search_engines.end(); ++iter) {
-    if (default_se_name == WideToUTF8((*iter)->short_name())) {
+    if (default_se_name == UTF16ToUTF8((*iter)->short_name())) {
       default_se_index = static_cast<int>(iter - search_engines.begin());
       break;
     }

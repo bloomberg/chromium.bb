@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ struct URLVisitedDetails;
 //
 // There is a TemplateURLModel per Profile.
 //
-// TemplateURLModel does not load the vector of TemplateURLs in it's
+// TemplateURLModel does not load the vector of TemplateURLs in its
 // constructor (except for testing). Use the Load method to trigger a load.
 // When TemplateURLModel has completed loading, observers are notified via
 // OnTemplateURLModelChanged as well as the TEMPLATE_URL_MODEL_LOADED
@@ -63,9 +63,9 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // Struct used for initializing the data store with fake data.
   // Each initializer is mapped to a TemplateURL.
   struct Initializer {
-    const wchar_t* const keyword;
+    const char* const keyword;
     const char* const url;
-    const wchar_t* const content;
+    const char* const content;
   };
 
   explicit TemplateURLModel(Profile* profile);
@@ -78,11 +78,11 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // don't generate keywords for a variety of situations where we would probably
   // not want to auto-add keywords, such as keywords for searches on pages that
   // themselves come from form submissions.
-  static std::wstring GenerateKeyword(const GURL& url, bool autodetected);
+  static string16 GenerateKeyword(const GURL& url, bool autodetected);
 
   // Removes any unnecessary characters from a user input keyword.
   // This removes the leading scheme, "www." and any trailing slash.
-  static std::wstring CleanUserInputKeyword(const std::wstring& keyword);
+  static string16 CleanUserInputKeyword(const string16& keyword);
 
   // Returns the search url for t_url.  Returns an empty GURL if t_url has no
   // url().
@@ -102,23 +102,22 @@ class TemplateURLModel : public WebDataServiceConsumer,
   //
   // url gives the url of the search query. The url is used to avoid generating
   // a TemplateURL for an existing TemplateURL that shares the same host.
-  bool CanReplaceKeyword(const std::wstring& keyword,
+  bool CanReplaceKeyword(const string16& keyword,
                          const GURL& url,
                          const TemplateURL** template_url_to_replace);
 
   // Returns (in |matches|) all keywords beginning with |prefix|, sorted
   // shortest-first. If support_replacement_only is true, only keywords that
   // support replacement are returned.
-  void FindMatchingKeywords(const std::wstring& prefix,
+  void FindMatchingKeywords(const string16& prefix,
                             bool support_replacement_only,
-                            std::vector<std::wstring>* matches) const;
+                            std::vector<string16>* matches) const;
 
   // Looks up |keyword| and returns the element it maps to.  Returns NULL if
   // the keyword was not found.
   // The caller should not try to delete the returned pointer; the data store
   // retains ownership of it.
-  const TemplateURL* GetTemplateURLForKeyword(
-    const std::wstring& keyword) const;
+  const TemplateURL* GetTemplateURLForKeyword(const string16& keyword) const;
 
   // Returns the first TemplateURL found with a URL using the specified |host|,
   // or NULL if there are no such TemplateURLs
@@ -167,8 +166,8 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // Resets the title, keyword and search url of the specified TemplateURL.
   // The TemplateURL is marked as not replaceable.
   void ResetTemplateURL(const TemplateURL* url,
-                        const std::wstring& title,
-                        const std::wstring& keyword,
+                        const string16& title,
+                        const string16& keyword,
                         const std::string& search_url);
 
   // Return true if the given |url| can be made the default.
@@ -211,8 +210,8 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // Returns the locale-direction-adjusted short name for the given keyword.
   // Also sets the out param to indicate whether the keyword belongs to an
   // extension.
-  std::wstring GetKeywordShortName(const std::wstring& keyword,
-                                   bool* is_extension_keyword);
+  string16 GetKeywordShortName(const string16& keyword,
+                               bool* is_extension_keyword);
 
   // NotificationObserver method. TemplateURLModel listens for three
   // notification types:
@@ -245,7 +244,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // This exists and is virtual for testing.
   virtual void SetKeywordSearchTermsForURL(const TemplateURL* t_url,
                                            const GURL& url,
-                                           const std::wstring& term);
+                                           const string16& term);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest, BuildQueryTerms);
@@ -258,7 +257,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest, MergeDeletesUnusedProviders);
   friend class TemplateURLModelTestUtil;
 
-  typedef std::map<std::wstring, const TemplateURL*> KeywordToTemplateMap;
+  typedef std::map<string16, const TemplateURL*> KeywordToTemplateMap;
   typedef std::vector<const TemplateURL*> TemplateURLVector;
 
   // Helper functor for FindMatchingKeywords(), for finding the range of

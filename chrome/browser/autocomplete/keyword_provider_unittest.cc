@@ -1,8 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -37,13 +38,13 @@ class KeywordProviderTest : public testing::Test {
 
 void KeywordProviderTest::SetUp() {
   static const TemplateURLModel::Initializer kTestKeywordData[] = {
-    { L"aa", "aa.com?foo=%s", L"aa" },
-    { L"aaaa", "http://aaaa/?aaaa=1&b=%s&c", L"aaaa" },
-    { L"aaaaa", "%s", L"aaaaa" },
-    { L"ab", "bogus URL %s", L"ab" },
-    { L"weasel", "weasel%sweasel", L"weasel" },
-    { L"www", " +%2B?=%sfoo ", L"www" },
-    { L"z", "%s=z", L"z" },
+    { "aa", "aa.com?foo=%s", "aa" },
+    { "aaaa", "http://aaaa/?aaaa=1&b=%s&c", "aaaa" },
+    { "aaaaa", "%s", "aaaaa" },
+    { "ab", "bogus URL %s", "ab" },
+    { "weasel", "weasel%sweasel", "weasel" },
+    { "www", " +%2B?=%sfoo ", "www" },
+    { "z", "%s=z", "z" },
   };
 
   model_.reset(new TemplateURLModel(kTestKeywordData,
@@ -184,17 +185,17 @@ TEST_F(KeywordProviderTest, Description) {
 
 TEST_F(KeywordProviderTest, AddKeyword) {
   TemplateURL* template_url = new TemplateURL();
-  std::wstring keyword(L"foo");
+  string16 keyword(ASCIIToUTF16("foo"));
   std::string url("http://www.google.com/foo?q={searchTerms}");
   template_url->SetURL(url, 0, 0);
   template_url->set_keyword(keyword);
-  template_url->set_short_name(L"Test");
+  template_url->set_short_name(ASCIIToUTF16("Test"));
   model_->Add(template_url);
   ASSERT_TRUE(template_url == model_->GetTemplateURLForKeyword(keyword));
 }
 
 TEST_F(KeywordProviderTest, RemoveKeyword) {
-  std::wstring url(L"http://aaaa/?aaaa=1&b={searchTerms}&c");
-  model_->Remove(model_->GetTemplateURLForKeyword(L"aaaa"));
-  ASSERT_TRUE(model_->GetTemplateURLForKeyword(L"aaaa") == NULL);
+  string16 url(ASCIIToUTF16("http://aaaa/?aaaa=1&b={searchTerms}&c"));
+  model_->Remove(model_->GetTemplateURLForKeyword(ASCIIToUTF16("aaaa")));
+  ASSERT_TRUE(model_->GetTemplateURLForKeyword(ASCIIToUTF16("aaaa")) == NULL);
 }

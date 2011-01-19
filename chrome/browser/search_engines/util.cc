@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -29,7 +28,7 @@ string16 GetDefaultSearchEngineName(Profile* profile) {
     // http://code.google.com/p/chromium/issues/detail?id=2573
     return string16();
   }
-  return WideToUTF16(default_provider->short_name());
+  return default_provider->short_name();
 }
 
 // Removes (and deletes) TemplateURLs from |urls| that have duplicate

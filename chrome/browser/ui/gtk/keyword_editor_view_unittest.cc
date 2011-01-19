@@ -30,8 +30,8 @@ class KeywordEditorViewTest : public testing::Test {
                           const std::string& keyword,
                           bool make_default) {
     TemplateURL* template_url = new TemplateURL();
-    template_url->set_short_name(UTF8ToWide(name));
-    template_url->set_keyword(UTF8ToWide(keyword));
+    template_url->set_short_name(UTF8ToUTF16(name));
+    template_url->set_keyword(UTF8ToUTF16(keyword));
     template_url->SetURL("http://example.com/{searchTerms}", 0, 0);
     profile_->GetTemplateURLModel()->Add(template_url);
     if (make_default)

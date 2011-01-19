@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -527,7 +527,8 @@ NSPoint LocationBarViewMac::GetPageInfoBubblePoint() const {
 
 NSImage* LocationBarViewMac::GetKeywordImage(const std::wstring& keyword) {
   const TemplateURL* template_url =
-      profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
+      profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(
+          WideToUTF16Hack(keyword));
   if (template_url && template_url->IsExtensionKeyword()) {
     const SkBitmap& bitmap = profile_->GetExtensionService()->
         GetOmniboxIcon(template_url->GetExtensionId());
@@ -656,11 +657,11 @@ void LocationBarViewMac::Layout() {
 
   // Get the keyword to use for keyword-search and hinting.
   const std::wstring keyword(edit_view_->model()->keyword());
-  std::wstring short_name;
+  string16 short_name;
   bool is_extension_keyword = false;
   if (!keyword.empty()) {
     short_name = profile_->GetTemplateURLModel()->
-        GetKeywordShortName(keyword, &is_extension_keyword);
+        GetKeywordShortName(WideToUTF16Hack(keyword), &is_extension_keyword);
   }
 
   const bool is_keyword_hint = edit_view_->model()->is_keyword_hint();
@@ -669,7 +670,8 @@ void LocationBarViewMac::Layout() {
     // Switch from location icon to keyword mode.
     location_icon_decoration_->SetVisible(false);
     selected_keyword_decoration_->SetVisible(true);
-    selected_keyword_decoration_->SetKeyword(short_name, is_extension_keyword);
+    selected_keyword_decoration_->SetKeyword(UTF16ToWideHack(short_name),
+                                             is_extension_keyword);
     selected_keyword_decoration_->SetImage(GetKeywordImage(keyword));
   } else if (toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
     // Switch from location icon to show the EV bubble instead.
@@ -679,7 +681,7 @@ void LocationBarViewMac::Layout() {
     std::wstring label(toolbar_model_->GetEVCertName());
     ev_bubble_decoration_->SetFullLabel(base::SysWideToNSString(label));
   } else if (!keyword.empty() && is_keyword_hint) {
-    keyword_hint_decoration_->SetKeyword(WideToUTF16Hack(short_name),
+    keyword_hint_decoration_->SetKeyword(short_name,
                                          is_extension_keyword);
     keyword_hint_decoration_->SetVisible(true);
   }
