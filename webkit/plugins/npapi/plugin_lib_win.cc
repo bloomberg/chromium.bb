@@ -8,6 +8,7 @@
 #include "base/file_version_info_win.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
@@ -32,16 +33,25 @@ bool PluginLib::ReadWebPluginInfo(const FilePath &filename,
 
   FileVersionInfoWin* version_info_win =
       static_cast<FileVersionInfoWin*>(version_info.get());
-  PluginVersionInfo pvi;
-  pvi.mime_types = version_info_win->GetStringValue(L"MIMEType");
-  pvi.file_extensions = version_info_win->GetStringValue(L"FileExtents");
-  pvi.type_descriptions = version_info_win->GetStringValue(L"FileOpenName");
-  pvi.product_name = version_info->product_name();
-  pvi.file_description = version_info->file_description();
-  pvi.file_version = version_info->file_version();
-  pvi.path = filename;
 
-  return PluginList::CreateWebPluginInfo(pvi, info);
+  info->name = version_info->product_name();
+  info->desc = version_info->file_description();
+  info->version = version_info->file_version();
+  info->path = filename;
+  info->enabled = true;
+
+  // TODO(evan): Move the ParseMimeTypes code inline once Pepper is updated.
+  if (!PluginList::ParseMimeTypes(
+          UTF16ToASCII(version_info_win->GetStringValue(L"MIMEType")),
+          UTF16ToASCII(version_info_win->GetStringValue(L"FileExtents")),
+          version_info_win->GetStringValue(L"FileOpenName"),
+          &info->mime_types)) {
+    LOG_IF(ERROR, PluginList::DebugPluginLoading())
+        << "Plugin " << info->name << " has bad MIME types, skipping";
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace npapi

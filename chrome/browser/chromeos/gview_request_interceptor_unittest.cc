@@ -66,7 +66,10 @@ class GViewRequestInterceptorTest : public testing::Test {
   }
 
   void RegisterPDFPlugin() {
-    webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(pdf_path_);
+    webkit::npapi::WebPluginInfo info;
+    info.path = pdf_path_;
+    info.enabled = true;
+    webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
     webkit::npapi::PluginList::Singleton()->RefreshPlugins();
   }
 

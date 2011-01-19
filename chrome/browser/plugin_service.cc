@@ -459,20 +459,25 @@ void PluginService::RegisterPepperPlugins() {
   std::vector<PepperPluginInfo> plugins;
   PepperPluginRegistry::GetList(&plugins);
   for (size_t i = 0; i < plugins.size(); ++i) {
-    webkit::npapi::PluginVersionInfo info;
+    webkit::npapi::WebPluginInfo info;
     info.path = plugins[i].path;
-    info.product_name = plugins[i].name.empty() ?
-        plugins[i].path.BaseName().ToWStringHack() :
-        ASCIIToWide(plugins[i].name);
-    info.file_description = ASCIIToWide(plugins[i].description);
-    info.file_extensions = ASCIIToWide(plugins[i].file_extensions);
-    info.file_description = ASCIIToWide(plugins[i].type_descriptions);
-    info.mime_types = ASCIIToWide(JoinString(plugins[i].mime_types, '|'));
+    info.name = plugins[i].name.empty() ?
+        WideToUTF16(plugins[i].path.BaseName().ToWStringHack()) :
+        ASCIIToUTF16(plugins[i].name);
+    info.desc = ASCIIToUTF16(plugins[i].description);
+    info.enabled = true;
 
-    // These NPAPI entry points will never be called.  TODO(darin): Come up
-    // with a cleaner way to register pepper plugins with the NPAPI PluginList,
-    // or perhaps refactor the PluginList to be less specific to NPAPI.
-    memset(&info.entry_points, 0, sizeof(info.entry_points));
+    // TODO(evan): Pepper shouldn't require us to parse strings to get
+    // the list of mime types out.
+    if (!webkit::npapi::PluginList::ParseMimeTypes(
+            JoinString(plugins[i].mime_types, '|'),
+            plugins[i].file_extensions,
+            ASCIIToUTF16(plugins[i].type_descriptions),
+            &info.mime_types)) {
+      LOG(ERROR) << "Error parsing mime types for "
+                 << plugins[i].path.ToWStringHack();
+      return;
+    }
 
     webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
   }

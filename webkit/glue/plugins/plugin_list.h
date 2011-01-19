@@ -18,7 +18,6 @@
 namespace NPAPI {
 
 typedef webkit::npapi::PluginEntryPoints PluginEntryPoints;
-typedef webkit::npapi::PluginVersionInfo PluginVersionInfo;
 
 class PluginList {
  public:

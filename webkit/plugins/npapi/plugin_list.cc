@@ -216,40 +216,40 @@ void PluginList::AddExtraPluginDir(const FilePath& plugin_dir) {
 #endif
 }
 
-void PluginList::RegisterInternalPlugin(const PluginVersionInfo& info) {
-  AutoLock lock(lock_);
-  internal_plugins_.push_back(info);
-}
+void PluginList::RegisterInternalPlugin(const WebPluginInfo& info) {
+  PluginEntryPoints entry_points = {0};
+  InternalPlugin plugin = { info, entry_points };
 
-void PluginList::RegisterInternalPlugin(const FilePath& path) {
-  webkit::npapi::PluginVersionInfo info;
-  info.path = path;
-  memset(&info.entry_points, 0, sizeof(info.entry_points));
-  RegisterInternalPlugin(info);
+  AutoLock lock(lock_);
+  internal_plugins_.push_back(plugin);
 }
 
 void PluginList::RegisterInternalPlugin(const FilePath& filename,
                                         const std::string& name,
                                         const std::string& description,
-                                        const std::string& mime_type,
+                                        const std::string& mime_type_str,
                                         const PluginEntryPoints& entry_points) {
-  webkit::npapi::PluginVersionInfo info = {
-    filename,
-    ASCIIToWide(name),
-    ASCIIToWide(description),
-    L"1",
-    ASCIIToWide(mime_type),
-    L"",
-    L"",
-    entry_points
-  };
-  RegisterInternalPlugin(info);
+  InternalPlugin plugin;
+  plugin.info.path = filename;
+  plugin.info.name = ASCIIToUTF16(name);
+  plugin.info.version = ASCIIToUTF16("1");
+  plugin.info.desc = ASCIIToUTF16(description);
+  plugin.info.enabled = true;
+
+  WebPluginMimeType mime_type;
+  mime_type.mime_type = mime_type_str;
+  plugin.info.mime_types.push_back(mime_type);
+
+  plugin.entry_points = entry_points;
+
+  AutoLock lock(lock_);
+  internal_plugins_.push_back(plugin);
 }
 
 void PluginList::UnregisterInternalPlugin(const FilePath& path) {
   AutoLock lock(lock_);
   for (size_t i = 0; i < internal_plugins_.size(); i++) {
-    if (internal_plugins_[i].path == path) {
+    if (internal_plugins_[i].info.path == path) {
       internal_plugins_.erase(internal_plugins_.begin() + i);
       return;
     }
@@ -263,9 +263,10 @@ bool PluginList::ReadPluginInfo(const FilePath& filename,
   {
     AutoLock lock(lock_);
     for (size_t i = 0; i < internal_plugins_.size(); ++i) {
-      if (filename == internal_plugins_[i].path) {
+      if (filename == internal_plugins_[i].info.path) {
         *entry_points = &internal_plugins_[i].entry_points;
-        return CreateWebPluginInfo(internal_plugins_[i], info);
+        *info = internal_plugins_[i].info;
+        return true;
       }
     }
   }
@@ -276,27 +277,22 @@ bool PluginList::ReadPluginInfo(const FilePath& filename,
   return PluginLib::ReadWebPluginInfo(filename, info);
 }
 
-bool PluginList::CreateWebPluginInfo(const PluginVersionInfo& pvi,
-                                     WebPluginInfo* info) {
+// static
+bool PluginList::ParseMimeTypes(
+    const std::string& mime_types_str,
+    const std::string& file_extensions_str,
+    const string16& mime_type_descriptions_str,
+    std::vector<WebPluginMimeType>* parsed_mime_types) {
   std::vector<std::string> mime_types, file_extensions;
   std::vector<string16> descriptions;
-  base::SplitString(WideToUTF8(pvi.mime_types), '|', &mime_types);
-  base::SplitString(WideToUTF8(pvi.file_extensions), '|', &file_extensions);
-  base::SplitString(WideToUTF16(pvi.type_descriptions), '|', &descriptions);
+  base::SplitString(mime_types_str, '|', &mime_types);
+  base::SplitString(file_extensions_str, '|', &file_extensions);
+  base::SplitString(mime_type_descriptions_str, '|', &descriptions);
 
-  info->mime_types.clear();
+  parsed_mime_types->clear();
 
-  if (mime_types.empty()) {
-    LOG_IF(ERROR, PluginList::DebugPluginLoading())
-        << "Plugin " << pvi.product_name << " has no MIME types, skipping";
+  if (mime_types.empty())
     return false;
-  }
-
-  info->name = WideToUTF16(pvi.product_name);
-  info->desc = WideToUTF16(pvi.file_description);
-  info->version = WideToUTF16(pvi.file_version);
-  info->path = pvi.path;
-  info->enabled = true;
 
   for (size_t i = 0; i < mime_types.size(); ++i) {
     WebPluginMimeType mime_type;
@@ -312,14 +308,14 @@ bool PluginList::CreateWebPluginInfo(const PluginVersionInfo& pvi,
       // list from the description if it is present.
       size_t ext = mime_type.description.find(ASCIIToUTF16("(*"));
       if (ext != string16::npos) {
-        if (ext > 1 && mime_type.description[ext -1] == ' ')
+        if (ext > 1 && mime_type.description[ext - 1] == ' ')
           ext--;
 
         mime_type.description.erase(ext);
       }
     }
 
-    info->mime_types.push_back(mime_type);
+    parsed_mime_types->push_back(mime_type);
   }
 
   return true;
@@ -348,7 +344,7 @@ void PluginList::LoadPlugins(bool refresh) {
   // other methods if they're called on other threads.
   std::vector<FilePath> extra_plugin_paths;
   std::vector<FilePath> extra_plugin_dirs;
-  std::vector<PluginVersionInfo> internal_plugins;
+  std::vector<InternalPlugin> internal_plugins;
   {
     AutoLock lock(lock_);
     if (plugins_loaded_ && !refresh && !plugins_need_refresh_)
@@ -372,9 +368,9 @@ void PluginList::LoadPlugins(bool refresh) {
   // "discovered" plugin want to handle the same type, the internal plugin
   // will have precedence.
   for (size_t i = 0; i < internal_plugins.size(); ++i) {
-    if (internal_plugins[i].path.value() == kDefaultPluginLibraryName)
+    if (internal_plugins[i].info.path.value() == kDefaultPluginLibraryName)
       continue;
-    LoadPlugin(internal_plugins[i].path, &new_plugins);
+    LoadPlugin(internal_plugins[i].info.path, &new_plugins);
   }
 
   for (size_t i = 0; i < extra_plugin_paths.size(); ++i) {

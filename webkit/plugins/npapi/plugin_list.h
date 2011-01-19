@@ -43,25 +43,6 @@ struct PluginEntryPoints {
   NP_ShutdownFunc np_shutdown;
 };
 
-// This struct fully describes a plugin. For external plugins, it's read in from
-// the version info of the dll; For internal plugins, it's predefined and
-// includes addresses of entry functions. (Yes, it's Win32 NPAPI-centric, but
-// it'll do for holding descriptions of internal plugins cross-platform.)
-// TODO(evan): remove when NaCl is fixed.
-struct PluginVersionInfo {
-  FilePath path;
-  // Info about the plugin itself.
-  std::wstring product_name;
-  std::wstring file_description;
-  std::wstring file_version;
-  // Info about the data types that the plugin supports.
-  std::wstring mime_types;
-  std::wstring file_extensions;
-  std::wstring type_descriptions;
-  // Entry points for internal plugins.  Pointers are NULL for external plugins.
-  PluginEntryPoints entry_points;
-};
-
 // The PluginList is responsible for loading our NPAPI based plugins. It does
 // so in whatever manner is appropriate for the platform. On Windows, it loads
 // plugins from a known directory by looking for DLLs which start with "NP",
@@ -100,19 +81,21 @@ class PluginList {
   // Get the ordered list of directories from which to load plugins
   void GetPluginDirectories(std::vector<FilePath>* plugin_dirs);
 
-  // Register an internal plugin with the specified plugin information and
-  // function pointers.  An internal plugin must be registered before it can
+  // Register an internal plugin with the specified plugin information.
+  // An internal plugin must be registered before it can
   // be loaded using PluginList::LoadPlugin().
-  void RegisterInternalPlugin(const FilePath& path);
+  void RegisterInternalPlugin(const WebPluginInfo& info);
+
+  // This second version is for "plugins" that have been compiled
+  // directly into the binary -- callers must provide the metadata and
+  // the entry points.
+  // TODO(evan): we use file names here, but they're not really files, they're
+  // actually a string that uniquely identifies the plugin.
   void RegisterInternalPlugin(const FilePath& filename,
                               const std::string& name,
                               const std::string& description,
                               const std::string& mime_type,
                               const PluginEntryPoints& entry_points);
-
-  // Deprecated version of the above.
-  // TODO(evan): remove when NaCl is fixed.
-  void RegisterInternalPlugin(const PluginVersionInfo& info);
 
   // Removes a specified internal plugin from the list. The search will match
   // on the path from the version info previously registered.
@@ -129,9 +112,15 @@ class PluginList {
                       WebPluginInfo* info,
                       const PluginEntryPoints** entry_points);
 
-  // Populate a WebPluginInfo from a PluginVersionInfo.
-  static bool CreateWebPluginInfo(const PluginVersionInfo& pvi,
-                                  WebPluginInfo* info);
+  // In Windows and Pepper plugins, the mime types are passed as a specially
+  // formatted list of strings.  This function parses those strings into
+  // a WebPluginMimeType vector.
+  // TODO(evan): make Pepper pass around formatted data and move this code
+  // into plugin_list_win.
+  static bool ParseMimeTypes(const std::string& mime_types,
+                             const std::string& file_extensions,
+                             const string16& mime_type_descriptions,
+                             std::vector<WebPluginMimeType>* parsed_mime_types);
 
   // Shutdown all plugins.  Should be called at process teardown.
   void Shutdown();
@@ -318,8 +307,12 @@ class PluginList {
   // Extra plugin directories that we want to search when loading.
   std::vector<FilePath> extra_plugin_dirs_;
 
+  struct InternalPlugin {
+    WebPluginInfo info;
+    PluginEntryPoints entry_points;
+  };
   // Holds information about internal plugins.
-  std::vector<PluginVersionInfo> internal_plugins_;
+  std::vector<InternalPlugin> internal_plugins_;
 
   // Path names of plugins to disable (the default is to enable them all).
   std::set<FilePath> disabled_plugins_;
