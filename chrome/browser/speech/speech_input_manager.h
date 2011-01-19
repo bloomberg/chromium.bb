@@ -32,6 +32,10 @@ class SpeechInputManager {
     virtual ~Delegate() {}
   };
 
+  // Whether the speech input feature is enabled, based on the browser channel
+  // information and command line flags.
+  static bool IsFeatureEnabled();
+
   // Factory method to access the singleton. We have this method here instead of
   // using Singleton<> directly in the calling code to aid tests in injection
   // mocks.
