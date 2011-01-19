@@ -156,7 +156,7 @@
       {
         "name": "getBackgroundPage",
         "type": "function",
-        "description": "Returns the JavaScript 'window' object for the background page running inside the current extension. Returns null if the extension has no backround page.",
+        "description": "Returns the JavaScript 'window' object for the background page running inside the current extension. Returns null if the extension has no background page.",
         "parameters": [],
         "returns": {
           "type": "object", "isInstanceOf": "DOMWindow", "properties": {}, "additionalProperties": { "type": "any" }
