@@ -2268,6 +2268,9 @@ io_handler(GIOChannel   *source,
 	gsize bytes_read;
 	GError *error = NULL;
 
+	if(condition == G_IO_HUP)
+          exit(0);
+
 	g_io_channel_read_chars(source, buffer, sizeof buffer,
 				&bytes_read, &error);
 
@@ -2298,8 +2301,8 @@ terminal_run(struct terminal *terminal, const char *path)
 	terminal->master = master;
 	terminal->channel = g_io_channel_unix_new(master);
 	fcntl(master, F_SETFL, O_NONBLOCK);
-	g_io_add_watch(terminal->channel, G_IO_IN,
-		       io_handler, terminal);
+	g_io_add_watch(terminal->channel, G_IO_IN, io_handler, terminal);
+        g_io_add_watch(terminal->channel, G_IO_HUP, io_handler, terminal);
 
 	return 0;
 }
