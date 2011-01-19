@@ -429,7 +429,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPage_Issue5132) {
 }
 
 // Load a page with no selectable text and make sure we don't crash.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindUnSelectableText) {
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindUnselectableText) {
   ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our page.
@@ -438,15 +438,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindUnSelectableText) {
 
   int ordinal = 0;
   TabContents* tab = browser()->GetSelectedTabContents();
-
-  int match_count =
-      FindInPageWchar(tab, L"text", kFwd, kIgnoreCase, &ordinal);
-  // TODO(finnur): These two values are currently 0 and 0 but will change to
-  // 1 and 1 when we merge down a fix for un-selectable text in patch from
-  // revision 75784 (https://bugs.webkit.org/show_bug.cgi?id=52367). Once the
-  // patch has been rolled into Chromium I'll change this back to check for 1
-  // explicitly (as opposed to using equality).
-  EXPECT_EQ(match_count, ordinal);
+  EXPECT_EQ(1, FindInPageWchar(tab, L"text", kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(1, ordinal);
 }
 
 // Try to reproduce the crash seen in issue 1341577.
