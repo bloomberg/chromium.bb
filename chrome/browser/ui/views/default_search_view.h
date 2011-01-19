@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "views/window/dialog_delegate.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/gtk/constrained_window_gtk.h"
+#include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #endif
 
 class PrefService;

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/tab_contents_container_gtk.h"
+#include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 
 #include <algorithm>
 
 #include "base/i18n/rtl.h"
-#include "chrome/browser/gtk/gtk_expanded_container.h"
-#include "chrome/browser/gtk/gtk_floating_container.h"
-#include "chrome/browser/gtk/status_bubble_gtk.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/gtk/gtk_expanded_container.h"
+#include "chrome/browser/ui/gtk/gtk_floating_container.h"
+#include "chrome/browser/ui/gtk/status_bubble_gtk.h"
 #include "chrome/common/notification_source.h"
 #include "gfx/native_widget_types.h"
 

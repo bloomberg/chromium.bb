@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/back_forward_button_gtk.h"
+#include "chrome/browser/ui/gtk/back_forward_button_gtk.h"
 
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

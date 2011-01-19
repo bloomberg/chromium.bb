@@ -10,7 +10,7 @@
 
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/gtk/info_bubble_gtk.h"
+#include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/instant_confirm_dialog_gtk.h"
+#include "chrome/browser/ui/gtk/instant_confirm_dialog_gtk.h"
 
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
-#include "chrome/browser/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/options/show_options_url.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"

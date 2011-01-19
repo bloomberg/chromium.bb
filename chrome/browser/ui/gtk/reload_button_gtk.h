@@ -11,8 +11,8 @@
 #include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/timer.h"
-#include "chrome/browser/gtk/custom_button.h"
-#include "chrome/browser/gtk/owned_widget_gtk.h"
+#include "chrome/browser/ui/gtk/custom_button.h"
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 

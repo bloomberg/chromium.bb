@@ -11,7 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 
 class InputWindowDialogGtk : public InputWindowDialog {
  public:

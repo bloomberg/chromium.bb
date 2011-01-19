@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/js_modal_dialog_gtk.h"
+#include "chrome/browser/ui/gtk/js_modal_dialog_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -10,8 +10,8 @@
 #include "app/message_box_flags.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 

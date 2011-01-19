@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/gtk_custom_menu_item.h"
+#include "chrome/browser/ui/gtk/gtk_custom_menu_item.h"
 
 #include "base/i18n/rtl.h"
-#include "chrome/browser/gtk/gtk_custom_menu.h"
+#include "chrome/browser/ui/gtk/gtk_custom_menu.h"
 
 enum {
   BUTTON_PUSHED,

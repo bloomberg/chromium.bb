@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "chrome/browser/gtk/reload_button_gtk.h"
+#include "chrome/browser/ui/gtk/reload_button_gtk.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ReloadButtonGtkTest : public testing::Test {

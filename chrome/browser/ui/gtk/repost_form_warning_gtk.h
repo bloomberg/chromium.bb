@@ -10,7 +10,7 @@
 
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/gtk/constrained_window_gtk.h"
+#include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 
 class RepostFormWarningController;
 

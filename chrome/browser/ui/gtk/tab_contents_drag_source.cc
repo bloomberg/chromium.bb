@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/tab_contents_drag_source.h"
+#include "chrome/browser/ui/gtk/tab_contents_drag_source.h"
 
 #include <string>
 
@@ -13,11 +13,11 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/drag_download_file.h"
 #include "chrome/browser/download/drag_download_util.h"
-#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "gfx/gtk_util.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"

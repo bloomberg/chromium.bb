@@ -14,7 +14,7 @@
 #include "base/basictypes.h"
 #include "base/singleton.h"
 #include "chrome/browser/accessibility_events.h"
-#include "chrome/browser/gtk/accessibility_event_router_gtk.h"
+#include "chrome/browser/ui/gtk/accessibility_event_router_gtk.h"
 
 class Profile;
 

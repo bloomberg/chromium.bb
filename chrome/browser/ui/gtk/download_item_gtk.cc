@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/download_item_gtk.h"
+#include "chrome/browser/ui/gtk/download_item_gtk.h"
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -19,13 +19,13 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/gtk/custom_drag.h"
-#include "chrome/browser/gtk/download_shelf_gtk.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/menu_gtk.h"
-#include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/gtk/custom_drag.h"
+#include "chrome/browser/ui/gtk/download_shelf_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/menu_gtk.h"
+#include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/canvas_skia_paint.h"
 #include "gfx/color_utils.h"

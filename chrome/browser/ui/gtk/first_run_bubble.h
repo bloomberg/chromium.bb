@@ -16,7 +16,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/gtk/info_bubble_gtk.h"
+#include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 

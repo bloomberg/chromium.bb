@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/custom_drag.h"
+#include "chrome/browser/ui/gtk/custom_drag.h"
 
 #include "app/gtk_dnd_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/download_item.h"
-#include "chrome/browser/gtk/bookmark_utils_gtk.h"
+#include "chrome/browser/ui/gtk/bookmark_utils_gtk.h"
 #include "gfx/gtk_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"

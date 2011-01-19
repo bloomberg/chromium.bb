@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/collected_cookies_gtk.h"
+#include "chrome/browser/ui/gtk/collected_cookies_gtk.h"
 
 #include <string>
 
 #include "app/l10n_util.h"
 #include "chrome/browser/cookies_tree_model.h"
-#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/notification_source.h"
 #include "grit/generated_resources.h"
 

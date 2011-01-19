@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/gconf_titlebar_listener.h"
+#include "chrome/browser/ui/gtk/gconf_titlebar_listener.h"
 
 #include <gtk/gtk.h>
 
-#include "base/scoped_ptr.h"
-#include "base/singleton.h"
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
-#include "chrome/browser/gtk/browser_titlebar.h"
+#include "base/scoped_ptr.h"
+#include "base/singleton.h"
+#include "chrome/browser/ui/gtk/browser_titlebar.h"
 
 namespace {
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "app/gtk_dnd_util.h"
-#include "chrome/browser/gtk/bookmark_utils_gtk.h"
+#include "chrome/browser/ui/gtk/bookmark_utils_gtk.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(BookmarkUtilsGtkTest, GetNodesFromSelectionInvalid) {

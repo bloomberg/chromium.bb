@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/extension_installed_bubble_gtk.h"
+#include "chrome/browser/ui/gtk/extension_installed_bubble_gtk.h"
 
 #include <string>
 
@@ -11,13 +11,13 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/gtk/browser_actions_toolbar_gtk.h"
-#include "chrome/browser/gtk/browser_toolbar_gtk.h"
-#include "chrome/browser/gtk/browser_window_gtk.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/gtk/browser_actions_toolbar_gtk.h"
+#include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_details.h"

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/hover_controller_gtk.h"
+#include "chrome/browser/ui/gtk/hover_controller_gtk.h"
 
 #include "base/message_loop.h"
-#include "chrome/browser/gtk/gtk_chrome_button.h"
+#include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 
 static const gchar* kHoverControllerGtkKey = "__HOVER_CONTROLLER_GTK__";
 

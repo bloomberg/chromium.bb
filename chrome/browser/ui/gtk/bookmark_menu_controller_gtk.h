@@ -14,7 +14,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
-#include "chrome/browser/gtk/owned_widget_gtk.h"
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;

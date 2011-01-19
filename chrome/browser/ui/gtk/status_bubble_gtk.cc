@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/status_bubble_gtk.h"
+#include "chrome/browser/ui/gtk/status_bubble_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -12,10 +12,10 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/rounded_window.h"
-#include "chrome/browser/gtk/slide_animator_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/rounded_window.h"
+#include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #include "chrome/common/notification_service.h"
 #include "ui/base/animation/slide_animation.h"
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/theme_install_bubble_view_gtk.h"
+#include "chrome/browser/ui/gtk/theme_install_bubble_view_gtk.h"
 
 #include <math.h>
 
 #include "app/l10n_util.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/rounded_window.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/rounded_window.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"

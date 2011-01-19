@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/extension_popup_gtk.h"
+#include "chrome/browser/ui/gtk/extension_popup_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -12,13 +12,13 @@
 #include "base/message_loop.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/debugger/devtools_manager.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "googleurl/src/gurl.h"

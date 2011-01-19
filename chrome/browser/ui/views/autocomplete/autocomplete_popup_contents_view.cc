@@ -7,8 +7,8 @@
 #include "app/bidi_line_iterator.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/theme_provider.h"
 #include "app/text_elider.h"
+#include "app/theme_provider.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
@@ -38,16 +38,16 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include <objidl.h>
 #include <commctrl.h>
 #include <dwmapi.h>
+#include <objidl.h>
 
 #include "app/win/hwnd_util.h"
 #include "base/win/scoped_gdi_object.h"
 #endif
 
 #if defined(OS_LINUX)
-#include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "gfx/skia_utils_gtk.h"
 #endif
 

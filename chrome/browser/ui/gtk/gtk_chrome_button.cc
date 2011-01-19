@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/gtk_chrome_button.h"
+#include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 
 #include "base/basictypes.h"
-#include "chrome/browser/gtk/nine_box.h"
+#include "chrome/browser/ui/gtk/nine_box.h"
 #include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/view_id_util.h"
+#include "chrome/browser/ui/gtk/view_id_util.h"
 
 #include <stdint.h>
 #include <string>

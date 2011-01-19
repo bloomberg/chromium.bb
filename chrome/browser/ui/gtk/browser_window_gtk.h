@@ -17,9 +17,9 @@
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/gtk/infobar_arrow_model.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/gtk/infobar_arrow_model.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/rect.h"
 

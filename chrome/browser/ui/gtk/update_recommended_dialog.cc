@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/update_recommended_dialog.h"
+#include "chrome/browser/ui/gtk/update_recommended_dialog.h"
 
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

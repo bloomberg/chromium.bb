@@ -18,7 +18,7 @@
 #include <gtk/gtk.h>
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/gtk/owned_widget_gtk.h"
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "ui/base/animation/animation_delegate.h"
 
 namespace ui {

@@ -9,7 +9,7 @@
 #include "app/gtk_signal.h"
 #include "app/gtk_signal_registrar.h"
 #include "base/timer.h"
-#include "chrome/browser/gtk/slide_animator_gtk.h"
+#include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 
 typedef struct _GtkFloatingContainer GtkFloatingContainer;
 typedef struct _GtkWidget GtkWidget;

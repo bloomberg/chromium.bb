@@ -25,7 +25,7 @@
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "views/focus/focus_manager.h"
 #elif defined(TOOLKIT_GTK)
-#include "chrome/browser/gtk/slide_animator_gtk.h"
+#include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #endif

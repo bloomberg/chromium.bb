@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/info_bubble_accelerators_gtk.h"
+#include "chrome/browser/ui/gtk/info_bubble_accelerators_gtk.h"
 
 #include <gdk/gdkkeysyms.h>
 #include <glib.h>

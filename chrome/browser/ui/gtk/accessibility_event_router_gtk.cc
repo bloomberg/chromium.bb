@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/accessibility_event_router_gtk.h"
+#include "chrome/browser/ui/gtk/accessibility_event_router_gtk.h"
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
-#include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/common/notification_type.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "views/controls/textfield/gtk_views_textview.h"
 #include "views/controls/textfield/gtk_views_entry.h"
+#include "views/controls/textfield/gtk_views_textview.h"
 #include "views/controls/textfield/native_textfield_gtk.h"
 #endif
 

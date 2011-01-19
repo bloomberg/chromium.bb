@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 
 #include <cairo/cairo.h>
-#include <gtk/gtk.h>
 #include <gdk/gdkx.h>
+#include <gtk/gtk.h>
 
 #include <cstdarg>
 #include <map>
@@ -26,11 +26,11 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/gtk/cairo_cached_surface.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/gtk/cairo_cached_surface.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/common/renderer_preferences.h"
 #include "gfx/gtk_util.h"
 #include "googleurl/src/gurl.h"
@@ -44,7 +44,7 @@
 #include "chrome/browser/chromeos/options/options_window_view.h"
 #include "views/window/window.h"
 #else
-#include "chrome/browser/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #endif
 
 using WebKit::WebDragOperationsMask;

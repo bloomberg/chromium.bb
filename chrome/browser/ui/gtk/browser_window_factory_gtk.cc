@@ -4,9 +4,9 @@
 
 #include "chrome/browser/browser_window.h"
 
-#include "chrome/browser/gtk/browser_window_gtk.h"
-#include "chrome/browser/gtk/find_bar_gtk.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/find_bar_gtk.h"
 
 BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   return new BrowserWindowGtk(browser);

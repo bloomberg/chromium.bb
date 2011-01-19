@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/infobar_container_gtk.h"
+#include "chrome/browser/ui/gtk/infobar_container_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -10,13 +10,13 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/gtk/browser_window_gtk.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/infobar_gtk.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/infobar_gtk.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "third_party/skia/include/core/SkPaint.h"

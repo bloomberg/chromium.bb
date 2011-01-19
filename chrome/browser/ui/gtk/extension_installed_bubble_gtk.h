@@ -8,8 +8,8 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/gtk/custom_button.h"
-#include "chrome/browser/gtk/info_bubble_gtk.h"
+#include "chrome/browser/ui/gtk/custom_button.h"
+#include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"

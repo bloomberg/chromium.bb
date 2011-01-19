@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_OVERFLOW_BUTTON_H_
 #pragma once
 
-#include "chrome/browser/gtk/owned_widget_gtk.h"
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
