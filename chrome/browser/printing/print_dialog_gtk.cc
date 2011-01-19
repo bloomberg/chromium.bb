@@ -125,6 +125,8 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, gint response_id) {
       GtkPrinter* printer =
           gtk_print_unix_dialog_get_selected_printer(
               GTK_PRINT_UNIX_DIALOG(dialog_));
+      // Attempt to track down bug 70166.
+      CHECK(printer != NULL);
       if (!gtk_printer_accepts_pdf(printer)) {
         browser_->GetSelectedTabContents()->AddInfoBar(
             new PdfUnsupportedInfoBarDelegate(browser_));
