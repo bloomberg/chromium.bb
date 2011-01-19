@@ -217,8 +217,8 @@ void GpuWatchdogThread::OnExit() {
     return;
 #endif
 
-  LOG(ERROR) << "The GPU process hung. Restarting after "
-             << timeout_ << " seconds.";
+  LOG(ERROR) << "The GPU process hung. Terminating after "
+             << timeout_ << " ms.";
 
   volatile int* null_pointer = NULL;
   *null_pointer = timeout;
