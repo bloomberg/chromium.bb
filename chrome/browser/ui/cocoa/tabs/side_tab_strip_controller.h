@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/ui/cocoa/tab_strip_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 
 // A controller for the tab strip when side tabs are enabled.
 //

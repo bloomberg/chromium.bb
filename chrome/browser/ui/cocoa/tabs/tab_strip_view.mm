@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/tab_strip_view.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/tab_strip_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 
 @implementation TabStripView

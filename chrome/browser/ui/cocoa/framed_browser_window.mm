@@ -8,7 +8,7 @@
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #import "chrome/browser/ui/cocoa/browser_frame_view.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/tab_strip_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/themes/browser_theme_provider.h"

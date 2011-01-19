@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/tab_strip_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 
 #import <QuartzCore/QuartzCore.h>
 
@@ -34,12 +34,12 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
-#import "chrome/browser/ui/cocoa/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tab_contents_controller.h"
-#import "chrome/browser/ui/cocoa/tab_controller.h"
-#import "chrome/browser/ui/cocoa/tab_strip_model_observer_bridge.h"
-#import "chrome/browser/ui/cocoa/tab_view.h"
-#import "chrome/browser/ui/cocoa/throbber_view.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_view.h"
+#import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"

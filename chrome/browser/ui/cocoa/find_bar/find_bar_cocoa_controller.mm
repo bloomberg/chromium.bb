@@ -15,7 +15,7 @@
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/find_pasteboard.h"
 #import "chrome/browser/ui/cocoa/focus_tracker.h"
-#import "chrome/browser/ui/cocoa/tab_strip_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 

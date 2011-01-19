@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/ui/cocoa/tab_strip_view.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 
 // A class that handles drawing the background of the tab strip when side tabs
 // are enabled.

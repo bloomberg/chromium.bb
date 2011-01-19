@@ -12,7 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/tab_strip_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 
 namespace {
 

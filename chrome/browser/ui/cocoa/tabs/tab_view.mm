@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/tab_view.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 
 #include "base/logging.h"
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
-#import "chrome/browser/ui/cocoa/tab_controller.h"
-#import "chrome/browser/ui/cocoa/tab_window_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "grit/theme_resources.h"

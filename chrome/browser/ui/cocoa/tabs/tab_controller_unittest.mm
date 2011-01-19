@@ -5,9 +5,9 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/tab_controller.h"
-#import "chrome/browser/ui/cocoa/tab_controller_target.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"

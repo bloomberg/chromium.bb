@@ -8,7 +8,7 @@
 #import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/browser_frame_view.h"
-#import "chrome/browser/ui/cocoa/tab_strip_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 
 typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int, unichar);

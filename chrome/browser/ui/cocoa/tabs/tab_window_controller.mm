@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/tab_window_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 
 #include "app/theme_provider.h"
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/focus_tracker.h"
-#import "chrome/browser/ui/cocoa/tab_strip_view.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 
 @interface TabWindowController(PRIVATE)

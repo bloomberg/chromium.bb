@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_TAB_STRIP_CONTROLLER_H_
-#define CHROME_BROWSER_UI_COCOA_TAB_STRIP_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_COCOA_TABS_TAB_STRIP_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_TABS_TAB_STRIP_CONTROLLER_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
@@ -11,7 +11,7 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/tab_contents_controller.h"
-#import "chrome/browser/ui/cocoa/tab_controller_target.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "third_party/GTM/AppKit/GTMWindowSheetController.h"
 
@@ -259,4 +259,4 @@ class ToolbarModel;
 // controller.
 extern NSString* const kTabStripNumberOfTabsChanged;
 
-#endif  // CHROME_BROWSER_UI_COCOA_TAB_STRIP_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_COCOA_TABS_TAB_STRIP_CONTROLLER_H_

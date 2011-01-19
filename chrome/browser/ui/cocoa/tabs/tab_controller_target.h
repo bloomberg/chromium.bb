@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_TAB_CONTROLLER_TARGET_H_
-#define CHROME_BROWSER_UI_COCOA_TAB_CONTROLLER_TARGET_H_
+#ifndef CHROME_BROWSER_UI_COCOA_TABS_TAB_CONTROLLER_TARGET_H_
+#define CHROME_BROWSER_UI_COCOA_TABS_TAB_CONTROLLER_TARGET_H_
 #pragma once
 
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -24,4 +24,4 @@
            forController:(TabController*)controller;
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_TAB_CONTROLLER_TARGET_H_
+#endif  // CHROME_BROWSER_UI_COCOA_TABS_TAB_CONTROLLER_TARGET_H_
