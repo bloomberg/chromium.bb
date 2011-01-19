@@ -403,7 +403,7 @@ bool AutomationResourceMessageFilter::SendDownloadRequestToHost(
   int automation_request_id = 0;
   bool valid_id = GetAutomationRequestId(request_id, &automation_request_id);
   if (!valid_id) {
-    NOTREACHED() << "Invalid request id: " << request_id;
+    LOG(ERROR) << "Invalid request id: " << request_id;
     return false;
   }
 
