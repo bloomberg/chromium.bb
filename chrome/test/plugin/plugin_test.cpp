@@ -75,8 +75,8 @@ class PluginTest : public UITest {
   }
 
  protected:
-#if defined(OS_WIN)
   virtual void SetUp() {
+#if defined(OS_WIN)
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
     if (strcmp(test_info->name(), "MediaPlayerNew") == 0) {
@@ -96,10 +96,12 @@ class PluginTest : public UITest {
       launch_arguments_.AppendSwitchASCII(switches::kTestSandbox,
                                           "security_tests.dll");
     }
+#endif  // defined(OS_WIN)
+
+    launch_arguments_.AppendSwitch(switches::kAllowOutdatedPlugins);
 
     UITest::SetUp();
   }
-#endif  // defined(OS_WIN)
 
   void TestPlugin(const std::string& test_case,
                   int timeout,
@@ -123,8 +125,8 @@ class PluginTest : public UITest {
   }
 };
 
-// http://crbug.com/68303
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+// http://crbug.com/68751
+#if defined(OS_MACOSX)
 TEST_F(PluginTest, DISABLED_Flash) {
 #else
 TEST_F(PluginTest, Flash) {
@@ -152,7 +154,7 @@ class ClickToPlayPluginTest : public PluginTest {
   }
 };
 
-// http://crbug.com/68303
+// http://crbug.com/68751
 #if defined(OS_MACOSX)
 TEST_F(ClickToPlayPluginTest, DISABLED_Flash) {
 #else
@@ -174,7 +176,7 @@ TEST_F(ClickToPlayPluginTest, Flash) {
   WaitForFinish(action_max_timeout_ms(), true);
 }
 
-// http://crbug.com/68303
+// http://crbug.com/68751
 #if defined(OS_MACOSX)
 TEST_F(ClickToPlayPluginTest, DISABLED_FlashDocument) {
 #else
