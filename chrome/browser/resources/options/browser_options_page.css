@@ -74,3 +74,8 @@
   position: absolute;
   bottom: 18px;
 }
+
+#startupAddButton {
+  margin-left: 0;
+  margin-top: 10px;
+}

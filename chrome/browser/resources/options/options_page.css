@@ -277,6 +277,7 @@ html[hide-menu=true] #mainview {
 
 .subpage-sheet .page h1 {
   padding-top: 4px;
+  margin-bottom: 10px;
 }
 
 section {
@@ -587,7 +588,7 @@ select {
   font-size: inherit;
   margin: 0;
   overflow: hidden;
-  padding: 2px 20px 2px 3px;
+  padding: 2px 20px 2px 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
