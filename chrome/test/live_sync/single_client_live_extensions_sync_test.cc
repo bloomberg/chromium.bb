@@ -28,7 +28,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveExtensionsSyncTest,
 
 // TODO(rsimha): Enable after http://crbug.com/70028 is fixed.
 IN_PROC_BROWSER_TEST_F(SingleClientLiveExtensionsSyncTest,
-                       FAILS_StartWithSomeExtensions) {
+                       DISABLED_StartWithSomeExtensions) {
   ASSERT_TRUE(SetupClients());
 
   const int kNumExtensions = 5;
