@@ -69,14 +69,24 @@ void NativeTableGtk::InsertColumn(const TableColumn& column, int index) {
   NOTIMPLEMENTED();
 }
 
-void NativeTableGtk::RemoveColumn(int index) {
-  NOTIMPLEMENTED();
+void NativeTableGtk::RemoveColumn(int column_index) {
+  if (!native_view())
+    return;
+
+  GtkTreeViewColumn* column = gtk_tree_view_get_column(tree_view_,
+                                                       column_index);
+  if (column) {
+    gtk_tree_view_remove_column(tree_view_, column);
+
+    if (table_->model()->RowCount() > 0)
+      OnRowsChanged(0, table_->model()->RowCount() - 1);
+  }
 }
 
 int NativeTableGtk::GetColumnWidth(int column_index) const {
   GtkTreeViewColumn* column = gtk_tree_view_get_column(tree_view_,
                                                        column_index);
-  return gtk_tree_view_column_get_width(column);
+  return column ? gtk_tree_view_column_get_width(column) : -1;
 }
 
 void NativeTableGtk::SetColumnWidth(int column_index, int width) {
