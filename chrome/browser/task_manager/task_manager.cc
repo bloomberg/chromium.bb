@@ -891,7 +891,13 @@ void TaskManagerModel::OnBytesRead(net::URLRequestJob* job, const char* buf,
   if (!ResourceDispatcherHost::RenderViewForRequest(job->request(),
                                                &render_process_host_child_id,
                                                &routing_id)) {
-    NOTREACHED();
+    // Only net::URLRequestJob instances created by the ResourceDispatcherHost
+    // have a render view associated.  Jobs from components such as the
+    // SearchProvider for autocomplete, have no associated view, so we can't
+    // correctly attribute the bandwidth they consume.
+    // TODO(wez): All jobs' resources should ideally be accountable, even if
+    // only by contributing to the Browser process' stats.
+    return;
   }
 
   // This happens in the IO thread, post it to the UI thread.
