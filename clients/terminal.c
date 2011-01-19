@@ -273,9 +273,9 @@ function_key_response(char escape, int num, uint32_t modifiers,
 	int mod_num = 0;
 	int len;
 
-	if (modifiers & WINDOW_MODIFIER_SHIFT) mod_num   |= 1;
-	if (modifiers & WINDOW_MODIFIER_ALT) mod_num     |= 2;
-	if (modifiers & WINDOW_MODIFIER_CONTROL) mod_num |= 4;
+	if (modifiers & XKB_COMMON_SHIFT_MASK) mod_num   |= 1;
+	if (modifiers & XKB_COMMON_MOD1_MASK) mod_num    |= 2;
+	if (modifiers & XKB_COMMON_CONTROL_MASK) mod_num |= 4;
 
 	if (mod_num != 0)
 		len = snprintf(response, MAX_RESPONSE, "\e[%d;%d%c",
@@ -1969,8 +1969,8 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	int len = 0;
 
 	modifiers = input_get_modifiers(input);
-	if ((modifiers & WINDOW_MODIFIER_CONTROL) &&
-	    (modifiers & WINDOW_MODIFIER_SHIFT) &&
+	if ((modifiers & XKB_COMMON_CONTROL_MASK) &&
+	    (modifiers & XKB_COMMON_SHIFT_MASK) &&
 	    state && handle_bound_key(terminal, input, sym, 0))
 		return;
 
@@ -2065,7 +2065,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		len = apply_key_map(terminal->key_mode, sym, modifiers, ch);
 		if (len != 0) break;
 		
-		if (modifiers & WINDOW_MODIFIER_CONTROL) {
+		if (modifiers & XKB_COMMON_CONTROL_MASK) {
 			if (sym >= '3' && sym <= '7')
 				sym = (sym & 0x1f) + 8;
 
@@ -2076,10 +2076,10 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 			else if (sym == '/') sym = 0x1F;
 			else if (sym == '8' || sym == '?') sym = 0x7F;
 		} else if ((terminal->mode & MODE_ALT_SENDS_ESC) && 
-			(modifiers & WINDOW_MODIFIER_ALT))
+			   (modifiers & XKB_COMMON_MOD1_MASK))
 		{
 			ch[len++] = 0x1b;
-		} else if (modifiers & WINDOW_MODIFIER_ALT) {
+		} else if (modifiers & XKB_COMMON_MOD1_MASK) {
 			sym = sym | 0x80;
 		}
 

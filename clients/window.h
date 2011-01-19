@@ -23,6 +23,7 @@
 #ifndef _WINDOW_H_
 #define _WINDOW_H_
 
+#include <X11/extensions/XKBcommon.h>
 #include <glib.h>
 #include <wayland-client.h>
 
@@ -84,14 +85,6 @@ display_flush_cairo_device(struct display *display);
 
 void
 display_run(struct display *d);
-
-enum {
-	WINDOW_MODIFIER_SHIFT = 0x01,
-	WINDOW_MODIFIER_LOCK = 0x02,
-	WINDOW_MODIFIER_CONTROL = 0x04,
-	WINDOW_MODIFIER_ALT = 0x08,
-	WINDOW_MODIFIER_MOD2 = 0x10,
-};
 
 enum pointer_type {
 	POINTER_BOTTOM_LEFT,

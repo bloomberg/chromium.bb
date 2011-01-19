@@ -911,7 +911,7 @@ window_handle_key(void *data, struct wl_input_device *input_device,
 		return;
 
 	level = 0;
-	if (input->modifiers & WINDOW_MODIFIER_SHIFT &&
+	if (input->modifiers & XKB_COMMON_SHIFT_MASK &&
 	    XkbKeyGroupWidth(d->xkb, code, 0) > 1)
 		level = 1;
 
