@@ -3574,14 +3574,6 @@
    fun:_ZN28PrerenderResourceHandlerTestC2Ev
 }
 {
-   Bug_69906
-   Memcheck:Leak
-   fun:calloc
-   fun:speex_alloc
-   ...
-   fun:*SpeexEncoderC1Ei
-}
-{
    Bug_69919
    Memcheck:Leak
    fun:calloc
