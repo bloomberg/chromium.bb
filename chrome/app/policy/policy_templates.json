@@ -81,7 +81,7 @@
 #     chrome.*, chrome.mac -> plist, plist_strings,doc
 #     everything else -> doc
 #
-# Annotations: 
+# Annotations:
 #   Additional information is specified under keys 'features' and
 #   'example_value'. These are used in the generated documentation and example
 #   policy configuration files.
