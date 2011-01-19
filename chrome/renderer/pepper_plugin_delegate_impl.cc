@@ -68,11 +68,23 @@ class PlatformImage2DImpl
     : public webkit::ppapi::PluginDelegate::PlatformImage2D {
  public:
   // This constructor will take ownership of the dib pointer.
+  // On Mac, we assume that the dib is cached by the browser, so on destruction
+  // we'll tell the browser to free it.
   PlatformImage2DImpl(int width, int height, TransportDIB* dib)
       : width_(width),
         height_(height),
         dib_(dib) {
   }
+
+#if defined(OS_MACOSX)
+  // On Mac, we have to tell the browser to free the transport DIB.
+  virtual ~PlatformImage2DImpl() {
+    if (dib_.get()) {
+      RenderThread::current()->Send(
+          new ViewHostMsg_FreeTransportDIB(dib_->id()));
+    }
+  }
+#endif
 
   virtual skia::PlatformCanvas* Map() {
     return dib_->GetPlatformCanvas(width_, height_);
@@ -487,15 +499,12 @@ PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
   // work in the sandbox.  Do this by sending a message to the browser
   // requesting a TransportDIB (see also
   // chrome/renderer/webplugin_delegate_proxy.cc, method
-  // WebPluginDelegateProxy::CreateBitmap() for similar code).  Note that the
-  // TransportDIB is _not_ cached in the browser; this is because this memory
-  // gets flushed by the renderer into another TransportDIB that represents the
-  // page, which is then in turn flushed to the screen by the browser process.
-  // When |transport_dib_| goes out of scope in the dtor, all of its shared
-  // memory gets reclaimed.
+  // WebPluginDelegateProxy::CreateBitmap() for similar code). The TransportDIB
+  // is cached in the browser, and is freed (in typical cases) by the
+  // PlatformImage2DImpl's destructor.
   TransportDIB::Handle dib_handle;
   IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(buffer_size,
-                                                        false,
+                                                        true,
                                                         &dib_handle);
   if (!RenderThread::current()->Send(msg))
     return NULL;
