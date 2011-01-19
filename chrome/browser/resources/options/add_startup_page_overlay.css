@@ -23,15 +23,27 @@
   height: 320px;
 }
 
-#addStartupRecentPageList .url {
-  display: none;
+#addStartupRecentPageList .vertical-center {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  white-space: nowrap;
   color: hsl(0, 0%, 70%);
+}
+
+#addStartupRecentPageList .title {
+  box-sizing: border-box;
+  color: black;
+  display: inline-block;
+  max-width: 100%;
+}
+
+#addStartupRecentPageList .url {
   -webkit-padding-start: 3ex;
 }
 
-#addStartupRecentPageList > :hover > .url,
-#addStartupRecentPageList > [selected] > .url {
-  display: inline;
+#addStartupRecentPageList > :not(:hover):not([selected]) > .url,
+  display: none;
 }
 
 #addStartupPageOverlay .action-area {

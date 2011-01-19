@@ -35,19 +35,23 @@ cr.define('options.add_startup_page', function() {
     decorate: function() {
       ListItem.prototype.decorate.call(this);
 
+      var wrapperEl = this.ownerDocument.createElement('div');
+      wrapperEl.className = 'vertical-center';
+      this.appendChild(wrapperEl);
+
       var titleEl = this.ownerDocument.createElement('span');
       titleEl.className = 'title';
       titleEl.classList.add('favicon-cell');
       titleEl.style.backgroundImage = url('chrome://favicon/' +
                                           this.pageInfo['url']);
-      this.appendChild(titleEl);
+      wrapperEl.appendChild(titleEl);
       if (this.pageInfo['title'].length > 0) {
         titleEl.textContent = this.pageInfo['title'];
 
         var urlEL = this.ownerDocument.createElement('span');
         urlEL.className = 'url';
         urlEL.textContent = this.pageInfo['displayURL'];
-        this.appendChild(urlEL);
+        wrapperEl.appendChild(urlEL);
       } else {
         titleEl.textContent = this.pageInfo['displayURL'];
       }
