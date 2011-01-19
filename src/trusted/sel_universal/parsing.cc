@@ -86,6 +86,7 @@ static int HandleEscapedHex(const string s, size_t* pos) {
   return ival;
 }
 
+
 static int HandleEscapedChar(const string s, size_t* pos) {
   if (*pos >= s.size()) return -1;
   switch (s[*pos]) {
@@ -283,6 +284,34 @@ static uint32_t SplitArrayChar(string s, vector<string>* tokens, bool input) {
   return dim;
 }
 
+// substitute ${var_name} strings in s
+static string SubstituteVars(string s, NaClCommandLoop* ncl) {
+  string result("");
+  string var("");
+  bool scanning_var_name = false;
+  for (size_t i = 0; i < s.size(); ++i) {
+    if (scanning_var_name) {
+      if (s[i] == '{') {
+        continue;
+      } else if (s[i] == '}') {
+        result.append(ncl->GetVariable(var));
+        scanning_var_name = false;
+      } else {
+        var.push_back(s[i]);
+      }
+    } else {
+      if (s[i] == '$') {
+        scanning_var_name = true;
+        var = "";
+      } else {
+        result.push_back(s[i]);
+      }
+    }
+  }
+
+  return result;
+}
+
 
 static string UnescapeString(string s) {
   string result("");
@@ -299,8 +328,8 @@ static string UnescapeString(string s) {
 // input indicates whether this is an input our an output arg.
 // Output args are handled slightly different especially in the array case
 // where the merely allocate space but do not initialize it.
-bool ParseArg(
-  NaClSrpcArg* arg, string token, bool input, NaClCommandLoop* ncl) {
+static bool ParseArg(
+    NaClSrpcArg* arg, string token, bool input, NaClCommandLoop* ncl) {
   int dim;
 
   if (token.size() <= 2) {
@@ -314,7 +343,7 @@ bool ParseArg(
   // Initialize the argument slot.  This enables freeing on failures.
   memset(arg, 0, sizeof(*arg));
 
-  NaClLog(1, "TOKEN %s\n", token.c_str());
+  NaClLog(2, "TOKEN %s\n", token.c_str());
   if (token[1] != '(' || token[token.size() - 1] != ')') {
     NaClLog(LOG_ERROR, "malformed token");
     return false;
@@ -373,7 +402,7 @@ bool ParseArg(
       arg->tag = NACL_SRPC_ARG_TYPE_INT;
       arg->u.ival = StringToInt32(token, 2);
       break;
-   case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
       arg->tag = NACL_SRPC_ARG_TYPE_INT_ARRAY;
       dim = SplitArray(token, &array_tokens, input);
       arg->arrays.iarr = static_cast<int32_t*>(calloc(dim, sizeof(int32_t)));
@@ -408,7 +437,8 @@ bool ParseArg(
       break;
     case NACL_SRPC_ARG_TYPE_STRING:
       arg->tag = NACL_SRPC_ARG_TYPE_STRING;
-      arg->arrays.str = strdup(UnescapeString(token).c_str());
+      arg->arrays.str =
+        strdup(UnescapeString(SubstituteVars(token, ncl)).c_str());
       if (NULL == arg->arrays.str) {
         NaClLog(LOG_ERROR, "alloc problem\n");
         return false;
@@ -425,6 +455,86 @@ bool ParseArg(
       return false;
   }
 
+  return true;
+}
+
+
+bool OneArgEqual(NaClSrpcArg* arg1, NaClSrpcArg* arg2) {
+  if (arg1->tag != arg2->tag) return false;
+
+  switch (arg1->tag) {
+    case NACL_SRPC_ARG_TYPE_INVALID:
+      return true;
+    case NACL_SRPC_ARG_TYPE_BOOL:
+      return arg1->u.bval == arg2->u.bval;
+    case NACL_SRPC_ARG_TYPE_DOUBLE:
+      // TOOD(robertm): tolerate small deltas
+      return arg1->u.dval == arg2->u.dval;
+    case NACL_SRPC_ARG_TYPE_HANDLE:
+      return arg1->u.hval == arg2->u.hval;
+    case NACL_SRPC_ARG_TYPE_INT:
+      return arg1->u.ival == arg2->u.ival;
+    case NACL_SRPC_ARG_TYPE_LONG:
+      return arg1->u.lval == arg2->u.lval;
+    case NACL_SRPC_ARG_TYPE_STRING:
+      return string(arg1->arrays.str) == string(arg2->arrays.str);
+
+    case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
+      if (arg1->u.count != arg2->u.count) return false;
+      for (size_t i = 0; i < arg1->u.count; ++i) {
+        if ( arg1->arrays.carr[i] != arg2->arrays.carr[i]) return false;
+      }
+      return true;
+    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+      if (arg1->u.count != arg2->u.count) return false;
+      for (size_t i = 0; i < arg1->u.count; ++i) {
+        if ( arg1->arrays.iarr[i] != arg2->arrays.iarr[i]) return false;
+      }
+      return true;
+    case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+      if (arg1->u.count != arg2->u.count) return false;
+      for (size_t i = 0; i < arg1->u.count; ++i) {
+        if ( arg1->arrays.larr[i] != arg2->arrays.larr[i]) return false;
+      }
+      return true;
+    case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
+      if (arg1->u.count != arg2->u.count) return false;
+      for (size_t i = 0; i < arg1->u.count; ++i) {
+        // TOOD(robertm): tolerate small deltas
+        if ( arg1->arrays.darr[i] != arg2->arrays.darr[i]) return false;
+      }
+      return true;
+    case NACL_SRPC_ARG_TYPE_OBJECT:
+    case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+    default:
+      NaClLog(LOG_FATAL, "unsupported srpc arg type\n");
+      return false;
+  }
+}
+
+
+bool AllArgsEqual(NaClSrpcArg** arg1, NaClSrpcArg** arg2) {
+  if (NULL != *arg1 && NULL != *arg2) {
+    if (!OneArgEqual(*arg1, *arg2)) return false;
+    return AllArgsEqual(++arg1, ++arg2);
+  } else if (0 == *arg1 && 0 == *arg2) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+
+bool ParseArgs(NaClSrpcArg** args,
+               const vector<string>& tokens,
+               size_t start,
+               bool input,
+               NaClCommandLoop* ncl) {
+  for (size_t i = 0; args[i] != NULL; ++i) {
+    if (!ParseArg(args[i], tokens[start + i], input, ncl)) {
+      return false;
+    }
+  }
   return true;
 }
 
@@ -549,5 +659,57 @@ void DumpArg(const NaClSrpcArg* arg, NaClCommandLoop* ncl) {
       break;
     default:
       break;
+  }
+}
+
+
+void DumpArgs(const NaClSrpcArg* const* args, NaClCommandLoop *ncl) {
+  for (size_t i = 0; args[i] != 0; ++i) {
+    printf("  ");
+    DumpArg(args[i], ncl);
+  }
+}
+
+
+void BuildArgVec(NaClSrpcArg* argv[], NaClSrpcArg arg[], size_t count) {
+  for (size_t i = 0; i < count; ++i) {
+    NaClSrpcArgCtor(&arg[i]);
+    argv[i] = &arg[i];
+  }
+  argv[count] = NULL;
+}
+
+
+void FreeArrayArgs(NaClSrpcArg** args) {
+  for (size_t i = 0; args[i] != NULL; ++i) {
+    switch (args[i]->tag) {
+     case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
+      free(args[i]->arrays.carr);
+      break;
+     case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
+      free(args[i]->arrays.darr);
+      break;
+     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+      free(args[i]->arrays.iarr);
+      break;
+     case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+      free(args[i]->arrays.larr);
+      break;
+     case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+     case NACL_SRPC_ARG_TYPE_OBJECT:
+      NaClLog(LOG_ERROR, "unsupported srpc arg type\n");
+      break;
+     case NACL_SRPC_ARG_TYPE_STRING:
+      free(args[i]->arrays.str);
+      break;
+     case NACL_SRPC_ARG_TYPE_INVALID:
+     case NACL_SRPC_ARG_TYPE_BOOL:
+     case NACL_SRPC_ARG_TYPE_DOUBLE:
+     case NACL_SRPC_ARG_TYPE_HANDLE:
+     case NACL_SRPC_ARG_TYPE_INT:
+     case NACL_SRPC_ARG_TYPE_LONG:
+     default:
+      break;
+    }
   }
 }

@@ -28,9 +28,11 @@ class NaClCommandLoop {
                   NaClSrpcImcDescType default_socket_address);
 
   void SetVariable(string name, string value);
+  string GetVariable(string name) const;
   void AddHandler(string name, CommandHandler handler);
-  void AddDesc(NaClSrpcImcDescType desc, string name);
-  string AddDescUniquify(NaClSrpcImcDescType desc, string prefix);
+  void AddDesc(NaClDesc* desc, string name);
+  void AddUpcallRpc(string signature, NaClSrpcMethod rpc);
+  string AddDescUniquify(NaClDesc* desc, string prefix);
   NaClSrpcImcDescType FindDescByName(string name) const;
   NaClSrpcService* getService() const { return service_; }
   NaClSrpcChannel* getChannel() const { return channel_; }
@@ -38,10 +40,16 @@ class NaClCommandLoop {
   void StartInteractiveLoop();
 
  private:
-  // most other handlers are not even class members, this one needs
-  // to access descs_, though.
-  static bool HandleDesc(NaClCommandLoop* ncl, const vector<string>& args);
-
+  // Note, most handlers are not even class members, the ones below
+  // need to access to certain private class members
+  static bool HandleShowDescriptors(NaClCommandLoop* ncl,
+                                    const vector<string>& args);
+  static bool HandleShowVariables(NaClCommandLoop* ncl,
+                                  const vector<string>& args);
+  static bool HandleSetVariable(NaClCommandLoop* ncl,
+                                  const vector<string>& args);
+  static bool HandleInstallUpcalls(NaClCommandLoop* ncl,
+                                   const vector<string>& args);
   int desc_count_;
   NaClSrpcService* service_;
   NaClSrpcChannel* channel_;
@@ -49,6 +57,8 @@ class NaClCommandLoop {
   map<string, string> vars_;
   map<string, CommandHandler> handlers_;
   map<string, NaClSrpcImcDescType> descs_;
+  map<string, NaClSrpcMethod> upcall_rpcs_;
+  bool upcall_installed_;
 };
 
 

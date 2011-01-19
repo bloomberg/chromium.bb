@@ -78,6 +78,34 @@ void NaClCommandLoop::AddHandler(string name, CommandHandler handler) {
 }
 
 
+void NaClCommandLoop::SetVariable(string name, string value) {
+  vars_[name] = value;
+}
+
+
+string NaClCommandLoop::GetVariable(string name) const {
+  if (vars_.find(name) == vars_.end()) {
+    NaClLog(LOG_ERROR, "unknown variable %s\n", name.c_str());
+    return "";
+  }
+  // NOTE: vars_[name] is not const
+  return vars_.find(name)->second;
+}
+
+
+void NaClCommandLoop::AddUpcallRpc(string name, NaClSrpcMethod rpc) {
+  if (upcall_installed_) {
+    NaClLog(LOG_ERROR, "upcall service is already install - ignoring\n");
+    return;
+  }
+
+  if (upcall_rpcs_.find(name) != upcall_rpcs_.end()) {
+    NaClLog(LOG_ERROR, "rpc %s already exists\n", name.c_str());
+  }
+  upcall_rpcs_[name] = rpc;
+}
+
+
 static string BuildSignature(string name, NaClSrpcArg** in, NaClSrpcArg** out) {
   string result = name;
 
@@ -100,15 +128,77 @@ static string BuildSignature(string name, NaClSrpcArg** in, NaClSrpcArg** out) {
 }
 
 
-bool NaClCommandLoop::HandleDesc(NaClCommandLoop* ncl,
-                                 const vector<string>& args) {
-  UNREFERENCED_PARAMETER(args);
+bool NaClCommandLoop::HandleShowDescriptors(NaClCommandLoop* ncl,
+                                            const vector<string>& args) {
+  if (args.size() != 1) {
+    NaClLog(LOG_ERROR, "not the right number of args for this command\n");
+    return false;
+  }
   printf("Descriptors:\n");
-  for (map<string, NaClSrpcImcDescType>::const_iterator it = ncl->descs_.begin();
-       it != ncl->descs_.end();
-       ++it) {
+  typedef map<string, NaClSrpcImcDescType>::const_iterator Ci;
+  for (Ci it = ncl->descs_.begin(); it != ncl->descs_.end(); ++it) {
     printf("  %p: %s\n", static_cast<void*>(it->second), it->first.c_str());
   }
+  return true;
+}
+
+
+bool NaClCommandLoop::HandleShowVariables(NaClCommandLoop* ncl,
+                                          const vector<string>& args) {
+  if (args.size() != 1) {
+    NaClLog(LOG_ERROR, "not the right number of args for this command\n");
+    return false;
+  }
+  printf("Variables:\n");
+  typedef map<string, string>::const_iterator Ci;
+  for (Ci it = ncl->vars_.begin(); it != ncl->vars_.end(); ++it) {
+    printf("  %s: [%s]\n", it->first.c_str(), it->second.c_str());
+  }
+  return true;
+}
+
+
+bool NaClCommandLoop::HandleSetVariable(NaClCommandLoop* ncl,
+                                        const vector<string>& args) {
+  if (args.size() != 3) {
+    NaClLog(LOG_ERROR, "not the right number of args for this command\n");
+    return false;
+  }
+  ncl->SetVariable(args[1], args[2]);
+  return true;
+}
+
+
+bool NaClCommandLoop::HandleInstallUpcalls(NaClCommandLoop* ncl,
+                                           const vector<string>& args) {
+  if (args.size() != 2) {
+    NaClLog(LOG_ERROR, "not the right number of args for this command\n");
+    return false;
+  }
+  // Note, we do not care about this leak
+  NaClSrpcHandlerDesc* handlers =
+    new NaClSrpcHandlerDesc[ncl->upcall_rpcs_.size() + 1];
+
+  NaClSrpcHandlerDesc* curr = handlers;
+  typedef map<string, NaClSrpcMethod>::const_iterator Ci;
+  for (Ci it = ncl->upcall_rpcs_.begin(); it != ncl->upcall_rpcs_.end(); ++it) {
+    curr->entry_fmt = it->first.c_str();
+    curr->handler = it->second;
+    ++curr;
+    NaClLog(1, "adding upcall handler: %s\n",  it->first.c_str());
+  }
+  // terminate the handlers with a zero sentinel
+  curr->entry_fmt = 0;
+  curr->handler = 0;
+
+  // Note, we do not care about this leak
+  NaClSrpcService* service = new NaClSrpcService;
+  if (!NaClSrpcServiceHandlerCtor(service, handlers)) {
+    NaClLog(LOG_ERROR, "could not create upcall service");
+  }
+  ncl->channel_->server = service;
+  ncl->SetVariable(args[1], service->service_string);
+  ncl->upcall_installed_ = true;
   return true;
 }
 
@@ -116,12 +206,17 @@ bool NaClCommandLoop::HandleDesc(NaClCommandLoop* ncl,
 static bool HandleHelp(NaClCommandLoop* ncl, const vector<string>& args) {
   UNREFERENCED_PARAMETER(ncl);
   UNREFERENCED_PARAMETER(args);
-  // TODO(sehr,robertm): we should have a syntax description option
+  // TODO(sehr,robertm): we should have a syntax description arg
+  //                     in the handler install call.
   printf("Commands:\n");
   printf("  # <anything>\n");
   printf("    comment\n");
-  printf("  descs\n");
+  printf("  show_descriptors\n");
   printf("    print the table of known descriptors (handles)\n");
+  printf("  show_variables\n");
+  printf("    print the table of variables and their values\n");
+  printf("  set_variable <name> <value>\n");
+  printf("    set variable to the given value\n");
   printf("  sysv\n");
   printf("    create a descriptor for an SysV shared memory (Linux only)\n");
   printf("  rpc method_name <in_args> * <out_args>\n");
@@ -130,6 +225,8 @@ static bool HandleHelp(NaClCommandLoop* ncl, const vector<string>& args) {
   printf("    Each out_arg is of form 'type', e.g. i, s.\n");
   printf("  service\n");
   printf("    print the methods found by service_discovery\n");
+  printf("  install_upcalls <name>\n");
+  printf("    install upcalls and set variable name to the service_string\n");
   printf("  quit\n");
   printf("    quit the program\n");
   printf("  help\n");
@@ -138,78 +235,6 @@ static bool HandleHelp(NaClCommandLoop* ncl, const vector<string>& args) {
   printf("    print this menu\n");
   return true;
 }
-
-
-static void BuildArgVec(NaClSrpcArg* argv[], NaClSrpcArg arg[], size_t count) {
-  for (size_t i = 0; i < count; ++i) {
-    NaClSrpcArgCtor(&arg[i]);
-    argv[i] = &arg[i];
-  }
-  argv[count] = NULL;
-}
-
-
-static void DumpArgs(
-  string name, const NaClSrpcArg* arg, size_t n, NaClCommandLoop *ncl) {
-  printf("%s RESULTS: ", name.c_str());
-  for (size_t i = 0; i < n; ++i) {
-    printf("  ");
-    DumpArg(&arg[i], ncl);
-  }
-  printf("\n");
-}
-
-
-// Read n arguments from the tokens array.  Returns true iff successful.
-static bool ParseArgs(NaClSrpcArg* arg,
-                      const vector<string>& tokens,
-                      size_t start,
-                      size_t n,
-                      bool input,
-                      NaClCommandLoop* ncl) {
-  for (size_t i = 0; i < n; ++i) {
-    if (!ParseArg(&arg[i], tokens[start + i], input, ncl)) {
-      /* TODO(sehr): reclaim memory here on failure. */
-      return false;
-    }
-  }
-  return true;
-}
-
-
-// Best effort
-static void FreeArrayArgs(NaClSrpcArg arg[], size_t count) {
-  for (size_t i = 0; i < count; ++i) {
-    switch (arg[i].tag) {
-     case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-      free(arg[i].arrays.carr);
-      break;
-     case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-      free(arg[i].arrays.darr);
-      break;
-     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-      free(arg[i].arrays.iarr);
-      break;
-     case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
-      free(arg[i].arrays.larr);
-      break;
-     case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-      FreeArrayArgs(arg[i].arrays.varr, arg[i].u.count);
-      break;
-     case NACL_SRPC_ARG_TYPE_INVALID:
-     case NACL_SRPC_ARG_TYPE_BOOL:
-     case NACL_SRPC_ARG_TYPE_DOUBLE:
-     case NACL_SRPC_ARG_TYPE_HANDLE:
-     case NACL_SRPC_ARG_TYPE_INT:
-     case NACL_SRPC_ARG_TYPE_LONG:
-     case NACL_SRPC_ARG_TYPE_STRING:
-     case NACL_SRPC_ARG_TYPE_OBJECT:
-     default:
-      break;
-    }
-  }
-}
-
 
 static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
   // we need two args at start and the "*" in out separator
@@ -234,9 +259,10 @@ static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
   const size_t n_in = in_out_sep - 2;
   NaClSrpcArg  in[NACL_SRPC_MAX_ARGS];
   NaClSrpcArg* inv[NACL_SRPC_MAX_ARGS + 1];
-  NaClLog(1, "SRPC: Parsing %d input args.\n", (int)n_in);
+  NaClLog(2, "SRPC: Parsing %d input args.\n", (int)n_in);
   BuildArgVec(inv, in, n_in);
-  if (!ParseArgs(in, args, 2, n_in, true, ncl)) {
+  if (!ParseArgs(inv, args, 2, true, ncl)) {
+    // TODO(sehr): reclaim memory here on failure.
     NaClLog(LOG_ERROR, "Bad input args for RPC.\n");
     return false;
   }
@@ -245,9 +271,10 @@ static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
   const size_t n_out =  args.size() - in_out_sep - 1;
   NaClSrpcArg  out[NACL_SRPC_MAX_ARGS];
   NaClSrpcArg* outv[NACL_SRPC_MAX_ARGS + 1];
-  NaClLog(1, "SRPC: Parsing %d output args.\n", (int)n_out);
+  NaClLog(2, "SRPC: Parsing %d output args.\n", (int)n_out);
   BuildArgVec(outv, out, n_out);
-  if (!ParseArgs(out, args, in_out_sep + 1, n_out, false, ncl)) {
+  if (!ParseArgs(outv, args, in_out_sep + 1, false, ncl)) {
+    // TODO(sehr): reclaim memory here on failure.
     NaClLog(LOG_ERROR, "Bad output args for RPC.\n");
     return false;
   }
@@ -272,11 +299,13 @@ static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
     return false;
   }
 
-  DumpArgs(args[1], outv[0], n_out, ncl);
+  printf("%s RESULTS: ", args[1].c_str());
+  DumpArgs(outv, ncl);
+  printf("\n");
 
   /* Free the storage allocated for array valued parameters and returns. */
-  FreeArrayArgs(in, n_in);
-  FreeArrayArgs(out, n_out);
+  FreeArrayArgs(inv);
+  FreeArrayArgs(outv);
   return true;
 }
 
@@ -289,44 +318,13 @@ static bool HandleService(NaClCommandLoop* ncl, const vector<string>& args) {
 }
 
 
-static void UpcallString(NaClSrpcRpc* rpc,
-                         NaClSrpcArg** ins,
-                         NaClSrpcArg** outs,
-                         NaClSrpcClosure* done) {
-  UNREFERENCED_PARAMETER(outs);
-  printf("UpcallString: called with '%s'\n", ins[0]->arrays.str);
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
-}
-
-
 NaClCommandLoop::NaClCommandLoop(NaClSrpcService* service,
                                  NaClSrpcChannel* channel,
                                  NaClSrpcImcDescType default_socket_address) {
-
+  upcall_installed_ = false;
   desc_count_ = 0;
   channel_ = channel;
   service_ = service;
-
-  // Add a simple upcall service to the channel (if any)
-  if (NULL != channel) {
-    NaClLog(1, "adding upcall service\n");
-    static const NaClSrpcHandlerDesc upcall_handlers[] = {
-      { "upcall_string:s:", UpcallString },
-      { NULL, NULL }
-    };
-    NaClSrpcService* s = static_cast<NaClSrpcService*>(malloc(sizeof(*service)));
-    if (s == 0) {
-      NaClLog(LOG_FATAL, "could not allocate service");
-    }
-
-    if (!NaClSrpcServiceHandlerCtor(s, upcall_handlers)) {
-      NaClLog(LOG_FATAL, "could not create service");
-      free(s);
-    }
-    channel_->server = s;
-  }
-
   // populate descriptors
   AddDesc((NaClDesc*) NaClDescInvalidMake(), "invalid");
   AddDesc(DescFromPlatformDesc(0, NACL_ABI_O_RDONLY), "stdin");
@@ -337,18 +335,17 @@ NaClCommandLoop::NaClCommandLoop(NaClSrpcService* service,
   }
 
   // populate command handlers
-  AddHandler("descs", HandleDesc);
+  // TODO(robertm): for backward compatibility
+  AddHandler("descs", HandleShowDescriptors);
+  AddHandler("show_descriptors", HandleShowDescriptors);
+  AddHandler("show_variables", HandleShowVariables);
+  AddHandler("set_variables", HandleSetVariable);
+  AddHandler("install_upcalls", HandleInstallUpcalls);
   AddHandler("rpc", HandleRpc);
   AddHandler("help", HandleHelp);
   AddHandler("?", HandleHelp);
   AddHandler("service", HandleService);
-#if NACL_LINUX
-  extern bool HandleSysv(NaClCommandLoop* ncl, const vector<string>& args);
-  AddHandler("sysv", HandleSysv);
-#endif  /* NACL_LINUX */
 }
-
-
 
 void NaClCommandLoop::StartInteractiveLoop() {
   int command_count = 0;

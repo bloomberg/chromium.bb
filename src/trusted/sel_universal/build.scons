@@ -24,6 +24,7 @@ if env.Bit('linux'):
 env.ComponentProgram('sel_universal',
                     ['sel_universal_new.cc',
                      'rpc_universal.cc',
+                     'pepper_handler.cc',
                      'parsing.cc',
                      ] + extra_srcs,
                     EXTRA_LIBS=['nonnacl_util_c',

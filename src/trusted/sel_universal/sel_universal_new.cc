@@ -21,19 +21,13 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 
 using std::vector;
 using std::string;
-
-#ifdef NACL_SEL_UNIVERSAL_INCLUDE_SDL
-// TODO(robertm): move this into its own header at some point
-extern void InitializeMultimediaHandler(NaClSrpcChannel* channel,
-                                       int width,
-                                       int height,
-                                       const char* title);
-#endif
+using nacl::DescWrapper;
 
 static const char* kUsage =
   "Usage:\n"
@@ -100,8 +94,7 @@ static nacl::string ProcessArguments(int argc,
 }
 
 
-int main(int  argc, char* argv[]) {
-
+int main(int argc, char* argv[]) {
   // Descriptor transfer requires the following
   NaClSrpcModuleInit();
   NaClNrdAllModulesInit();
@@ -125,19 +118,41 @@ int main(int  argc, char* argv[]) {
 
   // Open the communication channels to the service runtime.
   if (!launcher.OpenSrpcChannels(&command_channel, &channel)) {
-    fprintf(stderr, "sel_universal: Open channel failed\n");
+    NaClLog(LOG_ERROR, "sel_universal: Open channel failed\n");
     exit(1);
   }
 
-#ifdef NACL_SEL_UNIVERSAL_INCLUDE_SDL
-  int width = 640;
-  int height = 480;
-  InitializeMultimediaHandler(&channel, width, height, "NaCl Module");
-#endif
   NaClCommandLoop loop(channel.client,
                        &channel,
                        launcher.socket_address());
 
+#if ENABLE_PEPPER_EMULATION
+  // Pepper sample commands
+  // initialize_pepper pepper_desc
+  // add_pepper_rpcs
+  // install_upcalls service_string
+  // show_variables
+  // show_descriptors
+  // rpc PPP_InitializeModule i(0) l(0) h(pepper_desc) s("${service_string}") * i(0) i(0)
+
+  extern bool HandlerPepperInit(NaClCommandLoop* ncl,
+                                const vector<string>& args);
+  loop.AddHandler("initialize_pepper", HandlerPepperInit);
+
+  extern bool HandlerAddPepperRpcs(NaClCommandLoop* ncl,
+                                   const vector<string>& args);
+  loop.AddHandler("add_pepper_rpcs", HandlerAddPepperRpcs);
+#endif
+
+#if NACL_LINUX
+  extern bool HandlerSysv(NaClCommandLoop* ncl, const vector<string>& args);
+  loop.AddHandler("sysv", HandlerSysv);
+
+  extern bool HandlerSleep(NaClCommandLoop* ncl, const vector<string>& args);
+  loop.AddHandler("sleep", HandlerSleep);
+#endif  /* NACL_LINUX */
+
+  NaClLog(1, "starting loop\n");
   loop.StartInteractiveLoop();
 
   // Close the connections to sel_ldr.

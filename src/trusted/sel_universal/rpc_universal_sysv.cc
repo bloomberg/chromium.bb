@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
 // TODO(bsy): including src/trusted/service_runtime/include/sys/mman.h
 //     causes C++ compiler errors:
@@ -115,11 +116,23 @@ static NaClSrpcImcDescType SysvShmDesc() {
 }
 
 
-bool HandleSysv(NaClCommandLoop* ncl, const vector<string>& args) {
+bool HandlerSysv(NaClCommandLoop* ncl, const vector<string>& args) {
   if (args.size() < 2) {
     NaClLog(LOG_ERROR, "not enough args\n");
     return false;
   }
   ncl->AddDesc(SysvShmDesc(), args[1]);
+  return true;
+}
+
+
+bool HandlerSleep(NaClCommandLoop* ncl, const vector<string>& args) {
+  UNREFERENCED_PARAMETER(ncl);
+  if (args.size() < 2) {
+    NaClLog(LOG_ERROR, "not enough args\n");
+    return false;
+  }
+
+  sleep(strtol(args[1].c_str(), 0, 0));
   return true;
 }
