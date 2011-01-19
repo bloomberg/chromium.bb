@@ -137,3 +137,6 @@ PREFIX : webkit_glue::resourcefetcher::didfail___webkit_glue::weburlloaderimpl::
 # 68516
 REGEX: tcmalloc.+webcore.+
 REGEX: `anonymous namespace'::do_free_with_callback.+webcore.+
+
+# 70031
+SUBSTRING : webcore::shadowdata::`scalar deleting destructor___webcore::shadowdata::`scalar deleting destructor'___webcore::shadowdata::`scalar deleting destructor'___webcore::shadowdata::`scalar deleting destructor'
