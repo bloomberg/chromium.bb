@@ -87,17 +87,27 @@ class PrerenderResourceHandlerTest : public testing::Test {
  protected:
   PrerenderResourceHandlerTest()
       : prerender_duration_(base::TimeDelta::FromSeconds(10)),
-        mock_handler_(new MockResourceHandler()),
         ALLOW_THIS_IN_INITIALIZER_LIST(
             pre_handler_(new PrerenderResourceHandler(
-                mock_handler_,
+                new MockResourceHandler(),
                 NewCallback(
                     this,
                     &PrerenderResourceHandlerTest::SetLastHandledURL)))),
         ui_thread_(BrowserThread::UI, &loop_),
+        io_thread_(BrowserThread::IO, &loop_),
         default_url_("http://www.prerender.com") {
     pre_handler_->set_prerender_duration(prerender_duration_);
     pre_handler_->set_get_current_time_function(&FixedGetCurrentTime);
+  }
+
+  virtual ~PrerenderResourceHandlerTest() {
+    // When a ResourceHandler's reference count drops to 0, it is not
+    // deleted immediately. Instead, a task is posted to the IO thread's
+    // message loop to delete it.
+    // So, drop the reference count to 0 and run the message loop once
+    // to ensure that all resources are cleaned up before the test exits.
+    pre_handler_ = NULL;
+    loop_.RunAllPending();
   }
 
   void SetLastHandledURL(const GURL& url, const std::vector<GURL>& alias_urls) {
@@ -120,8 +130,7 @@ class PrerenderResourceHandlerTest : public testing::Test {
     EXPECT_TRUE(last_handled_url_.is_empty());
 
     // Start the response. If it is able to prerender, a task will
-    // be posted to loop_ (masquerading as the UI thread), and
-    // |SetLastHandledURL| will be called.
+    // be posted to the UI thread and |SetLastHandledURL| will be called.
     EXPECT_TRUE(pre_handler_->OnResponseStarted(request_id, response));
     loop_.RunAllPending();
   }
@@ -133,10 +142,10 @@ class PrerenderResourceHandlerTest : public testing::Test {
   }
 
   base::TimeDelta prerender_duration_;
-  scoped_refptr<MockResourceHandler> mock_handler_;
   scoped_refptr<PrerenderResourceHandler> pre_handler_;
   MessageLoop loop_;
   BrowserThread ui_thread_;
+  BrowserThread io_thread_;
   GURL last_handled_url_;
   GURL default_url_;
   std::vector<GURL> alias_urls_;

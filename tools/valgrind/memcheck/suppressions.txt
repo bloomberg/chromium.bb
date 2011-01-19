@@ -3568,12 +3568,6 @@
    fun:_ZN3net9HttpCache11Transaction13DoSendRequestEv
 }
 {
-   bug_69414
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN28PrerenderResourceHandlerTestC2Ev
-}
-{
    Bug_69919
    Memcheck:Leak
    fun:calloc

@@ -1186,12 +1186,6 @@
    fun:ResourceDispatcherHostTest::MakeTestRequest
 }
 {
-   bug_69414
-   Heapcheck:Leak
-   ...
-   fun:*PrerenderResourceHandlerTest*
-}
-{
    Bug_70062
    Heapcheck:Leak
    fun:PR_NewLock
