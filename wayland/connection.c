@@ -369,7 +369,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 	struct wl_array **arrayp, *array;
 	const char **sp, *s;
 	char *extra;
-	int i, count, fd, extra_size;
+	int i, count, fd, extra_size, *fd_ptr;
 
 	extra_size = wl_message_size_extra(message);
 	count = strlen(message->signature) + 2;
@@ -449,12 +449,18 @@ wl_connection_vmarshal(struct wl_connection *connection,
 			break;
 
 		case 'h':
+			closure->types[i] = &ffi_type_sint;
+			closure->args[i] = extra;
+			fd_ptr = (int *) extra;
+			extra += sizeof *fd_ptr;
+
 			fd = va_arg(ap, int);
 			dup_fd = dup(fd);
 			if (dup_fd < 0) {
 				fprintf(stderr, "dup failed: %m");
 				abort();
 			}
+			*fd_ptr = dup_fd;
 			wl_buffer_put(&connection->fds_out,
 				      &dup_fd, sizeof dup_fd);
 			break;
