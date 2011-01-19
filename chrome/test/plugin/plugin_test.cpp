@@ -125,12 +125,7 @@ class PluginTest : public UITest {
   }
 };
 
-// http://crbug.com/68751
-#if defined(OS_MACOSX)
-TEST_F(PluginTest, DISABLED_Flash) {
-#else
 TEST_F(PluginTest, Flash) {
-#endif
   // Note: This does not work with the npwrapper on 64-bit Linux. Install the
   // native 64-bit Flash to run the test.
   // TODO(thestig) Update this list if we decide to only test against internal
@@ -154,12 +149,7 @@ class ClickToPlayPluginTest : public PluginTest {
   }
 };
 
-// http://crbug.com/68751
-#if defined(OS_MACOSX)
-TEST_F(ClickToPlayPluginTest, DISABLED_Flash) {
-#else
 TEST_F(ClickToPlayPluginTest, Flash) {
-#endif
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   ASSERT_TRUE(browser->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
@@ -176,12 +166,7 @@ TEST_F(ClickToPlayPluginTest, Flash) {
   WaitForFinish(action_max_timeout_ms(), true);
 }
 
-// http://crbug.com/68751
-#if defined(OS_MACOSX)
-TEST_F(ClickToPlayPluginTest, DISABLED_FlashDocument) {
-#else
 TEST_F(ClickToPlayPluginTest, FlashDocument) {
-#endif
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   ASSERT_TRUE(browser->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
