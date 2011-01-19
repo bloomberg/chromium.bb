@@ -255,6 +255,7 @@ void StatusBubbleGtk::InitWidgets() {
   gtk_container_add(GTK_CONTAINER(padding_), label_);
 
   container_.Own(gtk_event_box_new());
+  gtk_widget_set_no_show_all(container_.get(), TRUE);
   gtk_util::ActAsRoundedWindow(
       container_.get(), gtk_util::kGdkWhite, kCornerSize,
       gtk_util::ROUNDED_TOP_RIGHT,
