@@ -658,10 +658,20 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
     printf("\n");
   }
 
+  base::ProcessId chrome_browser_process_id() {
+    base::NamedProcessIterator iter(L"chrome.exe", NULL);
+    const base::ProcessEntry* entry = iter.NextProcessEntry();
+    if (entry) {
+      return entry->pid();
+    }
+    return -1;
+  }
+
   ChromeProcessList GetBrowserChildren() {
-    ChromeProcessList list = GetRunningChromeProcesses(browser_process_id());
+    ChromeProcessList list = GetRunningChromeProcesses(
+        chrome_browser_process_id());
     ChromeProcessList::iterator browser =
-        std::find(list.begin(), list.end(), browser_process_id());
+        std::find(list.begin(), list.end(), chrome_browser_process_id());
     if (browser != list.end()) {
       list.erase(browser);
     }
@@ -670,7 +680,7 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
 
   void AccountProcessMemoryUsage(DWORD process_id) {
     ProcessMemoryInfo process_memory_info(
-        process_id, process_id == browser_process_id(), this);
+        process_id, process_id == chrome_browser_process_id(), this);
 
     ASSERT_TRUE(process_memory_info.GetMemoryConsumptionDetails());
 
@@ -824,7 +834,7 @@ class ChromeFrameActiveXMemoryTest : public MemoryTestBase {
     // redirect.
     if (!test_completed_) {
       // Measure memory usage for the browser process.
-      AccountProcessMemoryUsage(browser_process_id());
+      AccountProcessMemoryUsage(chrome_browser_process_id());
       // Measure memory usage for the current process.
       AccountProcessMemoryUsage(GetCurrentProcessId());
 

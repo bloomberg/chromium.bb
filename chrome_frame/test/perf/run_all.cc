@@ -10,10 +10,16 @@
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/utils.h"
 
+void PureCall() {
+  __debugbreak();
+}
+
 int main(int argc, char **argv) {
   base::PerfTestSuite perf_suite(argc, argv);
   chrome::RegisterPathProvider();
   base::PlatformThread::SetName("ChromeFrame perf tests");
+
+  _set_purecall_handler(PureCall);
 
   SetConfigBool(kChromeFrameHeadlessMode, true);
   SetConfigBool(kChromeFrameUnpinnedMode, true);
