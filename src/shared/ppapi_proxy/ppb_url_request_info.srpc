@@ -9,7 +9,7 @@
  'name': 'PpbURLRequestInfoRpc',
  'rpcs': [
           {'name': 'PPB_URLRequestInfo_Create',
-           'inputs': [['module', 'PP_Module'],         # PP_Module
+           'inputs': [['instance', 'PP_Instance'],     # PP_Instance
                      ],
            'outputs': [['resource', 'PP_Resource'],    # PP_Resource
                       ]

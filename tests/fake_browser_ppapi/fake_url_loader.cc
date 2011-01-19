@@ -65,7 +65,7 @@ int32_t Open(PP_Resource loader_id,
     return PP_ERROR_FAILED;
 
   // Set up the response.
-  URLResponseInfo* response = new URLResponseInfo(request->module_id());
+  URLResponseInfo* response = new URLResponseInfo(request->instance_id());
   response->set_url(g_nacl_ppapi_url_path + "/" + request->url());
   response->set_status_code(NACL_HTTP_STATUS_OK);
   loader->set_response(response);

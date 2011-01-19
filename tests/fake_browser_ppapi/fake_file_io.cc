@@ -26,9 +26,9 @@ namespace fake_browser_ppapi {
 
 namespace {
 
-PP_Resource Create(PP_Module module_id) {
-  DebugPrintf("FileIO::Create: module_id=%"NACL_PRId32"\n", module_id);
-  FileIO* file_io = new FileIO(module_id);
+PP_Resource Create(PP_Instance instance_id) {
+  DebugPrintf("FileIO::Create: module_id=%"NACL_PRId32"\n", instance_id);
+  FileIO* file_io = new FileIO(instance_id);
   PP_Resource resource_id = TrackResource(file_io);
   DebugPrintf("FileIO::Create: resource_id=%"NACL_PRId32"\n", resource_id);
   return resource_id;

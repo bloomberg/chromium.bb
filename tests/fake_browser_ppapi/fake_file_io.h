@@ -17,8 +17,8 @@ namespace fake_browser_ppapi {
 // Implements the PPB_FileIO_Dev interface.
 class FileIO : public Resource {
  public:
-  explicit FileIO(PP_Module module_id)
-      : module_id_(module_id), file_desc_(NACL_NO_FILE_DESC) {}
+  explicit FileIO(PP_Instance instance_id)
+      : instance_id_(instance_id), file_desc_(NACL_NO_FILE_DESC) {}
   ~FileIO() {
     // This crashes on a Mac with:
     // Program received signal EXC_BAD_ACCESS, Could not access memory.
@@ -37,7 +37,7 @@ class FileIO : public Resource {
   static const PPB_FileIO_Dev* GetInterface();
 
  private:
-  PP_Module module_id_;
+  PP_Instance instance_id_;
   int32_t file_desc_;
 
   NACL_DISALLOW_COPY_AND_ASSIGN(FileIO);

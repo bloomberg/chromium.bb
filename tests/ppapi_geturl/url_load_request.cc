@@ -178,7 +178,7 @@ bool UrlLoadRequest::GetRequiredInterfaces(std::string* error) {
     *error = "Failed to get browser interface '" PPB_URLREQUESTINFO_INTERFACE;
     return false;
   }
-  request_ = request_interface_->Create(module->module_id());
+  request_ = request_interface_->Create(instance_);
   if (0 == request_) {
     *error = "PPB_URLRequestInfo::Create: failed";
     return false;
@@ -216,7 +216,7 @@ bool UrlLoadRequest::GetRequiredInterfaces(std::string* error) {
     *error = "Failed to get browser interface '" PPB_FILEIO_DEV_INTERFACE;
     return false;
   }
-  fileio_ = fileio_interface_->Create(module->module_id());
+  fileio_ = fileio_interface_->Create(instance_);
   if (0 == fileio_) {
     *error = "PPB_FileIO_Dev::Create: failed";
     return false;

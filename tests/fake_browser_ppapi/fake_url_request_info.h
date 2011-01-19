@@ -19,8 +19,8 @@ namespace fake_browser_ppapi {
 // Implements the PPB_URLRequestInfo interface.
 class URLRequestInfo : public Resource {
  public:
-  explicit URLRequestInfo(PP_Module module_id)
-      : module_id_(module_id), stream_to_file_(false) {}
+  explicit URLRequestInfo(PP_Instance instance_id)
+      : instance_id_(instance_id), stream_to_file_(false) {}
 
   URLRequestInfo* AsURLRequestInfo() { return this; }
 
@@ -33,7 +33,7 @@ class URLRequestInfo : public Resource {
   }
 
   // Getters
-  PP_Module module_id() const { return module_id_; }
+  PP_Instance instance_id() const { return instance_id_; }
   const std::string& url() const { return url_; }
   bool stream_to_file() { return stream_to_file_; }
 
@@ -41,7 +41,7 @@ class URLRequestInfo : public Resource {
   static const PPB_URLRequestInfo* GetInterface();
 
  private:
-  PP_Module module_id_;
+  PP_Instance instance_id_;
   std::string url_;
   std::string method_;
   std::string headers_;

@@ -22,13 +22,14 @@ namespace ppapi_proxy {
 
 namespace {
 
-PP_Resource Create(PP_Module module) {
-  DebugPrintf("PPB_URLRequestInfo::Create: module=%"NACL_PRIx32"\n", module);
+PP_Resource Create(PP_Instance instance) {
+  DebugPrintf("PPB_URLRequestInfo::Create: instance=%"NACL_PRIx32"\n",
+              instance);
 
   PP_Resource resource;
   NaClSrpcError srpc_result =
       PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_Create(
-          GetMainSrpcChannel(), module, &resource);
+          GetMainSrpcChannel(), instance, &resource);
   DebugPrintf("PPB_URLRequestInfo::Create: %s\n",
               NaClSrpcErrorString(srpc_result));
 

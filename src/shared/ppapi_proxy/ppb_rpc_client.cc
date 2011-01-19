@@ -843,13 +843,13 @@ NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_Close(
 
 NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_Create(
     NaClSrpcChannel* channel,
-    PP_Module module,
+    PP_Instance instance,
     PP_Resource* resource)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLRequestInfo_Create:i:i",
-      module,
+      instance,
       resource
   );
   return retval;

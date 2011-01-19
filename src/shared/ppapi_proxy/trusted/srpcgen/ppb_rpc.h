@@ -411,7 +411,7 @@ class PpbURLRequestInfoRpcServer {
   static void PPB_URLRequestInfo_Create(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      PP_Module module,
+      PP_Instance instance,
       PP_Resource* resource);
   static void PPB_URLRequestInfo_IsURLRequestInfo(
       NaClSrpcRpc* rpc,

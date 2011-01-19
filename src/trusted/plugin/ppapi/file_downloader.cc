@@ -17,7 +17,7 @@
 
 namespace plugin {
 
-void FileDownloader::Initialize(const pp::Instance* instance) {
+void FileDownloader::Initialize(pp::Instance* instance) {
   PLUGIN_PRINTF(("FileDownloader::FileDownloader (this=%p)\n",
                  static_cast<void*>(this)));
   CHECK(instance != NULL);
@@ -41,15 +41,15 @@ bool FileDownloader::Open(const nacl::string& url,
   // Reset the url loader and file reader.
   // Note that we have the only refernce to the underlying objects, so
   // this will implicitly close any pending IO and destroy them.
-  url_loader_ = pp::URLLoader(*instance_);
-  file_reader_ = pp::FileIO_Dev();
+  url_loader_ = pp::URLLoader(instance_);
+  file_reader_ = pp::FileIO_Dev(instance_);
   file_io_trusted_interface_ = static_cast<const PPB_FileIOTrusted_Dev*>(
       pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_DEV_INTERFACE));
   if (file_io_trusted_interface_ == NULL)
     return false;  // Interface not supported by our browser
 
   // Prepare the url request.
-  pp::URLRequestInfo url_request;
+  pp::URLRequestInfo url_request(instance_);
   url_request.SetURL(url_);
   url_request.SetStreamToFile(true);
 

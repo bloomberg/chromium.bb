@@ -20,13 +20,13 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_Create(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
-    PP_Module module,
+    PP_Instance instance,
     // outputs
     PP_Resource* resource) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
-  *resource = PPBURLRequestInfoInterface()->Create(module);
+  *resource = PPBURLRequestInfoInterface()->Create(instance);
   DebugPrintf("PPB_URLRequestInfo::Create: resource=%"NACL_PRIx32"\n",
               *resource);
 

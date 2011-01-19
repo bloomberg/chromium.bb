@@ -29,7 +29,7 @@ class FileDownloader {
 
   // Initialize() can only be called once during the lifetime of this instance.
   // After the first call, subesquent calls do nothing.
-  void Initialize(const pp::Instance* instance);
+  void Initialize(pp::Instance* instance);
 
   // Issues a GET on |url| downloading the response into a file. The file is
   // then opened and a file descriptor is made available. Returns immediately
@@ -68,7 +68,7 @@ class FileDownloader {
   void URLLoadFinishNotify(int32_t pp_error);
   void FileOpenNotify(int32_t pp_error);
 
-  const pp::Instance* instance_;
+  pp::Instance* instance_;
   nacl::string url_;
   pp::CompletionCallback file_open_notify_callback_;
   pp::FileIO_Dev file_reader_;
