@@ -17,6 +17,15 @@ test_stat = env.CommandSelLdrTestNacl(
 
 env.AddNodeToTestSuite(test_stat, ['small_tests'], 'run_stat_test')
 
+env.ComponentProgram('test_fstat.nexe', 'test_fstat.c')
+
+test_fstat = env.CommandSelLdrTestNacl(
+    'test_fstat.out',
+    command=[env.File('test_fstat.nexe'), env.File('test_stat_data')],
+    stdout_golden=env.File('test_fstat.stdout'))
+
+env.AddNodeToTestSuite(test_fstat, ['small_tests'], 'run_fstat_test')
+
 env.ComponentProgram('test_dir.nexe', 'test_dir.c')
 
 test_dir_nexe = env.File('test_dir.nexe')

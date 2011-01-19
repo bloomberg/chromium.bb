@@ -1,0 +1,13 @@
+st_dev offset 0, size 8
+st_ino offset 8, size 8
+st_mode offset 16, size 4
+st_nlink offset 20, size 4
+st_uid offset 24, size 4
+st_gid offset 28, size 4
+st_rdev offset 32, size 8
+st_size offset 40, size 8
+st_blksize offset 48, size 8
+st_blocks offset 56, size 8
+st_atim offset 64, size 16
+struct st size 112
+30
