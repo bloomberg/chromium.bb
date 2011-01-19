@@ -357,34 +357,34 @@ list > * {
 }
 
 list:not([disabled]) > :hover {
-  background-color: #f2f2f2;
+  background-color: #e4ecf7;
 }
 
 list > [selected],
 list:focus > [selected],
 list:focus > [lead][selected],
 list > [selected]:hover {
-  background-color: #f2f2f2;
+  background-color: #bbcee9;
   background-image: none;
 }
 
 list:focus > [lead],
 list:focus > [lead][selected],
 list [lead][selected][editing] {
-  border-top: 1px solid #b2b2b2;
-  border-bottom: 1px solid #b2b2b2;
+  border-top: 1px solid #7892b4;
+  border-bottom: 1px solid #7892b4;
 }
 
 list:focus > [lead]:nth-child(2),
 list:focus > [lead][selected]:nth-child(2),
 list [lead][selected][editing]:nth-child(2) {
-  border-top: 1px solid #f2f2f2;
+  border-top: 1px transparent;
 }
 
 list:focus > [lead]:nth-last-child(2),
 list:focus > [lead][selected]:nth-last-child(2),
 list [lead][selected][editing]:nth-last-child(2) {
-  border-bottom: 1px solid #f2f2f2;
+  border-bottom: 1px transparent;
 }
 
 list[disabled] > [lead][selected],
