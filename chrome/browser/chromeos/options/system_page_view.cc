@@ -17,8 +17,6 @@
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/chromeos/options/language_config_util.h"
-#include "chrome/browser/chromeos/options/language_config_view.h"
 #include "chrome/browser/chromeos/options/options_window_view.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
@@ -304,139 +302,6 @@ void TouchpadSection::NotifyPrefChanged(const std::string* pref_name) {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// LanguageSection
-
-// TextInput section for text input settings.
-class LanguageSection : public SettingsPageSection,
-                        public views::ButtonListener,
-                        public views::Combobox::Listener {
- public:
-  explicit LanguageSection(Profile* profile);
-  virtual ~LanguageSection() {}
-
- private:
-  enum ButtonTag {
-    kCustomizeLanguagesButton,
-  };
-  // Overridden from SettingsPageSection:
-  virtual void InitContents(GridLayout* layout);
-  void NotifyPrefChanged(const std::string* pref_name);
-
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event);
-
-  // Overridden from views::Combobox::Listener:
-  virtual void ItemChanged(views::Combobox* sender,
-                           int prev_index,
-                           int new_index);
-
-  IntegerPrefMember xkb_remap_search_key_pref_;
-  IntegerPrefMember xkb_remap_control_key_pref_;
-  IntegerPrefMember xkb_remap_alt_key_pref_;
-  views::Combobox* xkb_modifier_combobox_;
-  chromeos::LanguageComboboxModel<int> xkb_modifier_combobox_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(LanguageSection);
-};
-
-LanguageSection::LanguageSection(Profile* profile)
-    : SettingsPageSection(profile,
-                          IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE),
-      xkb_modifier_combobox_(NULL),
-      xkb_modifier_combobox_model_(
-          &language_prefs::kXkbModifierMultipleChoicePrefs) {
-  xkb_remap_search_key_pref_.Init(
-      prefs::kLanguageXkbRemapSearchKeyTo, profile->GetPrefs(), this);
-  xkb_remap_control_key_pref_.Init(
-      prefs::kLanguageXkbRemapControlKeyTo, profile->GetPrefs(), this);
-  xkb_remap_alt_key_pref_.Init(
-      prefs::kLanguageXkbRemapAltKeyTo, profile->GetPrefs(), this);
-}
-
-void LanguageSection::InitContents(GridLayout* layout) {
-  // Add the customize button and XKB combobox.
-  layout->StartRow(0, double_column_view_set_id());
-  views::NativeButton* customize_languages_button = new views::NativeButton(
-      this,
-      UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE)));
-  customize_languages_button->set_tag(kCustomizeLanguagesButton);
-
-  xkb_modifier_combobox_ = new views::Combobox(&xkb_modifier_combobox_model_);
-  xkb_modifier_combobox_->set_listener(this);
-
-  // Initialize the combobox to what's saved in user preferences. Otherwise,
-  // ItemChanged() will be called with |new_index| == 0.
-  NotifyPrefChanged(NULL);
-
-  layout->AddView(customize_languages_button, 1, 1,
-                  GridLayout::LEADING, GridLayout::CENTER);
-  layout->AddView(xkb_modifier_combobox_);
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
-}
-
-void LanguageSection::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
-  if (sender->tag() == kCustomizeLanguagesButton) {
-    LanguageConfigView::Show(profile(), GetOptionsViewParent());
-  }
-}
-
-void LanguageSection::ItemChanged(views::Combobox* sender,
-                                  int prev_index,
-                                  int new_index) {
-  VLOG(1) << "Changing XKB modofier pref to " << new_index;
-  switch (new_index) {
-    default:
-      LOG(ERROR) << "Unexpected mapping: " << new_index;
-      /* fall through */
-    case language_prefs::kNoRemap:
-      xkb_remap_search_key_pref_.SetValue(kSearchKey);
-      xkb_remap_control_key_pref_.SetValue(kLeftControlKey);
-      xkb_remap_alt_key_pref_.SetValue(kLeftAltKey);
-      break;
-    case language_prefs::kSwapCtrlAndAlt:
-      xkb_remap_search_key_pref_.SetValue(kSearchKey);
-      xkb_remap_control_key_pref_.SetValue(kLeftAltKey);
-      xkb_remap_alt_key_pref_.SetValue(kLeftControlKey);
-      break;
-    case language_prefs::kSwapSearchAndCtrl:
-      xkb_remap_search_key_pref_.SetValue(kLeftControlKey);
-      xkb_remap_control_key_pref_.SetValue(kSearchKey);
-      xkb_remap_alt_key_pref_.SetValue(kLeftAltKey);
-      break;
-  }
-}
-
-void LanguageSection::NotifyPrefChanged(const std::string* pref_name) {
-  if (!pref_name || (*pref_name == prefs::kLanguageXkbRemapSearchKeyTo ||
-                     *pref_name == prefs::kLanguageXkbRemapControlKeyTo ||
-                     *pref_name == prefs::kLanguageXkbRemapAltKeyTo)) {
-    const int search_remap = xkb_remap_search_key_pref_.GetValue();
-    const int control_remap = xkb_remap_control_key_pref_.GetValue();
-    const int alt_remap = xkb_remap_alt_key_pref_.GetValue();
-    if ((search_remap == kSearchKey) &&
-        (control_remap == kLeftControlKey) &&
-        (alt_remap == kLeftAltKey)) {
-      xkb_modifier_combobox_->SetSelectedItem(language_prefs::kNoRemap);
-    } else if ((search_remap == kLeftControlKey) &&
-               (control_remap == kSearchKey) &&
-               (alt_remap == kLeftAltKey)) {
-      xkb_modifier_combobox_->SetSelectedItem(
-          language_prefs::kSwapSearchAndCtrl);
-    } else if ((search_remap == kSearchKey) &&
-               (control_remap == kLeftAltKey) &&
-               (alt_remap == kLeftControlKey)) {
-      xkb_modifier_combobox_->SetSelectedItem(language_prefs::kSwapCtrlAndAlt);
-    } else {
-      LOG(ERROR) << "Unexpected mapping. The prefs are updated by DOMUI?";
-      xkb_modifier_combobox_->SetSelectedItem(language_prefs::kNoRemap);
-    }
-  }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // AccessibilitySection
 
@@ -527,9 +392,6 @@ void SystemPageView::InitControlLayout() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new TouchpadSection(profile()));
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(new LanguageSection(profile()));
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new AccessibilitySection(profile()));

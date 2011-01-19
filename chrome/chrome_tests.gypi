@@ -1124,7 +1124,6 @@
         'browser/chromeos/login/wizard_accessibility_handler_unittest.cc',
         'browser/chromeos/notifications/desktop_notifications_unittest.cc',
         'browser/chromeos/offline/offline_load_page_unittest.cc',
-        'browser/chromeos/options/language_config_model_unittest.cc',
         'browser/chromeos/plugin_selection_policy_unittest.cc',
         'browser/chromeos/proxy_config_service_impl_unittest.cc',
         'browser/chromeos/status/input_method_menu_unittest.cc',

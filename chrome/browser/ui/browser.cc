@@ -130,7 +130,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/options/language_config_view.h"
 #endif
 
 using base::TimeDelta;
@@ -1930,7 +1929,7 @@ void Browser::OpenLanguageOptionsDialog() {
       switches::kDisableTabbedOptions)) {
     ShowOptionsTab(chrome::kLanguageOptionsSubPage);
   } else {
-    chromeos::LanguageConfigView::Show(profile_, NULL);
+   // Language options dialog has been replaced by DOMUI.
   }
 }
 
