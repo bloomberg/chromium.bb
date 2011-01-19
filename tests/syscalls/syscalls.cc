@@ -324,32 +324,32 @@ bool test_lseek(const char *test_file) {
     return failed(testname, "EBADF != errno");
 
   ret_val = read(fd, &out_char, 1);
-  if ((ret_val != 1) && (out_char != '2'))
-    return failed(testname, "read(fd, &out_char, 1)");
+  if ((ret_val != 1) || (out_char != '3'))
+    return failed(testname, "read(fd, &out_char, 1) #1");
 
   ret_val = lseek(fd, 1, SEEK_CUR);
   if (ret_val != 4)
     return failed(testname, "lseek(fd, 1, SEEK_CUR)");
 
   ret_val = read(fd, &out_char, 1);
-  if ((ret_val != 1) && (out_char != '4'))
-    return failed(testname, "read(fd, &out_char, 1)");
+  if ((ret_val != 1) || (out_char != '5'))
+    return failed(testname, "read(fd, &out_char, 1) #2");
 
   ret_val = lseek(fd, -1, SEEK_CUR);
   if (ret_val != 4)
     return failed(testname, "lseek(fd, -1, SEEK_CUR)");
 
   ret_val = read(fd, &out_char, 1);
-  if ((ret_val != 1) && (out_char != '4'))
-    return failed(testname, "read(fd, &out_char, 1)");
+  if ((ret_val != 1) || (out_char != '5'))
+    return failed(testname, "read(fd, &out_char, 1) #3");
 
   ret_val = lseek(fd, -2, SEEK_END);
   if (ret_val != 3)
     return failed(testname, "lseek(fd, -2, SEEK_END)");
 
   ret_val = read(fd, &out_char, 1);
-  if ((ret_val != 1) && (out_char != '3'))
-    return failed(testname, "read(fd, &out_char, 1)");
+  if ((ret_val != 1) || (out_char != '4'))
+    return failed(testname, "read(fd, &out_char, 1) #4");
 
   ret_val = lseek(fd, 4, SEEK_END);
   // lseek allows for positioning beyond the EOF
@@ -377,8 +377,8 @@ bool test_lseek(const char *test_file) {
     return failed(testname, "EINVAL != errno");
 
   ret_val = read(fd, &out_char, 1);
-  if ((ret_val != 1) && (out_char == '4'))
-    return failed(testname, "read(fd, &out_char, 1)");
+  if ((ret_val != 1) || (out_char == '4'))
+    return failed(testname, "read(fd, &out_char, 1) #5");
 
   close(fd);
   return passed(testname, "all");
