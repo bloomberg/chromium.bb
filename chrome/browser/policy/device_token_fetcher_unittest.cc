@@ -224,4 +224,28 @@ TEST_F(DeviceTokenFetcherTest, FetchWithNonManagedUsername) {
   ASSERT_FALSE(fetcher_->IsTokenValid());
 }
 
+TEST_F(DeviceTokenFetcherTest, RestartImmediately) {
+  // Create a token.
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedRegister());
+  SimulateSuccessfulLoginAndRunPending(kTestManagedDomainUsername);
+  ASSERT_FALSE(fetcher_->IsTokenPending());
+  std::string device_token = fetcher_->GetDeviceToken();
+
+  // Restart a new fetcher immediately without calling StartFetching(). The
+  // existing token should not be loaded, but rather a new token generated.
+  FilePath token_path;
+  GetDeviceTokenPath(fetcher_, &token_path);
+  scoped_refptr<TestingDeviceTokenFetcher> fetcher2(
+      new TestingDeviceTokenFetcher(
+          backend_.get(), profile_.get(), token_path));
+  fetcher2->Restart();
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedRegister());
+  fetcher2->SimulateLogin(kTestManagedDomainUsername);
+  loop_.RunAllPending();
+  ASSERT_FALSE(fetcher2->IsTokenPending());
+  ASSERT_NE(device_token, fetcher2->GetDeviceToken());
+}
+
 }  // namespace policy

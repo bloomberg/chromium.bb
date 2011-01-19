@@ -223,6 +223,8 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kGSSAPILibraryName },
   { Value::TYPE_BOOLEAN, kPolicyDisable3DAPIs,
     prefs::kDisable3DAPIs },
+  { Value::TYPE_INTEGER, kPolicyPolicyRefreshRate,
+    prefs::kPolicyRefreshRate },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
@@ -834,6 +836,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kGSSAPILibraryName },
     { kPolicyDisable3DAPIs, Value::TYPE_BOOLEAN,
       key::kDisable3DAPIs },
+    { kPolicyPolicyRefreshRate, Value::TYPE_INTEGER,
+      key::kPolicyRefreshRate },
 
 #if defined(OS_CHROMEOS)
     { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,

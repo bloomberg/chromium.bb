@@ -635,6 +635,11 @@ const char kEnableTranslate[] = "translate.enabled";
 
 const char kPinnedTabs[] = "pinned_tabs";
 
+// Integer that specifies the policy refresh rate in milliseconds. Not all
+// values are meaningful, so it is clamped to a sane range by the policy
+// provider.
+const char kPolicyRefreshRate[] = "policy.refresh_rate";
+
 // Integer containing the default Geolocation content setting.
 const char kGeolocationDefaultContentSetting[] =
     "geolocation.default_content_setting";

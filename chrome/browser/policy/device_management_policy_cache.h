@@ -42,7 +42,7 @@ class DeviceManagementPolicyCache {
   // to the caller.
   DictionaryValue* GetPolicy();
 
-  void SetDeviceUnmanaged(bool is_device_unmanaged);
+  void SetDeviceUnmanaged();
   bool is_device_unmanaged() const {
     return is_device_unmanaged_;
   }

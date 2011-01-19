@@ -959,6 +959,17 @@
       Disabling this setting potentially allows web pages to use the WebGL API and plugins to use the Pepper 3D API. The default settings of the browser may still require command line arguments to be passed in order to use these APIs.''',
     },
     {
+      'name': 'PolicyRefreshRate',
+      'type': 'int',
+      'supported_on': ['chrome_os:1.0.0.0-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': 3600000,
+      'caption': '''Policy refresh rate''',
+      'desc': '''Specifies the period in milliseconds at which the device management service is queried for policy information.
+
+      Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 30 minutes to 1 day. Any values not in this range will be clamped to the respective boundary.''',
+    },
+    {
       'name': 'ChromeFrameRendererSettings',
       'type': 'group',
       'caption': '''Default HTML renderer for <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',

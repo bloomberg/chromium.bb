@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/device_management_policy_cache.h"
+#include "chrome/browser/policy/profile_policy_context.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
@@ -23,8 +24,13 @@ namespace policy {
 
 namespace em = enterprise_management;
 
-const int64 kPolicyRefreshRateInMilliseconds = 3 * 60 * 60 * 1000;  // 3 hours
-const int64 kPolicyRefreshMaxEarlierInMilliseconds = 20 * 60 * 1000;  // 20 mins
+// The maximum ratio in percent of the policy refresh rate we use for adjusting
+// the policy refresh time instant. The rationale is to avoid load spikes from
+// many devices that were set up in sync for some reason.
+const int kPolicyRefreshDeviationFactorPercent = 10;
+// Maximum deviation we are willing to accept.
+const int64 kPolicyRefreshDeviationMaxInMilliseconds = 30 * 60 * 1000;
+
 // These are the base values for delays before retrying after an error. They
 // will be doubled each time they are used.
 const int64 kPolicyRefreshErrorDelayInMilliseconds = 3 * 1000;  // 3 seconds
@@ -35,44 +41,25 @@ const int64 kPolicyRefreshUnmanagedDeviceInMilliseconds = 24 * 60 * 60 * 1000;
 const FilePath::StringType kDeviceTokenFilename = FILE_PATH_LITERAL("Token");
 const FilePath::StringType kPolicyFilename = FILE_PATH_LITERAL("Policy");
 
-// Ensures that the portion of the policy provider implementation that requires
-// the IOThread is deferred until the IOThread is fully initialized. The policy
-// provider posts this task on the UI thread during its constructor, thereby
-// guaranteeing that the code won't get executed until after the UI and IO
-// threads are fully constructed.
-class DeviceManagementPolicyProvider::InitializeAfterIOThreadExistsTask
-    : public Task {
+// Calls back into the provider to refresh policy.
+class DeviceManagementPolicyProvider::RefreshTask : public CancelableTask {
  public:
-  explicit InitializeAfterIOThreadExistsTask(
-      base::WeakPtr<DeviceManagementPolicyProvider> provider)
-      : provider_(provider) {
-  }
-
-  // Task implementation:
-  virtual void Run() {
-    DeviceManagementPolicyProvider* provider = provider_.get();
-    if (provider)
-      provider->InitializeAfterIOThreadExists();
-  }
-
- private:
-  base::WeakPtr<DeviceManagementPolicyProvider> provider_;
-};
-
-class DeviceManagementPolicyProvider::RefreshTask : public Task {
- public:
-  explicit RefreshTask(base::WeakPtr<DeviceManagementPolicyProvider> provider)
+  explicit RefreshTask(DeviceManagementPolicyProvider* provider)
       : provider_(provider) {}
 
   // Task implementation:
   virtual void Run() {
-    DeviceManagementPolicyProvider* provider = provider_.get();
-    if (provider)
-      provider->RefreshTaskExecute();
+    if (provider_)
+      provider_->RefreshTaskExecute();
+  }
+
+  // CancelableTask implementation:
+  virtual void Cancel() {
+    provider_ = NULL;
   }
 
  private:
-  base::WeakPtr<DeviceManagementPolicyProvider> provider_;
+  DeviceManagementPolicyProvider* provider_;
 };
 
 DeviceManagementPolicyProvider::DeviceManagementPolicyProvider(
@@ -82,36 +69,19 @@ DeviceManagementPolicyProvider::DeviceManagementPolicyProvider(
     : ConfigurationPolicyProvider(policy_list) {
   Initialize(backend,
              profile,
-             kPolicyRefreshRateInMilliseconds,
-             kPolicyRefreshMaxEarlierInMilliseconds,
+             ProfilePolicyContext::kDefaultPolicyRefreshRateInMilliseconds,
+             kPolicyRefreshDeviationFactorPercent,
+             kPolicyRefreshDeviationMaxInMilliseconds,
              kPolicyRefreshErrorDelayInMilliseconds,
              kDeviceTokenRefreshErrorDelayInMilliseconds,
              kPolicyRefreshUnmanagedDeviceInMilliseconds);
-}
-
-DeviceManagementPolicyProvider::DeviceManagementPolicyProvider(
-    const PolicyDefinitionList* policy_list,
-    DeviceManagementBackend* backend,
-    Profile* profile,
-    int64 policy_refresh_rate_ms,
-    int64 policy_refresh_max_earlier_ms,
-    int64 policy_refresh_error_delay_ms,
-    int64 token_fetch_error_delay_ms,
-    int64 unmanaged_device_refresh_rate_ms)
-    : ConfigurationPolicyProvider(policy_list) {
-  Initialize(backend,
-             profile,
-             policy_refresh_rate_ms,
-             policy_refresh_max_earlier_ms,
-             policy_refresh_error_delay_ms,
-             token_fetch_error_delay_ms,
-             unmanaged_device_refresh_rate_ms);
 }
 
 DeviceManagementPolicyProvider::~DeviceManagementPolicyProvider() {
   FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
                     observer_list_,
                     OnProviderGoingAway());
+  CancelRefreshTask();
 }
 
 bool DeviceManagementPolicyProvider::Provide(
@@ -122,69 +92,127 @@ bool DeviceManagementPolicyProvider::Provide(
 }
 
 bool DeviceManagementPolicyProvider::IsInitializationComplete() const {
-  return !waiting_for_initial_policies_;
+  return !cache_->last_policy_refresh_time().is_null();
 }
 
 void DeviceManagementPolicyProvider::HandlePolicyResponse(
     const em::DevicePolicyResponse& response) {
-  if (cache_->SetPolicy(response))
+  DCHECK(TokenAvailable());
+  if (cache_->SetPolicy(response)) {
+    initial_fetch_done_ = true;
     NotifyCloudPolicyUpdate();
-  policy_request_pending_ = false;
-  // Reset the error delay since policy fetching succeeded this time.
-  policy_refresh_error_delay_ms_ = kPolicyRefreshErrorDelayInMilliseconds;
-  ScheduleRefreshTask(GetRefreshTaskDelay());
-  // Update this provider's internal waiting state, but don't notify anyone
-  // else yet (that's done by the PrefValueStore that receives the policy).
-  waiting_for_initial_policies_ = false;
+  }
+  SetState(STATE_POLICY_VALID);
 }
 
 void DeviceManagementPolicyProvider::OnError(
     DeviceManagementBackend::ErrorCode code) {
-  policy_request_pending_ = false;
+  DCHECK(TokenAvailable());
   if (code == DeviceManagementBackend::kErrorServiceDeviceNotFound ||
       code == DeviceManagementBackend::kErrorServiceManagementTokenInvalid) {
     LOG(WARNING) << "The device token was either invalid or unknown to the "
                  << "device manager, re-registering device.";
-    token_fetcher_->Restart();
+    SetState(STATE_TOKEN_RESET);
   } else if (code ==
              DeviceManagementBackend::kErrorServiceManagementNotSupported) {
     VLOG(1) << "The device is no longer managed, resetting device token.";
-    token_fetcher_->Restart();
+    SetState(STATE_TOKEN_RESET);
   } else {
     LOG(WARNING) << "Could not provide policy from the device manager (error = "
                  << code << "), will retry in "
-                 << (policy_refresh_error_delay_ms_/1000) << " seconds.";
-    ScheduleRefreshTask(policy_refresh_error_delay_ms_);
-    policy_refresh_error_delay_ms_ *= 2;
-    if (policy_refresh_rate_ms_ &&
-        policy_refresh_rate_ms_ < policy_refresh_error_delay_ms_) {
-      policy_refresh_error_delay_ms_ = policy_refresh_rate_ms_;
-    }
+                 << (effective_policy_refresh_error_delay_ms_ / 1000)
+                 << " seconds.";
+    SetState(STATE_POLICY_ERROR);
   }
-  StopWaitingForInitialPolicies();
 }
 
 void DeviceManagementPolicyProvider::OnTokenSuccess() {
-  if (policy_request_pending_)
-    return;
-  cache_->SetDeviceUnmanaged(false);
-  SendPolicyRequest();
+  DCHECK(!TokenAvailable());
+  SetState(STATE_TOKEN_VALID);
 }
 
 void DeviceManagementPolicyProvider::OnTokenError() {
+  DCHECK(!TokenAvailable());
   LOG(WARNING) << "Could not retrieve device token.";
-  ScheduleRefreshTask(token_fetch_error_delay_ms_);
-  token_fetch_error_delay_ms_ *= 2;
-  if (token_fetch_error_delay_ms_ > policy_refresh_rate_ms_)
-    token_fetch_error_delay_ms_ = policy_refresh_rate_ms_;
-  StopWaitingForInitialPolicies();
+  SetState(STATE_TOKEN_ERROR);
 }
 
 void DeviceManagementPolicyProvider::OnNotManaged() {
+  DCHECK(!TokenAvailable());
   VLOG(1) << "This device is not managed.";
-  cache_->SetDeviceUnmanaged(true);
-  ScheduleRefreshTask(unmanaged_device_refresh_rate_ms_);
-  StopWaitingForInitialPolicies();
+  cache_->SetDeviceUnmanaged();
+  SetState(STATE_UNMANAGED);
+}
+
+void DeviceManagementPolicyProvider::SetRefreshRate(
+    int64 refresh_rate_milliseconds) {
+  policy_refresh_rate_ms_ = refresh_rate_milliseconds;
+
+  // Reschedule the refresh task if necessary.
+  if (state_ == STATE_POLICY_VALID)
+    SetState(STATE_POLICY_VALID);
+}
+
+DeviceManagementPolicyProvider::DeviceManagementPolicyProvider(
+    const PolicyDefinitionList* policy_list,
+    DeviceManagementBackend* backend,
+    Profile* profile,
+    int64 policy_refresh_rate_ms,
+    int policy_refresh_deviation_factor_percent,
+    int64 policy_refresh_deviation_max_ms,
+    int64 policy_refresh_error_delay_ms,
+    int64 token_fetch_error_delay_ms,
+    int64 unmanaged_device_refresh_rate_ms)
+    : ConfigurationPolicyProvider(policy_list) {
+  Initialize(backend,
+             profile,
+             policy_refresh_rate_ms,
+             policy_refresh_deviation_factor_percent,
+             policy_refresh_deviation_max_ms,
+             policy_refresh_error_delay_ms,
+             token_fetch_error_delay_ms,
+             unmanaged_device_refresh_rate_ms);
+}
+
+void DeviceManagementPolicyProvider::Initialize(
+    DeviceManagementBackend* backend,
+    Profile* profile,
+    int64 policy_refresh_rate_ms,
+    int policy_refresh_deviation_factor_percent,
+    int64 policy_refresh_deviation_max_ms,
+    int64 policy_refresh_error_delay_ms,
+    int64 token_fetch_error_delay_ms,
+    int64 unmanaged_device_refresh_rate_ms) {
+  DCHECK(profile);
+  backend_.reset(backend);
+  profile_ = profile;
+  storage_dir_ = GetOrCreateDeviceManagementDir(profile_->GetPath());
+  state_ = STATE_INITIALIZING;
+  initial_fetch_done_ = false;
+  refresh_task_ = NULL;
+  policy_refresh_rate_ms_ = policy_refresh_rate_ms;
+  policy_refresh_deviation_factor_percent_ =
+      policy_refresh_deviation_factor_percent;
+  policy_refresh_deviation_max_ms_ = policy_refresh_deviation_max_ms;
+  policy_refresh_error_delay_ms_ = policy_refresh_error_delay_ms;
+  effective_policy_refresh_error_delay_ms_ = policy_refresh_error_delay_ms;
+  token_fetch_error_delay_ms_ = token_fetch_error_delay_ms;
+  effective_token_fetch_error_delay_ms_ = token_fetch_error_delay_ms;
+  unmanaged_device_refresh_rate_ms_ = unmanaged_device_refresh_rate_ms;
+
+  const FilePath policy_path = storage_dir_.Append(kPolicyFilename);
+  cache_.reset(new DeviceManagementPolicyCache(policy_path));
+  cache_->LoadPolicyFromFile();
+
+  SetDeviceTokenFetcher(new DeviceTokenFetcher(backend_.get(), profile,
+                                               GetTokenPath()));
+
+  if (cache_->is_device_unmanaged()) {
+    // This is a non-first login on an unmanaged device.
+    SetState(STATE_UNMANAGED);
+  } else {
+    SetState(STATE_INITIALIZING);
+  }
 }
 
 void DeviceManagementPolicyProvider::AddObserver(
@@ -197,81 +225,7 @@ void DeviceManagementPolicyProvider::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-void DeviceManagementPolicyProvider::NotifyCloudPolicyUpdate() {
-  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
-                    observer_list_,
-                    OnUpdatePolicy());
-}
-
-void DeviceManagementPolicyProvider::Initialize(
-    DeviceManagementBackend* backend,
-    Profile* profile,
-    int64 policy_refresh_rate_ms,
-    int64 policy_refresh_max_earlier_ms,
-    int64 policy_refresh_error_delay_ms,
-    int64 token_fetch_error_delay_ms,
-    int64 unmanaged_device_refresh_rate_ms) {
-  backend_.reset(backend);
-  profile_ = profile;
-  storage_dir_ = GetOrCreateDeviceManagementDir(profile_->GetPath());
-  policy_request_pending_ = false;
-  refresh_task_pending_ = false;
-  waiting_for_initial_policies_ = true;
-  policy_refresh_rate_ms_ = policy_refresh_rate_ms;
-  policy_refresh_max_earlier_ms_ = policy_refresh_max_earlier_ms;
-  policy_refresh_error_delay_ms_ = policy_refresh_error_delay_ms;
-  token_fetch_error_delay_ms_ = token_fetch_error_delay_ms;
-  unmanaged_device_refresh_rate_ms_ = unmanaged_device_refresh_rate_ms;
-
-  const FilePath policy_path = storage_dir_.Append(kPolicyFilename);
-  cache_.reset(new DeviceManagementPolicyCache(policy_path));
-  cache_->LoadPolicyFromFile();
-
-  if (cache_->is_device_unmanaged()) {
-    // This is a non-first login on an unmanaged device.
-    waiting_for_initial_policies_ = false;
-    // Defer token_fetcher_ initialization until this device should ask for
-    // a device token again.
-    base::Time unmanaged_timestamp = cache_->last_policy_refresh_time();
-    int64 delay = unmanaged_device_refresh_rate_ms_ -
-        (base::Time::NowFromSystemTime().ToInternalValue() -
-            unmanaged_timestamp.ToInternalValue());
-    if (delay < 0)
-      delay = 0;
-    BrowserThread::PostDelayedTask(
-        BrowserThread::UI, FROM_HERE,
-        new InitializeAfterIOThreadExistsTask(AsWeakPtr()),
-        delay);
-  } else {
-    if (file_util::PathExists(
-        storage_dir_.Append(kDeviceTokenFilename))) {
-      // This is a non-first login on a managed device.
-      waiting_for_initial_policies_ = false;
-    }
-    // Defer initialization that requires the IOThread until after the IOThread
-    // has been initialized.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            new InitializeAfterIOThreadExistsTask(AsWeakPtr()));
-  }
-}
-
-void DeviceManagementPolicyProvider::InitializeAfterIOThreadExists() {
-  if (profile_) {
-    if (!token_fetcher_) {
-      token_fetcher_ = new DeviceTokenFetcher(
-          backend_.get(), profile_, GetTokenPath());
-    }
-    registrar_.Init(token_fetcher_);
-    registrar_.AddObserver(this);
-    token_fetcher_->StartFetching();
-  }
-}
-
 void DeviceManagementPolicyProvider::SendPolicyRequest() {
-  if (policy_request_pending_)
-    return;
-
-  policy_request_pending_ = true;
   em::DevicePolicyRequest policy_request;
   policy_request.set_policy_scope(kChromePolicyScope);
   em::DevicePolicySettingRequest* setting =
@@ -284,40 +238,39 @@ void DeviceManagementPolicyProvider::SendPolicyRequest() {
 }
 
 void DeviceManagementPolicyProvider::RefreshTaskExecute() {
-  DCHECK(refresh_task_pending_);
-  refresh_task_pending_ = false;
-  // If there is no valid device token, the token_fetcher_ apparently failed,
-  // so it must be restarted.
-  if (!token_fetcher_->IsTokenValid()) {
-    if (token_fetcher_->IsTokenPending()) {
-      NOTREACHED();
+  DCHECK(refresh_task_);
+  refresh_task_ = NULL;
+
+  switch (state_) {
+    case STATE_INITIALIZING:
+      token_fetcher_->StartFetching();
       return;
-    }
-    token_fetcher_->Restart();
-    return;
+    case STATE_TOKEN_VALID:
+    case STATE_POLICY_VALID:
+    case STATE_POLICY_ERROR:
+      SendPolicyRequest();
+      return;
+    case STATE_UNMANAGED:
+    case STATE_TOKEN_ERROR:
+    case STATE_TOKEN_RESET:
+      token_fetcher_->Restart();
+      return;
   }
-  // If there is a device token, just refresh policies.
-  SendPolicyRequest();
+
+  NOTREACHED() << "Unhandled state";
 }
 
-void DeviceManagementPolicyProvider::ScheduleRefreshTask(
-    int64 delay_in_milliseconds) {
-  // This check is simply a safeguard, the situation currently cannot happen.
-  if (refresh_task_pending_) {
-    NOTREACHED();
-    return;
+void DeviceManagementPolicyProvider::CancelRefreshTask() {
+  if (refresh_task_) {
+    refresh_task_->Cancel();
+    refresh_task_ = NULL;
   }
-  refresh_task_pending_ = true;
-  BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-                                 new RefreshTask(AsWeakPtr()),
-                                 delay_in_milliseconds);
 }
 
-int64 DeviceManagementPolicyProvider::GetRefreshTaskDelay() {
-  int64 delay = policy_refresh_rate_ms_;
-  if (policy_refresh_max_earlier_ms_)
-    delay -= base::RandGenerator(policy_refresh_max_earlier_ms_);
-  return delay;
+void DeviceManagementPolicyProvider::NotifyCloudPolicyUpdate() {
+  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                    observer_list_,
+                    OnUpdatePolicy());
 }
 
 FilePath DeviceManagementPolicyProvider::GetTokenPath() {
@@ -326,14 +279,88 @@ FilePath DeviceManagementPolicyProvider::GetTokenPath() {
 
 void DeviceManagementPolicyProvider::SetDeviceTokenFetcher(
     DeviceTokenFetcher* token_fetcher) {
-  DCHECK(!token_fetcher_);
+  registrar_.Init(token_fetcher);
+  registrar_.AddObserver(this);
   token_fetcher_ = token_fetcher;
 }
 
-void DeviceManagementPolicyProvider::StopWaitingForInitialPolicies() {
-  waiting_for_initial_policies_ = false;
-  // Notify observers that initial policy fetch is complete.
-  NotifyCloudPolicyUpdate();
+void DeviceManagementPolicyProvider::SetState(
+    DeviceManagementPolicyProvider::ProviderState new_state) {
+  state_ = new_state;
+
+  // If this state transition completes the initial policy fetch, let the
+  // observers now.
+  if (!initial_fetch_done_ &&
+      new_state != STATE_INITIALIZING &&
+      new_state != STATE_TOKEN_VALID) {
+    initial_fetch_done_ = true;
+    NotifyCloudPolicyUpdate();
+  }
+
+  base::Time now(base::Time::NowFromSystemTime());
+  base::Time refresh_at;
+  base::Time last_refresh(cache_->last_policy_refresh_time());
+  if (last_refresh.is_null())
+    last_refresh = now;
+
+  // Determine when to take the next step.
+  switch (state_) {
+    case STATE_INITIALIZING:
+      refresh_at = now;
+      break;
+    case STATE_TOKEN_VALID:
+      effective_token_fetch_error_delay_ms_ = token_fetch_error_delay_ms_;
+      refresh_at = now;
+      break;
+    case STATE_TOKEN_RESET:
+      refresh_at = now;
+      break;
+    case STATE_UNMANAGED:
+      refresh_at = last_refresh +
+          base::TimeDelta::FromMilliseconds(unmanaged_device_refresh_rate_ms_);
+      break;
+    case STATE_POLICY_VALID:
+      effective_policy_refresh_error_delay_ms_ = policy_refresh_error_delay_ms_;
+      refresh_at =
+          last_refresh + base::TimeDelta::FromMilliseconds(GetRefreshDelay());
+      break;
+    case STATE_TOKEN_ERROR:
+      refresh_at = now + base::TimeDelta::FromMilliseconds(
+                             effective_token_fetch_error_delay_ms_);
+      effective_token_fetch_error_delay_ms_ *= 2;
+      if (effective_token_fetch_error_delay_ms_ > policy_refresh_rate_ms_)
+        effective_token_fetch_error_delay_ms_ = policy_refresh_rate_ms_;
+      break;
+    case STATE_POLICY_ERROR:
+      refresh_at = now + base::TimeDelta::FromMilliseconds(
+                             effective_policy_refresh_error_delay_ms_);
+      effective_policy_refresh_error_delay_ms_ *= 2;
+      if (effective_policy_refresh_error_delay_ms_ > policy_refresh_rate_ms_)
+        effective_policy_refresh_error_delay_ms_ = policy_refresh_rate_ms_;
+      break;
+  }
+
+  // Update the refresh task.
+  CancelRefreshTask();
+  if (!refresh_at.is_null()) {
+    refresh_task_ = new RefreshTask(this);
+    int64 delay = std::max<int64>((refresh_at - now).InMilliseconds(), 0);
+    BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE, refresh_task_,
+                                   delay);
+  }
+}
+
+int64 DeviceManagementPolicyProvider::GetRefreshDelay() {
+  int64 deviation = (policy_refresh_deviation_factor_percent_ *
+                     policy_refresh_rate_ms_) / 100;
+  deviation = std::min(deviation, policy_refresh_deviation_max_ms_);
+  return policy_refresh_rate_ms_ - base::RandGenerator(deviation + 1);
+}
+
+bool DeviceManagementPolicyProvider::TokenAvailable() const {
+  return state_ == STATE_TOKEN_VALID ||
+         state_ == STATE_POLICY_VALID ||
+         state_ == STATE_POLICY_ERROR;
 }
 
 // static

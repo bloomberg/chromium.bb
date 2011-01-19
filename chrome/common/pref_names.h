@@ -234,6 +234,7 @@ extern const char kAutoFillPersonalDataManagerFirstRun[];
 extern const char kUseVerticalTabs[];
 extern const char kEnableTranslate[];
 extern const char kPinnedTabs[];
+extern const char kPolicyRefreshRate[];
 
 // Local state
 extern const char kMetricsClientID[];
