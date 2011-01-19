@@ -1649,6 +1649,28 @@ TEST_F(ExtensionServiceTest, InstallApps) {
   ValidatePrefKeyCount(pref_count);
 }
 
+TEST_F(ExtensionServiceTest, UpdateApps) {
+  InitializeEmptyExtensionService();
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path =
+      extensions_path.AppendASCII("extensions").AppendASCII("app_update");
+
+  // First install v1 of a hosted app.
+  InstallExtension(extensions_path.AppendASCII("v1.crx"), true);
+  ASSERT_EQ(1u, service_->extensions()->size());
+  std::string id = service_->extensions()->at(0)->id();
+  ASSERT_EQ(std::string("1"),
+            service_->extensions()->at(0)->version()->GetString());
+
+  // Now try updating to v2.
+  UpdateExtension(id,
+                  extensions_path.AppendASCII("v2.crx"),
+                  ENABLED);
+  ASSERT_EQ(std::string("2"),
+            service_->extensions()->at(0)->version()->GetString());
+}
+
 TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
   InitializeEmptyExtensionService();
   EXPECT_TRUE(service_->extensions()->empty());
