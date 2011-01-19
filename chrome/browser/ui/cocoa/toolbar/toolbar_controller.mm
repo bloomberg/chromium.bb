@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 
 #include <algorithm>
 
@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
-#import "chrome/browser/ui/cocoa/back_forward_menu_controller.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
@@ -40,8 +39,9 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
-#import "chrome/browser/ui/cocoa/reload_button.h"
-#import "chrome/browser/ui/cocoa/toolbar_view.h"
+#import "chrome/browser/ui/cocoa/toolbar/back_forward_menu_controller.h"
+#import "chrome/browser/ui/cocoa/toolbar/reload_button.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_view.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"

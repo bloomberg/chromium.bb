@@ -37,7 +37,7 @@
 #import "chrome/browser/ui/cocoa/importer/import_settings_dialog.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
-#import "chrome/browser/ui/cocoa/toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 #include "grit/app_resources.h"

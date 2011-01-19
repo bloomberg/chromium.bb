@@ -40,7 +40,7 @@
 #include "chrome/browser/ui/cocoa/status_bubble_mac.h"
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
 #import "chrome/browser/ui/cocoa/theme_install_bubble_view.h"
-#import "chrome/browser/ui/cocoa/toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"

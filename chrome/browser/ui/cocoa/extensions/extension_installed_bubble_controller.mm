@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/cocoa/hover_close_button.h"
 #include "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#include "chrome/browser/ui/cocoa/toolbar_controller.h"
+#include "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/extension.h"

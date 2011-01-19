@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/back_forward_menu_controller.h"
+#import "chrome/browser/ui/cocoa/toolbar/back_forward_menu_controller.h"
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"

@@ -9,7 +9,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background_page_tracker.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#import "chrome/browser/ui/cocoa/toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

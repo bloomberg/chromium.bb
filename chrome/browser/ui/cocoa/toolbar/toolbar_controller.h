@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_TOOLBAR_CONTROLLER_H_
-#define CHROME_BROWSER_UI_COCOA_TOOLBAR_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_COCOA_TOOLBAR_TOOLBAR_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_TOOLBAR_TOOLBAR_CONTROLLER_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
@@ -184,4 +184,4 @@ class WrenchMenuModel;
 - (NSButton*)hoverButtonForEvent:(NSEvent*)theEvent;
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_TOOLBAR_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_COCOA_TOOLBAR_TOOLBAR_CONTROLLER_H_

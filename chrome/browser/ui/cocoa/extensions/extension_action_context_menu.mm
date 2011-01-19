@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#include "chrome/browser/ui/cocoa/toolbar_controller.h"
+#include "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"

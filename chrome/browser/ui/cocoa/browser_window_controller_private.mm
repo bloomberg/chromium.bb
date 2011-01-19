@@ -22,7 +22,7 @@
 #import "chrome/browser/ui/cocoa/tabs/side_tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
-#import "chrome/browser/ui/cocoa/toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
