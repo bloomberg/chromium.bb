@@ -475,6 +475,18 @@ html[dir=rtl].option-name {
   background-repeat: no-repeat;
 }
 
+input.favicon-cell {
+  -webkit-padding-start: 22px;
+  background-position-x: 4px;
+}
+
+/* TODO(jhawkins): Use something better than 99.3% when CSS3 background
+ * positioning is available.
+ */
+html[dir=rtl] input.favicon-cell {
+  background-position-x: 99.3%;
+}
+
 list .favicon-cell {
   -webkit-margin-start: 7px;
   -webkit-padding-start: 26px;
