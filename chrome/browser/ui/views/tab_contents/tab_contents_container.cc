@@ -22,17 +22,6 @@ TabContentsContainer::~TabContentsContainer() {
     RemoveObservers();
 }
 
-void TabContentsContainer::SetReservedContentsRect(
-    const gfx::Rect& reserved_rect) {
-  cached_reserved_rect_ = reserved_rect;
-#if !defined(TOUCH_UI)
-  if (tab_contents_ && tab_contents_->GetRenderWidgetHostView()) {
-    tab_contents_->GetRenderWidgetHostView()->set_reserved_contents_rect(
-        reserved_rect);
-  }
-#endif
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsContainer, NotificationObserver implementation:
 

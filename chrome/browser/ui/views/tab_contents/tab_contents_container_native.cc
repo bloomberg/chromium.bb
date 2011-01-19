@@ -26,6 +26,15 @@ TabContentsContainer::TabContentsContainer()
   SetID(VIEW_ID_TAB_CONTAINER);
 }
 
+void TabContentsContainer::SetReservedContentsRect(
+    const gfx::Rect& reserved_rect) {
+  cached_reserved_rect_ = reserved_rect;
+  if (tab_contents_ && tab_contents_->GetRenderWidgetHostView()) {
+    tab_contents_->GetRenderWidgetHostView()->set_reserved_contents_rect(
+        reserved_rect);
+  }
+}
+
 void TabContentsContainer::ChangeTabContents(TabContents* contents) {
   if (tab_contents_) {
     native_container_->DetachContents(tab_contents_);

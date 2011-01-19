@@ -28,6 +28,13 @@ TabContentsContainer::TabContentsContainer()
   SetID(VIEW_ID_TAB_CONTAINER);
 }
 
+void TabContentsContainer::SetReservedContentsRect(
+    const gfx::Rect& reserved_rect) {
+  cached_reserved_rect_ = reserved_rect;
+  // TODO(anicolao): find out what this is supposed to be used for and ensure
+  // it's OK for touch.
+}
+
 void TabContentsContainer::ChangeTabContents(TabContents* contents) {
   if (tab_contents_) {
     views::View *v = static_cast<TabContentsViewViews*>(tab_contents_->view());
