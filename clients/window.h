@@ -110,8 +110,9 @@ typedef void (*window_resize_handler_t)(struct window *window,
 					void *data);
 typedef void (*window_redraw_handler_t)(struct window *window, void *data);
 typedef void (*window_frame_handler_t)(struct window *window, uint32_t frame, uint32_t timestamp, void *data);
-typedef void (*window_key_handler_t)(struct window *window, uint32_t key, uint32_t unicode,
-				     uint32_t state, uint32_t modifiers, void *data);
+typedef void (*window_key_handler_t)(struct window *window, struct input *input,
+				     uint32_t time, uint32_t key, uint32_t unicode,
+				     uint32_t state, void *data);
 typedef void (*window_keyboard_focus_handler_t)(struct window *window,
 						struct input *device, void *data);
 
@@ -235,6 +236,9 @@ window_activate_drag(struct wl_drag *drag, struct window *window,
 
 void
 input_get_position(struct input *input, int32_t *x, int32_t *y);
+
+uint32_t
+input_get_modifiers(struct input *input);
 
 struct wl_input_device *
 input_get_input_device(struct input *input);

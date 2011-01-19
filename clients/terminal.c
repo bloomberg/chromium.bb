@@ -1872,12 +1872,20 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 }
 
 static void
-key_handler(struct window *window, uint32_t key, uint32_t sym,
-	    uint32_t state, uint32_t modifiers, void *data)
+static void
+key_handler(struct window *window, struct input *input, uint32_t time,
+	    uint32_t key, uint32_t sym, uint32_t state, void *data)
 {
 	struct terminal *terminal = data;
 	char ch[MAX_RESPONSE];
+	uint32_t modifiers;
 	int len = 0;
+
+	modifiers = input_get_modifiers(input);
+	if ((modifiers & WINDOW_MODIFIER_CONTROL) &&
+	    (modifiers & WINDOW_MODIFIER_SHIFT) &&
+	    state && handle_bound_key(terminal, input, sym, 0))
+		return;
 
 	switch (sym) {
 	case XK_F11:

@@ -110,8 +110,8 @@ redraw_handler(struct window *window, void *data)
 }
 
 static void
-key_handler(struct window *window, uint32_t key, uint32_t unicode,
-	    uint32_t state, uint32_t modifiers, void *data)
+key_handler(struct window *window, struct input *input, uint32_t time,
+	    uint32_t key, uint32_t unicode, uint32_t state, void *data)
 {
 	struct view *view = data;
 

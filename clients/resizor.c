@@ -128,8 +128,8 @@ keyboard_focus_handler(struct window *window,
 }
 
 static void
-key_handler(struct window *window, uint32_t key, uint32_t sym,
-	    uint32_t state, uint32_t modifiers, void *data)
+key_handler(struct window *window, struct input *input, uint32_t time,
+	    uint32_t key, uint32_t sym, uint32_t state, void *data)
 {
 	struct resizor *resizor = data;
 

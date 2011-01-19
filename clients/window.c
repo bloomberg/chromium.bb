@@ -922,8 +922,8 @@ window_handle_key(void *data, struct wl_input_device *input_device,
 		input->modifiers &= ~d->xkb->map->modmap[code];
 
 	if (window->key_handler)
-		(*window->key_handler)(window, key, sym, state,
-				       input->modifiers, window->user_data);
+		(*window->key_handler)(window, input, time, key, sym, state,
+				       window->user_data);
 }
 
 static void
@@ -1012,6 +1012,12 @@ struct wl_input_device *
 input_get_input_device(struct input *input)
 {
 	return input->input_device;
+}
+
+uint32_t
+input_get_modifiers(struct input *input)
+{
+	return input->modifiers;
 }
 
 struct wl_drag *
