@@ -261,6 +261,30 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup) {
 }
 
 // This test verifies that navigating with WindowOpenDisposition = NEW_POPUP
+// from a normal popup results in a new Browser with TYPE_POPUP.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupFromPopup) {
+  // Open a popup.
+  browser::NavigateParams p1(MakeNavigateParams());
+  p1.disposition = NEW_POPUP;
+  browser::Navigate(&p1);
+  // Open another popup.
+  browser::NavigateParams p2(MakeNavigateParams(p1.browser));
+  p2.disposition = NEW_POPUP;
+  browser::Navigate(&p2);
+
+  // Navigate() should have opened a new normal popup window.
+  EXPECT_NE(p1.browser, p2.browser);
+  EXPECT_EQ(Browser::TYPE_POPUP, p2.browser->type());
+
+  // We should have three windows, the browser() provided by the framework,
+  // the first popup window, and the second popup window.
+  EXPECT_EQ(3u, BrowserList::size());
+  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, p1.browser->tab_count());
+  EXPECT_EQ(1, p2.browser->tab_count());
+}
+
+// This test verifies that navigating with WindowOpenDisposition = NEW_POPUP
 // from an app frame results in a new Browser with TYPE_APP_POPUP.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_NewPopupFromAppWindow) {
@@ -281,6 +305,35 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(1, app_browser->tab_count());
   EXPECT_EQ(1, p.browser->tab_count());
+}
+
+// This test verifies that navigating with WindowOpenDisposition = NEW_POPUP
+// from an app popup results in a new Browser also of TYPE_APP_POPUP.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       Disposition_NewPopupFromAppPopup) {
+  Browser* app_browser = CreateEmptyBrowserForType(Browser::TYPE_APP,
+                                                   browser()->profile());
+  // Open an app popup.
+  browser::NavigateParams p1(MakeNavigateParams(app_browser));
+  p1.disposition = NEW_POPUP;
+  browser::Navigate(&p1);
+  // Now open another app popup.
+  browser::NavigateParams p2(MakeNavigateParams(p1.browser));
+  p2.disposition = NEW_POPUP;
+  browser::Navigate(&p2);
+
+  // Navigate() should have opened a new popup app window.
+  EXPECT_NE(browser(), p1.browser);
+  EXPECT_NE(p1.browser, p2.browser);
+  EXPECT_EQ(Browser::TYPE_APP_POPUP, p2.browser->type());
+
+  // We should now have four windows, the app window, the first app popup,
+  // the second app popup, and the original browser() provided by the framework.
+  EXPECT_EQ(4u, BrowserList::size());
+  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, app_browser->tab_count());
+  EXPECT_EQ(1, p1.browser->tab_count());
+  EXPECT_EQ(1, p2.browser->tab_count());
 }
 
 // This test verifies that navigating with WindowOpenDisposition = NEW_POPUP

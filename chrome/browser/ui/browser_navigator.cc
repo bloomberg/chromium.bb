@@ -161,9 +161,8 @@ Browser* GetBrowserForDisposition(browser::NavigateParams* params) {
       // Make a new popup window. Coerce app-style if |params->browser| or the
       // |source| represents an app.
       Browser::Type type = Browser::TYPE_POPUP;
-      if ((params->browser && params->browser->type() == Browser::TYPE_APP) ||
-          (params->source_contents &&
-              params->source_contents->is_app())) {
+      if ((params->browser && (params->browser->type() & Browser::TYPE_APP)) ||
+          (params->source_contents && params->source_contents->is_app())) {
         type = Browser::TYPE_APP_POPUP;
       }
       if (profile) {
