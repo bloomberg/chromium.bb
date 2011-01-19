@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,6 +75,12 @@ bool CheckForIllegalFilenames(const FilePath& extension_path,
 
 // Get a relative file path from a chrome-extension:// URL.
 FilePath ExtensionURLToRelativeFilePath(const GURL& url);
+
+// Get a path to a temp directory for unpacking an extension.
+// This is essentially PathService::Get(chrome::DIR_USER_DATA_TEMP, ...),
+// with a histogram that allows us to understand why it is failing.
+// Return an empty file path on failure.
+FilePath GetUserDataTempDir();
 
 }  // namespace extension_file_util
 

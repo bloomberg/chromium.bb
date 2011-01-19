@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,12 @@
 #include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
+#include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -515,6 +519,72 @@ FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
     return FilePath();
 
   return path;
+}
+
+FilePath GetUserDataTempDir() {
+  // We do file IO in this function, but only when the current profile's
+  // Temp directory has never been used before, or in a rare error case.
+  // Developers are not likely to see these situations often, so do an
+  // explicit thread check.
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  // Getting chrome::DIR_USER_DATA_TEMP is failing.  Use histogram to see why.
+  // TODO(skerner): Fix the problem, and remove this code.  crbug.com/70056
+  enum DirectoryCreationResult {
+    SUCCESS = 0,
+
+    CANT_GET_PARENT_PATH,
+    CANT_GET_UDT_PATH,
+    NOT_A_DIRECTORY,
+    CANT_CREATE_DIR,
+    CANT_WRITE_TO_PATH,
+
+    UNSET,
+    NUM_DIRECTORY_CREATION_RESULTS
+  };
+
+  // All paths should set |result|.
+  DirectoryCreationResult result = UNSET;
+
+  FilePath temp_path;
+  if (!PathService::Get(chrome::DIR_USER_DATA_TEMP, &temp_path)) {
+    FilePath parent_path;
+    if (!PathService::Get(chrome::DIR_USER_DATA, &parent_path))
+      result = CANT_GET_PARENT_PATH;
+    else
+      result = CANT_GET_UDT_PATH;
+
+  } else if (file_util::PathExists(temp_path)) {
+
+    // Path exists.  Check that it is a directory we can write to.
+    if (!file_util::DirectoryExists(temp_path)) {
+      result = NOT_A_DIRECTORY;
+
+    } else if (!file_util::PathIsWritable(temp_path)) {
+      result = CANT_WRITE_TO_PATH;
+
+    } else {
+      // Temp is a writable directory.
+      result = SUCCESS;
+    }
+
+  } else if (!file_util::CreateDirectory(temp_path)) {
+    // Path doesn't exist, and we failed to create it.
+    result = CANT_CREATE_DIR;
+
+  } else {
+    // Successfully created the Temp directory.
+    result = SUCCESS;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Extensions.GetUserDataTempDir",
+                            result,
+                            NUM_DIRECTORY_CREATION_RESULTS);
+
+  if (result == SUCCESS)
+    return temp_path;
+
+  return FilePath();
 }
 
 }  // namespace extension_file_util

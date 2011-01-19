@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,12 +12,15 @@
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
+#include "base/path_service.h"
 #include "base/scoped_handle.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"  // TODO(viettrungluu): delete me.
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -33,12 +36,34 @@ const char SandboxedExtensionUnpacker::kExtensionHeaderMagic[] = "Cr24";
 
 SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
     const FilePath& crx_path,
-    const FilePath& temp_path,
     ResourceDispatcherHost* rdh,
     SandboxedExtensionUnpackerClient* client)
-    : crx_path_(crx_path), temp_path_(temp_path),
+    : crx_path_(crx_path),
       thread_identifier_(BrowserThread::ID_COUNT),
       rdh_(rdh), client_(client), got_response_(false) {
+}
+
+bool SandboxedExtensionUnpacker::CreateTempDirectory() {
+  CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_identifier_));
+
+  FilePath user_data_temp_dir = extension_file_util::GetUserDataTempDir();
+  if (user_data_temp_dir.empty()) {
+    // TODO(skerner): This should have its own string.
+    // Using an existing string so that the change can be merged.
+    ReportFailure(l10n_util::GetStringFUTF8(
+        IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+        ASCIIToUTF16("COULD_NOT_CREATE_TEMP_DIRECTORY")));
+    return false;
+  }
+
+  if (!temp_dir_.CreateUniqueTempDirUnderPath(user_data_temp_dir)) {
+    ReportFailure(l10n_util::GetStringFUTF8(
+        IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+        ASCIIToUTF16("COULD_NOT_CREATE_TEMP_DIRECTORY")));
+    return false;
+  }
+
+  return true;
 }
 
 void SandboxedExtensionUnpacker::Start() {
@@ -46,14 +71,8 @@ void SandboxedExtensionUnpacker::Start() {
   // file IO on.
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_identifier_));
 
-  // Create a temporary directory to work in.
-  if (!temp_dir_.CreateUniqueTempDirUnderPath(temp_path_)) {
-    // Could not create temporary directory.
-    ReportFailure(l10n_util::GetStringFUTF8(
-        IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
-        ASCIIToUTF16("COULD_NOT_CREATE_TEMP_DIRECTORY")));
-    return;
-  }
+  if (!CreateTempDirectory())
+    return;  // ReportFailure() already called.
 
   // Initialize the path that will eventually contain the unpacked extension.
   extension_root_ = temp_dir_.path().AppendASCII(
@@ -311,10 +330,13 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
 }
 
 void SandboxedExtensionUnpacker::ReportFailure(const std::string& error) {
+  UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackFailure", 1);
   client_->OnUnpackFailure(error);
 }
 
 void SandboxedExtensionUnpacker::ReportSuccess() {
+  UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccess", 1);
+
   // Client takes ownership of temporary directory and extension.
   client_->OnUnpackSuccess(temp_dir_.Take(), extension_root_, extension_);
   extension_ = NULL;

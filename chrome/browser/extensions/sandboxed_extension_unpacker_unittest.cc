@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,11 +22,15 @@ namespace keys = extension_manifest_keys;
 using testing::_;
 using testing::Invoke;
 
+namespace {
+
 void OnUnpackSuccess(const FilePath& temp_dir,
                      const FilePath& extension_root,
                      const Extension* extension) {
   // Don't delete temp_dir here, we need to do some post op checking.
 }
+
+}  // namespace
 
 class MockSandboxedExtensionUnpackerClient
     : public SandboxedExtensionUnpackerClient {
@@ -78,7 +82,7 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
     // a temp folder to play in.
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &install_dir_));
     install_dir_ =
-      install_dir_.AppendASCII("sandboxed_extension_unpacker_test");
+        install_dir_.AppendASCII("sandboxed_extension_unpacker_test");
     file_util::Delete(install_dir_, true);
     file_util::CreateDirectory(install_dir_);
 
@@ -89,14 +93,14 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
 
     unpacker_.reset(new ExtensionUnpacker(crx_path));
 
-
     // Build a temp area where the extension will be unpacked.
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &temp_dir_));
     temp_dir_ = temp_dir_.AppendASCII("sandboxed_extension_unpacker_test_Temp");
-    file_util::CreateDirectory(temp_dir_);
+    ASSERT_TRUE(file_util::CreateDirectory(temp_dir_));
 
     sandboxed_unpacker_ =
-      new SandboxedExtensionUnpacker(crx_path, temp_dir_, NULL, client_);
+        new SandboxedExtensionUnpacker(crx_path, NULL, client_);
+
     // Hack since SandboxedExtensionUnpacker gets its background thread id from
     // the Start call, but we don't call it here.
     sandboxed_unpacker_->thread_identifier_ = BrowserThread::FILE;
@@ -159,6 +163,7 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
 
 TEST_F(SandboxedExtensionUnpackerTest, NoCatalogsSuccess) {
   EXPECT_CALL(*client_, OnUnpackSuccess(_, _, _));
+  EXPECT_CALL(*client_, OnUnpackFailure(_)).Times(0);
 
   SetupUnpacker("no_l10n.crx");
   ASSERT_TRUE(unpacker_->Run());
@@ -180,6 +185,7 @@ TEST_F(SandboxedExtensionUnpackerTest, NoCatalogsSuccess) {
 
 TEST_F(SandboxedExtensionUnpackerTest, WithCatalogsSuccess) {
   EXPECT_CALL(*client_, OnUnpackSuccess(_, _, _));
+  EXPECT_CALL(*client_, OnUnpackFailure(_)).Times(0);
 
   SetupUnpacker("good_l10n.crx");
   ASSERT_TRUE(unpacker_->Run());

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,18 +117,9 @@ CrxInstaller::~CrxInstaller() {
 void CrxInstaller::InstallCrx(const FilePath& source_file) {
   source_file_ = source_file;
 
-  FilePath user_data_temp_dir;
-  {
-    // We shouldn't be doing disk IO on the UI thread.
-    //   http://code.google.com/p/chromium/issues/detail?id=60634
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    CHECK(PathService::Get(chrome::DIR_USER_DATA_TEMP, &user_data_temp_dir));
-  }
-
   scoped_refptr<SandboxedExtensionUnpacker> unpacker(
       new SandboxedExtensionUnpacker(
           source_file,
-          user_data_temp_dir,
           g_browser_process->resource_dispatcher_host(),
           this));
 

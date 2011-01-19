@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,9 @@ enum {
                                 // this when a temporary file or directory will
                                 // be moved into the profile, to avoid issues
                                 // moving across volumes.  See crbug.com/13044 .
+                                // Getting this path does not create it.  Users
+                                // should check that the path exists before
+                                // using it.
   DIR_INTERNAL_PLUGINS,         // Directory where internal plugins reside.
 #if !defined(OS_MACOSX) && defined(OS_POSIX)
   DIR_POLICY_FILES,             // Directory for system-wide read-only

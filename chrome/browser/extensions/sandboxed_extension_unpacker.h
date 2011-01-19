@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,7 +93,6 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   // |client| with the result. If |rdh| is provided, unpacking is done in a
   // sandboxed subprocess. Otherwise, it is done in-process.
   SandboxedExtensionUnpacker(const FilePath& crx_path,
-                             const FilePath& temp_path,
                              ResourceDispatcherHost* rdh,
                              SandboxedExtensionUnpackerClient* cilent);
 
@@ -106,6 +105,10 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   friend class SandboxedExtensionUnpackerTest;
 
   virtual ~SandboxedExtensionUnpacker();
+
+  // Set |temp_dir_| as a temporary directory to unpack the extension in.
+  // Return true on success.
+  virtual bool CreateTempDirectory();
 
   // Validates the signature of the extension and extract the key to
   // |public_key_|. Returns true if the signature validates, false otherwise.
@@ -140,9 +143,6 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
 
   // The path to the CRX to unpack.
   FilePath crx_path_;
-
-  // A path to a temp dir to unpack in.
-  FilePath temp_path_;
 
   // Our client's thread. This is the thread we respond on.
   BrowserThread::ID thread_identifier_;

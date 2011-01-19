@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/json_value_serializer.h"
 #include "googleurl/src/gurl.h"
@@ -45,8 +46,11 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     return NULL;
   }
 
-  FilePath user_data_temp_dir;
-  CHECK(PathService::Get(chrome::DIR_USER_DATA_TEMP, &user_data_temp_dir));
+  FilePath user_data_temp_dir = extension_file_util::GetUserDataTempDir();
+  if (user_data_temp_dir.empty()) {
+    *error = "Could not get path to profile temporary directory.";
+    return NULL;
+  }
 
   ScopedTempDir temp_dir;
   if (!temp_dir.CreateUniqueTempDirUnderPath(user_data_temp_dir)) {
