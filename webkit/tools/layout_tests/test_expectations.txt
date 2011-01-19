@@ -10,3 +10,5 @@
 // TODO(thakis): Remove these after the next webkit roll.
 BUGTHAKIS LINUX : media/video-display-toggle.html = IMAGE
 BUGTHAKIS WIN : media/video-display-toggle.html = IMAGE
+
+BUGDIMICH MAC : fast/css/background-clip-values.html = MISSING
