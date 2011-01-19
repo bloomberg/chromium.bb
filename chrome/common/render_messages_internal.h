@@ -220,7 +220,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_HandleInputEvent)
 // Parameters
 // * edit_commands (see chrome/common/edit_command_types.h)
 //   Contains one or more edit commands.
-// See third_party/WebKit/WebCore/editing/EditorCommand.cpp for detailed
+// See third_party/WebKit/Source/WebCore/editing/EditorCommand.cpp for detailed
 // definition of webkit edit commands.
 //
 // This message must be sent just before sending a key event.

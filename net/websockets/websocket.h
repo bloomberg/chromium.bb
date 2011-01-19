@@ -6,7 +6,7 @@
 // It is intended to be used for live experiment of WebSocket connectivity
 // metrics.
 // Note that it is not used for WebKit's WebSocket communication.
-// See third_party/WebKit/WebCore/websockets/ instead.
+// See third_party/WebKit/Source/WebCore/websockets/ instead.
 
 #ifndef NET_WEBSOCKETS_WEBSOCKET_H_
 #define NET_WEBSOCKETS_WEBSOCKET_H_

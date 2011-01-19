@@ -29,7 +29,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace {
-// Copied from third_party/WebKit/WebCore/page/EventHandler.cpp
+// Copied from third_party/WebKit/Source/WebCore/page/EventHandler.cpp
 //
 // Match key code of composition keydown event on windows.
 // IE sends VK_PROCESSKEY which has value 229;

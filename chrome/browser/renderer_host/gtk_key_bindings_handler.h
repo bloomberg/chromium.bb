@@ -30,7 +30,7 @@ struct NativeWebKeyboardEvent;
 // class derived from GtkTextView is used, which overrides all signals related
 // to key bindings, to make sure GtkTextView won't receive them.
 //
-// See third_party/WebKit/WebCore/editing/EditorCommand.cpp for detailed
+// See third_party/WebKit/Source/WebCore/editing/EditorCommand.cpp for detailed
 // definition of webkit edit commands.
 // See webkit/glue/editor_client_impl.cc for key bindings predefined in our
 // webkit glue.
