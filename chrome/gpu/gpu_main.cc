@@ -4,6 +4,10 @@
 
 #include <stdlib.h>
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include "app/win/scoped_com_initializer.h"
 #include "base/environment.h"
 #include "base/message_loop.h"
@@ -50,6 +54,13 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
   base::PlatformThread::SetName("CrGpuMain");
+
+#if defined(OS_WIN)
+  // Prevent Windows from displaying a modal dialog on failures like not being
+  // able to load a DLL.
+  SetErrorMode(
+      SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
+#endif
 
   app::win::ScopedCOMInitializer com_initializer;
 
