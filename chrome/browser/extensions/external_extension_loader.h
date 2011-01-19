@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTERNAL_EXTENSION_LOADER_H_
 #pragma once
 
+#include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 
@@ -40,6 +41,13 @@ class ExternalExtensionLoader
   // Implementations of this method should save the loaded results
   // in prefs_ and then call LoadFinished.
   virtual void StartLoading() = 0;
+
+  // Some external providers allow relative file paths to local CRX files.
+  // Subclasses that want this behavior should override this method to
+  // return the absolute path from which relative paths should be resolved.
+  // By default, return an empty path, which indicates that relative paths
+  // are not allowed.
+  virtual const FilePath GetBaseCrxFilePath();
 
  protected:
   virtual ~ExternalExtensionLoader() {}

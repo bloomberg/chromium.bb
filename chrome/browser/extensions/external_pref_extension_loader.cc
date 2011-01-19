@@ -32,8 +32,20 @@ DictionaryValue* ExtractPrefs(ValueSerializer* serializer) {
 
 }  // namespace
 
-ExternalPrefExtensionLoader::ExternalPrefExtensionLoader() {
+ExternalPrefExtensionLoader::ExternalPrefExtensionLoader(int base_path_key)
+    : base_path_key_(base_path_key) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+const FilePath ExternalPrefExtensionLoader::GetBaseCrxFilePath() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // LoadOnFileThread() should set |external_file_path_| to a non-empty
+  // path.  This function should not be called until after LoadOnFileThread()
+  // is complete.
+  CHECK(!base_path_.empty());
+
+  return base_path_;
 }
 
 void ExternalPrefExtensionLoader::StartLoading() {
@@ -47,11 +59,13 @@ void ExternalPrefExtensionLoader::StartLoading() {
 
 void ExternalPrefExtensionLoader::LoadOnFileThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  FilePath json_file;
-  PathService::Get(app::DIR_EXTERNAL_EXTENSIONS, &json_file);
-  json_file = json_file.Append(FILE_PATH_LITERAL("external_extensions.json"));
-  scoped_ptr<DictionaryValue> prefs;
 
+  CHECK(PathService::Get(base_path_key_, &base_path_));
+
+  FilePath json_file;
+  json_file = base_path_.Append(FILE_PATH_LITERAL("external_extensions.json"));
+
+  scoped_ptr<DictionaryValue> prefs;
   if (file_util::PathExists(json_file)) {
     JSONFileValueSerializer serializer(json_file);
     prefs.reset(ExtractPrefs(&serializer));
@@ -68,7 +82,9 @@ void ExternalPrefExtensionLoader::LoadOnFileThread() {
 }
 
 ExternalTestingExtensionLoader::ExternalTestingExtensionLoader(
-    const std::string& json_data) {
+    const std::string& json_data,
+    const FilePath& fake_base_path)
+    : fake_base_path_(fake_base_path) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JSONStringValueSerializer serializer(json_data);
   testing_prefs_.reset(ExtractPrefs(&serializer));
@@ -78,4 +94,8 @@ void ExternalTestingExtensionLoader::StartLoading() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   prefs_.reset(testing_prefs_->DeepCopy());
   LoadFinished();
+}
+
+const FilePath ExternalTestingExtensionLoader::GetBaseCrxFilePath() {
+  return fake_base_path_;
 }

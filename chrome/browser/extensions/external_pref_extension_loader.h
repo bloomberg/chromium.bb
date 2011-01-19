@@ -19,7 +19,12 @@
 // thread and they are expecting public method calls from the UI thread.
 class ExternalPrefExtensionLoader : public ExternalExtensionLoader {
  public:
-  ExternalPrefExtensionLoader();
+  // |base_path_key| is the directory containing the external_extensions.json
+  // file.  Relative file paths to extension files are resolved relative
+  // to this path.
+  explicit ExternalPrefExtensionLoader(int base_path_key);
+
+  virtual const FilePath GetBaseCrxFilePath();
 
  protected:
   virtual void StartLoading();
@@ -31,6 +36,9 @@ class ExternalPrefExtensionLoader : public ExternalExtensionLoader {
 
   void LoadOnFileThread();
 
+  int base_path_key_;
+  FilePath base_path_;
+
   DISALLOW_COPY_AND_ASSIGN(ExternalPrefExtensionLoader);
 };
 
@@ -38,7 +46,11 @@ class ExternalPrefExtensionLoader : public ExternalExtensionLoader {
 // from json data specified in a string.
 class ExternalTestingExtensionLoader : public ExternalExtensionLoader {
  public:
-  explicit ExternalTestingExtensionLoader(const std::string& json_data);
+  ExternalTestingExtensionLoader(
+      const std::string& json_data,
+      const FilePath& fake_base_path);
+
+  virtual const FilePath GetBaseCrxFilePath();
 
  protected:
   virtual void StartLoading();
@@ -48,6 +60,7 @@ class ExternalTestingExtensionLoader : public ExternalExtensionLoader {
 
   virtual ~ExternalTestingExtensionLoader() {}
 
+  FilePath fake_base_path_;
   scoped_ptr<DictionaryValue> testing_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTestingExtensionLoader);

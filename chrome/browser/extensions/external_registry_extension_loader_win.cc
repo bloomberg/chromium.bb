@@ -49,10 +49,18 @@ void ExternalRegistryExtensionLoader::LoadOnFileThread() {
     std::wstring key_path = ASCIIToWide(kRegistryExtensions);
     key_path.append(L"\\");
     key_path.append(iterator.Name());
-    if (key.Open(kRegRoot, key_path.c_str(), KEY_READ) == ERROR_SUCCESS) {
-      std::wstring extension_path;
-      if (key.ReadValue(kRegistryExtensionPath, &extension_path)
+    if (key.Open(kRegRoot, key_path.c_str(), KEY_READ)  == ERROR_SUCCESS) {
+      std::wstring extension_path_str;
+      if (key.ReadValue(kRegistryExtensionPath, &extension_path_str)
           == ERROR_SUCCESS) {
+        FilePath extension_path(extension_path_str);
+        if (!extension_path.IsAbsolute()) {
+          LOG(ERROR) << "Path " << extension_path_str
+                     << " needs to be absolute in key "
+                     << key_path;
+          ++iterator;
+          continue;
+        }
         std::wstring extension_version;
         if (key.ReadValue(kRegistryExtensionVersion, &extension_version)
             == ERROR_SUCCESS) {
@@ -81,7 +89,7 @@ void ExternalRegistryExtensionLoader::LoadOnFileThread() {
               WideToASCII(extension_version));
           prefs->SetString(
               id + "." + ExternalExtensionProviderImpl::kExternalCrx,
-              extension_path);
+              extension_path_str);
         } else {
           // TODO(erikkay): find a way to get this into about:extensions
           LOG(ERROR) << "Missing value " << kRegistryExtensionVersion

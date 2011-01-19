@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/external_policy_extension_loader.h"
 #include "chrome/browser/extensions/external_pref_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_paths.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/extensions/external_registry_extension_loader_win.h"
@@ -120,12 +121,16 @@ void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
         continue;
       }
 
-      // If the path is relative, make it absolute.
+      // If the path is relative, and the provider has a base path,
+      // build the absolute path to the crx file.
       FilePath path(external_crx);
       if (!path.IsAbsolute()) {
-        // Try path as relative path from external extension dir.
-        FilePath base_path;
-        PathService::Get(app::DIR_EXTERNAL_EXTENSIONS, &base_path);
+        FilePath base_path = loader_->GetBaseCrxFilePath();
+        if (base_path.empty()) {
+          LOG(WARNING) << "File path " << external_crx.c_str()
+                       << " is relative.  An absolute path is required.";
+          continue;
+        }
         path = base_path.Append(external_crx);
       }
 
@@ -222,7 +227,7 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
       linked_ptr<ExternalExtensionProviderInterface>(
           new ExternalExtensionProviderImpl(
               service,
-              new ExternalPrefExtensionLoader,
+              new ExternalPrefExtensionLoader(app::DIR_EXTERNAL_EXTENSIONS),
               Extension::EXTERNAL_PREF,
               Extension::EXTERNAL_PREF_DOWNLOAD)));
 #if defined(OS_WIN)

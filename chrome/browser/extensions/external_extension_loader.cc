@@ -15,6 +15,14 @@ void ExternalExtensionLoader::Init(
   owner_ = owner;
 }
 
+const FilePath ExternalExtensionLoader::GetBaseCrxFilePath() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // By default, relative paths are not supported.
+  // Subclasses that wish to support them should override this method.
+  return FilePath();
+}
+
 void ExternalExtensionLoader::OwnerShutdown() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   owner_ = NULL;
