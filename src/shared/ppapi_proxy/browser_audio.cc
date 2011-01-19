@@ -9,10 +9,10 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "ppapi/c/dev/ppb_audio_config_dev.h"
-#include "ppapi/c/dev/ppb_audio_dev.h"
-#include "ppapi/c/dev/ppb_audio_trusted_dev.h"
+#include "ppapi/c/ppb_audio.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/core.h"
 #include "ppapi/cpp/module.h"
@@ -21,17 +21,17 @@
 
 namespace {
 
-const PPB_AudioTrusted_Dev* GetAudioTrustedInterface() {
-  static const PPB_AudioTrusted_Dev* audioTrusted =
-      static_cast<const PPB_AudioTrusted_Dev*>
-          (ppapi_proxy::GetBrowserInterface(PPB_AUDIO_TRUSTED_DEV_INTERFACE));
+const PPB_AudioTrusted* GetAudioTrustedInterface() {
+  static const PPB_AudioTrusted* audioTrusted =
+      static_cast<const PPB_AudioTrusted*>
+          (ppapi_proxy::GetBrowserInterface(PPB_AUDIO_TRUSTED_INTERFACE));
   return audioTrusted;
 }
 
-const PPB_Audio_Dev* GetAudioInterface() {
-  static const PPB_Audio_Dev* audio =
-      static_cast<const PPB_Audio_Dev*>
-          (ppapi_proxy::GetBrowserInterface(PPB_AUDIO_DEV_INTERFACE));
+const PPB_Audio* GetAudioInterface() {
+  static const PPB_Audio* audio =
+      static_cast<const PPB_Audio*>
+          (ppapi_proxy::GetBrowserInterface(PPB_AUDIO_INTERFACE));
   return audio;
 }
 
@@ -53,7 +53,7 @@ void StreamCreatedCallback(void* user_data, int32_t result) {
   if (result < 0) {
     return;
   }
-  const PPB_AudioTrusted_Dev* audioTrusted = GetAudioTrustedInterface();
+  const PPB_AudioTrusted* audioTrusted = GetAudioTrustedInterface();
   if (NULL == audioTrusted) {
     return;
   }
@@ -79,7 +79,7 @@ void StreamCreatedCallback(void* user_data, int32_t result) {
   NaClDesc *nacl_shm = NaClDescRef(shm_wrapper->desc());
   NaClDesc *nacl_socket = NaClDescRef(socket_wrapper->desc());
   int r;
-  r = PppAudioDevRpcClient::PPP_Audio_Dev_StreamCreated(
+  r = PppAudioRpcClient::PPP_Audio_StreamCreated(
       ppapi_proxy::GetMainSrpcChannel(data->instance_id),
       data->audio_id,
       nacl_shm,
@@ -89,14 +89,14 @@ void StreamCreatedCallback(void* user_data, int32_t result) {
 
 }  // namespace
 
-void PpbAudioDevRpcServer::PPB_Audio_Dev_Create(
+void PpbAudioRpcServer::PPB_Audio_Create(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     PP_Instance instance,
     PP_Resource config,
     PP_Resource* resource) {
   NaClSrpcClosureRunner runner(done);
-  const PPB_AudioTrusted_Dev* audio = GetAudioTrustedInterface();
+  const PPB_AudioTrusted* audio = GetAudioTrustedInterface();
   PP_Resource audio_id;
   PP_CompletionCallback callback;
   StreamCreatedCallbackData* data;
@@ -122,13 +122,13 @@ void PpbAudioDevRpcServer::PPB_Audio_Dev_Create(
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-void PpbAudioDevRpcServer::PPB_Audio_Dev_StartPlayback(
+void PpbAudioRpcServer::PPB_Audio_StartPlayback(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     PP_Resource resource,
     int32_t* out_bool) {
   NaClSrpcClosureRunner runner(done);
-  const PPB_Audio_Dev* audio = GetAudioInterface();
+  const PPB_Audio* audio = GetAudioInterface();
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   if (NULL == audio) {
     *out_bool = false;
@@ -138,13 +138,13 @@ void PpbAudioDevRpcServer::PPB_Audio_Dev_StartPlayback(
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-void PpbAudioDevRpcServer::PPB_Audio_Dev_StopPlayback(
+void PpbAudioRpcServer::PPB_Audio_StopPlayback(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     PP_Resource resource,
     int32_t* out_bool) {
   NaClSrpcClosureRunner runner(done);
-  const PPB_Audio_Dev* audio = GetAudioInterface();
+  const PPB_Audio* audio = GetAudioInterface();
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   if (NULL == audio) {
     *out_bool = false;
@@ -154,13 +154,13 @@ void PpbAudioDevRpcServer::PPB_Audio_Dev_StopPlayback(
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-void PpbAudioDevRpcServer::PPB_Audio_Dev_IsAudio(
+void PpbAudioRpcServer::PPB_Audio_IsAudio(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     PP_Resource resource,
     int32_t* out_bool) {
   NaClSrpcClosureRunner runner(done);
-  const PPB_Audio_Dev* audio = GetAudioInterface();
+  const PPB_Audio* audio = GetAudioInterface();
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   if (NULL == audio) {
     *out_bool = false;
@@ -170,13 +170,13 @@ void PpbAudioDevRpcServer::PPB_Audio_Dev_IsAudio(
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-void PpbAudioDevRpcServer::PPB_Audio_Dev_GetCurrentConfig(
+void PpbAudioRpcServer::PPB_Audio_GetCurrentConfig(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     PP_Resource resource,
     PP_Resource* config) {
   NaClSrpcClosureRunner runner(done);
-  const PPB_Audio_Dev* audio = GetAudioInterface();
+  const PPB_Audio* audio = GetAudioInterface();
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   if (NULL == audio) {
     return;

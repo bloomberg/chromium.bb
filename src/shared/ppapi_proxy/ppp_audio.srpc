@@ -2,14 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file declares the RPC methods used to implement PPB_Audio_Dev
+# This file declares the RPC methods used to implement PPB_Audio
 # calls from the browser.  The functions are described in
-# ppapi/c/dev/ppb_audio_dev.h.
+# ppapi/c/ppb_audio.h.
 {
- 'name': 'PppAudioDevRpc',
+ 'name': 'PppAudioRpc',
  'rpcs': [
           # Stream Created
-          {'name': 'PPP_Audio_Dev_StreamCreated',
+          {'name': 'PPP_Audio_StreamCreated',
            'inputs': [['instance', 'PP_Instance'],
                       ['out_shm', 'handle'],
                       ['out_shm_size', 'int32_t'],

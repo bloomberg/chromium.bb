@@ -39,6 +39,8 @@ if env.Bit('windows'):
 cpp_sources = [
     # Updated automatically by update-scons.py.
     # From ppapi.gyp:ppapi_cpp_objects:.*\.cc
+    'cpp/audio.cc',
+    'cpp/audio_config.cc',
     'cpp/core.cc',
     'cpp/graphics_2d.cc',
     'cpp/image_data.cc',
@@ -55,6 +57,7 @@ cpp_sources = [
     'cpp/dev/audio_config_dev.cc',
     'cpp/dev/audio_dev.cc',
     'cpp/dev/buffer_dev.cc',
+    'cpp/dev/context_3d_dev.cc',
     'cpp/dev/directory_entry_dev.cc',
     'cpp/dev/directory_reader_dev.cc',
     'cpp/dev/file_chooser_dev.cc',
@@ -69,6 +72,7 @@ cpp_sources = [
     'cpp/dev/printing_dev.cc',
     'cpp/dev/scrollbar_dev.cc',
     'cpp/dev/selection_dev.cc',
+    'cpp/dev/surface_3d_dev.cc',
     'cpp/dev/transport_dev.cc',
     'cpp/dev/url_util_dev.cc',
     'cpp/dev/video_decoder_dev.cc',

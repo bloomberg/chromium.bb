@@ -100,66 +100,67 @@ class PpbRpcClient {
   void operator=(const PpbRpcClient);
 };  // class PpbRpcClient
 
-class PpbAudioDevRpcClient {
+class PpbAudioRpcClient {
  public:
-  static NaClSrpcError PPB_Audio_Dev_Create(
+  static NaClSrpcError PPB_Audio_Create(
       NaClSrpcChannel* channel,
       PP_Instance instance,
       PP_Resource config,
       PP_Resource* out_resource);
-  static NaClSrpcError PPB_Audio_Dev_IsAudio(
+  static NaClSrpcError PPB_Audio_IsAudio(
       NaClSrpcChannel* channel,
       PP_Resource resource,
       int32_t* out_bool);
-  static NaClSrpcError PPB_Audio_Dev_GetCurrentConfig(
+  static NaClSrpcError PPB_Audio_GetCurrentConfig(
       NaClSrpcChannel* channel,
       PP_Resource resource,
       PP_Resource* out_resource);
-  static NaClSrpcError PPB_Audio_Dev_StopPlayback(
+  static NaClSrpcError PPB_Audio_StopPlayback(
       NaClSrpcChannel* channel,
       PP_Resource resource,
       int32_t* out_bool);
-  static NaClSrpcError PPB_Audio_Dev_StartPlayback(
+  static NaClSrpcError PPB_Audio_StartPlayback(
       NaClSrpcChannel* channel,
       PP_Resource resource,
       int32_t* out_bool);
 
  private:
-  PpbAudioDevRpcClient();
-  PpbAudioDevRpcClient(const PpbAudioDevRpcClient&);
-  void operator=(const PpbAudioDevRpcClient);
-};  // class PpbAudioDevRpcClient
+  PpbAudioRpcClient();
+  PpbAudioRpcClient(const PpbAudioRpcClient&);
+  void operator=(const PpbAudioRpcClient);
+};  // class PpbAudioRpcClient
 
-class PpbAudioConfigDevRpcClient {
+class PpbAudioConfigRpcClient {
  public:
-  static NaClSrpcError PPB_AudioConfig_Dev_CreateStereo16Bit(
+  static NaClSrpcError PPB_AudioConfig_CreateStereo16Bit(
       NaClSrpcChannel* channel,
       PP_Instance instance,
       int32_t sample_rate,
       int32_t sample_frame_count,
       PP_Resource* resource);
-  static NaClSrpcError PPB_AudioConfig_Dev_IsAudioConfig(
+  static NaClSrpcError PPB_AudioConfig_IsAudioConfig(
       NaClSrpcChannel* channel,
       PP_Resource resource,
       int32_t* out_bool);
-  static NaClSrpcError PPB_AudioConfig_Dev_RecommendSampleFrameCount(
+  static NaClSrpcError PPB_AudioConfig_RecommendSampleFrameCount(
       NaClSrpcChannel* channel,
-      int32_t request,
-      int32_t* sample_frame_count);
-  static NaClSrpcError PPB_AudioConfig_Dev_GetSampleRate(
+      int32_t request_sample_rate,
+      int32_t request_sample_frame_count,
+      int32_t* out_sample_frame_count);
+  static NaClSrpcError PPB_AudioConfig_GetSampleRate(
       NaClSrpcChannel* channel,
       PP_Resource resource,
       int32_t* sample_rate);
-  static NaClSrpcError PPB_AudioConfig_Dev_GetSampleFrameCount(
+  static NaClSrpcError PPB_AudioConfig_GetSampleFrameCount(
       NaClSrpcChannel* channel,
       PP_Resource resource,
       int32_t* sample_frame_count);
 
  private:
-  PpbAudioConfigDevRpcClient();
-  PpbAudioConfigDevRpcClient(const PpbAudioConfigDevRpcClient&);
-  void operator=(const PpbAudioConfigDevRpcClient);
-};  // class PpbAudioConfigDevRpcClient
+  PpbAudioConfigRpcClient();
+  PpbAudioConfigRpcClient(const PpbAudioConfigRpcClient&);
+  void operator=(const PpbAudioConfigRpcClient);
+};  // class PpbAudioConfigRpcClient
 
 class PpbCoreRpcClient {
  public:

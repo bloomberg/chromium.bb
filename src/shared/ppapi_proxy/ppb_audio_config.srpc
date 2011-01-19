@@ -2,14 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file declares the RPC methods used to implement PPB_AudioConfig_Dev
+# This file declares the RPC methods used to implement PPB_AudioConfig
 # calls from the plugin.  The functions are described in
-# ppapi/c/dev/ppb_audio_config_dev.h.
+# ppapi/c/ppb_audio_config.h.
 {
- 'name': 'PpbAudioConfigDevRpc',
+ 'name': 'PpbAudioConfigRpc',
  'rpcs': [
           # Implements a call to create an audio configuration for stereo output.
-          {'name': 'PPB_AudioConfig_Dev_CreateStereo16Bit',
+          {'name': 'PPB_AudioConfig_CreateStereo16Bit',
            'inputs': [['instance', 'PP_Instance'],
                       ['sample_rate', 'int32_t'],
                       ['sample_frame_count', 'int32_t'],
@@ -18,28 +18,29 @@
                       ]
           },
           # Implements a call to check if this is an AudioConfig.
-          {'name': 'PPB_AudioConfig_Dev_IsAudioConfig',
+          {'name': 'PPB_AudioConfig_IsAudioConfig',
            'inputs': [['resource', 'PP_Resource'],
                      ],
            'outputs': [['out_bool', 'int32_t']
                       ]
           },
           # Implements a call to get recommended sample frame count.
-          {'name': 'PPB_AudioConfig_Dev_RecommendSampleFrameCount',
-           'inputs': [['request', 'int32_t'],
+          {'name': 'PPB_AudioConfig_RecommendSampleFrameCount',
+           'inputs': [['request_sample_rate', 'int32_t'],
+                      ['request_sample_frame_count', 'int32_t'],
                      ],
-           'outputs': [['sample_frame_count', 'int32_t']
+           'outputs': [['out_sample_frame_count', 'int32_t']
                       ]
           },
           # Implements a call to get the sample rate.
-          {'name': 'PPB_AudioConfig_Dev_GetSampleRate',
+          {'name': 'PPB_AudioConfig_GetSampleRate',
            'inputs': [['resource', 'PP_Resource'],
                      ],
            'outputs': [['sample_rate', 'int32_t']
                       ]
           },
           # Implements a call to get the obtained sample frame count.
-          {'name': 'PPB_AudioConfig_Dev_GetSampleFrameCount',
+          {'name': 'PPB_AudioConfig_GetSampleFrameCount',
            'inputs': [['resource', 'PP_Resource'],
                      ],
            'outputs': [['sample_frame_count', 'int32_t'],

@@ -11,21 +11,21 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "ppapi/c/dev/ppb_audio_config_dev.h"
+#include "ppapi/c/ppb_audio_config.h"
 
 namespace ppapi_proxy {
 namespace {
 
-PP_AudioSampleRate_Dev GetSampleRate(PP_Resource config) {
+PP_AudioSampleRate GetSampleRate(PP_Resource config) {
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   int32_t sample_rate;
   NaClSrpcError retval =
-      PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_GetSampleRate(
+      PpbAudioConfigRpcClient::PPB_AudioConfig_GetSampleRate(
           channel,
           config,
           &sample_rate);
   if (NACL_SRPC_RESULT_OK == retval) {
-    return static_cast<PP_AudioSampleRate_Dev>(sample_rate);
+    return static_cast<PP_AudioSampleRate>(sample_rate);
   }
   return PP_AUDIOSAMPLERATE_NONE;
 }
@@ -34,7 +34,7 @@ uint32_t GetSampleFrameCount(PP_Resource config) {
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   int32_t sample_frame_count;
   NaClSrpcError retval =
-      PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_GetSampleFrameCount(
+      PpbAudioConfigRpcClient::PPB_AudioConfig_GetSampleFrameCount(
           channel,
           config,
           &sample_frame_count);
@@ -44,13 +44,16 @@ uint32_t GetSampleFrameCount(PP_Resource config) {
   return 0;
 }
 
-uint32_t RecommendSampleFrameCount(uint32_t request_sample_frame_count) {
+uint32_t RecommendSampleFrameCount(
+    PP_AudioSampleRate sample_rate, 
+    uint32_t request_sample_frame_count) {
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   int32_t out_sample_frame_count;
   NaClSrpcError retval =
-      PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_RecommendSampleFrameCount(
+      PpbAudioConfigRpcClient::PPB_AudioConfig_RecommendSampleFrameCount(
           channel,
-          request_sample_frame_count,
+          static_cast<int32_t>(sample_rate),
+          static_cast<int32_t>(request_sample_frame_count),
           &out_sample_frame_count);
   if (NACL_SRPC_RESULT_OK == retval) {
     return static_cast<uint32_t>(out_sample_frame_count);
@@ -62,7 +65,7 @@ PP_Bool IsAudioConfig(PP_Resource resource) {
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   int32_t out_bool;
   NaClSrpcError retval =
-      PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_IsAudioConfig(
+      PpbAudioConfigRpcClient::PPB_AudioConfig_IsAudioConfig(
           channel,
           resource,
           &out_bool);
@@ -73,12 +76,12 @@ PP_Bool IsAudioConfig(PP_Resource resource) {
 }
 
 PP_Resource CreateStereo16Bit(PP_Instance instance,
-                              PP_AudioSampleRate_Dev sample_rate,
+                              PP_AudioSampleRate sample_rate,
                               uint32_t sample_frame_count) {
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   PP_Resource resource;
   NaClSrpcError retval =
-      PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_CreateStereo16Bit(
+      PpbAudioConfigRpcClient::PPB_AudioConfig_CreateStereo16Bit(
           channel,
           instance,
           static_cast<int32_t>(sample_rate),
@@ -91,8 +94,8 @@ PP_Resource CreateStereo16Bit(PP_Instance instance,
 }
 }  // namespace
 
-const PPB_AudioConfig_Dev* PluginAudioConfig::GetInterface() {
-  static const PPB_AudioConfig_Dev intf = {
+const PPB_AudioConfig* PluginAudioConfig::GetInterface() {
+  static const PPB_AudioConfig intf = {
     CreateStereo16Bit,
     RecommendSampleFrameCount,
     IsAudioConfig,

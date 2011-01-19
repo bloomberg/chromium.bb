@@ -16,8 +16,8 @@
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
-#include "ppapi/c/dev/ppb_audio_config_dev.h"
-#include "ppapi/c/dev/ppb_audio_dev.h"
+#include "ppapi/c/ppb_audio.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/cpp/common.h"
 #include "ppapi/cpp/module_impl.h"
 #include "srpcgen/ppb_rpc.h"
@@ -160,7 +160,7 @@ PP_Resource Create(PP_Instance instance,
   NaClSrpcChannel* channel = NULL;
   // Proxy to browser Create, get audio PP_Resource
   channel = ppapi_proxy::GetMainSrpcChannel();
-  retval = PpbAudioDevRpcClient::PPB_Audio_Dev_Create(
+  retval = PpbAudioRpcClient::PPB_Audio_Create(
       channel,
       instance,
       config,
@@ -185,7 +185,7 @@ PP_Bool IsAudio(PP_Resource resource) {
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   int32_t out_bool;
   NaClSrpcError retval =
-      PpbAudioDevRpcClient::PPB_Audio_Dev_IsAudio(
+      PpbAudioRpcClient::PPB_Audio_IsAudio(
           channel,
           resource,
           &out_bool);
@@ -199,7 +199,7 @@ PP_Resource GetCurrentConfig(PP_Resource audio) {
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   PP_Resource out_resource;
   NaClSrpcError retval =
-      PpbAudioDevRpcClient::PPB_Audio_Dev_GetCurrentConfig(
+      PpbAudioRpcClient::PPB_Audio_GetCurrentConfig(
           channel,
           audio,
           &out_resource);
@@ -227,7 +227,7 @@ PP_Bool StartPlayback(PP_Resource audioResource) {
     }
   }
   NaClSrpcError retval =
-      PpbAudioDevRpcClient::PPB_Audio_Dev_StartPlayback(
+      PpbAudioRpcClient::PPB_Audio_StartPlayback(
           channel,
           audioResource,
           &out_bool);
@@ -255,7 +255,7 @@ PP_Bool StopPlayback(PP_Resource audioResource) {
   }
   // RPC to trusted side
   NaClSrpcError retval =
-      PpbAudioDevRpcClient::PPB_Audio_Dev_StopPlayback(
+      PpbAudioRpcClient::PPB_Audio_StopPlayback(
           channel,
           audioResource,
           &out_bool);
@@ -270,8 +270,8 @@ PP_Bool StopPlayback(PP_Resource audioResource) {
 }
 }  // namespace
 
-const PPB_Audio_Dev* PluginAudio::GetInterface() {
-  static const PPB_Audio_Dev intf = {
+const PPB_Audio* PluginAudio::GetInterface() {
+  static const PPB_Audio intf = {
     Create,
     IsAudio,
     GetCurrentConfig,
@@ -282,10 +282,10 @@ const PPB_Audio_Dev* PluginAudio::GetInterface() {
 }
 }  // namespace ppapi_proxy
 
-// PppAudioDevRpcServer::PPP_Audio_Dev_StreamCreated() must be in global
+// PppAudioRpcServer::PPP_Audio_StreamCreated() must be in global
 // namespace.  This function receives handles for the socket and shared
 // memory, provided by the trusted audio implementation.
-void PppAudioDevRpcServer::PPP_Audio_Dev_StreamCreated(
+void PppAudioRpcServer::PPP_Audio_StreamCreated(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     PP_Resource audioResource,

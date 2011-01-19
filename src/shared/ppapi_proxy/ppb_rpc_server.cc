@@ -189,13 +189,13 @@ static void PPB_GetInterfaceDispatcher(
   );
 }
 
-static void PPB_Audio_Dev_CreateDispatcher(
+static void PPB_Audio_CreateDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbAudioDevRpcServer::PPB_Audio_Dev_Create(
+  PpbAudioRpcServer::PPB_Audio_Create(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -204,13 +204,13 @@ static void PPB_Audio_Dev_CreateDispatcher(
   );
 }
 
-static void PPB_Audio_Dev_IsAudioDispatcher(
+static void PPB_Audio_IsAudioDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbAudioDevRpcServer::PPB_Audio_Dev_IsAudio(
+  PpbAudioRpcServer::PPB_Audio_IsAudio(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -218,13 +218,13 @@ static void PPB_Audio_Dev_IsAudioDispatcher(
   );
 }
 
-static void PPB_Audio_Dev_GetCurrentConfigDispatcher(
+static void PPB_Audio_GetCurrentConfigDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbAudioDevRpcServer::PPB_Audio_Dev_GetCurrentConfig(
+  PpbAudioRpcServer::PPB_Audio_GetCurrentConfig(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -232,13 +232,13 @@ static void PPB_Audio_Dev_GetCurrentConfigDispatcher(
   );
 }
 
-static void PPB_Audio_Dev_StopPlaybackDispatcher(
+static void PPB_Audio_StopPlaybackDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbAudioDevRpcServer::PPB_Audio_Dev_StopPlayback(
+  PpbAudioRpcServer::PPB_Audio_StopPlayback(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -246,13 +246,13 @@ static void PPB_Audio_Dev_StopPlaybackDispatcher(
   );
 }
 
-static void PPB_Audio_Dev_StartPlaybackDispatcher(
+static void PPB_Audio_StartPlaybackDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbAudioDevRpcServer::PPB_Audio_Dev_StartPlayback(
+  PpbAudioRpcServer::PPB_Audio_StartPlayback(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -260,13 +260,13 @@ static void PPB_Audio_Dev_StartPlaybackDispatcher(
   );
 }
 
-static void PPB_AudioConfig_Dev_CreateStereo16BitDispatcher(
+static void PPB_AudioConfig_CreateStereo16BitDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_CreateStereo16Bit(
+  PpbAudioConfigRpcServer::PPB_AudioConfig_CreateStereo16Bit(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -276,13 +276,13 @@ static void PPB_AudioConfig_Dev_CreateStereo16BitDispatcher(
   );
 }
 
-static void PPB_AudioConfig_Dev_IsAudioConfigDispatcher(
+static void PPB_AudioConfig_IsAudioConfigDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_IsAudioConfig(
+  PpbAudioConfigRpcServer::PPB_AudioConfig_IsAudioConfig(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -290,13 +290,28 @@ static void PPB_AudioConfig_Dev_IsAudioConfigDispatcher(
   );
 }
 
-static void PPB_AudioConfig_Dev_RecommendSampleFrameCountDispatcher(
+static void PPB_AudioConfig_RecommendSampleFrameCountDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_RecommendSampleFrameCount(
+  PpbAudioConfigRpcServer::PPB_AudioConfig_RecommendSampleFrameCount(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_AudioConfig_GetSampleRateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbAudioConfigRpcServer::PPB_AudioConfig_GetSampleRate(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -304,27 +319,13 @@ static void PPB_AudioConfig_Dev_RecommendSampleFrameCountDispatcher(
   );
 }
 
-static void PPB_AudioConfig_Dev_GetSampleRateDispatcher(
+static void PPB_AudioConfig_GetSampleFrameCountDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_GetSampleRate(
-      rpc,
-      done,
-      inputs[0]->u.ival,
-      &(outputs[0]->u.ival)
-  );
-}
-
-static void PPB_AudioConfig_Dev_GetSampleFrameCountDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_GetSampleFrameCount(
+  PpbAudioConfigRpcServer::PPB_AudioConfig_GetSampleFrameCount(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -932,16 +933,16 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "Construct:CiCC:CC", ConstructDispatcher },
   { "Deallocate:C:", DeallocateDispatcher },
   { "PPB_GetInterface:s:i", PPB_GetInterfaceDispatcher },
-  { "PPB_Audio_Dev_Create:ii:i", PPB_Audio_Dev_CreateDispatcher },
-  { "PPB_Audio_Dev_IsAudio:i:i", PPB_Audio_Dev_IsAudioDispatcher },
-  { "PPB_Audio_Dev_GetCurrentConfig:i:i", PPB_Audio_Dev_GetCurrentConfigDispatcher },
-  { "PPB_Audio_Dev_StopPlayback:i:i", PPB_Audio_Dev_StopPlaybackDispatcher },
-  { "PPB_Audio_Dev_StartPlayback:i:i", PPB_Audio_Dev_StartPlaybackDispatcher },
-  { "PPB_AudioConfig_Dev_CreateStereo16Bit:iii:i", PPB_AudioConfig_Dev_CreateStereo16BitDispatcher },
-  { "PPB_AudioConfig_Dev_IsAudioConfig:i:i", PPB_AudioConfig_Dev_IsAudioConfigDispatcher },
-  { "PPB_AudioConfig_Dev_RecommendSampleFrameCount:i:i", PPB_AudioConfig_Dev_RecommendSampleFrameCountDispatcher },
-  { "PPB_AudioConfig_Dev_GetSampleRate:i:i", PPB_AudioConfig_Dev_GetSampleRateDispatcher },
-  { "PPB_AudioConfig_Dev_GetSampleFrameCount:i:i", PPB_AudioConfig_Dev_GetSampleFrameCountDispatcher },
+  { "PPB_Audio_Create:ii:i", PPB_Audio_CreateDispatcher },
+  { "PPB_Audio_IsAudio:i:i", PPB_Audio_IsAudioDispatcher },
+  { "PPB_Audio_GetCurrentConfig:i:i", PPB_Audio_GetCurrentConfigDispatcher },
+  { "PPB_Audio_StopPlayback:i:i", PPB_Audio_StopPlaybackDispatcher },
+  { "PPB_Audio_StartPlayback:i:i", PPB_Audio_StartPlaybackDispatcher },
+  { "PPB_AudioConfig_CreateStereo16Bit:iii:i", PPB_AudioConfig_CreateStereo16BitDispatcher },
+  { "PPB_AudioConfig_IsAudioConfig:i:i", PPB_AudioConfig_IsAudioConfigDispatcher },
+  { "PPB_AudioConfig_RecommendSampleFrameCount:ii:i", PPB_AudioConfig_RecommendSampleFrameCountDispatcher },
+  { "PPB_AudioConfig_GetSampleRate:i:i", PPB_AudioConfig_GetSampleRateDispatcher },
+  { "PPB_AudioConfig_GetSampleFrameCount:i:i", PPB_AudioConfig_GetSampleFrameCountDispatcher },
   { "PPB_Core_AddRefResource:i:", PPB_Core_AddRefResourceDispatcher },
   { "PPB_Core_ReleaseResource:i:", PPB_Core_ReleaseResourceDispatcher },
   { "ReleaseResourceMultipleTimes:ii:", ReleaseResourceMultipleTimesDispatcher },

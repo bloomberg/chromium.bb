@@ -14,8 +14,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/ref_counted.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
-#include "ppapi/c/dev/ppb_audio_dev.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/ppb_audio.h"
 
 namespace ppapi_proxy {
 
@@ -45,7 +45,7 @@ class PluginAudio : public PluginResource {
   bool StartAudioThread();
   bool StopAudioThread();
   static void* AudioThread(void* self);
-  static const PPB_Audio_Dev* GetInterface();
+  static const PPB_Audio* GetInterface();
   virtual bool InitFromBrowserResource(PP_Resource resource);
  private:
   NaClSrpcImcDescType socket_;

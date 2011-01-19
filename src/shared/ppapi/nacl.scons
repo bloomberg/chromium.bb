@@ -37,6 +37,8 @@ Dir('.').addRepository(Dir('#/../ppapi'))
 cpp_sources = [
     # Updated automatically by update-scons.py.
     # From ppapi.gyp:ppapi_cpp_objects:.*\.cc
+    'cpp/audio.cc',
+    'cpp/audio_config.cc',
     'cpp/core.cc',
     'cpp/graphics_2d.cc',
     'cpp/image_data.cc',
@@ -53,6 +55,7 @@ cpp_sources = [
     'cpp/dev/audio_config_dev.cc',
     'cpp/dev/audio_dev.cc',
     'cpp/dev/buffer_dev.cc',
+    'cpp/dev/context_3d_dev.cc',
     'cpp/dev/directory_entry_dev.cc',
     'cpp/dev/directory_reader_dev.cc',
     'cpp/dev/file_chooser_dev.cc',
@@ -67,6 +70,7 @@ cpp_sources = [
     'cpp/dev/printing_dev.cc',
     'cpp/dev/scrollbar_dev.cc',
     'cpp/dev/selection_dev.cc',
+    'cpp/dev/surface_3d_dev.cc',
     'cpp/dev/transport_dev.cc',
     'cpp/dev/url_util_dev.cc',
     'cpp/dev/video_decoder_dev.cc',
@@ -101,6 +105,8 @@ c_headers = [
     'c/pp_time.h',
     'c/pp_var.h',
     'c/ppb.h',
+    'c/ppb_audio.h',
+    'c/ppb_audio_config.h',
     'c/ppb_core.h',
     'c/ppb_class.h',
     'c/ppb_graphics_2d.h',
@@ -120,12 +126,14 @@ c_dev_headers = [
     # From ppapi.gyp:ppapi_c:c/dev/[^/]*\.h
     'c/dev/pp_cursor_type_dev.h',
     'c/dev/pp_file_info_dev.h',
+    'c/dev/pp_graphics_3d_dev.h',
     'c/dev/pp_video_dev.h',
     'c/dev/ppb_audio_config_dev.h',
     'c/dev/ppb_audio_dev.h',
     'c/dev/ppb_audio_trusted_dev.h',
     'c/dev/ppb_buffer_dev.h',
     'c/dev/ppb_char_set_dev.h',
+    'c/dev/ppb_context_3d_dev.h',
     'c/dev/ppb_cursor_control_dev.h',
     'c/dev/ppb_directory_reader_dev.h',
     'c/dev/ppb_file_chooser_dev.h',
@@ -139,6 +147,7 @@ c_dev_headers = [
     'c/dev/ppb_graphics_3d_dev.h',
     'c/dev/ppb_opengles_dev.h',
     'c/dev/ppb_scrollbar_dev.h',
+    'c/dev/ppb_surface_3d_dev.h',
     'c/dev/ppb_testing_dev.h',
     'c/dev/ppb_transport_dev.h',
     'c/dev/ppb_url_util_dev.h',
@@ -162,6 +171,8 @@ c_dev_headers = [
 cpp_headers = [
     # Updated automatically by update-scons.py.
     # From ppapi.gyp:ppapi_cpp_objects:cpp/[^/]*\.h
+    'cpp/audio.h',
+    'cpp/audio_config.h',
     'cpp/common.h',
     'cpp/completion_callback.h',
     'cpp/core.h',
@@ -195,6 +206,7 @@ cpp_dev_headers = [
     'cpp/dev/audio_config_dev.h',
     'cpp/dev/audio_dev.h',
     'cpp/dev/buffer_dev.h',
+    'cpp/dev/context_3d_dev.h',
     'cpp/dev/directory_entry_dev.h',
     'cpp/dev/directory_reader_dev.h',
     'cpp/dev/file_chooser_dev.h',
@@ -209,6 +221,7 @@ cpp_dev_headers = [
     'cpp/dev/printing_dev.h',
     'cpp/dev/scrollbar_dev.h',
     'cpp/dev/selection_dev.h',
+    'cpp/dev/surface_3d_dev.h',
     'cpp/dev/transport_dev.h',
     'cpp/dev/url_util_dev.h',
     'cpp/dev/video_decoder_dev.h',

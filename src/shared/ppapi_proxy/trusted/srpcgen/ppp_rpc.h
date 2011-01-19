@@ -124,9 +124,9 @@ class PppRpcClient {
   void operator=(const PppRpcClient);
 };  // class PppRpcClient
 
-class PppAudioDevRpcClient {
+class PppAudioRpcClient {
  public:
-  static NaClSrpcError PPP_Audio_Dev_StreamCreated(
+  static NaClSrpcError PPP_Audio_StreamCreated(
       NaClSrpcChannel* channel,
       PP_Instance instance,
       NaClSrpcImcDescType out_shm,
@@ -134,10 +134,10 @@ class PppAudioDevRpcClient {
       NaClSrpcImcDescType out_socket);
 
  private:
-  PppAudioDevRpcClient();
-  PppAudioDevRpcClient(const PppAudioDevRpcClient&);
-  void operator=(const PppAudioDevRpcClient);
-};  // class PppAudioDevRpcClient
+  PppAudioRpcClient();
+  PppAudioRpcClient(const PppAudioRpcClient&);
+  void operator=(const PppAudioRpcClient);
+};  // class PppAudioRpcClient
 
 class PppInstanceRpcClient {
  public:

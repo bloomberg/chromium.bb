@@ -35,9 +35,9 @@ struct InterfaceMapElement {
 };
 
 const InterfaceMapElement interface_map[] = {
-  { PPB_AUDIO_DEV_INTERFACE,
+  { PPB_AUDIO_INTERFACE,
     reinterpret_cast<GetInterfacePtr>(PluginAudio::GetInterface) },
-  { PPB_AUDIO_CONFIG_DEV_INTERFACE,
+  { PPB_AUDIO_CONFIG_INTERFACE,
     reinterpret_cast<GetInterfacePtr>(PluginAudioConfig::GetInterface) },
   { PPB_BUFFER_DEV_INTERFACE,
     reinterpret_cast<GetInterfacePtr>(PluginBuffer::GetInterface) },
