@@ -160,7 +160,7 @@ void ContentPageView::LinkActivated(views::Link* source, int event_flags) {
   }
   if (source == sync_action_link_) {
     DCHECK(sync_service_ && !sync_service_->IsManaged());
-    sync_service_->ShowLoginDialog(GetWindow()->GetNativeWindow());
+    sync_service_->ShowErrorUI(GetWindow()->GetNativeWindow());
     return;
   }
   if (source == privacy_dashboard_link_) {

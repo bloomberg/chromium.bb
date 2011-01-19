@@ -155,26 +155,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
   if (!sync_service_->IsSyncEnabled())
     return;
   if (sync_service_->HasSyncSetupCompleted()) {
-    if (sync_service_->observed_passphrase_required()) {
-      if (sync_service_->IsUsingSecondaryPassphrase())
-        sync_service_->PromptForExistingPassphrase(NULL);
-      else
-        sync_service_->SigninForPassphrase(dom_ui_->tab_contents());
-      return;
-    }
-    if (sync_service_->GetAuthError().state() ==
-        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
-        sync_service_->GetAuthError().state() ==
-        GoogleServiceAuthError::CAPTCHA_REQUIRED ||
-        sync_service_->GetAuthError().state() ==
-        GoogleServiceAuthError::ACCOUNT_DELETED ||
-        sync_service_->GetAuthError().state() ==
-        GoogleServiceAuthError::ACCOUNT_DISABLED ||
-        sync_service_->GetAuthError().state() ==
-        GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
-      sync_service_->ShowLoginDialog(NULL);
-      return;
-    }
+    sync_service_->ShowErrorUI(NULL);
     DictionaryValue value;
     value.SetString("syncEnabledMessage",
                     l10n_util::GetStringFUTF16(IDS_SYNC_NTP_SYNCED_TO,

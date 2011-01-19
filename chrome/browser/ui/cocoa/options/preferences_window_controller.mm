@@ -1429,9 +1429,11 @@ const int kDisabledIndex = 1;
   syncService_->ShowConfigure(NULL);
 }
 
+// Called when the user clicks on the multi-purpose 'sync problem'
+// link.
 - (IBAction)doSyncReauthentication:(id)sender {
   DCHECK(syncService_ && !syncService_->IsManaged());
-  syncService_->ShowLoginDialog(NULL);
+  syncService_->ShowErrorUI(NULL);
 }
 
 - (void)setPasswordManagerEnabledIndex:(NSInteger)value {

@@ -261,7 +261,7 @@ html[dir=rtl] .foreign-session-client {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 100%;
+  font-size: 106%;
   margin: 0 10px;
 }
 

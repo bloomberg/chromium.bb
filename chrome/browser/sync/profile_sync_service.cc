@@ -726,6 +726,25 @@ void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
 
+void ProfileSyncService::ShowErrorUI(gfx::NativeWindow parent_window) {
+  if (observed_passphrase_required()) {
+    if (IsUsingSecondaryPassphrase())
+      PromptForExistingPassphrase(parent_window);
+    else
+      ShowLoginDialog(parent_window);
+    return;
+  }
+  const GoogleServiceAuthError& error = GetAuthError();
+  if (error.state() == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
+      error.state() == GoogleServiceAuthError::CAPTCHA_REQUIRED ||
+      error.state() == GoogleServiceAuthError::ACCOUNT_DELETED ||
+      error.state() == GoogleServiceAuthError::ACCOUNT_DISABLED ||
+      error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
+    ShowLoginDialog(parent_window);
+  }
+}
+
+
 void ProfileSyncService::ShowConfigure(gfx::NativeWindow parent_window) {
   if (WizardIsVisible()) {
     wizard_.Focus();

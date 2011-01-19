@@ -603,7 +603,7 @@ void ContentPageGtk::OnSyncCustomizeButtonClicked(GtkWidget* widget) {
 
 void ContentPageGtk::OnSyncActionLinkClicked(GtkWidget* widget) {
   DCHECK(sync_service_ && !sync_service_->IsManaged());
-  sync_service_->ShowConfigure(NULL);
+  sync_service_->ShowErrorUI(NULL);
 }
 
 void ContentPageGtk::OnStopSyncDialogResponse(GtkWidget* widget, int response) {

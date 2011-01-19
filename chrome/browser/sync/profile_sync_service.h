@@ -225,6 +225,11 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return wizard_.IsVisible();
   }
   virtual void ShowLoginDialog(gfx::NativeWindow parent_window);
+
+  // This method handles clicks on "sync error" UI, showing the appropriate
+  // dialog for the error condition (relogin / enter passphrase).
+  virtual void ShowErrorUI(gfx::NativeWindow parent_window);
+
   void ShowConfigure(gfx::NativeWindow parent_window);
   void PromptForExistingPassphrase(gfx::NativeWindow parent_window);
   void SigninForPassphrase(TabContents* container);
