@@ -53,21 +53,40 @@ static bool FindFormInputElements(WebKit::WebFormElement* fe,
   for (size_t j = 0; j < data.fields.size(); j++) {
     WebKit::WebVector<WebKit::WebNode> temp_elements;
     fe->getNamedElements(data.fields[j].name(), temp_elements);
-    if (temp_elements.isEmpty()) {
-      // We didn't find a required element. This is not the right form.
-      // Make sure no input elements from a partially matched form in this
-      // iteration remain in the result set.
-      // Note: clear will remove a reference from each InputElement.
+
+    // Match the first input element, if any.
+    // |getNamedElements| may return non-input elements where the names match,
+    // so the results are filtered for input elements.
+    // If more than one match is made, then we have ambiguity (due to misuse
+    // of "name" attribute) so is it considered not found.
+    bool found_input = false;
+    for (size_t i = 0; i < temp_elements.size(); ++i) {
+      if (temp_elements[i].to<WebKit::WebElement>().hasTagName("input")) {
+        // Check for a non-unique match.
+        if (found_input) {
+          found_input = false;
+          break;
+        }
+
+        // This element matched, add it to our temporary result. It's possible
+        // there are multiple matches, but for purposes of identifying the form
+        // one suffices and if some function needs to deal with multiple
+        // matching elements it can get at them through the FormElement*.
+        // Note: This assignment adds a reference to the InputElement.
+        result->input_elements[data.fields[j].name()] =
+            temp_elements[i].to<WebKit::WebInputElement>();
+        found_input = true;
+      }
+    }
+
+    // A required element was not found. This is not the right form.
+    // Make sure no input elements from a partially matched form in this
+    // iteration remain in the result set.
+    // Note: clear will remove a reference from each InputElement.
+    if (!found_input) {
       result->input_elements.clear();
       return false;
     }
-    // This element matched, add it to our temporary result. It's possible there
-    // are multiple matches, but for purposes of identifying the form one
-    // suffices and if some function needs to deal with multiple matching
-    // elements it can get at them through the FormElement*.
-    // Note: This assignment adds a reference to the InputElement.
-    result->input_elements[data.fields[j].name()] =
-        temp_elements[0].to<WebKit::WebInputElement>();
   }
   return true;
 }
@@ -128,7 +147,7 @@ bool FillForm(FormElements* fe, const webkit_glue::FormData& data) {
 
   for (FormInputElementMap::iterator it = fe->input_elements.begin();
        it != fe->input_elements.end(); ++it) {
-    WebKit::WebInputElement& element = it->second;
+    WebKit::WebInputElement element = it->second;
     if (!element.value().isEmpty())  // Don't overwrite pre-filled values.
       continue;
     if (element.isPasswordField() &&
