@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,14 +14,6 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/gtk/browser_window_gtk.h"
-#include "chrome/browser/gtk/constrained_window_gtk.h"
-#include "chrome/browser/gtk/gtk_expanded_container.h"
-#include "chrome/browser/gtk/gtk_floating_container.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/sad_tab_gtk.h"
-#include "chrome/browser/gtk/tab_contents_drag_source.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_factory.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
@@ -30,6 +22,14 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/constrained_window_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_expanded_container.h"
+#include "chrome/browser/ui/gtk/gtk_floating_container.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/sad_tab_gtk.h"
+#include "chrome/browser/ui/gtk/tab_contents_drag_source.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "gfx/point.h"

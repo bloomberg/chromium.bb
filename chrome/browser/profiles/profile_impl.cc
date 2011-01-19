@@ -32,8 +32,8 @@
 #include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -46,8 +46,8 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/host_zoom_map.h"
-#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/net/net_pref_observer.h"
@@ -55,8 +55,8 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/password_manager/password_store_default.h"
-#include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/profile_policy_context.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_value_store.h"
@@ -96,7 +96,7 @@
 #include "webkit/database/database_tracker.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #endif
 
 #if defined(OS_WIN)

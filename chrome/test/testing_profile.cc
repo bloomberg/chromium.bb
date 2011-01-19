@@ -40,8 +40,8 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/testing_pref_service.h"
 #include "chrome/test/test_url_request_context_getter.h"
+#include "chrome/test/testing_pref_service.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
@@ -50,7 +50,7 @@
 #include "webkit/database/database_tracker.h"
 
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
-#include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #endif
 
 using base::Time;

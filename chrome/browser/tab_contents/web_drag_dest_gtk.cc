@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,10 +9,10 @@
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/gtk/bookmark_utils_gtk.h"
-#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/gtk/bookmark_utils_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"

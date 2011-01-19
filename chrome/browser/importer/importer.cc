@@ -36,7 +36,7 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/importer/importer_lock_dialog.h"
 #elif defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/gtk/import_lock_dialog_gtk.h"
+#include "chrome/browser/ui/gtk/import_lock_dialog_gtk.h"
 #endif
 
 using webkit_glue::PasswordForm;

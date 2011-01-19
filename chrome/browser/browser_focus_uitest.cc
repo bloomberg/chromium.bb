@@ -39,12 +39,12 @@
 #endif
 
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/gtk/view_id_util.h"
+#include "chrome/browser/ui/gtk/view_id_util.h"
 #endif
 
 #if defined(OS_WIN)
-#include <windows.h>
 #include <Psapi.h>
+#include <windows.h>
 #endif
 
 #if defined(OS_LINUX)

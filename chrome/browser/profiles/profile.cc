@@ -41,7 +41,7 @@
 #include "webkit/database/database_tracker.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #endif
 
 #if defined(OS_WIN)

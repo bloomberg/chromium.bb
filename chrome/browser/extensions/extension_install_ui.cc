@@ -42,8 +42,8 @@
 
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/extensions/gtk_theme_installed_infobar_delegate.h"
-#include "chrome/browser/gtk/extension_installed_bubble_gtk.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/extension_installed_bubble_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #endif
 
 // static

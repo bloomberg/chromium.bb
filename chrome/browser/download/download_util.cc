@@ -65,7 +65,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "views/widget/widget_gtk.h"
 #elif defined(TOOLKIT_GTK)
-#include "chrome/browser/gtk/custom_drag.h"
+#include "chrome/browser/ui/gtk/custom_drag.h"
 #endif  // defined(TOOLKIT_GTK)
 #endif  // defined(TOOLKIT_USES_GTK)
 

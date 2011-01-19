@@ -62,7 +62,7 @@
 #endif
 
 #if defined(TOOLKIT_GTK)
-#include "chrome/browser/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #endif
 
 #if defined(OS_CHROMEOS)

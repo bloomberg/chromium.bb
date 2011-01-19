@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/view_id_util.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/view_id_util.h"
 
 void TestingAutomationProvider::ActivateWindow(int handle) {
   NOTIMPLEMENTED();

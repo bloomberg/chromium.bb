@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,13 @@
 
 #include <gdk/gdk.h>
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "ui/base/animation/animation_delegate.h"

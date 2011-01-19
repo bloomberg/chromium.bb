@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 
-#include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#include <gtk/gtk.h>
 
 #include <algorithm>
 
@@ -20,11 +20,11 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/color_utils.h"
@@ -38,13 +38,13 @@
 #include "ui/base/animation/multi_animation.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
+#include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #else
 #include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/gtk/location_bar_view_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "views/controls/native/native_view_host.h"
 #endif
 

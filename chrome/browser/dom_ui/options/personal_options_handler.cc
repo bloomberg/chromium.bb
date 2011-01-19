@@ -25,9 +25,9 @@
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/options/options_page_base.h"
 #include "chrome/browser/ui/options/options_window.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/chrome_paths.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -38,7 +38,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
 #if defined(TOOLKIT_GTK)
-#include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #endif  // defined(TOOLKIT_GTK)
 
 PersonalOptionsHandler::PersonalOptionsHandler() {

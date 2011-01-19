@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,12 +9,12 @@
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/string_number_conversions.h"
 #include "base/string16.h"
+#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #if defined(OS_MACOSX)
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #endif
@@ -43,7 +43,7 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #elif defined(TOOLKIT_GTK)
-#include "chrome/browser/gtk/custom_drag.h"
+#include "chrome/browser/ui/gtk/custom_drag.h"
 #endif
 
 using base::Time;

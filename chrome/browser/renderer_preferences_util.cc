@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,8 @@
 #include "chrome/browser/profiles/profile.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/gtk_theme_provider.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #endif
 
 namespace renderer_preferences_util {

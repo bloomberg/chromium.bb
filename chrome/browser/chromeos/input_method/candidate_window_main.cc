@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
       l10n_util::GetStringUTF8(IDS_UI_FONT_FAMILY_CROS);
   // The font name should not be empty here, but just in case.
   if (font_name != "default" && !font_name.empty()) {
-    // Don't use gtk_util::SetGtkFont() in chrome/browser/gtk not to
+    // Don't use gtk_util::SetGtkFont() in chrome/browser/ui/gtk not to
     // introduce a dependency to it.
     g_object_set(gtk_settings_get_default(),
                  "gtk-font-name", font_name.c_str(), NULL);

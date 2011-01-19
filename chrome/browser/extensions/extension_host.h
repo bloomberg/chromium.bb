@@ -20,7 +20,7 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #elif defined(TOOLKIT_GTK)
-#include "chrome/browser/gtk/extension_view_gtk.h"
+#include "chrome/browser/ui/gtk/extension_view_gtk.h"
 #endif
 #include "chrome/common/notification_registrar.h"
 

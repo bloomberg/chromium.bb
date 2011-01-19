@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,10 +15,10 @@
 #include "chrome/browser/browser_thread.h"  // for FileAccessProvider
 #include "chrome/browser/certificate_manager_model.h"
 #include "chrome/browser/certificate_viewer.h"
-#include "chrome/browser/gtk/certificate_dialogs.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
+#include "chrome/browser/ui/gtk/certificate_dialogs.h"
 #include "grit/generated_resources.h"
 #include "net/base/crypto_module.h"
 #include "net/base/x509_certificate.h"

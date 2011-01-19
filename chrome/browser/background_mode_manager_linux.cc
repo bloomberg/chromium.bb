@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,8 @@
 #include "base/task.h"
 #include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "grit/generated_resources.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,13 @@
 #include <gtk/gtk.h>
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
-#include "chrome/browser/gtk/browser_window_gtk.h"
-#include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/view_id_util.h"
+#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/common/automation_messages.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"

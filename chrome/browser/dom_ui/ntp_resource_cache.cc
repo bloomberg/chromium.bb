@@ -47,7 +47,7 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #elif defined(OS_POSIX)
-#include "chrome/browser/gtk/bookmark_bar_gtk.h"
+#include "chrome/browser/ui/gtk/bookmark_bar_gtk.h"
 #endif
 
 using base::Time;

@@ -15,7 +15,7 @@
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #if defined(TOOLKIT_GTK)
-#include "chrome/browser/gtk/html_dialog_gtk.h"
+#include "chrome/browser/ui/gtk/html_dialog_gtk.h"
 #endif  // defined(TOOLKIT_GTK)
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"

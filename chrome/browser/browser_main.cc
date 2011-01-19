@@ -19,13 +19,13 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "base/threading/platform_thread.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -33,7 +33,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_main_win.h"
-#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -55,6 +54,7 @@
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/net/websocket_experiment/websocket_experiment_runner.h"
 #include "chrome/browser/plugin_service.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
@@ -110,7 +110,7 @@
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <dbus/dbus-glib.h>
 #include "chrome/browser/browser_main_gtk.h"
-#include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -124,9 +124,9 @@
 // progress and should not be taken as an indication of a real refactoring.
 
 #if defined(OS_WIN)
-#include <windows.h>
 #include <commctrl.h>
 #include <shellapi.h>
+#include <windows.h>
 
 #include "app/l10n_util_win.h"
 #include "app/win/scoped_com_initializer.h"

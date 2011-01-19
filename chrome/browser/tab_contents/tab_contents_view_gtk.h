@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,9 @@
 
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/gtk/focus_store_gtk.h"
-#include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/ui/gtk/focus_store_gtk.h"
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
