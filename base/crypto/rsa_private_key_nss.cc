@@ -223,9 +223,13 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfoWithParams(
   SECItem der_private_key_info;
   der_private_key_info.data = const_cast<unsigned char*>(&input.front());
   der_private_key_info.len = input.size();
-  SECStatus rv =  PK11_ImportDERPrivateKeyInfoAndReturnKey(slot,
-      &der_private_key_info, NULL, NULL, permanent, sensitive,
-      KU_DIGITAL_SIGNATURE, &result->key_, NULL);
+  // Allow the private key to be used for key unwrapping, data decryption,
+  // and signature generation.
+  const unsigned int key_usage = KU_KEY_ENCIPHERMENT | KU_DATA_ENCIPHERMENT |
+                                 KU_DIGITAL_SIGNATURE;
+  SECStatus rv =  PK11_ImportDERPrivateKeyInfoAndReturnKey(
+      slot, &der_private_key_info, NULL, NULL, permanent, sensitive,
+      key_usage, &result->key_, NULL);
   PK11_FreeSlot(slot);
   if (rv != SECSuccess) {
     NOTREACHED();
