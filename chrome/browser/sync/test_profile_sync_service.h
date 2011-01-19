@@ -65,8 +65,6 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
   SyncBackendHostForProfileSyncTest(
       TestProfileSyncService* service,
       Profile* profile,
-      const FilePath& profile_path,
-      const DataTypeController::TypeMap& data_type_controllers,
       Task* initial_condition_setup_task,
       int num_expected_resumes,
       int num_expected_pauses,
@@ -93,10 +91,13 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
     }
   }
 
-  virtual void ConfigureDataTypes(const syncable::ModelTypeSet& types,
+  virtual void ConfigureDataTypes(
+      const DataTypeController::TypeMap& data_type_controllers,
+      const syncable::ModelTypeSet& types,
       CancelableTask* ready_task) {
     SetAutofillMigrationState(syncable::MIGRATED);
-    SyncBackendHost::ConfigureDataTypes(types, ready_task);
+    SyncBackendHost::ConfigureDataTypes(
+        data_type_controllers, types, ready_task);
   }
 
   // Called when a nudge comes in.
@@ -164,9 +165,7 @@ class TestProfileSyncService : public ProfileSyncService {
                          const std::string& test_user,
                          bool synchronous_backend_initialization,
                          Task* initial_condition_setup_task)
-      : ProfileSyncService(factory, profile,
-                           !test_user.empty() ?
-                           test_user : ""),
+      : ProfileSyncService(factory, profile, test_user),
         synchronous_backend_initialization_(
             synchronous_backend_initialization),
         synchronous_sync_configuration_(false),
@@ -178,16 +177,6 @@ class TestProfileSyncService : public ProfileSyncService {
     SetSyncSetupCompleted();
   }
   virtual ~TestProfileSyncService() { }
-
-  virtual void CreateBackend() {
-    backend_.reset(new browser_sync::SyncBackendHostForProfileSyncTest(
-        this, profile(),
-        profile()->GetPath(), data_type_controllers(),
-        initial_condition_setup_task_.release(),
-        num_expected_resumes_, num_expected_pauses_,
-        set_initial_sync_ended_on_init_,
-        synchronous_backend_initialization_));
-  }
 
   virtual void OnBackendInitialized() {
     ProfileSyncService::OnBackendInitialized();
@@ -221,6 +210,9 @@ class TestProfileSyncService : public ProfileSyncService {
   }
 
   browser_sync::TestIdFactory* id_factory() { return &id_factory_; }
+
+ protected:
+  virtual void CreateBackend();
 
  private:
   // When testing under ChromiumOS, this method must not return an empty

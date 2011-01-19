@@ -46,14 +46,9 @@ ACTION(QuitUIMessageLoop) {
   MessageLoop::current()->Quit();
 }
 
-ACTION_P(InvokeTask, task) {
-  if (task)
-    task->Run();
-}
-
 class TestModelAssociatorHelper {
  public:
-  TestModelAssociatorHelper(browser_sync::TestIdFactory* id_factory)
+  explicit TestModelAssociatorHelper(browser_sync::TestIdFactory* id_factory)
       : id_factory_(id_factory) {
   }
 

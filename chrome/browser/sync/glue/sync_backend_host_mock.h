@@ -16,18 +16,14 @@
 
 namespace browser_sync {
 
-ACTION(InvokeTask) {
-  arg1->Run();
-  delete arg1;
-}
-
 class SyncBackendHostMock : public SyncBackendHost {
  public:
   SyncBackendHostMock();
   virtual ~SyncBackendHostMock();
 
-  MOCK_METHOD2(ConfigureDataTypes,
-               void(const std::set<syncable::ModelType>&, CancelableTask*));
+  MOCK_METHOD3(ConfigureDataTypes,
+               void(const DataTypeController::TypeMap&,
+                    const std::set<syncable::ModelType>&, CancelableTask*));
   MOCK_METHOD0(RequestPause, bool());
   MOCK_METHOD0(RequestResume, bool());
   MOCK_METHOD0(StartSyncingWithServer, void());

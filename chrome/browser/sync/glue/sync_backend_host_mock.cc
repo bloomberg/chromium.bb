@@ -6,6 +6,11 @@
 
 namespace browser_sync {
 
+ACTION(InvokeTask) {
+  arg2->Run();
+  delete arg2;
+}
+
 SyncBackendHostMock::SyncBackendHostMock() {
   // By default, the RequestPause and RequestResume methods will
   // send the confirmation notification and return true.
@@ -17,7 +22,7 @@ SyncBackendHostMock::SyncBackendHostMock() {
                                    testing::Return(true)));
 
   // By default, invoke the ready callback.
-  ON_CALL(*this, ConfigureDataTypes(testing::_, testing::_)).
+  ON_CALL(*this, ConfigureDataTypes(testing::_, testing::_, testing::_)).
       WillByDefault(InvokeTask());
 }
 

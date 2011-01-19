@@ -15,7 +15,6 @@
 #include "chrome/browser/sync/glue/password_change_processor.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
-#include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -38,7 +37,6 @@ using base::Time;
 using browser_sync::PasswordChangeProcessor;
 using browser_sync::PasswordDataTypeController;
 using browser_sync::PasswordModelAssociator;
-using browser_sync::SyncBackendHostMock;
 using browser_sync::TestIdFactory;
 using browser_sync::UnrecoverableErrorHandler;
 using sync_api::SyncManager;
@@ -101,6 +99,38 @@ class MockPasswordStore : public PasswordStore {
       bool(std::vector<PasswordForm*>*));
 };
 
+class PasswordTestProfileSyncService : public TestProfileSyncService {
+ public:
+  PasswordTestProfileSyncService(ProfileSyncFactory* factory,
+                                 Profile* profile,
+                                 const std::string& test_user,
+                                 bool synchronous_backend_initialization,
+                                 Task* initial_condition_setup_task,
+                                 Task* passphrase_accept_task)
+      : TestProfileSyncService(factory, profile, test_user,
+                               synchronous_backend_initialization,
+                               initial_condition_setup_task),
+        passphrase_accept_task_(passphrase_accept_task) {}
+
+  virtual ~PasswordTestProfileSyncService() {}
+
+  virtual void OnPassphraseRequired(bool for_decryption) {
+    TestProfileSyncService::OnPassphraseRequired(for_decryption);
+    ADD_FAILURE();
+  }
+
+  virtual void OnPassphraseAccepted() {
+    TestProfileSyncService::OnPassphraseAccepted();
+
+    if (passphrase_accept_task_) {
+      passphrase_accept_task_->Run();
+    }
+  }
+
+ private:
+  Task* passphrase_accept_task_;
+};
+
 class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
  protected:
   ProfileSyncServicePasswordTest()
@@ -114,15 +144,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     notification_service_ = new ThreadNotificationService(&db_thread_);
     notification_service_->Init();
     registrar_.Add(&observer_,
-        NotificationType::SYNC_PASSPHRASE_ACCEPTED,
-        NotificationService::AllSources());
-    registrar_.Add(&observer_,
         NotificationType::SYNC_CONFIGURE_DONE,
-        NotificationService::AllSources());
-
-    // We shouldn't ever get this. Gmock will complain if we do.
-    registrar_.Add(&observer_,
-        NotificationType::SYNC_PASSPHRASE_REQUIRED,
         NotificationService::AllSources());
   }
 
@@ -141,8 +163,8 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
                         int num_resume_expectations,
                         int num_pause_expectations) {
     if (!service_.get()) {
-      service_.reset(new TestProfileSyncService(&factory_, &profile_,
-                                                "test_user", false, root_task));
+      service_.reset(new PasswordTestProfileSyncService(
+          &factory_, &profile_, "test_user", false, root_task, node_task));
       service_->RegisterPreferences();
       profile_.GetPrefs()->SetBoolean(prefs::kSyncPasswords, true);
       service_->set_num_expected_resumes(num_resume_expectations);
@@ -178,13 +200,6 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
       service_->Initialize();
       MessageLoop::current()->Run();
 
-
-      EXPECT_CALL(
-          observer_,
-          Observe(
-              NotificationType(NotificationType::SYNC_PASSPHRASE_ACCEPTED),
-              _,_)).
-          WillOnce(InvokeTask(node_task));
       EXPECT_CALL(
           observer_,
           Observe(

@@ -404,12 +404,6 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
     return;
   }
 
-  // TODO(chron): Reimplement invalidate XMPP login / Sync login
-  //              command line switches. Perhaps make it a command
-  //              line in the TokenService itself to pass an arbitrary
-  //              token.
-
-
   syncable::ModelTypeSet types;
   // If sync setup hasn't finished, we don't want to initialize routing info
   // for any data types so that we don't download updates for types that the
@@ -429,9 +423,7 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
 }
 
 void ProfileSyncService::CreateBackend() {
-  backend_.reset(
-      new SyncBackendHost(this, profile_, profile_->GetPath(),
-                          data_type_controllers_));
+  backend_.reset(new SyncBackendHost(this, profile_));
 }
 
 void ProfileSyncService::StartUp() {
@@ -447,13 +439,6 @@ void ProfileSyncService::StartUp() {
       profile_->GetPrefs()->GetInt64(prefs::kSyncLastSyncedTime));
 
   CreateBackend();
-
-  registrar_.Add(this,
-                 NotificationType::SYNC_PASSPHRASE_REQUIRED,
-                 Source<SyncBackendHost>(backend_.get()));
-  registrar_.Add(this,
-                 NotificationType::SYNC_PASSPHRASE_ACCEPTED,
-                 Source<SyncBackendHost>(backend_.get()));
 
   // Initialize the backend.  Every time we start up a new SyncBackendHost,
   // we'll want to start from a fresh SyncDB, so delete any old one that might
@@ -482,13 +467,6 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   scoped_ptr<SyncBackendHost> doomed_backend(backend_.release());
   if (doomed_backend.get()) {
     doomed_backend->Shutdown(sync_disabled);
-
-    registrar_.Remove(this,
-                   NotificationType::SYNC_PASSPHRASE_REQUIRED,
-                   Source<SyncBackendHost>(doomed_backend.get()));
-    registrar_.Remove(this,
-                   NotificationType::SYNC_PASSPHRASE_ACCEPTED,
-                   Source<SyncBackendHost>(doomed_backend.get()));
 
     doomed_backend.reset();
   }
@@ -519,7 +497,7 @@ void ProfileSyncService::DisableForUser() {
     signin_->SignOut();
   }
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  NotifyObservers();
 }
 
 bool ProfileSyncService::HasSyncSetupCompleted() const {
@@ -543,6 +521,10 @@ void ProfileSyncService::UpdateLastSyncedTime() {
   profile_->GetPrefs()->SetInt64(prefs::kSyncLastSyncedTime,
       last_synced_time_.ToInternalValue());
   profile_->GetPrefs()->ScheduleSavePersistentPrefs();
+}
+
+void ProfileSyncService::NotifyObservers() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
 
 // static
@@ -591,7 +573,7 @@ void ProfileSyncService::OnUnrecoverableError(
   // Tell the wizard so it can inform the user only if it is already open.
   wizard_.Step(SyncSetupWizard::FATAL_ERROR);
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  NotifyObservers();
   LOG(ERROR) << "Unrecoverable error detected -- ProfileSyncService unusable."
       << message;
   std::string location;
@@ -613,7 +595,7 @@ void ProfileSyncService::OnBackendInitialized() {
   if (last_synced_time_.is_null()) {
     UpdateLastSyncedTime();
   }
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  NotifyObservers();
 
   if (!cros_user_.empty()) {
     if (profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart)) {
@@ -630,7 +612,7 @@ void ProfileSyncService::OnBackendInitialized() {
 
 void ProfileSyncService::OnSyncCycleCompleted() {
   UpdateLastSyncedTime();
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  NotifyObservers();
 }
 
 void ProfileSyncService::UpdateAuthErrorState(
@@ -654,7 +636,7 @@ void ProfileSyncService::UpdateAuthErrorState(
 
   is_auth_in_progress_ = false;
   // Fan the notification out to interested UI-thread components.
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  NotifyObservers();
 }
 
 void ProfileSyncService::OnAuthError() {
@@ -674,7 +656,7 @@ void ProfileSyncService::OnClearServerDataTimeout() {
   if (clear_server_data_state_ != CLEAR_SUCCEEDED &&
       clear_server_data_state_ != CLEAR_FAILED) {
     clear_server_data_state_ = CLEAR_FAILED;
-    FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+    NotifyObservers();
   }
 }
 
@@ -687,7 +669,7 @@ void ProfileSyncService::OnClearServerDataFailed() {
   if (clear_server_data_state_ != CLEAR_SUCCEEDED &&
       clear_server_data_state_ != CLEAR_FAILED) {
     clear_server_data_state_ = CLEAR_FAILED;
-    FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+    NotifyObservers();
   }
 }
 
@@ -698,8 +680,44 @@ void ProfileSyncService::OnClearServerDataSucceeded() {
   // we want UI to update itself and no longer allow the user to press "clear"
   if (clear_server_data_state_ != CLEAR_SUCCEEDED) {
     clear_server_data_state_ = CLEAR_SUCCEEDED;
-    FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+    NotifyObservers();
   }
+}
+
+void ProfileSyncService::OnPassphraseRequired(bool for_decryption) {
+  DCHECK(backend_.get());
+  DCHECK(backend_->IsNigoriEnabled());
+  observed_passphrase_required_ = true;
+  passphrase_required_for_decryption_ = for_decryption;
+
+  if (!cached_passphrase_.value.empty()) {
+    SetPassphrase(cached_passphrase_.value,
+                  cached_passphrase_.is_explicit,
+                  cached_passphrase_.is_creation);
+    cached_passphrase_ = CachedPassphrase();
+    return;
+  }
+
+  if (WizardIsVisible()) {
+    wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
+  }
+
+  NotifyObservers();
+}
+
+void ProfileSyncService::OnPassphraseAccepted() {
+  // Make sure the data types that depend on the passphrase are started at
+  // this time.
+  syncable::ModelTypeSet types;
+  GetPreferredDataTypes(&types);
+  data_type_manager_->Configure(types);
+
+  NotifyObservers();
+  observed_passphrase_required_ = false;
+  tried_setting_explicit_passphrase_ = false;
+  tried_creating_explicit_passphrase_ = false;
+
+  wizard_.Step(SyncSetupWizard::DONE);
 }
 
 void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
@@ -723,7 +741,7 @@ void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
   wizard_.SetParent(parent_window);
   wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  NotifyObservers();
 }
 
 void ProfileSyncService::ShowErrorUI(gfx::NativeWindow parent_window) {
@@ -843,7 +861,7 @@ void ProfileSyncService::OnUserSubmittedAuth(
     const std::string& captcha, const std::string& access_code) {
   last_attempted_user_email_ = username;
   is_auth_in_progress_ = true;
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  NotifyObservers();
 
   auth_start_time_ = base::TimeTicks::Now();
 
@@ -908,7 +926,7 @@ void ProfileSyncService::OnUserCancelledDialog() {
   // good if invalid creds were provided, but it's an edge case and the user
   // can of course get themselves out of it.
   is_auth_in_progress_ = false;
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  NotifyObservers();
 }
 
 void ProfileSyncService::ChangePreferredDataTypes(
@@ -1055,7 +1073,7 @@ void ProfileSyncService::Observe(NotificationType type,
                                  const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::SYNC_CONFIGURE_START: {
-      FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+      NotifyObservers();
       // TODO(sync): Maybe toast?
       break;
     }
@@ -1083,29 +1101,8 @@ void ProfileSyncService::Observe(NotificationType type,
       // TODO(sync): Less wizard, more toast.
       if (!observed_passphrase_required_)
         wizard_.Step(SyncSetupWizard::DONE);
-      FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+      NotifyObservers();
 
-      break;
-    }
-    case NotificationType::SYNC_PASSPHRASE_REQUIRED: {
-      DCHECK(backend_.get());
-      DCHECK(backend_->IsNigoriEnabled());
-      observed_passphrase_required_ = true;
-      passphrase_required_for_decryption_ = *(Details<bool>(details).ptr());
-
-      if (!cached_passphrase_.value.empty()) {
-        SetPassphrase(cached_passphrase_.value,
-                      cached_passphrase_.is_explicit,
-                      cached_passphrase_.is_creation);
-        cached_passphrase_ = CachedPassphrase();
-        break;
-      }
-
-      if (WizardIsVisible()) {
-        wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
-      }
-
-      FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
       break;
     }
     case NotificationType::SYNC_DATA_TYPES_UPDATED: {
@@ -1116,25 +1113,10 @@ void ProfileSyncService::Observe(NotificationType type,
       OnUserChoseDatatypes(false, types);
       break;
     }
-    case NotificationType::SYNC_PASSPHRASE_ACCEPTED: {
-      // Make sure the data types that depend on the passphrase are started at
-      // this time.
-      syncable::ModelTypeSet types;
-      GetPreferredDataTypes(&types);
-      data_type_manager_->Configure(types);
-
-      FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
-      observed_passphrase_required_ = false;
-      tried_setting_explicit_passphrase_ = false;
-      tried_creating_explicit_passphrase_ = false;
-
-      wizard_.Step(SyncSetupWizard::DONE);
-      break;
-    }
     case NotificationType::PREF_CHANGED: {
       std::string* pref_name = Details<std::string>(details).ptr();
       if (*pref_name == prefs::kSyncManaged) {
-        FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+        NotifyObservers();
         if (*pref_sync_managed_) {
           DisableForUser();
         } else if (HasSyncSetupCompleted() && AreCredentialsAvailable()) {

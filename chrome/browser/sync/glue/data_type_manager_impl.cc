@@ -160,6 +160,7 @@ void DataTypeManagerImpl::Restart() {
   // The task will be invoked when updates are downloaded.
   state_ = DOWNLOAD_PENDING;
   backend_->ConfigureDataTypes(
+      controllers_,
       last_requested_types_,
       method_factory_.NewRunnableMethod(&DataTypeManagerImpl::DownloadReady));
 

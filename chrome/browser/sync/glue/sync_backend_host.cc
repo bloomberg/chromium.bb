@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/compiler_specific.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/task.h"
@@ -50,21 +51,16 @@ namespace browser_sync {
 using sessions::SyncSessionSnapshot;
 using sync_api::SyncCredentials;
 
-SyncBackendHost::SyncBackendHost(
-    SyncFrontend* frontend,
-    Profile* profile,
-    const FilePath& profile_path,
-    const DataTypeController::TypeMap& data_type_controllers)
-    : core_thread_("Chrome_SyncCoreThread"),
+SyncBackendHost::SyncBackendHost(SyncFrontend* frontend, Profile* profile)
+    : core_(new Core(ALLOW_THIS_IN_INITIALIZER_LIST(this))),
+      core_thread_("Chrome_SyncCoreThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(profile),
       frontend_(frontend),
-      sync_data_folder_path_(profile_path.Append(kSyncDataFolderName)),
-      data_type_controllers_(data_type_controllers),
+      sync_data_folder_path_(
+          profile_->GetPath().Append(kSyncDataFolderName)),
       last_auth_error_(AuthError::None()),
       syncapi_initialized_(false) {
-
-  core_ = new Core(this);
 }
 
 SyncBackendHost::SyncBackendHost()
@@ -322,8 +318,10 @@ void SyncBackendHost::ConfigureAutofillMigration() {
   }
 }
 
-void SyncBackendHost::ConfigureDataTypes(const syncable::ModelTypeSet& types,
-                                         CancelableTask* ready_task) {
+void SyncBackendHost::ConfigureDataTypes(
+    const DataTypeController::TypeMap& data_type_controllers,
+    const syncable::ModelTypeSet& types,
+    CancelableTask* ready_task) {
   // Only one configure is allowed at a time.
   DCHECK(!configure_ready_task_.get());
   DCHECK(syncapi_initialized_);
@@ -337,8 +335,8 @@ void SyncBackendHost::ConfigureDataTypes(const syncable::ModelTypeSet& types,
   {
     AutoLock lock(registrar_lock_);
     for (DataTypeController::TypeMap::const_iterator it =
-             data_type_controllers_.begin();
-         it != data_type_controllers_.end(); ++it) {
+             data_type_controllers.begin();
+         it != data_type_controllers.end(); ++it) {
       syncable::ModelType type = (*it).first;
 
       // If a type is not specified, remove it from the routing_info.
@@ -459,21 +457,23 @@ void SyncBackendHost::Core::NotifyResumed() {
 }
 
 void SyncBackendHost::Core::NotifyPassphraseRequired(bool for_decryption) {
-  NotificationService::current()->Notify(
-      NotificationType::SYNC_PASSPHRASE_REQUIRED,
-      Source<SyncBackendHost>(host_),
-      Details<bool>(&for_decryption));
+  if (!host_ || !host_->frontend_)
+    return;
+
+  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
+
+  host_->frontend_->OnPassphraseRequired(for_decryption);
 }
 
 void SyncBackendHost::Core::NotifyPassphraseAccepted(
     const std::string& bootstrap_token) {
-  if (!host_)
+  if (!host_ || !host_->frontend_)
     return;
+
+  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
+
   host_->PersistEncryptionBootstrapToken(bootstrap_token);
-  NotificationService::current()->Notify(
-      NotificationType::SYNC_PASSPHRASE_ACCEPTED,
-      Source<SyncBackendHost>(host_),
-      NotificationService::NoDetails());
+  host_->frontend_->OnPassphraseAccepted();
 }
 
 void SyncBackendHost::Core::NotifyUpdatedToken(const std::string& token) {

@@ -185,6 +185,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnClearServerDataFailed();
   virtual void OnClearServerDataTimeout();
   virtual void OnClearServerDataSucceeded();
+  virtual void OnPassphraseRequired(bool for_decryption);
+  virtual void OnPassphraseAccepted();
 
   // Called when a user enters credentials through UI.
   virtual void OnUserSubmittedAuth(const std::string& username,
@@ -469,6 +471,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Sets the last synced time to the current time.
   void UpdateLastSyncedTime();
+
+  void NotifyObservers();
 
   static const char* GetPrefNameForDataType(syncable::ModelType data_type);
 
