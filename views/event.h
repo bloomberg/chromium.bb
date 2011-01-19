@@ -442,7 +442,7 @@ class DropTargetEvent : public LocatedEvent {
   // Data associated with the drag/drop session.
   const OSExchangeData& GetData() const { return data_; }
 
-  // Bitmask of supported DragDropTypes::DragOperation by the source.
+  // Bitmask of supported ui::DragDropTypes::DragOperation by the source.
   int GetSourceOperations() const { return source_operations_; }
 
  private:

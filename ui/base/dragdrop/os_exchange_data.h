@@ -17,10 +17,10 @@
 #include <gtk/gtk.h>
 #endif
 
-#include "app/download_file_interface.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
+#include "ui/base/dragdrop/download_file_interface.h"
 
 class GURL;
 class Pickle;

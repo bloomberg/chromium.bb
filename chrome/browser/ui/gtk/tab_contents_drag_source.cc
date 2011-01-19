@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/gtk_dnd_util.h"
 #include "base/file_util.h"
 #include "base/mime_util.h"
 #include "base/utf_string_conversions.h"
@@ -21,6 +20,7 @@
 #include "gfx/gtk_util.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
+#include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "webkit/glue/webdropdata.h"
 
 using WebKit::WebDragOperation;
@@ -82,22 +82,22 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   int targets_mask = 0;
 
   if (!drop_data.plain_text.empty())
-    targets_mask |= gtk_dnd_util::TEXT_PLAIN;
+    targets_mask |= ui::TEXT_PLAIN;
   if (drop_data.url.is_valid()) {
-    targets_mask |= gtk_dnd_util::TEXT_URI_LIST;
-    targets_mask |= gtk_dnd_util::CHROME_NAMED_URL;
-    targets_mask |= gtk_dnd_util::NETSCAPE_URL;
+    targets_mask |= ui::TEXT_URI_LIST;
+    targets_mask |= ui::CHROME_NAMED_URL;
+    targets_mask |= ui::NETSCAPE_URL;
   }
   if (!drop_data.text_html.empty())
-    targets_mask |= gtk_dnd_util::TEXT_HTML;
+    targets_mask |= ui::TEXT_HTML;
   if (!drop_data.file_contents.empty())
-    targets_mask |= gtk_dnd_util::CHROME_WEBDROP_FILE_CONTENTS;
+    targets_mask |= ui::CHROME_WEBDROP_FILE_CONTENTS;
   if (!drop_data.download_metadata.empty() &&
       drag_download_util::ParseDownloadMetadata(drop_data.download_metadata,
                                                 &wide_download_mime_type_,
                                                 &download_file_name_,
                                                 &download_url_)) {
-    targets_mask |= gtk_dnd_util::DIRECT_SAVE_FILE;
+    targets_mask |= ui::DIRECT_SAVE_FILE;
   }
 
   // NOTE: Begin a drag even if no targets present. Otherwise, things like
@@ -111,12 +111,12 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
     drag_pixbuf_ = gfx::GdkPixbufFromSkBitmap(&image);
   image_offset_ = image_offset;
 
-  GtkTargetList* list = gtk_dnd_util::GetTargetListFromCodeMask(targets_mask);
-  if (targets_mask & gtk_dnd_util::CHROME_WEBDROP_FILE_CONTENTS) {
+  GtkTargetList* list = ui::GetTargetListFromCodeMask(targets_mask);
+  if (targets_mask & ui::CHROME_WEBDROP_FILE_CONTENTS) {
     drag_file_mime_type_ = gdk_atom_intern(
         mime_util::GetDataMimeType(drop_data.file_contents).c_str(), FALSE);
     gtk_target_list_add(list, drag_file_mime_type_,
-                        0, gtk_dnd_util::CHROME_WEBDROP_FILE_CONTENTS);
+                        0, ui::CHROME_WEBDROP_FILE_CONTENTS);
   }
 
   drag_failed_ = false;
@@ -173,35 +173,34 @@ void TabContentsDragSource::OnDragDataGet(GtkWidget* sender,
   const int kBitsPerByte = 8;
 
   switch (target_type) {
-    case gtk_dnd_util::TEXT_PLAIN: {
+    case ui::TEXT_PLAIN: {
       std::string utf8_text = UTF16ToUTF8(drop_data_->plain_text);
       gtk_selection_data_set_text(selection_data, utf8_text.c_str(),
                                   utf8_text.length());
       break;
     }
 
-    case gtk_dnd_util::TEXT_HTML: {
+    case ui::TEXT_HTML: {
       // TODO(estade): change relative links to be absolute using
       // |html_base_url|.
       std::string utf8_text = UTF16ToUTF8(drop_data_->text_html);
       gtk_selection_data_set(selection_data,
-                             gtk_dnd_util::GetAtomForTarget(
-                                 gtk_dnd_util::TEXT_HTML),
+                             ui::GetAtomForTarget(ui::TEXT_HTML),
                              kBitsPerByte,
                              reinterpret_cast<const guchar*>(utf8_text.c_str()),
                              utf8_text.length());
       break;
     }
 
-    case gtk_dnd_util::TEXT_URI_LIST:
-    case gtk_dnd_util::CHROME_NAMED_URL:
-    case gtk_dnd_util::NETSCAPE_URL: {
-      gtk_dnd_util::WriteURLWithName(selection_data, drop_data_->url,
-                                   drop_data_->url_title, target_type);
+    case ui::TEXT_URI_LIST:
+    case ui::CHROME_NAMED_URL:
+    case ui::NETSCAPE_URL: {
+      ui::WriteURLWithName(selection_data, drop_data_->url,
+                           drop_data_->url_title, target_type);
       break;
     }
 
-    case gtk_dnd_util::CHROME_WEBDROP_FILE_CONTENTS: {
+    case ui::CHROME_WEBDROP_FILE_CONTENTS: {
       gtk_selection_data_set(
           selection_data,
           drag_file_mime_type_, kBitsPerByte,
@@ -210,7 +209,7 @@ void TabContentsDragSource::OnDragDataGet(GtkWidget* sender,
       break;
     }
 
-    case gtk_dnd_util::DIRECT_SAVE_FILE: {
+    case ui::DIRECT_SAVE_FILE: {
       char status_code = 'E';
 
       // Retrieves the full file path (in file URL format) provided by the
@@ -219,10 +218,8 @@ void TabContentsDragSource::OnDragDataGet(GtkWidget* sender,
       gint file_url_len = 0;
       guchar* file_url_value = NULL;
       if (gdk_property_get(context->source_window,
-                           gtk_dnd_util::GetAtomForTarget(
-                              gtk_dnd_util::DIRECT_SAVE_FILE),
-                           gtk_dnd_util::GetAtomForTarget(
-                              gtk_dnd_util::TEXT_PLAIN_NO_CHARSET),
+                           ui::GetAtomForTarget(ui::DIRECT_SAVE_FILE),
+                           ui::GetAtomForTarget(ui::TEXT_PLAIN_NO_CHARSET),
                            0,
                            1024,
                            FALSE,
@@ -309,10 +306,8 @@ void TabContentsDragSource::OnDragBegin(GtkWidget* sender,
     // Pass the file name to the drop target by setting the source window's
     // XdndDirectSave0 property.
     gdk_property_change(drag_context->source_window,
-                        gtk_dnd_util::GetAtomForTarget(
-                            gtk_dnd_util::DIRECT_SAVE_FILE),
-                        gtk_dnd_util::GetAtomForTarget(
-                            gtk_dnd_util::TEXT_PLAIN_NO_CHARSET),
+                        ui::GetAtomForTarget(ui::DIRECT_SAVE_FILE),
+                        ui::GetAtomForTarget(ui::TEXT_PLAIN_NO_CHARSET),
                         8,
                         GDK_PROP_MODE_REPLACE,
                         reinterpret_cast<const guchar*>(
@@ -349,8 +344,7 @@ void TabContentsDragSource::OnDragEnd(GtkWidget* sender,
 
   if (!download_url_.is_empty()) {
     gdk_property_delete(drag_context->source_window,
-                        gtk_dnd_util::GetAtomForTarget(
-                            gtk_dnd_util::DIRECT_SAVE_FILE));
+                        ui::GetAtomForTarget(ui::DIRECT_SAVE_FILE));
   }
 
   if (!drag_failed_) {

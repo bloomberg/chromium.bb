@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -23,6 +22,7 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "webkit/glue/window_open_disposition.h"
 
 namespace {
@@ -178,10 +178,10 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
 
     gtk_drag_source_set(menu_item, GDK_BUTTON1_MASK, NULL, 0,
         static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_LINK));
-    int target_mask = gtk_dnd_util::CHROME_BOOKMARK_ITEM;
+    int target_mask = ui::CHROME_BOOKMARK_ITEM;
     if (node->is_url())
-      target_mask |= gtk_dnd_util::TEXT_URI_LIST | gtk_dnd_util::NETSCAPE_URL;
-    gtk_dnd_util::SetSourceTargetListFromCodeMask(menu_item, target_mask);
+      target_mask |= ui::TEXT_URI_LIST | ui::NETSCAPE_URL;
+    ui::SetSourceTargetListFromCodeMask(menu_item, target_mask);
     signals_.Connect(menu_item, "drag-begin",
                      G_CALLBACK(OnMenuItemDragBeginThunk), this);
     signals_.Connect(menu_item, "drag-end",

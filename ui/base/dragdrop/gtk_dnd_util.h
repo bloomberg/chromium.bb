@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GTK_DND_UTIL_H_
-#define APP_GTK_DND_UTIL_H_
+#ifndef UI_BASE_DRAGDROP_GTK_DND_UTIL_H_
+#define UI_BASE_DRAGDROP_GTK_DND_UTIL_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -14,7 +14,7 @@
 
 class GURL;
 
-namespace gtk_dnd_util {
+namespace ui {
 
 // Registry of all internal int codes for drag and drop.
 enum {
@@ -83,6 +83,6 @@ bool ExtractNetscapeURL(GtkSelectionData* selection_data,
                         GURL* url,
                         string16* title);
 
-}  // namespace gtk_dnd_util
+}  // namespace ui
 
-#endif  // APP_GTK_DND_UTIL_H_
+#endif  // UI_BASE_DRAGDROP_GTK_DND_UTIL_H_

@@ -634,7 +634,7 @@ int BrowserActionsContainer::OnDragUpdated(
   if (GetViewForPoint(event.location()) == chevron_) {
     if (show_menu_task_factory_.empty() && !overflow_menu_)
       StartShowFolderDropMenuTimer();
-    return DragDropTypes::DRAG_MOVE;
+    return ui::DragDropTypes::DRAG_MOVE;
   }
   StopShowFolderDropMenuTimer();
 
@@ -684,7 +684,7 @@ int BrowserActionsContainer::OnDragUpdated(
   SetDropIndicator(width_before_icons + (before_icon * IconWidth(true)) -
       (kItemSpacing / 2));
 
-  return DragDropTypes::DRAG_MOVE;
+  return ui::DragDropTypes::DRAG_MOVE;
 }
 
 void BrowserActionsContainer::OnDragExited() {
@@ -697,7 +697,7 @@ int BrowserActionsContainer::OnPerformDrop(
     const views::DropTargetEvent& event) {
   BrowserActionDragData data;
   if (!data.Read(event.GetData()))
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
 
   // Make sure we have the same view as we started with.
   DCHECK_EQ(browser_action_views_[data.index()]->button()->extension()->id(),
@@ -732,7 +732,7 @@ int BrowserActionsContainer::OnPerformDrop(
       browser_action_views_[data.index()]->button()->extension(), i);
 
   OnDragExited();  // Perform clean up after dragging.
-  return DragDropTypes::DRAG_MOVE;
+  return ui::DragDropTypes::DRAG_MOVE;
 }
 
 void BrowserActionsContainer::OnThemeChanged() {
@@ -777,7 +777,7 @@ void BrowserActionsContainer::WriteDragData(View* sender,
 
 int BrowserActionsContainer::GetDragOperations(View* sender,
                                                const gfx::Point& p) {
-  return DragDropTypes::DRAG_MOVE;
+  return ui::DragDropTypes::DRAG_MOVE;
 }
 
 bool BrowserActionsContainer::CanStartDrag(View* sender,

@@ -4,7 +4,7 @@
 
 #include "views/widget/drop_helper.h"
 
-#include "app/drag_drop_types.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"
 
@@ -53,11 +53,11 @@ int DropHelper::OnDrop(const OSExchangeData& data,
   View* drop_view = target_view_;
   deepest_view_ = target_view_ = NULL;
   if (!drop_view)
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
 
-  if (drag_operation == DragDropTypes::DRAG_NONE) {
+  if (drag_operation == ui::DragDropTypes::DRAG_NONE) {
     drop_view->OnDragExited();
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
   }
 
   gfx::Point view_location(root_view_location);
@@ -136,7 +136,7 @@ int DropHelper::NotifyDragOver(const OSExchangeData& data,
                                const gfx::Point& root_view_location,
                                int drag_operation) {
   if (!target_view_)
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
 
   gfx::Point target_view_location(root_view_location);
   View::ConvertPointToView(root_view_, target_view_, &target_view_location);

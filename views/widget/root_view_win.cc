@@ -4,9 +4,9 @@
 
 #include "views/widget/root_view.h"
 
-#include "app/drag_drop_types.h"
-#include "app/win/drag_source.h"
 #include "gfx/canvas_skia.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/drag_source.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 
@@ -41,10 +41,10 @@ void RootView::StartDragForViewFromMouseEvent(
     int operation) {
   // NOTE: view may be null.
   drag_view_ = view;
-  scoped_refptr<app::win::DragSource> drag_source(new app::win::DragSource);
+  scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
   DWORD effects;
   DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
-             DragDropTypes::DragOperationToDropEffect(operation), &effects);
+             ui::DragDropTypes::DragOperationToDropEffect(operation), &effects);
   // If the view is removed during the drag operation, drag_view_ is set to
   // NULL.
   if (view && drag_view_ == view) {

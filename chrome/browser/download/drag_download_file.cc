@@ -57,7 +57,7 @@ DragDownloadFile::~DragDownloadFile() {
     download_manager_->RemoveObserver(this);
 }
 
-bool DragDownloadFile::Start(DownloadFileObserver* observer) {
+bool DragDownloadFile::Start(ui::DownloadFileObserver* observer) {
   AssertCurrentlyOnDragThread();
 
   if (is_started_)

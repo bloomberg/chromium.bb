@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
@@ -61,6 +60,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
+#include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "webkit/glue/window_open_disposition.h"
 
 namespace {
@@ -370,10 +370,10 @@ void LocationBarViewGtk::SetSiteTypeDragSource() {
 
   gtk_drag_source_set(site_type_event_box_, GDK_BUTTON1_MASK,
                       NULL, 0, GDK_ACTION_COPY);
-  gtk_dnd_util::SetSourceTargetListFromCodeMask(site_type_event_box_,
-                                                gtk_dnd_util::TEXT_PLAIN |
-                                                gtk_dnd_util::TEXT_URI_LIST |
-                                                gtk_dnd_util::CHROME_NAMED_URL);
+  ui::SetSourceTargetListFromCodeMask(site_type_event_box_,
+                                      ui::TEXT_PLAIN |
+                                      ui::TEXT_URI_LIST |
+                                      ui::CHROME_NAMED_URL);
 }
 
 void LocationBarViewGtk::SetProfile(Profile* profile) {
@@ -1124,7 +1124,7 @@ void LocationBarViewGtk::OnIconDragData(GtkWidget* sender,
   TabContents* tab = GetTabContents();
   if (!tab)
     return;
-  gtk_dnd_util::WriteURLWithName(data, tab->GetURL(), tab->GetTitle(), info);
+  ui::WriteURLWithName(data, tab->GetURL(), tab->GetTitle(), info);
 }
 
 void LocationBarViewGtk::OnIconDragBegin(GtkWidget* sender,

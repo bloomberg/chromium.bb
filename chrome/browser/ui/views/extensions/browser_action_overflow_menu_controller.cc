@@ -145,13 +145,13 @@ int BrowserActionOverflowMenuController::GetDropOperation(
   if ((item->GetCommand() == 0) && (*position == DROP_BEFORE)) {
     BrowserActionDragData drop_data;
     if (!drop_data.Read(event.GetData()))
-      return DragDropTypes::DRAG_NONE;
+      return ui::DragDropTypes::DRAG_NONE;
 
     if (drop_data.index() < owner_->VisibleBrowserActions())
-      return DragDropTypes::DRAG_NONE;
+      return ui::DragDropTypes::DRAG_NONE;
   }
 
-  return DragDropTypes::DRAG_MOVE;
+  return ui::DragDropTypes::DRAG_MOVE;
 }
 
 int BrowserActionOverflowMenuController::OnPerformDrop(
@@ -160,7 +160,7 @@ int BrowserActionOverflowMenuController::OnPerformDrop(
     const views::DropTargetEvent& event) {
   BrowserActionDragData drop_data;
   if (!drop_data.Read(event.GetData()))
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
 
   size_t drop_index;
   ViewForId(menu->GetCommand(), &drop_index);
@@ -175,7 +175,7 @@ int BrowserActionOverflowMenuController::OnPerformDrop(
 
   if (for_drop_)
     delete this;
-  return DragDropTypes::DRAG_MOVE;
+  return ui::DragDropTypes::DRAG_MOVE;
 }
 
 bool BrowserActionOverflowMenuController::CanDrag(views::MenuItemView* menu) {
@@ -194,7 +194,7 @@ void BrowserActionOverflowMenuController::WriteDragData(
 
 int BrowserActionOverflowMenuController::GetDragOperations(
     views::MenuItemView* sender) {
-  return DragDropTypes::DRAG_MOVE;
+  return ui::DragDropTypes::DRAG_MOVE;
 }
 
 BrowserActionView* BrowserActionOverflowMenuController::ViewForId(

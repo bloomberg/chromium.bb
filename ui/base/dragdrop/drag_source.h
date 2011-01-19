@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_WIN_DRAG_SOURCE_H_
-#define APP_WIN_DRAG_SOURCE_H_
+#ifndef UI_BASE_DRAGDROP_DRAG_SOURCE_H_
+#define UI_BASE_DRAGDROP_DRAG_SOURCE_H_
 #pragma once
 
 #include <objidl.h>
@@ -11,8 +11,7 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 
-namespace app {
-namespace win {
+namespace ui {
 
 // A base IDropSource implementation. Handles notifications sent by an active
 // drag-drop operation as the user mouses over other drop targets on their
@@ -52,7 +51,6 @@ class DragSource : public IDropSource,
   DISALLOW_COPY_AND_ASSIGN(DragSource);
 };
 
-}  // namespace win
-}  // namespace app
+}  // namespace ui
 
-#endif  // APP_WIN_DRAG_SOURCE_H_
+#endif  // UI_BASE_DRAGDROP_DRAG_SOURCE_H_

@@ -9,10 +9,10 @@
 #include <initguid.h>
 #include <oleacc.h>
 
-#include "app/drag_drop_types.h"
 #include "base/string_util.h"
 #include "gfx/canvas.h"
 #include "gfx/path.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "views/accessibility/view_accessibility.h"
 #include "views/border.h"
 #include "views/views_delegate.h"

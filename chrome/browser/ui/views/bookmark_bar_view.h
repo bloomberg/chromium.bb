@@ -409,7 +409,7 @@ class BookmarkBarView : public DetachableToolbarView,
   void StartShowFolderDropMenuTimer(const BookmarkNode* node);
 
   // Returns the drop operation and index for the drop based on the event
-  // and data. Returns DragDropTypes::DRAG_NONE if not a valid location.
+  // and data. Returns ui::DragDropTypes::DRAG_NONE if not a valid location.
   int CalculateDropOperation(const views::DropTargetEvent& event,
                              const BookmarkNodeData& data,
                              int* index,

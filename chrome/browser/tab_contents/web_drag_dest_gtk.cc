@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/gtk_dnd_util.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/net_util.h"
+#include "ui/base/dragdrop/gtk_dnd_util.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
@@ -25,8 +25,8 @@ namespace {
 // Returns the bookmark target atom, based on the underlying toolkit.
 //
 // For GTK, bookmark drag data is encoded as pickle and associated with
-// gtk_dnd_util::CHROME_BOOKMARK_ITEM. See
-// bookmark_utils::WriteBookmarksToSelection() for details.
+// ui::CHROME_BOOKMARK_ITEM. See // bookmark_utils::WriteBookmarksToSelection()
+// for details.
 // For Views, bookmark drag data is encoded in the same format, and
 // associated with a custom format. See BookmarkNodeData::Write() for
 // details.
@@ -34,7 +34,7 @@ GdkAtom GetBookmarkTargetAtom() {
 #if defined(TOOLKIT_VIEWS)
   return BookmarkNodeData::GetBookmarkCustomFormat();
 #else
-  return gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_BOOKMARK_ITEM);
+  return ui::GetAtomForTarget(ui::CHROME_BOOKMARK_ITEM);
 #endif
 }
 
@@ -104,11 +104,11 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
     // text/uri-list after text/plain so that the plain text can be cleared if
     // it's a file drag.
     static int supported_targets[] = {
-      gtk_dnd_util::TEXT_PLAIN,
-      gtk_dnd_util::TEXT_URI_LIST,
-      gtk_dnd_util::TEXT_HTML,
-      gtk_dnd_util::NETSCAPE_URL,
-      gtk_dnd_util::CHROME_NAMED_URL,
+      ui::TEXT_PLAIN,
+      ui::TEXT_URI_LIST,
+      ui::TEXT_HTML,
+      ui::NETSCAPE_URL,
+      ui::CHROME_NAMED_URL,
       // TODO(estade): support image drags?
     };
 
@@ -116,7 +116,7 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
     data_requests_ = arraysize(supported_targets) + 1;
     for (size_t i = 0; i < arraysize(supported_targets); ++i) {
       gtk_drag_get_data(widget_, context,
-                        gtk_dnd_util::GetAtomForTarget(supported_targets[i]),
+                        ui::GetAtomForTarget(supported_targets[i]),
                         time);
     }
 
@@ -151,8 +151,7 @@ void WebDragDestGtk::OnDragDataReceived(
   if (data->data && data->length > 0) {
     // If the source can't provide us with valid data for a requested target,
     // data->data will be NULL.
-    if (data->target ==
-        gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::TEXT_PLAIN)) {
+    if (data->target == ui::GetAtomForTarget(ui::TEXT_PLAIN)) {
       guchar* text = gtk_selection_data_get_text(data);
       if (text) {
         drop_data_->plain_text =
@@ -160,8 +159,7 @@ void WebDragDestGtk::OnDragDataReceived(
                                     data->length));
         g_free(text);
       }
-    } else if (data->target ==
-               gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::TEXT_URI_LIST)) {
+    } else if (data->target == ui::GetAtomForTarget(ui::TEXT_URI_LIST)) {
       gchar** uris = gtk_selection_data_get_uris(data);
       if (uris) {
         drop_data_->url = GURL();
@@ -186,15 +184,13 @@ void WebDragDestGtk::OnDragDataReceived(
         }
         g_strfreev(uris);
       }
-    } else if (data->target ==
-               gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::TEXT_HTML)) {
+    } else if (data->target == ui::GetAtomForTarget(ui::TEXT_HTML)) {
       // TODO(estade): Can the html have a non-UTF8 encoding?
       drop_data_->text_html =
           UTF8ToUTF16(std::string(reinterpret_cast<char*>(data->data),
                                   data->length));
       // We leave the base URL empty.
-    } else if (data->target ==
-               gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::NETSCAPE_URL)) {
+    } else if (data->target == ui::GetAtomForTarget(ui::NETSCAPE_URL)) {
       std::string netscape_url(reinterpret_cast<char*>(data->data),
                                data->length);
       size_t split = netscape_url.find_first_of('\n');
@@ -203,10 +199,8 @@ void WebDragDestGtk::OnDragDataReceived(
         if (split < netscape_url.size() - 1)
           drop_data_->url_title = UTF8ToUTF16(netscape_url.substr(split + 1));
       }
-    } else if (data->target ==
-               gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_NAMED_URL)) {
-      gtk_dnd_util::ExtractNamedURL(data,
-                                    &drop_data_->url, &drop_data_->url_title);
+    } else if (data->target == ui::GetAtomForTarget(ui::CHROME_NAMED_URL)) {
+      ui::ExtractNamedURL(data, &drop_data_->url, &drop_data_->url_title);
     }
   }
 
@@ -220,7 +214,7 @@ void WebDragDestGtk::OnDragDataReceived(
       bookmark_drag_data_.ReadFromVector(
           bookmark_utils::GetNodesFromSelection(
               NULL, data,
-              gtk_dnd_util::CHROME_BOOKMARK_ITEM,
+              ui::CHROME_BOOKMARK_ITEM,
               tab_contents_->profile(), NULL, NULL));
       bookmark_drag_data_.SetOriginatingProfile(tab_contents_->profile());
     } else {

@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
 #pragma once
 
-#include "app/win/drag_source.h"
 #include "base/basictypes.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/point.h"
+#include "ui/base/dragdrop/drag_source.h"
 
 class RenderViewHost;
 class TabContents;
@@ -20,7 +20,7 @@ class TabContents;
 // by an active drag-drop operation as the user mouses over other drop targets
 // on their system. This object tells Windows whether or not the drag should
 // continue, and supplies the appropriate cursors.
-class WebDragSource : public app::win::DragSource,
+class WebDragSource : public ui::DragSource,
                       public NotificationObserver {
  public:
   // Create a new DragSource for a given HWND and TabContents.
@@ -35,7 +35,7 @@ class WebDragSource : public app::win::DragSource,
   void set_effect(DWORD effect) { effect_ = effect; }
 
  protected:
-  // app::win::DragSource
+  // ui::DragSource
   virtual void OnDragSourceCancel();
   virtual void OnDragSourceDrop();
   virtual void OnDragSourceMove();

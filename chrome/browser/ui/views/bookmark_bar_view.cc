@@ -674,7 +674,7 @@ int BookmarkBarView::OnPerformDrop(const DropTargetEvent& event) {
     bookmark_drop_menu_->Cancel();
 
   if (!drop_info_.get() || !drop_info_->drag_operation)
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
 
   const BookmarkNode* root =
       drop_info_->is_over_other ? model_->other_node() :
@@ -1134,7 +1134,7 @@ int BookmarkBarView::GetDragOperations(View* sender, const gfx::Point& p) {
     // the new tab page, on the new tab page size_animation_ is always 0). This
     // typically is only hit if the user does something to inadvertanty trigger
     // dnd, such as pressing the mouse and hitting control-b.
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
   }
 
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
@@ -1144,7 +1144,7 @@ int BookmarkBarView::GetDragOperations(View* sender, const gfx::Point& p) {
     }
   }
   NOTREACHED();
-  return DragDropTypes::DRAG_NONE;
+  return ui::DragDropTypes::DRAG_NONE;
 }
 
 bool BookmarkBarView::CanStartDrag(views::View* sender,
@@ -1426,7 +1426,7 @@ int BookmarkBarView::CalculateDropOperation(const DropTargetEvent& event,
       event.y() >= other_bookmarked_button_->y() +
                       other_bookmarked_button_->height()) {
     // Mouse isn't over a button.
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
   }
 
   bool found = false;
@@ -1441,8 +1441,8 @@ int BookmarkBarView::CalculateDropOperation(const DropTargetEvent& event,
     // No bookmarks, accept the drop.
     *index = 0;
     int ops = data.GetFirstNode(profile_)
-        ? DragDropTypes::DRAG_MOVE
-        : DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_LINK;
+        ? ui::DragDropTypes::DRAG_MOVE
+        : ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK;
     return
         bookmark_utils::PreferredDropOperation(event.GetSourceOperations(),
                                                ops);
@@ -1488,14 +1488,14 @@ int BookmarkBarView::CalculateDropOperation(const DropTargetEvent& event,
         // use the last visible index.
         *index = GetFirstHiddenNodeIndex();
       } else {
-        return DragDropTypes::DRAG_NONE;
+        return ui::DragDropTypes::DRAG_NONE;
       }
     } else if (mirrored_x < other_bookmarked_button_->x()) {
       // Mouse is after the last visible button but before more recently
       // bookmarked; use the last visible index.
       *index = GetFirstHiddenNodeIndex();
     } else {
-      return DragDropTypes::DRAG_NONE;
+      return ui::DragDropTypes::DRAG_NONE;
     }
   }
 

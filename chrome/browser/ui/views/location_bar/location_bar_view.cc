@@ -8,7 +8,6 @@
 #include <gtk/gtk.h>
 #endif
 
-#include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
@@ -44,6 +43,7 @@
 #include "gfx/skia_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "views/controls/label.h"
 #include "views/drag_utils.h"
 
@@ -1085,7 +1085,7 @@ AccessibilityTypes::Role LocationBarView::GetAccessibleRole() {
 void LocationBarView::WriteDragData(views::View* sender,
                                     const gfx::Point& press_pt,
                                     OSExchangeData* data) {
-  DCHECK(GetDragOperations(sender, press_pt) != DragDropTypes::DRAG_NONE);
+  DCHECK(GetDragOperations(sender, press_pt) != ui::DragDropTypes::DRAG_NONE);
 
   TabContents* tab_contents = GetTabContentsFromDelegate(delegate_);
   DCHECK(tab_contents);
@@ -1100,8 +1100,8 @@ int LocationBarView::GetDragOperations(views::View* sender,
   TabContents* tab_contents = GetTabContentsFromDelegate(delegate_);
   return (tab_contents && tab_contents->GetURL().is_valid() &&
           !location_entry()->IsEditingOrEmpty()) ?
-      (DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_LINK) :
-      DragDropTypes::DRAG_NONE;
+      (ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK) :
+      ui::DragDropTypes::DRAG_NONE;
 }
 
 bool LocationBarView::CanStartDrag(View* sender,

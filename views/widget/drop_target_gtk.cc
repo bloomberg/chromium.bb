@@ -9,12 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "app/drag_drop_types.h"
-#include "app/gtk_dnd_util.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/point.h"
 #include "net/base/net_util.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_gtk.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
@@ -47,11 +47,9 @@ int CalculateTypes(GList* targets, std::set<GdkAtom>* type_set) {
     type_set->insert(atom);
     if (atom == GDK_TARGET_STRING) {
       types |= OSExchangeData::STRING;
-    } else if (atom == gtk_dnd_util::GetAtomForTarget(
-                   gtk_dnd_util::CHROME_NAMED_URL)) {
+    } else if (atom == ui::GetAtomForTarget(ui::CHROME_NAMED_URL)) {
       types |= OSExchangeData::URL;
-    } else if (atom == gtk_dnd_util::GetAtomForTarget(
-                   gtk_dnd_util::TEXT_URI_LIST)) {
+    } else if (atom == ui::GetAtomForTarget(ui::TEXT_URI_LIST)) {
       // TEXT_URI_LIST is used for files as well as urls.
       types |= OSExchangeData::URL | OSExchangeData::FILE_NAME;
     } else {
@@ -113,16 +111,14 @@ void DropTargetGtk::OnDragDataReceived(GdkDragContext* context,
     if (data->length > 0)
       result = Pickle(reinterpret_cast<char*>(data->data), data->length);
     data_provider().SetPickledData(data->type, result);
-  } else if (data->type == gtk_dnd_util::GetAtomForTarget(
-                 gtk_dnd_util::CHROME_NAMED_URL)) {
+  } else if (data->type == ui::GetAtomForTarget(ui::CHROME_NAMED_URL)) {
     GURL url;
     string16 title;
-    gtk_dnd_util::ExtractNamedURL(data, &url, &title);
+    ui::ExtractNamedURL(data, &url, &title);
     data_provider().SetURL(url, UTF16ToWideHack(title));
-  } else if (data->type == gtk_dnd_util::GetAtomForTarget(
-                 gtk_dnd_util::TEXT_URI_LIST)) {
+  } else if (data->type == ui::GetAtomForTarget(ui::TEXT_URI_LIST)) {
     std::vector<GURL> urls;
-    gtk_dnd_util::ExtractURIList(data, &urls);
+    ui::ExtractURIList(data, &urls);
     if (urls.size() == 1 && urls[0].is_valid()) {
       data_provider().SetURL(urls[0], std::wstring());
 
@@ -143,13 +139,13 @@ void DropTargetGtk::OnDragDataReceived(GdkDragContext* context,
   if (!data_->HasAllFormats(requested_formats_, requested_custom_formats_))
     return;  // Waiting on more data.
 
-  int drag_operation = DragDropTypes::GdkDragActionToDragOperation(
+  int drag_operation = ui::DragDropTypes::GdkDragActionToDragOperation(
       context->actions);
   gfx::Point root_view_location(x, y);
   drag_operation = helper_.OnDragOver(*data_, root_view_location,
                                       drag_operation);
   GdkDragAction gdk_action = static_cast<GdkDragAction>(
-      DragDropTypes::DragOperationToGdkDragAction(drag_operation));
+      ui::DragDropTypes::DragOperationToGdkDragAction(drag_operation));
   if (!received_drop_)
     gdk_drag_status(context, gdk_action, time);
 
@@ -224,14 +220,14 @@ gboolean DropTargetGtk::OnDragMotion(GdkDragContext* context,
     }
   }
 
-  int drag_operation = DragDropTypes::GdkDragActionToDragOperation(
+  int drag_operation = ui::DragDropTypes::GdkDragActionToDragOperation(
       context->actions);
   drag_operation = helper_.OnDragOver(*data_, root_view_location,
                                       drag_operation);
   if (!received_drop_) {
     GdkDragAction gdk_action =
         static_cast<GdkDragAction>(
-            DragDropTypes::DragOperationToGdkDragAction(drag_operation));
+            ui::DragDropTypes::DragOperationToGdkDragAction(drag_operation));
     gdk_drag_status(context, gdk_action, time);
   }
   return TRUE;
@@ -240,13 +236,13 @@ gboolean DropTargetGtk::OnDragMotion(GdkDragContext* context,
 void DropTargetGtk::FinishDrop(GdkDragContext* context,
                                gint x, gint y, guint time) {
   gfx::Point root_view_location(x, y);
-  int drag_operation = DragDropTypes::GdkDragActionToDragOperation(
+  int drag_operation = ui::DragDropTypes::GdkDragActionToDragOperation(
       context->actions);
   drag_operation = helper_.OnDrop(*data_, root_view_location,
                                   drag_operation);
   GdkDragAction gdk_action =
       static_cast<GdkDragAction>(
-          DragDropTypes::DragOperationToGdkDragAction(drag_operation));
+          ui::DragDropTypes::DragOperationToGdkDragAction(drag_operation));
   gtk_drag_finish(context, gdk_action != 0, (gdk_action & GDK_ACTION_MOVE),
                   time);
 
@@ -301,25 +297,20 @@ void DropTargetGtk::RequestFormats(GdkDragContext* context,
   if ((formats & OSExchangeData::URL) != 0 &&
       (requested_formats_ & OSExchangeData::URL) == 0) {
     requested_formats_ |= OSExchangeData::URL;
-    if (known_formats.count(
-            gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_NAMED_URL))) {
+    if (known_formats.count(ui::GetAtomForTarget(ui::CHROME_NAMED_URL))) {
       gtk_drag_get_data(widget, context,
-                        gtk_dnd_util::GetAtomForTarget(
-                            gtk_dnd_util::CHROME_NAMED_URL), time);
+                        ui::GetAtomForTarget(ui::CHROME_NAMED_URL), time);
     } else if (known_formats.count(
-                   gtk_dnd_util::GetAtomForTarget(
-                       gtk_dnd_util::TEXT_URI_LIST))) {
+                   ui::GetAtomForTarget(ui::TEXT_URI_LIST))) {
       gtk_drag_get_data(widget, context,
-                        gtk_dnd_util::GetAtomForTarget(
-                            gtk_dnd_util::TEXT_URI_LIST), time);
+                        ui::GetAtomForTarget(ui::TEXT_URI_LIST), time);
     }
   }
   if (((formats & OSExchangeData::FILE_NAME) != 0) &&
       (requested_formats_ & OSExchangeData::FILE_NAME) == 0) {
     requested_formats_ |= OSExchangeData::FILE_NAME;
     gtk_drag_get_data(widget, context,
-                      gtk_dnd_util::GetAtomForTarget(
-                          gtk_dnd_util::TEXT_URI_LIST), time);
+                      ui::GetAtomForTarget(ui::TEXT_URI_LIST), time);
   }
   for (std::set<GdkAtom>::const_iterator i = custom_formats.begin();
        i != custom_formats.end(); ++i) {

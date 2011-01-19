@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_TAB_CONTENTS_WEB_DROP_TARGET_WIN_H_
 #pragma once
 
-#include "app/win/drop_target.h"
 #include "base/scoped_ptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "ui/base/dragdrop/drop_target.h"
 
 class InterstitialDropTarget;
 class RenderViewHost;
@@ -17,7 +17,7 @@ class TabContents;
 // A helper object that provides drop capabilities to a TabContents. The
 // DropTarget handles drags that enter the region of the TabContents by
 // passing on the events to the renderer.
-class WebDropTarget : public app::win::DropTarget {
+class WebDropTarget : public ui::DropTarget {
  public:
   // Create a new WebDropTarget associating it with the given HWND and
   // TabContents.

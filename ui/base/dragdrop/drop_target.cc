@@ -1,15 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/win/drop_target.h"
+#include "ui/base/dragdrop/drop_target.h"
 
 #include <shlobj.h>
 
 #include "base/logging.h"
 
-namespace app {
-namespace win {
+namespace ui {
 
 IDropTargetHelper* DropTarget::cached_drop_target_helper_ = NULL;
 int32 DropTarget::drag_identity_ = 0;
@@ -170,5 +169,4 @@ DWORD DropTarget::OnDrop(IDataObject* data_object,
   return DROPEFFECT_NONE;
 }
 
-}  // namespace win
-}  // namespace app
+}  // namespace ui

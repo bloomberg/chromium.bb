@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
@@ -23,6 +22,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/animation_container.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "views/controls/image_view.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/window/non_client_view.h"
@@ -349,7 +349,7 @@ void TabStrip::OnDragExited() {
 
 int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
   if (!drop_info_.get())
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
 
   const int drop_index = drop_info_->drop_index;
   const bool drop_before = drop_info_->drop_before;
@@ -360,7 +360,7 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
   GURL url;
   std::wstring title;
   if (!event.GetData().GetURLAndTitle(&url, &title) || !url.is_valid())
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
 
   controller()->PerformDrop(drop_before, drop_index, url);
 
@@ -770,11 +770,11 @@ void TabStrip::SetDropIndex(int tab_data_index, bool drop_before) {
 
 int TabStrip::GetDropEffect(const views::DropTargetEvent& event) {
   const int source_ops = event.GetSourceOperations();
-  if (source_ops & DragDropTypes::DRAG_COPY)
-    return DragDropTypes::DRAG_COPY;
-  if (source_ops & DragDropTypes::DRAG_LINK)
-    return DragDropTypes::DRAG_LINK;
-  return DragDropTypes::DRAG_MOVE;
+  if (source_ops & ui::DragDropTypes::DRAG_COPY)
+    return ui::DragDropTypes::DRAG_COPY;
+  if (source_ops & ui::DragDropTypes::DRAG_LINK)
+    return ui::DragDropTypes::DRAG_LINK;
+  return ui::DragDropTypes::DRAG_MOVE;
 }
 
 // static

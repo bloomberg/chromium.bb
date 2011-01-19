@@ -67,7 +67,7 @@ class MenuScrollButton : public View {
   }
 
   virtual int OnDragUpdated(const DropTargetEvent& event) {
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
   }
 
   virtual void OnDragExited() {
@@ -76,7 +76,7 @@ class MenuScrollButton : public View {
   }
 
   virtual int OnPerformDrop(const DropTargetEvent& event) {
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
   }
 
   virtual void Paint(gfx::Canvas* canvas) {

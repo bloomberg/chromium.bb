@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "app/download_file_interface.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/scoped_ptr.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/download/download_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/file_stream.h"
+#include "ui/base/dragdrop/download_file_interface.h"
 
 template <typename T> struct DefaultSingletonTraits;
 

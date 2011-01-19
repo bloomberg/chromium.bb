@@ -67,7 +67,7 @@
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'sources': [
-            'gtk_dnd_util_unittest.cc',
+            '../ui/base/dragdrop/gtk_dnd_util_unittest.cc',
           ],
           'dependencies': [
             'app_unittest_strings',

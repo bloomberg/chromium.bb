@@ -1,15 +1,17 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
 
-#include "app/gtk_dnd_util.h"
 #include "base/pickle.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/dragdrop/gtk_dnd_util.h"
+
+namespace ui {
 
 TEST(GtkDndUtilTest, ExtractNamedURLValid) {
   const std::string kTitle = "title";
@@ -26,7 +28,7 @@ TEST(GtkDndUtilTest, ExtractNamedURLValid) {
 
   GURL url;
   string16 title;
-  ASSERT_EQ(true, gtk_dnd_util::ExtractNamedURL(&data, &url, &title));
+  ASSERT_EQ(true, ui::ExtractNamedURL(&data, &url, &title));
   EXPECT_EQ(UTF8ToUTF16(kTitle), title);
   EXPECT_EQ(GURL(kUrl), url);
 }
@@ -46,7 +48,7 @@ TEST(GtkDndUtilTest, ExtractNamedURLInvalidURL) {
 
   GURL url;
   string16 title;
-  EXPECT_FALSE(gtk_dnd_util::ExtractNamedURL(&data, &url, &title));
+  EXPECT_FALSE(ui::ExtractNamedURL(&data, &url, &title));
 }
 
 TEST(GtkDndUtilTest, ExtractNamedURLInvalidInput) {
@@ -56,13 +58,13 @@ TEST(GtkDndUtilTest, ExtractNamedURLInvalidInput) {
   data.data = NULL;
   data.length = 0;
 
-  EXPECT_FALSE(gtk_dnd_util::ExtractNamedURL(&data, &url, &title));
+  EXPECT_FALSE(ui::ExtractNamedURL(&data, &url, &title));
 
   guchar empty_data[] = "";
   data.data = empty_data;
   data.length = 0;
 
-  EXPECT_FALSE(gtk_dnd_util::ExtractNamedURL(&data, &url, &title));
+  EXPECT_FALSE(ui::ExtractNamedURL(&data, &url, &title));
 
   const std::string kTitle = "title";
   Pickle pickle;
@@ -73,5 +75,7 @@ TEST(GtkDndUtilTest, ExtractNamedURLInvalidInput) {
   data.data = test_data.get();
   data.length = pickle.size();
 
-  EXPECT_FALSE(gtk_dnd_util::ExtractNamedURL(&data, &url, &title));
+  EXPECT_FALSE(ui::ExtractNamedURL(&data, &url, &title));
 }
+
+}  // namespace ui

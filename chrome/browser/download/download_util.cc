@@ -62,7 +62,7 @@
 
 #if defined(TOOLKIT_USES_GTK)
 #if defined(TOOLKIT_VIEWS)
-#include "app/drag_drop_types.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "views/widget/widget_gtk.h"
 #elif defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/custom_drag.h"
@@ -70,11 +70,11 @@
 #endif  // defined(TOOLKIT_USES_GTK)
 
 #if defined(OS_WIN)
-#include "app/win/drag_source.h"
 #include "app/win/win_util.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "ui/base/dragdrop/drag_source.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #endif
 
@@ -490,7 +490,7 @@ void DragDownload(const DownloadItem* download,
   }
 
 #if defined(OS_WIN)
-  scoped_refptr<app::win::DragSource> drag_source(new app::win::DragSource);
+  scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
 
   // Run the drag and drop loop
   DWORD effects;
@@ -504,7 +504,8 @@ void DragDownload(const DownloadItem* download,
   if (!widget)
     return;
 
-  widget->DoDrag(data, DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_LINK);
+  widget->DoDrag(data,
+                 ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK);
 #endif  // OS_WIN
 }
 #elif defined(USE_X11)

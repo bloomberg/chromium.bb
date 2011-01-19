@@ -1,14 +1,16 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_DRAG_DROP_TYPES_H_
-#define APP_DRAG_DROP_TYPES_H_
+#ifndef UI_BASE_DRAGDROP_DRAG_DROP_TYPES_H_
+#define UI_BASE_DRAGDROP_DRAG_DROP_TYPES_H_
 #pragma once
 
 #include "build/build_config.h"
 
 #include "base/basictypes.h"
+
+namespace ui {
 
 class DragDropTypes {
  public:
@@ -28,4 +30,6 @@ class DragDropTypes {
 #endif
 };
 
-#endif  // APP_DRAG_DROP_TYPES_H_
+}  // namespace ui
+
+#endif  // UI_BASE_DRAGDROP_DRAG_DROP_TYPES_H_

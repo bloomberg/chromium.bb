@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -34,8 +33,9 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
-#include "views/event.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/models/tree_node_iterator.h"
+#include "views/event.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -210,21 +210,21 @@ int PreferredDropOperation(int source_operations, int operations) {
   int common_ops = (source_operations & operations);
   if (!common_ops)
     return 0;
-  if (DragDropTypes::DRAG_COPY & common_ops)
-    return DragDropTypes::DRAG_COPY;
-  if (DragDropTypes::DRAG_LINK & common_ops)
-    return DragDropTypes::DRAG_LINK;
-  if (DragDropTypes::DRAG_MOVE & common_ops)
-    return DragDropTypes::DRAG_MOVE;
-  return DragDropTypes::DRAG_NONE;
+  if (ui::DragDropTypes::DRAG_COPY & common_ops)
+    return ui::DragDropTypes::DRAG_COPY;
+  if (ui::DragDropTypes::DRAG_LINK & common_ops)
+    return ui::DragDropTypes::DRAG_LINK;
+  if (ui::DragDropTypes::DRAG_MOVE & common_ops)
+    return ui::DragDropTypes::DRAG_MOVE;
+  return ui::DragDropTypes::DRAG_NONE;
 }
 
 int BookmarkDragOperation(const BookmarkNode* node) {
   if (node->is_url()) {
-    return DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE |
-           DragDropTypes::DRAG_LINK;
+    return ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE |
+           ui::DragDropTypes::DRAG_LINK;
   }
-  return DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE;
+  return ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE;
 }
 
 int BookmarkDropOperation(Profile* profile,
@@ -234,18 +234,18 @@ int BookmarkDropOperation(Profile* profile,
                           int index) {
   if (data.IsFromProfile(profile) && data.size() > 1)
     // Currently only accept one dragged node at a time.
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
 
   if (!bookmark_utils::IsValidDropLocation(profile, data, parent, index))
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
 
   if (data.GetFirstNode(profile)) {
     // User is dragging from this profile: move.
-    return DragDropTypes::DRAG_MOVE;
+    return ui::DragDropTypes::DRAG_MOVE;
   }
   // User is dragging from another app, copy.
   return PreferredDropOperation(event.GetSourceOperations(),
-      DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_LINK);
+      ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK);
 }
 
 int PerformBookmarkDrop(Profile* profile,
@@ -262,13 +262,13 @@ int PerformBookmarkDrop(Profile* profile,
         model->Move(dragged_nodes[i], parent_node, index);
         index = parent_node->IndexOfChild(dragged_nodes[i]) + 1;
       }
-      return DragDropTypes::DRAG_MOVE;
+      return ui::DragDropTypes::DRAG_MOVE;
     }
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
   }
   // Dropping a group from different profile. Always accept.
   bookmark_utils::CloneBookmarkNode(model, data.elements, parent_node, index);
-  return DragDropTypes::DRAG_COPY;
+  return ui::DragDropTypes::DRAG_COPY;
 }
 
 bool IsValidDropLocation(Profile* profile,
@@ -337,8 +337,8 @@ void DragBookmarks(Profile* profile,
   MessageLoop::current()->SetNestableTasksAllowed(true);
 
   root_view->StartDragForViewFromMouseEvent(NULL, data,
-      DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE |
-      DragDropTypes::DRAG_LINK);
+      ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE |
+      ui::DragDropTypes::DRAG_LINK);
 
   MessageLoop::current()->SetNestableTasksAllowed(was_nested);
 #elif defined(OS_MACOSX)

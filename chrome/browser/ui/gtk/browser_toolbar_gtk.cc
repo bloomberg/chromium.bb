@@ -8,7 +8,6 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
-#include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
@@ -52,6 +51,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/models/accelerator_gtk.h"
 
 namespace {
@@ -421,9 +421,8 @@ void BrowserToolbarGtk::SetUpDragForHomeButton(bool enable) {
   if (enable) {
     gtk_drag_dest_set(home_->widget(), GTK_DEST_DEFAULT_ALL,
                       NULL, 0, GDK_ACTION_COPY);
-    static const int targets[] = { gtk_dnd_util::TEXT_PLAIN,
-                                   gtk_dnd_util::TEXT_URI_LIST, -1 };
-    gtk_dnd_util::SetDestTargetList(home_->widget(), targets);
+    static const int targets[] = { ui::TEXT_PLAIN, ui::TEXT_URI_LIST, -1 };
+    ui::SetDestTargetList(home_->widget(), targets);
 
     drop_handler_.reset(new GtkSignalRegistrar());
     drop_handler_->Connect(home_->widget(), "drag-data-received",
@@ -599,7 +598,7 @@ gboolean BrowserToolbarGtk::OnMenuButtonPressEvent(GtkWidget* button,
 void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
     GdkDragContext* drag_context, gint x, gint y,
     GtkSelectionData* data, guint info, guint time) {
-  if (info != gtk_dnd_util::TEXT_PLAIN) {
+  if (info != ui::TEXT_PLAIN) {
     NOTIMPLEMENTED() << "Only support plain text drops for now, sorry!";
     return;
   }

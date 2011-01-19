@@ -5,23 +5,23 @@
 #ifndef WEBKIT_TOOLS_TEST_SHELL_DRAG_DELEGATE_H__
 #define WEBKIT_TOOLS_TEST_SHELL_DRAG_DELEGATE_H__
 
-#include "app/win/drag_source.h"
+#include "ui/base/dragdrop/drag_source.h"
 
 namespace WebKit {
 class WebView;
 }
 
-// A class that implements app::win::DragSource for the test shell webview
+// A class that implements ui::DragSource for the test shell webview
 // delegate.
-class TestDragDelegate : public app::win::DragSource {
+class TestDragDelegate : public ui::DragSource {
  public:
   TestDragDelegate(HWND source_hwnd, WebKit::WebView* webview)
-      : app::win::DragSource(),
+      : ui::DragSource(),
         source_hwnd_(source_hwnd),
         webview_(webview) { }
 
  protected:
-  // app::win::DragSource
+  // ui::DragSource
   virtual void OnDragSourceCancel();
   virtual void OnDragSourceDrop();
   virtual void OnDragSourceMove();

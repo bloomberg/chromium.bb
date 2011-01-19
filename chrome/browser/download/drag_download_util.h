@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_UTIL_H_
 #pragma once
 
-#include "app/download_file_interface.h"
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/download/drag_download_file.h"
+#include "ui/base/dragdrop/download_file_interface.h"
 
 class FilePath;
 class GURL;
@@ -40,7 +40,7 @@ bool ParseDownloadMetadata(const string16& metadata,
 net::FileStream* CreateFileStreamForDrop(FilePath* file_path);
 
 // Implementation of DownloadFileObserver to finalize the download process.
-class PromiseFileFinalizer : public DownloadFileObserver {
+class PromiseFileFinalizer : public ui::DownloadFileObserver {
  public:
   explicit PromiseFileFinalizer(DragDownloadFile* drag_file_downloader);
   virtual ~PromiseFileFinalizer();

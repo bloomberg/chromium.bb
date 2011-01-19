@@ -1,13 +1,15 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/drag_drop_types.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 
 #include <gtk/gtk.h>
 
+namespace ui {
+
 // static
-int DragDropTypes::DragOperationToGdkDragAction(int drag_operation) {
+int ui::DragDropTypes::DragOperationToGdkDragAction(int drag_operation) {
   int gdk_drag_action = 0;
   if (drag_operation & DRAG_MOVE)
     gdk_drag_action |= GDK_ACTION_MOVE;
@@ -19,7 +21,7 @@ int DragDropTypes::DragOperationToGdkDragAction(int drag_operation) {
 }
 
 // static
-int DragDropTypes::GdkDragActionToDragOperation(int gdk_drag_action) {
+int ui::DragDropTypes::GdkDragActionToDragOperation(int gdk_drag_action) {
   int drag_operation = DRAG_NONE;
   if (gdk_drag_action & GDK_ACTION_COPY)
     drag_operation |= DRAG_COPY;
@@ -29,3 +31,5 @@ int DragDropTypes::GdkDragActionToDragOperation(int gdk_drag_action) {
     drag_operation |= DRAG_LINK;
   return drag_operation;
 }
+
+}  // namespace ui

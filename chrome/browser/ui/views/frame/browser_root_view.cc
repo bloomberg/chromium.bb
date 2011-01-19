@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 
-#include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "grit/chromium_strings.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 
 BrowserRootView::BrowserRootView(BrowserView* browser_view,
@@ -74,7 +74,7 @@ int BrowserRootView::OnDragUpdated(const views::DropTargetEvent& event) {
     forwarding_to_tab_strip_ = false;
     tabstrip()->OnDragExited();
   }
-  return DragDropTypes::DRAG_NONE;
+  return ui::DragDropTypes::DRAG_NONE;
 }
 
 void BrowserRootView::OnDragExited() {
@@ -86,7 +86,7 @@ void BrowserRootView::OnDragExited() {
 
 int BrowserRootView::OnPerformDrop(const views::DropTargetEvent& event) {
   if (!forwarding_to_tab_strip_)
-    return DragDropTypes::DRAG_NONE;
+    return ui::DragDropTypes::DRAG_NONE;
 
   // Extract the URL and create a new ui::OSExchangeData containing the URL. We
   // do this as the TabStrip doesn't know about the autocomplete edit and needs

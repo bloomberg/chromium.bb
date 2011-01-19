@@ -82,7 +82,7 @@ class InterstitialDropTarget {
 };
 
 WebDropTarget::WebDropTarget(HWND source_hwnd, TabContents* tab_contents)
-    : app::win::DropTarget(source_hwnd),
+    : ui::DropTarget(source_hwnd),
       tab_contents_(tab_contents),
       current_rvh_(NULL),
       drag_cursor_(WebDragOperationNone),

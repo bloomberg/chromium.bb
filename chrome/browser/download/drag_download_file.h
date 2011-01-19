@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_FILE_H_
 #pragma once
 
-#include "app/download_file_interface.h"
 #include "base/file_path.h"
 #include "base/linked_ptr.h"
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/dragdrop/download_file_interface.h"
 
 class TabContents;
 
@@ -20,7 +20,7 @@ namespace net {
 class FileStream;
 }
 
-class DragDownloadFile : public DownloadFileProvider,
+class DragDownloadFile : public ui::DownloadFileProvider,
                          public DownloadManager::Observer,
                          public DownloadItem::Observer {
  public:
@@ -43,7 +43,7 @@ class DragDownloadFile : public DownloadFileProvider,
   // DownloadFileProvider methods.
   // Called on drag-and-drop thread (Windows).
   // Called on UI thread (MacOSX).
-  virtual bool Start(DownloadFileObserver* observer);
+  virtual bool Start(ui::DownloadFileObserver* observer);
   virtual void Stop();
 #if defined(OS_WIN)
   virtual IStream* GetStream() { return NULL; }
@@ -96,7 +96,7 @@ class DragDownloadFile : public DownloadFileProvider,
   // Accessed on UI thread (MacOSX).
   bool is_started_;
   bool is_successful_;
-  scoped_refptr<DownloadFileObserver> observer_;
+  scoped_refptr<ui::DownloadFileObserver> observer_;
 
   // Accessed on drag-and-drop thread (Windows only).
 #if defined(OS_WIN)

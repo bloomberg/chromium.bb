@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_WIN_DROP_TARGET_H_
-#define APP_WIN_DROP_TARGET_H_
+#ifndef UI_BASE_DRAGDROP_DROP_TARGET_H_
+#define UI_BASE_DRAGDROP_DROP_TARGET_H_
 #pragma once
 
 #include <objidl.h>
@@ -13,8 +13,7 @@
 // Windows interface.
 struct IDropTargetHelper;
 
-namespace app {
-namespace win {
+namespace ui {
 
 // A DropTarget implementation that takes care of the nitty gritty
 // of dnd. While this class is concrete, subclasses will most likely
@@ -130,7 +129,6 @@ class DropTarget : public IDropTarget {
   DISALLOW_COPY_AND_ASSIGN(DropTarget);
 };
 
-}  // namespace win
-}  // namespace app
+}  // namespace ui
 
-#endif  // APP_WIN_DROP_TARGET_H_
+#endif  // UI_BASE_DRAGDROP_DROP_TARGET_H_

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/gtk/bookmark_utils_gtk.h"
 
-#include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/pickle.h"
@@ -21,6 +20,7 @@
 #include "gfx/canvas_skia_paint.h"
 #include "gfx/font.h"
 #include "gfx/gtk_util.h"
+#include "ui/base/dragdrop/gtk_dnd_util.h"
 
 namespace {
 
@@ -294,11 +294,11 @@ void SetButtonTextColors(GtkWidget* label, GtkThemeProvider* provider) {
 // DnD-related -----------------------------------------------------------------
 
 int GetCodeMask(bool folder) {
-  int rv = gtk_dnd_util::CHROME_BOOKMARK_ITEM;
+  int rv = ui::CHROME_BOOKMARK_ITEM;
   if (!folder) {
-    rv |= gtk_dnd_util::TEXT_URI_LIST |
-          gtk_dnd_util::TEXT_PLAIN |
-          gtk_dnd_util::NETSCAPE_URL;
+    rv |= ui::TEXT_URI_LIST |
+          ui::TEXT_PLAIN |
+          ui::NETSCAPE_URL;
   }
   return rv;
 }
@@ -318,7 +318,7 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
                                guint target_type,
                                Profile* profile) {
   switch (target_type) {
-    case gtk_dnd_util::CHROME_BOOKMARK_ITEM: {
+    case ui::CHROME_BOOKMARK_ITEM: {
       BookmarkNodeData data(nodes);
       Pickle pickle;
       data.WriteToPickle(profile, &pickle);
@@ -329,7 +329,7 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
                              pickle.size());
       break;
     }
-    case gtk_dnd_util::NETSCAPE_URL: {
+    case ui::NETSCAPE_URL: {
       // _NETSCAPE_URL format is URL + \n + title.
       std::string utf8_text = nodes[0]->GetURL().spec() + "\n" +
           UTF16ToUTF8(nodes[0]->GetTitle());
@@ -340,7 +340,7 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
                              utf8_text.length());
       break;
     }
-    case gtk_dnd_util::TEXT_URI_LIST: {
+    case ui::TEXT_URI_LIST: {
       gchar** uris = reinterpret_cast<gchar**>(malloc(sizeof(gchar*) *
                                                (nodes.size() + 1)));
       for (size_t i = 0; i < nodes.size(); ++i) {
@@ -358,7 +358,7 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
       free(uris);
       break;
     }
-    case gtk_dnd_util::TEXT_PLAIN: {
+    case ui::TEXT_PLAIN: {
       gtk_selection_data_set_text(selection_data,
                                   nodes[0]->GetURL().spec().c_str(), -1);
       break;
@@ -386,7 +386,7 @@ std::vector<const BookmarkNode*> GetNodesFromSelection(
       *delete_selection_data = TRUE;
 
     switch (target_type) {
-      case gtk_dnd_util::CHROME_BOOKMARK_ITEM: {
+      case ui::CHROME_BOOKMARK_ITEM: {
         if (dnd_success)
           *dnd_success = TRUE;
         Pickle pickle(reinterpret_cast<char*>(selection_data->data),
@@ -408,7 +408,7 @@ bool CreateNewBookmarkFromNamedUrl(GtkSelectionData* selection_data,
     BookmarkModel* model, const BookmarkNode* parent, int idx) {
   GURL url;
   string16 title;
-  if (!gtk_dnd_util::ExtractNamedURL(selection_data, &url, &title))
+  if (!ui::ExtractNamedURL(selection_data, &url, &title))
     return false;
 
   model->AddURL(parent, idx, title, url);
@@ -418,7 +418,7 @@ bool CreateNewBookmarkFromNamedUrl(GtkSelectionData* selection_data,
 bool CreateNewBookmarksFromURIList(GtkSelectionData* selection_data,
     BookmarkModel* model, const BookmarkNode* parent, int idx) {
   std::vector<GURL> urls;
-  gtk_dnd_util::ExtractURIList(selection_data, &urls);
+  ui::ExtractURIList(selection_data, &urls);
   for (size_t i = 0; i < urls.size(); ++i) {
     std::string title = GetNameForURL(urls[i]);
     model->AddURL(parent, idx++, UTF8ToUTF16(title), urls[i]);
@@ -430,7 +430,7 @@ bool CreateNewBookmarkFromNetscapeURL(GtkSelectionData* selection_data,
     BookmarkModel* model, const BookmarkNode* parent, int idx) {
   GURL url;
   string16 title;
-  if (!gtk_dnd_util::ExtractNetscapeURL(selection_data, &url, &title))
+  if (!ui::ExtractNetscapeURL(selection_data, &url, &title))
     return false;
 
   model->AddURL(parent, idx, title, url);

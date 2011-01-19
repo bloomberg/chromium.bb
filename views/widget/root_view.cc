@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
-#include "app/drag_drop_types.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "gfx/canvas_skia.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/fill_layout.h"
 #include "views/focus/view_storage.h"

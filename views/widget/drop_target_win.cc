@@ -4,8 +4,8 @@
 
 #include "views/widget/drop_target_win.h"
 
-#include "app/drag_drop_types.h"
 #include "gfx/point.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "views/widget/root_view.h"
@@ -17,7 +17,7 @@ using ui::OSExchangeDataProviderWin;
 namespace views {
 
 DropTargetWin::DropTargetWin(RootView* root_view)
-    : app::win::DropTarget(root_view->GetWidget()->GetNativeView()),
+    : ui::DropTarget(root_view->GetWidget()->GetNativeView()),
       helper_(root_view) {
 }
 
@@ -37,8 +37,8 @@ DWORD DropTargetWin::OnDragOver(IDataObject* data_object,
   OSExchangeData data(new OSExchangeDataProviderWin(data_object));
   int drop_operation =
       helper_.OnDragOver(data, root_view_location,
-                         DragDropTypes::DropEffectToDragOperation(effect));
-  return DragDropTypes::DragOperationToDropEffect(drop_operation);
+                         ui::DragDropTypes::DropEffectToDragOperation(effect));
+  return ui::DragDropTypes::DragOperationToDropEffect(drop_operation);
 }
 
 void DropTargetWin::OnDragLeave(IDataObject* data_object) {
@@ -53,11 +53,11 @@ DWORD DropTargetWin::OnDrop(IDataObject* data_object,
   View::ConvertPointToView(NULL, helper_.root_view(), &root_view_location);
 
   OSExchangeData data(new OSExchangeDataProviderWin(data_object));
-  int drop_operation = DragDropTypes::DropEffectToDragOperation(effect);
+  int drop_operation = ui::DragDropTypes::DropEffectToDragOperation(effect);
   drop_operation = helper_.OnDragOver(data, root_view_location,
                                       drop_operation);
   drop_operation = helper_.OnDrop(data, root_view_location, drop_operation);
-  return DragDropTypes::DragOperationToDropEffect(drop_operation);
+  return ui::DragDropTypes::DragOperationToDropEffect(drop_operation);
 }
 
 }  // namespace views

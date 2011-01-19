@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "app/gtk_dnd_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
@@ -46,6 +45,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/dragdrop/gtk_dnd_util.h"
 
 namespace {
 
@@ -76,11 +76,11 @@ const int kOtherBookmarksPaddingHorizontal = 2;
 const int kOtherBookmarksPaddingVertical = 1;
 
 // The targets accepted by the toolbar and folder buttons for DnD.
-const int kDestTargetList[] = { gtk_dnd_util::CHROME_BOOKMARK_ITEM,
-                                gtk_dnd_util::CHROME_NAMED_URL,
-                                gtk_dnd_util::TEXT_URI_LIST,
-                                gtk_dnd_util::NETSCAPE_URL,
-                                gtk_dnd_util::TEXT_PLAIN, -1 };
+const int kDestTargetList[] = { ui::CHROME_BOOKMARK_ITEM,
+                                ui::CHROME_NAMED_URL,
+                                ui::TEXT_URI_LIST,
+                                ui::NETSCAPE_URL,
+                                ui::TEXT_PLAIN, -1 };
 
 // Acceptable drag actions for the bookmark bar drag destinations.
 const GdkDragAction kDragAction =
@@ -212,7 +212,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
   gtk_drag_dest_set(instructions_,
       GtkDestDefaults(GTK_DEST_DEFAULT_DROP | GTK_DEST_DEFAULT_MOTION),
       NULL, 0, kDragAction);
-  gtk_dnd_util::SetDestTargetList(instructions_, kDestTargetList);
+  ui::SetDestTargetList(instructions_, kDestTargetList);
   g_signal_connect(instructions_, "drag-data-received",
                    G_CALLBACK(&OnDragReceivedThunk), this);
 
@@ -239,7 +239,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
 
   gtk_drag_dest_set(bookmark_toolbar_.get(), GTK_DEST_DEFAULT_DROP,
                     NULL, 0, kDragAction);
-  gtk_dnd_util::SetDestTargetList(bookmark_toolbar_.get(), kDestTargetList);
+  ui::SetDestTargetList(bookmark_toolbar_.get(), kDestTargetList);
   g_signal_connect(bookmark_toolbar_.get(), "drag-motion",
                    G_CALLBACK(&OnToolbarDragMotionThunk), this);
   g_signal_connect(bookmark_toolbar_.get(), "drag-leave",
@@ -840,7 +840,7 @@ GtkWidget* BookmarkBarGtk::CreateBookmarkButton(const BookmarkNode* node) {
   gtk_drag_source_set(button, GDK_BUTTON1_MASK, NULL, 0,
       static_cast<GdkDragAction>(GDK_ACTION_MOVE | GDK_ACTION_COPY));
   int target_mask = bookmark_utils::GetCodeMask(node->is_folder());
-  gtk_dnd_util::SetSourceTargetListFromCodeMask(button, target_mask);
+  ui::SetSourceTargetListFromCodeMask(button, target_mask);
   g_signal_connect(button, "drag-begin",
                    G_CALLBACK(&OnButtonDragBeginThunk), this);
   g_signal_connect(button, "drag-end",
@@ -889,7 +889,7 @@ void BookmarkBarGtk::ConnectFolderButtonEvents(GtkWidget* widget,
                     NULL,
                     0,
                     kDragAction);
-  gtk_dnd_util::SetDestTargetList(widget, kDestTargetList);
+  ui::SetDestTargetList(widget, kDestTargetList);
   g_signal_connect(widget, "drag-data-received",
                    G_CALLBACK(&OnDragReceivedThunk), this);
   if (is_tool_item) {
@@ -1116,8 +1116,7 @@ gboolean BookmarkBarGtk::ItemDraggedOverToolbar(GdkDragContext* context,
   gtk_toolbar_set_drop_highlight_item(GTK_TOOLBAR(bookmark_toolbar_.get()),
                                       GTK_TOOL_ITEM(toolbar_drop_item_),
                                       index);
-  if (target_type ==
-      gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_BOOKMARK_ITEM)) {
+  if (target_type == ui::GetAtomForTarget(ui::CHROME_BOOKMARK_ITEM)) {
     gdk_drag_status(context, GDK_ACTION_MOVE, time);
   } else {
     gdk_drag_status(context, GDK_ACTION_COPY, time);
@@ -1163,8 +1162,7 @@ gboolean BookmarkBarGtk::OnFolderDragMotion(GtkWidget* button,
 
     // Drag is over middle of folder.
     gtk_drag_highlight(button);
-    if (target_type ==
-        gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_BOOKMARK_ITEM)) {
+    if (target_type == ui::GetAtomForTarget(ui::CHROME_BOOKMARK_ITEM)) {
       gdk_drag_status(context, GDK_ACTION_MOVE, time);
     } else {
       gdk_drag_status(context, GDK_ACTION_COPY, time);
@@ -1237,7 +1235,7 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
   }
 
   switch (target_type) {
-    case gtk_dnd_util::CHROME_BOOKMARK_ITEM: {
+    case ui::CHROME_BOOKMARK_ITEM: {
       std::vector<const BookmarkNode*> nodes =
           bookmark_utils::GetNodesFromSelection(context, selection_data,
                                                 target_type,
@@ -1253,25 +1251,25 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
       break;
     }
 
-    case gtk_dnd_util::CHROME_NAMED_URL: {
+    case ui::CHROME_NAMED_URL: {
       dnd_success = bookmark_utils::CreateNewBookmarkFromNamedUrl(
           selection_data, model_, dest_node, index);
       break;
     }
 
-    case gtk_dnd_util::TEXT_URI_LIST: {
+    case ui::TEXT_URI_LIST: {
       dnd_success = bookmark_utils::CreateNewBookmarksFromURIList(
           selection_data, model_, dest_node, index);
       break;
     }
 
-    case gtk_dnd_util::NETSCAPE_URL: {
+    case ui::NETSCAPE_URL: {
       dnd_success = bookmark_utils::CreateNewBookmarkFromNetscapeURL(
           selection_data, model_, dest_node, index);
       break;
     }
 
-    case gtk_dnd_util::TEXT_PLAIN: {
+    case ui::TEXT_PLAIN: {
       guchar* text = gtk_selection_data_get_text(selection_data);
       if (!text)
         break;

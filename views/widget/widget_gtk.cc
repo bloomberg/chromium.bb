@@ -11,12 +11,12 @@
 #include <set>
 #include <vector>
 
-#include "app/drag_drop_types.h"
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/path.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_gtk.h"
 #include "views/widget/default_theme_provider.h"
@@ -359,7 +359,7 @@ void WidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
       window_contents_,
       targets,
       static_cast<GdkDragAction>(
-          DragDropTypes::DragOperationToGdkDragAction(operation)),
+          ui::DragDropTypes::DragOperationToGdkDragAction(operation)),
       1,
       current_event);
 

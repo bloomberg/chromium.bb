@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/gtk_dnd_util.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
@@ -34,6 +33,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/dragdrop/gtk_dnd_util.h"
 
 namespace {
 
@@ -738,11 +738,11 @@ void TabStripGtk::Init() {
                     NULL, 0,
                     static_cast<GdkDragAction>(
                         GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK));
-  static const int targets[] = { gtk_dnd_util::TEXT_URI_LIST,
-                                 gtk_dnd_util::NETSCAPE_URL,
-                                 gtk_dnd_util::TEXT_PLAIN,
+  static const int targets[] = { ui::TEXT_URI_LIST,
+                                 ui::NETSCAPE_URL,
+                                 ui::TEXT_PLAIN,
                                  -1 };
-  gtk_dnd_util::SetDestTargetList(tabstrip_.get(), targets);
+  ui::SetDestTargetList(tabstrip_.get(), targets);
 
   g_signal_connect(tabstrip_.get(), "expose-event",
                    G_CALLBACK(OnExposeThunk), this);
@@ -1976,10 +1976,10 @@ gboolean TabStripGtk::OnDragDataReceived(GtkWidget* widget,
                                          guint info, guint time) {
   bool success = false;
 
-  if (info == gtk_dnd_util::TEXT_URI_LIST ||
-      info == gtk_dnd_util::NETSCAPE_URL ||
-      info == gtk_dnd_util::TEXT_PLAIN) {
-    success = CompleteDrop(data->data, info == gtk_dnd_util::TEXT_PLAIN);
+  if (info == ui::TEXT_URI_LIST ||
+      info == ui::NETSCAPE_URL ||
+      info == ui::TEXT_PLAIN) {
+    success = CompleteDrop(data->data, info == ui::TEXT_PLAIN);
   }
 
   gtk_drag_finish(context, success, success, time);

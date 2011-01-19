@@ -9,13 +9,13 @@
 #include <iostream>
 #endif
 
-#include "app/drag_drop_types.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/path.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "views/background.h"
 #include "views/layout_manager.h"
 #include "views/views_delegate.h"
@@ -497,7 +497,7 @@ bool View::ProcessMousePressed(const MouseEvent& e, DragInfo* drag_info) {
   if (!enabled)
     return result;
 
-  if (drag_operations != DragDropTypes::DRAG_NONE) {
+  if (drag_operations != ui::DragDropTypes::DRAG_NONE) {
     drag_info->PossibleDrag(e.location());
     return true;
   }
@@ -606,7 +606,7 @@ void View::RemoveAllChildViews(bool delete_views) {
 
 void View::DoDrag(const MouseEvent& e, const gfx::Point& press_pt) {
   int drag_operations = GetDragOperations(press_pt);
-  if (drag_operations == DragDropTypes::DRAG_NONE)
+  if (drag_operations == ui::DragDropTypes::DRAG_NONE)
     return;
 
   OSExchangeData data;
@@ -1143,7 +1143,7 @@ void View::UnregisterAccelerators(bool leave_data_intact) {
 int View::GetDragOperations(const gfx::Point& press_pt) {
   return drag_controller_ ?
       drag_controller_->GetDragOperations(this, press_pt) :
-      DragDropTypes::DRAG_NONE;
+      ui::DragDropTypes::DRAG_NONE;
 }
 
 void View::WriteDragData(const gfx::Point& press_pt, OSExchangeData* data) {
@@ -1391,14 +1391,14 @@ void View::OnDragEntered(const DropTargetEvent& event) {
 }
 
 int View::OnDragUpdated(const DropTargetEvent& event) {
-  return DragDropTypes::DRAG_NONE;
+  return ui::DragDropTypes::DRAG_NONE;
 }
 
 void View::OnDragExited() {
 }
 
 int View::OnPerformDrop(const DropTargetEvent& event) {
-  return DragDropTypes::DRAG_NONE;
+  return ui::DragDropTypes::DRAG_NONE;
 }
 
 // static

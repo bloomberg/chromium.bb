@@ -617,7 +617,7 @@ int MenuController::OnDragUpdated(SubmenuView* source,
       over_empty_menu = true;
   }
   MenuDelegate::DropPosition drop_position = MenuDelegate::DROP_NONE;
-  int drop_operation = DragDropTypes::DRAG_NONE;
+  int drop_operation = ui::DragDropTypes::DRAG_NONE;
   if (menu_item) {
     gfx::Point menu_item_loc(event.location());
     View::ConvertPointToView(source, menu_item, &menu_item_loc);
@@ -645,7 +645,7 @@ int MenuController::OnDragUpdated(SubmenuView* source,
                  SELECTION_DEFAULT);
 
     if (drop_position == MenuDelegate::DROP_NONE ||
-        drop_operation == DragDropTypes::DRAG_NONE)
+        drop_operation == ui::DragDropTypes::DRAG_NONE)
       menu_item = NULL;
   } else {
     SetSelection(source->GetMenuItem(), SELECTION_OPEN_SUBMENU);

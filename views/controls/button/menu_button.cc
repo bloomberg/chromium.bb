@@ -4,13 +4,13 @@
 
 #include "views/controls/button/menu_button.h"
 
-#include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
 #include "grit/app_strings.h"
 #include "grit/app_resources.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "views/controls/button/button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/event.h"
@@ -193,7 +193,7 @@ bool MenuButton::OnMousePressed(const MouseEvent& e) {
     // If we're draggable (GetDragOperations returns a non-zero value), then
     // don't pop on press, instead wait for release.
     if (e.IsOnlyLeftMouseButton() && HitTest(e.location()) &&
-        GetDragOperations(e.location()) == DragDropTypes::DRAG_NONE) {
+        GetDragOperations(e.location()) == ui::DragDropTypes::DRAG_NONE) {
       TimeDelta delta = Time::Now() - menu_closed_time_;
       int64 delta_in_milliseconds = delta.InMilliseconds();
       if (delta_in_milliseconds > kMinimumTimeBetweenButtonClicks) {
@@ -210,7 +210,7 @@ void MenuButton::OnMouseReleased(const MouseEvent& e,
   // !IsTriggerableEvent it could lead to a situation where we end up showing
   // the menu and context menu (this would happen if the right button is not
   // triggerable and there's a context menu).
-  if (GetDragOperations(e.location()) != DragDropTypes::DRAG_NONE &&
+  if (GetDragOperations(e.location()) != ui::DragDropTypes::DRAG_NONE &&
       state() != BS_DISABLED && !canceled && !InDrag() &&
       e.IsOnlyLeftMouseButton() && HitTest(e.location())) {
     Activate();

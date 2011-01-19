@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gtk_dnd_util.h"
+#include "ui/base/dragdrop/gtk_dnd_util.h"
 
 #include <string>
 
@@ -13,41 +13,40 @@
 
 static const int kBitsPerByte = 8;
 
+namespace ui {
+
 namespace {
 
 void AddTargetToList(GtkTargetList* targets, int target_code) {
   switch (target_code) {
-    case gtk_dnd_util::TEXT_PLAIN:
-      gtk_target_list_add_text_targets(targets, gtk_dnd_util::TEXT_PLAIN);
+    case ui::TEXT_PLAIN:
+      gtk_target_list_add_text_targets(targets, ui::TEXT_PLAIN);
       break;
 
-    case gtk_dnd_util::TEXT_URI_LIST:
-      gtk_target_list_add_uri_targets(targets, gtk_dnd_util::TEXT_URI_LIST);
+    case ui::TEXT_URI_LIST:
+      gtk_target_list_add_uri_targets(targets, ui::TEXT_URI_LIST);
       break;
 
-    case gtk_dnd_util::TEXT_HTML:
+    case ui::TEXT_HTML:
       gtk_target_list_add(
-          targets, gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::TEXT_HTML),
-          0, gtk_dnd_util::TEXT_HTML);
+          targets, ui::GetAtomForTarget(ui::TEXT_HTML), 0, ui::TEXT_HTML);
       break;
 
-    case gtk_dnd_util::NETSCAPE_URL:
+    case ui::NETSCAPE_URL:
       gtk_target_list_add(targets,
-          gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::NETSCAPE_URL),
-          0, gtk_dnd_util::NETSCAPE_URL);
+          ui::GetAtomForTarget(ui::NETSCAPE_URL), 0, ui::NETSCAPE_URL);
       break;
 
-    case gtk_dnd_util::CHROME_TAB:
-    case gtk_dnd_util::CHROME_BOOKMARK_ITEM:
-    case gtk_dnd_util::CHROME_NAMED_URL:
-      gtk_target_list_add(targets, gtk_dnd_util::GetAtomForTarget(target_code),
+    case ui::CHROME_TAB:
+    case ui::CHROME_BOOKMARK_ITEM:
+    case ui::CHROME_NAMED_URL:
+      gtk_target_list_add(targets, ui::GetAtomForTarget(target_code),
                           GTK_TARGET_SAME_APP, target_code);
       break;
 
-    case gtk_dnd_util::DIRECT_SAVE_FILE:
+    case ui::DIRECT_SAVE_FILE:
       gtk_target_list_add(targets,
-          gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::DIRECT_SAVE_FILE),
-          0, gtk_dnd_util::DIRECT_SAVE_FILE);
+          ui::GetAtomForTarget(ui::DIRECT_SAVE_FILE), 0, ui::DIRECT_SAVE_FILE);
       break;
 
     default:
@@ -56,8 +55,6 @@ void AddTargetToList(GtkTargetList* targets, int target_code) {
 }
 
 }  // namespace
-
-namespace gtk_dnd_util {
 
 GdkAtom GetAtomForTarget(int target) {
   switch (target) {
@@ -174,7 +171,7 @@ void WriteURLWithName(GtkSelectionData* selection_data,
       pickle.WriteString(url.spec());
       gtk_selection_data_set(
           selection_data,
-          GetAtomForTarget(gtk_dnd_util::CHROME_NAMED_URL),
+          GetAtomForTarget(ui::CHROME_NAMED_URL),
           kBitsPerByte,
           reinterpret_cast<const guchar*>(pickle.data()),
           pickle.size());
@@ -260,4 +257,4 @@ bool ExtractNetscapeURL(GtkSelectionData* selection_data,
   return true;
 }
 
-}  // namespace gtk_dnd_util
+}  // namespace ui

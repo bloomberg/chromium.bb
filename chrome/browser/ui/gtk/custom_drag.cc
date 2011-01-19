@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/gtk/custom_drag.h"
 
-#include "app/gtk_dnd_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/ui/gtk/bookmark_utils_gtk.h"
@@ -12,11 +11,11 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/dragdrop/gtk_dnd_util.h"
 
 namespace {
 
-const int kDownloadItemCodeMask = gtk_dnd_util::TEXT_URI_LIST |
-                                  gtk_dnd_util::CHROME_NAMED_URL;
+const int kDownloadItemCodeMask = ui::TEXT_URI_LIST | ui::CHROME_NAMED_URL;
 const GdkDragAction kDownloadItemDragAction = GDK_ACTION_COPY;
 const GdkDragAction kBookmarkDragAction =
     static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE);
@@ -25,7 +24,7 @@ void OnDragDataGetForDownloadItem(GtkSelectionData* selection_data,
                                   guint target_type,
                                   const DownloadItem* download_item) {
   GURL url = net::FilePathToFileURL(download_item->full_path());
-  gtk_dnd_util::WriteURLWithName(selection_data, url,
+  ui::WriteURLWithName(selection_data, url,
       UTF8ToUTF16(download_item->GetFileNameToReportUser().value()),
       target_type);
 }
@@ -51,7 +50,7 @@ CustomDrag::CustomDrag(SkBitmap* icon, int code_mask, GdkDragAction action)
   g_signal_connect(drag_widget_, "drag-end",
                    G_CALLBACK(OnDragEndThunk), this);
 
-  GtkTargetList* list = gtk_dnd_util::GetTargetListFromCodeMask(code_mask);
+  GtkTargetList* list = ui::GetTargetListFromCodeMask(code_mask);
   GdkEvent* event = gtk_get_current_event();
   gtk_drag_begin(drag_widget_, list, action, 1, event);
   if (event)
@@ -98,7 +97,7 @@ void DownloadItemDrag::SetSource(GtkWidget* widget,
                                  SkBitmap* icon) {
   gtk_drag_source_set(widget, GDK_BUTTON1_MASK, NULL, 0,
                       kDownloadItemDragAction);
-  gtk_dnd_util::SetSourceTargetListFromCodeMask(widget, kDownloadItemCodeMask);
+  ui::SetSourceTargetListFromCodeMask(widget, kDownloadItemCodeMask);
 
   // Disconnect previous signal handlers, if any.
   g_signal_handlers_disconnect_by_func(
