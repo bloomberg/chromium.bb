@@ -97,6 +97,9 @@ class PluginList {
   // Same as above, but specifies a directory in which to search for plugins.
   void AddExtraPluginDir(const FilePath& plugin_dir);
 
+  // Get the ordered list of directories from which to load plugins
+  void GetPluginDirectories(std::vector<FilePath>* plugin_dirs);
+
   // Register an internal plugin with the specified plugin information and
   // function pointers.  An internal plugin must be registered before it can
   // be loaded using PluginList::LoadPlugin().
@@ -282,9 +285,6 @@ class PluginList {
 
   // Do any initialization.
   void PlatformInit();
-
-  // Get the ordered list of directories from which to load plugins
-  void GetPluginDirectories(std::vector<FilePath>* plugin_dirs);
 
   //
   // Command-line switches

@@ -56,6 +56,29 @@ static void NotifyPluginsOfActivation() {
 }
 #endif
 
+static void PurgePluginListCache(bool reload_pages) {
+  for (RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->Send(new ViewMsg_PurgePluginListCache(reload_pages));
+  }
+}
+
+#if defined(OS_LINUX)
+// Delegate class for monitoring directories.
+class PluginDirWatcherDelegate : public FilePathWatcher::Delegate {
+  virtual void OnFilePathChanged(const FilePath& path) {
+    VLOG(1) << "Watched path changed: " << path.value();
+    // Make the plugin list update itself
+    webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+  }
+  virtual void OnError() {
+    // TODO(pastarmovj): Add some sensible error handling. Maybe silently
+    // stopping the watcher would be enough. Or possibly restart it.
+    NOTREACHED();
+  }
+};
+#endif
+
 // static
 bool PluginService::enable_chrome_plugins_ = true;
 
@@ -120,6 +143,9 @@ PluginService::PluginService()
 
   chrome::RegisterInternalGPUPlugin();
 
+  // Start watching for changes in the plugin list. This means watching
+  // for changes in the Windows registry keys and on both Windows and POSIX
+  // watch for changes in the paths that are expected to contain plugins.
 #if defined(OS_WIN)
   hkcu_key_.Create(
       HKEY_CURRENT_USER, webkit::npapi::kRegistryMozillaPlugins, KEY_NOTIFY);
@@ -143,7 +169,36 @@ PluginService::PluginService()
         user_data_dir.Append("Plugins"));
   }
 #endif
+// The FilePathWatcher produces too many false positives on MacOS (access time
+// updates?) which will lead to enforcing updates of the plugins way too often.
+// On ChromeOS the user can't install plugins anyway and on Windows all
+// important plugins register themselves in the registry so no need to do that.
+#if defined(OS_LINUX)
+  file_watcher_delegate_ = new PluginDirWatcherDelegate();
+  // Get the list of all paths for registering the FilePathWatchers
+  // that will track and if needed reload the list of plugins on runtime.
+  std::vector<FilePath> plugin_dirs;
+  webkit::npapi::PluginList::Singleton()->GetPluginDirectories(
+      &plugin_dirs);
 
+  for (size_t i = 0; i < plugin_dirs.size(); ++i) {
+    FilePathWatcher* watcher = new FilePathWatcher();
+    // FilePathWatcher can not handle non-absolute paths under windows.
+    // We don't watch for file changes in windows now but if this should ever
+    // be extended to Windows these lines might save some time of debugging.
+#if defined(OS_WIN)
+    if (!plugin_dirs[i].IsAbsolute())
+      continue;
+#endif
+    VLOG(1) << "Watching for changes in: " << plugin_dirs[i].value();
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableFunction(
+            &PluginService::RegisterFilePathWatcher,
+            watcher, plugin_dirs[i], file_watcher_delegate_));
+    file_watchers_.push_back(watcher);
+  }
+#endif
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
@@ -302,13 +357,6 @@ bool PluginService::GetFirstAllowedPluginInfo(
 #endif
 }
 
-static void PurgePluginListCache(bool reload_pages) {
-  for (RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
-       !it.IsAtEnd(); it.Advance()) {
-    it.GetCurrentValue()->Send(new ViewMsg_PurgePluginListCache(reload_pages));
-  }
-}
-
 void PluginService::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {
 #if defined(OS_WIN)
@@ -320,6 +368,9 @@ void PluginService::OnWaitableEventSignaled(
 
   webkit::npapi::PluginList::Singleton()->RefreshPlugins();
   PurgePluginListCache(true);
+#else
+  // This event should only get signaled on a Windows machine.
+  NOTREACHED();
 #endif  // defined(OS_WIN)
 }
 
@@ -384,7 +435,7 @@ void PluginService::Observe(NotificationType type,
       break;
     }
     default:
-      DCHECK(false);
+      NOTREACHED();
   }
 }
 
@@ -426,3 +477,14 @@ void PluginService::RegisterPepperPlugins() {
     webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
   }
 }
+
+#if defined(OS_LINUX)
+// static
+void PluginService::RegisterFilePathWatcher(
+    FilePathWatcher *watcher,
+    const FilePath& path,
+    FilePathWatcher::Delegate* delegate) {
+  bool result = watcher->Watch(path, delegate);
+  DCHECK(result);
+}
+#endif

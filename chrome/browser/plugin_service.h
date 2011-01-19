@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/hash_tables.h"
+#include "base/scoped_vector.h"
 #include "base/singleton.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "build/build_config.h"
@@ -28,6 +29,10 @@
 #include "base/win/registry.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "chrome/browser/file_path_watcher/file_path_watcher.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 namespace chromeos {
 class PluginSelectionPolicy;
@@ -40,6 +45,7 @@ class Message;
 
 class MessageLoop;
 class Profile;
+class PluginDirWatcherDelegate;
 class ResourceDispatcherHost;
 
 namespace net {
@@ -144,6 +150,14 @@ class PluginService
       const FilePath& plugin_path,
       PluginProcessHost::Client* client);
 
+#if defined(OS_LINUX)
+  // Registers a new FilePathWatcher for a given path.
+  static void RegisterFilePathWatcher(
+      FilePathWatcher* watcher,
+      const FilePath& path,
+      FilePathWatcher::Delegate* delegate);
+#endif
+
   // mapping between plugin path and PluginProcessHost
   typedef base::hash_map<FilePath, PluginProcessHost*> PluginMap;
   PluginMap plugin_hosts_;
@@ -179,6 +193,11 @@ class PluginService
   scoped_ptr<base::WaitableEvent> hklm_event_;
   base::WaitableEventWatcher hkcu_watcher_;
   base::WaitableEventWatcher hklm_watcher_;
+#endif
+
+#if defined(OS_LINUX)
+  ScopedVector<FilePathWatcher> file_watchers_;
+  scoped_refptr<PluginDirWatcherDelegate> file_watcher_delegate_;
 #endif
 
   // Set to true if chrome plugins are enabled. Defaults to true.
