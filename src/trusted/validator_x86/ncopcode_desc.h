@@ -71,9 +71,6 @@ typedef struct NaClOp {
   NaClOpFlags flags;
 } NaClOp;
 
-/* Maximum number of operands in an x86 instruction (implicit and explicit). */
-#define NACL_MAX_NUM_OPERANDS 6
-
 /* Maxmimum number of opcode bytes per instruction. */
 #define NACL_MAX_OPCODE_BYTES 3
 
@@ -113,7 +110,8 @@ typedef struct NaClInst {
   /* The number of operands modeled for this instruction. */
   uint8_t num_operands;
   /* The corresponding models of the operands. */
-  NaClOp operands[NACL_MAX_NUM_OPERANDS];
+  /* NaClOp operands[NACL_MAX_NUM_OPERANDS]; */
+  const NaClOp* operands;
   /* A human readable description of the operands. Used
    * by NaClInstPrint to print out the corresponding description
    * of the operands.

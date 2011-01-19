@@ -139,6 +139,36 @@ static NaClMrmInst* NaClInstMrmTable[NCDTABLESIZE]
 /* Holds encodings of prefix bytes. */
 static const char* NaClPrefixTable[NCDTABLESIZE];
 
+
+/* Define the maximum number of instruction operands (over
+ * all instructions) we will allow.  Note: before compression,
+ * there should a little less than 3000 operands. Hence,
+ * 10000 is a (very) safe value to use as a limit, and should
+ * not need to be changed.
+ */
+#define NACL_MAX_OPERANDS_TOTAL 10000
+
+/* Holds operands for instructions, as they are constructed. */
+static NaClOp NaClOperands[NACL_MAX_OPERANDS_TOTAL];
+
+/* Holds index to the next available operand in NaClOperands.
+ * Once instructions are modeled, defines the number of elements
+ * in NaClOperands.
+ */
+static size_t nacl_operands_size = 0;
+
+/* Holds a compressed version of instruction operands (i.e.
+ * contents of NaClOperands), so that instructions with
+ * common operands share space.
+ */
+static NaClOp NaClOpsCompressed[NACL_MAX_OPERANDS_TOTAL];
+
+/* Holds index to the next available operand in NaClOpsCompressed
+ * while compressing instructions. Once operands are compressed,
+ * defines the number of elements in NaClOpsCompressed.
+ */
+static size_t nacl_ops_compressed_size = 0;
+
 /* Prints out the opcode prefix being defined, the opcode pattern
  * being defined, and the given error message. Then aborts the
  * execution of the program.
@@ -802,9 +832,14 @@ static void NaClApplySanityChecksToOp(int index) {
 static void NaClDefOpInternal(NaClOpKind kind, NaClOpFlags flags) {
   int index;
   assert(NULL != current_inst);
+  if (nacl_operands_size >= NACL_MAX_OPERANDS_TOTAL) {
+    NaClFatal("Out of operand space. "
+              "Increase size of NACL_MAX_OPERANDS_TOTAL!");
+  }
+  nacl_operands_size++;
   index = current_inst->num_operands++;
-  current_inst->operands[index].kind = kind;
-  current_inst->operands[index].flags = flags;
+  ((NaClOp*) current_inst->operands)[index].kind = kind;
+  ((NaClOp*) current_inst->operands)[index].flags = flags;
 }
 
 static void NaClInstallCurrentIntoOpcodeMrm(const NaClInstPrefix prefix,
@@ -991,9 +1026,6 @@ void NaClDefOp(
   int index = current_inst->num_operands;
   DEBUG(NaClLog(LOG_INFO, "  %s:", NaClOpKindName(kind));
         NaClPrintlnOpFlags(NaClLogGetGio(), flags));
-  if (NACL_MAX_NUM_OPERANDS <= index) {
-    NaClFatalOp(index, "NaClOpcode defines too many operands...\n");
-  }
   /* If one of the M_Operands, make sure that the ModRm mod field isn't 0x3,
    * so that we don't return registers.
    * If one specifies an operand that implies the use of a ModRm byte, add
@@ -1052,7 +1084,7 @@ void NaClAddOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
       gprintf(g, "Adding flags:");
       NaClPrintlnOpFlags(g, more_flags));
   if (operand_index <= current_inst->num_operands) {
-    current_inst->operands[operand_index].flags |= more_flags;
+    ((NaClOp*) current_inst->operands)[operand_index].flags |= more_flags;
     NaClApplySanityChecksToOp(operand_index);
   } else {
     NaClFatalOp((int) operand_index, "NaClAddOpFlags: index out of range\n");
@@ -1067,7 +1099,7 @@ void NaClRemoveOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
   DEBUG(NaClLog(LOG_INFO, "Removing flags:");
         NaClPrintlnOpFlags(NaClLogGetGio(), more_flags));
   if (operand_index <= current_inst->num_operands) {
-    current_inst->operands[operand_index].flags &= ~more_flags;
+    ((NaClOp*) current_inst->operands)[operand_index].flags &= ~more_flags;
     NaClApplySanityChecksToOp(operand_index);
   } else {
     NaClFatalOp((int) operand_index, "NaClRemoveOpFlags: index out of range\n");
@@ -1332,7 +1364,6 @@ static void NaClDefInstInternal(
    * the defining of instructions easier, in that the caller doesn't
    * need to specify the prefix to use.
    */
-  int i;
 
   /* Before starting, install an opcode sequence if applicable. */
   if (NULL != current_cand_inst_node) {
@@ -1376,11 +1407,7 @@ static void NaClDefInstInternal(
 
   /* undefine all operands. */
   current_inst->num_operands = 0;
-  for (i = 0; i < NACL_MAX_NUM_OPERANDS; ++i) {
-    NaClDefOpInternal(Unknown_Operand, 0);
-  }
-  /* Now reset number of operands to zero. */
-  current_inst->num_operands = 0;
+  current_inst->operands = NaClOperands + nacl_operands_size;
 
   NaClAddIFlags(flags);
 
@@ -1841,6 +1868,24 @@ static void NaClOpPrintInternal(struct Gio* f, const NaClOp* operand) {
   gprintf(f, " },\n");
 }
 
+/* Converts the (compressed) operand to the corresponding
+ * index in NaClOpsCompressed.
+ */
+size_t NaClOpOffset(const NaClOp* op) {
+  /* Note: This function is innefficient, but doesn't slow things down
+   * enough to worry about. Especially since this only effects the
+   * generator.
+   */
+  size_t i;
+  for (i = 0; i <= nacl_ops_compressed_size; ++i) {
+    if (op == (NaClOpsCompressed + i)) return i;
+  }
+  /* If reached, we have a bug! */
+  NaClFatal("Can't find offset for operand");
+  /* NOT REACHED */
+  return 0;
+}
+
 /* Prints out the given instruction to the given file. If index >= 0,
  * print out a comment, with the value of index, before the printed
  * instruction. Lookahead is used to convert the next_rule pointer into
@@ -1864,12 +1909,8 @@ static void NaClInstPrintInternal(struct Gio* f, Bool as_array_element,
   NaClIFlagsPrintInternal(f, inst->flags);
   gprintf(f, ",\n");
   gprintf(f, "    Inst%s,\n", NaClMnemonicName(inst->name));
-  gprintf(f, "    %u, {\n", inst->num_operands);
-  for (i = 0; i < NACL_MAX_NUM_OPERANDS; ++i) {
-    gprintf(f, "      ");
-    NaClOpPrintInternal(f, inst->operands + i);
-  }
-  gprintf(f, "    },\n");
+  gprintf(f, "    %u, g_Operands + %"NACL_PRIuS",\n",
+          inst->num_operands, NaClOpOffset(inst->operands));
   gprintf(f, "    \"%s\",\n", inst->operands_desc);
   if (index < 0 || NULL == inst->next_rule) {
     gprintf(f, "    NULL\n");
@@ -2021,6 +2062,98 @@ static void NaClPrintInstsInInstTrie(int current_index,
   }
 }
 
+/* Returns true if the given operands are equal. */
+static Bool NaClOpSame(const NaClOp* op1, const NaClOp* op2) {
+  return (op1->kind == op2->kind) && (op1->flags == op2->flags);
+}
+
+/* Compress the operands in the given instruction. */
+static void NaClInstOpCompress(NaClInst* inst) {
+  size_t i;
+  Bool found = FALSE;  /* until proven otherwise */
+  if (NULL == inst) return;
+  if (inst->num_operands <= nacl_ops_compressed_size) {
+    /* Note: Be sure to not overflow compressed array by stopping when
+     * there is no more room for the operands of the given instruction.
+     */
+    for (i = 0; i < nacl_ops_compressed_size - inst->num_operands; ++i) {
+      size_t j;
+      Bool matches = TRUE;  /* until proven otherwise */
+      for (j = 0; j < inst->num_operands; ++j) {
+        if (!NaClOpSame(inst->operands + j, NaClOpsCompressed + i + j)) {
+          matches = FALSE;
+          break;
+        }
+      }
+      if (matches) {
+        /* Operands already in compressed table, use copy. */
+        inst->operands = NaClOpsCompressed + i;
+        found = TRUE;
+        break;
+      }
+    }
+  }
+  if (!found) {
+    /* If reached, not in compressed table. Add. */
+    for (i = 0; i < inst->num_operands; ++i) {
+      ((NaClOp*) NaClOpsCompressed)[nacl_ops_compressed_size + i].kind =
+          inst->operands[i].kind;
+      ((NaClOp*) NaClOpsCompressed)[nacl_ops_compressed_size + i].flags =
+          inst->operands[i].flags;
+    }
+    inst->operands = NaClOpsCompressed + nacl_ops_compressed_size;
+    nacl_ops_compressed_size += inst->num_operands;
+  }
+  NaClInstOpCompress((NaClInst*) inst->next_rule);
+}
+
+/* Compress operands of all instructions reachable from
+ * the given node.
+ */
+static void NaClOpNodeCompress(const NaClInstNode* node) {
+  int i;
+  if (NULL == node) return;
+  NaClInstOpCompress((NaClInst*) node->matching_inst);
+  for (i = 0; i < NACL_NUM_BYTE_VALUES; ++i) {
+    NaClOpNodeCompress(node->succs[i]);
+  }
+}
+
+/* Walks over the modeled instructions and replaces duplicate
+ * operand entries.
+ */
+static void NaClOpCompress() {
+  int i;
+  NaClInstPrefix prefix;
+  fprintf(stderr, "Note: %"NACL_PRIuS" operands before compression, ",
+          nacl_operands_size);
+  /* Compress operand of the undefined instruction. */
+  NaClInstOpCompress(undefined_inst);
+
+  /* Compress all operands of instructions in the instruction opcode tables. */
+  for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
+    for (i = 0; i < NCDTABLESIZE; ++i) {
+      NaClInstOpCompress(NaClInstTable[i][prefix]);
+    }
+  }
+
+  /* Compress all operands of instructions in the instruction trie. */
+  NaClOpNodeCompress(inst_node_root);
+  fprintf(stderr, "%"NACL_PRIuS" after.\n", nacl_ops_compressed_size);
+}
+
+/* Prints out the array of (compressed) operands. */
+static void NaClPrintOperandTable(struct Gio* f) {
+  size_t i;
+  gprintf(f, "static const NaClOp g_Operands[%"NACL_PRIuS"] = {\n",
+          nacl_ops_compressed_size);
+  for (i = 0; i < nacl_ops_compressed_size; ++i) {
+    gprintf(f,"  /* %"NACL_PRIuS" */ ", i);
+    NaClOpPrintInternal(f, NaClOpsCompressed+i);
+  }
+  gprintf(f, "};\n\n");
+}
+
 /* Print out the contents of the defined instructions into the given file. */
 static void NaClPrintDecodeTables(struct Gio* f) {
   int i;
@@ -2038,6 +2171,8 @@ static void NaClPrintDecodeTables(struct Gio* f) {
    */
   int num_opcodes = NaClCountNumberInsts();
   int num_seq_opcodes = NaClCountInstSeqs(inst_node_root);
+
+  NaClPrintOperandTable(f);
 
   gprintf(f,
           "static const NaClInst g_Opcodes[%d] = {\n",
@@ -2277,6 +2412,7 @@ int main(const int argc, const char* argv[]) {
   NaClSimplifyIfApplicable();
   NaClVerifyInstCounts();
   FillInMissingOperandsDescs();
+  NaClOpCompress();
 
   if (new_argc == 1) {
     GioFileRefCtor(&gfile, stdout);
