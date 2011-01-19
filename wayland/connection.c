@@ -61,7 +61,7 @@ struct wl_connection {
 	int fd;
 	void *data;
 	wl_connection_update_func_t update;
-	struct wl_closure closure;
+	struct wl_closure receive_closure, send_closure;
 };
 
 union wl_value {
@@ -362,7 +362,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 		       uint32_t opcode, va_list ap,
 		       const struct wl_message *message)
 {
-	struct wl_closure *closure = &connection->closure;
+	struct wl_closure *closure = &connection->send_closure;
 	struct wl_object **objectp, *object;
 	uint32_t length, *p, *start, size;
 	int dup_fd;
@@ -487,7 +487,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 	int i, count, extra_space;
 	struct wl_object **object;
 	struct wl_array **array;
-	struct wl_closure *closure = &connection->closure;
+	struct wl_closure *closure = &connection->receive_closure;
 
 	count = strlen(message->signature) + 2;
 	if (count > ARRAY_LENGTH(closure->types)) {
