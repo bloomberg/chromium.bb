@@ -5,6 +5,14 @@
 {
   'variables': {
     'chromium_code': 1,
+    # These are defined here because we need to build this library twice. Once
+    # with extra parameter checking. Once with no parameter checking to be 100%
+    # OpenGL ES 2.0 compliant for the conformance tests.
+    'gles2_c_lib_source_files': [
+      'command_buffer/client/gles2_c_lib.h',
+      'command_buffer/client/gles2_c_lib.cc',
+      'command_buffer/client/gles2_c_lib_autogen.h',
+    ],
   },
   'targets': [
     {
@@ -93,9 +101,22 @@
         'gles2_lib',
       ],
       'sources': [
-        'command_buffer/client/gles2_c_lib.h',
-        'command_buffer/client/gles2_c_lib.cc',
-        'command_buffer/client/gles2_c_lib_autogen.h',
+        '<@(gles2_c_lib_source_files)',
+      ],
+    },
+    {
+      # Same as gles2_c_lib except with no parameter checking. Required for
+      # OpenGL ES 2.0 conformance tests.
+      'target_name': 'gles2_c_lib_nocheck',
+      'type': 'static_library',
+      'defines': [
+        'GLES2_CONFORMANCE_TESTS=1',
+      ],
+      'dependencies': [
+        'gles2_lib',
+      ],
+      'sources': [
+        '<@(gles2_c_lib_source_files)',
       ],
     },
     {

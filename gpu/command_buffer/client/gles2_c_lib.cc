@@ -20,7 +20,7 @@
 //
 // If it was up to us we'd just always write to the destination but the OpenGL
 // spec defines the behavior of OpenGL function, not us. :-(
-#if defined(__native_client__)
+#if defined(__native_client__) || defined(GLES2_CONFORMANCE_TESTS)
   #define GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v)
 #elif defined(GPU_DCHECK)
   #define GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(v) GPU_DCHECK(v)
