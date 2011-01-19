@@ -1,10 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DOM_UI_LANGUAGE_OPTIONS_HANDLER_H_
-#define CHROME_BROWSER_CHROMEOS_DOM_UI_LANGUAGE_OPTIONS_HANDLER_H_
+#ifndef CHROME_BROWSER_DOM_UI_OPTIONS_LANGUAGE_OPTIONS_HANDLER_H_
+#define CHROME_BROWSER_DOM_UI_OPTIONS_LANGUAGE_OPTIONS_HANDLER_H_
 #pragma once
+
+// TODO(csilv): This is for the move CL.  Changes to make this cross-platform
+// will come in the followup CL.
+#if defined(OS_CHROMEOS)
 
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/dom_ui/options/options_ui.h"
@@ -92,4 +96,7 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
 
 }  // namespace
 
-#endif  // CHROME_BROWSER_CHROMEOS_DOM_UI_LANGUAGE_OPTIONS_HANDLER_H_
+#endif  // OS_CHROMEOS
+
+#endif  // CHROME_BROWSER_DOM_UI_OPTIONS_LANGUAGE_OPTIONS_HANDLER_H_
+

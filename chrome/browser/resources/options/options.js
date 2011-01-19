@@ -17,6 +17,7 @@ var CookiesView = options.CookiesView;
 var FontSettings = options.FontSettings;
 var ImportDataOverlay = options.ImportDataOverlay;
 var InstantConfirmOverlay = options.InstantConfirmOverlay;
+var LanguageOptions = options.LanguageOptions;
 var OptionsPage = options.OptionsPage;
 var PasswordManager = options.PasswordManager;
 var PersonalOptions = options.PersonalOptions;

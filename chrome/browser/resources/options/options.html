@@ -23,10 +23,11 @@
 <link rel="stylesheet" href="content_settings.css">
 <link rel="stylesheet" href="cookies_view.css">
 <link rel="stylesheet" href="font_settings.css">
+<link rel="stylesheet" href="import_data_overlay.css">
+<link rel="stylesheet" href="language_options.css">
 <link rel="stylesheet" href="password_manager.css">
 <link rel="stylesheet" href="password_manager_list.css">
 <link rel="stylesheet" href="personal_options.css">
-<link rel="stylesheet" href="import_data_overlay.css">
 <link rel="stylesheet" href="search_engine_manager.css">
 <link rel="stylesheet" href="search_page.css">
 <link rel="stylesheet" href="subpages_tab_controls.css">
@@ -34,7 +35,6 @@
   <link rel="stylesheet" href="about_page.css">
   <link rel="stylesheet" href="chromeos_accounts_options_page.css">
   <link rel="stylesheet" href="chromeos_internet_options_page.css">
-  <link rel="stylesheet" href="chromeos_language_options.css">
   <link rel="stylesheet" href="chromeos_proxy.css">
 </if>
 
@@ -68,9 +68,6 @@
   <script src="chromeos_cellular_plan_element.js"></script>
   <script src="chromeos_internet_network_element.js"></script>
   <script src="chromeos_internet_options.js"></script>
-  <script src="chromeos_language_add_language_overlay.js"></script>
-  <script src="chromeos_language_list.js"></script>
-  <script src="chromeos_language_options.js"></script>
   <script src="chromeos_system_options.js"></script>
   <script src="chromeos_accounts_options.js"></script>
   <script src="chromeos_proxy_options.js"></script>
@@ -82,7 +79,6 @@
     var AccountsOptions = options.AccountsOptions;
     var InternetOptions = options.InternetOptions;
     var LanguageHangulOptions = options.LanguageHangulOptions;
-    var LanguageOptions = options.LanguageOptions;
     var SystemOptions = options.SystemOptions;
   </script>
 </if>
@@ -121,6 +117,9 @@
 <script src="font_settings_ui.js"></script>
 <script src="import_data_overlay.js"></script>
 <script src="instant_confirm_overlay.js"></script>
+<script src="language_add_language_overlay.js"></script>
+<script src="language_list.js"></script>
+<script src="language_options.js"></script>
 <script src="password_manager.js"></script>
 <script src="password_manager_list.js"></script>
 <script src="personal_options.js"></script>
@@ -142,8 +141,8 @@
   <include src="clear_browser_data_overlay.html">
   <include src="import_data_overlay.html">
   <include src="instant_confirm_overlay.html">
+  <include src="language_add_language_overlay.html">
   <if expr="pp_ifdef('chromeos')">
-     <include src="chromeos_language_add_language_overlay.html">
      <include
          src="chromeos_language_customize_modifier_keys_overlay.html">
      <include src="chromeos_internet_detail.html">
@@ -187,7 +186,6 @@
            <button class="close-subpage"></button>
            <if expr="pp_ifdef('chromeos')">
              <include src="about_page.html">
-             <include src="chromeos_language_options.html">
              <include src="chromeos_language_chewing_options.html">
              <include src="chromeos_language_hangul_options.html">
              <include src="chromeos_language_mozc_options.html">
@@ -200,6 +198,7 @@
            <include src="autofill_options.html">
            <include src="content_settings.html">
            <include src="font_settings.html">
+           <include src="language_options.html">
            <include src="password_manager.html">
            <include src="search_engine_manager.html">
            <include src="startup_page_manager.html">

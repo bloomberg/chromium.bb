@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/dom_ui/language_options_handler.h"
+// TODO(csilv): This is for the move CL.  Changes to make this cross-platform
+// will come in the followup CL.
+#if defined(OS_CHROMEOS)
+
+#include "chrome/browser/dom_ui/options/language_options_handler.h"
 
 #include <map>
 #include <set>
@@ -313,3 +317,6 @@ void LanguageOptionsHandler::SignOutCallback(const ListValue* args) {
 }
 
 }  // namespace chromeos
+
+#endif  // OS_CHROMEOS
+
