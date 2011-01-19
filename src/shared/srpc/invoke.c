@@ -65,6 +65,78 @@ static int TypeCheckArgs(const char* arg_types, NaClSrpcArg** alist) {
   return 1;
 }
 
+
+static void DumpArg(const NaClSrpcArg* arg) {
+  uint32_t count;
+  uint32_t i;
+
+  switch (arg->tag) {
+    case NACL_SRPC_ARG_TYPE_INVALID:
+     dprintf(("X()"));
+      break;
+    case NACL_SRPC_ARG_TYPE_BOOL:
+     dprintf(("b(%d)", arg->u.bval));
+      break;
+    case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
+      count = arg->u.count;
+      dprintf(("C(%"NACL_PRIu32",", count));
+      /*  this should really perform some escaping. */
+      for (i = 0; i < arg->u.count; ++i)
+        dprintf(("%c", arg->arrays.carr[i]));
+      dprintf((")"));
+      break;
+    case NACL_SRPC_ARG_TYPE_DOUBLE:
+     dprintf(("d(%f)",arg->u.dval));
+      break;
+    case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
+      count = arg->u.count;
+      dprintf(("D(%"NACL_PRIu32"", count));
+      for (i = 0; i < count; ++i) {
+        dprintf((",%f", arg->arrays.darr[i]));
+      }
+      dprintf((")"));
+      break;
+    case NACL_SRPC_ARG_TYPE_HANDLE:
+      dprintf(("h(%p)", (void*)arg->u.hval));
+      break;
+    case NACL_SRPC_ARG_TYPE_INT:
+     dprintf(("i(%"NACL_PRId32")", arg->u.ival));
+      break;
+    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+      count = arg->u.count;
+      dprintf(("I(%"NACL_PRIu32"", count));
+      for (i = 0; i < count; ++i)
+        dprintf((",%"NACL_PRId32, arg->arrays.iarr[i]));
+      dprintf((")"));
+      break;
+    case NACL_SRPC_ARG_TYPE_LONG:
+      dprintf(("l(%"NACL_PRId64")", arg->u.lval));
+      break;
+    case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+      count = arg->u.count;
+      dprintf(("L(%"NACL_PRIu32"", count));
+      for (i = 0; i < count; ++i)
+        dprintf((",%"NACL_PRId64, arg->arrays.larr[i]));
+      dprintf((")"));
+      break;
+    case NACL_SRPC_ARG_TYPE_STRING:
+      /* this should really perform some escaping. */
+      dprintf(("s(\"%s\")", arg->arrays.str));
+      break;
+      /*
+       * The two cases below are added to avoid warnings, they are only used
+       * in the plugin code
+       */
+    case NACL_SRPC_ARG_TYPE_OBJECT:
+      /* this is a pointer that NaCl module can do nothing with */
+      dprintf(("o(%p)", arg->arrays.oval));
+      break;
+    case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+      break;
+    default:
+      break;
+  }
+}
 /*
  * Methods for invoking RPCs.
  */
@@ -72,6 +144,7 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
                               uint32_t rpc_number,
                               NaClSrpcArg* args[],
                               NaClSrpcArg* rets[]) {
+  int i;
   NaClSrpcRpc        rpc;
   NaClSrpcError      retval;
   const char*        rpc_name;
@@ -102,6 +175,12 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
   dprintf((SIDE "SRPC: InvokeV(channel %p, rpc %"NACL_PRIu32" '%s')\n",
            (void*) channel, rpc_number, rpc_name));
 
+  for (i = 0; args[i] != NULL; i++ ) {
+    dprintf((SIDE  "SRPC: args %d: ", i));
+    DumpArg(args[i]);
+    dprintf(("\n"));
+  }
+
   /*
    * First we send the request.
    * This requires sending args and the types and array sizes from rets.
@@ -128,6 +207,12 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
   dprintf((SIDE "SRPC: InvokeV: received response (%d, %s)\n",
            rpc.result,
            NaClSrpcErrorString(rpc.result)));
+
+  for (i = 0; rets[i] != NULL; i++ ) {
+    dprintf((SIDE  "SRPC: rets %d: ", i));
+    DumpArg(rets[i]);
+    dprintf(("\n"));
+  }
 
   return rpc.result;
 }
