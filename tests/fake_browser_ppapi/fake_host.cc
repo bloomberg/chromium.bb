@@ -41,7 +41,7 @@ int dlclose(void* handle) {
 namespace fake_browser_ppapi {
 
 Host::Host(const char* plugin_file)
-    : var_interface_(NULL), last_resource_id_(0) {
+    : var_interface_(NULL), last_resource_id_(0), last_instance_id_(0) {
   dl_handle_ = dlopen(plugin_file, RTLD_NOW | RTLD_LOCAL);
   CHECK(dl_handle_ != NULL);
   initialize_module_ =
