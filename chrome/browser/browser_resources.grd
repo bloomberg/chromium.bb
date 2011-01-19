@@ -57,8 +57,8 @@ without changes to the corresponding grd file. etaa -->
       <include name="IDR_SAFE_BROWSING_MULTIPLE_THREAT_BLOCK" file="resources\safe_browsing_multiple_threat_block.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SAFE_BROWSING_PHISHING_BLOCK" file="resources\safe_browsing_phishing_block.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SIGNIN_HTML" file="resources\browser_signin.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_SSL_ERROR_HTML" file="security\resources\ssl_error.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_SSL_ROAD_BLOCK_HTML" file="security\resources\ssl_roadblock.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_SSL_ERROR_HTML" file="resources\ssl_error.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_SSL_ROAD_BLOCK_HTML" file="resources\ssl_roadblock.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_CONFIGURE_HTML" file="sync\resources\configure.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_ENCRYPTION_LOGIN_HTML" file="sync\resources\encryption_login.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_PASSPHRASE_HTML" file="sync\resources\passphrase.html" flattenhtml="true" type="BINDATA" />
