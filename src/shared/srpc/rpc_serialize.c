@@ -804,14 +804,14 @@ static void RpcCheckingClosureRun(NaClSrpcClosure* self) {
            rpc->result));
   /* Send the RPC response to the caller. */
   rpc->is_request = 0;
-  retval = SrpcSendMessage(rpc, NULL, rpc->rets, rpc->channel->message_channel);
-  dprintf((SIDE "SRPC: RpcCheckingClosureRun: response sent\n"));
   rpc->dispatch_loop_should_continue = 1;
   if (NACL_SRPC_RESULT_BREAK == rpc->result) {
     dprintf((SIDE "SRPC: RpcCheckingClosureRun: server requested break\n"));
     rpc->result = NACL_SRPC_RESULT_OK;
     rpc->dispatch_loop_should_continue = 0;
   }
+  retval = SrpcSendMessage(rpc, NULL, rpc->rets, rpc->channel->message_channel);
+  dprintf((SIDE "SRPC: RpcCheckingClosureRun: response sent\n"));
   if (retval < 0) {
     /* If the response write failed, drop request and continue. */
     dprintf((SIDE "SRPC: RpcCheckingClosureRun: response write failed\n"));
