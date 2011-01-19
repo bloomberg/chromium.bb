@@ -66,8 +66,6 @@ class BlockedPlugin : public RenderViewObserver,
   webkit::npapi::WebViewPlugin* plugin_;
   // The name of the plugin that was blocked.
   string16 name_;
-  // True iff we're showing a custom menu.
-  bool custom_menu_showing_;
 };
 
 #endif  // CHROME_RENDERER_BLOCKED_PLUGIN_H_

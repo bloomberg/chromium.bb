@@ -41,6 +41,9 @@ using WebKit::WebString;
 using WebKit::WebVector;
 
 static const char* const kBlockedPluginDataURL = "chrome://blockedplugindata/";
+// TODO(cevans) - move these to a shared header file so that there are no
+// collisions in the longer term. Currently, blocked_plugin.cc is the only
+// user of custom menu commands (extension menu items have their own range).
 static const unsigned kMenuActionLoad = 1;
 static const unsigned kMenuActionRemove = 2;
 
@@ -53,8 +56,7 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
                              const string16& message)
     : RenderViewObserver(render_view),
       frame_(frame),
-      plugin_params_(params),
-      custom_menu_showing_(false) {
+      plugin_params_(params) {
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(template_id));
 
@@ -118,22 +120,18 @@ void BlockedPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {
   menu_data.customItems.swap(custom_items);
   menu_data.mousePosition = WebPoint(event.windowX, event.windowY);
   render_view()->showContextMenu(NULL, menu_data);
-  custom_menu_showing_ = true;
 }
 
 bool BlockedPlugin::OnMessageReceived(const IPC::Message& message) {
-  if (custom_menu_showing_ &&
-      message.type() == ViewMsg_CustomContextMenuAction::ID) {
+  // We don't swallow ViewMsg_CustomContextMenuAction because we listen for all
+  // custom menu IDs, and not just our own. We don't swallow
+  // ViewMsg_LoadBlockedPlugins because multiple blocked plugins have an
+  // interest in it.
+  if (message.type() == ViewMsg_CustomContextMenuAction::ID) {
     ViewMsg_CustomContextMenuAction::Dispatch(
         &message, this, this, &BlockedPlugin::OnMenuItemSelected);
-    return true;
-  }
-
-  // Don't want to swallow these messages.
-  if (message.type() == ViewMsg_LoadBlockedPlugins::ID) {
+  } else if (message.type() == ViewMsg_LoadBlockedPlugins::ID) {
     LoadPlugin();
-  } else if (message.type() == ViewMsg_ContextMenuClosed::ID) {
-    custom_menu_showing_ = false;
   }
 
   return false;
@@ -144,8 +142,6 @@ void BlockedPlugin::OnMenuItemSelected(unsigned id) {
     LoadPlugin();
   } else if (id == kMenuActionRemove) {
     HidePlugin();
-  } else {
-    NOTREACHED();
   }
 }
 
