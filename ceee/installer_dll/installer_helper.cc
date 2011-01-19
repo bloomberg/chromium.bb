@@ -227,10 +227,11 @@ HRESULT RegisterFirefoxCeee(bool do_register) {
 
     if (file_util::PathExists(path)) {
       base::win::RegKey key(HKEY_LOCAL_MACHINE, L"SOFTWARE", KEY_WRITE);
-      if (key.CreateKey(L"Mozilla", KEY_WRITE) &&
-          key.CreateKey(L"Firefox", KEY_WRITE) &&
-          key.CreateKey(L"extensions", KEY_WRITE) &&
-          key.WriteValue(kCeeeFirefoxExtensionName, path.value().c_str())) {
+      if ((key.CreateKey(L"Mozilla", KEY_WRITE) == ERROR_SUCCESS) &&
+          (key.CreateKey(L"Firefox", KEY_WRITE) == ERROR_SUCCESS) &&
+          (key.CreateKey(L"extensions", KEY_WRITE) == ERROR_SUCCESS) &&
+          (key.WriteValue(kCeeeFirefoxExtensionName, path.value().c_str()))
+              == ERROR_SUCCESS) {
         hr = S_OK;
       } else {
         hr = com::AlwaysErrorFromLastError();
@@ -239,13 +240,12 @@ HRESULT RegisterFirefoxCeee(bool do_register) {
   } else {
     hr = S_OK;  // OK if not found, then there's nothing to do
     base::win::RegKey key(HKEY_LOCAL_MACHINE, L"SOFTWARE", KEY_READ);
-    if (key.OpenKey(L"Mozilla", KEY_READ) &&
-        key.OpenKey(L"Firefox", KEY_READ) &&
-        key.OpenKey(L"extensions", KEY_WRITE) &&
+    if ((key.OpenKey(L"Mozilla", KEY_READ) == ERROR_SUCCESS) &&
+        (key.OpenKey(L"Firefox", KEY_READ) == ERROR_SUCCESS) &&
+        (key.OpenKey(L"extensions", KEY_WRITE) == ERROR_SUCCESS) &&
         key.ValueExists(kCeeeFirefoxExtensionName)) {
-      if (!key.DeleteValue(kCeeeFirefoxExtensionName)) {
-        hr = com::AlwaysErrorFromLastError();
-      }
+      LONG result = key.DeleteValue(kCeeeFirefoxExtensionName);
+      hr = HRESULT_FROM_WIN32(result);
     }
   }
 
@@ -258,7 +258,8 @@ HRESULT SetCeeeChannelModifier(bool new_value) {
   std::wstring reg_key(ceee_module_util::GetCromeFrameClientStateKey());
 
   base::win::RegKey key;
-  if (!key.Open(HKEY_LOCAL_MACHINE, reg_key.c_str(), KEY_ALL_ACCESS)) {
+  if (key.Open(HKEY_LOCAL_MACHINE, reg_key.c_str(), KEY_ALL_ACCESS) !=
+      ERROR_SUCCESS) {
     // Omaha didn't install the key.  Perhaps no Omaha?  That's ok.
     return S_OK;
   }

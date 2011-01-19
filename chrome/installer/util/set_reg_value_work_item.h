@@ -9,6 +9,7 @@
 #include <windows.h>
 
 #include <string>
+#include <vector>
 
 #include "chrome/installer/util/work_item.h"
 
@@ -66,23 +67,16 @@ class SetRegValueWorkItem : public WorkItem {
   // Name of the value to be set.
   std::wstring value_name_;
 
-  // Data of the value to be set.
-  std::wstring value_data_str_;  // if data is of type REG_SZ
-  DWORD value_data_dword_;  // if data is of type REG_DWORD
-  int64 value_data_qword_;  // if data is of type REG_QWORD
-
   // Whether to overwrite the existing value under the target key.
   bool overwrite_;
 
   // Type of data to store
   DWORD type_;
+  std::vector<uint8> value_;
+  DWORD previous_type_;
+  std::vector<uint8> previous_value_;
 
   SettingStatus status_;
-
-  // Data of the previous value.
-  std::wstring previous_value_str_;  // if data is of type REG_SZ
-  DWORD previous_value_dword_;  // if data is of type REG_DWORD
-  int64 previous_value_qword_;  // if data is of type REG_QWORD
 };
 
 #endif  // CHROME_INSTALLER_UTIL_SET_REG_VALUE_WORK_ITEM_H__

@@ -200,14 +200,14 @@ class RegistryEntry {
     bool found = false;
     if (_is_string) {
       std::wstring read_value;
-      found = (key.ReadValue(_name.c_str(), &read_value)) &&
+      found = (key.ReadValue(_name.c_str(), &read_value) == ERROR_SUCCESS) &&
               (read_value.size() == _value.size()) &&
               (std::equal(_value.begin(), _value.end(), read_value.begin(),
                           base::CaseInsensitiveCompare<wchar_t>()));
     } else {
       DWORD read_value;
-      found = key.ReadValueDW(_name.c_str(), &read_value) &&
-              read_value == _int_value;
+      found = (key.ReadValueDW(_name.c_str(), &read_value) == ERROR_SUCCESS) &&
+              (read_value == _int_value);
     }
     key.Close();
     return found;
@@ -220,10 +220,10 @@ class RegistryEntry {
     bool found = false;
     if (_is_string) {
       std::wstring read_value;
-      found = key.ReadValue(_name.c_str(), &read_value);
+      found = key.ReadValue(_name.c_str(), &read_value) == ERROR_SUCCESS;
     } else {
       DWORD read_value;
-      found = key.ReadValueDW(_name.c_str(), &read_value);
+      found = key.ReadValueDW(_name.c_str(), &read_value) == ERROR_SUCCESS;
     }
     key.Close();
     return found;
@@ -356,7 +356,7 @@ bool AnotherUserHasDefaultBrowser(BrowserDistribution* dist,
   reg_key.append(L"\\" + dist->GetApplicationName() + ShellUtil::kRegShellOpen);
   RegKey key(HKEY_LOCAL_MACHINE, reg_key.c_str(), KEY_READ);
   std::wstring registry_chrome_exe;
-  if (!key.ReadValue(L"", &registry_chrome_exe) ||
+  if ((key.ReadValue(L"", &registry_chrome_exe) != ERROR_SUCCESS) ||
       registry_chrome_exe.length() < 2)
     return false;
 
@@ -583,15 +583,16 @@ void ShellUtil::GetRegisteredBrowsers(BrowserDistribution* dist,
     RegKey capabilities(root, (key + L"\\Capabilities").c_str(), KEY_READ);
     std::wstring name;
     if (!capabilities.Valid() ||
-        !capabilities.ReadValue(L"ApplicationName", &name)) {
+        capabilities.ReadValue(L"ApplicationName", &name) != ERROR_SUCCESS) {
       RegKey base_key(root, key.c_str(), KEY_READ);
-      if (!base_key.ReadValue(L"", &name))
+      if (base_key.ReadValue(L"", &name) != ERROR_SUCCESS)
         continue;
     }
     RegKey install_info(root, (key + L"\\InstallInfo").c_str(), KEY_READ);
     std::wstring command;
     if (!install_info.Valid() ||
-        !install_info.ReadValue(L"ReinstallCommand", &command))
+        (install_info.ReadValue(L"ReinstallCommand",
+                                &command) != ERROR_SUCCESS))
       continue;
     if (!name.empty() && !command.empty() &&
         name.find(dist->GetApplicationName()) == std::wstring::npos)

@@ -45,9 +45,10 @@ TEST_F(InstallUtilTest, InstallerResult) {
     BrowserDistribution* distribution =
         BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::CHROME_BROWSER, prefs);
-    EXPECT_TRUE(key.Open(root, distribution->GetStateKey().c_str(), KEY_READ));
-    EXPECT_TRUE(key.ReadValue(installer::kInstallerSuccessLaunchCmdLine,
-                              &value));
+    EXPECT_EQ(ERROR_SUCCESS,
+        key.Open(root, distribution->GetStateKey().c_str(), KEY_READ));
+    EXPECT_EQ(ERROR_SUCCESS,
+        key.ReadValue(installer::kInstallerSuccessLaunchCmdLine, &value));
     EXPECT_EQ(launch_cmd, value);
   }
   TempRegKeyOverride::DeleteAllTempKeys();
@@ -67,9 +68,10 @@ TEST_F(InstallUtilTest, InstallerResult) {
     BrowserDistribution* distribution =
         BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::CHROME_BROWSER, prefs);
-    EXPECT_TRUE(key.Open(root, distribution->GetStateKey().c_str(), KEY_READ));
-    EXPECT_TRUE(key.ReadValue(installer::kInstallerSuccessLaunchCmdLine,
-                              &value));
+    EXPECT_EQ(ERROR_SUCCESS,
+        key.Open(root, distribution->GetStateKey().c_str(), KEY_READ));
+    EXPECT_EQ(ERROR_SUCCESS,
+        key.ReadValue(installer::kInstallerSuccessLaunchCmdLine, &value));
     EXPECT_EQ(launch_cmd, value);
     key.Close();
   }

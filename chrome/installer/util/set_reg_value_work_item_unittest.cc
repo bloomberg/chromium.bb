@@ -27,14 +27,15 @@ class SetRegValueWorkItemTest : public testing::Test {
     // Create a temporary key for testing
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
     key.DeleteKey(test_root);
-    ASSERT_FALSE(key.Open(HKEY_CURRENT_USER, test_root, KEY_READ));
-    ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, test_root, KEY_READ));
+    ASSERT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, test_root, KEY_READ));
+    ASSERT_EQ(ERROR_SUCCESS,
+        key.Create(HKEY_CURRENT_USER, test_root, KEY_READ));
   }
   virtual void TearDown() {
     logging::CloseLogFile();
     // Clean up the temporary key
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
-    ASSERT_TRUE(key.DeleteKey(test_root));
+    ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(test_root));
   }
 };
 
@@ -46,7 +47,8 @@ TEST_F(SetRegValueWorkItemTest, WriteNewNonOverwrite) {
 
   std::wstring parent_key(test_root);
   file_util::AppendToPath(&parent_key, L"WriteNewNonOverwrite");
-  ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, parent_key.c_str(), KEY_READ));
+  ASSERT_EQ(ERROR_SUCCESS,
+      key.Create(HKEY_CURRENT_USER, parent_key.c_str(), KEY_READ));
 
   std::wstring name_str(L"name_str");
   std::wstring data_str(data_str_1);
@@ -64,8 +66,8 @@ TEST_F(SetRegValueWorkItemTest, WriteNewNonOverwrite) {
 
   std::wstring read_out;
   DWORD read_dword;
-  EXPECT_TRUE(key.ReadValue(name_str.c_str(), &read_out));
-  EXPECT_TRUE(key.ReadValueDW(name_dword.c_str(), &read_dword));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name_str.c_str(), &read_out));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValueDW(name_dword.c_str(), &read_dword));
   EXPECT_EQ(read_out, data_str_1);
   EXPECT_EQ(read_dword, dword1);
 
@@ -83,7 +85,8 @@ TEST_F(SetRegValueWorkItemTest, WriteNewOverwrite) {
 
   std::wstring parent_key(test_root);
   file_util::AppendToPath(&parent_key, L"WriteNewOverwrite");
-  ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, parent_key.c_str(), KEY_READ));
+  ASSERT_EQ(ERROR_SUCCESS,
+      key.Create(HKEY_CURRENT_USER, parent_key.c_str(), KEY_READ));
 
   std::wstring name_str(L"name_str");
   std::wstring data_str(data_str_1);
@@ -101,8 +104,8 @@ TEST_F(SetRegValueWorkItemTest, WriteNewOverwrite) {
 
   std::wstring read_out;
   DWORD read_dword;
-  EXPECT_TRUE(key.ReadValue(name_str.c_str(), &read_out));
-  EXPECT_TRUE(key.ReadValueDW(name_dword.c_str(), &read_dword));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name_str.c_str(), &read_out));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValueDW(name_dword.c_str(), &read_dword));
   EXPECT_EQ(read_out, data_str_1);
   EXPECT_EQ(read_dword, dword1);
 
@@ -121,13 +124,14 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingNonOverwrite) {
 
   std::wstring parent_key(test_root);
   file_util::AppendToPath(&parent_key, L"WriteExistingNonOverwrite");
-  ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, parent_key.c_str(),
-                         KEY_READ | KEY_SET_VALUE));
+  ASSERT_EQ(ERROR_SUCCESS,
+      key.Create(HKEY_CURRENT_USER, parent_key.c_str(),
+                 KEY_READ | KEY_SET_VALUE));
 
   // First test REG_SZ value.
   // Write data to the value we are going to set.
   std::wstring name(L"name_str");
-  ASSERT_TRUE(key.WriteValue(name.c_str(), data_str_1));
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(name.c_str(), data_str_1));
 
   std::wstring data(data_str_2);
   scoped_ptr<SetRegValueWorkItem> work_item(
@@ -136,29 +140,29 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingNonOverwrite) {
   EXPECT_TRUE(work_item->Do());
 
   std::wstring read_out;
-  EXPECT_TRUE(key.ReadValue(name.c_str(), &read_out));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name.c_str(), &read_out));
   EXPECT_EQ(0, read_out.compare(data_str_1));
 
   work_item->Rollback();
   EXPECT_TRUE(key.ValueExists(name.c_str()));
-  EXPECT_TRUE(key.ReadValue(name.c_str(), &read_out));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name.c_str(), &read_out));
   EXPECT_EQ(read_out, data_str_1);
 
   // Now test REG_DWORD value.
   // Write data to the value we are going to set.
   name.assign(L"name_dword");
-  ASSERT_TRUE(key.WriteValue(name.c_str(), dword1));
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(name.c_str(), dword1));
   work_item.reset(WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
       parent_key, name, dword2, false));
   EXPECT_TRUE(work_item->Do());
 
   DWORD read_dword;
-  EXPECT_TRUE(key.ReadValueDW(name.c_str(), &read_dword));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValueDW(name.c_str(), &read_dword));
   EXPECT_EQ(read_dword, dword1);
 
   work_item->Rollback();
   EXPECT_TRUE(key.ValueExists(name.c_str()));
-  EXPECT_TRUE(key.ReadValueDW(name.c_str(), &read_dword));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValueDW(name.c_str(), &read_dword));
   EXPECT_EQ(read_dword, dword1);
 }
 
@@ -169,13 +173,14 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingOverwrite) {
 
   std::wstring parent_key(test_root);
   file_util::AppendToPath(&parent_key, L"WriteExistingOverwrite");
-  ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, parent_key.c_str(),
-                         KEY_READ | KEY_SET_VALUE));
+  ASSERT_EQ(ERROR_SUCCESS,
+      key.Create(HKEY_CURRENT_USER, parent_key.c_str(),
+                 KEY_READ | KEY_SET_VALUE));
 
   // First test REG_SZ value.
   // Write data to the value we are going to set.
   std::wstring name(L"name_str");
-  ASSERT_TRUE(key.WriteValue(name.c_str(), data_str_1));
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(name.c_str(), data_str_1));
 
   std::wstring data(data_str_2);
   scoped_ptr<SetRegValueWorkItem> work_item(
@@ -184,29 +189,29 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingOverwrite) {
   EXPECT_TRUE(work_item->Do());
 
   std::wstring read_out;
-  EXPECT_TRUE(key.ReadValue(name.c_str(), &read_out));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name.c_str(), &read_out));
   EXPECT_EQ(0, read_out.compare(data_str_2));
 
   work_item->Rollback();
   EXPECT_TRUE(key.ValueExists(name.c_str()));
-  EXPECT_TRUE(key.ReadValue(name.c_str(), &read_out));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name.c_str(), &read_out));
   EXPECT_EQ(read_out, data_str_1);
 
   // Now test REG_DWORD value.
   // Write data to the value we are going to set.
   name.assign(L"name_dword");
-  ASSERT_TRUE(key.WriteValue(name.c_str(), dword1));
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(name.c_str(), dword1));
   work_item.reset(WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
       parent_key, name, dword2, true));
   EXPECT_TRUE(work_item->Do());
 
   DWORD read_dword;
-  EXPECT_TRUE(key.ReadValueDW(name.c_str(), &read_dword));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValueDW(name.c_str(), &read_dword));
   EXPECT_EQ(read_dword, dword2);
 
   work_item->Rollback();
   EXPECT_TRUE(key.ValueExists(name.c_str()));
-  EXPECT_TRUE(key.ReadValueDW(name.c_str(), &read_dword));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValueDW(name.c_str(), &read_dword));
   EXPECT_EQ(read_dword, dword1);
 }
 

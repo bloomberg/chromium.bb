@@ -51,11 +51,12 @@ void CheckAsyncIidRegistered(const IID& iid, const IID& async_iid) {
       L"Interface\\%ls\\AsynchronousInterface", iid_str.c_str());
 
   base::win::RegKey key;
-  if (key.Open(HKEY_CLASSES_ROOT, key_name.c_str(), KEY_READ)) {
+  if (key.Open(HKEY_CLASSES_ROOT, key_name.c_str(), KEY_READ) ==
+      ERROR_SUCCESS) {
     // It's registered, the rest of this block is debug checking that
     // the correct IID is indeed registered for the async interface.
     std::wstring async_iid_str;
-    DCHECK(key.ReadValue(NULL, &async_iid_str));
+    DCHECK_EQ(ERROR_SUCCESS, key.ReadValue(NULL, &async_iid_str));
     IID read_async_iid;
     DCHECK(SUCCEEDED(::IIDFromString(async_iid_str.c_str(), &read_async_iid)));
     DCHECK(read_async_iid == async_iid);

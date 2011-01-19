@@ -31,9 +31,9 @@ int GetCurrentFirefoxMajorVersionFromRegistry() {
     base::win::RegKey reg_key(kFireFoxRegistryPaths[i],
                               L"Software\\Mozilla\\Mozilla Firefox", KEY_READ);
 
-    bool result = reg_key.ReadValue(L"CurrentVersion", ver_buffer,
+    LONG result = reg_key.ReadValue(L"CurrentVersion", ver_buffer,
                                     &ver_buffer_length, NULL);
-    if (!result)
+    if (result != ERROR_SUCCESS)
       continue;
     highest_version = std::max(highest_version, _wtoi(ver_buffer));
   }
@@ -47,9 +47,9 @@ std::wstring GetFirefoxInstallPathFromRegistry() {
   DWORD buffer_length = sizeof(buffer);
   base::win::RegKey reg_key(HKEY_LOCAL_MACHINE, registry_path.c_str(),
                             KEY_READ);
-  bool result = reg_key.ReadValue(L"CurrentVersion", buffer,
+  LONG result = reg_key.ReadValue(L"CurrentVersion", buffer,
                                   &buffer_length, NULL);
-  if (!result)
+  if (result != ERROR_SUCCESS)
     return std::wstring();
   registry_path += L"\\" + std::wstring(buffer) + L"\\Main";
   buffer_length = sizeof(buffer);
@@ -57,7 +57,7 @@ std::wstring GetFirefoxInstallPathFromRegistry() {
                                       registry_path.c_str(), KEY_READ);
   result = reg_key_directory.ReadValue(L"Install Directory", buffer,
                                        &buffer_length, NULL);
-  if (!result)
+  if (result != ERROR_SUCCESS)
     return std::wstring();
   return buffer;
 }

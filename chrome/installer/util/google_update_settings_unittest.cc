@@ -49,8 +49,10 @@ class GoogleUpdateSettingsTest: public testing::Test {
     EXPECT_TRUE(err == ERROR_SUCCESS || err == ERROR_FILE_NOT_FOUND);
 
     // Create the keys we're redirecting HKCU and HKLM to.
-    ASSERT_TRUE(hkcu_.Create(HKEY_CURRENT_USER, kHKCUReplacement, KEY_READ));
-    ASSERT_TRUE(hklm_.Create(HKEY_CURRENT_USER, kHKLMReplacement, KEY_READ));
+    ASSERT_EQ(ERROR_SUCCESS,
+        hkcu_.Create(HKEY_CURRENT_USER, kHKCUReplacement, KEY_READ));
+    ASSERT_EQ(ERROR_SUCCESS,
+        hklm_.Create(HKEY_CURRENT_USER, kHKLMReplacement, KEY_READ));
 
     // And do the switcharoo.
     ASSERT_EQ(ERROR_SUCCESS,
@@ -83,8 +85,8 @@ class GoogleUpdateSettingsTest: public testing::Test {
     RegKey update_key;
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     std::wstring path = dist->GetStateKey();
-    ASSERT_TRUE(update_key.Create(root, path.c_str(), KEY_WRITE));
-    ASSERT_TRUE(update_key.WriteValue(L"ap", value));
+    ASSERT_EQ(ERROR_SUCCESS, update_key.Create(root, path.c_str(), KEY_WRITE));
+    ASSERT_EQ(ERROR_SUCCESS, update_key.WriteValue(L"ap", value));
   }
 
   // Tests setting the ap= value to various combinations of values with
@@ -165,11 +167,12 @@ class GoogleUpdateSettingsTest: public testing::Test {
     RegKey key;
     std::wstring ap_key_value;
     std::wstring reg_key = GetApKeyPath();
-    if (key.Open(HKEY_CURRENT_USER, reg_key.c_str(), KEY_ALL_ACCESS) &&
-        key.ReadValue(google_update::kRegApField, &ap_key_value)) {
-      return ap_key_value;
+    if (key.Open(HKEY_CURRENT_USER, reg_key.c_str(), KEY_ALL_ACCESS) ==
+        ERROR_SUCCESS) {
+      key.ReadValue(google_update::kRegApField, &ap_key_value);
     }
-    return std::wstring();
+
+    return ap_key_value;
   }
 
   RegKey hkcu_;
@@ -369,10 +372,11 @@ TEST_F(GoogleUpdateSettingsTest, UpdateInstallStatusTest) {
   HKEY reg_root = HKEY_CURRENT_USER;
   bool ap_key_deleted = false;
   RegKey key;
-  if (!key.Open(HKEY_CURRENT_USER, reg_key.c_str(), KEY_ALL_ACCESS)) {
+  if (key.Open(HKEY_CURRENT_USER, reg_key.c_str(), KEY_ALL_ACCESS) !=
+      ERROR_SUCCESS) {
     work_item_list->AddCreateRegKeyWorkItem(reg_root, reg_key);
     ASSERT_TRUE(work_item_list->Do()) << "Failed to create ClientState key.";
-  } else if (key.DeleteValue(google_update::kRegApField)) {
+  } else if (key.DeleteValue(google_update::kRegApField) == ERROR_SUCCESS) {
     ap_key_deleted = true;
   }
   // try differential installer
@@ -420,22 +424,27 @@ TEST_F(GoogleUpdateSettingsTest, SetEULAConsent) {
 
   // By default, eulaconsent ends up on the package.
   EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(*package.get(), true));
-  EXPECT_TRUE(key.Open(HKEY_LOCAL_MACHINE,
-                       properties.GetStateMediumKey().c_str(),
-                       KEY_QUERY_VALUE | KEY_SET_VALUE));
-  EXPECT_TRUE(key.ReadValueDW(google_update::kRegEULAAceptedField, &value));
+  EXPECT_EQ(ERROR_SUCCESS,
+      key.Open(HKEY_LOCAL_MACHINE, properties.GetStateMediumKey().c_str(),
+               KEY_QUERY_VALUE | KEY_SET_VALUE));
+  EXPECT_EQ(ERROR_SUCCESS,
+      key.ReadValueDW(google_update::kRegEULAAceptedField, &value));
   EXPECT_EQ(1U, value);
-  EXPECT_TRUE(key.DeleteValue(google_update::kRegEULAAceptedField));
+  EXPECT_EQ(ERROR_SUCCESS,
+      key.DeleteValue(google_update::kRegEULAAceptedField));
 
   // But it will end up on the product if needed
-  EXPECT_TRUE(key.Create(HKEY_LOCAL_MACHINE,
-                         distribution->GetStateKey().c_str(), KEY_SET_VALUE));
-  EXPECT_TRUE(key.WriteValue(google_update::kRegEULAAceptedField,
-                             static_cast<DWORD>(0)));
+  EXPECT_EQ(ERROR_SUCCESS,
+      key.Create(HKEY_LOCAL_MACHINE, distribution->GetStateKey().c_str(),
+                 KEY_SET_VALUE));
+  EXPECT_EQ(ERROR_SUCCESS,
+      key.WriteValue(google_update::kRegEULAAceptedField,
+                     static_cast<DWORD>(0)));
   EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(*package.get(), true));
-  EXPECT_TRUE(key.Open(HKEY_LOCAL_MACHINE,
-                       distribution->GetStateMediumKey().c_str(),
-                       KEY_QUERY_VALUE | KEY_SET_VALUE));
-  EXPECT_TRUE(key.ReadValueDW(google_update::kRegEULAAceptedField, &value));
+  EXPECT_EQ(ERROR_SUCCESS,
+      key.Open(HKEY_LOCAL_MACHINE, distribution->GetStateMediumKey().c_str(),
+               KEY_QUERY_VALUE | KEY_SET_VALUE));
+  EXPECT_EQ(ERROR_SUCCESS,
+      key.ReadValueDW(google_update::kRegEULAAceptedField, &value));
   EXPECT_EQ(1U, value);
 }

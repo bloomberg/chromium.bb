@@ -278,8 +278,10 @@ bool Upgrade::SwapNewChromeExeIfPresent() {
   BrowserDistribution *dist = BrowserDistribution::GetDistribution();
   base::win::RegKey key;
   std::wstring rename_cmd;
-  if (key.Open(reg_root, dist->GetVersionKey().c_str(), KEY_READ) &&
-      key.ReadValue(google_update::kRegRenameCmdField, &rename_cmd)) {
+  if ((key.Open(reg_root, dist->GetVersionKey().c_str(),
+                KEY_READ) == ERROR_SUCCESS) &&
+      (key.ReadValue(google_update::kRegRenameCmdField,
+                     &rename_cmd) == ERROR_SUCCESS)) {
     base::ProcessHandle handle;
     if (base::LaunchApp(rename_cmd, true, true, &handle)) {
       DWORD exit_code;

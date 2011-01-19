@@ -365,8 +365,9 @@ bool ChromeMiniInstaller::CloseChromeBrowser() {
 // Checks for Chrome registry keys.
 bool ChromeMiniInstaller::CheckRegistryKey(const std::wstring& key_path) {
   RegKey key;
-  if (!key.Open(GetRootRegistryKey(), key_path.c_str(), KEY_ALL_ACCESS)) {
-    printf("Cannot open reg key\n");
+  LONG ret = key.Open(GetRootRegistryKey(), key_path.c_str(), KEY_ALL_ACCESS);
+  if (ret != ERROR_SUCCESS) {
+    printf("Cannot open reg key. error: %d\n", ret);
     return false;
   }
   std::wstring reg_key_value_returned;
@@ -380,7 +381,8 @@ bool ChromeMiniInstaller::CheckRegistryKeyOnUninstall(
     const std::wstring& key_path) {
   RegKey key;
   int timer = 0;
-  while ((key.Open(GetRootRegistryKey(), key_path.c_str(), KEY_ALL_ACCESS)) &&
+  while ((key.Open(GetRootRegistryKey(), key_path.c_str(),
+                   KEY_ALL_ACCESS) == ERROR_SUCCESS) &&
          (timer < 20000)) {
     base::PlatformThread::Sleep(200);
     timer = timer + 200;
@@ -444,8 +446,9 @@ void ChromeMiniInstaller::DeletePvRegistryKey() {
   pv_key.append(dist->GetAppGuid());
 
   RegKey key;
-  if (key.Open(GetRootRegistryKey(), pv_key.c_str(), KEY_ALL_ACCESS))
-    ASSERT_TRUE(key.DeleteValue(L"pv"));
+  if (key.Open(GetRootRegistryKey(), pv_key.c_str(), KEY_ALL_ACCESS) ==
+      ERROR_SUCCESS)
+    ASSERT_EQ(ERROR_SUCCESS, key.DeleteValue(L"pv"));
   printf("Deleted %ls key\n", pv_key.c_str());
 }
 
@@ -523,8 +526,9 @@ bool ChromeMiniInstaller::GetChromeVersionFromRegistry(
     std::wstring* build_key_value) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   RegKey key(GetRootRegistryKey(), dist->GetVersionKey().c_str(), KEY_READ);
-  if (!key.ReadValue(L"pv", build_key_value)) {
-    printf("registry key not found\n");
+  LONG result = key.ReadValue(L"pv", build_key_value);
+  if (result != ERROR_SUCCESS) {
+    printf("registry read for chrome version failed. error: %d\n", result);
     return false;
   }
   printf("Build key value is %ls\n\n", build_key_value->c_str());

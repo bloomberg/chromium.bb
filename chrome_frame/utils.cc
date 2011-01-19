@@ -233,7 +233,8 @@ bool UtilChangePersistentNPAPIMarker(bool set) {
   bool success = false;
   if (cf_state_key.Valid()) {
     if (set) {
-      success = cf_state_key.WriteValue(kChromeFramePersistNPAPIReg, 1);
+      success = (cf_state_key.WriteValue(kChromeFramePersistNPAPIReg, 1) ==
+          ERROR_SUCCESS);
     } else {
       // Unfortunately, DeleteValue returns true only if the value
       // previously existed, so we do a separate existence check to
@@ -255,7 +256,8 @@ bool UtilIsPersistentNPAPIMarkerSet() {
   bool success = false;
   if (cf_state_key.Valid()) {
     DWORD val = 0;
-    if (cf_state_key.ReadValueDW(kChromeFramePersistNPAPIReg, &val)) {
+    if (cf_state_key.ReadValueDW(kChromeFramePersistNPAPIReg, &val) ==
+        ERROR_SUCCESS) {
       success = (val != 0);
     }
   }
@@ -676,11 +678,8 @@ int GetConfigInt(int default_value, const wchar_t* value_name) {
   int ret = default_value;
   RegKey config_key;
   if (config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey,
-                      KEY_QUERY_VALUE)) {
-    int value = FALSE;
-    if (config_key.ReadValueDW(value_name, reinterpret_cast<DWORD*>(&value))) {
-      ret = value;
-    }
+                      KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+    config_key.ReadValueDW(value_name, reinterpret_cast<DWORD*>(&ret));
   }
 
   return ret;
@@ -694,8 +693,8 @@ bool GetConfigBool(bool default_value, const wchar_t* value_name) {
 bool SetConfigInt(const wchar_t* value_name, int value) {
   RegKey config_key;
   if (config_key.Create(HKEY_CURRENT_USER, kChromeFrameConfigKey,
-                        KEY_SET_VALUE)) {
-    if (config_key.WriteValue(value_name, value)) {
+                        KEY_SET_VALUE) == ERROR_SUCCESS) {
+    if (config_key.WriteValue(value_name, value) == ERROR_SUCCESS) {
       return true;
     }
   }
@@ -710,8 +709,10 @@ bool SetConfigBool(const wchar_t* value_name, bool value) {
 bool DeleteConfigValue(const wchar_t* value_name) {
   RegKey config_key;
   if (config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey,
-                      KEY_WRITE)) {
-    return config_key.DeleteValue(value_name);
+                      KEY_WRITE) == ERROR_SUCCESS) {
+    if (config_key.DeleteValue(value_name) == ERROR_SUCCESS) {
+      return true;
+    }
   }
   return false;
 }
@@ -728,7 +729,8 @@ bool IsGcfDefaultRenderer() {
     // TODO(tommi): Implement caching for this config value as it gets
     // checked frequently.
     RegKey config_key;
-    if (config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey, KEY_READ)) {
+    if (config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey,
+                        KEY_READ) == ERROR_SUCCESS) {
       config_key.ReadValueDW(kEnableGCFRendererByDefault, &is_default);
     }
   }
@@ -751,8 +753,10 @@ RendererType RendererTypeForUrl(const std::wstring& url) {
   }
 
   RegKey config_key;
-  if (!config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey, KEY_READ))
+  if (config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey,
+                      KEY_READ) != ERROR_SUCCESS) {
     return RENDERER_TYPE_UNDETERMINED;
+  }
 
   RendererType renderer_type = RENDERER_TYPE_UNDETERMINED;
 

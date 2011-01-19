@@ -633,8 +633,8 @@ TempRegKeyOverride::TempRegKeyOverride(HKEY override, const wchar_t* temp_name)
   DCHECK(temp_name && lstrlenW(temp_name));
   std::wstring key_path(kTempTestKeyPath);
   key_path += L"\\" + temp_name_;
-  EXPECT_TRUE(temp_key_.Create(HKEY_CURRENT_USER, key_path.c_str(),
-                               KEY_ALL_ACCESS));
+  EXPECT_EQ(ERROR_SUCCESS, temp_key_.Create(HKEY_CURRENT_USER, key_path.c_str(),
+                                            KEY_ALL_ACCESS));
   EXPECT_EQ(ERROR_SUCCESS,
             ::RegOverridePredefKey(override_, temp_key_.Handle()));
 }
@@ -647,7 +647,7 @@ TempRegKeyOverride::~TempRegKeyOverride() {
 // static
 void TempRegKeyOverride::DeleteAllTempKeys() {
   base::win::RegKey key;
-  if (key.Open(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS)) {
+  if (key.Open(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS) == ERROR_SUCCESS) {
     key.DeleteKey(kTempTestKeyPath);
   }
 }

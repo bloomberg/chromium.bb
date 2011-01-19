@@ -34,9 +34,11 @@ HANDLE LaunchCommandDirectly(const std::wstring& command_field) {
 
   for (int i = 0; i < arraysize(roots); i++) {
     base::win::RegKey version_key;
-    if (version_key.Open(roots[i], version_key_name.c_str(), KEY_QUERY_VALUE)) {
+    if (version_key.Open(roots[i], version_key_name.c_str(),
+                         KEY_QUERY_VALUE) == ERROR_SUCCESS) {
       std::wstring command_line;
-      if (version_key.ReadValue(command_field.c_str(), &command_line)) {
+      if (version_key.ReadValue(command_field.c_str(),
+                                &command_line) == ERROR_SUCCESS) {
         HANDLE launched_process = NULL;
         if (base::LaunchApp(command_line, false, true, &launched_process)) {
           return launched_process;
@@ -186,33 +188,23 @@ bool RegistryReadyModeState::GetValue(int64* value, bool* exists) {
   *exists = false;
   *value = 0;
 
-  HKEY roots[] = {HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};
-
+  HKEY roots[] = { HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE };
+  LONG result = ERROR_SUCCESS;
   for (int i = 0; i < arraysize(roots); i++) {
     base::win::RegKey config_key;
-
-    if (config_key.Open(roots[i], key_name_.c_str(), KEY_QUERY_VALUE)) {
-      if (config_key.ValueExists(installer::kChromeFrameReadyModeField)) {
-        int64 temp;
-        DWORD value_size = sizeof(temp);
-        DWORD type = 0;
-        if (!config_key.ReadValue(installer::kChromeFrameReadyModeField,
-                                  &temp, &value_size, &type)) {
-          DLOG(ERROR) << "Failed to read from registry key " << key_name_
-                      << " and value " << installer::kChromeFrameReadyModeField;
-          return false;
-        }
-
-        if (value_size != sizeof(temp) || type != REG_QWORD) {
-          DLOG(ERROR) << "Unexpected state found under registry key "
-                      << key_name_ << " and value "
-                      << installer::kChromeFrameReadyModeField;
-          return false;
-        }
-
-        *value = temp;
+    result = config_key.Open(roots[i], key_name_.c_str(), KEY_QUERY_VALUE);
+    if (result == ERROR_SUCCESS) {
+      result = config_key.ReadInt64(installer::kChromeFrameReadyModeField,
+                                    value);
+      if (result == ERROR_SUCCESS) {
         *exists = true;
         return true;
+      }
+      if (result != ERROR_FILE_NOT_FOUND) {
+        DLOG(ERROR) << "Failed to read from registry key " << key_name_
+                    << " and value " << installer::kChromeFrameReadyModeField
+                    << " error: " << result;
+        return false;
       }
     }
   }

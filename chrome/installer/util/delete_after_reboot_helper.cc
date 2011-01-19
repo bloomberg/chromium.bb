@@ -379,13 +379,14 @@ bool RemoveFromMovesPendingReboot(const wchar_t* directory) {
 
   if (strings_to_keep.size() <= 1) {
     // We have only the trailing NULL string. Don't bother writing that.
-    return session_manager_key.DeleteValue(kPendingFileRenameOps);
+    return (session_manager_key.DeleteValue(kPendingFileRenameOps) ==
+        ERROR_SUCCESS);
   }
   std::vector<char> buffer;
   StringArrayToMultiSZBytes(strings_to_keep, &buffer);
   DCHECK(buffer.size() > 0);
   if (buffer.empty())
     return false;
-  return session_manager_key.WriteValue(kPendingFileRenameOps, &buffer[0],
-                                        buffer.size(), REG_MULTI_SZ);
+  return (session_manager_key.WriteValue(kPendingFileRenameOps, &buffer[0],
+      buffer.size(), REG_MULTI_SZ) == ERROR_SUCCESS);
 }

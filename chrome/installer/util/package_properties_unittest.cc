@@ -32,8 +32,8 @@ TEST_F(PackagePropertiesTest, Basic) {
     if (!props[i]->ReceivesUpdates()) {
       TempRegKeyOverride override(HKEY_CURRENT_USER, L"props");
       RegKey key;
-      EXPECT_TRUE(key.Create(HKEY_CURRENT_USER, state_key.c_str(),
-                             KEY_ALL_ACCESS));
+      EXPECT_EQ(ERROR_SUCCESS,
+          key.Create(HKEY_CURRENT_USER, state_key.c_str(), KEY_ALL_ACCESS));
     }
     TempRegKeyOverride::DeleteAllTempKeys();
   }

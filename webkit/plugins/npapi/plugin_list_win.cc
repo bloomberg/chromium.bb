@@ -73,7 +73,7 @@ bool GetInstalledPath(const char16* app, FilePath* out) {
 
   base::win::RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ);
   std::wstring path;
-  if (key.ReadValue(kRegistryPath, &path)) {
+  if (key.ReadValue(kRegistryPath, &path) == ERROR_SUCCESS) {
     *out = FilePath(path);
     return true;
   }
@@ -95,7 +95,7 @@ void GetPluginsInRegistryDirectory(
     base::win::RegKey key(root_key, reg_path.c_str(), KEY_READ);
 
     std::wstring path;
-    if (key.ReadValue(kRegistryPath, &path))
+    if (key.ReadValue(kRegistryPath, &path) == ERROR_SUCCESS)
       plugin_dirs->insert(FilePath(path));
   }
 }
@@ -110,7 +110,7 @@ void GetFirefoxInstalledPaths(std::vector<FilePath>* out) {
                              it.Name() + L"\\Main";
     base::win::RegKey key(HKEY_LOCAL_MACHINE, full_path.c_str(), KEY_READ);
     std::wstring install_dir;
-    if (!key.ReadValue(L"Install Directory", &install_dir))
+    if (key.ReadValue(L"Install Directory", &install_dir) != ERROR_SUCCESS)
       continue;
     out->push_back(FilePath(install_dir));
   }
@@ -190,8 +190,10 @@ void GetJavaDirectory(std::set<FilePath>* plugin_dirs) {
 
   // 2. Read the current Java version
   std::wstring java_version;
-  if (!java_key.ReadValue(kRegistryBrowserJavaVersion, &java_version))
+  if (java_key.ReadValue(kRegistryBrowserJavaVersion, &java_version) !=
+      ERROR_SUCCESS) {
     java_key.ReadValue(kRegistryCurrentJavaVersion, &java_version);
+  }
 
   if (!java_version.empty()) {
     java_key.OpenKey(java_version.c_str(), KEY_QUERY_VALUE);
@@ -199,7 +201,8 @@ void GetJavaDirectory(std::set<FilePath>* plugin_dirs) {
     // 3. Install path of the JRE binaries is specified in "JavaHome"
     //    value under the Java version key.
     std::wstring java_plugin_directory;
-    if (java_key.ReadValue(kRegistryJavaHome, &java_plugin_directory)) {
+    if (java_key.ReadValue(kRegistryJavaHome, &java_plugin_directory) ==
+        ERROR_SUCCESS) {
       // 4. The new plugin resides under the 'bin/new_plugin'
       //    subdirectory.
       DCHECK(!java_plugin_directory.empty());

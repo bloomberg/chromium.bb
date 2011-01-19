@@ -43,7 +43,7 @@ bool GetIeVersionString(std::wstring* version) {
     return false;
   base::win::RegKey key(HKEY_LOCAL_MACHINE, kIeVersionKey, KEY_READ);
   DCHECK(key.ValueExists(kIeVersionValue));
-  return key.ReadValue(kIeVersionValue, version);
+  return (key.ReadValue(kIeVersionValue, version) == ERROR_SUCCESS);
 }
 
 }  // namespace
@@ -164,9 +164,12 @@ int GetAverageAddonTimeMs(const CLSID& addon_id,
   }
 
   DWORD load_time = 0;
+  LONG result = ERROR_SUCCESS;
   if (GetIeVersion() < IEVERSION_IE9) {
-    if (!stats_key.ReadValueDW(time_prefix.c_str(), &load_time)) {
-      VLOG(1) << "Can't read time: " << time_prefix;
+    result = stats_key.ReadValueDW(time_prefix.c_str(), &load_time);
+    if (result != ERROR_SUCCESS) {
+      VLOG(1) << "Can't read time: " << time_prefix << " error: "
+              << com::LogWe(result);
       return kInvalidTime;
     }
   } else {
@@ -177,9 +180,11 @@ int GetAverageAddonTimeMs(const CLSID& addon_id,
     DWORD data_size = sizeof(values);
     DWORD data_type = REG_NONE;
 
-    if (!stats_key.ReadValue(value_name.c_str(), &values, &data_size,
-                             &data_type)) {
-      VLOG(1) << "Can't read time: " << value_name;
+    result = stats_key.ReadValue(value_name.c_str(), &values, &data_size,
+                                 &data_type);
+    if (result != ERROR_SUCCESS) {
+      VLOG(1) << "Can't read time: " << value_name << " error: "
+              << com::LogWe(result);
       return kInvalidTime;
     }
 

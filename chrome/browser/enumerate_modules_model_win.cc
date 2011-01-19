@@ -423,12 +423,12 @@ void ModuleEnumerator::ReadShellExtensions(HKEY parent) {
     std::wstring key(std::wstring(L"CLSID\\") + registration.Name() +
         L"\\InProcServer32");
     base::win::RegKey clsid;
-    if (!clsid.Open(HKEY_CLASSES_ROOT, key.c_str(), KEY_READ)) {
+    if (clsid.Open(HKEY_CLASSES_ROOT, key.c_str(), KEY_READ) != ERROR_SUCCESS) {
       ++registration;
       continue;
     }
     string16 dll;
-    if (!clsid.ReadValue(L"", &dll)) {
+    if (clsid.ReadValue(L"", &dll) != ERROR_SUCCESS) {
       ++registration;
       continue;
     }

@@ -110,12 +110,9 @@ WorkItem* WorkItemList::AddDeleteRegKeyWorkItem(HKEY predefined_root,
 WorkItem* WorkItemList::AddDeleteRegValueWorkItem(
     HKEY predefined_root,
     const std::wstring& key_path,
-    const std::wstring& value_name,
-    DWORD type) {
+    const std::wstring& value_name) {
   WorkItem* item = WorkItem::CreateDeleteRegValueWorkItem(predefined_root,
-                                                          key_path,
-                                                          value_name,
-                                                          type);
+                                                          key_path, value_name);
   AddWorkItem(item);
   return item;
 }

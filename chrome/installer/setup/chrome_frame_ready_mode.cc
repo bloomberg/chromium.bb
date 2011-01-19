@@ -83,20 +83,18 @@ InstallStatus ChromeFrameReadyModeOptIn(const InstallerState& installer_state,
     // Add a work item to delete the ChromeFrameReadyMode registry value.
     HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
     item_list->AddDeleteRegValueWorkItem(root, package_properties.GetStateKey(),
-        kChromeFrameReadyModeField, REG_QWORD);
+        kChromeFrameReadyModeField);
 
     // Delete the command elevation registry keys
     std::wstring version_key(cf->GetVersionKey());
     item_list->AddDeleteRegValueWorkItem(
-        root, version_key, google_update::kRegCFTempOptOutCmdField, REG_SZ);
+        root, version_key, google_update::kRegCFTempOptOutCmdField);
     item_list->AddDeleteRegValueWorkItem(
-        root, version_key, google_update::kRegCFEndTempOptOutCmdField, REG_SZ);
+        root, version_key, google_update::kRegCFEndTempOptOutCmdField);
     item_list->AddDeleteRegValueWorkItem(root, version_key,
-                                         google_update::kRegCFOptOutCmdField,
-                                         REG_SZ);
+                                         google_update::kRegCFOptOutCmdField);
     item_list->AddDeleteRegValueWorkItem(root, version_key,
-                                         google_update::kRegCFOptInCmdField,
-                                         REG_SZ);
+                                         google_update::kRegCFOptInCmdField);
 
     if (!item_list->Do()) {
       LOG(ERROR) << "Failed to opt into GCF";
@@ -141,8 +139,7 @@ InstallStatus ChromeFrameReadyModeTempOptOut(const CommandLine& cmd_line) {
     while (values.Valid()) {
       const wchar_t* name = values.Name();
       if (StartsWith(name, kChromeFramePrefix, true)) {
-        item_list->AddDeleteRegValueWorkItem(root, kPostPlatformUAKey, name,
-                                             REG_SZ);
+        item_list->AddDeleteRegValueWorkItem(root, kPostPlatformUAKey, name);
       }
       ++values;
     }

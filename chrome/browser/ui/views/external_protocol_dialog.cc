@@ -176,7 +176,7 @@ std::wstring ExternalProtocolDialog::GetApplicationForProtocol(
   std::wstring parameters = url_spec.substr(split_offset + 1,
                                             url_spec.length() - 1);
   std::wstring application_to_launch;
-  if (cmd_key.ReadValue(NULL, &application_to_launch)) {
+  if (cmd_key.ReadValue(NULL, &application_to_launch) == ERROR_SUCCESS) {
     ReplaceSubstringsAfterOffset(&application_to_launch, 0, L"%1", parameters);
     return application_to_launch;
   } else {

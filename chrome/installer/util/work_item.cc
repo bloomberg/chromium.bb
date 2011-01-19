@@ -49,10 +49,8 @@ DeleteRegKeyWorkItem* WorkItem::CreateDeleteRegKeyWorkItem(
 DeleteRegValueWorkItem* WorkItem::CreateDeleteRegValueWorkItem(
     HKEY predefined_root,
     const std::wstring& key_path,
-    const std::wstring& value_name,
-    DWORD type) {
-  return new DeleteRegValueWorkItem(predefined_root, key_path,
-                                    value_name, type);
+    const std::wstring& value_name) {
+  return new DeleteRegValueWorkItem(predefined_root, key_path, value_name);
 }
 
 DeleteTreeWorkItem* WorkItem::CreateDeleteTreeWorkItem(

@@ -43,16 +43,9 @@ bool GetCeeeRegistryBoolean(const wchar_t* key, bool default_value) {
   base::win::RegKey hkcu(HKEY_CURRENT_USER, kRegistryPath, KEY_READ);
   LOG_IF(ERROR, !hkcu.Valid()) << "Could not open reg key: " << kRegistryPath;
 
-  DWORD dword_value_representation = 0;
-  DWORD size = sizeof(dword_value_representation);
-  DWORD type = REG_DWORD;
-
-  if (!hkcu.Valid() ||
-      !hkcu.ReadValue(key, &dword_value_representation, &size, &type)) {
-    return default_value;
-  }
-
-  return dword_value_representation != 0;
+  DWORD value = default_value ? 1 : 0;
+  hkcu.ReadValueDW(key, &value);
+  return value != 0;
 }
 
 void SetCeeeRegistryBoolean(const wchar_t* key, bool assign_value) {
@@ -60,11 +53,13 @@ void SetCeeeRegistryBoolean(const wchar_t* key, bool assign_value) {
   LOG_IF(ERROR, !hkcu.Valid()) << "Could not open reg key: " << kRegistryPath;
 
   DWORD dword_value_representation = assign_value ? 1 : 0;
-  bool write_result = hkcu.WriteValue(key, &dword_value_representation,
+  LONG write_result = hkcu.WriteValue(key, &dword_value_representation,
                                       sizeof(dword_value_representation),
                                       REG_DWORD);
 
-  LOG_IF(ERROR, !write_result) << "Failed to write a registry key: " << key;
+  LOG_IF(ERROR, write_result != ERROR_SUCCESS)
+      << "Failed to write a registry key: " << key
+      << " error: " << com::LogWe(write_result);
 }
 
 }  // anonymous namespace
@@ -111,8 +106,10 @@ std::wstring GetExtensionPath() {
 
   base::win::RegKey* keys[] = { &hkcu, &hklm };
   for (int i = 0; i < arraysize(keys); ++i) {
-    if (keys[i]->Valid() && keys[i]->ReadValue(kRegistryValue, &crx_path))
+    if (keys[i]->Valid() &&
+        (keys[i]->ReadValue(kRegistryValue, &crx_path) == ERROR_SUCCESS)) {
       break;
+    }
   }
 
   if (crx_path.size() == 0u) {
@@ -196,8 +193,8 @@ bool NeedToInstallExtension() {
         // we might need to retry installation.
         std::wstring version_string;
         base::win::RegKey hkcu(HKEY_CURRENT_USER, kRegistryPath, KEY_READ);
-        success = hkcu.ReadValue(
-            kRegistryValueCrxInstalledByVersion, &version_string);
+        success = hkcu.ReadValue(kRegistryValueCrxInstalledByVersion,
+                                 &version_string) == ERROR_SUCCESS;
         return !success || version_string != TO_L_STRING(CHROME_VERSION_STRING);
       }
     }
@@ -216,17 +213,18 @@ void SetInstalledExtensionPath(const FilePath& path) {
       base::Time::Now().ToInternalValue();
 
   base::win::RegKey key(HKEY_CURRENT_USER, kRegistryPath, KEY_WRITE);
-  bool write_result = key.WriteValue(kRegistryValueCrxInstalledTime,
+  LONG write_result = key.WriteValue(kRegistryValueCrxInstalledTime,
                                      &crx_time,
                                      sizeof(crx_time),
                                      REG_QWORD);
-  DCHECK(write_result);
+  DCHECK_EQ(ERROR_SUCCESS, write_result);
   write_result = key.WriteValue(kRegistryValueCrxInstalledPath,
                                 path.value().c_str());
-  DCHECK(write_result);
+  DCHECK_EQ(ERROR_SUCCESS, write_result);
 
   write_result = key.WriteValue(kRegistryValueCrxInstalledByVersion,
                                 TO_L_STRING(CHROME_VERSION_STRING));
+  DCHECK_EQ(ERROR_SUCCESS, write_result);
 }
 
 bool IsCrxOrEmpty(const std::wstring& path) {
@@ -301,12 +299,13 @@ std::wstring GetCromeFrameClientStateKey() {
 bool GetCollectStatsConsent() {
   std::wstring reg_path = GetCromeFrameClientStateKey();
   base::win::RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ);
-  DWORD value;
-  if (!key.ReadValueDW(google_update::kRegUsageStatsField, &value)) {
+  DWORD value = 0;
+  if (key.ReadValueDW(google_update::kRegUsageStatsField, &value) !=
+      ERROR_SUCCESS) {
     base::win::RegKey hklm_key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ);
-    if (!hklm_key.ReadValueDW(google_update::kRegUsageStatsField, &value))
-      return false;
+    key.ReadValueDW(google_update::kRegUsageStatsField, &value);
   }
+
   return (1 == value);
 }
 
@@ -326,7 +325,7 @@ bool RefreshElevationPolicyIfNeeded() {
 
   static const wchar_t kValueName[] = L"last_elevation_refresh";
   std::wstring last_elevation_refresh_version;
-  bool result = hkcu.ReadValue(kValueName, &last_elevation_refresh_version);
+  LONG result = hkcu.ReadValue(kValueName, &last_elevation_refresh_version);
   if (last_elevation_refresh_version == expected_version)
     return false;
 
@@ -336,7 +335,8 @@ bool RefreshElevationPolicyIfNeeded() {
   // Write after refreshing because it's better to refresh twice, than to miss
   // once.
   result = hkcu.WriteValue(kValueName, expected_version.c_str());
-  LOG_IF(ERROR, !result) << "Failed to write a registry value: " << kValueName;
+  LOG_IF(ERROR, result != ERROR_SUCCESS) << "Failed to write a registry value: "
+      << kValueName << " error: " << com::LogWe(result);
 
   return true;
 }

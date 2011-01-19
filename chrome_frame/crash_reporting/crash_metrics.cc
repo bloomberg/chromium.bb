@@ -30,16 +30,19 @@ bool CrashMetricsReporter::SetMetric(Metric metric, int value) {
   DCHECK(metric >= NAVIGATION_COUNT && metric <= LAST_METRIC);
 
   base::win::RegKey metric_key;
-  if (metric_key.Create(HKEY_CURRENT_USER, kChromeFrameMetricsKey,
-                        KEY_SET_VALUE)) {
-    if (metric_key.WriteValue(g_metric_names[metric], value)) {
+  LONG result = metric_key.Create(HKEY_CURRENT_USER, kChromeFrameMetricsKey,
+                                  KEY_SET_VALUE);
+  if (result == ERROR_SUCCESS) {
+    result = metric_key.WriteValue(g_metric_names[metric], value);
+    if (result == ERROR_SUCCESS) {
       return true;
     } else {
       DLOG(ERROR) << "Failed to read ChromeFrame metric:"
-                  << g_metric_names[metric];
+        << g_metric_names[metric] << " error: " << result;
     }
   } else {
-    DLOG(ERROR) << "Failed to create ChromeFrame metrics key";
+    DLOG(ERROR) << "Failed to create ChromeFrame metrics key. error: "
+                << result;
   }
   return false;
 }
@@ -50,13 +53,11 @@ int CrashMetricsReporter::GetMetric(Metric metric) {
   int ret = 0;
   base::win::RegKey metric_key;
   if (metric_key.Open(HKEY_CURRENT_USER, kChromeFrameMetricsKey,
-                      KEY_QUERY_VALUE)) {
-    int value = 0;
-    if (metric_key.ReadValueDW(g_metric_names[metric],
-                               reinterpret_cast<DWORD*>(&value))) {
-      ret = value;
-    }
+                      KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+    metric_key.ReadValueDW(g_metric_names[metric],
+                           reinterpret_cast<DWORD*>(&ret));
   }
+
   return ret;
 }
 

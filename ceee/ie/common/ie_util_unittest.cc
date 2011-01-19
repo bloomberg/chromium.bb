@@ -70,11 +70,11 @@ TEST_F(IeUtilTest, Ie8) {
   base::win::RegKey stats_key(HKEY_CURRENT_USER, kAddonStatsRegPath, KEY_WRITE);
   ASSERT_TRUE(stats_key.Valid());
 
-  ASSERT_TRUE(stats_key.WriteValue(L"LoadTime", L"time"));
+  ASSERT_EQ(ERROR_SUCCESS, stats_key.WriteValue(L"LoadTime", L"time"));
   EXPECT_EQ(-1, GetAverageAddonLoadTimeMs(kAddonGuid));
 
   DWORD time = 11;
-  ASSERT_TRUE(stats_key.WriteValue(L"LoadTime", time));
+  ASSERT_EQ(ERROR_SUCCESS, stats_key.WriteValue(L"LoadTime", time));
 
   EXPECT_EQ(11, GetAverageAddonLoadTimeMs(kAddonGuid));
 }
@@ -89,24 +89,25 @@ TEST_F(IeUtilTest, Ie9) {
   base::win::RegKey stats_key(HKEY_CURRENT_USER, kAddonStatsRegPath, KEY_WRITE);
   ASSERT_TRUE(stats_key.Valid());
 
-  ASSERT_TRUE(stats_key.WriteValue(L"LoadTimeArray", L"time"));
+  ASSERT_EQ(ERROR_SUCCESS, stats_key.WriteValue(L"LoadTimeArray", L"time"));
   EXPECT_EQ(-1, GetAverageAddonLoadTimeMs(kAddonGuid));
 
   DWORD time[] = {1, 2, 3, 4, -1, 10};
 
-  ASSERT_TRUE(stats_key.WriteValue(L"LoadTimeArray", &time, sizeof(time[0]),
-                                   REG_BINARY));
+  ASSERT_EQ(ERROR_SUCCESS, stats_key.WriteValue(L"LoadTimeArray", &time,
+                                                sizeof(time[0]), REG_BINARY));
   EXPECT_EQ(-1, GetAverageAddonLoadTimeMs(kAddonGuid));
 
-  ASSERT_TRUE(stats_key.WriteValue(L"LoadTimeArray", &time, 10, REG_BINARY));
+  ASSERT_EQ(ERROR_SUCCESS,
+      stats_key.WriteValue(L"LoadTimeArray", &time, 10, REG_BINARY));
   EXPECT_EQ(-1, GetAverageAddonLoadTimeMs(kAddonGuid));
 
-  ASSERT_TRUE(stats_key.WriteValue(L"LoadTimeArray", &time, 4 * sizeof(time[0]),
-                                   REG_BINARY));
+  ASSERT_EQ(ERROR_SUCCESS, stats_key.WriteValue(L"LoadTimeArray",
+      &time, 4 * sizeof(time[0]), REG_BINARY));
   EXPECT_EQ(2, GetAverageAddonLoadTimeMs(kAddonGuid));
 
-  ASSERT_TRUE(stats_key.WriteValue(L"LoadTimeArray", time, sizeof(time),
-                                   REG_BINARY));
+  ASSERT_EQ(ERROR_SUCCESS, stats_key.WriteValue(L"LoadTimeArray", time,
+                                                sizeof(time), REG_BINARY));
   EXPECT_EQ(4, GetAverageAddonLoadTimeMs(kAddonGuid));
 }
 

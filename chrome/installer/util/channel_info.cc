@@ -116,11 +116,12 @@ bool SetModifier(ModifierIndex index, bool set, std::wstring* ap_value) {
 namespace installer {
 
 bool ChannelInfo::Initialize(const RegKey& key) {
-  return key.ReadValue(google_update::kRegApField, &value_);
+  return (key.ReadValue(google_update::kRegApField, &value_) == ERROR_SUCCESS);
 }
 
 bool ChannelInfo::Write(RegKey* key) const {
-  return key->WriteValue(google_update::kRegApField, value_.c_str());
+  return (key->WriteValue(google_update::kRegApField, value_.c_str()) ==
+      ERROR_SUCCESS);
 }
 
 bool ChannelInfo::GetChannelName(std::wstring* channel_name) const {

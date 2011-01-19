@@ -40,7 +40,7 @@ class DeleteRegValueWorkItem : public WorkItem {
   };
 
   DeleteRegValueWorkItem(HKEY predefined_root, const std::wstring& key_path,
-                         const std::wstring& value_name, DWORD type);
+                         const std::wstring& value_name);
 
   // Root key of the target key under which the value is set. The root key can
   // only be one of the predefined keys on Windows.
@@ -52,19 +52,11 @@ class DeleteRegValueWorkItem : public WorkItem {
   // Name of the value to be set.
   std::wstring value_name_;
 
-  // DWORD that tells whether data value is of type REG_SZ, REG_DWORD, or
-  // REG_QWORD
-  // Ideally we do not need this information from user of this class and can
-  // check the registry for the type. But to simpify implementation we are
-  // going to put the burden on the caller for now to provide us the type.
-  DWORD type_;
-
   DeletionStatus status_;
 
-  // Data of the previous value.
-  std::wstring old_str_;  // if data is of type REG_SZ
-  DWORD old_dw_;  // if data is of type REG_DWORD
-  int64 old_qword_;  // if data is of type REG_QWORD
+  // Previous value.
+  DWORD previous_type_;
+  std::string previous_value_;
 };
 
 #endif  // CHROME_INSTALLER_UTIL_DELETE_REG_VALUE_WORK_ITEM_H_

@@ -448,7 +448,7 @@ std::wstring GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   std::wstring result;
   std::wstring brand_value;
   if (client_state_key.ReadValue(google_update::kRegRLZBrandField,
-                                 &brand_value)) {
+                                 &brand_value) == ERROR_SUCCESS) {
     result = google_update::kRegRLZBrandField;
     result.append(L"=");
     result.append(brand_value);
@@ -457,7 +457,7 @@ std::wstring GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
 
   std::wstring client_value;
   if (client_state_key.ReadValue(google_update::kRegClientField,
-                                 &client_value)) {
+                                 &client_value) == ERROR_SUCCESS) {
     result.append(google_update::kRegClientField);
     result.append(L"=");
     result.append(client_value);

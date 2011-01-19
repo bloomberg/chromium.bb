@@ -49,11 +49,13 @@ void ExternalRegistryExtensionLoader::LoadOnFileThread() {
     std::wstring key_path = ASCIIToWide(kRegistryExtensions);
     key_path.append(L"\\");
     key_path.append(iterator.Name());
-    if (key.Open(kRegRoot, key_path.c_str(), KEY_READ)) {
+    if (key.Open(kRegRoot, key_path.c_str(), KEY_READ) == ERROR_SUCCESS) {
       std::wstring extension_path;
-      if (key.ReadValue(kRegistryExtensionPath, &extension_path)) {
+      if (key.ReadValue(kRegistryExtensionPath, &extension_path)
+          == ERROR_SUCCESS) {
         std::wstring extension_version;
-        if (key.ReadValue(kRegistryExtensionVersion, &extension_version)) {
+        if (key.ReadValue(kRegistryExtensionVersion, &extension_version)
+            == ERROR_SUCCESS) {
           std::string id = WideToASCII(iterator.Name());
           StringToLowerASCII(&id);
 

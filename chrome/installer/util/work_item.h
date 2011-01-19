@@ -82,8 +82,7 @@ class WorkItem {
   static DeleteRegValueWorkItem* CreateDeleteRegValueWorkItem(
       HKEY predefined_root,
       const std::wstring& key_path,
-      const std::wstring& value_name,
-      DWORD type);
+      const std::wstring& value_name);
 
   // Create a DeleteTreeWorkItem that recursively deletes a file system
   // hierarchy at the given root path. A key file can be optionally specified

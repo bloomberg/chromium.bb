@@ -85,7 +85,7 @@ class PluginTest : public UITest {
       base::win::RegKey regkey;
       if (regkey.Open(HKEY_LOCAL_MACHINE,
                       L"Software\\Microsoft\\MediaPlayer\\ShimInclusionList",
-                      KEY_WRITE)) {
+                      KEY_WRITE) == ERROR_SUCCESS) {
         regkey.CreateKey(L"CHROME.EXE", KEY_READ);
       }
     } else if (strcmp(test_info->name(), "MediaPlayerOld") == 0) {

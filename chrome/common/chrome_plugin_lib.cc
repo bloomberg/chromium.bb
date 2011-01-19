@@ -153,11 +153,11 @@ void ChromePluginLib::LoadChromePlugins(const CPBrowserFuncs* bfuncs) {
     reg_path.append(iter.Name());
     base::win::RegKey key(HKEY_CURRENT_USER, reg_path.c_str());
 
-    DWORD is_persistent;
-    if (key.ReadValueDW(kRegistryLoadOnStartup, &is_persistent) &&
-        is_persistent) {
+    DWORD is_persistent = 0;
+    key.ReadValueDW(kRegistryLoadOnStartup, &is_persistent);
+    if (is_persistent) {
       std::wstring path;
-      if (key.ReadValue(kRegistryPath, &path)) {
+      if (key.ReadValue(kRegistryPath, &path) == ERROR_SUCCESS) {
         ChromePluginLib::Create(path, bfuncs);
       }
     }

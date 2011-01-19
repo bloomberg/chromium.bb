@@ -125,12 +125,12 @@ PluginService::PluginService()
       HKEY_CURRENT_USER, webkit::npapi::kRegistryMozillaPlugins, KEY_NOTIFY);
   hklm_key_.Create(
       HKEY_LOCAL_MACHINE, webkit::npapi::kRegistryMozillaPlugins, KEY_NOTIFY);
-  if (hkcu_key_.StartWatching()) {
+  if (hkcu_key_.StartWatching() == ERROR_SUCCESS) {
     hkcu_event_.reset(new base::WaitableEvent(hkcu_key_.watch_event()));
     hkcu_watcher_.StartWatching(hkcu_event_.get(), this);
   }
 
-  if (hklm_key_.StartWatching()) {
+  if (hklm_key_.StartWatching() == ERROR_SUCCESS) {
     hklm_event_.reset(new base::WaitableEvent(hklm_key_.watch_event()));
     hklm_watcher_.StartWatching(hklm_event_.get(), this);
   }

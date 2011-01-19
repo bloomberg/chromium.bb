@@ -181,7 +181,7 @@ bool CurrentUserHasDefaultBrowser(const Product& product) {
                  ShellUtil::kRegShellOpen);
   RegKey key(HKEY_LOCAL_MACHINE, reg_key.c_str(), KEY_READ);
   std::wstring reg_exe;
-  if (key.ReadValue(L"", &reg_exe) && reg_exe.length() > 2) {
+  if (key.ReadValue(L"", &reg_exe) == ERROR_SUCCESS && reg_exe.length() > 2) {
     FilePath chrome_exe(product.package().path()
         .Append(installer::kChromeExe));
     // The path in the registry will always have quotes.

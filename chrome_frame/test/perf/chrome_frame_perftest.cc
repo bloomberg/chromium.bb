@@ -1105,7 +1105,7 @@ TEST_F(FlashCreationTest, PerfCold) {
   base::win::RegKey flash_key(HKEY_CLASSES_ROOT, kFlashControlKey, KEY_READ);
 
   std::wstring plugin_path;
-  ASSERT_TRUE(flash_key.ReadValue(L"", &plugin_path));
+  ASSERT_EQ(ERROR_SUCCESS, flash_key.ReadValue(L"", &plugin_path));
   ASSERT_FALSE(plugin_path.empty());
 
   FilePath flash_path = FilePath::FromWStringHack(plugin_path);
@@ -1126,7 +1126,7 @@ TEST_F(SilverlightCreationTest, DISABLED_PerfCold) {
                                     KEY_READ);
 
   std::wstring plugin_path;
-  ASSERT_TRUE(silverlight_key.ReadValue(L"", &plugin_path));
+  ASSERT_EQ(ERROR_SUCCESS, silverlight_key.ReadValue(L"", &plugin_path));
   ASSERT_FALSE(plugin_path.empty());
 
   FilePath silverlight_path = FilePath::FromWStringHack(plugin_path);

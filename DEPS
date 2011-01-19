@@ -225,7 +225,7 @@ deps_os = {
        Var("nacl_revision")),
 
     "src/rlz":
-      (Var("googlecode_url") % "rlz") + "/trunk@32",
+      (Var("googlecode_url") % "rlz") + "/trunk@33",
 
     # Dependencies used by libjpeg-turbo
     "src/third_party/yasm/binaries":

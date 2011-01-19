@@ -343,8 +343,8 @@ void AddGoogleUpdateWorkItems(const InstallationState& original_state,
     // Handle the case where the ClientState key doesn't exist by creating it.
     // This takes care of the multi-installer's package key, which is not
     // created by Google Update for us.
-    if (!key.Open(reg_root, kscan->c_str(), KEY_QUERY_VALUE) ||
-        !other_info.Initialize(key)) {
+    if ((key.Open(reg_root, kscan->c_str(), KEY_QUERY_VALUE) != ERROR_SUCCESS)
+        || (!other_info.Initialize(key))) {
       other_info.set_value(std::wstring());
     }
     if (!other_info.Equals(channel_info)) {
@@ -502,11 +502,9 @@ bool AppendPostInstallTasks(bool multi_install,
       BrowserDistribution* dist = products[i]->distribution();
       std::wstring version_key(dist->GetVersionKey());
       regular_update_work_items->AddDeleteRegValueWorkItem(root, version_key,
-                                            google_update::kRegOldVersionField,
-                                            true);
+                                            google_update::kRegOldVersionField);
       regular_update_work_items->AddDeleteRegValueWorkItem(root, version_key,
-                                            google_update::kRegRenameCmdField,
-                                            true);
+                                            google_update::kRegRenameCmdField);
     }
 
     post_install_task_list->AddWorkItem(regular_update_work_items.release());
@@ -790,7 +788,7 @@ void AddChromeFrameWorkItems(bool install,
                KEY_QUERY_VALUE).Valid()) {
       list->AddDeleteRegValueWorkItem(root,
           product.package().properties()->GetStateKey(),
-          installer::kChromeFrameReadyModeField, REG_QWORD);
+          installer::kChromeFrameReadyModeField);
     }
 
     const Product* chrome = installer::FindProduct(product.package().products(),
@@ -812,16 +810,13 @@ void AddChromeFrameWorkItems(bool install,
 
   if (!ready_mode || !install) {
     list->AddDeleteRegValueWorkItem(root, version_key,
-                                    google_update::kRegCFTempOptOutCmdField,
-                                    REG_SZ);
+                                    google_update::kRegCFTempOptOutCmdField);
     list->AddDeleteRegValueWorkItem(root, version_key,
-                                    google_update::kRegCFEndTempOptOutCmdField,
-                                    REG_SZ);
+                                    google_update::kRegCFEndTempOptOutCmdField);
     list->AddDeleteRegValueWorkItem(root, version_key,
-                                    google_update::kRegCFOptOutCmdField,
-                                    REG_SZ);
+                                    google_update::kRegCFOptOutCmdField);
     list->AddDeleteRegValueWorkItem(root, version_key,
-                                    google_update::kRegCFOptInCmdField, REG_SZ);
+                                    google_update::kRegCFOptInCmdField);
   }
 
   if (update_chrome_uninstall_command) {

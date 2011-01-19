@@ -418,9 +418,9 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
   // for the rest patch this function.
   if ((quirks_ & PLUGIN_QUIRK_PATCH_REGENUMKEYEXW) &&
       base::win::GetVersion() == base::win::VERSION_XP &&
-      !base::win::RegKey().Open(HKEY_LOCAL_MACHINE,
+      (base::win::RegKey().Open(HKEY_LOCAL_MACHINE,
           L"SOFTWARE\\Microsoft\\MediaPlayer\\ShimInclusionList\\chrome.exe",
-          KEY_READ) &&
+          KEY_READ) != ERROR_SUCCESS) &&
       !g_iat_patch_reg_enum_key_ex_w.Pointer()->is_patched()) {
     g_iat_patch_reg_enum_key_ex_w.Pointer()->Patch(
         L"wmpdxm.dll", "advapi32.dll", "RegEnumKeyExW",

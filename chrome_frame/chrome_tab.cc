@@ -324,16 +324,16 @@ HRESULT SetupRunOnce() {
       }
 
       RegKey run_once;
-      if (run_once.Create(hive, kRunOnce, KEY_READ | KEY_WRITE)) {
+      LONG ret = run_once.Create(hive, kRunOnce, KEY_READ | KEY_WRITE);
+      if (ret == ERROR_SUCCESS) {
         CommandLine run_once_cmd(chrome_launcher::GetChromeExecutablePath());
         run_once_cmd.AppendSwitchASCII(switches::kAutomationClientChannelID,
                                        "0");
         run_once_cmd.AppendSwitch(switches::kChromeFrame);
-        if (run_once.WriteValue(L"A",
-                                run_once_cmd.command_line_string().c_str())) {
-          result = S_OK;
-        }
+        ret = run_once.WriteValue(L"A",
+                                  run_once_cmd.command_line_string().c_str());
       }
+      result = HRESULT_FROM_WIN32(ret);
     } else {
       result = S_FALSE;
     }
@@ -434,7 +434,8 @@ HRESULT SetChromeFrameUA(bool is_system, const wchar_t* value) {
   HKEY parent_hive = is_system ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
 
   RegKey ua_key;
-  if (ua_key.Create(parent_hive, kPostPlatformUAKey, KEY_READ | KEY_WRITE)) {
+  if (ua_key.Create(parent_hive, kPostPlatformUAKey,
+                    KEY_READ | KEY_WRITE) == ERROR_SUCCESS) {
     // Make sure that we unregister ChromeFrame UA strings registered previously
     wchar_t value_name[MAX_PATH + 1] = {};
     wchar_t value_data[MAX_PATH + 1] = {};
@@ -654,7 +655,7 @@ class SecurityDescBackup {
     RegKey backup_key(HKEY_LOCAL_MACHINE, backup_key_name_.c_str(),
                       KEY_READ | KEY_WRITE);
     if (backup_key.Valid()) {
-      return backup_key.WriteValue(NULL, str.GetString());
+      return backup_key.WriteValue(NULL, str.GetString()) == ERROR_SUCCESS;
     }
 
     return false;
@@ -696,15 +697,15 @@ class SecurityDescBackup {
 
     DWORD len = 0;
     DWORD reg_type = REG_NONE;
-    if (!backup_key.ReadValue(NULL, NULL, &len, &reg_type))
+    if (backup_key.ReadValue(NULL, NULL, &len, &reg_type) != ERROR_SUCCESS)
       return false;
 
     if (reg_type != REG_SZ)
       return false;
 
     size_t wchar_count = 1 + len / sizeof(wchar_t);
-    if (!backup_key.ReadValue(NULL, WriteInto(sddl, wchar_count), &len,
-                              &reg_type)) {
+    if (backup_key.ReadValue(NULL, WriteInto(sddl, wchar_count), &len,
+                             &reg_type) != ERROR_SUCCESS) {
       return false;
     }
 
@@ -760,16 +761,17 @@ static bool SetOrDeleteMimeHandlerKey(bool set, HKEY root_key) {
   if (!key.Valid())
     return false;
 
-  bool result;
+  LONG result1 = ERROR_SUCCESS;
+  LONG result2 = ERROR_SUCCESS;
   if (set) {
-    result = key.WriteValue(L"ChromeTab.ChromeActiveDocument", 1);
-    result = key.WriteValue(L"ChromeTab.ChromeActiveDocument.1", 1) && result;
+    result1 = key.WriteValue(L"ChromeTab.ChromeActiveDocument", 1);
+    result2 = key.WriteValue(L"ChromeTab.ChromeActiveDocument.1", 1);
   } else {
-    result = key.DeleteValue(L"ChromeTab.ChromeActiveDocument");
-    result = key.DeleteValue(L"ChromeTab.ChromeActiveDocument.1") && result;
+    result1 = key.DeleteValue(L"ChromeTab.ChromeActiveDocument");
+    result2 = key.DeleteValue(L"ChromeTab.ChromeActiveDocument.1");
   }
 
-  return result;
+  return (result2 == ERROR_SUCCESS) && (result2 == ERROR_SUCCESS);
 }
 
 bool RegisterSecuredMimeHandler(bool enable, bool is_system) {

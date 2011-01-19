@@ -160,7 +160,7 @@ void AddGoogleUpdateWorkItems(const InstallationState& original_state,
     // Handle the case where the ClientState key doesn't exist by creating it.
     // This takes care of the multi-installer's package key, which is not
     // created by Google Update for us.
-    if (!key.Open(reg_root, kscan->c_str(), KEY_QUERY_VALUE) ||
+    if (key.Open(reg_root, kscan->c_str(), KEY_QUERY_VALUE) != ERROR_SUCCESS ||
         !other_info.Initialize(key)) {
       other_info.set_value(std::wstring());
     }

@@ -82,20 +82,25 @@ Version* InstallUtil::GetChromeVersion(BrowserDistribution* dist,
                                        bool system_install) {
   DCHECK(dist);
   RegKey key;
-  std::wstring version_str;
-
   HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  if (!key.Open(reg_root, dist->GetVersionKey().c_str(), KEY_READ) ||
-      !key.ReadValue(google_update::kRegVersionField, &version_str)) {
+  LONG result = key.Open(reg_root, dist->GetVersionKey().c_str(), KEY_READ);
+
+  std::wstring version_str;
+  if (result == ERROR_SUCCESS)
+    result = key.ReadValue(google_update::kRegVersionField, &version_str);
+
+  Version* ret = NULL;
+  if (result == ERROR_SUCCESS && !version_str.empty()) {
+    VLOG(1) << "Existing " << dist->GetApplicationName()
+            << " version found " << version_str;
+    ret = Version::GetVersionFromString(WideToASCII(version_str));
+  } else {
+    DCHECK_EQ(ERROR_FILE_NOT_FOUND, result);
     VLOG(1) << "No existing " << dist->GetApplicationName()
             << " install found.";
-    key.Close();
-    return NULL;
   }
-  key.Close();
-  VLOG(1) << "Existing " << dist->GetApplicationName()
-          << " version found " << version_str;
-  return Version::GetVersionFromString(WideToASCII(version_str));
+
+  return ret;
 }
 
 bool InstallUtil::IsOSSupported() {
@@ -195,9 +200,10 @@ bool InstallUtil::BuildDLLRegistrationList(const std::wstring& install_path,
 bool InstallUtil::DeleteRegistryKey(RegKey& root_key,
                                     const std::wstring& key_path) {
   VLOG(1) << "Deleting registry key " << key_path;
-  if (!root_key.DeleteKey(key_path.c_str()) &&
-      ::GetLastError() != ERROR_FILE_NOT_FOUND) {
-    PLOG(ERROR) << "Failed to delete registry key: " << key_path;
+  LONG result = root_key.DeleteKey(key_path.c_str());
+  if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
+    PLOG(ERROR) << "Failed to delete registry key: " << key_path
+                << " error: " << result;
     return false;
   }
   return true;
@@ -211,10 +217,13 @@ bool InstallUtil::DeleteRegistryValue(HKEY reg_root,
                                       const std::wstring& value_name) {
   RegKey key(reg_root, key_path.c_str(), KEY_ALL_ACCESS);
   VLOG(1) << "Deleting registry value " << value_name;
-  if (key.ValueExists(value_name.c_str()) &&
-      !key.DeleteValue(value_name.c_str())) {
-    LOG(ERROR) << "Failed to delete registry value: " << value_name;
-    return false;
+  if (key.ValueExists(value_name.c_str())) {
+    LONG result = key.DeleteValue(value_name.c_str());
+    if (result != ERROR_SUCCESS) {
+      LOG(ERROR) << "Failed to delete registry value: " << value_name
+                 << " error: " << result;
+      return false;
+    }
   }
   return true;
 }

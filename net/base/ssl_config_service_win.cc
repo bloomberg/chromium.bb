@@ -63,17 +63,15 @@ bool SSLConfigServiceWin::GetSSLConfigNow(SSLConfig* config) {
   // http://crbug.com/61455
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   RegKey internet_settings;
-  if (!internet_settings.Open(HKEY_CURRENT_USER, kInternetSettingsSubKeyName,
-                              KEY_READ))
+  if (internet_settings.Open(HKEY_CURRENT_USER, kInternetSettingsSubKeyName,
+                             KEY_READ) != ERROR_SUCCESS)
     return false;
 
-  DWORD revocation;
-  if (!internet_settings.ReadValueDW(kRevocationValueName, &revocation))
-    revocation = REVOCATION_DEFAULT;
+  DWORD revocation = REVOCATION_DEFAULT;
+  internet_settings.ReadValueDW(kRevocationValueName, &revocation);
 
-  DWORD protocols;
-  if (!internet_settings.ReadValueDW(kProtocolsValueName, &protocols))
-    protocols = PROTOCOLS_DEFAULT;
+  DWORD protocols = PROTOCOLS_DEFAULT;
+  internet_settings.ReadValueDW(kProtocolsValueName, &protocols);
 
   config->rev_checking_enabled = (revocation != 0);
   config->ssl3_enabled = ((protocols & SSL3) != 0);
@@ -120,9 +118,9 @@ void SSLConfigServiceWin::SetSSLVersionEnabled(int version, bool enabled) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   RegKey internet_settings(HKEY_CURRENT_USER, kInternetSettingsSubKeyName,
                            KEY_READ | KEY_WRITE);
-  DWORD value;
-  if (!internet_settings.ReadValueDW(kProtocolsValueName, &value))
-    value = PROTOCOLS_DEFAULT;
+  DWORD value = PROTOCOLS_DEFAULT;
+  internet_settings.ReadValueDW(kProtocolsValueName, &value);
+
   if (enabled)
     value |= version;
   else

@@ -23,7 +23,8 @@ bool IsIeCeeeRegistered() {
   path += clsid;
 
   base::win::RegKey key;
-  return key.Open(HKEY_CLASSES_ROOT, path.c_str(), KEY_QUERY_VALUE);
+  return (key.Open(HKEY_CLASSES_ROOT, path.c_str(), KEY_QUERY_VALUE) ==
+      ERROR_SUCCESS);
 }
 
 }  // namespace ceee_util

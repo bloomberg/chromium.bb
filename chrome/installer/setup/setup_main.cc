@@ -167,12 +167,10 @@ installer::InstallStatus RenameChromeExecutables(
     std::wstring version_key(browser_dist->GetVersionKey());
     install_list->AddDeleteRegValueWorkItem(reg_root,
                                             version_key,
-                                            google_update::kRegOldVersionField,
-                                            REG_SZ);
+                                            google_update::kRegOldVersionField);
     install_list->AddDeleteRegValueWorkItem(reg_root,
                                             version_key,
-                                            google_update::kRegRenameCmdField,
-                                            REG_SZ);
+                                            google_update::kRegRenameCmdField);
   }
   installer::InstallStatus ret = installer::RENAME_SUCCESSFUL;
   if (!install_list->Do()) {

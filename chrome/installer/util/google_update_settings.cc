@@ -40,9 +40,9 @@ bool ReadGoogleUpdateStrKey(const wchar_t* const name, std::wstring* value) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring reg_path = dist->GetStateKey();
   RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ);
-  if (!key.ReadValue(name, value)) {
+  if (key.ReadValue(name, value) != ERROR_SUCCESS) {
     RegKey hklm_key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ);
-    return hklm_key.ReadValue(name, value);
+    return (hklm_key.ReadValue(name, value) == ERROR_SUCCESS);
   }
   return true;
 }
@@ -52,7 +52,7 @@ bool WriteGoogleUpdateStrKey(const wchar_t* const name,
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring reg_path = dist->GetStateKey();
   RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ | KEY_WRITE);
-  return key.WriteValue(name, value.c_str());
+  return (key.WriteValue(name, value.c_str()) == ERROR_SUCCESS);
 }
 
 bool ClearGoogleUpdateStrKey(const wchar_t* const name) {
@@ -60,9 +60,9 @@ bool ClearGoogleUpdateStrKey(const wchar_t* const name) {
   std::wstring reg_path = dist->GetStateKey();
   RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ | KEY_WRITE);
   std::wstring value;
-  if (!key.ReadValue(name, &value))
+  if (key.ReadValue(name, &value) != ERROR_SUCCESS)
     return false;
-  return key.WriteValue(name, L"");
+  return (key.WriteValue(name, L"") == ERROR_SUCCESS);
 }
 
 bool RemoveGoogleUpdateStrKey(const wchar_t* const name) {
@@ -71,18 +71,17 @@ bool RemoveGoogleUpdateStrKey(const wchar_t* const name) {
   RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ | KEY_WRITE);
   if (!key.ValueExists(name))
     return true;
-  return key.DeleteValue(name);
+  return (key.DeleteValue(name) == ERROR_SUCCESS);
 }
 
 EulaSearchResult HasEULASetting(HKEY root, const std::wstring& state_key,
                                 bool setting) {
   RegKey key;
-  DWORD previous_value;
-
-  if (!key.Open(root, state_key.c_str(), KEY_QUERY_VALUE))
+  DWORD previous_value = setting ? 1 : 0;
+  if (key.Open(root, state_key.c_str(), KEY_QUERY_VALUE) != ERROR_SUCCESS)
     return NO_SETTING;
-
-  if (!key.ReadValueDW(google_update::kRegEULAAceptedField, &previous_value))
+  if (key.ReadValueDW(google_update::kRegEULAAceptedField,
+                      &previous_value) != ERROR_SUCCESS)
     return FOUND_CLIENT_STATE;
 
   return ((previous_value != 0) == setting) ?
@@ -95,11 +94,11 @@ bool GoogleUpdateSettings::GetCollectStatsConsent() {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring reg_path = dist->GetStateKey();
   RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ);
-  DWORD value;
-  if (!key.ReadValueDW(google_update::kRegUsageStatsField, &value)) {
-    RegKey hklm_key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ);
-    if (!hklm_key.ReadValueDW(google_update::kRegUsageStatsField, &value))
-      return false;
+  DWORD value = 0;
+  if (key.ReadValueDW(google_update::kRegUsageStatsField, &value) !=
+      ERROR_SUCCESS) {
+    key.Open(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ);
+    key.ReadValueDW(google_update::kRegUsageStatsField, &value);
   }
   return (1 == value);
 }
@@ -109,12 +108,13 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
   // Writing to HKLM is only a best effort deal.
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring reg_path = dist->GetStateMediumKey();
-  RegKey key_hklm(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ | KEY_WRITE);
-  key_hklm.WriteValue(google_update::kRegUsageStatsField, value);
+  RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ | KEY_WRITE);
+  key.WriteValue(google_update::kRegUsageStatsField, value);
   // Writing to HKCU is used both by chrome and by the crash reporter.
   reg_path = dist->GetStateKey();
-  RegKey key_hkcu(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ | KEY_WRITE);
-  return key_hkcu.WriteValue(google_update::kRegUsageStatsField, value);
+  key.Open(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ | KEY_WRITE);
+  return (key.WriteValue(google_update::kRegUsageStatsField, value) ==
+      ERROR_SUCCESS);
 }
 
 bool GoogleUpdateSettings::GetMetricsId(std::wstring* metrics_id) {
@@ -156,7 +156,8 @@ bool GoogleUpdateSettings::SetEULAConsent(
     }
   }
   RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_SET_VALUE);
-  return key.WriteValue(google_update::kRegEULAAceptedField, consented ? 1 : 0);
+  return (key.WriteValue(google_update::kRegEULAAceptedField,
+                         consented ? 1 : 0) == ERROR_SUCCESS);
 }
 
 int GoogleUpdateSettings::GetLastRunTime() {
@@ -247,17 +248,21 @@ void GoogleUpdateSettings::UpdateInstallStatus(bool system_install,
   std::wstring reg_key(google_update::kRegPathClientState);
   reg_key.append(L"\\");
   reg_key.append(product_guid);
-  if (!key.Open(reg_root, reg_key.c_str(), KEY_QUERY_VALUE | KEY_SET_VALUE) ||
-      !channel_info.Initialize(key)) {
+  LONG result = key.Open(reg_root, reg_key.c_str(),
+                         KEY_QUERY_VALUE | KEY_SET_VALUE);
+  if (result != ERROR_SUCCESS || !channel_info.Initialize(key)) {
     VLOG(1) << "Application key not found.";
     if (!incremental_install && !multi_install || !install_return_code) {
       VLOG(1) << "Returning without changing application key.";
       return;
     } else if (!key.Valid()) {
       reg_key.assign(google_update::kRegPathClientState);
-      if (!key.Open(reg_root, reg_key.c_str(), KEY_CREATE_SUB_KEY) ||
-          !key.CreateKey(product_guid.c_str(), KEY_SET_VALUE)) {
-        LOG(ERROR) << "Failed to create application key.";
+      result = key.Open(reg_root, reg_key.c_str(), KEY_CREATE_SUB_KEY);
+      if (result == ERROR_SUCCESS)
+        result = key.CreateKey(product_guid.c_str(), KEY_SET_VALUE);
+
+      if (result != ERROR_SUCCESS) {
+        LOG(ERROR) << "Failed to create application key. Error: " << result;
         return;
       }
     }

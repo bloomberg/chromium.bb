@@ -28,8 +28,9 @@ class WorkItemListTest : public testing::Test {
     // Create a temporary key for testing
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
     key.DeleteKey(test_root);
-    ASSERT_FALSE(key.Open(HKEY_CURRENT_USER, test_root, KEY_READ));
-    ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, test_root, KEY_READ));
+    ASSERT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, test_root, KEY_READ));
+    ASSERT_EQ(ERROR_SUCCESS,
+        key.Create(HKEY_CURRENT_USER, test_root, KEY_READ));
 
     // Create a temp directory for test.
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
@@ -47,7 +48,7 @@ class WorkItemListTest : public testing::Test {
     ASSERT_FALSE(file_util::PathExists(test_dir_));
     // Clean up the temporary key
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
-    ASSERT_TRUE(key.DeleteKey(test_root));
+    ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(test_root));
   }
 
   FilePath test_dir_;
@@ -88,9 +89,10 @@ TEST_F(WorkItemListTest, ExecutionSuccess) {
 
   // Verify all WorkItems have been executed.
   RegKey key;
-  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS,
+      key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
   std::wstring read_out;
-  EXPECT_TRUE(key.ReadValue(name.c_str(), &read_out));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name.c_str(), &read_out));
   EXPECT_EQ(0, read_out.compare(data_str));
   key.Close();
   EXPECT_TRUE(file_util::PathExists(dir_to_create));
@@ -100,7 +102,8 @@ TEST_F(WorkItemListTest, ExecutionSuccess) {
   // Verify everything is rolled back.
   // The value must have been deleted first in roll back otherwise the key
   // can not be deleted.
-  EXPECT_FALSE(key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
+  EXPECT_NE(ERROR_SUCCESS,
+      key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
   EXPECT_FALSE(file_util::PathExists(top_dir_to_create));
 }
 
@@ -145,17 +148,19 @@ TEST_F(WorkItemListTest, ExecutionFailAndRollback) {
 
   // Verify the first 2 WorkItems have been executed.
   RegKey key;
-  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS,
+      key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
   key.Close();
   EXPECT_TRUE(file_util::PathExists(dir_to_create));
   // The last one should not be there.
-  EXPECT_FALSE(key.Open(HKEY_CURRENT_USER, not_created_key.c_str(),
-               KEY_READ));
+  EXPECT_NE(ERROR_SUCCESS,
+      key.Open(HKEY_CURRENT_USER, not_created_key.c_str(), KEY_READ));
 
   work_item_list->Rollback();
 
   // Verify everything is rolled back.
-  EXPECT_FALSE(key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
+  EXPECT_NE(ERROR_SUCCESS,
+      key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
   EXPECT_FALSE(file_util::PathExists(top_dir_to_create));
 }
 
@@ -196,9 +201,10 @@ TEST_F(WorkItemListTest, ConditionalExecutionSuccess) {
 
   // Verify all WorkItems have been executed.
   RegKey key;
-  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS,
+      key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
   std::wstring read_out;
-  EXPECT_TRUE(key.ReadValue(name.c_str(), &read_out));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name.c_str(), &read_out));
   EXPECT_EQ(0, read_out.compare(data_str));
   key.Close();
   EXPECT_TRUE(file_util::PathExists(dir_to_create));
@@ -208,7 +214,8 @@ TEST_F(WorkItemListTest, ConditionalExecutionSuccess) {
   // Verify everything is rolled back.
   // The value must have been deleted first in roll back otherwise the key
   // can not be deleted.
-  EXPECT_FALSE(key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
+  EXPECT_NE(ERROR_SUCCESS,
+      key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
   EXPECT_FALSE(file_util::PathExists(top_dir_to_create));
 }
 
@@ -250,9 +257,10 @@ TEST_F(WorkItemListTest, ConditionalExecutionConditionFailure) {
   // Verify that the WorkItems added as part of the conditional list have NOT
   // been executed.
   RegKey key;
-  EXPECT_FALSE(key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
+  EXPECT_NE(ERROR_SUCCESS,
+      key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
   std::wstring read_out;
-  EXPECT_FALSE(key.ReadValue(name.c_str(), &read_out));
+  EXPECT_NE(ERROR_SUCCESS, key.ReadValue(name.c_str(), &read_out));
   key.Close();
 
   // Verify that the other work item was executed.
@@ -263,7 +271,8 @@ TEST_F(WorkItemListTest, ConditionalExecutionConditionFailure) {
   // Verify everything is rolled back.
   // The value must have been deleted first in roll back otherwise the key
   // can not be deleted.
-  EXPECT_FALSE(key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
+  EXPECT_NE(ERROR_SUCCESS,
+      key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
   EXPECT_FALSE(file_util::PathExists(top_dir_to_create));
 }
 

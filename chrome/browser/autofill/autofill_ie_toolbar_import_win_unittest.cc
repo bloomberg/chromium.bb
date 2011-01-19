@@ -92,8 +92,8 @@ void EncryptAndWrite(RegKey* key, const ValueDescription* value) {
   memcpy(&data[0], value->value, data_size);
 
   std::vector<uint8> encrypted_data = EncryptData(data);
-  EXPECT_TRUE(key->WriteValue(value->value_name, &encrypted_data[0],
-                              encrypted_data.size(), REG_BINARY));
+  EXPECT_EQ(ERROR_SUCCESS, key->WriteValue(value->value_name,
+      &encrypted_data[0], encrypted_data.size(), REG_BINARY));
 }
 
 void CreateSubkey(RegKey* key, wchar_t const* subkey_name,

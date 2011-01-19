@@ -70,9 +70,11 @@ void PolicySettings::ReadUrlSettings(
   std::wstring settings_value(
       ASCIIToWide(policy::key::kChromeFrameRendererSettings));
   for (int i = 0; i < arraysize(kRootKeys); ++i) {
-    if (config_key.Open(kRootKeys[i], policy::kRegistrySubKey, KEY_READ) &&
-        config_key.ReadValueDW(settings_value.c_str(), &value)) {
-      break;
+    if ((config_key.Open(kRootKeys[i], policy::kRegistrySubKey,
+                         KEY_READ) == ERROR_SUCCESS) &&
+        (config_key.ReadValueDW(settings_value.c_str(),
+                                &value) == ERROR_SUCCESS)) {
+        break;
     }
   }
 
@@ -124,10 +126,11 @@ void PolicySettings::ReadApplicationLocaleSetting(
   std::wstring application_locale_value(
       ASCIIToWide(policy::key::kApplicationLocaleValue));
   for (int i = 0; i < arraysize(kRootKeys); ++i) {
-    if (config_key.Open(kRootKeys[i], policy::kRegistrySubKey, KEY_READ) &&
-        config_key.ReadValue(application_locale_value.c_str(),
-                             application_locale)) {
-      break;
+    if ((config_key.Open(kRootKeys[i], policy::kRegistrySubKey,
+                         KEY_READ) == ERROR_SUCCESS) &&
+        (config_key.ReadValue(application_locale_value.c_str(),
+                              application_locale) == ERROR_SUCCESS)) {
+        break;
     }
   }
 }

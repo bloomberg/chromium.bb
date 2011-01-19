@@ -207,16 +207,20 @@ TEST_F(CeeeModuleUtilTest, GetCollectStatsConsentFromHkcu) {
   base::win::RegKey hkcu(HKEY_CURRENT_USER,
       ceee_module_util::GetCromeFrameClientStateKey().c_str(), KEY_WRITE);
 
-  ASSERT_TRUE(hkcu.WriteValue(google_update::kRegUsageStatsField, kTrue));
+  ASSERT_EQ(ERROR_SUCCESS,
+      hkcu.WriteValue(google_update::kRegUsageStatsField, kTrue));
   EXPECT_TRUE(ceee_module_util::GetCollectStatsConsent());
 
-  ASSERT_TRUE(hkcu.WriteValue(google_update::kRegUsageStatsField, kFalse));
+  ASSERT_EQ(ERROR_SUCCESS,
+      hkcu.WriteValue(google_update::kRegUsageStatsField, kFalse));
   EXPECT_FALSE(ceee_module_util::GetCollectStatsConsent());
 
-  ASSERT_TRUE(hkcu.WriteValue(google_update::kRegUsageStatsField, kInvalid));
+  ASSERT_EQ(ERROR_SUCCESS,
+      hkcu.WriteValue(google_update::kRegUsageStatsField, kInvalid));
   EXPECT_FALSE(ceee_module_util::GetCollectStatsConsent());
 
-  ASSERT_TRUE(hkcu.DeleteValue(google_update::kRegUsageStatsField));
+  ASSERT_EQ(ERROR_SUCCESS,
+      hkcu.DeleteValue(google_update::kRegUsageStatsField));
   EXPECT_FALSE(ceee_module_util::GetCollectStatsConsent());
 }
 
@@ -225,16 +229,20 @@ TEST_F(CeeeModuleUtilTest, GetCollectStatsConsentFromHklm) {
   base::win::RegKey hklm(HKEY_LOCAL_MACHINE,
       ceee_module_util::GetCromeFrameClientStateKey().c_str(), KEY_WRITE);
 
-  ASSERT_TRUE(hklm.WriteValue(google_update::kRegUsageStatsField, kTrue));
+  ASSERT_EQ(ERROR_SUCCESS,
+      hklm.WriteValue(google_update::kRegUsageStatsField, kTrue));
   EXPECT_TRUE(ceee_module_util::GetCollectStatsConsent());
 
-  ASSERT_TRUE(hklm.WriteValue(google_update::kRegUsageStatsField, kFalse));
+  ASSERT_EQ(ERROR_SUCCESS,
+      hklm.WriteValue(google_update::kRegUsageStatsField, kFalse));
   EXPECT_FALSE(ceee_module_util::GetCollectStatsConsent());
 
-  ASSERT_TRUE(hklm.WriteValue(google_update::kRegUsageStatsField, kInvalid));
+  ASSERT_EQ(ERROR_SUCCESS,
+      hklm.WriteValue(google_update::kRegUsageStatsField, kInvalid));
   EXPECT_FALSE(ceee_module_util::GetCollectStatsConsent());
 
-  ASSERT_TRUE(hklm.DeleteValue(google_update::kRegUsageStatsField));
+  ASSERT_EQ(ERROR_SUCCESS,
+      hklm.DeleteValue(google_update::kRegUsageStatsField));
   EXPECT_FALSE(ceee_module_util::GetCollectStatsConsent());
 }
 
@@ -246,14 +254,18 @@ TEST_F(CeeeModuleUtilTest, GetCollectStatsConsentHkcuBeforeHklm) {
   base::win::RegKey hklm(HKEY_LOCAL_MACHINE,
       ceee_module_util::GetCromeFrameClientStateKey().c_str(), KEY_WRITE);
 
-  ASSERT_TRUE(hklm.WriteValue(google_update::kRegUsageStatsField, kTrue));
+  ASSERT_EQ(ERROR_SUCCESS,
+      hklm.WriteValue(google_update::kRegUsageStatsField, kTrue));
   ASSERT_TRUE(ceee_module_util::GetCollectStatsConsent());
 
-  ASSERT_TRUE(hkcu.WriteValue(google_update::kRegUsageStatsField, kFalse));
+  ASSERT_EQ(ERROR_SUCCESS,
+      hkcu.WriteValue(google_update::kRegUsageStatsField, kFalse));
   EXPECT_FALSE(ceee_module_util::GetCollectStatsConsent());
 
-  ASSERT_TRUE(hkcu.DeleteValue(google_update::kRegUsageStatsField));
-  ASSERT_TRUE(hklm.DeleteValue(google_update::kRegUsageStatsField));
+  ASSERT_EQ(ERROR_SUCCESS,
+      hkcu.DeleteValue(google_update::kRegUsageStatsField));
+  ASSERT_EQ(ERROR_SUCCESS,
+      hklm.DeleteValue(google_update::kRegUsageStatsField));
 }
 
 }  // namespace

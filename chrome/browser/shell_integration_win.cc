@@ -346,7 +346,7 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
       std::wstring key_path(kChromeProtocols[i] + ShellUtil::kRegShellOpen);
       base::win::RegKey key(root_key, key_path.c_str(), KEY_READ);
       std::wstring value;
-      if (!key.Valid() || !key.ReadValue(L"", &value))
+      if (!key.Valid() || (key.ReadValue(L"", &value) != ERROR_SUCCESS))
         return NOT_DEFAULT_BROWSER;
       // Need to normalize path in case it's been munged.
       CommandLine command_line = CommandLine::FromString(value);
@@ -377,7 +377,7 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
     std::wstring app_cmd;
     base::win::RegKey key(HKEY_CURRENT_USER,
                           ShellUtil::kRegVistaUrlPrefs, KEY_READ);
-    if (key.Valid() && key.ReadValue(L"Progid", &app_cmd) &&
+    if (key.Valid() && (key.ReadValue(L"Progid", &app_cmd) == ERROR_SUCCESS) &&
         app_cmd == L"FirefoxURL")
       ff_default = true;
   } else {
@@ -385,7 +385,7 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
     key_path.append(ShellUtil::kRegShellOpen);
     base::win::RegKey key(HKEY_CLASSES_ROOT, key_path.c_str(), KEY_READ);
     std::wstring app_cmd;
-    if (key.Valid() && key.ReadValue(L"", &app_cmd) &&
+    if (key.Valid() && (key.ReadValue(L"", &app_cmd) == ERROR_SUCCESS) &&
         std::wstring::npos != StringToLowerASCII(app_cmd).find(L"firefox"))
       ff_default = true;
   }

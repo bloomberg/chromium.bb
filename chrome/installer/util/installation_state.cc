@@ -22,13 +22,14 @@ void ProductState::Initialize(bool system_install,
   const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   base::win::RegKey key(root_key, version_key.c_str(), KEY_QUERY_VALUE);
   std::wstring version_str;
-  if (key.ReadValue(google_update::kRegVersionField, &version_str)) {
+  if (key.ReadValue(google_update::kRegVersionField, &version_str)
+      == ERROR_SUCCESS) {
     version_.reset(Version::GetVersionFromString(WideToASCII(version_str)));
     if (version_.get() != NULL) {
       // The product is installed.  Check for the channel value (absent if not
       // installed/managed by Google Update).
-      if (!key.Open(root_key, state_key.c_str(), KEY_QUERY_VALUE) ||
-          !channel_.Initialize(key)) {
+      if ((key.Open(root_key, state_key.c_str(), KEY_QUERY_VALUE) !=
+          ERROR_SUCCESS) || !channel_.Initialize(key)) {
         channel_.set_value(std::wstring());
       }
     }

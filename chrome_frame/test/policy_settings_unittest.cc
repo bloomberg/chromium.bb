@@ -23,7 +23,8 @@ namespace {
 // A best effort way to zap CF policy entries that may be in the registry.
 void DeleteChromeFramePolicyEntries(HKEY root) {
   RegKey key;
-  if (key.Open(root, policy::kRegistrySubKey, KEY_ALL_ACCESS)) {
+  if (key.Open(root, policy::kRegistrySubKey,
+               KEY_ALL_ACCESS) == ERROR_SUCCESS) {
     key.DeleteValue(
         ASCIIToWide(policy::key::kChromeFrameRendererSettings).c_str());
     key.DeleteKey(ASCIIToWide(policy::key::kRenderInChromeFrameList).c_str());
@@ -34,8 +35,8 @@ void DeleteChromeFramePolicyEntries(HKEY root) {
 }
 
 bool InitializePolicyKey(HKEY policy_root, RegKey* policy_key) {
-  EXPECT_TRUE(policy_key->Create(policy_root, policy::kRegistrySubKey,
-                                 KEY_ALL_ACCESS));
+  EXPECT_EQ(ERROR_SUCCESS, policy_key->Create(policy_root,
+      policy::kRegistrySubKey, KEY_ALL_ACCESS));
   return policy_key->Valid();
 }
 
@@ -46,10 +47,11 @@ void WritePolicyList(RegKey* policy_key, const wchar_t* list_name,
   policy_key->DeleteKey(list_name);
 
   RegKey list_key;
-  EXPECT_TRUE(list_key.Create(policy_key->Handle(), list_name, KEY_ALL_ACCESS));
+  EXPECT_EQ(ERROR_SUCCESS, list_key.Create(policy_key->Handle(), list_name,
+                                           KEY_ALL_ACCESS));
   for (int i = 0; i < count; ++i) {
-    EXPECT_TRUE(list_key.WriteValue(base::StringPrintf(L"%i", i).c_str(),
-                                    values[i]));
+    EXPECT_EQ(ERROR_SUCCESS,
+        list_key.WriteValue(base::StringPrintf(L"%i", i).c_str(), values[i]));
   }
 }
 
@@ -94,7 +96,8 @@ bool SetChromeApplicationLocale(HKEY policy_root, const wchar_t* locale) {
 
   std::wstring application_locale_value(
       ASCIIToWide(policy::key::kApplicationLocaleValue));
-  EXPECT_TRUE(policy_key.WriteValue(application_locale_value.c_str(), locale));
+  EXPECT_EQ(ERROR_SUCCESS,
+      policy_key.WriteValue(application_locale_value.c_str(), locale));
   return true;
 }
 

@@ -38,8 +38,11 @@ void DisableLaunchOnStartupTask::Run() {
                              kBackgroundModeRegistrySubkey, KEY_READ);
   base::win::RegKey write_key(kBackgroundModeRegistryRootKey,
                               kBackgroundModeRegistrySubkey, KEY_WRITE);
-  if (read_key.ValueExists(key_name) && !write_key.DeleteValue(key_name))
-    NOTREACHED() << "Failed to deregister launch on login.";
+  if (read_key.ValueExists(key_name)) {
+    LONG result = write_key.DeleteValue(key_name);
+    DCHECK_EQ(ERROR_SUCCESS, result) <<
+        "Failed to deregister launch on login. error: " << result;
+  }
 }
 
 void EnableLaunchOnStartupTask::Run() {
@@ -56,13 +59,14 @@ void EnableLaunchOnStartupTask::Run() {
   std::wstring new_value = executable.value() + L" --no-startup-window";
   if (read_key.ValueExists(key_name)) {
     std::wstring current_value;
-    if (read_key.ReadValue(key_name, &current_value) &&
+    if ((read_key.ReadValue(key_name, &current_value) == ERROR_SUCCESS) &&
         (current_value == new_value)) {
       return;
     }
   }
-  if (!write_key.WriteValue(key_name, new_value.c_str()))
-    NOTREACHED() << "Failed to register launch on login.";
+  LONG result = write_key.WriteValue(key_name, new_value.c_str());
+  DCHECK_EQ(ERROR_SUCCESS, result) <<
+      "Failed to register launch on login. error: " << result;
 }
 
 }  // namespace

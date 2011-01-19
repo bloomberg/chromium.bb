@@ -137,14 +137,15 @@ namespace {
 bool SetUninstallArguments(HKEY root, BrowserDistribution* dist,
                            const CommandLine& args) {
   RegKey key(root, dist->GetStateKey().c_str(), KEY_ALL_ACCESS);
-  return key.WriteValue(installer::kUninstallArgumentsField,
-                        args.command_line_string().c_str());
+  return (key.WriteValue(installer::kUninstallArgumentsField,
+                         args.command_line_string().c_str()) == ERROR_SUCCESS);
 }
 
 bool SetInstalledVersion(HKEY root, BrowserDistribution* dist,
                          const std::wstring& version) {
   RegKey key(root, dist->GetVersionKey().c_str(), KEY_ALL_ACCESS);
-  return key.WriteValue(google_update::kRegVersionField, version.c_str());
+  return (key.WriteValue(google_update::kRegVersionField, version.c_str()) ==
+      ERROR_SUCCESS);
 }
 }  // end namespace
 

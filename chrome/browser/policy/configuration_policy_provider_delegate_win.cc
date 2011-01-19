@@ -19,7 +19,7 @@ bool ReadRegistryStringValue(RegKey* key, const string16& name,
   DWORD key_type = 0;
   scoped_array<uint8> buffer;
 
-  if (!key->ReadValue(name.c_str(), 0, &value_size, &key_type))
+  if (key->ReadValue(name.c_str(), 0, &value_size, &key_type) != ERROR_SUCCESS)
     return false;
   if (key_type != REG_SZ)
     return false;
@@ -89,16 +89,14 @@ DictionaryValue* ConfigurationPolicyProviderDelegateWin::Load() {
 
 bool ConfigurationPolicyProviderDelegateWin::GetRegistryPolicyString(
     const string16& name, string16* result) const {
-  string16 path = string16(kRegistrySubKey);
-  RegKey policy_key;
+  RegKey policy_key(HKEY_LOCAL_MACHINE, kRegistrySubKey, KEY_READ);
   // First try the global policy.
-  if (policy_key.Open(HKEY_LOCAL_MACHINE, path.c_str(), KEY_READ)) {
-    if (ReadRegistryStringValue(&policy_key, name, result))
-      return true;
-    policy_key.Close();
-  }
+  if (ReadRegistryStringValue(&policy_key, name, result))
+    return true;
+
   // Fall back on user-specific policy.
-  if (!policy_key.Open(HKEY_CURRENT_USER, path.c_str(), KEY_READ))
+  if (policy_key.Open(HKEY_CURRENT_USER, kRegistrySubKey,
+                      KEY_READ) != ERROR_SUCCESS)
     return false;
   return ReadRegistryStringValue(&policy_key, name, result);
 }
@@ -108,10 +106,11 @@ bool ConfigurationPolicyProviderDelegateWin::GetRegistryPolicyStringList(
   string16 path = string16(kRegistrySubKey);
   path += ASCIIToUTF16("\\") + key;
   RegKey policy_key;
-  if (!policy_key.Open(HKEY_LOCAL_MACHINE, path.c_str(), KEY_READ)) {
-    policy_key.Close();
+  if (policy_key.Open(HKEY_LOCAL_MACHINE, path.c_str(), KEY_READ) !=
+      ERROR_SUCCESS) {
     // Fall back on user-specific policy.
-    if (!policy_key.Open(HKEY_CURRENT_USER, path.c_str(), KEY_READ))
+    if (policy_key.Open(HKEY_CURRENT_USER, path.c_str(), KEY_READ) !=
+        ERROR_SUCCESS)
       return false;
   }
   string16 policy_string;
@@ -125,34 +124,28 @@ bool ConfigurationPolicyProviderDelegateWin::GetRegistryPolicyStringList(
 
 bool ConfigurationPolicyProviderDelegateWin::GetRegistryPolicyBoolean(
     const string16& value_name, bool* result) const {
-  DWORD value;
-  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, kRegistrySubKey, KEY_READ);
-  if (hkcu_policy_key.ReadValueDW(value_name.c_str(), &value)) {
-    *result = value != 0;
-    return true;
-  }
-
-  RegKey hklm_policy_key(HKEY_CURRENT_USER, kRegistrySubKey, KEY_READ);
-  if (hklm_policy_key.ReadValueDW(value_name.c_str(), &value)) {
-    *result = value != 0;
-    return true;
-  }
-  return false;
+  uint32 local_result = 0;
+  bool ret = GetRegistryPolicyInteger(value_name, &local_result);
+  if (ret)
+    *result = local_result != 0;
+  return ret;
 }
 
 bool ConfigurationPolicyProviderDelegateWin::GetRegistryPolicyInteger(
     const string16& value_name, uint32* result) const {
-  DWORD value;
-  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, kRegistrySubKey, KEY_READ);
-  if (hkcu_policy_key.ReadValueDW(value_name.c_str(), &value)) {
+  DWORD value = 0;
+  RegKey policy_key(HKEY_LOCAL_MACHINE, kRegistrySubKey, KEY_READ);
+  if (policy_key.ReadValueDW(value_name.c_str(), &value) == ERROR_SUCCESS) {
     *result = value;
     return true;
   }
 
-  RegKey hklm_policy_key(HKEY_CURRENT_USER, kRegistrySubKey, KEY_READ);
-  if (hklm_policy_key.ReadValueDW(value_name.c_str(), &value)) {
-    *result = value;
-    return true;
+  if (policy_key.Open(HKEY_CURRENT_USER, kRegistrySubKey, KEY_READ) ==
+      ERROR_SUCCESS) {
+    if (policy_key.ReadValueDW(value_name.c_str(), &value) == ERROR_SUCCESS) {
+      *result = value;
+      return true;
+    }
   }
   return false;
 }

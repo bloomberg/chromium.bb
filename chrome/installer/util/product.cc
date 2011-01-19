@@ -126,12 +126,11 @@ bool Product::IsMsi() const {
       // We didn't find it in the preferences, try looking in the registry.
       HKEY reg_root = system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
       RegKey key;
-      if (key.Open(reg_root, distribution_->GetStateKey().c_str(), KEY_READ)) {
-        DWORD msi_value;
-        if (key.ReadValueDW(google_update::kRegMSIField, &msi_value) &&
-            msi_value != 0) {
-          msi_ = true;
-        }
+      if (key.Open(reg_root, distribution_->GetStateKey().c_str(),
+                   KEY_READ) == ERROR_SUCCESS) {
+        DWORD msi_value = 0;
+        key.ReadValueDW(google_update::kRegMSIField, &msi_value);
+        msi_ = msi_value != 0;
       }
     } else {
       msi_ = true;
@@ -143,22 +142,19 @@ bool Product::IsMsi() const {
 }
 
 bool Product::SetMsiMarker(bool set) const {
-  bool success = false;
   HKEY reg_root = system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   RegKey client_state_key;
-  if (client_state_key.Open(reg_root, distribution_->GetStateKey().c_str(),
-                            KEY_READ | KEY_WRITE)) {
-    DWORD msi_value = set ? 1 : 0;
-    if (client_state_key.WriteValue(google_update::kRegMSIField, msi_value)) {
-      success = true;
-    } else {
-      LOG(ERROR) << "Could not write MSI value to client state key.";
-    }
-  } else {
-    LOG(ERROR) << "SetMsiMarker: Could not open client state key!";
+  LONG result = client_state_key.Open(reg_root,
+      distribution_->GetStateKey().c_str(), KEY_READ | KEY_WRITE);
+  if (result == ERROR_SUCCESS) {
+    result = client_state_key.WriteValue(google_update::kRegMSIField,
+                                         set ? 1 : 0);
   }
 
-  return success;
+  LOG_IF(ERROR, result != ERROR_SUCCESS) << "Failed to Open or Write MSI value"
+      "to client state key. error: " << result;
+
+  return (result == ERROR_SUCCESS);
 }
 
 bool Product::ShouldCreateUninstallEntry() const {

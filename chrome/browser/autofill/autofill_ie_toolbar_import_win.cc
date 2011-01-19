@@ -57,12 +57,13 @@ bool IsEmptySalt(std::wstring const& salt) {
 string16 ReadAndDecryptValue(RegKey* key, const wchar_t* value_name) {
   DWORD data_type = REG_BINARY;
   DWORD data_size = 0;
-  if (!key->ReadValue(value_name, NULL, &data_size, &data_type) ||
-      !data_size || data_type != REG_BINARY)
+  LONG result = key->ReadValue(value_name, NULL, &data_size, &data_type);
+  if ((result != ERROR_SUCCESS) || !data_size || data_type != REG_BINARY)
     return string16();
   std::vector<uint8> data;
   data.resize(data_size);
-  if (key->ReadValue(value_name, &(data[0]), &data_size, &data_type)) {
+  result = key->ReadValue(value_name, &(data[0]), &data_size, &data_type);
+  if (result == ERROR_SUCCESS) {
     std::string out_data;
     if (DecryptData(data, &out_data)) {
       // The actual data is in UTF16 already.
@@ -125,7 +126,7 @@ bool ImportSingleProfile(FormGroup* profile,
 
   for (uint32 value_index = 0; value_index < key->ValueCount(); ++value_index) {
     std::wstring value_name;
-    if (!key->ReadName(value_index, &value_name))
+    if (key->ReadName(value_index, &value_name) != ERROR_SUCCESS)
       continue;
     RegToFieldMap::const_iterator it = reg_to_field.find(value_name);
     if (it == reg_to_field.end())
