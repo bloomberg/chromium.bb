@@ -134,7 +134,6 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual void OnAutocompleteWillAccept();
   virtual bool OnCommitSuggestedText(const std::wstring& typed_text);
   virtual bool AcceptCurrentInstantPreview();
-  virtual void OnSetSuggestedSearchText(const string16& suggested_text);
   virtual void OnPopupBoundsChanged(const gfx::Rect& bounds);
   virtual void OnAutocompleteAccept(const GURL& url,
       WindowOpenDisposition disposition,

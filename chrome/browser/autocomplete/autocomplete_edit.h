@@ -56,9 +56,6 @@ class AutocompleteEditController {
   // Returns false if there is no instant preview showing.
   virtual bool AcceptCurrentInstantPreview() = 0;
 
-  // Sets the suggested search text to |suggested_text|.
-  virtual void OnSetSuggestedSearchText(const string16& suggested_text) = 0;
-
   // Invoked when the popup is going to change its bounds to |bounds|.
   virtual void OnPopupBoundsChanged(const gfx::Rect& bounds) = 0;
 
@@ -339,9 +336,6 @@ class AutocompleteEditModel : public NotificationObserver {
   // Invoked when the popup is going to change its bounds to |bounds|.
   void PopupBoundsChangedTo(const gfx::Rect& bounds);
 
-  // Invoked when the autocomplete results may have changed in some way.
-  void ResultsUpdated();
-
  private:
   enum PasteState {
     NONE,           // Most recent edit was not a paste that replaced all text.
@@ -398,10 +392,6 @@ class AutocompleteEditModel : public NotificationObserver {
   // function during copy handling, when the control key is down to trigger the
   // copy.
   bool GetURLForText(const std::wstring& text, GURL* url) const;
-
-  // Determines the suggested search text and invokes OnSetSuggestedSearchText
-  // on the controller.
-  void UpdateSuggestedSearchText();
 
   AutocompleteEditView* view_;
 

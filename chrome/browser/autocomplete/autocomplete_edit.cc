@@ -697,10 +697,6 @@ void AutocompleteEditModel::PopupBoundsChangedTo(const gfx::Rect& bounds) {
   controller_->OnPopupBoundsChanged(bounds);
 }
 
-void AutocompleteEditModel::ResultsUpdated() {
-  UpdateSuggestedSearchText();
-}
-
 // Return true if the suggestion type warrants a TCP/IP preconnection.
 // i.e., it is now highly likely that the user will select the related domain.
 static bool IsPreconnectable(AutocompleteMatch::Type type) {
@@ -798,39 +794,4 @@ bool AutocompleteEditModel::GetURLForText(const std::wstring& text,
 
   *url = parsed_url;
   return true;
-}
-
-// Returns true if suggested search text should be shown for the specified match
-// type.
-static bool ShouldShowSuggestSearchTextFor(AutocompleteMatch::Type type) {
-  // TODO: add support for other engines when in keyword mode.
-  return ((type == AutocompleteMatch::SEARCH_HISTORY) ||
-          (type == AutocompleteMatch::SEARCH_SUGGEST));
-}
-
-void AutocompleteEditModel::UpdateSuggestedSearchText() {
-  if (!InstantController::IsEnabled(profile_, InstantController::VERBATIM_TYPE))
-    return;
-
-  string16 suggested_text;
-  // The suggested text comes from the first search result.
-  if (popup_->IsOpen()) {
-    const AutocompleteResult& result = popup_->result();
-    if ((result.size() > 1) && (popup_->selected_line() == 0) &&
-        ((result.begin()->inline_autocomplete_offset == std::wstring::npos) ||
-         (result.begin()->inline_autocomplete_offset ==
-          result.begin()->fill_into_edit.size()))) {
-      for (AutocompleteResult::const_iterator i = result.begin() + 1;
-           i != result.end(); ++i) {
-        // TODO: add support for other engines when in keyword mode.
-        if (ShouldShowSuggestSearchTextFor(i->type) &&
-            i->inline_autocomplete_offset != std::wstring::npos) {
-          suggested_text = WideToUTF16(i->fill_into_edit.substr(
-                                           i->inline_autocomplete_offset));
-          break;
-        }
-      }
-    }
-  }
-  controller_->OnSetSuggestedSearchText(suggested_text);
 }

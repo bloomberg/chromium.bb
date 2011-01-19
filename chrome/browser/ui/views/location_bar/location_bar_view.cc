@@ -786,10 +786,6 @@ bool LocationBarView::AcceptCurrentInstantPreview() {
   return InstantController::CommitIfCurrent(delegate_->GetInstant());
 }
 
-void LocationBarView::OnSetSuggestedSearchText(const string16& suggested_text) {
-  SetSuggestedText(suggested_text);
-}
-
 void LocationBarView::OnPopupBoundsChanged(const gfx::Rect& bounds) {
   InstantController* instant = delegate_->GetInstant();
   if (instant)

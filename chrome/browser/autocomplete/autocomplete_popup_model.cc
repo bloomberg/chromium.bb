@@ -318,7 +318,6 @@ void AutocompletePopupModel::Observe(NotificationType type,
     SetHoveredLine(kNoMatch);
 
   view_->UpdatePopupAppearance();
-  edit_model_->ResultsUpdated();
   edit_model_->PopupBoundsChangedTo(view_->GetTargetBounds());
 }
 

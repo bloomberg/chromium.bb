@@ -256,11 +256,6 @@ bool LocationBarViewMac::AcceptCurrentInstantPreview() {
   return InstantController::CommitIfCurrent(browser_->instant());
 }
 
-void LocationBarViewMac::OnSetSuggestedSearchText(
-    const string16& suggested_text) {
-  SetSuggestedText(suggested_text);
-}
-
 void LocationBarViewMac::OnPopupBoundsChanged(const gfx::Rect& bounds) {
   InstantController* instant = browser_->instant();
   if (instant)

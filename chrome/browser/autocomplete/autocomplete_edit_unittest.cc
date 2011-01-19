@@ -81,7 +81,6 @@ class TestingAutocompleteEditController : public AutocompleteEditController {
   virtual bool AcceptCurrentInstantPreview() {
     return false;
   }
-  virtual void OnSetSuggestedSearchText(const string16& suggested_text) {}
   virtual void OnPopupBoundsChanged(const gfx::Rect& bounds) {}
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
