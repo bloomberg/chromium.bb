@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@ PropertyAccessor<TabContentsWrapper*>* TabContentsWrapper::property_accessor() {
 TabContentsWrapper* TabContentsWrapper::Clone() {
   TabContents* new_contents = tab_contents()->Clone();
   TabContentsWrapper* new_wrapper = new TabContentsWrapper(new_contents);
-  // Instantiate the passowrd manager if it has been instantiated here.
+  // Instantiate the password manager if it has been instantiated here.
   if (password_manager_.get())
     new_wrapper->GetPasswordManager();
   return new_wrapper;

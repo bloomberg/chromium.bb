@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/scoped_ptr.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/web_navigation_observer.h"
 
@@ -16,7 +17,7 @@ class PasswordManager;
 class PasswordManagerDelegate;
 class TabContentsDelegate;
 
-// Wraps TabContents and all of its supporting objetcs in order to control
+// Wraps TabContents and all of its supporting objects in order to control
 // their ownership and lifetime, while allowing TabContents to remain generic
 // and re-usable in other projects.
 // TODO(pinkerton): Eventually, this class will become TabContents as far as
@@ -62,7 +63,7 @@ class TabContentsWrapper : public WebNavigationObserver {
   PasswordManager* GetPasswordManager();
 
   // WebNavigationObserver overrides:
-  virtual void NavigateToPendingEntry();
+  virtual void NavigateToPendingEntry() OVERRIDE;
 
  private:
   // PasswordManager and its delegate, lazily created. The delegate must

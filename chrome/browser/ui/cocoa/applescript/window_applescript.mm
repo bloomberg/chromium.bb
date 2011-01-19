@@ -180,7 +180,6 @@
 
 - (void)insertInTabs:(TabAppleScript*)aTab atIndex:(int)index {
   // This method gets called when a new tab is created so
-  // This method gets called when a new tab is created so
   // the container and property are set here.
   [aTab setContainer:self
             property:AppleScript::kTabsProperty];
