@@ -267,7 +267,6 @@ extern const char kPpapiOutOfProcess[];
 extern const char kPpapiPluginLauncher[];
 extern const char kPpapiPluginProcess[];
 extern const char kPpapiStartupDialog[];
-extern const char kPrelaunchGpuProcess[];
 extern const char kPrint[];
 extern const char kProcessPerSite[];
 extern const char kProcessPerTab[];

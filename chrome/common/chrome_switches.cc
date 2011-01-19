@@ -932,10 +932,6 @@ const char kPpapiPluginProcess[]            = "ppapi";
 // Causes the PPAPI sub process to display a dialog on launch.
 const char kPpapiStartupDialog[]            = "ppapi-startup-dialog";
 
-// Establishes a channel to the GPU process asynchronously and (re)launches it
-// if necessary when a renderer process starts.
-const char kPrelaunchGpuProcess[]           = "prelaunch-gpu-process";
-
 // Prints the pages on the screen.
 const char kPrint[]                         = "print";
 

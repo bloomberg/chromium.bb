@@ -127,9 +127,6 @@ static const double kInitialIdleHandlerDelayS = 1.0 /* seconds */;
 static const double kInitialExtensionIdleHandlerDelayS = 5.0 /* seconds */;
 static const int64 kMaxExtensionIdleHandlerDelayS = 5*60 /* seconds */;
 
-static const int kPrelauchGpuPercentage = 5;
-static const int kPrelauchGpuProcessDelayMS = 10000;
-
 // Keep the global RenderThread in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
 static base::LazyInstance<base::ThreadLocalPointer<RenderThread> > lazy_tls(
@@ -300,23 +297,6 @@ void RenderThread::Init() {
   suicide_on_channel_error_filter_ = new SuicideOnChannelErrorFilter;
   AddFilter(suicide_on_channel_error_filter_.get());
 #endif
-
-  // Establish a channel to the GPU process asynchronously if requested. If the
-  // channel is established in time, EstablishGpuChannelSync will not block when
-  // it is later called. Delays by a fixed period of time to avoid loading the
-  // GPU immediately in an attempt to not slow startup time.
-  scoped_refptr<base::FieldTrial> prelaunch_trial(
-      new base::FieldTrial("PrelaunchGpuProcessExperiment", 100));
-  int prelaunch_group = prelaunch_trial->AppendGroup("prelaunch_gpu_process",
-                                                     kPrelauchGpuPercentage);
-  if (prelaunch_group == prelaunch_trial->group() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kPrelaunchGpuProcess)) {
-    message_loop()->PostDelayedTask(FROM_HERE,
-                                    task_factory_->NewRunnableMethod(
-                                        &RenderThread::EstablishGpuChannel),
-                                    kPrelauchGpuProcessDelayMS);
-  }
 
   TRACE_EVENT_END("RenderThread::Init", 0, "");
 }
