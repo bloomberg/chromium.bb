@@ -119,7 +119,7 @@ cr.define('options', function() {
      * Sets app cache info to display.
      */
     setAppCacheInfo: function(appCache) {
-      $('appCacheManifest').textContent = appCache.manefest;
+      $('appCacheManifest').textContent = appCache.manifest;
       $('appCacheSize').textContent = appCache.size;
       $('appCacheCreated').textContent = appCache.created;
       $('appCacheLastAccessed').textContent = appCache.accessed;
