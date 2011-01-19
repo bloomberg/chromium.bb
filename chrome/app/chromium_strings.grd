@@ -427,6 +427,9 @@ be available for now. -->
       <message name="IDS_INSTALL_MULTI_INSTALLATION_EXISTS" desc="Error during install if a multi-install Chromium or Chromium Frame is present, thereby preventing the installation of a single-install Chromium or Chromium Frame.">
         A conflicting installation of Chromium or Chromium Frame was found on the system. Please uninstall it and try again.
       </message>
+      <message name="IDS_INSTALL_CONFLICTING_CHANNEL_EXISTS" desc="Error during install if a version of Chromium on a different update channel exists when installing Chromium Frame.">
+        A conflicting installation of Chromium was found on the system. Please uninstall it and try again.
+      </message>
       <!-- Options Dialog -->
       <!--TODO(kmadhusu): Remove "IDS_OPTIONS_DISABLE_SERVICES" after platform-specific dialogs are removed.-->
       <message name="IDS_OPTIONS_DISABLE_SERVICES" desc="The text in the options panel that describes how we use web services to improve browsing experience.">

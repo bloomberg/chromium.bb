@@ -455,6 +455,9 @@ Chrome supports. -->
       <message name="IDS_INSTALL_MULTI_INSTALLATION_EXISTS" desc="Error during install if a multi-install Google Chrome or Google Chrome Frame is present, thereby preventing the installation of a single-install Google Chrome or Google Chrome Frame.">
         A conflicting installation of Google Chrome or Google Chrome Frame was found on the system. Please uninstall it and try again.
       </message>
+      <message name="IDS_INSTALL_CONFLICTING_CHANNEL_EXISTS" desc="Error during install if a version of Google Chrome on a different update channel exists when installing Google Chrome Frame.">
+        A conflicting installation of Google Chrome was found on the system. Please uninstall it and try again.
+      </message>
       <!-- Options Dialog -->
       <!-- TODO(kmadhusu): Remove "IDS_OPTIONS_DISABLE_SERVICES" after platform-specific dialogs are removed.-->
       <message name="IDS_OPTIONS_DISABLE_SERVICES" desc="The text in the options panel that describes how we use web services to improve browsing experience.">
