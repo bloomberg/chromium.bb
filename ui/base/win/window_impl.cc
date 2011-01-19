@@ -1,17 +1,16 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/win/window_impl.h"
+#include "ui/base/win/window_impl.h"
 
 #include <list>
 
-#include "app/win/hwnd_util.h"
+#include "ui/base/win/hwnd_util.h"
 #include "base/singleton.h"
 #include "base/string_number_conversions.h"
 
-namespace app {
-namespace win {
+namespace ui {
 
 static const DWORD kWindowDefaultChildStyle =
     WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
@@ -150,7 +149,7 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
   DCHECK(hwnd_);
 
   // The window procedure should have set the data for us.
-  DCHECK(app::win::GetWindowUserData(hwnd_) == this);
+  DCHECK(ui::GetWindowUserData(hwnd_) == this);
 }
 
 HICON WindowImpl::GetDefaultWindowIcon() const {
@@ -187,13 +186,13 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
     CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(l_param);
     WindowImpl* window = reinterpret_cast<WindowImpl*>(cs->lpCreateParams);
     DCHECK(window);
-    app::win::SetWindowUserData(hwnd, window);
+    ui::SetWindowUserData(hwnd, window);
     window->hwnd_ = hwnd;
     return TRUE;
   }
 
   WindowImpl* window = reinterpret_cast<WindowImpl*>(
-      app::win::GetWindowUserData(hwnd));
+      ui::GetWindowUserData(hwnd));
   if (!window)
     return 0;
 
@@ -228,5 +227,4 @@ std::wstring WindowImpl::GetWindowClassName() {
   return name;
 }
 
-}  // namespace win
-}  // namespace app
+}  // namespace ui

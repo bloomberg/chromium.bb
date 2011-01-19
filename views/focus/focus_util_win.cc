@@ -6,9 +6,9 @@
 
 #include <windowsx.h>
 
-#include "app/win/hwnd_util.h"
 #include "app/view_prop.h"
 #include "base/auto_reset.h"
+#include "ui/base/win/hwnd_util.h"
 
 using app::ViewProp;
 
@@ -34,7 +34,7 @@ static bool WindowSupportsRerouteMouseWheel(HWND window) {
 }
 
 static bool IsCompatibleWithMouseWheelRedirection(HWND window) {
-  std::wstring class_name = app::win::GetClassName(window);
+  std::wstring class_name = ui::GetClassName(window);
   // Mousewheel redirection to comboboxes is a surprising and
   // undesireable user behavior.
   return !(class_name == L"ComboBox" ||
@@ -42,7 +42,7 @@ static bool IsCompatibleWithMouseWheelRedirection(HWND window) {
 }
 
 static bool CanRedirectMouseWheelFrom(HWND window) {
-  std::wstring class_name = app::win::GetClassName(window);
+  std::wstring class_name = ui::GetClassName(window);
 
   // Older Thinkpad mouse wheel drivers create a window under mouse wheel
   // pointer. Detect if we are dealing with this window. In this case we

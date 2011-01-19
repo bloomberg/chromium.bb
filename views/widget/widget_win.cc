@@ -6,7 +6,6 @@
 
 #include "app/l10n_util_win.h"
 #include "app/view_prop.h"
-#include "app/win/hwnd_util.h"
 #include "app/win/win_util.h"
 #include "base/string_util.h"
 #include "gfx/canvas_skia.h"
@@ -14,6 +13,7 @@
 #include "gfx/path.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/system_monitor/system_monitor.h"
+#include "ui/base/win/hwnd_util.h"
 #include "views/accessibility/view_accessibility.h"
 #include "views/controls/native_control_win.h"
 #include "views/focus/focus_util_win.h"
@@ -78,7 +78,7 @@ WidgetWin* WidgetWin::GetWidget(HWND hwnd) {
   //                 WindowImpl).
   if (!WindowImpl::IsWindowImpl(hwnd))
     return NULL;
-  return reinterpret_cast<WidgetWin*>(app::win::GetWindowUserData(hwnd));
+  return reinterpret_cast<WidgetWin*>(ui::GetWindowUserData(hwnd));
 }
 
 // static
@@ -1110,7 +1110,7 @@ Window* WidgetWin::GetWindowImpl(HWND hwnd) {
   HWND parent = hwnd;
   while (parent) {
     WidgetWin* widget =
-        reinterpret_cast<WidgetWin*>(app::win::GetWindowUserData(parent));
+        reinterpret_cast<WidgetWin*>(ui::GetWindowUserData(parent));
     if (widget && widget->is_window_)
       return static_cast<WindowWin*>(widget);
     parent = ::GetParent(parent);

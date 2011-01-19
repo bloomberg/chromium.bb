@@ -8,7 +8,6 @@
 
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
-#include "app/win/hwnd_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
@@ -21,6 +20,7 @@
 #include "grit/app_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
+#include "ui/base/win/hwnd_util.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
@@ -340,7 +340,7 @@ HWND TreeView::CreateNativeControl(HWND parent_container) {
                                 parent_container, NULL, NULL, NULL);
   SetWindowLongPtr(tree_view_, GWLP_USERDATA,
                    reinterpret_cast<LONG_PTR>(&wrapper_));
-  original_handler_ = app::win::SetWindowProc(tree_view_, &TreeWndProc);
+  original_handler_ = ui::SetWindowProc(tree_view_, &TreeWndProc);
   l10n_util::AdjustUIFontForWindow(tree_view_);
 
   if (model_) {

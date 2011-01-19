@@ -8,7 +8,6 @@
 #include <shellapi.h>
 
 #include "app/theme_provider.h"
-#include "app/win/hwnd_util.h"
 #include "app/win/win_util.h"
 #include "base/i18n/rtl.h"
 #include "base/win/windows_version.h"
@@ -17,6 +16,7 @@
 #include "gfx/icon_util.h"
 #include "gfx/path.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
+#include "ui/base/win/hwnd_util.h"
 #include "views/accessibility/view_accessibility.h"
 #include "views/widget/root_view.h"
 #include "views/window/client_view.h"
@@ -540,7 +540,7 @@ gfx::NativeWindow WindowWin::GetNativeWindow() const {
 bool WindowWin::ShouldUseNativeFrame() const {
   ThemeProvider* tp = GetThemeProvider();
   if (!tp)
-    return app::win::ShouldUseVistaFrame();
+    return ui::ShouldUseVistaFrame();
   return tp->ShouldUseNativeFrame();
 }
 
@@ -595,7 +595,7 @@ void WindowWin::Init(HWND parent, const gfx::Rect& bounds) {
     set_window_ex_style(CalculateWindowExStyle());
 
   WidgetWin::Init(parent, bounds);
-  app::win::SetWindowUserData(GetNativeView(), this);
+  ui::SetWindowUserData(GetNativeView(), this);
 
   // Create the ClientView, add it to the NonClientView and add the
   // NonClientView to the RootView. This will cause everything to be parented.
@@ -614,9 +614,9 @@ void WindowWin::Init(HWND parent, const gfx::Rect& bounds) {
 }
 
 void WindowWin::SizeWindowToDefault() {
-  app::win::CenterAndSizeWindow(owning_window(), GetNativeView(),
-                                non_client_view_->GetPreferredSize(),
-                                false);
+  ui::CenterAndSizeWindow(owning_window(), GetNativeView(),
+                          non_client_view_->GetPreferredSize(),
+                          false);
 }
 
 gfx::Insets WindowWin::GetClientAreaInsets() const {

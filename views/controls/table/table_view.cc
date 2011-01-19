@@ -12,7 +12,6 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
-#include "app/win/hwnd_util.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "gfx/canvas_skia.h"
@@ -23,6 +22,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "ui/base/models/table_model.h"
+#include "ui/base/win/hwnd_util.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/table/table_view_observer.h"
 
@@ -837,14 +837,14 @@ HWND TableView::CreateNativeControl(HWND parent_container) {
     DCHECK(header);
     SetWindowLongPtr(header, GWLP_USERDATA,
         reinterpret_cast<LONG_PTR>(&table_view_wrapper_));
-    header_original_handler_ = app::win::SetWindowProc(header,
+    header_original_handler_ = ui::SetWindowProc(header,
         &TableView::TableHeaderWndProc);
   }
 
   SetWindowLongPtr(list_view_, GWLP_USERDATA,
       reinterpret_cast<LONG_PTR>(&table_view_wrapper_));
   original_handler_ =
-      app::win::SetWindowProc(list_view_, &TableView::TableWndProc);
+      ui::SetWindowProc(list_view_, &TableView::TableWndProc);
 
   // Bug 964884: detach the IME attached to this window.
   // We should attach IMEs only when we need to input CJK strings.

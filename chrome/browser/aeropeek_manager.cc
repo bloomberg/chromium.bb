@@ -7,8 +7,6 @@
 #include <dwmapi.h>
 #include <shobjidl.h>
 
-#include "app/win/hwnd_util.h"
-#include "app/win/window_impl.h"
 #include "app/win/shell.h"
 #include "base/command_line.h"
 #include "base/scoped_comptr_win.h"
@@ -37,6 +35,8 @@
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/win/hwnd_util.h"
+#include "ui/base/win/window_impl.h"
 
 namespace {
 
@@ -548,7 +548,7 @@ class SendLivePreviewTask : public Task {
 // * Translating received messages for TabStrip.
 // This class is used by the AeroPeekManager class, which is a proxy
 // between TabStrip and Windows 7.
-class AeroPeekWindow : public app::win::WindowImpl {
+class AeroPeekWindow : public ui::WindowImpl {
  public:
   AeroPeekWindow(HWND frame_window,
                  AeroPeekWindowDelegate* delegate,
@@ -1016,7 +1016,7 @@ bool AeroPeekManager::Enabled() {
   // flooding users with tab thumbnails.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   return base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      app::win::ShouldUseVistaFrame() &&
+      ui::ShouldUseVistaFrame() &&
       !command_line->HasSwitch(switches::kApp) &&
       command_line->HasSwitch(switches::kEnableAeroPeekTabs);
 }

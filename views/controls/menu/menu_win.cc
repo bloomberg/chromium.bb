@@ -8,7 +8,6 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
-#include "app/win/window_impl.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -16,6 +15,7 @@
 #include "gfx/font.h"
 #include "gfx/rect.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/win/window_impl.h"
 #include "views/accelerator.h"
 
 namespace views {
@@ -62,7 +62,7 @@ static int ChromeGetMenuItemID(HMENU hMenu, int pos) {
 // to intercept right clicks on the HMENU and notify the delegate as well as
 // for drawing icons.
 //
-class MenuHostWindow : public app::win::WindowImpl {
+class MenuHostWindow : public ui::WindowImpl {
  public:
   MenuHostWindow(MenuWin* menu, HWND parent_window) : menu_(menu) {
     int extended_style = 0;

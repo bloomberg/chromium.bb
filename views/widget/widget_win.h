@@ -14,10 +14,10 @@
 #include <string>
 #include <vector>
 
-#include "app/win/window_impl.h"
 #include "base/message_loop.h"
 #include "base/scoped_vector.h"
 #include "base/win/scoped_comptr.h"
+#include "ui/base/win/window_impl.h"
 #include "views/focus/focus_manager.h"
 #include "views/layout_manager.h"
 #include "views/widget/widget.h"
@@ -74,7 +74,7 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 //  then responsible for cleaning up after it.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class WidgetWin : public app::win::WindowImpl,
+class WidgetWin : public ui::WindowImpl,
                   public Widget,
                   public MessageLoopForUI::Observer,
                   public FocusTraversable {

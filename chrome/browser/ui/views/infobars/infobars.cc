@@ -24,7 +24,7 @@
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)
-#include "app/win/hwnd_util.h"
+#include "ui/base/win/hwnd_util.h"
 #endif
 
 // static
@@ -247,7 +247,7 @@ void InfoBar::AnimateClose() {
   // Do not restore focus (and active state with it) on Windows if some other
   // top-level window became active.
   if (GetWidget() &&
-      !app::win::DoesWindowBelongToActiveWindow(GetWidget()->GetNativeView())) {
+      !ui::DoesWindowBelongToActiveWindow(GetWidget()->GetNativeView())) {
     restore_focus = false;
   }
 #endif  // defined(OS_WIN)

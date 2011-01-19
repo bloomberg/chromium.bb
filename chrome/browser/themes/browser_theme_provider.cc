@@ -20,7 +20,7 @@
 #include "grit/theme_resources.h"
 
 #if defined(OS_WIN)
-#include "app/win/hwnd_util.h"
+#include "ui/base/win/hwnd_util.h"
 #endif
 
 // Strings used in alignment properties.
@@ -255,7 +255,7 @@ bool BrowserThemeProvider::ShouldUseNativeFrame() const {
   if (HasCustomImage(IDR_THEME_FRAME))
     return false;
 #if defined(OS_WIN)
-  return app::win::ShouldUseVistaFrame();
+  return ui::ShouldUseVistaFrame();
 #else
   return false;
 #endif

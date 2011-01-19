@@ -8,11 +8,11 @@
 
 #include <string>
 
-#include "app/win/window_impl.h"
 #include "chrome/default_plugin/install_dialog.h"
 #include "chrome/default_plugin/plugin_database_handler.h"
 #include "chrome/default_plugin/plugin_install_job_monitor.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "ui/base/win/window_impl.h"
 
 // Possible plugin installer states.
 enum PluginInstallerState {
@@ -34,7 +34,7 @@ class PluginDatabaseHandler;
 // Provides the plugin installation functionality. This class is
 // instantiated with the information like the mime type of the
 // target plugin, the display mode, etc.
-class PluginInstallerImpl : public app::win::WindowImpl {
+class PluginInstallerImpl : public ui::WindowImpl {
  public:
   static const int kRefreshPluginsMessage  = WM_APP + 1;
 

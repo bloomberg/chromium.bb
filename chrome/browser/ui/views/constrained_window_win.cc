@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "app/resource_bundle.h"
-#include "app/win/hwnd_util.h"
 #include "app/win/win_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +26,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
+#include "ui/base/win/hwnd_util.h"
 #include "views/controls/button/image_button.h"
 #include "views/focus/focus_manager.h"
 #include "views/window/client_view.h"
@@ -198,7 +198,7 @@ class ConstrainedWindowFrameView
 
   SkColor GetTitleColor() const {
     return (container_->owner()->profile()->IsOffTheRecord() ||
-        !app::win::ShouldUseVistaFrame()) ? SK_ColorWHITE : SK_ColorBLACK;
+        !ui::ShouldUseVistaFrame()) ? SK_ColorWHITE : SK_ColorBLACK;
   }
 
   // Loads the appropriate set of WindowResources for the frame view.
@@ -535,7 +535,7 @@ gfx::Rect ConstrainedWindowFrameView::CalculateClientAreaBounds(
 }
 
 void ConstrainedWindowFrameView::InitWindowResources() {
-  resources_.reset(app::win::ShouldUseVistaFrame() ?
+  resources_.reset(ui::ShouldUseVistaFrame() ?
     static_cast<views::WindowResources*>(new VistaWindowResources) :
     new XPWindowResources);
 }

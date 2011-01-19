@@ -9,7 +9,6 @@
 
 #include <set>
 
-#include "app/win/hwnd_util.h"
 #include "app/win/win_util.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 #include "gfx/font.h"
 #include "grit/theme_resources.h"
+#include "ui/base/win/hwnd_util.h"
 #include "views/screen.h"
 #include "views/window/window_delegate.h"
 
@@ -109,7 +109,7 @@ bool BrowserFrameWin::AlwaysUseNativeFrame() const {
   // We don't theme popup or app windows, so regardless of whether or not a
   // theme is active for normal browser windows, we don't want to use the custom
   // frame for popups/apps.
-  if (!browser_view_->IsBrowserTypeNormal() && app::win::ShouldUseVistaFrame())
+  if (!browser_view_->IsBrowserTypeNormal() && ui::ShouldUseVistaFrame())
     return true;
 
   // Otherwise, we use the native frame when we're told we should by the theme

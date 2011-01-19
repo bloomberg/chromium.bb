@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_WIN_WINDOW_IMPL_H_
-#define APP_WIN_WINDOW_IMPL_H_
+#ifndef UI_BASE_WIN_WINDOW_IMPL_H_
+#define UI_BASE_WIN_WINDOW_IMPL_H_
 #pragma once
 
 #include <atlbase.h>
@@ -17,8 +17,7 @@
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 
-namespace app {
-namespace win {
+namespace ui {
 
 // An interface implemented by classes that use message maps.
 // ProcessWindowMessage is implemented by the BEGIN_MESSAGE_MAP_EX macro.
@@ -110,7 +109,6 @@ class WindowImpl : public MessageMapInterface {
   DISALLOW_COPY_AND_ASSIGN(WindowImpl);
 };
 
-}  // namespace win
-}  // namespace app
+}  // namespace ui
 
-#endif  // APP_WIN_WINDOW_IMPL_H_
+#endif  // UI_BASE_WIN_WINDOW_IMPL_H_
