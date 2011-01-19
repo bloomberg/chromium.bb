@@ -23,9 +23,13 @@ from lib.cros_build_lib import RunCommand
 from lib.cros_build_lib import Warning as Warn
 
 
-# Find the Chromium OS root and Chromite root...
+# Find the Chromite root and Chromium OS root...  Note: in the chroot we may
+# choose to install Chromite somewhere (/usr/lib/chromite?), so we use the
+# environment variable to get the right place if it exists.
 _CHROMITE_PATH = os.path.dirname(os.path.realpath(__file__))
-_SRCROOT_PATH = os.path.realpath(os.path.join(_CHROMITE_PATH, '..'))
+_SRCROOT_PATH = os.environ.get('CROS_WORKON_SRCROOT',
+                               os.path.realpath(os.path.join(_CHROMITE_PATH,
+                                                             '..')))
 
 
 # Commands can take one of these two types of specs.  Note that if a command
