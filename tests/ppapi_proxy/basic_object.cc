@@ -87,6 +87,13 @@ const char* const kMethodHelloWorld = "helloWorld";
 const char* const kHelloWorld = "hello, world";
 const uint32_t kHelloWorldLength = static_cast<uint32_t>(sizeof(kHelloWorld));
 
+bool IsIntegral(PP_Var var) {
+  // JavaScript sometimes passes doubles for integers.
+  return (var.type == PP_VARTYPE_INT32) ||
+         ((var.type == PP_VARTYPE_DOUBLE) &&
+          (var.value.as_double == (int) var.value.as_double));
+}
+
 // A printer for PP_Vars.
 void PrintPpVar(PP_Var var) {
   printf("PP_Var(");
@@ -373,7 +380,7 @@ bool TestObject::set_prop_bool(PP_Var prop_bool) {
 }
 
 bool TestObject::set_prop_int32(PP_Var prop_int32) {
-  if (prop_int32.type != PP_VARTYPE_INT32) return false;
+  if (!IsIntegral(prop_int32)) return false;
   prop_int32_ = prop_int32;
   return true;
 }
@@ -431,7 +438,7 @@ PP_Var TestObject::method_bool(uint32_t argc,
 PP_Var TestObject::method_int32(uint32_t argc,
                                 PP_Var* argv,
                                 PP_Var* exception) {
-  if (argc != 1 || argv[0].type != PP_VARTYPE_INT32) {
+  if (argc != 1 || !IsIntegral(argv[0])) {
     *exception = kCallFailed;
   }
   return argv[0];
@@ -501,9 +508,7 @@ PP_Var TestObject::method_bool_2_args(uint32_t argc,
 PP_Var TestObject::method_int32_2_args(uint32_t argc,
                                        PP_Var* argv,
                                        PP_Var* exception) {
-  if (argc != 2 ||
-      argv[0].type != PP_VARTYPE_INT32 ||
-      argv[1].type != PP_VARTYPE_INT32) {
+  if (argc != 2 || !IsIntegral(argv[0]) || !IsIntegral(argv[1])) {
     *exception = kCallFailed;
   }
   return argv[0];
