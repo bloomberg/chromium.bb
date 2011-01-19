@@ -47,6 +47,9 @@ display_get_display(struct display *display);
 struct wl_compositor *
 display_get_compositor(struct display *display);
 
+struct wl_shell *
+display_get_shell(struct display *display);
+
 #ifdef EGL_NO_DISPLAY
 EGLDisplay
 display_get_egl_display(struct display *d);
@@ -242,5 +245,11 @@ input_get_modifiers(struct input *input);
 
 struct wl_input_device *
 input_get_input_device(struct input *input);
+
+int
+input_offers_mime_type(struct input *input, const char *type);
+int
+input_receive_mime_type(struct input *input, const char *type);
+
 
 #endif

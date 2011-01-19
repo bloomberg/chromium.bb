@@ -118,6 +118,7 @@ struct input {
 	struct wl_input_device *input_device;
 	struct window *pointer_focus;
 	struct window *keyboard_focus;
+	struct selection_offer *offer;
 	uint32_t current_pointer_image;
 	uint32_t modifiers;
 	int32_t x, y, sx, sy;
@@ -1317,6 +1318,117 @@ display_add_input(struct display *d, uint32_t id)
 	wl_input_device_set_user_data(input->input_device, input);
 }
 
+struct selection_offer {
+	struct display *display;
+	struct wl_selection_offer *offer;
+	struct wl_array types;
+	struct input *input;
+};
+
+int
+input_offers_mime_type(struct input *input, const char *type)
+{
+	struct selection_offer *offer = input->offer;
+	char **p, **end;
+
+	if (offer == NULL)
+		return 0;
+
+	end = offer->types.data + offer->types.size;
+	for (p = offer->types.data; p < end; p++)
+		if (strcmp(*p, type) == 0)
+			return 1;
+
+	return 0;
+}
+
+int
+input_receive_mime_type(struct input *input, const char *type)
+{
+	struct selection_offer *offer = input->offer;
+	int p[2];
+
+	pipe(p);
+	/* FIXME: A number of things can go wrong here: the object may
+	 * not be the current selection offer any more (which could
+	 * still work, but the source may have gone away or just
+	 * destroyed its wl_selection) or the offer may not have the
+	 * requested type after all (programmer/client error,
+	 * typically) */
+	wl_selection_offer_receive(offer->offer, type, p[1]);
+	close(p[1]);
+
+	return p[0];
+}
+
+static void
+selection_offer_offer(void *data,
+		      struct wl_selection_offer *selection_offer,
+		      const char *type)
+{
+	struct selection_offer *offer = data;
+
+	char **p;
+
+	p = wl_array_add(&offer->types, sizeof *p);
+	if (p)
+		*p = strdup(type);
+};
+
+static void
+selection_offer_keyboard_focus(void *data,
+			       struct wl_selection_offer *selection_offer,
+			       struct wl_input_device *input_device)
+{
+	struct selection_offer *offer = data;
+	struct input *input;
+	char **p, **end;
+
+	if (input_device == NULL) {
+		printf("selection offer retracted %p\n", selection_offer);
+		input = offer->input;
+		input->offer = NULL;
+		wl_selection_offer_destroy(selection_offer);
+		wl_array_release(&offer->types);
+		free(offer);
+		return;
+	}
+
+	input = wl_input_device_get_user_data(input_device);
+	printf("new selection offer %p:", selection_offer);
+
+	offer->input = input;
+	input->offer = offer;
+	end = offer->types.data + offer->types.size;
+	for (p = offer->types.data; p < end; p++)
+		printf(" %s", *p);
+
+	printf("\n");
+}
+
+struct wl_selection_offer_listener selection_offer_listener = {
+	selection_offer_offer,
+	selection_offer_keyboard_focus
+};
+
+static void
+add_selection_offer(struct display *d, uint32_t id)
+{
+	struct selection_offer *offer;
+
+	offer = malloc(sizeof *offer);
+	if (offer == NULL)
+		return;
+
+	offer->offer = wl_selection_offer_create(d->display, id);
+	offer->display = d;
+	wl_array_init(&offer->types);
+	offer->input = NULL;
+
+	wl_selection_offer_add_listener(offer->offer,
+					&selection_offer_listener, offer);
+}
+
 static void
 display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
@@ -1338,6 +1450,8 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		wl_drm_add_listener(d->drm, &drm_listener, d);
 	} else if (strcmp(interface, "shm") == 0) {
 		d->shm = wl_shm_create(display, id);
+	} else if (strcmp(interface, "selection_offer") == 0) {
+		add_selection_offer(d, id);
 	} else if (d->global_handler) {
 		d->global_handler(d, interface, id, version);
 	}
@@ -1532,6 +1646,12 @@ EGLDisplay
 display_get_egl_display(struct display *d)
 {
 	return d->dpy;
+}
+
+struct wl_shell *
+display_get_shell(struct display *display)
+{
+	return display->shell;
 }
 
 void
