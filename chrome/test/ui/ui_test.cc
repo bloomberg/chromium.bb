@@ -273,6 +273,10 @@ void UITestBase::NavigateToURL(const GURL& url) {
   NavigateToURL(url, 0, GetActiveTabIndex(0));
 }
 
+void UITestBase::NavigateToURL(const GURL& url, int window_index) {
+  NavigateToURL(url, window_index, GetActiveTabIndex(window_index));
+}
+
 void UITestBase::NavigateToURL(const GURL& url, int window_index, int
     tab_index) {
   NavigateToURLBlockUntilNavigationsComplete(url, 1, window_index, tab_index);

@@ -120,6 +120,9 @@ class UITestBase {
   // This method doesn't return until the navigation is complete.
   void NavigateToURL(const GURL& url);
 
+  // Navigate to the given URL in the active tab of the given app window.
+  void NavigateToURL(const GURL& url, int window_index);
+
   // Same as above, except in the given tab and window.
   void NavigateToURL(const GURL& url, int window_index, int tab_index);
 

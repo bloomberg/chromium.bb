@@ -2521,14 +2521,15 @@ void TestingAutomationProvider::GetDownloadsInfo(Browser* browser,
                                                  IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
 
-  if (!profile_->HasCreatedDownloadManager()) {
+  if (!browser->profile()->HasCreatedDownloadManager()) {
       reply.SendError("no download manager");
       return;
   }
 
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   std::vector<DownloadItem*> downloads;
-  profile_->GetDownloadManager()->GetAllDownloads(FilePath(), &downloads);
+  browser->profile()->GetDownloadManager()->
+      GetAllDownloads(FilePath(), &downloads);
 
   ListValue* list_of_downloads = new ListValue;
   for (std::vector<DownloadItem*>::iterator it = downloads.begin();
@@ -2548,18 +2549,18 @@ void TestingAutomationProvider::WaitForDownloadsToComplete(
     IPC::Message* reply_message) {
 
   // Look for a quick return.
-  if (!profile_->HasCreatedDownloadManager()) {
+  if (!browser->profile()->HasCreatedDownloadManager()) {
     // No download manager.
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
     return;
   }
   std::vector<DownloadItem*> downloads;
-  profile_->GetDownloadManager()->GetCurrentDownloads(FilePath(), &downloads);
+  browser->profile()->GetDownloadManager()->
+      GetCurrentDownloads(FilePath(), &downloads);
   if (downloads.empty()) {
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
     return;
   }
-
   // The observer owns itself.  When the last observed item pings, it
   // deletes itself.
   AutomationProviderDownloadItemObserver* item_observer =
@@ -2602,7 +2603,7 @@ void TestingAutomationProvider::PerformActionOnDownload(
   int id;
   std::string action;
 
-  if (!profile_->HasCreatedDownloadManager()) {
+  if (!browser->profile()->HasCreatedDownloadManager()) {
     AutomationJSONReply(this, reply_message).SendError("No download manager.");
     return;
   }
@@ -2612,7 +2613,7 @@ void TestingAutomationProvider::PerformActionOnDownload(
     return;
   }
 
-  DownloadManager* download_manager = profile_->GetDownloadManager();
+  DownloadManager* download_manager = browser->profile()->GetDownloadManager();
   DownloadItem* selected_item = GetDownloadItemFromId(id, download_manager);
   if (!selected_item) {
     AutomationJSONReply(this, reply_message).SendError(

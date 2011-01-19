@@ -54,6 +54,9 @@ class PyUITestBase : public UITestBase {
   // Navigate to the given URL in the active tab. Blocks until page loaded.
   void NavigateToURL(const char* url_string);
 
+  // Navigate to the given URL in the active tab in the given window.
+  void NavigateToURL(const char* url_string, int window_index);
+
   // Navigate to the given URL in given tab in the given window.
   // Blocks until page loaded.
   void NavigateToURL(const char* url_string, int window_index, int tab_index);

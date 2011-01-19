@@ -133,13 +133,15 @@ class DownloadsTest(pyauto.PyUITest):
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   'a_zip_file.zip')
     self._ClearLocalDownloadState(downloaded_pkg)
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
 
-    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)  # open incognito window
-    # Downloads from incognito window do not figure in GetDownloadsInfo()
-    # since the download manager's list doesn't contain it.
-    # Using WaitUntil is the only resort.
-    self.NavigateToURL(file_url, 1, 0)
-    self.assertTrue(self.WaitUntil(lambda: os.path.exists(downloaded_pkg)))
+    # Trigger download and wait in new incognito window.
+    self.DownloadAndWaitForStart(file_url, 1)
+    self.WaitForAllDownloadsToComplete(1)
+    incognito_downloads = self.GetDownloadsInfo(1).Downloads()
+
+    # Verify that download info exists in the correct profile.
+    self.assertEqual(len(incognito_downloads), 1)
     self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg))
     self.assertTrue(self.IsDownloadShelfVisible(1))
 
@@ -518,7 +520,7 @@ class DownloadsTest(pyauto.PyUITest):
     self.PerformActionOnDownload(id, 'open')
     self.WaitForAllDownloadsToComplete()
     unzip_file_name = downloaded_pkg + '.cpgz'
-    # Verify that the file was correctly downloaded
+    # Verify that the file was correctly downloaded.
     self.assertTrue(self.WaitUntil(lambda: os.path.exists(unzip_file_name)),
                     'Unzipped folder %s missing.' % unzip_file_name)
     self.assertTrue(os.path.exists(downloaded_pkg),
@@ -548,7 +550,7 @@ class DownloadsTest(pyauto.PyUITest):
       return old_percentage == 100 or percent > old_percentage,
     self.assertTrue(self.WaitUntil(_PercentInc),
         msg='Download percentage value is not increasing')
-    # Once download is completed, percentage is 100
+    # Once download is completed, percentage is 100.
     self.WaitForAllDownloadsToComplete()
     downloads = self.GetDownloadsInfo().Downloads()
     self.assertEqual(downloads[0]['PercentComplete'], 100,
@@ -570,17 +572,21 @@ class DownloadsTest(pyauto.PyUITest):
                                         'a_zip_file (1).zip')
     self._ClearLocalDownloadState(downloaded_pkg_regul)
     self._ClearLocalDownloadState(downloaded_pkg_incog)
-    self.NavigateToURL(file_url, 0, 0)
-    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
-    self.NavigateToURL(file_url, 1, 0)
-    self.WaitForAllDownloadsToComplete()
 
-    # Verify download in regular Window.
+    self.DownloadAndWaitForStart(file_url, 0)
+    self.WaitForAllDownloadsToComplete(0)
+
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.DownloadAndWaitForStart(file_url, 1)
+    self.WaitForAllDownloadsToComplete(1)
+
+    # Verify download in regular window.
     self.assertTrue(os.path.exists(downloaded_pkg_regul))
     self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg_regul))
 
-    # Verify download in Incognito Window.
-    # WaitForAllDownloadsToComplete does not wait for incognito downloads
+    # Verify download in incognito window.
+    # bug 69738 WaitForAllDownloadsToComplete is flaky for this test case.
+    # Using extra WaitUntil until this is resolved.
     self.assertTrue(self.WaitUntil(
         lambda: os.path.exists(downloaded_pkg_incog)))
     self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg_incog))

@@ -388,7 +388,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     return bookmark_model.BookmarkModel(self._GetBookmarksAsJSON())
 
-  def GetDownloadsInfo(self):
+  def GetDownloadsInfo(self, windex=0):
     """Return info about downloads.
 
     This includes all the downloads recognized by the history system.
@@ -397,7 +397,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       an instance of downloads_info.DownloadInfo
     """
     return download_info.DownloadInfo(
-        self._SendJSONRequest(0, json.dumps({'command': 'GetDownloadsInfo'})))
+        self._SendJSONRequest(
+            windex, json.dumps({'command': 'GetDownloadsInfo'})))
 
   def GetOmniboxInfo(self, windex=0):
     """Return info about Omnibox.
@@ -657,13 +658,14 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict)
 
-  def WaitForAllDownloadsToComplete(self):
+  def WaitForAllDownloadsToComplete(self, windex=0):
     """Wait for all downloads to complete.
 
     Note: This method does not work for dangerous downloads. Use
     WaitForGivenDownloadsToComplete (below) instead.
     """
-    self._GetResultFromJSONRequest({'command': 'WaitForAllDownloadsToComplete'})
+    cmd_dict = {'command': 'WaitForAllDownloadsToComplete'}
+    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
   def WaitForDownloadToComplete(self, download_path, timeout=-1):
     """Wait for the given downloads to complete.
@@ -728,7 +730,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
 
-  def DownloadAndWaitForStart(self, file_url):
+  def DownloadAndWaitForStart(self, file_url, windex=0):
     """Trigger download for the given url and wait for downloads to start.
 
     It waits for download by looking at the download info from Chrome, so
@@ -738,11 +740,16 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     download, it's fine to start another one even if the first one hasn't
     completed.
     """
-    num_downloads = len(self.GetDownloadsInfo().Downloads())
-    self.NavigateToURL(file_url)  # Trigger download.
+    try:
+      num_downloads = len(self.GetDownloadsInfo(windex).Downloads())
+    except JSONInterfaceError:
+      num_downloads = 0
+
+    self.NavigateToURL(file_url, windex)  # Trigger download.
     # It might take a while for the download to kick in, hold on until then.
     self.assertTrue(self.WaitUntil(
-        lambda: len(self.GetDownloadsInfo().Downloads()) == num_downloads + 1))
+        lambda: len(self.GetDownloadsInfo(windex).Downloads()) >
+                num_downloads))
 
   def SetWindowDimensions(
       self, x=None, y=None, width=None, height=None, windex=0):

@@ -74,6 +74,11 @@ void PyUITestBase::NavigateToURL(const char* url_string) {
   UITestBase::NavigateToURL(url);
 }
 
+void PyUITestBase::NavigateToURL(const char* url_string, int window_index) {
+  GURL url(url_string);
+  UITestBase::NavigateToURL(url, window_index);
+}
+
 void PyUITestBase::NavigateToURL(
     const char* url_string, int window_index, int tab_index) {
   GURL url(url_string);
