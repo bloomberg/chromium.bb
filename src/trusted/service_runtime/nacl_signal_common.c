@@ -233,7 +233,8 @@ void NaClSignalHandlerInit() {
   if (getenv("NACL_CRASH_TEST") != NULL) {
     NaClSignalErrorMessage("[CRASH_TEST] Causing crash in NaCl "
                            "trusted code...\n");
-    *(int *) 0 = 0;
+    /* Clang removes non-volatile NULL pointer references. */
+    *(volatile int *) 0 = 0;
   }
 }
 
@@ -246,5 +247,3 @@ void NaClSignalRegisterApp(struct NaClApp *nap) {
   CHECK(g_SignalNAP == NULL);
   g_SignalNAP = nap;
 }
-
-
