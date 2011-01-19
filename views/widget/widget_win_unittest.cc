@@ -74,8 +74,7 @@ TEST_F(WidgetWinTest, SetBoundsForZoomedWindow) {
   // cause it to be activated.
   window->SetBounds(gfx::Rect(50, 50, 650, 650));
   EXPECT_FALSE(window->IsZoomed());
-  // Re-enable the check below: http://crbug.com/69724
-  // EXPECT_FALSE(window->IsActive());
+  EXPECT_FALSE(window->IsActive());
 
   // Cleanup.
   window->CloseNow();

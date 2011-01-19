@@ -239,8 +239,9 @@ void WidgetWin::GetBounds(gfx::Rect* out, bool including_frame) const {
 }
 
 void WidgetWin::SetBounds(const gfx::Rect& bounds) {
-  if (IsZoomed())
-    ShowWindow(SW_SHOWNOACTIVATE);
+  LONG style = GetWindowLong(GWL_STYLE);
+  if (style & WS_MAXIMIZE)
+    SetWindowLong(GWL_STYLE, style & ~WS_MAXIMIZE);
   SetWindowPos(NULL, bounds.x(), bounds.y(), bounds.width(), bounds.height(),
                SWP_NOACTIVATE | SWP_NOZORDER);
 }
