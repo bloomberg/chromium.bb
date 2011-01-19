@@ -249,9 +249,6 @@ class UITestBase {
   static int command_execution_timeout_ms() {
     return TestTimeouts::command_execution_timeout_ms();
   }
-  static int action_max_timeout_ms() {
-    return TestTimeouts::action_max_timeout_ms();
-  }
 
   // Fetch the state which determines whether the profile will be cleared on
   // next startup.

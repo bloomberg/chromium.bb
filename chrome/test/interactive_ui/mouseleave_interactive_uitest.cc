@@ -1,8 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/file_path.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
@@ -58,12 +59,11 @@ TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
   // Navigate to the test html page.
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(test_url));
 
-  const int timeout_ms = 5 * action_max_timeout_ms();
-
   // Wait for the onload() handler to complete so we can do the
   // next part of the test.
   ASSERT_TRUE(WaitUntilCookieValue(
-      tab.get(), test_url, "__state", timeout_ms, "initial"));
+      tab.get(), test_url, "__state",
+      TestTimeouts::large_test_timeout_ms(), "initial"));
 
   // Move the cursor to the top-center of the content, which will trigger
   // a javascript onMouseOver event.
@@ -71,7 +71,8 @@ TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
 
   // Wait on the correct intermediate value of the cookie.
   ASSERT_TRUE(WaitUntilCookieValue(
-      tab.get(), test_url, "__state", timeout_ms, "initial,entered"));
+      tab.get(), test_url, "__state",
+      TestTimeouts::large_test_timeout_ms(), "initial,entered"));
 
   // Move the cursor above the content again, which should trigger
   // a javascript onMouseOut event.
@@ -79,7 +80,8 @@ TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
 
   // Wait on the correct final value of the cookie.
   ASSERT_TRUE(WaitUntilCookieValue(
-      tab.get(), test_url, "__state", timeout_ms, "initial,entered,left"));
+      tab.get(), test_url, "__state",
+      TestTimeouts::large_test_timeout_ms(), "initial,entered,left"));
 }
 
 }  // namespace

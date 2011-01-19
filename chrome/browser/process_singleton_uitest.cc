@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_temp_dir.h"
 #include "base/threading/thread.h"
+#include "base/test/test_timeouts.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_constants.h"
@@ -144,8 +145,8 @@ class ProcessSingletonTest : public UITest {
     for (size_t i = 0; i < kNbThreads; ++i) {
       chrome_starter_threads_[i].reset(new base::Thread("ChromeStarter"));
       ASSERT_TRUE(chrome_starter_threads_[i]->Start());
-      chrome_starters_[i] = new ChromeStarter(action_max_timeout_ms(),
-                                              temp_profile_dir_.path());
+      chrome_starters_[i] = new ChromeStarter(
+          TestTimeouts::action_max_timeout_ms(), temp_profile_dir_.path());
     }
   }
 

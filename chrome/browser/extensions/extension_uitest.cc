@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/test/test_timeouts.h"
 #include "base/values.h"
 #include "chrome/browser/automation/extension_automation_constants.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
@@ -144,7 +145,7 @@ TEST_F(ExtensionTestSimpleApiCall, FLAKY_RunTest) {
       GURL("chrome-extension://pmgpglkggjdpkpghhdmbdhababjpcohk/test.html"),
       GURL("")));
 
-  loop_.RunFor(action_max_timeout_ms());
+  loop_.RunFor(TestTimeouts::action_max_timeout_ms());
   ASSERT_FALSE(message_received.empty());
 
   scoped_ptr<Value> message_value(base::JSONReader::Read(message_received,
@@ -297,7 +298,7 @@ TEST_F(ExtensionTestRoundtripApiCall, FLAKY_RunTest) {
 
   // CheckAndSendResponse (called by OnForwardMessageToExternalHost)
   // will end the loop once it has received both of our expected messages.
-  loop_.RunFor(action_max_timeout_ms());
+  loop_.RunFor(TestTimeouts::action_max_timeout_ms());
 }
 
 class ExtensionTestBrowserEvents : public ExtensionUITest {
@@ -484,7 +485,7 @@ TEST_F(ExtensionTestBrowserEvents, FLAKY_RunTest) {
 
   // HandleMessageFromChrome (called by OnForwardMessageToExternalHost) ends
   // the loop when we've received the number of response messages we expect.
-  loop_.RunFor(action_max_timeout_ms());
+  loop_.RunFor(TestTimeouts::action_max_timeout_ms());
 
   // If this assert hits and the actual size is 0 then you need to look at:
   // src\chrome\test\data\extensions\uitest\event_sink\test.html and see if

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
@@ -52,7 +53,7 @@ TEST_F(LayoutPluginTester, FLAKY_SelfDeletePluginGetUrl) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("self_delete_plugin_geturl", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
+                TestTimeouts::action_max_timeout_ms());
 }
 
 // Tests if a plugin executing a self deleting script using Invoke
@@ -64,7 +65,7 @@ TEST_F(LayoutPluginTester, FLAKY_SelfDeletePluginInvoke) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("self_delete_plugin_invoke", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
+                TestTimeouts::action_max_timeout_ms());
 }
 
 TEST_F(LayoutPluginTester, NPObjectReleasedOnDestruction) {
@@ -95,5 +96,5 @@ TEST_F(LayoutPluginTester, NPObjectSetException) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("npobject_set_exception", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
+                TestTimeouts::action_max_timeout_ms());
 }

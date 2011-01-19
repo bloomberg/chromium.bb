@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 // TODO(jvoung) see what includes we really need.
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/common/chrome_paths.h"
 
 namespace {
@@ -37,47 +38,47 @@ NaClUITest::~NaClUITest() {
 
 TEST_F(NaClUITest, ServerTest) {
   FilePath test_file(kServerHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
+  RunTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
 
 TEST_F(NaClUITest, DISABLED_SrpcHelloWorld) {
   FilePath test_file(kSrpcHwHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
+  RunTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
 
 // http://crbug.com/64973
 TEST_F(NaClUITest, DISABLED_SrpcBasicTest) {
   FilePath test_file(kSrpcBasicHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
+  RunTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
 
 TEST_F(NaClUITest, DISABLED_SrpcSockAddrTest) {
   FilePath test_file(kSrpcSockAddrHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
+  RunTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
 
 TEST_F(NaClUITest, DISABLED_SrpcShmTest) {
   FilePath test_file(kSrpcShmHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
+  RunTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
 
 TEST_F(NaClUITest, DISABLED_SrpcPluginTest) {
   FilePath test_file(kSrpcPluginHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
+  RunTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
 
 TEST_F(NaClUITest, DISABLED_SrpcNrdXferTest) {
   FilePath test_file(kSrpcNrdXferHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
+  RunTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
 
 TEST_F(NaClUITest, DISABLED_NpapiHwTest) {
   FilePath test_file(kNpapiHwHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
+  RunTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
 
 TEST_F(NaClUITest, DISABLED_MultiarchTest) {
   FilePath test_file(kSrpcHwHtmlFileName);
-  RunMultiarchTest(test_file, action_max_timeout_ms());
+  RunMultiarchTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
 

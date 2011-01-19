@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/file_path.h"
 
 #include "app/app_switches.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui/npapi_test_helper.h"
 #include "chrome/test/ui_test_utils.h"
@@ -41,6 +42,6 @@ TEST_F(PepperTester, FAILS_Pepper3D) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("pepper_3d", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
+                TestTimeouts::action_max_timeout_ms());
 }
 #endif

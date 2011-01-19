@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // History UI tests
 
 #include "base/file_path.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -41,7 +42,7 @@ TEST_F(HistoryTester, VerifyHistoryLength1) {
   GURL url_1 = ui_test_utils::GetTestUrl(FilePath(kHistoryDir), test_case_1);
   NavigateToURL(url_1);
   WaitForFinish("History_Length_Test_1", "1", url_1, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 TEST_F(HistoryTester, VerifyHistoryLength2) {
@@ -53,7 +54,7 @@ TEST_F(HistoryTester, VerifyHistoryLength2) {
   GURL url_2 = ui_test_utils::GetTestUrl(FilePath(kHistoryDir), test_case_2);
   NavigateToURL(url_2);
   WaitForFinish("History_Length_Test_2", "1", url_2, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 TEST_F(HistoryTester, VerifyHistoryLength3) {
@@ -66,21 +67,21 @@ TEST_F(HistoryTester, VerifyHistoryLength3) {
   GURL url_1 = ui_test_utils::GetTestUrl(FilePath(kHistoryDir), test_case_1);
   NavigateToURL(url_1);
   WaitForFinish("History_Length_Test_1", "1", url_1, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 
   const FilePath test_case_2(
       FILE_PATH_LITERAL("history_length_test_page_2.html"));
   GURL url_2 = ui_test_utils::GetTestUrl(FilePath(kHistoryDir), test_case_2);
   NavigateToURL(url_2);
   WaitForFinish("History_Length_Test_2", "1", url_2, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 
   const FilePath test_case_3(
       FILE_PATH_LITERAL("history_length_test_page_4.html"));
   GURL url_3 = ui_test_utils::GetTestUrl(FilePath(kHistoryDir), test_case_3);
   NavigateToURL(url_3);
   WaitForFinish("History_Length_Test_3", "1", url_3, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 #if defined(OS_WIN) || defined(OS_LINUX)
@@ -98,7 +99,7 @@ TEST_F(HistoryTester, ConsiderRedirectAfterGestureAsUserInitiated) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kHistoryDir), test_case);
   NavigateToURL(url);
   WaitForFinish("History_Length_Test_11", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 
   // Simulate click. This only works for Windows.
   scoped_refptr<BrowserProxy> browser = automation()->GetBrowserWindow(0);
@@ -114,7 +115,7 @@ TEST_F(HistoryTester, ConsiderRedirectAfterGestureAsUserInitiated) {
 
   NavigateToURL(GURL("javascript:redirectToPage12()"));
   WaitForFinish("History_Length_Test_12", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
@@ -132,5 +133,5 @@ TEST_F(HistoryTester, ConsiderSlowRedirectAsUserInitiated) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kHistoryDir), test_case);
   NavigateToURL(url);
   WaitForFinish("History_Length_Test_21", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }

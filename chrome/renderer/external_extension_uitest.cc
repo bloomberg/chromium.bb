@@ -1,7 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/test_timeouts.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -107,8 +108,10 @@ void SearchProviderTest::FinishIsSearchProviderInstalledTest(
 
   std::string cookie_name = data.host + "testResult";
   std::string escaped_value =
-      WaitUntilCookieNonEmpty(data.tab, data.test_url,
-                              cookie_name.c_str(), action_max_timeout_ms());
+      WaitUntilCookieNonEmpty(data.tab,
+                              data.test_url,
+                              cookie_name.c_str(),
+                              TestTimeouts::action_max_timeout_ms());
 
   // Unescapes and normalizes the actual result.
   std::string value = UnescapeURLComponent(

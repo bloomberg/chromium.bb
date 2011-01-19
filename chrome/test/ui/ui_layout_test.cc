@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/test/test_file_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -220,7 +221,7 @@ void UILayoutTest::RunLayoutTest(const std::string& test_case_file_name,
   ASSERT_TRUE(tab->NavigateToURL(*new_test_url.get()));
   std::string escaped_value =
       WaitUntilCookieNonEmpty(tab.get(), *new_test_url.get(),
-          status_cookie.c_str(), action_max_timeout_ms());
+          status_cookie.c_str(), TestTimeouts::action_max_timeout_ms());
 
   // Unescapes and normalizes the actual result.
   std::string value = UnescapeURLComponent(escaped_value,

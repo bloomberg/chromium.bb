@@ -1,7 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/test_timeouts.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
@@ -154,7 +155,8 @@ TEST_F(KeyboardAccessTest, MAYBE_ReserveKeyboardAccelerators) {
   ASSERT_TRUE(window);
   ASSERT_TRUE(window->SimulateOSKeyPress(
       ui::VKEY_TAB, views::Event::EF_CONTROL_DOWN));
-  ASSERT_TRUE(browser->WaitForTabToBecomeActive(0, action_max_timeout_ms()));
+  ASSERT_TRUE(browser->WaitForTabToBecomeActive(
+      0, TestTimeouts::action_max_timeout_ms()));
 
 #if !defined(OS_MACOSX)  // see BrowserWindowCocoa::GetCommandId
   ASSERT_TRUE(browser->ActivateTab(1));

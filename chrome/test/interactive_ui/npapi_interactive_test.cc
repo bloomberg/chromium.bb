@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-//
 // NPAPI interactive UI tests.
-//
 
 #include "base/file_path.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/npapi_test_helper.h"
@@ -37,7 +36,7 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInvokeInSynchronousMouseMove) {
 
   WaitForFinish("execute_script_delete_in_mouse_move", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
+                TestTimeouts::action_max_timeout_ms());
 }
 
 // Flaky, http://crbug.com/60071.
@@ -58,7 +57,7 @@ TEST_F(NPAPIVisiblePluginTester, FLAKY_GetURLRequest404Response) {
   ASSERT_TRUE(window->SimulateOSKeyPress(ui::VKEY_ESCAPE, 0));
 
   WaitForFinish("geturl_404_response", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 // Tests if a plugin executing a self deleting script using Invoke with
@@ -78,5 +77,5 @@ TEST_F(NPAPIVisiblePluginTester, DISABLED_SelfDeletePluginInvokeAlert) {
 
   WaitForFinish("self_delete_plugin_invoke_alert", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
+                TestTimeouts::action_max_timeout_ms());
 }

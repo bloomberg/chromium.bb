@@ -1,9 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_layout_test.h"
@@ -78,7 +79,8 @@ class DOMStorageTest : public UILayoutTest {
     ASSERT_TRUE(tab->SetCookie(url, ""));
     ASSERT_TRUE(tab->NavigateToURL(url));
 
-    WaitUntilCookieNonEmpty(tab.get(), url, "cleared", action_max_timeout_ms());
+    WaitUntilCookieNonEmpty(tab.get(), url, "cleared",
+                            TestTimeouts::action_max_timeout_ms());
   }
 
   // Runs each test in an array of strings until it hits a NULL.

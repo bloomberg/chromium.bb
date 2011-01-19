@@ -42,7 +42,7 @@ TEST_F(NPAPITesterBase, Arguments) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("arguments", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 // Test invoking many plugins within a single page.
@@ -53,10 +53,13 @@ TEST_F(NPAPITesterBase, ManyPlugins) {
 
   for (int i = 1; i <= 15; i++) {
     SCOPED_TRACE(StringPrintf("Waiting for plugin #%d", i));
-    ASSERT_NO_FATAL_FAILURE(WaitForFinish("arguments", base::IntToString(i),
-                                          url, kTestCompleteCookie,
-                                          kTestCompleteSuccess,
-                                          action_max_timeout_ms()));
+    ASSERT_NO_FATAL_FAILURE(WaitForFinish(
+        "arguments",
+        base::IntToString(i),
+        url,
+        kTestCompleteCookie,
+        kTestCompleteSuccess,
+        TestTimeouts::action_max_timeout_ms()));
   }
 }
 
@@ -66,7 +69,7 @@ TEST_F(NPAPITesterBase, GetURL) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("geturl", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 // Test various calls to GetURL for javascript URLs with
@@ -76,7 +79,7 @@ TEST_F(NPAPITesterBase, GetJavaScriptURL) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("getjavascripturl", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 // Test that calling GetURL with a javascript URL and target=_self
@@ -86,7 +89,7 @@ TEST_F(NPAPITesterBase, GetJavaScriptURL2) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("getjavascripturl2", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 TEST_F(NPAPITesterBase, GetURLRedirectNotification) {
@@ -94,7 +97,7 @@ TEST_F(NPAPITesterBase, GetURLRedirectNotification) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("geturlredirectnotify", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 // Tests that if an NPObject is proxies back to its original process, the
@@ -105,7 +108,7 @@ TEST_F(NPAPITesterBase, NPObjectProxy) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("npobject_proxy", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -124,7 +127,7 @@ TEST_F(NPAPIVisiblePluginTester,
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("execute_script_delete_in_paint", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
+                TestTimeouts::action_max_timeout_ms());
 }
 #endif
 
@@ -138,7 +141,7 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNewStream) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("self_delete_plugin_stream", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
+                TestTimeouts::action_max_timeout_ms());
 }
 
 #if defined(OS_WIN)
@@ -149,7 +152,7 @@ TEST_F(NPAPIVisiblePluginTester, VerifyPluginWindowRect) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("checkwindowrect", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 // Tests that creating a new instance of a plugin while another one is handling
@@ -160,7 +163,7 @@ TEST_F(NPAPIVisiblePluginTester, CreateInstanceInPaint) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("create_instance_in_paint", "2", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 // Tests that putting up an alert in response to a paint doesn't deadlock.
@@ -200,7 +203,7 @@ TEST_F(NPAPIVisiblePluginTester, VerifyNPObjectLifetimeTest) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("npobject_lifetime_test", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
+                TestTimeouts::action_max_timeout_ms());
 }
 
 // Tests that we don't crash or assert if NPP_New fails
@@ -209,7 +212,7 @@ TEST_F(NPAPIVisiblePluginTester, NewFails) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("new_fails", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNPNEvaluate) {
@@ -222,7 +225,7 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNPNEvaluate) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("npobject_delete_plugin_in_evaluate", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
+                TestTimeouts::action_max_timeout_ms());
 }
 
 TEST_F(NPAPIVisiblePluginTester, SelfDeleteCreatePluginInNPNEvaluate) {
@@ -235,7 +238,7 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeleteCreatePluginInNPNEvaluate) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("npobject_delete_create_plugin_in_evaluate", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
+                TestTimeouts::action_max_timeout_ms());
 }
 
 #endif
@@ -265,7 +268,7 @@ TEST_F(NPAPITesterBase, PrivateDisabled) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("private", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 TEST_F(NPAPITesterBase, ScheduleTimer) {
@@ -273,7 +276,7 @@ TEST_F(NPAPITesterBase, ScheduleTimer) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("schedule_timer", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 TEST_F(NPAPITesterBase, PluginThreadAsyncCall) {
@@ -281,7 +284,7 @@ TEST_F(NPAPITesterBase, PluginThreadAsyncCall) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("plugin_thread_async_call", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 // Test checking the privacy mode is on.
@@ -293,7 +296,7 @@ TEST_F(NPAPIIncognitoTester, PrivateEnabled) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("private", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -308,7 +311,7 @@ TEST_F(NPAPIVisiblePluginTester, MultipleInstancesSyncCalls) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("multiple_instances_sync_calls", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 #endif
 
@@ -323,7 +326,7 @@ TEST_F(NPAPIVisiblePluginTester, GetURLRequestFailWrite) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
 
   WaitForFinish("geturl_fail_write", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 #if defined(OS_WIN)
@@ -337,7 +340,7 @@ TEST_F(NPAPITesterBase, EnsureScriptingWorksInDestroy) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("ensure_scripting_works_in_destroy", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
+                TestTimeouts::action_max_timeout_ms());
 }
 
 // This test uses a Windows Event to signal to the plugin that it should crash
@@ -358,7 +361,7 @@ TEST_F(NPAPITesterBase, NoHangIfInitCrashes) {
   NavigateToURL(url);
   WaitForFinish("no_hang_if_init_crashes", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
+                TestTimeouts::action_max_timeout_ms());
   CloseHandle(crash_event);
 }
 
@@ -375,7 +378,7 @@ TEST_F(NPAPIVisiblePluginTester, PluginReferrerTest) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
 
   WaitForFinish("plugin_referrer_test", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
 #if defined(OS_MACOSX)
@@ -397,7 +400,7 @@ TEST_F(NPAPIVisiblePluginTester, PluginConvertPointTest) {
   // change the test to trigger on mouse-down rather than window focus.
   ASSERT_TRUE(browser->BringToFront());
   WaitForFinish("convert_point", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 #endif
 
@@ -417,5 +420,5 @@ TEST_F(NPAPIVisiblePluginTester, ClickToPlay) {
   ASSERT_TRUE(tab->LoadBlockedPlugins());
 
   WaitForFinish("setup", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, action_max_timeout_ms());
+                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }

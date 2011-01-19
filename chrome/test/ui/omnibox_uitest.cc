@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/perftimer.h"
 #include "base/string_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_paths.h"
@@ -93,7 +94,8 @@ void OmniboxTest::RunQueryChain(const std::wstring& input_text) {
     // matches to be returned to us.
     ASSERT_TRUE(autocomplete_edit->SetText(input_text.substr(0, i)));
     PerfTimer timer;
-    if (autocomplete_edit->WaitForQuery(action_max_timeout_ms())) {
+    if (autocomplete_edit->WaitForQuery(
+            TestTimeouts::action_max_timeout_ms())) {
       ASSERT_TRUE(autocomplete_edit->GetAutocompleteMatches(&matches));
       int64 time_elapsed = timer.Elapsed().InMilliseconds();
 

@@ -1,9 +1,10 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "app/message_box_flags.h"
 #include "base/file_util.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_switches.h"
@@ -104,7 +105,7 @@ class UnloadTest : public UITest {
 
   void WaitForBrowserClosed() {
     const int kCheckDelayMs = 100;
-    for (int max_wait_time = action_max_timeout_ms();
+    for (int max_wait_time = TestTimeouts::action_max_timeout_ms();
          max_wait_time > 0; max_wait_time -= kCheckDelayMs) {
       CrashAwareSleep(kCheckDelayMs);
       if (!IsBrowserRunning())
@@ -116,7 +117,7 @@ class UnloadTest : public UITest {
 
   void CheckTitle(const std::wstring& expected_title) {
     const int kCheckDelayMs = 100;
-    for (int max_wait_time = action_max_timeout_ms();
+    for (int max_wait_time = TestTimeouts::action_max_timeout_ms();
          max_wait_time > 0; max_wait_time -= kCheckDelayMs) {
       CrashAwareSleep(kCheckDelayMs);
       if (expected_title == GetActiveTabTitle())

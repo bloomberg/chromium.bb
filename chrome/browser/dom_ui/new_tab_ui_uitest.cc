@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/test/ui/ui_test.h"
 
+#include "base/test/test_timeouts.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/prefs/pref_value_store.h"
@@ -49,7 +50,7 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
   ASSERT_TRUE(WaitUntilJavaScriptCondition(tab, L"",
       L"window.domAutomationController.send("
       L"document.getElementsByClassName('filler').length <= 5)",
-      action_max_timeout_ms()));
+      TestTimeouts::action_max_timeout_ms()));
 }
 
 // Sometimes hangs: http://crbug.com/70157
@@ -73,7 +74,7 @@ TEST_F(NewTabUITest, DISABLED_NTPHasLoginName) {
   ASSERT_TRUE(WaitUntilJavaScriptCondition(tab, L"",
       L"window.domAutomationController.send("
       L"document.getElementById('login-username').innerText.length > 0)",
-      action_max_timeout_ms()));
+      TestTimeouts::action_max_timeout_ms()));
 
   ASSERT_TRUE(tab->ExecuteAndExtractString(
       L"",

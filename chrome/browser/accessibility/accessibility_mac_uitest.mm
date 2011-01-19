@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui/ui_test.h"
 
@@ -40,7 +41,8 @@ class AccessibilityMacUITest : public UITest {
   void WaitAndAssertAllEventsObserved() {
     ASSERT_GE([expectedEvents count], 1U);
     CFRunLoopRunInMode(
-        kCFRunLoopDefaultMode, action_max_timeout_ms()/1000, false);
+        kCFRunLoopDefaultMode,
+        TestTimeouts::action_max_timeout_ms() / 1000, false);
     ASSERT_EQ(0U, [AccessibilityMacUITest::expectedEvents count]);
   }
 

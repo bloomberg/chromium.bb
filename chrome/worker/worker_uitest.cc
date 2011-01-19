@@ -48,7 +48,7 @@ class WorkerTest : public UILayoutTest {
     ASSERT_TRUE(tab->NavigateToURL(url));
 
     std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
-        kTestCompleteCookie, action_max_timeout_ms());
+        kTestCompleteCookie, TestTimeouts::action_max_timeout_ms());
     ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
   }
 
@@ -71,7 +71,7 @@ class WorkerTest : public UILayoutTest {
     ASSERT_TRUE(tab->NavigateToURL(url));
 
     std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
-        kTestCompleteCookie, action_max_timeout_ms());
+        kTestCompleteCookie, TestTimeouts::action_max_timeout_ms());
 
     // Close the incognito window
     ASSERT_TRUE(incognito->RunCommand(IDC_CLOSE_WINDOW));
@@ -607,7 +607,7 @@ TEST_F(WorkerTest, FLAKY_WorkerClose) {
                                        FilePath(kWorkerClose));
   ASSERT_TRUE(tab->NavigateToURL(url));
   std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
-      kTestCompleteCookie, action_max_timeout_ms());
+      kTestCompleteCookie, TestTimeouts::action_max_timeout_ms());
   ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
   ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
 }
@@ -624,7 +624,7 @@ TEST_F(WorkerTest, QueuedSharedWorkerShutdown) {
   ASSERT_TRUE(tab.get());
   ASSERT_TRUE(tab->NavigateToURL(url));
   std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
-      kTestCompleteCookie, action_max_timeout_ms());
+      kTestCompleteCookie, TestTimeouts::action_max_timeout_ms());
   ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
   ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
 }
@@ -658,7 +658,7 @@ TEST_F(WorkerTest, FLAKY_MultipleTabsQueuedSharedWorker) {
   ASSERT_TRUE(window->AppendTab(url2));
 
   std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
-      kTestCompleteCookie, action_max_timeout_ms());
+      kTestCompleteCookie, TestTimeouts::action_max_timeout_ms());
   ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
   ASSERT_TRUE(WaitForProcessCountToBe(3, max_workers_per_tab));
 }
@@ -687,7 +687,7 @@ TEST_F(WorkerTest, FLAKY_QueuedSharedWorkerStartedFromOtherTab) {
   ASSERT_TRUE(window->AppendTab(url2));
 
   std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
-      kTestCompleteCookie, action_max_timeout_ms());
+      kTestCompleteCookie, TestTimeouts::action_max_timeout_ms());
   ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
   ASSERT_TRUE(WaitForProcessCountToBe(2, max_workers_per_tab+1));
 }

@@ -92,7 +92,7 @@ class TabRestoreUITest : public UITest {
     ASSERT_TRUE(restored_tab_proxy.get());
     // Wait for the restored tab to finish loading.
     ASSERT_TRUE(restored_tab_proxy->WaitForTabToBeRestored(
-        action_max_timeout_ms()));
+        TestTimeouts::action_max_timeout_ms()));
 
     // Ensure that the tab and window are active.
     CheckActiveWindow(browser_proxy.get());

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/common/chrome_paths.h"
@@ -76,7 +77,8 @@ class SessionRestoreUITest : public UITest {
 
     scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetActiveTab());
     ASSERT_TRUE(tab_proxy.get());
-    ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
+    ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(
+        TestTimeouts::action_max_timeout_ms()));
 
     ASSERT_TRUE(tab_proxy->GetCurrentURL(url));
   }
@@ -103,7 +105,8 @@ TEST_F(SessionRestoreUITest, Basic) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(0));
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(
+      TestTimeouts::action_max_timeout_ms()));
 
   ASSERT_EQ(url2_, GetActiveTabURL());
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab_proxy->GoBack());
@@ -129,7 +132,8 @@ TEST_F(SessionRestoreUITest, RestoresForwardAndBackwardNavs) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(0));
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(
+      TestTimeouts::action_max_timeout_ms()));
 
   ASSERT_TRUE(GetActiveTabURL() == url2_);
   ASSERT_TRUE(tab_proxy->GoForward());
@@ -173,7 +177,8 @@ TEST_F(SessionRestoreUITest, RestoresCrossSiteForwardAndBackwardNavs) {
   ASSERT_EQ(1, tab_count);
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(0));
   ASSERT_TRUE(tab_proxy.get());
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(
+      TestTimeouts::action_max_timeout_ms()));
 
   // Check that back and forward work as expected.
   GURL url;
@@ -223,14 +228,16 @@ TEST_F(SessionRestoreUITest, TwoTabsSecondSelected) {
 
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(
+      TestTimeouts::action_max_timeout_ms()));
 
   ASSERT_EQ(url2_, GetActiveTabURL());
 
   ASSERT_TRUE(browser_proxy->ActivateTab(0));
   tab_proxy = browser_proxy->GetActiveTab();
   ASSERT_TRUE(tab_proxy.get());
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(
+      TestTimeouts::action_max_timeout_ms()));
 
   ASSERT_EQ(url1_, GetActiveTabURL());
 }
@@ -370,7 +377,8 @@ TEST_F(SessionRestoreUITest, DontRestoreWhileIncognito) {
   ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(0));
   ASSERT_TRUE(tab_proxy.get());
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(
+      TestTimeouts::action_max_timeout_ms()));
   GURL url;
   ASSERT_TRUE(tab_proxy->GetCurrentURL(&url));
   ASSERT_TRUE(url != url1_);
@@ -477,10 +485,12 @@ TEST_F(SessionRestoreUITest, FLAKY_ShareProcessesOnRestore) {
 
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(tab_count - 2));
   ASSERT_TRUE(tab_proxy.get() != NULL);
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(
+      TestTimeouts::action_max_timeout_ms()));
   tab_proxy = browser_proxy->GetTab(tab_count - 1);
   ASSERT_TRUE(tab_proxy.get() != NULL);
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
+  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(
+      TestTimeouts::action_max_timeout_ms()));
 
   ASSERT_EQ(expected_process_count, GetBrowserProcessCount());
 }

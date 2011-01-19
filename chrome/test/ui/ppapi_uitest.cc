@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,7 +93,7 @@ class PPAPITest : public UITest {
     // making sure we're making forward progress.
     std::string startup_cookie =
         WaitUntilCookieNonEmpty(tab.get(), test_url,
-            "STARTUP_COOKIE", action_max_timeout_ms());
+            "STARTUP_COOKIE", TestTimeouts::action_max_timeout_ms());
 
     // If this fails, the plugin couldn't be loaded in the given amount of
     // time. This may mean the plugin was not found or possibly the system
