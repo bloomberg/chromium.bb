@@ -267,6 +267,12 @@ const char kTLS1Enabled[] = "ssl.tls1.enabled";
 #endif
 
 #if defined(OS_CHROMEOS)
+// An integer pref to initially mute volume if 1.
+const char kAudioMute[] = "settings.audio.mute";
+
+// A double pref to set initial volume.
+const char kAudioVolume[] = "settings.audio.volume";
+
 // A boolean pref set to true if TapToClick is being done in browser.
 const char kTapToClickEnabled[] = "settings.touchpad.enable_tap_to_click";
 

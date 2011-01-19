@@ -8,6 +8,10 @@
 
 #include "base/logging.h"
 #include "base/task.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_thread.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/pref_names.h"
 
 namespace chromeos {
 
@@ -19,8 +23,6 @@ namespace chromeos {
 // adjusting that as well.  If the PCM element has more volume steps, it allows
 // for finer granularity in the total volume.
 
-// TODO(davej): Serialize volume/mute to preserve settings when restarting.
-
 typedef long alsa_long_t;  // 'long' is required for ALSA API calls.
 
 namespace {
@@ -29,6 +31,10 @@ const char* kMasterVolume = "Master";
 const char* kPCMVolume = "PCM";
 const double kDefaultMinVolume = -90.0;
 const double kDefaultMaxVolume = 0.0;
+const double kPrefVolumeInvalid = -999.0;
+const int kPrefMuteOff = 0;
+const int kPrefMuteOn = 1;
+const int kPrefMuteInvalid = 2;
 
 }  // namespace
 
@@ -57,8 +63,9 @@ void AudioMixerAlsa::Init(InitDoneCallback* callback) {
     delete callback;
     return;
   }
+  InitPrefs();
 
-  // Post the task of starting up, which can block for 200-500ms,
+  // Post the task of starting up, which may block on the order of ms,
   // so best not to do it on the caller's thread.
   thread_->message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(this, &AudioMixerAlsa::DoInit, callback));
@@ -67,6 +74,7 @@ void AudioMixerAlsa::Init(InitDoneCallback* callback) {
 bool AudioMixerAlsa::InitSync() {
   if (!InitThread())
     return false;
+  InitPrefs();
   return InitializeAlsaMixer();
 }
 
@@ -93,7 +101,10 @@ void AudioMixerAlsa::SetVolumeDb(double vol_db) {
   AutoLock lock(mixer_state_lock_);
   if (mixer_state_ != READY)
     return;
+  if (vol_db < kSilenceDb)
+    vol_db = kSilenceDb;
   DoSetVolumeDb_Locked(vol_db);
+  volume_pref_.SetValue(vol_db);
 }
 
 bool AudioMixerAlsa::IsMute() const {
@@ -101,6 +112,12 @@ bool AudioMixerAlsa::IsMute() const {
   if (mixer_state_ != READY)
     return false;
   return GetElementMuted_Locked(elem_master_);
+}
+
+// To indicate the volume is not valid yet, a very low volume value is stored.
+// We compare against a slightly higher value in case of rounding errors.
+static bool PrefVolumeValid(double volume) {
+  return (volume > kPrefVolumeInvalid + 0.1);
 }
 
 void AudioMixerAlsa::SetMute(bool mute) {
@@ -111,8 +128,9 @@ void AudioMixerAlsa::SetMute(bool mute) {
   // Set volume to minimum on mute, since switching the element off does not
   // always mute as it should.
 
-  // TODO(davej): Setting volume to minimum can be removed once switching the
-  //              element off can be guaranteed to work.
+  // TODO(davej): Remove save_volume_ and setting volume to minimum if
+  // switching the element off can be guaranteed to mute it.  Currently mute
+  // is done by setting the volume to min_volume_.
 
   bool old_value = GetElementMuted_Locked(elem_master_);
 
@@ -128,6 +146,7 @@ void AudioMixerAlsa::SetMute(bool mute) {
   SetElementMuted_Locked(elem_master_, mute);
   if (elem_pcm_)
     SetElementMuted_Locked(elem_pcm_, mute);
+  mute_pref_.SetValue(mute ? kPrefMuteOn : kPrefMuteOff);
 }
 
 AudioMixer::State AudioMixerAlsa::GetState() const {
@@ -138,11 +157,25 @@ AudioMixer::State AudioMixerAlsa::GetState() const {
   return mixer_state_;
 }
 
+// static
+void AudioMixerAlsa::RegisterPrefs(PrefService* local_state) {
+  if (!local_state->FindPreference(prefs::kAudioVolume))
+    local_state->RegisterRealPref(prefs::kAudioVolume, kPrefVolumeInvalid);
+  if (!local_state->FindPreference(prefs::kAudioMute))
+    local_state->RegisterIntegerPref(prefs::kAudioMute, kPrefMuteInvalid);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Private functions follow
 
 void AudioMixerAlsa::DoInit(InitDoneCallback* callback) {
   bool success = InitializeAlsaMixer();
+
+  if (success) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &AudioMixerAlsa::RestoreVolumeMuteOnUIThread));
+  }
 
   if (callback) {
     callback->Run(success);
@@ -166,6 +199,13 @@ bool AudioMixerAlsa::InitThread() {
 
   mixer_state_ = INITIALIZING;
   return true;
+}
+
+void AudioMixerAlsa::InitPrefs() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  PrefService* prefs = g_browser_process->local_state();
+  volume_pref_.Init(prefs::kAudioVolume, prefs, NULL);
+  mute_pref_.Init(prefs::kAudioMute, prefs, NULL);
 }
 
 bool AudioMixerAlsa::InitializeAlsaMixer() {
@@ -241,6 +281,42 @@ void AudioMixerAlsa::FreeAlsaMixer() {
   }
 }
 
+void AudioMixerAlsa::DoSetVolumeMute(double pref_volume, int pref_mute) {
+  AutoLock lock(mixer_state_lock_);
+  if (mixer_state_ != READY)
+    return;
+
+  // If volume or mute are invalid, set them now to the current actual values.
+  if (!PrefVolumeValid(pref_volume))
+    pref_volume = DoGetVolumeDb_Locked();
+  bool mute;
+  if (pref_mute == kPrefMuteInvalid)
+    mute = GetElementMuted_Locked(elem_master_);
+  else
+    mute = (pref_mute == kPrefMuteOn) ? true : false;
+
+  VLOG(1) << "Setting volume to " << pref_volume << " and mute to " << mute;
+
+  if (mute) {
+    save_volume_ = pref_volume;
+    DoSetVolumeDb_Locked(min_volume_);
+  } else if (pref_mute == kPrefMuteOff) {
+      DoSetVolumeDb_Locked(pref_volume);
+  }
+
+  SetElementMuted_Locked(elem_master_, mute);
+  if (elem_pcm_)
+    SetElementMuted_Locked(elem_pcm_, mute);
+}
+
+void AudioMixerAlsa::RestoreVolumeMuteOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // This happens during init, so set the volume off the UI thread.
+  thread_->message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &AudioMixerAlsa::DoSetVolumeMute,
+                        volume_pref_.GetValue(), mute_pref_.GetValue()));
+}
+
 double AudioMixerAlsa::DoGetVolumeDb_Locked() const {
   double vol_total = 0.0;
   GetElementVolume_Locked(elem_master_, &vol_total);
@@ -258,7 +334,6 @@ void AudioMixerAlsa::DoSetVolumeDb_Locked(double vol_db) {
   // If a PCM volume slider exists, then first set the Master volume to the
   // nearest volume >= requested volume, then adjust PCM volume down to get
   // closer to the requested volume.
-
   if (elem_pcm_) {
     SetElementVolume_Locked(elem_master_, vol_db, &actual_vol, 0.9999f);
     SetElementVolume_Locked(elem_pcm_, vol_db - actual_vol, NULL, 0.5f);
@@ -273,7 +348,7 @@ snd_mixer_elem_t* AudioMixerAlsa::FindElementWithName_Locked(
   snd_mixer_selem_id_t* sid;
 
   // Using id_malloc/id_free API instead of id_alloca since the latter gives the
-  // warning: the address of 'sid' will always evaluate as 'true'
+  // warning: the address of 'sid' will always evaluate as 'true'.
   if (snd_mixer_selem_id_malloc(&sid))
     return NULL;
 

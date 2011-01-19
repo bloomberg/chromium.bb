@@ -98,6 +98,8 @@ extern const char kSSL3Enabled[];
 extern const char kTLS1Enabled[];
 #endif
 #if defined(OS_CHROMEOS)
+extern const char kAudioMute[];
+extern const char kAudioVolume[];
 extern const char kTapToClickEnabled[];
 extern const char kTouchpadSensitivity[];
 extern const char kLanguageCurrentInputMethod[];

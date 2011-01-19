@@ -65,6 +65,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/audio_mixer_alsa.h"
 #include "chrome/browser/chromeos/login/apply_services_customization.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -103,6 +104,7 @@ void RegisterLocalState(PrefService* local_state) {
   BackgroundPageTracker::RegisterPrefs(local_state);
   NotificationUIManager::RegisterPrefs(local_state);
 #if defined(OS_CHROMEOS)
+  chromeos::AudioMixerAlsa::RegisterPrefs(local_state);
   chromeos::UserManager::RegisterPrefs(local_state);
   chromeos::UserCrosSettingsProvider::RegisterPrefs(local_state);
   WizardController::RegisterPrefs(local_state);
