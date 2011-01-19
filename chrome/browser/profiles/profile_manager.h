@@ -10,18 +10,18 @@
 
 #include <vector>
 
-#include "app/system_monitor.h"
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "ui/base/system_monitor/system_monitor.h"
 
 class FilePath;
 
 class ProfileManager : public base::NonThreadSafe,
-                       public SystemMonitor::PowerObserver,
+                       public ui::SystemMonitor::PowerObserver,
                        public NotificationObserver {
  public:
   ProfileManager();

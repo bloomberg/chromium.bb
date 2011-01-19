@@ -1,17 +1,17 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/system_monitor.h"
+#include "ui/base/system_monitor/system_monitor.h"
 
 #import <AppKit/AppKit.h>
 
 @interface SystemMonitorBridge : NSObject {
  @private
-  SystemMonitor* systemMonitor_;  // weak
+  ui::SystemMonitor* systemMonitor_;  // weak
 }
 
-- (id)initWithSystemMonitor:(SystemMonitor*)monitor;
+- (id)initWithSystemMonitor:(ui::SystemMonitor*)monitor;
 - (void)computerDidSleep:(NSNotification*)notification;
 - (void)computerDidWake:(NSNotification*)notification;
 
@@ -19,7 +19,7 @@
 
 @implementation SystemMonitorBridge
 
-- (id)initWithSystemMonitor:(SystemMonitor*)monitor {
+- (id)initWithSystemMonitor:(ui::SystemMonitor*)monitor {
   self = [super init];
   if (self) {
     systemMonitor_ = monitor;
@@ -48,20 +48,20 @@
 }
 
 - (void)computerDidSleep:(NSNotification*)notification {
-  systemMonitor_->ProcessPowerMessage(SystemMonitor::SUSPEND_EVENT);
+  systemMonitor_->ProcessPowerMessage(ui::SystemMonitor::SUSPEND_EVENT);
 }
 
 - (void)computerDidWake:(NSNotification*)notification {
-  systemMonitor_->ProcessPowerMessage(SystemMonitor::RESUME_EVENT);
+  systemMonitor_->ProcessPowerMessage(ui::SystemMonitor::RESUME_EVENT);
 }
 
 @end
 
-void SystemMonitor::PlatformInit() {
+void ui::SystemMonitor::PlatformInit() {
   system_monitor_bridge_ =
       [[SystemMonitorBridge alloc] initWithSystemMonitor:this];
 }
 
-void SystemMonitor::PlatformDestroy() {
+void ui::SystemMonitor::PlatformDestroy() {
   [system_monitor_bridge_ release];
 }

@@ -7,8 +7,6 @@
 #include <unistd.h>
 #endif  // OS_MACOSX
 
-#include "app/hi_res_timer_manager.h"
-#include "app/system_monitor.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -23,6 +21,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/hi_res_timer_manager.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/net/net_resource_provider.h"
@@ -32,6 +31,7 @@
 #include "chrome/renderer/render_thread.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_module.h"
+#include "ui/base/system_monitor/system_monitor.h"
 
 #if defined(OS_MACOSX)
 #include "base/eintr_wrapper.h"
@@ -240,7 +240,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   base::PlatformThread::SetName("CrRendererMain");
 
-  SystemMonitor system_monitor;
+  ui::SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
 
   platform.PlatformInitialize();

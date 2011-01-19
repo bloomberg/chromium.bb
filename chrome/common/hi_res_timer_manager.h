@@ -1,21 +1,21 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_HI_RES_TIMER_MANAGER_H_
-#define APP_HI_RES_TIMER_MANAGER_H_
+#ifndef CHROME_COMMON_HI_RES_TIMER_MANAGER_H_
+#define CHROME_COMMON_HI_RES_TIMER_MANAGER_H_
 #pragma once
 
-#include "app/system_monitor.h"
+#include "ui/base/system_monitor/system_monitor.h"
 
 // Ensures that the Windows high resolution timer is only used
 // when not running on battery power.
-class HighResolutionTimerManager : public SystemMonitor::PowerObserver {
+class HighResolutionTimerManager : public ui::SystemMonitor::PowerObserver {
  public:
   HighResolutionTimerManager();
   virtual ~HighResolutionTimerManager();
 
-  // SystemMonitor::PowerObserver:
+  // ui::SystemMonitor::PowerObserver:
   virtual void OnPowerStateChange(bool on_battery_power);
 
  private:
@@ -27,4 +27,4 @@ class HighResolutionTimerManager : public SystemMonitor::PowerObserver {
   DISALLOW_COPY_AND_ASSIGN(HighResolutionTimerManager);
 };
 
-#endif  // APP_HI_RES_TIMER_MANAGER_H_
+#endif  // CHROME_COMMON_HI_RES_TIMER_MANAGER_H_

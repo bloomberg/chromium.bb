@@ -183,7 +183,7 @@ FakeExternalTab::~FakeExternalTab() {
 
 void FakeExternalTab::Initialize() {
   DCHECK(g_browser_process == NULL);
-  SystemMonitor system_monitor;
+  ui::SystemMonitor system_monitor;
 
   // The gears plugin causes the PluginRequestInterceptor to kick in and it
   // will cause problems when it tries to intercept URL requests.

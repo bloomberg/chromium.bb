@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_SYSTEM_MONITOR_H_
-#define APP_SYSTEM_MONITOR_H_
+#ifndef UI_BASE_SYSTEM_MONITOR_SYSTEM_MONITOR_H_
+#define UI_BASE_SYSTEM_MONITOR_SYSTEM_MONITOR_H_
 #pragma once
 
 #include "build/build_config.h"
@@ -28,6 +28,8 @@
 class SystemMonitorBridge;
 #endif
 #endif
+
+namespace ui {
 
 // Class for monitoring various system-related subsystems
 // such as power management, network status, etc.
@@ -136,4 +138,6 @@ class SystemMonitor {
   DISALLOW_COPY_AND_ASSIGN(SystemMonitor);
 };
 
-#endif  // APP_SYSTEM_MONITOR_H_
+}  // namespace ui
+
+#endif  // UI_BASE_SYSTEM_MONITOR_SYSTEM_MONITOR_H_

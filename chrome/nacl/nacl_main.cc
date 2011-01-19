@@ -8,8 +8,6 @@
 #include <windows.h>
 #endif
 
-#include "app/hi_res_timer_manager.h"
-#include "app/system_monitor.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -21,12 +19,14 @@
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/hi_res_timer_manager.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/sandbox_policy.h"
 #include "chrome/nacl/nacl_main_platform_delegate.h"
 #include "chrome/nacl/nacl_thread.h"
+#include "ui/base/system_monitor/system_monitor.h"
 
 #if defined(OS_WIN)
 #include "chrome/nacl/broker_thread.h"
@@ -43,7 +43,7 @@ int NaClBrokerMain(const MainFunctionParams& parameters) {
   MessageLoopForIO main_message_loop;
   base::PlatformThread::SetName("CrNaClBrokerMain");
 
-  SystemMonitor system_monitor;
+  ui::SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
 
   const CommandLine& parsed_command_line = parameters.command_line_;
@@ -111,7 +111,7 @@ int NaClMain(const MainFunctionParams& parameters) {
   MessageLoopForIO main_message_loop;
   base::PlatformThread::SetName("CrNaClMain");
 
-  SystemMonitor system_monitor;
+  ui::SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)

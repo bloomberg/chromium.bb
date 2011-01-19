@@ -5,7 +5,6 @@
 #include <map>
 #include <string>
 
-#include "app/system_monitor.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -36,6 +35,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/system_monitor/system_monitor.h"
 
 using testing::_;
 
@@ -230,8 +230,8 @@ class TabStripModelTest : public RenderViewHostTestHarness {
   std::wstring profile_path_;
   std::map<TabContents*, int> foo_;
 
-  // ProfileManager requires a SystemMonitor.
-  SystemMonitor system_monitor;
+  // ProfileManager requires a ui::SystemMonitor.
+  ui::SystemMonitor system_monitor;
 
   ProfileManager pm_;
 };
