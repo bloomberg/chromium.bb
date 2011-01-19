@@ -34,33 +34,46 @@ class TempDirTestCase(unittest.TestCase):
       func()
 
 
+def CaptureStdoutAndStderr(func):
+  temp_fd, filename = tempfile.mkstemp()
+  os.unlink(filename)
+  temp_fh = os.fdopen(temp_fd, "w+")
+  # We replace the file descriptors because we want to capture the
+  # output of subprocesses too.  Setting Python's sys.stdout and
+  # sys.stderr is not enough for that.
+  saved_stdout = os.dup(1)
+  saved_stderr = os.dup(2)
+  os.dup2(temp_fh.fileno(), 1)
+  os.dup2(temp_fh.fileno(), 2)
+  try:
+    result_value = func()
+  finally:
+    os.dup2(saved_stdout, 1)
+    os.dup2(saved_stderr, 2)
+    os.close(saved_stdout)
+    os.close(saved_stderr)
+  def GetOutput():
+    temp_fh.seek(0)
+    return temp_fh.read()
+  return GetOutput, result_value
+
+
 # This function is intended to be used as a decorator.  It is for
 # noisy tests.  This function wraps a test method to redirect
 # stdout/stderr to a temporary file, and reveals the output only if
 # the test fails.
 def Quieten(func):
   def Wrapper(*args):
-    temp_fd, filename = tempfile.mkstemp()
-    os.unlink(filename)
-    temp_fh = os.fdopen(temp_fd, "w+")
-    saved_stdout = os.dup(1)
-    saved_stderr = os.dup(2)
-    os.dup2(temp_fh.fileno(), 1)
-    os.dup2(temp_fh.fileno(), 2)
-    try:
+    def RunFunc():
       try:
-        func(*args)
-      finally:
-        os.dup2(saved_stdout, 1)
-        os.dup2(saved_stderr, 2)
-        os.close(saved_stdout)
-        os.close(saved_stderr)
-    except Exception:
-      temp_fh.seek(0)
-      output = temp_fh.read()
-      error = "".join(traceback.format_exception(*sys.exc_info())).rstrip("\n")
+        return False, func(*args)
+      except Exception:
+        return True, sys.exc_info()
+    get_output, (did_raise, value) = CaptureStdoutAndStderr(RunFunc)
+    if did_raise:
+      error = "".join(traceback.format_exception(*value)).rstrip("\n")
       raise Exception("Test failed with the following output:\n\n%s\n%s" %
-                      (output, error))
+                      (get_output(), error))
   return Wrapper
 
 

@@ -211,6 +211,31 @@ digraph {
     assert os.path.exists(os.path.join(dir3.dest_path,
                                        "subdir_bar", "urfile"))
 
+  def test_union_dir_overwrite_warning(self):
+    Dir = dirtree_test.Dir
+    File = dirtree_test.File
+
+    tree1 = Dir([("subdir", Dir([("diff_file", File("data1")),
+                                 ("same_file", File("data")),
+                                 ("diff_thing", Dir([])),
+                                 ]))])
+    tree2 = Dir([("subdir", Dir([("diff_file", File("data 2")),
+                                 ("same_file", File("data")),
+                                 ("diff_thing", File("data")),
+                                 ]))])
+    tempdir = self.MakeTempDir()
+    dir1 = btarget.SourceTarget("dir1", os.path.join(tempdir, "dir1"), tree1)
+    dir2 = btarget.SourceTarget("dir2", os.path.join(tempdir, "dir2"), tree2)
+    dir3 = btarget.UnionDir("dir3", os.path.join(tempdir, "dir3"),
+                            [dir1, dir2])
+    get_output, unused = dirtree_test.CaptureStdoutAndStderr(
+        lambda: btarget.Rebuild([dir3], open(os.devnull, "w")))
+    self.assertEquals(
+        get_output(),
+        "Warning: file 'subdir/diff_file' is being overwritten "
+        "(old size 5, new size 6)\n"
+        "Warning: directory 'subdir/diff_thing' is being overwritten\n")
+
   def test_tree_hash_function(self):
     # Check that the hash uses file and directory contents, not inode
     # numbers and timestamps.

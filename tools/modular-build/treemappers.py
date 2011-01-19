@@ -21,12 +21,23 @@ def UnionIntoDict(input_tree, dest_dict, context=""):
       if key in dest_dict:
         # TODO(mseaborn): Ideally we should pass in a log stream
         # explicitly instead of using sys.stderr.
-        sys.stderr.write("Warning: %r is being overwritten\n" % new_context)
+        if not isinstance(dest_dict[key], FileSnapshot):
+          sys.stderr.write("Warning: directory %r is being overwritten\n"
+                           % new_context)
+        elif dest_dict[key].GetHash() != value.GetHash():
+          # We include file sizes in the warnings because they can
+          # suggest whether the overwrite is significant.  Having the
+          # same size suggests that the file contains a timestamp,
+          # which is the case for .gz files.
+          sys.stderr.write(
+              "Warning: file %r is being overwritten "
+              "(old size %i, new size %i)\n"
+              % (new_context, dest_dict[key].GetSize(), value.GetSize()))
       dest_dict[key] = value
     else:
       dest_subdir = dest_dict.setdefault(key, {})
       if isinstance(dest_subdir, FileSnapshot):
-        raise Exception("Cannot overwrite directory %r with file"
+        raise Exception("Cannot overwrite file %r with directory"
                         % new_context)
       UnionIntoDict(value, dest_subdir, new_context)
 

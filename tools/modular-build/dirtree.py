@@ -234,6 +234,9 @@ class FileSnapshot(object):
   def GetHash(self):
     raise NotImplementedError()
 
+  def GetSize(self):
+    raise NotImplementedError()
+
   def IsExecutable(self):
     raise NotImplementedError()
 
@@ -272,6 +275,9 @@ class FileSnapshotUsingHardLink(FileSnapshot):
   def GetHash(self):
     return self._file_hasher.HashFileGivenStat(self._filename, self._stat_info)
 
+  def GetSize(self):
+    return self._stat_info.st_size
+
   def IsExecutable(self):
     return self._stat_info.st_mode & stat.S_IXUSR != 0
 
@@ -299,6 +305,9 @@ class FileSnapshotInMemory(FileSnapshot):
 
   def GetHash(self):
     return hashlib.sha1(self._data).hexdigest()
+
+  def GetSize(self):
+    return len(self._data)
 
   def IsExecutable(self):
     return self._is_executable
