@@ -1191,3 +1191,11 @@
    ...
    fun:*PrerenderResourceHandlerTest*
 }
+{
+   Bug_70062
+   Heapcheck:Leak
+   fun:PR_NewLock
+   fun:InitSessionCacheLocks
+   fun:initSessionCacheLocksLazily
+   fun:PR_CallOnce
+}

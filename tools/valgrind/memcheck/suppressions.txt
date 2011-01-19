@@ -3614,3 +3614,22 @@
    fun:_ZN17PluginChannelBase17OnMessageReceivedERKN3IPC7MessageE
    fun:_ZN13PluginChannel17OnMessageReceivedERKN3IPC7MessageE
 }
+{
+   Bug_70062
+   Memcheck:Leak
+   fun:calloc
+   fun:PR_Calloc
+   fun:PR_NewLock
+   ...
+   fun:InitSessionCacheLocks
+   fun:initSessionCacheLocksLazily
+   fun:PR_CallOnce
+   fun:ssl_InitSessionCacheLocks
+   fun:lock_cache
+   fun:ssl_LookupSID
+   fun:ssl2_BeginClientHandshake
+   fun:ssl_Do1stHandshake
+   fun:SSL_ForceHandshake
+   fun:_ZN3net18SSLClientSocketNSS11DoHandshakeEv
+   fun:_ZN3net18SSLClientSocketNSS15DoHandshakeLoopEi
+}
