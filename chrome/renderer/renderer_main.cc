@@ -261,7 +261,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   if (parsed_command_line.HasSwitch(switches::kForceFieldTestNameAndValue)) {
     std::string persistent = parsed_command_line.GetSwitchValueASCII(
         switches::kForceFieldTestNameAndValue);
-    bool ret = field_trial.StringAugmentsState(persistent);
+    bool ret = field_trial.CreateTrialsInChildProcess(persistent);
     DCHECK(ret);
   }
 

@@ -70,8 +70,11 @@ net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
     // For each option (i.e., non-default), we have a fixed probability.
     base::FieldTrial::Probability kProbabilityPerGroup = 100;  // 10%.
 
+    // After June 30, 2011 builds, it will always be in default group
+    // (parallel_default).
     scoped_refptr<base::FieldTrial> trial(
-        new base::FieldTrial("DnsParallelism", kDivisor));
+        new base::FieldTrial(
+            "DnsParallelism", kDivisor, "parallel_default", 2011, 6, 30));
 
     // List options with different counts.
     // Firefox limits total to 8 in parallel, and default is currently 50.
@@ -82,9 +85,6 @@ net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
     int parallel_10 = trial->AppendGroup("parallel_10", kProbabilityPerGroup);
     int parallel_14 = trial->AppendGroup("parallel_14", kProbabilityPerGroup);
     int parallel_20 = trial->AppendGroup("parallel_20", kProbabilityPerGroup);
-
-    trial->AppendGroup("parallel_default",
-                        base::FieldTrial::kAllRemainingProbability);
 
     if (trial->group() == parallel_6)
       parallelism = 6;

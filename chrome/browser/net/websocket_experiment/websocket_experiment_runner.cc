@@ -28,12 +28,13 @@ static scoped_refptr<WebSocketExperimentRunner> runner;
 void WebSocketExperimentRunner::Start() {
   DCHECK(!runner.get());
 
+  // After June 30, 2011 builds, it will always be in default group.
   scoped_refptr<base::FieldTrial> trial(
-      new base::FieldTrial("WebSocketExperiment", 1000));
-  trial->AppendGroup("active", 5);  // 0.5% in active group.
+      new base::FieldTrial(
+          "WebSocketExperiment", 1000, "default", 2011, 6, 30));
+  int active = trial->AppendGroup("active", 5);  // 0.5% in active group.
 
-  bool run_experiment =
-      (trial->group() != base::FieldTrial::kNotParticipating);
+  bool run_experiment = (trial->group() == active);
 #ifndef NDEBUG
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string experiment_host = command_line.GetSwitchValueASCII(

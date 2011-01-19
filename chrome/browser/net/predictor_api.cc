@@ -551,12 +551,14 @@ PredictorInit::PredictorInit(PrefService* user_prefs,
   // For each option (i.e., non-default), we have a fixed probability.
   base::FieldTrial::Probability kProbabilityPerGroup = 100;  // 10% probability.
 
-  trial_ = new base::FieldTrial("DnsImpact", kDivisor);
+  // After June 30, 2011 builds, it will always be in default group
+  // (default_enabled_prefetch).
+  trial_ = new base::FieldTrial("DnsImpact", kDivisor,
+                                "default_enabled_prefetch", 2011, 6, 30);
 
   // First option is to disable prefetching completely.
   int disabled_prefetch = trial_->AppendGroup("disabled_prefetch",
                                               kProbabilityPerGroup);
-
 
   // We're running two experiments at the same time.  The first set of trials
   // modulates the delay-time until we declare a congestion event (and purge
@@ -585,9 +587,6 @@ PredictorInit::PredictorInit(PrefService* user_prefs,
       "max_4 concurrent_prefetch", kProbabilityPerGroup);
   int max_6_concurrent_prefetch = trial_->AppendGroup(
       "max_6 concurrent_prefetch", kProbabilityPerGroup);
-
-  trial_->AppendGroup("default_enabled_prefetch",
-      base::FieldTrial::kAllRemainingProbability);
 
   // We will register the incognito observer regardless of whether prefetching
   // is enabled, as it is also used to clear the host cache.

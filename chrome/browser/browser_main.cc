@@ -231,8 +231,16 @@ void BrowserMainParts::ConnectionFieldTrial() {
   const base::FieldTrial::Probability kConnectDivisor = 100;
   const base::FieldTrial::Probability kConnectProbability = 1;  // 1% prob.
 
+  // After June 30, 2011 builds, it will always be in default group.
   scoped_refptr<base::FieldTrial> connect_trial(
-      new base::FieldTrial("ConnCountImpact", kConnectDivisor));
+      new base::FieldTrial(
+          "ConnCountImpact", kConnectDivisor, "conn_count_6", 2011, 6, 30));
+
+  // This (6) is the current default value. Having this group declared here
+  // makes it straightforward to modify |kConnectProbability| such that the same
+  // probability value will be assigned to all the other groups, while
+  // preserving the remainder of the of probability space to the default value.
+  const int connect_6 = connect_trial->kDefaultGroupNumber;
 
   const int connect_5 = connect_trial->AppendGroup("conn_count_5",
                                                    kConnectProbability);
@@ -242,12 +250,6 @@ void BrowserMainParts::ConnectionFieldTrial() {
                                                    kConnectProbability);
   const int connect_9 = connect_trial->AppendGroup("conn_count_9",
                                                    kConnectProbability);
-  // This (6) is the current default value. Having this group declared here
-  // makes it straightforward to modify |kConnectProbability| such that the same
-  // probability value will be assigned to all the other groups, while
-  // preserving the remainder of the of probability space to the default value.
-  const int connect_6 = connect_trial->AppendGroup("conn_count_6",
-      base::FieldTrial::kAllRemainingProbability);
 
   const int connect_trial_group = connect_trial->group();
 
@@ -276,8 +278,11 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
   // 1% probability for all experimental settings.
   const base::FieldTrial::Probability kSocketTimeoutProbability = 1;
 
+  // After June 30, 2011 builds, it will always be in default group.
   scoped_refptr<base::FieldTrial> socket_timeout_trial(
-      new base::FieldTrial("IdleSktToImpact", kIdleSocketTimeoutDivisor));
+      new base::FieldTrial("IdleSktToImpact", kIdleSocketTimeoutDivisor,
+          "idle_timeout_60", 2011, 6, 30));
+  const int socket_timeout_60 = socket_timeout_trial->kDefaultGroupNumber;
 
   const int socket_timeout_5 =
       socket_timeout_trial->AppendGroup("idle_timeout_5",
@@ -288,9 +293,6 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
   const int socket_timeout_20 =
       socket_timeout_trial->AppendGroup("idle_timeout_20",
                                         kSocketTimeoutProbability);
-  const int socket_timeout_60 =
-      socket_timeout_trial->AppendGroup("idle_timeout_60",
-          base::FieldTrial::kAllRemainingProbability);
 
   const int idle_to_trial_group = socket_timeout_trial->group();
 
@@ -312,8 +314,16 @@ void BrowserMainParts::ProxyConnectionsFieldTrial() {
   // 25% probability
   const base::FieldTrial::Probability kProxyConnectionProbability = 1;
 
+  // After June 30, 2011 builds, it will always be in default group.
   scoped_refptr<base::FieldTrial> proxy_connection_trial(
-      new base::FieldTrial("ProxyConnectionImpact", kProxyConnectionsDivisor));
+      new base::FieldTrial("ProxyConnectionImpact", kProxyConnectionsDivisor,
+          "proxy_connections_32", 2011, 6, 30));
+
+  // This (32 connections per proxy server) is the current default value.
+  // Declaring it here allows us to easily re-assign the probability space while
+  // maintaining that the default group always has the remainder of the "share",
+  // which allows for cleaner and quicker changes down the line if needed.
+  const int proxy_connections_32 = proxy_connection_trial->kDefaultGroupNumber;
 
   // The number of max sockets per group cannot be greater than the max number
   // of sockets per proxy server.  We tried using 8, and it can easily
@@ -324,14 +334,6 @@ void BrowserMainParts::ProxyConnectionsFieldTrial() {
   const int proxy_connections_64 =
       proxy_connection_trial->AppendGroup("proxy_connections_64",
                                           kProxyConnectionProbability);
-
-  // This (32 connections per proxy server) is the current default value.
-  // Declaring it here allows us to easily re-assign the probability space while
-  // maintaining that the default group always has the remainder of the "share",
-  // which allows for cleaner and quicker changes down the line if needed.
-  const int proxy_connections_32 =
-      proxy_connection_trial->AppendGroup("proxy_connections_32",
-          base::FieldTrial::kAllRemainingProbability);
 
   const int proxy_connections_trial_group = proxy_connection_trial->group();
 
@@ -363,13 +365,18 @@ void BrowserMainParts::SpdyFieldTrial() {
     const base::FieldTrial::Probability kSpdyDivisor = 100;
     // 10% to preclude SPDY.
     base::FieldTrial::Probability npnhttp_probability = 10;
+
+    // After June 30, 2011 builds, it will always be in default group.
     scoped_refptr<base::FieldTrial> trial(
-        new base::FieldTrial("SpdyImpact", kSpdyDivisor));
+        new base::FieldTrial(
+            "SpdyImpact", kSpdyDivisor, "npn_with_spdy", 2011, 6, 30));
+
+    // npn with spdy support is the default.
+    int npn_spdy_grp = trial->kDefaultGroupNumber;
+
     // npn with only http support, no spdy.
     int npn_http_grp = trial->AppendGroup("npn_with_http", npnhttp_probability);
-    // npn with spdy support.
-    int npn_spdy_grp = trial->AppendGroup("npn_with_spdy",
-        base::FieldTrial::kAllRemainingProbability);
+
     int trial_grp = trial->group();
     if (trial_grp == npn_http_grp) {
       is_spdy_trial = true;
@@ -388,14 +395,17 @@ void BrowserMainParts::SpdyFieldTrial() {
   const base::FieldTrial::Probability kSpdyCwnd16 = 20;     // fixed at 16
   const base::FieldTrial::Probability kSpdyCwndMin16 = 20;  // no less than 16
   const base::FieldTrial::Probability kSpdyCwndMin10 = 20;  // no less than 10
+
+  // After June 30, 2011 builds, it will always be in default group
+  // (cwndDynamic).
   scoped_refptr<base::FieldTrial> trial(
-      new base::FieldTrial("SpdyCwnd", kSpdyCwndDivisor));
+      new base::FieldTrial(
+          "SpdyCwnd", kSpdyCwndDivisor, "cwndDynamic", 2011, 6, 30));
+
   trial->AppendGroup("cwnd32", kSpdyCwnd32);
   trial->AppendGroup("cwnd16", kSpdyCwnd16);
   trial->AppendGroup("cwndMin16", kSpdyCwndMin16);
   trial->AppendGroup("cwndMin10", kSpdyCwndMin10);
-  trial->AppendGroup("cwndDynamic",
-                     base::FieldTrial::kAllRemainingProbability);
 
   if (parsed_command_line().HasSwitch(switches::kMaxSpdyConcurrentStreams)) {
     int value = 0;
@@ -420,12 +430,12 @@ void BrowserMainParts::PrefetchFieldTrial() {
   } else {
     const base::FieldTrial::Probability kPrefetchDivisor = 1000;
     const base::FieldTrial::Probability no_prefetch_probability = 500;
+    // After June 30, 2011 builds, it will always be in default group.
     scoped_refptr<base::FieldTrial> trial(
-        new base::FieldTrial("Prefetch", kPrefetchDivisor));
+        new base::FieldTrial("Prefetch", kPrefetchDivisor,
+            "ContentPrefetchEnabled", 2011, 6, 30));
+    const int yes_prefetch_grp = trial->kDefaultGroupNumber;
     trial->AppendGroup("ContentPrefetchDisabled", no_prefetch_probability);
-    const int yes_prefetch_grp =
-        trial->AppendGroup("ContentPrefetchEnabled",
-                           base::FieldTrial::kAllRemainingProbability);
     const int trial_grp = trial->group();
     ResourceDispatcherHost::set_is_prefetch_enabled(
         trial_grp == yes_prefetch_grp);
@@ -447,14 +457,14 @@ void BrowserMainParts::ConnectBackupJobsFieldTrial() {
     const base::FieldTrial::Probability kConnectBackupJobsDivisor = 100;
     // 1% probability.
     const base::FieldTrial::Probability kConnectBackupJobsProbability = 1;
+    // After June 30, 2011 builds, it will always be in defaut group.
     scoped_refptr<base::FieldTrial> trial(
         new base::FieldTrial("ConnnectBackupJobs",
-                             kConnectBackupJobsDivisor));
+            kConnectBackupJobsDivisor, "ConnectBackupJobsEnabled", 2011, 6,
+                30));
+    const int connect_backup_jobs_enabled = trial->kDefaultGroupNumber;
     trial->AppendGroup("ConnectBackupJobsDisabled",
                        kConnectBackupJobsProbability);
-    const int connect_backup_jobs_enabled =
-        trial->AppendGroup("ConnectBackupJobsEnabled",
-                           base::FieldTrial::kAllRemainingProbability);
     const int trial_group = trial->group();
     net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
         trial_group == connect_backup_jobs_enabled);
@@ -1531,8 +1541,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // layout globally.
   base::FieldTrial::Probability kSDCH_DIVISOR = 1000;
   base::FieldTrial::Probability kSDCH_DISABLE_PROBABILITY = 1;  // 0.1% prob.
+  // After June 30, 2011 builds, it will always be in default group.
   scoped_refptr<base::FieldTrial> sdch_trial(
-      new base::FieldTrial("GlobalSdch", kSDCH_DIVISOR));
+      new base::FieldTrial("GlobalSdch", kSDCH_DIVISOR, "global_enable_sdch",
+          2011, 6, 30));
+  int sdch_enabled = sdch_trial->kDefaultGroupNumber;
 
   // Use default of "" so that all domains are supported.
   std::string sdch_supported_domain("");
@@ -1542,8 +1555,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   } else {
     sdch_trial->AppendGroup("global_disable_sdch",
                             kSDCH_DISABLE_PROBABILITY);
-    int sdch_enabled = sdch_trial->AppendGroup("global_enable_sdch",
-        base::FieldTrial::kAllRemainingProbability);
     if (sdch_enabled != sdch_trial->group())
       sdch_supported_domain = "never_enabled_sdch_for_any_domain";
   }
