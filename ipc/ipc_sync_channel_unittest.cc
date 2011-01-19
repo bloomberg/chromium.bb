@@ -997,7 +997,8 @@ TEST_F(IPCSyncChannelTest, SendWithTimeoutTimeout) {
 }
 
 // Sends some message that time-out and some that succeed.
-TEST_F(IPCSyncChannelTest, SendWithTimeoutMixedOKAndTimeout) {
+// Crashes flakily, http://crbug.com/70075.
+TEST_F(IPCSyncChannelTest, DISABLED_SendWithTimeoutMixedOKAndTimeout) {
   SendWithTimeoutMixedOKAndTimeout(false);
   SendWithTimeoutMixedOKAndTimeout(true);
 }
