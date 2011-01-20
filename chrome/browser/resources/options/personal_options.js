@@ -100,15 +100,21 @@ cr.define('options', function() {
       var idx = $('sync-select').selectedIndex;
       var syncCheckboxes = $('sync-table').getElementsByTagName('input');
       if (idx == 0) {
+        // 'Choose what to sync.'
         for (var i = 0; i < syncCheckboxes.length; i++) {
           syncCheckboxes[i].disabled = false;
         }
       } else if (idx == 1) {
+        // 'Everything' is synced.
         for (var i = 0; i < syncCheckboxes.length; i++) {
-          // Merely setting checked = true is not enough to trigger the pref
-          // being set; thus, we simulate the click.
-          if (!syncCheckboxes[i].checked)
-            syncCheckboxes[i].click();
+          if (!syncCheckboxes[i].checked) {
+            syncCheckboxes[i].checked = true;
+
+            // Merely setting checked = true is not enough to trigger the pref
+            // being set; thus, we dispatch a change event to notify
+            // PrefCheckbox |checked| has changed.
+            cr.dispatchSimpleEvent(syncCheckboxes[i], 'change');
+          }
 
           syncCheckboxes[i].disabled = true;
         }

@@ -50,7 +50,7 @@ cr.define('options', function() {
 
       // Listen to user events.
       this.addEventListener(
-          'click',
+          'change',
           function(e) {
             var value = self.inverted_pref ? !self.checked : self.checked;
             switch(self.valueType) {
@@ -72,7 +72,7 @@ cr.define('options', function() {
      */
     initializeValueType: function(valueType) {
       this.valueType = valueType || 'boolean';
-    }
+    },
   };
 
   /**
