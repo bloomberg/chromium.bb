@@ -63,6 +63,8 @@ class SpeechInputManager {
                                 const std::string& origin_url)  = 0;
   virtual void CancelRecognition(int caller_id) = 0;
   virtual void StopRecording(int caller_id) = 0;
+
+  virtual void CancelAllRequestsWithDelegate(Delegate* delegate) = 0;
 };
 
 // This typedef is to workaround the issue with certain versions of

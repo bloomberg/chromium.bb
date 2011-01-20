@@ -51,6 +51,7 @@ class SpeechInputDispatcherHost : public BrowserMessageFilter,
   SpeechInputManager* manager();
 
   int render_process_id_;
+  bool may_have_pending_requests_;  // Set if we received any speech IPC request
 
   static SpeechInputManager::AccessorMethod* manager_accessor_;
 

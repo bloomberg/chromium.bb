@@ -105,13 +105,21 @@ SpeechInputManager::AccessorMethod*
     SpeechInputDispatcherHost::manager_accessor_ = &SpeechInputManager::Get;
 
 SpeechInputDispatcherHost::SpeechInputDispatcherHost(int render_process_id)
-    : render_process_id_(render_process_id) {
+    : render_process_id_(render_process_id),
+      may_have_pending_requests_(false) {
   // This is initialized by Browser. Do not add any non-trivial
   // initialization here, instead do it lazily when required (e.g. see the
   // method |manager()|) or add an Init() method.
 }
 
 SpeechInputDispatcherHost::~SpeechInputDispatcherHost() {
+  // If the renderer crashed for some reason or if we didn't receive a proper
+  // Cancel/Stop call for an existing session, cancel such active sessions now.
+  // We first check if this dispatcher received any speech IPC requst so that
+  // we don't end up creating the speech input manager for web pages which don't
+  // use speech input.
+  if (may_have_pending_requests_)
+    manager()->CancelAllRequestsWithDelegate(this);
 }
 
 SpeechInputManager* SpeechInputDispatcherHost::manager() {
@@ -131,6 +139,7 @@ bool SpeechInputDispatcherHost::OnMessageReceived(
       return true;
     }
 
+    may_have_pending_requests_ = true;
     IPC_BEGIN_MESSAGE_MAP_EX(SpeechInputDispatcherHost, message,
                              *message_was_ok)
       IPC_MESSAGE_HANDLER(SpeechInputHostMsg_StartRecognition,

@@ -111,6 +111,8 @@ class SpeechInputManagerImpl : public SpeechInputManager,
                                 const std::string& origin_url);
   virtual void CancelRecognition(int caller_id);
   virtual void StopRecording(int caller_id);
+  virtual void CancelAllRequestsWithDelegate(
+      SpeechInputManagerDelegate* delegate);
 
   // SpeechRecognizer::Delegate methods.
   virtual void SetRecognitionResult(int caller_id,
@@ -263,6 +265,20 @@ void SpeechInputManagerImpl::CancelRecognition(int caller_id) {
   if (recording_caller_id_ == caller_id)
     recording_caller_id_ = 0;
   bubble_controller_->CloseBubble(caller_id);
+}
+
+void SpeechInputManagerImpl::CancelAllRequestsWithDelegate(
+    SpeechInputManagerDelegate* delegate) {
+  SpeechRecognizerMap::iterator it = requests_.begin();
+  while (it != requests_.end()) {
+    if (it->second.delegate == delegate) {
+      CancelRecognition(it->first);
+      // This map will have very few elements so it is simpler to restart.
+      it = requests_.begin();
+    } else {
+      ++it;
+    }
+  }
 }
 
 void SpeechInputManagerImpl::StopRecording(int caller_id) {
