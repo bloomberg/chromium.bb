@@ -378,7 +378,7 @@ CheckFileBuilt() {
   local depname=$1
   local filename=$2
   if [[ ! -x ${filename} ]] ; then
-    echo "You have not built ${depname} yet (${filename})!"
+    echo "You have not built ${depname} yet (${filename})!" 1>&2
     exit -1
   fi
 }
