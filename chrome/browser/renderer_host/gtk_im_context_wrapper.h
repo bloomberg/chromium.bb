@@ -70,7 +70,10 @@ class GtkIMContextWrapper {
 
   // Check if a text needs commit by forwarding a char event instead of
   // by confirming as a composition text.
-  bool NeedCommitByForwardingCharEvent();
+  bool NeedCommitByForwardingCharEvent() const;
+
+  // Check if the input method returned any result, eg. preedit and commit text.
+  bool HasInputMethodResult() const;
 
   void ProcessFilteredKeyPressEvent(NativeWebKeyboardEvent* wke);
   void ProcessUnfilteredKeyPressEvent(NativeWebKeyboardEvent* wke);
@@ -205,6 +208,12 @@ class GtkIMContextWrapper {
   // It's only used to workaround http://crbug.com/50485.
   // TODO(suzhe): Remove it after input methods get fixed.
   bool suppress_next_commit_;
+
+  // Information of the last key event, for working around
+  // http://crosbug.com/6582
+  int last_key_code_;
+  bool last_key_was_up_;
+  bool last_key_filtered_no_result_;
 
   DISALLOW_COPY_AND_ASSIGN(GtkIMContextWrapper);
 };
