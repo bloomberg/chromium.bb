@@ -25,8 +25,8 @@ namespace webkit_glue {
 ResourceFetcher::ResourceFetcher(const GURL& url, WebFrame* frame,
                                  Callback* c)
     : url_(url),
-      callback_(c),
-      completed_(false) {
+      completed_(false),
+      callback_(c) {
   // Can't do anything without a frame.  However, delegate can be NULL (so we
   // can do a http request and ignore the results).
   DCHECK(frame);
