@@ -165,7 +165,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
   FilePath model_path_;
   ModelStatus model_status_;
   base::PlatformFile model_file_;
-  URLFetcher* model_fetcher_;
+  scoped_ptr<URLFetcher> model_fetcher_;
   scoped_ptr<std::string> tmp_model_string_;
   std::vector<OpenModelDoneCallback*> open_callbacks_;
 

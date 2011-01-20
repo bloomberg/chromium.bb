@@ -146,14 +146,16 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // any pending URLFetchers, and avoid creating any more.
   SdchDictionaryFetcher::Shutdown();
 
-  // We need to destroy the MetricsService, GoogleURLTracker, and
-  // IntranetRedirectDetector before the io_thread_ gets destroyed, since their
-  // destructors can call the URLFetcher destructor, which does a
-  // PostDelayedTask operation on the IO thread.  (The IO thread will handle
-  // that URLFetcher operation before going away.)
+  // We need to destroy the MetricsService, GoogleURLTracker,
+  // IntranetRedirectDetector, and SafeBrowsing ClientSideDetectionService
+  // before the io_thread_ gets destroyed, since their destructors can call the
+  // URLFetcher destructor, which does a PostDelayedTask operation on the IO
+  // thread. (The IO thread will handle that URLFetcher operation before going
+  // away.)
   metrics_service_.reset();
   google_url_tracker_.reset();
   intranet_redirect_detector_.reset();
+  safe_browsing_detection_service_.reset();
 
   // Need to clear the desktop notification balloons before the io_thread_ and
   // before the profiles, since if there are any still showing we will access
