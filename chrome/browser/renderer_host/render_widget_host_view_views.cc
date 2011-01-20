@@ -717,8 +717,16 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
     status = TOUCH_STATUS_CONTINUE;
 
   // Update the location and state of the point.
-  UpdateTouchPointPosition(&e, GetPosition(), point);
   point->state = TouchPointStateFromEvent(&e);
+  if (point->state == WebKit::WebTouchPoint::StateMoved) {
+    // It is possible for badly written touch drivers to emit Move events even
+    // when the touch location hasn't changed. In such cases, consume the event
+    // and pretend nothing happened.
+    if (point->position.x == e.x() && point->position.y == e.y()) {
+      return status;
+    }
+  }
+  UpdateTouchPointPosition(&e, GetPosition(), point);
 
   // Mark the rest of the points as stationary.
   for (int i = 0; i < touch_event_.touchPointsLength; ++i) {
