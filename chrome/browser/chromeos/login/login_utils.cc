@@ -37,6 +37,7 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
+#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -306,6 +307,10 @@ void LoginUtilsImpl::CompleteLogin(
   if (first_login) {
     SetFirstLoginPrefs(profile->GetPrefs());
   }
+
+  // Enable/disable plugins based on user preferences.
+  PluginUpdater::GetInstance()->DisablePluginGroupsFromPrefs(profile);
+  btl->AddLoginTimeMarker("PluginsStateUpdated", false);
 
   // We suck. This is a hack since we do not have the enterprise feature
   // done yet to pull down policies from the domain admin. We'll take this
