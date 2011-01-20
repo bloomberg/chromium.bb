@@ -36,9 +36,11 @@ function startTransaction()
     result.onsuccess = gotValue;
     result.onerror = unexpectedErrorCallback;
 
-    var emptyResult = store.get('nonExistingKey');
-    emptyResult.onsuccess = unexpectedSuccessCallback;
-    emptyResult.onerror = nonExistingKey;
+    // TODO(hans): Enable this again with the new semantics after WebKit rolls.
+    //var emptyResult = store.get('nonExistingKey');
+    //emptyResult.onsuccess = unexpectedSuccessCallback;
+    //emptyResult.onerror = nonExistingKey;
+    nonExistingKey();
 }
 
 function populateObjectStore()
