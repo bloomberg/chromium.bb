@@ -170,6 +170,9 @@
     'file_system': {
       'filepath': 'file_system/.*',
     },
+    'pepper_api': {
+      'filepath': 'ppapi/c/.*',
+    },
   },
 
   'WATCHLISTS': {
@@ -229,5 +232,6 @@
                'nirnimesh@chromium.org', 'dyu@chromium.org'],
     'labs': ['thakis@chromium.org'],
     'file_system': ['kinuko@chromium.org'],
+    'pepper_api': ['piman+watch@chromium.org'],
   },
 }
