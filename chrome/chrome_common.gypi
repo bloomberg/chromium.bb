@@ -77,6 +77,8 @@
           'common/font_config_ipc_linux.h',
           'common/geoposition.cc',
           'common/geoposition.h',
+          'common/gfx_resource_provider.cc',
+          'common/gfx_resource_provider.h',
           'common/gpu_create_command_buffer_config.cc',
           'common/gpu_create_command_buffer_config.h',
           'common/gpu_feature_flags.cc',

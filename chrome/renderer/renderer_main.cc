@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/gfx_resource_provider.h"
 #include "chrome/common/hi_res_timer_manager.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
@@ -29,6 +30,7 @@
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 #include "chrome/renderer/render_process_impl.h"
 #include "chrome/renderer/render_thread.h"
+#include "gfx/gfx_module.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_module.h"
 #include "ui/base/system_monitor/system_monitor.h"
@@ -213,8 +215,9 @@ int RendererMain(const MainFunctionParams& parameters) {
   InitCrashReporter();
 #endif
 
-  // Configure the network module so it has access to resources.
+  // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
+  gfx::GfxModule::SetResourceProvider(chrome::GfxResourceProvider);
 
   // This function allows pausing execution using the --renderer-startup-dialog
   // flag allowing us to attach a debugger.

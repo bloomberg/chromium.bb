@@ -17,14 +17,14 @@ class NativeThemeChromeos : public gfx::NativeThemeLinux {
   virtual ~NativeThemeChromeos();
 
   // Scrollbar painting overrides
-  virtual gfx::Size GetSize(Part part) const;
-  virtual void PaintTrack(skia::PlatformCanvas* canvas,
+  virtual gfx::Size GetPartSize(Part part) const;
+  virtual void PaintScrollbarTrack(skia::PlatformCanvas* canvas,
       Part part, State state,
       const ScrollbarTrackExtraParams& extra_params,
       const gfx::Rect& rect);
   virtual void PaintArrowButton(skia::PlatformCanvas* canvas,
       const gfx::Rect& rect, Part direction, State state);
-  virtual void PaintThumb(skia::PlatformCanvas* canvas,
+  virtual void PaintScrollbarThumb(skia::PlatformCanvas* canvas,
       Part part, State state, const gfx::Rect& rect);
   SkBitmap* GetHorizontalBitmapNamed(int resource_id);
 

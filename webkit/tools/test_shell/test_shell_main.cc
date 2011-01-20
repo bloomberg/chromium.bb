@@ -22,6 +22,7 @@
 #include "base/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/gfx_module.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_module.h"
 #include "net/base/net_util.h"
@@ -202,8 +203,9 @@ int main(int argc, char* argv[]) {
   // Load ICU data tables
   icu_util::Initialize();
 
-  // Config the network module so it has access to a limited set of resources.
-  net::NetModule::SetResourceProvider(TestShell::NetResourceProvider);
+  // Config the modules that need access to a limited set of resources.
+  net::NetModule::SetResourceProvider(TestShell::ResourceProvider);
+  gfx::GfxModule::SetResourceProvider(TestShell::ResourceProvider);
 
   platform.InitializeGUI();
 

@@ -38,6 +38,24 @@ static gfx::NativeThemeLinux::Part NativeThemePart(
       return gfx::NativeThemeLinux::kScrollbarHorizontalTrack;
     case WebKit::WebThemeEngine::PartScrollbarVerticalTrack:
       return gfx::NativeThemeLinux::kScrollbarVerticalTrack;
+    case WebKit::WebThemeEngine::PartCheckbox:
+      return gfx::NativeThemeLinux::kCheckbox;
+    case WebKit::WebThemeEngine::PartRadio:
+      return gfx::NativeThemeLinux::kRadio;
+    case WebKit::WebThemeEngine::PartButton:
+      return gfx::NativeThemeLinux::kPushButton;
+    case WebKit::WebThemeEngine::PartTextField:
+      return gfx::NativeThemeLinux::kTextField;
+    case WebKit::WebThemeEngine::PartMenuList:
+      return gfx::NativeThemeLinux::kMenuList;
+    case WebKit::WebThemeEngine::PartSliderTrack:
+      return gfx::NativeThemeLinux::kSliderTrack;
+    case WebKit::WebThemeEngine::PartSliderThumb:
+      return gfx::NativeThemeLinux::kSliderThumb;
+    case WebKit::WebThemeEngine::PartInnerSpinButton:
+      return gfx::NativeThemeLinux::kInnerSpinButton;
+    case WebKit::WebThemeEngine::PartProgressBar:
+      return gfx::NativeThemeLinux::kProgressBar;
     default:
       return gfx::NativeThemeLinux::kScrollbarDownArrow;
   }
@@ -49,7 +67,7 @@ static gfx::NativeThemeLinux::State NativeThemeState(
     case WebKit::WebThemeEngine::StateDisabled:
       return gfx::NativeThemeLinux::kDisabled;
     case WebKit::WebThemeEngine::StateHover:
-      return gfx::NativeThemeLinux::kHover;
+      return gfx::NativeThemeLinux::kHovered;
     case WebKit::WebThemeEngine::StateNormal:
       return gfx::NativeThemeLinux::kNormal;
     case WebKit::WebThemeEngine::StatePressed:
@@ -64,21 +82,79 @@ static void GetNativeThemeExtraParams(
     WebKit::WebThemeEngine::State state,
     const WebKit::WebThemeEngine::ExtraParams* extra_params,
     gfx::NativeThemeLinux::ExtraParams* native_theme_extra_params) {
-  if (part == WebKit::WebThemeEngine::PartScrollbarHorizontalTrack ||
-      part == WebKit::WebThemeEngine::PartScrollbarVerticalTrack) {
-    native_theme_extra_params->scrollbar_track.track_x =
-        extra_params->scrollbarTrack.trackX;
-    native_theme_extra_params->scrollbar_track.track_y =
-        extra_params->scrollbarTrack.trackY;
-    native_theme_extra_params->scrollbar_track.track_width =
-        extra_params->scrollbarTrack.trackWidth;
-    native_theme_extra_params->scrollbar_track.track_height =
-        extra_params->scrollbarTrack.trackHeight;
+  switch (part) {
+    case WebKit::WebThemeEngine::PartScrollbarHorizontalTrack:
+    case WebKit::WebThemeEngine::PartScrollbarVerticalTrack:
+      native_theme_extra_params->scrollbar_track.track_x =
+          extra_params->scrollbarTrack.trackX;
+      native_theme_extra_params->scrollbar_track.track_y =
+          extra_params->scrollbarTrack.trackY;
+      native_theme_extra_params->scrollbar_track.track_width =
+          extra_params->scrollbarTrack.trackWidth;
+      native_theme_extra_params->scrollbar_track.track_height =
+          extra_params->scrollbarTrack.trackHeight;
+      break;
+    case WebKit::WebThemeEngine::PartCheckbox:
+      native_theme_extra_params->button.checked = extra_params->button.checked;
+      native_theme_extra_params->button.indeterminate =
+          extra_params->button.indeterminate;
+      break;
+    case WebKit::WebThemeEngine::PartRadio:
+      native_theme_extra_params->button.checked = extra_params->button.checked;
+      break;
+    case WebKit::WebThemeEngine::PartButton:
+      native_theme_extra_params->button.is_default =
+          extra_params->button.isDefault;
+      native_theme_extra_params->button.background_color =
+          extra_params->button.backgroundColor;
+      break;
+    case WebKit::WebThemeEngine::PartTextField:
+      native_theme_extra_params->text_field.is_text_area =
+          extra_params->textField.isTextArea;
+      native_theme_extra_params->text_field.is_listbox =
+          extra_params->textField.isListbox;
+      native_theme_extra_params->text_field.background_color =
+          extra_params->textField.backgroundColor;
+      break;
+    case WebKit::WebThemeEngine::PartMenuList:
+      native_theme_extra_params->menu_list.arrow_x =
+          extra_params->menuList.arrowX;
+      native_theme_extra_params->menu_list.arrow_y =
+          extra_params->menuList.arrowY;
+      native_theme_extra_params->menu_list.background_color =
+          extra_params->menuList.backgroundColor;
+      break;
+    case WebKit::WebThemeEngine::PartSliderTrack:
+    case WebKit::WebThemeEngine::PartSliderThumb:
+      native_theme_extra_params->slider.vertical =
+          extra_params->slider.vertical;
+      native_theme_extra_params->slider.in_drag = extra_params->slider.inDrag;
+      break;
+    case WebKit::WebThemeEngine::PartInnerSpinButton:
+      native_theme_extra_params->inner_spin.spin_up =
+          extra_params->innerSpin.spinUp;
+      native_theme_extra_params->inner_spin.read_only =
+          extra_params->innerSpin.readOnly;
+      break;
+    case WebKit::WebThemeEngine::PartProgressBar:
+      native_theme_extra_params->progress_bar.determinate =
+          extra_params->progressBar.determinate;
+      native_theme_extra_params->progress_bar.value_rect_x =
+          extra_params->progressBar.valueRectX;
+      native_theme_extra_params->progress_bar.value_rect_y =
+          extra_params->progressBar.valueRectY;
+      native_theme_extra_params->progress_bar.value_rect_width =
+          extra_params->progressBar.valueRectWidth;
+      native_theme_extra_params->progress_bar.value_rect_height =
+          extra_params->progressBar.valueRectHeight;
+      break;
+    default:
+      break;  // Parts that have no extra params get here.
   }
 }
 
 WebKit::WebSize WebThemeEngineImpl::getSize(WebKit::WebThemeEngine::Part part) {
-  return gfx::NativeThemeLinux::instance()->GetSize(NativeThemePart(part));
+  return gfx::NativeThemeLinux::instance()->GetPartSize(NativeThemePart(part));
 }
 
 void WebThemeEngineImpl::paint(

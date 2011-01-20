@@ -11,7 +11,27 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_BITMAP_BRUSH_IMAGE" file="bitmap_brush_image.png" type="BINDATA" />
+      <if expr="os.find('win') != -1">
+        <!-- IDR_BITMAP_BRUSH_IMAGE is for canvas_direct2d_unittest on win -->
+        <include name="IDR_BITMAP_BRUSH_IMAGE" file="resources\bitmap_brush_image.png" type="BINDATA" />
+      </if>
+
+      <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">
+        <include name="IDR_LINUX_CHECKBOX_DISABLED_INDETERMINATE" file="resources\linux-checkbox-disabled-indeterminate.png" type="BINDATA" />
+        <include name="IDR_LINUX_CHECKBOX_DISABLED_OFF" file="resources\linux-checkbox-disabled-off.png" type="BINDATA" />
+        <include name="IDR_LINUX_CHECKBOX_DISABLED_ON" file="resources\linux-checkbox-disabled-on.png" type="BINDATA" />
+        <include name="IDR_LINUX_CHECKBOX_INDETERMINATE" file="resources\linux-checkbox-indeterminate.png" type="BINDATA" />
+        <include name="IDR_LINUX_CHECKBOX_OFF" file="resources\linux-checkbox-off.png" type="BINDATA" />
+        <include name="IDR_LINUX_CHECKBOX_ON" file="resources\linux-checkbox-on.png" type="BINDATA" />
+        <include name="IDR_LINUX_RADIO_DISABLED_OFF" file="resources\linux-radio-disabled-off.png" type="BINDATA" />
+        <include name="IDR_LINUX_RADIO_DISABLED_ON" file="resources\linux-radio-disabled-on.png" type="BINDATA" />
+        <include name="IDR_LINUX_RADIO_OFF" file="resources\linux-radio-off.png" type="BINDATA" />
+        <include name="IDR_LINUX_RADIO_ON" file="resources\linux-radio-on.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_BAR" file="resources\linux-progress-bar.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_BORDER_LEFT" file="resources\linux-progress-border-left.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_BORDER_RIGHT" file="resources\linux-progress-border-right.png" type="BINDATA" />
+        <include name="IDR_PROGRESS_VALUE" file="resources\linux-progress-value.png" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

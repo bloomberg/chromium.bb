@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/native_theme_chromeos.h"
 
-#include <limits>
-
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "gfx/insets.h"
@@ -14,67 +12,6 @@
 #include "gfx/skbitmap_operations.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkShader.h"
-
-namespace {
-
-bool IntersectsClipRectInt(
-    skia::PlatformCanvas* canvas, int x, int y, int w, int h) {
-  SkRect clip;
-  return canvas->getClipBounds(&clip) &&
-      clip.intersect(SkIntToScalar(x), SkIntToScalar(y), SkIntToScalar(x + w),
-                     SkIntToScalar(y + h));
-}
-
-void DrawBitmapInt(
-    skia::PlatformCanvas* canvas, const SkBitmap& bitmap,
-    int src_x, int src_y, int src_w, int src_h,
-    int dest_x, int dest_y, int dest_w, int dest_h) {
-  DLOG_ASSERT(src_x + src_w < std::numeric_limits<int16_t>::max() &&
-              src_y + src_h < std::numeric_limits<int16_t>::max());
-  if (src_w <= 0 || src_h <= 0 || dest_w <= 0 || dest_h <= 0) {
-    NOTREACHED() << "Attempting to draw bitmap to/from an empty rect!";
-    return;
-  }
-
-  if (!IntersectsClipRectInt(canvas, dest_x, dest_y, dest_w, dest_h))
-    return;
-
-  SkRect dest_rect = { SkIntToScalar(dest_x),
-                       SkIntToScalar(dest_y),
-                       SkIntToScalar(dest_x + dest_w),
-                       SkIntToScalar(dest_y + dest_h) };
-
-  if (src_w == dest_w && src_h == dest_h) {
-    // Workaround for apparent bug in Skia that causes image to occasionally
-    // shift.
-    SkIRect src_rect = { src_x, src_y, src_x + src_w, src_y + src_h };
-    canvas->drawBitmapRect(bitmap, &src_rect, dest_rect);
-    return;
-  }
-
-  // Make a bitmap shader that contains the bitmap we want to draw. This is
-  // basically what SkCanvas.drawBitmap does internally, but it gives us
-  // more control over quality and will use the mipmap in the source image if
-  // it has one, whereas drawBitmap won't.
-  SkShader* shader = SkShader::CreateBitmapShader(bitmap,
-                                                  SkShader::kRepeat_TileMode,
-                                                  SkShader::kRepeat_TileMode);
-  SkMatrix shader_scale;
-  shader_scale.setScale(SkFloatToScalar(static_cast<float>(dest_w) / src_w),
-                        SkFloatToScalar(static_cast<float>(dest_h) / src_h));
-  shader_scale.preTranslate(SkIntToScalar(-src_x), SkIntToScalar(-src_y));
-  shader_scale.postTranslate(SkIntToScalar(dest_x), SkIntToScalar(dest_y));
-  shader->setLocalMatrix(shader_scale);
-
-  // The rect will be filled by the bitmap.
-  SkPaint p;
-  p.setFilterBitmap(true);
-  p.setShader(shader);
-  shader->unref();
-  canvas->drawRect(dest_rect, p);
-}
-
-}
 
 /* static */
 gfx::NativeThemeLinux* gfx::NativeThemeLinux::instance() {
@@ -89,7 +26,7 @@ NativeThemeChromeos::NativeThemeChromeos() {
 NativeThemeChromeos::~NativeThemeChromeos() {
 }
 
-gfx::Size NativeThemeChromeos::GetSize(Part part) const {
+gfx::Size NativeThemeChromeos::GetPartSize(Part part) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int scrollbar_width = rb.GetBitmapNamed(IDR_SCROLL_BACKGROUND)->width();
   int width = 0, height = 0;
@@ -124,11 +61,13 @@ gfx::Size NativeThemeChromeos::GetSize(Part part) const {
       width = scrollbar_width;
       height = scrollbar_width;
       break;
+    default:
+      return NativeThemeLinux::GetPartSize(part);
   }
   return gfx::Size(width, height);
 }
 
-void NativeThemeChromeos::PaintTrack(skia::PlatformCanvas* canvas,
+void NativeThemeChromeos::PaintScrollbarTrack(skia::PlatformCanvas* canvas,
     Part part, State state,
     const ScrollbarTrackExtraParams& extra_params, const gfx::Rect& rect) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -174,11 +113,11 @@ void NativeThemeChromeos::PaintTrack(skia::PlatformCanvas* canvas,
   }
 }
 
-void NativeThemeChromeos::PaintThumb(skia::PlatformCanvas* canvas,
+void NativeThemeChromeos::PaintScrollbarThumb(skia::PlatformCanvas* canvas,
     Part part, State state, const gfx::Rect& rect) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int resource_id = IDR_SCROLL_THUMB;
-  if (state == kHover)
+  if (state == kHovered)
     resource_id++;
   else if (state == kPressed)
     resource_id += 2;
@@ -225,7 +164,7 @@ void NativeThemeChromeos::PaintArrowButton(skia::PlatformCanvas* canvas,
   int resource_id =
       (part == kScrollbarUpArrow || part == kScrollbarLeftArrow) ?
           IDR_SCROLL_ARROW_UP : IDR_SCROLL_ARROW_DOWN;
-  if (state == kHover)
+  if (state == kHovered)
     resource_id++;
   else if (state == kPressed)
     resource_id += 2;
@@ -255,4 +194,3 @@ SkBitmap* NativeThemeChromeos::GetHorizontalBitmapNamed(int resource_id) {
   }
   return NULL;
 }
-

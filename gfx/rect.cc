@@ -234,6 +234,14 @@ Point Rect::CenterPoint() const {
   return Point(x() + (width() + 1) / 2, y() + (height() + 1) / 2);
 }
 
+Rect Rect::Center(const gfx::Size& size) const {
+  int new_width = std::min(width(), size.width());
+  int new_height = std::min(height(), size.height());
+  int new_x = x() + (width() - new_width) / 2;
+  int new_y = y() + (height() - new_height) / 2;
+  return Rect(new_x, new_y, new_width, new_height);
+}
+
 bool Rect::SharesEdgeWith(const gfx::Rect& rect) const {
   return (y() == rect.y() && height() == rect.height() &&
              (x() == rect.right() || right() == rect.x())) ||

@@ -626,7 +626,7 @@ void TestShell::ShowStartupDebuggingDialog() {
 }
 
 // static
-base::StringPiece TestShell::NetResourceProvider(int key) {
+base::StringPiece TestShell::ResourceProvider(int key) {
   base::StringPiece res;
   g_resource_data_pack->GetStringPiece(key, &res);
   return res;
@@ -655,7 +655,7 @@ base::StringPiece GetDataResource(int resource_id) {
       resource_id = IDR_TEXTAREA_RESIZER_TESTSHELL;
       break;
   }
-  return TestShell::NetResourceProvider(resource_id);
+  return TestShell::ResourceProvider(resource_id);
 }
 
 }  // namespace webkit_glue

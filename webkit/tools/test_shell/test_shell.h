@@ -360,8 +360,8 @@ public:
     // Show the "attach to me" dialog, for debugging test shell startup.
     static void ShowStartupDebuggingDialog();
 
-    // This is called indirectly by the network layer to access resources.
-    static base::StringPiece NetResourceProvider(int key);
+    // This is called indirectly by the modules that need access resources.
+    static base::StringPiece ResourceProvider(int key);
 
     TestShellDevToolsAgent* dev_tools_agent() {
       return dev_tools_agent_.get();

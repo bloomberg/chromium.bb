@@ -138,11 +138,6 @@ static base::StringPiece GetRawDataResource(HMODULE module, int resource_id) {
       : base::StringPiece();
 }
 
-// This is called indirectly by the network layer to access resources.
-base::StringPiece NetResourceProvider(int key) {
-  return GetRawDataResource(::GetModuleHandle(NULL), key);
-}
-
 }  // namespace
 
 // Initialize static member variable
@@ -739,7 +734,7 @@ void TestShell::ShowStartupDebuggingDialog() {
 }
 
 // static
-base::StringPiece TestShell::NetResourceProvider(int key) {
+base::StringPiece TestShell::ResourceProvider(int key) {
   return GetRawDataResource(::GetModuleHandle(NULL), key);
 }
 
@@ -806,7 +801,7 @@ base::StringPiece GetDataResource(int resource_id) {
   case IDR_INPUT_SPEECH:
   case IDR_INPUT_SPEECH_RECORDING:
   case IDR_INPUT_SPEECH_WAITING:
-    return NetResourceProvider(resource_id);
+    return TestShell::ResourceProvider(resource_id);
 
   default:
     break;

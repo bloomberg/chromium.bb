@@ -76,6 +76,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/common/gfx_resource_provider.h"
 #include "chrome/common/hi_res_timer_manager.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -85,6 +86,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "gfx/gfx_module.h"
 #include "grit/app_locale_settings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -1507,8 +1509,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #endif
 #endif
 
-  // Configure the network module so it has access to resources.
+  // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
+  gfx::GfxModule::SetResourceProvider(chrome::GfxResourceProvider);
 
   // Register our global network handler for chrome:// and
   // chrome-extension:// URLs.

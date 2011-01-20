@@ -11,12 +11,20 @@
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
+#include "gfx/gfx_module.h"
 #include "grit/webkit_resources.h"
 
 namespace {
 
 // Data resources on linux.  This is a pointer to the mmapped resources file.
 app::DataPack* g_resource_data_pack = NULL;
+
+base::StringPiece TestResourceProvider(int resource_id) {
+  base::StringPiece res;
+  if (g_resource_data_pack)
+    g_resource_data_pack->GetStringPiece(resource_id, &res);
+  return res;
+}
 
 }
 
@@ -37,6 +45,9 @@ void AfterInitialize(bool unit_test_mode) {
   data_path = data_path.Append("DumpRenderTree.pak");
   if (!g_resource_data_pack->Load(data_path))
     LOG(FATAL) << "failed to load DumpRenderTree.pak";
+
+  // Config the modules that need access to a limited set of resources.
+  gfx::GfxModule::SetResourceProvider(TestResourceProvider);
 }
 
 void BeforeShutdown() {
