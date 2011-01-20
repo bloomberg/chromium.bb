@@ -189,6 +189,7 @@ class ListenerImpl : public base::MessagePumpLibevent::Watcher {
   std::string name_;
   Domain domain_;
   Listener::Delegate* delegate_;
+  bool started_;
   int fd_;
   int token_;
   Lock switchboard_lock_;
@@ -415,20 +416,23 @@ LeopardSwitchboardThread* ListenerImpl::g_switchboard_thread_ = NULL;
 
 ListenerImpl::ListenerImpl(
     const std::string& name, Domain domain, Listener::Delegate* delegate)
-    : name_(name), domain_(domain), delegate_(delegate), fd_(-1), token_(-1) {
+    : name_(name), domain_(domain), delegate_(delegate), started_(false),
+      fd_(-1), token_(-1) {
 }
 
 ListenerImpl::~ListenerImpl() {
-  if (!UseLeopardSwitchboardThread()) {
-    if (fd_ != -1) {
-      uint32_t status = notify_cancel(token_);
-      DCHECK_EQ(status, static_cast<uint32_t>(NOTIFY_STATUS_OK));
-    }
-  } else {
-    base::AutoLock autolock(switchboard_lock_);
-    if (g_switchboard_thread_) {
-      std::string notification = AddPrefixToNotification(name_, domain_);
-      CHECK(g_switchboard_thread_->RemoveListener(this, notification));
+  if (started_) {
+    if (!UseLeopardSwitchboardThread()) {
+      if (fd_ != -1) {
+        uint32_t status = notify_cancel(token_);
+        DCHECK_EQ(status, static_cast<uint32_t>(NOTIFY_STATUS_OK));
+      }
+    } else {
+      base::AutoLock autolock(switchboard_lock_);
+      if (g_switchboard_thread_) {
+        std::string notification = AddPrefixToNotification(name_, domain_);
+        CHECK(g_switchboard_thread_->RemoveListener(this, notification));
+      }
     }
   }
 }
@@ -475,6 +479,7 @@ void ListenerImpl::StartLeopard() {
       success = g_switchboard_thread_->AddListener(this, notification);
     }
   }
+  started_ = success;
   Task* task =
       new Listener::ListenerStartedTask(name_, domain_, delegate_, success);
   CHECK(message_loop_proxy_->PostTask(FROM_HERE, task));
@@ -496,7 +501,13 @@ void ListenerImpl::StartSnowLeopard() {
     MessageLoopForIO* io_loop = MessageLoopForIO::current();
     success = io_loop->WatchFileDescriptor(
         fd_, true, MessageLoopForIO::WATCH_READ, &watcher_, this);
+    if (!success) {
+      uint32_t status = notify_cancel(token_);
+      DCHECK_EQ(status, static_cast<uint32_t>(NOTIFY_STATUS_OK));
+      fd_ = -1;
+    }
   }
+  started_ = success;
   Task* task =
       new Listener::ListenerStartedTask(name_, domain_, delegate_, success);
   CHECK(message_loop_proxy_->PostTask(FROM_HERE, task));
