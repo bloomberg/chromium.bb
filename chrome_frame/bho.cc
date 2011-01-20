@@ -362,12 +362,7 @@ bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
 
   if (state_ == UNKNOWN) {
     g_trans_hooks.InstallHooks();
-    // IE9 sends the short user agent by default. To enable websites to
-    // identify and send content specific to chrome frame we need the
-    // negotiate patch which adds the user agent to outgoing requests.
-    if (GetIEVersion() == IE_9) {
-      HttpNegotiatePatch::Initialize();
-    }
+    HttpNegotiatePatch::Initialize();
     state_ = PATCH_PROTOCOL;
     ret = true;
   }

@@ -231,10 +231,19 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
     return hr;
   }
   if (modify_user_agent_) {
-    std::string updated(AppendCFUserAgentString(headers, *additional_headers));
+    std::string updated_headers;
+    if (IsGcfDefaultRenderer() &&
+        RendererTypeForUrl(url) == RENDERER_TYPE_CHROME_DEFAULT_RENDERER) {
+      // Replace the user-agent header with Chrome's.
+      updated_headers = ReplaceOrAddUserAgent(*additional_headers,
+                                              http_utils::GetChromeUserAgent());
+    } else {
+      updated_headers = AppendCFUserAgentString(headers, *additional_headers);
+    }
     *additional_headers = reinterpret_cast<wchar_t*>(::CoTaskMemRealloc(
-        *additional_headers, (updated.length() + 1) * sizeof(wchar_t)));
-    lstrcpyW(*additional_headers, ASCIIToWide(updated).c_str());
+        *additional_headers,
+        (updated_headers.length() + 1) * sizeof(wchar_t)));
+    lstrcpyW(*additional_headers, ASCIIToWide(updated_headers).c_str());
   }
   return S_OK;
 }
