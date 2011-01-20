@@ -32,6 +32,8 @@ class URLRequestJobTracker {
   // The observer's methods are called on the thread that called AddObserver.
   class JobObserver {
    public:
+    virtual ~JobObserver() {}
+
     // Called after the given job has been added to the list
     virtual void OnJobAdded(URLRequestJob* job) = 0;
 
@@ -54,8 +56,6 @@ class URLRequestJobTracker {
     // duration of the OnBytesRead callback.
     virtual void OnBytesRead(URLRequestJob* job, const char* buf,
                              int byte_count) = 0;
-
-    virtual ~JobObserver() {}
   };
 
   URLRequestJobTracker();

@@ -76,6 +76,13 @@ class ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
  protected:
   friend class base::RefCountedThreadSafe<ListenSocket>;
 
+  enum WaitState {
+    NOT_WAITING      = 0,
+    WAITING_ACCEPT   = 1,
+    WAITING_READ     = 3,
+    WAITING_CLOSE    = 4
+  };
+
   static const SOCKET kInvalidSocket;
   static const int kSocketError;
 
@@ -93,12 +100,6 @@ class ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
   virtual void Close();
   virtual void CloseSocket(SOCKET s);
 
-  enum WaitState {
-    NOT_WAITING      = 0,
-    WAITING_ACCEPT   = 1,
-    WAITING_READ     = 3,
-    WAITING_CLOSE    = 4
-  };
   // Pass any value in case of Windows, because in Windows
   // we are not using state.
   void WatchSocket(WaitState state);
@@ -110,12 +111,12 @@ class ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
   base::win::ObjectWatcher watcher_;
   HANDLE socket_event_;
 #elif defined(OS_POSIX)
-  WaitState wait_state_;
-  // The socket's libevent wrapper
-  MessageLoopForIO::FileDescriptorWatcher watcher_;
   // Called by MessagePumpLibevent when the socket is ready to do I/O
   virtual void OnFileCanReadWithoutBlocking(int fd);
   virtual void OnFileCanWriteWithoutBlocking(int fd);
+  WaitState wait_state_;
+  // The socket's libevent wrapper
+  MessageLoopForIO::FileDescriptorWatcher watcher_;
 #endif
 
   SOCKET socket_;

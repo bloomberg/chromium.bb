@@ -10,12 +10,6 @@
 
 namespace net {
 
-HTTPSProber::HTTPSProber() {
-}
-
-HTTPSProber::~HTTPSProber() {
-}
-
 // static
 HTTPSProber* HTTPSProber::GetInstance() {
   return Singleton<HTTPSProber>::get();
@@ -46,26 +40,6 @@ bool HTTPSProber::ProbeHost(const std::string& host, URLRequestContext* ctx,
   return true;
 }
 
-void HTTPSProber::Success(net::URLRequest* request) {
-  DoCallback(request, true);
-}
-
-void HTTPSProber::Failure(net::URLRequest* request) {
-  DoCallback(request, false);
-}
-
-void HTTPSProber::DoCallback(net::URLRequest* request, bool result) {
-  std::map<std::string, HTTPSProberDelegate*>::iterator i =
-    inflight_probes_.find(request->original_url().host());
-  DCHECK(i != inflight_probes_.end());
-
-  HTTPSProberDelegate* delegate = i->second;
-  inflight_probes_.erase(i);
-  probed_.insert(request->original_url().host());
-  delete request;
-  delegate->ProbeComplete(result);
-}
-
 void HTTPSProber::OnAuthRequired(net::URLRequest* request,
                                  net::AuthChallengeInfo* auth_info) {
   Success(request);
@@ -87,6 +61,32 @@ void HTTPSProber::OnResponseStarted(net::URLRequest* request) {
 
 void HTTPSProber::OnReadCompleted(net::URLRequest* request, int bytes_read) {
   NOTREACHED();
+}
+
+HTTPSProber::HTTPSProber() {
+}
+
+HTTPSProber::~HTTPSProber() {
+}
+
+void HTTPSProber::Success(net::URLRequest* request) {
+  DoCallback(request, true);
+}
+
+void HTTPSProber::Failure(net::URLRequest* request) {
+  DoCallback(request, false);
+}
+
+void HTTPSProber::DoCallback(net::URLRequest* request, bool result) {
+  std::map<std::string, HTTPSProberDelegate*>::iterator i =
+    inflight_probes_.find(request->original_url().host());
+  DCHECK(i != inflight_probes_.end());
+
+  HTTPSProberDelegate* delegate = i->second;
+  inflight_probes_.erase(i);
+  probed_.insert(request->original_url().host());
+  delete request;
+  delegate->ProbeComplete(result);
 }
 
 }  // namespace net

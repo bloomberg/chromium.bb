@@ -63,6 +63,8 @@ class HTTPSProber : public net::URLRequest::Delegate {
   virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
 
  private:
+  friend struct DefaultSingletonTraits<HTTPSProber>;
+
   HTTPSProber();
   ~HTTPSProber();
 
@@ -73,7 +75,6 @@ class HTTPSProber : public net::URLRequest::Delegate {
   std::map<std::string, HTTPSProberDelegate*> inflight_probes_;
   std::set<std::string> probed_;
 
-  friend struct DefaultSingletonTraits<HTTPSProber>;
   DISALLOW_COPY_AND_ASSIGN(HTTPSProber);
 };
 
