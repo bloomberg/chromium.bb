@@ -9,8 +9,7 @@
 class GoogleUpdateTest : public PlatformTest {
 };
 
-// bug: http://crbug.com/70092
-TEST_F(GoogleUpdateTest, DISABLED_StatsConstent) {
+TEST_F(GoogleUpdateTest, StatsConsent) {
   // Stats are off by default.
   EXPECT_FALSE(GoogleUpdateSettings::GetCollectStatsConsent());
   // Stats reporting is ON.

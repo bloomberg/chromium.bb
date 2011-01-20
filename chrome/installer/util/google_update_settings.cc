@@ -112,7 +112,7 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
   key.WriteValue(google_update::kRegUsageStatsField, value);
   // Writing to HKCU is used both by chrome and by the crash reporter.
   reg_path = dist->GetStateKey();
-  key.Open(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ | KEY_WRITE);
+  key.Create(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ | KEY_WRITE);
   return (key.WriteValue(google_update::kRegUsageStatsField, value) ==
       ERROR_SUCCESS);
 }
