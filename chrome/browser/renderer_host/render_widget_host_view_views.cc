@@ -701,7 +701,7 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
       // _PRESSED event. So find that.
       // At the moment, only a maximum of 4 touch-points are allowed. So a
       // simple loop should be sufficient.
-      for (int i = 0; i < WebTouchEvent::touchPointsLengthCap; ++i) {
+      for (int i = 0; i < touch_event_.touchPointsLength; ++i) {
         point = touch_event_.touchPoints + i;
         if (point->id == e.identity()) {
           break;

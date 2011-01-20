@@ -6,6 +6,22 @@
   'variables': {
     'chromium_code': 1,
   },
+
+  'conditions': [
+    [ 'OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+      'conditions': [
+        ['sysroot!=""', {
+          'variables': {
+            'pkg-config': './pkg-config-wrapper "<(sysroot)"',
+          },
+        }, {
+          'variables': {
+            'pkg-config': 'pkg-config'
+          },
+        }],]
+    }],
+  ],
+
   'target_defaults': {
     'sources/': [
       ['exclude', '/(cocoa|gtk|win)/'],
@@ -281,6 +297,8 @@
         'standard_layout.h',
         'touchui/gesture_manager.cc',
         'touchui/gesture_manager.h',
+        'touchui/touch_factory.cc',
+        'touchui/touch_factory.h',
         'view.cc',
         'view.h',
         'view_constants.cc',
@@ -391,6 +409,15 @@
           'sources/': [
             ['exclude', 'focus/accelerator_handler_gtk.cc'],
             ['exclude', 'controls/menu/native_menu_gtk.cc'],
+          ],
+          'conditions': [
+            ['"<!@(<(pkg-config) --atleast-version=2.0 inputproto || echo $?)"!=""', {
+              # Exclude TouchFactory if XInput2 is not available.
+              'sources/': [
+                ['exclude', 'touchui/touch_factory.cc'],
+                ['exclude', 'touchui/touch_factory.h'],
+              ],
+            }],
           ],
         }],
         ['OS=="win"', {
