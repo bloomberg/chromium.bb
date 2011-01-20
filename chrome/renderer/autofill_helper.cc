@@ -129,6 +129,8 @@ void AutoFillHelper::didSelectAutoFillSuggestion(const WebKit::WebNode& node,
                                                  const WebKit::WebString& label,
                                                  int unique_id) {
   DCHECK_GE(unique_id, 0);
+  if (password_autocomplete_manager_->DidSelectAutoFillSuggestion(node, value))
+    return;
 
   didClearAutoFillSelection(node);
   FillAutoFillFormData(node, unique_id, AUTOFILL_PREVIEW);
@@ -136,14 +138,6 @@ void AutoFillHelper::didSelectAutoFillSuggestion(const WebKit::WebNode& node,
 
 void AutoFillHelper::didClearAutoFillSelection(const WebKit::WebNode& node) {
   form_manager_.ClearPreviewedFormWithNode(node, was_query_node_autofilled_);
-}
-
-void AutoFillHelper::didAcceptAutocompleteSuggestion(
-    const WebKit::WebInputElement& user_element) {
-  bool result = password_autocomplete_manager_->FillPassword(user_element);
-  // Since this user name was selected from a suggestion list, we should always
-  // have password for it.
-  DCHECK(result);
 }
 
 void AutoFillHelper::removeAutocompleteSuggestion(
@@ -186,7 +180,8 @@ void AutoFillHelper::TextFieldDidChangeImpl(
 void AutoFillHelper::textFieldDidReceiveKeyDown(
     const WebKit::WebInputElement& element,
     const WebKit::WebKeyboardEvent& event) {
-  password_autocomplete_manager_->TextFieldHandlingKeyDown(element, event);
+  if (password_autocomplete_manager_->TextFieldHandlingKeyDown(element, event))
+    return;
 
   if (event.windowsKeyCode == ui::VKEY_DOWN ||
       event.windowsKeyCode == ui::VKEY_UP)

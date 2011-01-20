@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -325,9 +325,11 @@ TEST_F(PasswordAutocompleteManagerTest, SuggestionSelect) {
 
   // To simulate a selection in the suggestion drop-down we just mimick what the
   // WebView does: it sets the element value then calls
-  // didAcceptAutocompleteSuggestion on the renderer.
-  username_element_.setValue(ASCIIToUTF16(kAliceUsername));
-  autofill_helper_->didAcceptAutocompleteSuggestion(username_element_);
+  // didSelectAutoFillSuggestion on the renderer.
+  autofill_helper_->didSelectAutoFillSuggestion(username_element_,
+                                                ASCIIToUTF16(kAliceUsername),
+                                                WebKit::WebString(),
+                                                0);
 
   // Autocomplete should have kicked in.
   CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -197,16 +197,6 @@ PasswordAutocompleteManager::PasswordAutocompleteManager(
 PasswordAutocompleteManager::~PasswordAutocompleteManager() {
 }
 
-void PasswordAutocompleteManager::FrameClosing(const WebKit::WebFrame* frame) {
-  for (LoginToPasswordInfoMap::iterator iter = login_to_password_info_.begin();
-       iter != login_to_password_info_.end();) {
-    if (iter->first.document().frame() == frame)
-      login_to_password_info_.erase(iter++);
-    else
-      ++iter;
-  }
-}
-
 bool PasswordAutocompleteManager::TextFieldDidEndEditing(
     const WebKit::WebInputElement& element) {
   LoginToPasswordInfoMap::const_iterator iter =
@@ -261,8 +251,12 @@ bool PasswordAutocompleteManager::TextDidChangeInTextField(
   }
 
   // Don't inline autocomplete if the user is deleting, that would be confusing.
-  if (iter->second.backspace_pressed_last)
-    return false;
+  // But refresh the popup.  Note, since this is ours, return true to signal
+  // no further processing is required.
+  if (iter->second.backspace_pressed_last) {
+    ShowSuggestionPopup(iter->second.fill_data, username);
+    return true;
+  }
 
   WebKit::WebString name = element.nameForAutofill();
   if (name.isEmpty())
@@ -281,55 +275,41 @@ bool PasswordAutocompleteManager::TextDidChangeInTextField(
   return true;
 }
 
-void PasswordAutocompleteManager::TextFieldHandlingKeyDown(
+bool PasswordAutocompleteManager::TextFieldHandlingKeyDown(
     const WebKit::WebInputElement& element,
     const WebKit::WebKeyboardEvent& event) {
-
   LoginToPasswordInfoMap::iterator iter = login_to_password_info_.find(element);
   if (iter == login_to_password_info_.end())
-    return;
+    return false;
 
   int win_key_code = event.windowsKeyCode;
   iter->second.backspace_pressed_last =
       (win_key_code == ui::VKEY_BACK || win_key_code == ui::VKEY_DELETE);
+  return true;
 }
 
-bool PasswordAutocompleteManager::FillPassword(
-    const WebKit::WebInputElement& user_input) {
+bool PasswordAutocompleteManager::DidSelectAutoFillSuggestion(
+    const WebKit::WebNode& node,
+    const WebKit::WebString& value) {
+  if (!node.isElementNode())
+    return false;
+
+  WebKit::WebElement element(static_cast<const WebKit::WebElement&>(node));
+  if (!element.hasTagName("input"))
+    return false;
+
+  WebKit::WebInputElement user_input = element.to<WebKit::WebInputElement>();
   LoginToPasswordInfoMap::iterator iter =
       login_to_password_info_.find(user_input);
   if (iter == login_to_password_info_.end())
     return false;
-  const webkit_glue::PasswordFormFillData& fill_data =
-      iter->second.fill_data;
+
+  // Set the incoming |value| in the text field and |FillUserNameAndPassword|
+  // will do the rest.
+  user_input.setValue(value);
+  const webkit_glue::PasswordFormFillData& fill_data = iter->second.fill_data;
   WebKit::WebInputElement password = iter->second.password_field;
-  WebKit::WebInputElement non_const_user_input(user_input);
-  return FillUserNameAndPassword(&non_const_user_input, &password,
-                                 fill_data, true, true);
-}
-
-void PasswordAutocompleteManager::PerformInlineAutocomplete(
-    const WebKit::WebInputElement& username_input,
-    const WebKit::WebInputElement& password_input,
-    const webkit_glue::PasswordFormFillData& fill_data) {
-  DCHECK(!fill_data.wait_for_username);
-
-  // We need non-const versions of the username and password inputs.
-  WebKit::WebInputElement username = username_input;
-  WebKit::WebInputElement password = password_input;
-
-  // Don't inline autocomplete if the caret is not at the end.
-  // TODO(jcivelli): is there a better way to test the caret location?
-  if (username.selectionStart() != username.selectionEnd() ||
-      username.selectionEnd() != static_cast<int>(username.value().length())) {
-    return;
-  }
-
-  // Show the popup with the list of available usernames.
-  ShowSuggestionPopup(fill_data, username);
-
-  // Fill the user and password field with the most relevant match.
-  FillUserNameAndPassword(&username, &password, fill_data, false, true);
+  return FillUserNameAndPassword(&user_input, &password, fill_data, true, true);
 }
 
 void PasswordAutocompleteManager::SendPasswordForms(WebKit::WebFrame* frame,
@@ -385,6 +365,15 @@ void PasswordAutocompleteManager::DidFinishDocumentLoad(
 void PasswordAutocompleteManager::DidFinishLoad(WebKit::WebFrame* frame) {
   SendPasswordForms(frame, true);
 }
+
+void PasswordAutocompleteManager::FrameDetached(WebKit::WebFrame* frame) {
+  FrameClosing(frame);
+}
+
+void PasswordAutocompleteManager::FrameWillClose(WebKit::WebFrame* frame) {
+  FrameClosing(frame);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // PageClickListener implementation:
@@ -515,4 +504,38 @@ bool PasswordAutocompleteManager::FillUserNameAndPassword(
     password_element->setValue(password);
   SetElementAutofilled(password_element, true);
   return true;
+}
+
+void PasswordAutocompleteManager::PerformInlineAutocomplete(
+    const WebKit::WebInputElement& username_input,
+    const WebKit::WebInputElement& password_input,
+    const webkit_glue::PasswordFormFillData& fill_data) {
+  DCHECK(!fill_data.wait_for_username);
+
+  // We need non-const versions of the username and password inputs.
+  WebKit::WebInputElement username = username_input;
+  WebKit::WebInputElement password = password_input;
+
+  // Don't inline autocomplete if the caret is not at the end.
+  // TODO(jcivelli): is there a better way to test the caret location?
+  if (username.selectionStart() != username.selectionEnd() ||
+      username.selectionEnd() != static_cast<int>(username.value().length())) {
+    return;
+  }
+
+  // Show the popup with the list of available usernames.
+  ShowSuggestionPopup(fill_data, username);
+
+  // Fill the user and password field with the most relevant match.
+  FillUserNameAndPassword(&username, &password, fill_data, false, true);
+}
+
+void PasswordAutocompleteManager::FrameClosing(const WebKit::WebFrame* frame) {
+  for (LoginToPasswordInfoMap::iterator iter = login_to_password_info_.begin();
+       iter != login_to_password_info_.end();) {
+    if (iter->first.document().frame() == frame)
+      login_to_password_info_.erase(iter++);
+    else
+      ++iter;
+  }
 }

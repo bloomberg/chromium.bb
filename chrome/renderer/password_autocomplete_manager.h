@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,30 +28,17 @@ class PasswordAutocompleteManager : public RenderViewObserver,
   explicit PasswordAutocompleteManager(RenderView* render_view);
   virtual ~PasswordAutocompleteManager();
 
-  // Invoked when the passed frame is closing.  Gives us a chance to clear any
-  // reference we may have to elements in that frame.
-  void FrameClosing(const WebKit::WebFrame* frame);
-
-  // Fills the password associated with |user_input|, using its current value
-  // as the actual user name.  Returns true if the password field was filled,
-  // false otherwise, typically if there was no matching suggestions for the
-  // currently typed username.
-  bool FillPassword(const WebKit::WebInputElement& user_input);
-
-  // Fills |login_input| and |password| with the most relevant suggestion from
-  // |fill_data| and shows a popup with other suggestions.
-  void PerformInlineAutocomplete(
-      const WebKit::WebInputElement& username,
-      const WebKit::WebInputElement& password,
-      const webkit_glue::PasswordFormFillData& fill_data);
-
   // WebViewClient editor related calls forwarded by the RenderView.
   // If they return true, it indicates the event was consumed and should not
   // be used for any other autofill activity.
   bool TextFieldDidEndEditing(const WebKit::WebInputElement& element);
   bool TextDidChangeInTextField(const WebKit::WebInputElement& element);
-  void TextFieldHandlingKeyDown(const WebKit::WebInputElement& element,
+  bool TextFieldHandlingKeyDown(const WebKit::WebInputElement& element,
                                 const WebKit::WebKeyboardEvent& event);
+  // Fills the password associated with user name |value|. Returns true if the
+  // username and password fields were filled, false otherwise.
+  bool DidSelectAutoFillSuggestion(const WebKit::WebNode& node,
+                                   const WebKit::WebString& value);
 
  private:
   friend class PasswordAutocompleteManagerTest;
@@ -64,16 +51,19 @@ class PasswordAutocompleteManager : public RenderViewObserver,
   };
   typedef std::map<WebKit::WebElement, PasswordInfo> LoginToPasswordInfoMap;
 
-  // RenderView::Observer implementation.
+  // RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame);
   virtual void DidFinishLoad(WebKit::WebFrame* frame);
+  virtual void FrameDetached(WebKit::WebFrame* frame);
+  virtual void FrameWillClose(WebKit::WebFrame* frame);
 
-  // PageClickListener implementation:
+  // PageClickListener:
   virtual bool InputElementClicked(const WebKit::WebInputElement& element,
                                    bool was_focused,
                                    bool is_focused);
 
+  // RenderView IPC handlers:
   void OnFillPasswordForm(
       const webkit_glue::PasswordFormFillData& form_data);
 
@@ -96,6 +86,17 @@ class PasswordAutocompleteManager : public RenderViewObserver,
       const webkit_glue::PasswordFormFillData& fill_data,
       bool exact_username_match,
       bool set_selection);
+
+  // Fills |login_input| and |password| with the most relevant suggestion from
+  // |fill_data| and shows a popup with other suggestions.
+  void PerformInlineAutocomplete(
+      const WebKit::WebInputElement& username,
+      const WebKit::WebInputElement& password,
+      const webkit_glue::PasswordFormFillData& fill_data);
+
+  // Invoked when the passed frame is closing.  Gives us a chance to clear any
+  // reference we may have to elements in that frame.
+  void FrameClosing(const WebKit::WebFrame* frame);
 
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;

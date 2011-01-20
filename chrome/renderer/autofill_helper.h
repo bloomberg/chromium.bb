@@ -45,8 +45,6 @@ class AutoFillHelper : public RenderViewObserver,
                                            const WebKit::WebString& label,
                                            int unique_id);
   virtual void didClearAutoFillSelection(const WebKit::WebNode& node);
-  virtual void didAcceptAutocompleteSuggestion(
-      const WebKit::WebInputElement& element);
   virtual void removeAutocompleteSuggestion(const WebKit::WebString& name,
                                             const WebKit::WebString& value);
   virtual void textFieldDidEndEditing(const WebKit::WebInputElement& element);
