@@ -115,7 +115,7 @@ void StatusBubbleGtk::Show() {
   // If we were going to hide, stop.
   hide_timer_.Stop();
 
-  gtk_widget_show_all(container_.get());
+  gtk_widget_show(container_.get());
   if (container_->window)
     gdk_window_raise(container_->window);
 }
@@ -125,7 +125,7 @@ void StatusBubbleGtk::Hide() {
   expand_timer_.Stop();
   expand_animation_.reset();
 
-  gtk_widget_hide_all(container_.get());
+  gtk_widget_hide(container_.get());
 }
 
 void StatusBubbleGtk::SetStatusTextTo(const std::string& status_utf8) {
@@ -253,6 +253,7 @@ void StatusBubbleGtk::InitWidgets() {
       kInternalLeftRightPadding + (ltr ? 0 : kCornerSize),
       kInternalLeftRightPadding + (ltr ? kCornerSize : 0));
   gtk_container_add(GTK_CONTAINER(padding_), label_);
+  gtk_widget_show_all(padding_);
 
   container_.Own(gtk_event_box_new());
   gtk_widget_set_no_show_all(container_.get(), TRUE);
