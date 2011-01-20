@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ namespace keys = extension_accessibility_api_constants;
 namespace {
 
 static std::string SubstringUTF8(std::string str, int start, int len) {
-  base::UTF8CharIterator iter(&str);
+  base::i18n::UTF8CharIterator iter(&str);
   for (int i = 0; i < start; i++) {
     if (!iter.Advance())
       return std::string();
@@ -300,7 +300,7 @@ std::string WizardAccessibilityHandler::GetTextBoxValue(
     const AccessibilityTextBoxInfo* textbox_info) {
   std::string value = textbox_info->value();
   if (textbox_info->password()) {
-    base::UTF8CharIterator iter(&value);
+    base::i18n::UTF8CharIterator iter(&value);
     std::string obscured;
     while (!iter.end()) {
       obscured += "*";
@@ -377,7 +377,7 @@ void WizardAccessibilityHandler::DescribeTextContentsChanged(
   // character's UTF8-encoded representation.
   scoped_array<int32> old_chars(new int32[old_array_len]);
   scoped_array<int> old_indices(new int[old_array_len + 1]);
-  base::UTF8CharIterator old_iter(&old_value);
+  base::i18n::UTF8CharIterator old_iter(&old_value);
   while (!old_iter.end()) {
     old_chars[old_iter.char_pos()] = old_iter.get();
     old_indices[old_iter.char_pos()] = old_iter.array_pos();
@@ -388,7 +388,7 @@ void WizardAccessibilityHandler::DescribeTextContentsChanged(
 
   scoped_array<int32> new_chars(new int32[new_array_len]);
   scoped_array<int> new_indices(new int[new_array_len + 1]);
-  base::UTF8CharIterator new_iter(&new_value);
+  base::i18n::UTF8CharIterator new_iter(&new_value);
   while (!new_iter.end()) {
     new_chars[new_iter.char_pos()] = new_iter.get();
     new_indices[new_iter.char_pos()] = new_iter.array_pos();

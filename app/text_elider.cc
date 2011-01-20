@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
-
 
 namespace {
 
@@ -616,7 +615,7 @@ void RectangleString::AddWord(const string16& word) {
     // Word is so big that it must be fragmented.
     int array_start = 0;
     int char_start = 0;
-    base::UTF16CharIterator chars(&word);
+    base::i18n::UTF16CharIterator chars(&word);
     while (!chars.end()) {
       // When boundary is hit, add as much as will fit on this line.
       if (current_col_ + (chars.char_pos() - char_start) >= max_cols_) {

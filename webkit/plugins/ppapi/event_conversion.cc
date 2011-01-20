@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,7 +94,7 @@ void AppendCharEvent(const WebInputEvent& event,
     utf16_char_count++;
 
   // Make a separate PP_InputEvent for each Unicode character in the input.
-  base::UTF16CharIterator iter(key_event.text, utf16_char_count);
+  base::i18n::UTF16CharIterator iter(key_event.text, utf16_char_count);
   while (!iter.end()) {
     PP_InputEvent result = GetPPEventWithCommonFieldsAndType(event);
     result.u.character.modifier = key_event.modifiers;
