@@ -37,6 +37,10 @@ const GPUInfo& GpuChannelHost::gpu_info() const {
   return gpu_info_;
 }
 
+void GpuChannelHost::SetStateLost() {
+  state_ = kLost;
+}
+
 bool GpuChannelHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(message.routing_id() != MSG_ROUTING_CONTROL);
 

@@ -412,7 +412,12 @@ void Context::SetError(Error error) {
 
 bool Context::IsCommandBufferContextLost() {
   gpu::CommandBuffer::State state = command_buffer_->GetLastState();
-  return state.error == gpu::error::kLostContext;
+  if (state.error == gpu::error::kLostContext) {
+    // Tell the host that the connection was lost right away.
+    channel_->SetStateLost();
+    return true;
+  }
+  return false;
 }
 
 // TODO(gman): Remove This

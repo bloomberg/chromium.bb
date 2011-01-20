@@ -48,6 +48,9 @@ class GpuChannelHost : public IPC::Channel::Listener,
 
   State state() const { return state_; }
 
+  // Change state to kLost.
+  void SetStateLost();
+
   // The GPU stats reported by the GPU process.
   void set_gpu_info(const GPUInfo& gpu_info);
   const GPUInfo& gpu_info() const;
