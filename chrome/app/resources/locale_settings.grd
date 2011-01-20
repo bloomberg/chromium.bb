@@ -624,15 +624,6 @@
       </message>
 
       <if expr="pp_ifdef('chromeos')">
-        <!-- The width and height of the Languages and Input dialog box in -->
-        <!-- characters and lines (See above). -->
-        <message name="IDS_LANGUAGES_INPUT_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-          127
-        </message>
-        <message name="IDS_LANGUAGES_INPUT_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-          26
-        </message>
-
         <!-- The width and height of the CAPTCHA challenge dialog box in -->
         <!-- characters and lines (See above). -->
         <message name="IDS_CAPTCHA_INPUT_DIALOG_WIDTH_CHARS" use_name_for_id="true">
