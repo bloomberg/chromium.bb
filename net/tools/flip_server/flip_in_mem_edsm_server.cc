@@ -85,6 +85,9 @@ bool FLAGS_need_to_encode_url = false;
 //  SO_REUSEPORT);
 bool FLAGS_reuseport = false;
 
+// Flag to force spdy, even if NPN is not negotiated.
+bool FLAGS_force_spdy = false;
+
 // The amount of time the server delays before sending back the
 //  reply);
 double FLAGS_server_think_time_in_s = 0;
@@ -1150,24 +1153,31 @@ class SMConnection:  public SMConnectionInterface,
             } else {
               VLOG(1) << "Session status: resumed";
             }
-            const unsigned char *npn_proto;
-            unsigned int npn_proto_len;
-            SSL_get0_next_proto_negotiated(ssl_, &npn_proto, &npn_proto_len);
-            if (npn_proto_len > 0) {
-              string npn_proto_str((const char *)npn_proto, npn_proto_len);
-              VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                      << "NPN protocol detected: " << npn_proto_str;
-            } else {
-              VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                      << "NPN protocol detected: none";
-              if (acceptor_->flip_handler_type_ == FLIP_HANDLER_SPDY_SERVER) {
+            bool spdy_negotiated = FLAGS_force_spdy;
+            if (!spdy_negotiated) {
+              const unsigned char *npn_proto;
+              unsigned int npn_proto_len;
+              SSL_get0_next_proto_negotiated(ssl_, &npn_proto, &npn_proto_len);
+              if (npn_proto_len > 0) {
+                string npn_proto_str((const char *)npn_proto, npn_proto_len);
                 VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                        << "NPN protocol: Could not negotiate SPDY protocol.";
-                goto error_or_close;
+                        << "NPN protocol detected: " << npn_proto_str;
+              } else {
+                VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
+                        << "NPN protocol detected: none";
+                if (acceptor_->flip_handler_type_ == FLIP_HANDLER_SPDY_SERVER) {
+                  VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
+                          << "NPN protocol: Could not negotiate SPDY protocol.";
+                  goto error_or_close;
+                }
+              }
+              if (npn_proto_len > 0 &&
+                  !strncmp(reinterpret_cast<const char*>(npn_proto),
+                           "spdy/2", npn_proto_len)) {
+                  spdy_negotiated = true;
               }
             }
-            if (npn_proto_len > 0 &&
-                 !strncmp((char *)npn_proto, "spdy/2", npn_proto_len)) {
+            if (spdy_negotiated) {
               if (!sm_spdy_interface_) {
                 sm_spdy_interface_ = NewSpdySM(this, NULL, epoll_server_,
                                                memory_cache_, acceptor_);
@@ -3086,6 +3096,9 @@ int main (int argc, char**argv)
     g_proxy_config.ssl_disable_compression_ = true;
   }
 
+  if (cl.HasSwitch("force_spdy"))
+    FLAGS_force_spdy = true;
+
   InitLogging(g_proxy_config.log_filename_.c_str(),
               g_proxy_config.log_destination_,
               logging::DONT_LOCK_LOG_FILE,
@@ -3104,6 +3117,8 @@ int main (int argc, char**argv)
   LOG(INFO) << "Disable nagle           : "
             << (FLAGS_disable_nagle?"true":"false");
   LOG(INFO) << "Reuseport               : " << (FLAGS_reuseport?"true":"false");
+  LOG(INFO) << "Force SPDY              : "
+            << (FLAGS_force_spdy?"true":"false");
   LOG(INFO) << "SSL session expiry      : "
             << g_proxy_config.ssl_session_expiry_;
   LOG(INFO) << "SSL disable compression : "
