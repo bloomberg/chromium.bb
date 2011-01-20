@@ -1,12 +1,14 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_MESSAGE_BOX_FLAGS_H_
-#define APP_MESSAGE_BOX_FLAGS_H_
+#ifndef UI_BASE_MESSAGE_BOX_FLAGS_H_
+#define UI_BASE_MESSAGE_BOX_FLAGS_H_
 #pragma once
 
 #include "base/basictypes.h"
+
+namespace ui {
 
 // This class contains flags used to communicate the type of message box
 // to show.  E.g., the renderer can request the browser to show a
@@ -55,4 +57,6 @@ class MessageBoxFlags {
   DISALLOW_COPY_AND_ASSIGN(MessageBoxFlags);
 };
 
-#endif  // APP_MESSAGE_BOX_FLAGS_H_
+}  // namespace ui
+
+#endif  // UI_BASE_MESSAGE_BOX_FLAGS_H_

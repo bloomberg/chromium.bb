@@ -341,7 +341,7 @@ class BrowserActionButton : public NotificationObserver,
   // Same as |default_icon_|, but stored as SkBitmap.
   SkBitmap default_skbitmap_;
 
-  GtkSignalRegistrar signals_;
+  ui::GtkSignalRegistrar signals_;
   NotificationRegistrar registrar_;
 
   // The context menu view and model for this extension action.

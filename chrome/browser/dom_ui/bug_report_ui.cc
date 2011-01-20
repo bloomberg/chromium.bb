@@ -38,7 +38,7 @@
 #include "grit/locale_settings.h"
 
 #if defined(USE_X11)
-#include "app/x11_util.h"
+#include "ui/base/x/x11_util.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #elif defined(OS_WIN)

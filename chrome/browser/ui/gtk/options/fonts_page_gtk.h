@@ -11,11 +11,11 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/options/options_page_base.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class DefaultEncodingComboboxModel;
 

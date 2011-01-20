@@ -8,12 +8,12 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/gtk/options/content_filter_page_gtk.h"
 #include "chrome/browser/ui/gtk/options/cookie_filter_page_gtk.h"
 #include "chrome/common/content_settings_types.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class AccessibleWidgetHelper;
 

@@ -8,7 +8,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/text_elider.h"
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/i18n/rtl.h"
@@ -26,6 +25,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/text/text_elider.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/widget/root_view.h"
@@ -280,16 +280,16 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     // Elide giant extensions (this shouldn't currently be hit, but might
     // in future, should we ever notice unsafe giant extensions).
     if (extension.length() > kFileNameMaxLength / 2)
-      gfx::ElideString(extension, kFileNameMaxLength / 2, &extension);
+      ui::ElideString(extension, kFileNameMaxLength / 2, &extension);
 
     // The dangerous download label text is different for an extension file.
     if (download->is_extension_install()) {
       dangerous_download_label_ = new views::Label(UTF16ToWide(
           l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION)));
     } else {
-      gfx::ElideString(rootname,
-                       kFileNameMaxLength - extension.length(),
-                       &rootname);
+      ui::ElideString(rootname,
+                      kFileNameMaxLength - extension.length(),
+                      &rootname);
       std::wstring filename = rootname + L"." + extension;
       filename = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
           WideToUTF16(filename)));
@@ -609,8 +609,8 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
   if (!IsDangerousMode()) {
     string16 filename;
     if (!disabled_while_opening_) {
-      filename = gfx::ElideFilename(download_->GetFileNameToReportUser(),
-                                    font_, kTextWidth);
+      filename = ui::ElideFilename(download_->GetFileNameToReportUser(),
+                                   font_, kTextWidth);
     } else {
       // First, Calculate the download status opening string width.
       string16 status_string =
@@ -618,8 +618,8 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
       int status_string_width = font_.GetStringWidth(status_string);
       // Then, elide the file name.
       string16 filename_string =
-          gfx::ElideFilename(download_->GetFileNameToReportUser(), font_,
-                             kTextWidth - status_string_width);
+          ui::ElideFilename(download_->GetFileNameToReportUser(), font_,
+                            kTextWidth - status_string_width);
       // Last, concat the whole string.
       filename = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING,
                                             filename_string);

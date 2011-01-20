@@ -268,7 +268,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 - (void)updateTitleColor {
   NSColor* titleColor = nil;
-  ThemeProvider* theme = [[[self view] window] themeProvider];
+  ui::ThemeProvider* theme = [[[self view] window] themeProvider];
   if (theme && ![self selected]) {
     titleColor =
         theme->GetNSColor(BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT,

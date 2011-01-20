@@ -4,7 +4,8 @@
 
 #include <vector>
 
-#include "app/text_elider.h"
+#include "ui/base/text/text_elider.h"
+
 #include "base/file_path.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
@@ -18,6 +19,8 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
+
+namespace ui {
 
 namespace {
 
@@ -45,8 +48,6 @@ string16 CutString(const string16& text,
 }
 
 }  // namespace
-
-namespace gfx {
 
 // This function takes a GURL object and elides it. It returns a string
 // which composed of parts from subdomain, domain, path, filename and query.
@@ -497,7 +498,7 @@ bool ElideString(const std::wstring& input, int max_len, std::wstring* output) {
   return true;
 }
 
-}  // namespace gfx
+}  // namespace ui
 
 namespace {
 
@@ -651,7 +652,7 @@ void RectangleString::NewLine() {
 
 }  // namespace
 
-namespace gfx {
+namespace ui {
 
 bool ElideRectangleString(const string16& input, size_t max_rows,
                           size_t max_cols, string16* output) {
@@ -661,5 +662,4 @@ bool ElideRectangleString(const string16& input, size_t max_rows,
   return rect.Finalize();
 }
 
-}  // namespace gfx
-
+}  // namespace ui

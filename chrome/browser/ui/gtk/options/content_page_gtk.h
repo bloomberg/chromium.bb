@@ -10,12 +10,12 @@
 
 #include <string>
 
-#include "app/gtk_signal.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/gtk/options/managed_prefs_banner_gtk.h"
 #include "chrome/browser/ui/options/options_page_base.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class Profile;
 

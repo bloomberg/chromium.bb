@@ -7,13 +7,13 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
-#include "app/event_synthesis_gtk.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/automation/ui_controls_internal.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/automation_constants.h"
 #include "gfx/rect.h"
+#include "ui/base/gtk/event_synthesis_gtk.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "views/view.h"
@@ -124,8 +124,7 @@ bool SendKeyPress(gfx::NativeWindow window,
   }
 
   std::vector<GdkEvent*> events;
-  app::SynthesizeKeyPressEvents(event_window, key, control, shift, alt,
-                                 &events);
+  ui::SynthesizeKeyPressEvents(event_window, key, control, shift, alt, &events);
   for (std::vector<GdkEvent*>::iterator iter = events.begin();
        iter != events.end(); ++iter) {
     gdk_event_put(*iter);

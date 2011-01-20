@@ -8,7 +8,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+namespace ui {
 class ThemeProvider;
+}
+using ui::ThemeProvider;
 
 // Bit flags; mix-and-match as necessary.
 enum {

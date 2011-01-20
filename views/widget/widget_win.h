@@ -22,7 +22,7 @@
 #include "views/layout_manager.h"
 #include "views/widget/widget.h"
 
-namespace app {
+namespace ui {
 class ViewProp;
 }
 
@@ -484,7 +484,7 @@ class WidgetWin : public ui::WindowImpl,
   bool is_window_;
 
  private:
-  typedef ScopedVector<app::ViewProp> ViewProps;
+  typedef ScopedVector<ui::ViewProp> ViewProps;
 
   // Implementation of GetWindow. Ascends the parents of |hwnd| returning the
   // first ancestor that is a Window.

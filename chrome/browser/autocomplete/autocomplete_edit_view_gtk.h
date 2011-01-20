@@ -11,8 +11,6 @@
 #include <algorithm>
 #include <string>
 
-#include "app/gtk_signal.h"
-#include "app/gtk_signal_registrar.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -24,6 +22,8 @@
 #include "chrome/common/page_transition_types.h"
 #include "gfx/rect.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AccessibleWidgetHelper;
@@ -534,7 +534,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // "focus-out" events.
   GtkWidget* going_to_focus_;
 
-  GtkSignalRegistrar signals_;
+  ui::GtkSignalRegistrar signals_;
 
 #if defined(TOOLKIT_VIEWS)
   scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;

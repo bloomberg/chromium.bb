@@ -6,8 +6,8 @@
 #define VIEWS_CONTROLS_TABLE_NATIVE_TABLE_GTK_H_
 #pragma once
 
-#include "app/gtk_signal.h"
 #include "ui/base/models/table_model.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "views/controls/native_control_gtk.h"
 #include "views/controls/table/native_table_wrapper.h"
 

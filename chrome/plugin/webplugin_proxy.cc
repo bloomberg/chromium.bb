@@ -35,7 +35,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "app/x11_util_internal.h"
+#include "ui/base/x/x11_util_internal.h"
 #endif
 
 using WebKit::WebBindings;
@@ -73,10 +73,9 @@ WebPluginProxy::WebPluginProxy(
       // If the X server supports SHM pixmaps
       // and the color depth and masks match,
       // then consider using SHM pixmaps for windowless plugin painting.
-      Display* display = x11_util::GetXDisplay();
-      if (x11_util::QuerySharedMemorySupport(display) ==
-              x11_util::SHARED_MEMORY_PIXMAP &&
-          x11_util::BitsPerPixelForPixmapDepth(
+      Display* display = ui::GetXDisplay();
+      if (ui::QuerySharedMemorySupport(display) == ui::SHARED_MEMORY_PIXMAP &&
+          ui::BitsPerPixelForPixmapDepth(
               display, DefaultDepth(display, 0)) == 32) {
         Visual* vis = DefaultVisual(display, 0);
 
@@ -94,7 +93,7 @@ WebPluginProxy::~WebPluginProxy() {
 
 #if defined(USE_X11)
   if (windowless_shm_pixmap_ != None)
-    XFreePixmap(x11_util::GetXDisplay(), windowless_shm_pixmap_);
+    XFreePixmap(ui::GetXDisplay(), windowless_shm_pixmap_);
 #endif
 
 #if defined(OS_MACOSX)
@@ -618,8 +617,8 @@ void WebPluginProxy::SetWindowlessBuffer(
   // If SHM pixmaps support is available, create a SHM pixmap and
   // pass it to the delegate for windowless plugin painting.
   if (delegate_->IsWindowless() && use_shm_pixmap_ && windowless_dib_.get()) {
-    Display* display = x11_util::GetXDisplay();
-    XID root_window = x11_util::GetX11RootWindow();
+    Display* display = ui::GetXDisplay();
+    XID root_window = ui::GetX11RootWindow();
     XShmSegmentInfo shminfo = {0};
 
     if (windowless_shm_pixmap_ != None)

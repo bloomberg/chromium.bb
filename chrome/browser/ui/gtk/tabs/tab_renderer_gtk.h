@@ -9,7 +9,6 @@
 #include <gtk/gtk.h>
 #include <map>
 
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -21,6 +20,7 @@
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 namespace gfx {
 class Size;
@@ -29,10 +29,10 @@ class Size;
 class CustomDrawButton;
 class GtkThemeProvider;
 class TabContents;
-class ThemeProvider;
 
 namespace ui {
 class SlideAnimation;
+class ThemeProvider;
 class ThrobAnimation;
 }
 
@@ -49,7 +49,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   class LoadingAnimation : public NotificationObserver {
    public:
     struct Data {
-      explicit Data(ThemeProvider* theme_provider);
+      explicit Data(ui::ThemeProvider* theme_provider);
       Data(int loading, int waiting, int waiting_to_loading);
 
       SkBitmap* waiting_animation_frames;
@@ -59,7 +59,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
       int waiting_to_loading_frame_count_ratio;
     };
 
-    explicit LoadingAnimation(ThemeProvider* theme_provider);
+    explicit LoadingAnimation(ui::ThemeProvider* theme_provider);
 
     // Used in unit tests to inject specific data.
     explicit LoadingAnimation(const LoadingAnimation::Data& data);
@@ -93,7 +93,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
     NotificationRegistrar registrar_;
 
     // Gives us our throbber images.
-    ThemeProvider* theme_provider_;
+    ui::ThemeProvider* theme_provider_;
 
     // Current state of the animation.
     AnimationState animation_state_;
@@ -104,7 +104,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
     DISALLOW_COPY_AND_ASSIGN(LoadingAnimation);
   };
 
-  explicit TabRendererGtk(ThemeProvider* theme_provider);
+  explicit TabRendererGtk(ui::ThemeProvider* theme_provider);
   virtual ~TabRendererGtk();
 
   // TabContents. If only the loading state was updated, the loading_only flag

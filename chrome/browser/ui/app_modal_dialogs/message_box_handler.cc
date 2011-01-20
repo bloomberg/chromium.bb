@@ -5,8 +5,6 @@
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 
 #include "app/l10n_util.h"
-#include "app/message_box_flags.h"
-#include "app/text_elider.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -21,6 +19,8 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/chromium_strings.h"
+#include "ui/base/message_box_flags.h"
+#include "ui/base/text/text_elider.h"
 
 static std::wstring GetTitle(Profile* profile,
                              bool is_alert,
@@ -46,7 +46,7 @@ static std::wstring GetTitle(Profile* profile,
 
   // TODO(brettw) it should be easier than this to do the correct language
   // handling without getting the accept language from the profile.
-  string16 base_address = gfx::ElideUrl(frame_url.GetOrigin(),
+  string16 base_address = ui::ElideUrl(frame_url.GetOrigin(),
       gfx::Font(), 0,
       UTF8ToWide(profile->GetPrefs()->GetString(prefs::kAcceptLanguages)));
 
@@ -68,7 +68,7 @@ void RunJavascriptMessageBox(Profile* profile,
                              const std::wstring& default_prompt_text,
                              bool display_suppress_checkbox,
                              IPC::Message* reply_msg) {
-  bool is_alert = dialog_flags == MessageBoxFlags::kIsJavascriptAlert;
+  bool is_alert = dialog_flags == ui::MessageBoxFlags::kIsJavascriptAlert;
   std::wstring title = GetTitle(profile, is_alert, frame_url);
   AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
       delegate, title, dialog_flags, message_text, default_prompt_text,
@@ -84,7 +84,7 @@ void RunBeforeUnloadDialog(TabContents* tab_contents,
       tab_contents,
       UTF16ToWideHack(
           l10n_util::GetStringUTF16(IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE)),
-      MessageBoxFlags::kIsJavascriptConfirm,
+      ui::MessageBoxFlags::kIsJavascriptConfirm,
       message_text,
       std::wstring(),
       false,

@@ -97,7 +97,7 @@ void BookmarkBarInstructionsView::LinkActivated(views::Link* source,
 
 void BookmarkBarInstructionsView::UpdateColors() {
   // We don't always have a theme provider (ui tests, for example).
-  const ThemeProvider* theme_provider = GetThemeProvider();
+  const ui::ThemeProvider* theme_provider = GetThemeProvider();
   if (!theme_provider)
     return;
   updated_colors_ = true;

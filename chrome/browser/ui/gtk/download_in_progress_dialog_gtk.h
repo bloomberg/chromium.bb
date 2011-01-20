@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_GTK_DOWNLOAD_IN_PROGRESS_DIALOG_GTK_H_
 #pragma once
 
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class Browser;
 

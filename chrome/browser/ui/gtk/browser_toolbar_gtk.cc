@@ -424,7 +424,7 @@ void BrowserToolbarGtk::SetUpDragForHomeButton(bool enable) {
     static const int targets[] = { ui::TEXT_PLAIN, ui::TEXT_URI_LIST, -1 };
     ui::SetDestTargetList(home_->widget(), targets);
 
-    drop_handler_.reset(new GtkSignalRegistrar());
+    drop_handler_.reset(new ui::GtkSignalRegistrar());
     drop_handler_->Connect(home_->widget(), "drag-data-received",
                            G_CALLBACK(OnDragDataReceivedThunk), this);
   } else {

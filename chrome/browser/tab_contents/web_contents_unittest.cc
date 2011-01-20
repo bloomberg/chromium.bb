@@ -4,7 +4,6 @@
 
 #include <vector>
 
-#include "app/message_box_flags.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
@@ -27,6 +26,7 @@
 #include "chrome/test/testing_profile.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/message_box_flags.h"
 
 using webkit_glue::PasswordForm;
 
@@ -1524,7 +1524,7 @@ TEST_F(TabContentsTest, NoJSMessageOnInterstitials) {
   IPC::Message* dummy_message = new IPC::Message;
   bool did_suppress_message = false;
   contents()->RunJavaScriptMessage(L"This is an informative message", L"OK",
-      kGURL, MessageBoxFlags::kIsJavascriptAlert, dummy_message,
+      kGURL, ui::MessageBoxFlags::kIsJavascriptAlert, dummy_message,
       &did_suppress_message);
   EXPECT_TRUE(did_suppress_message);
 }

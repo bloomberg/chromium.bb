@@ -8,8 +8,8 @@
 
 #include <gtk/gtk.h>
 
-#include "app/x11_util.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "ui/base/x/x11_util.h"
 #include "views/controls/button/button.h"
 
 class BrowserView;

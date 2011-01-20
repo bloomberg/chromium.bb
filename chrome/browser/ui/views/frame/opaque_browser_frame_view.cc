@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/theme_provider.h"
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -22,6 +21,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/theme_provider.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/widget/root_view.h"
@@ -107,7 +107,7 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
       window_icon_(NULL),
       frame_(frame),
       browser_view_(browser_view) {
-  ThemeProvider* tp = frame_->GetThemeProviderForFrame();
+  ui::ThemeProvider* tp = frame_->GetThemeProviderForFrame();
   SkColor color = tp->GetColor(BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);
   SkBitmap* background =
       tp->GetBitmapNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND);
@@ -541,7 +541,7 @@ gfx::Rect OpaqueBrowserFrameView::IconBounds() const {
 }
 
 void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
-  ThemeProvider* tp = GetThemeProvider();
+  ui::ThemeProvider* tp = GetThemeProvider();
 
   SkBitmap* top_left_corner = tp->GetBitmapNamed(IDR_WINDOW_TOP_LEFT_CORNER);
   SkBitmap* top_right_corner =
@@ -659,7 +659,7 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 
 
 void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
-  ThemeProvider* tp = GetThemeProvider();
+  ui::ThemeProvider* tp = GetThemeProvider();
   views::Window* window = frame_->GetWindow();
 
   // Window frame mode and color
@@ -752,7 +752,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   // section so that we never break the gradient.
   int split_point = kFrameShadowThickness * 2;
   int bottom_y = y + split_point;
-  ThemeProvider* tp = GetThemeProvider();
+  ui::ThemeProvider* tp = GetThemeProvider();
   SkBitmap* toolbar_left = tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER);
   int bottom_edge_height = std::min(toolbar_left->height(), h) - split_point;
 
@@ -857,7 +857,7 @@ void OpaqueBrowserFrameView::PaintOTRAvatar(gfx::Canvas* canvas) {
 }
 
 void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
-  ThemeProvider* tp = GetThemeProvider();
+  ui::ThemeProvider* tp = GetThemeProvider();
   int client_area_top = frame_->GetWindow()->GetClientView()->y();
   int image_top = client_area_top;
 

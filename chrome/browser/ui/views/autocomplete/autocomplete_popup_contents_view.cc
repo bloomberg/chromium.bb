@@ -6,8 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/text_elider.h"
-#include "app/theme_provider.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/bidi_line_iterator.h"
 #include "base/i18n/rtl.h"
@@ -28,6 +26,8 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/text/text_elider.h"
+#include "ui/base/theme_provider.h"
 #include "unicode/ubidi.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
@@ -710,8 +710,8 @@ void AutocompleteResultView::Elide(Runs* runs, int remaining_width) const {
 
       // Can we fit at least an ellipsis?
       std::wstring elided_text(UTF16ToWideHack(
-          gfx::ElideText(WideToUTF16Hack(j->text), *j->font, remaining_width,
-                         false)));
+          ui::ElideText(WideToUTF16Hack(j->text), *j->font, remaining_width,
+                        false)));
       Classifications::reverse_iterator prior_classification(j);
       ++prior_classification;
       const bool on_first_classification =

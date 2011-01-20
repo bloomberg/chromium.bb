@@ -1,16 +1,16 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_VIEW_PROP_H_
-#define APP_VIEW_PROP_H_
+#ifndef UI_BASE_VIEW_PROP_H_
+#define UI_BASE_VIEW_PROP_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "gfx/native_widget_types.h"
 
-namespace app {
+namespace ui {
 
 // ViewProp maintains a key/value pair for a particular view. ViewProp is
 // designed as a replacement for the Win32's SetProp, but does not make use of
@@ -42,6 +42,6 @@ class ViewProp {
   DISALLOW_COPY_AND_ASSIGN(ViewProp);
 };
 
-}  // namespace app
+}  // namespace ui
 
-#endif  // APP_VIEW_PROP_H_
+#endif  // UI_BASE_VIEW_PROP_H_

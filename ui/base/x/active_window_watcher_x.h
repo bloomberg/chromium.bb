@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_ACTIVE_WINDOW_WATCHER_X_H_
-#define APP_ACTIVE_WINDOW_WATCHER_X_H_
+#ifndef UI_BASE_X_ACTIVE_WINDOW_WATCHER_X_H_
+#define UI_BASE_X_ACTIVE_WINDOW_WATCHER_X_H_
 #pragma once
 
 #include <gdk/gdk.h>
@@ -11,6 +11,8 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "base/singleton.h"
+
+namespace ui {
 
 // This is a helper class that is used to keep track of which window the X
 // window manager thinks is active. Add an Observer to listener for changes to
@@ -53,4 +55,6 @@ class ActiveWindowWatcherX {
   DISALLOW_COPY_AND_ASSIGN(ActiveWindowWatcherX);
 };
 
-#endif  // APP_ACTIVE_WINDOW_WATCHER_X_H_
+}  // namespace ui
+
+#endif  // UI_BASE_X_ACTIVE_WINDOW_WATCHER_X_H_

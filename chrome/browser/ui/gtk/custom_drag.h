@@ -9,8 +9,8 @@
 #include <gtk/gtk.h>
 #include <vector>
 
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class BookmarkNode;
 class DownloadItem;

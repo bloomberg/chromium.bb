@@ -33,7 +33,7 @@
 
 - (void)drawBackground {
   BOOL isKey = [[self window] isKeyWindow];
-  ThemeProvider* themeProvider = [[self window] themeProvider];
+  ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   if (themeProvider) {
     NSColor* backgroundImageColor =
         themeProvider->GetNSImageColorNamed(IDR_THEME_TOOLBAR, false);
@@ -70,7 +70,7 @@
 
 - (NSColor*)strokeColor {
   BOOL isKey = [[self window] isKeyWindow];
-  ThemeProvider* themeProvider = [[self window] themeProvider];
+  ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   if (!themeProvider)
     return [NSColor blackColor];
   return themeProvider->GetNSColor(

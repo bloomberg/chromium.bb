@@ -29,7 +29,7 @@
 #include "views/accessibility/view_accessibility.h"
 #endif
 #if defined(OS_LINUX)
-#include "app/scoped_handle_gtk.h"
+#include "ui/base/gtk/scoped_handle_gtk.h"
 #endif
 
 namespace views {
@@ -455,7 +455,7 @@ bool View::HitTest(const gfx::Point& l) const {
       base::win::ScopedRegion rgn(mask.CreateNativeRegion());
       return !!PtInRegion(rgn, l.x(), l.y());
 #elif defined(TOOLKIT_USES_GTK)
-      ScopedRegion rgn(mask.CreateNativeRegion());
+      ui::ScopedRegion rgn(mask.CreateNativeRegion());
       return gdk_region_point_in(rgn.Get(), l.x(), l.y());
 #endif
     }

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/sync_setup_flow.h"
 
-#include "app/gfx/font_util.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -21,13 +20,15 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#if defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/html_dialog_window_controller_cppsafe.h"
-#endif
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/font.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_font_util.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/cocoa/html_dialog_window_controller_cppsafe.h"
+#endif
 
 // XPath expression for finding specific iframes.
 static const wchar_t* kLoginIFrameXPath = L"//iframe[@id='login']";
@@ -373,7 +374,7 @@ void SyncSetupFlow::GetDialogSize(gfx::Size* size) const {
       UTF8ToUTF16(prefs->GetString(prefs::kWebKitSansSerifFontFamily)),
       prefs->GetInteger(prefs::kWebKitDefaultFontSize));
 
-  *size = gfx::GetLocalizedContentsSizeForFont(
+  *size = ui::GetLocalizedContentsSizeForFont(
       IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS,
       IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES,
       approximate_web_font);

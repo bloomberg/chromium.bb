@@ -38,7 +38,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "app/x11_util.h"
+#include "ui/base/x/x11_util.h"
 #elif defined(OS_MACOSX)
 #include "app/l10n_util.h"
 #include "base/mac/mac_util.h"
@@ -76,7 +76,7 @@ PluginThread::PluginThread()
     setenv("GDK_NATIVE_WINDOWS", "1", 1);
   }
 
-  x11_util::SetDefaultX11ErrorHandlers();
+  ui::SetDefaultX11ErrorHandlers();
 #endif
 
   PatchNPNFunctions();

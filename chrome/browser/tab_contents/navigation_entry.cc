@@ -5,7 +5,6 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 
 #include "app/resource_bundle.h"
-#include "app/text_elider.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,6 +14,7 @@
 #include "chrome/common/url_constants.h"
 #include "grit/app_resources.h"
 #include "net/base/net_util.h"
+#include "ui/base/text/text_elider.h"
 
 // Use this to get a new unique ID for a NavigationEntry during construction.
 // The returned ID is guaranteed to be nonzero (which is the "no ID" indicator).
@@ -95,9 +95,8 @@ const string16& NavigationEntry::GetTitleForDisplay(
   } else if (!url_.is_empty()) {
     title = net::FormatUrl(url_, languages);
   }
-  gfx::ElideString(UTF16ToWideHack(title),
-                   chrome::kMaxTitleChars,
-                   &elided_title);
+  ui::ElideString(UTF16ToWideHack(title), chrome::kMaxTitleChars,
+                  &elided_title);
   cached_display_title_ = WideToUTF16Hack(elided_title);
   return cached_display_title_;
 }

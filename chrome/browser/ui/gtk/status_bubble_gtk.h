@@ -10,7 +10,6 @@
 
 #include <string>
 
-#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
@@ -20,6 +19,7 @@
 #include "gfx/point.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class GtkThemeProvider;
 class Profile;

@@ -336,7 +336,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
 }
 
 // TODO(viettrungluu): clean up/reorganize.
-- (void)drawBorderAndFillForTheme:(ThemeProvider*)themeProvider
+- (void)drawBorderAndFillForTheme:(ui::ThemeProvider*)themeProvider
                       controlView:(NSView*)controlView
                         innerPath:(NSBezierPath*)innerPath
               showClickedGradient:(BOOL)showClickedGradient
@@ -516,7 +516,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   BOOL pressed = ([((NSControl*)[self controlView]) isEnabled] &&
                   [self isHighlighted]);
   NSWindow* window = [controlView window];
-  ThemeProvider* themeProvider = [window themeProvider];
+  ui::ThemeProvider* themeProvider = [window themeProvider];
   BOOL active = [window isKeyWindow] || [window isMainWindow];
 
   // Stroke the borders and appropriate fill gradient. If we're borderless, the

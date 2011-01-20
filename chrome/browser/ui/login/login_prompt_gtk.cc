@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_signal.h"
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/ui/login/login_model.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 using webkit_glue::PasswordForm;
 

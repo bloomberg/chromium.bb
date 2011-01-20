@@ -4,7 +4,6 @@
 
 #include "chrome/browser/automation/testing_automation_provider.h"
 
-#include "app/message_box_flags.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -75,6 +74,7 @@
 #include "chrome/common/automation_messages.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
+#include "ui/base/message_box_flags.h"
 #include "views/event.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
@@ -1780,7 +1780,7 @@ void TestingAutomationProvider::GetShowingAppModalDialog(bool* showing_dialog,
       AppModalDialogQueue::GetInstance()->active_dialog();
   if (!active_dialog) {
     *showing_dialog = false;
-    *dialog_button = MessageBoxFlags::DIALOGBUTTON_NONE;
+    *dialog_button = ui::MessageBoxFlags::DIALOGBUTTON_NONE;
     return;
   }
   NativeAppModalDialog* native_dialog = active_dialog->native_dialog();
@@ -1788,7 +1788,7 @@ void TestingAutomationProvider::GetShowingAppModalDialog(bool* showing_dialog,
   if (*showing_dialog)
     *dialog_button = native_dialog->GetAppModalDialogButtons();
   else
-    *dialog_button = MessageBoxFlags::DIALOGBUTTON_NONE;
+    *dialog_button = ui::MessageBoxFlags::DIALOGBUTTON_NONE;
 }
 
 void TestingAutomationProvider::ClickAppModalDialogButton(int button,
@@ -1799,13 +1799,13 @@ void TestingAutomationProvider::ClickAppModalDialogButton(int button,
       AppModalDialogQueue::GetInstance()->active_dialog()->native_dialog();
   if (native_dialog &&
       (native_dialog->GetAppModalDialogButtons() & button) == button) {
-    if ((button & MessageBoxFlags::DIALOGBUTTON_OK) ==
-        MessageBoxFlags::DIALOGBUTTON_OK) {
+    if ((button & ui::MessageBoxFlags::DIALOGBUTTON_OK) ==
+        ui::MessageBoxFlags::DIALOGBUTTON_OK) {
       native_dialog->AcceptAppModalDialog();
       *success =  true;
     }
-    if ((button & MessageBoxFlags::DIALOGBUTTON_CANCEL) ==
-        MessageBoxFlags::DIALOGBUTTON_CANCEL) {
+    if ((button & ui::MessageBoxFlags::DIALOGBUTTON_CANCEL) ==
+        ui::MessageBoxFlags::DIALOGBUTTON_CANCEL) {
       DCHECK(!*success) << "invalid param, OK and CANCEL specified";
       native_dialog->CancelAppModalDialog();
       *success =  true;

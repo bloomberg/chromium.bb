@@ -12,8 +12,8 @@
 #include <set>
 #include <string>
 
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class BrowserTitlebar;
 template <typename T> struct DefaultSingletonTraits;

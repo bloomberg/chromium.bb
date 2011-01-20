@@ -26,14 +26,18 @@
 
 using ui::OSExchangeData;
 
+class ViewAccessibility;
+
 namespace gfx {
 class Canvas;
 class Insets;
 class Path;
 }
 
+namespace ui {
 class ThemeProvider;
-class ViewAccessibility;
+}
+using ui::ThemeProvider;
 
 namespace views {
 

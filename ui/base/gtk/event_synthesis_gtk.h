@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -6,8 +6,8 @@
 // only keyboard events). This is useful for a variety of testing purposes.
 // NOTE: This should not be used outside of testing.
 
-#ifndef APP_EVENT_SYNTHESIS_GTK_
-#define APP_EVENT_SYNTHESIS_GTK_
+#ifndef UI_BASE_GTK_EVENT_SYNTHESIS_GTK_
+#define UI_BASE_GTK_EVENT_SYNTHESIS_GTK_
 #pragma once
 
 #include <gdk/gdk.h>
@@ -16,7 +16,7 @@
 
 #include "ui/base/keycodes/keyboard_codes.h"
 
-namespace app {
+namespace ui {
 
 // Creates and returns a key event. Passes ownership to the caller.
 GdkEvent* SynthesizeKeyEvent(GdkWindow* event_window,
@@ -28,10 +28,10 @@ GdkEvent* SynthesizeKeyEvent(GdkWindow* event_window,
 // Ownership of the events in the vector is passed to the caller.
 void SynthesizeKeyPressEvents(
     GdkWindow* window,
-    ui::KeyboardCode key,
+    KeyboardCode key,
     bool control, bool shift, bool alt,
     std::vector<GdkEvent*>* events);
 
-}  // namespace app
+}  // namespace ui
 
-#endif  // APP_EVENT_SYNTHESIS_GTK_
+#endif  // UI_BASE_GTK_EVENT_SYNTHESIS_GTK_

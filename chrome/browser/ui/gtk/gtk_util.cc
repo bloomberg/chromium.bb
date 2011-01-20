@@ -13,7 +13,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/x11_util.h"
 #include "base/environment.h"
 #include "base/i18n/rtl.h"
 #include "base/linux_util.h"
@@ -37,6 +36,7 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/x/x11_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/frame/browser_view.h"
@@ -365,9 +365,9 @@ void CenterOverWindow(GtkWindow* window, GtkWindow* parent) {
 
   // Move to user expected desktop if window is already visible.
   if (GTK_WIDGET(window)->window) {
-    x11_util::ChangeWindowDesktop(
-        x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(window)),
-        x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(parent)));
+    ui::ChangeWindowDesktop(
+        ui::GetX11WindowFromGtkWidget(GTK_WIDGET(window)),
+        ui::GetX11WindowFromGtkWidget(GTK_WIDGET(parent)));
   }
 }
 
@@ -546,15 +546,15 @@ bool IsScreenComposited() {
   return gdk_screen_is_composited(screen) == TRUE;
 }
 
-void EnumerateTopLevelWindows(x11_util::EnumerateWindowsDelegate* delegate) {
+void EnumerateTopLevelWindows(ui::EnumerateWindowsDelegate* delegate) {
   std::vector<XID> stack;
-  if (!x11_util::GetXWindowStack(&stack)) {
+  if (!ui::GetXWindowStack(&stack)) {
     // Window Manager doesn't support _NET_CLIENT_LIST_STACKING, so fall back
     // to old school enumeration of all X windows.  Some WMs parent 'top-level'
     // windows in unnamed actual top-level windows (ion WM), so extend the
     // search depth to all children of top-level windows.
     const int kMaxSearchDepth = 1;
-    x11_util::EnumerateAllWindows(delegate, kMaxSearchDepth);
+    ui::EnumerateAllWindows(delegate, kMaxSearchDepth);
     return;
   }
 
@@ -857,20 +857,20 @@ void StackPopupWindow(GtkWidget* popup, GtkWidget* toplevel) {
   // this -- otherwise, we'll get an error if the window manager reparents the
   // toplevel window right after we call GetHighestAncestorWindow().
   gdk_x11_display_grab(gtk_widget_get_display(toplevel));
-  XID toplevel_window_base = x11_util::GetHighestAncestorWindow(
-      x11_util::GetX11WindowFromGtkWidget(toplevel),
-      x11_util::GetX11RootWindow());
+  XID toplevel_window_base = ui::GetHighestAncestorWindow(
+      ui::GetX11WindowFromGtkWidget(toplevel),
+      ui::GetX11RootWindow());
   if (toplevel_window_base) {
-    XID window_xid = x11_util::GetX11WindowFromGtkWidget(popup);
-    XID window_parent = x11_util::GetParentWindow(window_xid);
-    if (window_parent == x11_util::GetX11RootWindow()) {
-      x11_util::RestackWindow(window_xid, toplevel_window_base, true);
+    XID window_xid = ui::GetX11WindowFromGtkWidget(popup);
+    XID window_parent = ui::GetParentWindow(window_xid);
+    if (window_parent == ui::GetX11RootWindow()) {
+      ui::RestackWindow(window_xid, toplevel_window_base, true);
     } else {
       // The window manager shouldn't reparent override-redirect windows.
       DLOG(ERROR) << "override-redirect window " << window_xid
                   << "'s parent is " << window_parent
                   << ", rather than root window "
-                  << x11_util::GetX11RootWindow();
+                  << ui::GetX11RootWindow();
     }
   }
   gdk_x11_display_ungrab(gtk_widget_get_display(toplevel));

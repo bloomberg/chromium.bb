@@ -13,10 +13,12 @@
 
 #include <vector>
 
-#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
+#include "ui/base/gtk/gtk_signal.h"
 
+namespace ui {
 class GtkSignalRegistrar;
+}
 
 class MenuBarHelper {
  public:
@@ -70,7 +72,7 @@ class MenuBarHelper {
 
   // Signal handlers that are attached only between the "show" and "hide" events
   // for the menu.
-  scoped_ptr<GtkSignalRegistrar> signal_handlers_;
+  scoped_ptr<ui::GtkSignalRegistrar> signal_handlers_;
 
   Delegate* delegate_;
 };

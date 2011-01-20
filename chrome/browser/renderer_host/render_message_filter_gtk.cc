@@ -7,7 +7,6 @@
 #include <fcntl.h>
 #include <map>
 
-#include "app/x11_util.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
@@ -24,6 +23,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/x/x11_util.h"
 
 using WebKit::WebScreenInfo;
 using WebKit::WebScreenInfoFactory;
@@ -49,8 +49,8 @@ static base::LazyInstance<PrintingSequencePathMap>
 void RenderMessageFilter::DoOnGetScreenInfo(gfx::NativeViewId view,
                                             IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::BACKGROUND_X11));
-  Display* display = x11_util::GetSecondaryDisplay();
-  int screen = x11_util::GetDefaultScreen(display);
+  Display* display = ui::GetSecondaryDisplay();
+  int screen = ui::GetDefaultScreen(display);
   WebScreenInfo results = WebScreenInfoFactory::screenInfo(display, screen);
   ViewHostMsg_GetScreenInfo::WriteReplyParams(reply_msg, results);
   Send(reply_msg);
@@ -69,7 +69,7 @@ void RenderMessageFilter::DoOnGetWindowRect(gfx::NativeViewId view,
     if (window) {
       int x, y;
       unsigned width, height;
-      if (x11_util::GetWindowGeometry(&x, &y, &width, &height, window))
+      if (ui::GetWindowGeometry(&x, &y, &width, &height, window))
         rect = gfx::Rect(x, y, width, height);
     }
   }
@@ -84,7 +84,7 @@ static XID GetTopLevelWindow(XID window) {
   bool parent_is_root;
   XID parent_window;
 
-  if (!x11_util::GetWindowParent(&parent_window, &parent_is_root, window))
+  if (!ui::GetWindowParent(&parent_window, &parent_is_root, window))
     return 0;
   if (parent_is_root)
     return window;
@@ -107,7 +107,7 @@ void RenderMessageFilter::DoOnGetRootWindowRect(gfx::NativeViewId view,
       if (toplevel) {
         int x, y;
         unsigned width, height;
-        if (x11_util::GetWindowGeometry(&x, &y, &width, &height, toplevel))
+        if (ui::GetWindowGeometry(&x, &y, &width, &height, toplevel))
           rect = gfx::Rect(x, y, width, height);
       }
     }

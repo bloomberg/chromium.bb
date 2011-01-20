@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/first_run_bubble.h"
 
-#include "app/gfx/font_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
@@ -18,6 +17,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_font_util.h"
 #include "ui/base/win/hwnd_util.h"
 #include "views/event.h"
 #include "views/controls/button/native_button.h"
@@ -346,9 +346,9 @@ gfx::Size FirstRunOEMBubbleView::GetPreferredSize() {
   const gfx::Font& font = rb.GetFont(
       ResourceBundle::MediumFont).DeriveFont(3, gfx::Font::BOLD);
   gfx::Size size = gfx::Size(
-      gfx::GetLocalizedContentsWidthForFont(
+      ui::GetLocalizedContentsWidthForFont(
           IDS_FIRSTRUNOEMBUBBLE_DIALOG_WIDTH_CHARS, font),
-      gfx::GetLocalizedContentsHeightForFont(
+      ui::GetLocalizedContentsHeightForFont(
           IDS_FIRSTRUNOEMBUBBLE_DIALOG_HEIGHT_LINES, font));
 
   // WARNING: HACK. Vista and XP calculate font size differently; this means

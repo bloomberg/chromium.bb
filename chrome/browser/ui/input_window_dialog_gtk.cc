@@ -6,12 +6,12 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_signal.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class InputWindowDialogGtk : public InputWindowDialog {
  public:

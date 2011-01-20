@@ -644,7 +644,7 @@ const CGFloat kRapidCloseDist = 2.5;
   // background overlay drawn over it (see below) will be fully opaque.
   BOOL hasBackgroundImage = NO;
   if (!selected) {
-    // ThemeProvider::HasCustomImage is true only if the theme provides the
+    // ui::ThemeProvider::HasCustomImage is true only if the theme provides the
     // image. However, even if the theme doesn't provide a tab background, the
     // theme machinery will make one if given a frame image. See
     // BrowserThemePack::GenerateTabBackgroundImages for details.

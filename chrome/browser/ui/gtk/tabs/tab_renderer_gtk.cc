@@ -89,7 +89,8 @@ gfx::Rect GetWidgetBoundsRelativeToParent(GtkWidget* parent,
 
 }  // namespace
 
-TabRendererGtk::LoadingAnimation::Data::Data(ThemeProvider* theme_provider) {
+TabRendererGtk::LoadingAnimation::Data::Data(
+    ui::ThemeProvider* theme_provider) {
   // The loading animation image is a strip of states. Each state must be
   // square, so the height must divide the width evenly.
   loading_animation_frames = theme_provider->GetBitmapNamed(IDR_THROBBER);
@@ -144,7 +145,7 @@ SkColor TabRendererGtk::unselected_title_color_ = SkColorSetRGB(64, 64, 64);
 // TabRendererGtk::LoadingAnimation, public:
 //
 TabRendererGtk::LoadingAnimation::LoadingAnimation(
-    ThemeProvider* theme_provider)
+    ui::ThemeProvider* theme_provider)
     : data_(new Data(theme_provider)),
       theme_provider_(theme_provider),
       animation_state_(ANIMATION_NONE),
@@ -243,7 +244,7 @@ class TabRendererGtk::FavIconCrashAnimation : public ui::LinearAnimation,
 ////////////////////////////////////////////////////////////////////////////////
 // TabRendererGtk, public:
 
-TabRendererGtk::TabRendererGtk(ThemeProvider* theme_provider)
+TabRendererGtk::TabRendererGtk(ui::ThemeProvider* theme_provider)
     : showing_icon_(false),
       showing_close_button_(false),
       fav_icon_hiding_offset_(0),

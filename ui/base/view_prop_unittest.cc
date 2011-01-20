@@ -1,18 +1,20 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "app/view_prop.h"
 #include "base/scoped_ptr.h"
+#include "ui/base/view_prop.h"
+
+namespace ui {
 
 typedef testing::Test ViewPropTest;
 
 static const char* kKey1 = "key_1";
 static const char* kKey2 = "key_2";
 
-using app::ViewProp;
+using ui::ViewProp;
 
 // Test a handful of viewprop assertions.
 TEST_F(ViewPropTest, Basic) {
@@ -68,3 +70,5 @@ TEST_F(ViewPropTest, Basic) {
     EXPECT_EQ(NULL, ViewProp::GetValue(nv2, kKey2));
   }
 }
+
+}  // namespace ui

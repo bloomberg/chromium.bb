@@ -17,7 +17,6 @@
 class BaseTab;
 class DraggedTabController;
 class TabStripController;
-class ThemeProvider;
 
 // Base class for the view tab strip implementations.
 class BaseTabStrip : public views::View,

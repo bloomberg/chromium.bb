@@ -11,7 +11,6 @@
 #include <map>
 #include <string>
 
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditViewGtk;

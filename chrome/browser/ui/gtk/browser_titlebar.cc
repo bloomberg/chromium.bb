@@ -367,11 +367,11 @@ void BrowserTitlebar::Init() {
 
   gtk_widget_show_all(container_);
 
-  ActiveWindowWatcherX::AddObserver(this);
+  ui::ActiveWindowWatcherX::AddObserver(this);
 }
 
 BrowserTitlebar::~BrowserTitlebar() {
-  ActiveWindowWatcherX::RemoveObserver(this);
+  ui::ActiveWindowWatcherX::RemoveObserver(this);
 #if defined(USE_GCONF)
   GConfTitlebarListener::GetInstance()->RemoveObserver(this);
 #endif

@@ -14,7 +14,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/x11_util.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
@@ -49,6 +48,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "ui/base/x/x11_util.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
@@ -405,7 +405,7 @@ void GrabWidget::TryUngrabOtherClients() {
     int event_base, error_base;
     int major, minor;
     // Make sure we have XTest extension.
-    DCHECK(XTestQueryExtension(x11_util::GetXDisplay(),
+    DCHECK(XTestQueryExtension(ui::GetXDisplay(),
                                &event_base, &error_base,
                                &major, &minor));
   }
@@ -419,12 +419,12 @@ void GrabWidget::TryUngrabOtherClients() {
     // Successfully grabbed the keyboard, but pointer is still
     // grabbed by other client. Another attempt to close supposedly
     // opened menu by emulating keypress at the left top corner.
-    Display* display = x11_util::GetXDisplay();
+    Display* display = ui::GetXDisplay();
     Window root, child;
     int root_x, root_y, win_x, winy;
     unsigned int mask;
     XQueryPointer(display,
-                  x11_util::GetX11WindowFromGtkWidget(window_contents()),
+                  ui::GetX11WindowFromGtkWidget(window_contents()),
                   &root, &child, &root_x, &root_y,
                   &win_x, &winy, &mask);
     XTestFakeMotionEvent(display, -1, -10000, -10000, CurrentTime);
@@ -439,7 +439,7 @@ void GrabWidget::TryUngrabOtherClients() {
     // by other client. Another attempt to close supposedly opened
     // menu by emulating escape key.  Such situation must be very
     // rare, but handling this just in case
-    Display* display = x11_util::GetXDisplay();
+    Display* display = ui::GetXDisplay();
     KeyCode escape = XKeysymToKeycode(display, XK_Escape);
     XTestFakeKeyEvent(display, escape, True, CurrentTime);
     XTestFakeKeyEvent(display, escape, False, CurrentTime);

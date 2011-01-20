@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/download/download_item_cell.h"
 
 #include "app/l10n_util.h"
-#include "app/text_elider.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -19,6 +18,7 @@
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
+#include "ui/base/text/text_elider.h"
 
 namespace {
 
@@ -85,9 +85,9 @@ const int kCompleteAnimationDuration = 2.5;
                 animationCurve:(NSAnimationCurve)animationCurve;
 @end
 
-class BackgroundTheme : public ThemeProvider {
+class BackgroundTheme : public ui::ThemeProvider {
 public:
-  BackgroundTheme(ThemeProvider* provider);
+  BackgroundTheme(ui::ThemeProvider* provider);
 
   virtual void Init(Profile* profile) { }
   virtual SkBitmap* GetBitmapNamed(int id) const { return nil; }
@@ -103,13 +103,13 @@ public:
   virtual NSGradient* GetNSGradient(int id) const;
 
 private:
-  ThemeProvider* provider_;
+  ui::ThemeProvider* provider_;
   scoped_nsobject<NSGradient> buttonGradient_;
   scoped_nsobject<NSGradient> buttonPressedGradient_;
   scoped_nsobject<NSColor> borderColor_;
 };
 
-BackgroundTheme::BackgroundTheme(ThemeProvider* provider) :
+BackgroundTheme::BackgroundTheme(ui::ThemeProvider* provider) :
     provider_(provider) {
   NSColor* bgColor = [NSColor colorWithCalibratedRed:241/255.0
                                                green:245/255.0
@@ -168,7 +168,7 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
        progressed:(NSAnimationProgress)progress;
 - (NSString*)elideTitle:(int)availableWidth;
 - (NSString*)elideStatus:(int)availableWidth;
-- (ThemeProvider*)backgroundThemeWrappingProvider:(ThemeProvider*)provider;
+- (ui::ThemeProvider*)backgroundThemeWrappingProvider:(ui::ThemeProvider*)provider;
 - (BOOL)pressedWithDefaultThemeOnPart:(DownloadItemMousePosition)part;
 - (NSColor*)titleColorForPart:(DownloadItemMousePosition)part;
 - (void)drawSecondaryTitleInRect:(NSRect)innerFrame;
@@ -398,7 +398,7 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
                      [font pointSize]);
 
   return base::SysUTF16ToNSString(
-      ElideFilename(downloadPath_, font_chr, availableWidth));
+      ui::ElideFilename(downloadPath_, font_chr, availableWidth));
 }
 
 - (NSString*)elideStatus:(int)availableWidth {
@@ -406,14 +406,14 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
   gfx::Font font_chr(base::SysNSStringToUTF16([font fontName]),
                      [font pointSize]);
 
-  return base::SysUTF16ToNSString(ElideText(
+  return base::SysUTF16ToNSString(ui::ElideText(
       base::SysNSStringToUTF16([self secondaryTitle]),
       font_chr,
       availableWidth,
       false));
 }
 
-- (ThemeProvider*)backgroundThemeWrappingProvider:(ThemeProvider*)provider {
+- (ui::ThemeProvider*)backgroundThemeWrappingProvider:(ui::ThemeProvider*)provider {
   if (!themeProvider_.get()) {
     themeProvider_.reset(new BackgroundTheme(provider));
   }
@@ -423,7 +423,8 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
 
 // Returns if |part| was pressed while the default theme was active.
 - (BOOL)pressedWithDefaultThemeOnPart:(DownloadItemMousePosition)part {
-  ThemeProvider* themeProvider = [[[self controlView] window] themeProvider];
+  ui::ThemeProvider* themeProvider =
+      [[[self controlView] window] themeProvider];
   bool isDefaultTheme =
       !themeProvider->HasCustomImage(IDR_THEME_BUTTON_BACKGROUND);
   return isDefaultTheme && [self isHighlighted] && mousePosition_ == part;
@@ -431,7 +432,8 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
 
 // Returns the text color that should be used to draw text on |part|.
 - (NSColor*)titleColorForPart:(DownloadItemMousePosition)part {
-  ThemeProvider* themeProvider = [[[self controlView] window] themeProvider];
+  ui::ThemeProvider* themeProvider =
+      [[[self controlView] window] themeProvider];
   NSColor* themeTextColor =
       themeProvider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT,
                                 true);
@@ -480,7 +482,8 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
   // with a background that looks like windows (some transparent white) if a
   // theme is used. Use custom theme object with a white color gradient to trick
   // the superclass into drawing what we want.
-  ThemeProvider* themeProvider = [[[self controlView] window] themeProvider];
+  ui::ThemeProvider* themeProvider =
+      [[[self controlView] window] themeProvider];
   bool isDefaultTheme =
       !themeProvider->HasCustomImage(IDR_THEME_BUTTON_BACKGROUND);
 

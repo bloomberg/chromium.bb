@@ -4,7 +4,7 @@
 
 #include "views/accessibility/view_accessibility.h"
 
-#include "app/view_prop.h"
+#include "ui/base/view_prop.h"
 #include "views/controls/button/native_button.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_win.h"
@@ -725,8 +725,8 @@ HRESULT ViewAccessibility::GetNativeIAccessibleInterface(
     return E_INVALIDARG;
 
   HWND native_view_window = static_cast<HWND>(
-      app::ViewProp::GetValue(native_host->native_view(),
-                              kViewsNativeHostPropForAccessibility));
+      ui::ViewProp::GetValue(native_host->native_view(),
+                             kViewsNativeHostPropForAccessibility));
   if (!IsWindow(native_view_window)) {
     native_view_window = native_host->native_view();
   }

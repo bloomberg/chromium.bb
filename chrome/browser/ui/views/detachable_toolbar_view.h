@@ -60,12 +60,12 @@ class DetachableToolbarView : public AccessiblePaneView {
   // bookmarks or extension toolstrips). |rect| is the rectangle to paint
   // the background within. |roundness| describes the roundness of the corners.
   static void PaintContentAreaBackground(gfx::Canvas* canvas,
-                                         ThemeProvider* theme_provider,
+                                         ui::ThemeProvider* theme_provider,
                                          const SkRect& rect,
                                          double roundness);
   // Paint the border around the content area (when in detached mode).
   static void PaintContentAreaBorder(gfx::Canvas* canvas,
-                                     ThemeProvider* theme_provider,
+                                     ui::ThemeProvider* theme_provider,
                                      const SkRect& rect,
                                      double roundness);
 

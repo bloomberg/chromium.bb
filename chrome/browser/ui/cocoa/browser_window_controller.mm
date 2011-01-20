@@ -1477,7 +1477,7 @@
   [[self window] setViewsNeedDisplay:YES];
 }
 
-- (ThemeProvider*)themeProvider {
+- (ui::ThemeProvider*)themeProvider {
   return browser_->profile()->GetThemeProvider();
 }
 

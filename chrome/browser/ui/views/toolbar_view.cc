@@ -657,7 +657,7 @@ int ToolbarView::PopupTopSpacing() const {
 }
 
 void ToolbarView::LoadImages() {
-  ThemeProvider* tp = GetThemeProvider();
+  ui::ThemeProvider* tp = GetThemeProvider();
 
   back_->SetImage(views::CustomButton::BS_NORMAL, tp->GetBitmapNamed(IDR_BACK));
   back_->SetImage(views::CustomButton::BS_HOT, tp->GetBitmapNamed(IDR_BACK_H));
@@ -717,7 +717,7 @@ void ToolbarView::UpdateAppMenuBadge() {
 }
 
 SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
-  ThemeProvider* tp = GetThemeProvider();
+  ui::ThemeProvider* tp = GetThemeProvider();
 
   int id = 0;
   switch (state) {

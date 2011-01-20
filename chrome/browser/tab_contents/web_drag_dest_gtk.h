@@ -8,11 +8,11 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "webkit/glue/webdropdata.h"
 
 class TabContents;

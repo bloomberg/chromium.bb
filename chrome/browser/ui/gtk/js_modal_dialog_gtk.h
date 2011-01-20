@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_GTK_JS_MODAL_DIALOG_GTK_H_
 #pragma once
 
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "gfx/native_widget_types.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GtkWidget GtkWidget;
 

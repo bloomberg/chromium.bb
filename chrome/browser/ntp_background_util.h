@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_NTP_BACKGROUND_UTIL_H_
 #pragma once
 
-class ThemeProvider;
-
 namespace gfx {
 class Canvas;
 class Rect;
+}
+
+namespace ui {
+class ThemeProvider;
 }
 
 class NtpBackgroundUtil {
@@ -20,7 +22,7 @@ class NtpBackgroundUtil {
   // aligned images). |tab_contents_height| is necessary for correctly painting
   // bottom-aligned images since then the origin is the bottom of the web page.
   static void PaintBackgroundDetachedMode(
-      ThemeProvider* tp, gfx::Canvas* canvas,
+      ui::ThemeProvider* tp, gfx::Canvas* canvas,
       const gfx::Rect& area, int tab_contents_height);
 
  private:

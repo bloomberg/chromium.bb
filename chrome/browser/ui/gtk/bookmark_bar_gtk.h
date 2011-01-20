@@ -10,7 +10,6 @@
 
 #include <vector>
 
-#include "app/gtk_signal.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
@@ -25,6 +24,7 @@
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class BookmarkMenuController;
 class Browser;

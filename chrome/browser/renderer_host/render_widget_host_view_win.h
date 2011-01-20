@@ -25,9 +25,8 @@
 #include "gfx/native_widget_types.h"
 #include "webkit/glue/webcursor.h"
 
-namespace app {
-class ViewProp;
-}
+class BackingStore;
+class RenderWidgetHost;
 
 namespace gfx {
 class Size;
@@ -38,8 +37,9 @@ namespace IPC {
 class Message;
 }
 
-class BackingStore;
-class RenderWidgetHost;
+namespace ui {
+class ViewProp;
+}
 
 typedef CWinTraits<WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0>
     RenderWidgetHostHWNDTraits;
@@ -350,7 +350,7 @@ class RenderWidgetHostViewWin
   // method.
   WebKit::WebTextInputType text_input_type_;
 
-  ScopedVector<app::ViewProp> props_;
+  ScopedVector<ui::ViewProp> props_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };

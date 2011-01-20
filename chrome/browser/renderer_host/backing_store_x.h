@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_RENDERER_HOST_BACKING_STORE_X_H_
 #pragma once
 
-#include "app/x11_util.h"
 #include "base/basictypes.h"
 #include "build/build_config.h"
 #include "chrome/browser/renderer_host/backing_store.h"
+#include "ui/base/x/x11_util.h"
 
 namespace gfx {
 class Point;
@@ -77,7 +77,7 @@ class BackingStoreX : public BackingStore {
   // displayed.
   Display* const display_;
   // What flavor, if any, MIT-SHM (X shared memory) support we have.
-  const x11_util::SharedMemorySupport shared_memory_support_;
+  const ui::SharedMemorySupport shared_memory_support_;
   // If this is true, then we can use Xrender to composite our pixmaps.
   const bool use_render_;
   // If |use_render_| is false, this is the number of bits-per-pixel for |depth|

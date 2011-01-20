@@ -117,7 +117,7 @@ void DOMUI::CallJavascriptFunction(
   ExecuteJavascript(GetJavascript(function_name, args));
 }
 
-ThemeProvider* DOMUI::GetThemeProvider() const {
+ui::ThemeProvider* DOMUI::GetThemeProvider() const {
   return GetProfile()->GetThemeProvider();
 }
 

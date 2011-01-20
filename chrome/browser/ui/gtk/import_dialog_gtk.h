@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_GTK_IMPORT_DIALOG_GTK_H_
 #pragma once
 
-#include "app/gtk_signal.h"
 #include "chrome/browser/importer/importer.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class AccessibleWidgetHelper;
 class Profile;

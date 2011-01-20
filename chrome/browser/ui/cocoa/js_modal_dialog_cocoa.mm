@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "app/l10n_util_mac.h"
-#include "app/message_box_flags.h"
 #include "base/logging.h"
 #import "base/mac/cocoa_protocols.h"
 #include "base/sys_string_conversions.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "grit/app_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/message_box_flags.h"
 
 // Helper object that receives the notification that the dialog/sheet is
 // going away. Is responsible for cleaning itself up.
@@ -106,10 +106,10 @@ JSModalDialogCocoa::JSModalDialogCocoa(JavaScriptAppModalDialog* dialog)
   bool text_field = false;
   bool one_button = false;
   switch (dialog_->dialog_flags()) {
-    case MessageBoxFlags::kIsJavascriptAlert:
+    case ui::MessageBoxFlags::kIsJavascriptAlert:
       one_button = true;
       break;
-    case MessageBoxFlags::kIsJavascriptConfirm:
+    case ui::MessageBoxFlags::kIsJavascriptConfirm:
       if (dialog_->is_before_unload_dialog()) {
         default_button = l10n_util::GetNSStringWithFixup(
             IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL);
@@ -117,7 +117,7 @@ JSModalDialogCocoa::JSModalDialogCocoa(JavaScriptAppModalDialog* dialog)
             IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL);
       }
       break;
-    case MessageBoxFlags::kIsJavascriptPrompt:
+    case ui::MessageBoxFlags::kIsJavascriptPrompt:
       text_field = true;
       break;
 
@@ -166,10 +166,10 @@ int JSModalDialogCocoa::GetAppModalDialogButtons() const {
   int num_buttons = [[alert_ buttons] count];
   switch (num_buttons) {
     case 1:
-      return MessageBoxFlags::DIALOGBUTTON_OK;
+      return ui::MessageBoxFlags::DIALOGBUTTON_OK;
     case 2:
-      return MessageBoxFlags::DIALOGBUTTON_OK |
-             MessageBoxFlags::DIALOGBUTTON_CANCEL;
+      return ui::MessageBoxFlags::DIALOGBUTTON_OK |
+             ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
     default:
       NOTREACHED();
       return 0;

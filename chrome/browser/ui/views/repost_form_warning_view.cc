@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/repost_form_warning_view.h"
 
 #include "app/l10n_util.h"
-#include "app/message_box_flags.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
+#include "ui/base/message_box_flags.h"
 #include "views/controls/message_box_view.h"
 #include "views/window/window.h"
 
@@ -35,7 +35,7 @@ RepostFormWarningView::RepostFormWarningView(
       : controller_(new RepostFormWarningController(tab_contents)),
         message_box_view_(NULL) {
   message_box_view_ = new MessageBoxView(
-      MessageBoxFlags::kIsConfirmMessageBox,
+      ui::MessageBoxFlags::kIsConfirmMessageBox,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING)),
       std::wstring());
   controller_->Show(this);
@@ -52,10 +52,10 @@ std::wstring RepostFormWarningView::GetWindowTitle() const {
 }
 
 std::wstring RepostFormWarningView::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK)
+    ui::MessageBoxFlags::DialogButton button) const {
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
     return UTF16ToWide(l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING_RESEND));
-  if (button == MessageBoxFlags::DIALOGBUTTON_CANCEL)
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_CANCEL)
     return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL));
   return std::wstring();
 }

@@ -10,8 +10,8 @@
 
 #include <vector>
 
-#include "app/gtk_signal.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class Profile;
 

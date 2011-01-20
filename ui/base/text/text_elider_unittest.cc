@@ -1,8 +1,7 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/text_elider.h"
 #include "base/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/scoped_ptr.h"
@@ -11,6 +10,9 @@
 #include "gfx/font.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/text/text_elider.h"
+
+namespace ui {
 
 namespace {
 
@@ -253,7 +255,7 @@ TEST(TextEliderTest, ElideTextLongStrings) {
 
 // Verifies display_url is set correctly.
 TEST(TextEliderTest, SortedDisplayURL) {
-  gfx::SortedDisplayURL d_url(GURL("http://www.google.com"), std::wstring());
+  ui::SortedDisplayURL d_url(GURL("http://www.google.com"), std::wstring());
   EXPECT_EQ("www.google.com", UTF16ToASCII(d_url.display_url()));
 }
 
@@ -288,8 +290,8 @@ TEST(TextEliderTest, SortedDisplayURLCompare) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    gfx::SortedDisplayURL url1(GURL(tests[i].a), std::wstring());
-    gfx::SortedDisplayURL url2(GURL(tests[i].b), std::wstring());
+    ui::SortedDisplayURL url1(GURL(tests[i].a), std::wstring());
+    ui::SortedDisplayURL url2(GURL(tests[i].b), std::wstring());
     EXPECT_EQ(tests[i].compare_result, url1.Compare(url2, collator.get()));
     EXPECT_EQ(-tests[i].compare_result, url2.Compare(url1, collator.get()));
   }
@@ -317,7 +319,7 @@ TEST(TextEliderTest, ElideString) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     std::wstring output;
     EXPECT_EQ(cases[i].result,
-              gfx::ElideString(cases[i].input, cases[i].max_len, &output));
+              ui::ElideString(cases[i].input, cases[i].max_len, &output));
     EXPECT_EQ(cases[i].output, output);
   }
 }
@@ -398,9 +400,9 @@ TEST(TextEliderTest, ElideRectangleString) {
   string16 output;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     EXPECT_EQ(cases[i].result,
-              gfx::ElideRectangleString(WideToUTF16(cases[i].input),
-                                        cases[i].max_rows, cases[i].max_cols,
-                                        &output));
+              ui::ElideRectangleString(WideToUTF16(cases[i].input),
+                                       cases[i].max_rows, cases[i].max_cols,
+                                       &output));
     EXPECT_EQ(cases[i].output, UTF16ToWide(output));
   }
 }
@@ -418,9 +420,9 @@ TEST(TextEliderTest, ElideRectangleWide16) {
       L"\x03a0\x03b1\x03b3\x03ba\x03cc\x03c3\x03bc\x03b9\x03bf\x03c2\x0020\n"
       L"\x0399\x03c3\x03c4\x03cc\x03c2"));
   string16 output;
-  EXPECT_TRUE(gfx::ElideRectangleString(str, 2, 4, &output));
+  EXPECT_TRUE(ui::ElideRectangleString(str, 2, 4, &output));
   EXPECT_EQ(out1, output);
-  EXPECT_FALSE(gfx::ElideRectangleString(str, 2, 12, &output));
+  EXPECT_FALSE(ui::ElideRectangleString(str, 2, 12, &output));
   EXPECT_EQ(out2, output);
 }
 
@@ -433,7 +435,8 @@ TEST(TextEliderTest, ElideRectangleWide32) {
       "\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C\n"
       "\xF0\x9D\x92\x9C \naaa\n..."));
   string16 output;
-  EXPECT_TRUE(gfx::ElideRectangleString(str, 3, 3, &output));
+  EXPECT_TRUE(ui::ElideRectangleString(str, 3, 3, &output));
   EXPECT_EQ(out, output);
 }
 
+}  // namespace ui

@@ -6,7 +6,7 @@
 #define VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_GTK_H_
 #pragma once
 
-#include "app/gtk_signal.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "views/controls/combobox/native_combobox_wrapper.h"
 #include "views/controls/native_control_gtk.h"
 

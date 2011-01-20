@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_GTK_UPDATE_RECOMMENDED_DIALOG_H_
 #pragma once
 
-#include "app/gtk_integers.h"
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
+#include "ui/base/gtk/gtk_integers.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;

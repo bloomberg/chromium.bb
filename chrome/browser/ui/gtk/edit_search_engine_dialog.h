@@ -9,10 +9,10 @@
 #include <gtk/gtk.h>
 #include <string>
 
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class AccessibleWidgetHelper;
 class EditSearchEngineController;

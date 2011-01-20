@@ -8,8 +8,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_signal.h"
-#include "app/gtk_signal_registrar.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
@@ -18,6 +16,8 @@
 #include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 
 class SkBitmap;
 class TabContents;
@@ -102,7 +102,7 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
   // the reference.
   GtkWidget* drag_icon_;
 
-  GtkSignalRegistrar signals_;
+  ui::GtkSignalRegistrar signals_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsDragSource);
 };

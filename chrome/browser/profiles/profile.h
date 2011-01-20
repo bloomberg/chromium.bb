@@ -91,7 +91,6 @@ class StatusTray;
 class TabRestoreService;
 class TemplateURLFetcher;
 class TemplateURLModel;
-class ThemeProvider;
 class TokenService;
 class TransportSecurityPersister;
 class URLRequestContextGetter;

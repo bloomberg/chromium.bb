@@ -28,7 +28,7 @@
     [self setOpaque:YES];
 }
 
-- (ThemeProvider*)themeProvider {
+- (ui::ThemeProvider*)themeProvider {
   id delegate = [self delegate];
   if (![delegate respondsToSelector:@selector(themeProvider)])
     return NULL;

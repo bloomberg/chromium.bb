@@ -6,17 +6,19 @@
 #define CHROME_BROWSER_UI_GTK_TABS_TAB_GTK_H_
 #pragma once
 
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 namespace gfx {
 class Path;
 }
 
+namespace ui {
 class ThemeProvider;
+}
 
 class TabGtk : public TabRendererGtk,
                public MessageLoopForUI::Observer {
@@ -76,7 +78,7 @@ class TabGtk : public TabRendererGtk,
     virtual bool HasAvailableDragActions() const = 0;
 
     // Returns the theme provider for icons and colors.
-    virtual ThemeProvider* GetThemeProvider() = 0;
+    virtual ui::ThemeProvider* GetThemeProvider() = 0;
 
    protected:
     virtual ~TabDelegate() {}

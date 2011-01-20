@@ -10,7 +10,6 @@
 #endif
 
 #include "app/resource_bundle.h"
-#include "app/theme_provider.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -18,6 +17,7 @@
 #include "gfx/favicon_size.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/theme_provider.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/app_icon_win.h"

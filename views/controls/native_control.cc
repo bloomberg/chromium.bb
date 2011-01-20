@@ -11,12 +11,12 @@
 #include <atlmisc.h>
 
 #include "app/l10n_util_win.h"
-#include "app/view_prop.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "gfx/native_theme_win.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
+#include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
 #include "views/background.h"
 #include "views/border.h"
@@ -24,7 +24,7 @@
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
-using app::ViewProp;
+using ui::ViewProp;
 
 namespace views {
 

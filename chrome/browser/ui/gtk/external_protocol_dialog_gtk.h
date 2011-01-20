@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_GTK_EXTERNAL_PROTOCOL_DIALOG_GTK_H_
 #pragma once
 
-#include "app/gtk_signal.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class TabContents;
 

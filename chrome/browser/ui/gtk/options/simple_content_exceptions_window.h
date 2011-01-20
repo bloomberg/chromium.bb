@@ -8,12 +8,12 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/remove_rows_table_model.h"
 #include "chrome/browser/ui/gtk/gtk_tree.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class SimpleContentExceptionsWindow
     : public gtk_tree::TableAdapter::Delegate {

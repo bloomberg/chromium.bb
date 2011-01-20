@@ -284,7 +284,7 @@ bool AutomationProxy::WaitForWindowCountToBecome(int count) {
 
 bool AutomationProxy::GetShowingAppModalDialog(
     bool* showing_app_modal_dialog,
-    MessageBoxFlags::DialogButton* button) {
+    ui::MessageBoxFlags::DialogButton* button) {
   if (!showing_app_modal_dialog || !button) {
     NOTREACHED();
     return false;
@@ -297,12 +297,12 @@ bool AutomationProxy::GetShowingAppModalDialog(
     return false;
   }
 
-  *button = static_cast<MessageBoxFlags::DialogButton>(button_int);
+  *button = static_cast<ui::MessageBoxFlags::DialogButton>(button_int);
   return true;
 }
 
 bool AutomationProxy::ClickAppModalDialogButton(
-    MessageBoxFlags::DialogButton button) {
+    ui::MessageBoxFlags::DialogButton button) {
   bool succeeded = false;
 
   if (!Send(new AutomationMsg_ClickAppModalDialogButton(

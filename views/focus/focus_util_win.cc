@@ -6,11 +6,11 @@
 
 #include <windowsx.h>
 
-#include "app/view_prop.h"
 #include "base/auto_reset.h"
+#include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
 
-using app::ViewProp;
+using ui::ViewProp;
 
 namespace views {
 

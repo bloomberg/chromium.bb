@@ -14,7 +14,7 @@
 
 - (NSColor*)strokeColor {
   BOOL isKey = [[self window] isKeyWindow];
-  ThemeProvider* themeProvider = [[self window] themeProvider];
+  ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   return themeProvider ? themeProvider->GetNSColor(
       isKey ? BrowserThemeProvider::COLOR_TOOLBAR_STROKE :
               BrowserThemeProvider::COLOR_TOOLBAR_STROKE_INACTIVE, true) :
@@ -23,7 +23,7 @@
 
 - (void)drawRect:(NSRect)rect {
   BOOL isKey = [[self window] isKeyWindow];
-  ThemeProvider* themeProvider = [[self window] themeProvider];
+  ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   if (!themeProvider)
     return;
 

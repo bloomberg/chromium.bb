@@ -10,8 +10,6 @@
 
 #include "gfx/native_widget_types.h"
 
-class ThemeProvider;
-
 namespace gfx {
 class Path;
 class Point;
@@ -20,7 +18,9 @@ class Rect;
 
 namespace ui {
 class Accelerator;
+class ThemeProvider;
 }
+using ui::ThemeProvider;
 
 namespace views {
 

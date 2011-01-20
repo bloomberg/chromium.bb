@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GTK_SIGNAL_REGISTRAR_H_
-#define APP_GTK_SIGNAL_REGISTRAR_H_
+#ifndef UI_BASE_GTK_GTK_SIGNAL_REGISTRAR_H_
+#define UI_BASE_GTK_GTK_SIGNAL_REGISTRAR_H_
 #pragma once
 
 #include <glib.h>
@@ -15,6 +15,8 @@
 typedef void (*GCallback) (void);
 typedef struct _GObject GObject;
 typedef struct _GtkWidget GtkWidget;
+
+namespace ui {
 
 // A class that ensures that callbacks don't run on stale owner objects. Similar
 // in spirit to NotificationRegistrar. Use as follows:
@@ -65,4 +67,6 @@ class GtkSignalRegistrar {
   DISALLOW_COPY_AND_ASSIGN(GtkSignalRegistrar);
 };
 
-#endif  // APP_GTK_SIGNAL_REGISTRAR_H_
+}  // namespace ui
+
+#endif  // UI_BASE_GTK_GTK_SIGNAL_REGISTRAR_H_

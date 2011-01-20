@@ -31,6 +31,7 @@
 
 using ui::OSExchangeData;
 using ui::OSExchangeDataProviderGtk;
+using ui::ActiveWindowWatcherX;
 
 namespace {
 

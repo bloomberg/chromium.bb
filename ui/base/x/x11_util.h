@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_X11_UTIL_H_
-#define APP_X11_UTIL_H_
+#ifndef UI_BASE_X_X11_UTIL_H_
+#define UI_BASE_X_X11_UTIL_H_
 #pragma once
 
 // This file declares utility functions for X11 (Linux only).
@@ -28,7 +28,7 @@ namespace gfx {
 class Rect;
 }
 
-namespace x11_util {
+namespace ui {
 
 // These functions use the GDK default display and this /must/ be called from
 // the UI thread. Thus, they don't support multiple displays.
@@ -178,6 +178,6 @@ bool ChangeWindowDesktop(XID window, XID destination);
 // to set your own error handlers.
 void SetDefaultX11ErrorHandlers();
 
-}  // namespace x11_util
+}  // namespace ui
 
-#endif  // APP_X11_UTIL_H_
+#endif  // UI_BASE_X_X11_UTIL_H_

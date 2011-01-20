@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/event_synthesis_gtk.h"
+#include "ui/base/gtk/event_synthesis_gtk.h"
 
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 
-namespace app {
+namespace ui {
 
 GdkEvent* SynthesizeKeyEvent(GdkWindow* window,
                              bool press, guint gdk_key, guint state) {
@@ -39,7 +39,7 @@ GdkEvent* SynthesizeKeyEvent(GdkWindow* window,
 }
 
 void SynthesizeKeyPressEvents(GdkWindow* window,
-                              ui::KeyboardCode key,
+                              KeyboardCode key,
                               bool control, bool shift, bool alt,
                               std::vector<GdkEvent*>* events) {
   if (control)
@@ -87,4 +87,4 @@ void SynthesizeKeyPressEvents(GdkWindow* window,
   }
 }
 
-}  // namespace app
+}  // namespace ui

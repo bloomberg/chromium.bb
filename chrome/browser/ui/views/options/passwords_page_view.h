@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "app/text_elider.h"
 #include "base/compiler_specific.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/ui/views/confirm_message_box_dialog.h"
 #include "chrome/browser/ui/views/options/options_page_view.h"
 #include "ui/base/models/table_model.h"
+#include "ui/base/text/text_elider.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/table/table_view.h"
@@ -102,13 +102,13 @@ class PasswordsTableModel : public TableModel,
   // Wraps the PasswordForm from the database and caches the display URL for
   // quick sorting.
   struct PasswordRow {
-    PasswordRow(const gfx::SortedDisplayURL& url,
+    PasswordRow(const ui::SortedDisplayURL& url,
                 webkit_glue::PasswordForm* password_form)
         : display_url(url), form(password_form) {
     }
 
     // Contains the URL that is displayed along with the
-    gfx::SortedDisplayURL display_url;
+    ui::SortedDisplayURL display_url;
 
     // The underlying PasswordForm. We own this.
     scoped_ptr<webkit_glue::PasswordForm> form;

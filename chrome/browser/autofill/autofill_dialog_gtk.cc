@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gtk_signal.h"
 #include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -38,6 +37,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 // Shows the editor for adding/editing an AutoFillProfile. If
 // |auto_fill_profile| is NULL, a new AutoFillProfile should be created.

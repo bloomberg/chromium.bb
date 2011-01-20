@@ -10,10 +10,10 @@
 
 #include <string>
 
-#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "grit/generated_resources.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 #if defined(TOOLKIT_VIEWS)
 namespace gfx {

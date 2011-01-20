@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_UI_GTK_FULLSCREEN_EXIT_BUBBLE_GTK_H_
 #pragma once
 
-#include "app/gtk_signal.h"
-#include "app/gtk_signal_registrar.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
+#include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 
 typedef struct _GtkFloatingContainer GtkFloatingContainer;
 typedef struct _GtkWidget GtkWidget;
@@ -45,7 +45,7 @@ class FullscreenExitBubbleGtk {
   // The timer that does the initial hiding of the exit bubble.
   base::OneShotTimer<FullscreenExitBubbleGtk> initial_delay_;
 
-  GtkSignalRegistrar signals_;
+  ui::GtkSignalRegistrar signals_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_FULLSCREEN_EXIT_BUBBLE_GTK_H_

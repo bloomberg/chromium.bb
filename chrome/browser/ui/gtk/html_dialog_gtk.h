@@ -9,12 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_tab_contents_delegate.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/size.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GtkWidget GtkWidget;
 

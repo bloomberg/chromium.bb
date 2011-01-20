@@ -498,7 +498,7 @@ void TabStrip::Init() {
 }
 
 void TabStrip::LoadNewTabButtonImage() {
-  ThemeProvider* tp = GetThemeProvider();
+  ui::ThemeProvider* tp = GetThemeProvider();
 
   // If we don't have a theme provider yet, it means we do not have a
   // root view, and are therefore in a test.

@@ -21,9 +21,12 @@ class ListValue;
 class Profile;
 class RenderViewHost;
 class TabContents;
-class ThemeProvider;
 class Value;
 struct ViewHostMsg_DomMessage_Params;
+
+namespace ui {
+class ThemeProvider;
+}
 
 // A DOMUI sets up the datasources and message handlers for a given HTML-based
 // UI. It is contained by a DOMUIManager.
@@ -125,7 +128,7 @@ class DOMUI {
   void CallJavascriptFunction(const std::wstring& function_name,
                               const std::vector<const Value*>& args);
 
-  ThemeProvider* GetThemeProvider() const;
+  ui::ThemeProvider* GetThemeProvider() const;
 
   // May be overridden by DOMUI's which do not have a tab contents.
   virtual Profile* GetProfile() const;

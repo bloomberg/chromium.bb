@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "app/message_box_flags.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/threading/platform_thread.h"
@@ -27,6 +26,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ui/base/message_box_flags.h"
 
 class BrowserProxy;
 class ExtensionProxy;
@@ -123,11 +123,11 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Returns whether an app modal dialog window is showing right now (i.e., a
   // javascript alert), and what buttons it contains.
   bool GetShowingAppModalDialog(bool* showing_app_modal_dialog,
-      MessageBoxFlags::DialogButton* button) WARN_UNUSED_RESULT;
+      ui::MessageBoxFlags::DialogButton* button) WARN_UNUSED_RESULT;
 
   // Simulates a click on a dialog button. Synchronous.
   bool ClickAppModalDialogButton(
-      MessageBoxFlags::DialogButton button) WARN_UNUSED_RESULT;
+      ui::MessageBoxFlags::DialogButton button) WARN_UNUSED_RESULT;
 
   // Block the thread until a modal dialog is displayed. Returns true on
   // success.

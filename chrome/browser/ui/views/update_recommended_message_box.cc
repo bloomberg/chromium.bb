@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 
 #include "app/l10n_util.h"
-#include "app/message_box_flags.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
@@ -14,6 +13,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/message_box_flags.h"
 #include "views/controls/message_box_view.h"
 #include "views/window/window.h"
 
@@ -47,15 +47,15 @@ bool UpdateRecommendedMessageBox::Accept() {
 }
 
 int UpdateRecommendedMessageBox::GetDialogButtons() const {
-  return MessageBoxFlags::DIALOGBUTTON_OK |
-         MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  return ui::MessageBoxFlags::DIALOGBUTTON_OK |
+         ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
 }
 
 std::wstring UpdateRecommendedMessageBox::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
-  DCHECK(button == MessageBoxFlags::DIALOGBUTTON_OK ||
-         button == MessageBoxFlags::DIALOGBUTTON_CANCEL);
-  return button == MessageBoxFlags::DIALOGBUTTON_OK ?
+    ui::MessageBoxFlags::DialogButton button) const {
+  DCHECK(button == ui::MessageBoxFlags::DIALOGBUTTON_OK ||
+         button == ui::MessageBoxFlags::DIALOGBUTTON_CANCEL);
+  return button == ui::MessageBoxFlags::DIALOGBUTTON_OK ?
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_RESTART_AND_UPDATE)) :
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_NOT_NOW));
 }
@@ -90,7 +90,8 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox(
   const string16 product_name = l10n_util::GetStringUTF16(kProductNameId);
   // Also deleted when the window closes.
   message_box_view_ = new MessageBoxView(
-      MessageBoxFlags::kFlagHasMessage | MessageBoxFlags::kFlagHasOKButton,
+      ui::MessageBoxFlags::kFlagHasMessage |
+          ui::MessageBoxFlags::kFlagHasOKButton,
       UTF16ToWide(l10n_util::GetStringFUTF16(IDS_UPDATE_RECOMMENDED,
                                              product_name)),
       std::wstring(),

@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/options/advanced_page_view.h"
 
 #include "app/l10n_util.h"
-#include "app/message_box_flags.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,6 +15,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/message_box_flags.h"
 #include "views/controls/message_box_view.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/scroll_view.h"
@@ -38,12 +38,12 @@ class ResetDefaultsConfirmBox : public views::DialogDelegate {
  protected:
   // views::DialogDelegate
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const {
+      ui::MessageBoxFlags::DialogButton button) const {
     switch (button) {
-      case MessageBoxFlags::DIALOGBUTTON_OK:
+      case ui::MessageBoxFlags::DIALOGBUTTON_OK:
         return UTF16ToWide(
             l10n_util::GetStringUTF16(IDS_OPTIONS_RESET_OKLABEL));
-      case MessageBoxFlags::DIALOGBUTTON_CANCEL:
+      case ui::MessageBoxFlags::DIALOGBUTTON_CANCEL:
         return UTF16ToWide(
             l10n_util::GetStringUTF16(IDS_OPTIONS_RESET_CANCELLABEL));
       default:
@@ -71,7 +71,8 @@ class ResetDefaultsConfirmBox : public views::DialogDelegate {
         IDS_OPTIONS_RESET_CONFIRM_BOX_WIDTH_CHARS);
     // Also deleted when the window closes.
     message_box_view_ = new MessageBoxView(
-        MessageBoxFlags::kFlagHasMessage | MessageBoxFlags::kFlagHasOKButton,
+        ui::MessageBoxFlags::kFlagHasMessage |
+            ui::MessageBoxFlags::kFlagHasOKButton,
         UTF16ToWide(
             l10n_util::GetStringUTF16(IDS_OPTIONS_RESET_MESSAGE)).c_str(),
         std::wstring(),

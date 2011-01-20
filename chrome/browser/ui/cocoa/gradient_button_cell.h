@@ -10,7 +10,9 @@
 
 #include "base/scoped_nsobject.h"
 
+namespace ui {
 class ThemeProvider;
+}
 
 // Base class for button cells for toolbar and bookmark bar.
 //
@@ -68,7 +70,7 @@ typedef enum {
 // Turn off theming.  Temporary work-around.
 - (void)setShouldTheme:(BOOL)shouldTheme;
 
-- (void)drawBorderAndFillForTheme:(ThemeProvider*)themeProvider
+- (void)drawBorderAndFillForTheme:(ui::ThemeProvider*)themeProvider
                       controlView:(NSView*)controlView
                         innerPath:(NSBezierPath*)innerPath
               showClickedGradient:(BOOL)showClickedGradient

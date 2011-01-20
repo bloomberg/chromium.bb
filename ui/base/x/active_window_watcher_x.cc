@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,9 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 
-#include "app/active_window_watcher_x.h"
+#include "ui/base/x/active_window_watcher_x.h"
+
+namespace ui {
 
 static Atom kNetActiveWindowAtom = None;
 
@@ -100,3 +102,5 @@ GdkFilterReturn ActiveWindowWatcherX::OnWindowXEvent(GdkXEvent* xevent,
 
   return GDK_FILTER_CONTINUE;
 }
+
+}  // namespace ui

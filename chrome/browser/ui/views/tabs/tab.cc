@@ -525,7 +525,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
   int offset = GetX(views::View::APPLY_MIRRORING_TRANSFORMATION) +
       background_offset_.x();
-  ThemeProvider* tp = GetThemeProvider();
+  ui::ThemeProvider* tp = GetThemeProvider();
   DCHECK(tp) << "Unable to get theme provider";
 
   SkBitmap* tab_bg = GetThemeProvider()->GetBitmapNamed(IDR_THEME_TOOLBAR);

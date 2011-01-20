@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/views/confirm_message_box_dialog.h"
 
 #include "app/l10n_util.h"
-#include "app/message_box_flags.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/message_box_flags.h"
 #include "views/standard_layout.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
@@ -65,8 +65,8 @@ ConfirmMessageBoxDialog::ConfirmMessageBoxDialog(
 }
 
 int ConfirmMessageBoxDialog::GetDialogButtons() const {
-  return MessageBoxFlags::DIALOGBUTTON_OK |
-         MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  return ui::MessageBoxFlags::DIALOGBUTTON_OK |
+         ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
 }
 
 std::wstring ConfirmMessageBoxDialog::GetWindowTitle() const {
@@ -74,11 +74,11 @@ std::wstring ConfirmMessageBoxDialog::GetWindowTitle() const {
 }
 
 std::wstring ConfirmMessageBoxDialog::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
+    ui::MessageBoxFlags::DialogButton button) const {
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK) {
     return confirm_label_;
   }
-  if (button == MessageBoxFlags::DIALOGBUTTON_CANCEL)
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_CANCEL)
     return reject_label_;
   return DialogDelegate::GetDialogButtonLabel(button);
 }

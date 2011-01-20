@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "app/text_elider.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #include "chrome/common/notification_service.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/text/text_elider.h"
 
 namespace {
 
@@ -105,8 +105,8 @@ void StatusBubbleGtk::SetStatusTextToURL() {
   }
 
   // TODO(tc): We don't actually use gfx::Font as the font in the status
-  // bubble.  We should extend gfx::ElideUrl to take some sort of pango font.
-  url_text_ = UTF16ToUTF8(gfx::ElideUrl(url_, gfx::Font(), desired_width,
+  // bubble.  We should extend ui::ElideUrl to take some sort of pango font.
+  url_text_ = UTF16ToUTF8(ui::ElideUrl(url_, gfx::Font(), desired_width,
                           UTF16ToWideHack(languages_)));
   SetStatusTextTo(url_text_);
 }

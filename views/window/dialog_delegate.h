@@ -6,10 +6,12 @@
 #define VIEWS_WINDOW_DIALOG_DELEGATE_H_
 #pragma once
 
-#include "app/message_box_flags.h"
+#include "ui/base/message_box_flags.h"
 #include "views/accessibility/accessibility_types.h"
 #include "views/window/dialog_client_view.h"
 #include "views/window/window_delegate.h"
+
+using ui::MessageBoxFlags;
 
 namespace views {
 
@@ -37,22 +39,24 @@ class DialogDelegate : public WindowDelegate {
   //
   // To use the extra button you need to override GetDialogButtons()
   virtual int GetDialogButtons() const {
-    return MessageBoxFlags::DIALOGBUTTON_OK |
-        MessageBoxFlags::DIALOGBUTTON_CANCEL;
+    return ui::MessageBoxFlags::DIALOGBUTTON_OK |
+        ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
   }
 
   // Returns whether accelerators are enabled on the button. This is invoked
   // when an accelerator is pressed, not at construction time. This
   // returns true.
-  virtual bool AreAcceleratorsEnabled(MessageBoxFlags::DialogButton button) {
+  virtual bool AreAcceleratorsEnabled(
+      ui::MessageBoxFlags::DialogButton button) {
     return true;
   }
 
   // Returns the label of the specified DialogButton.
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const {
-    // empty string results in defaults for MessageBoxFlags::DIALOGBUTTON_OK,
-    // MessageBoxFlags::DIALOGBUTTON_CANCEL.
+      ui::MessageBoxFlags::DialogButton button) const {
+    // empty string results in defaults for
+    // ui::MessageBoxFlags::DIALOGBUTTON_OK,
+    // ui::MessageBoxFlags::DIALOGBUTTON_CANCEL.
     return L"";
   }
 
@@ -69,21 +73,21 @@ class DialogDelegate : public WindowDelegate {
 
   // Returns the default dialog button. This should not be a mask as only
   // one button should ever be the default button.  Return
-  // MessageBoxFlags::DIALOGBUTTON_NONE if there is no default.  Default
-  // behavior is to return MessageBoxFlags::DIALOGBUTTON_OK or
-  // MessageBoxFlags::DIALOGBUTTON_CANCEL (in that order) if they are
-  // present, MessageBoxFlags::DIALOGBUTTON_NONE otherwise.
+  // ui::MessageBoxFlags::DIALOGBUTTON_NONE if there is no default.  Default
+  // behavior is to return ui::MessageBoxFlags::DIALOGBUTTON_OK or
+  // ui::MessageBoxFlags::DIALOGBUTTON_CANCEL (in that order) if they are
+  // present, ui::MessageBoxFlags::DIALOGBUTTON_NONE otherwise.
   virtual int GetDefaultDialogButton() const;
 
   // Returns whether the specified dialog button is enabled.
   virtual bool IsDialogButtonEnabled(
-      MessageBoxFlags::DialogButton button) const {
+      ui::MessageBoxFlags::DialogButton button) const {
     return true;
   }
 
   // Returns whether the specified dialog button is visible.
   virtual bool IsDialogButtonVisible(
-      MessageBoxFlags::DialogButton button) const {
+      ui::MessageBoxFlags::DialogButton button) const {
     return true;
   }
 

@@ -9,18 +9,21 @@
 #include <map>
 #include <vector>
 
-#include "app/gtk_integers.h"
-#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "gfx/color_utils.h"
+#include "ui/base/gtk/gtk_integers.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class CairoCachedSurface;
-class GtkSignalRegistrar;
 class Profile;
+
+namespace ui {
+class GtkSignalRegistrar;
+}
 
 typedef struct _GdkDisplay GdkDisplay;
 typedef struct _GdkEventExpose GdkEventExpose;
@@ -72,7 +75,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // Whether we should use the GTK system theme.
   bool UseGtkTheme() const;
 
-  // A wrapper around ThemeProvider::GetColor, transforming the result to a
+  // A wrapper around ui::ThemeProvider::GetColor, transforming the result to a
   // GdkColor.
   GdkColor GetGdkColor(int id) const;
 
@@ -256,7 +259,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   std::vector<GtkWidget*> chrome_buttons_;
 
   // Tracks all the signals we have connected to on various widgets.
-  scoped_ptr<GtkSignalRegistrar> signals_;
+  scoped_ptr<ui::GtkSignalRegistrar> signals_;
 
   // Tints and colors calculated by LoadGtkValues() that are given to the
   // caller while |use_gtk_| is true.

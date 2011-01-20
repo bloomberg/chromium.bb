@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_X11_UTIL_INTERNAL_H_
-#define APP_X11_UTIL_INTERNAL_H_
+#ifndef UI_BASE_X_X11_UTIL_INTERNAL_H_
+#define UI_BASE_X_X11_UTIL_INTERNAL_H_
 #pragma once
 
 // This file declares utility functions for X11 (Linux only).
@@ -19,7 +19,8 @@ extern "C" {
 #include <X11/extensions/Xrender.h>
 }
 
-namespace x11_util {
+namespace ui {
+
   // --------------------------------------------------------------------------
   // NOTE: these functions cache the results and must be called from the UI
   // thread.
@@ -41,6 +42,7 @@ namespace x11_util {
 
   // Returns a string suitable for logging the error event.
   std::string GetErrorEventDescription(Display* dpy, XErrorEvent* error_event);
-};
 
-#endif  // APP_X11_UTIL_INTERNAL_H_
+}  // namespace ui
+
+#endif  // UI_BASE_X_X11_UTIL_INTERNAL_H_

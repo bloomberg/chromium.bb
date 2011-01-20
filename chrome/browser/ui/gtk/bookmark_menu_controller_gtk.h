@@ -8,13 +8,13 @@
 
 #include <map>
 
-#include "app/gtk_integers.h"
-#include "app/gtk_signal.h"
-#include "app/gtk_signal_registrar.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
+#include "ui/base/gtk/gtk_integers.h"
+#include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;
@@ -137,7 +137,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   scoped_ptr<BookmarkContextMenuController> context_menu_controller_;
   scoped_ptr<MenuGtk> context_menu_;
 
-  GtkSignalRegistrar signals_;
+  ui::GtkSignalRegistrar signals_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkMenuController);
 };

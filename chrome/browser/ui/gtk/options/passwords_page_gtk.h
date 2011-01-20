@@ -11,10 +11,10 @@
 #include <string>
 #include <vector>
 
-#include "app/gtk_signal.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/notification_observer.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class Profile;
 

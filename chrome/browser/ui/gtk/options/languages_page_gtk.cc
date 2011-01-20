@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gtk_signal.h"
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_common.h"
 #include "grit/generated_resources.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 namespace {
 

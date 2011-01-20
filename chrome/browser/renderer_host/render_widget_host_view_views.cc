@@ -8,7 +8,6 @@
 #include <string>
 
 #include "app/l10n_util.h"
-#include "app/x11_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -25,6 +24,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
+#include "ui/base/x/x11_util.h"
 #include "views/event.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_gtk.h"
@@ -328,7 +328,7 @@ BackingStore* RenderWidgetHostViewViews::AllocBackingStore(
   if (!nview)
     return NULL;
   return new BackingStoreX(host_, size,
-                           x11_util::GetVisualFromGtkWidget(nview),
+                           ui::GetVisualFromGtkWidget(nview),
                            gtk_widget_get_visual(nview)->depth);
 }
 
@@ -395,7 +395,7 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
         // In the common case, use XCopyArea. We don't draw more than once, so
         // we don't need to double buffer.
         backing_store->XShowRect(origin,
-            paint_rect, x11_util::GetX11WindowFromGdkWindow(window));
+            paint_rect, ui::GetX11WindowFromGdkWindow(window));
       } else {
         // If the grey blend is showing, we make two drawing calls. Use double
         // buffering to prevent flicker. Use CairoShowRect because XShowRect

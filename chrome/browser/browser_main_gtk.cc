@@ -8,8 +8,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "app/x11_util.h"
-#include "app/x11_util_internal.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "chrome/browser/browser_list.h"
@@ -20,6 +18,8 @@
 #include "chrome/browser/zygote_host_linux.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/result_codes.h"
+#include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_util_internal.h"
 
 #if defined(USE_NSS)
 #include "base/nss_util.h"
@@ -36,7 +36,7 @@ bool g_in_x11_io_error_handler = false;
 
 int BrowserX11ErrorHandler(Display* d, XErrorEvent* error) {
   if (!g_in_x11_io_error_handler)
-    LOG(ERROR) << x11_util::GetErrorEventDescription(d, error);
+    LOG(ERROR) << ui::GetErrorEventDescription(d, error);
   return 0;
 }
 
@@ -128,9 +128,7 @@ void PrepareRestartOnCrashEnviroment(const CommandLine &parsed_command_line) {
 void SetBrowserX11ErrorHandlers() {
   // Set up error handlers to make sure profile gets written if X server
   // goes away.
-  x11_util::SetX11ErrorHandlers(
-      BrowserX11ErrorHandler,
-      BrowserX11IOErrorHandler);
+  ui::SetX11ErrorHandlers(BrowserX11ErrorHandler, BrowserX11IOErrorHandler);
 }
 
 #if !defined(OS_CHROMEOS)

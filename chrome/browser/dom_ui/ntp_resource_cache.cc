@@ -9,7 +9,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/theme_provider.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/ref_counted_memory.h"
@@ -41,6 +40,7 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/animation.h"
+#include "ui/base/theme_provider.h"
 
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/bookmark_bar_view.h"
@@ -88,7 +88,7 @@ std::string SkColorToRGBAString(SkColor color) {
 
 // Get the CSS string for the background position on the new tab page for the
 // states when the bar is attached or detached.
-std::string GetNewTabBackgroundCSS(const ThemeProvider* theme_provider,
+std::string GetNewTabBackgroundCSS(const ui::ThemeProvider* theme_provider,
                                    bool bar_attached) {
   int alignment;
   theme_provider->GetDisplayProperty(
@@ -129,7 +129,8 @@ std::string GetNewTabBackgroundCSS(const ThemeProvider* theme_provider,
 
 // How the background image on the new tab page should be tiled (see tiling
 // masks in browser_theme_provider.h).
-std::string GetNewTabBackgroundTilingCSS(const ThemeProvider* theme_provider) {
+std::string GetNewTabBackgroundTilingCSS(
+    const ui::ThemeProvider* theme_provider) {
   int repeat_mode;
   theme_provider->GetDisplayProperty(
       BrowserThemeProvider::NTP_BACKGROUND_TILING, &repeat_mode);
@@ -415,7 +416,7 @@ void NTPResourceCache::CreateNewTabHTML() {
 }
 
 void NTPResourceCache::CreateNewTabIncognitoCSS() {
-  ThemeProvider* tp = profile_->GetThemeProvider();
+  ui::ThemeProvider* tp = profile_->GetThemeProvider();
   DCHECK(tp);
 
   // Get our theme colors
@@ -451,7 +452,7 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
 }
 
 void NTPResourceCache::CreateNewTabCSS() {
-  ThemeProvider* tp = profile_->GetThemeProvider();
+  ui::ThemeProvider* tp = profile_->GetThemeProvider();
   DCHECK(tp);
 
   // Get our theme colors

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 
-#include "app/text_elider.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -14,6 +13,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "ipc/ipc_message.h"
+#include "ui/base/text/text_elider.h"
 
 namespace {
 
@@ -43,11 +43,11 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
   // We trim the various parts of the message dialog because otherwise we can
   // overflow the message dialog (and crash/hang the GTK+ version).
   string16 elided_text;
-  gfx::ElideRectangleString(WideToUTF16(message_text),
-       kMessageTextMaxRows, kMessageTextMaxCols, &elided_text);
+  ui::ElideRectangleString(WideToUTF16(message_text),
+      kMessageTextMaxRows, kMessageTextMaxCols, &elided_text);
   message_text_ = UTF16ToWide(elided_text);
-  gfx::ElideString(default_prompt_text, kDefaultPromptTextSize,
-                   &default_prompt_text_);
+  ui::ElideString(default_prompt_text, kDefaultPromptTextSize,
+                  &default_prompt_text_);
 
   DCHECK((tab_contents_ != NULL) != (extension_host_ != NULL));
   InitNotifications();

@@ -8,11 +8,11 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/task.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class TabContents;
 typedef struct _GdkColor GdkColor;

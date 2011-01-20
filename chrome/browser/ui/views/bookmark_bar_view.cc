@@ -11,7 +11,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/text_elider.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -43,6 +42,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/text/text_elider.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_item_view.h"
@@ -144,7 +144,7 @@ static std::wstring CreateToolTipForURLAndTitle(const gfx::Point& screen_loc,
   if (!title.empty()) {
     std::wstring localized_title = title;
     base::i18n::AdjustStringForLocaleDirection(&localized_title);
-    result.append(UTF16ToWideHack(gfx::ElideText(WideToUTF16Hack(
+    result.append(UTF16ToWideHack(ui::ElideText(WideToUTF16Hack(
         localized_title), tt_font, max_width, false)));
   }
 
@@ -159,7 +159,7 @@ static std::wstring CreateToolTipForURLAndTitle(const gfx::Point& screen_loc,
     // "/http://www.yahoo.com" when rendered, as is, in an RTL context since
     // the Unicode BiDi algorithm puts certain characters on the left by
     // default.
-    string16 elided_url(gfx::ElideUrl(url, tt_font, max_width, languages));
+    string16 elided_url(ui::ElideUrl(url, tt_font, max_width, languages));
     elided_url = base::i18n::GetDisplayStringInLTRDirectionality(elided_url);
     result.append(UTF16ToWideHack(elided_url));
   }
@@ -1577,7 +1577,7 @@ void BookmarkBarView::StopThrobbing(bool immediate) {
 
 void BookmarkBarView::UpdateColors() {
   // We don't always have a theme provider (ui tests, for example).
-  const ThemeProvider* theme_provider = GetThemeProvider();
+  const ui::ThemeProvider* theme_provider = GetThemeProvider();
   if (!theme_provider)
     return;
   SkColor text_color =

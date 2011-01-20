@@ -42,7 +42,7 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
   virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const;
   virtual int GetHorizontalTabStripVerticalOffset(bool restored) const;
   virtual void UpdateThrobber(bool running);
-  virtual ThemeProvider* GetThemeProviderForFrame() const;
+  virtual ui::ThemeProvider* GetThemeProviderForFrame() const;
   virtual bool AlwaysUseNativeFrame() const;
   virtual views::View* GetFrameView() const;
   virtual void TabStripDisplayModeChanged();
@@ -63,8 +63,8 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
   virtual LRESULT OnNCActivate(BOOL active);
   virtual LRESULT OnNCHitTest(const CPoint& pt);
   virtual void OnWindowPosChanged(WINDOWPOS* window_pos);
-  virtual ThemeProvider* GetThemeProvider() const;
-  virtual ThemeProvider* GetDefaultThemeProvider() const;
+  virtual ui::ThemeProvider* GetThemeProvider() const;
+  virtual ui::ThemeProvider* GetDefaultThemeProvider() const;
   virtual void OnScreenReaderDetected();
 
   // Overridden from views::Window:

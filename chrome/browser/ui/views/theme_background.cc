@@ -30,7 +30,7 @@ void ThemeBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
       background = rb.GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
   } else {
     Profile* profile = browser_view_->browser()->profile();
-    ThemeProvider* theme = profile->GetThemeProvider();
+    ui::ThemeProvider* theme = profile->GetThemeProvider();
     if (browser_view_->IsActive()) {
       background = theme->GetBitmapNamed(
           profile->IsOffTheRecord() ?

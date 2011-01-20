@@ -9,8 +9,8 @@
 #include <vector>
 #include <string>
 
-#include "app/gtk_integers.h"
 #include "base/string16.h"
+#include "ui/base/gtk/gtk_integers.h"
 
 class BookmarkModel;
 class BookmarkNode;

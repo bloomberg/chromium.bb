@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gfx/font_util.h"
+#include "ui/base/l10n/l10n_font_util.h"
 
 #include "app/l10n_util.h"
 #include "base/logging.h"
@@ -10,7 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "gfx/font.h"
 
-namespace gfx {
+namespace ui {
 
 int GetLocalizedContentsWidthForFont(int col_resource_id,
                                      const gfx::Font& font) {
@@ -37,4 +37,4 @@ gfx::Size GetLocalizedContentsSizeForFont(int col_resource_id,
                    GetLocalizedContentsHeightForFont(row_resource_id, font));
 }
 
-}  // namespace gfx
+}  // namespace ui

@@ -7,7 +7,6 @@
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
 #include "app/l10n_util.h"
-#include "app/text_elider.h"
 #include "app/resource_bundle.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -22,6 +21,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/registry_controlled_domain.h"
+#include "ui/base/text/text_elider.h"
 
 const int BackForwardMenuModel::kMaxHistoryItems = 12;
 const int BackForwardMenuModel::kMaxChapterStops = 5;
@@ -82,7 +82,7 @@ string16 BackForwardMenuModel::GetLabelAt(int index) const {
   string16 menu_text(entry->GetTitleForDisplay(
       GetTabContents()->profile()->GetPrefs()->
           GetString(prefs::kAcceptLanguages)));
-  menu_text = gfx::ElideText(menu_text, gfx::Font(), kMaxWidth, false);
+  menu_text = ui::ElideText(menu_text, gfx::Font(), kMaxWidth, false);
 
   for (size_t i = menu_text.find('&'); i != string16::npos;
        i = menu_text.find('&', i + 2)) {

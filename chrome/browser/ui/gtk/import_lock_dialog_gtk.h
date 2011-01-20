@@ -8,9 +8,9 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class ImporterHost;
 

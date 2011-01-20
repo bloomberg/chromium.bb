@@ -1,7 +1,7 @@
 include_rules = [
-  "+app/gfx",  # Font's are here.
   "+app",  # win_util::FormatSystemTime/Date.
   "+base",
   "+gfx",
   "+skia/ext",
+  "+ui/base/text",
 ]

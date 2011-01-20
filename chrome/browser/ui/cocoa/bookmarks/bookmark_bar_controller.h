@@ -386,7 +386,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (int64)nodeIdFromMenuTag:(int32)tag;
 - (int32)menuTagFromNodeId:(int64)menuid;
 - (const BookmarkNode*)nodeFromMenuItem:(id)sender;
-- (void)updateTheme:(ThemeProvider*)themeProvider;
+- (void)updateTheme:(ui::ThemeProvider*)themeProvider;
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;
 - (BOOL)isEventAnExitEvent:(NSEvent*)event;
 - (BOOL)shrinkOrHideView:(NSView*)view forMaxX:(CGFloat)maxViewX;

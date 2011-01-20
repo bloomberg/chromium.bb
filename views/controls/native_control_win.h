@@ -12,7 +12,7 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/widget/child_window_message_processor.h"
 
-namespace app {
+namespace ui {
 class ViewProp;
 }
 
@@ -73,7 +73,7 @@ class NativeControlWin : public ChildWindowMessageProcessor,
   DWORD GetAdditionalRTLStyle() const;
 
  private:
-  typedef ScopedVector<app::ViewProp> ViewProps;
+  typedef ScopedVector<ui::ViewProp> ViewProps;
 
   // Called by the containing WidgetWin when a message of type WM_CTLCOLORBTN or
   // WM_CTLCOLORSTATIC is sent from the HWND created by an object dreived from

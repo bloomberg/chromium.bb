@@ -6,7 +6,6 @@
 
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
-#include "app/text_elider.h"
 #include "base/mac/mac_util.h"
 #include "base/metrics/histogram.h"
 #include "base/string16.h"
@@ -27,6 +26,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/text/text_elider.h"
 
 namespace {
 
@@ -87,7 +87,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 @interface DownloadItemController (Private)
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
-- (void)updateTheme:(ThemeProvider*)themeProvider;
+- (void)updateTheme:(ui::ThemeProvider*)themeProvider;
 - (void)setState:(DownoadItemState)state;
 @end
 
@@ -191,15 +191,15 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
       // Elide giant extensions.
       if (extension.length() > kFileNameMaxLength / 2) {
         std::wstring wide_extension;
-        gfx::ElideString(UTF8ToWide(extension), kFileNameMaxLength / 2,
-                       &wide_extension);
+        ui::ElideString(UTF8ToWide(extension), kFileNameMaxLength / 2,
+                        &wide_extension);
         extension = WideToUTF8(wide_extension);
       }
 
       // Rebuild the filename.extension.
       std::wstring rootname = UTF8ToWide(filename.RemoveExtension().value());
-      gfx::ElideString(rootname, kFileNameMaxLength - extension.length(),
-                       &rootname);
+      ui::ElideString(rootname, kFileNameMaxLength - extension.length(),
+                      &rootname);
       std::string new_filename = WideToUTF8(rootname);
       if (extension.length())
         new_filename += std::string(".") + extension;
@@ -269,7 +269,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 }
 
 - (void)updateToolTip {
-  string16 elidedFilename = gfx::ElideFilename(
+  string16 elidedFilename = ui::ElideFilename(
       [self download]->GetFileNameToReportUser(),
       gfx::Font(), kToolTipMaxWidth);
   [progressView_ setToolTip:base::SysUTF16ToNSString(elidedFilename)];
@@ -306,14 +306,14 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 // Called after the current theme has changed.
 - (void)themeDidChangeNotification:(NSNotification*)aNotification {
-  ThemeProvider* themeProvider =
-      static_cast<ThemeProvider*>([[aNotification object] pointerValue]);
+  ui::ThemeProvider* themeProvider =
+      static_cast<ui::ThemeProvider*>([[aNotification object] pointerValue]);
   [self updateTheme:themeProvider];
 }
 
 // Adapt appearance to the current theme. Called after theme changes and before
 // this is shown for the first time.
-- (void)updateTheme:(ThemeProvider*)themeProvider {
+- (void)updateTheme:(ui::ThemeProvider*)themeProvider {
   NSColor* color =
       themeProvider->GetNSColor(BrowserThemeProvider::COLOR_TAB_TEXT, true);
   [dangerousDownloadLabel_ setTextColor:color];

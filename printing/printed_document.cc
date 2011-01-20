@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "app/text_elider.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
@@ -25,6 +24,7 @@
 #include "printing/printed_page.h"
 #include "printing/units.h"
 #include "skia/ext/platform_device.h"
+#include "ui/base/text/text_elider.h"
 
 namespace {
 
@@ -225,10 +225,10 @@ void PrintedDocument::PrintHeaderFooter(gfx::NativeDrawingContext context,
 
   if (string_size.width() > bounding.width()) {
     if (line == PageOverlays::kUrl) {
-      output = UTF16ToWideHack(gfx::ElideUrl(url(), font, bounding.width(),
-                                             std::wstring()));
+      output = UTF16ToWideHack(ui::ElideUrl(url(), font, bounding.width(),
+                                            std::wstring()));
     } else {
-      output = UTF16ToWideHack(gfx::ElideText(WideToUTF16Hack(output),
+      output = UTF16ToWideHack(ui::ElideText(WideToUTF16Hack(output),
           font, bounding.width(), false));
     }
   }

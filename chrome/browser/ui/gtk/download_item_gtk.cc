@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/text_elider.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/metrics/histogram.h"
@@ -35,6 +34,7 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/text/text_elider.h"
 
 namespace {
 
@@ -519,7 +519,7 @@ void DownloadItemGtk::LoadIcon() {
 }
 
 void DownloadItemGtk::UpdateTooltip() {
-  string16 elided_filename = gfx::ElideFilename(
+  string16 elided_filename = ui::ElideFilename(
       get_download()->GetFileNameToReportUser(),
       gfx::Font(), kTooltipMaxWidth);
   gtk_widget_set_tooltip_text(body_.get(),
@@ -531,7 +531,7 @@ void DownloadItemGtk::UpdateNameLabel() {
   // use gfx::Font() to draw the text. This is why we need to add so
   // much padding when we set the size request. We need to either use gfx::Font
   // or somehow extend TextElider.
-  string16 elided_filename = gfx::ElideFilename(
+  string16 elided_filename = ui::ElideFilename(
       get_download()->GetFileNameToReportUser(),
       gfx::Font(), kTextWidth);
 
@@ -582,7 +582,7 @@ void DownloadItemGtk::UpdateDangerWarning() {
       dangerous_warning =
           l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
     } else {
-      string16 elided_filename = gfx::ElideFilename(
+      string16 elided_filename = ui::ElideFilename(
           get_download()->target_name(), gfx::Font(), kTextWidth);
 
       dangerous_warning =

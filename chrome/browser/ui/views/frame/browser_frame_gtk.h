@@ -33,14 +33,14 @@ class BrowserFrameGtk : public BrowserFrame,
   virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const;
   virtual int GetHorizontalTabStripVerticalOffset(bool restored) const;
   virtual void UpdateThrobber(bool running);
-  virtual ThemeProvider* GetThemeProviderForFrame() const;
+  virtual ui::ThemeProvider* GetThemeProviderForFrame() const;
   virtual bool AlwaysUseNativeFrame() const;
   virtual views::View* GetFrameView() const;
   virtual void TabStripDisplayModeChanged();
 
   // Overridden from views::Widget:
-  virtual ThemeProvider* GetThemeProvider() const;
-  virtual ThemeProvider* GetDefaultThemeProvider() const;
+  virtual ui::ThemeProvider* GetThemeProvider() const;
+  virtual ui::ThemeProvider* GetDefaultThemeProvider() const;
   virtual void IsActiveChanged();
   virtual void SetInitialFocus();
 

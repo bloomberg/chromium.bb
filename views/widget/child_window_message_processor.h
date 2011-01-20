@@ -8,7 +8,7 @@
 
 #include <windows.h>
 
-namespace app {
+namespace ui {
 class ViewProp;
 }
 
@@ -23,7 +23,7 @@ class ChildWindowMessageProcessor {
  public:
   // Registers |processor| for |hwnd|. The caller takes ownership of the
   // returned object.
-  static app::ViewProp* Register(HWND hwnd,
+  static ui::ViewProp* Register(HWND hwnd,
                                  ChildWindowMessageProcessor* processor);
 
   // Returns the ChildWindowMessageProcessor for |hwnd|, NULL if there isn't

@@ -7,7 +7,6 @@
 #include <dwmapi.h>
 #include <shellapi.h>
 
-#include "app/theme_provider.h"
 #include "app/win/win_util.h"
 #include "base/i18n/rtl.h"
 #include "base/win/windows_version.h"
@@ -16,6 +15,7 @@
 #include "gfx/icon_util.h"
 #include "gfx/path.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
+#include "ui/base/theme_provider.h"
 #include "ui/base/win/hwnd_util.h"
 #include "views/accessibility/view_accessibility.h"
 #include "views/widget/root_view.h"
@@ -538,7 +538,7 @@ gfx::NativeWindow WindowWin::GetNativeWindow() const {
 }
 
 bool WindowWin::ShouldUseNativeFrame() const {
-  ThemeProvider* tp = GetThemeProvider();
+  ui::ThemeProvider* tp = GetThemeProvider();
   if (!tp)
     return ui::ShouldUseVistaFrame();
   return tp->ShouldUseNativeFrame();

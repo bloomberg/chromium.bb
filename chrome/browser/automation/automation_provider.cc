@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "app/message_box_flags.h"
 #include "base/callback.h"
 #include "base/debug/trace_event.h"
 #include "base/file_path.h"

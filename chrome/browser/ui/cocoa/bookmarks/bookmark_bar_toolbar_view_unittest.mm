@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/theme_provider.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
@@ -16,6 +15,7 @@
 #include "testing/platform_test.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/theme_provider.h"
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -23,7 +23,7 @@ using ::testing::Return;
 using ::testing::SetArgumentPointee;
 
 // When testing the floating drawing, we need to have a source of theme data.
-class MockThemeProvider : public ThemeProvider {
+class MockThemeProvider : public ui::ThemeProvider {
  public:
   // Cross platform methods
   MOCK_METHOD1(Init, void(Profile*));
@@ -58,11 +58,11 @@ class MockThemeProvider : public ThemeProvider {
     NSObject<BookmarkBarState, BookmarkBarToolbarViewController> {
  @private
   int currentTabContentsHeight_;
-  ThemeProvider* themeProvider_;
+  ui::ThemeProvider* themeProvider_;
   bookmarks::VisualState visualState_;
 }
 @property (nonatomic, assign) int currentTabContentsHeight;
-@property (nonatomic, assign) ThemeProvider* themeProvider;
+@property (nonatomic, assign) ui::ThemeProvider* themeProvider;
 @property (nonatomic, assign) bookmarks::VisualState visualState;
 
 // |BookmarkBarState| protocol:

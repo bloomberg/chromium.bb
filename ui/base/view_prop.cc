@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/view_prop.h"
+#include "ui/base/view_prop.h"
 
 #include <set>
 
-namespace app {
+namespace ui {
 
 // Maints the actual view, key and data.
 class ViewProp::Data : public base::RefCounted<ViewProp::Data> {
@@ -100,4 +100,4 @@ const char* ViewProp::Key() const {
   return data_->key();
 }
 
-}  // namespace app
+}  // namespace ui

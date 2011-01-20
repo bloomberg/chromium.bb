@@ -17,10 +17,10 @@ extern "C" {
 #include "app/gfx/gl/gl_context_osmesa.h"
 #include "app/gfx/gl/gl_context_stub.h"
 #include "app/gfx/gl/gl_implementation.h"
-#include "app/x11_util.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "ui/base/x/x11_util.h"
 
 namespace {
 
@@ -420,14 +420,14 @@ bool OSMesaViewGLContext::SwapBuffers() {
   // Copy the frame into the pixmap.
   XWindowAttributes attributes;
   XGetWindowAttributes(display, window_, &attributes);
-  x11_util::PutARGBImage(display,
-                         attributes.visual,
-                         attributes.depth,
-                         pixmap_,
-                         pixmap_graphics_context_,
-                         static_cast<const uint8*>(osmesa_context_.buffer()),
-                         size.width(),
-                         size.height());
+  ui::PutARGBImage(display,
+                   attributes.visual,
+                   attributes.depth,
+                   pixmap_,
+                   pixmap_graphics_context_,
+                   static_cast<const uint8*>(osmesa_context_.buffer()),
+                   size.width(),
+                   size.height());
 
   // Copy the pixmap to the window.
   XCopyArea(display,

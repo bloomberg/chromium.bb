@@ -245,7 +245,7 @@ class TabContents;
 - (void)updateSidebarForContents:(TabContents*)contents;
 
 // Gets the current theme provider.
-- (ThemeProvider*)themeProvider;
+- (ui::ThemeProvider*)themeProvider;
 
 // Gets the window style.
 - (ThemedWindowStyle)themedWindowStyle;

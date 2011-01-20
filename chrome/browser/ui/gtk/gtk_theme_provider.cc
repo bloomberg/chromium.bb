@@ -8,7 +8,6 @@
 
 #include <set>
 
-#include "app/gtk_signal_registrar.h"
 #include "app/resource_bundle.h"
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
@@ -38,6 +37,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 
 namespace {
 
@@ -251,7 +251,7 @@ GtkThemeProvider::GtkThemeProvider()
     : BrowserThemeProvider(),
       fake_window_(gtk_window_new(GTK_WINDOW_TOPLEVEL)),
       fake_frame_(chrome_gtk_frame_new()),
-      signals_(new GtkSignalRegistrar),
+      signals_(new ui::GtkSignalRegistrar),
       fullscreen_icon_set_(NULL) {
   fake_label_.Own(gtk_label_new(""));
   fake_entry_.Own(gtk_entry_new());
@@ -323,7 +323,7 @@ bool GtkThemeProvider::HasCustomImage(int id) const {
 
 void GtkThemeProvider::InitThemesFor(NotificationObserver* observer) {
   observer->Observe(NotificationType::BROWSER_THEME_CHANGED,
-                    Source<ThemeProvider>(this),
+                    Source<ui::ThemeProvider>(this),
                     NotificationService::NoDetails());
 }
 

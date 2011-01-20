@@ -174,23 +174,23 @@ TEST_F(NPAPIVisiblePluginTester, AlertInWindowMessage) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
 
   bool modal_dialog_showing = false;
-  MessageBoxFlags::DialogButton available_buttons;
+  ui::MessageBoxFlags::DialogButton available_buttons;
   ASSERT_TRUE(automation()->WaitForAppModalDialog());
   ASSERT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
       &available_buttons));
   ASSERT_TRUE(modal_dialog_showing);
-  ASSERT_NE((MessageBoxFlags::DIALOGBUTTON_OK & available_buttons), 0);
+  ASSERT_NE((ui::MessageBoxFlags::DIALOGBUTTON_OK & available_buttons), 0);
   ASSERT_TRUE(automation()->ClickAppModalDialogButton(
-      MessageBoxFlags::DIALOGBUTTON_OK));
+      ui::MessageBoxFlags::DIALOGBUTTON_OK));
 
   modal_dialog_showing = false;
   ASSERT_TRUE(automation()->WaitForAppModalDialog());
   ASSERT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
       &available_buttons));
   ASSERT_TRUE(modal_dialog_showing);
-  ASSERT_NE((MessageBoxFlags::DIALOGBUTTON_OK & available_buttons), 0);
+  ASSERT_NE((ui::MessageBoxFlags::DIALOGBUTTON_OK & available_buttons), 0);
   ASSERT_TRUE(automation()->ClickAppModalDialogButton(
-      MessageBoxFlags::DIALOGBUTTON_OK));
+      ui::MessageBoxFlags::DIALOGBUTTON_OK));
 }
 
 TEST_F(NPAPIVisiblePluginTester, VerifyNPObjectLifetimeTest) {

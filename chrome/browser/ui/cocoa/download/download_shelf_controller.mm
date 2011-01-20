@@ -161,7 +161,8 @@ const NSTimeInterval kAutoCloseDelaySeconds = 5;
   NSColor* color = nil;
 
   if (bridge_.get() && bridge_->browser() && bridge_->browser()->profile()) {
-    ThemeProvider* provider = bridge_->browser()->profile()->GetThemeProvider();
+    ui::ThemeProvider* provider =
+        bridge_->browser()->profile()->GetThemeProvider();
 
     color =
         provider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT, false);

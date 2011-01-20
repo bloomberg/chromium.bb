@@ -6,7 +6,6 @@
 
 #include "chrome/browser/dom_ui/options/advanced_options_utils.h"
 
-#include "app/gtk_signal.h"
 #include "base/file_util.h"
 #include "base/environment.h"
 #include "base/process_util.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/process_watcher.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 // Command used to configure GNOME proxy settings. The command was renamed
 // in January 2009, so both are used to work on both old and new systems.

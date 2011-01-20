@@ -83,10 +83,10 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "app/view_prop.h"
 #include "app/win/win_util.h"
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"
+#include "ui/base/view_prop.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/ui/views/accelerator_table_gtk.h"
 #include "views/window/hit_test.h"
@@ -179,7 +179,7 @@ BookmarkExtensionBackground::BookmarkExtensionBackground(
 
 void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
                                         views::View* view) const {
-  ThemeProvider* tp = host_view_->GetThemeProvider();
+  ui::ThemeProvider* tp = host_view_->GetThemeProvider();
   int toolbar_overlap = host_view_->GetToolbarOverlap();
   // The client edge is drawn below the toolbar bounds.
   if (toolbar_overlap)
@@ -490,7 +490,7 @@ BrowserView* BrowserView::GetBrowserViewForNativeWindow(
 #if defined(OS_WIN)
   if (IsWindow(window)) {
     return reinterpret_cast<BrowserView*>(
-        app::ViewProp::GetValue(window, kBrowserViewKey));
+        ui::ViewProp::GetValue(window, kBrowserViewKey));
   }
 #else
   if (window) {
@@ -1388,7 +1388,7 @@ gfx::Rect BrowserView::GrabWindowSnapshot(std::vector<unsigned char>*
   views::Window* window = GetWindow();
 
 #if defined(USE_X11)
-  x11_util::GrabWindowSnapshot(window->GetNativeWindow(), png_representation);
+  ui::GrabWindowSnapshot(window->GetNativeWindow(), png_representation);
 #elif defined(OS_WIN)
   app::win::GrabWindowSnapshot(window->GetNativeWindow(), png_representation);
 #endif

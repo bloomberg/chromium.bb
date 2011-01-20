@@ -4,7 +4,6 @@
 
 #include "printing/page_overlays.h"
 
-#include "app/text_elider.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -192,7 +191,7 @@ std::wstring PageOverlays::ReplaceVariables(const std::wstring& input,
     } else if (0 == output.compare(offset,
                                    wcslen(kUrl),
                                    kUrl)) {
-      // TODO(maruel):  http://b/1126373 gfx::ElideUrl(document.url(), ...)
+      // TODO(maruel):  http://b/1126373 ui::ElideUrl(document.url(), ...)
       offset = ReplaceKey(&output,
                           offset,
                           wcslen(kUrl),

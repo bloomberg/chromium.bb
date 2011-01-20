@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "app/l10n_util.h"
-#include "app/message_box_flags.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/views/user_data_dir_dialog.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/message_box_flags.h"
 #include "views/controls/message_box_view.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
@@ -30,7 +30,8 @@ UserDataDirDialog::UserDataDirDialog(const FilePath& user_data_dir)
       IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY,
       WideToUTF16Hack(user_data_dir.ToWStringHack())));
   const int kDialogWidth = 400;
-  message_box_view_ = new MessageBoxView(MessageBoxFlags::kIsConfirmMessageBox,
+  message_box_view_ = new MessageBoxView(
+      ui::MessageBoxFlags::kIsConfirmMessageBox,
       message_text.c_str(), std::wstring(), kDialogWidth);
 
   views::Window::CreateChromeWindow(NULL, gfx::Rect(), this)->Show();
@@ -41,13 +42,13 @@ UserDataDirDialog::~UserDataDirDialog() {
 }
 
 std::wstring UserDataDirDialog::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
+    ui::MessageBoxFlags::DialogButton button) const {
 
   switch (button) {
-    case MessageBoxFlags::DIALOGBUTTON_OK:
+    case ui::MessageBoxFlags::DIALOGBUTTON_OK:
       return UTF16ToWide(l10n_util::GetStringUTF16(
           IDS_CANT_WRITE_USER_DIRECTORY_CHOOSE_DIRECTORY_BUTTON));
-    case MessageBoxFlags::DIALOGBUTTON_CANCEL:
+    case ui::MessageBoxFlags::DIALOGBUTTON_CANCEL:
       return UTF16ToWide(l10n_util::GetStringUTF16(
           IDS_CANT_WRITE_USER_DIRECTORY_EXIT_BUTTON));
     default:

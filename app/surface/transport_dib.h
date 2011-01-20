@@ -15,7 +15,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #elif defined(USE_X11)
-#include "app/x11_util.h"
+#include "ui/base/x/x11_util.h"
 #endif
 
 namespace skia {

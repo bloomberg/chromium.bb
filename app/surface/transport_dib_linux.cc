@@ -8,11 +8,11 @@
 #include <sys/shm.h>
 
 #include "app/surface/transport_dib.h"
-#include "app/x11_util.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "gfx/size.h"
 #include "skia/ext/platform_canvas.h"
+#include "ui/base/x/x11_util.h"
 
 // The shmat system call uses this as it's invalid return address
 static void *const kInvalidAddress = (void*) -1;
@@ -33,7 +33,7 @@ TransportDIB::~TransportDIB() {
 
   if (x_shm_) {
     DCHECK(display_);
-    x11_util::DetachSharedMemory(display_, x_shm_);
+    ui::DetachSharedMemory(display_, x_shm_);
   }
 }
 
@@ -128,7 +128,7 @@ TransportDIB::Handle TransportDIB::handle() const {
 
 XID TransportDIB::MapToX(Display* display) {
   if (!x_shm_) {
-    x_shm_ = x11_util::AttachSharedMemory(display, key_);
+    x_shm_ = ui::AttachSharedMemory(display, key_);
     display_ = display;
   }
 

@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
 
-#include "app/text_elider.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_BOOKMARK_MENU
@@ -13,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
+#include "ui/base/text/text_elider.h"
 #include "webkit/glue/window_open_disposition.h"
 
 namespace {
@@ -29,10 +29,10 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   NSFont* nsfont = [NSFont menuBarFontOfSize:0];  // 0 means "default"
   gfx::Font font(base::SysNSStringToUTF16([nsfont fontName]),
                  static_cast<int>([nsfont pointSize]));
-  string16 title = gfx::ElideText(node->GetTitle(),
-                                  font,
-                                  kMaximumMenuPixelsWide,
-                                  false);
+  string16 title = ui::ElideText(node->GetTitle(),
+                                 font,
+                                 kMaximumMenuPixelsWide,
+                                 false);
   return base::SysUTF16ToNSString(title);
 }
 

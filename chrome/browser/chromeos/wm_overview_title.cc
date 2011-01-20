@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "app/x11_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_window.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/chromeos/wm_overview_snapshot.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/x/x11_util.h"
 #include "views/border.h"
 #include "views/grid_layout.h"
 #include "views/view.h"
@@ -97,7 +97,7 @@ void WmOverviewTitle::Init(const gfx::Size& size,
 
   // Set the window type
   vector<int> params;
-  params.push_back(x11_util::GetX11WindowFromGtkWidget(
+  params.push_back(ui::GetX11WindowFromGtkWidget(
       GTK_WIDGET(snapshot->GetNativeView())));
   WmIpc::instance()->SetWindowType(
       GetNativeView(),

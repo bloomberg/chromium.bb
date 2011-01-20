@@ -13,12 +13,12 @@
 
 #include <gtk/gtk.h>
 
-#include "app/active_window_watcher_x.h"
-#include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/x/active_window_watcher_x.h"
 
 class BrowserWindowGtk;
 class CustomDrawButton;
@@ -28,7 +28,7 @@ class PopupPageMenuModel;
 class TabContents;
 
 class BrowserTitlebar : public NotificationObserver,
-                        public ActiveWindowWatcherX::Observer,
+                        public ui::ActiveWindowWatcherX::Observer,
                         public ui::SimpleMenuModel::Delegate {
  public:
   // A default button order string for when we aren't asking gconf for the

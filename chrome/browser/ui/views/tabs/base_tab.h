@@ -72,7 +72,7 @@ class BaseTab : public ui::AnimationDelegate,
   // Set the theme provider - because we get detached, we are frequently
   // outside of a hierarchy with a theme provider at the top. This should be
   // called whenever we're detached or attached to a hierarchy.
-  void set_theme_provider(ThemeProvider* provider) {
+  void set_theme_provider(ui::ThemeProvider* provider) {
     theme_provider_ = provider;
   }
 
@@ -191,7 +191,7 @@ class BaseTab : public ui::AnimationDelegate,
   // animations.
   bool throbber_disabled_;
 
-  ThemeProvider* theme_provider_;
+  ui::ThemeProvider* theme_provider_;
 
   // The offset used to animate the favicon location. This is used when the tab
   // crashes.

@@ -16,7 +16,7 @@
 
 @interface BookmarkBarView (Private)
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
-- (void)updateTheme:(ThemeProvider*)themeProvider;
+- (void)updateTheme:(ui::ThemeProvider*)themeProvider;
 @end
 
 @implementation BookmarkBarView
@@ -59,7 +59,7 @@
 // controller desn't have access to it until it's placed in the view
 // hierarchy.  This is the spot where we close the loop.
 - (void)viewWillMoveToWindow:(NSWindow*)window {
-  ThemeProvider* themeProvider = [window themeProvider];
+  ui::ThemeProvider* themeProvider = [window themeProvider];
   [self updateTheme:themeProvider];
   [controller_ updateTheme:themeProvider];
 }
@@ -70,14 +70,14 @@
 
 // Called after the current theme has changed.
 - (void)themeDidChangeNotification:(NSNotification*)aNotification {
-  ThemeProvider* themeProvider =
-      static_cast<ThemeProvider*>([[aNotification object] pointerValue]);
+  ui::ThemeProvider* themeProvider =
+      static_cast<ui::ThemeProvider*>([[aNotification object] pointerValue]);
   [self updateTheme:themeProvider];
 }
 
 // Adapt appearance to the current theme. Called after theme changes and before
 // this is shown for the first time.
-- (void)updateTheme:(ThemeProvider*)themeProvider {
+- (void)updateTheme:(ui::ThemeProvider*)themeProvider {
   if (!themeProvider)
     return;
 

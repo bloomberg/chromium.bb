@@ -6,7 +6,6 @@
 
 #include <limits>
 
-#include "app/text_elider.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -18,6 +17,7 @@
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
+#include "ui/base/text/text_elider.h"
 
 namespace {
 
@@ -152,7 +152,7 @@ void StatusBubbleMac::SetURL(const GURL& url, const string16& languages) {
                      [font pointSize]);
 
   string16 original_url_text = net::FormatUrl(url, UTF16ToUTF8(languages));
-  string16 status = gfx::ElideUrl(url, font_chr, text_width,
+  string16 status = ui::ElideUrl(url, font_chr, text_width,
       UTF16ToWideHack(languages));
 
   SetText(status, true);
@@ -608,7 +608,7 @@ void StatusBubbleMac::ExpandBubble() {
   NSFont* font = [[window_ contentView] font];
   gfx::Font font_chr(base::SysNSStringToUTF16([font fontName]),
       [font pointSize]);
-  string16 expanded_url = gfx::ElideUrl(url_, font_chr,
+  string16 expanded_url = ui::ElideUrl(url_, font_chr,
       max_bubble_width, UTF16ToWideHack(languages_));
 
   // Scale width from gfx::Font in view coordinates to window coordinates.

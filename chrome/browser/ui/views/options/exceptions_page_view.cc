@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "ui/base/text/text_elider.h"
 #include "views/background.h"
 #include "views/controls/button/native_button.h"
 #include "views/grid_layout.h"
@@ -55,7 +56,7 @@ void ExceptionsTableModel::OnPasswordStoreRequestDone(
       UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   for (size_t i = 0; i < result.size(); ++i) {
     saved_signons_.push_back(new PasswordRow(
-        gfx::SortedDisplayURL(result[i]->origin, languages), result[i]));
+        ui::SortedDisplayURL(result[i]->origin, languages), result[i]));
   }
   if (observer_)
     observer_->OnModelChanged();

@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_toolbar_view.h"
 
-#include "app/theme_provider.h"
 #include "gfx/rect.h"
 #include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -13,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "gfx/canvas_skia_paint.h"
+#include "ui/base/theme_provider.h"
 
 const CGFloat kBorderRadius = 3.0;
 
@@ -45,7 +45,7 @@ const CGFloat kBorderRadius = 3.0;
 
   NSRect bounds = [self bounds];
 
-  ThemeProvider* themeProvider = [controller_ themeProvider];
+  ui::ThemeProvider* themeProvider = [controller_ themeProvider];
   if (!themeProvider)
     return;
 

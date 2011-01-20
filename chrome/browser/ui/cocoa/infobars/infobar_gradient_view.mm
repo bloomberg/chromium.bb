@@ -39,7 +39,7 @@ const double kBackgroundColorBottom[3] =
 }
 
 - (NSColor*)strokeColor {
-  ThemeProvider* themeProvider = [[self window] themeProvider];
+  ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   if (!themeProvider)
     return [NSColor blackColor];
 

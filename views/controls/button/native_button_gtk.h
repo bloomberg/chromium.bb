@@ -6,7 +6,7 @@
 #define VIEWS_CONTROLS_BUTTON_NATIVE_BUTTON_GTK_H_
 #pragma once
 
-#include "app/gtk_signal.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "views/controls/button/native_button_wrapper.h"
 #include "views/controls/native_control_gtk.h"
 

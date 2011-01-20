@@ -31,7 +31,7 @@ class TabContentsContainer;
 class RenderViewContextMenuViews;
 struct NavigationInfo;
 
-namespace app {
+namespace ui {
 class ViewProp;
 }
 
@@ -336,7 +336,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   // page without chrome frame.
   bool route_all_top_level_navigations_;
 
-  scoped_ptr<app::ViewProp> prop_;
+  scoped_ptr<ui::ViewProp> prop_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };

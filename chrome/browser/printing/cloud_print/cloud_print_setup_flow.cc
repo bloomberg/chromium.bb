@@ -4,7 +4,6 @@
 
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 
-#include "app/gfx/font_util.h"
 #include "base/json/json_writer.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
@@ -14,9 +13,6 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/html_dialog_gtk.h"
-#endif  // defined(TOOLKIT_GTK)
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
@@ -30,18 +26,23 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/browser_dialogs.h"
-#endif  // defined(TOOLKIT_GTK)
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_messages.h"
 #include "gfx/font.h"
-
 #include "grit/chromium_strings.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_font_util.h"
+
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/gtk/html_dialog_gtk.h"
+#endif  // defined(TOOLKIT_GTK)
+
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/views/browser_dialogs.h"
+#endif  // defined(TOOLKIT_GTK)
 
 static const wchar_t kGaiaLoginIFrameXPath[] = L"//iframe[@id='gaialogin']";
 static const wchar_t kDoneIframeXPath[] = L"//iframe[@id='setupdone']";
@@ -137,12 +138,12 @@ void CloudPrintSetupFlow::GetDialogSize(gfx::Size* size) const {
       prefs->GetInteger(prefs::kWebKitDefaultFontSize));
 
   if (setup_done_) {
-    *size = gfx::GetLocalizedContentsSizeForFont(
+    *size = ui::GetLocalizedContentsSizeForFont(
         IDS_CLOUD_PRINT_SETUP_WIZARD_DONE_WIDTH_CHARS,
         IDS_CLOUD_PRINT_SETUP_WIZARD_DONE_HEIGHT_LINES,
         approximate_web_font);
   } else {
-    *size = gfx::GetLocalizedContentsSizeForFont(
+    *size = ui::GetLocalizedContentsSizeForFont(
         IDS_CLOUD_PRINT_SETUP_WIZARD_WIDTH_CHARS,
         IDS_CLOUD_PRINT_SETUP_WIZARD_HEIGHT_LINES,
         approximate_web_font);
@@ -284,7 +285,7 @@ void CloudPrintSetupFlow::ShowSetupDone() {
     gfx::Font approximate_web_font(
         UTF8ToUTF16(prefs->GetString(prefs::kWebKitSansSerifFontFamily)),
         prefs->GetInteger(prefs::kWebKitDefaultFontSize));
-    gfx::Size done_size = gfx::GetLocalizedContentsSizeForFont(
+    gfx::Size done_size = ui::GetLocalizedContentsSizeForFont(
         IDS_CLOUD_PRINT_SETUP_WIZARD_DONE_WIDTH_CHARS,
         IDS_CLOUD_PRINT_SETUP_WIZARD_DONE_HEIGHT_LINES,
         approximate_web_font);

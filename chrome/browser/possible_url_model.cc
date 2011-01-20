@@ -5,7 +5,6 @@
 #include "chrome/browser/possible_url_model.h"
 
 #include "app/resource_bundle.h"
-#include "app/text_elider.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
@@ -20,6 +19,7 @@
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/table_model_observer.h"
+#include "ui/base/text/text_elider.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -43,7 +43,7 @@ struct PossibleURLModel::Result {
   // fav_icon_map_ to lookup the favicon for the url, as well as the index
   // into results_ when the favicon is received.
   size_t index;
-  gfx::SortedDisplayURL display_url;
+  ui::SortedDisplayURL display_url;
   std::wstring title;
 };
 
@@ -87,7 +87,7 @@ void PossibleURLModel::OnHistoryQueryComplete(HistoryService::Handle h,
     results_[i].url = (*result)[i].url();
     results_[i].index = i;
     results_[i].display_url =
-        gfx::SortedDisplayURL((*result)[i].url(), languages);
+        ui::SortedDisplayURL((*result)[i].url(), languages);
     results_[i].title = UTF16ToWide((*result)[i].title());
   }
 

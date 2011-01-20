@@ -4,24 +4,24 @@
 
 #include "views/window/window.h"
 
-#include "app/gfx/font_util.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "gfx/font.h"
 #include "gfx/size.h"
+#include "ui/base/l10n/l10n_font_util.h"
 #include "views/widget/widget.h"
 
 namespace views {
 
 // static
 int Window::GetLocalizedContentsWidth(int col_resource_id) {
-  return gfx::GetLocalizedContentsWidthForFont(col_resource_id,
+  return ui::GetLocalizedContentsWidthForFont(col_resource_id,
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont));
 }
 
 // static
 int Window::GetLocalizedContentsHeight(int row_resource_id) {
-  return gfx::GetLocalizedContentsHeightForFont(row_resource_id,
+  return ui::GetLocalizedContentsHeightForFont(row_resource_id,
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont));
 }
 

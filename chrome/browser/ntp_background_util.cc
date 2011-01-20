@@ -57,7 +57,7 @@ void PaintThemeBackground(
 
 // static
 void NtpBackgroundUtil::PaintBackgroundDetachedMode(
-    ThemeProvider* tp, gfx::Canvas* canvas, const gfx::Rect& area,
+    ui::ThemeProvider* tp, gfx::Canvas* canvas, const gfx::Rect& area,
     int tab_contents_height) {
   // Draw the background to match the new tab page.
   canvas->FillRectInt(tp->GetColor(BrowserThemeProvider::COLOR_NTP_BACKGROUND),

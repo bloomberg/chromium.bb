@@ -6,12 +6,12 @@
 
 #include <vector>
 
-#include "app/x11_util.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/chromeos/wm_overview_snapshot.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/x/x11_util.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/grid_layout.h"
@@ -42,7 +42,7 @@ void WmOverviewFavIcon::Init(WmOverviewSnapshot* snapshot) {
 
   // Set the window type
   vector<int> params;
-  params.push_back(x11_util::GetX11WindowFromGtkWidget(
+  params.push_back(ui::GetX11WindowFromGtkWidget(
       GTK_WIDGET(snapshot->GetNativeView())));
   WmIpc::instance()->SetWindowType(
       GetNativeView(),

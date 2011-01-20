@@ -18,7 +18,7 @@
 #include "views/view.h"
 #include "views/focus/focus_manager.h"
 #elif defined(TOOLKIT_GTK)
-#include "app/active_window_watcher_x.h"
+#include "ui/base/x/active_window_watcher_x.h"
 #endif
 
 // The ExtensionBrowserEventRouter listens to Browser window & tab events
@@ -30,7 +30,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 #if defined(TOOLKIT_VIEWS)
                                     public views::WidgetFocusChangeListener,
 #elif defined(TOOLKIT_GTK)
-                                    public ActiveWindowWatcherX::Observer,
+                                    public ui::ActiveWindowWatcherX::Observer,
 #endif
                                     public BrowserList::Observer,
                                     public NotificationObserver {

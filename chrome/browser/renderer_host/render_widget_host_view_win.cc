@@ -9,7 +9,6 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
-#include "app/view_prop.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
@@ -41,6 +40,7 @@
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebInputEventFactory.h"
+#include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
 #include "views/accessibility/view_accessibility.h"
 #include "views/focus/focus_manager.h"
@@ -53,9 +53,9 @@
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
-using app::ViewProp;
 using base::TimeDelta;
 using base::TimeTicks;
+using ui::ViewProp;
 using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseEvent;

@@ -1,5 +1,5 @@
 include_rules = [
-  "+app",
+  "+app", # app/win/iat_patch_function.h
   "+ppapi",
 
   # Files in this directory must not depend on the proxy, because the proxy
@@ -8,4 +8,5 @@ include_rules = [
 
   "+printing",
   "+skia",
+  "+ui/base",
 ]

@@ -286,7 +286,7 @@ void FindBarView::Paint(gfx::Canvas* canvas) {
   // controller, so the whitespace in the left and right background images is
   // actually outside the window region and is therefore not drawn. See
   // FindInPageWidgetWin::CreateRoundedWindowEdges() for details.
-  ThemeProvider* tp = GetThemeProvider();
+  ui::ThemeProvider* tp = GetThemeProvider();
   canvas->TileImageInt(*tp->GetBitmapNamed(IDR_THEME_TOOLBAR), origin.x(),
                        origin.y(), 0, 0, bounds.width(), bounds.height());
 

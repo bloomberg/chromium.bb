@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/message_box_flags.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -159,6 +158,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
 #include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/message_box_flags.h"
 #include "v8/include/v8.h"
 #include "v8/include/v8-testing.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
@@ -2385,7 +2385,7 @@ bool RenderView::runFileChooser(
 
 void RenderView::runModalAlertDialog(
     WebFrame* frame, const WebString& message) {
-  RunJavaScriptMessage(MessageBoxFlags::kIsJavascriptAlert,
+  RunJavaScriptMessage(ui::MessageBoxFlags::kIsJavascriptAlert,
                        UTF16ToWideHack(message),
                        std::wstring(),
                        frame->url(),
@@ -2394,7 +2394,7 @@ void RenderView::runModalAlertDialog(
 
 bool RenderView::runModalConfirmDialog(
     WebFrame* frame, const WebString& message) {
-  return RunJavaScriptMessage(MessageBoxFlags::kIsJavascriptConfirm,
+  return RunJavaScriptMessage(ui::MessageBoxFlags::kIsJavascriptConfirm,
                               UTF16ToWideHack(message),
                               std::wstring(),
                               frame->url(),
@@ -2405,7 +2405,7 @@ bool RenderView::runModalPromptDialog(
     WebFrame* frame, const WebString& message, const WebString& default_value,
     WebString* actual_value) {
   std::wstring result;
-  bool ok = RunJavaScriptMessage(MessageBoxFlags::kIsJavascriptPrompt,
+  bool ok = RunJavaScriptMessage(ui::MessageBoxFlags::kIsJavascriptPrompt,
                                  UTF16ToWideHack(message),
                                  UTF16ToWideHack(default_value),
                                  frame->url(),

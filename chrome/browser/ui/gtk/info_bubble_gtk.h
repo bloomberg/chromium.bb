@@ -17,13 +17,13 @@
 #include <gtk/gtk.h>
 #include <vector>
 
-#include "app/gtk_signal.h"
-#include "app/gtk_signal_registrar.h"
 #include "base/basictypes.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
+#include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 
 class GtkThemeProvider;
 class InfoBubbleGtk;
@@ -207,7 +207,7 @@ class InfoBubbleGtk : public NotificationObserver {
 
   NotificationRegistrar registrar_;
 
-  GtkSignalRegistrar signals_;
+  ui::GtkSignalRegistrar signals_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBubbleGtk);
 };

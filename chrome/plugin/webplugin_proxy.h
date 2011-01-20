@@ -9,7 +9,7 @@
 #include <string>
 
 #if defined(USE_X11)
-#include "app/x11_util.h"
+#include "ui/base/x/x11_util.h"
 #endif
 #include "app/surface/transport_dib.h"
 #include "base/hash_tables.h"

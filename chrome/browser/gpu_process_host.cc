@@ -32,9 +32,9 @@
 // These two #includes need to come after render_messages.h.
 #include <gdk/gdkwindow.h>  // NOLINT
 #include <gdk/gdkx.h>  // NOLINT
-#include "app/x11_util.h"
 #include "gfx/gtk_native_view_id_manager.h"
 #include "gfx/size.h"
+#include "ui/base/x/x11_util.h"
 #endif  // defined(OS_LINUX)
 
 namespace {

@@ -6,7 +6,10 @@
 #define VIEWS_WIDGET_WIDGET_UTILS_H_
 #pragma once
 
+namespace ui {
 class ThemeProvider;
+}
+using ui::ThemeProvider;
 
 namespace views {
 

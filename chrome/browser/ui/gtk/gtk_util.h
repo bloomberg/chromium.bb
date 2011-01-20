@@ -10,11 +10,11 @@
 #include <string>
 #include <vector>
 
-#include "app/x11_util.h"
 #include "base/string16.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "ui/base/x/x11_util.h"
 #include "webkit/glue/window_open_disposition.h"
 
 typedef struct _cairo cairo_t;
@@ -173,7 +173,7 @@ GtkWidget* CenterWidgetInHBox(GtkWidget* hbox, GtkWidget* widget,
 bool IsScreenComposited();
 
 // Enumerates the top-level gdk windows of the current display.
-void EnumerateTopLevelWindows(x11_util::EnumerateWindowsDelegate* delegate);
+void EnumerateTopLevelWindows(ui::EnumerateWindowsDelegate* delegate);
 
 // Set that clicking the button with the given mouse buttons will cause a click
 // event.

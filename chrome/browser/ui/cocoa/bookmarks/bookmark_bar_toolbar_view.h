@@ -18,7 +18,10 @@
 
 @class BookmarkBarView;
 class TabContents;
+
+namespace ui {
 class ThemeProvider;
+}
 
 // An interface to allow mocking of a BookmarkBarController by the
 // BookmarkBarToolbarView.
@@ -29,7 +32,7 @@ class ThemeProvider;
 - (int)currentTabContentsHeight;
 
 // Current theme provider, passed to the cross platform NtpBackgroundUtil class.
-- (ThemeProvider*)themeProvider;
+- (ui::ThemeProvider*)themeProvider;
 
 @end
 

@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_GTK_CLEAR_BROWSING_DATA_DIALOG_GTK_H_
 #pragma once
 
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;

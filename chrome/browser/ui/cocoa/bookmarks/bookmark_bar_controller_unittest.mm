@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/theme_provider.h"
 #include "base/basictypes.h"
 #include "base/scoped_nsobject.h"
 #include "base/string16.h"
@@ -29,6 +28,7 @@
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#include "ui/base/theme_provider.h"
 
 // Just like a BookmarkBarController but openURL: is stubbed out.
 @interface BookmarkBarControllerNoOpen : BookmarkBarController {
@@ -170,7 +170,7 @@
 @end
 
 
-class FakeTheme : public ThemeProvider {
+class FakeTheme : public ui::ThemeProvider {
  public:
   FakeTheme(NSColor* color) : color_(color) { }
   scoped_nsobject<NSColor> color_;

@@ -19,8 +19,6 @@
 #include <limits>
 
 #include "app/surface/transport_dib.h"
-#include "app/x11_util.h"
-#include "app/x11_util_internal.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -29,6 +27,8 @@
 #include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_util_internal.h"
 
 // Assume that somewhere along the line, someone will do width * height * 4
 // with signed numbers. If the maximum value is 2**31, then 2**31 / 4 =
@@ -64,12 +64,12 @@ BackingStoreX::BackingStoreX(RenderWidgetHost* widget,
                             void* visual,
                             int depth)
     : BackingStore(widget, size),
-      display_(x11_util::GetXDisplay()),
-      shared_memory_support_(x11_util::QuerySharedMemorySupport(display_)),
-      use_render_(x11_util::QueryRenderSupport(display_)),
+      display_(ui::GetXDisplay()),
+      shared_memory_support_(ui::QuerySharedMemorySupport(display_)),
+      use_render_(ui::QueryRenderSupport(display_)),
       visual_(visual),
       visual_depth_(depth),
-      root_window_(x11_util::GetX11RootWindow()) {
+      root_window_(ui::GetX11RootWindow()) {
 #if defined(OS_OPENBSD) || defined(OS_FREEBSD)
   COMPILE_ASSERT(_BYTE_ORDER == _LITTLE_ENDIAN, assumes_little_endian);
 #else
@@ -82,13 +82,13 @@ BackingStoreX::BackingStoreX(RenderWidgetHost* widget,
   if (use_render_) {
     picture_ = XRenderCreatePicture(
         display_, pixmap_,
-        x11_util::GetRenderVisualFormat(display_,
-                                        static_cast<Visual*>(visual)),
-                                        0, NULL);
+        ui::GetRenderVisualFormat(display_,
+                                  static_cast<Visual*>(visual)),
+                                  0, NULL);
     pixmap_bpp_ = 0;
   } else {
     picture_ = 0;
-    pixmap_bpp_ = x11_util::BitsPerPixelForPixmapDepth(display_, depth);
+    pixmap_bpp_ = ui::BitsPerPixelForPixmapDepth(display_, depth);
   }
 
   pixmap_gc_ = XCreateGC(display_, pixmap_, 0, NULL);
@@ -97,7 +97,7 @@ BackingStoreX::BackingStoreX(RenderWidgetHost* widget,
 BackingStoreX::BackingStoreX(RenderWidgetHost* widget, const gfx::Size& size)
     : BackingStore(widget, size),
       display_(NULL),
-      shared_memory_support_(x11_util::SHARED_MEMORY_NONE),
+      shared_memory_support_(ui::SHARED_MEMORY_NONE),
       use_render_(false),
       pixmap_bpp_(0),
       visual_(NULL),
@@ -135,9 +135,9 @@ void BackingStoreX::PaintRectWithoutXrender(
                                 visual_depth_);
 
   // Draw ARGB transport DIB onto our pixmap.
-  x11_util::PutARGBImage(display_, visual_, visual_depth_, pixmap,
-                         pixmap_gc_, static_cast<uint8*>(bitmap->memory()),
-                         width, height);
+  ui::PutARGBImage(display_, visual_, visual_depth_, pixmap,
+                   pixmap_gc_, static_cast<uint8*>(bitmap->memory()),
+                   width, height);
 
   for (size_t i = 0; i < copy_rects.size(); i++) {
     const gfx::Rect& copy_rect = copy_rects[i];
@@ -184,7 +184,7 @@ void BackingStoreX::PaintToBackingStore(
   Picture picture;
   Pixmap pixmap;
 
-  if (shared_memory_support_ == x11_util::SHARED_MEMORY_PIXMAP) {
+  if (shared_memory_support_ == ui::SHARED_MEMORY_PIXMAP) {
     XShmSegmentInfo shminfo = {0};
     shminfo.shmseg = dib->MapToX(display_);
 
@@ -203,7 +203,7 @@ void BackingStoreX::PaintToBackingStore(
     pixmap = XCreatePixmap(display_, root_window_, width, height, 32);
     GC gc = XCreateGC(display_, pixmap, 0, NULL);
 
-    if (shared_memory_support_ == x11_util::SHARED_MEMORY_PUTIMAGE) {
+    if (shared_memory_support_ == ui::SHARED_MEMORY_PUTIMAGE) {
       const XID shmseg = dib->MapToX(display_);
 
       XShmSegmentInfo shminfo;
@@ -269,7 +269,7 @@ void BackingStoreX::PaintToBackingStore(
     XFreeGC(display_, gc);
   }
 
-  picture = x11_util::CreatePictureFromSkiaPixmap(display_, pixmap);
+  picture = ui::CreatePictureFromSkiaPixmap(display_, pixmap);
 
   for (size_t i = 0; i < copy_rects.size(); i++) {
     const gfx::Rect& copy_rect = copy_rects[i];
@@ -291,7 +291,7 @@ void BackingStoreX::PaintToBackingStore(
   // In the case of shared memory, we wait for the composite to complete so that
   // we are sure that the X server has finished reading from the shared memory
   // segment.
-  if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE)
+  if (shared_memory_support_ != ui::SHARED_MEMORY_NONE)
     XSync(display_, False);
 
   XRenderFreePicture(display_, picture);
@@ -315,7 +315,7 @@ bool BackingStoreX::CopyFromBackingStore(const gfx::Rect& rect,
 
   XImage* image;
   XShmSegmentInfo shminfo;  // Used only when shared memory is enabled.
-  if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE) {
+  if (shared_memory_support_ != ui::SHARED_MEMORY_NONE) {
     // Use shared memory for faster copies when it's available.
     Visual* visual = static_cast<Visual*>(visual_);
     memset(&shminfo, 0, sizeof(shminfo));
@@ -364,7 +364,7 @@ bool BackingStoreX::CopyFromBackingStore(const gfx::Rect& rect,
   // Note that this also initializes the output bitmap as opaque.
   if (!output->initialize(width, height, true) ||
       image->bits_per_pixel != 32) {
-    if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE)
+    if (shared_memory_support_ != ui::SHARED_MEMORY_NONE)
       DestroySharedImage(display_, image, &shminfo);
     else
       XDestroyImage(image);
@@ -386,7 +386,7 @@ bool BackingStoreX::CopyFromBackingStore(const gfx::Rect& rect,
     }
   }
 
-  if (shared_memory_support_ != x11_util::SHARED_MEMORY_NONE)
+  if (shared_memory_support_ != ui::SHARED_MEMORY_NONE)
     DestroySharedImage(display_, image, &shminfo);
   else
     XDestroyImage(image);

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/x11_util.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "ui/base/x/x11_util.h"
 
 namespace {
 
@@ -49,7 +49,7 @@ class NotificationTest : public InProcessBrowserTest,
     // Detect if we're running under ChromeOS WindowManager. See
     // the description for "under_chromeos_" below for why we need this.
     std::string wm_name;
-    bool wm_name_valid = x11_util::GetWindowManagerName(&wm_name);
+    bool wm_name_valid = ui::GetWindowManagerName(&wm_name);
     // NOTE: On Chrome OS the wm and Chrome are started in parallel. This
     // means it's possible for us not to be able to get the name of the window
     // manager. We assume that when this happens we're on Chrome OS.

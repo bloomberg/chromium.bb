@@ -9,9 +9,6 @@
 #include <gtk/gtk.h>
 #include <string>
 
-#include "app/active_window_watcher_x.h"
-#include "app/gtk_signal.h"
-#include "app/gtk_signal_registrar.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -21,6 +18,8 @@
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/models/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -211,7 +210,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   OwnedWidgetGtk offscreen_entry_;
 
   // Manages the home button drop signal handler.
-  scoped_ptr<GtkSignalRegistrar> drop_handler_;
+  scoped_ptr<ui::GtkSignalRegistrar> drop_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserToolbarGtk);
 };

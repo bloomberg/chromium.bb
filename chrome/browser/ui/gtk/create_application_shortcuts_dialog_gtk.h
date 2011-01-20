@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_UI_GTK_CREATE_APPLICATION_SHORTCUTS_DIALOG_GTK_H_
 #pragma once
 
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/shell_integration.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GdkPixbuf GdkPixbuf;
 typedef struct _GtkWidget GtkWidget;

@@ -11,9 +11,9 @@
 #include <string>
 #include <vector>
 
-#include "app/gtk_signal.h"
 #include "base/task.h"
 #include "gfx/point.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class SkBitmap;
 

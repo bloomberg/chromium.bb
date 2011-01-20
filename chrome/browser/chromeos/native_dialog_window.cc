@@ -6,11 +6,11 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_signal.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/ui/views/window.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/non_client_view.h"

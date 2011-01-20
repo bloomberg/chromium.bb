@@ -19,7 +19,6 @@
 #include <string>
 
 #include "app/l10n_util.h"
-#include "app/x11_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -38,6 +37,7 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "gfx/gtk_preserve_window.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
+#include "ui/base/x/x11_util.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor_gtk_data.h"
 #include "webkit/plugins/npapi/webplugin.h"
@@ -766,7 +766,7 @@ bool RenderWidgetHostViewGtk::IsPopup() {
 BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
     const gfx::Size& size) {
   return new BackingStoreX(host_, size,
-                           x11_util::GetVisualFromGtkWidget(view_.get()),
+                           ui::GetVisualFromGtkWidget(view_.get()),
                            gtk_widget_get_visual(view_.get())->depth);
 }
 
@@ -858,7 +858,7 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
         // In the common case, use XCopyArea. We don't draw more than once, so
         // we don't need to double buffer.
         backing_store->XShowRect(gfx::Point(0, 0),
-            paint_rect, x11_util::GetX11WindowFromGtkWidget(view_.get()));
+            paint_rect, ui::GetX11WindowFromGtkWidget(view_.get()));
       } else {
         // If the grey blend is showing, we make two drawing calls. Use double
         // buffering to prevent flicker. Use CairoShowRect because XShowRect

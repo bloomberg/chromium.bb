@@ -96,7 +96,7 @@ void PanelBrowserView::ActivationChanged(bool activated) {
 void PanelBrowserView::SetCreatorView(PanelBrowserView* creator) {
   DCHECK(creator);
   GtkWindow* window = creator->GetNativeHandle();
-  creator_xid_ = x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(window));
+  creator_xid_ = ui::GetX11WindowFromGtkWidget(GTK_WIDGET(window));
 }
 
 bool PanelBrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {

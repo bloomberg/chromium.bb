@@ -34,6 +34,8 @@
 #include "views/widget/widget.h"
 #endif
 
+using ui::MessageBoxFlags;
+
 namespace views {
 
 namespace {

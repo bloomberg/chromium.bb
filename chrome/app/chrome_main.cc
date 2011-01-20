@@ -75,7 +75,7 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>
-#include "app/x11_util.h"
+#include "ui/base/x/x11_util.h"
 #endif
 
 #if defined(USE_TCMALLOC)

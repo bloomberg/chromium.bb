@@ -8,7 +8,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/theme_provider.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -24,6 +23,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/animation/throb_animation.h"
+#include "ui/base/theme_provider.h"
 #include "views/controls/button/image_button.h"
 
 // How long the pulse throb takes.
@@ -305,8 +305,8 @@ AccessibilityTypes::Role BaseTab::GetAccessibleRole() {
   return AccessibilityTypes::ROLE_PAGETAB;
 }
 
-ThemeProvider* BaseTab::GetThemeProvider() {
-  ThemeProvider* tp = View::GetThemeProvider();
+ui::ThemeProvider* BaseTab::GetThemeProvider() {
+  ui::ThemeProvider* tp = View::GetThemeProvider();
   return tp ? tp : theme_provider_;
 }
 
@@ -359,7 +359,7 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas, int x, int y) {
     favicon_x += (data().favicon.width() - kFavIconSize) / 2;
 
   if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
-    ThemeProvider* tp = GetThemeProvider();
+    ui::ThemeProvider* tp = GetThemeProvider();
     SkBitmap frames(*tp->GetBitmapNamed(
         (data().network_state == TabRendererData::NETWORK_STATE_WAITING) ?
         IDR_THROBBER_WAITING : IDR_THROBBER));

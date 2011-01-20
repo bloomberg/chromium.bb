@@ -261,7 +261,7 @@ class TabStrip : public BaseTabStrip,
 
   // The size of the new tab button must be hardcoded because we need to be
   // able to lay it out before we are able to get its image from the
-  // ThemeProvider.  It also makes sense to do this, because the size of the
+  // ui::ThemeProvider.  It also makes sense to do this, because the size of the
   // new tab button should not need to be calculated dynamically.
   static const int kNewTabButtonWidth = 28;
   static const int kNewTabButtonHeight = 18;

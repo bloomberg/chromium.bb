@@ -8,11 +8,11 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_signal.h"
 #include "chrome/browser/content_exceptions_table_model.h"
 #include "chrome/browser/content_setting_combo_model.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 // An editor which lets the user create or edit an individual exception to the
 // current content setting policy. (i.e. let www.google.com always show

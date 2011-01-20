@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "app/x11_util.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/backing_store_x.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
 #include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/x/x11_util.h"
 
 namespace {
 

@@ -9,7 +9,6 @@
 #include <string>
 
 #include "app/l10n_util.h"
-#include "app/text_elider.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/text/text_elider.h"
 
 namespace {
 
@@ -63,9 +63,9 @@ ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(const GURL& url)
   const int kMaxCommandSize = 256;
   std::wstring elided_url_without_scheme;
   std::wstring elided_command;
-  gfx::ElideString(ASCIIToWide(url.possibly_invalid_spec()),
+  ui::ElideString(ASCIIToWide(url.possibly_invalid_spec()),
       kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
-  gfx::ElideString(ASCIIToWide(std::string("xdg-open ") + url.spec()),
+  ui::ElideString(ASCIIToWide(std::string("xdg-open ") + url.spec()),
       kMaxCommandSize, &elided_command);
 
   std::string message_text = l10n_util::GetStringFUTF8(

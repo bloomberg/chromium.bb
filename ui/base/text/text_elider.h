@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_TEXT_ELIDER_H_
-#define APP_TEXT_ELIDER_H_
+#ifndef UI_BASE_TEXT_TEXT_ELIDER_H_
+#define UI_BASE_TEXT_TEXT_ELIDER_H_
 #pragma once
 
 #include <unicode/coll.h>
@@ -17,7 +17,7 @@ class FilePath;
 class GURL;
 
 // TODO(port): this file should deal in string16s rather than wstrings.
-namespace gfx {
+namespace ui {
 
 // This function takes a GURL object and elides it. It returns a string
 // which composed of parts from subdomain, domain, path, filename and query.
@@ -114,6 +114,6 @@ bool ElideRectangleString(const string16& input, size_t max_rows,
                           size_t max_cols, string16* output);
 
 
-} // namespace gfx.
+} // namespace ui
 
-#endif  // APP_TEXT_ELIDER_H_
+#endif  // UI_BASE_TEXT_TEXT_ELIDER_H_

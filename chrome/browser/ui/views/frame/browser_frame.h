@@ -12,12 +12,15 @@
 class BaseTabStrip;
 class BrowserView;
 class Profile;
-class ThemeProvider;
 
 namespace gfx {
 class Font;
 class Rect;
 }  // namespace gfx
+
+namespace ui {
+class ThemeProvider;
+}
 
 namespace views {
 class Window;
@@ -59,7 +62,7 @@ class BrowserFrame {
   virtual void UpdateThrobber(bool running) = 0;
 
   // Returns the theme provider for this frame.
-  virtual ThemeProvider* GetThemeProviderForFrame() const = 0;
+  virtual ui::ThemeProvider* GetThemeProviderForFrame() const = 0;
 
   // Returns true if the window should use the native frame view. This is true
   // if there are no themes applied on Vista, or if there are themes applied and

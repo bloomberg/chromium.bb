@@ -45,7 +45,7 @@ enum DownloadItemMousePosition {
   CGFloat statusAlpha_;
   scoped_nsobject<NSAnimation> hideStatusAnimation_;
 
-  scoped_ptr<ThemeProvider> themeProvider_;
+  scoped_ptr<ui::ThemeProvider> themeProvider_;
 }
 
 - (void)setStateFromDownload:(BaseDownloadItemModel*)downloadModel;

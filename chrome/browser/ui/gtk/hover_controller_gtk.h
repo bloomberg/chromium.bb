@@ -8,11 +8,11 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_signal.h"
-#include "app/gtk_signal_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/animation/throb_animation.h"
+#include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 
 // This class handles the "throbbing" of a GtkChromeButton. The visual effect
 // of throbbing is created by painting partially transparent hover effects. It
@@ -59,7 +59,7 @@ class HoverControllerGtk : public ui::AnimationDelegate {
   ui::SlideAnimation hover_animation_;
   GtkWidget* button_;
 
-  GtkSignalRegistrar signals_;
+  ui::GtkSignalRegistrar signals_;
 
   DISALLOW_COPY_AND_ASSIGN(HoverControllerGtk);
 };

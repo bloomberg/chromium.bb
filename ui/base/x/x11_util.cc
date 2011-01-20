@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 // ported from XCB since we can't use XCB on Ubuntu while its 32-bit support
 // remains woefully incomplete.
 
-#include "app/x11_util.h"
+#include "ui/base/x/x11_util.h"
 
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
@@ -23,11 +23,11 @@
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
-#include "app/x11_util_internal.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "ui/base/x/x11_util_internal.h"
 
-namespace x11_util {
+namespace ui {
 
 namespace {
 
@@ -341,7 +341,7 @@ XID GetParentWindow(XID window) {
 
 XID GetHighestAncestorWindow(XID window, XID root) {
   while (true) {
-    XID parent = x11_util::GetParentWindow(window);
+    XID parent = GetParentWindow(window);
     if (parent == None)
       return None;
     if (parent == root)
@@ -644,9 +644,9 @@ bool GetWindowParent(XID* parent_window, bool* parent_is_root, XID window) {
 bool GetWindowManagerName(std::string* wm_name) {
   DCHECK(wm_name);
   int wm_window = 0;
-  if (!x11_util::GetIntProperty(x11_util::GetX11RootWindow(),
-                                "_NET_SUPPORTING_WM_CHECK",
-                                &wm_window)) {
+  if (!GetIntProperty(GetX11RootWindow(),
+                      "_NET_SUPPORTING_WM_CHECK",
+                      &wm_window)) {
     return false;
   }
 
@@ -661,7 +661,7 @@ bool GetWindowManagerName(std::string* wm_name) {
   // check that too.
   gdk_error_trap_push();
   int wm_window_property = 0;
-  bool result = x11_util::GetIntProperty(
+  bool result = GetIntProperty(
       wm_window, "_NET_SUPPORTING_WM_CHECK", &wm_window_property);
   gdk_flush();
   bool got_error = gdk_error_trap_pop();
@@ -669,7 +669,7 @@ bool GetWindowManagerName(std::string* wm_name) {
     return false;
 
   gdk_error_trap_push();
-  result = x11_util::GetStringProperty(
+  result = GetStringProperty(
       static_cast<XID>(wm_window), "_NET_WM_NAME", wm_name);
   gdk_flush();
   got_error = gdk_error_trap_pop();
@@ -877,4 +877,4 @@ std::string GetErrorEventDescription(Display *dpy,
 // End of x11_util_internal.h
 
 
-}  // namespace x11_util
+}  // namespace ui

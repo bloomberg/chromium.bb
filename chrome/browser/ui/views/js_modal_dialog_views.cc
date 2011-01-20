@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/views/js_modal_dialog_views.h"
 
 #include "app/l10n_util.h"
-#include "app/message_box_flags.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/views/window.h"
 #include "grit/generated_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/message_box_flags.h"
 #include "views/controls/message_box_view.h"
 #include "views/window/window.h"
 
@@ -21,7 +21,7 @@ JSModalDialogViews::JSModalDialogViews(
     JavaScriptAppModalDialog* parent)
     : parent_(parent),
       message_box_view_(new MessageBoxView(
-          parent->dialog_flags() | MessageBoxFlags::kAutoDetectAlignment,
+          parent->dialog_flags() | ui::MessageBoxFlags::kAutoDetectAlignment,
           parent->message_text(), parent->default_prompt_text())) {
   DCHECK(message_box_view_);
 
@@ -68,22 +68,22 @@ void JSModalDialogViews::CancelAppModalDialog() {
 // JSModalDialogViews, views::DialogDelegate implementation:
 
 int JSModalDialogViews::GetDefaultDialogButton() const {
-  if (parent_->dialog_flags() & MessageBoxFlags::kFlagHasOKButton)
-    return MessageBoxFlags::DIALOGBUTTON_OK;
+  if (parent_->dialog_flags() & ui::MessageBoxFlags::kFlagHasOKButton)
+    return ui::MessageBoxFlags::DIALOGBUTTON_OK;
 
-  if (parent_->dialog_flags() & MessageBoxFlags::kFlagHasCancelButton)
-    return MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  if (parent_->dialog_flags() & ui::MessageBoxFlags::kFlagHasCancelButton)
+    return ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
 
-  return MessageBoxFlags::DIALOGBUTTON_NONE;
+  return ui::MessageBoxFlags::DIALOGBUTTON_NONE;
 }
 
 int JSModalDialogViews::GetDialogButtons() const {
   int dialog_buttons = 0;
-  if (parent_->dialog_flags() & MessageBoxFlags::kFlagHasOKButton)
-    dialog_buttons = MessageBoxFlags::DIALOGBUTTON_OK;
+  if (parent_->dialog_flags() & ui::MessageBoxFlags::kFlagHasOKButton)
+    dialog_buttons = ui::MessageBoxFlags::DIALOGBUTTON_OK;
 
-  if (parent_->dialog_flags() & MessageBoxFlags::kFlagHasCancelButton)
-    dialog_buttons |= MessageBoxFlags::DIALOGBUTTON_CANCEL;
+  if (parent_->dialog_flags() & ui::MessageBoxFlags::kFlagHasCancelButton)
+    dialog_buttons |= ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
 
   return dialog_buttons;
 }
@@ -117,12 +117,12 @@ void JSModalDialogViews::OnClose() {
 }
 
 std::wstring JSModalDialogViews::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
+    ui::MessageBoxFlags::DialogButton button) const {
   if (parent_->is_before_unload_dialog()) {
-    if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
+    if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK) {
       return UTF16ToWide(l10n_util::GetStringUTF16(
           IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL));
-    } else if (button == MessageBoxFlags::DIALOGBUTTON_CANCEL) {
+    } else if (button == ui::MessageBoxFlags::DIALOGBUTTON_CANCEL) {
       return UTF16ToWide(l10n_util::GetStringUTF16(
           IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL));
     }

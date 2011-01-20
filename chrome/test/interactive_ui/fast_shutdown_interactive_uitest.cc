@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/message_box_flags.h"
 #include "base/file_path.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -13,6 +12,7 @@
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "gfx/rect.h"
+#include "ui/base/message_box_flags.h"
 #include "views/event.h"
 
 class FastShutdown : public UITest {
@@ -53,7 +53,7 @@ TEST_F(FastShutdown, MAYBE_SlowTermination) {
   ASSERT_TRUE(browser->ApplyAccelerator(IDC_CLOSE_WINDOW));
   ASSERT_TRUE(automation()->WaitForAppModalDialog());
   ASSERT_TRUE(automation()->ClickAppModalDialogButton(
-                  MessageBoxFlags::DIALOGBUTTON_OK));
+                  ui::MessageBoxFlags::DIALOGBUTTON_OK));
   ASSERT_TRUE(WaitForBrowserProcessToQuit(
       TestTimeouts::wait_for_terminate_timeout_ms()));
 }

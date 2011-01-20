@@ -13,7 +13,10 @@ struct BookmarkNodeData;
 class BookmarkModel;
 class BookmarkNode;
 @class BrowserWindowController;
+
+namespace ui {
 class ThemeProvider;
+}
 
 // Protocol for a BookmarkButton's delegate, responsible for doing
 // things on behalf of a bookmark button.
@@ -115,7 +118,7 @@ class ThemeProvider;
 - (CGFloat)indicatorPosForDragToPoint:(NSPoint)point;
 
 // Return the theme provider associated with this browser window.
-- (ThemeProvider*)themeProvider;
+- (ui::ThemeProvider*)themeProvider;
 
 // Called just before a child folder puts itself on screen.
 - (void)childFolderWillShow:(id<BookmarkButtonControllerProtocol>)child;

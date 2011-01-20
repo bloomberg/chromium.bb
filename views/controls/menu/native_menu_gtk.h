@@ -10,9 +10,9 @@
 
 #include <vector>
 
-#include "app/gtk_signal.h"
 #include "base/message_loop.h"
 #include "base/task.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "views/controls/menu/menu_wrapper.h"
 
 namespace ui {

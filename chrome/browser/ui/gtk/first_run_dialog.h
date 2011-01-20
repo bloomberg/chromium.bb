@@ -9,9 +9,9 @@
 typedef struct _GtkButton GtkButton;
 typedef struct _GtkWidget GtkWidget;
 
-#include "app/gtk_signal.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class TemplateURL;
 class TemplateURLModel;

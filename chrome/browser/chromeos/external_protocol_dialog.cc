@@ -5,8 +5,6 @@
 #include "chrome/browser/chromeos/external_protocol_dialog.h"
 
 #include "app/l10n_util.h"
-#include "app/message_box_flags.h"
-#include "app/text_elider.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -18,6 +16,8 @@
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/message_box_flags.h"
+#include "ui/base/text/text_elider.h"
 #include "views/controls/message_box_view.h"
 #include "views/window/window.h"
 
@@ -49,11 +49,11 @@ ExternalProtocolDialog::~ExternalProtocolDialog() {
 // ExternalProtocolDialog, views::DialogDelegate implementation:
 
 int ExternalProtocolDialog::GetDialogButtons() const {
-  return MessageBoxFlags::DIALOGBUTTON_OK;
+  return ui::MessageBoxFlags::DIALOGBUTTON_OK;
 }
 
 std::wstring ExternalProtocolDialog::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
+    ui::MessageBoxFlags::DialogButton button) const {
   return UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT));
 }
@@ -88,7 +88,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
       scheme_(url.scheme()) {
   const int kMaxUrlWithoutSchemeSize = 256;
   std::wstring elided_url_without_scheme;
-  gfx::ElideString(ASCIIToWide(url.possibly_invalid_spec()),
+  ui::ElideString(ASCIIToWide(url.possibly_invalid_spec()),
       kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
 
   std::wstring message_text = UTF16ToWide(l10n_util::GetStringFUTF16(
@@ -96,10 +96,11 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
       ASCIIToUTF16(url.scheme() + ":"),
       WideToUTF16(elided_url_without_scheme)) + ASCIIToUTF16("\n\n"));
 
-  message_box_view_ = new MessageBoxView(MessageBoxFlags::kIsConfirmMessageBox,
-                                         message_text,
-                                         std::wstring(),
-                                         kMessageWidth);
+  message_box_view_ = new MessageBoxView(
+      ui::MessageBoxFlags::kIsConfirmMessageBox,
+      message_text,
+      std::wstring(),
+      kMessageWidth);
   message_box_view_->SetCheckBoxLabel(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT)));
 

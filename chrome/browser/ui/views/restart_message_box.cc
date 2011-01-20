@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/views/restart_message_box.h"
 
 #include "app/l10n_util.h"
-#include "app/message_box_flags.h"
 #include "base/utf_string_conversions.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/message_box_flags.h"
 #include "views/controls/message_box_view.h"
 #include "views/window/window.h"
 
@@ -22,12 +22,12 @@ void RestartMessageBox::ShowMessageBox(gfx::NativeWindow parent_window) {
 }
 
 int RestartMessageBox::GetDialogButtons() const {
-  return MessageBoxFlags::DIALOGBUTTON_OK;
+  return ui::MessageBoxFlags::DIALOGBUTTON_OK;
 }
 
 std::wstring RestartMessageBox::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
-  DCHECK(button == MessageBoxFlags::DIALOGBUTTON_OK);
+    ui::MessageBoxFlags::DialogButton button) const {
+  DCHECK(button == ui::MessageBoxFlags::DIALOGBUTTON_OK);
   return UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK));
 }
 
@@ -54,7 +54,8 @@ RestartMessageBox::RestartMessageBox(gfx::NativeWindow parent_window) {
   const int kDialogWidth = 400;
   // Also deleted when the window closes.
   message_box_view_ = new MessageBoxView(
-      MessageBoxFlags::kFlagHasMessage | MessageBoxFlags::kFlagHasOKButton,
+      ui::MessageBoxFlags::kFlagHasMessage |
+          ui::MessageBoxFlags::kFlagHasOKButton,
       UTF16ToWide(
           l10n_util::GetStringUTF16(IDS_OPTIONS_RESTART_REQUIRED)).c_str(),
       std::wstring(),

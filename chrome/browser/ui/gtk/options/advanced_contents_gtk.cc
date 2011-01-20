@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "app/gtk_signal.h"
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -47,6 +46,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 namespace {
 

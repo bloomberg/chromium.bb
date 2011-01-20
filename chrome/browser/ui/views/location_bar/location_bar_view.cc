@@ -10,7 +10,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/theme_provider.h"
 #include "base/command_line.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
@@ -44,6 +43,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/theme_provider.h"
 #include "views/controls/label.h"
 #include "views/drag_utils.h"
 

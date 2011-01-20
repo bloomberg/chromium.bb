@@ -21,7 +21,7 @@
 #include "webkit/glue/webcursor.h"
 
 #if defined(USE_X11)
-#include "app/x11_util.h"
+#include "ui/base/x/x11_util.h"
 
 typedef struct _GdkDrawable GdkPixmap;
 #endif

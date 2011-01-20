@@ -7,7 +7,6 @@
 #include <string>
 
 #include "app/l10n_util.h"
-#include "app/message_box_flags.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +18,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "ui/base/message_box_flags.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
@@ -156,7 +156,7 @@ views::View* DefaultSearchView::GetContentsView() {
 }
 
 int DefaultSearchView::GetDialogButtons() const {
-  return MessageBoxFlags::DIALOGBUTTON_NONE;
+  return ui::MessageBoxFlags::DIALOGBUTTON_NONE;
 }
 
 bool DefaultSearchView::Accept() {

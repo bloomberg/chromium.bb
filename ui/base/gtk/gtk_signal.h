@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GTK_SIGNAL_H_
-#define APP_GTK_SIGNAL_H_
+#ifndef UI_BASE_GTK_GTK_SIGNAL_H_
+#define UI_BASE_GTK_GTK_SIGNAL_H_
 #pragma once
 
 typedef void* gpointer;
@@ -114,4 +114,4 @@ typedef struct _GtkWidget GtkWidget;
   CHROMEG_CALLBACK_6(CLASS, RETURN, METHOD, GtkWidget*, ARG1, ARG2, ARG3,   \
                      ARG4, ARG5, ARG6);
 
-#endif  // APP_GTK_SIGNAL_H_
+#endif  // UI_BASE_GTK_GTK_SIGNAL_H_

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/remoting/setup_flow.h"
 
-#include "app/gfx/font_util.h"
 #include "app/l10n_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -23,6 +22,7 @@
 #include "gfx/font.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_font_util.h"
 
 namespace remoting {
 
@@ -169,7 +169,7 @@ void SetupFlow::GetDialogSize(gfx::Size* size) const {
       prefs->GetInteger(prefs::kWebKitDefaultFontSize));
 
   // TODO(pranavk) Replace the following SYNC resources with REMOTING Resources.
-  *size = gfx::GetLocalizedContentsSizeForFont(
+  *size = ui::GetLocalizedContentsSizeForFont(
       IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS,
       IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES,
       approximate_web_font);

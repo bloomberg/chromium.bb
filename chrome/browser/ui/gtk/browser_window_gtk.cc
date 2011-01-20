@@ -302,7 +302,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        infobar_arrow_model_(this) {
   // We register first so that other views like the toolbar can use the
   // is_active() function in their ActiveWindowChanged() handlers.
-  ActiveWindowWatcherX::AddObserver(this);
+  ui::ActiveWindowWatcherX::AddObserver(this);
 
   use_custom_frame_pref_.Init(prefs::kUseCustomChromeFrame,
       browser_->profile()->GetPrefs(), this);
@@ -312,7 +312,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
   // always even on the current virtual desktop.  If we are running under
   // compiz, suppress such raises, as they are not necessary in compiz anyway.
   std::string wm_name;
-  if (x11_util::GetWindowManagerName(&wm_name) && wm_name == "compiz")
+  if (ui::GetWindowManagerName(&wm_name) && wm_name == "compiz")
     suppress_window_raise_ = true;
 
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
@@ -348,7 +348,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
 }
 
 BrowserWindowGtk::~BrowserWindowGtk() {
-  ActiveWindowWatcherX::RemoveObserver(this);
+  ui::ActiveWindowWatcherX::RemoveObserver(this);
 
   browser_->tabstrip_model()->RemoveObserver(this);
 }
@@ -783,7 +783,7 @@ void BrowserWindowGtk::SetFullscreen(bool fullscreen) {
     // panel or not.
     std::string wm_name;
     bool unmaximize_before_unfullscreen = IsMaximized() &&
-        x11_util::GetWindowManagerName(&wm_name) && wm_name == "Metacity";
+        ui::GetWindowManagerName(&wm_name) && wm_name == "Metacity";
     if (unmaximize_before_unfullscreen)
       UnMaximize();
 
@@ -1121,7 +1121,7 @@ gfx::Rect BrowserWindowGtk::GetInstantBounds() {
 
 gfx::Rect BrowserWindowGtk::GrabWindowSnapshot(std::vector<unsigned char>*
                                                png_representation) {
-  x11_util::GrabWindowSnapshot(window_, png_representation);
+  ui::GrabWindowSnapshot(window_, png_representation);
   return bounds_;
 }
 
@@ -1438,7 +1438,7 @@ void BrowserWindowGtk::RegisterUserPrefs(PrefService* prefs) {
   bool custom_frame_default = false;
   // Avoid checking the window manager if we're not connected to an X server (as
   // is the case in Valgrind tests).
-  if (x11_util::XDisplayExists() &&
+  if (ui::XDisplayExists() &&
       !prefs->HasPrefPath(prefs::kUseCustomChromeFrame)) {
     custom_frame_default = GetCustomFramePrefDefault();
   }
@@ -2066,7 +2066,7 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
 // static
 void BrowserWindowGtk::MainWindowMapped(GtkWidget* widget) {
   // Map the X Window ID of the window to our window.
-  XID xid = x11_util::GetX11WindowFromGtkWidget(widget);
+  XID xid = ui::GetX11WindowFromGtkWidget(widget);
   BrowserWindowGtk::xid_map_.insert(
       std::pair<XID, GtkWindow*>(xid, GTK_WINDOW(widget)));
 }
@@ -2074,7 +2074,7 @@ void BrowserWindowGtk::MainWindowMapped(GtkWidget* widget) {
 // static
 void BrowserWindowGtk::MainWindowUnMapped(GtkWidget* widget) {
   // Unmap the X Window ID.
-  XID xid = x11_util::GetX11WindowFromGtkWidget(widget);
+  XID xid = ui::GetX11WindowFromGtkWidget(widget);
   BrowserWindowGtk::xid_map_.erase(xid);
 }
 
@@ -2231,7 +2231,7 @@ void BrowserWindowGtk::PlaceBookmarkBar(bool is_floating) {
 // static
 bool BrowserWindowGtk::GetCustomFramePrefDefault() {
   std::string wm_name;
-  if (!x11_util::GetWindowManagerName(&wm_name))
+  if (!ui::GetWindowManagerName(&wm_name))
     return false;
 
   // Ideally, we'd use the custom frame by default and just fall back on using

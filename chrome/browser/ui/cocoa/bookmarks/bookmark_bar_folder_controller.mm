@@ -1407,7 +1407,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return y;
 }
 
-- (ThemeProvider*)themeProvider {
+- (ui::ThemeProvider*)themeProvider {
   return [parentController_ themeProvider];
 }
 

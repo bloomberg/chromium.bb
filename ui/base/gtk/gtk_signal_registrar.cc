@@ -1,12 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gtk_signal_registrar.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 
 #include <glib-object.h>
 
 #include "base/logging.h"
+
+namespace ui {
 
 GtkSignalRegistrar::GtkSignalRegistrar() {
 }
@@ -72,3 +74,5 @@ void GtkSignalRegistrar::WeakNotify(GObject* where_the_object_was) {
   // handler id list.
   handler_lists_.erase(iter);
 }
+
+}  // namespace ui

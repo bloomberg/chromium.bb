@@ -8,11 +8,11 @@
 
 #include <string>
 
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/ui/gtk/gtk_tree.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class AccessibleWidgetHelper;
 class GURL;

@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/external_protocol_dialog.h"
 
 #include "app/l10n_util_mac.h"
-#include "app/text_elider.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/external_protocol_handler.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/text/text_elider.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // ExternalProtocolHandler
@@ -62,8 +62,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
 
   const int kMaxUrlWithoutSchemeSize = 256;
   std::wstring elided_url_without_scheme;
-  gfx::ElideString(ASCIIToWide(url_.possibly_invalid_spec()),
-                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
+  ui::ElideString(ASCIIToWide(url_.possibly_invalid_spec()),
+                  kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
 
   NSString* urlString = l10n_util::GetNSStringFWithFixup(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,

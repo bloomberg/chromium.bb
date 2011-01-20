@@ -114,7 +114,7 @@ void ExtensionBrowserEventRouter::Init() {
 #if defined(TOOLKIT_VIEWS)
   views::FocusManager::GetWidgetFocusManager()->AddFocusChangeListener(this);
 #elif defined(TOOLKIT_GTK)
-  ActiveWindowWatcherX::AddObserver(this);
+  ui::ActiveWindowWatcherX::AddObserver(this);
 #elif defined(OS_MACOSX)
   // Needed for when no suitable window can be passed to an extension as the
   // currently focused window.
@@ -154,7 +154,7 @@ ExtensionBrowserEventRouter::~ExtensionBrowserEventRouter() {
 #if defined(TOOLKIT_VIEWS)
   views::FocusManager::GetWidgetFocusManager()->RemoveFocusChangeListener(this);
 #elif defined(TOOLKIT_GTK)
-  ActiveWindowWatcherX::RemoveObserver(this);
+  ui::ActiveWindowWatcherX::RemoveObserver(this);
 #endif
 }
 

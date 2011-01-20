@@ -4,25 +4,25 @@
 
 #include "views/widget/child_window_message_processor.h"
 
-#include "app/view_prop.h"
 #include "base/logging.h"
+#include "ui/base/view_prop.h"
 
 namespace views {
 
 static const char* const kChildWindowKey = "__CHILD_WINDOW_MESSAGE_PROCESSOR__";
 
 // static
-app::ViewProp* ChildWindowMessageProcessor::Register(
+ui::ViewProp* ChildWindowMessageProcessor::Register(
     HWND hwnd,
     ChildWindowMessageProcessor* processor) {
   DCHECK(processor);
-  return new app::ViewProp(hwnd, kChildWindowKey, processor);
+  return new ui::ViewProp(hwnd, kChildWindowKey, processor);
 }
 
 // static
 ChildWindowMessageProcessor* ChildWindowMessageProcessor::Get(HWND hwnd) {
   return reinterpret_cast<ChildWindowMessageProcessor*>(
-      app::ViewProp::GetValue(hwnd, kChildWindowKey));
+    ui::ViewProp::GetValue(hwnd, kChildWindowKey));
 }
 
 }  // namespace

@@ -212,7 +212,7 @@ static BOOL gCanGetCornerRadius = NO;
                             bounds:(NSRect)bounds
                             offset:(NSPoint)offset
               forceBlackBackground:(BOOL)forceBlackBackground {
-  ThemeProvider* themeProvider = [[view window] themeProvider];
+  ui::ThemeProvider* themeProvider = [[view window] themeProvider];
   if (!themeProvider)
     return NO;
 
@@ -324,7 +324,7 @@ static BOOL gCanGetCornerRadius = NO;
 }
 
 + (NSColor*)titleColorForThemeView:(NSView*)view {
-  ThemeProvider* themeProvider = [[view window] themeProvider];
+  ui::ThemeProvider* themeProvider = [[view window] themeProvider];
   if (!themeProvider)
     return [NSColor windowFrameTextColor];
 

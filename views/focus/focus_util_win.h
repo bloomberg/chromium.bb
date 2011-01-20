@@ -8,7 +8,7 @@
 
 #include <windows.h>
 
-namespace app {
+namespace ui {
 class ViewProp;
 }
 
@@ -18,7 +18,7 @@ namespace views {
 // We reroute the mouse wheel messages to such HWND when they are under the
 // mouse pointer (but are not the active window). Callers own the returned
 // object.
-app::ViewProp* SetWindowSupportsRerouteMouseWheel(HWND hwnd);
+ui::ViewProp* SetWindowSupportsRerouteMouseWheel(HWND hwnd);
 
 // Forwards mouse wheel messages to the window under it.
 // Windows sends mouse wheel messages to the currently active window.

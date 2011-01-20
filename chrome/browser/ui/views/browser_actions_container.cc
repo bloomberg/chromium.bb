@@ -986,7 +986,7 @@ void BrowserActionsContainer::ModelLoaded() {
 }
 
 void BrowserActionsContainer::LoadImages() {
-  ThemeProvider* tp = GetThemeProvider();
+  ui::ThemeProvider* tp = GetThemeProvider();
   chevron_->SetIcon(*tp->GetBitmapNamed(IDR_BROWSER_ACTIONS_OVERFLOW));
   chevron_->SetHoverIcon(*tp->GetBitmapNamed(IDR_BROWSER_ACTIONS_OVERFLOW_H));
   chevron_->SetPushedIcon(*tp->GetBitmapNamed(IDR_BROWSER_ACTIONS_OVERFLOW_P));

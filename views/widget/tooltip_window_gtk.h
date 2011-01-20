@@ -8,9 +8,9 @@
 
 #include <string>
 
-#include "app/gtk_integers.h"
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
+#include "ui/base/gtk/gtk_integers.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GdkEventExpose GdkEventExpose;
 typedef struct _GtkLabel GtkLabel;

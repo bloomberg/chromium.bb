@@ -26,7 +26,7 @@ void DetachableToolbarView::PaintBackgroundAttachedMode(
     gfx::Canvas* canvas,
     views::View* view,
     const gfx::Point& background_origin) {
-  ThemeProvider* tp = view->GetThemeProvider();
+  ui::ThemeProvider* tp = view->GetThemeProvider();
   SkColor theme_toolbar_color =
       tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
   canvas->FillRectInt(theme_toolbar_color, 0, 0,
@@ -63,7 +63,7 @@ void DetachableToolbarView::PaintHorizontalBorder(gfx::Canvas* canvas,
 
 // static
 void DetachableToolbarView::PaintContentAreaBackground(
-    gfx::Canvas* canvas, ThemeProvider* theme_provider,
+    gfx::Canvas* canvas, ui::ThemeProvider* theme_provider,
     const SkRect& rect, double roundness) {
   SkPaint paint;
   paint.setAntiAlias(true);
@@ -75,7 +75,7 @@ void DetachableToolbarView::PaintContentAreaBackground(
 
 // static
 void DetachableToolbarView::PaintContentAreaBorder(
-    gfx::Canvas* canvas, ThemeProvider* theme_provider,
+    gfx::Canvas* canvas, ui::ThemeProvider* theme_provider,
     const SkRect& rect, double roundness) {
   SkPaint border_paint;
   border_paint.setColor(

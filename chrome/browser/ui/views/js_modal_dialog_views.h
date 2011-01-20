@@ -10,8 +10,8 @@
 
 #include <string>
 
-#include "app/message_box_flags.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
+#include "ui/base/message_box_flags.h"
 #include "views/window/dialog_delegate.h"
 
 class MessageBoxView;
@@ -39,7 +39,7 @@ class JSModalDialogViews : public NativeAppModalDialog,
   virtual bool Cancel();
   virtual bool Accept();
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
+      ui::MessageBoxFlags::DialogButton button) const;
 
   // Overridden from views::WindowDelegate:
   virtual bool IsModal() const { return true; }

@@ -8,8 +8,8 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_signal.h"
 #include "chrome/browser/status_icons/status_icon.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class MenuGtk;
 class SkBitmap;

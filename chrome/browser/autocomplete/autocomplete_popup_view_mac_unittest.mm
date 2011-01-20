@@ -4,12 +4,12 @@
 
 #import "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
 
-#include "app/text_elider.h"
 #include "base/scoped_ptr.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "testing/platform_test.h"
+#include "ui/base/text/text_elider.h"
 
 namespace {
 
@@ -461,7 +461,7 @@ TEST_F(AutocompletePopupViewMacTest, ElideString) {
 
   // When elided, result is the same as ElideText().
   ret = AutocompletePopupViewMac::ElideString(as, wideContents, font_, kNarrow);
-  std::wstring elided(UTF16ToWideHack(ElideText(WideToUTF16Hack(
+  std::wstring elided(UTF16ToWideHack(ui::ElideText(WideToUTF16Hack(
       wideContents), font_, kNarrow, false)));
   EXPECT_TRUE(ret == as);
   EXPECT_FALSE([[as string] isEqualToString:contents]);
@@ -469,7 +469,7 @@ TEST_F(AutocompletePopupViewMacTest, ElideString) {
 
   // When elided, result is the same as ElideText().
   ret = AutocompletePopupViewMac::ElideString(as, wideContents, font_, 0.0);
-  elided = UTF16ToWideHack(ElideText(WideToUTF16Hack(wideContents), font_,
+  elided = UTF16ToWideHack(ui::ElideText(WideToUTF16Hack(wideContents), font_,
                                      0.0, false));
   EXPECT_TRUE(ret == as);
   EXPECT_FALSE([[as string] isEqualToString:contents]);

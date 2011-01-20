@@ -8,9 +8,9 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class Browser;
 
