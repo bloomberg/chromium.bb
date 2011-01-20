@@ -121,7 +121,7 @@ cr.define('options', function() {
         return;
 
       var target = e.target;
-      if (target.className == 'close-button') {
+      if (target.classList.contains('close-button')) {
         var listItem = this.getListItemAncestor(target);
         var selected = this.selectionModel.selectedIndexes;
 
