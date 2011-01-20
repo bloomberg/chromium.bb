@@ -2625,8 +2625,6 @@
         'browser/ui/browser_navigator.cc',
         'browser/ui/browser_navigator.h',
         'browser/ui/browser_window.h',
-        'browser/ui/cocoa/about_ipc_bridge.h',
-        'browser/ui/cocoa/about_ipc_bridge.mm',
         'browser/ui/cocoa/about_ipc_controller.h',
         'browser/ui/cocoa/about_ipc_controller.mm',
         'browser/ui/cocoa/about_ipc_dialog.h',

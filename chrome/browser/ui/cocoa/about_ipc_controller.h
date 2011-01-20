@@ -14,7 +14,7 @@
 #include "third_party/GTM/Foundation/GTMRegex.h"
 
 // Must be included after IPC_MESSAGE_LOG_ENABLED gets defined
-#import "chrome/browser/ui/cocoa/about_ipc_bridge.h"
+#import "chrome/browser/ui/cocoa/about_ipc_dialog.h"
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 
