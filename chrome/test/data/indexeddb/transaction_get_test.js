@@ -16,6 +16,7 @@ function afterCommit()
 
 function nonExistingKey()
 {
+    shouldBe("event.result", "undefined");
     window.setTimeout('afterCommit()', 0);
 }
 
@@ -36,11 +37,9 @@ function startTransaction()
     result.onsuccess = gotValue;
     result.onerror = unexpectedErrorCallback;
 
-    // TODO(hans): Enable this again with the new semantics after WebKit rolls.
-    //var emptyResult = store.get('nonExistingKey');
-    //emptyResult.onsuccess = unexpectedSuccessCallback;
-    //emptyResult.onerror = nonExistingKey;
-    nonExistingKey();
+    var emptyResult = store.get('nonExistingKey');
+    emptyResult.onsuccess = nonExistingKey;
+    emptyResult.onerror = unexpectedErrorCallback;
 }
 
 function populateObjectStore()
