@@ -271,7 +271,6 @@
                 'app/theme/omnibox_https_invalid.pdf',
                 'app/theme/omnibox_https_valid.pdf',
                 'app/theme/omnibox_https_warning.pdf',
-                'app/theme/omnibox_more.pdf',
                 'app/theme/omnibox_search.pdf',
                 'app/theme/omnibox_star.pdf',
                 'app/theme/otr_icon.pdf',
