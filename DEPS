@@ -11,7 +11,7 @@ vars = {
   "libjingle_revision": "50",
   "libvpx_revision": "65287",
   "ffmpeg_revision": "71842",
-  "skia_revision": "716",
+  "skia_revision": "699",
 }
 
 deps = {
@@ -65,9 +65,6 @@ deps = {
   "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin":
     Var("nacl_trunk") + "/src/native_client/tests/prebuilt@" +
     Var("nacl_revision"),
-
-  "src/third_party/skia/gpu":
-    (Var("googlecode_url") % "skia") + "/trunk/gpu@" + Var("skia_revision"),
 
   "src/third_party/skia/src":
     (Var("googlecode_url") % "skia") + "/trunk/src@" + Var("skia_revision"),
