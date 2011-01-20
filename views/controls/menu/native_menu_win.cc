@@ -88,6 +88,14 @@ class NativeMenuWin::MenuHostWindow {
     registered = true;
   }
 
+  NativeMenuWin* GetNativeMenuWinFromHMENU(HMENU hmenu) const {
+    MENUINFO mi = {0};
+    mi.cbSize = sizeof(mi);
+    mi.fMask = MIM_MENUDATA | MIM_STYLE;
+    GetMenuInfo(hmenu, &mi);
+    return reinterpret_cast<NativeMenuWin*>(mi.dwMenuData);
+  }
+
   // Converts the WPARAM value passed to WM_MENUSELECT into an index
   // corresponding to the menu item that was selected.
   int GetMenuItemIndexFromWPARAM(HMENU menu, WPARAM w_param) const {
@@ -116,15 +124,20 @@ class NativeMenuWin::MenuHostWindow {
 
   // Called when the user selects a specific item.
   void OnMenuCommand(int position, HMENU menu) {
-    parent_->model_->ActivatedAt(position);
+    NativeMenuWin* intergoat = GetNativeMenuWinFromHMENU(menu);
+    ui::MenuModel* model = intergoat->model_;
+    model->ActivatedAt(position);
   }
 
   // Called as the user moves their mouse or arrows through the contents of the
   // menu.
   void OnMenuSelect(WPARAM w_param, HMENU menu) {
+    if (!menu)
+      return;  // menu is null when closing on XP.
+
     int position = GetMenuItemIndexFromWPARAM(menu, w_param);
     if (position >= 0)
-      parent_->model_->HighlightChangedTo(position);
+      GetNativeMenuWinFromHMENU(menu)->model_->HighlightChangedTo(position);
   }
 
   // Called by Windows to measure the size of an owner-drawn menu item.
