@@ -130,8 +130,6 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
 }
 
 RenderWidgetHostViewViews::~RenderWidgetHostViewViews() {
-  RenderViewGone(base::TERMINATION_STATUS_NORMAL_TERMINATION,
-                 ResultCodes::NORMAL_EXIT);
 }
 
 void RenderWidgetHostViewViews::InitAsChild() {
@@ -293,8 +291,12 @@ void RenderWidgetHostViewViews::RenderViewGone(base::TerminationStatus status,
 }
 
 void RenderWidgetHostViewViews::Destroy() {
-  // TODO(anicolao): deal with any special popup cleanup
-  NOTIMPLEMENTED();
+  // host_'s destruction brought us here, null it out so we don't use it
+  host_ = NULL;
+
+  if (GetParent())
+    GetParent()->RemoveChildView(this);
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void RenderWidgetHostViewViews::SetTooltipText(const std::wstring& tip) {
