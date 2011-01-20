@@ -51,7 +51,6 @@ std::string AutocompleteMatch::TypeToString(Type type) {
     "search-history",
     "search-suggest",
     "search-other-engine",
-    "open-history-page",
   };
   DCHECK(arraysize(strings) == NUM_TYPES);
   return strings[type];
@@ -70,7 +69,6 @@ int AutocompleteMatch::TypeToIcon(Type type) {
     IDR_OMNIBOX_SEARCH,
     IDR_OMNIBOX_SEARCH,
     IDR_OMNIBOX_SEARCH,
-    IDR_OMNIBOX_MORE,
   };
   DCHECK(arraysize(icons) == NUM_TYPES);
   return icons[type];
@@ -85,12 +83,7 @@ bool AutocompleteMatch::MoreRelevant(const AutocompleteMatch& elem1,
   if (elem1.relevance == elem2.relevance)
     return elem1.contents > elem2.contents;
 
-  // A negative relevance indicates the real relevance can be determined by
-  // negating the value. If both relevances are negative, negate the result
-  // so that we end up with positive relevances, then negative relevances with
-  // the negative relevances sorted by absolute values.
-  const bool result = elem1.relevance > elem2.relevance;
-  return (elem1.relevance < 0 && elem2.relevance < 0) ? !result : result;
+  return elem1.relevance > elem2.relevance;
 }
 
 // static

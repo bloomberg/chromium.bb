@@ -577,47 +577,6 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EnterToSearch) {
   EXPECT_STREQ(kSearchSingleCharURL, url.spec().c_str());
 }
 
-// See http://crbug.com/20934: Omnibox keyboard behavior wrong for
-// "See recent pages in history"
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EnterToOpenHistoryPage) {
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-
-  ASSERT_NO_FATAL_FAILURE(SetupComponents());
-  browser()->FocusLocationBar();
-
-  AutocompleteEditView* edit_view = NULL;
-  ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
-  AutocompletePopupModel* popup_model = edit_view->model()->popup_model();
-  ASSERT_TRUE(popup_model);
-
-  ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));
-  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
-  ASSERT_TRUE(popup_model->IsOpen());
-  EXPECT_EQ(0U, popup_model->selected_line());
-
-  // Move to the history page item.
-  size_t size = popup_model->result().size();
-  while (true) {
-    if (popup_model->result().match_at(popup_model->selected_line()).type ==
-        AutocompleteMatch::OPEN_HISTORY_PAGE)
-      break;
-    size_t old_selected_line = popup_model->selected_line();
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_DOWN, false, false, false));
-    ASSERT_EQ(old_selected_line + 1, popup_model->selected_line());
-    if (popup_model->selected_line() == size - 1)
-      break;
-  }
-
-  // Make sure the history page item is selected.
-  ASSERT_EQ(AutocompleteMatch::OPEN_HISTORY_PAGE,
-            popup_model->result().match_at(popup_model->selected_line()).type);
-
-  // Open the history page item.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, false, false, false));
-  GURL url = browser()->GetSelectedTabContents()->GetURL();
-  EXPECT_STREQ(kHistoryPageURL, url.spec().c_str());
-}
-
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EscapeToDefaultMatch) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 

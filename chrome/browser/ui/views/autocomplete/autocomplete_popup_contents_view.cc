@@ -525,7 +525,6 @@ const SkBitmap* AutocompleteResultView::GetIcon() const {
       case IDR_OMNIBOX_HTTP:    icon = IDR_OMNIBOX_HTTP_SELECTED; break;
       case IDR_OMNIBOX_HISTORY: icon = IDR_OMNIBOX_HISTORY_SELECTED; break;
       case IDR_OMNIBOX_SEARCH:  icon = IDR_OMNIBOX_SEARCH_SELECTED; break;
-      case IDR_OMNIBOX_MORE:    icon = IDR_OMNIBOX_MORE_SELECTED; break;
       case IDR_OMNIBOX_STAR:    icon = IDR_OMNIBOX_STAR_SELECTED; break;
       default:             NOTREACHED(); break;
     }

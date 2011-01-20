@@ -77,8 +77,6 @@ struct AutocompleteMatch {
                              // containing the input.
     SEARCH_SUGGEST,          // A suggested search (with the default engine).
     SEARCH_OTHER_ENGINE,     // A search with a non-default engine.
-    OPEN_HISTORY_PAGE,       // A synthetic result that opens the history page
-                             // to search for the input.
     NUM_TYPES,
   };
 
@@ -134,13 +132,6 @@ struct AutocompleteMatch {
   // various providers. This is used to rank matches among all responding
   // providers, so different providers must be carefully tuned to supply
   // matches with appropriate relevance.
-  //
-  // If the relevance is negative, it will only be displayed if there are not
-  // enough non-negative items in all the providers to max out the popup. In
-  // this case, the relevance of the additional items will be inverted so they
-  // can be mixed in with the rest of the relevances. This allows a provider
-  // to group its matches, having the added items appear intermixed with its
-  // other matches.
   //
   // TODO(pkasting): http://b/1111299 This should be calculated algorithmically,
   // rather than being a fairly fixed value defined by the table above.

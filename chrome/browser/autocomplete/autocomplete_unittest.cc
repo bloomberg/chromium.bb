@@ -382,8 +382,7 @@ TEST(AutocompleteTest, InputCrash) {
                           false);
 }
 
-// Test that we can properly compare matches' relevance when at least one is
-// negative.
+// Test comparing matches relevance.
 TEST(AutocompleteMatch, MoreRelevant) {
   struct RelevantCases {
     int r1;
@@ -394,8 +393,8 @@ TEST(AutocompleteMatch, MoreRelevant) {
     {  10,  -5, true  },
     {  -5,  10, false },
     {   0,  10, false },
-    { -10,  -5, true  },
-    {  -5, -10, false },
+    { -10,  -5, false  },
+    {  -5, -10, true },
   };
 
   AutocompleteMatch m1(NULL, 0, false, AutocompleteMatch::URL_WHAT_YOU_TYPED);

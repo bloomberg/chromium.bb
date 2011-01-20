@@ -504,9 +504,7 @@ class AutocompleteResult {
   void Validate() const;
 #endif
 
-  // Max number of matches we'll show from the various providers. We may end
-  // up showing an additional shortcut for Destinations->History, see
-  // AddHistoryContentsShortcut.
+  // Max number of matches we'll show from the various providers.
   static const size_t kMaxMatches;
 
  private:
@@ -543,7 +541,6 @@ class AutocompleteController : public ACProviderListener {
 #ifdef UNIT_TEST
   explicit AutocompleteController(const ACProviders& providers)
       : providers_(providers),
-        history_contents_provider_(NULL),
         search_provider_(NULL),
         updated_latest_result_(false),
         delay_interval_has_passed_(false),
@@ -642,23 +639,11 @@ class AutocompleteController : public ACProviderListener {
   // notificiations.
   void CommitResult(bool notify_default_match);
 
-  // Returns the matches from |provider| whose destination urls are not in
-  // |latest_result_|.
-  ACMatches GetMatchesNotInLatestResult(
-      const AutocompleteProvider* provider) const;
-
-  // If the HistoryContentsAutocomplete provider is done and there are more
-  // matches in the database than currently shown, an entry is added to
-  // |latest_result_| to show all history matches.
-  void AddHistoryContentsShortcut();
-
   // Updates |done_| to be accurate with respect to current providers' statuses.
   void CheckIfDone();
 
   // A list of all providers.
   ACProviders providers_;
-
-  HistoryContentsProvider* history_contents_provider_;
 
   SearchProvider* search_provider_;
 

@@ -548,9 +548,8 @@ void AutocompleteResult::Selection::Clear() {
 }
 
 AutocompleteResult::AutocompleteResult() {
-  // Reserve space for the max number of matches we'll show. The +1 accounts
-  // for the history shortcut match as it isn't included in max_matches.
-  matches_.reserve(kMaxMatches + 1);
+  // Reserve space for the max number of matches we'll show.
+  matches_.reserve(kMaxMatches);
 
   // It's probably safe to do this in the initializer list, but there's little
   // penalty to doing it here and it ensures our object is fully constructed
@@ -599,25 +598,13 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input) {
                              &AutocompleteMatch::DestinationsEqual),
                  matches_.end());
 
-  // Find the top |kMaxMatches| matches.
-  if (matches_.size() > kMaxMatches) {
-    std::partial_sort(matches_.begin(), matches_.begin() + kMaxMatches,
-                      matches_.end(), &AutocompleteMatch::MoreRelevant);
-    matches_.erase(matches_.begin() + kMaxMatches, matches_.end());
-  }
+  // Sort the results.
+  const size_t num_matches = std::min(kMaxMatches, matches_.size());
+  std::partial_sort(matches_.begin(), matches_.begin() + num_matches,
+                    matches_.end(), &AutocompleteMatch::MoreRelevant);
+  // Remove matches so that we have at most kMaxMatches.
+  matches_.resize(num_matches);
 
-  // HistoryContentsProvider uses a negative relevance as a way to avoid
-  // starving out other provider matches, yet we may end up using this match. To
-  // make sure such matches are sorted correctly we search for all
-  // relevances < 0 and negate them. If we change our relevance algorithm to
-  // properly mix different providers' matches, this can go away.
-  for (ACMatches::iterator i = matches_.begin(); i != matches_.end(); ++i) {
-    if (i->relevance < 0)
-      i->relevance = -i->relevance;
-  }
-
-  // Put the final result set in order.
-  std::sort(matches_.begin(), matches_.end(), &AutocompleteMatch::MoreRelevant);
   default_match_ = begin();
 
   // Set the alternate nav URL.
@@ -697,8 +684,7 @@ AutocompleteController::AutocompleteController(Profile* profile)
       switches::kDisableHistoryURLProvider))
     providers_.push_back(new HistoryURLProvider(this, profile));
   providers_.push_back(new KeywordProvider(this, profile));
-  history_contents_provider_ = new HistoryContentsProvider(this, profile);
-  providers_.push_back(history_contents_provider_);
+  providers_.push_back(new HistoryContentsProvider(this, profile));
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end(); ++i)
     (*i)->AddRef();
 }
@@ -836,9 +822,6 @@ void AutocompleteController::UpdateLatestResult(bool is_synchronous_pass) {
   // Sort the matches and trim to a small number of "best" matches.
   latest_result_.SortAndCull(input_);
 
-  if (history_contents_provider_)
-    AddHistoryContentsShortcut();
-
 #ifndef NDEBUG
   latest_result_.Validate();
 #endif
@@ -900,105 +883,6 @@ void AutocompleteController::CommitResult(bool notify_default_match) {
   }
   if (!done_)
     update_delay_timer_.Reset();
-}
-
-ACMatches AutocompleteController::GetMatchesNotInLatestResult(
-    const AutocompleteProvider* provider) const {
-  DCHECK(provider);
-
-  // Determine the set of destination URLs.
-  std::set<GURL> destination_urls;
-  for (AutocompleteResult::const_iterator i(latest_result_.begin());
-       i != latest_result_.end(); ++i)
-    destination_urls.insert(i->destination_url);
-
-  ACMatches matches;
-  const ACMatches& provider_matches = provider->matches();
-  for (ACMatches::const_iterator i = provider_matches.begin();
-       i != provider_matches.end(); ++i) {
-    if (destination_urls.find(i->destination_url) == destination_urls.end())
-      matches.push_back(*i);
-  }
-
-  return matches;
-}
-
-void AutocompleteController::AddHistoryContentsShortcut() {
-  DCHECK(history_contents_provider_);
-  // Only check the history contents provider if the history contents provider
-  // is done and has matches.
-  if (!history_contents_provider_->done() ||
-      !history_contents_provider_->db_match_count()) {
-    return;
-  }
-
-  if ((history_contents_provider_->db_match_count() <=
-          (latest_result_.size() + 1)) ||
-      (history_contents_provider_->db_match_count() == 1)) {
-    // We only want to add a shortcut if we're not already showing the matches.
-    ACMatches matches(GetMatchesNotInLatestResult(history_contents_provider_));
-    if (matches.empty())
-      return;
-    if (matches.size() == 1) {
-      // Only one match not shown, add it. The relevance may be negative,
-      // which means we need to negate it to get the true relevance.
-      AutocompleteMatch& match = matches.front();
-      if (match.relevance < 0)
-        match.relevance = -match.relevance;
-      latest_result_.AddMatch(match);
-      return;
-    } // else, fall through and add item.
-  }
-
-  AutocompleteMatch match(NULL, 0, false, AutocompleteMatch::OPEN_HISTORY_PAGE);
-  match.fill_into_edit = input_.text();
-
-  // Mark up the text such that the user input text is bold.
-  size_t keyword_offset = std::wstring::npos;  // Offset into match.contents.
-  if (history_contents_provider_->db_match_count() ==
-      history_contents_provider_->kMaxMatchCount) {
-    // History contents searcher has maxed out.
-    match.contents = UTF16ToWideHack(
-        l10n_util::GetStringFUTF16(IDS_OMNIBOX_RECENT_HISTORY_MANY,
-                                   WideToUTF16Hack(input_.text()),
-                                   &keyword_offset));
-  } else {
-    // We can report exact matches when there aren't too many.
-    std::vector<size_t> content_param_offsets;
-    match.contents = UTF16ToWideHack(l10n_util::GetStringFUTF16(
-        IDS_OMNIBOX_RECENT_HISTORY,
-        base::FormatNumber(history_contents_provider_->
-                               db_match_count()),
-        WideToUTF16Hack(input_.text()),
-        &content_param_offsets));
-
-    // content_param_offsets is ordered based on supplied params, we expect
-    // that the second one contains the query (first is the number).
-    if (content_param_offsets.size() == 2) {
-      keyword_offset = content_param_offsets[1];
-    } else {
-      // See comments on an identical NOTREACHED() in search_provider.cc.
-      NOTREACHED();
-    }
-  }
-
-  // NOTE: This comparison succeeds when keyword_offset == std::wstring::npos.
-  if (keyword_offset > 0) {
-    match.contents_class.push_back(
-        ACMatchClassification(0, ACMatchClassification::NONE));
-  }
-  match.contents_class.push_back(
-      ACMatchClassification(keyword_offset, ACMatchClassification::MATCH));
-  if (keyword_offset + input_.text().size() < match.contents.size()) {
-    match.contents_class.push_back(
-        ACMatchClassification(keyword_offset + input_.text().size(),
-                              ACMatchClassification::NONE));
-  }
-  match.destination_url =
-      HistoryUI::GetHistoryURLWithSearchText(WideToUTF16(input_.text()));
-  match.transition = PageTransition::AUTO_BOOKMARK;
-  match.provider = history_contents_provider_;
-  latest_result_.AddMatch(match);
 }
 
 void AutocompleteController::CheckIfDone() {

@@ -105,8 +105,6 @@ const int kAutocompleteImages[] = {
   IDR_OMNIBOX_HISTORY_DARK,
   IDR_OMNIBOX_SEARCH,
   IDR_OMNIBOX_SEARCH_DARK,
-  IDR_OMNIBOX_MORE,
-  IDR_OMNIBOX_MORE_DARK,
   IDR_OMNIBOX_STAR,
   IDR_OMNIBOX_STAR_DARK,
   IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON,
@@ -947,7 +945,6 @@ SkBitmap* GtkThemeProvider::GenerateGtkThemeBitmap(int id) const {
     // different colors between the omnibox and the normal background area.
     case IDR_OMNIBOX_HISTORY:
     case IDR_OMNIBOX_HTTP:
-    case IDR_OMNIBOX_MORE:
     case IDR_OMNIBOX_SEARCH:
     case IDR_OMNIBOX_STAR:
     case IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON:
@@ -960,7 +957,6 @@ SkBitmap* GtkThemeProvider::GenerateGtkThemeBitmap(int id) const {
     // with the selected color.
     case IDR_OMNIBOX_HISTORY_DARK:
     case IDR_OMNIBOX_HTTP_DARK:
-    case IDR_OMNIBOX_MORE_DARK:
     case IDR_OMNIBOX_SEARCH_DARK:
     case IDR_OMNIBOX_STAR_DARK: {
       return GenerateTintedIcon(id, selected_entry_tint_);

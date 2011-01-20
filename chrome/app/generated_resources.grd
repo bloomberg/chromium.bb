@@ -4341,13 +4341,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT" desc="Text shown in the search button at the front of the omnibox when the user has selected an extension keyword">
         <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph>
       </message>
-      <!-- TODO(tc): This doesn't handle singular/plural properly. It needs to be reworded. -->
-      <message name="IDS_OMNIBOX_RECENT_HISTORY" desc="Text shown in the omnibox that shows how many recent matches there are and allows the user to navigate to destinations->history with the selected text.">
-        See <ph name="NUM_MATCHES">$1<ex>2,123</ex></ph> recent pages in history containing <ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>
-      </message>
-      <message name="IDS_OMNIBOX_RECENT_HISTORY_MANY" desc="Same as IDS_OMNIBOX_RECENT_HISTORY but when there are many results.">
-        See all pages in history containing <ph name="SEARCH_TERMS">$1<ex>flowers</ex></ph>
-      </message>
 
       <!-- Native Frame menu -->
       <message name="IDS_ALWAYS_ON_TOP" desc="The optional menu in native frame windows for setting the window to be always on top">

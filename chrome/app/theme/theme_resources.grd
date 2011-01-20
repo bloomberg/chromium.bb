@@ -243,9 +243,6 @@
       <include name="IDR_OMNIBOX_HTTPS_WARNING" file="omnibox_https_warning.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HTTP_DARK" file="omnibox_http_dark.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HTTP_SELECTED" file="omnibox_http_selected.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_MORE" file="omnibox_more.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_MORE_DARK" file="omnibox_more_dark.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_MORE_SELECTED" file="omnibox_more_selected.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_SEARCH" file="omnibox_search.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_SEARCH_DARK" file="omnibox_search_dark.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_SEARCH_SELECTED" file="omnibox_search_selected.png" type="BINDATA" />
