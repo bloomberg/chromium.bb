@@ -1,10 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "views/view_text_utils.h"
 
-#include "app/bidi_line_iterator.h"
+#include "base/i18n/bidi_line_iterator.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -31,7 +31,7 @@ void DrawTextAndPositionUrl(gfx::Canvas* canvas,
   // a run is a sequence of words that share the same directionality. We
   // initialize a bidirectional ICU line iterator and split the text into
   // runs that are either strictly LTR or strictly RTL, with no mix.
-  BiDiLineIterator bidi_line;
+  base::i18n::BiDiLineIterator bidi_line;
   if (!bidi_line.Open(WideToUTF16Hack(text), true, false))
     return;
 

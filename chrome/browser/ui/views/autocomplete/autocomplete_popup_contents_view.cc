@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 
-#include "app/bidi_line_iterator.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"
 #include "app/theme_provider.h"
 #include "base/compiler_specific.h"
+#include "base/i18n/bidi_line_iterator.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
@@ -558,7 +558,7 @@ int AutocompleteResultView::DrawString(
   // worry about whether our eliding might change the visual display in
   // unintended ways, e.g. by removing directional markings or by adding an
   // ellipsis that's not enclosed in appropriate markings.
-  BiDiLineIterator bidi_line;
+  base::i18n::BiDiLineIterator bidi_line;
   if (!bidi_line.Open(WideToUTF16Hack(text), base::i18n::IsRTL(), is_url))
     return x;
   const int num_runs = bidi_line.CountRuns();

@@ -1,29 +1,30 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_BIDI_LINE_ITERATOR_H_
-#define APP_BIDI_LINE_ITERATOR_H_
+#ifndef BASE_I18N_BIDI_LINE_ITERATOR_H_
+#define BASE_I18N_BIDI_LINE_ITERATOR_H_
 #pragma once
-
-#include <string>
 
 #include "unicode/ubidi.h"
 
 #include "base/basictypes.h"
 #include "base/string16.h"
 
+namespace base {
+namespace i18n {
+
 // A simple wrapper class for the bidirectional iterator of ICU.
 // This class uses the bidirectional iterator of ICU to split a line of
 // bidirectional texts into visual runs in its display order.
 class BiDiLineIterator {
  public:
-  BiDiLineIterator() : bidi_(NULL) { }
+  BiDiLineIterator();
   ~BiDiLineIterator();
 
   // Initializes the bidirectional iterator with the specified text.  Returns
   // whether initialization succeeded.
-  UBool Open(const string16& text, bool right_to_left, bool url);
+  bool Open(const string16& text, bool right_to_left, bool url);
 
   // Returns the number of visual runs in the text, or zero on error.
   int CountRuns();
@@ -40,4 +41,7 @@ class BiDiLineIterator {
   DISALLOW_COPY_AND_ASSIGN(BiDiLineIterator);
 };
 
-#endif  // APP_BIDI_LINE_ITERATOR_H_
+}  // namespace i18n
+}  // namespace base
+
+#endif  // BASE_I18N_BIDI_LINE_ITERATOR_H_

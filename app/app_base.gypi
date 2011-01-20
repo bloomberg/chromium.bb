@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -159,7 +159,6 @@
         '../ui/base/win/window_impl.h',
         'active_window_watcher_x.cc',
         'active_window_watcher_x.h',
-        'bidi_line_iterator.cc',
         'data_pack.cc',
         'data_pack.h',
         'event_synthesis_gtk.cc',
