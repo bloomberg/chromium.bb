@@ -35,6 +35,8 @@
   'variables': {
       'src_files': ['sel_universal_new.cc',
                     'rpc_universal.cc',
+                    'replay_handler.cc',
+                    'pepper_handler.cc',
                     'parsing.cc',
                     ],
   },

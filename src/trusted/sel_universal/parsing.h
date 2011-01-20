@@ -44,4 +44,7 @@ void BuildArgVec(NaClSrpcArg* argv[], NaClSrpcArg arg[], size_t count);
 
 // Free memory allocated by ParseArgs.
 void FreeArrayArgs(NaClSrpcArg** args);
+
+// Substitute variables in string s.
+string SubstituteVars(string s, NaClCommandLoop* ncl);
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERSAL_PARSING_H_ */

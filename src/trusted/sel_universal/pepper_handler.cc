@@ -13,6 +13,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/sel_universal/pepper_handler.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 
 #include <stdio.h>
@@ -67,8 +68,10 @@ void WINAPI PepperHandlerThread(void* desc_void) {
   NaClThreadExit();
 }
 
+}  // end namespace
 
-bool HanlderAddPepperRpcs(NaClCommandLoop* l, const vector<string>& args) {
+
+bool HandlerAddPepperRpcs(NaClCommandLoop* l, const vector<string>& args) {
   if (args.size() != 1) {
     NaClLog(LOG_ERROR, "not the right number of args for this command\n");
     return false;
@@ -134,8 +137,6 @@ bool HanlderAddPepperRpcs(NaClCommandLoop* l, const vector<string>& args) {
                       &Unimplemented);
   return true;
 }
-
-}  // end namespace
 
 bool HandlerPepperInit(NaClCommandLoop* ncl, const vector<string>& args) {
   if (args.size() != 2) {

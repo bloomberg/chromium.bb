@@ -50,6 +50,8 @@ class NaClCommandLoop {
                                   const vector<string>& args);
   static bool HandleInstallUpcalls(NaClCommandLoop* ncl,
                                    const vector<string>& args);
+  static bool HandleEcho(NaClCommandLoop* ncl,
+                         const vector<string>& args);
   int desc_count_;
   NaClSrpcService* service_;
   NaClSrpcChannel* channel_;

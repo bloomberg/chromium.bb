@@ -23,6 +23,8 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
+#include "native_client/src/trusted/sel_universal/pepper_handler.h"
+#include "native_client/src/trusted/sel_universal/replay_handler.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 
 using std::vector;
@@ -126,7 +128,7 @@ int main(int argc, char* argv[]) {
                        &channel,
                        launcher.socket_address());
 
-#if ENABLE_PEPPER_EMULATION
+  //
   // Pepper sample commands
   // initialize_pepper pepper_desc
   // add_pepper_rpcs
@@ -135,14 +137,11 @@ int main(int argc, char* argv[]) {
   // show_descriptors
   // rpc PPP_InitializeModule i(0) l(0) h(pepper_desc) s("${service_string}") * i(0) i(0)
 
-  extern bool HandlerPepperInit(NaClCommandLoop* ncl,
-                                const vector<string>& args);
   loop.AddHandler("initialize_pepper", HandlerPepperInit);
-
-  extern bool HandlerAddPepperRpcs(NaClCommandLoop* ncl,
-                                   const vector<string>& args);
   loop.AddHandler("add_pepper_rpcs", HandlerAddPepperRpcs);
-#endif
+
+  loop.AddHandler("replay_activate", HandlerReplayActivate);
+  loop.AddHandler("replay", HandlerReplay);
 
 #if NACL_LINUX
   extern bool HandlerSysv(NaClCommandLoop* ncl, const vector<string>& args);
@@ -153,6 +152,7 @@ int main(int argc, char* argv[]) {
 #endif  /* NACL_LINUX */
 
   NaClLog(1, "starting loop\n");
+
   loop.StartInteractiveLoop();
 
   // Close the connections to sel_ldr.

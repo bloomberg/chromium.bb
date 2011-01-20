@@ -284,8 +284,9 @@ static uint32_t SplitArrayChar(string s, vector<string>* tokens, bool input) {
   return dim;
 }
 
+
 // substitute ${var_name} strings in s
-static string SubstituteVars(string s, NaClCommandLoop* ncl) {
+string SubstituteVars(string s, NaClCommandLoop* ncl) {
   string result("");
   string var("");
   bool scanning_var_name = false;
@@ -328,15 +329,16 @@ static string UnescapeString(string s) {
 // input indicates whether this is an input our an output arg.
 // Output args are handled slightly different especially in the array case
 // where the merely allocate space but do not initialize it.
-static bool ParseArg(
-    NaClSrpcArg* arg, string token, bool input, NaClCommandLoop* ncl) {
-  int dim;
-
-  if (token.size() <= 2) {
-    NaClLog(LOG_ERROR, "parameter too short: %s\n", token.c_str());
+static bool ParseArg(NaClSrpcArg* arg,
+                     string raw_token,
+                     bool input,
+                     NaClCommandLoop* ncl) {
+  if (raw_token.size() <= 2) {
+    NaClLog(LOG_ERROR, "parameter too short: %s\n", raw_token.c_str());
     return false;
   }
 
+  const string token = SubstituteVars(raw_token, ncl);
   const char type = token[0];
   vector<string> array_tokens;
 
@@ -345,10 +347,11 @@ static bool ParseArg(
 
   NaClLog(2, "TOKEN %s\n", token.c_str());
   if (token[1] != '(' || token[token.size() - 1] != ')') {
-    NaClLog(LOG_ERROR, "malformed token");
+    NaClLog(LOG_ERROR, "malformed token '%s'\n", token.c_str());
     return false;
   }
 
+  int dim;
   switch (type) {
     case NACL_SRPC_ARG_TYPE_INVALID:
       arg->tag = NACL_SRPC_ARG_TYPE_INVALID;
@@ -438,7 +441,7 @@ static bool ParseArg(
     case NACL_SRPC_ARG_TYPE_STRING:
       arg->tag = NACL_SRPC_ARG_TYPE_STRING;
       arg->arrays.str =
-        strdup(UnescapeString(SubstituteVars(token, ncl)).c_str());
+        strdup(UnescapeString(token).c_str());
       if (NULL == arg->arrays.str) {
         NaClLog(LOG_ERROR, "alloc problem\n");
         return false;
@@ -585,7 +588,6 @@ void DumpArg(const NaClSrpcArg* arg, NaClCommandLoop* ncl) {
   uint32_t count;
   uint32_t i;
   char* p;
-
   switch (arg->tag) {
     case NACL_SRPC_ARG_TYPE_INVALID:
       printf("X()");
@@ -658,6 +660,7 @@ void DumpArg(const NaClSrpcArg* arg, NaClCommandLoop* ncl) {
       printf(")");
       break;
     default:
+      NaClLog(LOG_ERROR, "unknown type '%c'\n", arg->tag);
       break;
   }
 }

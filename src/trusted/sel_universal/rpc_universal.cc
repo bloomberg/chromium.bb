@@ -169,12 +169,24 @@ bool NaClCommandLoop::HandleSetVariable(NaClCommandLoop* ncl,
 }
 
 
+bool NaClCommandLoop::HandleEcho(NaClCommandLoop* ncl,
+                                 const vector<string>& args) {
+  for (size_t i = 1; i < args.size(); ++i) {
+    printf("%s", SubstituteVars(args[i], ncl).c_str());
+  }
+  printf("\n");
+  return true;
+}
+
+
 bool NaClCommandLoop::HandleInstallUpcalls(NaClCommandLoop* ncl,
                                            const vector<string>& args) {
   if (args.size() != 2) {
     NaClLog(LOG_ERROR, "not the right number of args for this command\n");
     return false;
   }
+
+  NaClLog(1, "installing %d upcall rpcs", (int)ncl->upcall_rpcs_.size());
   // Note, we do not care about this leak
   NaClSrpcHandlerDesc* handlers =
     new NaClSrpcHandlerDesc[ncl->upcall_rpcs_.size() + 1];
@@ -227,6 +239,8 @@ static bool HandleHelp(NaClCommandLoop* ncl, const vector<string>& args) {
   printf("    print the methods found by service_discovery\n");
   printf("  install_upcalls <name>\n");
   printf("    install upcalls and set variable name to the service_string\n");
+  printf("  echo <args>*\n");
+  printf("    print rest of line - performs variable substitution\n");
   printf("  quit\n");
   printf("    quit the program\n");
   printf("  help\n");
@@ -285,7 +299,7 @@ static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
                                                       signature.c_str());
 
   if (kNaClSrpcInvalidMethodIndex == rpc_num) {
-    NaClLog(LOG_ERROR, "No RPC found of that name/signature.\n");
+    NaClLog(LOG_ERROR, "No RPC found of signature: [%s]\n", signature.c_str());
     return false;
   }
 
@@ -339,9 +353,10 @@ NaClCommandLoop::NaClCommandLoop(NaClSrpcService* service,
   AddHandler("descs", HandleShowDescriptors);
   AddHandler("show_descriptors", HandleShowDescriptors);
   AddHandler("show_variables", HandleShowVariables);
-  AddHandler("set_variables", HandleSetVariable);
+  AddHandler("set_variable", HandleSetVariable);
   AddHandler("install_upcalls", HandleInstallUpcalls);
   AddHandler("rpc", HandleRpc);
+  AddHandler("echo", HandleEcho);
   AddHandler("help", HandleHelp);
   AddHandler("?", HandleHelp);
   AddHandler("service", HandleService);
@@ -365,7 +380,6 @@ void NaClCommandLoop::StartInteractiveLoop() {
     Tokenize(buffer, &tokens);
 
     if (tokens.size() == 0) {
-      NaClLog(LOG_ERROR, "bad line\n");
       continue;
     }
 
