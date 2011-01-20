@@ -383,9 +383,7 @@ void PatchHelper::PatchBrowserService(IBrowserService* browser_service) {
 void PatchHelper::UnpatchIfNeeded() {
   if (state_ == PATCH_PROTOCOL) {
     g_trans_hooks.RevertHooks();
-    if (GetIEVersion() == IE_9) {
-      HttpNegotiatePatch::Uninitialize();
-    }
+    HttpNegotiatePatch::Uninitialize();
   }
   state_ = UNKNOWN;
 }
