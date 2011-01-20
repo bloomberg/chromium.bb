@@ -770,6 +770,7 @@ Segment::Segment(
     m_start(start),
     m_size(size),
     m_pos(start),
+    m_pSeekHead(NULL),
     m_pInfo(NULL),
     m_pTracks(NULL),
     m_pCues(NULL),
@@ -801,6 +802,7 @@ Segment::~Segment()
     delete m_pTracks;
     delete m_pInfo;
     delete m_pCues;
+    delete m_pSeekHead;
 }
 
 
@@ -1028,8 +1030,21 @@ long long Segment::ParseHeaders()
         }
         else if (id == 0x014D9B74)  //SeekHead ID
         {
+#if 0
             if (available >= total)
                 ParseSeekHead(pos, size);
+#else
+            if (m_pSeekHead == NULL)
+            {
+                m_pSeekHead = new SeekHead(this,
+                                           pos,
+                                           size,
+                                           element_start,
+                                           element_size);
+
+                assert(m_pSeekHead);  //TODO
+            }
+#endif
         }
 
         m_pos = pos + size;  //consume payload
@@ -1751,14 +1766,11 @@ long Segment::Load()
     if (m_clusters == NULL)  //TODO: ignore this case?
         return E_FILE_FORMAT_INVALID;
 
-    //TODO: decide whether we require Cues element
-    //if (m_pCues == NULL)
-    //   return E_FILE_FORMAT_INVALID;
-
     return 0;
 }
 
 
+#if 0
 void Segment::ParseSeekHead(long long start, long long size_)
 {
     long long pos = start;
@@ -1790,8 +1802,117 @@ void Segment::ParseSeekHead(long long start, long long size_)
 
     assert(pos == stop);
 }
+#else
+SeekHead::SeekHead(
+    Segment* pSegment,
+    long long start,
+    long long size_,
+    long long element_start,
+    long long element_size) :
+    m_pSegment(pSegment),
+    m_start(start),
+    m_size(size_),
+    m_element_start(element_start),
+    m_element_size(element_size),
+    m_entries(0),
+    m_count(0)
+{
+    long long pos = start;
+    const long long stop = start + size_;
+
+    IMkvReader* const pReader = m_pSegment->m_pReader;
+
+    //first count the seek head entries
+
+    while (pos < stop)
+    {
+        long len;
+
+        const long long id = ReadUInt(pReader, pos, len);
+        assert(id >= 0);  //TODO
+        assert((pos + len) <= stop);
+
+        pos += len;  //consume ID
+
+        const long long size = ReadUInt(pReader, pos, len);
+        assert(size >= 0);
+        assert((pos + len) <= stop);
+
+        pos += len;  //consume Size field
+        assert((pos + size) <= stop);
+
+        if (id == 0x0DBB)  //SeekEntry ID
+            ++m_count;
+
+        pos += size;  //consume payload
+        assert(pos <= stop);
+    }
+
+    assert(pos == stop);
+
+    if (m_count <= 0)
+        return;  //nothing else for us to do
+
+    m_entries = new (std::nothrow) Entry[m_count];
+    assert(m_entries);  //TODO
+
+    //now parse the entries
+
+    Entry* pEntry = m_entries;
+    pos = start;
+
+    while (pos < stop)
+    {
+        long len;
+
+        const long long id = ReadUInt(pReader, pos, len);
+        assert(id >= 0);  //TODO
+        assert((pos + len) <= stop);
+
+        pos += len;  //consume ID
+
+        const long long size = ReadUInt(pReader, pos, len);
+        assert(size >= 0);
+        assert((pos + len) <= stop);
+
+        pos += len;  //consume Size field
+        assert((pos + size) <= stop);
+
+        if (id == 0x0DBB)  //SeekEntry ID
+            ParseEntry(pReader, pos, size, pEntry++);
+
+        pos += size;  //consume payload
+        assert(pos <= stop);
+    }
+
+    assert(pos == stop);
+    assert(ptrdiff_t(pEntry - m_entries) == m_count);
+}
+
+SeekHead::~SeekHead()
+{
+    delete[] m_entries;
+}
+
+int SeekHead::GetCount() const
+{
+    return m_count;
+}
+
+const SeekHead::Entry* SeekHead::GetEntry(int idx) const
+{
+    if (idx < 0)
+        return 0;
+
+    if (idx >= m_count)
+        return 0;
+
+    return m_entries + idx;
+}
+#endif
 
 
+#if 0
 void Segment::ParseCues(long long off)
 {
     if (m_pCues)
@@ -1839,11 +1960,140 @@ void Segment::ParseCues(long long off)
 
     //os << "Segment::ParseCues (end)" << endl;
 }
+#else
+long Segment::ParseCues(
+    long long off,
+    long long& pos,
+    long& len)
+{
+    if (m_pCues)
+        return 0;  //success
+
+    if (off < 0)
+        return -1;
+
+    long long total, avail;
+
+    const int status = m_pReader->Length(&total, &avail);
+
+    if (status < 0)  //error
+        return status;
+
+    assert(total >= 0);
+    assert(avail <= total);
+
+    pos = m_start + off;
+
+    const long long element_start = pos;
+    const long long stop = m_start + m_size;  //end of segment
+
+    if ((pos + 1) > avail)
+    {
+        len = 1;
+        return E_BUFFER_NOT_FULL;
+    }
+
+    long long result = GetUIntLength(m_pReader, pos, len);
+
+    if (result < 0)  //error
+        return static_cast<long>(result);
+
+    if (result > 0) //underflow (weird)
+    {
+        len = 1;
+        return E_BUFFER_NOT_FULL;
+    }
+
+    if ((pos + len) > stop)  //not a very useful test
+        return E_FILE_FORMAT_INVALID;
+
+    if ((pos + len) > avail)
+        return E_BUFFER_NOT_FULL;
+
+    const long long idpos = pos;
+
+    const long long id = ReadUInt(m_pReader, idpos, len);
+
+    if (id != 0x0C53BB6B)  //Cues ID
+        return E_FILE_FORMAT_INVALID;
+
+    pos += len;  //consume ID
+    assert(pos < stop);
+
+    //Read Size
+
+    if ((pos + 1) > avail)
+    {
+        len = 1;
+        return E_BUFFER_NOT_FULL;
+    }
+
+    result = GetUIntLength(m_pReader, pos, len);
+
+    if (result < 0)  //error
+        return static_cast<long>(result);
+
+    if (result > 0) //underflow (weird)
+    {
+        len = 1;
+        return E_BUFFER_NOT_FULL;
+    }
+
+    if ((pos + len) > stop)  //not a very useful test
+        return E_FILE_FORMAT_INVALID;
+
+    if ((pos + len) > avail)
+        return E_BUFFER_NOT_FULL;
+
+    const long long size = ReadUInt(m_pReader, pos, len);
+
+    if (size < 0)  //error
+        return static_cast<long>(size);
+
+    if (size == 0)  //weird, although technically not illegal
+        return 1;   //done
+
+    pos += len;  //consume length of size of element
+
+    //Pos now points to start of payload
+
+    const long long element_stop = pos + size;
+
+    if (element_stop > stop)
+        return E_FILE_FORMAT_INVALID;
+
+    len = static_cast<long>(size);
+
+    if (element_stop > avail)
+        return E_BUFFER_NOT_FULL;
+
+    const long long element_size = element_stop - element_start;
+
+    m_pCues = new (std::nothrow) Cues(
+                                    this,
+                                    pos,
+                                    size,
+                                    element_start,
+                                    element_size);
+    assert(m_pCues);  //TODO
+
+#if 0   //TODO
+    //we should do this incrementally as well
+
+    while (m_pCues->LoadCuePoint())
+        ;
+
+#endif
+
+    return 0;  //success
+}
+#endif
 
 
+#if 0
 void Segment::ParseSeekEntry(
-   long long start,
-   long long size_)
+    long long start,
+    long long size_)
 {
     long long pos = start;
 
@@ -1898,6 +2148,66 @@ void Segment::ParseSeekEntry(
     if (seekId == 0x0C53BB6B)  //Cues ID
         ParseCues(seekOff);
 }
+#else
+void SeekHead::ParseEntry(
+    IMkvReader* pReader,
+    long long start,
+    long long size_,
+    Entry* pEntry)
+{
+    long long pos = start;
+    const long long stop = start + size_;
+
+    long len;
+
+    //parse the container for the level-1 element ID
+
+    const long long seekIdId = ReadUInt(pReader, pos, len);
+    //seekIdId;
+    assert(seekIdId == 0x13AB);  //SeekID ID
+    assert((pos + len) <= stop);
+
+    pos += len;  //consume id
+
+    const long long seekIdSize = ReadUInt(pReader, pos, len);
+    assert(seekIdSize >= 0);
+    assert((pos + len) <= stop);
+
+    pos += len;  //consume size
+
+    //TODO: it's not clear whether this is correct
+    //It seems as if the payload here is "binary" which
+    //means the value of the ID should be unserialized,
+    //not parsed as an uint.
+    //
+    pEntry->id = ReadUInt(pReader, pos, len);  //payload
+    assert(pEntry->id >= 0);
+    assert(len == seekIdSize);
+    assert((pos + len) <= stop);
+
+    pos += seekIdSize;  //consume payload
+
+    const long long seekPosId = ReadUInt(pReader, pos, len);
+    //seekPosId;
+    assert(seekPosId == 0x13AC);  //SeekPos ID
+    assert((pos + len) <= stop);
+
+    pos += len;  //consume id
+
+    const long long seekPosSize = ReadUInt(pReader, pos, len);
+    assert(seekPosSize >= 0);
+    assert((pos + len) <= stop);
+
+    pos += len;  //consume size
+    assert((pos + seekPosSize) <= stop);
+
+    pEntry->pos = UnserializeUInt(pReader, pos, seekPosSize);
+    assert(pEntry->pos >= 0);
+
+    pos += seekPosSize;  //consume payload
+    assert(pos == stop);
+}
+#endif
 
 
 Cues::Cues(
@@ -2102,7 +2412,7 @@ bool Cues::Find(
     assert(time_ns >= 0);
     assert(pTrack);
 
-    LoadCuePoint();
+    LoadCuePoint();  //establish invariant
 
     assert(m_cue_points);
     assert(m_count > 0);
@@ -3389,7 +3699,7 @@ bool Segment::SearchCues(
 #endif
 
 
-Tracks* Segment::GetTracks() const
+const Tracks* Segment::GetTracks() const
 {
     return m_pTracks;
 }
@@ -3404,6 +3714,12 @@ const SegmentInfo* Segment::GetInfo() const
 const Cues* Segment::GetCues() const
 {
     return m_pCues;
+}
+
+
+const SeekHead* Segment::GetSeekHead() const
+{
+    return m_pSeekHead;
 }
 
 

@@ -386,6 +386,49 @@ private:
     char* m_pTitleAsUTF8;
 };
 
+
+class SeekHead
+{
+    SeekHead(const SeekHead&);
+    SeekHead& operator=(const SeekHead&);
+
+public:
+    Segment* const m_pSegment;
+    const long long m_start;
+    const long long m_size;
+    const long long m_element_start;
+    const long long m_element_size;
+
+    SeekHead(
+        Segment*,
+        long long start,
+        long long size,
+        long long element_start,
+        long long element_size);
+
+    ~SeekHead();
+
+    struct Entry
+    {
+        long long id;
+        long long pos;
+    };
+
+    int GetCount() const;
+    const Entry* GetEntry(int idx) const;
+
+private:
+    Entry* m_entries;
+    int m_count;
+
+    static void ParseEntry(
+        IMkvReader*,
+        long long pos,
+        long long size,
+        Entry*);
+
+};
+
 class Cues;
 class CuePoint
 {
@@ -473,9 +516,10 @@ public:
                         const CuePoint*,
                         const CuePoint::TrackPosition*) const;
 
+    bool LoadCuePoint() const;
+
 private:
     void Init() const;
-    bool LoadCuePoint() const;
     void PreloadCuePoint(size_t&, long long) const;
 
     mutable CuePoint** m_cue_points;
@@ -593,7 +637,8 @@ public:
     long ParseCluster(long long& cluster_pos, long long& new_pos) const;
     bool AddCluster(long long cluster_pos, long long new_pos);
 
-    Tracks* GetTracks() const;
+    const SeekHead* GetSeekHead() const;
+    const Tracks* GetTracks() const;
     const SegmentInfo* GetInfo() const;
     const Cues* GetCues() const;
 
@@ -607,9 +652,16 @@ public:
     const Cluster* FindCluster(long long time_nanoseconds) const;
     //const BlockEntry* Seek(long long time_nanoseconds, const Track*) const;
 
+    long ParseCues(
+        long long cues_off,  //offset relative to start of segment
+        long long& parse_pos,
+        long& parse_len);
+
 private:
 
     long long m_pos;  //absolute file posn; what has been consumed so far
+
+    SeekHead* m_pSeekHead;
     SegmentInfo* m_pInfo;
     Tracks* m_pTracks;
     Cues* m_pCues;
@@ -621,9 +673,9 @@ private:
     void AppendCluster(Cluster*);
     void PreloadCluster(Cluster*, ptrdiff_t);
 
-    void ParseSeekHead(long long pos, long long size);
-    void ParseSeekEntry(long long pos, long long size);
-    void ParseCues(long long);
+    //void ParseSeekHead(long long pos, long long size);
+    //void ParseSeekEntry(long long pos, long long size);
+    //void ParseCues(long long);
 
     const BlockEntry* GetBlock(
         const CuePoint&,
