@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/collected_cookies_mac.h"
+#import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
 
 #include <vector>
 

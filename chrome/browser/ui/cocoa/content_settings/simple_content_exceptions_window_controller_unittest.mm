@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/simple_content_exceptions_window_controller.h"
+#import "chrome/browser/ui/cocoa/content_settings/simple_content_exceptions_window_controller.h"
 
 #import <Cocoa/Cocoa.h>
 

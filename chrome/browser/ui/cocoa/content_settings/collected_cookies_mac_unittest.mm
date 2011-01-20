@@ -9,7 +9,7 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
-#import "chrome/browser/ui/cocoa/collected_cookies_mac.h"
+#import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
 #include "chrome/test/testing_profile.h"
 
 namespace {

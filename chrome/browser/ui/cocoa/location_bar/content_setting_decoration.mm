@@ -17,7 +17,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#import "chrome/browser/ui/cocoa/content_setting_bubble_cocoa.h"
+#import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"

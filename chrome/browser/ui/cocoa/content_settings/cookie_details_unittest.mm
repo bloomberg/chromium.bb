@@ -4,7 +4,7 @@
 
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "chrome/browser/ui/cocoa/cookie_details.h"
+#include "chrome/browser/ui/cocoa/content_settings/cookie_details.h"
 #include "googleurl/src/gurl.h"
 #import "testing/gtest_mac.h"
 

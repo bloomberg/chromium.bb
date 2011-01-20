@@ -8,7 +8,7 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/cookies_tree_model.h"
-#import "chrome/browser/ui/cocoa/cookie_tree_node.h"
+#import "chrome/browser/ui/cocoa/content_settings/cookie_tree_node.h"
 #include "net/base/cookie_monster.h"
 
 @class CookiesWindowController;

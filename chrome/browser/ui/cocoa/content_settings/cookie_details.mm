@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/cookie_details.h"
+#include "chrome/browser/ui/cocoa/content_settings/cookie_details.h"
 
 #include "app/l10n_util_mac.h"
 #import "base/i18n/time_formatting.h"

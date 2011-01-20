@@ -6,7 +6,7 @@
 
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/cookies_tree_model.h"
-#include "chrome/browser/ui/cocoa/cookie_details.h"
+#include "chrome/browser/ui/cocoa/content_settings/cookie_details.h"
 
 @interface CocoaCookieTreeNode : NSObject {
   scoped_nsobject<NSString> title_;

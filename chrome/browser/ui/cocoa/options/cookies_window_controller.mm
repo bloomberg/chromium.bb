@@ -14,7 +14,7 @@
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/clear_browsing_data_controller.h"
-#include "chrome/browser/ui/cocoa/cookie_details_view_controller.h"
+#include "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
