@@ -32,9 +32,9 @@ ${PREFIX} $1 ${DASHDASH} train >stdout.out 2>stderr.out
 
 if [[ "${VERIFY}" != "no" ]] ; then
   echo "VERIFY"
-  cmp stdout.out  data/train/output/train.stdout
-  for i in ${LIST}; do 
-    cmp $i data/train/output/$i
+  ../specdiff.sh -o stdout.out data/train/output/train.stdout
+  for i in ${LIST}; do
+    ../specdiff.sh -o $i data/train/output/$i
   done
 fi
 echo "OK"

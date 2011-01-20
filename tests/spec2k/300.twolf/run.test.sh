@@ -29,10 +29,10 @@ ${PREFIX} $1 ${DASHDASH} test >stdout.out 2>stderr.out
 
 if [[ "${VERIFY}" != "no" ]] ; then
   echo "VERIFY"
-  #cmp stdout.out  data/test/output/test.stdout
+  #../specdiff.sh -o stdout.out data/test/output/test.stdout
   echo "SKIP STDOUT"
-  for i in ${LIST}; do 
-    cmp $i data/test/output/$i
+  for i in ${LIST}; do
+    ../specdiff.sh -o $i data/test/output/$i
   done
 fi
 echo "OK"

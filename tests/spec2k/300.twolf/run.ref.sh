@@ -31,9 +31,9 @@ ${PREFIX} $1 ${DASHDASH} ref >stdout.out 2>stderr.out
 
 if [[ "${VERIFY}" != "no" ]] ; then
   echo "VERIFY"
-  cmp stdout.out  data/ref/output/ref.stdout
-  for i in ${LIST}; do 
-    cmp $i data/ref/output/$i
+  ../specdiff.sh -o stdout.out data/ref/output/ref.stdout
+  for i in ${LIST}; do
+    ../specdiff.sh -o $i data/ref/output/$i
   done
 fi
 echo "OK"
