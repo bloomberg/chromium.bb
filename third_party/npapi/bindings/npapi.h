@@ -449,6 +449,8 @@ typedef enum {
   , NPNVsupportsCarbonBool = 3000 /* TRUE if the browser supports the Carbon event model */
 #endif
   , NPNVsupportsCocoaBool = 3001 /* TRUE if the browser supports the Cocoa event model */
+  , NPNVsupportsUpdatedCocoaTextInputBool = 3002 /* TRUE if the browser supports the updated
+                                                    Cocoa text input specification. */
 #endif
 #if (MOZ_PLATFORM_MAEMO == 5) || (MOZ_PLATFORM_MAEMO == 6)
   , NPNVSupportsWindowlessLocal = 2002
