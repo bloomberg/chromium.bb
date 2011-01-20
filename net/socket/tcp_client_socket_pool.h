@@ -71,11 +71,6 @@ class TCPConnectJob : public ConnectJob {
     STATE_NONE,
   };
 
-  // Begins the host resolution and the TCP connect.  Returns OK on success
-  // and ERR_IO_PENDING if it cannot immediately service the request.
-  // Otherwise, it returns a net error code.
-  virtual int ConnectInternal();
-
   void OnIOComplete(int result);
 
   // Runs the state transition loop.
@@ -85,6 +80,11 @@ class TCPConnectJob : public ConnectJob {
   int DoResolveHostComplete(int result);
   int DoTCPConnect();
   int DoTCPConnectComplete(int result);
+
+  // Begins the host resolution and the TCP connect.  Returns OK on success
+  // and ERR_IO_PENDING if it cannot immediately service the request.
+  // Otherwise, it returns a net error code.
+  virtual int ConnectInternal();
 
   scoped_refptr<TCPSocketParams> params_;
   ClientSocketFactory* const client_socket_factory_;

@@ -97,12 +97,6 @@ LoadState TCPConnectJob::GetLoadState() const {
   }
 }
 
-int TCPConnectJob::ConnectInternal() {
-  next_state_ = STATE_RESOLVE_HOST;
-  start_time_ = base::TimeTicks::Now();
-  return DoLoop(OK);
-}
-
 void TCPConnectJob::OnIOComplete(int result) {
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING)
@@ -186,6 +180,12 @@ int TCPConnectJob::DoTCPConnectComplete(int result) {
   }
 
   return result;
+}
+
+int TCPConnectJob::ConnectInternal() {
+  next_state_ = STATE_RESOLVE_HOST;
+  start_time_ = base::TimeTicks::Now();
+  return DoLoop(OK);
 }
 
 ConnectJob* TCPClientSocketPool::TCPConnectJobFactory::NewConnectJob(

@@ -454,13 +454,6 @@ int FileStream::Write(
   }
 }
 
-int FileStream::Flush() {
-  if (!IsOpen())
-    return ERR_UNEXPECTED;
-
-  return FlushFile(file_);
-}
-
 int64 FileStream::Truncate(int64 bytes) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
@@ -476,6 +469,13 @@ int64 FileStream::Truncate(int64 bytes) {
   // And truncate the file.
   int result = ftruncate(file_, bytes);
   return result == 0 ? seek_position : MapErrorCode(errno);
+}
+
+int FileStream::Flush() {
+  if (!IsOpen())
+    return ERR_UNEXPECTED;
+
+  return FlushFile(file_);
 }
 
 }  // namespace net

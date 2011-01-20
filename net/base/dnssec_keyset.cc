@@ -15,6 +15,19 @@
 #include "base/time.h"
 #include "net/base/dns_util.h"
 
+namespace {
+
+// These are encoded AlgorithmIdentifiers for the given signature algorithm.
+const unsigned char kRSAWithSHA1[] = {
+  0x30, 0xd, 0x6, 0x9, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0xd, 0x1, 0x1, 0x5, 5, 0
+};
+
+const unsigned char kRSAWithSHA256[] = {
+  0x30, 0xd, 0x6, 0x9, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0xd, 0x1, 0x1, 0xb, 5, 0
+};
+
+}  // namespace
+
 namespace net {
 
 DNSSECKeySet::DNSSECKeySet()
@@ -34,33 +47,6 @@ bool DNSSECKeySet::AddKey(const base::StringPiece& dnskey) {
   public_keys_.push_back(der_encoded);
   return true;
 }
-
-// static
-uint16 DNSSECKeySet::DNSKEYToKeyID(const base::StringPiece& dnskey) {
-  const unsigned char* data =
-      reinterpret_cast<const unsigned char*>(dnskey.data());
-
-  // RFC 4043: App B
-  uint32 ac = 0;
-  for (unsigned i = 0; i < dnskey.size(); i++) {
-    if (i & 1) {
-      ac += data[i];
-    } else {
-      ac += static_cast<uint32>(data[i]) << 8;
-    }
-  }
-  ac += (ac >> 16) & 0xffff;
-  return ac;
-}
-
-// These are encoded AlgorithmIdentifiers for the given signature algorithm.
-static const unsigned char kRSAWithSHA1[] = {
-  0x30, 0xd, 0x6, 0x9, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0xd, 0x1, 0x1, 0x5, 5, 0
-};
-
-static const unsigned char kRSAWithSHA256[] = {
-  0x30, 0xd, 0x6, 0x9, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0xd, 0x1, 0x1, 0xb, 5, 0
-};
 
 bool DNSSECKeySet::CheckSignature(
     const base::StringPiece& name,
@@ -180,8 +166,107 @@ bool DNSSECKeySet::CheckSignature(
   return false;
 }
 
+// static
+uint16 DNSSECKeySet::DNSKEYToKeyID(const base::StringPiece& dnskey) {
+  const unsigned char* data =
+      reinterpret_cast<const unsigned char*>(dnskey.data());
+
+  // RFC 4043: App B
+  uint32 ac = 0;
+  for (unsigned i = 0; i < dnskey.size(); i++) {
+    if (i & 1) {
+      ac += data[i];
+    } else {
+      ac += static_cast<uint32>(data[i]) << 8;
+    }
+  }
+  ac += (ac >> 16) & 0xffff;
+  return ac;
+}
+
 void DNSSECKeySet::IgnoreTimestamps() {
   ignore_timestamps_ = true;
+}
+
+bool DNSSECKeySet::VerifySignature(
+    base::StringPiece signature_algorithm,
+    base::StringPiece signature,
+    base::StringPiece public_key,
+    base::StringPiece signed_data) {
+  // This code is largely a copy-and-paste from
+  // base/crypto/signature_verifier_nss.cc. We can't change
+  // base::SignatureVerifier to always use NSS because we want the ability to
+  // be FIPS 140-2 compliant. However, we can't use base::SignatureVerifier
+  // here because some platforms don't support SHA256 signatures. Therefore, we
+  // use NSS directly.
+
+  base::EnsureNSSInit();
+
+  CERTSubjectPublicKeyInfo* spki = NULL;
+  SECItem spki_der;
+  spki_der.type = siBuffer;
+  spki_der.data = (uint8*) public_key.data();
+  spki_der.len = public_key.size();
+  spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&spki_der);
+  if (!spki)
+    return false;
+  SECKEYPublicKey* pub_key = SECKEY_ExtractPublicKey(spki);
+  SECKEY_DestroySubjectPublicKeyInfo(spki);  // Done with spki.
+  if (!pub_key)
+    return false;
+
+  PLArenaPool* arena = PORT_NewArena(DER_DEFAULT_CHUNKSIZE);
+  if (!arena) {
+    SECKEY_DestroyPublicKey(pub_key);
+    return false;
+  }
+
+  SECItem sig_alg_der;
+  sig_alg_der.type = siBuffer;
+  sig_alg_der.data = (uint8*) signature_algorithm.data();
+  sig_alg_der.len = signature_algorithm.size();
+  SECAlgorithmID sig_alg_id;
+  SECStatus rv;
+  rv = SEC_QuickDERDecodeItem(arena, &sig_alg_id, SECOID_AlgorithmIDTemplate,
+                              &sig_alg_der);
+  if (rv != SECSuccess) {
+    SECKEY_DestroyPublicKey(pub_key);
+    PORT_FreeArena(arena, PR_TRUE);
+    return false;
+  }
+
+  SECItem sig;
+  sig.type = siBuffer;
+  sig.data = (uint8*) signature.data();
+  sig.len = signature.size();
+  SECOidTag hash_alg_tag;
+  VFYContext* vfy_context =
+      VFY_CreateContextWithAlgorithmID(pub_key, &sig,
+                                       &sig_alg_id, &hash_alg_tag,
+                                       NULL);
+  SECKEY_DestroyPublicKey(pub_key);
+  PORT_FreeArena(arena, PR_TRUE);  // Done with sig_alg_id.
+  if (!vfy_context) {
+    // A corrupted RSA signature could be detected without the data, so
+    // VFY_CreateContextWithAlgorithmID may fail with SEC_ERROR_BAD_SIGNATURE
+    // (-8182).
+    return false;
+  }
+
+  rv = VFY_Begin(vfy_context);
+  if (rv != SECSuccess) {
+    NOTREACHED();
+    return false;
+  }
+  rv = VFY_Update(vfy_context, (uint8*) signed_data.data(), signed_data.size());
+  if (rv != SECSuccess) {
+    NOTREACHED();
+    return false;
+  }
+  rv = VFY_End(vfy_context);
+  VFY_DestroyContext(vfy_context, PR_TRUE);
+
+  return rv == SECSuccess;
 }
 
 // This is an ASN.1 encoded AlgorithmIdentifier for RSA
@@ -371,87 +456,6 @@ std::string DNSSECKeySet::ASN1WrapDNSKEY(const base::StringPiece& dnskey) {
   DCHECK_EQ(0u, length);
 
   return std::string(reinterpret_cast<char*>(out.get()), j);
-}
-
-bool DNSSECKeySet::VerifySignature(
-    base::StringPiece signature_algorithm,
-    base::StringPiece signature,
-    base::StringPiece public_key,
-    base::StringPiece signed_data) {
-  // This code is largely a copy-and-paste from
-  // base/crypto/signature_verifier_nss.cc. We can't change
-  // base::SignatureVerifier to always use NSS because we want the ability to
-  // be FIPS 140-2 compliant. However, we can't use base::SignatureVerifier
-  // here because some platforms don't support SHA256 signatures. Therefore, we
-  // use NSS directly.
-
-  base::EnsureNSSInit();
-
-  CERTSubjectPublicKeyInfo* spki = NULL;
-  SECItem spki_der;
-  spki_der.type = siBuffer;
-  spki_der.data = (uint8*) public_key.data();
-  spki_der.len = public_key.size();
-  spki = SECKEY_DecodeDERSubjectPublicKeyInfo(&spki_der);
-  if (!spki)
-    return false;
-  SECKEYPublicKey* pub_key = SECKEY_ExtractPublicKey(spki);
-  SECKEY_DestroySubjectPublicKeyInfo(spki);  // Done with spki.
-  if (!pub_key)
-    return false;
-
-  PLArenaPool* arena = PORT_NewArena(DER_DEFAULT_CHUNKSIZE);
-  if (!arena) {
-    SECKEY_DestroyPublicKey(pub_key);
-    return false;
-  }
-
-  SECItem sig_alg_der;
-  sig_alg_der.type = siBuffer;
-  sig_alg_der.data = (uint8*) signature_algorithm.data();
-  sig_alg_der.len = signature_algorithm.size();
-  SECAlgorithmID sig_alg_id;
-  SECStatus rv;
-  rv = SEC_QuickDERDecodeItem(arena, &sig_alg_id, SECOID_AlgorithmIDTemplate,
-                              &sig_alg_der);
-  if (rv != SECSuccess) {
-    SECKEY_DestroyPublicKey(pub_key);
-    PORT_FreeArena(arena, PR_TRUE);
-    return false;
-  }
-
-  SECItem sig;
-  sig.type = siBuffer;
-  sig.data = (uint8*) signature.data();
-  sig.len = signature.size();
-  SECOidTag hash_alg_tag;
-  VFYContext* vfy_context =
-      VFY_CreateContextWithAlgorithmID(pub_key, &sig,
-                                       &sig_alg_id, &hash_alg_tag,
-                                       NULL);
-  SECKEY_DestroyPublicKey(pub_key);
-  PORT_FreeArena(arena, PR_TRUE);  // Done with sig_alg_id.
-  if (!vfy_context) {
-    // A corrupted RSA signature could be detected without the data, so
-    // VFY_CreateContextWithAlgorithmID may fail with SEC_ERROR_BAD_SIGNATURE
-    // (-8182).
-    return false;
-  }
-
-  rv = VFY_Begin(vfy_context);
-  if (rv != SECSuccess) {
-    NOTREACHED();
-    return false;
-  }
-  rv = VFY_Update(vfy_context, (uint8*) signed_data.data(), signed_data.size());
-  if (rv != SECSuccess) {
-    NOTREACHED();
-    return false;
-  }
-  rv = VFY_End(vfy_context);
-  VFY_DestroyContext(vfy_context, PR_TRUE);
-
-  return rv == SECSuccess;
 }
 
 }  // namespace net

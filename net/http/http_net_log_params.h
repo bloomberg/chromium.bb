@@ -24,8 +24,6 @@ class NetLogHttpRequestParameter : public NetLog::EventParameters {
   NetLogHttpRequestParameter(const std::string& line,
                              const HttpRequestHeaders& headers);
 
-  virtual Value* ToValue() const;
-
   const HttpRequestHeaders& GetHeaders() const {
     return headers_;
   }
@@ -33,6 +31,9 @@ class NetLogHttpRequestParameter : public NetLog::EventParameters {
   const std::string& GetLine() const {
     return line_;
   }
+
+  // NetLog::EventParameters
+  virtual Value* ToValue() const;
 
  private:
   virtual ~NetLogHttpRequestParameter();
@@ -48,11 +49,12 @@ class NetLogHttpResponseParameter : public NetLog::EventParameters {
   explicit NetLogHttpResponseParameter(
       const scoped_refptr<HttpResponseHeaders>& headers);
 
-  virtual Value* ToValue() const;
-
   const HttpResponseHeaders& GetHeaders() const {
     return *headers_;
   }
+
+  // NetLog::EventParameters
+  virtual Value* ToValue() const;
 
  private:
   virtual ~NetLogHttpResponseParameter();
