@@ -159,6 +159,8 @@
       '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
       # This test fails due to crbug.com/50706
       '-translate.TranslateTest.testToggleTranslateOption',
+      # crbug.com/70280
+      '-translate.TranslateTest.testSeveralLanguages',
     ],
 
     'win': [
