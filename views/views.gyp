@@ -281,6 +281,8 @@
         'standard_layout.h',
         'touchui/gesture_manager.cc',
         'touchui/gesture_manager.h',
+        'touchui/touch_factory.cc',
+        'touchui/touch_factory.h',
         'view.cc',
         'view.h',
         'view_constants.cc',
