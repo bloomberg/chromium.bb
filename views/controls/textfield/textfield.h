@@ -36,9 +36,11 @@ class NativeTextfieldWrapper;
 
 // TextRange specifies the range of text in the Textfield.  This is
 // used to specify selected text and will be used to change the
-// attributes of characters in the textfield. The range preserves the
-// direction, and selecting from the end to the begining is considered
-// "reverse" order.
+// attributes of characters in the textfield. When this is used for
+// selection, the end is caret position, and the start is where
+// selection started.  The range preserves the direction, and
+// selecting from the end to the begining is considered "reverse"
+// order. (that is, start > end is reverse)
 class TextRange {
  public:
   TextRange() : start_(0), end_(0) {}

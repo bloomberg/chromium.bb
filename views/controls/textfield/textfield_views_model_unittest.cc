@@ -104,6 +104,11 @@ TEST_F(TextfieldViewsModelTest, Selection) {
   EXPECT_EQ(string16(), model.GetSelectedText());
   model.SelectAll();
   EXPECT_STR_EQ("HELLO", model.GetSelectedText());
+  // SelectAll should select towards the end.
+  TextRange range;
+  model.GetSelectedRange(&range);
+  EXPECT_EQ(0U, range.start());
+  EXPECT_EQ(5U, range.end());
 
   // Select and move cursor
   model.MoveCursorTo(1U, false);
@@ -168,7 +173,7 @@ TEST_F(TextfieldViewsModelTest, Password) {
 
   model.SelectAll();
   EXPECT_STR_EQ("ELLO", model.GetSelectedText());
-  EXPECT_EQ(0U, model.cursor_pos());
+  EXPECT_EQ(4U, model.cursor_pos());
 
   model.Insert('X');
   EXPECT_STR_EQ("*", model.GetVisibleText());
@@ -288,10 +293,11 @@ TEST_F(TextfieldViewsModelTest, SetText) {
   EXPECT_EQ(5U, model.cursor_pos());
   model.SelectAll();
   EXPECT_STR_EQ("GOODBYE", model.GetSelectedText());
-  // Selection move the current pos to the begining.
+  // Selection move the current pos to the end.
+  EXPECT_EQ(7U, model.cursor_pos());
+  model.MoveCursorToStart(false);
   EXPECT_EQ(0U, model.cursor_pos());
   model.MoveCursorToEnd(false);
-  EXPECT_EQ(7U, model.cursor_pos());
 
   model.SetText(ASCIIToUTF16("BYE"));
   EXPECT_EQ(3U, model.cursor_pos());
@@ -342,7 +348,7 @@ TEST_F(TextfieldViewsModelTest, Clipboard) {
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_text);
   EXPECT_STR_EQ("HELLO HELLO WORLD", clipboard_text);
   EXPECT_STR_EQ("HELLO HELLO WORLD", model.text());
-  EXPECT_EQ(0U, model.cursor_pos());
+  EXPECT_EQ(17U, model.cursor_pos());
 
   // Test for paste.
   model.ClearSelection();

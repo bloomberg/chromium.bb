@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/textfield/native_textfield_views.h"
@@ -21,8 +22,12 @@
 
 namespace views {
 
+// Convert to Wide so that the printed string will be readable when
+// check fails.
 #define EXPECT_STR_EQ(ascii, utf16) \
   EXPECT_EQ(ASCIIToWide(ascii), UTF16ToWide(utf16))
+#define EXPECT_STR_NE(ascii, utf16) \
+  EXPECT_NE(ASCIIToWide(ascii), UTF16ToWide(utf16))
 
 // TODO(oshima): Move tests that are independent of TextfieldViews to
 // textfield_unittests.cc once we move the test utility functions
@@ -404,8 +409,8 @@ void VerifyTextfieldContextMenuContents(bool textfield_has_selection,
   EXPECT_EQ(textfield_has_selection, menu_model->IsEnabledAt(1 /* COPY */));
   EXPECT_EQ(textfield_has_selection, menu_model->IsEnabledAt(3 /* DELETE */));
   string16 str;
-  views::ViewsDelegate::views_delegate->GetClipboard()
-      ->ReadText(ui::Clipboard::BUFFER_STANDARD, &str);
+  views::ViewsDelegate::views_delegate->GetClipboard()->
+      ReadText(ui::Clipboard::BUFFER_STANDARD, &str);
   EXPECT_NE(str.empty(), menu_model->IsEnabledAt(2 /* PASTE */));
 }
 
@@ -421,6 +426,67 @@ TEST_F(NativeTextfieldViewsTest, ContextMenuDisplayTest) {
 
   textfield_->SelectAll();
   VerifyTextfieldContextMenuContents(true, GetContextMenu()->model());
+}
+
+TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {
+  scoped_ptr<TestViewsDelegate> test_views_delegate(new TestViewsDelegate());
+  AutoReset<views::ViewsDelegate*> auto_reset(
+      &views::ViewsDelegate::views_delegate, test_views_delegate.get());
+
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  textfield_->SetText(ASCIIToUTF16(" one two three "));
+  textfield_->SetReadOnly(true);
+  SendKeyEventToTextfieldViews(ui::VKEY_HOME);
+  EXPECT_EQ(0U, textfield_->GetCursorPosition());
+
+  SendKeyEventToTextfieldViews(ui::VKEY_END);
+  EXPECT_EQ(15U, textfield_->GetCursorPosition());
+
+  SendKeyEventToTextfieldViews(ui::VKEY_LEFT, false, false);
+  EXPECT_EQ(14U, textfield_->GetCursorPosition());
+
+  SendKeyEventToTextfieldViews(ui::VKEY_LEFT, false, true);
+  EXPECT_EQ(9U, textfield_->GetCursorPosition());
+
+  SendKeyEventToTextfieldViews(ui::VKEY_LEFT, true, true);
+  EXPECT_EQ(5U, textfield_->GetCursorPosition());
+  EXPECT_STR_EQ("two ", textfield_->GetSelectedText());
+
+  textfield_->SelectAll();
+  EXPECT_STR_EQ(" one two three ", textfield_->GetSelectedText());
+
+  // CUT&PASTE does not work, but COPY works
+  SendKeyEventToTextfieldViews(ui::VKEY_X, false, true);
+  EXPECT_STR_EQ(" one two three ", textfield_->GetSelectedText());
+  string16 str;
+  views::ViewsDelegate::views_delegate->GetClipboard()->
+      ReadText(ui::Clipboard::BUFFER_STANDARD, &str);
+  EXPECT_STR_NE(" one two three ", str);
+
+  SendKeyEventToTextfieldViews(ui::VKEY_C, false, true);
+  views::ViewsDelegate::views_delegate->GetClipboard()->
+      ReadText(ui::Clipboard::BUFFER_STANDARD, &str);
+  EXPECT_STR_EQ(" one two three ", str);
+
+  // SetText should work even in read only mode.
+  textfield_->SetText(ASCIIToUTF16(" four five six "));
+  EXPECT_STR_EQ(" four five six ", textfield_->text());
+
+  // Paste shouldn't work.
+  SendKeyEventToTextfieldViews(ui::VKEY_V, false, true);
+  EXPECT_STR_EQ(" four five six ", textfield_->text());
+  EXPECT_TRUE(textfield_->GetSelectedText().empty());
+
+  textfield_->SelectAll();
+  EXPECT_STR_EQ(" four five six ", textfield_->GetSelectedText());
+
+  // Text field is unmodifiable and selection shouldn't change.
+  SendKeyEventToTextfieldViews(ui::VKEY_DELETE);
+  EXPECT_STR_EQ(" four five six ", textfield_->GetSelectedText());
+  SendKeyEventToTextfieldViews(ui::VKEY_BACK);
+  EXPECT_STR_EQ(" four five six ", textfield_->GetSelectedText());
+  SendKeyEventToTextfieldViews(ui::VKEY_T);
+  EXPECT_STR_EQ(" four five six ", textfield_->GetSelectedText());
 }
 
 }  // namespace views

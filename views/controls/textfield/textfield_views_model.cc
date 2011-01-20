@@ -230,8 +230,9 @@ void TextfieldViewsModel::SelectRange(const TextRange& range) {
 }
 
 void TextfieldViewsModel::SelectAll() {
-  cursor_pos_ = 0;
-  selection_begin_ = text_.length();
+  // SelectAll selects towards the end.
+  cursor_pos_ = text_.length();
+  selection_begin_ = 0;
 }
 
 void TextfieldViewsModel::ClearSelection() {
