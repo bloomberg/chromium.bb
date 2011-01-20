@@ -10,3 +10,7 @@
 // TODO(thakis): Remove these after the next webkit roll.
 BUGTHAKIS LINUX : media/video-display-toggle.html = IMAGE
 BUGTHAKIS WIN : media/video-display-toggle.html = IMAGE
+
+BUGDIMICH : fast/js/toString-recursion.html = PASS TEXT
+BUGDIMICH : fast/loader/stateobjects/pushstate-object-types.html = PASS TEXT
+BUGDIMICH : fast/regex/cross-frame-callable.html = PASS TEXT
