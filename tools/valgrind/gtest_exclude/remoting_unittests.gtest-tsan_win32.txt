@@ -1,0 +1,2 @@
+# Fails under TSan/Win, see http://crbug.com/70225
+JingleSessionTest.Connect
