@@ -19,7 +19,6 @@
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/page_zoom.h"
-#include "chrome/common/speech_input_result.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/window_container_type.h"
 #include "ipc/ipc_message_macros.h"
@@ -1017,22 +1016,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_AccessibilityDoDefaultAction,
 // Tells the render view that a ViewHostMsg_AccessibilityNotifications
 // message was processed and it can send addition notifications.
 IPC_MESSAGE_ROUTED0(ViewMsg_AccessibilityNotifications_ACK)
-
-// Relay a speech recognition result, either partial or final.
-IPC_MESSAGE_ROUTED2(ViewMsg_SpeechInput_SetRecognitionResult,
-                    int /* request id */,
-                    speech_input::SpeechInputResultArray /* result */)
-
-// Indicate that speech recognizer has stopped recording and started
-// recognition.
-IPC_MESSAGE_ROUTED1(ViewMsg_SpeechInput_RecordingComplete,
-                    int /* request id */)
-
-// Indicate that speech recognizer has completed recognition. This will be
-// the last message sent in response to a
-// ViewHostMsg_SpeechInput_StartRecognition.
-IPC_MESSAGE_ROUTED1(ViewMsg_SpeechInput_RecognitionComplete,
-                    int /* request id */)
 
 // Notification that the device's orientation has changed.
 IPC_MESSAGE_ROUTED1(ViewMsg_DeviceOrientationUpdated,
@@ -2461,30 +2444,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateZoomLimits,
                     int /* minimum_percent */,
                     int /* maximum_percent */,
                     bool /* remember */)
-
-// Requests the speech input service to start speech recognition on behalf of
-// the given |render_view_id|.
-IPC_MESSAGE_CONTROL5(ViewHostMsg_SpeechInput_StartRecognition,
-                     int /* render_view_id */,
-                     int /* request_id */,
-                     gfx::Rect /* element_rect */,
-                     std::string /* language */,
-                     std::string /* grammar */)
-
-// Requests the speech input service to cancel speech recognition on behalf of
-// the given |render_view_id|. If speech recognition is not happening nor or
-// is happening on behalf of some other render view, this call does nothing.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_SpeechInput_CancelRecognition,
-                     int /* render_view_id */,
-                     int /* request id */)
-
-// Requests the speech input service to stop audio recording on behalf of
-// the given |render_view_id|. Any audio recorded so far will be fed to the
-// speech recognizer. If speech recognition is not happening nor or is
-// happening on behalf of some other render view, this call does nothing.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_SpeechInput_StopRecording,
-                     int /* render_view_id */,
-                     int /* request id */)
 
 //---------------------------------------------------------------------------
 // Device orientation services messages:

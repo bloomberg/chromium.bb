@@ -139,6 +139,10 @@ class URLFetcher {
   // Returns the current load flags.
   int load_flags() const;
 
+  // The referrer URL for the request. Must be called before the request is
+  // started.
+  void set_referrer(const std::string& referrer);
+
   // Set extra headers on the request.  Must be called before the request
   // is started.
   void set_extra_request_headers(const std::string& extra_request_headers);

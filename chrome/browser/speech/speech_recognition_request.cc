@@ -123,6 +123,7 @@ SpeechRecognitionRequest::~SpeechRecognitionRequest() {}
 bool SpeechRecognitionRequest::Send(const std::string& language,
                                     const std::string& grammar,
                                     const std::string& hardware_info,
+                                    const std::string& origin_url,
                                     const std::string& content_type,
                                     const std::string& audio_data) {
   DCHECK(!url_fetcher_.get());
@@ -161,6 +162,7 @@ bool SpeechRecognitionRequest::Send(const std::string& language,
                                         this));
   url_fetcher_->set_upload_data(content_type, audio_data);
   url_fetcher_->set_request_context(url_context_);
+  url_fetcher_->set_referrer(origin_url);
 
   // The speech recognition API does not require user identification as part
   // of requests, so we don't send cookies or auth data for these requests to

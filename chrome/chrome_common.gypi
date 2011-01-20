@@ -157,6 +157,8 @@
           'common/set_process_title.h',
           'common/set_process_title_linux.cc',
           'common/set_process_title_linux.h',
+          'common/speech_input_messages.cc',
+          'common/speech_input_messages.h',
           'common/switch_utils.cc',
           'common/switch_utils.h',
           'common/time_format.cc',

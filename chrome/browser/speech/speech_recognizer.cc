@@ -39,12 +39,14 @@ SpeechRecognizer::SpeechRecognizer(Delegate* delegate,
                                    int caller_id,
                                    const std::string& language,
                                    const std::string& grammar,
-                                   const std::string& hardware_info)
+                                   const std::string& hardware_info,
+                                   const std::string& origin_url)
     : delegate_(delegate),
       caller_id_(caller_id),
       language_(language),
       grammar_(grammar),
       hardware_info_(hardware_info),
+      origin_url_(origin_url),
       codec_(AudioEncoder::CODEC_SPEEX),
       encoder_(NULL),
       endpointer_(kAudioSampleRate),
@@ -136,8 +138,8 @@ void SpeechRecognizer::StopRecording() {
     DCHECK(!request_.get());
     request_.reset(new SpeechRecognitionRequest(
         Profile::GetDefaultRequestContext(), this));
-    request_->Send(language_, grammar_, hardware_info_, encoder_->mime_type(),
-                   data);
+    request_->Send(language_, grammar_, hardware_info_, origin_url_,
+                   encoder_->mime_type(), data);
   }
   encoder_.reset();
 }

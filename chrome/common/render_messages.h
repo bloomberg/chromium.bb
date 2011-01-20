@@ -48,10 +48,6 @@ namespace webkit_blob {
 class BlobData;
 }
 
-namespace speech_input {
-struct SpeechInputResultItem;
-}
-
 namespace webkit_glue {
 struct FormData;
 class FormField;
@@ -551,14 +547,6 @@ struct SimilarTypeTraits<fileapi::FileSystemType> {
 template <>
 struct ParamTraits<AudioBuffersState> {
   typedef AudioBuffersState param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<speech_input::SpeechInputResultItem> {
-  typedef speech_input::SpeechInputResultItem param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

@@ -32,7 +32,8 @@ class SpeechInputDispatcher : public RenderViewObserver,
   virtual bool startRecognition(int request_id,
                                 const WebKit::WebRect& element_rect,
                                 const WebKit::WebString& language,
-                                const WebKit::WebString& grammar);
+                                const WebKit::WebString& grammar,
+                                const WebKit::WebSecurityOrigin& origin);
 
   virtual void cancelRecognition(int request_id);
   virtual void stopRecording(int request_id);

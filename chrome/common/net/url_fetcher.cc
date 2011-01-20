@@ -127,6 +127,7 @@ class URLFetcher::Core
 
   std::string upload_content_;       // HTTP POST payload
   std::string upload_content_type_;  // MIME type of POST payload
+  std::string referrer_;             // HTTP Referer header value
 
   // Used to determine how long to wait before making a request or doing a
   // retry.
@@ -336,6 +337,7 @@ void URLFetcher::Core::StartURLRequest() {
   }
   request_->set_load_flags(flags);
   request_->set_context(request_context_getter_->GetURLRequestContext());
+  request_->set_referrer(referrer_);
 
   switch (request_type_) {
     case GET:
@@ -479,6 +481,10 @@ void URLFetcher::set_upload_data(const std::string& upload_content_type,
 
 const std::string& URLFetcher::upload_data() const {
   return core_->upload_content_;
+}
+
+void URLFetcher::set_referrer(const std::string& referrer) {
+  core_->referrer_ = referrer;
 }
 
 void URLFetcher::set_load_flags(int load_flags) {

@@ -37,7 +37,7 @@ class SpeechInputManager {
   static bool IsFeatureEnabled();
 
   // Factory method to access the singleton. We have this method here instead of
-  // using Singleton<> directly in the calling code to aid tests in injection
+  // using Singleton directly in the calling code to aid tests in injection
   // mocks.
   static SpeechInputManager* Get();
   // Factory method definition useful for tests.
@@ -59,7 +59,8 @@ class SpeechInputManager {
                                 int render_view_id,
                                 const gfx::Rect& element_rect,
                                 const std::string& language,
-                                const std::string& grammar)  = 0;
+                                const std::string& grammar,
+                                const std::string& origin_url)  = 0;
   virtual void CancelRecognition(int caller_id) = 0;
   virtual void StopRecording(int caller_id) = 0;
 };

@@ -9,6 +9,8 @@
 #include "chrome/browser/browser_message_filter.h"
 #include "chrome/browser/speech/speech_input_manager.h"
 
+struct SpeechInputHostMsg_StartRecognition_Params;
+
 namespace speech_input {
 
 // SpeechInputDispatcherHost is a delegate for Speech API messages used by
@@ -39,10 +41,8 @@ class SpeechInputDispatcherHost : public BrowserMessageFilter,
  private:
   virtual ~SpeechInputDispatcherHost();
 
-  void OnStartRecognition(int render_view_id, int request_id,
-                          const gfx::Rect& element_rect,
-                          const std::string& language,
-                          const std::string& grammar);
+  void OnStartRecognition(
+      const SpeechInputHostMsg_StartRecognition_Params &params);
   void OnCancelRecognition(int render_view_id, int request_id);
   void OnStopRecording(int render_view_id, int request_id);
 

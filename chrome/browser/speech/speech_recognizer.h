@@ -76,7 +76,8 @@ class SpeechRecognizer
                    int caller_id,
                    const std::string& language,
                    const std::string& grammar,
-                   const std::string& hardware_info);
+                   const std::string& hardware_info,
+                   const std::string& origin_url);
   ~SpeechRecognizer();
 
   // Starts audio recording and does recognition after recording ends. The same
@@ -126,6 +127,7 @@ class SpeechRecognizer
   std::string language_;
   std::string grammar_;
   std::string hardware_info_;
+  std::string origin_url_;
 
   scoped_ptr<SpeechRecognitionRequest> request_;
   scoped_refptr<media::AudioInputController> audio_controller_;

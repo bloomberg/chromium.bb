@@ -48,6 +48,7 @@ class SpeechRecognitionRequest : public URLFetcher::Delegate {
   bool Send(const std::string& language,
             const std::string& grammar,
             const std::string& hardware_info,
+            const std::string& origin_url,
             const std::string& content_type,
             const std::string& audio_data);
 
