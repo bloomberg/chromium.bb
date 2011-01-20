@@ -48,7 +48,6 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
-#include "chrome/browser/chromeos/wm_ipc.h"
 #endif
 
 using base::Time;
@@ -252,7 +251,6 @@ void Shutdown() {
   UnregisterURLRequestChromeJob();
 
 #if defined(OS_CHROMEOS)
-  chromeos::WmIpc::instance()->NotifyAboutSignout();
   if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
     chromeos::CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
   }

@@ -166,6 +166,7 @@ void WmIpc::SetLoggedInProperty(bool logged_in) {
 void WmIpc::NotifyAboutSignout() {
   Message msg(chromeos::WM_IPC_MESSAGE_WM_NOTIFY_SIGNING_OUT);
   SendMessage(msg);
+  XFlush(ui::GetXDisplay());
 }
 
 WmIpc::WmIpc() {

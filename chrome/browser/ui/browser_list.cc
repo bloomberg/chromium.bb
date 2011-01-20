@@ -160,6 +160,10 @@ Browser* FindBrowserMatching(const T& begin,
 BrowserList::BrowserVector BrowserList::browsers_;
 ObserverList<BrowserList::Observer> BrowserList::observers_;
 
+#if defined(OS_CHROMEOS)
+bool BrowserList::notified_window_manager_about_signout_ = false;
+#endif
+
 // static
 void BrowserList::AddBrowser(Browser* browser) {
   DCHECK(browser);
@@ -186,11 +190,16 @@ void BrowserList::AddBrowser(Browser* browser) {
 
 // static
 void BrowserList::NotifyAndTerminate() {
+#if defined(OS_CHROMEOS)
+  // Let the window manager know that we're going away before we start closing
+  // windows so it can display a graceful transition to a black screen.
+  chromeos::WmIpc::instance()->NotifyAboutSignout();
+  notified_window_manager_about_signout_ = true;
+#endif
   NotificationService::current()->Notify(NotificationType::APP_TERMINATING,
                                          NotificationService::AllSources(),
                                          NotificationService::NoDetails());
 #if defined(OS_CHROMEOS)
-  chromeos::WmIpc::instance()->NotifyAboutSignout();
   if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
     chromeos::CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
     return;
@@ -236,6 +245,16 @@ void BrowserList::RemoveBrowser(Browser* browser) {
   if (browsers_.empty() &&
       (browser_shutdown::IsTryingToQuit() ||
        g_browser_process->IsShuttingDown())) {
+#if defined(OS_CHROMEOS)
+    // We might've already notified the window manager before closing any
+    // windows in NotifyAndTerminate() if we were able to take the
+    // no-beforeunload-handlers-or-downloads fast path; no need to do it again
+    // here.
+    if (!notified_window_manager_about_signout_) {
+      chromeos::WmIpc::instance()->NotifyAboutSignout();
+      notified_window_manager_about_signout_ = true;
+    }
+#endif
     // Last browser has just closed, and this is a user-initiated quit or there
     // is no module keeping the app alive, so send out our notification. No need
     // to call ProfileManager::ShutdownSessionServices() as part of the

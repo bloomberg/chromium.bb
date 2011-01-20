@@ -180,6 +180,11 @@ class BrowserList {
   // Counter of calls to StartKeepAlive(). If non-zero, the application will
   // continue running after the last browser has exited.
   static int keep_alive_count_;
+
+#if defined(OS_CHROMEOS)
+  // Have we already notified the window manager that we're signing out?
+  static bool notified_window_manager_about_signout_;
+#endif
 };
 
 class TabContents;
