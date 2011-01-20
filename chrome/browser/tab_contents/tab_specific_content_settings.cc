@@ -107,6 +107,8 @@ void TabSpecificContentSettings::OnCookiesRead(
     const GURL& url,
     const net::CookieList& cookie_list,
     bool blocked_by_policy) {
+  if (cookie_list.empty())
+    return;
   LocalSharedObjectsContainer& container = blocked_by_policy ?
       blocked_local_shared_objects_ : allowed_local_shared_objects_;
   typedef net::CookieList::const_iterator cookie_iterator;

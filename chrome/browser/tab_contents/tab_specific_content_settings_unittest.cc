@@ -5,7 +5,7 @@
 #include "chrome/browser/tab_contents/tab_specific_content_settings.h"
 
 #include "chrome/test/testing_profile.h"
-#include "net/base/cookie_options.h"
+#include "net/base/cookie_monster.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -135,5 +135,22 @@ TEST(TabSpecificContentSettingsTest, AllowedContent) {
   ASSERT_TRUE(
       content_settings.IsContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_TRUE(
+      content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
+}
+
+TEST(TabSpecificContentSettingsTest, EmptyCookieList) {
+  TestContentSettingsDelegate test_delegate;
+  TestingProfile profile;
+  TabSpecificContentSettings content_settings(&test_delegate, &profile);
+
+  ASSERT_FALSE(
+      content_settings.IsContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES));
+  ASSERT_FALSE(
+      content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
+  content_settings.OnCookiesRead(
+      GURL("http://google.com"), net::CookieList(), true);
+  ASSERT_FALSE(
+      content_settings.IsContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES));
+  ASSERT_FALSE(
       content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
 }
