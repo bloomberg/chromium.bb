@@ -261,7 +261,8 @@ var OptionsPage = options.OptionsPage;
 
   AdvancedOptions.RemoveRemotingSection = function() {
     var proxySectionElm = $('remoting-section');
-    proxySectionElm.parentNode.removeChild(proxySectionElm);
+    if (proxySectionElm)
+      proxySectionElm.parentNode.removeChild(proxySectionElm);
   };
 
   // Export
