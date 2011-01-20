@@ -1,0 +1,46 @@
+
+"*** REGISTER REPLAY METHODS" 
+
+"*** INITIALIZE PEPPER" 
+
+"*** CREATE UPCALL SERVICE" 
+
+"*** INIT MODULE" 
+replaying PPB_GetInterface:s:i:
+output 0:  i(1)
+replaying PPB_GetInterface:s:i:
+output 0:  i(1)
+replaying PPB_GetInterface:s:i:
+output 0:  i(1)
+replaying PPB_GetInterface:s:i:
+output 0:  i(1)
+PPP_InitializeModule RESULTS:   i(7150)  i(0)
+
+"*** INIT INSTANCE" 
+PPP_GetInterface RESULTS:   i(1)
+PPP_Instance_DidCreate RESULTS:   i(1)
+
+"*** SETTTING UP VIDEO MEMORY" 
+CHECKSUM: 0x00000000
+
+"*** TRIGGER REPAINT" 
+replaying PPB_ImageData_Create:iiCi:i:
+output 0:  i(7)
+replaying PPB_ImageData_Describe:i:Chii:
+output 0:  C(16,\x00\x00\x00\x00\x90\x01\x00\x00\x90\x01\x00\x00@\x06\x00\x00)
+output 1:  h(video_handle)
+output 2:  i(64000)
+output 3:  i(1)
+replaying PPB_Graphics2D_Create:iCi:i:
+output 0:  i(8)
+replaying PPB_Instance_BindGraphics:ii:i:
+output 0:  i(1)
+replaying PPB_Graphics2D_ReplaceContents:ii::
+replaying PPB_Graphics2D_Flush:ii:i:
+output 0:  i(-1)
+replaying ReleaseResourceMultipleTimes:ii::
+PPP_Instance_DidChangeView RESULTS: 
+
+"*** CHECKING MEMORY" 
+CHECKSUM: 0xffffff67
+PPP_ShutdownModule RESULTS: 

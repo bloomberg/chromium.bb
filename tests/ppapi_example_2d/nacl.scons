@@ -21,3 +21,22 @@ ppapi_example_2d_nexe = env.ComponentProgram('ppapi_example_2d.nexe',
 # Note that the html is required to run this program.
 env.Publish('ppapi_example_2d.nexe', 'run',
             ['ppapi_example_2d.html' ])
+
+node = env.CommandSelLdrTestNacl(
+    'ppapi_example_2d.out',
+    loader='sel_universal',
+    command=[env.File('ppapi_example_2d.nexe')],
+    stdin=env.File('ppapi_example_2d.stdin'),
+    stdout_golden=env.File('ppapi_example_2d.stdout'),
+    # filter out a line that contains a process id
+    filter_regex="PPP_InitializeModule",
+    filter_inverse='true',
+    )
+
+# we the sysv shm feature in sel_universal which is only available on linux
+trusted_env = env.get('TRUSTED_ENV')
+is_broken = env.UsingEmulator() or not trusted_env.Bit('linux')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_ppapi_example_2d_test',
+                       is_broken=is_broken)
