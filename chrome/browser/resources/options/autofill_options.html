@@ -1,5 +1,11 @@
 <div id="autofill-options" class="page hidden">
   <h1 i18n-content="autoFillOptionsTitle"></h1>
+<if expr="pp_ifdef('darwin')">
+  <label class="checkbox">
+    <input pref="autofill.auxiliary_profiles_enabled" type="checkbox">
+    <span i18n-content="auxiliaryProfilesEnabled"></span>
+  </label>
+</if>
   <h3 i18n-content="autoFillAddresses"></h3>
   <div class="settings-list">
     <list id="address-list"></list>

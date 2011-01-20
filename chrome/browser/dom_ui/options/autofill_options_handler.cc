@@ -84,6 +84,11 @@ void AutoFillOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("editCreditCardTitle",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION));
 
+#if defined(OS_MACOSX)
+  localized_strings->SetString("auxiliaryProfilesEnabled",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK));
+#endif  // defined(OS_MACOSX)
+
   SetAddressOverlayStrings(localized_strings);
   SetCreditCardOverlayStrings(localized_strings);
 }
