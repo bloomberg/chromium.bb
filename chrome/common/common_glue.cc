@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/plugin/npobject_util.h"
 #include "googleurl/src/url_util.h"
+#include "ui/base/ui_base_switches.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace webkit_glue {

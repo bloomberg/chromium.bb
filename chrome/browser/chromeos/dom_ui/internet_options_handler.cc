@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -34,8 +33,9 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "views/window/window.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "views/window/window.h"
 
 static const char kOtherNetworksFakePath[] = "?";
 

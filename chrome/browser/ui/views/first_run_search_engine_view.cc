@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
 #include "base/rand_util.h"
 #include "base/time.h"
@@ -27,6 +26,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"

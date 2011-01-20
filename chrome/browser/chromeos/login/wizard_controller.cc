@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -49,6 +48,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "unicode/timezone.h"
 #include "views/accelerator.h"
 #include "views/painter.h"

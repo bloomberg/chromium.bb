@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
@@ -55,6 +54,7 @@
 #include "grit/locale_settings.h"
 #include "webkit/glue/webkit_glue.h"
 #include "net/base/escape.h"
+#include "ui/base/resource/resource_bundle.h"
 #ifdef CHROME_V8
 #include "v8/include/v8.h"
 #endif

@@ -5,7 +5,6 @@
 #include "chrome/browser/task_manager/task_manager.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
@@ -33,6 +32,7 @@
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "unicode/coll.h"
 
 #if defined(OS_MACOSX)

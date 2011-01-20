@@ -4,7 +4,6 @@
 
 #include "chrome/browser/themes/browser_theme_provider.h"
 
-#include "app/resource_bundle.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -18,6 +17,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/hwnd_util.h"

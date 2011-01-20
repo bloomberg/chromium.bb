@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -61,6 +60,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/window_open_disposition.h"
 
 namespace {

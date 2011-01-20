@@ -12,9 +12,7 @@
 #include <cstdlib>
 #include <iterator>
 
-#include "app/app_paths.h"
 #include "app/l10n_util_collator.h"
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
@@ -28,6 +26,8 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "gfx/canvas.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 #include "unicode/rbbi.h"
 #include "unicode/uloc.h"
 
@@ -362,7 +362,7 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
 #else
 
   FilePath locale_path;
-  PathService::Get(app::DIR_LOCALES, &locale_path);
+  PathService::Get(ui::DIR_LOCALES, &locale_path);
   std::string resolved_locale;
   std::vector<std::string> candidates;
 

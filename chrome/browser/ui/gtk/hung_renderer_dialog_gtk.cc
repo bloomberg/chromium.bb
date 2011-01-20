@@ -7,7 +7,6 @@
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
@@ -22,6 +21,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

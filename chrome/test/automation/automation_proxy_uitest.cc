@@ -42,6 +42,7 @@
 #include "testing/gmock_mutant.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/message_box_flags.h"
+#include "ui/base/ui_base_switches.h"
 #include "views/event.h"
 
 using ui_test_utils::TimedMessageLoopRunner;

@@ -12,7 +12,6 @@
 #include <string>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
@@ -54,6 +53,7 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/base/dragdrop/os_exchange_data.h"

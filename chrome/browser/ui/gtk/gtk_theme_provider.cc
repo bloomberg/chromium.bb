@@ -8,7 +8,6 @@
 
 #include <set>
 
-#include "app/resource_bundle.h"
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util-inl.h"
@@ -38,6 +37,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

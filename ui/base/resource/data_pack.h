@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,14 +6,17 @@
 // (key, value) pairs of data.  It's used to store static resources like
 // translation strings and images.
 
-#ifndef APP_DATA_PACK_H_
-#define APP_DATA_PACK_H_
+#ifndef UI_BASE_RESOURCE_DATA_PACK_H_
+#define UI_BASE_RESOURCE_DATA_PACK_H_
 #pragma once
 
 #include <map>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+
+class FilePath;
+class RefCountedStaticMemory;
 
 namespace base {
 class StringPiece;
@@ -23,11 +26,7 @@ namespace file_util {
 class MemoryMappedFile;
 }
 
-class FilePath;
-class RefCountedStaticMemory;
-
-
-namespace app {
+namespace ui {
 
 class DataPack {
  public:
@@ -61,6 +60,6 @@ class DataPack {
   DISALLOW_COPY_AND_ASSIGN(DataPack);
 };
 
-}  // namespace app
+}  // namespace ui
 
-#endif  // APP_DATA_PACK_H_
+#endif  // UI_BASE_RESOURCE_DATA_PACK_H_

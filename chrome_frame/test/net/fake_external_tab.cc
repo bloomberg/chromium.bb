@@ -9,7 +9,6 @@
 #include <exdisp.h>
 
 #include "app/app_paths.h"
-#include "app/resource_bundle.h"
 #include "app/win/scoped_com_initializer.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
@@ -42,6 +41,8 @@
 #include "chrome_frame/test/win_event_receiver.h"
 #include "chrome_frame/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 
 namespace {
 
@@ -193,6 +194,7 @@ void FakeExternalTab::Initialize() {
 
   chrome::RegisterPathProvider();
   app::RegisterPathProvider();
+  ui::RegisterPathProvider();
 
   // Load Chrome.dll as our resource dll.
   FilePath dll;

@@ -7,7 +7,6 @@
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
@@ -21,6 +20,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/registry_controlled_domain.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 
 const int BackForwardMenuModel::kMaxHistoryItems = 12;

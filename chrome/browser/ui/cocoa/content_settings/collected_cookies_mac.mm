@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "app/l10n_util_mac.h"
-#include "app/resource_bundle.h"
 #import "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +21,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 // Colors for the infobar.

@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/resource_bundle.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -29,6 +28,7 @@
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_simple_job.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

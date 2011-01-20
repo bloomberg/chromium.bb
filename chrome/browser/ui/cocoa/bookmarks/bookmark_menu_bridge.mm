@@ -5,7 +5,6 @@
 #import <AppKit/AppKit.h>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "app/mac/nsimage_cache.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
@@ -18,6 +17,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/base/resource/resource_bundle.h"
 
 BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile)
     : menuIsValid_(false),

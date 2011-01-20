@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/resource_bundle.h"
 #include "chrome/browser/chromeos/views/dropdown_button.h"
 #include "gfx/canvas_skia.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 // Asset icon particularities makes us offset focus frame.

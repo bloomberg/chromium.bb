@@ -5,13 +5,13 @@
 #include "chrome/browser/extensions/crashed_extension_infobar.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 CrashedExtensionInfoBarDelegate::CrashedExtensionInfoBarDelegate(
     TabContents* tab_contents,

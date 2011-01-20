@@ -14,6 +14,7 @@
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsFrontend.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "ui/base/ui_base_switches.h"
 
 using WebKit::WebDevToolsFrontend;
 using WebKit::WebString;

@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/status/network_dropdown_button.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -13,6 +12,7 @@
 #include "gfx/canvas_skia.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/window/window.h"
 
 namespace chromeos {

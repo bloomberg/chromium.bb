@@ -4,12 +4,12 @@
 
 #include "views/controls/menu/menu_item_view.h"
 
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/favicon_size.h"
 #include "grit/app_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/radio_button_image_gtk.h"

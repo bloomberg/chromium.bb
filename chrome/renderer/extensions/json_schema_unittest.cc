@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/v8_unit_test.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include "grit/renderer_resources.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/resource_bundle.h"
 
 static const char kJsonSchema[] = "json_schema.js";
 static const char kJsonSchemaTest[] = "json_schema_test.js";

@@ -5,11 +5,12 @@
 #include "views/examples/examples_main.h"
 
 #include "app/app_paths.h"
-#include "app/resource_bundle.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/process_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 #include "views/controls/label.h"
 #include "views/controls/button/text_button.h"
 #include "views/examples/button_example.h"
@@ -57,6 +58,7 @@ void ExamplesMain::Run() {
   base::AtExitManager exit_manager;
 
   app::RegisterPathProvider();
+  ui::RegisterPathProvider();
 
   icu_util::Initialize();
 

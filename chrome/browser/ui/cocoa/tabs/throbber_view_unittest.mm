@@ -4,13 +4,13 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/resource_bundle.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "grit/app_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#include "grit/app_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

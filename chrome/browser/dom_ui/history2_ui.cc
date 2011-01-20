@@ -8,7 +8,6 @@
 #include <set>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
@@ -34,13 +33,13 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
-#include "net/base/escape.h"
-
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "net/base/escape.h"
+#include "ui/base/resource/resource_bundle.h"
 
 // Maximum number of search results to return in a given search. We should
 // eventually remove this.

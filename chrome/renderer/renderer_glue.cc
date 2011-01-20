@@ -12,7 +12,6 @@
 
 #include <vector>
 
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/ref_counted.h"
 #include "base/string_util.h"
@@ -32,6 +31,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"

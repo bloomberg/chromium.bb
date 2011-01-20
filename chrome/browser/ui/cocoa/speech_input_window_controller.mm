@@ -5,7 +5,6 @@
 #import "speech_input_window_controller.h"
 
 #include "app/l10n_util_mac.h"
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -13,6 +12,7 @@
 #include "grit/theme_resources.h"
 #import "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/resource/resource_bundle.h"
 
 const int kBubbleControlVerticalSpacing = 10;  // Space between controls.
 const int kBubbleHorizontalMargin = 5;  // Space on either sides of controls.

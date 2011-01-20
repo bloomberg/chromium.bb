@@ -4,9 +4,9 @@
 
 #include "views/controls/menu/menu_config.h"
 
-#include "app/resource_bundle.h"
 #include "grit/app_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace views {
 

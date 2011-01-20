@@ -4,8 +4,6 @@
 
 #include "chrome/browser/themes/browser_theme_pack.h"
 
-#include "app/data_pack.h"
-#include "app/resource_bundle.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -20,6 +18,8 @@
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/base/resource/data_pack.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -370,7 +370,7 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
     FilePath path, const std::string& expected_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_refptr<BrowserThemePack> pack(new BrowserThemePack);
-  pack->data_pack_.reset(new app::DataPack);
+  pack->data_pack_.reset(new ui::DataPack);
 
   if (!pack->data_pack_->Load(path)) {
     LOG(ERROR) << "Failed to load theme data pack.";
@@ -448,7 +448,7 @@ bool BrowserThemePack::WriteToDisk(FilePath path) const {
   RepackImages(prepared_images_, &reencoded_images);
   AddRawImagesTo(reencoded_images, &resources);
 
-  return app::DataPack::WritePack(path, resources);
+  return ui::DataPack::WritePack(path, resources);
 }
 
 bool BrowserThemePack::GetTint(int id, color_utils::HSL* hsl) const {
@@ -583,7 +583,7 @@ void BrowserThemePack::BuildHeader(const Extension* extension) {
   header_->version = kThemePackVersion;
 
   // TODO(erg): Need to make this endian safe on other computers. Prerequisite
-  // is that app::DataPack removes this same check.
+  // is that ui::DataPack removes this same check.
 #if defined(__BYTE_ORDER)
   // Linux check
   COMPILE_ASSERT(__BYTE_ORDER == __LITTLE_ENDIAN,

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/panels/panel_scroller_header.h"
 
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/panels/panel_scroller.h"
 #include "gfx/canvas.h"
 #include "gfx/font.h"
+#include "ui/base/resource/resource_bundle.h"
 
 PanelScrollerHeader::PanelScrollerHeader(PanelScroller* scroller)
     : views::View(),

@@ -6,7 +6,6 @@
 
 #include "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
 
-#include "app/resource_bundle.h"
 #include "base/stl_util-inl.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -27,6 +26,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 
 namespace {

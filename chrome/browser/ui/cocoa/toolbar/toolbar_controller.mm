@@ -9,7 +9,6 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "app/mac/nsimage_cache.h"
-#include "app/resource_bundle.h"
 #include "base/mac/mac_util.h"
 #include "base/singleton.h"
 #include "base/sys_string_conversions.h"
@@ -57,6 +56,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/models/accelerator_cocoa.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

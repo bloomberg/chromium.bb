@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/ref_counted_memory.h"
@@ -15,6 +14,7 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "grit/sync_internals_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 SyncInternalsHTMLSource::SyncInternalsHTMLSource()
     : DataSource(chrome::kChromeUISyncInternalsHost,

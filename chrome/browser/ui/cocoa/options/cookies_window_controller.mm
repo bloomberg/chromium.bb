@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "app/l10n_util_mac.h"
-#include "app/resource_bundle.h"
 #import "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browsing_data_remover.h"
@@ -20,6 +19,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/apple/ImageAndTextCell.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/resource/resource_bundle.h"
 
 // Key path used for notifying KVO.
 static NSString* const kCocoaTreeModel = @"cocoaTreeModel";

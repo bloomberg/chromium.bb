@@ -5,7 +5,6 @@
 #include "chrome/browser/omnibox_search_hint.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/task.h"
@@ -31,6 +30,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 // The URLs of search engines for which we want to trigger the infobar.
 const char* kSearchEngineURLs[] = {

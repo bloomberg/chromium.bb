@@ -5,7 +5,6 @@
 #include "chrome/test/unit/chrome_test_suite.h"
 
 #include "app/app_paths.h"
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/stats_table.h"
@@ -17,6 +16,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_browser_process.h"
 #include "net/base/net_errors.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -94,6 +95,7 @@ void ChromeTestSuite::Initialize() {
 
   chrome::RegisterPathProvider();
   app::RegisterPathProvider();
+  ui::RegisterPathProvider();
   g_browser_process = new TestingBrowserProcess;
 
   if (!browser_dir_.empty()) {

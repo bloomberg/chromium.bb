@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -28,6 +27,7 @@
 #include "grit/theme_resources.h"
 #include "grit/locale_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/native_button.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"

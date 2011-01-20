@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/bookmark_menu_controller_views.h"
 
-#include "app/resource_bundle.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
@@ -20,6 +19,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/menu_button.h"
 
 using views::MenuItemView;

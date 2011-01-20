@@ -21,6 +21,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"
 #include "chrome/common/chrome_paths.h"
+#include "ui/base/ui_base_paths.h"
 
 namespace {
 // This is a minimalistic interface to wrap the platform console.  This will be
@@ -343,6 +344,7 @@ int DiagnosticsMain(const CommandLine& command_line) {
   // We need to have the path providers registered. They both
   // return void so there is no early error signal that we can use.
   app::RegisterPathProvider();
+  ui::RegisterPathProvider();
   chrome::RegisterPathProvider();
 
   TestWriter writer(console);

@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/views/infobars/infobar_text_button.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/views/infobars/infobar_button_border.h"
+#include "ui/base/resource/resource_bundle.h"
 
 // static
 InfoBarTextButton* InfoBarTextButton::Create(views::ButtonListener* listener,

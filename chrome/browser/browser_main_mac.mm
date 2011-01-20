@@ -8,7 +8,6 @@
 
 #include "app/app_switches.h"
 #include "app/l10n_util_mac.h"
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/file_path.h"
@@ -27,6 +26,7 @@
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/result_codes.h"
 #include "net/socket/ssl_client_socket_mac_factory.h"
+#include "ui/base/resource/resource_bundle.h"
 
 void DidEndMainMessageLoop() {
   AppController* appController = [NSApp delegate];

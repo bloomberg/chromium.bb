@@ -5,7 +5,6 @@
 
 #include <algorithm>
 
-#include "app/resource_bundle.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/values.h"
@@ -18,6 +17,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "grit/browser_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
 

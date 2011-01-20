@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 
-#include "app/resource_bundle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -16,6 +15,7 @@
 #include "gfx/icon_util.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "views/window/client_view.h"
 #include "views/window/window_resources.h"

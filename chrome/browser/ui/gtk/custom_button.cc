@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/gtk/custom_button.h"
 
-#include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
@@ -15,6 +14,7 @@
 #include "gfx/skbitmap_operations.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/resource/resource_bundle.h"
 
 CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
                                            int normal_id,

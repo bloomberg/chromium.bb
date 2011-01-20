@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/string_piece.h"
@@ -26,6 +25,7 @@
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

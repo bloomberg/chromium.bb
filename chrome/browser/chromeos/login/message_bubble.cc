@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/login/message_bubble.h"
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"

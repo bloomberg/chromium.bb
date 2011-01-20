@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -46,6 +45,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

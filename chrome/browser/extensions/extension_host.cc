@@ -7,7 +7,6 @@
 #include <list>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "base/singleton.h"
 #include "base/metrics/histogram.h"
@@ -48,6 +47,7 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/context_menu.h"
 
 #if defined(TOOLKIT_VIEWS)

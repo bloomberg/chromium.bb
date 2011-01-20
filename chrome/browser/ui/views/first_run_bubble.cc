@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/first_run_bubble.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
@@ -18,6 +17,7 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_font_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/hwnd_util.h"
 #include "views/event.h"
 #include "views/controls/button/native_button.h"

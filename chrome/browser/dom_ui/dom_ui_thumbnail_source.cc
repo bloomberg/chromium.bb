@@ -4,13 +4,13 @@
 
 #include "chrome/browser/dom_ui/dom_ui_thumbnail_source.h"
 
-#include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 DOMUIThumbnailSource::DOMUIThumbnailSource(Profile* profile)
     : DataSource(chrome::kChromeUIThumbnailPath, MessageLoop::current()),

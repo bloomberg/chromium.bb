@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/browser_actions_container.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -38,6 +37,7 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_2.h"

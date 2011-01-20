@@ -11,7 +11,6 @@
 
 #include "app/l10n_util.h"
 #include "app/mac/nsimage_cache.h"
-#include "app/resource_bundle.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -48,6 +47,7 @@
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#include "ui/base/resource/resource_bundle.h"
 
 NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 

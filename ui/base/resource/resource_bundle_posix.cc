@@ -1,10 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/resource_bundle.h"
+#include "ui/base/resource/resource_bundle.h"
 
-#include "app/data_pack.h"
 #include "app/l10n_util.h"
 #include "base/lock.h"
 #include "base/logging.h"
@@ -12,11 +11,14 @@
 #include "base/string16.h"
 #include "base/string_piece.h"
 #include "gfx/font.h"
+#include "ui/base/resource/data_pack.h"
+
+namespace ui {
 
 namespace {
 
-app::DataPack* LoadResourcesDataPak(FilePath resources_pak_path) {
-  app::DataPack* resources_pak = new app::DataPack;
+DataPack* LoadResourcesDataPak(FilePath resources_pak_path) {
+  DataPack* resources_pak = new DataPack;
   bool success = resources_pak->Load(resources_pak_path);
   if (!success) {
     delete resources_pak;
@@ -115,3 +117,5 @@ std::string ResourceBundle::LoadLocaleResources(
   CHECK(locale_resources_data_) << "failed to load locale.pak";
   return app_locale;
 }
+
+}  // namespace ui

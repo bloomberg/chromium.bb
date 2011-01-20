@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 #import <objc/objc-runtime.h>
 
-#include "app/data_pack.h"
 #include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -17,11 +16,12 @@
 #include "base/string16.h"
 #include "grit/webkit_resources.h"
 #include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
+#include "ui/base/resource/data_pack.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #import "webkit/support/drt_application_mac.h"
 #import "webkit/tools/test_shell/mac/DumpRenderTreePasteboard.h"
 
-static app::DataPack* g_resource_data_pack = NULL;
+static ui::DataPack* g_resource_data_pack = NULL;
 
 namespace webkit_support {
 
@@ -102,7 +102,7 @@ void AfterInitialize(bool unit_test_mode) {
     return;  // We don't have a resource pack when running the unit-tests.
 
   // Load a data pack.
-  g_resource_data_pack = new app::DataPack;
+  g_resource_data_pack = new ui::DataPack;
   NSString* resource_path =
       [base::mac::MainAppBundle() pathForResource:@"DumpRenderTree"
                                           ofType:@"pak"];

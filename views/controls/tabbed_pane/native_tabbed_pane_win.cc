@@ -7,12 +7,12 @@
 #include <vssym32.h>
 
 #include "app/l10n_util_win.h"
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 #include "gfx/native_theme_win.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/fill_layout.h"
 #include "views/widget/root_view.h"

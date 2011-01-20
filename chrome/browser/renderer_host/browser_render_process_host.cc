@@ -93,6 +93,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
+#include "ui/base/ui_base_switches.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/plugins/plugin_switches.h"
 

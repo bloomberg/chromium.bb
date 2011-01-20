@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/cocoa/sad_tab_view.h"
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/resource/resource_bundle.h"
 
 // Offset above vertical middle of page where contents of page start.
 static const CGFloat kSadTabOffset = -64;

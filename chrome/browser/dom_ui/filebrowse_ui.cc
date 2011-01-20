@@ -5,7 +5,6 @@
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -48,6 +47,7 @@
 #include "grit/locale_settings.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_file_job.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"

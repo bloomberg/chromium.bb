@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/resource_bundle.h"
 #import "base/mac/cocoa_protocols.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
@@ -18,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "ui/base/resource/resource_bundle.h"
 
 using ::testing::A;
 using ::testing::InSequence;

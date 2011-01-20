@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/data_pack.h"
+#include "ui/base/resource/data_pack.h"
 
 #include <errno.h>
 
@@ -57,9 +57,9 @@ enum LoadErrors {
   LOAD_ERRORS_COUNT,
 };
 
-}  // anonymous namespace
+}  // namespace
 
-namespace app {
+namespace ui {
 
 // In .cc for MemoryMappedFile dtor.
 DataPack::DataPack() : resource_count_(0) {
@@ -216,4 +216,4 @@ bool DataPack::WritePack(const FilePath& path,
   return true;
 }
 
-}  // namespace app
+}  // namespace ui

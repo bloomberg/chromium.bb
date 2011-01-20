@@ -10,7 +10,6 @@
 
 #include <algorithm>
 
-#include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -47,6 +46,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/glue/webkit_glue.h"
 

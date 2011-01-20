@@ -6,10 +6,10 @@
 #define CHROME_RENDERER_EXTENSIONS_BINDINGS_UTILS_H_
 #pragma once
 
-#include "app/resource_bundle.h"
 #include "base/linked_ptr.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 
 #include <list>

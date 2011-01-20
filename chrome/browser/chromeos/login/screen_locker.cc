@@ -13,7 +13,6 @@
 #undef Status
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
@@ -48,6 +47,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/x/x11_util.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"

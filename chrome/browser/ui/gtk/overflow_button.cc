@@ -6,12 +6,12 @@
 
 #include <gtk/gtk.h>
 
-#include "app/resource_bundle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 OverflowButton::OverflowButton(Profile* profile) : profile_(profile) {
   widget_.Own(GtkThemeProvider::GetFrom(profile)->BuildChromeButton());

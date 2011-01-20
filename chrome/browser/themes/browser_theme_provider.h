@@ -14,16 +14,20 @@
 #include "base/threading/non_thread_safe.h"
 #include "ui/base/theme_provider.h"
 
-namespace color_utils {
-struct HSL;
-}
-
 class BrowserThemePack;
 class BrowserThemeProviderTest;
 class Extension;
 class FilePath;
 class Profile;
+
+namespace color_utils {
+struct HSL;
+}
+
+namespace ui {
 class ResourceBundle;
+}
+using ui::ResourceBundle;
 
 #ifdef __OBJC__
 @class NSString;

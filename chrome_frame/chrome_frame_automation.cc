@@ -30,6 +30,7 @@
 #include "chrome_frame/navigation_constraints.h"
 #include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/utils.h"
+#include "ui/base/ui_base_switches.h"
 
 #ifdef NDEBUG
 int64 kAutomationServerReasonableLaunchDelay = 1000;  // in milliseconds

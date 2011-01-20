@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/sync_setup_wizard.h"
 
-#include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "base/singleton.h"
 #include "chrome/browser/browser_thread.h"
@@ -22,6 +21,7 @@
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/locale_settings.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

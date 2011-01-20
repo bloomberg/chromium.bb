@@ -4,7 +4,7 @@
 
 #include "views/widget/default_theme_provider.h"
 
-#include "app/resource_bundle.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/hwnd_util.h"

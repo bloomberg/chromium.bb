@@ -4,7 +4,6 @@
 
 #include "chrome/browser/tab_contents/navigation_entry.h"
 
-#include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,6 +13,7 @@
 #include "chrome/common/url_constants.h"
 #include "grit/app_resources.h"
 #include "net/base/net_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 
 // Use this to get a new unique ID for a NavigationEntry during construction.

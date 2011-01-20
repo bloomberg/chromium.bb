@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/string_number_conversions.h"
@@ -25,6 +24,7 @@
 #include "grit/theme_resources.h"
 #include "grit/locale_settings.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

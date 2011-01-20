@@ -1,8 +1,8 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/resource_bundle.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #include <windows.h>
 
@@ -10,8 +10,6 @@
 #include "base/logging.h"
 #include "gfx/font.h"
 #include "gfx/platform_font_win.h"
-
-ResourceBundle* ResourceBundle::g_shared_instance_ = NULL;
 
 // NOTE(gregoryd): This is a hack to avoid creating more nacl_win64-specific
 // files. The font members of ResourceBundle are never initialized in our code
@@ -25,6 +23,9 @@ PlatformFontWin::HFontRef::~HFontRef() {
 }
 }
 
+namespace ui {
+
+ResourceBundle* ResourceBundle::g_shared_instance_ = NULL;
 
 /* static */
 std::string ResourceBundle::InitSharedInstance(
@@ -62,3 +63,5 @@ ResourceBundle::~ResourceBundle() {
 string16 ResourceBundle::GetLocalizedString(int message_id) {
   return string16();
 }
+
+}  // namespace ui

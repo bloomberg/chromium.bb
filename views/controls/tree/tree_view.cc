@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "app/l10n_util_win.h"
-#include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
@@ -20,6 +19,7 @@
 #include "grit/app_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/hwnd_util.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"

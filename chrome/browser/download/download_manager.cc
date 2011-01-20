@@ -5,7 +5,6 @@
 #include "chrome/browser/download/download_manager.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -46,6 +45,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 DownloadManager::DownloadManager(DownloadStatusUpdater* status_updater)
     : shutdown_needed_(false),

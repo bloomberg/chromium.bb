@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/gtk/extension_infobar_gtk.h"
 
-#include "app/resource_bundle.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
@@ -13,6 +12,7 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "gfx/gtk_util.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 ExtensionInfoBarGtk::ExtensionInfoBarGtk(ExtensionInfoBarDelegate* delegate)
     : InfoBar(delegate),

@@ -1,8 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "app/data_pack.h"
 
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -10,8 +8,9 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/data_pack.h"
 
-namespace app {
+namespace ui {
 
 TEST(DataPackTest, Load) {
   FilePath data_path;
@@ -74,4 +73,4 @@ TEST(DataPackTest, Write) {
   EXPECT_EQ(fifteen, data);
 }
 
-}  // namespace app
+}  // namespace ui

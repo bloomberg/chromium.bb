@@ -1,12 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/resource_bundle.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #include <gtk/gtk.h>
 
-#include "app/app_paths.h"
 #include "base/base_paths.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -19,6 +18,9 @@
 #include "gfx/font.h"
 #include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/ui_base_paths.h"
+
+namespace ui {
 
 namespace {
 
@@ -66,14 +68,14 @@ void ResourceBundle::FreeGdkPixBufs() {
 // static
 FilePath ResourceBundle::GetResourcesFilePath() {
   FilePath resources_file_path;
-  PathService::Get(app::FILE_RESOURCES_PAK, &resources_file_path);
+  PathService::Get(ui::FILE_RESOURCES_PAK, &resources_file_path);
   return resources_file_path;
 }
 
 // static
 FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
   FilePath locale_file_path;
-  PathService::Get(app::DIR_LOCALES, &locale_file_path);
+  PathService::Get(ui::DIR_LOCALES, &locale_file_path);
   if (locale_file_path.empty())
     return locale_file_path;
   if (app_locale.empty())
@@ -142,3 +144,5 @@ GdkPixbuf* ResourceBundle::GetPixbufNamed(int resource_id) {
 GdkPixbuf* ResourceBundle::GetRTLEnabledPixbufNamed(int resource_id) {
   return GetPixbufImpl(resource_id, true);
 }
+
+}  // namespace ui

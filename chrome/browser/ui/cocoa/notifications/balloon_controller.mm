@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/mac/nsimage_cache.h"
-#include "app/resource_bundle.h"
 #import "base/mac/cocoa_protocols.h"
 #include "base/mac/mac_util.h"
 #import "base/scoped_nsobject.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/ui/cocoa/notifications/balloon_view_host_mac.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

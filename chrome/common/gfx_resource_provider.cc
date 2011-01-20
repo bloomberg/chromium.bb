@@ -4,8 +4,8 @@
 
 #include "chrome/common/gfx_resource_provider.h"
 
-#include "app/resource_bundle.h"
 #include "base/string_piece.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace chrome {
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/profiles/profile_impl.h"
 
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_path.h"
@@ -93,6 +92,7 @@
 #include "grit/browser_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/transport_security_state.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "webkit/database/database_tracker.h"
 
 #if defined(TOOLKIT_USES_GTK)

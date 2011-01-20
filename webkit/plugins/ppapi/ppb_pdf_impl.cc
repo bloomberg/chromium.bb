@@ -4,7 +4,6 @@
 
 #include "webkit/plugins/ppapi/ppb_pdf_impl.h"
 
-#include "app/resource_bundle.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -14,6 +13,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "unicode/usearch.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"

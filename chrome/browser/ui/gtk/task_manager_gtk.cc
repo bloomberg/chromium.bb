@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -32,6 +31,7 @@
 #include "grit/chromium_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "views/controls/menu/menu_2.h"

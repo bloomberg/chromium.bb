@@ -10,7 +10,6 @@
 
 #include "app/app_paths.h"
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -21,6 +20,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "grit/app_locale_settings.h"
 #include "third_party/cros/chromeos_cros_api.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 #include "views/focus/accelerator_handler.h"
 
 int main(int argc, char** argv) {
@@ -33,6 +34,7 @@ int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
   base::EnableTerminationOnHeapCorruption();
   app::RegisterPathProvider();
+  ui::RegisterPathProvider();
   CommandLine::Init(argc, argv);
 
   // Check if the UI language code is passed from the command line,

@@ -5,10 +5,10 @@
 #include "chrome/browser/chromeos/options/settings_page_view.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/skia_utils_gtk.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/label.h"
 #include "views/fill_layout.h"
 #include "views/widget/widget_gtk.h"

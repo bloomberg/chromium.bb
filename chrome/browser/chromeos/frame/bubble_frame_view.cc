@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/frame/bubble_frame_view.h"
 
-#include "app/resource_bundle.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 #include "gfx/insets.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/ui/views/bubble_border.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"

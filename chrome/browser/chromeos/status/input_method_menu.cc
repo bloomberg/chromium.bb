@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -24,6 +23,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 // The language menu consists of 3 parts (in this order):
 //

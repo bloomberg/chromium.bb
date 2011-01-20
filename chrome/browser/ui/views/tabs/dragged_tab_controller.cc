@@ -7,7 +7,6 @@
 #include <math.h>
 #include <set>
 
-#include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/browser_window.h"
@@ -33,6 +32,7 @@
 #include "ui/base/animation/animation.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/event.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"

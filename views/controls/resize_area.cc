@@ -4,8 +4,8 @@
 
 #include "views/controls/resize_area.h"
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_LINUX)
 #include "gfx/gtk_util.h"

@@ -42,6 +42,7 @@
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "ui/base/ui_base_switches.h"
 
 #if defined(USE_X11)
 #include "gfx/gtk_native_view_id_manager.h"

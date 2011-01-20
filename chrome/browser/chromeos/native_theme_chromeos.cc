@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/native_theme_chromeos.h"
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "gfx/insets.h"
 #include "gfx/rect.h"
@@ -15,6 +14,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

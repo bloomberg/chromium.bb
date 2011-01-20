@@ -8,7 +8,6 @@
 #include <cstdlib>
 #endif
 
-#include "app/app_paths.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_collator.h"
 #if !defined(OS_MACOSX)
@@ -26,6 +25,7 @@
 #endif
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "ui/base/ui_base_paths.h"
 #include "unicode/locid.h"
 
 namespace {
@@ -119,12 +119,12 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   // Use a temporary locale dir so we don't have to actually build the locale
   // dlls for this test.
   FilePath orig_locale_dir;
-  PathService::Get(app::DIR_LOCALES, &orig_locale_dir);
+  PathService::Get(ui::DIR_LOCALES, &orig_locale_dir);
   FilePath new_locale_dir;
   EXPECT_TRUE(file_util::CreateNewTempDirectory(
       FILE_PATH_LITERAL("l10n_util_test"),
       &new_locale_dir));
-  PathService::Override(app::DIR_LOCALES, new_locale_dir);
+  PathService::Override(ui::DIR_LOCALES, new_locale_dir);
   // Make fake locale files.
   std::string filenames[] = {
     "en-US",
@@ -278,7 +278,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 #endif  // defined(OS_WIN)
 
   // Clean up.
-  PathService::Override(app::DIR_LOCALES, orig_locale_dir);
+  PathService::Override(ui::DIR_LOCALES, orig_locale_dir);
   file_util::Delete(new_locale_dir, true);
   UErrorCode error_code = U_ZERO_ERROR;
   icu::Locale::setDefault(locale, error_code);

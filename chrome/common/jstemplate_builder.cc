@@ -7,12 +7,11 @@
 
 #include "chrome/common/jstemplate_builder.h"
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/common/json_value_serializer.h"
-
 #include "grit/common_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace jstemplate_builder {
 

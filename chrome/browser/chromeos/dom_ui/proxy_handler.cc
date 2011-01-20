@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/dom_ui/proxy_handler.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/stl_util-inl.h"
@@ -18,6 +17,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
 

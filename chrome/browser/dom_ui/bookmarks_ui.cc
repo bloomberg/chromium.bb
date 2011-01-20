@@ -4,7 +4,6 @@
 
 #include "chrome/browser/dom_ui/bookmarks_ui.h"
 
-#include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "base/ref_counted_memory.h"
 #include "base/singleton.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //

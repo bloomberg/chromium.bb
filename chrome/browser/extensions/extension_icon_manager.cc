@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_icon_manager.h"
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "chrome/common/extensions/extension.h"
@@ -17,6 +16,7 @@
 #include "gfx/size.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

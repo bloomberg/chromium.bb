@@ -9,11 +9,12 @@
 #include "build/build_config.h"
 
 #include "app/app_paths.h"
-#include "app/resource_bundle.h"
 #include "base/path_service.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -38,6 +39,7 @@ class AppTestSuite : public base::TestSuite {
     TestSuite::Initialize();
 
     app::RegisterPathProvider();
+    ui::RegisterPathProvider();
 #if defined(OS_MACOSX)
     // Look in the framework bundle for resources.
     // TODO(port): make a resource bundle for non-app exes.  What's done here
@@ -57,8 +59,8 @@ class AppTestSuite : public base::TestSuite {
     FilePath pak_dir;
     PathService::Get(base::DIR_MODULE, &pak_dir);
     pak_dir = pak_dir.AppendASCII("app_unittests_strings");
-    PathService::Override(app::DIR_LOCALES, pak_dir);
-    PathService::Override(app::FILE_RESOURCES_PAK,
+    PathService::Override(ui::DIR_LOCALES, pak_dir);
+    PathService::Override(ui::FILE_RESOURCES_PAK,
                           pak_dir.AppendASCII("app_resources.pak"));
 #endif
 

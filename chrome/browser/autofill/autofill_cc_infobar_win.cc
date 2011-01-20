@@ -4,7 +4,6 @@
 
 #include "chrome/browser/autofill/autofill_cc_infobar.h"
 
-#include "app/resource_bundle.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/infobars/infobars.h"
 #include "chrome/browser/ui/views/infobars/infobar_text_button.h"
@@ -12,6 +11,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/link.h"
 

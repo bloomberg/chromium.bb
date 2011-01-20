@@ -16,6 +16,7 @@
 #include "ipc/ipc_switches.h"
 #include "printing/native_metafile.h"
 #include "printing/page_range.h"
+#include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"

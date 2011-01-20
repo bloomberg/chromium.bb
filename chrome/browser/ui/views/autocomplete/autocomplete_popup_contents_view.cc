@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/bidi_line_iterator.h"
 #include "base/i18n/rtl.h"
@@ -26,6 +25,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/base/theme_provider.h"
 #include "unicode/ubidi.h"

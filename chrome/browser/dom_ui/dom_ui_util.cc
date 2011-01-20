@@ -6,11 +6,11 @@
 
 #include <vector>
 
-#include "app/resource_bundle.h"
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "gfx/codec/png_codec.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace dom_ui_util {
 

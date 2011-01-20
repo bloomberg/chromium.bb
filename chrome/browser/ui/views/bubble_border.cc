@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/views/bubble_border.h"
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/path.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/resource/resource_bundle.h"
 
 // static
 SkBitmap* BubbleBorder::left_ = NULL;

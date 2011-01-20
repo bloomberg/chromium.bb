@@ -19,19 +19,6 @@ bool PathProvider(int key, FilePath* result) {
 
   FilePath cur;
   switch (key) {
-    case app::DIR_LOCALES:
-      if (!PathService::Get(base::DIR_MODULE, &cur))
-        return false;
-#if defined(OS_MACOSX)
-      // On Mac, locale files are in Contents/Resources, a sibling of the
-      // App dir.
-      cur = cur.DirName();
-      cur = cur.Append(FILE_PATH_LITERAL("Resources"));
-#else
-      cur = cur.Append(FILE_PATH_LITERAL("locales"));
-#endif
-      create_dir = true;
-      break;
     case app::DIR_EXTERNAL_EXTENSIONS:
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;
@@ -45,28 +32,6 @@ bool PathProvider(int key, FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("extensions"));
       create_dir = true;
 #endif
-      break;
-    case app::FILE_RESOURCES_PAK:
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-      if (!PathService::Get(base::DIR_EXE, &cur))
-        return false;
-      // TODO(tony): We shouldn't be referencing chrome here.
-      cur = cur.AppendASCII("chrome.pak");
-#else
-      NOTREACHED();
-#endif
-      break;
-    // The following are only valid in the development environment, and
-    // will fail if executed from an installed executable (because the
-    // generated path won't exist).
-    case app::DIR_TEST_DATA:
-      if (!PathService::Get(base::DIR_SOURCE_ROOT, &cur))
-        return false;
-      cur = cur.Append(FILE_PATH_LITERAL("app"));
-      cur = cur.Append(FILE_PATH_LITERAL("test"));
-      cur = cur.Append(FILE_PATH_LITERAL("data"));
-      if (!file_util::PathExists(cur))  // we don't want to create this
-        return false;
       break;
     default:
       return false;

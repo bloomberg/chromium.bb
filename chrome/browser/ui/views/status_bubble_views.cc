@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -23,6 +22,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/linear_animation.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "views/controls/label.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"

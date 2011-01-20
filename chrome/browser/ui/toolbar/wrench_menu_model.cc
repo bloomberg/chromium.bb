@@ -8,7 +8,6 @@
 #include <cmath>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
 #include "base/string_number_conversions.h"
@@ -36,6 +35,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/models/button_menu_item_model.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>

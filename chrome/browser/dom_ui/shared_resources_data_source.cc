@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/resource_bundle.h"
 #include "base/singleton.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_thread.h"
@@ -19,6 +18,7 @@
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/mime_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/user_image_screen.h"
 
-#include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -15,6 +14,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
 

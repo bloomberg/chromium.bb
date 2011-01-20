@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/volume_bubble.h"
 
-#include "app/resource_bundle.h"
 #include "base/singleton.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
 

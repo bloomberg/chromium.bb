@@ -5,7 +5,6 @@
 #include "chrome/browser/search_engines/template_url_table_model.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/stl_util-inl.h"
@@ -19,6 +18,7 @@
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/table_model_observer.h"
+#include "ui/base/resource/resource_bundle.h"
 
 // Group IDs used by TemplateURLTableModel.
 static const int kMainGroupID = 0;

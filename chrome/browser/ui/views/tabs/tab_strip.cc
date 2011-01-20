@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
@@ -23,6 +22,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/animation/animation_container.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/image_view.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/window/non_client_view.h"

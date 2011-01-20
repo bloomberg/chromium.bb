@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/infobars/extension_infobar.h"
 
-#include "app/resource_bundle.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -16,6 +15,7 @@
 #include "gfx/canvas_skia.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/widget/widget.h"

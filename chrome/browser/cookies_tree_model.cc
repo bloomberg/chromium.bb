@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/linked_ptr.h"
 #include "base/string_util.h"
@@ -23,6 +22,7 @@
 #include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/resource/resource_bundle.h"
 
 static const char kFileOriginNodeName[] = "file://";
 

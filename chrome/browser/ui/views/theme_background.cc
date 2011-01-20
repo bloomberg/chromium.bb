@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/theme_background.h"
 
-#include "app/resource_bundle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -12,6 +11,7 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/view.h"
 
 ThemeBackground::ThemeBackground(BrowserView* browser_view)

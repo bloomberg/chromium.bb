@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
@@ -32,6 +31,7 @@
 #include "grit/app_resources.h"
 #include "grit/browser_resources.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/radio_button_image_gtk.h"

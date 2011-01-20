@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/perftimer.h"
@@ -20,11 +19,11 @@
 #include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
+#include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-
-#include "grit/renderer_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 using WebKit::WebFrame;
 using WebKit::WebString;

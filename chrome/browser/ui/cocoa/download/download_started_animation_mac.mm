@@ -11,7 +11,6 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-#include "app/resource_bundle.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 #include "chrome/common/notification_registrar.h"
@@ -21,6 +20,7 @@
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
+#include "ui/base/resource/resource_bundle.h"
 
 class DownloadAnimationTabObserver;
 

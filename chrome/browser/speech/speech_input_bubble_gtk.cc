@@ -5,7 +5,6 @@
 #include "chrome/browser/speech/speech_input_bubble.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
@@ -16,6 +15,7 @@
 #include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

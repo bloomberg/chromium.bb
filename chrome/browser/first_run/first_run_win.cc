@@ -13,7 +13,6 @@
 
 #include "app/app_switches.h"
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -58,6 +57,8 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"
 #include "views/window/window.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches.h"
 
 namespace {
 

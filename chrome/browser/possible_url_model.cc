@@ -4,7 +4,6 @@
 
 #include "chrome/browser/possible_url_model.h"
 
-#include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
@@ -19,6 +18,7 @@
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/table_model_observer.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 
 using base::Time;

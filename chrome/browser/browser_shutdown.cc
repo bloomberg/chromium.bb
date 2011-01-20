@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -39,6 +38,7 @@
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/switch_utils.h"
 #include "net/predictor_api.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/rlz/rlz.h"

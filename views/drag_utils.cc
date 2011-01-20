@@ -4,7 +4,6 @@
 
 #include "views/drag_utils.h"
 
-#include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -13,6 +12,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/app_resources.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/text_button.h"
 
 using ui::OSExchangeData;

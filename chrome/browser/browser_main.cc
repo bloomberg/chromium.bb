@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -102,6 +101,7 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_throttler_manager.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/system_monitor/system_monitor.h"
 
 #if defined(USE_LINUX_BREAKPAD)

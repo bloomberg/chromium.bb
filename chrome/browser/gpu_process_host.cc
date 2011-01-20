@@ -5,7 +5,6 @@
 #include "chrome/browser/gpu_process_host.h"
 
 #include "app/app_switches.h"
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/string_piece.h"
@@ -27,6 +26,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_LINUX)
 // These two #includes need to come after render_messages.h.

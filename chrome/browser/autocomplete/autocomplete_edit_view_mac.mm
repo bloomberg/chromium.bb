@@ -7,7 +7,6 @@
 #include <Carbon/Carbon.h>  // kVK_Return
 
 #include "app/mac/nsimage_cache.h"
-#include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -24,6 +23,7 @@
 #include "net/base/escape.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/resource/resource_bundle.h"
 
 // Focus-handling between |field_| and |model_| is a bit subtle.
 // Other platforms detect change of focus, which is inconvenient

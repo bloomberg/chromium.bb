@@ -15,7 +15,6 @@
 #include <string>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
@@ -59,6 +58,7 @@
 #include "net/base/ssl_config_service_win.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/background.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/combobox/combobox.h"

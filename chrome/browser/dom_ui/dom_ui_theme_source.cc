@@ -4,7 +4,6 @@
 
 #include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 
-#include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "base/ref_counted_memory.h"
 #include "chrome/browser/browser_thread.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 
 // use a resource map rather than hard-coded strings.

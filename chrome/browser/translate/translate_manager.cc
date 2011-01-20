@@ -4,7 +4,6 @@
 
 #include "chrome/browser/translate/translate_manager.h"
 
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
@@ -39,6 +38,7 @@
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

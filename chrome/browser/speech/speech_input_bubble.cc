@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/resource_bundle.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/speech/speech_input_bubble.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 SpeechInputBubble::FactoryMethod SpeechInputBubble::factory_ = NULL;
 const int SpeechInputBubble::kBubbleTargetOffsetX = 5;

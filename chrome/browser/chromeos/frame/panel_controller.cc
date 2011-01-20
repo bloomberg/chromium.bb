@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
@@ -21,6 +20,7 @@
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"

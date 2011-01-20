@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_RESOURCE_BUNDLE_H_
-#define APP_RESOURCE_BUNDLE_H_
+#ifndef UI_BASE_RESOURCE_RESOURCE_BUNDLE_H_
+#define UI_BASE_RESOURCE_RESOURCE_BUNDLE_H_
 #pragma once
 
 #include "build/build_config.h"
@@ -23,19 +23,16 @@
 #include "base/string16.h"
 #include "gfx/native_widget_types.h"
 
-namespace app {
-class DataPack;
-}
-namespace base {
-class Lock;
-}
-namespace gfx {
-class Font;
-}
 class SkBitmap;
 typedef uint32 SkColor;
+
 namespace base {
+class Lock;
 class StringPiece;
+}
+
+namespace gfx {
+class Font;
 }
 
 #if defined(OS_MACOSX)
@@ -49,6 +46,10 @@ class NSImage;
 #if defined(USE_X11)
 typedef struct _GdkPixbuf GdkPixbuf;
 #endif
+
+namespace ui {
+
+class DataPack;
 
 // ResourceBundle is a central facility to load images and other resources,
 // such as theme graphics.
@@ -176,7 +177,7 @@ class ResourceBundle {
    private:
     void Load();
 
-    scoped_ptr<app::DataPack> data_pack_;
+    scoped_ptr<DataPack> data_pack_;
     FilePath path_;
 
     DISALLOW_COPY_AND_ASSIGN(LoadedDataPack);
@@ -189,7 +190,7 @@ class ResourceBundle {
   typedef HINSTANCE DataHandle;
 #elif defined(USE_BASE_DATA_PACK)
   // Linux uses base::DataPack.
-  typedef app::DataPack* DataHandle;
+  typedef DataPack* DataHandle;
 #endif
 
   // Ctor/dtor are private, since we're a singleton.
@@ -274,4 +275,9 @@ class ResourceBundle {
   DISALLOW_COPY_AND_ASSIGN(ResourceBundle);
 };
 
-#endif  // APP_RESOURCE_BUNDLE_H_
+}  // namespace ui
+
+// TODO(beng): Someday, maybe, get rid of this.
+using ui::ResourceBundle;
+
+#endif  // UI_BASE_RESOURCE_RESOURCE_BUNDLE_H_

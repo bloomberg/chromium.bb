@@ -9,7 +9,6 @@
 #endif
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/string_number_conversions.h"
@@ -74,6 +73,7 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "grit/webkit_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/single_split_view.h"
 #include "views/focus/external_focus_tracker.h"
 #include "views/focus/view_storage.h"

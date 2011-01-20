@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -34,6 +33,7 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

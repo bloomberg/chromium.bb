@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "app/resource_bundle.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
@@ -32,6 +31,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 class BrowserSigninResourcesSource : public ChromeURLDataManager::DataSource {
  public:

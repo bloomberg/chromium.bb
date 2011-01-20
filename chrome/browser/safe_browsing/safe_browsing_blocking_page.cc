@@ -9,7 +9,6 @@
 #include <string>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/string_number_conversions.h"
@@ -36,6 +35,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/escape.h"
+#include "ui/base/resource/resource_bundle.h"
 
 // For malware interstitial pages, we link the problematic URL to Google's
 // diagnostic page.

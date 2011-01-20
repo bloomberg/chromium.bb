@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/user_manager.h"
 
-#include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/notification_type.h"
 #include "gfx/codec/png_codec.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
 

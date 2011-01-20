@@ -5,7 +5,6 @@
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
 #include "base/string_piece.h"
@@ -24,6 +23,7 @@
 #include "chrome/common/notification_service.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

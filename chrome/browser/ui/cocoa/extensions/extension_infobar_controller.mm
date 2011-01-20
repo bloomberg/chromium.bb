@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "app/resource_bundle.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -20,6 +19,7 @@
 #include "gfx/canvas_skia.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 const CGFloat kAnimationDuration = 0.12;

@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "app/app_paths.h"
-#include "app/resource_bundle.h"
 #include "base/test/test_suite.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 
 class ViewTestSuite : public base::TestSuite {
  public:
@@ -13,6 +14,7 @@ class ViewTestSuite : public base::TestSuite {
  protected:
   virtual void Initialize() {
     app::RegisterPathProvider();
+    ui::RegisterPathProvider();
     base::TestSuite::Initialize();
     ResourceBundle::InitSharedInstance("en-US");
   }

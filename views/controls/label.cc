@@ -7,7 +7,6 @@
 #include <cmath>
 #include <limits>
 
-#include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/string_split.h"
@@ -17,6 +16,7 @@
 #include "gfx/color_utils.h"
 #include "gfx/font.h"
 #include "gfx/insets.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "views/background.h"
 

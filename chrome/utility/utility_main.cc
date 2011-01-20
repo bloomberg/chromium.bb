@@ -18,6 +18,7 @@
 #include "chrome/common/main_function_params.h"
 #include "chrome/utility/utility_thread.h"
 #include "ui/base/system_monitor/system_monitor.h"
+#include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
 #include "chrome/common/chrome_switches.h"

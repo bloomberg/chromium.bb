@@ -12,7 +12,11 @@
 #include "ui/base/theme_provider.h"
 
 class Profile;
+
+namespace ui {
 class ResourceBundle;
+}
+using ui::ResourceBundle;
 
 namespace views {
 

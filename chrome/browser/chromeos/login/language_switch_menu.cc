@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 
-#include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/menu_button.h"
 #include "views/widget/widget_gtk.h"
 

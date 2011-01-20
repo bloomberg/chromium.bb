@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "app/resource_bundle.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_callback_factory.h"
@@ -34,6 +33,7 @@
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
+#include "ui/base/resource/resource_bundle.h"
 
 const int kTopGradientHeight  = 15;
 

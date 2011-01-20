@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
@@ -43,6 +42,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

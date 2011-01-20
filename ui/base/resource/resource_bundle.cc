@@ -1,10 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/resource_bundle.h"
+#include "ui/base/resource/resource_bundle.h"
 
-#include "app/data_pack.h"
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
@@ -13,6 +12,9 @@
 #include "gfx/codec/png_codec.h"
 #include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/resource/data_pack.h"
+
+namespace ui {
 
 namespace {
 
@@ -247,7 +249,7 @@ ResourceBundle::LoadedDataPack::~LoadedDataPack() {
 
 void ResourceBundle::LoadedDataPack::Load() {
   DCHECK(!data_pack_.get());
-  data_pack_.reset(new app::DataPack);
+  data_pack_.reset(new ui::DataPack);
   bool success = data_pack_->Load(path_);
   LOG_IF(ERROR, !success) << "Failed to load " << path_.value()
       << "\nYou will not be able to use the Bookmarks Manager or "
@@ -263,3 +265,5 @@ RefCountedStaticMemory* ResourceBundle::LoadedDataPack::GetStaticMemory(
     int resource_id) const {
   return data_pack_->GetStaticMemory(resource_id);
 }
+
+}  // namespace ui

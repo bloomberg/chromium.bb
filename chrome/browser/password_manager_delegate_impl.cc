@@ -5,7 +5,6 @@
 #include "chrome/browser/password_manager_delegate_impl.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/metrics/histogram.h"
 #include "base/singleton.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
@@ -16,6 +15,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/password_form.h"
 
 // After a successful *new* login attempt, we take the PasswordFormManager in

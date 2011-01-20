@@ -4,13 +4,13 @@
 
 #include "views/painter.h"
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/insets.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace views {
 

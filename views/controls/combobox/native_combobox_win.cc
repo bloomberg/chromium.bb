@@ -4,12 +4,12 @@
 
 #include "views/controls/combobox/native_combobox_win.h"
 
-#include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/font.h"
 #include "gfx/native_theme_win.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/widget/widget.h"
 

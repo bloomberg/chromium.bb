@@ -4,11 +4,11 @@
 
 #include "views/window/window.h"
 
-#include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "gfx/font.h"
 #include "gfx/size.h"
 #include "ui/base/l10n/l10n_font_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/widget/widget.h"
 
 namespace views {

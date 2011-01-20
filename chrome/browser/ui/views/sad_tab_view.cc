@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/sad_tab_view.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -19,6 +18,7 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/resource/resource_bundle.h"
 
 static const int kSadTabOffset = -64;
 static const int kIconTitleSpacing = 20;

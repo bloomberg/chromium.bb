@@ -4,7 +4,6 @@
 
 #include "app/app_paths.h"
 #include "app/app_switches.h"
-#include "app/resource_bundle.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
@@ -36,6 +35,9 @@
 #include "chrome/common/set_process_title.h"
 #include "chrome/common/url_constants.h"
 #include "ipc/ipc_switches.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
+#include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
 #include <algorithm>
@@ -717,6 +719,7 @@ int ChromeMain(int argc, char** argv) {
 
   // Initialize the Chrome path provider.
   app::RegisterPathProvider();
+  ui::RegisterPathProvider();
   chrome::RegisterPathProvider();
 
   // Notice a user data directory override if any

@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/options/exception_editor_view.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_exceptions_table_model.h"
 #include "googleurl/src/url_canon.h"
@@ -13,6 +12,7 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/grid_layout.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"

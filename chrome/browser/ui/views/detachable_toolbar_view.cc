@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/views/detachable_toolbar_view.h"
 
-#include "app/resource_bundle.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/skia_util.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/window/non_client_view.h"
 
 // How round the 'new tab' style bookmarks bar is.

@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/views/theme_install_bubble_view.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/canvas_skia.h"
 #include "grit/generated_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/widget/widget.h"
 
 namespace {

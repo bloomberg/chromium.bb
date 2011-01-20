@@ -4,13 +4,13 @@
 
 #import "chrome/browser/ui/cocoa/styled_text_field_cell.h"
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "gfx/font.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

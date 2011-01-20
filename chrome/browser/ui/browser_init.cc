@@ -7,7 +7,6 @@
 #include <algorithm>   // For max().
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/environment.h"
 #include "base/event_recorder.h"
 #include "base/file_path.h"
@@ -66,6 +65,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_MACOSX)

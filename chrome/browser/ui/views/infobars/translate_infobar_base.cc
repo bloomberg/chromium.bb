@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/infobars/translate_infobar_base.h"
 
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/after_translate_infobar.h"
@@ -14,6 +13,7 @@
 #include "gfx/canvas_skia.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/image_view.h"
 

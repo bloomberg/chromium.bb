@@ -1,13 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/resource_bundle.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #include <atlbase.h>
 
-#include "app/app_paths.h"
-#include "app/data_pack.h"
 #include "app/l10n_util.h"
 #include "base/debug/stack_trace.h"
 #include "base/file_util.h"
@@ -18,8 +16,11 @@
 #include "base/stl_util-inl.h"
 #include "base/string_piece.h"
 #include "base/win/windows_version.h"
-
 #include "gfx/font.h"
+#include "ui/base/ui_base_paths.h"
+#include "ui/base/resource/data_pack.h"
+
+namespace ui {
 
 namespace {
 
@@ -78,7 +79,7 @@ void ResourceBundle::UnloadLocaleResources() {
 // static
 FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
   FilePath locale_path;
-  PathService::Get(app::DIR_LOCALES, &locale_path);
+  PathService::Get(ui::DIR_LOCALES, &locale_path);
 
   if (app_locale.empty())
     return FilePath();
@@ -165,3 +166,5 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
   // Copy into a string16 and return.
   return string16(image->achString, image->nLength);
 }
+
+}  // namespace ui;

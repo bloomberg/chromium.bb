@@ -8,7 +8,6 @@
 #include <limits>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -17,6 +16,7 @@
 #include "gfx/canvas_skia.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/window/window.h"
 
 namespace chromeos {

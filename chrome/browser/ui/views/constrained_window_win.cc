@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/resource_bundle.h"
 #include "app/win/win_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +25,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/hwnd_util.h"
 #include "views/controls/button/image_button.h"
 #include "views/focus/focus_manager.h"

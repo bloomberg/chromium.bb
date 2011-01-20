@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
-#include "app/resource_bundle.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "gfx/canvas.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 

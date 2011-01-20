@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/views/options/options_group_view.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
@@ -16,6 +15,7 @@
 #include "gfx/native_theme_win.h"
 #include "grit/locale_settings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "views/grid_layout.h"
 #include "views/controls/label.h"
 #include "views/controls/separator.h"

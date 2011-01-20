@@ -9,7 +9,6 @@
 
 #include "webkit/tools/test_shell/test_shell.h"
 
-#include "app/data_pack.h"
 #include "base/base_paths.h"
 #include "base/basictypes.h"
 #include "base/debug/debugger.h"
@@ -30,6 +29,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/resource/data_pack.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -69,7 +69,7 @@ const int kTestWindowXLocation = -14000;
 const int kTestWindowYLocation = -14000;
 
 // Data pack resource. This is a pointer to the mmapped resources file.
-static app::DataPack* g_resource_data_pack = NULL;
+static ui::DataPack* g_resource_data_pack = NULL;
 
 // Define static member variables
 base::LazyInstance <std::map<gfx::NativeWindow, TestShell *> >
@@ -209,7 +209,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
   // mmap the data pack which holds strings used by WebCore. This is only
   // a fatal error if we're bundled, which means we might be running layout
   // tests. This is a harmless failure for test_shell_tests.
-  g_resource_data_pack = new app::DataPack;
+  g_resource_data_pack = new ui::DataPack;
   NSString *resource_path =
       [base::mac::MainAppBundle() pathForResource:@"test_shell"
                                           ofType:@"pak"];
