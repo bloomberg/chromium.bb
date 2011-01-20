@@ -8142,7 +8142,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You have chosen to encrypt data using your Google password; you can always change your mind later by changing your sync settings.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_MSG_EXPLICIT" desc="Message when explicit passphrase is selected.">
-        Only someone with your passphrase can read your data. Google does not store your passphrase. If you forget your passphrase, you will need to reset sync.
+        Only someone with your passphrase can read your data. If you forget your passphrase, you will need to reset sync.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_MSG_CANCEL" desc="Message when not syncing passwords is selected.">
         You have chosen not to sync passwords; you can always change your mind later by changing your sync settings.
@@ -8302,7 +8302,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enter your passphrase
       </message>
       <message name="IDS_SYNC_ENTER_PASSPHRASE_BODY" desc="Instructions for the dialog where the user enters the passphrase.">
-        You already have data that is encrypted with a custom passphrase, please enter it below.
+        You already have data that is encrypted with a custom passphrase. Please enter it below.
       </message>
       <message name="IDS_SYNC_ENTER_OTHER_PASSPHRASE_BODY" desc="Instructions for the dialog where the user needs to enter a different passphrase.">
         The passphrase you entered can't be used because you already have data encrypted with a custom passphrase. Please enter your existing passphrase below.
