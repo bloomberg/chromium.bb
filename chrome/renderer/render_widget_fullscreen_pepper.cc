@@ -56,6 +56,9 @@ class PepperWidget : public WebWidget {
     widget_->Invalidate();
   }
 
+  virtual void animate() {
+  }
+
   virtual void layout() {
   }
 
