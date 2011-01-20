@@ -398,11 +398,12 @@ void AutomationProxyCacheEntry::RemoveDelegate(LaunchDelegate* delegate,
       if (snapshots_)
         SendUMAData();
 
-      // Take down the proxy since we no longer have any clients.
-      proxy_.reset(NULL);
-
       // Process pending notifications.
       thread_->message_loop()->RunAllPending();
+
+      // Take down the proxy since we no longer have any clients.
+      // Make sure we only do this once all pending messages have been cleared.
+      proxy_.reset(NULL);
     }
     // Be careful to remove from the list after running pending
     // tasks.  Otherwise the delegate being removed might miss out
