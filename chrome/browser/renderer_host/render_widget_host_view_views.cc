@@ -688,6 +688,9 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
         if (touch_event_.touchPointsLength == 1) {
           // A new touch sequence has started.
           status = TOUCH_STATUS_START;
+
+          // We also want the focus.
+          RequestFocus();
         }
       }
       break;
