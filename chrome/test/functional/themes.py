@@ -103,8 +103,8 @@ class ThemesTest(pyauto.PyUITest):
     themes_dir = os.path.join(self.DataDir(), 'themes')
     urls_file = os.path.join(self.DataDir(), 'urls.txt')
 
-    assert(os.path.exists(themes_dir),
-           'The dir "%s" must exist' % os.path.abspath(themes_dir))
+    assert os.path.exists(themes_dir), \
+           'The dir "%s" must exist' % os.path.abspath(themes_dir)
 
     group_size = 20
     num_urls_to_visit = 100
