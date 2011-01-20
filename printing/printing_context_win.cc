@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include <winspool.h>
 
-#include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
@@ -188,12 +187,11 @@ void PrintingContextWin::AskUserForSettings(HWND view,
     dialog_options.Flags |= PD_NOPAGENUMS;
   }
 
-  {
-    if ((*print_dialog_func_)(&dialog_options) != S_OK) {
-      ResetSettings();
-      callback->Run(FAILED);
-    }
+  if ((*print_dialog_func_)(&dialog_options) != S_OK) {
+    ResetSettings();
+    callback->Run(FAILED);
   }
+
   // TODO(maruel):  Support PD_PRINTTOFILE.
   callback->Run(ParseDialogResultEx(dialog_options));
 }

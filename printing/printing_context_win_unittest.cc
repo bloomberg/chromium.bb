@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,6 @@ HRESULT WINAPI PrintDlgExMock(LPPRINTDLGEX lppd) {
   // Pretend the page range is 1-5, but since lppd->Flags does not have
   // PD_SELECTION set, this really shouldn't matter.
   lppd->nPageRanges = 1;
-  lppd->lpPageRanges = new PRINTPAGERANGE[1];
   lppd->lpPageRanges[0].nFromPage = 1;
   lppd->lpPageRanges[0].nToPage = 5;
 
