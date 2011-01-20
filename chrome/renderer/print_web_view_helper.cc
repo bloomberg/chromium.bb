@@ -401,13 +401,16 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
       static_cast<int>(ConvertUnitDouble(content_height_in_points,
           printing::kPointsPerInch, dpi)));
 
+  double page_width_in_points = content_width_in_points +
+      margin_left_in_points + margin_right_in_points;
+  double page_height_in_points = content_height_in_points +
+      margin_top_in_points + margin_bottom_in_points;
+
   params->page_size = gfx::Size(
-      static_cast<int>(ConvertUnitDouble(content_width_in_points +
-          margin_left_in_points + margin_right_in_points,
-          printing::kPointsPerInch, dpi)),
-      static_cast<int>(ConvertUnitDouble(content_height_in_points +
-          margin_top_in_points + margin_bottom_in_points,
-          printing::kPointsPerInch, dpi)));
+      static_cast<int>(ConvertUnitDouble(
+          page_width_in_points, printing::kPointsPerInch, dpi)),
+      static_cast<int>(ConvertUnitDouble(
+          page_height_in_points, printing::kPointsPerInch, dpi)));
 
   params->margin_top = static_cast<int>(ConvertUnitDouble(
       margin_top_in_points, printing::kPointsPerInch, dpi));

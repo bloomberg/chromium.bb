@@ -73,59 +73,53 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   DCHECK(hdc);
   skia::PlatformDevice::InitializeDC(hdc);
 
+  int page_number = params.page_number;
+
   double content_width_in_points;
   double content_height_in_points;
-  double margin_top_in_points;
-  double margin_right_in_points;
-  double margin_bottom_in_points;
-  double margin_left_in_points;
-  GetPageSizeAndMarginsInPoints(frame,
-                                params.page_number,
-                                params.params,
-                                &content_width_in_points,
-                                &content_height_in_points,
-                                &margin_top_in_points,
-                                &margin_right_in_points,
-                                &margin_bottom_in_points,
-                                &margin_left_in_points);
+  GetPageSizeAndMarginsInPoints(frame, page_number, params.params,
+      &content_width_in_points, &content_height_in_points, NULL, NULL, NULL,
+      NULL);
 
-  // Since WebKit extends the page width depending on the magical shrink
-  // factor we make sure the canvas covers the worst case scenario
-  // (x2.0 currently).  PrintContext will then set the correct clipping region.
-  int size_x = static_cast<int>(content_width_in_points *
-                                params.params.max_shrink);
-  int size_y = static_cast<int>(content_height_in_points *
-                                params.params.max_shrink);
   // Calculate the dpi adjustment.
-  float shrink = static_cast<float>(params.params.desired_dpi /
-                                    params.params.dpi);
+  float scale_factor = static_cast<float>(params.params.desired_dpi /
+                                          params.params.dpi);
+
+  // Since WebKit extends the page width depending on the magical |scale_factor|
+  // we make sure the canvas covers the worst case scenario (x2.0 currently).
+  // PrintContext will then set the correct clipping region.
+  int width = static_cast<int>(content_width_in_points *
+                               params.params.max_shrink);
+  int height = static_cast<int>(content_height_in_points *
+                                params.params.max_shrink);
 #if 0
   // TODO(maruel): This code is kept for testing until the 100% GDI drawing
   // code is stable. maruels use this code's output as a reference when the
   // GDI drawing code fails.
 
   // Mix of Skia and GDI based.
-  skia::PlatformCanvas canvas(size_x, size_y, true);
+  skia::PlatformCanvas canvas(width, height, true);
   canvas.drawARGB(255, 255, 255, 255, SkXfermode::kSrc_Mode);
-  float webkit_shrink = frame->printPage(params.page_number, &canvas);
-  if (shrink <= 0 || webkit_shrink <= 0) {
-    NOTREACHED() << "Printing page " << params.page_number << " failed.";
+  float webkit_scale_factor = frame->printPage(page_number, &canvas);
+  if (scale_factor <= 0 || webkit_scale_factor <= 0) {
+    NOTREACHED() << "Printing page " << page_number << " failed.";
   } else {
-    // Update the dpi adjustment with the "page shrink" calculated in webkit.
-    shrink /= webkit_shrink;
+    // Update the dpi adjustment with the "page |scale_factor|" calculated
+    // in webkit.
+    scale_factor /= webkit_scale_factor;
   }
 
   // Create a BMP v4 header that we can serialize.
   BITMAPV4HEADER bitmap_header;
-  gfx::CreateBitmapV4Header(size_x, size_y, &bitmap_header);
+  gfx::CreateBitmapV4Header(width, height, &bitmap_header);
   const SkBitmap& src_bmp = canvas.getDevice()->accessBitmap(true);
   SkAutoLockPixels src_lock(src_bmp);
   int retval = StretchDIBits(hdc,
                              0,
                              0,
-                             size_x, size_y,
+                             width, height,
                              0, 0,
-                             size_x, size_y,
+                             width, height,
                              src_bmp.getPixels(),
                              reinterpret_cast<BITMAPINFO*>(&bitmap_header),
                              DIB_RGB_COLORS,
@@ -133,13 +127,14 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   DCHECK(retval != GDI_ERROR);
 #else
   // 100% GDI based.
-  skia::VectorCanvas canvas(hdc, size_x, size_y);
-  float webkit_shrink = frame->printPage(params.page_number, &canvas);
-  if (shrink <= 0 || webkit_shrink <= 0) {
-    NOTREACHED() << "Printing page " << params.page_number << " failed.";
+  skia::VectorCanvas canvas(hdc, width, height);
+  float webkit_scale_factor = frame->printPage(page_number, &canvas);
+  if (scale_factor <= 0 || webkit_scale_factor <= 0) {
+    NOTREACHED() << "Printing page " << page_number << " failed.";
   } else {
-    // Update the dpi adjustment with the "page shrink" calculated in webkit.
-    shrink /= webkit_shrink;
+    // Update the dpi adjustment with the "page scale_factor" calculated
+    // in webkit.
+    scale_factor /= webkit_scale_factor;
   }
 #endif
 
@@ -163,7 +158,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
     SetGraphicsMode(bitmap_dc, GM_ADVANCED);
     void* bits = NULL;
     BITMAPINFO hdr;
-    gfx::CreateBitmapHeader(size_x, size_y, &hdr.bmiHeader);
+    gfx::CreateBitmapHeader(width, height, &hdr.bmiHeader);
     HBITMAP hbitmap = CreateDIBSection(
         bitmap_dc, &hdr, DIB_RGB_COLORS, &bits, NULL, 0);
     if (!hbitmap) {
@@ -171,7 +166,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
     }
 
     HGDIOBJ old_bitmap = SelectObject(bitmap_dc, hbitmap);
-    RECT rect = {0, 0, size_x, size_y };
+    RECT rect = {0, 0, width, height };
     HBRUSH whiteBrush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
     FillRect(bitmap_dc, &rect, whiteBrush);
 
@@ -204,29 +199,14 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   ViewHostMsg_DidPrintPage_Params page_params;
   page_params.data_size = 0;
   page_params.metafile_data_handle = NULL;
-  page_params.page_number = params.page_number;
+  page_params.page_number = page_number;
   page_params.document_cookie = params.params.document_cookie;
-  page_params.actual_shrink = shrink;
-  page_params.page_size = gfx::Size(
-      static_cast<int>(ConvertUnitDouble(
-          content_width_in_points +
-          margin_left_in_points + margin_right_in_points,
-          kPointsPerInch, params.params.dpi)),
-      static_cast<int>(ConvertUnitDouble(
-          content_height_in_points +
-          margin_top_in_points + margin_bottom_in_points,
-          kPointsPerInch, params.params.dpi)));
-  page_params.content_area = gfx::Rect(
-      static_cast<int>(ConvertUnitDouble(
-          margin_left_in_points, kPointsPerInch, params.params.dpi)),
-      static_cast<int>(ConvertUnitDouble(
-          margin_top_in_points, kPointsPerInch, params.params.dpi)),
-      static_cast<int>(ConvertUnitDouble(
-          content_width_in_points, kPointsPerInch, params.params.dpi)),
-      static_cast<int>(ConvertUnitDouble(
-          content_height_in_points, kPointsPerInch, params.params.dpi)));
-  page_params.has_visible_overlays =
-      frame->isPageBoxVisible(params.page_number);
+  page_params.actual_shrink = scale_factor;
+  page_params.page_size = params.params.page_size;
+  page_params.content_area = gfx::Rect(params.params.margin_left,
+      params.params.margin_top, params.params.printable_size.width(),
+      params.params.printable_size.height());
+  page_params.has_visible_overlays = frame->isPageBoxVisible(page_number);
   base::SharedMemory shared_buf;
 
   // http://msdn2.microsoft.com/en-us/library/ms535522.aspx
