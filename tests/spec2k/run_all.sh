@@ -161,7 +161,7 @@ SetupNaclDynX8664Common() {
   SEL_LDR=$(GetSelLdr "x86-64")
   RUNNABLE_LD=../../toolchain/linux_x86/nacl64/lib/runnable-ld.so
   RUNNABLE_LD=$(readlink -f ${RUNNABLE_LD})
-  PREFIX="${SEL_LDR} -a -c -f ${RUNNABLE_LD}"
+  PREFIX="${SEL_LDR} -a -s -f ${RUNNABLE_LD}"
 }
 
 #@
