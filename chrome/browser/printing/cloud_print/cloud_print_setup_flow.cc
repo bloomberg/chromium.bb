@@ -37,7 +37,7 @@
 #include "ui/base/l10n/l10n_font_util.h"
 
 #if defined(TOOLKIT_GTK)
-#include "chrome/browser/gtk/html_dialog_gtk.h"
+#include "chrome/browser/ui/gtk/html_dialog_gtk.h"
 #endif  // defined(TOOLKIT_GTK)
 
 #if defined(TOOLKIT_VIEWS)

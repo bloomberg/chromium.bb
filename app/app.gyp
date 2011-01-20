@@ -48,6 +48,8 @@
         '../ui/base/models/tree_node_iterator_unittest.cc',
         '../ui/base/models/tree_node_model_unittest.cc',
         '../ui/base/system_monitor/system_monitor_unittest.cc',
+        '../ui/base/text/text_elider_unittest.cc',
+        '../ui/base/view_prop_unittest.cc',
         'data_pack_unittest.cc',
         'l10n_util_mac_unittest.mm',
         'l10n_util_unittest.cc',
@@ -57,8 +59,6 @@
         'sql/transaction_unittest.cc',
         'test_suite.h',
         'test/data/resource.h',
-        'text_elider_unittest.cc',
-        'view_prop_unittest.cc',
         'win/win_util_unittest.cc',
       ],
       'include_dirs': [
@@ -78,7 +78,7 @@
         ['OS!="win"', {
           'sources!': [
             '../ui/base/dragdrop/os_exchange_data_win_unittest.cc',
-            'view_prop_unittest.cc',
+            '../ui/base/view_prop_unittest.cc',
             'win_util_unittest.cc',
           ],
         }],

@@ -5,7 +5,6 @@
 #include "views/widget/widget_win.h"
 
 #include "app/l10n_util_win.h"
-#include "app/view_prop.h"
 #include "app/win/win_util.h"
 #include "base/string_util.h"
 #include "gfx/canvas_skia.h"
@@ -13,6 +12,8 @@
 #include "gfx/path.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/system_monitor/system_monitor.h"
+#include "ui/base/theme_provider.h"
+#include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
 #include "views/accessibility/view_accessibility.h"
 #include "views/controls/native_control_win.h"
@@ -27,7 +28,7 @@
 #include "views/widget/widget_utils.h"
 #include "views/window/window_win.h"
 
-using app::ViewProp;
+using ui::ViewProp;
 
 namespace views {
 
