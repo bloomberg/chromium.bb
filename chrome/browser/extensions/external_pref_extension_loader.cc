@@ -60,18 +60,21 @@ void ExternalPrefExtensionLoader::StartLoading() {
 void ExternalPrefExtensionLoader::LoadOnFileThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  CHECK(PathService::Get(base_path_key_, &base_path_));
-
-  FilePath json_file;
-  json_file = base_path_.Append(FILE_PATH_LITERAL("external_extensions.json"));
-
   scoped_ptr<DictionaryValue> prefs;
-  if (file_util::PathExists(json_file)) {
-    JSONFileValueSerializer serializer(json_file);
-    prefs.reset(ExtractPrefs(&serializer));
-  } else {
-    prefs.reset(new DictionaryValue());
+
+  if (PathService::Get(base_path_key_, &base_path_)) {
+    FilePath json_file;
+    json_file =
+        base_path_.Append(FILE_PATH_LITERAL("external_extensions.json"));
+
+    if (file_util::PathExists(json_file)) {
+      JSONFileValueSerializer serializer(json_file);
+      prefs.reset(ExtractPrefs(&serializer));
+    }
   }
+
+  if (!prefs.get())
+    prefs.reset(new DictionaryValue());
 
   prefs_.reset(prefs.release());
   BrowserThread::PostTask(
