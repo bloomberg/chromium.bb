@@ -1718,22 +1718,6 @@
         'tools/convert_dict/convert_dict_unittest.cc',
         '../testing/gtest_mac_unittest.mm',
         '../third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
-        # TODO(jcampan): Create a separate unit test for these to allow us to
-        # test views completely decoupled from chrome.
-        '../views/animation/bounds_animator_unittest.cc',
-        '../views/box_layout_unittest.cc',
-        '../views/controls/label_unittest.cc',
-        '../views/controls/progress_bar_unittest.cc',
-        '../views/controls/single_split_view.cc',
-        '../views/controls/tabbed_pane/tabbed_pane_unittest.cc',
-        '../views/controls/table/table_view_unittest.cc',
-        '../views/controls/textfield/textfield_views_model_unittest.cc',
-        '../views/controls/textfield/native_textfield_views_unittest.cc',
-        '../views/focus/accelerator_handler_gtk_unittest.cc',
-        '../views/focus/focus_manager_unittest.cc',
-        '../views/grid_layout_unittest.cc',
-        '../views/test/views_test_base.h',
-        '../views/view_unittest.cc',
       ],
       'conditions': [
         ['touchui==1', {
