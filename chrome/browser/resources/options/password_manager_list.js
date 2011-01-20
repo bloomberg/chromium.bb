@@ -51,6 +51,7 @@ cr.define('options.passwordManager', function() {
       // The password input field.
       var passwordInput = this.ownerDocument.createElement('input');
       passwordInput.className = 'inactive-password';
+      passwordInput.readOnly = true;
       passwordInput.type = 'password';
       passwordInput.value = this.password;
       passwordInputDiv.appendChild(passwordInput);
@@ -67,12 +68,14 @@ cr.define('options.passwordManager', function() {
     /** @inheritDoc */
     selectionChanged: function() {
       var passwordInput = this.querySelector('input[type=password]');
-      var buttonSpan = passwordInput.nextSibling;
+      var textInput = this.querySelector('input[type=text]');
+      var input = passwordInput || textInput;
+      var buttonSpan = input.nextSibling;
       if (this.selected) {
-        passwordInput.classList.remove('inactive-password');
+        input.classList.remove('inactive-password');
         buttonSpan.classList.remove('hidden');
       } else {
-        passwordInput.classList.add('inactive-password');
+        input.classList.add('inactive-password');
         buttonSpan.classList.add('hidden');
       }
     },
