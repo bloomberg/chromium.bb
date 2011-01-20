@@ -275,6 +275,10 @@ html[hide-menu=true] #mainview {
   padding-top: 13px;
 }
 
+.page list {
+  min-height: 200px;
+}
+
 .subpage-sheet .page h1 {
   padding-top: 4px;
   margin-bottom: 10px;
