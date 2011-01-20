@@ -45,7 +45,8 @@ longjmp:
     movl    4(%esp), %ecx     /* ecx has env argument */
     movl    8(%esp), %eax     /* eax has val argument */
     /* mov into %eax sets conditon codes */
-    jne     .skip
+    /* If val is zero, we must return 1 -- otherwise return val */
+    je      .skip
     movl    $1, %eax
 .skip:
     movl    0(%ecx), %ebx     /* restore ebx */

@@ -43,8 +43,9 @@ longjmp:
     /* edi has env argument */
     /* esi has val argument */
     /* mov into %eax sets conditon codes */
+    /* if val is zero, we must return 1 -- otherwise return val */
     movl    %esi, %eax
-    jne     .skip
+    je      .skip
     movl    $1, %eax
 .skip:
     movq    %nacl:0(%r15,%rdi), %rbx     /* restore rbx */
