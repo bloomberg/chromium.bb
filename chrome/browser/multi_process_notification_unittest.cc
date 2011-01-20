@@ -11,8 +11,8 @@
 #include "base/message_loop.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread.h"
 #include "base/time.h"
-#include "chrome/browser/browser_thread.h"
 #include "testing/multiprocess_func_list.h"
 
 #if defined(OS_MACOSX)
@@ -97,14 +97,14 @@ void QuitterDelegate::OnNotificationReceived(
 }
 
 int MultiProcessNotificationMain(multi_process_notification::Domain domain) {
-  BrowserThread browser_thread(BrowserThread::IO);
+  base::Thread thread("MultiProcessNotificationMainIOThread");
   base::Thread::Options options(MessageLoop::TYPE_IO, 0);
-  EXPECT_TRUE(browser_thread.StartWithOptions(options));
+  EXPECT_TRUE(thread.StartWithOptions(options));
   MessageLoop loop;
   QuitterDelegate quitter;
   multi_process_notification::Listener listener(
       kQuitNotificationName, domain, &quitter);
-  EXPECT_TRUE(listener.Start());
+  EXPECT_TRUE(listener.Start(thread.message_loop()));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   EXPECT_TRUE(quitter.WasStartedReceived());
   EXPECT_TRUE(multi_process_notification::Post(kStartedNotificationName,
@@ -123,27 +123,22 @@ class MultiProcessNotificationTest : public base::MultiProcessTest {
   void PostNotificationTest(multi_process_notification::Domain domain);
   void CrossPostNotificationTest(multi_process_notification::Domain domain);
 
-  static void SetUpTestCase();
-  static void TearDownTestCase();
+  virtual void SetUp();
+  MessageLoop* IOMessageLoop() { return io_thread_.message_loop(); };
 
  private:
   MessageLoop loop_;
-  static BrowserThread* g_io_thread;
+  base::Thread io_thread_;
 };
 
-MultiProcessNotificationTest::MultiProcessNotificationTest() {
+MultiProcessNotificationTest::MultiProcessNotificationTest()
+    : io_thread_("MultiProcessNotificationTestThread") {
 }
 
-BrowserThread* MultiProcessNotificationTest::g_io_thread = NULL;
 
-void MultiProcessNotificationTest::SetUpTestCase() {
-  g_io_thread = new BrowserThread(BrowserThread::IO);
+void MultiProcessNotificationTest::SetUp() {
   base::Thread::Options options(MessageLoop::TYPE_IO, 0);
-  ASSERT_TRUE(g_io_thread->StartWithOptions(options));
-}
-
-void MultiProcessNotificationTest::TearDownTestCase() {
-  delete g_io_thread;
+  ASSERT_TRUE(io_thread_.StartWithOptions(options));
 }
 
 void MultiProcessNotificationTest::PostNotificationTest(
@@ -151,7 +146,7 @@ void MultiProcessNotificationTest::PostNotificationTest(
   QuitterDelegate process_started;
   multi_process_notification::Listener listener(
       kStartedNotificationName, domain, &process_started);
-  ASSERT_TRUE(listener.Start());
+  ASSERT_TRUE(listener.Start(IOMessageLoop()));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   ASSERT_TRUE(process_started.WasStartedReceived());
   std::string process_name;
@@ -201,13 +196,14 @@ void MultiProcessNotificationTest::CrossPostNotificationTest(
       final_notification, multi_process_notification::UserDomain,
       &final_quitter);
 
-  ASSERT_TRUE(profile_listener.Start());
+  MessageLoop* message_loop = IOMessageLoop();
+  ASSERT_TRUE(profile_listener.Start(message_loop));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   ASSERT_TRUE(profile_quitter.WasStartedReceived());
-  ASSERT_TRUE(user_listener.Start());
+  ASSERT_TRUE(user_listener.Start(message_loop));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   ASSERT_TRUE(user_quitter.WasStartedReceived());
-  ASSERT_TRUE(system_listener.Start());
+  ASSERT_TRUE(system_listener.Start(message_loop));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   ASSERT_TRUE(system_quitter.WasStartedReceived());
 
@@ -218,7 +214,7 @@ void MultiProcessNotificationTest::CrossPostNotificationTest(
   // after the local_notification and make sure that all listeners have had a
   // chance to process local_notification before we check to see if they
   // were called.
-  ASSERT_TRUE(final_listener.Start());
+  ASSERT_TRUE(final_listener.Start(message_loop));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   EXPECT_TRUE(final_quitter.WasStartedReceived());
   ASSERT_TRUE(multi_process_notification::Post(
@@ -250,14 +246,20 @@ TEST_F(MultiProcessNotificationTest, BasicCreationTest) {
   QuitterDelegate quitter;
   multi_process_notification::Listener local_listener(
       "BasicCreationTest", multi_process_notification::UserDomain, &quitter);
-  ASSERT_TRUE(local_listener.Start());
+  MessageLoop* message_loop = IOMessageLoop();
+  ASSERT_TRUE(local_listener.Start(message_loop));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   ASSERT_TRUE(quitter.WasStartedReceived());
   multi_process_notification::Listener system_listener(
       "BasicCreationTest", multi_process_notification::SystemDomain, &quitter);
-  ASSERT_TRUE(system_listener.Start());
+  ASSERT_TRUE(system_listener.Start(message_loop));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   ASSERT_TRUE(quitter.WasStartedReceived());
+
+  multi_process_notification::Listener local_listener2(
+      "BasicCreationTest", multi_process_notification::UserDomain, &quitter);
+  // Should fail because current message loop should not be an IOMessageLoop.
+  ASSERT_FALSE(local_listener2.Start(MessageLoop::current()));
 }
 
 TEST_F(MultiProcessNotificationTest, PostInProcessNotification) {
@@ -265,8 +267,8 @@ TEST_F(MultiProcessNotificationTest, PostInProcessNotification) {
   QuitterDelegate quitter;
   multi_process_notification::Listener listener(
       local_notification, multi_process_notification::UserDomain, &quitter);
-
-  ASSERT_TRUE(listener.Start());
+  MessageLoop* message_loop = IOMessageLoop();
+  ASSERT_TRUE(listener.Start(message_loop));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   ASSERT_TRUE(quitter.WasStartedReceived());
   ASSERT_TRUE(multi_process_notification::Post(
@@ -292,14 +294,14 @@ TEST_F(MultiProcessNotificationTest, MultiListener) {
 
   multi_process_notification::Listener quit_listener(quit_local_notification,
       multi_process_notification::UserDomain, &quitter);
-
-  ASSERT_TRUE(local_listener1.Start());
+  MessageLoop* message_loop = IOMessageLoop();
+  ASSERT_TRUE(local_listener1.Start(message_loop));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   ASSERT_TRUE(delegate1.WasStartedReceived());
-  ASSERT_TRUE(local_listener2.Start());
+  ASSERT_TRUE(local_listener2.Start(message_loop));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   ASSERT_TRUE(delegate2.WasStartedReceived());
-  ASSERT_TRUE(quit_listener.Start());
+  ASSERT_TRUE(quit_listener.Start(message_loop));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   ASSERT_TRUE(quitter.WasStartedReceived());
   ASSERT_TRUE(multi_process_notification::Post(

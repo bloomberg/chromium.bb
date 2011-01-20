@@ -20,7 +20,10 @@ class ListenerImpl {
                Domain domain,
                Listener::Delegate* delegate);
 
-  bool Start();
+  bool Start(MessageLoop* io_loop_to_listen_on);
+
+  std::string name() const { return name_; }
+  Domain domain() const { return domain_; }
 
  private:
   std::string name_;
@@ -36,7 +39,7 @@ ListenerImpl::ListenerImpl(const std::string& name,
     : name_(name), domain_(domain), delegate_(delegate) {
 }
 
-bool ListenerImpl::Start() {
+bool ListenerImpl::Start(MessageLoop* io_loop_to_listen_on) {
   // TODO(dmaclach): Implement
   NOTIMPLEMENTED();
   return false;
@@ -51,8 +54,16 @@ Listener::Listener(const std::string& name,
 Listener::~Listener() {
 }
 
-bool Listener::Start() {
-  return impl_->Start();
+bool Listener::Start(MessageLoop* io_loop_to_listen_on) {
+  return impl_->Start(io_loop_to_listen_on);
+}
+
+std::string Listener::name() const {
+  return impl_->name();
+}
+
+Domain Listener::domain() const {
+  return impl_->domain();
 }
 
 }  // namespace multi_process_notification

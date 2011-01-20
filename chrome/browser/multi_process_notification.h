@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 
@@ -95,8 +96,15 @@ class Listener {
   ~Listener();
 
   // A listener is not considered valid until Start() returns true and its
-  // delegate's OnListenerStarted method is called with |success| == true
-  bool Start();
+  // delegate's OnListenerStarted method is called with |success| == true.
+  // |io_loop_to_listen_on| is the message loop to register the listener on.
+  // All callbacks will be made in the same thread that "Start" is called on,
+  // not the thread that owns io_loop_to_listen_on.
+  // |io_loop_to_listen_on| must be of type TYPE_IO.
+  bool Start(MessageLoop* io_loop_to_listen_on);
+
+  std::string name() const;
+  Domain domain() const;
 
  private:
   scoped_ptr<ListenerImpl> impl_;

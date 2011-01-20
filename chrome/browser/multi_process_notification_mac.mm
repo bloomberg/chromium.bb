@@ -28,7 +28,6 @@
 #include "base/sys_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/threading/simple_thread.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_paths.h"
 
 // Enable this to build with leopard_switchboard_thread
@@ -175,7 +174,11 @@ class ListenerImpl : public base::MessagePumpLibevent::Watcher {
                Listener::Delegate* delegate);
   virtual ~ListenerImpl();
 
-  bool Start();
+  bool Start(MessageLoop* io_loop_to_listen_on);
+
+  std::string name() const { return name_; }
+  Domain domain() const { return domain_; }
+
   void OnListen();
 
   // Watcher overrides
@@ -430,9 +433,13 @@ ListenerImpl::~ListenerImpl() {
   }
 }
 
-bool ListenerImpl::Start() {
+bool ListenerImpl::Start(MessageLoop* io_loop_to_listen_on) {
   DCHECK_EQ(fd_, -1);
   DCHECK_EQ(token_, -1);
+  if (io_loop_to_listen_on->type() != MessageLoop::TYPE_IO) {
+    DLOG(ERROR) << "io_loop_to_listen_on must be TYPE_IO";
+    return false;
+  }
   message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
   Task* task;
   if(UseLeopardSwitchboardThread()) {
@@ -440,12 +447,13 @@ bool ListenerImpl::Start() {
   } else {
     task = NewRunnableMethod(this, &ListenerImpl::StartSnowLeopard);
   }
-  return BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task);
+  io_loop_to_listen_on->PostTask(FROM_HERE, task);
+  return true;
 }
 
 void ListenerImpl::StartLeopard() {
   DCHECK(UseLeopardSwitchboardThread());
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
   bool success = true;
   {
     base::AutoLock autolock(switchboard_lock_);
@@ -474,7 +482,7 @@ void ListenerImpl::StartLeopard() {
 
 void ListenerImpl::StartSnowLeopard() {
   DCHECK(!UseLeopardSwitchboardThread());
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
   bool success = true;
   std::string notification = AddPrefixToNotification(name_, domain_);
   uint32_t status = notify_register_file_descriptor(
@@ -496,7 +504,7 @@ void ListenerImpl::StartSnowLeopard() {
 
 void ListenerImpl::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK(!UseLeopardSwitchboardThread());
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
   DCHECK_EQ(fd, fd_);
   int token;
   int status = HANDLE_EINTR(read(fd, &token, sizeof(token)));
@@ -518,7 +526,7 @@ void ListenerImpl::OnFileCanReadWithoutBlocking(int fd) {
 }
 
 void ListenerImpl::OnListen() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
   Task* task =
       new Listener::NotificationReceivedTask(name_, domain_, delegate_);
   CHECK(message_loop_proxy_->PostTask(FROM_HERE, task));
@@ -536,8 +544,16 @@ Listener::Listener(
 Listener::~Listener() {
 }
 
-bool Listener::Start() {
-  return impl_->Start();
+bool Listener::Start(MessageLoop* io_loop_to_listen_on) {
+  return impl_->Start(io_loop_to_listen_on);
+}
+
+std::string Listener::name() const {
+  return impl_->name();
+}
+
+Domain Listener::domain() const {
+  return impl_->domain();
 }
 
 }  // namespace multi_process_notification
