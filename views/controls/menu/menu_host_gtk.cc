@@ -6,19 +6,10 @@
 
 #include <gdk/gdk.h>
 
-#if defined(HAVE_XINPUT2)
-#include <gdk/gdkx.h>
-#include <X11/extensions/XInput2.h>
-#endif
-
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_host_root_view.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/submenu_view.h"
-
-#if defined(HAVE_XINPUT2)
-#include "views/touchui/touch_factory.h"
-#endif
 
 namespace views {
 
@@ -113,10 +104,6 @@ void MenuHostGtk::ReleaseGrab() {
     did_input_grab_ = false;
     gdk_pointer_ungrab(GDK_CURRENT_TIME);
     gdk_keyboard_ungrab(GDK_CURRENT_TIME);
-#if defined(HAVE_XINPUT2)
-    TouchFactory::GetInstance()->UngrabTouchDevices(
-        GDK_WINDOW_XDISPLAY(window_contents()->window));
-#endif
   }
 }
 
@@ -164,14 +151,6 @@ void MenuHostGtk::DoCapture() {
 
   did_input_grab_ = pointer_grab_status == GDK_GRAB_SUCCESS &&
       keyboard_grab_status == GDK_GRAB_SUCCESS;
-
-#if defined(HAVE_XINPUT2)
-  ::Window window = GDK_WINDOW_XID(window_contents()->window);
-  Display* display = GDK_WINDOW_XDISPLAY(window_contents()->window);
-  bool xi2grab = TouchFactory::GetInstance()->GrabTouchDevices(display, window);
-  did_input_grab_ = did_input_grab_ && xi2grab;
-#endif
-
   DCHECK(did_input_grab_);
   // need keyboard grab.
 }
