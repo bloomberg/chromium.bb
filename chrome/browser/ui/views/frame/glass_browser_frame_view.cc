@@ -84,7 +84,8 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
         NonClientTopBorderHeight(false, false), ps.width(),
         browser_view_->height());
   }
-  int minimize_button_offset = frame_->GetMinimizeButtonOffset();
+  int minimize_button_offset =
+      std::min(frame_->GetMinimizeButtonOffset(), width());
   int tabstrip_x = browser_view_->ShouldShowOffTheRecordAvatar() ?
       (otr_avatar_bounds_.right() + kOTRSideSpacing) :
       NonClientBorderThickness();
