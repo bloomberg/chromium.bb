@@ -20,15 +20,16 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_sidebar_utils.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/url_constants.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
 // Errors.
+const char kNoSidebarError[] =
+    "This extension has no sidebar specified.";
 const char kNoTabError[] = "No tab with id: *.";
-const char kInvalidUrlError[] = "Invalid url: \"*\".";
 const char kNoCurrentWindowError[] = "No current browser window was found";
 const char kNoDefaultTabError[] = "No default tab was found";
 const char kInvalidExpandContextError[] =
@@ -49,31 +50,7 @@ namespace extension_sidebar_constants {
 const char kActiveState[] = "active";
 const char kHiddenState[] = "hidden";
 const char kShownState[] = "shown";
-}
-
-static GURL ResolvePossiblyRelativeURL(const std::string& url_string,
-                                       const Extension* extension) {
-  GURL url = GURL(url_string);
-  if (!url.is_valid())
-    url = extension->GetResourceURL(url_string);
-
-  return url;
-}
-
-static bool CanUseHost(const Extension* extension,
-                       const GURL& url,
-                       std::string* error) {
-  if (extension->HasHostPermission(url))
-      return true;
-
-  if (error) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(
-        extension_manifest_errors::kCannotAccessPage, url.spec());
-  }
-
-  return false;
-}
-
+}  // namespace extension_sidebar_constants
 
 // static
 void ExtensionSidebarEventRouter::OnStateChanged(
@@ -89,9 +66,9 @@ void ExtensionSidebarEventRouter::OnStateChanged(
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
-  const std::string& extension_id(content_id);
   profile->GetExtensionEventRouter()->DispatchEventToExtension(
-      extension_id, kOnStateChanged, json_args, profile, GURL());
+      extension_sidebar_utils::GetExtensionIdByContentId(content_id),
+      kOnStateChanged, json_args, profile, GURL());
 }
 
 
@@ -111,6 +88,11 @@ static bool IsArgumentListEmpty(const ListValue* arguments) {
 }
 
 bool SidebarFunction::RunImpl() {
+  if (!GetExtension()->sidebar_defaults()) {
+    error_ = kNoSidebarError;
+    return false;
+  }
+
   if (!args_.get())
     return false;
 
@@ -224,24 +206,13 @@ bool NavigateSidebarFunction::RunImpl(TabContents* tab,
                                       const DictionaryValue& details) {
   std::string url_string;
   EXTENSION_FUNCTION_VALIDATE(details.GetString(kUrlKey, &url_string));
-  GURL url = ResolvePossiblyRelativeURL(url_string, GetExtension());
-  if (!url.is_valid()) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(kInvalidUrlError,
-                                                     url_string);
-    return false;
-  }
-  if (!url.SchemeIs(chrome::kExtensionScheme) &&
-      !CanUseHost(GetExtension(), url, &error_)) {
-    return false;
-  }
-  // Disallow requests outside of the requesting extension view's extension.
-  if (url.SchemeIs(chrome::kExtensionScheme)) {
-    std::string extension_id(url.host());
-    if (extension_id != GetExtension()->id())
-      return false;
-  }
 
-  SidebarManager::GetInstance()->NavigateSidebar(tab, content_id, GURL(url));
+  GURL url = extension_sidebar_utils::ResolveAndVerifyUrl(
+      url_string, GetExtension(), &error_);
+  if (!url.is_valid())
+    return false;
+
+  SidebarManager::GetInstance()->NavigateSidebar(tab, content_id, url);
   return true;
 }
 

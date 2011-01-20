@@ -1,0 +1,11 @@
+{
+  "name": "test",
+  "version": "1",
+  "sidebar": {
+    "default_title": "Default title",
+    "default_icon": 42
+  },
+  "permissions": [
+    "experimental"
+  ]
+}

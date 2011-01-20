@@ -74,19 +74,23 @@ class SidebarManager : public NotificationObserver,
   void HideSidebar(TabContents* tab, const std::string& content_id);
 
   // Navigates sidebar identified by |tab| and |content_id| to |url|.
-  void NavigateSidebar(TabContents* tab, const std::string& content_id,
+  void NavigateSidebar(TabContents* tab,
+                       const std::string& content_id,
                        const GURL& url);
 
   // Changes sidebar's badge text (displayed on the mini tab).
-  void SetSidebarBadgeText(TabContents* tab, const std::string& content_id,
+  void SetSidebarBadgeText(TabContents* tab,
+                           const std::string& content_id,
                            const string16& badge_text);
 
   // Changes sidebar's icon (displayed on the mini tab).
-  void SetSidebarIcon(TabContents* tab, const std::string& content_id,
+  void SetSidebarIcon(TabContents* tab,
+                      const std::string& content_id,
                       const SkBitmap& bitmap);
 
   // Changes sidebar's title (mini tab's tooltip).
-  void SetSidebarTitle(TabContents* tab, const std::string& content_id,
+  void SetSidebarTitle(TabContents* tab,
+                       const std::string& content_id,
                        const string16& title);
 
  private:

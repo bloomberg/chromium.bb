@@ -18,6 +18,7 @@
 #include "base/singleton.h"
 #include "base/stl_util-inl.h"
 #include "base/third_party/nss/blapi.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -30,6 +31,8 @@
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/extension_sidebar_defaults.h"
+#include "chrome/common/extensions/extension_sidebar_utils.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_util.h"
@@ -194,6 +197,7 @@ const int Extension::kIconSizes[] = {
 
 const int Extension::kPageActionIconMaxSize = 19;
 const int Extension::kBrowserActionIconMaxSize = 19;
+const int Extension::kSidebarIconMaxSize = 16;
 
 // Explicit permissions -- permission declaration required.
 const char Extension::kBackgroundPermission[] = "background";
@@ -799,6 +803,51 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
       DCHECK(!result->HasPopup(ExtensionAction::kDefaultTabId))
           << "Shouldn't be posible for the popup to be set.";
     }
+  }
+
+  return result.release();
+}
+
+ExtensionSidebarDefaults* Extension::LoadExtensionSidebarDefaults(
+    const DictionaryValue* extension_sidebar, std::string* error) {
+  scoped_ptr<ExtensionSidebarDefaults> result(new ExtensionSidebarDefaults());
+
+  std::string default_icon;
+  // Read sidebar's |default_icon| (optional).
+  if (extension_sidebar->HasKey(keys::kSidebarDefaultIcon)) {
+    if (!extension_sidebar->GetString(keys::kSidebarDefaultIcon,
+                                      &default_icon) ||
+        default_icon.empty()) {
+      *error = errors::kInvalidSidebarDefaultIconPath;
+      return NULL;
+    }
+    result->set_default_icon_path(default_icon);
+  }
+
+  // Read sidebar's |default_title| (optional).
+  string16 default_title;
+  if (extension_sidebar->HasKey(keys::kSidebarDefaultTitle)) {
+    if (!extension_sidebar->GetString(keys::kSidebarDefaultTitle,
+                                      &default_title)) {
+      *error = errors::kInvalidSidebarDefaultTitle;
+      return NULL;
+    }
+  }
+  result->set_default_title(default_title);
+
+  // Read sidebar's |default_url| (optional).
+  std::string default_url;
+  if (extension_sidebar->HasKey(keys::kSidebarDefaultUrl)) {
+    if (!extension_sidebar->GetString(keys::kSidebarDefaultUrl, &default_url) ||
+        default_url.empty()) {
+      *error = errors::kInvalidSidebarDefaultUrl;
+      return NULL;
+    }
+    GURL resolved_url = extension_sidebar_utils::ResolveAndVerifyUrl(
+        default_url, this, error);
+    if (!resolved_url.is_valid())
+      return NULL;
+    result->set_default_url(resolved_url);
   }
 
   return result.release();
@@ -1926,6 +1975,23 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   }
 
   InitEffectiveHostPermissions();
+
+  // Initialize sidebar action (optional). It has to be done after host
+  // permissions are initialized to verify default sidebar url.
+  if (source.HasKey(keys::kSidebar)) {
+    DictionaryValue* sidebar_value;
+    if (!source.GetDictionary(keys::kSidebar, &sidebar_value)) {
+      *error = errors::kInvalidSidebar;
+      return false;
+    }
+    if (!HasApiPermission(Extension::kExperimentalPermission)) {
+      *error = errors::kSidebarExperimental;
+      return false;
+    }
+    sidebar_defaults_.reset(LoadExtensionSidebarDefaults(sidebar_value, error));
+    if (!sidebar_defaults_.get())
+      return false;  // Failed to parse sidebar definition.
+  }
 
   // Although |source| is passed in as a const, it's still possible to modify
   // it.  This is dangerous since the utility process re-uses |source| after

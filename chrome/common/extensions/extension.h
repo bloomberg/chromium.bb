@@ -26,6 +26,7 @@
 class DictionaryValue;
 class ExtensionAction;
 class ExtensionResource;
+class ExtensionSidebarDefaults;
 class SkBitmap;
 class Version;
 
@@ -151,6 +152,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Max size (both dimensions) for browser and page actions.
   static const int kPageActionIconMaxSize;
   static const int kBrowserActionIconMaxSize;
+  static const int kSidebarIconMaxSize;
 
   // Each permission is a module that the extension is permitted to use.
   //
@@ -414,6 +416,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const UserScriptList& content_scripts() const { return content_scripts_; }
   ExtensionAction* page_action() const { return page_action_.get(); }
   ExtensionAction* browser_action() const { return browser_action_.get(); }
+  ExtensionSidebarDefaults* sidebar_defaults() const {
+    return sidebar_defaults_.get();
+  }
   const std::vector<PluginInfo>& plugins() const { return plugins_; }
   const GURL& background_url() const { return background_url_; }
   const GURL& options_url() const { return options_url_; }
@@ -533,6 +538,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   ExtensionAction* LoadExtensionActionHelper(
       const DictionaryValue* extension_action, std::string* error);
 
+  // Helper method to load an ExtensionSidebarDefaults from the sidebar manifest
+  // entry.
+  ExtensionSidebarDefaults* LoadExtensionSidebarDefaults(
+      const DictionaryValue* sidebar, std::string* error);
+
   // Calculates the effective host permissions from the permissions and content
   // script petterns.
   void InitEffectiveHostPermissions();
@@ -625,6 +635,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The extension's browser action, if any.
   scoped_ptr<ExtensionAction> browser_action_;
+
+  // The extension's sidebar, if any.
+  scoped_ptr<ExtensionSidebarDefaults> sidebar_defaults_;
 
   // Optional list of NPAPI plugins and associated properties.
   std::vector<PluginInfo> plugins_;

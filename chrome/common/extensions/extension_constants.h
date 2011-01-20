@@ -57,6 +57,10 @@ namespace extension_manifest_keys {
   extern const char* kPluginsPublic;
   extern const char* kPublicKey;
   extern const char* kRunAt;
+  extern const char* kSidebar;
+  extern const char* kSidebarDefaultIcon;
+  extern const char* kSidebarDefaultTitle;
+  extern const char* kSidebarDefaultUrl;
   extern const char* kSignature;
   extern const char* kTheme;
   extern const char* kThemeColors;
@@ -160,6 +164,10 @@ namespace extension_manifest_errors {
   extern const char* kInvalidPluginsPath;
   extern const char* kInvalidPluginsPublic;
   extern const char* kInvalidRunAt;
+  extern const char* kInvalidSidebar;
+  extern const char* kInvalidSidebarDefaultIconPath;
+  extern const char* kInvalidSidebarDefaultTitle;
+  extern const char* kInvalidSidebarDefaultUrl;
   extern const char* kInvalidSignature;
   extern const char* kInvalidTheme;
   extern const char* kInvalidThemeColors;
@@ -191,6 +199,7 @@ namespace extension_manifest_errors {
   extern const char* kMultipleOverrides;
   extern const char* kOneUISurfaceOnly;
   extern const char* kReservedMessageFound;
+  extern const char* kSidebarExperimental;
   extern const char* kThemesCannotContainExtensions;
   extern const char* kWebContentMustBeEnabled;
 #if defined(OS_CHROMEOS)

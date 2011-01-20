@@ -444,8 +444,6 @@
 
             'browser/accessibility/accessibility_win_browsertest.cc',
             'browser/accessibility/browser_views_accessibility_browsertest.cc',
-            # TODO: port sidebar.
-            'browser/sidebar/sidebar_test.cc',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {
@@ -2224,6 +2222,8 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
+            # TODO(alekseys): port sidebar to linux/mac.
+            'browser/sidebar/sidebar_browsertest.cc',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',

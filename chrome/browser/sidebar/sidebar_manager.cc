@@ -107,6 +107,9 @@ void SidebarManager::ShowSidebar(TabContents* tab,
   if (!host) {
     host = new SidebarContainer(tab, content_id, this);
     RegisterSidebarContainerFor(tab, host);
+    // It might trigger UpdateSidebar notification, so load them after
+    // the registration.
+    host->LoadDefaults();
   }
 
   host->Show();

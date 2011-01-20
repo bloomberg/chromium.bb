@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 
 class BrowserWindow;
@@ -25,7 +26,8 @@ class TabContents;
 //  tab it is linked to, mini tab icon, title etc.
 //
 class SidebarContainer
-    : public TabContentsDelegate {
+    : public TabContentsDelegate,
+      private ImageLoadingTracker::Observer {
  public:
   // Interface to implement to listen for sidebar update notification.
   class Delegate {
@@ -37,13 +39,17 @@ class SidebarContainer
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  SidebarContainer(TabContents* tab, const std::string& content_id,
+  SidebarContainer(TabContents* tab,
+                   const std::string& content_id,
                    Delegate* delegate);
   virtual ~SidebarContainer();
 
   // Called right before destroying this sidebar.
   // Does all the necessary cleanup.
   void SidebarClosing();
+
+  // Sets default sidebar parameters, as specified in extension manifest.
+  void LoadDefaults();
 
   // Returns sidebar's content id.
   const std::string& content_id() const { return content_id_; }
@@ -110,6 +116,14 @@ class SidebarContainer
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
 
+  // Overridden from ImageLoadingTracker::Observer.
+  virtual void OnImageLoaded(SkBitmap* image,
+                             ExtensionResource resource,
+                             int index);
+
+  // Returns an extension this sidebar belongs to.
+  const Extension* GetExtension() const;
+
   // Contents of the tab this sidebar is linked to.
   TabContents* tab_;
 
@@ -131,6 +145,20 @@ class SidebarContainer
 
   // Sidebar's title, displayed as a tooltip for sidebar's mini tab.
   string16 title_;
+
+  // On the first expand sidebar will be automatically navigated to the default
+  // url (specified in the extension manifest), but only if the extension has
+  // not explicitly navigated it yet. This variable is set to false on the first
+  // sidebar navigation.
+  bool navigate_to_default_url_on_expand_;
+  // Since the default icon (specified in the extension manifest) is loaded
+  // asynchronously, sidebar icon can already be set by the extension
+  // by the time it's loaded. This variable tracks whether the loaded default
+  // icon should be used or discarded.
+  bool use_default_icon_;
+
+  // Helper to load icons from extension asynchronously.
+  scoped_ptr<ImageLoadingTracker> image_loading_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(SidebarContainer);
 };

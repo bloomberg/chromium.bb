@@ -3,30 +3,52 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/path_service.h"
+#include "base/ref_counted.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/test/test_server.h"
 
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
+
 namespace {
 
-const char kSampleContentId[] = "sample_content_id";
 const char kSimplePage[] = "files/sidebar/simple_page.html";
 
-class SidebarTest : public InProcessBrowserTest {
+class SidebarTest : public ExtensionBrowserTest {
  public:
   SidebarTest() {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalExtensionApis);
-    set_show_window(true);
   }
 
  protected:
+  // InProcessBrowserTest overrides.
+  virtual void SetUpOnMainThread() {
+    ExtensionBrowserTest::SetUpOnMainThread();
+
+    // Load test sidebar extension.
+    FilePath extension_path;
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extension_path));
+    extension_path = extension_path.AppendASCII("sidebar");
+
+    ASSERT_TRUE(LoadExtension(extension_path));
+
+    // For now content_id == extension_id.
+    content_id_ = last_loaded_extension_id_;
+  }
+
   void ShowSidebarForCurrentTab() {
     ShowSidebar(browser()->GetSelectedTabContents());
   }
@@ -50,10 +72,10 @@ class SidebarTest : public InProcessBrowserTest {
 
     SidebarManager* sidebar_manager = SidebarManager::GetInstance();
 
-    sidebar_manager->NavigateSidebar(tab, kSampleContentId, url);
+    sidebar_manager->NavigateSidebar(tab, content_id_, url);
 
     SidebarContainer* sidebar_container =
-        sidebar_manager->GetSidebarContainerFor(tab, kSampleContentId);
+        sidebar_manager->GetSidebarContainerFor(tab, content_id_);
 
     TabContents* client_contents = sidebar_container->sidebar_contents();
     ui_test_utils::WaitForNavigation(&client_contents->controller());
@@ -61,26 +83,26 @@ class SidebarTest : public InProcessBrowserTest {
 
   void ShowSidebar(TabContents* tab) {
     SidebarManager* sidebar_manager = SidebarManager::GetInstance();
-    sidebar_manager->ShowSidebar(tab, kSampleContentId);
+    sidebar_manager->ShowSidebar(tab, content_id_);
   }
 
   void ExpandSidebar(TabContents* tab) {
     SidebarManager* sidebar_manager = SidebarManager::GetInstance();
-    sidebar_manager->ExpandSidebar(tab, kSampleContentId);
+    sidebar_manager->ExpandSidebar(tab, content_id_);
     if (browser()->GetSelectedTabContents() == tab)
       EXPECT_GT(browser_view()->GetSidebarWidth(), 0);
   }
 
   void CollapseSidebar(TabContents* tab) {
     SidebarManager* sidebar_manager = SidebarManager::GetInstance();
-    sidebar_manager->CollapseSidebar(tab, kSampleContentId);
+    sidebar_manager->CollapseSidebar(tab, content_id_);
     if (browser()->GetSelectedTabContents() == tab)
       EXPECT_EQ(0, browser_view()->GetSidebarWidth());
   }
 
   void HideSidebar(TabContents* tab) {
     SidebarManager* sidebar_manager = SidebarManager::GetInstance();
-    sidebar_manager->HideSidebar(tab, kSampleContentId);
+    sidebar_manager->HideSidebar(tab, content_id_);
     if (browser()->GetSelectedTabContents() == tab)
       EXPECT_EQ(0, browser_view()->GetSidebarWidth());
   }
@@ -92,6 +114,9 @@ class SidebarTest : public InProcessBrowserTest {
   BrowserView* browser_view() const {
     return static_cast<BrowserView*>(browser()->window());
   }
+
+ private:
+  std::string content_id_;
 };
 
 IN_PROC_BROWSER_TEST_F(SidebarTest, OpenClose) {
