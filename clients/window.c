@@ -941,6 +941,11 @@ window_handle_pointer_focus(void *data,
 		input->pointer_focus = wl_surface_get_user_data(surface);
 		window = input->pointer_focus;
 
+		input->x = x;
+		input->y = y;
+		input->sx = sx;
+		input->sy = sy;
+
 		pointer = POINTER_LEFT_PTR;
 		if (window->motion_handler)
 			pointer = (*window->motion_handler)(window,
