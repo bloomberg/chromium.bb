@@ -889,6 +889,7 @@ class RenderView : public RenderWidget,
                                        const std::string& origin,
                                        const std::string& target);
   void OnInstallMissingPlugin();
+  void OnDisplayPrerenderedPage();
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const WebKit::WebMediaPlayerAction& action);
   void OnMoveOrResizeStarted();
@@ -1000,7 +1001,8 @@ class RenderView : public RenderWidget,
       const WebKit::WebPluginParams& params,
       const webkit::npapi::PluginGroup& group,
       int resource_id,
-      int message_id);
+      int message_id,
+      bool is_blocked_for_prerendering);
 
   // Sends an IPC notification that the specified content type was blocked.
   // If the content type requires it, |resource_identifier| names the specific

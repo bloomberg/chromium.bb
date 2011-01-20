@@ -29,7 +29,8 @@ class BlockedPlugin : public RenderViewObserver,
                 const WebKit::WebPluginParams& params,
                 const WebPreferences& settings,
                 int template_id,
-                const string16& message);
+                const string16& message,
+                bool is_blocked_for_prerendering);
 
   webkit::npapi::WebViewPlugin* plugin() { return plugin_; }
 
@@ -66,6 +67,9 @@ class BlockedPlugin : public RenderViewObserver,
   webkit::npapi::WebViewPlugin* plugin_;
   // The name of the plugin that was blocked.
   string16 name_;
+  // True iff the plugin was blocked because the page was being prerendered.
+  // Plugin will automatically be loaded when the page is displayed.
+  bool is_blocked_for_prerendering_;
 };
 
 #endif  // CHROME_RENDERER_BLOCKED_PLUGIN_H_

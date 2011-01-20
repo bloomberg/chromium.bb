@@ -56,7 +56,12 @@ void PrerenderContents::StartPrerendering() {
   registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                  Source<Profile>(profile_));
   render_view_host_->CreateRenderView(string16());
-  render_view_host_->NavigateToURL(prerender_url_);
+
+  ViewMsg_Navigate_Params params;
+  params.url = prerender_url_;
+  params.transition = PageTransition::LINK;
+  params.navigation_type = ViewMsg_Navigate_Params::PRERENDER;
+  render_view_host_->Navigate(params);
 }
 
 PrerenderContents::~PrerenderContents() {

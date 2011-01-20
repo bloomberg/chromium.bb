@@ -53,10 +53,12 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
                              const WebPluginParams& params,
                              const WebPreferences& preferences,
                              int template_id,
-                             const string16& message)
+                             const string16& message,
+                             bool is_blocked_for_prerendering)
     : RenderViewObserver(render_view),
       frame_(frame),
-      plugin_params_(params) {
+      plugin_params_(params),
+      is_blocked_for_prerendering_(is_blocked_for_prerendering) {
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(template_id));
 
@@ -132,6 +134,9 @@ bool BlockedPlugin::OnMessageReceived(const IPC::Message& message) {
         &message, this, this, &BlockedPlugin::OnMenuItemSelected);
   } else if (message.type() == ViewMsg_LoadBlockedPlugins::ID) {
     LoadPlugin();
+  } else if (message.type() == ViewMsg_DisplayPrerenderedPage::ID) {
+    if (is_blocked_for_prerendering_)
+      LoadPlugin();
   }
 
   return false;

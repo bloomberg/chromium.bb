@@ -8,8 +8,10 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/render_view_host_manager.h"
+#include "chrome/common/render_messages.h"
 
 struct PrerenderManager::PrerenderContentsData {
   PrerenderContents* contents_;
@@ -95,6 +97,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
 
   RenderViewHost* rvh = pc->render_view_host();
   pc->set_render_view_host(NULL);
+  rvh->Send(new ViewMsg_DisplayPrerenderedPage(rvh->routing_id()));
   tc->SwapInRenderViewHost(rvh);
 
   ViewHostMsg_FrameNavigate_Params* p = pc->navigate_params();

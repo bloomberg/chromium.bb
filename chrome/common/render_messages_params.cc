@@ -316,6 +316,10 @@ struct ParamTraits<ViewMsg_Navigate_Params::NavigationType> {
         event = "NavigationType_RESTORE";
         break;
 
+      case ViewMsg_Navigate_Params::PRERENDER:
+        event = "NavigationType_PRERENDER";
+        break;
+
       case ViewMsg_Navigate_Params::NORMAL:
         event = "NavigationType_NORMA";
         break;

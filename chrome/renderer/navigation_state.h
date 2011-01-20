@@ -32,6 +32,8 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     RELOAD,                    // User pressed reload.
     HISTORY_LOAD,              // Back or forward.
     NORMAL_LOAD,               // User entered URL, or omnibox search.
+    PRERENDER_LOAD,            // Navigation started as the speculatively
+                               // prendering of a linked page.
     LINK_LOAD,                 // (deprecated) Included next 4 categories.
     LINK_LOAD_NORMAL,          // Commonly following of link.
     LINK_LOAD_RELOAD,          // JS/link directed reload.
@@ -211,6 +213,11 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     postponed_data_.append(data, data_len);
   }
 
+  bool is_prerendering() const { return is_prerendering_; }
+  void set_is_prerendering(bool is_prerendering) {
+    is_prerendering_ = is_prerendering;
+  }
+
   int http_status_code() const { return http_status_code_; }
   void set_http_status_code(int http_status_code) {
     http_status_code_ = http_status_code;
@@ -301,6 +308,10 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   std::string security_info_;
   bool postpone_loading_data_;
   std::string postponed_data_;
+
+  // True if page is being prerendered.  False once prerendered page is
+  // displayed.
+  bool is_prerendering_;
 
   bool cache_policy_override_set_;
   WebKit::WebURLRequest::CachePolicy cache_policy_override_;

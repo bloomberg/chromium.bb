@@ -62,6 +62,9 @@ struct ViewMsg_Navigate_Params {
     // the page's cache policy is ignored and we load from the cache.
     RESTORE,
 
+    // Speculatively prerendering the page.
+    PRERENDER,
+
     // Navigation type not categorized by the other types.
     NORMAL
   };

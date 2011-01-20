@@ -1025,6 +1025,8 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
     IPC_MESSAGE_HANDLER(ViewMsg_SetAltErrorPageURL, OnSetAltErrorPageURL)
     IPC_MESSAGE_HANDLER(ViewMsg_InstallMissingPlugin, OnInstallMissingPlugin)
+    IPC_MESSAGE_HANDLER(ViewMsg_DisplayPrerenderedPage,
+                        OnDisplayPrerenderedPage)
     IPC_MESSAGE_HANDLER(ViewMsg_RunFileChooserResponse, OnFileChooserResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
@@ -1453,8 +1455,14 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
       }
     }
 
-    if (navigation_state)
-      navigation_state->set_load_type(NavigationState::NORMAL_LOAD);
+    if (navigation_state) {
+      if (params.navigation_type != ViewMsg_Navigate_Params::PRERENDER) {
+        navigation_state->set_load_type(NavigationState::NORMAL_LOAD);
+      } else {
+        navigation_state->set_load_type(NavigationState::PRERENDER_LOAD);
+        navigation_state->set_is_prerendering(true);
+      }
+    }
     main_frame->loadRequest(request);
   }
 
@@ -2709,7 +2717,8 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                    params,
                                    *group,
                                    IDR_BLOCKED_PLUGIN_HTML,
-                                   IDS_PLUGIN_OUTDATED);
+                                   IDS_PLUGIN_OUTDATED,
+                                   false);
   }
 
   if (!info.enabled)
@@ -2720,6 +2729,18 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   if (info.path.value() == webkit::npapi::kDefaultPluginLibraryName ||
       plugin_setting == CONTENT_SETTING_ALLOW ||
       host_setting == CONTENT_SETTING_ALLOW) {
+    // Delay loading plugins if prerendering.
+    WebDataSource* ds = frame->dataSource();
+    NavigationState* navigation_state = NavigationState::FromDataSource(ds);
+    if (navigation_state->is_prerendering()) {
+      return CreatePluginPlaceholder(frame,
+                                     params,
+                                     *group,
+                                     IDR_CLICK_TO_PLAY_PLUGIN_HTML,
+                                     IDS_PLUGIN_LOAD,
+                                     true);
+    }
+
     scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
         pepper_delegate_.CreatePepperPlugin(info.path));
     if (pepper_module)
@@ -2735,13 +2756,15 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                    params,
                                    *group,
                                    IDR_CLICK_TO_PLAY_PLUGIN_HTML,
-                                   IDS_PLUGIN_LOAD);
+                                   IDS_PLUGIN_LOAD,
+                                   false);
   } else {
     return CreatePluginPlaceholder(frame,
                                    params,
                                    *group,
                                    IDR_BLOCKED_PLUGIN_HTML,
-                                   IDS_PLUGIN_BLOCKED);
+                                   IDS_PLUGIN_BLOCKED,
+                                   false);
   }
 }
 
@@ -4383,7 +4406,8 @@ WebPlugin* RenderView::CreatePluginPlaceholder(
     const WebPluginParams& params,
     const webkit::npapi::PluginGroup& group,
     int resource_id,
-    int message_id) {
+    int message_id,
+    bool is_blocked_for_prerendering) {
   // |blocked_plugin| will delete itself when the WebViewPlugin
   // is destroyed.
   BlockedPlugin* blocked_plugin =
@@ -4394,7 +4418,8 @@ WebPlugin* RenderView::CreatePluginPlaceholder(
                         webkit_preferences_,
                         resource_id,
                         l10n_util::GetStringFUTF16(message_id,
-                                                   group.GetGroupName()));
+                                                   group.GetGroupName()),
+                        is_blocked_for_prerendering);
   return blocked_plugin->plugin();
 }
 
@@ -4684,6 +4709,17 @@ void RenderView::OnInstallMissingPlugin() {
   // This could happen when the first default plugin is deleted.
   if (first_default_plugin_)
     first_default_plugin_->InstallMissingPlugin();
+}
+
+void RenderView::OnDisplayPrerenderedPage() {
+  NavigationState* navigation_state = pending_navigation_state_.get();
+  if (!navigation_state) {
+    WebDataSource* ds = webview()->mainFrame()->dataSource();
+    navigation_state = NavigationState::FromDataSource(ds);
+  }
+
+  DCHECK(navigation_state->is_prerendering());
+  navigation_state->set_is_prerendering(false);
 }
 
 void RenderView::OnFileChooserResponse(const std::vector<FilePath>& paths) {

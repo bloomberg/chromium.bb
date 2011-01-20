@@ -566,6 +566,9 @@ IPC_MESSAGE_CONTROL1(ViewMsg_PurgePluginListCache,
 // Tells the render view to load all blocked plugins.
 IPC_MESSAGE_ROUTED0(ViewMsg_LoadBlockedPlugins)
 
+// Tells the render view a prerendered page is about to be displayed.
+IPC_MESSAGE_ROUTED0(ViewMsg_DisplayPrerenderedPage)
+
 IPC_MESSAGE_ROUTED1(ViewMsg_RunFileChooserResponse,
                     std::vector<FilePath> /* selected files */)
 
