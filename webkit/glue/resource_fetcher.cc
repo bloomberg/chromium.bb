@@ -53,6 +53,18 @@ void ResourceFetcher::Start(WebFrame* frame) {
   loader_->loadAsynchronously(request, this);
 }
 
+void ResourceFetcher::RunCallback(const WebURLResponse& response,
+                                  const std::string& data) {
+  if (!callback_.get())
+    return;
+
+  // Take care to clear callback_ before running the callback as it may lead to
+  // our destruction.
+  scoped_ptr<Callback> callback;
+  callback.swap(callback_);
+  callback->Run(response, data);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // WebURLLoaderClient methods
 
@@ -93,10 +105,7 @@ void ResourceFetcher::didFinishLoading(
   DCHECK(!completed_);
   completed_ = true;
 
-  if (callback_.get()) {
-    callback_->Run(response_, data_);
-    callback_.reset();
-  }
+  RunCallback(response_, data_);
 }
 
 void ResourceFetcher::didFail(WebURLLoader* loader, const WebURLError& error) {
@@ -104,10 +113,7 @@ void ResourceFetcher::didFail(WebURLLoader* loader, const WebURLError& error) {
   completed_ = true;
 
   // Go ahead and tell our delegate that we're done.
-  if (callback_.get()) {
-    callback_->Run(WebURLResponse(), std::string());
-    callback_.reset();
-  }
+  RunCallback(WebURLResponse(), std::string());
 }
 
 /////////////////////////////////////////////////////////////////////////////

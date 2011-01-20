@@ -47,8 +47,12 @@ void ImageResourceFetcher::OnURLFetchComplete(
     // If we get here, it means no image from server or couldn't decode the
     // response as an image. The delegate will see a null image, indicating
     // that an error occurred.
-  callback_->Run(this, bitmap);
-  callback_.reset();
+
+  // Take care to clear callback_ before running the callback as it may lead to
+  // our destruction.
+  scoped_ptr<Callback> callback;
+  callback.swap(callback_);
+  callback->Run(this, bitmap);
 }
 
 }  // namespace webkit_glue

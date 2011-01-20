@@ -46,8 +46,8 @@ class FetcherDelegate {
     return ::NewCallback(this, &FetcherDelegate::OnURLFetchComplete);
   }
 
-  void OnURLFetchComplete(const WebURLResponse& response,
-                          const std::string& data) {
+  virtual void OnURLFetchComplete(const WebURLResponse& response,
+                                  const std::string& data) {
     response_ = response;
     data_ = data;
     completed_ = true;
@@ -221,6 +221,40 @@ TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
   EXPECT_TRUE(delegate->response().isNull());
   EXPECT_EQ(delegate->data(), std::string());
   EXPECT_TRUE(delegate->time_elapsed_ms() < kMaxWaitTimeMs);
+}
+
+class EvilFetcherDelegate : public FetcherDelegate {
+ public:
+  void SetFetcher(ResourceFetcher* fetcher) {
+    fetcher_.reset(fetcher);
+  }
+
+  void OnURLFetchComplete(const WebURLResponse& response,
+                          const std::string& data) {
+    // Destroy the ResourceFetcher here.  We are testing that upon returning
+    // to the ResourceFetcher that it does not crash.
+    fetcher_.reset();
+    FetcherDelegate::OnURLFetchComplete(response, data);
+  }
+
+ private:
+  scoped_ptr<ResourceFetcher> fetcher_;
+};
+
+TEST_F(ResourceFetcherTests, ResourceFetcherDeletedInCallback) {
+  ASSERT_TRUE(test_server_.Start());
+
+  WebFrame* frame = test_shell_->webView()->mainFrame();
+
+  // Grab a page that takes at least 1 sec to respond, but set the fetcher to
+  // timeout in 0 sec.
+  GURL url(test_server_.GetURL("slow?1"));
+  scoped_ptr<EvilFetcherDelegate> delegate(new EvilFetcherDelegate);
+  scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcherWithTimeout(
+      url, frame, 0, delegate->NewCallback()));
+  delegate->SetFetcher(fetcher.release());
+
+  delegate->WaitForResponse();
 }
 
 }  // namespace
