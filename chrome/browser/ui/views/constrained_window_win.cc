@@ -571,6 +571,9 @@ void ConstrainedWindowWin::FocusConstrainedWindow() {
 }
 
 void ConstrainedWindowWin::ShowConstrainedWindow() {
+  // We marked the view as hidden during construction.  Mark it as
+  // visible now so FocusManager will let us receive focus.
+  GetNonClientView()->SetVisible(true);
   if (owner_->delegate())
     owner_->delegate()->WillShowConstrainedWindow(owner_);
   ActivateConstrainedWindow();
@@ -614,6 +617,10 @@ ConstrainedWindowWin::ConstrainedWindowWin(
   set_window_style(WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_CAPTION |
                    WS_THICKFRAME | WS_SYSMENU);
   set_focus_on_creation(false);
+  // Views default to visible.  Since we are creating a window that is
+  // not visible (no WS_VISIBLE), mark our View as hidden so that
+  // FocusManager can deal with it properly.
+  GetNonClientView()->SetVisible(false);
 
   WindowWin::Init(owner_->GetNativeView(), gfx::Rect());
 }
