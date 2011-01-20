@@ -129,8 +129,12 @@ void SpeechRecognizer::StopRecording() {
   // Since the http request takes a single string as POST data, allocate
   // one and copy over bytes from the audio buffers to the string.
   // And If we haven't got any audio yet end the recognition sequence here.
+  string mime_type = encoder_->mime_type();
   string data;
-  if (!encoder_->GetEncodedData(&data)) {
+  encoder_->GetEncodedData(&data);
+  encoder_.reset();
+
+  if (data.empty()) {
     // Guard against the delegate freeing us until we finish our job.
     scoped_refptr<SpeechRecognizer> me(this);
     delegate_->DidCompleteRecognition(caller_id_);
@@ -139,9 +143,8 @@ void SpeechRecognizer::StopRecording() {
     request_.reset(new SpeechRecognitionRequest(
         Profile::GetDefaultRequestContext(), this));
     request_->Send(language_, grammar_, hardware_info_, origin_url_,
-                   encoder_->mime_type(), data);
+                   mime_type, data);
   }
-  encoder_.reset();
 }
 
 void SpeechRecognizer::ReleaseAudioBuffers() {
