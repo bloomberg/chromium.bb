@@ -6,6 +6,7 @@
 
 #include "base/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "chrome_frame/chrome_frame_npapi.h"
 #include "chrome_frame/np_browser_functions.h"
 #include "chrome_frame/np_utils.h"
 #include "net/base/net_errors.h"
@@ -370,6 +371,24 @@ NPError NPAPIUrlRequestManager::NewStream(NPMIMEType type,
   }
 
   DCHECK(request_map_.find(request->id()) != request_map_.end());
+
+  // If the host browser does not support the NPAPI redirect notification
+  // spec, and if the request URL is implicitly redirected, we need to
+  // inform Chrome about the redirect and allow it to follow the redirect.
+  // We achieve this by comparing the URL requested with the URL received in
+  // the response and if they don't match we assume a redirect. This would have
+  // a sideffect that two GET requests would be sent out in this case.
+  if (!BrowserSupportsRedirectNotification()) {
+    if (GURL(request->url().c_str()) != GURL(stream->url)) {
+      DVLOG(1) << "Request URL:"
+               << request->url()
+               << " was redirected to:"
+               << stream->url;
+      delegate_->OnResponseStarted(request->id(), "", "", 0, base::Time(),
+                                   stream->url, 302);
+      return NPERR_GENERIC_ERROR;
+    }
+  }
   // We need to return the requested stream mode if we are returning a success
   // code. If we don't do this it causes Opera to blow up.
   *stream_type = NP_NORMAL;

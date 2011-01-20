@@ -276,4 +276,8 @@ class ScopedNpObject {
 // The memory allocation is done via the npapi browser functions.
 void AllocateStringVariant(const std::string& str, NPVariant* var);
 
+// Returns true if the host browser supports the NPAPI redirect notification
+// spec. https://wiki.mozilla.org/NPAPI:HTTPRedirectHandling
+bool BrowserSupportsRedirectNotification();
+
 #endif // CHROME_FRAME_NP_BROWSER_FUNCTIONS_H_

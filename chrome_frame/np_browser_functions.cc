@@ -527,3 +527,7 @@ void AllocateStringVariant(const std::string& str, NPVariant* var) {
     NULL_TO_NPVARIANT(*var);
   }
 }
+
+bool BrowserSupportsRedirectNotification() {
+  return npapi::g_urlredirectresponse != NULL;
+}
