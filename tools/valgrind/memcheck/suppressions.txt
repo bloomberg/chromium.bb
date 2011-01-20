@@ -3637,3 +3637,20 @@
    fun:_ZN9SingletonI13PluginService22DefaultSingletonTraitsIS0_ES0_E3getEv
    fun:_ZN13PluginService11GetInstanceEv
 }
+{
+   bug_70291
+   Memcheck:Leak
+   ...
+   fun:_ZN4base13RSAPrivateKey34CreateFromPrivateKeyInfoWithParamsERKSt6vectorIhSaIhEEbb
+   fun:_ZN4base13RSAPrivateKey24CreateFromPrivateKeyInfoERKSt6vectorIhSaIhEE
+   fun:_ZN8remoting8protocol17JingleSessionTest18DoCreateServerPairEv
+   fun:_Z16DispatchToMethodIN8remoting8protocol17JingleSessionTestEMS2_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN8remoting8protocol17JingleSessionTestEMS2_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN8remoting12JingleThread17JingleMessagePump9OnMessageEPN9talk_base7MessageE
+   fun:_ZN9talk_base12MessageQueue8DispatchEPNS_7MessageE
+   fun:_ZN9talk_base6Thread15ProcessMessagesEi
+ }
+ 
