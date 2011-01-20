@@ -23,7 +23,13 @@ static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("popup_blocker");
 
 typedef InProcessBrowserTest PopupBlockerBrowserTest;
 
-IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupBlockedPostBlank) {
+#if defined(OS_CHROMEOS)
+// Flakily crashes on ChromeOS: http://crbug.com/70192
+#define MAYBE_PopupBlockedPostBlank DISABLED_PopupBlockedPostBlank
+#else
+#define MAYBE_PopupBlockedPostBlank PopupBlockedPostBlank
+#endif
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MAYBE_PopupBlockedPostBlank) {
   FilePath file_name(FILE_PATH_LITERAL("popup-blocked-to-post-blank.html"));
   FilePath test_dir(kTestDir);
   GURL url(ui_test_utils::GetTestUrl(test_dir, file_name));
