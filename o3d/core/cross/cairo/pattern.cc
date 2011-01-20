@@ -73,6 +73,17 @@ Pattern::~Pattern() {
   cairo_pattern_destroy(pattern_);
 }
 
+void Pattern::SetAffineTransform(double xx,
+                                 double yx,
+                                 double xy,
+                                 double yy,
+                                 double x0,
+                                 double y0) {
+  cairo_matrix_t matrix;
+  cairo_matrix_init(&matrix, xx, yx, xy, yy, x0, y0);
+  cairo_pattern_set_matrix(pattern_, &matrix);
+}
+
 Pattern::Pattern(ServiceLocator* service_locator, cairo_pattern_t* pattern)
     : ObjectBase(service_locator),
       pattern_(pattern) {

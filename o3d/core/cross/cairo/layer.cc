@@ -50,14 +50,16 @@ Layer::~Layer() {
 
 Layer::Layer(ServiceLocator* service_locator)
     : ObjectBase(service_locator),
-      alpha_(1.0),
+      visible_(true),
+      alpha_(0.0),
       x_(0),
       y_(0),
       z_(0),
       width_(0),
       height_(0),
       scale_x_(1.0),
-      scale_y_(1.0) {
+      scale_y_(1.0),
+      paint_operator_(BLEND) {
   DLOG(INFO) << "Create Layer";
   Renderer* renderer = service_locator->GetService<Renderer>();
   RendererCairo* renderer_cairo = down_cast<RendererCairo*>(renderer);

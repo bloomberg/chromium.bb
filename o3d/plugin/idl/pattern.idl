@@ -75,6 +75,24 @@ namespace o2d {
                                       double green,
                                       double blue,
                                       double alpha);
+
+  %[
+    Set the affine transformation matrix that maps user space to pattern space.
+    The default matrix is the identity matrix, so that no transformation occurs.
+
+    \param xx xx component of the affine transformation
+    \param yx yx component of the affine transformation
+    \param xy xy component of the affine transformation
+    \param yy yy component of the affine transformation
+    \param x0 X translation component of the affine transformation
+    \param y0 Y translation component of the affine transformation
+  %]
+  void SetAffineTransform(double xx,
+                          double yx,
+                          double xy,
+                          double yy,
+                          double x0,
+                          double y0);
 };  // Pattern
 
 }  // namespace o2d

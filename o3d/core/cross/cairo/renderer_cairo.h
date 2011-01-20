@@ -218,8 +218,8 @@ class RendererCairo : public Renderer {
                                    float min_z,
                                    float max_z);
 
-  // Mask the area of the current layer that will collide with other images.
-  void MaskArea(cairo_t* cr, LayerList::iterator it);
+  // Clip the area of the current layer that will collide with other images.
+  void ClipArea(cairo_t* cr, LayerList::iterator it);
 
   // Paint the background with black color.
   // TODO(fransiskusx): Support changing the background color.

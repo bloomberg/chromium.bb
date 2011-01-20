@@ -69,6 +69,16 @@ class Pattern : public ObjectBase {
 
   cairo_pattern_t* pattern() const { return pattern_; }
 
+  // Set the affine transformation matrix that maps user space to pattern space.
+  // The default matrix is the identity matrix, so that no transformation
+  // occurs.
+  void SetAffineTransform(double xx,
+                          double yx,
+                          double xy,
+                          double yy,
+                          double x0,
+                          double y0);
+
  private:
   Pattern(ServiceLocator* service_locator, cairo_pattern_t* pattern);
 

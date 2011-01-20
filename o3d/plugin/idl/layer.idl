@@ -39,12 +39,40 @@ namespace o2d {
 %]
 [nocpp, include="core/cross/cairo/layer.h"] class Layer : ObjectBase {
   %[
+    Available painting operators.
+
+    \var PaintOperator,
+    \li BLEND,  Alpha-blend the Pattern on top of lower Layers based on its
+                alpha channel. (Default)
+    \li BLEND_WITH_TRANSPARENCY,  Like BLEND, but scale the alpha channel down
+                                  based on the alpha property of the Layer as an
+                                  additional fractional transparency.
+    \li COPY,  Copy the colour content of the Pattern directly to the
+               destination, ignoring the alpha channel.
+    \li COPY_WITH_FADING,  Like COPY, but fade the colour to black based on the
+                           alpha property of the Layer as an additional
+                           fractional brightness.
+  %]
+  enum PaintOperator {
+    BLEND,
+    BLEND_WITH_TRANSPARENCY,
+    COPY,
+    COPY_WITH_FADING
+  };
+
+  %[
     The Pattern used to paint this Layer.
   %]
   [getter, setter] Pattern? pattern;
 
   %[
-    Transparancy of this layer.
+    Whether this layer should be visible or not.
+  %]
+  [getter, setter] bool visible;
+
+  %[
+    The transparency for the BLEND_WITH_TRANSPARENCY operator or the fading for
+    the COPY_WITH_FADING operator.
   %]
   [getter, setter] double alpha;
 
@@ -82,6 +110,11 @@ namespace o2d {
     A scaling factor to apply to the pattern's y-axis.
   %]
   [getter, setter] double scale_y;
+
+  %[
+    The paint operator to use for painting this Layer.
+  %]
+  [getter, setter] PaintOperator paint_operator;
 };  // Layer
 
 }  // namespace o2d
