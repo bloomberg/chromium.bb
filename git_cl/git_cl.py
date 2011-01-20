@@ -1029,8 +1029,14 @@ def SendUpstream(parser, args, cmd):
 def CMDdcommit(parser, args):
   """commit the current changelist via git-svn"""
   if not settings.GetIsGitSvn():
-    print('This doesn\'t appear to be an SVN repository.')
-    print('Are you sure you didn\'t mean \'git cl push\'?')
+    message = """This doesn't appear to be an SVN repository.
+If your project has a git mirror with an upstream SVN master, you probably need
+to run 'git svn init', see your project's git mirror documentation.
+If your project has a true writeable upstream repository, you probably want
+to run 'git cl push' instead.
+Choose wisely, if you get this wrong, your commit might appear to succeed but
+will instead be silently ignored."""
+    print(message)
     raw_input('[Press enter to dcommit or ctrl-C to quit]')
   return SendUpstream(parser, args, 'dcommit')
 
