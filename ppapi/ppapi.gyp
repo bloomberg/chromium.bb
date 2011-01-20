@@ -70,9 +70,6 @@
         'c/dev/pp_file_info_dev.h',
         'c/dev/pp_graphics_3d_dev.h',
         'c/dev/pp_video_dev.h',
-        'c/dev/ppb_audio_config_dev.h',
-        'c/dev/ppb_audio_dev.h',
-        'c/dev/ppb_audio_trusted_dev.h',
         'c/dev/ppb_buffer_dev.h',
         'c/dev/ppb_char_set_dev.h',
         'c/dev/ppb_context_3d_dev.h',
@@ -170,10 +167,6 @@
         'cpp/var.h',
 
         # Dev interfaces.
-        'cpp/dev/audio_config_dev.cc',
-        'cpp/dev/audio_config_dev.h',
-        'cpp/dev/audio_dev.cc',
-        'cpp/dev/audio_dev.h',
         'cpp/dev/buffer_dev.cc',
         'cpp/dev/buffer_dev.h',
         'cpp/dev/context_3d_dev.cc',

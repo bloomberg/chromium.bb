@@ -8,11 +8,11 @@
 #ifndef PPAPI_TESTS_ALL_CPP_INCLUDES_H_
 #define PPAPI_TESTS_ALL_CPP_INCLUDES_H_
 
+#include "ppapi/cpp/audio.h"
+#include "ppapi/cpp/audio_config.h"
 #include "ppapi/cpp/common.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/core.h"
-#include "ppapi/cpp/dev/audio_config_dev.h"
-#include "ppapi/cpp/dev/audio_dev.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/dev/context_3d_dev.h"
 #include "ppapi/cpp/dev/directory_entry_dev.h"
