@@ -167,14 +167,14 @@ bool CreateServerUnixDomainSocket(const std::string& pipe_name,
   // Delete any old FS instances.
   unlink(pipe_name.c_str());
 
-    // Make sure the path we need exists.
+  // Make sure the path we need exists.
   FilePath path(pipe_name);
   FilePath dir_path = path.DirName();
   if (!file_util::CreateDirectory(dir_path)) {
     return false;
   }
 
-  // Create unix_addr structure
+  // Create unix_addr structure.
   struct sockaddr_un unix_addr;
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
@@ -188,6 +188,14 @@ bool CreateServerUnixDomainSocket(const std::string& pipe_name,
   if (bind(fd, reinterpret_cast<const sockaddr*>(&unix_addr),
            unix_addr_len) != 0) {
     PLOG(ERROR) << "bind " << pipe_name;
+    if (HANDLE_EINTR(close(fd)) < 0)
+      PLOG(ERROR) << "close " << pipe_name;
+    return false;
+  }
+
+  // Adjust the socket permissions.
+  if (chmod(pipe_name.c_str(), 0600)) {
+    PLOG(ERROR) << "fchmod " << pipe_name;
     if (HANDLE_EINTR(close(fd)) < 0)
       PLOG(ERROR) << "close " << pipe_name;
     return false;
