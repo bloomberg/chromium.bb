@@ -48,19 +48,12 @@ class BrowserClosedObserver : public NotificationObserver {
 // action we take.
 const int kActionDelayMs = 500;
 
-const char kConsoleTestPage[] = "files/devtools/console_test_page.html";
 const char kDebuggerTestPage[] = "files/devtools/debugger_test_page.html";
-const char kJsPage[] = "files/devtools/js_page.html";
 const char kHeapProfilerPage[] = "files/devtools/heap_profiler.html";
 const char kPauseWhenLoadingDevTools[] =
     "files/devtools/pause_when_loading_devtools.html";
 const char kPauseWhenScriptIsRunning[] =
     "files/devtools/pause_when_script_is_running.html";
-const char kResourceContentLengthTestPage[] = "files/devtools/image.html";
-const char kResourceTestPage[] = "files/devtools/resource_test_page.html";
-const char kSimplePage[] = "files/devtools/simple_page.html";
-const char kCompletionOnPause[] =
-    "files/devtools/completion_on_pause.html";
 const char kPageWithContentScript[] =
     "files/devtools/page_with_content_script.html";
 
@@ -253,31 +246,6 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
   FilePath test_extensions_dir_;
 };
 
-// Fails after WebKit roll 69808:70011, http://crbug.com/59727.
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_TestEnableResourcesTab DISABLED_TestEnableResourcesTab
-#else
-#define MAYBE_TestEnableResourcesTab TestEnableResourcesTab
-#endif  // defined(OS_LINUX) || defined(OS_WIN)
-
-// Tests resources panel enabling.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestEnableResourcesTab) {
-  RunTest("testEnableResourcesTab", kSimplePage);
-}
-
-// Fails after WebKit roll 59365:59477, http://crbug.com/44202.
-#if defined(OS_LINUX)
-#define MAYBE_TestResourceContentLength FLAKY_TestResourceContentLength
-#else
-#define MAYBE_TestResourceContentLength TestResourceContentLength
-#endif  // defined(OS_LINUX)
-
-// Tests profiler panel.
-// Disabled, http://crbug.com/68447.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestProfilerTab) {
-  RunTest("testProfilerTab", kJsPage);
-}
-
 // Tests heap profiler.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestHeapProfiler) {
   RunTest("testHeapProfiler", kHeapProfilerPage);
@@ -288,19 +256,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
-// Fails after WebKit roll 75765:75812 (likely 75791), http://crbug.com/69719
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
-        FAILS_TestScriptsTabIsPopulatedOnInspectedPageRefresh
-#else
-#define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
-              TestScriptsTabIsPopulatedOnInspectedPageRefresh
-#endif  // defined(OS_LINUX) || defined(OS_WIN)
 // Tests that scripts tab is populated with inspected scripts even if it
 // hadn't been shown by the moment inspected paged refreshed.
 // @see http://crbug.com/26312
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
+                       TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
   // Clear inspector settings to ensure that Elements will be
   // current panel when DevTools window is open.
   GetInspectedTab()->render_view_host()->delegate()->ClearInspectorSettings();
@@ -322,43 +282,16 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
   RunTest("testNoScriptDuplicatesOnPanelSwitch", kDebuggerTestPage);
 }
 
-// Fails after WebKit roll 75765:75812 (likely 75791), http://crbug.com/69719
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_TestPauseWhenLoadingDevTools DISABLED_TestPauseWhenLoadingDevTools
-#else
-#define MAYBE_TestPauseWhenLoadingDevTools TestPauseWhenLoadingDevTools
-#endif  // defined(OS_LINUX) || defined(OS_WIN)
 // Tests that debugger works correctly if pause event occurs when DevTools
 // frontend is being loaded.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestPauseWhenLoadingDevTools) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenLoadingDevTools) {
   RunTest("testPauseWhenLoadingDevTools", kPauseWhenLoadingDevTools);
 }
 
-// Fails after WebKit roll 75765:75812 (likely 75791), http://crbug.com/69719
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_TestPauseWhenScriptIsRunning DISABLED_TestPauseWhenScriptIsRunning
-#else
-#define MAYBE_TestPauseWhenScriptIsRunning TestPauseWhenScriptIsRunning
-#endif  // defined(OS_LINUX) || defined(OS_WIN)
 // Tests that pressing 'Pause' will pause script execution if the script
 // is already running.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestPauseWhenScriptIsRunning) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
-}
-
-// Fails after WebKit roll 66724:66804, http://crbug.com/54592
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_TestCompletionOnPause FAILS_TestCompletionOnPause
-#else
-#define MAYBE_TestCompletionOnPause TestCompletionOnPause
-#endif  // defined(OS_LINUX) || defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestCompletionOnPause) {
-  RunTest("testCompletionOnPause", kCompletionOnPause);
-}
-
-// Tests that 'Pause' button works for eval.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseInEval) {
-  RunTest("testPauseInEval", kDebuggerTestPage);
 }
 
 }  // namespace
