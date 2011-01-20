@@ -807,7 +807,8 @@ class TabContents : public PageNavigator,
                                         const std::string& main_frame_origin,
                                         const std::string& security_info);
   void OnDidDisplayInsecureContent();
-  void OnDidRunInsecureContent(const std::string& security_origin);
+  void OnDidRunInsecureContent(const std::string& security_origin,
+                               const GURL& target_url);
   void OnDocumentLoadedInFrame(int64 frame_id);
   void OnDidFinishLoad(int64 frame_id);
 

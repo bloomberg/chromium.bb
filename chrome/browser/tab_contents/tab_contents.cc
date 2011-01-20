@@ -1754,7 +1754,7 @@ void TabContents::OnDidDisplayInsecureContent() {
 }
 
 void TabContents::OnDidRunInsecureContent(
-    const std::string& security_origin) {
+    const std::string& security_origin, const GURL& target_url) {
   controller_.ssl_manager()->DidRunInsecureContent(security_origin);
 }
 

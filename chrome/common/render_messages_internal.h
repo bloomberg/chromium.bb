@@ -1252,8 +1252,9 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_DidLoadResourceFromMemoryCache,
 IPC_MESSAGE_ROUTED0(ViewHostMsg_DidDisplayInsecureContent)
 
 // Sent when the renderer runs insecure content in a secure origin.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidRunInsecureContent,
-                    std::string  /* security_origin */)
+IPC_MESSAGE_ROUTED2(ViewHostMsg_DidRunInsecureContent,
+                    std::string  /* security_origin */,
+                    GURL         /* target URL */);
 
 // Sent when the renderer starts a provisional load for a frame.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_DidStartProvisionalLoadForFrame,
