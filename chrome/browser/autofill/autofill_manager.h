@@ -67,11 +67,11 @@ class AutoFillManager : public IPC::Channel::Listener,
   // Returns the value of the AutoFillEnabled pref.
   virtual bool IsAutoFillEnabled() const;
 
-  // Handles the form data submitted by the user.
-  void HandleSubmit();
+  // Imports the form data, submitted by the user, into |personal_data_|.
+  void ImportFormData(const FormStructure& submitted_form);
 
   // Uploads the form data to the AutoFill server.
-  void UploadFormData();
+  void UploadFormData(const FormStructure& submitted_form);
 
   // Reset cache.
   void Reset();
@@ -173,9 +173,11 @@ class AutoFillManager : public IPC::Channel::Listener,
   void ParseForms(const std::vector<webkit_glue::FormData>& forms);
 
   // Uses existing personal data to determine possible field types for the
-  // |upload_form_structure_|.
-  void DeterminePossibleFieldTypesForUpload(
-      const FormStructure* cached_upload_form_structure);
+  // |submitted_form|.
+  void DeterminePossibleFieldTypesForUpload(FormStructure* submitted_form);
+
+  void LogMetricsAboutSubmittedForm(const webkit_glue::FormData& form,
+                                    const FormStructure* submitted_form);
 
   // The TabContents hosting this AutoFillManager.
   // Weak reference.
@@ -203,9 +205,6 @@ class AutoFillManager : public IPC::Channel::Listener,
 
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;
-
-  // The form data the user has submitted.
-  scoped_ptr<FormStructure> upload_form_structure_;
 
   // The InfoBar that asks for permission to store credit card information.
   // Deletes itself when closed.

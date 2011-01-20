@@ -140,7 +140,7 @@ void PersonalDataManager::RemoveObserver(
 }
 
 bool PersonalDataManager::ImportFormData(
-    const std::vector<FormStructure*>& form_structures) {
+    const std::vector<const FormStructure*>& form_structures) {
   // Parse the form and construct a profile based on the information that is
   // possible to import.
   int importable_fields = 0;
@@ -149,7 +149,7 @@ bool PersonalDataManager::ImportFormData(
   // TODO(jhawkins): Use a hash of the CC# instead of a list of unique IDs?
   imported_credit_card_.reset(new CreditCard);
 
-  std::vector<FormStructure*>::const_iterator iter;
+  std::vector<const FormStructure*>::const_iterator iter;
   for (iter = form_structures.begin(); iter != form_structures.end(); ++iter) {
     const FormStructure* form = *iter;
     for (size_t i = 0; i < form->field_count(); ++i) {

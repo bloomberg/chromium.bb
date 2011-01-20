@@ -206,27 +206,21 @@ void AutoFillManager::OnFormSubmitted(const FormData& form) {
     return;
 
   // Grab a copy of the form data.
-  upload_form_structure_.reset(new FormStructure(form));
+  FormStructure submitted_form(form);
 
   // Disregard forms that we wouldn't ever autofill in the first place.
-  if (!upload_form_structure_->ShouldBeParsed(true))
+  if (!submitted_form.ShouldBeParsed(true))
     return;
 
-  FormStructure* cached_upload_form_structure = NULL;
-  AutoFillField* ignored;
-  if (!FindCachedFormAndField(form, form.fields.front(),
-                              &cached_upload_form_structure, &ignored)) {
-    cached_upload_form_structure = NULL;
-  }
+  DeterminePossibleFieldTypesForUpload(&submitted_form);
+  LogMetricsAboutSubmittedForm(form, &submitted_form);
 
-  DeterminePossibleFieldTypesForUpload(cached_upload_form_structure);
-  // TODO(isherman): Consider uploading to server here rather than in
-  // HandleSubmit().
+  UploadFormData(submitted_form);
 
-  if (!upload_form_structure_->IsAutoFillable(true))
+  if (!submitted_form.IsAutoFillable(true))
     return;
 
-  HandleSubmit();
+  ImportFormData(submitted_form);
 }
 
 void AutoFillManager::OnFormsSeen(const std::vector<FormData>& forms) {
@@ -485,13 +479,31 @@ bool AutoFillManager::IsAutoFillEnabled() const {
 }
 
 void AutoFillManager::DeterminePossibleFieldTypesForUpload(
-    const FormStructure* cached_upload_form_structure) {
-  for (size_t i = 0; i < upload_form_structure_->field_count(); i++) {
-    const AutoFillField* field = upload_form_structure_->field(i);
+    FormStructure* submitted_form) {
+  for (size_t i = 0; i < submitted_form->field_count(); i++) {
+    const AutoFillField* field = submitted_form->field(i);
     FieldTypeSet field_types;
     personal_data_->GetPossibleFieldTypes(field->value(), &field_types);
     DCHECK(!field_types.empty());
-    upload_form_structure_->set_possible_types(i, field_types);
+    submitted_form->set_possible_types(i, field_types);
+  }
+}
+
+void AutoFillManager::LogMetricsAboutSubmittedForm(
+    const FormData& form,
+    const FormStructure* submitted_form) {
+  FormStructure* cached_submitted_form = NULL;
+  AutoFillField* ignored;
+  if (!FindCachedFormAndField(form, form.fields.front(),
+                              &cached_submitted_form, &ignored)) {
+    cached_submitted_form = NULL;
+  }
+
+  for (size_t i = 0; i < submitted_form->field_count(); i++) {
+    const AutoFillField* field = submitted_form->field(i);
+    FieldTypeSet field_types;
+    personal_data_->GetPossibleFieldTypes(field->value(), &field_types);
+    DCHECK(!field_types.empty());
 
     if (field->form_control_type() == ASCIIToUTF16("select-one")) {
       // TODO(isherman): <select> fields don't support |is_autofilled()|. Since
@@ -509,8 +521,8 @@ void AutoFillManager::DeterminePossibleFieldTypesForUpload(
       } else {
         metric_logger_->Log(AutoFillMetrics::FIELD_AUTOFILL_FAILED);
 
-        AutoFillFieldType heuristic_type = cached_upload_form_structure?
-            cached_upload_form_structure->field(i)->heuristic_type() :
+        AutoFillFieldType heuristic_type = cached_submitted_form?
+            cached_submitted_form->field(i)->heuristic_type() :
             UNKNOWN_TYPE;
         if (heuristic_type == UNKNOWN_TYPE)
           metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_UNKNOWN);
@@ -519,8 +531,8 @@ void AutoFillManager::DeterminePossibleFieldTypesForUpload(
         else
           metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_MISMATCH);
 
-        AutoFillFieldType server_type = cached_upload_form_structure?
-            cached_upload_form_structure->field(i)->server_type() :
+        AutoFillFieldType server_type = cached_submitted_form?
+            cached_submitted_form->field(i)->server_type() :
             NO_SERVER_DATA;
         if (server_type == NO_SERVER_DATA)
           metric_logger_->Log(AutoFillMetrics::FIELD_SERVER_TYPE_UNKNOWN);
@@ -529,7 +541,6 @@ void AutoFillManager::DeterminePossibleFieldTypesForUpload(
         else
           metric_logger_->Log(AutoFillMetrics::FIELD_SERVER_TYPE_MISMATCH);
       }
-
 
       // TODO(isherman): Other things we might want to log here:
       // * Per Vadim's email, a combination of (1) whether heuristics fired,
@@ -541,13 +552,9 @@ void AutoFillManager::DeterminePossibleFieldTypesForUpload(
   }
 }
 
-void AutoFillManager::HandleSubmit() {
-  // If there wasn't enough data to import then we don't want to send an upload
-  // to the server.
-  // TODO(jhawkins): Import form data from |form_structures_|.  That will
-  // require querying the FormManager for updated field values.
-  std::vector<FormStructure*> import;
-  import.push_back(upload_form_structure_.get());
+void AutoFillManager::ImportFormData(const FormStructure& submitted_form) {
+  std::vector<const FormStructure*> import;
+  import.push_back(&submitted_form);
   if (!personal_data_->ImportFormData(import))
     return;
 
@@ -556,20 +563,16 @@ void AutoFillManager::HandleSubmit() {
   CreditCard* credit_card;
   personal_data_->GetImportedFormData(&profile, &credit_card);
 
-  if (!credit_card) {
-    UploadFormData();
-    return;
-  }
-
-  // Show an infobar to offer to save the credit card info.
-  if (tab_contents_) {
+  // If credit card information was submitted, show an infobar to offer to save
+  // it.
+  if (credit_card && tab_contents_) {
     tab_contents_->AddInfoBar(new AutoFillCCInfoBarDelegate(tab_contents_,
                                                             this));
   }
 }
 
-void AutoFillManager::UploadFormData() {
-  if (!disable_download_manager_requests_ && upload_form_structure_.get()) {
+void AutoFillManager::UploadFormData(const FormStructure& submitted_form) {
+  if (!disable_download_manager_requests_) {
     bool was_autofilled = false;
     // Check if the form among last 3 forms that were auto-filled.
     // Clear older signatures.
@@ -578,7 +581,7 @@ void AutoFillManager::UploadFormData() {
     for (it = autofilled_forms_signatures_.begin();
          it != autofilled_forms_signatures_.end() && total_form_checked < 3;
          ++it, ++total_form_checked) {
-      if (*it == upload_form_structure_->FormSignature())
+      if (*it == submitted_form.FormSignature())
         was_autofilled = true;
     }
     // Remove outdated form signatures.
@@ -586,20 +589,17 @@ void AutoFillManager::UploadFormData() {
       autofilled_forms_signatures_.erase(it,
                                          autofilled_forms_signatures_.end());
     }
-    download_manager_.StartUploadRequest(*(upload_form_structure_.get()),
-                                         was_autofilled);
+    download_manager_.StartUploadRequest(submitted_form, was_autofilled);
   }
 }
 
 void AutoFillManager::Reset() {
-  upload_form_structure_.reset();
   form_structures_.reset();
 }
 
 void AutoFillManager::OnInfoBarClosed(bool should_save) {
   if (should_save)
     personal_data_->SaveImportedCreditCard();
-  UploadFormData();
 }
 
 AutoFillManager::AutoFillManager()

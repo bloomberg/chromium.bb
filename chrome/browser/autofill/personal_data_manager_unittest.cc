@@ -524,7 +524,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
       "Email:", "email", "theprez@gmail.com", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
-  std::vector<FormStructure*> forms;
+  std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure);
   EXPECT_TRUE(personal_data_->ImportFormData(forms));
 
@@ -557,7 +557,7 @@ TEST_F(PersonalDataManagerTest, DISABLED_ImportFormDataNotEnoughFilledFields) {
       "Card number:", "card_number", "4111 1111 1111 1111", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
-  std::vector<FormStructure*> forms;
+  std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure);
   EXPECT_FALSE(personal_data_->ImportFormData(forms));
 
@@ -593,7 +593,7 @@ TEST_F(PersonalDataManagerTest, ImportPhoneNumberSplitAcrossMultipleFields) {
   field.set_max_length(4);
   form.fields.push_back(field);
   FormStructure form_structure(form);
-  std::vector<FormStructure*> forms;
+  std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure);
   EXPECT_TRUE(personal_data_->ImportFormData(forms));
 
@@ -686,7 +686,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
-  std::vector<FormStructure*> forms;
+  std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
   EXPECT_TRUE(personal_data_->ImportFormData(forms));
 
@@ -762,7 +762,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
-  std::vector<FormStructure*> forms;
+  std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
   EXPECT_TRUE(personal_data_->ImportFormData(forms));
 
@@ -841,7 +841,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
-  std::vector<FormStructure*> forms;
+  std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
   EXPECT_TRUE(personal_data_->ImportFormData(forms));
 
@@ -918,7 +918,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
-  std::vector<FormStructure*> forms;
+  std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
   EXPECT_TRUE(personal_data_->ImportFormData(forms));
 
@@ -986,7 +986,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
-  std::vector<FormStructure*> forms;
+  std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
   EXPECT_TRUE(personal_data_->ImportFormData(forms));
   personal_data_->SaveImportedCreditCard();
@@ -1059,7 +1059,7 @@ TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
-  std::vector<FormStructure*> forms;
+  std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
   EXPECT_TRUE(personal_data_->ImportFormData(forms));
   personal_data_->SaveImportedCreditCard();
@@ -1124,7 +1124,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
-  std::vector<FormStructure*> forms;
+  std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
   EXPECT_TRUE(personal_data_->ImportFormData(forms));
   personal_data_->SaveImportedCreditCard();
@@ -1199,7 +1199,7 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
-  std::vector<FormStructure*> forms;
+  std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
   EXPECT_TRUE(personal_data_->ImportFormData(forms));
   personal_data_->SaveImportedCreditCard();
@@ -1265,7 +1265,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
-  std::vector<FormStructure*> forms;
+  std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
   EXPECT_TRUE(personal_data_->ImportFormData(forms));
   personal_data_->SaveImportedCreditCard();
@@ -1331,7 +1331,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
-  std::vector<FormStructure*> forms;
+  std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
   EXPECT_TRUE(personal_data_->ImportFormData(forms));
   personal_data_->SaveImportedCreditCard();
