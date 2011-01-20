@@ -802,7 +802,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestRedirectGoodToBadHTTPS) {
 }
 
 // Visit a page over http that is a redirect to a page with good HTTPS.
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToGoodHTTPS) {
+// Disabled, http://crbug.com/70216.
+IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestRedirectHTTPToGoodHTTPS) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
