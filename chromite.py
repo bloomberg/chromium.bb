@@ -866,7 +866,7 @@ def _CmdEmerge(raw_argv, *args, **kwargs):
     args: The rest of the positional arguments.  See _DoWrappedChrootCommand.
     kwargs: The keyword arguments.  See _DoWrappedChrootCommand.
   """
-  _DoWrappedChrootCommand(['emerge-%s'], ['emerge'],
+  _DoWrappedChrootCommand(['emerge-%s'], ['sudo', 'emerge'],
                           raw_argv, need_args=True, *args, **kwargs)
 
 
