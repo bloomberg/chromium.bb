@@ -1081,6 +1081,7 @@
       'type': '<(library)',
       'msvs_guid': '2DA87614-55C5-4E56-A17E-0CD099786197',
       'dependencies': [
+        'chrome_strings',
         'common',
         'common_net',
         '../base/base.gyp:base',

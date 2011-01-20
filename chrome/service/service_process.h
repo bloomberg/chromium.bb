@@ -82,8 +82,8 @@ class ServiceProcess : public CloudPrintProxy::Client,
   CloudPrintProxy* GetCloudPrintProxy();
 
   // CloudPrintProxy::Client implementation.
-  virtual void OnCloudPrintProxyEnabled();
-  virtual void OnCloudPrintProxyDisabled();
+  virtual void OnCloudPrintProxyEnabled(bool persist_state);
+  virtual void OnCloudPrintProxyDisabled(bool persist_state);
 
   // ChromotingHostManager::Observer interface.
   virtual void OnRemotingHostEnabled();

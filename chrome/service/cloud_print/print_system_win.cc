@@ -7,6 +7,7 @@
 #include <objidl.h>
 #include <winspool.h>
 
+#include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
@@ -18,6 +19,7 @@
 #include "chrome/service/service_process.h"
 #include "chrome/service/service_utility_process_host.h"
 #include "gfx/rect.h"
+#include "grit/generated_resources.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/backend/win_helper.h"
@@ -246,7 +248,7 @@ class PrintSystemWin : public PrintSystem {
   PrintSystemWin();
 
   // PrintSystem implementation.
-  virtual void Init();
+  virtual PrintSystemResult Init();
 
   virtual void EnumeratePrinters(printing::PrinterList* printer_list);
 
@@ -594,7 +596,13 @@ PrintSystemWin::PrintSystemWin() {
   print_backend_ = printing::PrintBackend::CreateInstance(NULL);
 }
 
-void PrintSystemWin::Init() {
+PrintSystem::PrintSystemResult PrintSystemWin::Init() {
+  if (!printing::XPSModule::Init()) {
+    std::string message = l10n_util::GetStringUTF8(
+        IDS_CLOUD_PRINT_XPS_UNAVAILABLE);
+    return PrintSystemResult(false, message);
+  }
+  return PrintSystemResult(true, std::string());
 }
 
 void PrintSystemWin::EnumeratePrinters(printing::PrinterList* printer_list) {

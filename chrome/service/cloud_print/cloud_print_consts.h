@@ -17,6 +17,7 @@ extern const char kPrinterDefaultsValue[];
 extern const char kPrinterStatusValue[];
 extern const char kPrinterTagValue[];
 extern const char kPrinterRemoveTagValue[];
+extern const char kMessageTextValue[];
 // Values in the respone JSON from the cloud print server
 extern const char kPrinterListValue[];
 extern const char kSuccessValue[];
@@ -42,6 +43,8 @@ extern const char kJobFetchReasonStartup[];
 extern const char kJobFetchReasonPoll[];
 extern const char kJobFetchReasonNotified[];
 extern const char kJobFetchReasonQueryMore[];
+extern const char kPrintSystemFailedMessageId[];
+extern const char kGetPrinterCapsFailedMessageId[];
 
 // Max retry count for job data fetch requests.
 const int kJobDataMaxRetryCount = 5;

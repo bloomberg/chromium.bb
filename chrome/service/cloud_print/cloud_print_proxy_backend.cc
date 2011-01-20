@@ -7,6 +7,7 @@
 #include <map>
 #include <vector>
 
+#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/rand_util.h"
@@ -22,6 +23,7 @@
 #include "chrome/service/gaia/service_gaia_authenticator.h"
 #include "chrome/service/service_process.h"
 #include "googleurl/src/gurl.h"
+#include "grit/generated_resources.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/push_notifications_thread.h"
 #include "jingle/notifier/listener/talk_mediator_impl.h"
@@ -106,6 +108,18 @@ class CloudPrintProxyBackend::Core
       const GURL& url,
       DictionaryValue* json_data,
       bool succeeded);
+
+  CloudPrintURLFetcher::ResponseAction HandleRegisterFailedStatusResponse(
+      const URLFetcher* source,
+      const GURL& url,
+      DictionaryValue* json_data,
+      bool succeeded);
+
+CloudPrintURLFetcher::ResponseAction HandlePrintSystemUnavailableResponse(
+      const URLFetcher* source,
+      const GURL& url,
+      DictionaryValue* json_data,
+      bool succeeded);
   // End response handlers
 
   // NotifyXXX is how the Core communicates with the frontend across
@@ -117,6 +131,7 @@ class CloudPrintProxyBackend::Core
     const std::string& cloud_print_xmpp_token,
     const std::string& email);
   void NotifyAuthenticationFailed();
+  void NotifyPrintSystemUnavailable();
 
   // Starts a new printer registration process.
   void StartRegistration();
@@ -135,6 +150,9 @@ class CloudPrintProxyBackend::Core
   // handler is responsible for checking for pending print jobs for this
   // printer and print them.
   void InitJobHandlerForPrinter(DictionaryValue* printer_data);
+  // Sends a diagnostic message to the cloud print server that the print
+  // system failed to initialize.
+  void ReportPrintSystemUnavailable(const std::string& failure_message);
 
   // Callback method for GetPrinterCapsAndDefaults.
   void OnReceivePrinterCaps(
@@ -332,34 +350,40 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
     return;  // No print system available, fail initalization.
   }
 
-  print_system_->Init();
+  cloud_print::PrintSystem::PrintSystemResult result = print_system_->Init();
 
   // TODO(sanjeevr): Validate the tokens.
   auth_token_ = cloud_print_token;
 
-  const notifier::NotifierOptions kNotifierOptions;
-  const bool kInvalidateXmppAuthToken = false;
-  const bool kAllowInsecureXmppConnection = false;
-  talk_mediator_.reset(new notifier::TalkMediatorImpl(
-      new notifier::PushNotificationsThread(kNotifierOptions,
-                                            kCloudPrintPushNotificationsSource),
-      kInvalidateXmppAuthToken,
-      kAllowInsecureXmppConnection));
-  push_notifications_channel_ = kCloudPrintPushNotificationsSource;
-  push_notifications_channel_.append("/proxy/");
-  push_notifications_channel_.append(proxy_id);
-  talk_mediator_->AddSubscribedServiceUrl(push_notifications_channel_);
-  talk_mediator_->SetDelegate(this);
-  talk_mediator_->SetAuthToken(email, cloud_print_xmpp_token,
-                               kSyncGaiaServiceId);
-  talk_mediator_->Login();
+  if (result.succeeded()) {
+    const notifier::NotifierOptions kNotifierOptions;
+    const bool kInvalidateXmppAuthToken = false;
+    const bool kAllowInsecureXmppConnection = false;
+    talk_mediator_.reset(new notifier::TalkMediatorImpl(
+        new notifier::PushNotificationsThread(
+            kNotifierOptions,
+            kCloudPrintPushNotificationsSource),
+        kInvalidateXmppAuthToken,
+        kAllowInsecureXmppConnection));
+    push_notifications_channel_ = kCloudPrintPushNotificationsSource;
+    push_notifications_channel_.append("/proxy/");
+    push_notifications_channel_.append(proxy_id);
+    talk_mediator_->AddSubscribedServiceUrl(push_notifications_channel_);
+    talk_mediator_->SetDelegate(this);
+    talk_mediator_->SetAuthToken(email, cloud_print_xmpp_token,
+                                 kSyncGaiaServiceId);
+    talk_mediator_->Login();
 
-  print_server_watcher_ = print_system_->CreatePrintServerWatcher();
-  print_server_watcher_->StartWatching(this);
+    print_server_watcher_ = print_system_->CreatePrintServerWatcher();
+    print_server_watcher_->StartWatching(this);
 
-  proxy_id_ = proxy_id;
+    proxy_id_ = proxy_id;
 
-  StartRegistration();
+    StartRegistration();
+  } else {
+    // We could not initialize the print system. We need to notify the server.
+    ReportPrintSystemUnavailable(result.message());
+  }
 }
 
 void CloudPrintProxyBackend::Core::StartRegistration() {
@@ -454,6 +478,10 @@ void CloudPrintProxyBackend::Core::OnReceivePrinterCaps(
     const std::string& printer_name,
     const printing::PrinterCapsAndDefaults& caps_and_defaults) {
   DCHECK(next_upload_index_ < printer_list_.size());
+  std::string mime_boundary;
+  CloudPrintHelpers::CreateMimeBoundaryForUpload(&mime_boundary);
+  std::string post_data;
+  GURL post_url;
   if (succeeded) {
     const printing::PrinterBasicInfo& info =
         printer_list_.at(next_upload_index_);
@@ -461,9 +489,6 @@ void CloudPrintProxyBackend::Core::OnReceivePrinterCaps(
     last_uploaded_printer_name_ = info.printer_name;
     last_uploaded_printer_info_ = caps_and_defaults;
 
-    std::string mime_boundary;
-    CloudPrintHelpers::CreateMimeBoundaryForUpload(&mime_boundary);
-    std::string post_data;
     CloudPrintHelpers::AddMultipartValueForUpload(kProxyIdValue, proxy_id_,
                                                   mime_boundary,
                                                   std::string(), &post_data);
@@ -497,26 +522,38 @@ void CloudPrintProxyBackend::Core::OnReceivePrinterCaps(
         kPrinterCapsHashValue,
         MD5String(last_uploaded_printer_info_.printer_capabilities),
         mime_boundary, std::string(), &post_data);
-    // Terminate the request body
-    post_data.append("--" + mime_boundary + "--\r\n");
-    std::string mime_type("multipart/form-data; boundary=");
-    mime_type += mime_boundary;
-    GURL register_url = CloudPrintHelpers::GetUrlForPrinterRegistration(
+    post_url = CloudPrintHelpers::GetUrlForPrinterRegistration(
         cloud_print_server_url_);
 
     next_response_handler_ =
         &CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse;
-    request_ = new CloudPrintURLFetcher;
-    request_->StartPostRequest(register_url, this, auth_token_,
-                               kCloudPrintAPIMaxRetryCount, mime_type,
-                               post_data);
   } else {
     LOG(ERROR) << "CP_PROXY: Failed to get printer info for: " <<
         printer_name;
-    next_upload_index_++;
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &CloudPrintProxyBackend::Core::RegisterNextPrinter));
+    // This printer failed to register, notify the server of this failure.
+    post_url = CloudPrintHelpers::GetUrlForUserMessage(
+        cloud_print_server_url_,
+        kGetPrinterCapsFailedMessageId);
+    string16 printer_name_utf16 = UTF8ToUTF16(printer_name);
+    std::string status_message = l10n_util::GetStringFUTF8(
+        IDS_CLOUD_PRINT_REGISTER_PRINTER_FAILED,
+        printer_name_utf16);
+    CloudPrintHelpers::AddMultipartValueForUpload(kMessageTextValue,
+                                                  status_message,
+                                                  mime_boundary,
+                                                  std::string(),
+                                                  &post_data);
+    next_response_handler_ =
+        &CloudPrintProxyBackend::Core::HandleRegisterFailedStatusResponse;
   }
+  // Terminate the request body
+  post_data.append("--" + mime_boundary + "--\r\n");
+  std::string mime_type("multipart/form-data; boundary=");
+  mime_type += mime_boundary;
+  request_ = new CloudPrintURLFetcher;
+  request_->StartPostRequest(post_url, this, auth_token_,
+                             kCloudPrintAPIMaxRetryCount, mime_type,
+                             post_data);
 }
 
 void CloudPrintProxyBackend::Core::HandlePrinterNotification(
@@ -592,6 +629,11 @@ void CloudPrintProxyBackend::Core::NotifyAuthenticated(
 void CloudPrintProxyBackend::Core::NotifyAuthenticationFailed() {
   DCHECK(MessageLoop::current() == backend_->frontend_loop_);
   backend_->frontend_->OnAuthenticationFailed();
+}
+
+void CloudPrintProxyBackend::Core::NotifyPrintSystemUnavailable() {
+  DCHECK(MessageLoop::current() == backend_->frontend_loop_);
+  backend_->frontend_->OnPrintSystemUnavailable();
 }
 
 CloudPrintURLFetcher::ResponseAction
@@ -683,6 +725,32 @@ void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
   }
 }
 
+void CloudPrintProxyBackend::Core::ReportPrintSystemUnavailable(
+    const std::string& failure_message) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
+  std::string mime_boundary;
+  CloudPrintHelpers::CreateMimeBoundaryForUpload(&mime_boundary);
+  GURL post_url = CloudPrintHelpers::GetUrlForUserMessage(
+      cloud_print_server_url_,
+      kPrintSystemFailedMessageId);
+  std::string post_data;
+  CloudPrintHelpers::AddMultipartValueForUpload(kMessageTextValue,
+                                                failure_message,
+                                                mime_boundary,
+                                                std::string(),
+                                                &post_data);
+  next_response_handler_ =
+      &CloudPrintProxyBackend::Core::HandlePrintSystemUnavailableResponse;
+  // Terminate the request body
+  post_data.append("--" + mime_boundary + "--\r\n");
+  std::string mime_type("multipart/form-data; boundary=");
+  mime_type += mime_boundary;
+  request_ = new CloudPrintURLFetcher;
+  request_->StartPostRequest(post_url, this, auth_token_,
+                             kCloudPrintAPIMaxRetryCount, mime_type,
+                             post_data);
+}
+
 CloudPrintURLFetcher::ResponseAction
 CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse(
     const URLFetcher* source,
@@ -706,6 +774,36 @@ CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse(
       FROM_HERE,
       NewRunnableMethod(this,
                         &CloudPrintProxyBackend::Core::RegisterNextPrinter));
+  return CloudPrintURLFetcher::STOP_PROCESSING;
+}
+
+CloudPrintURLFetcher::ResponseAction
+CloudPrintProxyBackend::Core::HandleRegisterFailedStatusResponse(
+    const URLFetcher* source,
+    const GURL& url,
+    DictionaryValue* json_data,
+    bool succeeded) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
+  next_upload_index_++;
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this,
+                        &CloudPrintProxyBackend::Core::RegisterNextPrinter));
+  return CloudPrintURLFetcher::STOP_PROCESSING;
+}
+
+CloudPrintURLFetcher::ResponseAction
+CloudPrintProxyBackend::Core::HandlePrintSystemUnavailableResponse(
+    const URLFetcher* source,
+    const GURL& url,
+    DictionaryValue* json_data,
+    bool succeeded) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
+  // Let the frontend know that we do not have a print system.
+  backend_->frontend_loop_->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this,
+                        &Core::NotifyPrintSystemUnavailable));
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
 

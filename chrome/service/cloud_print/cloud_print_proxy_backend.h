@@ -34,6 +34,8 @@ class CloudPrintProxyFrontend {
                                const std::string& email) = 0;
   // We have invalid/expired credentials.
   virtual void OnAuthenticationFailed() = 0;
+  // The print system could not be initialized.
+  virtual void OnPrintSystemUnavailable() = 0;
 
  protected:
   // Don't delete through SyncFrontend interface.

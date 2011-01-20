@@ -106,7 +106,7 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
                                   cloud_print_email_, proxy_id);
   }
   if (client_) {
-    client_->OnCloudPrintProxyEnabled();
+    client_->OnCloudPrintProxyEnabled(true);
   }
 }
 
@@ -115,7 +115,7 @@ void CloudPrintProxy::DisableForUser() {
   cloud_print_email_.clear();
   Shutdown();
   if (client_) {
-    client_->OnCloudPrintProxyDisabled();
+    client_->OnCloudPrintProxyDisabled(true);
   }
 }
 
@@ -159,6 +159,15 @@ void CloudPrintProxy::OnAuthenticationFailed() {
   // expired.
   g_service_process->io_thread()->message_loop_proxy()->PostTask(
       FROM_HERE, NewRunnableFunction(&ShowTokenExpiredNotificationInBrowser));
+}
+
+void CloudPrintProxy::OnPrintSystemUnavailable() {
+  // If the print system is unavailable, we want to shutdown the proxy and
+  // disable it non-persistently.
+  Shutdown();
+  if (client_) {
+    client_->OnCloudPrintProxyDisabled(false);
+  }
 }
 
 void CloudPrintProxy::Shutdown() {

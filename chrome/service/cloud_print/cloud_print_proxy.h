@@ -23,8 +23,8 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   class Client {
    public:
     virtual ~Client() {}
-    virtual void OnCloudPrintProxyEnabled() {}
-    virtual void OnCloudPrintProxyDisabled() {}
+    virtual void OnCloudPrintProxyEnabled(bool persist_state) {}
+    virtual void OnCloudPrintProxyDisabled(bool persist_state) {}
   };
   CloudPrintProxy();
   virtual ~CloudPrintProxy();
@@ -44,13 +44,14 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
     return cloud_print_email_;
   }
 
-  // Notification methods from the backend. Called on UI thread.
+  // CloudPrintProxyFrontend implementation. Called on UI thread.
   virtual void OnPrinterListAvailable(
       const printing::PrinterList& printer_list);
   virtual void OnAuthenticated(const std::string& cloud_print_token,
                                const std::string& cloud_print_xmpp_token,
                                const std::string& email);
   virtual void OnAuthenticationFailed();
+  virtual void OnPrintSystemUnavailable();
 
  protected:
   void Shutdown();

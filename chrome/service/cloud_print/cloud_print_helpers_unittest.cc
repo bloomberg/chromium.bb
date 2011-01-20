@@ -73,6 +73,12 @@ void CheckURLs(const GURL& server_base_url) {
                               "code=2&message=Out%%20of%%20Paper&numpages=345&"
                               "pagesprinted=47", expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
+
+  url = CloudPrintHelpers::GetUrlForUserMessage(server_base_url,
+                                                "blahmessageid");
+  expected_url = StringPrintf("%suser/message?code=blahmessageid",
+                              expected_url_base.c_str());
+  EXPECT_EQ(expected_url, url.spec());
 }
 
 }  // namespace

@@ -5364,6 +5364,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CLOUD_PRINT_SETUP_TEST_PAGE" desc="Label on button for printing a test page.">
         Print a Test Page
       </message>
+      <message name="IDS_CLOUD_PRINT_REGISTER_PRINTER_FAILED" desc="Status message to be sent to the server when we failed to retrieve information about a printer to register.">
+        An error occurred while retrieving printer capabilities for printer <ph name="PRINTER_NAME">$1<ex>HP Laserjet 7900</ex></ph>. This printer could not be registered with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>.
+      </message>
+      <message name="IDS_CLOUD_PRINT_XPS_UNAVAILABLE" desc="Status message to be sent to the Cloud Print server when the XPS framework is missing.">
+        The Microsoft XML Paper Specification Essentials Pack is not installed on the machine running the Google Cloud Print connector.
+      </message>
 
       <!-- Print Preview -->
       <message name="IDS_PRINT_PREVIEW_TITLE" desc="Title for print preview page ">

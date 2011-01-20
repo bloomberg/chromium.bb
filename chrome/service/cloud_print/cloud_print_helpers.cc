@@ -137,6 +137,16 @@ GURL CloudPrintHelpers::GetUrlForJobStatusUpdate(
   return cloud_print_server_url.ReplaceComponents(replacements);
 }
 
+GURL CloudPrintHelpers::GetUrlForUserMessage(const GURL& cloud_print_server_url,
+                                             const std::string& message_id) {
+  std::string path(AppendPathToUrl(cloud_print_server_url, "user/message"));
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+  std::string query = StringPrintf("code=%s", message_id.c_str());
+  replacements.SetQueryStr(query);
+  return cloud_print_server_url.ReplaceComponents(replacements);
+}
+
 bool CloudPrintHelpers::ParseResponseJSON(
     const std::string& response_data, bool* succeeded,
     DictionaryValue** response_dict) {

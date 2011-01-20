@@ -14,6 +14,7 @@ const char kPrinterDefaultsValue[] = "defaults";
 const char kPrinterStatusValue[] = "status";
 const char kPrinterTagValue[] = "tag";
 const char kPrinterRemoveTagValue[] = "remove_tag";
+const char kMessageTextValue[] = "message";
 
 // Values in the respone JSON from the cloud print server
 const char kPrinterListValue[] = "printers";
@@ -52,4 +53,8 @@ const char kJobFetchReasonPoll[] = "poll";
 const char kJobFetchReasonNotified[] = "notified";
 // Job fetch after a successful print to query for more jobs.
 const char kJobFetchReasonQueryMore[] = "querymore";
+
+// Short message ids for diagnostic messages sent to the server.
+const char kPrintSystemFailedMessageId[] = "printsystemfail";
+const char kGetPrinterCapsFailedMessageId[] = "getprncapsfail";
 

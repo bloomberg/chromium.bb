@@ -4,6 +4,7 @@
 
 #include "chrome/browser/service/service_process_control.h"
 
+#include "app/app_switches.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/process_util.h"
@@ -214,6 +215,9 @@ void ServiceProcessControl::Launch(Task* success_task, Task* failure_task) {
   if (browser_command_line.HasSwitch(switches::kWaitForDebuggerChildren)) {
     cmd_line->AppendSwitch(switches::kWaitForDebugger);
   }
+
+  std::string locale = g_browser_process->GetApplicationLocale();
+  cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
   // And then start the process asynchronously.
   launcher_ = new Launcher(this, cmd_line);

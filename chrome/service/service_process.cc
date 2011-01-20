@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "app/app_switches.h"
+#include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
@@ -35,6 +37,8 @@ namespace {
 // Delay in millseconds after the last service is disabled before we attempt
 // a shutdown.
 const int64 kShutdownDelay = 60000;
+
+const char kDefaultServiceProcessLocale[] = "en-US";
 
 class ServiceIOThread : public base::Thread {
  public:
@@ -96,6 +100,21 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
   service_prefs_.reset(
       new ServiceProcessPrefs(pref_path, file_thread_->message_loop_proxy()));
   service_prefs_->ReadPrefs();
+
+  // Check if a locale override has been specified on the command-line.
+  std::string locale = command_line.GetSwitchValueASCII(switches::kLang);
+  if (!locale.empty()) {
+    service_prefs_->SetString(prefs::kApplicationLocale, locale);
+    service_prefs_->WritePrefs();
+  } else {
+    // If no command-line value was specified, read the last used locale from
+    // the prefs.
+    service_prefs_->GetString(prefs::kApplicationLocale, &locale);
+    // If no locale was specified anywhere, use the default one.
+    if (locale.empty())
+      locale = kDefaultServiceProcessLocale;
+  }
+  ResourceBundle::InitSharedInstance(locale);
 
 #if defined(ENABLE_REMOTING)
   // Initialize chromoting host manager.
@@ -176,17 +195,21 @@ CloudPrintProxy* ServiceProcess::GetCloudPrintProxy() {
   return cloud_print_proxy_.get();
 }
 
-void ServiceProcess::OnCloudPrintProxyEnabled() {
-  // Save the preference that we have enabled the cloud print proxy.
-  service_prefs_->SetBoolean(prefs::kCloudPrintProxyEnabled, true);
-  service_prefs_->WritePrefs();
+void ServiceProcess::OnCloudPrintProxyEnabled(bool persist_state) {
+  if (persist_state) {
+    // Save the preference that we have enabled the cloud print proxy.
+    service_prefs_->SetBoolean(prefs::kCloudPrintProxyEnabled, true);
+    service_prefs_->WritePrefs();
+  }
   OnServiceEnabled();
 }
 
-void ServiceProcess::OnCloudPrintProxyDisabled() {
-  // Save the preference that we have disabled the cloud print proxy.
-  service_prefs_->SetBoolean(prefs::kCloudPrintProxyEnabled, false);
-  service_prefs_->WritePrefs();
+void ServiceProcess::OnCloudPrintProxyDisabled(bool persist_state) {
+  if (persist_state) {
+    // Save the preference that we have disabled the cloud print proxy.
+    service_prefs_->SetBoolean(prefs::kCloudPrintProxyEnabled, false);
+    service_prefs_->WritePrefs();
+  }
   OnServiceDisabled();
 }
 
