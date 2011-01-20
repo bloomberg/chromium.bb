@@ -42,20 +42,6 @@ class KeyboardLibraryImpl : public KeyboardLibrary {
     return false;
   }
 
-  bool GetKeyboardLayoutPerWindow(bool* is_per_window) const {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
-      return chromeos::GetKeyboardLayoutPerWindow(is_per_window);
-    }
-    return false;
-  }
-
-  bool SetKeyboardLayoutPerWindow(bool is_per_window) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
-      return chromeos::SetKeyboardLayoutPerWindow(is_per_window);
-    }
-    return false;
-  }
-
   bool GetAutoRepeatEnabled(bool* enabled) const {
     if (CrosLibrary::Get()->EnsureLoaded()) {
       return chromeos::GetAutoRepeatEnabled(enabled);
@@ -106,14 +92,6 @@ class KeyboardLibraryStubImpl : public KeyboardLibrary {
   }
 
   bool RemapModifierKeys(const ModifierMap& modifier_map) {
-    return false;
-  }
-
-  bool GetKeyboardLayoutPerWindow(bool* is_per_window) const {
-    return false;
-  }
-
-  bool SetKeyboardLayoutPerWindow(bool is_per_window) {
     return false;
   }
 

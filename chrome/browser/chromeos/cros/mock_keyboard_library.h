@@ -22,8 +22,6 @@ class MockKeyboardLibrary : public KeyboardLibrary {
   MOCK_CONST_METHOD0(GetCurrentKeyboardLayoutName, std::string(void));
   MOCK_METHOD1(SetCurrentKeyboardLayoutByName, bool(const std::string&));
   MOCK_METHOD1(RemapModifierKeys, bool(const ModifierMap&));
-  MOCK_CONST_METHOD1(GetKeyboardLayoutPerWindow, bool(bool*));
-  MOCK_METHOD1(SetKeyboardLayoutPerWindow, bool(bool));
   MOCK_CONST_METHOD1(GetAutoRepeatEnabled, bool(bool*));
   MOCK_METHOD1(SetAutoRepeatEnabled, bool(bool));
   MOCK_CONST_METHOD1(GetAutoRepeatRate, bool(AutoRepeatRate*));

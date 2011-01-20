@@ -210,14 +210,6 @@ void CrosMock::SetKeyboardLibraryStatusAreaExpectations() {
       .Times(AnyNumber())
       .WillRepeatedly((Return(true)))
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_keyboard_library_, SetKeyboardLayoutPerWindow(_))
-      .Times(AnyNumber())
-      .WillRepeatedly((Return(true)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_keyboard_library_, GetKeyboardLayoutPerWindow(_))
-      .Times(AnyNumber())
-      .WillRepeatedly((Return(true)))
-      .RetiresOnSaturation();
   EXPECT_CALL(*mock_keyboard_library_, GetAutoRepeatEnabled(_))
       .Times(AnyNumber())
       .WillRepeatedly((Return(true)))

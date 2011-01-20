@@ -136,9 +136,6 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
   DCHECK(input_method_descriptors_.get() &&
          !input_method_descriptors_->empty());
 
-  // Use the same keyboard layout on all windows.
-  CrosLibrary::Get()->GetKeyboardLibrary()->SetKeyboardLayoutPerWindow(false);
-
   // Sync current and previous input methods on Chrome prefs with ibus-daemon.
   // InputMethodChanged() will be called soon and the indicator will be updated.
   InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
