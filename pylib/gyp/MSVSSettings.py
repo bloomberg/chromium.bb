@@ -508,7 +508,7 @@ _Same(_compile, 'CompileAs',
                     'CompileAsC',  # /TC
                     'CompileAsCpp']))  # /TP
 _Same(_compile, 'DebugInformationFormat',
-      _Enumeration([None,  # '0' is disabled
+      _Enumeration(['',  # Disabled
                     'OldStyle',  # /Z7
                     None,
                     'ProgramDatabase',  # /Zi
