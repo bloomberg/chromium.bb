@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@
     } else {
       CGFloat nextVerticalOffset = [button frame].origin.y;
       EXPECT_CGFLOAT_EQ(lastVerticalOffset -
-                            bookmarks::kBookmarkButtonVerticalSpan,
+                            bookmarks::kBookmarkFolderButtonHeight,
                         nextVerticalOffset);
       lastVerticalOffset = nextVerticalOffset;
     }
@@ -483,9 +483,11 @@ TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
       break;
     targetButton = button;
   }
+  EXPECT_TRUE(targetButton != nil);
   NSPoint hitPoint = [targetButton frame].origin;
   hitPoint.x += 50.0;
-  hitPoint.y += (bookmarks::kBookmarkButtonHeight / 2.0) - scrollPoint.y;
+  hitPoint.y += (bookmarks::kBookmarkFolderButtonHeight / 2.0) - scrollPoint.y;
+  hitPoint = [targetButton convertPoint:hitPoint toView:scrollView];
 
   for (int i = 0; i < 3; i++) {
     CGFloat height = NSHeight([window frame]);
@@ -557,7 +559,7 @@ TEST_F(BookmarkBarFolderControllerTest, MenuPlacementWhileScrollingDeleting) {
   // the top of the window has moved up, then delete a visible button and
   // make sure the top has not moved.
   oldTop = newTop;
-  const CGFloat scrollOneBookmark = bookmarks::kBookmarkButtonHeight +
+  const CGFloat scrollOneBookmark = bookmarks::kBookmarkFolderButtonHeight +
       bookmarks::kBookmarkVerticalPadding;
   NSUInteger buttonCounter = 0;
   NSUInteger extraButtonLimit = 3;
@@ -729,10 +731,8 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToFolder) {
   // and grown vertically.
   NSRect expectedToWindowFrame = oldToWindowFrame;
   expectedToWindowFrame.origin.x -= horizontalShift;
-  CGFloat diff = (bookmarks::kBookmarkBarHeight +
-                  2*bookmarks::kBookmarkVerticalPadding);
-  expectedToWindowFrame.origin.y -= diff;
-  expectedToWindowFrame.size.height += diff;
+  expectedToWindowFrame.origin.y -= bookmarks::kBookmarkFolderButtonHeight;
+  expectedToWindowFrame.size.height += bookmarks::kBookmarkFolderButtonHeight;
   EXPECT_NSRECT_EQ(expectedToWindowFrame, newToWindowFrame);
 
   // Check button spacing.
@@ -796,10 +796,8 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragCopyBarBookmarkToFolder) {
   EXPECT_NSRECT_EQ(oldToFolderFrame, newToFolderFrame);
   // The toWindow should have shifted down vertically and grown vertically.
   NSRect expectedToWindowFrame = oldToWindowFrame;
-  CGFloat diff = (bookmarks::kBookmarkBarHeight +
-                  2*bookmarks::kBookmarkVerticalPadding);
-  expectedToWindowFrame.origin.y -= diff;
-  expectedToWindowFrame.size.height += diff;
+  expectedToWindowFrame.origin.y -= bookmarks::kBookmarkFolderButtonHeight;
+  expectedToWindowFrame.size.height += bookmarks::kBookmarkFolderButtonHeight;
   EXPECT_NSRECT_EQ(expectedToWindowFrame, newToWindowFrame);
 
   // Copy the button back to the bar after "3b".
@@ -875,10 +873,9 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToSubfolder) {
   EXPECT_NSRECT_EQ(oldToWindowFrame, newToWindowFrame);
   NSRect newToSubwindowFrame = [toSubwindow frame];
   NSRect expectedToSubwindowFrame = oldToSubwindowFrame;
-  expectedToSubwindowFrame.origin.y -=
-      (bookmarks::kBookmarkButtonHeight + bookmarks::kVisualHeightOffset);
+  expectedToSubwindowFrame.origin.y -= bookmarks::kBookmarkFolderButtonHeight;
   expectedToSubwindowFrame.size.height +=
-      (bookmarks::kBookmarkButtonHeight + bookmarks::kVisualHeightOffset);
+      bookmarks::kBookmarkFolderButtonHeight;
   EXPECT_NSRECT_EQ(expectedToSubwindowFrame, newToSubwindowFrame);
 }
 
@@ -1181,7 +1178,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   EXPECT_TRUE(folderController);
   NSWindow* folderWindow = [folderController window];
   EXPECT_TRUE(folderWindow);
-  CGFloat expectedHeight = (CGFloat)bookmarks::kBookmarkButtonHeight +
+  CGFloat expectedHeight = (CGFloat)bookmarks::kBookmarkFolderButtonHeight +
       (2*bookmarks::kBookmarkVerticalPadding);
   NSRect windowFrame = [folderWindow frame];
   CGFloat windowHeight = NSHeight(windowFrame);

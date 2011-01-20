@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,11 +29,11 @@ const NSTimeInterval kBookmarkBarFolderScrollInterval = 0.1;
 // Amount to scroll by per timer fire.  We scroll rather slowly; to
 // accomodate we do several at a time.
 const CGFloat kBookmarkBarFolderScrollAmount =
-    3 * bookmarks::kBookmarkButtonVerticalSpan;
+    3 * bookmarks::kBookmarkFolderButtonHeight;
 
 // Amount to scroll for each scroll wheel roll.
 const CGFloat kBookmarkBarFolderScrollWheelAmount =
-    1 * bookmarks::kBookmarkButtonVerticalSpan;
+    1 * bookmarks::kBookmarkFolderButtonHeight;
 
 // Determining adjustments to the layout of the folder menu window in response
 // to resizing and scrolling relies on many visual factors. The following
@@ -473,9 +473,9 @@ struct LayoutMetrics {
         [[parentButton_ window]
             convertBaseToScreen:[[parentButton_ superview]
                                     convertPoint:NSZeroPoint toView:nil]];
-    newWindowTopLeft = NSMakePoint(buttonBottomLeftInScreen.x,
-                                   bookmarkBarBottomLeftInScreen.y +
-                                      bookmarks::kBookmarkBarMenuOffset);
+    newWindowTopLeft = NSMakePoint(
+        buttonBottomLeftInScreen.x + bookmarks::kBookmarkBarButtonOffset,
+        bookmarkBarBottomLeftInScreen.y + bookmarks::kBookmarkBarMenuOffset);
     // Make sure the window is on-screen; if not, push left.  It is
     // intentional that top level folders "push left" slightly
     // different than subfolders.
@@ -486,11 +486,11 @@ struct LayoutMetrics {
                                     NSMinX(screenFrame));
     }
   } else {
-    // Parent is a folder; grow right/left.
+    // Parent is a folder: expose as much as we can vertically; grow right/left.
     newWindowTopLeft.x = [self childFolderWindowLeftForWidth:windowWidth];
     NSPoint topOfWindow = NSMakePoint(0,
-                                      (NSMaxY([parentButton_ frame]) +
-                                          bookmarks::kBookmarkVerticalPadding));
+                                      NSMaxY([parentButton_ frame]) -
+                                          bookmarks::kBookmarkVerticalPadding);
     topOfWindow = [[parentButton_ window]
                    convertBaseToScreen:[[parentButton_ superview]
                                         convertPoint:topOfWindow toView:nil]];
@@ -508,8 +508,8 @@ struct LayoutMetrics {
 - (int)menuHeightForButtonCount:(int)buttonCount {
   // This does not take into account any padding which may be required at the
   // top and/or bottom of the window.
-  return (buttonCount * bookmarks::kBookmarkButtonVerticalSpan) +
-      bookmarks::kBookmarkVerticalPadding;
+  return (buttonCount * bookmarks::kBookmarkFolderButtonHeight) +
+      2 * bookmarks::kBookmarkVerticalPadding;
 }
 
 - (void)adjustWindowLeft:(CGFloat)windowLeft
@@ -569,10 +569,10 @@ struct LayoutMetrics {
   metrics.canScrollDown = metrics.folderTop > maximumY;
 
   // Accommodate changes in the bottom of the menu.
-  [self adjustMetricsForMenuTopChanges:layoutMetrics];
+  [self adjustMetricsForMenuBottomChanges:layoutMetrics];
 
   // Accommodate changes in the top of the menu.
-  [self adjustMetricsForMenuBottomChanges:layoutMetrics];
+  [self adjustMetricsForMenuTopChanges:layoutMetrics];
 
   metrics.scrollerFrame.origin.y += metrics.deltaScrollerY;
   metrics.scrollerFrame.size.height += metrics.deltaScrollerHeight;
@@ -586,7 +586,7 @@ struct LayoutMetrics {
   metrics.windowFrame.size.width = metrics.windowSize.width;
 }
 
-- (void)adjustMetricsForMenuTopChanges:(LayoutMetrics*)layoutMetrics {
+- (void)adjustMetricsForMenuBottomChanges:(LayoutMetrics*)layoutMetrics {
   LayoutMetrics& metrics(*layoutMetrics);
   if (metrics.canScrollUp) {
     if (!metrics.couldScrollUp) {
@@ -598,7 +598,7 @@ struct LayoutMetrics {
       metrics.deltaScrollerY = verticalScrollArrowHeight_;
       metrics.deltaScrollerHeight = -metrics.deltaScrollerY;
       // Adjust the scroll delta if we've grown the window and it is
-      // now scroll-up-able, but don't adjust it factor if we've
+      // now scroll-up-able, but don't adjust it if we've
       // scrolled down and it wasn't scroll-up-able but now is.
       if (metrics.canScrollDown == metrics.couldScrollDown) {
         CGFloat deltaScroll = metrics.deltaWindowY + metrics.deltaScrollerY +
@@ -613,17 +613,12 @@ struct LayoutMetrics {
       // Could -> Can't
       metrics.deltaWindowY = metrics.folderY - metrics.oldWindowY;
       metrics.deltaWindowHeight = -metrics.deltaWindowY;
-      metrics.deltaVisibleY = -bookmarks::kScrollWindowVerticalMargin;
+      metrics.deltaVisibleY = -metrics.visibleFrame.origin.y;
       metrics.deltaVisibleHeight = -metrics.deltaVisibleY;
       metrics.deltaScrollerY = -verticalScrollArrowHeight_;
       metrics.deltaScrollerHeight = -metrics.deltaScrollerY;
-      // Adjust the scroll delta if we are no longer scroll-up-able
-      // and the scroll-down-able-ness hasn't changed.
-      if (metrics.canScrollDown == metrics.couldScrollDown) {
-        CGFloat deltaScroll = metrics.deltaWindowY + metrics.deltaScrollerY +
-                              metrics.deltaVisibleY;
-        metrics.scrollPoint.y += deltaScroll;
-      }
+      // We are no longer scroll-up-able so the scroll point drops to zero.
+      metrics.scrollPoint.y = 0.0;
     } else {
       // Couldn't -> Can't
       // Check for menu height change by looking at the relative tops of the
@@ -635,7 +630,7 @@ struct LayoutMetrics {
   }
 }
 
-- (void)adjustMetricsForMenuBottomChanges:(LayoutMetrics*)layoutMetrics {
+- (void)adjustMetricsForMenuTopChanges:(LayoutMetrics*)layoutMetrics {
   LayoutMetrics& metrics(*layoutMetrics);
   if (metrics.canScrollDown == metrics.couldScrollDown) {
     if (!metrics.canScrollDown) {
@@ -733,9 +728,10 @@ struct LayoutMetrics {
   // http://crbug.com/35966
   NSRect buttonsOuterFrame = NSMakeRect(
       0,
-      (height - bookmarks::kBookmarkButtonVerticalSpan),
+      height - bookmarks::kBookmarkFolderButtonHeight -
+          bookmarks::kBookmarkVerticalPadding,
       bookmarks::kDefaultBookmarkWidth,
-      bookmarks::kBookmarkButtonHeight);
+      bookmarks::kBookmarkFolderButtonHeight);
 
   // TODO(jrg): combine with addNodesToButtonList: code from
   // bookmark_bar_controller.mm (but use y offset)
@@ -755,7 +751,7 @@ struct LayoutMetrics {
                                                  frame:buttonsOuterFrame];
       [buttons_ addObject:button];
       [folderView_ addSubview:button];
-      buttonsOuterFrame.origin.y -= bookmarks::kBookmarkButtonVerticalSpan;
+      buttonsOuterFrame.origin.y -= bookmarks::kBookmarkFolderButtonHeight;
     }
   }
   [self layOutWindowWithHeight:height];
@@ -770,8 +766,10 @@ struct LayoutMetrics {
   // Make sure as much of a submenu is exposed (which otherwise would be a
   // problem if the parent button is close to the bottom of the screen).
   if ([parentController_ isKindOfClass:[self class]]) {
-    newWindowTopLeft.y = MAX(newWindowTopLeft.y,
-                             height + bookmarks::kScrollWindowVerticalMargin);
+    CGFloat minimumY = NSMinY([[[self window] screen] visibleFrame]) +
+                       bookmarks::kScrollWindowVerticalMargin +
+                       height;
+    newWindowTopLeft.y = MAX(newWindowTopLeft.y, minimumY);
   }
   NSWindow* window = [self window];
   NSRect windowFrame = NSMakeRect(newWindowTopLeft.x,
@@ -1449,7 +1447,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // topmost button's frame (and there will always be one) offset upward in
   // anticipation of insertion.
   NSRect newButtonFrame = [[buttons_ objectAtIndex:0] frame];
-  newButtonFrame.origin.y += bookmarks::kBookmarkButtonVerticalSpan;
+  newButtonFrame.origin.y += bookmarks::kBookmarkFolderButtonHeight;
   // When adding a button to an empty folder we must remove the 'empty'
   // placeholder button. This can be detected by checking for a parent
   // child count of 1.
@@ -1473,7 +1471,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     // which is where the new button will be located.
     newButtonFrame = [button frame];
     NSRect buttonFrame = [button frame];
-    buttonFrame.origin.y += bookmarks::kBookmarkButtonVerticalSpan;
+    buttonFrame.origin.y += bookmarks::kBookmarkFolderButtonHeight;
     [button setFrame:buttonFrame];
   }
   [[button cell] mouseExited:nil];  // De-highlight.
@@ -1545,7 +1543,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       for (NSInteger i = fromIndex; i < toIndex; ++i) {
         BookmarkButton* button = [buttons_ objectAtIndex:i];
         NSRect frame = [button frame];
-        frame.origin.y += bookmarks::kBookmarkButtonVerticalSpan;
+        frame.origin.y += bookmarks::kBookmarkFolderButtonHeight;
         [button setFrameOrigin:frame.origin];
       }
     } else {
@@ -1554,7 +1552,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       for (NSInteger i = fromIndex - 1; i >= toIndex; --i) {
         BookmarkButton* button = [buttons_ objectAtIndex:i];
         NSRect buttonFrame = [button frame];
-        buttonFrame.origin.y -= bookmarks::kBookmarkButtonVerticalSpan;
+        buttonFrame.origin.y -= bookmarks::kBookmarkFolderButtonHeight;
         [button setFrameOrigin:buttonFrame.origin];
       }
     }
@@ -1596,7 +1594,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   for (NSInteger i = 0; i < buttonIndex; ++i) {
     BookmarkButton* button = [buttons_ objectAtIndex:i];
     NSRect buttonFrame = [button frame];
-    buttonFrame.origin.y -= bookmarks::kBookmarkButtonVerticalSpan;
+    buttonFrame.origin.y -= bookmarks::kBookmarkFolderButtonHeight;
     [button setFrame:buttonFrame];
   }
   // Search for and adjust submenus, if necessary.
@@ -1614,13 +1612,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     // If all nodes have been removed from this folder then add in the
     // 'empty' placeholder button.
     NSRect buttonFrame =
-        NSMakeRect(0,
-                   bookmarks::kBookmarkButtonHeight -
-                       (bookmarks::kBookmarkBarHeight -
-                        bookmarks::kBookmarkVerticalPadding),
-                   bookmarks::kDefaultBookmarkWidth,
-                   (bookmarks::kBookmarkBarHeight -
-                       2 * bookmarks::kBookmarkVerticalPadding));
+        NSMakeRect(0.0, 0.0, bookmarks::kDefaultBookmarkWidth,
+                   bookmarks::kBookmarkFolderButtonHeight);
     BookmarkButton* button = [self makeButtonForNode:nil
                                                frame:buttonFrame];
     [buttons_ addObject:button];

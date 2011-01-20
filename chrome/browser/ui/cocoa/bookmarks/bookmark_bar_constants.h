@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,9 @@ const int kNTPBookmarkBarPadding =
 
 // The height of buttons in the bookmark bar.
 const int kBookmarkButtonHeight = kBookmarkBarHeight + kVisualHeightOffset;
+
+// The height of buttons in a bookmark bar folder menu.
+const CGFloat kBookmarkFolderButtonHeight = 24.0;
 
 // The radius of the corner curves on the menu. Also used for sizing the shadow
 // window behind the menu window at times when the menu can be scrolled.

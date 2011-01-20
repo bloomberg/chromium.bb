@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -231,10 +231,11 @@
   if ([button isFolder]) {
     NSRect imageRect = NSZeroRect;
     imageRect.size = [arrowImage_ size];
-    NSRect drawRect = NSOffsetRect(imageRect,
-                                   NSWidth(cellFrame) - NSWidth(imageRect),
-                                   (NSHeight(cellFrame) / 2.0) -
-                                   (NSHeight(imageRect) / 2.0));
+    const CGFloat kArrowOffset = 1.0;  // Required for proper centering.
+    CGFloat dX = NSWidth(cellFrame) - NSWidth(imageRect);
+    CGFloat dY = (NSHeight(cellFrame) / 2.0) - (NSHeight(imageRect) / 2.0) +
+        kArrowOffset;
+    NSRect drawRect = NSOffsetRect(imageRect, dX, dY);
     [arrowImage_ drawInRect:drawRect
                     fromRect:imageRect
                    operation:NSCompositeSourceOver

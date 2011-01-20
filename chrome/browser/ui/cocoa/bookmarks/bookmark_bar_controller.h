@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,16 +54,6 @@ const CGFloat kBookmarkVerticalPadding = 2.0;
 const CGFloat kBookmarkMenuButtonMinimumWidth = 100.0;
 const CGFloat kBookmarkMenuButtonMaximumWidth = 485.0;
 
-// TODO(mrossetti): Add constant (kBookmarkVerticalSeparation) for the gap
-// between buttons in a folder menu. Right now we're using
-// kBookmarkVerticalPadding, which is dual purpose and wrong.
-// http://crbug.com/59057
-
-// Convenience constant giving the vertical distance from the top extent of one
-// folder button to the next button.
-const CGFloat kBookmarkButtonVerticalSpan =
-    kBookmarkButtonHeight + kBookmarkVerticalPadding;
-
 // The minimum separation between a folder menu and the edge of the screen.
 // If the menu gets closer to the edge of the screen (either right or left)
 // then it is pops up in the opposite direction.
@@ -90,6 +80,12 @@ const CGFloat kScrollWindowVerticalMargin = 6.0;
 // How far to offset a folder menu from the top of the bookmark bar. This
 // is set just above the bar so that it become distinctive when drawn.
 const CGFloat kBookmarkBarMenuOffset = 2.0;
+
+// How far to offset a folder menu's left edge horizontally in relation to
+// the left edge of the button from which it springs. Because of drawing
+// differences, simply aligning the |frame| of each does not render the
+// pproper result, so we have to offset.
+const CGFloat kBookmarkBarButtonOffset = 2.0;
 
 // Delay before opening a subfolder (and closing the previous one)
 // when hovering over a folder button.
