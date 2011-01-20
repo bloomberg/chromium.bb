@@ -268,7 +268,7 @@ int NPObjectStub::CreateStub(NPP npp, NPObject* object, NPCapability* cap) {
   if (NULL == stub) {
     // If the stub was null, either the object was null or new failed.
     // In either case, we don't have a stub to give a capability to.
-    cap->set_object(NULL);
+    cap->set_object(0);
     return 0;
   }
   // Insert the newly created stub into the mapping for future reuse.

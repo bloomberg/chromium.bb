@@ -34,7 +34,7 @@ SymbolHandle GetSymbolHandle(DylibHandle dl_handle, const char* name) {
   char* error_string = dlerror();
   if (sym_handle == NULL || error_string != NULL) {
     fprintf(stderr, "Couldn't get symbol %s: %s\n", name, error_string);
-    return NULL;
+    sym_handle = NULL;
   }
   return reinterpret_cast<SymbolHandle>(sym_handle);
 }

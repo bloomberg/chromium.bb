@@ -22,7 +22,7 @@ uintptr_t GetSymbolHandle(const char* name) {
   char*  error_string = dlerror();
   if (NULL == sym_handle || error_string) {
     fprintf(stderr, "Couldn't get symbol %s: %s\n", name, error_string);
-    return NULL;
+    return 0;
   }
   return reinterpret_cast<uintptr_t>(sym_handle);
 }

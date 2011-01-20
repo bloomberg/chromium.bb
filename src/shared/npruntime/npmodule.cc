@@ -241,7 +241,7 @@ NPError NPModule::GetValue(NPP npp, NPPVariable variable, void *value) {
                                                       &cap_size,
                                                       cap_ptr);
       if (NACL_SRPC_RESULT_OK != retval) {
-        return NULL;
+        return NPERR_GENERIC_ERROR;
       }
       proxy_ = NPBridge::CreateProxy(npp, capability);
     }

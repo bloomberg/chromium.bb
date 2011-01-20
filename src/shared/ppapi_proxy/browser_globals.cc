@@ -88,7 +88,7 @@ void UnsetModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
 
 PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
   if (channel_to_module_id_map == NULL) {
-    return NULL;
+    return 0;
   }
   return (*channel_to_module_id_map)[channel];
 }
