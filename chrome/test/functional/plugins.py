@@ -192,19 +192,21 @@ class PluginsTest(pyauto.PyUITest):
     # setting 1 min of wait time here.
     test_utils.CallFunctionWithNewTimeout(self, 1 * 60 * 1000,
         lambda: self.NavigateToURL('http://vimeo.com'))
-    pid = self._GetPluginPID('Shockwave Flash')
-    self.assertTrue(pid, msg='No plugin process for Shockwave Flash')
-    self.Kill(pid)
+    # Wait until Shockwave Flash plugin process loads.
+    self.assertTrue(self.WaitUntil(
+        lambda: self._GetPluginPID('Shockwave Flash') is not None),
+        msg='No plugin process for Shockwave Flash')
+    self.Kill(self._GetPluginPID('Shockwave Flash'))
     self.assertTrue(self.WaitUntil(
         lambda: self._GetPluginPID('Shockwave Flash') is None),
         msg='Expected Shockwave Flash plugin to die after killing')
 
-    # Add an exception to block plugins on hulu.com.
+    # Add an exception to block plugins on vimeo.com.
     self.SetPrefs(pyauto.kContentSettingsPatterns,
                  {'[*.]vimeo.com': {'plugins': 2}})
     self.GetBrowserWindow(0).GetTab(0).Reload()
     self.assertFalse(self._GetPluginPID('Shockwave Flash'),
-                     msg='Plug-in not blocked.')
+                     msg='Shockwave Flash Plug-in not blocked.')
 
 
 if __name__ == '__main__':
