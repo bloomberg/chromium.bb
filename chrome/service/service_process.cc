@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "app/app_switches.h"
-#include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
@@ -25,6 +23,8 @@
 #include "chrome/service/service_ipc_server.h"
 #include "chrome/service/service_process_prefs.h"
 #include "net/base/network_change_notifier.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches.h"
 
 #if defined(ENABLE_REMOTING)
 #include "chrome/service/remoting/chromoting_host_manager.h"
