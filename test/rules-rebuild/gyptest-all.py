@@ -13,7 +13,8 @@ import TestGyp
 
 test = TestGyp.TestGyp()
 
-if test.format == 'msvs':
+# Visual Studio 2008 and earlier can't handle this test.
+if test.format == 'msvs' and not test.uses_msbuild:
   msg = 'TODO:  issue 120:  disabled on MSVS due to test execution problems.\n'
   test.skip_test(msg)
 

@@ -16,15 +16,16 @@ test = TestGyp.TestGyp()
 
 # Tests string literals, percents, and backslash escapes.
 try:
-  os.environ['GYP_DEFINES'] = \
-      """test_format='%s\\n' test_args='"Simple test of %s with a literal"'"""
+  os.environ['GYP_DEFINES'] = (
+      r"""test_format='\n%s\n' """
+      r"""test_args='"Simple test of %s with a literal"'""")
   test.run_gyp('defines-escaping.gyp')
 finally:
   del os.environ['GYP_DEFINES']
 
 test.build('defines-escaping.gyp')
 
-expect = """\
+expect = """
 Simple test of %s with a literal
 """
 test.run_built_executable('defines_escaping', stdout=expect)
@@ -33,7 +34,7 @@ test.run_built_executable('defines_escaping', stdout=expect)
 # Test multiple comma-and-space-separated string literals.
 try:
   os.environ['GYP_DEFINES'] = \
-      """test_format='%s and %s\\n' test_args='"foo", "bar"'"""
+      r"""test_format='\n%s and %s\n' test_args='"foo", "bar"'"""
   test.run_gyp('defines-escaping.gyp')
 finally:
   del os.environ['GYP_DEFINES']
@@ -42,7 +43,7 @@ test.sleep()
 test.touch('defines-escaping.c')
 test.build('defines-escaping.gyp')
 
-expect = """\
+expect = """
 foo and bar
 """
 test.run_built_executable('defines_escaping', stdout=expect)
@@ -50,13 +51,13 @@ test.run_built_executable('defines_escaping', stdout=expect)
 
 # Test string literals containing quotes.
 try:
-  os.environ['GYP_DEFINES'] = \
-     ("""test_format='%s %s %s %s %s\\n' """ +
-      """test_args='"\\"These,\\"",""" +
-                """ "\\"words,\\"","""
-                """ "\\"are,\\"",""" +
-                """ "\\"in,\\"",""" +
-                """ "\\"quotes.\\""'""")
+  os.environ['GYP_DEFINES'] = (
+      r"""test_format='\n%s %s %s %s %s\n' """
+      r"""test_args='"\"These,\"","""
+                r""" "\"words,\"","""
+                r""" "\"are,\"","""
+                r""" "\"in,\"","""
+                r""" "\"quotes.\""'""")
   test.run_gyp('defines-escaping.gyp')
 finally:
   del os.environ['GYP_DEFINES']
@@ -65,7 +66,7 @@ test.sleep()
 test.touch('defines-escaping.c')
 test.build('defines-escaping.gyp')
 
-expect = """\
+expect = """
 "These," "words," "are," "in," "quotes."
 """
 test.run_built_executable('defines_escaping', stdout=expect)
@@ -73,13 +74,13 @@ test.run_built_executable('defines_escaping', stdout=expect)
 
 # Test string literals containing single quotes.
 try:
-  os.environ['GYP_DEFINES'] = \
-     ("""test_format='%s %s %s %s %s\\n' """ +
-      """test_args="\\"'These,'\\",""" +
-                """ \\"'words,'\\","""
-                """ \\"'are,'\\",""" +
-                """ \\"'in,'\\",""" +
-                """ \\"'quotes.'\\"" """)
+  os.environ['GYP_DEFINES'] = (
+      r"""test_format='\n%s %s %s %s %s\n' """
+      r"""test_args="\"'These,'\","""
+                r""" \"'words,'\","""
+                r""" \"'are,'\","""
+                r""" \"'in,'\","""
+                r""" \"'quotes.'\"" """)
   test.run_gyp('defines-escaping.gyp')
 finally:
   del os.environ['GYP_DEFINES']
@@ -88,7 +89,7 @@ test.sleep()
 test.touch('defines-escaping.c')
 test.build('defines-escaping.gyp')
 
-expect = """\
+expect = """
 'These,' 'words,' 'are,' 'in,' 'quotes.'
 """
 test.run_built_executable('defines_escaping', stdout=expect)
@@ -97,11 +98,11 @@ test.run_built_executable('defines_escaping', stdout=expect)
 # Test string literals containing different numbers of backslashes before quotes
 # (to exercise Windows' quoting behaviour).
 try:
-  os.environ['GYP_DEFINES'] = \
-     ("""test_format='%s\\n%s\\n%s\\n' """ +
-      """test_args='"\\\\\\"1 visible slash\\\\\\"",""" +
-                """ "\\\\\\\\\\"2 visible slashes\\\\\\\\\\"","""
-                """ "\\\\\\\\\\\\\\"3 visible slashes\\\\\\\\\\\\\\""'""")
+  os.environ['GYP_DEFINES'] = (
+      r"""test_format='\n%s\n%s\n%s\n' """
+      r"""test_args='"\\\"1 visible slash\\\"","""
+                r""" "\\\\\"2 visible slashes\\\\\"","""
+                r""" "\\\\\\\"3 visible slashes\\\\\\\""'""")
   test.run_gyp('defines-escaping.gyp')
 finally:
   del os.environ['GYP_DEFINES']
@@ -110,19 +111,19 @@ test.sleep()
 test.touch('defines-escaping.c')
 test.build('defines-escaping.gyp')
 
-expect = """\
-\\"1 visible slash\\"
-\\\\"2 visible slashes\\\\"
-\\\\\\"3 visible slashes\\\\\\"
+expect = r"""
+\"1 visible slash\"
+\\"2 visible slashes\\"
+\\\"3 visible slashes\\\"
 """
 test.run_built_executable('defines_escaping', stdout=expect)
 
 
 # Test that various scary sequences are passed unfettered.
 try:
-  os.environ['GYP_DEFINES'] = \
-     ("""test_format='%s\\n' """ +
-      """test_args='"%PATH%, $foo, &quot; `foo`;"'""")
+  os.environ['GYP_DEFINES'] = (
+      r"""test_format='\n%s\n' """
+      r"""test_args='"$foo, &quot; `foo`;"'""")
   test.run_gyp('defines-escaping.gyp')
 finally:
   del os.environ['GYP_DEFINES']
@@ -131,20 +132,38 @@ test.sleep()
 test.touch('defines-escaping.c')
 test.build('defines-escaping.gyp')
 
-expect = """\
-%PATH%, $foo, &quot; `foo`;
+expect = """
+$foo, &quot; `foo`;
 """
 test.run_built_executable('defines_escaping', stdout=expect)
+
+
+# VisualStudio 2010 can't handle passing %PATH%
+if not (test.format == 'msvs' and test.uses_msbuild):
+  try:
+    os.environ['GYP_DEFINES'] = (
+        """test_format='%s' """
+        """test_args='"%PATH%"'""")
+    test.run_gyp('defines-escaping.gyp')
+  finally:
+    del os.environ['GYP_DEFINES']
+
+  test.sleep()
+  test.touch('defines-escaping.c')
+  test.build('defines-escaping.gyp')
+
+  expect = "%PATH%"
+  test.run_built_executable('defines_escaping', stdout=expect)
 
 
 # Test commas and semi-colons preceded by backslashes (to exercise Windows'
 # quoting behaviour).
 try:
-  os.environ['GYP_DEFINES'] = \
-     ("""test_format='%s\\n%s\\n' """ +
-      """test_args='"\\\\, \\\\\\\\;",""" +
+  os.environ['GYP_DEFINES'] = (
+      r"""test_format='\n%s\n%s\n' """
+      r"""test_args='"\\, \\\\;","""
                 # Same thing again, but enclosed in visible quotes.
-                """ "\\"\\\\, \\\\\\\\;\\""'""")
+                r""" "\"\\, \\\\;\""'""")
   test.run_gyp('defines-escaping.gyp')
 finally:
   del os.environ['GYP_DEFINES']
@@ -153,9 +172,9 @@ test.sleep()
 test.touch('defines-escaping.c')
 test.build('defines-escaping.gyp')
 
-expect = """\
-\\, \\\\;
-"\\, \\\\;"
+expect = r"""
+\, \\;
+"\, \\;"
 """
 test.run_built_executable('defines_escaping', stdout=expect)
 

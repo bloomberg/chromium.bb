@@ -397,7 +397,7 @@ class TestGypMSVS(TestGypBase):
   """
   format = 'msvs'
 
-  u = r'=== Build: 0 succeeded, 0 failed, (\d+) up-to-date, 0 skipped ==='
+  u = r'=== Build: (\d+) succeeded, 0 failed, (\d+) up-to-date, 0 skipped ==='
   up_to_date_re = re.compile(u, re.M)
 
   # Initial None element will indicate to our .initialize_build_tool()
@@ -408,32 +408,52 @@ class TestGypMSVS(TestGypBase):
   build_tool_list = [None, 'devenv.com']
 
   def initialize_build_tool(self):
-    """
-    Initializes the Visual Studio .build_tool parameter, searching %PATH%
-    and %PATHEXT% for a devenv.{exe,bat,...} executable, and falling
-    back to a hard-coded default (on the current drive) if necessary.
+    """ Initializes the Visual Studio .build_tool and .uses_msbuild parameters.
+
+    We use the value specified by GYP_MSVS_VERSION.  If not specified, we
+    search %PATH% and %PATHEXT% for a devenv.{exe,bat,...} executable.
+    Failing that, we search for likely deployment paths.
     """
     super(TestGypMSVS, self).initialize_build_tool()
-    if not self.build_tool:
-      # We didn't find 'devenv' on the path.  Just hard-code a default,
-      # and revisit this if it becomes important.
-      possible = [
-        # Note:  if you're using this, set GYP_MSVS_VERSION=2008
-        # to get the tests to pass.
-        ('C:\\Program Files (x86)',
-         'Microsoft Visual Studio 9.0', 'Common7', 'IDE', 'devenv.com'),
-        ('C:\\Program Files',
-         'Microsoft Visual Studio 9.0', 'Common7', 'IDE', 'devenv.com'),
-        ('C:\\Program Files (x86)',
-         'Microsoft Visual Studio 8', 'Common7', 'IDE', 'devenv.com'),
-        ('C:\\Program Files',
-         'Microsoft Visual Studio 8', 'Common7', 'IDE', 'devenv.com'),
-      ]
-      for build_tool in possible:
-        bt = os.path.join(*build_tool)
+    possible_roots = ['C:\\Program Files (x86)', 'C:\\Program Files']
+    possible_paths = {
+        '2010': r'Microsoft Visual Studio 10.0\Common7\IDE\devenv.com',
+        '2008': r'Microsoft Visual Studio 9.0\Common7\IDE\devenv.com',
+        '2005': r'Microsoft Visual Studio 8\Common7\IDE\devenv.com'}
+    msvs_version = os.environ.get('GYP_MSVS_VERSION', 'auto')
+    if msvs_version in possible_paths:
+      # Check that the path to the specified GYP_MSVS_VERSION exists.
+      path = possible_paths[msvs_version]
+      for r in possible_roots:
+        bt = os.path.join(r, path)
         if os.path.exists(bt):
           self.build_tool = bt
-          break
+          self.uses_msbuild = msvs_version >= '2010'
+          return
+      else:
+        print ('Warning: Environment variable GYP_MSVS_VERSION specifies "%s" '
+               'but corresponding "%s" was not found.' % (msvs_version, path))
+    if self.build_tool:
+      # We found 'devenv' on the path, use that and try to guess the version.
+      for version, path in possible_paths.iteritems():
+        if self.build_tool.find(path) >= 0:
+          self.uses_msbuild = version >= '2010'
+          return
+      else:
+        # If not, assume not MSBuild.
+        self.uses_msbuild = False
+      return
+    # Neither GYP_MSVS_VERSION nor the path help us out.  Iterate through
+    # the choices looking for a match.
+    for version, path in possible_paths.iteritems():
+      for r in possible_roots:
+        bt = os.path.join(r, path)
+        if os.path.exists(bt):
+          self.build_tool = bt
+          self.uses_msbuild = msvs_version >= '2010'
+          return
+    print 'Error: could not find devenv'
+    sys.exit(1)
   def build(self, gyp_file, target=None, rebuild=False, **kw):
     """
     Runs a Visual Studio build using the configuration generated
@@ -463,7 +483,22 @@ class TestGypMSVS(TestGypBase):
     if not result:
       stdout = self.stdout()
       m = self.up_to_date_re.search(stdout)
-      if not m or m.group(1) == '0':
+      up_to_date = False
+      if m:
+        succeeded = m.group(1)
+        up_to_date = m.group(2)
+        up_to_date = succeeded == '0' and up_to_date == '1'
+        # Figuring out if the build is up to date changed with VS2010.
+        # For builds that should be up to date, I sometimes get
+        # "1 succeeded and 0 up to date".  As an ad-hoc measure, we check
+        # this and also verify that th number of output lines is small.
+        # I don't know if this is caused by VS itself or is due to
+        # interaction with virus checkers.
+        if self.uses_msbuild and (succeeded == '1' and
+             up_to_date == '0' and
+             stdout.count('\n') <= 6):
+          up_to_date = True
+      if not up_to_date:
         self.report_not_up_to_date()
         self.fail_test()
     return result
