@@ -9,10 +9,12 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/browser_callback.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
+#include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "srpcgen/ppb_rpc.h"
 #include "srpcgen/upcall.h"
 
+using ppapi_proxy::DebugPrintf;
 using ppapi_proxy::PPBCoreInterface;
 using ppapi_proxy::MakeRemoteCompletionCallback;
 using ppapi_proxy::GetMainSrpcChannel;
@@ -22,6 +24,7 @@ void PpbCoreRpcServer::PPB_Core_AddRefResource(NaClSrpcRpc* rpc,
                                                PP_Resource resource) {
   NaClSrpcClosureRunner runner(done);
   PPBCoreInterface()->AddRefResource(resource);
+  DebugPrintf("PPB_Core::AddRefResource: resource=%"NACL_PRIx32"\n", resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -30,6 +33,8 @@ void PpbCoreRpcServer::PPB_Core_ReleaseResource(NaClSrpcRpc* rpc,
                                                 PP_Resource resource) {
   NaClSrpcClosureRunner runner(done);
   PPBCoreInterface()->ReleaseResource(resource);
+  DebugPrintf("PPB_Core::ReleaseResource: resource=%"NACL_PRIx32"\n",
+              resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -41,6 +46,7 @@ void PpbCoreRpcServer::PPB_Core_GetTime(NaClSrpcRpc* rpc,
                                         double* time) {
   NaClSrpcClosureRunner runner(done);
   *time = PPBCoreInterface()->GetTime();
+  DebugPrintf("PPB_Core::GetTime: time=%f\n", *time);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -74,7 +80,8 @@ void PpbCoreRpcServer::PPB_Core_CallOnMainThread(
 
   PPBCoreInterface()->CallOnMainThread(
       delay_in_milliseconds, remote_callback, result);
-
+  DebugPrintf("PPB_Core::CallOnMainThread_main: "
+              "delay_in_milliseconds=%"NACL_PRId32"\n", delay_in_milliseconds);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -97,7 +104,8 @@ void PppUpcallRpcServer::PPB_Core_CallOnMainThread(
 
   PPBCoreInterface()->CallOnMainThread(
       delay_in_milliseconds, remote_callback_on_main, result);
-
+  DebugPrintf("PPB_Core::CallOnMainThread_upcall: "
+              "delay_in_milliseconds=%"NACL_PRId32"\n", delay_in_milliseconds);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
