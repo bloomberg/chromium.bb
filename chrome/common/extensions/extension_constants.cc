@@ -229,13 +229,13 @@ const char* kInvalidPluginsPublic =
     "Invalid value for 'plugins[*].public'.";
 const char* kInvalidRunAt =
     "Invalid value for 'content_scripts[*].run_at'.";
-extern const char* kInvalidSidebar =
+const char* kInvalidSidebar =
     "Invalid value for 'sidebar'.";
-extern const char* kInvalidSidebarDefaultIconPath =
+const char* kInvalidSidebarDefaultIconPath =
     "Invalid value for 'sidebar.default_icon'.";
-extern const char* kInvalidSidebarDefaultTitle =
+const char* kInvalidSidebarDefaultTitle =
     "Invalid value for 'sidebar.default_title'.";
-extern const char* kInvalidSidebarDefaultUrl =
+const char* kInvalidSidebarDefaultUrl =
     "Invalid value for 'sidebar.default_url'.";
 const char* kInvalidSignature =
     "Value 'signature' is missing or invalid.";
