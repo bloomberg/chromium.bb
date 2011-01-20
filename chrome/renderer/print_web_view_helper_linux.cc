@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,8 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
     // webkit::ppapi::PluginInstance::PrintEnd() has a valid canvas/metafile to
     // save the final output to. See pepper_plugin_instance.cc for the whole
     // story.
-    PrepareFrameAndViewForPrint prep_frame_view(params.params,
+    ViewMsg_Print_Params printParams = params.params;
+    PrepareFrameAndViewForPrint prep_frame_view(printParams,
                                                 frame,
                                                 node,
                                                 frame->view());
@@ -46,20 +47,20 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
 
     metafile.Init();
 
-    ViewMsg_PrintPage_Params print_page_params;
-    print_page_params.params = params.params;
+    ViewMsg_PrintPage_Params page_params;
+    page_params.params = printParams;
     const gfx::Size& canvas_size = prep_frame_view.GetPrintCanvasSize();
     if (params.pages.empty()) {
       for (int i = 0; i < page_count; ++i) {
-        print_page_params.page_number = i;
+        page_params.page_number = i;
         delete canvas;
-        PrintPage(print_page_params, canvas_size, frame, &metafile, &canvas);
+        PrintPage(page_params, canvas_size, frame, &metafile, &canvas);
       }
     } else {
       for (size_t i = 0; i < params.pages.size(); ++i) {
-        print_page_params.page_number = params.pages[i];
+        page_params.page_number = params.pages[i];
         delete canvas;
-        PrintPage(print_page_params, canvas_size, frame, &metafile, &canvas);
+        PrintPage(page_params, canvas_size, frame, &metafile, &canvas);
       }
     }
   }
