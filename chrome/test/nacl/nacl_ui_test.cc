@@ -12,8 +12,8 @@
 
 namespace {
 // NOTE: The base URL of each HTML file is specified in nacl_test.
-const FilePath::CharType kSrpcHwHtmlFileName[] =
-  FILE_PATH_LITERAL("srpc_hw.html");
+const FilePath::CharType kPPAPIHwHtmlFileName[] =
+  FILE_PATH_LITERAL("srpc_hw_ppapi.html");
 const FilePath::CharType kSrpcBasicHtmlFileName[] =
   FILE_PATH_LITERAL("srpc_basic.html");
 const FilePath::CharType kSrpcSockAddrHtmlFileName[] =
@@ -41,8 +41,8 @@ TEST_F(NaClUITest, ServerTest) {
   RunTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
 
-TEST_F(NaClUITest, DISABLED_SrpcHelloWorld) {
-  FilePath test_file(kSrpcHwHtmlFileName);
+TEST_F(NaClUITest, PPAPIHelloWorld) {
+  FilePath test_file(kPPAPIHwHtmlFileName);
   RunTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
 
@@ -77,8 +77,8 @@ TEST_F(NaClUITest, DISABLED_NpapiHwTest) {
   RunTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
 
-TEST_F(NaClUITest, DISABLED_MultiarchTest) {
-  FilePath test_file(kSrpcHwHtmlFileName);
-  RunMultiarchTest(test_file, TestTimeouts::action_max_timeout_ms());
-}
+// TEST_F(NaClUITest, DISABLED_MultiarchTest) {
+//   FilePath test_file(kSrpcHwHtmlFileName);
+//   RunMultiarchTest(test_file, TestTimeouts::action_max_timeout_ms());
+// }
 
