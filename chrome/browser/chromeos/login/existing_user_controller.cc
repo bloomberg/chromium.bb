@@ -117,7 +117,7 @@ void EnableTooltipsIfNeeded(const std::vector<UserController*>& controllers) {
 }  // namespace
 
 ExistingUserController*
-  ExistingUserController::delete_scheduled_instance_ = NULL;
+  ExistingUserController::current_controller_ = NULL;
 
 // TODO(xiyuan): Wait for the cached settings update before using them.
 ExistingUserController::ExistingUserController(
@@ -131,8 +131,9 @@ ExistingUserController::ExistingUserController(
       bubble_(NULL),
       user_settings_(new UserCrosSettingsProvider),
       method_factory_(this) {
-  if (delete_scheduled_instance_)
-    delete_scheduled_instance_->Delete();
+  if (current_controller_)
+    current_controller_->Delete();
+  current_controller_ = this;
 
   // Calculate the max number of users from available screen size.
   bool show_guest = UserCrosSettingsProvider::cached_allow_guest();
@@ -247,10 +248,11 @@ ExistingUserController::~ExistingUserController() {
 
   STLDeleteElements(&controllers_);
   STLDeleteElements(&invisible_controllers_);
+  DCHECK(current_controller_ != NULL);
+  current_controller_ = NULL;
 }
 
 void ExistingUserController::Delete() {
-  delete_scheduled_instance_ = NULL;
   delete this;
 }
 
@@ -288,7 +290,10 @@ void ExistingUserController::Login(UserController* source,
   // Use the same LoginPerformer for subsequent login as it has state
   // such as CAPTCHA challenge token & corresponding user input.
   if (!login_performer_.get() || num_login_attempts_ <= 1) {
-    login_performer_.reset(new LoginPerformer(this));
+    LoginPerformer::Delegate* delegate = this;
+    if (login_performer_delegate_.get())
+      delegate = login_performer_delegate_.get();
+    login_performer_.reset(new LoginPerformer(delegate));
   }
   login_performer_->Login(controllers_[selected_view_index_]->user().email(),
                           UTF16ToUTF8(password));
@@ -360,11 +365,6 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
   controller->Init(screen_name, background_bounds_);
   controller->set_start_url(start_url_);
   controller->Show();
-
-  // And schedule us for deletion. We delay for a second as the window manager
-  // is doing an animation with our windows.
-  DCHECK(!delete_scheduled_instance_);
-  delete_scheduled_instance_ = this;
 
   delete_timer_.Start(base::TimeDelta::FromSeconds(1), this,
                       &ExistingUserController::Delete);
