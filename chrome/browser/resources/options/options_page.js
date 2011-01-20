@@ -382,6 +382,10 @@ cr.define('options', function() {
     if (!(topPage && topPage.parentPage))
       return;
 
+    // If an overlay is currently visible, do nothing.
+    if (this.isOverlayVisible_())
+      return;
+
     // If the click was within a subpage, do nothing.
     for (var level = 1; level <= 2; level++) {
       if ($('subpage-sheet-container-' + level).contains(event.target))
