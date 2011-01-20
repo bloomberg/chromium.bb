@@ -17,6 +17,7 @@ BUGDIMICH : fast/regex/cross-frame-callable.html = PASS TEXT
 
 // New test that was non-deterministic.
 BUGYURYS : userscripts/window-onerror-for-isolated-world-1.html = PASS TEXT
+BUGYURYS : userscripts/window-onerror-for-isolated-world-2.html = PASS TEXT
 BUGYURYS : http/tests/security/aboutBlank/xss-DENIED-navigate-opener-document-write.html = PASS TEXT
 BUGYURYS : http/tests/security/aboutBlank/xss-DENIED-navigate-opener-javascript-url.html = PASS TEXT
 BUGYURYS : http/tests/security/xss-DENIED-frame-name.html = PASS TEXT
