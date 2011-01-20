@@ -9,9 +9,6 @@
 // this code merely aims at being maitainable.
 // Efficiency and proper dealing with bad input are non-goals.
 
-#include <string>
-#include <vector>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,11 +22,18 @@
 #define NACL_ISNAN(d) isnan(d)
 #endif  /* NACL_WINDOWS */
 
+#include <iomanip>
+#include <string>
+#include <vector>
+#include <sstream>
+
 #include "native_client/src/include/portability_string.h"
 
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/sel_universal/parsing.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+
+using std::stringstream;
 
 
 static uint32_t StringToUint32(string s, size_t pos = 0) {
@@ -180,7 +184,7 @@ void Tokenize(string line, vector<string>* tokens) {
   size_t pos_start = 0;
 
   while (pos_start < line.size()) {
-    /* skip leading white space */
+    // skip over leading white space
     while (pos_start < line.size()) {
       const char c = line[pos_start];
       if (isspace((unsigned char)c)) {
@@ -202,12 +206,14 @@ void Tokenize(string line, vector<string>* tokens) {
         // NOTE: quotes are only really relevant in s("...").
         size_t end = ScanEscapeString(line, pos_end);
         if (end == 0) {
+          NaClLog(LOG_ERROR, "unterminated string constant\n");
           return;
         }
 
         pos_end = end;
+      } else {
+        pos_end++;
       }
-      pos_end++;
     }
 
     tokens->push_back(line.substr(pos_start, pos_end - pos_start));
@@ -330,15 +336,14 @@ static string UnescapeString(string s) {
 // Output args are handled slightly different especially in the array case
 // where the merely allocate space but do not initialize it.
 static bool ParseArg(NaClSrpcArg* arg,
-                     string raw_token,
+                     string token,
                      bool input,
                      NaClCommandLoop* ncl) {
-  if (raw_token.size() <= 2) {
-    NaClLog(LOG_ERROR, "parameter too short: %s\n", raw_token.c_str());
+  if (token.size() <= 2) {
+    NaClLog(LOG_ERROR, "parameter too short: %s\n", token.c_str());
     return false;
   }
 
-  const string token = SubstituteVars(raw_token, ncl);
   const char type = token[0];
   vector<string> array_tokens;
 
@@ -542,134 +547,113 @@ bool ParseArgs(NaClSrpcArg** args,
 }
 
 
-static void PrintOneChar(char c) {
+static string StringifyOneChar(unsigned char c) {
   switch (c) {
     case '\"':
-      printf("\\\"");
-      break;
+      return "\\\"";
     case '\b':
-      printf("\\b");
-      break;
+      return "\\b";
     case '\f':
-      printf("\\f");
-      break;
+      return "\\f";
     case '\n':
-      printf("\\n");
-      break;
+      return "\\n";
     case '\t':
-      printf("\\t");
-      break;
+      return "\\t";
     case '\v':
-      printf("\\v");
-      break;
+      return "\\v";
     case '\\':
-      printf("\\\\");
-      break;
+      return "\\\\";
     default:
-      if (' ' > c || 127 == c) {
-        printf("\\x%02x", c);
+      if (c < ' ' || 126 < c) {
+          stringstream result;
+          result << "\\x" << std::hex << std::setw(2) <<
+            std::setfill('0') << int(c);
+          return result.str();
       } else {
-        printf("%c", c);
+        stringstream result;
+        result << c;
+        return result.str();
       }
   }
 }
 
 
-static void DumpDouble(const double* dval) {
+static string DumpDouble(const double* dval) {
   if (NACL_ISNAN(*dval)) {
-    printf("NaN");
+    return "NaN";
   } else {
-    printf("%f", *dval);
+    stringstream result;
+    result << *dval;
+    return result.str();
   }
 }
 
 
-void DumpArg(const NaClSrpcArg* arg, NaClCommandLoop* ncl) {
+string DumpArg(const NaClSrpcArg* arg, NaClCommandLoop* ncl) {
+  stringstream result;
   uint32_t count;
   uint32_t i;
   char* p;
   switch (arg->tag) {
     case NACL_SRPC_ARG_TYPE_INVALID:
-      printf("X()");
-      break;
+      return "X()";
     case NACL_SRPC_ARG_TYPE_BOOL:
-      printf("b(%d)", arg->u.bval);
-      break;
+      result << "b(" << arg->u.bval << ")";
+      return result.str();
     case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
+      count = arg->u.count;
+      result << "C(" << count << ",";
       for (i = 0; i < arg->u.count; ++i)
-        PrintOneChar(arg->arrays.carr[i]);
-      break;
+        result << StringifyOneChar(arg->arrays.carr[i]);
+      result << ")";
+      return result.str();
     case NACL_SRPC_ARG_TYPE_DOUBLE:
-      printf("d(");
-      DumpDouble(&arg->u.dval);
-      printf(")");
-      break;
+      result << "d(" << DumpDouble(&arg->u.dval) << ")";
+      return result.str();
     case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
       count = arg->u.count;
-      printf("D(%"NACL_PRIu32"", count);
+      result << "D(" << count;
       for (i = 0; i < count; ++i) {
-        printf(",");
-        DumpDouble(&(arg->arrays.darr[i]));
+        result << "," << DumpDouble(&(arg->arrays.darr[i]));
       }
-      printf(")");
-      break;
+      result << ")";
+      return result.str();
     case NACL_SRPC_ARG_TYPE_HANDLE:
-      printf("h(%s)", ncl->AddDescUniquify(arg->u.hval, "imported").c_str());
-      break;
+      result << "h(" <<  ncl->AddDescUniquify(arg->u.hval, "imported") << ")";
+      return result.str();
     case NACL_SRPC_ARG_TYPE_INT:
-      printf("i(%"NACL_PRId32")", arg->u.ival);
-      break;
+      result << "i(" << arg->u.ival << ")";
+      return result.str();
     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
       count = arg->u.count;
-      printf("I(%"NACL_PRIu32"", count);
-      for (i = 0; i < count; ++i)
-        printf(",%"NACL_PRId32, arg->arrays.iarr[i]);
-      printf(")");
-      break;
+      result << "I(" << count;
+      for (i = 0; i < count; ++i) {
+        result << "," << arg->arrays.iarr[i];
+      }
+      result << ")";
+      return result.str();
     case NACL_SRPC_ARG_TYPE_LONG:
-      printf("l(%"NACL_PRId64")", arg->u.lval);
-      break;
+      result << "l(" << arg->u.lval << ")";
+      return result.str();
     case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
       count = arg->u.count;
-      printf("L(%"NACL_PRIu32"", count);
-      for (i = 0; i < count; ++i)
-        printf(",%"NACL_PRId64, arg->arrays.larr[i]);
-      printf(")");
-      break;
-    case NACL_SRPC_ARG_TYPE_STRING:
-      printf("s(\"");
-      for (p = arg->arrays.str; '\0' != *p; ++p)
-        PrintOneChar(*p);
-      printf("\")");
-      break;
-      /*
-       * The two cases below are added to avoid warnings, they are only used
-       * in the plugin code
-       */
-    case NACL_SRPC_ARG_TYPE_OBJECT:
-      /* this is a pointer that NaCl module can do nothing with */
-      printf("o(%p)", arg->arrays.oval);
-      break;
-    case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-      count = arg->u.count;
-      printf("A(%"NACL_PRIu32"", count);
+      result << "L(" << count;
       for (i = 0; i < count; ++i) {
-        printf(",");
-        DumpArg(&arg->arrays.varr[i], ncl);
+        result << "," << arg->arrays.larr[i];
       }
-      printf(")");
-      break;
+      result << ")";
+      return result.str();
+    case NACL_SRPC_ARG_TYPE_STRING:
+      result << "s(\"";
+      for (p = arg->arrays.str; '\0' != *p; ++p)
+        result << StringifyOneChar(*p);
+      result << "\")";
+      return result.str();
+    case NACL_SRPC_ARG_TYPE_OBJECT:
+    case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
     default:
-      NaClLog(LOG_ERROR, "unknown type '%c'\n", arg->tag);
-      break;
-  }
-}
-
-
-void DumpArgs(const NaClSrpcArg* const* args, NaClCommandLoop *ncl) {
-  for (size_t i = 0; args[i] != 0; ++i) {
-    printf("  ");
-    DumpArg(args[i], ncl);
+      NaClLog(LOG_ERROR, "unknown or unsupported type '%c'\n", arg->tag);
+      return "";
   }
 }
 

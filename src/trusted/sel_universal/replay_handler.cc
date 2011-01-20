@@ -107,9 +107,11 @@ void ReplayRpc(NaClSrpcRpc* rpc,
       break;
     }
 
-    NaClLog(1, "sending %d result values\n",
-            (int) GlobalReplayList[i]->args_out.size());
-    DumpArgs(outputs, GlobalCommandLoop);
+    printf("replaying %s:\n", signature.c_str());
+    for (size_t j = 0; outputs[j] != 0; ++j) {
+      string value = DumpArg(outputs[j], GlobalCommandLoop);
+      printf("output %d:  %s\n", (int) j, value.c_str());
+    }
     fflush(stdout);
 
     rpc->result = NACL_SRPC_RESULT_OK;
@@ -120,8 +122,10 @@ void ReplayRpc(NaClSrpcRpc* rpc,
   }
 
   NaClLog(LOG_WARNING, "No replay rpc found for rpc %s, args:\n", rpc_name);
-  DumpArgs(inputs, GlobalCommandLoop);
-  printf("\n");
+  for (size_t i = 0; inputs[i] != 0; ++i) {
+    string value = DumpArg(inputs[i], GlobalCommandLoop);
+    NaClLog(LOG_WARNING, "input %d:  %s\n", (int) i, value.c_str());
+  }
   fflush(stdout);
 
   // if we exit the for loop here we have an error

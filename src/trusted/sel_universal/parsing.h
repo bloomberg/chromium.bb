@@ -36,8 +36,8 @@ bool ParseArgs(NaClSrpcArg** arg,
 // Compare two arg vector for value equality
 bool AllArgsEqual(NaClSrpcArg** arg1, NaClSrpcArg** arg2);
 
-// Dump set of args to stdout.
-void DumpArgs(const NaClSrpcArg* const* args, NaClCommandLoop *ncl);
+// Get arg as string
+string DumpArg(const NaClSrpcArg* arg, NaClCommandLoop* ncl);
 
 // Initialize the array of NaClSrpcArg pointers from an array of NaClSrpcArg.
 void BuildArgVec(NaClSrpcArg* argv[], NaClSrpcArg arg[], size_t count);

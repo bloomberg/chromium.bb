@@ -13,6 +13,8 @@
 #include <sstream>
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/include/portability_string.h"
+
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
@@ -171,8 +173,9 @@ bool NaClCommandLoop::HandleSetVariable(NaClCommandLoop* ncl,
 
 bool NaClCommandLoop::HandleEcho(NaClCommandLoop* ncl,
                                  const vector<string>& args) {
+  UNREFERENCED_PARAMETER(ncl);
   for (size_t i = 1; i < args.size(); ++i) {
-    printf("%s", SubstituteVars(args[i], ncl).c_str());
+    printf("%s ", args[i].c_str());
   }
   printf("\n");
   return true;
@@ -211,6 +214,64 @@ bool NaClCommandLoop::HandleInstallUpcalls(NaClCommandLoop* ncl,
   ncl->channel_->server = service;
   ncl->SetVariable(args[1], service->service_string);
   ncl->upcall_installed_ = true;
+  return true;
+}
+
+
+static bool HandleStrcpy(NaClCommandLoop* ncl, const vector<string>& args) {
+  UNREFERENCED_PARAMETER(ncl);
+  if (args.size() < 4) {
+    NaClLog(LOG_ERROR, "Insufficient arguments to 'rpc' command.\n");
+    return false;
+  }
+
+  const uintptr_t start = (uintptr_t) STRTOLL(args[1].c_str(), 0, 0);
+  const uintptr_t offset = (uintptr_t) STRTOLL(args[2].c_str(), 0, 0);
+  // skip leading and trailing double quote
+  string payload = args[3].substr(1, args[3].size() - 2);
+  char* dst = reinterpret_cast<char*>(start + offset);
+  NaClLog(1, "copy [%s] to %p\n", args[3].c_str(), dst);
+  strcpy(dst, payload.c_str());
+  return true;
+}
+
+
+static bool HandleMemset(NaClCommandLoop* ncl, const vector<string>& args) {
+  UNREFERENCED_PARAMETER(ncl);
+  if (args.size() < 5) {
+    NaClLog(LOG_ERROR, "Insufficient arguments to 'rpc' command.\n");
+    return false;
+  }
+
+  const uintptr_t start = (uintptr_t) STRTOLL(args[1].c_str(), 0, 0);
+  const uintptr_t offset = (uintptr_t) STRTOLL(args[2].c_str(), 0, 0);
+  const uintptr_t length = (uintptr_t) STRTOLL(args[3].c_str(), 0, 0);
+  const int pattern = (int) strtol(args[4].c_str(), 0, 0);
+
+  char* dst = reinterpret_cast<char*>(start + offset);
+  NaClLog(1, "setting [%p, %p] to 0x%02x\n", dst, dst + length, pattern);
+  memset(dst, pattern, length);
+  return true;
+}
+
+
+static bool HandleChecksum(NaClCommandLoop* ncl, const vector<string>& args) {
+  UNREFERENCED_PARAMETER(ncl);
+  if (args.size() < 4) {
+    NaClLog(LOG_ERROR, "Insufficient arguments to 'rpc' command.\n");
+    return false;
+  }
+
+  const uintptr_t start = (uintptr_t) STRTOLL(args[1].c_str(), 0, 0);
+  const uintptr_t offset = (uintptr_t) STRTOLL(args[2].c_str(), 0, 0);
+  const size_t length = (size_t) STRTOLL(args[3].c_str(), 0, 0);
+  unsigned int sum = 0;
+  unsigned char* src = reinterpret_cast<unsigned char*>(start + offset);
+  for (size_t i = 0; i < length; ++i) {
+    sum = (sum << 1) + src[i];
+  }
+
+  printf("CHECKSUM: 0x%08x\n", sum);
   return true;
 }
 
@@ -314,7 +375,16 @@ static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
   }
 
   printf("%s RESULTS: ", args[1].c_str());
-  DumpArgs(outv, ncl);
+
+
+  for (size_t i = 0; outv[i] != 0; ++i) {
+    string value = DumpArg(outv[i], ncl);
+    printf("  %s", value.c_str());
+
+    stringstream tag;
+    tag << "result" + i;
+    ncl->SetVariable(tag.str(), value);
+  }
   printf("\n");
 
   /* Free the storage allocated for array valued parameters and returns. */
@@ -350,11 +420,13 @@ NaClCommandLoop::NaClCommandLoop(NaClSrpcService* service,
 
   // populate command handlers
   // TODO(robertm): for backward compatibility
-  AddHandler("descs", HandleShowDescriptors);
   AddHandler("show_descriptors", HandleShowDescriptors);
   AddHandler("show_variables", HandleShowVariables);
   AddHandler("set_variable", HandleSetVariable);
   AddHandler("install_upcalls", HandleInstallUpcalls);
+  AddHandler("strcpy", HandleStrcpy);
+  AddHandler("memset", HandleMemset);
+  AddHandler("checksum", HandleChecksum);
   AddHandler("rpc", HandleRpc);
   AddHandler("echo", HandleEcho);
   AddHandler("help", HandleHelp);
@@ -389,6 +461,10 @@ void NaClCommandLoop::StartInteractiveLoop() {
 
     if (tokens[0] == "quit") {
       break;
+    }
+
+    for (size_t i = 0; i < tokens.size(); ++i) {
+      tokens[i] = SubstituteVars(tokens[i], this);
     }
 
     if (handlers_.find(tokens[0])  == handlers_.end()) {
