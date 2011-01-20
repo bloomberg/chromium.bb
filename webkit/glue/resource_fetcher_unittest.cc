@@ -6,16 +6,13 @@
 
 #include "base/callback.h"
 #include "base/message_loop.h"
+#include "base/timer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/unittest_test_server.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
-
-#if defined(TOOLKIT_USES_GTK)
-#include <gtk/gtk.h>
-#endif
 
 using WebKit::WebFrame;
 using WebKit::WebURLResponse;
@@ -30,16 +27,16 @@ class ResourceFetcherTests : public TestShellTest {
 };
 
 static const int kMaxWaitTimeMs = 5000;
-static const int kWaitIntervalMs = 100;
 
 class FetcherDelegate {
  public:
   FetcherDelegate()
-      : timer_id_(0), completed_(false), time_elapsed_ms_(0) {
+      : completed_(false),
+        timed_out_(false) {
     // Start a repeating timer waiting for the download to complete.  The
     // callback has to be a static function, so we hold on to our instance.
     FetcherDelegate::instance_ = this;
-    CreateTimer(kWaitIntervalMs);
+    StartTimer();
   }
 
   ResourceFetcher::Callback* NewCallback() {
@@ -51,14 +48,13 @@ class FetcherDelegate {
     response_ = response;
     data_ = data;
     completed_ = true;
-    DestroyTimer();
+    timer_.Stop();
     MessageLoop::current()->Quit();
   }
 
   bool completed() const { return completed_; }
-  bool timed_out() const { return time_elapsed_ms_ > kMaxWaitTimeMs; }
+  bool timed_out() const { return timed_out_; }
 
-  int time_elapsed_ms() const { return time_elapsed_ms_; }
   std::string data() const { return data_; }
   const WebURLResponse& response() const { return response_; }
 
@@ -70,78 +66,26 @@ class FetcherDelegate {
       MessageLoop::current()->Run();
   }
 
-  void CreateTimer(int interval) {
-#if defined(OS_WIN)
-    timer_id_ = ::SetTimer(NULL, NULL, interval,
-                           &FetcherDelegate::TimerCallback);
-#elif defined(TOOLKIT_USES_GTK)
-    timer_id_ = g_timeout_add(interval, &FetcherDelegate::TimerCallback, NULL);
-#elif defined(OS_MACOSX)
-    // CFAbsoluteTime is in seconds and |interval| is in ms, so make sure we
-    // keep the units correct.
-    CFTimeInterval interval_in_seconds = static_cast<double>(interval) / 1000.0;
-    CFAbsoluteTime fire_date =
-        CFAbsoluteTimeGetCurrent() + interval_in_seconds;
-    timer_id_ = CFRunLoopTimerCreate(NULL, fire_date, interval_in_seconds, 0,
-                                     0, FetcherDelegate::TimerCallback, NULL);
-    CFRunLoopAddTimer(CFRunLoopGetCurrent(), timer_id_, kCFRunLoopCommonModes);
-#endif
+  void StartTimer() {
+    timer_.Start(base::TimeDelta::FromMilliseconds(kMaxWaitTimeMs),
+                 this,
+                 &FetcherDelegate::TimerFired);
   }
-
-  void DestroyTimer() {
-#if defined(OS_WIN)
-    ::KillTimer(NULL, timer_id_);
-#elif defined(TOOLKIT_USES_GTK)
-    g_source_remove(timer_id_);
-#elif defined(OS_MACOSX)
-    CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), timer_id_,
-                         kCFRunLoopCommonModes);
-    CFRelease(timer_id_);
-#endif
-  }
-
-#if defined(OS_WIN)
-  // Static timer callback, just passes through to instance version.
-  static VOID CALLBACK TimerCallback(HWND hwnd, UINT msg, UINT_PTR timer_id,
-                                     DWORD ms) {
-    instance_->TimerFired();
-  }
-#elif defined(TOOLKIT_USES_GTK)
-  static gboolean TimerCallback(gpointer data) {
-    instance_->TimerFired();
-    return true;
-  }
-#elif defined(OS_MACOSX)
-  static void TimerCallback(CFRunLoopTimerRef timer, void* info) {
-    instance_->TimerFired();
-  }
-#endif
 
   void TimerFired() {
     ASSERT_FALSE(completed_);
 
-    if (timed_out()) {
-      DestroyTimer();
-      MessageLoop::current()->Quit();
-      FAIL() << "fetch timed out";
-      return;
-    }
-
-    time_elapsed_ms_ += kWaitIntervalMs;
+    timed_out_ = true;
+    MessageLoop::current()->Quit();
+    FAIL() << "fetch timed out";
   }
 
   static FetcherDelegate* instance_;
 
  private:
-#if defined(OS_WIN)
-  UINT_PTR timer_id_;
-#elif defined(TOOLKIT_USES_GTK)
-  guint timer_id_;
-#elif defined(OS_MACOSX)
-  CFRunLoopTimerRef timer_id_;
-#endif
+  base::OneShotTimer<FetcherDelegate> timer_;
   bool completed_;
-  int time_elapsed_ms_;
+  bool timed_out_;
   WebURLResponse response_;
   std::string data_;
 };
@@ -198,7 +142,7 @@ TEST_F(ResourceFetcherTests, FLAKY_ResourceFetcherDidFail) {
   EXPECT_TRUE(delegate->completed());
   EXPECT_TRUE(delegate->response().isNull());
   EXPECT_EQ(delegate->data(), std::string());
-  EXPECT_TRUE(delegate->time_elapsed_ms() < kMaxWaitTimeMs);
+  EXPECT_FALSE(delegate->timed_out());
 }
 
 TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
@@ -220,7 +164,7 @@ TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
   EXPECT_TRUE(delegate->completed());
   EXPECT_TRUE(delegate->response().isNull());
   EXPECT_EQ(delegate->data(), std::string());
-  EXPECT_TRUE(delegate->time_elapsed_ms() < kMaxWaitTimeMs);
+  EXPECT_FALSE(delegate->timed_out());
 }
 
 class EvilFetcherDelegate : public FetcherDelegate {
@@ -255,6 +199,7 @@ TEST_F(ResourceFetcherTests, ResourceFetcherDeletedInCallback) {
   delegate->SetFetcher(fetcher.release());
 
   delegate->WaitForResponse();
+  EXPECT_FALSE(delegate->timed_out());
 }
 
 }  // namespace
