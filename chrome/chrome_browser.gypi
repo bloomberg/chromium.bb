@@ -4127,8 +4127,6 @@
                 ['include', '^browser/ui/views/tab_contents/tab_contents_container.h'],
                 ['include', '^browser/ui/views/tab_contents/tab_contents_container_native.cc'],
                 ['include', '^browser/ui/views/tab_contents/tab_contents_container_native.h'],
-                ['include', '^browser/ui/views/tab_contents/tab_contents_container_views.cc'],
-                ['include', '^browser/ui/views/tab_contents/tab_contents_container_views.h'],
                 ['include', '^browser/ui/views/tab_contents/tab_contents_view_gtk.cc'],
                 ['include', '^browser/ui/views/tab_contents/tab_contents_view_gtk.h'],
                 ['include', '^browser/ui/views/tab_icon_view.cc'],
@@ -4314,6 +4312,8 @@
                 # ['exclude', '^browser/ui/gtk/constrained_window_gtk.h'],
                 ['exclude', '^browser/ui/views/tab_contents/tab_contents_container_native.cc'],
                 ['exclude', '^browser/ui/views/tab_contents/tab_contents_container_native.h'],
+                ['include', '^browser/ui/views/tab_contents/tab_contents_container_views.cc'],
+                ['include', '^browser/ui/views/tab_contents/tab_contents_container_views.h'],
               ],
             }],
             ['OS=="linux" and chromeos==1',{
