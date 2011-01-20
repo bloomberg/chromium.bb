@@ -280,6 +280,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kBlockReadingThirdPartyCookies)
   },
+  {
+    "disable-interactive-form-validation",
+    IDS_FLAGS_DISABLE_INTERACTIVE_FORM_VALIDATION_NAME,
+    IDS_FLAGS_DISABLE_INTERACTIVE_FORM_VALIDATION_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kDisableInteractiveFormValidation)
+  },
 };
 
 const Experiment* experiments = kExperiments;

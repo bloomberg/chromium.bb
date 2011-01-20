@@ -4090,6 +4090,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_BLOCK_ALL_THIRD_PARTY_COOKIES_DESCRIPTION" desc="Description of the 'Block all third-party cookies' lab.">
         When the option to block third-party cookies from being set is enabled, also block third-party cookies from being read.
       </message>
+      <message name="IDS_FLAGS_DISABLE_INTERACTIVE_FORM_VALIDATION_NAME" desc="Name of the 'Disable HTML5 interactive form validation' lab.">
+        Disable HTML5 interactive form validation
+      </message>
+      <message name="IDS_FLAGS_DISABLE_INTERACTIVE_FORM_VALIDATION_DESCRIPTION" desc="Description of the 'Disable HTML5 interactive form validation' lab.">
+        Disable showing validation messages and preventing form submission.
+      </message>
 
       <!-- Instant -->
       <message name="IDS_INSTANT_OPT_IN_ENABLE" desc="Button shown in the omnibox dropdown for enabling instant">

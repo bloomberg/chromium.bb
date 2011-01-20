@@ -263,6 +263,10 @@ const char kDisableHistoryURLProvider[]   = "disable-history-url-provider";
 // Disable the Indexed Database API.
 const char kDisableIndexedDatabase[]         = "disable-indexed-database";
 
+// Disables HTML5 Forms interactive validation.
+const char kDisableInteractiveFormValidation[] =
+    "disable-interactive-form-validation";
+
 // Disable the internal Flash Player.
 const char kDisableInternalFlash[]          = "disable-internal-flash";
 

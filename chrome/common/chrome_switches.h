@@ -82,6 +82,7 @@ extern const char kDisableGpuWatchdog[];
 extern const char kDisableHangMonitor[];
 extern const char kDisableHistoryQuickProvider[];
 extern const char kDisableHistoryURLProvider[];
+extern const char kDisableInteractiveFormValidation[];
 extern const char kDisableInternalFlash[];
 extern const char kDisableIndexedDatabase[];
 extern const char kDisableIPv6[];

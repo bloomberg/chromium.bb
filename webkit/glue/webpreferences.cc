@@ -67,7 +67,8 @@ WebPreferences::WebPreferences()
       accelerated_video_enabled(false),
       accelerated_2d_canvas_enabled(false),
       accelerated_plugins_enabled(false),
-      memory_info_enabled(false) {
+      memory_info_enabled(false),
+      interactive_form_validation_enabled(true) {
 }
 
 WebPreferences::~WebPreferences() {
@@ -185,4 +186,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   // Tabs to link is not part of the settings. WebCore calls
   // ChromeClient::tabsToLinks which is part of the glue code.
   web_view->setTabsToLinks(tabs_to_links);
+
+  settings->setInteractiveFormValidationEnabled(
+      interactive_form_validation_enabled);
 }
