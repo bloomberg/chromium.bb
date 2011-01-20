@@ -180,7 +180,13 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakError) {
   ASSERT_TRUE(RunExtensionTest("tts/speak_error")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(TtsApiTest, Provide) {
+#if defined(OS_WIN)
+// Flakily fails on Windows: http://crbug.com/70198
+#define MAYBE_Provide FLAKY_Provide
+#else
+#define MAYBE_Provide Provide
+#endif
+IN_PROC_BROWSER_TEST_F(TtsApiTest, MAYBE_Provide) {
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(mock_platform_impl_, IsSpeaking())
