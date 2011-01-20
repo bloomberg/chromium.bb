@@ -14,6 +14,8 @@
 #include "srpcgen/upcall.h"
 
 using ppapi_proxy::PPBCoreInterface;
+using ppapi_proxy::MakeRemoteCompletionCallback;
+using ppapi_proxy::GetMainSrpcChannel;
 
 void PpbCoreRpcServer::PPB_Core_AddRefResource(NaClSrpcRpc* rpc,
                                                NaClSrpcClosure* done,
@@ -53,6 +55,30 @@ void PpbCoreRpcServer::ReleaseResourceMultipleTimes(NaClSrpcRpc* rpc,
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
+// Invoked from main thread.
+void PpbCoreRpcServer::PPB_Core_CallOnMainThread(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
+    int32_t delay_in_milliseconds,
+    int32_t callback_id,
+    int32_t result) {
+  NACL_UNTESTED();
+  CHECK(PPBCoreInterface()->IsMainThread());
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+
+  PP_CompletionCallback remote_callback =
+      MakeRemoteCompletionCallback(rpc->channel, callback_id);
+  if (remote_callback.func == NULL)
+    return;  // Treat this as a generic SRPC error.
+
+  PPBCoreInterface()->CallOnMainThread(
+      delay_in_milliseconds, remote_callback, result);
+
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
+  // Invoked from upcall thread.
 void PppUpcallRpcServer::PPB_Core_CallOnMainThread(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
@@ -62,11 +88,16 @@ void PppUpcallRpcServer::PPB_Core_CallOnMainThread(
   NACL_UNTESTED();
   CHECK(!PPBCoreInterface()->IsMainThread());
   NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+
   PP_CompletionCallback remote_callback_on_main =
-      ppapi_proxy::MakeRemoteCompletionCallback(
-          ppapi_proxy::GetMainSrpcChannel(rpc), callback_id);
+      MakeRemoteCompletionCallback(GetMainSrpcChannel(rpc), callback_id);
+  if (remote_callback_on_main.func == NULL)
+    return;  // Treat this as a generic SRPC error.
+
   PPBCoreInterface()->CallOnMainThread(
       delay_in_milliseconds, remote_callback_on_main, result);
+
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 

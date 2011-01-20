@@ -38,7 +38,14 @@
                       ]
           },
 
-          # CallOnMainThread is handled on an upcall channel.
+          # To be called from the main thread only!
+          {'name': 'PPB_Core_CallOnMainThread',
+           'inputs': [['delay_in_milliseconds', 'int32_t'],  # int32_t
+                      ['callback_id', 'int32_t'],       # PP_CompletionCallback
+                      ['result', 'int32_t'],            # int32_t
+                     ],
+            'outputs': []
+          },
 
           # IsMainThread does not require PRCs to the browser.
          ]

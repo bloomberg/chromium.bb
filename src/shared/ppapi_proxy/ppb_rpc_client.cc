@@ -409,6 +409,22 @@ NaClSrpcError PpbCoreRpcClient::PPB_Core_GetTime(
   return retval;
 }
 
+NaClSrpcError PpbCoreRpcClient::PPB_Core_CallOnMainThread(
+    NaClSrpcChannel* channel,
+    int32_t delay_in_milliseconds,
+    int32_t callback_id,
+    int32_t result)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Core_CallOnMainThread:iii:",
+      delay_in_milliseconds,
+      callback_id,
+      result
+  );
+  return retval;
+}
+
 NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Create(
     NaClSrpcChannel* channel,
     PP_Instance instance,

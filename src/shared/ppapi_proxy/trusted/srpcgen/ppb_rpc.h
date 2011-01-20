@@ -201,6 +201,12 @@ class PpbCoreRpcServer {
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       double* time);
+  static void PPB_Core_CallOnMainThread(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int32_t delay_in_milliseconds,
+      int32_t callback_id,
+      int32_t result);
 
  private:
   PpbCoreRpcServer();

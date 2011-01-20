@@ -177,6 +177,11 @@ class PpbCoreRpcClient {
   static NaClSrpcError PPB_Core_GetTime(
       NaClSrpcChannel* channel,
       double* time);
+  static NaClSrpcError PPB_Core_CallOnMainThread(
+      NaClSrpcChannel* channel,
+      int32_t delay_in_milliseconds,
+      int32_t callback_id,
+      int32_t result);
 
  private:
   PpbCoreRpcClient();
@@ -359,7 +364,7 @@ class PpbURLRequestInfoRpcClient {
  public:
   static NaClSrpcError PPB_URLRequestInfo_Create(
       NaClSrpcChannel* channel,
-      PP_Module module,
+      PP_Instance instance,
       PP_Resource* resource);
   static NaClSrpcError PPB_URLRequestInfo_IsURLRequestInfo(
       NaClSrpcChannel* channel,

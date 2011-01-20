@@ -9,6 +9,7 @@
 #include <map>
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_callback.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource_tracker.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_upcall.h"
@@ -92,14 +93,27 @@ PP_Bool IsMainThread() {
 void CallOnMainThread(int32_t delay_in_milliseconds,
                       PP_CompletionCallback callback,
                       int32_t result) {
+  if (!IsMainThread()) {
+    NACL_UNTESTED();
+    ppapi_proxy::PluginUpcallCoreCallOnMainThread(
+        delay_in_milliseconds, callback, result);
+    return;
+  }
+
   NACL_UNTESTED();
-  CHECK(!IsMainThread());  // TODO(polina): define such behavior.
-  DebugPrintf("PPB_Core::CallOnMainThread: "
-              "delay=%"NACL_PRIu32" result=%"NACL_PRIu32 "\n",
-              delay_in_milliseconds, result);
-  ppapi_proxy::PluginUpcallCoreCallOnMainThread(delay_in_milliseconds,
-                                                callback,
-                                                result);
+  int32_t callback_id =
+      ppapi_proxy::CompletionCallbackTable::Get()->AddCallback(callback);
+  if (callback_id == 0)
+    return;
+
+  NaClSrpcError srpc_result =
+      PpbCoreRpcClient::PPB_Core_CallOnMainThread(
+          ppapi_proxy::GetMainSrpcChannel(),
+          delay_in_milliseconds,
+          callback_id,
+          result);
+  DebugPrintf("PPB_Core::CallOnMainThread: %s\n",
+              NaClSrpcErrorString(srpc_result));
 }
 
 }  // namespace
