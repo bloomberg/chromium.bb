@@ -32,7 +32,7 @@ body {
   position: fixed;
   left: 0;
   right: 0;
-  background: rgba(0, 0, 0, .2);
+  background: rgba(233, 238, 242, .5);
   top: 0;
   bottom: 0;
   z-index: 10;
@@ -108,7 +108,7 @@ html[toolkit=views] .button-strip {
 }
 
 .button-strip > button {
-  -webkit-margin-start: 4px;
+  -webkit-margin-start: 10px;
   display: block;
 }
 

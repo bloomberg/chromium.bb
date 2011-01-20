@@ -11,22 +11,23 @@ found in the LICENSE file.
 
 #clearBrowserDataOverlay {
   -webkit-box-shadow: 0px 0px 40px -5px #888;
-  border: 1px solid #c8cdda;
-  border-radius: 0;
+  border: 1px solid rgb(188, 193, 208);
+  border-radius: 2px;
+  min-width: 500px;
   padding: 0;
 }
 
 #cbdTitle {
   background: -webkit-linear-gradient(white, #F8F8F8);
-  border-bottom: 1px solid #bbbbbb;
+  border-bottom: 1px solid rgba(188, 193, 208, .5);
   display: block;
   font-size: 105%;
   font-weight: bold;
-  padding: 12px;
+  padding: 10px 15px 8px 15px;
 }
 
 #cbdContentArea {
-  padding: 5px 15px;
+  padding: 10px 15px 5px 15px;
 }
 
 #cbdContentArea label {
@@ -45,7 +46,7 @@ found in the LICENSE file.
 #cbdActionArea {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
-  border-top: 1px solid #eeeeee;
+  border-top: 1px solid rgba(188, 193, 208, .5);
   display: -webkit-box;
   padding: 12px;
 }
