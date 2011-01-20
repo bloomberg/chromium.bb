@@ -45,9 +45,6 @@ class DOMStorageMessageFilter : public BrowserMessageFilter {
   friend class base::RefCountedThreadSafe<DOMStorageMessageFilter>;
   ~DOMStorageMessageFilter();
 
-  // BrowserMessageFilter override.
-  virtual void BadMessageReceived();
-
   // Message Handlers.
   void OnStorageAreaId(int64 namespace_id, const string16& origin,
                        int64* storage_area_id);

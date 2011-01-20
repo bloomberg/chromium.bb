@@ -30,6 +30,11 @@ class DOMStorageContext {
   explicit DOMStorageContext(WebKitContext* webkit_context);
   virtual ~DOMStorageContext();
 
+  // Invalid storage id.  No storage session will ever report this value.
+  // Used in DOMStorageMessageFilter::OnStorageAreaId when coping with
+  // interactions with non-existent storage sessions.
+  static const int64 kInvalidStorageId = -1;
+
   // Allocate a new storage area id.  Only call on the WebKit thread.
   int64 AllocateStorageAreaId();
 

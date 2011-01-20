@@ -102,11 +102,6 @@ bool DOMStorageMessageFilter::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
-void DOMStorageMessageFilter::BadMessageReceived() {
-  UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_DSMF"));
-  BrowserMessageFilter::BadMessageReceived();
-}
-
 void DOMStorageMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
@@ -122,7 +117,7 @@ void DOMStorageMessageFilter::OnStorageAreaId(int64 namespace_id,
   DOMStorageNamespace* storage_namespace =
       Context()->GetStorageNamespace(namespace_id, true);
   if (!storage_namespace) {
-    BadMessageReceived();
+    *storage_area_id = DOMStorageContext::kInvalidStorageId;
     return;
   }
   DOMStorageArea* storage_area = storage_namespace->GetStorageArea(
@@ -135,10 +130,10 @@ void DOMStorageMessageFilter::OnLength(int64 storage_area_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
-    BadMessageReceived();
-    return;
+    *length = 0;
+  } else {
+    *length = storage_area->Length();
   }
-  *length = storage_area->Length();
 }
 
 void DOMStorageMessageFilter::OnKey(int64 storage_area_id, unsigned index,
@@ -146,10 +141,10 @@ void DOMStorageMessageFilter::OnKey(int64 storage_area_id, unsigned index,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
-    BadMessageReceived();
-    return;
+    *key = NullableString16(true);
+  } else {
+    *key = storage_area->Key(index);
   }
-  *key = storage_area->Key(index);
 }
 
 void DOMStorageMessageFilter::OnGetItem(int64 storage_area_id,
@@ -158,10 +153,10 @@ void DOMStorageMessageFilter::OnGetItem(int64 storage_area_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
-    BadMessageReceived();
-    return;
+    *value = NullableString16(true);
+  } else {
+    *value = storage_area->GetItem(key);
   }
-  *value = storage_area->GetItem(key);
 }
 
 void DOMStorageMessageFilter::OnSetItem(
@@ -171,7 +166,8 @@ void DOMStorageMessageFilter::OnSetItem(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
-    BadMessageReceived();
+    *old_value = NullableString16(true);
+    *result = WebKit::WebStorageArea::ResultOK;
     return;
   }
 
@@ -196,7 +192,7 @@ void DOMStorageMessageFilter::OnRemoveItem(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
-    BadMessageReceived();
+    *old_value = NullableString16(true);
     return;
   }
 
@@ -209,7 +205,7 @@ void DOMStorageMessageFilter::OnClear(int64 storage_area_id, const GURL& url,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
-    BadMessageReceived();
+    *something_cleared = false;
     return;
   }
 
