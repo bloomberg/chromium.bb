@@ -894,10 +894,14 @@ terminal_draw_contents(struct terminal *terminal)
 	struct glyph_run run;
 	cairo_font_extents_t extents;
 
+	surface = window_get_surface(terminal->window);
 	window_get_child_allocation(terminal->window, &allocation);
-
-	surface = display_create_surface(terminal->display, &allocation);
 	cr = cairo_create(surface);
+	cairo_rectangle(cr, allocation.x, allocation.y,
+			allocation.width, allocation.height);
+	cairo_clip(cr);
+	cairo_push_group(cr);
+
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	terminal_set_color(terminal, cr, terminal->color_scheme->border);
 	cairo_paint(cr);
@@ -909,7 +913,8 @@ terminal_draw_contents(struct terminal *terminal)
 	top_margin = (allocation.height - terminal->height * extents.height) / 2;
 
 	cairo_set_line_width(cr, 1.0);
-
+	cairo_translate(cr, allocation.x + side_margin,
+			allocation.y + top_margin);
 	/* paint the background */
 	for (row = 0; row < terminal->height; row++) {
 		for (col = 0; col < terminal->width; col++) {
@@ -920,8 +925,8 @@ terminal_draw_contents(struct terminal *terminal)
 				continue;
 
 			terminal_set_color(terminal, cr, attr.attr.bg);
-			cairo_move_to(cr, side_margin + (col * extents.max_x_advance),
-			      top_margin + (row * extents.height));
+			cairo_move_to(cr, col * extents.max_x_advance,
+				      row * extents.height);
 			cairo_rel_line_to(cr, extents.max_x_advance, 0);
 			cairo_rel_line_to(cr, 0, extents.height);
 			cairo_rel_line_to(cr, -extents.max_x_advance, 0);
@@ -942,8 +947,8 @@ terminal_draw_contents(struct terminal *terminal)
 
 			glyph_run_flush(&run, attr);
 
-			text_x = side_margin + col * extents.max_x_advance;
-			text_y = top_margin + extents.ascent + row * extents.height;
+			text_x = col * extents.max_x_advance;
+			text_y = extents.ascent + row * extents.height;
 			if (attr.attr.a & ATTRMASK_UNDERLINE) {
 				terminal_set_color(terminal, cr, attr.attr.fg);
 				cairo_move_to(cr, text_x, (double)text_y + 1.5);
@@ -962,8 +967,8 @@ terminal_draw_contents(struct terminal *terminal)
 		d = 0.5;
 
 		cairo_set_line_width(cr, 1);
-		cairo_move_to(cr, side_margin + terminal->column * extents.max_x_advance + d,
-			      top_margin + terminal->row * extents.height + d);
+		cairo_move_to(cr, terminal->column * extents.max_x_advance + d,
+			      terminal->row * extents.height + d);
 		cairo_rel_line_to(cr, extents.max_x_advance - 2 * d, 0);
 		cairo_rel_line_to(cr, 0, extents.height - 2 * d);
 		cairo_rel_line_to(cr, -extents.max_x_advance + 2 * d, 0);
@@ -972,10 +977,9 @@ terminal_draw_contents(struct terminal *terminal)
 		cairo_stroke(cr);
 	}
 
+	cairo_pop_group_to_source(cr);
+	cairo_paint(cr);
 	cairo_destroy(cr);
-
-	window_copy_surface(terminal->window, &allocation, surface);
-
 	cairo_surface_destroy(surface);
 }
 
