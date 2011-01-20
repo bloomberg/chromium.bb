@@ -6309,16 +6309,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_FONT_TITLE" desc="Title that appears in the sub-dialogue for Font within Fonts and Encoding tab">
         Font
       </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_STANDARD_LABEL" desc="Label of the standard fonts section of the Fonts and Encoding tab">
-        Standard font
-      </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL" desc="Dialog label for Serif font selection">
         Serif Font:
       </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL" desc="Dialog label for Sans Serif font selection">
         Sans-Serif Font:
       </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL" desc="Label of the fixed-width fonts section of the Fonts and Encoding tab">
+      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL" desc="Label of the standard fonts section of the Fonts and Encoding subpage">
+        Standard font:
+      </message>
+      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL" desc="Label of the fixed-width fonts section of the Fonts and Encoding subpage">
         Fixed-width font:
       </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_BUTTON_LABEL" desc="Button label for font selection">

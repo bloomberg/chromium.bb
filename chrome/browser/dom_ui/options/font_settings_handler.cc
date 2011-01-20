@@ -35,8 +35,9 @@ void FontSettingsHandler::GetLocalizedValues(
   localized_strings->SetString("fontSettingsTitle",
       l10n_util::GetStringUTF16(IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE));
   localized_strings->SetString("fontSettingsStandard",
-      l10n_util::GetStringUTF16(
-          IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_FONT_TITLE));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(
+              IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL)));
   localized_strings->SetString("fontSettingsFixedWidth",
       dom_options_util::StripColon(
           l10n_util::GetStringUTF16(
@@ -47,12 +48,6 @@ void FontSettingsHandler::GetLocalizedValues(
   localized_strings->SetString("fontSettingsEncoding",
       l10n_util::GetStringUTF16(
           IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE));
-  localized_strings->SetString("fontSettingsSerifLabel",
-      l10n_util::GetStringUTF16(
-          IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL));
-  localized_strings->SetString("fontSettingsSansSerifLabel",
-      l10n_util::GetStringUTF16(
-          IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL));
   localized_strings->SetString("fontSettingsSizeLabel",
       l10n_util::GetStringUTF16(
           IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_SELECTOR_LABEL));
