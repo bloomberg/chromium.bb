@@ -75,9 +75,6 @@ class ProgramManager {
       return sampler_indices_;
     }
 
-    // Resets the program after an unsuccessful link.
-    void Reset();
-
     // Updates the program info after a successful link.
     void Update();
 
@@ -131,6 +128,10 @@ class ProgramManager {
       return valid_;
     }
 
+    void ClearLinkStatus() {
+      link_status_ = false;
+    }
+
     bool AttachShader(ShaderManager* manager, ShaderManager::ShaderInfo* info);
     void DetachShader(ShaderManager* manager, ShaderManager::ShaderInfo* info);
 
@@ -169,6 +170,9 @@ class ProgramManager {
       service_id_ = 0;
     }
 
+    // Resets the program.
+    void Reset();
+
     const UniformInfo* AddUniformInfo(
         GLsizei size, GLenum type, GLint location, const std::string& name);
 
@@ -205,8 +209,11 @@ class ProgramManager {
     // Shaders by type of shader.
     ShaderManager::ShaderInfo::Ref attached_shaders_[kMaxAttachedShaders];
 
-    // This is true if glLinkProgram was successful.
+    // This is true if glLinkProgram was successful at least once.
     bool valid_;
+
+    // This is true if glLinkProgram was successful last time it was called.
+    bool link_status_;
 
     // Log info
     std::string log_info_;

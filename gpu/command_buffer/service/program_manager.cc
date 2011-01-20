@@ -48,11 +48,13 @@ ProgramManager::ProgramInfo::ProgramInfo(GLuint service_id)
       max_attrib_name_length_(0),
       max_uniform_name_length_(0),
       service_id_(service_id),
-      valid_(false) {
+      valid_(false),
+      link_status_(false) {
 }
 
 void ProgramManager::ProgramInfo::Reset() {
   valid_ = false;
+  link_status_ = false;
   max_uniform_name_length_ = 0;
   max_attrib_name_length_ = 0;
   attrib_infos_.clear();
@@ -76,6 +78,7 @@ void ProgramManager::ProgramInfo::UpdateLogInfo() {
 
 void ProgramManager::ProgramInfo::Update() {
   Reset();
+  link_status_ = true;
   GLint num_attribs = 0;
   GLint max_len = 0;
   GLint max_location = -1;
@@ -337,7 +340,7 @@ void ProgramManager::ProgramInfo::GetProgramiv(GLenum pname, GLint* params) {
       *params = max_uniform_name_length_ + 1;
       break;
     case GL_LINK_STATUS:
-      *params = valid_;
+      *params = link_status_;
       break;
     case GL_INFO_LOG_LENGTH:
       // Notice +1 to accomodate NULL terminator.

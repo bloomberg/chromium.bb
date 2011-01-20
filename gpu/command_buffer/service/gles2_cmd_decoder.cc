@@ -3607,16 +3607,17 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
   if (!info) {
     return;
   }
+
+  info->ClearLinkStatus();
   if (!info->CanLink()) {
     return;
   }
+
   glLinkProgram(info->service_id());
   GLint success = 0;
   glGetProgramiv(info->service_id(), GL_LINK_STATUS, &success);
   if (success) {
     info->Update();
-  } else {
-    info->Reset();
   }
 };
 
