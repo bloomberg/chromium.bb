@@ -22,9 +22,16 @@ StatusTrayWin::StatusTrayWin()
   ATOM clazz = RegisterClassEx(&wc);
   DCHECK(clazz);
 
-  // Create an offscreen window for handling messages for the status icons.
+  // If the taskbar is re-created after we start up, we have to rebuild all of
+  // our icons.
+  taskbar_created_message_ = RegisterWindowMessage(TEXT("TaskbarCreated"));
+
+  // Create an offscreen window for handling messages for the status icons. We
+  // create a hidden WS_POPUP window instead of an HWND_MESSAGE window, because
+  // only top-level windows such as popups can receive broadcast messages like
+  // "TaskbarCreated".
   window_ = CreateWindow(chrome::kStatusTrayWindowClass,
-                         0, 0, 0, 0, 0, 0, HWND_MESSAGE, 0, hinst, 0);
+                         0, WS_POPUP, 0, 0, 0, 0, 0, 0, hinst, 0);
   ui::SetWindowUserData(window_, this);
 }
 
@@ -34,34 +41,44 @@ LRESULT CALLBACK StatusTrayWin::WndProcStatic(HWND hwnd,
                                               LPARAM lparam) {
   StatusTrayWin* msg_wnd = reinterpret_cast<StatusTrayWin*>(
       GetWindowLongPtr(hwnd, GWLP_USERDATA));
-  return msg_wnd->WndProc(hwnd, message, wparam, lparam);
+  if (msg_wnd)
+    return msg_wnd->WndProc(hwnd, message, wparam, lparam);
+  else
+    return ::DefWindowProc(hwnd, message, wparam, lparam);
 }
 
 LRESULT CALLBACK StatusTrayWin::WndProc(HWND hwnd,
                                         UINT message,
                                         WPARAM wparam,
                                         LPARAM lparam) {
-  switch (message) {
-    case kStatusIconMessage:
-      switch (lparam) {
-        case WM_LBUTTONDOWN:
-        case WM_RBUTTONDOWN:
-        case WM_CONTEXTMENU:
-          // Walk our icons, find which one was clicked on, and invoke its
-          // HandleClickEvent() method.
-          for (StatusIconList::const_iterator iter = status_icons().begin();
-               iter != status_icons().end();
-               ++iter) {
-            StatusIconWin* win_icon = static_cast<StatusIconWin*>(*iter);
-            if (win_icon->icon_id() == wparam) {
-              POINT p;
-              GetCursorPos(&p);
-              win_icon->HandleClickEvent(p.x, p.y, lparam == WM_LBUTTONDOWN);
-            }
+  if (message == taskbar_created_message_) {
+    // We need to reset all of our icons because the taskbar went away.
+    for (StatusIconList::const_iterator iter = status_icons().begin();
+         iter != status_icons().end();
+         ++iter) {
+      StatusIconWin* win_icon = static_cast<StatusIconWin*>(*iter);
+      win_icon->ResetIcon();
+    }
+    return TRUE;
+  } else if (message == kStatusIconMessage) {
+    switch (lparam) {
+      case WM_LBUTTONDOWN:
+      case WM_RBUTTONDOWN:
+      case WM_CONTEXTMENU:
+        // Walk our icons, find which one was clicked on, and invoke its
+        // HandleClickEvent() method.
+        for (StatusIconList::const_iterator iter = status_icons().begin();
+             iter != status_icons().end();
+             ++iter) {
+          StatusIconWin* win_icon = static_cast<StatusIconWin*>(*iter);
+          if (win_icon->icon_id() == wparam) {
+            POINT p;
+            GetCursorPos(&p);
+            win_icon->HandleClickEvent(p.x, p.y, lparam == WM_LBUTTONDOWN);
           }
-          return TRUE;
-      }
-      break;
+        }
+        return TRUE;
+    }
   }
   return ::DefWindowProc(hwnd, message, wparam, lparam);
 }

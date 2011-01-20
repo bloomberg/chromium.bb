@@ -33,8 +33,13 @@ class StatusTrayWin : public StatusTray {
 
   // The unique icon ID we will assign to the next icon.
   UINT next_icon_id_;
+
   // The window used for processing events.
   HWND window_;
+
+  // The message ID of the "TaskbarCreated" message, sent to us when we need to
+  // reset our status icons.
+  UINT taskbar_created_message_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusTrayWin);
 };

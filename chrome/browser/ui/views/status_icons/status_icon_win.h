@@ -37,6 +37,9 @@ class StatusIconWin : public StatusIcon {
   // otherwise displays the context menu if there is one.
   void HandleClickEvent(int x, int y, bool left_button_click);
 
+  // Re-creates the status tray icon now after the taskbar has been created.
+  void ResetIcon();
+
  protected:
   // Overridden from StatusIcon.
   virtual void UpdatePlatformContextMenu(ui::MenuModel* menu);
