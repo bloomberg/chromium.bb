@@ -210,6 +210,11 @@
             '<@(ppapi_sources)',
             'browser_utils.cc',
           ],
+          'xcode_settings': {
+            'OTHER_LDFLAGS': [
+                '-Wl,-exported_symbols_list <(DEPTH)/native_client/src/trusted/plugin/ppapi/ppapi.def'
+            ],
+          },
           'defines': [
             'NACL_PPAPI',
           ],
