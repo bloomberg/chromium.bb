@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_IPC_TEST_SINK_H_
-#define CHROME_COMMON_IPC_TEST_SINK_H_
+#ifndef IPC_IPC_TEST_SINK_H_
+#define IPC_IPC_TEST_SINK_H_
 #pragma once
 
 #include <utility>
@@ -43,7 +43,7 @@ class Message;
 //
 // To hook up the sink, all you need to do is call OnMessageReceived when a
 // message is received.
-class TestSink : public IPC::Channel {
+class TestSink : public Channel {
  public:
   TestSink();
   ~TestSink();
@@ -88,4 +88,4 @@ class TestSink : public IPC::Channel {
 
 }  // namespace IPC
 
-#endif  // CHROME_COMMON_IPC_TEST_SINK_H_
+#endif  // IPC_IPC_TEST_SINK_H_

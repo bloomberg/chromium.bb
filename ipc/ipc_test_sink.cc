@@ -1,8 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/ipc_test_sink.h"
+#include "ipc/ipc_test_sink.h"
+
 #include "ipc/ipc_message.h"
 
 namespace IPC {
@@ -13,7 +14,7 @@ TestSink::TestSink() {
 TestSink::~TestSink() {
 }
 
-bool TestSink::Send(IPC::Message* message) {
+bool TestSink::Send(Message* message) {
   OnMessageReceived(*message);
   delete message;
   return true;

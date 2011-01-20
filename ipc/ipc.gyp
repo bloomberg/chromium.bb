@@ -74,6 +74,18 @@
         }]
       ],
     },
+    {
+      'target_name': 'test_support_ipc',
+      'type': '<(library)',
+      'dependencies': [
+        'ipc',
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'ipc_test_sink.cc',
+        'ipc_test_sink.h',
+      ],
+    },
   ],
 }
 
