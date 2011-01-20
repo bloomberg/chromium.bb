@@ -4,7 +4,6 @@
 
 #include "chrome/browser/service/service_process_control.h"
 
-#include "app/app_switches.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/process_util.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/service_messages.h"
 #include "chrome/common/service_process_util.h"
+#include "ui/base/ui_base_switches.h"
 
 // ServiceProcessControl::Launcher implementation.
 // This class is responsible for launching the service process on the
