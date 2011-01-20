@@ -3961,11 +3961,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_REMOTING_NAME" desc="Description of the 'Remoting' lab.">
         Remoting
       </message>
-      <message name="IDS_FLAGS_REMOTING_CLIENT_DESCRIPTION" desc="Description of the 'Remoting' client lab.">
-        Enable Remoting Client support.
-      </message>
-      <message name="IDS_FLAGS_REMOTING_HOST_DESCRIPTION" desc="Description of the 'Remoting' host lab.">
-        Enable Remoting Host support.
+      <message name="IDS_FLAGS_REMOTING_DESCRIPTION" desc="Description of the 'Remoting' client lab.">
+        Enable the UI plus backing code for the Remoting serivce process, and client plugin. Warning: This is currently for developer testing only. Unless you are on the dev team and whitelisted, nothing in the enabled UI will work.
       </message>
       <message name="IDS_FLAGS_ENABLE_NACL_NAME" desc="Description of the 'Enable Native Client' lab.">
         Native Client
