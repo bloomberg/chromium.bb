@@ -1198,12 +1198,10 @@ void LocationBarViewGtk::AdjustChildrenVisibility() {
 
   // Only one of |tab_to_search_box_| and |tab_to_search_hint_| can be visible
   // at the same time.
-  if (!show_selected_keyword_ && GTK_WIDGET_VISIBLE(tab_to_search_box_)) {
+  if (!show_selected_keyword_ && GTK_WIDGET_VISIBLE(tab_to_search_box_))
     gtk_widget_hide(tab_to_search_box_);
-  } else if (!show_keyword_hint_ && GTK_WIDGET_VISIBLE(tab_to_search_hint_)) {
+  else if (!show_keyword_hint_ && GTK_WIDGET_VISIBLE(tab_to_search_hint_))
     gtk_widget_hide(tab_to_search_hint_);
-    location_entry_->set_enable_tab_to_search(false);
-  }
 
   if (show_selected_keyword_) {
     GtkRequisition box, full_label, partial_label;
@@ -1241,17 +1239,14 @@ void LocationBarViewGtk::AdjustChildrenVisibility() {
 
     if (icon.width >= entry_box_width_ - kInnerPadding) {
       gtk_widget_hide(tab_to_search_hint_);
-      location_entry_->set_enable_tab_to_search(false);
     } else if (full_width >= available_width) {
       gtk_widget_hide(tab_to_search_hint_leading_label_);
       gtk_widget_hide(tab_to_search_hint_trailing_label_);
       gtk_widget_show(tab_to_search_hint_);
-      location_entry_->set_enable_tab_to_search(true);
     } else if (full_width < available_width) {
       gtk_widget_show(tab_to_search_hint_leading_label_);
       gtk_widget_show(tab_to_search_hint_trailing_label_);
       gtk_widget_show(tab_to_search_hint_);
-      location_entry_->set_enable_tab_to_search(true);
     }
   }
 }

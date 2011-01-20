@@ -102,32 +102,17 @@ class AutocompleteEditController {
 
 class AutocompleteEditModel : public NotificationObserver {
  public:
-  enum KeywordUIState {
-    // The user is typing normally.
-    NORMAL,
-    // The user is editing in the middle of the input string.  Even if the
-    // input looks like a keyword, don't display the keyword UI, as to not
-    // interfere with the user's editing.
-    NO_KEYWORD,
-    // The user has triggered the keyword UI.  Until it disappears, bias
-    // autocomplete results so that input strings of the keyword alone default
-    // to the keyword provider, not a normal navigation or search.
-    KEYWORD,
-  };
-
   struct State {
     State(bool user_input_in_progress,
           const std::wstring& user_text,
           const std::wstring& keyword,
-          bool is_keyword_hint,
-          KeywordUIState keyword_ui_state);
+          bool is_keyword_hint);
     ~State();
 
     bool user_input_in_progress;
     const std::wstring user_text;
     const std::wstring keyword;
     const bool is_keyword_hint;
-    const KeywordUIState keyword_ui_state;
   };
 
   AutocompleteEditModel(AutocompleteEditView* view,
@@ -255,14 +240,12 @@ class AutocompleteEditModel : public NotificationObserver {
 
   // Accessors for keyword-related state (see comments on keyword_ and
   // is_keyword_hint_).
-  std::wstring keyword() const {
-    return (is_keyword_hint_ || (keyword_ui_state_ != NO_KEYWORD)) ?
-        keyword_ : std::wstring();
-  }
+  const std::wstring& keyword() const { return keyword_; }
   bool is_keyword_hint() const { return is_keyword_hint_; }
 
-  // Accepts the current keyword hint as a keyword.
-  void AcceptKeyword();
+  // Accepts the current keyword hint as a keyword. It always returns true for
+  // caller convenience.
+  bool AcceptKeyword();
 
   // Clears the current keyword.  |visible_text| is the (non-keyword) text
   // currently visible in the edit.
@@ -294,8 +277,8 @@ class AutocompleteEditModel : public NotificationObserver {
   // necessary.
   void OnControlKeyChanged(bool pressed);
 
-  // Called when the user pastes in text that replaces the entire edit contents.
-  void on_paste_replacing_all() { paste_state_ = REPLACING_ALL; }
+  // Called when the user pastes in text.
+  void on_paste() { paste_state_ = PASTING; }
 
   // Called when the user presses up or down.  |count| is a repeat count,
   // negative for moving up, positive for moving down.
@@ -338,15 +321,14 @@ class AutocompleteEditModel : public NotificationObserver {
 
  private:
   enum PasteState {
-    NONE,           // Most recent edit was not a paste that replaced all text.
-    REPLACED_ALL,   // Most recent edit was a paste that replaced all text.
-    REPLACING_ALL,  // In the middle of doing a paste that replaces all
-                    // text.  We need this intermediate state because OnPaste()
-                    // does the actual detection of such pastes, but
-                    // OnAfterPossibleChange() has to update the paste state
-                    // for every edit.  If OnPaste() set the state directly to
-                    // REPLACED_ALL, OnAfterPossibleChange() wouldn't know
+    NONE,           // Most recent edit was not a paste.
+    PASTING,        // In the middle of doing a paste. We need this intermediate
+                    // state because OnPaste() does the actual detection of
+                    // paste, but OnAfterPossibleChange() has to update the
+                    // paste state for every edit. If OnPaste() set the state
+                    // directly to PASTED, OnAfterPossibleChange() wouldn't know
                     // whether that represented the current edit or a past one.
+    PASTED,         // Most recent edit was a paste.
   };
 
   enum ControlKeyState {
@@ -392,6 +374,14 @@ class AutocompleteEditModel : public NotificationObserver {
   // function during copy handling, when the control key is down to trigger the
   // copy.
   bool GetURLForText(const std::wstring& text, GURL* url) const;
+
+  // Accepts current keyword if the user only typed a space at the end of
+  // |new_user_text|. Returns true if the current keyword is accepted.
+  bool MaybeAcceptKeywordBySpace(const std::wstring& new_user_text);
+
+  // Checks if a given character is a valid space character for accepting
+  // keyword.
+  static bool IsSpaceCharForAcceptingKeyword(wchar_t c);
 
   AutocompleteEditView* view_;
 
@@ -461,12 +451,10 @@ class AutocompleteEditModel : public NotificationObserver {
   // them and not revert all the way to the permanent_text_.
   bool has_temporary_text_;
   GURL original_url_;
-  KeywordUIState original_keyword_ui_state_;
 
-  // When the user's last action was to paste and replace all the text, we
-  // disallow inline autocomplete (on the theory that the user is trying to
-  // paste in a new URL or part of one, and in either case inline autocomplete
-  // would get in the way).
+  // When the user's last action was to paste, we disallow inline autocomplete
+  // (on the theory that the user is trying to paste in a new URL or part of
+  // one, and in either case inline autocomplete would get in the way).
   PasteState paste_state_;
 
   // Whether the control key is depressed.  We track this to avoid calling
@@ -484,9 +472,6 @@ class AutocompleteEditModel : public NotificationObserver {
   // user hasn't actually selected a keyword yet.  When this is true, we can use
   // keyword_ to show a "Press <tab> to search" sort of hint.
   bool is_keyword_hint_;
-
-  // See KeywordUIState enum.
-  KeywordUIState keyword_ui_state_;
 
   // Paste And Go-related state.  See CanPasteAndGo().
   mutable GURL paste_and_go_url_;

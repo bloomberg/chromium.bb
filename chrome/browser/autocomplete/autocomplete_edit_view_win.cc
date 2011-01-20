@@ -861,8 +861,11 @@ bool AutocompleteEditViewWin::OnAfterPossibleChangeInternal(
       new_sel.cpMax = length;
     SetSelectionRange(new_sel);
   }
-  const bool selection_differs = (new_sel.cpMin != sel_before_change_.cpMin) ||
-      (new_sel.cpMax != sel_before_change_.cpMax);
+  const bool selection_differs =
+      ((new_sel.cpMin != new_sel.cpMax) ||
+       (sel_before_change_.cpMin != sel_before_change_.cpMax)) &&
+      ((new_sel.cpMin != sel_before_change_.cpMin) ||
+       (new_sel.cpMax != sel_before_change_.cpMax));
   const bool at_end_of_edit =
       (new_sel.cpMin == length) && (new_sel.cpMax == length);
 
@@ -1690,10 +1693,8 @@ void AutocompleteEditViewWin::OnPaste() {
   // Replace the selection if we have something to paste.
   const std::wstring text(GetClipboardText());
   if (!text.empty()) {
-    // If this paste will be replacing all the text, record that, so we can do
-    // different behaviors in such a case.
-    if (IsSelectAll())
-      model_->on_paste_replacing_all();
+    // Record this paste, so we can do different behavior.
+    model_->on_paste();
     // Force a Paste operation to trigger the text_changed code in
     // OnAfterPossibleChange(), even if identical contents are pasted into the
     // text box.
@@ -1972,7 +1973,7 @@ bool AutocompleteEditViewWin::OnKeyDownOnlyWritable(TCHAR key,
     }
 
     case VK_TAB: {
-      if (model_->is_keyword_hint() && !model_->keyword().empty()) {
+      if (model_->is_keyword_hint()) {
         // Accept the keyword.
         ScopedFreeze freeze(this, GetTextObjectModel());
         model_->AcceptKeyword();

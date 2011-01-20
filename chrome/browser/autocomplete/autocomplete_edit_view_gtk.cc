@@ -184,7 +184,6 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       tab_was_pressed_(false),
       paste_clipboard_requested_(false),
       enter_was_inserted_(false),
-      enable_tab_to_search_(true),
       selection_suggested_(false),
       delete_was_pressed_(false),
       delete_at_end_pressed_(false),
@@ -650,13 +649,10 @@ void AutocompleteEditViewGtk::OnRevertTemporaryText() {
 }
 
 void AutocompleteEditViewGtk::OnBeforePossibleChange() {
-  // If this change is caused by a paste clipboard action and all text is
-  // selected, then call model_->on_paste_replacing_all() to prevent inline
-  // autocomplete.
+  // Record this paste, so we can do different behavior.
   if (paste_clipboard_requested_) {
     paste_clipboard_requested_ = false;
-    if (IsSelectAll())
-      model_->on_paste_replacing_all();
+    model_->on_paste();
   }
 
   // This method will be called in HandleKeyPress() method just before
@@ -696,8 +692,11 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
 
   CharRange new_sel = GetSelection();
   int length = GetTextLength();
-  bool selection_differs = (new_sel.cp_min != sel_before_change_.cp_min) ||
-                           (new_sel.cp_max != sel_before_change_.cp_max);
+  bool selection_differs =
+      ((new_sel.cp_min != new_sel.cp_max) ||
+       (sel_before_change_.cp_min != sel_before_change_.cp_max)) &&
+      ((new_sel.cp_min != sel_before_change_.cp_min) ||
+       (new_sel.cp_max != sel_before_change_.cp_max));
   bool at_end_of_edit = (new_sel.cp_min == length && new_sel.cp_max == length);
 
   // See if the text or selection have changed since OnBeforePossibleChange().
@@ -1626,18 +1625,13 @@ void AutocompleteEditViewGtk::HandleViewMoveFocus(GtkWidget* widget,
   bool handled = false;
 
   // Trigger Tab to search behavior only when Tab key is pressed.
-  if (model_->is_keyword_hint() && !model_->keyword().empty()) {
-    if (enable_tab_to_search_) {
-      model_->AcceptKeyword();
-      handled = true;
-    }
+  if (model_->is_keyword_hint()) {
+    handled = model_->AcceptKeyword();
+  } else if (GTK_WIDGET_VISIBLE(instant_view_)) {
+    controller_->OnCommitSuggestedText(GetText());
+    handled = true;
   } else {
-    if (GTK_WIDGET_VISIBLE(instant_view_)) {
-      controller_->OnCommitSuggestedText(GetText());
-      handled = true;
-    } else {
-      handled = controller_->AcceptCurrentInstantPreview();
-    }
+    handled = controller_->AcceptCurrentInstantPreview();
   }
 
   if (handled) {
