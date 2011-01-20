@@ -46,7 +46,7 @@ like this:
   "name": "My extension",
   ...
   <b>"page_action": {
-    "default_icon": "icons/foo.png", <em>// <b>required</b></em>
+    "default_icon": "icons/foo.png", <em>// optional</em>
     "default_title": "Do action",    <em>// optional; shown in tooltip</em>
     "default_popup": "popup.html"    <em>// optional</em>
   }</b>,
@@ -57,8 +57,8 @@ like this:
 
 <p>
 Like browser actions,
-page actions have an icon and
-can also have a tooltip and popup;
+page actions can have an icon,
+a tooltip, and popup;
 they can't have badges, however.
 In addition, page actions can appear and disappear.
 You can find information about icons, tooltips, and popups

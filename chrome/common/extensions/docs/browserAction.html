@@ -385,7 +385,7 @@ like this:
   "name": "My extension",
   ...
   <b>"browser_action": {
-    "default_icon": "images/icon19.png", <em>// <b>required</b></em>
+    "default_icon": "images/icon19.png", <em>// optional</em>
     "default_title": "Google Mail",      <em>// optional; shown in tooltip</em>
     "default_popup": "popup.html"        <em>// optional</em>
   }</b>,
@@ -395,8 +395,7 @@ like this:
 <h2 id="ui">Parts of the UI</h2>
 
 <p>
-A browser action must have an <a href="#icon">icon</a>.
-It can also have
+A browser action can have an <a href="#icon">icon</a>,
 a <a href="#tooltip">tooltip</a>,
 a <a href="#badge">badge</a>,
 and a <a href="#popups">popup</a>.
