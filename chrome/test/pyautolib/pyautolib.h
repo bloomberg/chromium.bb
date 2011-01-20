@@ -192,6 +192,10 @@ class PyUITestBase : public UITestBase {
     return TestTimeouts::action_max_timeout_ms();
   }
 
+  int command_execution_timeout_ms() const {
+    return TestTimeouts::command_execution_timeout_ms();
+  }
+
  private:
   // Enables PostTask to main thread.
   // Should be shared across multiple instances of PyUITestBase so that this

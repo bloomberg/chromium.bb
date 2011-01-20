@@ -244,12 +244,6 @@ class UITestBase {
     return launcher_->browser_quit_time();
   }
 
-  // Compatibility timeout accessors.
-  // TODO(phajdan.jr): update callers and remove these.
-  static int command_execution_timeout_ms() {
-    return TestTimeouts::command_execution_timeout_ms();
-  }
-
   // Fetch the state which determines whether the profile will be cleared on
   // next startup.
   bool get_clear_profile() const {
