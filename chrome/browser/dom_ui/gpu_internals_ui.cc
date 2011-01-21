@@ -279,6 +279,8 @@ DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
       base::StringPrintf("0x%04x", gpu_info.vendor_id())));
   basic_info->Append(NewDescriptionValuePair("Device Id",
       base::StringPrintf("0x%04x", gpu_info.device_id())));
+  basic_info->Append(NewDescriptionValuePair("Driver vendor",
+      gpu_info.driver_vendor()));
   basic_info->Append(NewDescriptionValuePair("Driver version",
       gpu_info.driver_version()));
   basic_info->Append(NewDescriptionValuePair("Pixel shader version",
@@ -287,6 +289,12 @@ DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
       VersionNumberToString(gpu_info.vertex_shader_version())));
   basic_info->Append(NewDescriptionValuePair("GL version",
       VersionNumberToString(gpu_info.gl_version())));
+  basic_info->Append(NewDescriptionValuePair("GL_VENDOR",
+      gpu_info.gl_vendor()));
+  basic_info->Append(NewDescriptionValuePair("GL_RENDERER",
+      gpu_info.gl_renderer()));
+  basic_info->Append(NewDescriptionValuePair("GL_VERSION",
+      gpu_info.gl_version_string()));
 
   DictionaryValue* info = new DictionaryValue();
   info->Set("basic_info", basic_info);
