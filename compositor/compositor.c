@@ -473,6 +473,26 @@ surface_map_toplevel(struct wl_client *client,
 }
 
 static void
+surface_map_transient(struct wl_client *client,
+		      struct wl_surface *surface, struct wl_surface *parent,
+		      int x, int y, uint32_t flags)
+{
+	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_surface *pes = (struct wlsc_surface *) parent;
+
+	if (es->mapped)
+		return;
+
+	es->x = pes->x + x;
+	es->y = pes->y + y;
+
+	wlsc_surface_update_matrix(es);
+	wl_list_insert(&es->compositor->surface_list, &es->link);
+	wlsc_compositor_schedule_repaint(es->compositor);
+	es->mapped = 1;
+}
+
+static void
 surface_damage(struct wl_client *client,
 	       struct wl_surface *surface,
 	       int32_t x, int32_t y, int32_t width, int32_t height)
@@ -487,6 +507,7 @@ const static struct wl_surface_interface surface_interface = {
 	surface_destroy,
 	surface_attach,
 	surface_map_toplevel,
+	surface_map_transient,
 	surface_damage
 };
 

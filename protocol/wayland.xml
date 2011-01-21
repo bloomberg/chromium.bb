@@ -341,6 +341,21 @@
     <!-- Make the surface visible as a toplevel window. -->
     <request name="map_toplevel"/>
 
+    <!-- Map the surface relative to an existing surface. The x and y
+         arguments specify the locations of the upper left corner of
+         the surface relative to the upper left corner of the parent
+         surface.  The flags argument controls overflow/clipping
+         behaviour when the surface would intersect a screen edge,
+         panel or such.  And possibly whether the offset only
+         determines the initial position or if the surface is locked
+         to that relative position during moves. -->
+    <request name="map_transient">
+      <arg name="parent" type="object" interface="surface"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="flags" type="uint"/>
+    </request>
+
     <!-- Notify the server that the attached buffer's contents have
          changed, and request a redraw. The arguments allow you to
          damage only a part of the surface, but the server may ignore
