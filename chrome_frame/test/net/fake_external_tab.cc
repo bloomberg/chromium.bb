@@ -457,6 +457,10 @@ void FilterDisabledTests() {
     // Chrome's HTTP stack like the ability to set the proxy for a URL, etc.
     "URLRequestTestHTTP.ProxyTunnelRedirectTest",
     "URLRequestTestHTTP.UnexpectedServerAuthTest",
+
+    // This test is disabled as it expects an empty UA to be echoed back from
+    // the server which is not the case in ChromeFrame.
+    "URLRequestTestHTTP.DefaultUserAgent",
   };
 
   std::string filter("-");  // All following filters will be negative.
