@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -136,7 +135,7 @@ void FlagsDOMHandler::HandleRequestFlagsExperiments(const ListValue* args) {
   DictionaryValue results;
   results.Set("flagsExperiments",
               about_flags::GetFlagsExperimentsData(
-                  dom_ui_->GetProfile()->GetPrefs()));
+                  g_browser_process->local_state()));
   results.SetBoolean("needsRestart",
                      about_flags::IsRestartNeededToCommitChanges());
   dom_ui_->CallJavascriptFunction(L"returnFlagsExperiments", results);
@@ -155,7 +154,7 @@ void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
     return;
 
   about_flags::SetExperimentEnabled(
-      dom_ui_->GetProfile()->GetPrefs(),
+      g_browser_process->local_state(),
       experiment_internal_name,
       enable_str == "true");
 }
@@ -195,6 +194,6 @@ RefCountedMemory* FlagsUI::GetFaviconResourceBytes() {
 }
 
 // static
-void FlagsUI::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterListPref(prefs::kEnabledLabsExperiments);
+void FlagsUI::RegisterPrefs(PrefService* local_state) {
+  local_state->RegisterListPref(prefs::kEnabledLabsExperiments);
 }

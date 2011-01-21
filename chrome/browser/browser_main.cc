@@ -1244,6 +1244,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Initialize the prefs of the local state.
   browser::RegisterLocalState(local_state);
 
+  // Convert active labs into switches. Modifies the current command line.
+  about_flags::ConvertFlagsToSwitches(local_state,
+                                      CommandLine::ForCurrentProcess());
+
   // Now that all preferences have been registered, set the install date
   // for the uninstall metrics if this is our first run. This only actually
   // gets used if the user has metrics reporting enabled at uninstall time.
@@ -1579,7 +1583,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   HandleTestParameters(parsed_command_line);
   RecordBreakpadStatusUMA(metrics);
-  about_flags::RecordUMAStatistics(user_prefs);
+  about_flags::RecordUMAStatistics(local_state);
 
   // Stat the directory with the inspector's files so that we can know if we
   // should display the entry in the context menu or not.
