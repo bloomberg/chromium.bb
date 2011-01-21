@@ -5,8 +5,7 @@
 cr.define('options.search_engines', function() {
   const InlineEditableItemList = options.InlineEditableItemList;
   const InlineEditableItem = options.InlineEditableItem;
-  const ListInlineHeaderSelectionController =
-      options.ListInlineHeaderSelectionController;
+  const ListSelectionController = cr.ui.ListSelectionController;
 
   /**
    * Creates a new search engine list item.
@@ -90,50 +89,37 @@ cr.define('options.search_engines', function() {
 
       this.currentlyValid_ = !this.isPlaceholder_;
 
-      if (engine['heading']) {
-        this.classList.add('heading');
-        this.editable = false;
-      } else if (engine['default']) {
+      if (engine['default'])
         this.classList.add('default');
-      }
 
       this.deletable = engine['canBeRemoved'];
-
-      var nameText = engine['name'];
-      var keywordText = engine['keyword'];
-      var urlText = engine['url'];
-      if (engine['heading']) {
-        nameText = engine['heading'];
-        keywordText = localStrings.getString('searchEngineTableKeywordHeader');
-        urlText = localStrings.getString('searchEngineTableURLHeader');
-      }
 
       // Construct the name column.
       var nameColEl = this.ownerDocument.createElement('div');
       nameColEl.className = 'name-column';
       this.contentElement.appendChild(nameColEl);
 
-      // For non-heading rows, start with a favicon.
-      if (!engine['heading']) {
-        var faviconDivEl = this.ownerDocument.createElement('div');
-        faviconDivEl.className = 'favicon';
-        var imgEl = this.ownerDocument.createElement('img');
-        imgEl.src = 'chrome://favicon/iconurl/' + engine['iconURL'];
-        faviconDivEl.appendChild(imgEl);
-        nameColEl.appendChild(faviconDivEl);
-      }
+      // Add the favicon.
+      var faviconDivEl = this.ownerDocument.createElement('div');
+      faviconDivEl.className = 'favicon';
+      var imgEl = this.ownerDocument.createElement('img');
+      imgEl.src = 'chrome://favicon/iconurl/' + engine['iconURL'];
+      faviconDivEl.appendChild(imgEl);
+      nameColEl.appendChild(faviconDivEl);
 
-      var nameEl = this.createEditableTextCell(nameText, this.isPlaceholder_);
+      var nameEl = this.createEditableTextCell(engine['name'],
+                                               this.isPlaceholder_);
       nameColEl.appendChild(nameEl);
 
       // Then the keyword column.
-      var keywordEl = this.createEditableTextCell(keywordText,
+      var keywordEl = this.createEditableTextCell(engine['keyword'],
                                                   this.isPlaceholder_);
       keywordEl.className = 'keyword-column';
       this.contentElement.appendChild(keywordEl);
 
       // And the URL column.
-      var urlEl = this.createEditableTextCell(urlText, this.isPlaceholder_);
+      var urlEl = this.createEditableTextCell(engine['url'],
+                                              this.isPlaceholder_);
       var urlWithButtonEl = this.ownerDocument.createElement('div');
       urlWithButtonEl.appendChild(urlEl);
       urlWithButtonEl.className = 'url-column';
@@ -142,6 +128,7 @@ cr.define('options.search_engines', function() {
       // is implemented. When this is removed, remove the extra div above.
       if (engine['canBeDefault']) {
         var makeDefaultButtonEl = this.ownerDocument.createElement('button');
+        makeDefaultButtonEl.className = "raw-button";
         makeDefaultButtonEl.textContent =
             templateData.makeDefaultSearchEngineButton;
         makeDefaultButtonEl.onclick = function(e) {
@@ -155,27 +142,25 @@ cr.define('options.search_engines', function() {
       }
 
       // Do final adjustment to the input fields.
-      if (!engine['heading']) {
-        this.nameField_ = nameEl.querySelector('input');
-        this.keywordField_ = keywordEl.querySelector('input');
-        this.urlField_ = urlEl.querySelector('input');
+      this.nameField_ = nameEl.querySelector('input');
+      this.keywordField_ = keywordEl.querySelector('input');
+      this.urlField_ = urlEl.querySelector('input');
 
-        if (engine['urlLocked'])
-          this.urlField_.disabled = true;
+      if (engine['urlLocked'])
+        this.urlField_.disabled = true;
 
-        if (this.isPlaceholder_) {
-          this.nameField_.placeholder =
-              localStrings.getString('searchEngineTableNamePlaceholder');
-          this.keywordField_.placeholder =
-              localStrings.getString('searchEngineTableKeywordPlaceholder');
-          this.urlField_.placeholder =
-              localStrings.getString('searchEngineTableURLPlaceholder');
-        }
+      if (this.isPlaceholder_) {
+        this.nameField_.placeholder =
+            localStrings.getString('searchEngineTableNamePlaceholder');
+        this.keywordField_.placeholder =
+            localStrings.getString('searchEngineTableKeywordPlaceholder');
+        this.urlField_.placeholder =
+            localStrings.getString('searchEngineTableURLPlaceholder');
+      }
 
-        var fields = [ this.nameField_, this.keywordField_, this.urlField_ ];
-          for (var i = 0; i < fields.length; i++) {
-          fields[i].oninput = this.startFieldValidation_.bind(this);
-        }
+      var fields = [ this.nameField_, this.keywordField_, this.urlField_ ];
+        for (var i = 0; i < fields.length; i++) {
+        fields[i].oninput = this.startFieldValidation_.bind(this);
       }
 
       // Listen for edit events.
@@ -303,22 +288,9 @@ cr.define('options.search_engines', function() {
     },
 
     /** @inheritDoc */
-    createSelectionController: function(sm) {
-      return new ListInlineHeaderSelectionController(sm, this);
-    },
-
-    /** @inheritDoc */
     deleteItemAtIndex: function(index) {
       var modelIndex = this.dataModel.item(index)['modelIndex']
       chrome.send('removeSearchEngine', [String(modelIndex)]);
-    },
-
-    /**
-     * Returns true if the given item is selectable.
-     * @param {number} index The index to check.
-     */
-    canSelectIndex: function(index) {
-      return !this.dataModel.item(index).hasOwnProperty('heading');
     },
 
     /**
@@ -330,6 +302,8 @@ cr.define('options.search_engines', function() {
     validationComplete: function(validity, modelIndex) {
       // If it's not still being edited, it no longer matters.
       var currentSelection = this.selectedItem;
+      if (!currentSelection)
+        return;
       var listItem = this.getListItem(currentSelection);
       if (listItem.editing && currentSelection['modelIndex'] == modelIndex)
         listItem.validationComplete(validity);

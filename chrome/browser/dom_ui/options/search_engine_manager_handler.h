@@ -64,8 +64,6 @@ class SearchEngineManagerHandler : public OptionsPageUIHandler,
   // Called from DOMUI.
   void EditCompleted(const ListValue* args);
 
-  // Returns a dictionary to pass to DOMUI representing the given group heading.
-  DictionaryValue* CreateDictionaryForHeading(int group_index);
   // Returns a dictionary to pass to DOMUI representing the given search engine.
   DictionaryValue* CreateDictionaryForEngine(int index, bool is_default);
 

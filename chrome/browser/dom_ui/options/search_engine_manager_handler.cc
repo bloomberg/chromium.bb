@@ -50,6 +50,10 @@ void SearchEngineManagerHandler::GetLocalizedValues(
 
   localized_strings->SetString("searchEngineManagerPage",
       l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_WINDOW_TITLE));
+  localized_strings->SetString("defaultSearchEngineListTitle",
+      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_MAIN_SEPARATOR));
+  localized_strings->SetString("otherSearchEngineListTitle",
+      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_OTHER_SEPARATOR));
   localized_strings->SetString("searchEngineTableNameHeader",
       l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN));
   localized_strings->SetString("searchEngineTableKeywordHeader",
@@ -98,33 +102,31 @@ void SearchEngineManagerHandler::OnModelChanged() {
   if (!list_controller_->loaded())
     return;
 
-  ListValue engine_list;
-
   // Find the default engine.
   const TemplateURL* default_engine =
       list_controller_->url_model()->GetDefaultSearchProvider();
   int default_index = list_controller_->table_model()->IndexOfTemplateURL(
       default_engine);
 
-  // Add the first group (default search engine options).
-  engine_list.Append(CreateDictionaryForHeading(0));
+  // Build the first list (default search engine options).
+  ListValue defaults_list;
   int last_default_engine_index =
       list_controller_->table_model()->last_search_engine_index();
   for (int i = 0; i < last_default_engine_index; ++i) {
-    engine_list.Append(CreateDictionaryForEngine(i, i == default_index));
+    defaults_list.Append(CreateDictionaryForEngine(i, i == default_index));
   }
 
-  // Add the second group (other search templates).
-  engine_list.Append(CreateDictionaryForHeading(1));
+  // Build the second list (other search templates).
+  ListValue others_list;
   if (last_default_engine_index < 0)
     last_default_engine_index = 0;
   int engine_count = list_controller_->table_model()->RowCount();
   for (int i = last_default_engine_index; i < engine_count; ++i) {
-    engine_list.Append(CreateDictionaryForEngine(i, i == default_index));
+    others_list.Append(CreateDictionaryForEngine(i, i == default_index));
   }
 
   dom_ui_->CallJavascriptFunction(L"SearchEngineManager.updateSearchEngineList",
-                                  engine_list);
+                                  defaults_list, others_list);
 }
 
 void SearchEngineManagerHandler::OnItemsChanged(int start, int length) {
@@ -137,15 +139,6 @@ void SearchEngineManagerHandler::OnItemsAdded(int start, int length) {
 
 void SearchEngineManagerHandler::OnItemsRemoved(int start, int length) {
   OnModelChanged();
-}
-
-DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForHeading(
-    int group_index) {
-  ui::TableModel::Groups groups = list_controller_->table_model()->GetGroups();
-
-  DictionaryValue* dict = new DictionaryValue();
-  dict->SetString("heading", groups[group_index].title);
-  return dict;
 }
 
 DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(

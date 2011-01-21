@@ -1,100 +1,68 @@
-#searchEngineList {
-  -webkit-border-radius: 2px;
-  border-bottom: 1px solid #d9d9d9;
-  height: auto;
-}
-
-#searchEngineList .heading {
-  -webkit-border-radius: 2px;
-  color: black;
-  border-bottom: 1px solid #d9d9d9;
-}
-
-#searchEngineList .heading:not(:nth-child(2)) {
-  border-top: 1px solid #d9d9d9;
-}
-
-#searchEngineList .heading .name-column {
-  font-weight: bold;
-}
-
-#searchEngineList > div:not(.heading) {
-  border-left: 1px solid #d9d9d9;
-  border-right: 1px solid #d9d9d9;
-}
-
-#searchEngineList > div, #searchEngineHeading {
+.search-engine-list > div {
   display: -webkit-box;
 }
 
-#searchEngineList .favicon {
+.search-engine-list .favicon {
   padding: 1px 7px 0px 7px;
   height: 16px;
 }
 
-#searchEngineList .name-column {
+.search-engine-list .name-column {
+  -webkit-padding-end: 1ex;
   box-sizing: border-box;
   width: 37%;
 }
 
-#searchEngineList .keyword-column {
+.search-engine-list .keyword-column {
   width: 26%;
 }
 
-#searchEngineList .url-column {
+.search-engine-list .url-column {
   width: 37%;
 }
 
-#searchEngineList > div:not(.heading) .keyword-column,
-#searchEngineList > div:not(.heading) .url-column {
+.search-engine-list .keyword-column,
+.search-engine-list .url-column {
+  -webkit-padding-end: 1ex;
   color: #666666;
 }
 
-#searchEngineList .name-column,
-#searchEngineList .keyword-column,
-#searchEngineList .url-column {
-  -webkit-padding-end: 1ex;
-}
-
-#searchEngineList .default {
+.search-engine-list .default .name-column,
+.search-engine-list .default .keyword-column {
   font-weight: bold;
 }
 
-#searchEngineList .default .url-column {
-  font-weight: normal;
-}
-
-#searchEngineList .name-column {
+.search-engine-list .name-column {
   display: -webkit-box;
 }
 
-#searchEngineList .name-column :last-child {
+.search-engine-list .name-column :last-child {
   -webkit-box-flex: 1;
 }
 
-#searchEngineList input {
+.search-engine-list input {
   box-sizing: border-box;
   margin: 0;
   width: 100%;
 }
 
 /* For temporary Make Default button */
-#searchEngineList .url-column {
+.search-engine-list .url-column {
   display: -webkit-box;
   -webkit-box-align: center;
 }
 
-#searchEngineList .url-column :first-child {
+.search-engine-list .url-column :first-child {
   -webkit-box-flex: 1;
 }
 
-#searchEngineList .url-column button {
+.search-engine-list .url-column button {
   background: #8aaaed;
   color: #fff;
   -webkit-margin-start: 3px;
 }
 
-#searchEngineList > :not(:hover):not([editing]) .url-column button {
+.search-engine-list > :not(:hover):not([editing]) .url-column button {
   display: none;
 }
 /* End temporary Make Default button styling */
