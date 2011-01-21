@@ -69,10 +69,8 @@ class HeaderFlattener : public WebHTTPHeaderVisitor {
     const std::string& value_utf8 = value.utf8();
 
     // Skip over referrer headers found in the header map because we already
-    // pulled it out as a separate parameter.  We likewise prune the UA since
-    // that will be added back by the network layer.
-    if (LowerCaseEqualsASCII(name_utf8, "referer") ||
-        LowerCaseEqualsASCII(name_utf8, "user-agent"))
+    // pulled it out as a separate parameter.
+    if (LowerCaseEqualsASCII(name_utf8, "referer"))
       return;
 
     // Skip over "Cache-Control: max-age=0" header if the corresponding
