@@ -149,6 +149,12 @@ class NotificationType {
     // are provided.
     RESOURCE_RECEIVED_REDIRECT,
 
+    // A new window is created in response to a request from a renderer. The
+    // source will be a Source<TabContents> corresponding to the tab the
+    // request originates from.  Details in the form of a
+    // ViewHostMsg_CreateWindow_Params object are provided.
+    CREATING_NEW_WINDOW,
+
     // SSL ---------------------------------------------------------------------
 
     // Updating the SSL security indicators (the lock icon and such) proceeds

@@ -3,12 +3,16 @@ var expectedEventData;
 var capturedEventData;
 var nextFrameId;
 var frameIds;
+var nextTabId;
+var tabIds;
 
 function expect(data) {
   expectedEventData = data;
   capturedEventData = [];
   nextFrameId = 1;
   frameIds = {};
+  nextTabId = 0;
+  tabIds = {};
 }
 
 function checkExpectations() {
@@ -22,12 +26,26 @@ function checkExpectations() {
 
 function captureEvent(name, details) {
   // normalize details.
-  details.timeStamp = 0;
-  if (details.frameId != 0) {
+  if ('timeStamp' in details) {
+    details.timeStamp = 0;
+  }
+  if (('frameId' in details) && (details.frameId != 0)) {
     if (frameIds[details.frameId] === undefined) {
       frameIds[details.frameId] = nextFrameId++;
     }
     details.frameId = frameIds[details.frameId];
+  }
+  if ('tabId' in details) {
+    if (tabIds[details.tabId] === undefined) {
+      tabIds[details.tabId] = nextTabId++;
+    }
+    details.tabId = tabIds[details.tabId];
+  }
+  if ('sourceTabId' in details) {
+    if (tabIds[details.sourceTabId] === undefined) {
+      tabIds[details.sourceTabId] = nextTabId++;
+    }
+    details.sourceTabId = tabIds[details.sourceTabId];
   }
   capturedEventData.push([name, details]);
   checkExpectations();
@@ -52,6 +70,11 @@ chrome.experimental.webNavigation.onCompleted.addListener(
     captureEvent("onCompleted", details);
 });
 
+chrome.experimental.webNavigation.onBeforeRetarget.addListener(
+  function(details) {
+    captureEvent("onBeforeRetarget", details);
+});
+
 chrome.experimental.webNavigation.onErrorOccurred.addListener(
   function(details) {
     captureEvent("onErrorOccurred", details);
@@ -68,13 +91,13 @@ chrome.tabs.getSelected(null, function(tab) {
         [ "onBeforeNavigate",
           { frameId: 0,
             requestId: 0,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             url: getURL('nonexistant.html') }],
         [ "onErrorOccurred",
           { error: "net::ERR_FILE_NOT_FOUND",
             frameId: 0,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             url: getURL('nonexistant.html') }]]);
       chrome.tabs.update(tabId, { url: getURL('nonexistant.html') });
@@ -86,12 +109,12 @@ chrome.tabs.getSelected(null, function(tab) {
         [ "onBeforeNavigate",
           { frameId: 0,
             requestId: 0,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             url: getURL('iframeFail/d.html') }],
         [ "onCommitted",
           { frameId: 0,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             transitionQualifiers: "",
             transitionType: "link",
@@ -99,23 +122,23 @@ chrome.tabs.getSelected(null, function(tab) {
         [ "onBeforeNavigate",
           { frameId: 1,
             requestId: 0,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             url: getURL('iframeFail/c.html') }],
         [ "onDOMContentLoaded",
           { frameId: 0,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             url: getURL('iframeFail/d.html') }],
         [ "onErrorOccurred",
           { error: "net::ERR_FILE_NOT_FOUND",
             frameId: 1,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             url: getURL('iframeFail/c.html') }],
         [ "onCompleted",
           { frameId: 0,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             url: getURL('iframeFail/d.html') }]]);
       chrome.tabs.update(tabId, { url: getURL('iframeFail/d.html') });
@@ -127,12 +150,12 @@ chrome.tabs.getSelected(null, function(tab) {
         [ "onBeforeNavigate",
           { frameId: 0,
             requestId: 0,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             url: getURL('iframeFail/a.html') }],
         [ "onCommitted",
           { frameId: 0,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             transitionQualifiers: "",
             transitionType: "link",
@@ -140,46 +163,46 @@ chrome.tabs.getSelected(null, function(tab) {
         [ "onBeforeNavigate",
           { frameId: 1,
             requestId: 0,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             url: getURL('iframeFail/b.html') }],
         [ "onDOMContentLoaded",
           { frameId: 0,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             url: getURL('iframeFail/a.html') }],
         [ "onCommitted",
           { frameId: 1,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             transitionQualifiers: "",
             transitionType: "auto_subframe",
             url: getURL('iframeFail/b.html') }],
         [ "onDOMContentLoaded",
           { frameId: 1,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             url: getURL('iframeFail/b.html') }],
         [ "onCompleted",
           { frameId: 1,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             url: getURL('iframeFail/b.html') }],
         [ "onCompleted",
           { frameId: 0,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             url: getURL('iframeFail/a.html') }],
         [ "onBeforeNavigate",
           { frameId: 1,
             requestId: 0,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             url: getURL('iframeFail/c.html') }],
         [ "onErrorOccurred",
           { error: "net::ERR_FILE_NOT_FOUND",
             frameId: 1,
-            tabId: tabId,
+            tabId: 0,
             timeStamp: 0,
             url: getURL('iframeFail/c.html') }]]);
       chrome.tabs.update(tabId, { url: getURL('iframeFail/a.html') });

@@ -15,8 +15,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/provisional_load_details.h"
-#include "chrome/common/notification_type.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/render_messages_params.h"
 #include "net/base/net_errors.h"
 
 namespace keys = extension_webnavigation_api_constants;
@@ -126,6 +127,9 @@ void ExtensionWebNavigationEventRouter::Init() {
                    NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR,
                    NotificationService::AllSources());
     registrar_.Add(this,
+                   NotificationType::CREATING_NEW_WINDOW,
+                   NotificationService::AllSources());
+    registrar_.Add(this,
                    NotificationType::TAB_CONTENTS_DESTROYED,
                    NotificationService::AllSources());
   }
@@ -160,6 +164,11 @@ void ExtensionWebNavigationEventRouter::Observe(
       FailProvisionalLoadWithError(
           Source<NavigationController>(source).ptr(),
           Details<ProvisionalLoadDetails>(details).ptr());
+      break;
+    case NotificationType::CREATING_NEW_WINDOW:
+      CreatingNewWindow(
+          Source<TabContents>(source).ptr(),
+          Details<const ViewHostMsg_CreateWindow_Params>(details).ptr());
       break;
     case NotificationType::TAB_CONTENTS_DESTROYED:
       navigation_state_.RemoveTabContentsState(
@@ -280,6 +289,24 @@ void ExtensionWebNavigationEventRouter::FailProvisionalLoadWithError(
   base::JSONWriter::Write(&args, false, &json_args);
   navigation_state_.ErrorOccurredInFrame(details->frame_id());
   DispatchEvent(controller->profile(), keys::kOnErrorOccurred, json_args);
+}
+
+void ExtensionWebNavigationEventRouter::CreatingNewWindow(
+    TabContents* tab_contents,
+    const ViewHostMsg_CreateWindow_Params* details) {
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetInteger(keys::kSourceTabIdKey,
+                   ExtensionTabUtil::GetTabId(tab_contents));
+  dict->SetString(keys::kSourceUrlKey, details->opener_url.spec());
+  dict->SetString(keys::kTargetUrlKey,
+                  details->target_url.possibly_invalid_spec());
+  dict->SetReal(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  args.Append(dict);
+
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+  DispatchEvent(tab_contents->profile(), keys::kOnBeforeRetarget, json_args);
 }
 
 void ExtensionWebNavigationEventRouter::DispatchEvent(

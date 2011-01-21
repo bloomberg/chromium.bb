@@ -27,7 +27,9 @@ class TimeDelta;
 }
 
 class ResourceDispatcherHost;
+struct ViewHostMsg_CreateWindow_Params;
 struct ViewMsg_ClosePage_Params;
+
 
 // Instantiated per RenderProcessHost to provide various optimizations on
 // behalf of a RenderWidgetHost.  This class bridges between the IO thread
@@ -121,10 +123,7 @@ class RenderWidgetHelper
   // Called on the IO thread when a UpdateRect message is received.
   void DidReceiveUpdateMsg(const IPC::Message& msg);
 
-  void CreateNewWindow(int opener_id,
-                       bool user_gesture,
-                       WindowContainerType window_container_type,
-                       const string16& frame_name,
+  void CreateNewWindow(const ViewHostMsg_CreateWindow_Params& params,
                        base::ProcessHandle render_process,
                        int* route_id);
   void CreateNewWidget(int opener_id,
@@ -167,10 +166,8 @@ class RenderWidgetHelper
   void OnDispatchUpdateMsg(UpdateMsgProxy* proxy);
 
   // Called on the UI thread to finish creating a window.
-  void OnCreateWindowOnUI(int opener_id,
-                          int route_id,
-                          WindowContainerType window_container_type,
-                          string16 frame_name);
+  void OnCreateWindowOnUI(const ViewHostMsg_CreateWindow_Params& params,
+                          int route_id);
 
   // Called on the IO thread after a window was created on the UI thread.
   void OnCreateWindowOnIO(int route_id);

@@ -9,7 +9,9 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages_params.h"
 
 // A Task used with InvokeLater that we hold a pointer to in pending_paints_.
@@ -200,10 +202,7 @@ void RenderWidgetHelper::OnCrossSiteClosePageACK(
 }
 
 void RenderWidgetHelper::CreateNewWindow(
-    int opener_id,
-    bool user_gesture,
-    WindowContainerType window_container_type,
-    const string16& frame_name,
+    const ViewHostMsg_CreateWindow_Params& params,
     base::ProcessHandle render_process,
     int* route_id) {
   *route_id = GetNextRoutingID();
@@ -215,18 +214,26 @@ void RenderWidgetHelper::CreateNewWindow(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
-          this, &RenderWidgetHelper::OnCreateWindowOnUI, opener_id, *route_id,
-          window_container_type, frame_name));
+          this, &RenderWidgetHelper::OnCreateWindowOnUI, params, *route_id));
 }
 
 void RenderWidgetHelper::OnCreateWindowOnUI(
-    int opener_id,
-    int route_id,
-    WindowContainerType window_container_type,
-    string16 frame_name) {
-  RenderViewHost* host = RenderViewHost::FromID(render_process_id_, opener_id);
-  if (host)
-    host->CreateNewWindow(route_id, window_container_type, frame_name);
+    const ViewHostMsg_CreateWindow_Params& params,
+    int route_id) {
+  RenderViewHost* host =
+      RenderViewHost::FromID(render_process_id_, params.opener_id);
+  if (host) {
+    host->CreateNewWindow(route_id,
+                          params.window_container_type,
+                          params.frame_name);
+    TabContents* tab_contents = host->delegate()->GetAsTabContents();
+    if (tab_contents) {
+      NotificationService::current()->Notify(
+          NotificationType::CREATING_NEW_WINDOW,
+          Source<TabContents>(tab_contents),
+          Details<const ViewHostMsg_CreateWindow_Params>(&params));
+    }
+  }
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

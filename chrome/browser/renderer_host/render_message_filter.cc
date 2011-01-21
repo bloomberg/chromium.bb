@@ -450,10 +450,7 @@ void RenderMessageFilter::OnMsgCreateWindow(
   *cloned_session_storage_namespace_id =
       webkit_context_->dom_storage_context()->CloneSessionStorage(
           params.session_storage_namespace_id);
-  render_widget_helper_->CreateNewWindow(params.opener_id,
-                                         params.user_gesture,
-                                         params.window_container_type,
-                                         params.frame_name,
+  render_widget_helper_->CreateNewWindow(params,
                                          peer_handle(),
                                          route_id);
 }

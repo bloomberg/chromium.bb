@@ -21,6 +21,7 @@
 class NavigationController;
 class ProvisionalLoadDetails;
 class TabContents;
+struct ViewHostMsg_CreateWindow_Params;
 
 // Tracks the navigation state of all frames currently known to the
 // webNavigation API. It is mainly used to track in which frames an error
@@ -120,6 +121,12 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
   // extension event from it.
   void FailProvisionalLoadWithError(NavigationController* controller,
                                     ProvisionalLoadDetails* details);
+
+  // Handler for the CREATING_NEW_WINDOW event. The method takes the details of
+  // such an event and constructs a suitable JSON formatted extension event from
+  // it.
+  void CreatingNewWindow(TabContents* tab_content,
+                         const ViewHostMsg_CreateWindow_Params* details);
 
   // Dispatches events to the extension message service.
   void DispatchEvent(Profile* context,
