@@ -389,13 +389,13 @@ list [lead][selected][editing] {
 list:focus > [lead]:nth-child(2),
 list:focus > [lead][selected]:nth-child(2),
 list [lead][selected][editing]:nth-child(2) {
-  border-top: 1px transparent;
+  border-top: 1px solid transparent;
 }
 
 list:focus > [lead]:nth-last-child(2),
 list:focus > [lead][selected]:nth-last-child(2),
 list [lead][selected][editing]:nth-last-child(2) {
-  border-bottom: 1px transparent;
+  border-bottom: 1px solid transparent;
 }
 
 list[disabled] > [lead][selected],
@@ -533,6 +533,7 @@ select:focus {
 }
 
 /* TEXT */
+input[type='password],
 input[type='text'] {
   -webkit-border-radius: 2px;
   border: 1px solid #aaa;

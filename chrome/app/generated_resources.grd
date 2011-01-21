@@ -4505,27 +4505,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORDS_PAGE_VIEW_CAPTION_DELETE_ALL_PASSWORDS" desc="Passwords page view's remove all confirmation message box window title">
         Remove all passwords
       </message>
+      <message name="IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON" desc="Text for passwords page view's button to show a stored password">
+        Show
+      </message>
+      <message name="IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON" desc="Text for passwords page view's button to hide a stored password">
+        Hide
+      </message>
 
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON" desc="In sentence case: Passwords page view's 'Remove all' button text">
           Remove all
         </message>
-        <message name="IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON" desc="In sentence case: Text for passwords page view's button to show a stored password">
-          Show password
-        </message>
-        <message name="IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON" desc="In sentence case: Text for passwords page view's button to hide a stored password">
-          Hide password
-        </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON" desc="In Title Case: Passwords page view's 'Remove all' button text">
           Remove All
-        </message>
-        <message name="IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON" desc="In Title Case: Text for passwords page view's button to show a stored password">
-          Show Password
-        </message>
-        <message name="IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON" desc="In Title Case: Text for passwords page view's button to hide a stored password">
-          Hide Password
         </message>
       </if>
 

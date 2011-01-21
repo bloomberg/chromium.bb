@@ -36,6 +36,10 @@ void PasswordManagerHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE));
   localized_strings->SetString("passwordExceptionsTitle",
       l10n_util::GetStringUTF16(IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE));
+  localized_strings->SetString("passwordShowButton",
+      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON));
+  localized_strings->SetString("passwordHideButton",
+      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON));
   localized_strings->SetString("passwordsSiteColumn",
       l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN));
   localized_strings->SetString("passwordsUsernameColumn",

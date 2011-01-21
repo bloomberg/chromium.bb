@@ -89,19 +89,9 @@
 }
 
 #searchEngineList .url-column button {
-  background-color: #aab6e1;
-  border: none;
-  border-radius: 3px;
-  color: white;
+  background: #8aaaed;
+  color: #fff;
   -webkit-margin-start: 3px;
-}
-
-#searchEngineList .url-column button:hover {
-  background-color: #9aa6d1;
-}
-
-#searchEngineList .url-column button:active {
-  background-color: #8a96c1;
 }
 
 #searchEngineList > :not(:hover):not([editing]) .url-column button {
