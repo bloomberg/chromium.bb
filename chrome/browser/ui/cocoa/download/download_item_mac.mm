@@ -35,7 +35,7 @@ void DownloadItemMac::OnDownloadUpdated(DownloadItem* download) {
   }
 
   if (download->GetUserVerifiedFilePath() != lastFilePath_) {
-    // Turns out the file path is "unconfirmed %d.crdownload" for dangerous
+    // Turns out the file path is "Unconfirmed %d.crdownload" for dangerous
     // downloads. When the download is confirmed, the file is renamed on
     // another thread, so reload the icon if the download filename changes.
     LoadIcon();

@@ -166,7 +166,7 @@ const struct {
     1, },
   // Dangerous download, download finishes BEFORE rename.
   // Needs to be renamed only once.
-  { FILE_PATH_LITERAL("unconfirmed xxx.crdownload"),
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
     true,
     true,
     false,
@@ -180,7 +180,7 @@ const struct {
     2, },
   // Dangerous download, download finishes AFTER rename.
   // Needs to be renamed only once.
-  { FILE_PATH_LITERAL("unconfirmed xxx.crdownload"),
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
     true,
     false,
     false,

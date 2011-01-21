@@ -317,7 +317,7 @@ void DownloadFileManager::OnIntermediateDownloadName(
 // There are 3 possible rename cases where this method can be called:
 // 1. tmp -> foo            (need_delete_crdownload=T)
 // 2. foo.crdownload -> foo (need_delete_crdownload=F)
-// 3. tmp-> unconfirmed.xxx.crdownload (need_delete_crdownload=F)
+// 3. tmp-> Unconfirmed.xxx.crdownload (need_delete_crdownload=F)
 void DownloadFileManager::OnFinalDownloadName(
     int id, const FilePath& full_path, bool need_delete_crdownload,
     DownloadManager* download_manager) {

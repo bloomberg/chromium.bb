@@ -333,10 +333,19 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info,
     // download.
     FilePath::StringType file_name;
     FilePath path;
+#if defined(OS_WIN)
+    string16 unconfirmed_prefix =
+        l10n_util::GetStringUTF16(IDS_DOWNLOAD_UNCONFIRMED_PREFIX);
+#else
+    std::string unconfirmed_prefix =
+        l10n_util::GetStringUTF8(IDS_DOWNLOAD_UNCONFIRMED_PREFIX);
+#endif
+
     while (path.empty()) {
       base::SStringPrintf(
           &file_name,
-          FILE_PATH_LITERAL("unconfirmed %d.crdownload"),
+          unconfirmed_prefix.append(
+              FILE_PATH_LITERAL(" %d.crdownload")).c_str(),
           base::RandInt(0, 100000));
       path = dir.Append(file_name);
       if (file_util::PathExists(path))

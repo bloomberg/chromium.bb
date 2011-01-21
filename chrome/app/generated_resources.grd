@@ -2069,6 +2069,9 @@ each locale. -->
       <message name="IDS_DOWNLOAD_STATUS_CANCELED" desc="Canceled text.">
         Canceled
       </message>
+      <message name="IDS_DOWNLOAD_UNCONFIRMED_PREFIX" desc="The prefix used in the unconfirmed download file.">
+        Unconfirmed
+      </message>
 
       <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD"
                desc="Message shown to the user to validate the download of a dangerous file.">
