@@ -282,6 +282,7 @@ void RenderWidgetHostViewViews::DidUpdateBackingStore(
     else
       SchedulePaint(rect, false);
   }
+  invalid_rect_ = invalid_rect_.Intersect(bounds());
 }
 
 void RenderWidgetHostViewViews::RenderViewGone(base::TerminationStatus status,
@@ -358,7 +359,8 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
   // Paint a "hole" in the canvas so that the render of the web page is on
   // top of whatever else has already been painted in the views hierarchy.
   // Later views might still get to paint on top.
-  canvas->FillRectInt(SK_ColorBLACK, 0, 0, kMaxWindowWidth, kMaxWindowHeight,
+  canvas->FillRectInt(SK_ColorBLACK, 0, 0,
+                      bounds().width(), bounds().height(),
                       SkXfermode::kClear_Mode);
 
   // Don't do any painting if the GPU process is rendering directly
