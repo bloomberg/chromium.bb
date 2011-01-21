@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,10 +56,8 @@ class PasswordManagerHandler : public OptionsPageUIHandler {
   // A short class to mediate requests to the password store.
   class ListPopulater : public PasswordStoreConsumer {
    public:
-    explicit ListPopulater(PasswordManagerHandler* page)
-        : page_(page),
-          pending_login_query_(0) {
-    }
+    explicit ListPopulater(PasswordManagerHandler* page);
+    virtual ~ListPopulater();
 
     // Send a query to the password store to populate a list.
     virtual void Populate() = 0;
@@ -76,9 +74,7 @@ class PasswordManagerHandler : public OptionsPageUIHandler {
   // A short class to mediate requests to the password store for passwordlist.
   class PasswordListPopulater : public ListPopulater {
    public:
-    explicit PasswordListPopulater(PasswordManagerHandler* page)
-      : ListPopulater(page) {
-    }
+    explicit PasswordListPopulater(PasswordManagerHandler* page);
 
     // Send a query to the password store to populate a password list.
     virtual void Populate();
@@ -91,9 +87,7 @@ class PasswordManagerHandler : public OptionsPageUIHandler {
   // A short class to mediate requests to the password store for exceptions.
   class PasswordExceptionListPopulater : public ListPopulater {
    public:
-    explicit PasswordExceptionListPopulater(
-        PasswordManagerHandler* page) : ListPopulater(page) {
-    }
+    explicit PasswordExceptionListPopulater(PasswordManagerHandler* page);
 
     // Send a query to the password store to populate a passwordException list.
     virtual void Populate();
