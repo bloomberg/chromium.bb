@@ -18,7 +18,8 @@ AudioImpl::AudioImpl()
 
 AudioImpl::~AudioImpl() {
   // Closing the socket causes the thread to exit - wait for it.
-  socket_->Close();
+  if (socket_.get())
+    socket_->Close();
   if (audio_thread_.get()) {
     audio_thread_->Join();
     audio_thread_.reset();
