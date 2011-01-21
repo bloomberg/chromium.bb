@@ -441,7 +441,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
     // the plugin. Unlike the DoDeferredUpdate case, an extra copy is still
     // required.
     optimized_instance->Paint(webkit_glue::ToWebCanvas(canvas),
-                              optimized_copy_location, optimized_copy_location);
+                              optimized_copy_location, rect);
   } else {
     // Normal painting case.
     webwidget_->paint(webkit_glue::ToWebCanvas(canvas), rect);
@@ -530,6 +530,8 @@ void RenderWidget::DoDeferredUpdate() {
       !is_accelerated_compositing_active_ &&
       GetBitmapForOptimizedPluginPaint(bounds, &dib, &optimized_copy_location,
                                        &optimized_copy_rect)) {
+    // Only update the part of the plugin that actually changed.
+    optimized_copy_rect = optimized_copy_rect.Intersect(bounds);
     bounds = optimized_copy_location;
     copy_rects.push_back(optimized_copy_rect);
     dib_id = dib->id();
