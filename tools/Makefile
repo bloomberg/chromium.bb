@@ -940,7 +940,7 @@ build: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries_nocpp
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gcc
 	case $$(SRC/binutils/config.guess) in \
-	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gdb ;; \
+	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gdb ;; \
 	esac
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
