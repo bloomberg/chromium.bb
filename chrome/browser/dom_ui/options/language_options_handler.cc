@@ -385,8 +385,8 @@ void LanguageOptionsHandler::UiLanguageChangeCallback(
 #if defined(OS_CHROMEOS)
   dom_ui_->GetProfile()->ChangeApplicationLocale(language_code, false);
 #else
-  PrefService* prefs = dom_ui_->GetProfile()->GetPrefs();
-  prefs->SetString(prefs::kApplicationLocale, language_code);
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetString(prefs::kApplicationLocale, language_code);
 #endif  // defined(OS_CHROMEOS)
   dom_ui_->CallJavascriptFunction(
       L"options.LanguageOptions.uiLanguageSaved");
