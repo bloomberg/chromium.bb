@@ -676,6 +676,11 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 	if (x11_compositor_init_egl(c) < 0)
 		return NULL;
 
+	c->base.destroy = x11_destroy;
+	c->base.authenticate = x11_authenticate;
+	c->base.present = x11_compositor_present;
+	c->base.create_buffer = wlsc_drm_buffer_create;
+
 	/* Can't init base class until we have a current egl context */
 	if (wlsc_compositor_init(&c->base, display) < 0)
 		return NULL;
@@ -692,10 +697,6 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 		wl_event_loop_add_fd(loop, xcb_get_file_descriptor(c->conn),
 				     WL_EVENT_READABLE,
 				     x11_compositor_handle_event, c);
-
-	c->base.destroy = x11_destroy;
-	c->base.authenticate = x11_authenticate;
-	c->base.present = x11_compositor_present;
 
 	return &c->base;
 }

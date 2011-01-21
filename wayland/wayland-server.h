@@ -188,6 +188,21 @@ struct wl_drag {
 	struct wl_listener drag_focus_listener;
 };
 
+struct wl_selection_offer {
+	struct wl_object object;
+};
+
+struct wl_selection {
+	struct wl_resource resource;
+	struct wl_client *client;
+	struct wl_input_device *input_device;
+	struct wl_selection_offer selection_offer;
+	struct wl_surface *selection_focus;
+	struct wl_client *target;
+	struct wl_array types;
+	struct wl_listener selection_focus_listener;
+};
+
 void
 wl_client_post_event(struct wl_client *client,
 		      struct wl_object *sender,

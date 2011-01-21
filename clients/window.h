@@ -23,6 +23,7 @@
 #ifndef _WINDOW_H_
 #define _WINDOW_H_
 
+#include <X11/extensions/XKBcommon.h>
 #include <glib.h>
 #include <wayland-client.h>
 
@@ -47,11 +48,14 @@ display_get_display(struct display *display);
 struct wl_compositor *
 display_get_compositor(struct display *display);
 
+struct wl_shell *
+display_get_shell(struct display *display);
+
 #ifdef EGL_NO_DISPLAY
 EGLDisplay
 display_get_egl_display(struct display *d);
 
-#ifdef HAVE_CAIRO_GL
+#ifdef HAVE_CAIRO_EGL
 EGLImageKHR
 display_get_image_for_drm_surface(struct display *display,
 				  cairo_surface_t *surface);
@@ -82,14 +86,6 @@ display_flush_cairo_device(struct display *display);
 void
 display_run(struct display *d);
 
-enum {
-	WINDOW_MODIFIER_SHIFT = 0x01,
-	WINDOW_MODIFIER_LOCK = 0x02,
-	WINDOW_MODIFIER_CONTROL = 0x04,
-	WINDOW_MODIFIER_ALT = 0x08,
-	WINDOW_MODIFIER_MOD2 = 0x10,
-};
-
 enum pointer_type {
 	POINTER_BOTTOM_LEFT,
 	POINTER_BOTTOM_RIGHT,
@@ -110,8 +106,9 @@ typedef void (*window_resize_handler_t)(struct window *window,
 					void *data);
 typedef void (*window_redraw_handler_t)(struct window *window, void *data);
 typedef void (*window_frame_handler_t)(struct window *window, uint32_t frame, uint32_t timestamp, void *data);
-typedef void (*window_key_handler_t)(struct window *window, uint32_t key, uint32_t unicode,
-				     uint32_t state, uint32_t modifiers, void *data);
+typedef void (*window_key_handler_t)(struct window *window, struct input *input,
+				     uint32_t time, uint32_t key, uint32_t unicode,
+				     uint32_t state, void *data);
 typedef void (*window_keyboard_focus_handler_t)(struct window *window,
 						struct input *device, void *data);
 
@@ -124,8 +121,10 @@ typedef int (*window_motion_handler_t)(struct window *window,
 				       int32_t x, int32_t y,
 				       int32_t sx, int32_t sy, void *data);
 
-typedef void (*display_drag_offer_handler_t)(struct wl_drag_offer *offer,
-					     struct display *display);
+typedef void (*display_global_handler_t)(struct display *display,
+					 const char *interface,
+					 uint32_t id,
+					 uint32_t version);
 
 struct window *
 window_create(struct display *display, const char *title,
@@ -143,10 +142,6 @@ window_get_child_allocation(struct window *window,
 void
 window_set_child_size(struct window *window, int32_t width, int32_t height);
 void
-window_copy_image(struct window *window,
-		  struct rectangle *rectangle,
-		  void *image);
-void
 window_schedule_redraw(struct window *window);
 
 void
@@ -155,11 +150,6 @@ window_damage(struct window *window, int32_t x, int32_t y,
 
 cairo_surface_t *
 window_get_surface(struct window *window);
-
-void
-window_copy_surface(struct window *window,
-		    struct rectangle *rectangle,
-		    cairo_surface_t *surface);
 
 void
 window_flush(struct window *window);
@@ -228,8 +218,8 @@ const char *
 window_get_title(struct window *window);
 
 void
-display_set_drag_offer_handler(struct display *display,
-			       display_drag_offer_handler_t handler);
+display_set_global_handler(struct display *display,
+			   display_global_handler_t handler);
 
 struct wl_drag *
 window_create_drag(struct window *window);
@@ -241,7 +231,16 @@ window_activate_drag(struct wl_drag *drag, struct window *window,
 void
 input_get_position(struct input *input, int32_t *x, int32_t *y);
 
+uint32_t
+input_get_modifiers(struct input *input);
+
 struct wl_input_device *
 input_get_input_device(struct input *input);
+
+int
+input_offers_mime_type(struct input *input, const char *type);
+int
+input_receive_mime_type(struct input *input, const char *type);
+
 
 #endif

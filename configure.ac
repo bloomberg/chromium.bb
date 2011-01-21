@@ -24,15 +24,41 @@ PKG_CHECK_MODULES(FFI, [libffi])
 
 PKG_CHECK_MODULES(COMPOSITOR,
 		  [egl glesv2 gdk-pixbuf-2.0 libudev >= 136 libdrm >= 2.4.17] xcb-dri2 xcb-xfixes)
+PKG_CHECK_MODULES(GLES2, [egl glesv2 libdrm])
 PKG_CHECK_MODULES(CLIENT, [egl gl cairo gdk-pixbuf-2.0 glib-2.0 gobject-2.0 xkbcommon libdrm])
 PKG_CHECK_MODULES(POPPLER, [poppler-glib gdk-2.0],
 			   [have_poppler=yes], [have_poppler=no])
 AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")
 
-PKG_CHECK_MODULES(CAIRO_GL, [cairo-gl],
-		  [have_cairo_gl=yes], [have_cairo_gl=no])
-AS_IF([test "x$have_cairo_gl" = "xyes"],
-      [AC_DEFINE([HAVE_CAIRO_GL], [1], [Have cairo-gl])])
+
+AC_ARG_ENABLE(x11-compositor, [  --enable-x11-compositor],,
+	      enable_x11_compositor=yes)
+AM_CONDITIONAL(ENABLE_X11_COMPOSITOR, test x$enable_x11_compositor == xyes)
+if test x$enable_x11_compositor == xyes; then
+  AC_DEFINE([BUILD_X11_COMPOSITOR], [1], [Build the X11 compositor])
+fi
+
+
+AC_ARG_ENABLE(drm-compositor, [  --enable-drm-compositor])
+AM_CONDITIONAL(ENABLE_DRM_COMPOSITOR, test x$enable_drm_compositor == xyes)
+if test x$enable_drm_compositor == xyes; then
+  AC_DEFINE([BUILD_DRM_COMPOSITOR], [1], [Build the DRM compositor])
+fi
+
+
+AC_ARG_ENABLE(wayland-compositor, [  --enable-wayland-compositor])
+AM_CONDITIONAL(ENABLE_WAYLAND_COMPOSITOR,
+	       test x$enable_wayland_compositor == xyes)
+if test x$enable_wayland_compositor == xyes; then
+  AC_DEFINE([BUILD_WAYLAND_COMPOSITOR], [1],
+	    [Build the Wayland (nested) compositor])
+fi
+
+
+PKG_CHECK_MODULES(CAIRO_EGL, [cairo-egl],
+		  [have_cairo_egl=yes], [have_cairo_egl=no])
+AS_IF([test "x$have_cairo_egl" = "xyes"],
+      [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])])
 
 if test $CC = gcc; then
 	GCC_CFLAGS="-Wall -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden"

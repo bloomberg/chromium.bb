@@ -43,7 +43,7 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-#ifdef HAVE_CAIRO_GL
+#ifdef HAVE_CAIRO_EGL
 #include <cairo-gl.h>
 #endif
 
@@ -79,7 +79,7 @@ struct display {
 	struct xkb_desc *xkb;
 	cairo_surface_t **pointer_surfaces;
 
-	display_drag_offer_handler_t drag_offer_handler;
+	display_global_handler_t global_handler;
 };
 
 struct window {
@@ -118,6 +118,7 @@ struct input {
 	struct wl_input_device *input_device;
 	struct window *pointer_focus;
 	struct window *keyboard_focus;
+	struct selection_offer *offer;
 	uint32_t current_pointer_image;
 	uint32_t modifiers;
 	int32_t x, y, sx, sy;
@@ -181,7 +182,7 @@ struct surface_data {
 #define MULT(_d,c,a,t) \
 	do { t = c * a + 0x7f; _d = ((t >> 8) + t) >> 8; } while (0)
 
-#ifdef HAVE_CAIRO_GL
+#ifdef HAVE_CAIRO_EGL
 
 struct drm_surface_data {
 	struct surface_data data;
@@ -469,7 +470,7 @@ cairo_surface_t *
 display_create_surface(struct display *display,
 		       struct rectangle *rectangle)
 {
-#ifdef HAVE_CAIRO_GL
+#ifdef HAVE_CAIRO_EGL
 	if (display->drm) {
 		return display_create_drm_surface(display, rectangle);
 	}
@@ -482,7 +483,7 @@ display_create_surface_from_file(struct display *display,
 				 const char *filename,
 				 struct rectangle *rectangle)
 {
-#ifdef HAVE_CAIRO_GL
+#ifdef HAVE_CAIRO_EGL
 	if (display->drm) {
 		return display_create_drm_surface_from_file(display, filename, rectangle);
 	}
@@ -536,7 +537,7 @@ display_get_pointer_surface(struct display *display, int pointer,
 	cairo_surface_t *surface;
 
 	surface = display->pointer_surfaces[pointer];
-#if HAVE_CAIRO_GL
+#if HAVE_CAIRO_EGL
 	*width = cairo_gl_surface_get_width(surface);
 	*height = cairo_gl_surface_get_height(surface);
 #else
@@ -630,7 +631,7 @@ window_create_surface(struct window *window)
 	cairo_surface_t *surface;
 
 	switch (window->buffer_type) {
-#ifdef HAVE_CAIRO_GL
+#ifdef HAVE_CAIRO_EGL
 	case WINDOW_BUFFER_TYPE_DRM:
 		surface = display_create_surface(window->display,
 						 &window->allocation);
@@ -910,7 +911,7 @@ window_handle_key(void *data, struct wl_input_device *input_device,
 		return;
 
 	level = 0;
-	if (input->modifiers & WINDOW_MODIFIER_SHIFT &&
+	if (input->modifiers & XKB_COMMON_SHIFT_MASK &&
 	    XkbKeyGroupWidth(d->xkb, code, 0) > 1)
 		level = 1;
 
@@ -922,8 +923,8 @@ window_handle_key(void *data, struct wl_input_device *input_device,
 		input->modifiers &= ~d->xkb->map->modmap[code];
 
 	if (window->key_handler)
-		(*window->key_handler)(window, key, sym, state,
-				       input->modifiers, window->user_data);
+		(*window->key_handler)(window, input, time, key, sym, state,
+				       window->user_data);
 }
 
 static void
@@ -939,6 +940,11 @@ window_handle_pointer_focus(void *data,
 	if (surface) {
 		input->pointer_focus = wl_surface_get_user_data(surface);
 		window = input->pointer_focus;
+
+		input->x = x;
+		input->y = y;
+		input->sx = sx;
+		input->sy = sy;
 
 		pointer = POINTER_LEFT_PTR;
 		if (window->motion_handler)
@@ -1012,6 +1018,12 @@ struct wl_input_device *
 input_get_input_device(struct input *input)
 {
 	return input->input_device;
+}
+
+uint32_t
+input_get_modifiers(struct input *input)
+{
+	return input->modifiers;
 }
 
 struct wl_drag *
@@ -1088,30 +1100,6 @@ window_set_child_size(struct window *window, int32_t width, int32_t height)
 		window->allocation.width = width + 20 + window->margin * 2;
 		window->allocation.height = height + 60 + window->margin * 2;
 	}
-}
-
-void
-window_copy_image(struct window *window,
-		  struct rectangle *rectangle, EGLImageKHR image)
-{
-	/* set image as read buffer, copy pixels or something... */
-}
-
-void
-window_copy_surface(struct window *window,
-		    struct rectangle *rectangle,
-		    cairo_surface_t *surface)
-{
-	cairo_t *cr;
-
-	cr = cairo_create (window->cairo_surface);
-
-	cairo_set_source_surface (cr,
-				  surface,
-				  rectangle->x, rectangle->y);
-
-	cairo_paint (cr);
-	cairo_destroy (cr);
 }
 
 static gboolean
@@ -1324,12 +1312,122 @@ display_add_input(struct display *d, uint32_t id)
 	wl_input_device_set_user_data(input->input_device, input);
 }
 
+struct selection_offer {
+	struct display *display;
+	struct wl_selection_offer *offer;
+	struct wl_array types;
+	struct input *input;
+};
+
+int
+input_offers_mime_type(struct input *input, const char *type)
+{
+	struct selection_offer *offer = input->offer;
+	char **p, **end;
+
+	if (offer == NULL)
+		return 0;
+
+	end = offer->types.data + offer->types.size;
+	for (p = offer->types.data; p < end; p++)
+		if (strcmp(*p, type) == 0)
+			return 1;
+
+	return 0;
+}
+
+int
+input_receive_mime_type(struct input *input, const char *type)
+{
+	struct selection_offer *offer = input->offer;
+	int p[2];
+
+	pipe(p);
+	/* FIXME: A number of things can go wrong here: the object may
+	 * not be the current selection offer any more (which could
+	 * still work, but the source may have gone away or just
+	 * destroyed its wl_selection) or the offer may not have the
+	 * requested type after all (programmer/client error,
+	 * typically) */
+	wl_selection_offer_receive(offer->offer, type, p[1]);
+	close(p[1]);
+
+	return p[0];
+}
+
+static void
+selection_offer_offer(void *data,
+		      struct wl_selection_offer *selection_offer,
+		      const char *type)
+{
+	struct selection_offer *offer = data;
+
+	char **p;
+
+	p = wl_array_add(&offer->types, sizeof *p);
+	if (p)
+		*p = strdup(type);
+};
+
+static void
+selection_offer_keyboard_focus(void *data,
+			       struct wl_selection_offer *selection_offer,
+			       struct wl_input_device *input_device)
+{
+	struct selection_offer *offer = data;
+	struct input *input;
+	char **p, **end;
+
+	if (input_device == NULL) {
+		printf("selection offer retracted %p\n", selection_offer);
+		input = offer->input;
+		input->offer = NULL;
+		wl_selection_offer_destroy(selection_offer);
+		wl_array_release(&offer->types);
+		free(offer);
+		return;
+	}
+
+	input = wl_input_device_get_user_data(input_device);
+	printf("new selection offer %p:", selection_offer);
+
+	offer->input = input;
+	input->offer = offer;
+	end = offer->types.data + offer->types.size;
+	for (p = offer->types.data; p < end; p++)
+		printf(" %s", *p);
+
+	printf("\n");
+}
+
+struct wl_selection_offer_listener selection_offer_listener = {
+	selection_offer_offer,
+	selection_offer_keyboard_focus
+};
+
+static void
+add_selection_offer(struct display *d, uint32_t id)
+{
+	struct selection_offer *offer;
+
+	offer = malloc(sizeof *offer);
+	if (offer == NULL)
+		return;
+
+	offer->offer = wl_selection_offer_create(d->display, id);
+	offer->display = d;
+	wl_array_init(&offer->types);
+	offer->input = NULL;
+
+	wl_selection_offer_add_listener(offer->offer,
+					&selection_offer_listener, offer);
+}
+
 static void
 display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
 {
 	struct display *d = data;
-	struct wl_drag_offer *offer;
 
 	if (strcmp(interface, "compositor") == 0) {
 		d->compositor = wl_compositor_create(display, id);
@@ -1346,11 +1444,10 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		wl_drm_add_listener(d->drm, &drm_listener, d);
 	} else if (strcmp(interface, "shm") == 0) {
 		d->shm = wl_shm_create(display, id);
-	} else if (strcmp(interface, "drag_offer") == 0) {
-		if (d->drag_offer_handler) {
-			offer = wl_drag_offer_create(display, id);
-			d->drag_offer_handler(offer, d);
-		}
+	} else if (strcmp(interface, "selection_offer") == 0) {
+		add_selection_offer(d, id);
+	} else if (d->global_handler) {
+		d->global_handler(d, interface, id, version);
 	}
 }
 
@@ -1452,7 +1549,7 @@ init_drm(struct display *d)
 		return -1;
 	}
 
-#ifdef HAVE_CAIRO_GL
+#ifdef HAVE_CAIRO_EGL
 	d->device = cairo_egl_device_create(d->dpy, d->ctx);
 	if (d->device == NULL) {
 		fprintf(stderr, "failed to get cairo drm device\n");
@@ -1545,6 +1642,12 @@ display_get_egl_display(struct display *d)
 	return d->dpy;
 }
 
+struct wl_shell *
+display_get_shell(struct display *display)
+{
+	return display->shell;
+}
+
 void
 display_run(struct display *d)
 {
@@ -1552,8 +1655,8 @@ display_run(struct display *d)
 }
 
 void
-display_set_drag_offer_handler(struct display *display,
-			       display_drag_offer_handler_t handler)
+display_set_global_handler(struct display *display,
+			   display_global_handler_t handler)
 {
-	display->drag_offer_handler = handler;
+	display->global_handler = handler;
 }

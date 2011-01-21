@@ -140,7 +140,7 @@ image_draw(struct image *image)
 	struct rectangle allocation;
 	GdkPixbuf *pb;
 	cairo_t *cr;
-	cairo_surface_t *wsurface, *surface;
+	cairo_surface_t *surface;
 
 	window_draw(image->window);
 
@@ -153,14 +153,15 @@ image_draw(struct image *image)
 	if (pb == NULL)
 		return;
 
-	wsurface = window_get_surface(image->window);
-	surface = cairo_surface_create_similar(wsurface,
-					       CAIRO_CONTENT_COLOR_ALPHA,
-					       allocation.width,
-					       allocation.height);
-
-	cairo_surface_destroy(wsurface);
+	surface = window_get_surface(image->window);
 	cr = cairo_create(surface);
+	window_get_child_allocation(image->window, &allocation);
+	cairo_rectangle(cr, allocation.x, allocation.y,
+			allocation.width, allocation.height);
+	cairo_clip(cr);
+	cairo_push_group(cr);
+	cairo_translate(cr, allocation.x, allocation.y);
+
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	cairo_paint(cr);
@@ -169,11 +170,13 @@ image_draw(struct image *image)
 			  allocation.width, allocation.height);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_paint(cr);
-	cairo_destroy(cr);
 
 	g_object_unref(pb);
 
-	window_copy_surface(image->window, &allocation, surface);
+	cairo_pop_group_to_source(cr);
+	cairo_paint(cr);
+	cairo_destroy(cr);
+
 	window_flush(image->window);
 	cairo_surface_destroy(surface);
 }

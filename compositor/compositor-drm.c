@@ -22,11 +22,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <signal.h>
-#include <linux/kd.h>
-#include <linux/vt.h>
-#include <linux/input.h>
-
 #define GL_GLEXT_PROTOTYPES
 #define EGL_EGLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
@@ -42,14 +37,7 @@ struct drm_compositor {
 	struct udev *udev;
 	struct wl_event_source *drm_source;
 
-	/* tty handling state */
-	int tty_fd;
-	uint32_t vt_active : 1;
-
-	struct termios terminal_attributes;
-	struct wl_event_source *tty_input_source;
-	struct wl_event_source *enter_vt_source;
-	struct wl_event_source *leave_vt_source;
+	struct tty *tty;
 };
 
 struct drm_output {
@@ -63,199 +51,6 @@ struct drm_output {
 	EGLImageKHR image[2];
 	uint32_t current;	
 };
-
-struct drm_input {
-	struct wlsc_input_device base;
-};
-
-struct evdev_input_device {
-	struct drm_input *master;
-	struct wl_event_source *source;
-	int tool, new_x, new_y;
-	int base_x, base_y;
-	int fd;
-};
-
-static void evdev_input_device_data(int fd, uint32_t mask, void *data)
-{
-	struct drm_compositor *c;
-	struct evdev_input_device *device = data;
-	struct input_event ev[8], *e, *end;
-	int len, value, dx, dy, absolute_event;
-	int x, y;
-	uint32_t time;
-
-	c = (struct drm_compositor *)
-		device->master->base.input_device.compositor;
-	if (!c->vt_active)
-		return;
-
-	dx = 0;
-	dy = 0;
-	absolute_event = 0;
-	x = device->master->base.input_device.x;
-	y = device->master->base.input_device.y;
-
-	len = read(fd, &ev, sizeof ev);
-	if (len < 0 || len % sizeof e[0] != 0) {
-		/* FIXME: handle error... reopen device? */;
-		return;
-	}
-
-	e = ev;
-	end = (void *) ev + len;
-	for (e = ev; e < end; e++) {
-		/* Get the signed value, earlier kernels had this as unsigned */
-		value = e->value;
-		time = e->time.tv_sec * 1000 + e->time.tv_usec / 1000;
-
-		switch (e->type) {
-		case EV_REL:
-			switch (e->code) {
-			case REL_X:
-				dx += value;
-				break;
-
-			case REL_Y:
-				dy += value;
-				break;
-			}
-			break;
-
-		case EV_ABS:
-		        absolute_event = 1;
-			switch (e->code) {
-			case ABS_X:
-				if (device->new_x) {
-					device->base_x = x - value;
-					device->new_x = 0;
-				}
-				x = device->base_x + value;
-				break;
-			case ABS_Y:
-				if (device->new_y) {
-					device->base_y = y - value;
-					device->new_y = 0;
-				}
-				y = device->base_y + value;
-				break;
-			}
-			break;
-
-		case EV_KEY:
-			if (value == 2)
-				break;
-
-			switch (e->code) {
-			case BTN_TOUCH:
-			case BTN_TOOL_PEN:
-			case BTN_TOOL_RUBBER:
-			case BTN_TOOL_BRUSH:
-			case BTN_TOOL_PENCIL:
-			case BTN_TOOL_AIRBRUSH:
-			case BTN_TOOL_FINGER:
-			case BTN_TOOL_MOUSE:
-			case BTN_TOOL_LENS:
-				if (device->tool == 0 && value) {
-					device->new_x = 1;
-					device->new_y = 1;
-				}
-				device->tool = value ? e->code : 0;
-				break;
-
-			case BTN_LEFT:
-			case BTN_RIGHT:
-			case BTN_MIDDLE:
-			case BTN_SIDE:
-			case BTN_EXTRA:
-			case BTN_FORWARD:
-			case BTN_BACK:
-			case BTN_TASK:
-				notify_button(&device->master->base.input_device,
-					      time, e->code, value);
-				break;
-
-			default:
-				notify_key(&device->master->base.input_device,
-					   time, e->code, value);
-				break;
-			}
-		}
-	}
-
-	if (dx != 0 || dy != 0)
-		notify_motion(&device->master->base.input_device,
-			      time, x + dx, y + dy);
-	if (absolute_event && device->tool)
-		notify_motion(&device->master->base.input_device, time, x, y);
-}
-
-static struct evdev_input_device *
-evdev_input_device_create(struct drm_input *master,
-			  struct wl_display *display, const char *path)
-{
-	struct evdev_input_device *device;
-	struct wl_event_loop *loop;
-
-	device = malloc(sizeof *device);
-	if (device == NULL)
-		return NULL;
-
-	device->tool = 1;
-	device->new_x = 1;
-	device->new_y = 1;
-	device->master = master;
-
-	device->fd = open(path, O_RDONLY);
-	if (device->fd < 0) {
-		free(device);
-		fprintf(stderr, "couldn't create pointer for %s: %m\n", path);
-		return NULL;
-	}
-
-	loop = wl_display_get_event_loop(display);
-	device->source = wl_event_loop_add_fd(loop, device->fd,
-					      WL_EVENT_READABLE,
-					      evdev_input_device_data, device);
-	if (device->source == NULL) {
-		close(device->fd);
-		free(device);
-		return NULL;
-	}
-
-	return device;
-}
-
-static void
-drm_input_create(struct drm_compositor *c)
-{
-	struct drm_input *input;
-	struct udev_enumerate *e;
-        struct udev_list_entry *entry;
-	struct udev_device *device;
-	const char *path;
-
-	input = malloc(sizeof *input);
-	if (input == NULL)
-		return;
-
-	memset(input, 0, sizeof *input);
-	wlsc_input_device_init(&input->base, &c->base);
-
-	e = udev_enumerate_new(c->udev);
-	udev_enumerate_add_match_subsystem(e, "input");
-	udev_enumerate_add_match_property(e, "WAYLAND_SEAT", "1");
-        udev_enumerate_scan_devices(e);
-        udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
-		path = udev_list_entry_get_name(entry);
-		device = udev_device_new_from_syspath(c->udev, path);
-		evdev_input_device_create(input, c->base.wl_display,
-					  udev_device_get_devnode(device));
-	}
-        udev_enumerate_unref(e);
-
-	c->base.input_device = &input->base.input_device;
-}
 
 static void
 drm_compositor_present(struct wlsc_compositor *ec)
@@ -498,118 +293,6 @@ create_outputs(struct drm_compositor *ec, int option_connector)
 	return 0;
 }
 
-static void on_enter_vt(int signal_number, void *data)
-{
-	struct drm_compositor *ec = data;
-	struct drm_output *output;
-	int ret;
-
-	ret = drmSetMaster(ec->base.drm.fd);
-	if (ret) {
-		fprintf(stderr, "failed to set drm master\n");
-		kill(0, SIGTERM);
-		return;
-	}
-
-	fprintf(stderr, "enter vt\n");
-
-	ioctl(ec->tty_fd, VT_RELDISP, VT_ACKACQ);
-	ret = ioctl(ec->tty_fd, KDSETMODE, KD_GRAPHICS);
-	if (ret)
-		fprintf(stderr, "failed to set KD_GRAPHICS mode on console: %m\n");
-	ec->vt_active = 1;
-
-	wl_list_for_each(output, &ec->base.output_list, base.link) {
-		ret = drmModeSetCrtc(ec->base.drm.fd, output->crtc_id,
-				     output->fb_id[output->current ^ 1], 0, 0,
-				     &output->connector_id, 1, &output->mode);
-		if (ret)
-			fprintf(stderr,
-				"failed to set mode for connector %d: %m\n",
-				output->connector_id);
-	}
-}
-
-static void on_leave_vt(int signal_number, void *data)
-{
-	struct drm_compositor *ec = data;
-	int ret;
-
-	ret = drmDropMaster(ec->base.drm.fd);
-	if (ret) {
-		fprintf(stderr, "failed to drop drm master\n");
-		kill(0, SIGTERM);
-		return;
-	}
-
-	ioctl (ec->tty_fd, VT_RELDISP, 1);
-	ret = ioctl(ec->tty_fd, KDSETMODE, KD_TEXT);
-	if (ret)
-		fprintf(stderr, "failed to set KD_TEXT mode on console: %m\n");
-	ec->vt_active = 0;
-}
-
-static void
-on_tty_input(int fd, uint32_t mask, void *data)
-{
-	struct drm_compositor *ec = data;
-
-	/* Ignore input to tty.  We get keyboard events from evdev
-	 */
-	tcflush(ec->tty_fd, TCIFLUSH);
-}
-
-static int setup_tty(struct drm_compositor *ec, struct wl_event_loop *loop)
-{
-	struct termios raw_attributes;
-	struct vt_mode mode = { 0 };
-	int ret;
-
-	ec->tty_fd = open("/dev/tty0", O_RDWR | O_NOCTTY);
-	if (ec->tty_fd <= 0) {
-		fprintf(stderr, "failed to open active tty: %m\n");
-		return -1;
-	}
-
-	if (tcgetattr(ec->tty_fd, &ec->terminal_attributes) < 0) {
-		fprintf(stderr, "could not get terminal attributes: %m\n");
-		return -1;
-	}
-
-	/* Ignore control characters and disable echo */
-	raw_attributes = ec->terminal_attributes;
-	cfmakeraw(&raw_attributes);
-
-	/* Fix up line endings to be normal (cfmakeraw hoses them) */
-	raw_attributes.c_oflag |= OPOST | OCRNL;
-
-	if (tcsetattr(ec->tty_fd, TCSANOW, &raw_attributes) < 0)
-		fprintf(stderr, "could not put terminal into raw mode: %m\n");
-
-	ec->tty_input_source =
-		wl_event_loop_add_fd(loop, ec->tty_fd,
-				     WL_EVENT_READABLE, on_tty_input, ec);
-
-	ret = ioctl(ec->tty_fd, KDSETMODE, KD_GRAPHICS);
-	if (ret)
-		fprintf(stderr, "failed to set KD_GRAPHICS mode on tty: %m\n");
-
-	ec->vt_active = 1;
-	mode.mode = VT_PROCESS;
-	mode.relsig = SIGUSR1;
-	mode.acqsig = SIGUSR2;
-	if (!ioctl(ec->tty_fd, VT_SETMODE, &mode) < 0) {
-		fprintf(stderr, "failed to take control of vt handling\n");
-	}
-
-	ec->leave_vt_source =
-		wl_event_loop_add_signal(loop, SIGUSR1, on_leave_vt, ec);
-	ec->enter_vt_source =
-		wl_event_loop_add_signal(loop, SIGUSR2, on_enter_vt, ec);
-
-	return 0;
-}
-
 static int
 drm_authenticate(struct wlsc_compositor *c, uint32_t id)
 {
@@ -623,11 +306,9 @@ drm_destroy(struct wlsc_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
 
-	if (tcsetattr(d->tty_fd, TCSANOW, &d->terminal_attributes) < 0)
-		fprintf(stderr,
-			"could not restore terminal to canonical mode\n");
+	tty_destroy(d->tty);
 
-	free(ec);
+	free(d);
 }
 
 struct wlsc_compositor *
@@ -673,7 +354,13 @@ drm_compositor_create(struct wl_display *display, int connector)
 		fprintf(stderr, "failed to initialize egl\n");
 		return NULL;
 	}
-	
+
+	ec->base.destroy = drm_destroy;
+	ec->base.authenticate = drm_authenticate;
+	ec->base.present = drm_compositor_present;
+	ec->base.create_buffer = wlsc_drm_buffer_create;
+	ec->base.focus = 1;
+
 	/* Can't init base class until we have a current egl context */
 	if (wlsc_compositor_init(&ec->base, display) < 0)
 		return NULL;
@@ -683,17 +370,13 @@ drm_compositor_create(struct wl_display *display, int connector)
 		return NULL;
 	}
 
-	drm_input_create(ec);
+	evdev_input_add_devices(&ec->base, ec->udev);
 
 	loop = wl_display_get_event_loop(ec->base.wl_display);
 	ec->drm_source =
 		wl_event_loop_add_fd(loop, ec->base.drm.fd,
 				     WL_EVENT_READABLE, on_drm_input, ec);
-	setup_tty(ec, loop);
-	ec->base.destroy = drm_destroy;
-	ec->base.authenticate = drm_authenticate;
-	ec->base.present = drm_compositor_present;
-	ec->base.focus = 1;
+	ec->tty = tty_create(&ec->base);
 
 	return &ec->base;
 }

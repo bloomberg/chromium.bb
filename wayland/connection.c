@@ -61,7 +61,7 @@ struct wl_connection {
 	int fd;
 	void *data;
 	wl_connection_update_func_t update;
-	struct wl_closure closure;
+	struct wl_closure receive_closure, send_closure;
 };
 
 union wl_value {
@@ -251,36 +251,6 @@ wl_connection_data(struct wl_connection *connection, uint32_t mask)
 	char cmsg[128];
 	int len, count, clen;
 
-	if (mask & WL_CONNECTION_READABLE) {
-		wl_buffer_put_iov(&connection->in, iov, &count);
-
-		msg.msg_name = NULL;
-		msg.msg_namelen = 0;
-		msg.msg_iov = iov;
-		msg.msg_iovlen = count;
-		msg.msg_control = cmsg;
-		msg.msg_controllen = sizeof cmsg;
-		msg.msg_flags = 0;
-
-		do {
-			len = recvmsg(connection->fd, &msg, 0);
-		} while (len < 0 && errno == EINTR);
-
-		if (len < 0) {
-			fprintf(stderr,
-				"read error from connection %p: %m (%d)\n",
-				connection, errno);
-			return -1;
-		} else if (len == 0) {
-			/* FIXME: Handle this better? */
-			return -1;
-		}
-
-		decode_cmsg(&connection->fds_in, &msg);
-
-		connection->in.head += len;
-	}	
-
 	if (mask & WL_CONNECTION_WRITABLE) {
 		wl_buffer_get_iov(&connection->out, iov, &count);
 
@@ -313,6 +283,36 @@ wl_connection_data(struct wl_connection *connection, uint32_t mask)
 					   WL_CONNECTION_READABLE,
 					   connection->data);
 	}
+
+	if (mask & WL_CONNECTION_READABLE) {
+		wl_buffer_put_iov(&connection->in, iov, &count);
+
+		msg.msg_name = NULL;
+		msg.msg_namelen = 0;
+		msg.msg_iov = iov;
+		msg.msg_iovlen = count;
+		msg.msg_control = cmsg;
+		msg.msg_controllen = sizeof cmsg;
+		msg.msg_flags = 0;
+
+		do {
+			len = recvmsg(connection->fd, &msg, 0);
+		} while (len < 0 && errno == EINTR);
+
+		if (len < 0) {
+			fprintf(stderr,
+				"read error from connection %p: %m (%d)\n",
+				connection, errno);
+			return -1;
+		} else if (len == 0) {
+			/* FIXME: Handle this better? */
+			return -1;
+		}
+
+		decode_cmsg(&connection->fds_in, &msg);
+
+		connection->in.head += len;
+	}	
 
 	return connection->in.head - connection->in.tail;
 }
@@ -362,14 +362,14 @@ wl_connection_vmarshal(struct wl_connection *connection,
 		       uint32_t opcode, va_list ap,
 		       const struct wl_message *message)
 {
-	struct wl_closure *closure = &connection->closure;
+	struct wl_closure *closure = &connection->send_closure;
 	struct wl_object **objectp, *object;
 	uint32_t length, *p, *start, size;
 	int dup_fd;
 	struct wl_array **arrayp, *array;
 	const char **sp, *s;
 	char *extra;
-	int i, count, fd, extra_size;
+	int i, count, fd, extra_size, *fd_ptr;
 
 	extra_size = wl_message_size_extra(message);
 	count = strlen(message->signature) + 2;
@@ -449,12 +449,18 @@ wl_connection_vmarshal(struct wl_connection *connection,
 			break;
 
 		case 'h':
+			closure->types[i] = &ffi_type_sint;
+			closure->args[i] = extra;
+			fd_ptr = (int *) extra;
+			extra += sizeof *fd_ptr;
+
 			fd = va_arg(ap, int);
 			dup_fd = dup(fd);
 			if (dup_fd < 0) {
 				fprintf(stderr, "dup failed: %m");
 				abort();
 			}
+			*fd_ptr = dup_fd;
 			wl_buffer_put(&connection->fds_out,
 				      &dup_fd, sizeof dup_fd);
 			break;
@@ -487,7 +493,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 	int i, count, extra_space;
 	struct wl_object **object;
 	struct wl_array **array;
-	struct wl_closure *closure = &connection->closure;
+	struct wl_closure *closure = &connection->receive_closure;
 
 	count = strlen(message->signature) + 2;
 	if (count > ARRAY_LENGTH(closure->types)) {

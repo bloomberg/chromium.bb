@@ -164,6 +164,10 @@
       <arg name="id" type="new_id" interface="drag"/>
     </request>
 
+    <request name="create_selection">
+      <arg name="id" type="new_id" interface="selection"/>
+    </request>
+
     <!-- The configure event asks the client to resize its surface.
          The size is a hint, in the sense that the client is free to
          ignore it if it doesn't resize, pick a smaller size (to
@@ -179,6 +183,53 @@
     </event>
   </interface>
 
+  <interface name="selection" version="1">
+    <!-- Add an offered mime type.  Can be called several times to
+         offer multiple types, but must be called before 'activate'. -->
+    <request name="offer">
+      <arg name="type" type="string"/>
+    </request>
+
+    <!-- Can the selection be activated for multiple devices? -->
+    <request name="activate">
+      <arg name="input_device" type="object" interface="input_device"/>
+      <arg name="time" type="uint"/>
+    </request>
+
+    <!-- Destroy the selection. -->
+    <request name="destroy" type="destructor"/>
+
+    <!-- Another client pasted the selection, send the mime-type over
+         the passed fd. -->
+    <event name="send">
+      <arg name="mime_type" type="string"/>
+      <arg name="fd" type="fd"/>
+    </event>
+
+    <!-- Another selection became active. -->
+    <event name="cancelled"/>
+  </interface>
+
+  <interface name="selection_offer" version="1">
+    <!-- Called to receive the selection data as the specified type.
+         Sends the pipe fd to the compositor, which forwards it to the
+         source in the 'send' event -->
+    <request name="receive">
+      <arg name="mime_type" type="string"/>
+      <arg name="fd" type="fd"/>
+    </request>
+
+    <!-- Sent before the keyboard_focus event to announce the types
+         offered.  One event per offered mime type.  A mime type of
+         NULL means the selection offer is going away.  -->
+    <event name="offer">
+      <arg name="type" type="string"/>
+    </event>
+
+    <event name="keyboard_focus">
+      <arg name="input_device" type="object" interface="input_device"/>
+    </event>
+  </interface>
 
   <interface name="drag" version="1">
     <!-- Add an offered mime type.  Can be called several times to

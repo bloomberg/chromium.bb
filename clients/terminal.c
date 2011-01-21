@@ -273,9 +273,9 @@ function_key_response(char escape, int num, uint32_t modifiers,
 	int mod_num = 0;
 	int len;
 
-	if (modifiers & WINDOW_MODIFIER_SHIFT) mod_num   |= 1;
-	if (modifiers & WINDOW_MODIFIER_ALT) mod_num     |= 2;
-	if (modifiers & WINDOW_MODIFIER_CONTROL) mod_num |= 4;
+	if (modifiers & XKB_COMMON_SHIFT_MASK) mod_num   |= 1;
+	if (modifiers & XKB_COMMON_MOD1_MASK) mod_num    |= 2;
+	if (modifiers & XKB_COMMON_CONTROL_MASK) mod_num |= 4;
 
 	if (mod_num != 0)
 		len = snprintf(response, MAX_RESPONSE, "\e[%d;%d%c",
@@ -390,6 +390,14 @@ struct terminal {
 	struct terminal_color color_table[256];
 	cairo_font_extents_t extents;
 	cairo_scaled_font_t *font_normal, *font_bold;
+
+	uint32_t tag;
+	struct wl_selection *selection;
+	struct wl_selection_offer *selection_offer;
+	uint32_t selection_offer_has_text;
+	int32_t dragging, selection_active;
+	int selection_start_x, selection_start_y;
+	int selection_end_x, selection_end_y;
 };
 
 /* Create default tab stops, every 8 characters */
@@ -487,16 +495,62 @@ union decoded_attr {
 	uint32_t key;
 };
 
+static int
+terminal_compare_position(struct terminal *terminal,
+			  int x, int y, int32_t ref_row, int32_t ref_col)
+{
+	struct rectangle allocation;
+	int top_margin, side_margin, col, row, ref_x;
+
+	window_get_child_allocation(terminal->window, &allocation);
+	side_margin = allocation.x + (allocation.width - terminal->width * terminal->extents.max_x_advance) / 2;
+	top_margin = allocation.y + (allocation.height - terminal->height * terminal->extents.height) / 2;
+
+	col = (x - side_margin) / terminal->extents.max_x_advance;
+	row = (y - top_margin) / terminal->extents.height;
+
+	ref_x = side_margin + ref_col * terminal->extents.max_x_advance +
+		terminal->extents.max_x_advance / 2;
+
+	if (row < ref_row)
+		return -1;
+	if (row == ref_row) {
+		if (col < ref_col)
+			return -1;
+		if (col == ref_col && x < ref_x)
+			return -1;
+	}
+
+	return 1;
+}
+
 static void
 terminal_decode_attr(struct terminal *terminal, int row, int col,
 		     union decoded_attr *decoded)
 {
 	struct attr attr;
 	int foreground, background, tmp;
+	int inverse = 0, start_cmp, end_cmp;
+
+	start_cmp =
+		terminal_compare_position(terminal,
+					  terminal->selection_start_x,
+					  terminal->selection_start_y,
+					  row, col);
+	end_cmp =
+		terminal_compare_position(terminal,
+					  terminal->selection_end_x,
+					  terminal->selection_end_y,
+					  row, col);
+	if (start_cmp < 0 && end_cmp > 0)
+		inverse = 1;
+	else if (end_cmp < 0 && start_cmp > 0)
+		inverse = 1;
 
 	/* get the attributes for this character cell */
 	attr = terminal_get_attr_row(terminal, row)[col];
 	if ((attr.a & ATTRMASK_INVERSE) ||
+	    inverse ||
 	    ((terminal->mode & MODE_SHOW_CURSOR) &&
 	     terminal->focused && terminal->row == row &&
 	     terminal->column == col)) {
@@ -830,7 +884,6 @@ terminal_draw_contents(struct terminal *terminal)
 {
 	struct rectangle allocation;
 	cairo_t *cr;
-	cairo_font_extents_t extents;
 	int top_margin, side_margin;
 	int row, col;
 	union utf8_char *p_row;
@@ -839,23 +892,29 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_surface_t *surface;
 	double d;
 	struct glyph_run run;
+	cairo_font_extents_t extents;
 
+	surface = window_get_surface(terminal->window);
 	window_get_child_allocation(terminal->window, &allocation);
-
-	surface = display_create_surface(terminal->display, &allocation);
 	cr = cairo_create(surface);
+	cairo_rectangle(cr, allocation.x, allocation.y,
+			allocation.width, allocation.height);
+	cairo_clip(cr);
+	cairo_push_group(cr);
+
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	terminal_set_color(terminal, cr, terminal->color_scheme->border);
 	cairo_paint(cr);
 
 	cairo_set_scaled_font(cr, terminal->font_normal);
 
-	cairo_font_extents(cr, &extents);
+	extents = terminal->extents;
 	side_margin = (allocation.width - terminal->width * extents.max_x_advance) / 2;
 	top_margin = (allocation.height - terminal->height * extents.height) / 2;
 
 	cairo_set_line_width(cr, 1.0);
-
+	cairo_translate(cr, allocation.x + side_margin,
+			allocation.y + top_margin);
 	/* paint the background */
 	for (row = 0; row < terminal->height; row++) {
 		for (col = 0; col < terminal->width; col++) {
@@ -866,8 +925,8 @@ terminal_draw_contents(struct terminal *terminal)
 				continue;
 
 			terminal_set_color(terminal, cr, attr.attr.bg);
-			cairo_move_to(cr, side_margin + (col * extents.max_x_advance),
-			      top_margin + (row * extents.height));
+			cairo_move_to(cr, col * extents.max_x_advance,
+				      row * extents.height);
 			cairo_rel_line_to(cr, extents.max_x_advance, 0);
 			cairo_rel_line_to(cr, 0, extents.height);
 			cairo_rel_line_to(cr, -extents.max_x_advance, 0);
@@ -888,8 +947,8 @@ terminal_draw_contents(struct terminal *terminal)
 
 			glyph_run_flush(&run, attr);
 
-			text_x = side_margin + col * extents.max_x_advance;
-			text_y = top_margin + extents.ascent + row * extents.height;
+			text_x = col * extents.max_x_advance;
+			text_y = extents.ascent + row * extents.height;
 			if (attr.attr.a & ATTRMASK_UNDERLINE) {
 				terminal_set_color(terminal, cr, attr.attr.fg);
 				cairo_move_to(cr, text_x, (double)text_y + 1.5);
@@ -908,8 +967,8 @@ terminal_draw_contents(struct terminal *terminal)
 		d = 0.5;
 
 		cairo_set_line_width(cr, 1);
-		cairo_move_to(cr, side_margin + terminal->column * extents.max_x_advance + d,
-			      top_margin + terminal->row * extents.height + d);
+		cairo_move_to(cr, terminal->column * extents.max_x_advance + d,
+			      terminal->row * extents.height + d);
 		cairo_rel_line_to(cr, extents.max_x_advance - 2 * d, 0);
 		cairo_rel_line_to(cr, 0, extents.height - 2 * d);
 		cairo_rel_line_to(cr, -extents.max_x_advance + 2 * d, 0);
@@ -918,10 +977,9 @@ terminal_draw_contents(struct terminal *terminal)
 		cairo_stroke(cr);
 	}
 
+	cairo_pop_group_to_source(cr);
+	cairo_paint(cr);
 	cairo_destroy(cr);
-
-	window_copy_surface(terminal->window, &allocation, surface);
-
 	cairo_surface_destroy(surface);
 }
 
@@ -1936,12 +1994,101 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 }
 
 static void
-key_handler(struct window *window, uint32_t key, uint32_t sym,
-	    uint32_t state, uint32_t modifiers, void *data)
+selection_listener_send(void *data, struct wl_selection *selection,
+			const char *mime_type, int fd)
+{
+	static const char msg[] = "selection data";
+
+	fprintf(stderr, "selection send, fd is %d\n", fd);
+	write(fd, msg, sizeof msg - 1);
+	close(fd);
+}
+
+static void
+selection_listener_cancelled(void *data, struct wl_selection *selection)
+{
+	fprintf(stderr, "selection cancelled\n");
+	wl_selection_destroy(selection);
+}
+
+static const struct wl_selection_listener selection_listener = {
+	selection_listener_send,
+	selection_listener_cancelled
+};
+
+static gboolean
+selection_io_func(GIOChannel *source, GIOCondition condition, gpointer data)
+{
+	struct terminal *terminal = data;
+	char buffer[256];
+	unsigned int len;
+	int fd;
+
+	fd = g_io_channel_unix_get_fd(source);
+	len = read(fd, buffer, sizeof buffer);
+	fprintf(stderr, "read %d bytes: %.*s\n", len, len, buffer);
+
+	write(terminal->master, buffer, len);
+
+	close(fd);
+	g_source_remove(terminal->tag);
+
+	g_io_channel_unref(source);
+
+	return TRUE;
+}
+
+static int
+handle_bound_key(struct terminal *terminal,
+		 struct input *input, uint32_t sym, uint32_t time)
+{
+	struct wl_shell *shell;
+	GIOChannel *channel;
+	int fd;
+
+	switch (sym) {
+	case XK_C:
+		shell = display_get_shell(terminal->display);
+		terminal->selection = wl_shell_create_selection(shell);
+		wl_selection_add_listener(terminal->selection,
+					  &selection_listener, terminal);
+		wl_selection_offer(terminal->selection, "text/plain");
+		wl_selection_activate(terminal->selection,
+				      input_get_input_device(input), time);
+
+		return 1;
+	case XK_V:
+		if (input_offers_mime_type(input, "text/plain")) {
+			fd = input_receive_mime_type(input, "text/plain");
+			channel = g_io_channel_unix_new(fd);
+			terminal->tag = g_io_add_watch(channel, G_IO_IN,
+						       selection_io_func,
+						       terminal);
+		}
+
+		return 1;
+	case XK_X:
+		/* cut selection; terminal doesn't do cut */
+		return 0;
+	default:
+		return 0;
+	}
+}
+
+static void
+key_handler(struct window *window, struct input *input, uint32_t time,
+	    uint32_t key, uint32_t sym, uint32_t state, void *data)
 {
 	struct terminal *terminal = data;
 	char ch[MAX_RESPONSE];
+	uint32_t modifiers;
 	int len = 0;
+
+	modifiers = input_get_modifiers(input);
+	if ((modifiers & XKB_COMMON_CONTROL_MASK) &&
+	    (modifiers & XKB_COMMON_SHIFT_MASK) &&
+	    state && handle_bound_key(terminal, input, sym, 0))
+		return;
 
 	switch (sym) {
 	case XK_F11:
@@ -2034,7 +2181,7 @@ key_handler(struct window *window, uint32_t key, uint32_t sym,
 		len = apply_key_map(terminal->key_mode, sym, modifiers, ch);
 		if (len != 0) break;
 		
-		if (modifiers & WINDOW_MODIFIER_CONTROL) {
+		if (modifiers & XKB_COMMON_CONTROL_MASK) {
 			if (sym >= '3' && sym <= '7')
 				sym = (sym & 0x1f) + 8;
 
@@ -2045,10 +2192,10 @@ key_handler(struct window *window, uint32_t key, uint32_t sym,
 			else if (sym == '/') sym = 0x1F;
 			else if (sym == '8' || sym == '?') sym = 0x7F;
 		} else if ((terminal->mode & MODE_ALT_SENDS_ESC) && 
-			(modifiers & WINDOW_MODIFIER_ALT))
+			   (modifiers & XKB_COMMON_MOD1_MASK))
 		{
 			ch[len++] = 0x1b;
-		} else if (modifiers & WINDOW_MODIFIER_ALT) {
+		} else if (modifiers & XKB_COMMON_MOD1_MASK) {
 			sym = sym | 0x80;
 		}
 
@@ -2069,6 +2216,50 @@ keyboard_focus_handler(struct window *window,
 
 	terminal->focused = (device != NULL);
 	window_schedule_redraw(terminal->window);
+}
+
+static void
+button_handler(struct window *window,
+	       struct input *input, uint32_t time,
+	       int button, int state, void *data)
+{
+	struct terminal *terminal = data;
+
+	switch (button) {
+	case 272:
+		if (state) {
+			terminal->dragging = 1;
+			terminal->selection_active = 0;
+			input_get_position(input,
+					   &terminal->selection_start_x,
+					   &terminal->selection_start_y);
+			terminal->selection_end_x = terminal->selection_start_x;
+			terminal->selection_end_y = terminal->selection_start_y;
+			window_schedule_redraw(window);
+		} else {
+			terminal->dragging = 0;
+		}
+		break;
+	}
+}
+
+static int
+motion_handler(struct window *window,
+	       struct input *input, uint32_t time,
+	       int32_t x, int32_t y,
+	       int32_t sx, int32_t sy, void *data)
+{
+	struct terminal *terminal = data;
+
+	if (terminal->dragging) {
+		terminal->selection_active = 1;
+		input_get_position(input,
+				   &terminal->selection_end_x,
+				   &terminal->selection_end_y);
+		window_schedule_redraw(window);
+	}
+
+	return POINTER_IBEAM;
 }
 
 static struct terminal *
@@ -2105,6 +2296,8 @@ terminal_create(struct display *display, int fullscreen)
 	window_set_key_handler(terminal->window, key_handler);
 	window_set_keyboard_focus_handler(terminal->window,
 					  keyboard_focus_handler);
+	window_set_button_handler(terminal->window, button_handler);
+	window_set_motion_handler(terminal->window, motion_handler);
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
 	cr = cairo_create(surface);

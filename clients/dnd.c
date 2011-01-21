@@ -171,21 +171,20 @@ dnd_draw(struct dnd *dnd)
 {
 	struct rectangle allocation;
 	cairo_t *cr;
-	cairo_surface_t *wsurface, *surface;
+	cairo_surface_t *surface;
 	int i;
 
 	window_draw(dnd->window);
 
-	window_get_child_allocation(dnd->window, &allocation);
-
-	wsurface = window_get_surface(dnd->window);
-	surface = cairo_surface_create_similar(wsurface,
-					       CAIRO_CONTENT_COLOR_ALPHA,
-					       allocation.width,
-					       allocation.height);
-	cairo_surface_destroy(wsurface);
-
+	surface = window_get_surface(dnd->window);
 	cr = cairo_create(surface);
+	window_get_child_allocation(dnd->window, &allocation);
+	cairo_rectangle(cr, allocation.x, allocation.y,
+			allocation.width, allocation.height);
+	cairo_clip(cr);
+	cairo_push_group(cr);
+
+	cairo_translate(cr, allocation.x, allocation.y);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.8);
 	cairo_paint(cr);
@@ -199,9 +198,9 @@ dnd_draw(struct dnd *dnd)
 		cairo_paint(cr);
 	}
 
+	cairo_pop_group_to_source(cr);
+	cairo_paint(cr);
 	cairo_destroy(cr);
-
-	window_copy_surface(dnd->window, &allocation, surface);
 	cairo_surface_destroy(surface);
 	window_flush(dnd->window);
 }
@@ -487,14 +486,21 @@ static const struct wl_drag_offer_listener drag_offer_listener = {
 };
 
 static void
-drag_offer_handler(struct wl_drag_offer *offer, struct display *display)
+global_handler(struct display *display,
+	       const char *interface, uint32_t id, uint32_t version)
 {
+	struct wl_drag_offer *offer;
 	struct dnd_offer *dnd_offer;
+
+	if (strcmp(interface, "drag_offer") != 0)
+		return;
+
+	offer = wl_drag_offer_create(display_get_display(display), id);
 
 	dnd_offer = malloc(sizeof *dnd_offer);
 	if (dnd_offer == NULL)
 		return;
-	
+
 	dnd_offer->refcount = 1;
 
 	wl_drag_offer_add_listener(offer, &drag_offer_listener, dnd_offer);
@@ -681,7 +687,7 @@ main(int argc, char *argv[])
 		return -1;
 	}
 
-	display_set_drag_offer_handler(d, drag_offer_handler);
+	display_set_global_handler(d, global_handler);
 
 	dnd = dnd_create (d);
 

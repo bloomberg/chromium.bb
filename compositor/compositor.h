@@ -19,7 +19,6 @@
 #ifndef _WAYLAND_SYSTEM_COMPOSITOR_H_
 #define _WAYLAND_SYSTEM_COMPOSITOR_H_
 
-#include <termios.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <libudev.h>
@@ -70,6 +69,7 @@ struct wlsc_input_device {
 	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
 	uint32_t modifier_state;
+	struct wl_selection *selection;
 };
 
 struct wlsc_drm {
@@ -78,19 +78,8 @@ struct wlsc_drm {
 	char *filename;
 };
 
-struct wlsc_drm_buffer {
-	struct wl_buffer buffer;
-	EGLImageKHR image;
-};
-
 struct wlsc_shm {
 	struct wl_object object;
-};
-
-struct wlsc_shm_buffer {
-	struct wl_buffer buffer;
-	int32_t stride;
-	void *data;
 };
 
 struct wlsc_compositor {
@@ -102,7 +91,7 @@ struct wlsc_compositor {
 	EGLContext context;
 	GLuint fbo, vbo;
 	GLuint proj_uniform, tex_uniform;
-	struct wlsc_drm_buffer **pointer_buffers;
+	struct wl_buffer **pointer_buffers;
 	struct wl_display *wl_display;
 
 	/* We implement the shell interface. */
@@ -126,6 +115,10 @@ struct wlsc_compositor {
 	void (*destroy)(struct wlsc_compositor *ec);
 	int (*authenticate)(struct wlsc_compositor *c, uint32_t id);
 	void (*present)(struct wlsc_compositor *c);
+	struct wl_buffer *(*create_buffer)(struct wlsc_compositor *c,
+					   int32_t width, int32_t height,
+					   struct wl_visual *visual,
+					   const void *data);
 };
 
 #define MODIFIER_CTRL	(1 << 8)
@@ -150,6 +143,9 @@ struct wlsc_surface {
 };
 
 void
+wlsc_surface_update_matrix(struct wlsc_surface *es);
+
+void
 notify_motion(struct wl_input_device *device,
 	      uint32_t time, int x, int y);
 void
@@ -164,9 +160,23 @@ wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs);
 void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor);
 
-struct wlsc_drm_buffer *
+void
+wlsc_input_device_set_pointer_image(struct wlsc_input_device *device,
+				    enum wlsc_pointer_type type);
+struct wlsc_surface *
+pick_surface(struct wl_input_device *device, int32_t *sx, int32_t *sy);
+
+void
+wlsc_selection_set_focus(struct wl_selection *selection,
+			 struct wl_surface *surface, uint32_t time);
+
+uint32_t
+get_time(void);
+
+struct wl_buffer *
 wlsc_drm_buffer_create(struct wlsc_compositor *ec,
-		       int width, int height, struct wl_visual *visual);
+		       int width, int height,
+		       struct wl_visual *visual, const void *data);
 
 int
 wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display);
@@ -182,6 +192,19 @@ wlsc_drm_init(struct wlsc_compositor *ec, int fd, const char *filename);
 int
 wlsc_shm_init(struct wlsc_compositor *ec);
 
+int
+wlsc_shell_init(struct wlsc_compositor *ec);
+
+void
+shell_move(struct wl_client *client, struct wl_shell *shell,
+	   struct wl_surface *surface,
+	   struct wl_input_device *device, uint32_t time);
+
+void
+shell_resize(struct wl_client *client, struct wl_shell *shell,
+	     struct wl_surface *surface,
+	     struct wl_input_device *device, uint32_t time, uint32_t edges);
+
 struct wl_buffer *
 wl_buffer_create_drm(struct wlsc_compositor *compositor,
 		     struct wl_visual *visual);
@@ -194,6 +217,15 @@ drm_compositor_create(struct wl_display *display, int connector);
 
 struct wlsc_compositor *
 wayland_compositor_create(struct wl_display *display, int width, int height);
+
+void
+evdev_input_add_devices(struct wlsc_compositor *c, struct udev *udev);
+
+struct tty *
+tty_create(struct wlsc_compositor *compositor);
+
+void
+tty_destroy(struct tty *tty);
 
 void
 screenshooter_create(struct wlsc_compositor *ec);
