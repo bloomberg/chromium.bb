@@ -484,7 +484,9 @@ bool AutocompleteEditViewViews::OnAfterPossibleChange() {
   // See if the text or selection have changed since OnBeforePossibleChange().
   std::wstring new_text = GetText();
   text_changed_ = (new_text != text_before_change_);
-  bool selection_differs = !sel_before_change_.Equals(new_sel);
+  bool selection_differs =
+      !((sel_before_change_.is_empty() && new_sel.is_empty()) ||
+        sel_before_change_.EqualsIgnoringDirection(new_sel));
 
   // When the user has deleted text, we don't allow inline autocomplete.  Make
   // sure to not flag cases like selecting part of the text and then pasting

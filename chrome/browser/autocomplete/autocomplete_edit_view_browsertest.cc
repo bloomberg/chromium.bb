@@ -984,4 +984,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest, BasicTextOperations) {
   BasicTextOperationsTest();
 }
 
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest, AcceptKeywordBySpace) {
+  AcceptKeywordBySpaceTest();
+}
+
 #endif

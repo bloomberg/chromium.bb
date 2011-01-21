@@ -69,9 +69,9 @@ class TextRange {
   // Returns the max of selected range.
   size_t GetMax() const;
 
-  // Returns true if |range| has same start, end position.
-  bool Equals(const TextRange& range) const {
-    return start_ == range.start_ && end_ == range.end_;
+  // Returns true if the the selection range is same ignoring the direction.
+  bool EqualsIgnoringDirection(const TextRange& range) const {
+    return GetMin() == range.GetMin() && GetMax() == range.GetMax();
   }
 
   // Set the range with |start| and |end|.
