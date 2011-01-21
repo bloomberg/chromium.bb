@@ -171,6 +171,12 @@ void AutoFillManager::RegisterUserPrefs(PrefService* prefs) {
                           kAutoFillNegativeUploadRateDefaultValue);
 }
 
+void AutoFillManager::DidNavigateMainFramePostCommit(
+    const NavigationController::LoadCommittedDetails& details,
+    const ViewHostMsg_FrameNavigate_Params& params) {
+  Reset();
+}
+
 bool AutoFillManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutoFillManager, message)

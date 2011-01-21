@@ -690,14 +690,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
                                    const std::string& json_arguments,
                                    IPC::Message* reply_msg) {}
 
-  // Password forms have been detected in the page.
-  virtual void PasswordFormsFound(
-      const std::vector<webkit_glue::PasswordForm>& forms) {}
-
-  // On initial layout, password forms are known to be visible on the page.
-  virtual void PasswordFormsVisible(
-      const std::vector<webkit_glue::PasswordForm>& visible_forms) {}
-
   // Notification that the page has an OpenSearch description document.
   virtual void PageHasOSDD(RenderViewHost* render_view_host,
                            int32 page_id, const GURL& doc_url,

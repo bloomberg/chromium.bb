@@ -137,8 +137,8 @@ TEST_F(PasswordManagerTest, FormSubmitEmptyStore) {
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
-  manager()->PasswordFormsFound(observed);  // The initial load.
-  manager()->PasswordFormsVisible(observed);  // The initial layout.
+  manager()->OnPasswordFormsFound(observed);  // The initial load.
+  manager()->OnPasswordFormsVisible(observed);  // The initial layout.
 
   // And the form submit contract is to call ProvisionallySavePassword.
   manager()->ProvisionallySavePassword(form);
@@ -172,8 +172,8 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
-  manager()->PasswordFormsFound(observed);  // The initial load.
-  manager()->PasswordFormsVisible(observed);  // The initial layout.
+  manager()->OnPasswordFormsFound(observed);  // The initial load.
+  manager()->OnPasswordFormsVisible(observed);  // The initial layout.
   manager()->ProvisionallySavePassword(form);
 
   // We still expect an add, since we didn't have a good match.
@@ -196,8 +196,8 @@ TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
-  manager()->PasswordFormsFound(observed);  // The initial load.
-  manager()->PasswordFormsVisible(observed);  // The initial layout.
+  manager()->OnPasswordFormsFound(observed);  // The initial load.
+  manager()->OnPasswordFormsVisible(observed);  // The initial layout.
 
   manager()->DidNavigate();
 
@@ -213,14 +213,14 @@ TEST_F(PasswordManagerTest, FormSubmitFailedLogin) {
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
-  manager()->PasswordFormsFound(observed);  // The initial load.
-  manager()->PasswordFormsVisible(observed);  // The initial layout.
+  manager()->OnPasswordFormsFound(observed);  // The initial load.
+  manager()->OnPasswordFormsVisible(observed);  // The initial layout.
 
   manager()->ProvisionallySavePassword(form);
 
   // The form reappears, and is visible in the layout:
-  manager()->PasswordFormsFound(observed);
-  manager()->PasswordFormsVisible(observed);
+  manager()->OnPasswordFormsFound(observed);
+  manager()->OnPasswordFormsVisible(observed);
 
   // No expected calls to the PasswordStore...
   manager()->DidStopLoading();
@@ -236,13 +236,13 @@ TEST_F(PasswordManagerTest, FormSubmitInvisibleLogin) {
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
-  manager()->PasswordFormsFound(observed);  // The initial load.
-  manager()->PasswordFormsVisible(observed);  // The initial layout.
+  manager()->OnPasswordFormsFound(observed);  // The initial load.
+  manager()->OnPasswordFormsVisible(observed);  // The initial layout.
 
   manager()->ProvisionallySavePassword(form);
 
   // The form reappears, but is not visible in the layout:
-  manager()->PasswordFormsFound(observed);
+  manager()->OnPasswordFormsFound(observed);
   // No call to PasswordFormsVisible.
 
   // Expect info bar to appear:
@@ -269,7 +269,7 @@ TEST_F(PasswordManagerTest, InitiallyInvisibleForm) {
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
-  manager()->PasswordFormsFound(observed);  // The initial load.
+  manager()->OnPasswordFormsFound(observed);  // The initial load.
   // PasswordFormsVisible is not called.
 
   manager()->DidStopLoading();

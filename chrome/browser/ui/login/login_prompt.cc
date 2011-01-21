@@ -398,7 +398,7 @@ class LoginDialogTask : public Task {
     PasswordManager* password_manager = (*wrapper)->GetPasswordManager();
     std::vector<PasswordForm> v;
     MakeInputForPasswordManager(&v);
-    password_manager->PasswordFormsFound(v);
+    password_manager->OnPasswordFormsFound(v);
     handler_->SetPasswordManager(password_manager);
 
     string16 host_and_port_hack16 = WideToUTF16Hack(auth_info_->host_and_port);

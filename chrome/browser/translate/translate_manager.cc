@@ -33,6 +33,7 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
@@ -473,7 +474,8 @@ void TranslateManager::RevertTranslation(TabContents* tab_contents) {
     NOTREACHED();
     return;
   }
-  tab_contents->render_view_host()->RevertTranslation(entry->page_id());
+  tab_contents->render_view_host()->Send(new ViewMsg_RevertTranslation(
+      tab_contents->render_view_host()->routing_id(), entry->page_id()));
   tab_contents->language_state().set_current_language(
       tab_contents->language_state().original_language());
 }
@@ -510,8 +512,10 @@ void TranslateManager::DoTranslatePage(TabContents* tab,
   }
 
   tab->language_state().set_translation_pending(true);
-  tab->render_view_host()->TranslatePage(entry->page_id(), translate_script,
-                                         source_lang, target_lang);
+
+  tab->render_view_host()->Send(new ViewMsg_TranslatePage(
+      tab->render_view_host()->routing_id(), entry->page_id(), translate_script,
+      source_lang, target_lang));
 
   // Ideally we'd have a better way to uniquely identify form control elements,
   // but we don't have that yet.  So before start translation, we clear the

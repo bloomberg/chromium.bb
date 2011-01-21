@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/tab_contents/web_navigation_observer.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "ipc/ipc_channel.h"
 
 namespace webkit_glue {
 struct FormData;
@@ -21,13 +21,13 @@ class TabContents;
 
 // Per-tab Autocomplete history manager. Handles receiving form data from the
 // renderer and the storing and retrieving of form data through WebDataService.
-class AutocompleteHistoryManager : public IPC::Channel::Listener,
+class AutocompleteHistoryManager : public WebNavigationObserver,
                                    public WebDataServiceConsumer {
  public:
   explicit AutocompleteHistoryManager(TabContents* tab_contents);
   virtual ~AutocompleteHistoryManager();
 
-  // IPC::Channel::Listener implementation.
+  // WebNavigationObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   // WebDataServiceConsumer implementation.

@@ -6,20 +6,14 @@
 #define CHROME_BROWSER_TAB_CONTENTS_WEB_NAVIGATION_OBSERVER_H_
 
 #include "chrome/browser/tab_contents/navigation_controller.h"
+#include "ipc/ipc_channel.h"
 
 struct ViewHostMsg_FrameNavigate_Params;
 
 // An observer API implemented by classes which are interested in various page
-// load events from TabContents.
-
-// TODO(pink): Is it worth having a bitfield where certain clients can only
-// register for certain events? Is the extra function call worth the added pain
-// on the caller to build the bitfield?
-
-class WebNavigationObserver {
+// load events from TabContents.  They also get a chance to filter IPC messages.
+class WebNavigationObserver : public IPC::Channel::Listener {
  public:
-  // For removing PasswordManager deps...
-
   virtual void NavigateToPendingEntry() { }
 
   virtual void DidNavigateMainFramePostCommit(
@@ -32,13 +26,8 @@ class WebNavigationObserver {
   virtual void DidStartLoading() { }
   virtual void DidStopLoading() { }
 
-  // TODO(beng): These should move from here once PasswordManager is able to
-  //             establish its own private communication protocol to the
-  //             renderer.
-  virtual void PasswordFormsFound(
-      const std::vector<webkit_glue::PasswordForm>& forms) { }
-  virtual void PasswordFormsVisible(
-      const std::vector<webkit_glue::PasswordForm>& visible_forms) { }
+  // IPC::Channel::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) { return false; }
 
 #if 0
   // For unifying with delegate...

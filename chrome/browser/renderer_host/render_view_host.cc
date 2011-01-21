@@ -784,9 +784,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                                     OnMsgRunBeforeUnloadConfirm)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ShowModalHTMLDialog,
                                     OnMsgShowModalHTMLDialog)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PasswordFormsFound, OnMsgPasswordFormsFound)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PasswordFormsVisible,
-                        OnMsgPasswordFormsVisible)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartDragging, OnMsgStartDragging)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
@@ -1361,16 +1358,6 @@ void RenderViewHost::PrintNodeUnderContextMenu() {
   Send(new ViewMsg_PrintNodeUnderContextMenu(routing_id()));
 }
 
-void RenderViewHost::OnMsgPasswordFormsFound(
-    const std::vector<PasswordForm>& forms) {
-  delegate_->PasswordFormsFound(forms);
-}
-
-void RenderViewHost::OnMsgPasswordFormsVisible(
-    const std::vector<PasswordForm>& visible_forms) {
-  delegate_->PasswordFormsVisible(visible_forms);
-}
-
 void RenderViewHost::OnMsgStartDragging(
     const WebDropData& drop_data,
     WebDragOperationsMask drag_operations_mask,
@@ -1727,18 +1714,6 @@ void RenderViewHost::UpdateBrowserWindowId(int window_id) {
 
 void RenderViewHost::PerformCustomContextMenuAction(unsigned action) {
   Send(new ViewMsg_CustomContextMenuAction(routing_id(), action));
-}
-
-void RenderViewHost::TranslatePage(int page_id,
-                                   const std::string& translate_script,
-                                   const std::string& source_lang,
-                                   const std::string& target_lang) {
-  Send(new ViewMsg_TranslatePage(routing_id(), page_id, translate_script,
-                                 source_lang, target_lang));
-}
-
-void RenderViewHost::RevertTranslation(int page_id) {
-  Send(new ViewMsg_RevertTranslation(routing_id(), page_id));
 }
 
 void RenderViewHost::SendContentSettings(const GURL& url,

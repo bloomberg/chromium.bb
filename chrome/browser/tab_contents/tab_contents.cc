@@ -449,9 +449,9 @@ TabContents::TabContents(Profile* profile,
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
 
   autofill_manager_.reset(new AutoFillManager(this));
-  message_filters_.push_back(autofill_manager_.get());
+  AddNavigationObserver(autofill_manager_.get());
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(this));
-  message_filters_.push_back(autocomplete_history_manager_.get());
+  AddNavigationObserver(autocomplete_history_manager_.get());
 }
 
 TabContents::~TabContents() {
@@ -571,10 +571,12 @@ void TabContents::RegisterUserPrefs(PrefService* prefs) {
 }
 
 bool TabContents::OnMessageReceived(const IPC::Message& message) {
-  for (size_t i = 0; i < message_filters_.size(); ++i) {
-    if (message_filters_[i]->OnMessageReceived(message))
+  ObserverListBase<WebNavigationObserver>::Iterator it(
+      web_navigation_observers_);
+  WebNavigationObserver* observer;
+  while ((observer = it.GetNext()) != NULL)
+    if (observer->OnMessageReceived(message))
       return true;
-  }
 
   bool handled = true;
   bool message_is_ok = true;
@@ -1986,9 +1988,6 @@ void TabContents::DidNavigateMainFramePostCommit(
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(WebNavigationObserver, web_navigation_observers_,
                     DidNavigateMainFramePostCommit(details, params));
-
-  // Clear the cache of forms in AutoFill.
-  autofill_manager_->Reset();
 }
 
 void TabContents::DidNavigateAnyFramePostCommit(
@@ -2931,18 +2930,6 @@ void TabContents::ShowModalHTMLDialog(const GURL& url, int width, int height,
                                     reply_msg, this);
     delegate()->ShowHtmlDialog(dialog_delegate, NULL);
   }
-}
-
-void TabContents::PasswordFormsFound(
-    const std::vector<webkit_glue::PasswordForm>& forms) {
-  FOR_EACH_OBSERVER(WebNavigationObserver, web_navigation_observers_,
-                    PasswordFormsFound(forms));
-}
-
-void TabContents::PasswordFormsVisible(
-    const std::vector<webkit_glue::PasswordForm>& visible_forms) {
-  FOR_EACH_OBSERVER(WebNavigationObserver, web_navigation_observers_,
-                    PasswordFormsVisible(visible_forms));
 }
 
 // Checks to see if we should generate a keyword based on the OSDD, and if

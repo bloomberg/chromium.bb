@@ -16,7 +16,7 @@
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "ipc/ipc_channel.h"
+#include "chrome/browser/tab_contents/web_navigation_observer.h"
 
 class AutoFillCCInfoBarDelegate;
 class AutoFillProfile;
@@ -25,7 +25,6 @@ class CreditCard;
 class FormStructure;
 class PrefService;
 class RenderViewHost;
-class TabContents;
 
 namespace webkit_glue {
 struct FormData;
@@ -34,7 +33,7 @@ class FormField;
 
 // Manages saving and restoring the user's personal information entered into web
 // forms.
-class AutoFillManager : public IPC::Channel::Listener,
+class AutoFillManager : public WebNavigationObserver,
                         public AutoFillDownloadManager::Observer {
  public:
   explicit AutoFillManager(TabContents* tab_contents);
@@ -49,7 +48,10 @@ class AutoFillManager : public IPC::Channel::Listener,
   // Returns the TabContents hosting this AutoFillManager.
   TabContents* tab_contents() const { return tab_contents_; }
 
-  // IPC::Channel::Listener implementation.
+  // WebNavigationObserver implementation.
+  virtual void DidNavigateMainFramePostCommit(
+      const NavigationController::LoadCommittedDetails& details,
+      const ViewHostMsg_FrameNavigate_Params& params);
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   // Called by the AutoFillCCInfoBarDelegate when the user interacts with the

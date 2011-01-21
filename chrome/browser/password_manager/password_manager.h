@@ -53,9 +53,11 @@ class PasswordManager : public LoginModel,
   virtual void DidNavigateAnyFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
-  virtual void PasswordFormsFound(
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
+  void OnPasswordFormsFound(
       const std::vector<webkit_glue::PasswordForm>& forms);
-  virtual void PasswordFormsVisible(
+  void OnPasswordFormsVisible(
       const std::vector<webkit_glue::PasswordForm>& visible_forms);
 
  private:
