@@ -271,6 +271,9 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .Times(AnyNumber());
   EXPECT_CALL(*mock_network_library_, RemoveCellularDataPlanObserver(_))
       .Times(AnyNumber());
+  EXPECT_CALL(*mock_network_library_, IsLocked())
+      .Times(AnyNumber())
+      .WillRepeatedly((Return(false)));
   EXPECT_CALL(*mock_network_library_, ethernet_available())
       .Times(AnyNumber())
       .WillRepeatedly((Return(true)));
