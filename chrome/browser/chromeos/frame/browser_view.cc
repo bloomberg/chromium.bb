@@ -352,12 +352,8 @@ void BrowserView::OpenButtonOptions(const views::View* button_view) {
   }
 }
 
-bool BrowserView::IsBrowserMode() const {
-  return true;
-}
-
-bool BrowserView::IsScreenLockerMode() const {
-  return false;
+StatusAreaHost::ScreenMode BrowserView::GetScreenMode() const {
+  return kBrowserMode;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

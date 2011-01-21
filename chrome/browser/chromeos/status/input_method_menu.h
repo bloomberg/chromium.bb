@@ -9,6 +9,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -32,11 +33,8 @@ class InputMethodMenu : public views::ViewMenuDelegate,
                         public NotificationObserver {
  public:
   InputMethodMenu(PrefService* pref_service,
-                  // TODO(yusukes): combine the three booleans into one enum.
-                  // http://crosbug.com/8386.
-                  bool is_browser_mode,
-                  bool is_screen_locker,
-                  bool is_out_of_box_experience_mode);
+                  StatusAreaHost::ScreenMode screen_mode,
+                  bool for_out_of_box_experience_dialog);
   virtual ~InputMethodMenu();
 
   // ui::MenuModel implementation.
@@ -163,9 +161,12 @@ class InputMethodMenu : public views::ViewMenuDelegate,
 
   PrefService* pref_service_;
   NotificationRegistrar registrar_;
-  const bool is_browser_mode_;
-  const bool is_screen_locker_mode_;
-  const bool is_out_of_box_experience_mode_;
+
+  // The mode of the host screen  (e.g. browser, screen locker, login screen.)
+  const StatusAreaHost::ScreenMode screen_mode_;
+  // true if the menu is for a dialog in OOBE screen. In the dialog, we don't
+  // use radio buttons.
+  const bool for_out_of_box_experience_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMenu);
 };

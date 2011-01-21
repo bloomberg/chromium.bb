@@ -109,8 +109,7 @@ class BackgroundView : public views::View,
   virtual bool ShouldOpenButtonOptions(
       const views::View* button_view) const;
   virtual void OpenButtonOptions(const views::View* button_view);
-  virtual bool IsBrowserMode() const;
-  virtual bool IsScreenLockerMode() const;
+  virtual ScreenMode GetScreenMode() const;
 
   // Overridden from LoginHtmlDialog::Delegate:
   virtual void OnDialogClosed() {}

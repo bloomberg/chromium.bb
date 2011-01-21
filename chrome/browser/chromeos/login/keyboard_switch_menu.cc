@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/status/status_area_host.h"
 #include "grit/generated_resources.h"
 #include "views/widget/widget_gtk.h"
 
@@ -17,9 +18,8 @@ namespace chromeos {
 
 KeyboardSwitchMenu::KeyboardSwitchMenu()
     : InputMethodMenu(NULL /* pref_service */,
-                      false /* is_browser_mode */,
-                      false /* is_screen_locker_mode */,
-                      true /* is_out_of_box_experience_mode */) {
+                      StatusAreaHost::kLoginMode,
+                      true /* for_out_of_box_experience_dialog */) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

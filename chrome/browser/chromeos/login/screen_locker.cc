@@ -459,8 +459,8 @@ class ScreenLockerBackgroundView
         screen_lock_view_(screen_lock_view) {
   }
 
-  virtual bool IsScreenLockerMode() const {
-    return true;
+  virtual ScreenMode GetScreenMode() const {
+    return kScreenLockerMode;
   }
 
   virtual void Layout() {

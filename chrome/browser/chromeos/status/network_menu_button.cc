@@ -96,7 +96,7 @@ void NetworkMenuButton::OnCellularDataPlanChanged(NetworkLibrary* cros) {
 // NetworkMenuButton, NetworkMenu implementation:
 
 bool NetworkMenuButton::IsBrowserMode() const {
-  return host_->IsBrowserMode();
+  return host_->GetScreenMode() == StatusAreaHost::kBrowserMode;
 }
 
 gfx::NativeWindow NetworkMenuButton::GetNativeWindow() const {

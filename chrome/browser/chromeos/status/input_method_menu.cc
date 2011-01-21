@@ -118,9 +118,8 @@ namespace chromeos {
 // InputMethodMenu
 
 InputMethodMenu::InputMethodMenu(PrefService* pref_service,
-                                 bool is_browser_mode,
-                                 bool is_screen_locker_mode,
-                                 bool is_out_of_box_experience_mode)
+                                 StatusAreaHost::ScreenMode screen_mode,
+                                 bool for_out_of_box_experience_dialog)
     : input_method_descriptors_(CrosLibrary::Get()->GetInputMethodLibrary()->
                                 GetActiveInputMethods()),
       model_(NULL),
@@ -130,16 +129,15 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
       ALLOW_THIS_IN_INITIALIZER_LIST(input_method_menu_(this)),
       minimum_input_method_menu_width_(0),
       pref_service_(pref_service),
-      is_browser_mode_(is_browser_mode),
-      is_screen_locker_mode_(is_screen_locker_mode),
-      is_out_of_box_experience_mode_(is_out_of_box_experience_mode) {
+      screen_mode_(screen_mode),
+      for_out_of_box_experience_dialog_(for_out_of_box_experience_dialog) {
   DCHECK(input_method_descriptors_.get() &&
          !input_method_descriptors_->empty());
 
   // Sync current and previous input methods on Chrome prefs with ibus-daemon.
   // InputMethodChanged() will be called soon and the indicator will be updated.
   InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
-  if (pref_service && is_browser_mode_) {
+  if (pref_service && (screen_mode_ == StatusAreaHost::kBrowserMode)) {
     previous_input_method_pref_.Init(
         prefs::kLanguagePreviousInputMethod, pref_service, this);
     const std::string previous_input_method_id =
@@ -158,7 +156,7 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
   }
   library->AddObserver(this);
 
-  if (!is_browser_mode_ && !is_screen_locker_mode_) {
+  if (screen_mode_ == StatusAreaHost::kLoginMode) {
     // This button is for the login screen.
     registrar_.Add(this,
                    NotificationType::LOGIN_USER_CHANGED,
@@ -215,7 +213,7 @@ int InputMethodMenu::GetGroupIdAt(int index) const {
   DCHECK_GE(index, 0);
 
   if (IndexIsInInputMethodList(index)) {
-    return is_out_of_box_experience_mode_ ?
+    return for_out_of_box_experience_dialog_ ?
         kRadioGroupNone : kRadioGroupLanguage;
   }
 
@@ -278,7 +276,7 @@ ui::MenuModel::ItemType InputMethodMenu::GetTypeAt(int index) const {
   }
 
   if (IndexIsInInputMethodList(index)) {
-    return is_out_of_box_experience_mode_ ?
+    return for_out_of_box_experience_dialog_ ?
         ui::MenuModel::TYPE_COMMAND : ui::MenuModel::TYPE_RADIO;
   }
 
@@ -390,15 +388,13 @@ void InputMethodMenu::PreferenceUpdateNeeded(
     InputMethodLibrary* obj,
     const InputMethodDescriptor& previous_input_method,
     const InputMethodDescriptor& current_input_method) {
-  if (is_browser_mode_) {
+  if (screen_mode_ == StatusAreaHost::kBrowserMode) {
     if (pref_service_) {  // make sure we're not in unit tests.
       // Sometimes (e.g. initial boot) |previous_input_method.id| is empty.
       previous_input_method_pref_.SetValue(previous_input_method.id);
       current_input_method_pref_.SetValue(current_input_method.id);
     }
-  } else {
-    // We're in the login screen (i.e. not in the normal browser mode nor screen
-    // locker mode).
+  } else if (screen_mode_ == StatusAreaHost::kLoginMode) {
     if (g_browser_process && g_browser_process->local_state()) {
       g_browser_process->local_state()->SetString(
           language_prefs::kPreferredKeyboardLayout, current_input_method.id);

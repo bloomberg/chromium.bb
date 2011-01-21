@@ -327,12 +327,8 @@ void BackgroundView::OpenButtonOptions(const views::View* button_view) {
   }
 }
 
-bool BackgroundView::IsBrowserMode() const {
-  return false;
-}
-
-bool BackgroundView::IsScreenLockerMode() const {
-  return false;
+StatusAreaHost::ScreenMode BackgroundView::GetScreenMode() const {
+  return kLoginMode;
 }
 
 // Overridden from LoginHtmlDialog::Delegate:

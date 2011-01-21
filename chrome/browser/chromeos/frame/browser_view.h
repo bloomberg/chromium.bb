@@ -72,8 +72,7 @@ class BrowserView : public ::BrowserView,
       const views::View* button_view) const;
   virtual void ExecuteBrowserCommand(int id) const;
   virtual void OpenButtonOptions(const views::View* button_view);
-  virtual bool IsBrowserMode() const;
-  virtual bool IsScreenLockerMode() const;
+  virtual ScreenMode GetScreenMode() const;
 
   gfx::NativeView saved_focused_widget() const {
     return saved_focused_widget_;

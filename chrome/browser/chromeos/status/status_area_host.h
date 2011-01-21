@@ -38,11 +38,15 @@ class StatusAreaHost {
   // Executes browser command.
   virtual void ExecuteBrowserCommand(int id) const = 0;
 
-  // True if status area hosted in browser. Otherwise it's OOBE/login state.
-  virtual bool IsBrowserMode() const = 0;
+  // The type of screen the host window is on.
+  enum ScreenMode {
+    kLoginMode,  // The host is for the OOBE/login screens.
+    kBrowserMode,  // The host is for browser.
+    kScreenLockerMode,  // The host is for screen locker.
+  };
 
-  // True if status area hosted in screen locker.
-  virtual bool IsScreenLockerMode() const = 0;
+  // Returns the type of screen.
+  virtual ScreenMode GetScreenMode() const = 0;
 
  protected:
   virtual ~StatusAreaHost() {}
