@@ -99,6 +99,16 @@ class InstantTest(pyauto.PyUITest):
     self.SetOmniboxText(query)
     self.assertTrue(self.WaitUntil(self._DoneLoadingGoogleQuery, args=[query]))
 
+  def testFindInCanDismissInstant(self):
+    """Test that instant preview is dismissed by find-in-page."""
+    self.SetOmniboxText('google.com')
+    self.assertTrue(self.WaitUntil(self._DoneLoading))
+    location = self.GetInstantInfo()['location']
+    self.assertTrue('google.com' in location,
+                    msg='No google.com in %s' % location)
+    self.OpenFindInPage()
+    self.assertEqual(self.GetActiveTabTitle(), '')
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
