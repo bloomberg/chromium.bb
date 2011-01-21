@@ -676,10 +676,8 @@ notify_button(struct wl_input_device *device,
 		(struct wlsc_compositor *) device->compositor;
 
 	surface = (struct wlsc_surface *) device->pointer_focus;
-	if (!surface)
-		return;
 
-	if (state && device->grab == NULL) {
+	if (state && surface && device->grab == NULL) {
 		wlsc_surface_raise(surface);
 
 		if (wd->selection)
@@ -694,19 +692,21 @@ notify_button(struct wl_input_device *device,
 						   time);
 	}
 
-	if (state && button == BTN_LEFT &&
+	if (state && surface && button == BTN_LEFT &&
 	    (wd->modifier_state & MODIFIER_SUPER))
 		shell_move(NULL,
 			   (struct wl_shell *) &compositor->shell,
 			   &surface->surface, device, time);
-	else if (state && button == BTN_MIDDLE &&
+	else if (state && surface && button == BTN_MIDDLE &&
 		 (wd->modifier_state & MODIFIER_SUPER))
 		shell_resize(NULL,
 			     (struct wl_shell *) &compositor->shell,
 			     &surface->surface, device, time,
 			     WL_GRAB_RESIZE_BOTTOM_RIGHT);
 
-	device->grab->interface->button(device->grab, time, button, state);
+	if (device->grab)
+		device->grab->interface->button(device->grab, time,
+						button, state);
 
 	if (!state && device->grab && device->grab_button == button)
 		wl_input_device_end_grab(device, time);
@@ -784,7 +784,6 @@ input_device_attach(struct wl_client *client,
 		return;
 	if (device->input_device.pointer_focus == NULL)
 		return;
-
 	if (device->input_device.pointer_focus->client != client)
 		return;
 

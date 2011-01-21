@@ -412,16 +412,6 @@ wl_input_device_end_grab(struct wl_input_device *device, uint32_t time)
 	device->grab = NULL;
 
 	wl_list_remove(&device->grab_listener.link);
-
-#if 0
-	struct wlsc_surface *es;
-	int32_t sx, sy;
-
-	es = pick_surface(device, &sx, &sy);
-	wl_input_device_set_pointer_focus(device,
-					  &es->surface, time,
-					  device->x, device->y, sx, sy);
-#endif
 }
 
 static void
