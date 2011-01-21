@@ -112,6 +112,7 @@
         'webview_host_gtk.cc',
         'webview_host_win.cc',
         'webwidget_host.h',
+        'webwidget_host.cc',
         'webwidget_host_gtk.cc',
         'webwidget_host_win.cc',
       ],

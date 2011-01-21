@@ -76,7 +76,8 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread,
       popup_type_(popup_type),
       pending_window_rect_count_(0),
       suppress_next_char_events_(false),
-      is_accelerated_compositing_active_(false) {
+      is_accelerated_compositing_active_(false),
+      animation_update_pending_(false) {
   RenderProcess::current()->AddRefProcess();
   DCHECK(render_thread_);
 }
@@ -486,9 +487,16 @@ void RenderWidget::CallDoDeferredUpdate() {
     Send(pending_input_event_ack_.release());
 }
 
+void RenderWidget::UpdateAnimationsIfNeeded() {
+  if (!is_hidden() && animation_update_pending_ &&
+      base::Time::Now() > animation_floor_time_) {
+    animation_update_pending_ = false;
+    webwidget_->animate();
+  }
+}
+
 void RenderWidget::DoDeferredUpdate() {
-  if (!webwidget_ || !paint_aggregator_.HasPendingUpdate() ||
-      update_reply_pending())
+  if (!webwidget_ || update_reply_pending())
     return;
 
   // Suppress updating when we are hidden.
@@ -498,10 +506,18 @@ void RenderWidget::DoDeferredUpdate() {
     return;
   }
 
+  if (base::Time::Now() > animation_floor_time_)
+    UpdateAnimationsIfNeeded();
+
   // Layout may generate more invalidation.  It may also enable the
   // GPU acceleration, so make sure to run layout before we send the
   // GpuRenderingActivated message.
   webwidget_->layout();
+
+  // Suppress painting if nothing is dirty.  This has to be done after updating
+  // animations running layout as these may generate further invalidations.
+  if (!paint_aggregator_.HasPendingUpdate())
+    return;
 
   // OK, save the pending update to a local since painting may cause more
   // invalidation.  Some WebCore rendering objects only layout when painted.
@@ -682,6 +698,16 @@ void RenderWidget::scheduleComposite() {
   // duplicating all that code is less desirable than "faking out" the
   // invalidation path using a magical damage rect.
   didInvalidateRect(WebRect(0, 0, 1, 1));
+}
+
+void RenderWidget::scheduleAnimation() {
+    if (!animation_update_pending_) {
+      animation_update_pending_ = true;
+      animation_floor_time_ =
+          base::Time::Now() + base::TimeDelta::FromMilliseconds(10);
+      MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
+          this, &RenderWidget::UpdateAnimationsIfNeeded), 10);
+    }
 }
 
 void RenderWidget::didChangeCursor(const WebCursorInfo& cursor_info) {

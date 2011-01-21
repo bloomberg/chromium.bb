@@ -149,7 +149,8 @@ WebWidgetHost::WebWidgetHost()
     : view_(NULL),
       webwidget_(NULL),
       scroll_dx_(0),
-      scroll_dy_(0) {
+      scroll_dy_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(factory_(this)) {
   set_painting(false);
 }
 
@@ -182,6 +183,8 @@ void WebWidgetHost::Paint() {
   [NSGraphicsContext setCurrentContext:
       [NSGraphicsContext graphicsContextWithGraphicsPort:bitmap_context
                                                  flipped:YES]];
+
+  webwidget_->animate();
 
   // This may result in more invalidation
   webwidget_->layout();

@@ -685,6 +685,11 @@ void TestWebViewDelegate::scheduleComposite() {
     host->ScheduleComposite();
 }
 
+void TestWebViewDelegate::scheduleAnimation() {
+  if (WebWidgetHost* host = GetWidgetHost())
+    host->ScheduleAnimation();
+}
+
 void TestWebViewDelegate::didFocus() {
   if (WebWidgetHost* host = GetWidgetHost())
     shell_->SetFocus(host, true);

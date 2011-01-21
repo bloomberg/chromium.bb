@@ -200,7 +200,8 @@ WebWidgetHost::WebWidgetHost()
       webwidget_(NULL),
       track_mouse_leave_(false),
       scroll_dx_(0),
-      scroll_dy_(0) {
+      scroll_dy_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(factory_(this)) {
   set_painting(false);
 }
 
@@ -241,6 +242,8 @@ void WebWidgetHost::Paint() {
     canvas_.reset(new skia::PlatformCanvas(
         paint_rect_.width(), paint_rect_.height(), true));
   }
+
+  webwidget_->animate();
 
   // This may result in more invalidation
   webwidget_->layout();

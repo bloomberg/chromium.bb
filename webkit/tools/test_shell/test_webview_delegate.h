@@ -151,6 +151,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual void didScrollRect(int dx, int dy,
                              const WebKit::WebRect& clip_rect);
   virtual void scheduleComposite();
+  virtual void scheduleAnimation();
   virtual void didFocus();
   virtual void didBlur();
   virtual void didChangeCursor(const WebKit::WebCursorInfo& cursor);

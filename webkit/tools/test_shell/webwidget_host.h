@@ -6,6 +6,7 @@
 #define WEBKIT_TOOLS_TEST_SHELL_WEBWIDGET_HOST_H_
 
 #include "base/basictypes.h"
+#include "base/task.h"
 #include "base/scoped_ptr.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
@@ -48,6 +49,7 @@ class WebWidgetHost {
   void DidInvalidateRect(const gfx::Rect& rect);
   void DidScrollRect(int dx, int dy, const gfx::Rect& clip_rect);
   void ScheduleComposite();
+  void ScheduleAnimation();
 #if defined(OS_WIN)
   void SetCursor(HCURSOR cursor);
 #endif
@@ -149,6 +151,9 @@ class WebWidgetHost {
 #ifndef NDEBUG
   bool painting_;
 #endif
+
+ private:
+  ScopedRunnableMethodFactory<WebWidgetHost> factory_;
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_WEBWIDGET_HOST_H_

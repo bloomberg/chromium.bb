@@ -102,6 +102,7 @@ class RenderWidget : public IPC::Channel::Listener,
   virtual void didScrollRect(int dx, int dy, const WebKit::WebRect& clipRect);
   virtual void didActivateAcceleratedCompositing(bool active);
   virtual void scheduleComposite();
+  virtual void scheduleAnimation();
   virtual void didFocus();
   virtual void didBlur();
   virtual void didChangeCursor(const WebKit::WebCursorInfo&);
@@ -159,6 +160,7 @@ class RenderWidget : public IPC::Channel::Listener,
   void PaintDebugBorder(const gfx::Rect& rect, skia::PlatformCanvas* canvas);
 
   void CallDoDeferredUpdate();
+  void UpdateAnimationsIfNeeded();
   void DoDeferredUpdate();
   void DoDeferredClose();
   void DoDeferredSetWindowRect(const WebKit::WebRect& pos);
@@ -367,6 +369,9 @@ class RenderWidget : public IPC::Channel::Listener,
   // Set to true if painting to the window is handled by the accelerated
   // compositor.
   bool is_accelerated_compositing_active_;
+
+  base::Time animation_floor_time_;
+  bool animation_update_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };
