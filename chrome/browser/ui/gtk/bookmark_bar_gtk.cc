@@ -805,14 +805,11 @@ void BookmarkBarGtk::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
   if (type == NotificationType::BROWSER_THEME_CHANGED) {
-    if (model_) {
+    if (model_ && model_->IsLoaded()) {
       // Regenerate the bookmark bar with all new objects with their theme
       // properties set correctly for the new theme.
       RemoveAllBookmarkButtons();
       CreateAllBookmarkButtons();
-    } else {
-      DLOG(ERROR) << "Received a theme change notification while we "
-                  << "don't have a BookmarkModel. Taking no action.";
     }
 
     UpdateEventBoxPaintability();

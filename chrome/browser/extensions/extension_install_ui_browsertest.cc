@@ -34,9 +34,8 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
   }
 };
 
-// Crashy, http://crbug.com/44548.
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
-                       DISABLED_TestThemeInstallUndoResetsToDefault) {
+                       TestThemeInstallUndoResetsToDefault) {
   // Install theme once and undo to verify we go back to default theme.
   FilePath theme_path = test_data_dir_.AppendASCII("theme.crx");
   ASSERT_TRUE(InstallExtensionWithUI(theme_path, 1));
