@@ -890,8 +890,8 @@ IPC_MESSAGE_ROUTED2(ViewMsg_WindowFrameChanged,
                     gfx::Rect /* window frame */,
                     gfx::Rect /* content view frame */)
 
-// Tell the renderer that text has been retured from plugin IME.
-IPC_MESSAGE_ROUTED2(ViewMsg_PluginImeCompositionConfirmed,
+// Tell the renderer that plugin IME has completed.
+IPC_MESSAGE_ROUTED2(ViewMsg_PluginImeCompositionCompleted,
                     string16 /* text */,
                     int /* plugin_id */)
 #endif
@@ -2145,10 +2145,13 @@ IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_AllocTransportDIB,
 IPC_MESSAGE_CONTROL1(ViewHostMsg_FreeTransportDIB,
                      TransportDIB::Id /* DIB id */)
 
-// Instructs the browser to start or stop plugin IME.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_SetPluginImeEnabled,
-                    bool, /* enabled */
+// Informs the browser that a plugin has gained or lost focus.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_PluginFocusChanged,
+                    bool, /* focused */
                     int /* plugin_id */)
+
+// Instructs the browser to start plugin IME.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_StartPluginIme)
 
 //---------------------------------------------------------------------------
 // Messages related to accelerated plugins

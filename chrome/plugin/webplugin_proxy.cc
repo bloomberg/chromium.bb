@@ -653,8 +653,13 @@ void WebPluginProxy::SetDeferResourceLoading(unsigned long resource_id,
 }
 
 #if defined(OS_MACOSX)
-void WebPluginProxy::SetImeEnabled(bool enabled) {
-  IPC::Message* msg = new PluginHostMsg_SetImeEnabled(route_id_, enabled);
+void WebPluginProxy::FocusChanged(bool focused) {
+  IPC::Message* msg = new PluginHostMsg_FocusChanged(route_id_, focused);
+  Send(msg);
+}
+
+void WebPluginProxy::StartIme() {
+  IPC::Message* msg = new PluginHostMsg_StartIme(route_id_);
   // This message can be sent during event-handling, and needs to be delivered
   // within that context.
   msg->set_unblock(true);

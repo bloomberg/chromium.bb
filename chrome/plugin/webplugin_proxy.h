@@ -147,7 +147,9 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   gfx::NativeViewId containing_window() { return containing_window_; }
 
 #if defined(OS_MACOSX)
-  virtual void SetImeEnabled(bool enabled);
+  virtual void FocusChanged(bool focused);
+
+  virtual void StartIme();
 
   virtual void BindFakePluginWindowHandle(bool opaque);
 

@@ -28,6 +28,5 @@ Although it comes from Mozilla (http://mxr.mozilla.org), it uses the original
 WebKit license.
 
 Local modifitations:
-- Added a cancelInput method.
 - Add #ifdef'd definifitions of a few symbols to support 10.5 SDK.
 

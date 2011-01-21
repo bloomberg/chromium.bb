@@ -208,8 +208,11 @@ class RenderWidgetHostView {
   // Informs the view that its containing window's frame changed.
   virtual void WindowFrameChanged() = 0;
 
-  // Start or stop plugin IME for the given plugin.
-  virtual void SetPluginImeEnabled(bool enabled, int plugin_id) = 0;
+  // Informs the view that a plugin gained or lost focus.
+  virtual void PluginFocusChanged(bool focused, int plugin_id) = 0;
+
+  // Start plugin IME.
+  virtual void StartPluginIme() = 0;
 
   // Does any event handling necessary for plugin IME; should be called after
   // the plugin has already had a chance to process the event. If plugin IME is

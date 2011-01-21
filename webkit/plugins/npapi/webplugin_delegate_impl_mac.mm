@@ -17,6 +17,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/webkit_glue.h"
@@ -266,6 +267,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       container_is_visible_(false),
       have_called_set_window_(false),
       ime_enabled_(false),
+      keyup_ignore_count_(0),
       external_drag_tracker_(new ExternalDragTracker()),
       handle_event_depth_(0),
       first_set_window_call_(true),
@@ -505,6 +507,21 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     current_windowless_cursor_.GetCursorInfo(cursor_info);
   }
 
+  // Per the Cocoa Plugin IME spec, plugins shoudn't receive keydown or keyup
+  // events while composition is in progress. Treat them as handled, however,
+  // since IME is consuming them on behalf of the plugin.
+  if ((event.type == WebInputEvent::KeyDown && ime_enabled_) ||
+      (event.type == WebInputEvent::KeyUp && keyup_ignore_count_)) {
+    // Composition ends on a keydown, so ime_enabled_ will be false at keyup;
+    // because the keydown wasn't sent to the plugin, the keyup shouldn't be
+    // either (per the spec).
+    if (event.type == WebInputEvent::KeyDown)
+      ++keyup_ignore_count_;
+    else
+      --keyup_ignore_count_;
+    return true;
+  }
+
 #ifndef NP_NO_CARBON
   if (instance()->event_model() == NPEventModelCarbon) {
 #ifndef NP_NO_QUICKDRAW
@@ -585,9 +602,11 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   int16_t handle_response = instance()->NPP_HandleEvent(plugin_event);
   bool handled = handle_response != kNPEventNotHandled;
 
-  if (handled && event.type == WebInputEvent::KeyDown) {
-    // Update IME state as requested by the plugin.
-    SetImeEnabled(handle_response == kNPEventStartIME);
+  // Start IME if requested by the plugin.
+  if (handled && handle_response == kNPEventStartIME &&
+      event.type == WebInputEvent::KeyDown) {
+    StartIme();
+    ++keyup_ignore_count_;
   }
 
   // Plugins don't give accurate information about whether or not they handled
@@ -793,9 +812,6 @@ void WebPluginDelegateImpl::SetWindowHasFocus(bool has_focus) {
     return;
   containing_window_has_focus_ = has_focus;
 
-  if (!has_focus)
-    SetImeEnabled(false);
-
 #ifndef NP_NO_QUICKDRAW
   // Make sure controls repaint with the correct look.
   if (quirks_ & PLUGIN_QUIRK_ALLOW_FASTER_QUICKDRAW_PATH)
@@ -832,8 +848,7 @@ bool WebPluginDelegateImpl::PlatformSetPluginHasFocus(bool focused) {
   if (!have_called_set_window_)
     return false;
 
-  if (!focused)
-    SetImeEnabled(false);
+  plugin_->FocusChanged(focused);
 
   ScopedActiveDelegate active_delegate(this);
 
@@ -899,18 +914,24 @@ void WebPluginDelegateImpl::WindowFrameChanged(const gfx::Rect& window_frame,
   SetContentAreaOrigin(gfx::Point(view_frame.x(), view_frame.y()));
 }
 
-void WebPluginDelegateImpl::ImeCompositionConfirmed(const string16& text) {
+void WebPluginDelegateImpl::ImeCompositionCompleted(const string16& text) {
   if (instance()->event_model() != NPEventModelCocoa) {
-    DLOG(ERROR) << "IME text receieved in Carbon event model";
+    DLOG(ERROR) << "IME notification receieved in Carbon event model";
     return;
   }
 
-  NPCocoaEvent text_event;
-  memset(&text_event, 0, sizeof(NPCocoaEvent));
-  text_event.type = NPCocoaEventTextInput;
-  text_event.data.text.text =
-      reinterpret_cast<NPNSString*>(base::SysUTF16ToNSString(text));
-  instance()->NPP_HandleEvent(&text_event);
+  ime_enabled_ = false;
+
+  // If |text| is empty this was just called to tell us composition was
+  // cancelled externally (e.g., the user pressed esc).
+  if (!text.empty()) {
+    NPCocoaEvent text_event;
+    memset(&text_event, 0, sizeof(NPCocoaEvent));
+    text_event.type = NPCocoaEventTextInput;
+    text_event.data.text.text =
+        reinterpret_cast<NPNSString*>(base::SysUTF16ToNSString(text));
+    instance()->NPP_HandleEvent(&text_event);
+  }
 }
 
 void WebPluginDelegateImpl::SetThemeCursor(ThemeCursor cursor) {
@@ -971,13 +992,28 @@ void WebPluginDelegateImpl::PluginVisibilityChanged() {
   }
 }
 
-void WebPluginDelegateImpl::SetImeEnabled(bool enabled) {
-  if (instance()->event_model() != NPEventModelCocoa)
+void WebPluginDelegateImpl::StartIme() {
+  if (instance()->event_model() != NPEventModelCocoa ||
+      !IsImeSupported()) {
     return;
-  if (enabled == ime_enabled_)
+  }
+  if (ime_enabled_)
     return;
-  ime_enabled_ = enabled;
-  plugin_->SetImeEnabled(enabled);
+  ime_enabled_ = true;
+  plugin_->StartIme();
+}
+
+bool WebPluginDelegateImpl::IsImeSupported() {
+  // Currently the plugin IME implementation only works on 10.6.
+  static BOOL sImeSupported = NO;
+  static BOOL sHaveCheckedSupport = NO;
+  if (!sHaveCheckedSupport) {
+    int32 major, minor, bugfix;
+    base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+    sImeSupported = major > 10 || (major == 10 && minor > 5);
+    sHaveCheckedSupport = YES;
+  }
+  return sImeSupported;
 }
 
 #pragma mark -

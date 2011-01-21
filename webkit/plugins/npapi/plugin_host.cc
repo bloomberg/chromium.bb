@@ -840,6 +840,16 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       rv = NPERR_NO_ERROR;
       break;
     }
+    case NPNVsupportsUpdatedCocoaTextInputBool: {
+      // We support the clarifications to the Cocoa IME event spec, but since
+      // IME currently only works on 10.6, only answer true there.
+      NPBool* supports_update = reinterpret_cast<NPBool*>(value);
+      int32 major, minor, bugfix;
+      base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+      *supports_update = major > 10 || (major == 10 && minor > 5);
+      rv = NPERR_NO_ERROR;
+      break;
+    }
   #endif  // OS_MACOSX
     case NPNVPepperExtensions:
       // Available for any plugin that attempts to get it.

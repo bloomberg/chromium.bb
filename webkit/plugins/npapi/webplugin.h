@@ -151,8 +151,11 @@ class WebPlugin {
                                        bool defer) = 0;
 
 #if defined(OS_MACOSX)
-  // Enables/disables plugin IME.
-  virtual void SetImeEnabled(bool enabled) {};
+  // Called to inform the WebPlugin that the plugin has gained or lost focus.
+  virtual void FocusChanged(bool focused) {};
+
+  // Starts plugin IME.
+  virtual void StartIme() {};
 
   // Synthesize a fake window handle for the plug-in to identify the instance
   // to the browser, allowing mapping to a surface for hardware accelleration

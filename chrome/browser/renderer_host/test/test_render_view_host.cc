@@ -143,8 +143,11 @@ void TestRenderWidgetHostView::SetActive(bool active) {
   // <viettrungluu@gmail.com>: Do I need to do anything here?
 }
 
-void TestRenderWidgetHostView::SetPluginImeEnabled(bool enabled,
-                                                   int plugin_id) {
+void TestRenderWidgetHostView::PluginFocusChanged(bool focused,
+                                                  int plugin_id) {
+}
+
+void TestRenderWidgetHostView::StartPluginIme() {
 }
 
 bool TestRenderWidgetHostView::PostProcessEventForPluginIme(

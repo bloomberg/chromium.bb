@@ -352,8 +352,11 @@ class RenderView : public RenderWidget,
   uint32 GetCPBrowsingContext();
 
 #if defined(OS_MACOSX)
-  // Enables/disabled plugin IME for the given plugin.
-  void SetPluginImeEnabled(bool enabled, int plugin_id);
+  // Informs the render view that the given plugin has gained or lost focus.
+  void PluginFocusChanged(bool focused, int plugin_id);
+
+  // Starts plugin IME.
+  void StartPluginIme();
 
   // Helper routines for accelerated plugin support. Used by the
   // WebPluginDelegateProxy, which has a pointer to the RenderView.
@@ -898,7 +901,7 @@ class RenderView : public RenderWidget,
   void OnNotifyRendererViewType(ViewType::Type view_type);
   void OnPaste();
 #if defined(OS_MACOSX)
-  void OnPluginImeCompositionConfirmed(const string16& text, int plugin_id);
+  void OnPluginImeCompositionCompleted(const string16& text, int plugin_id);
 #endif
   void OnPrintingDone(int document_cookie, bool success);
   void OnPrintPages();

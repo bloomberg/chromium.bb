@@ -90,8 +90,9 @@ class WebPluginDelegateProxy
   virtual void SetContainerVisibility(bool is_visible);
   // Informs the plugin that its enclosing window's frame has changed.
   virtual void WindowFrameChanged(gfx::Rect window_frame, gfx::Rect view_frame);
-  // Informs the plugin that text is avaiable from plugin IME.
-  virtual void ImeCompositionConfirmed(const string16& text, int plugin_id);
+  // Informs the plugin that plugin IME has completed.
+  // If |text| is empty, composition was cancelled.
+  virtual void ImeCompositionCompleted(const string16& text, int plugin_id);
 #endif
 
   // IPC::Channel::Listener implementation:
@@ -164,7 +165,8 @@ class WebPluginDelegateProxy
   void OnDeferResourceLoading(unsigned long resource_id, bool defer);
 
 #if defined(OS_MACOSX)
-  void OnSetImeEnabled(bool enabled);
+  void OnFocusChanged(bool focused);
+  void OnStartIme();
   void OnBindFakePluginWindowHandle(bool opaque);
   void OnUpdateGeometry_ACK(int ack_key);
   void OnAcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,

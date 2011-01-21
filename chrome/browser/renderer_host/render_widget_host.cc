@@ -173,8 +173,10 @@ bool RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnMsgGetScreenInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnMsgGetRootWindowRect)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetPluginImeEnabled,
-                        OnMsgSetPluginImeEnabled)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PluginFocusChanged,
+                        OnMsgPluginFocusChanged)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_StartPluginIme,
+                        OnMsgStartPluginIme)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateFakePluginWindowHandle,
                         OnAllocateFakePluginWindowHandle)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyFakePluginWindowHandle,
@@ -1043,8 +1045,12 @@ void RenderWidgetHost::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
   }
 }
 
-void RenderWidgetHost::OnMsgSetPluginImeEnabled(bool enabled, int plugin_id) {
-  view_->SetPluginImeEnabled(enabled, plugin_id);
+void RenderWidgetHost::OnMsgPluginFocusChanged(bool focused, int plugin_id) {
+  view_->PluginFocusChanged(focused, plugin_id);
+}
+
+void RenderWidgetHost::OnMsgStartPluginIme() {
+  view_->StartPluginIme();
 }
 
 void RenderWidgetHost::OnAllocateFakePluginWindowHandle(

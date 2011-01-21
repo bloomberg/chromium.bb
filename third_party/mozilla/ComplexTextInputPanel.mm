@@ -98,8 +98,7 @@ static NSString* const NSTextInputContextKeyboardSelectionDidChangeNotification 
 
 - (void)keyboardInputSourceChanged:(NSNotification *)notification
 {
-  [mInputTextView setString:@""];
-  [self orderOut:nil];
+  [self cancelComposition];
 }
 
 - (BOOL)interpretKeyEvent:(NSEvent*)event string:(NSString**)string
@@ -129,15 +128,20 @@ static NSString* const NSTextInputContextKeyboardSelectionDidChangeNotification 
   return hadMarkedText;
 }
 
-- (void)cancelInput
-{
-  [self orderOut:nil];
-  [mInputTextView setString:@""];
-}
-
 - (NSTextInputContext*)inputContext
 {
   return [mInputTextView inputContext];
+}
+
+- (void)cancelComposition
+{
+  [mInputTextView setString:@""];
+  [self orderOut:nil];
+}
+
+- (BOOL)inComposition
+{
+  return [mInputTextView hasMarkedText];
 }
 
 @end

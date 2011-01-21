@@ -162,8 +162,9 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Frames are in screen coordinates.
   void WindowFrameChanged(const gfx::Rect& window_frame,
                           const gfx::Rect& view_frame);
-  // Informs the plugin that IME composition has been confirmed.
-  void ImeCompositionConfirmed(const string16& text);
+  // Informs the plugin that IME composition has completed.
+  // If |text| is empty, IME was cancelled.
+  void ImeCompositionCompleted(const string16& text);
   // Informs the delegate that the plugin set a Carbon ThemeCursor.
   void SetThemeCursor(ThemeCursor cursor);
   // Informs the delegate that the plugin set a Carbon Cursor.
@@ -391,14 +392,17 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Updates anything that depends on plugin visibility.
   void PluginVisibilityChanged();
 
-  // Enables/disables IME.
-  void SetImeEnabled(bool enabled);
+  // Starts an IME session.
+  void StartIme();
 
   // Informs the browser about the updated accelerated drawing surface.
   void UpdateAcceleratedSurface();
 
   // Uses a CARenderer to draw the plug-in's layer in our OpenGL surface.
   void DrawLayerInSurface();
+
+  // Returns true if plugin IME is supported.
+  bool IsImeSupported();
 
 #ifndef NP_NO_CARBON
   // Moves our dummy window to match the current screen location of the plugin.
@@ -446,6 +450,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   gfx::Rect cached_clip_rect_;
 
   bool ime_enabled_;
+  int keyup_ignore_count_;
 
   scoped_ptr<ExternalDragTracker> external_drag_tracker_;
 #endif  // OS_MACOSX

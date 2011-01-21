@@ -457,8 +457,10 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnDeferResourceLoading)
 
 #if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_SetImeEnabled,
-                        OnSetImeEnabled);
+    IPC_MESSAGE_HANDLER(PluginHostMsg_FocusChanged,
+                        OnFocusChanged);
+    IPC_MESSAGE_HANDLER(PluginHostMsg_StartIme,
+                        OnStartIme);
     IPC_MESSAGE_HANDLER(PluginHostMsg_BindFakePluginWindowHandle,
                         OnBindFakePluginWindowHandle);
     IPC_MESSAGE_HANDLER(PluginHostMsg_UpdateGeometry_ACK,
@@ -1016,13 +1018,13 @@ void WebPluginDelegateProxy::WindowFrameChanged(gfx::Rect window_frame,
   msg->set_unblock(true);
   Send(msg);
 }
-void WebPluginDelegateProxy::ImeCompositionConfirmed(const string16& text,
+void WebPluginDelegateProxy::ImeCompositionCompleted(const string16& text,
                                                      int plugin_id) {
-  // If the text isn't intended for this plugin, there's nothing to do.
+  // If the message isn't intended for this plugin, there's nothing to do.
   if (instance_id_ != plugin_id)
     return;
 
-  IPC::Message* msg = new PluginMsg_ImeCompositionConfirmed(instance_id_,
+  IPC::Message* msg = new PluginMsg_ImeCompositionCompleted(instance_id_,
                                                             text);
   // Order relative to other key events is important.
   msg->set_unblock(true);
@@ -1376,9 +1378,14 @@ WebPluginDelegateProxy::CreateSeekableResourceClient(
 }
 
 #if defined(OS_MACOSX)
-void WebPluginDelegateProxy::OnSetImeEnabled(bool enabled) {
+void WebPluginDelegateProxy::OnFocusChanged(bool focused) {
   if (render_view_)
-    render_view_->SetPluginImeEnabled(enabled, instance_id_);
+    render_view_->PluginFocusChanged(focused, instance_id_);
+}
+
+void WebPluginDelegateProxy::OnStartIme() {
+  if (render_view_)
+    render_view_->StartPluginIme();
 }
 
 void WebPluginDelegateProxy::OnBindFakePluginWindowHandle(bool opaque) {

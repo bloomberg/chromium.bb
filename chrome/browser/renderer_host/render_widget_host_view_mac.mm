@@ -63,6 +63,7 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
 - (void)keyEvent:(NSEvent *)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)cancelChildPopups;
+- (void)checkForPluginImeCancellation;
 @end
 
 // This API was published since 10.6. Provide the declaration so it can be
@@ -91,8 +92,8 @@ WebKit::WebColor WebColorFromNSColor(NSColor *color) {
       std::max(0, std::min(static_cast<int>(lroundf(255.0f * b)), 255));
 }
 
-// Extract underline information from an attributed string.
-// Mostly copied from third_party/WebKit/Source/WebKit/mac/WebView/WebHTMLView.mm
+// Extract underline information from an attributed string. Mostly copied from
+// third_party/WebKit/Source/WebKit/mac/WebView/WebHTMLView.mm
 void ExtractUnderlines(
     NSAttributedString* string,
     std::vector<WebKit::WebCompositionUnderline>* underlines) {
@@ -881,8 +882,12 @@ void RenderWidgetHostViewMac::KillSelf() {
   }
 }
 
-void RenderWidgetHostViewMac::SetPluginImeEnabled(bool enabled, int plugin_id) {
-  [cocoa_view_ setPluginImeEnabled:(enabled ? YES : NO) forPlugin:plugin_id];
+void RenderWidgetHostViewMac::PluginFocusChanged(bool focused, int plugin_id) {
+  [cocoa_view_ pluginFocusChanged:(focused ? YES : NO) forPlugin:plugin_id];
+}
+
+void RenderWidgetHostViewMac::StartPluginIme() {
+  [cocoa_view_ setPluginImeActive:YES];
 }
 
 bool RenderWidgetHostViewMac::PostProcessEventForPluginIme(
@@ -898,10 +903,10 @@ bool RenderWidgetHostViewMac::PostProcessEventForPluginIme(
   return false;
 }
 
-void RenderWidgetHostViewMac::PluginImeCompositionConfirmed(
+void RenderWidgetHostViewMac::PluginImeCompositionCompleted(
     const string16& text, int plugin_id) {
   if (render_widget_host_) {
-    render_widget_host_->Send(new ViewMsg_PluginImeCompositionConfirmed(
+    render_widget_host_->Send(new ViewMsg_PluginImeCompositionCompleted(
         render_widget_host_->routing_id(), text, plugin_id));
   }
 }
@@ -1258,6 +1263,8 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
     render_widget_host_->SetActive(active);
   if (HasFocus())
     SetTextInputActive(active);
+  if (!active)
+    [cocoa_view_ setPluginImeActive:NO];
 }
 
 void RenderWidgetHostViewMac::SetWindowVisibility(bool visible) {
@@ -1331,7 +1338,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     canBeKeyView_ = YES;
     takesFocusOnlyOnMouseDown_ = NO;
     closeOnDeactivate_ = NO;
-    pluginImeIdentifier_ = -1;
+    focusedPluginIdentifier_ = -1;
   }
   return self;
 }
@@ -1487,11 +1494,17 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   hasEditCommands_ = NO;
   editCommands_.clear();
 
+  // Before doing anything with a key down, check to see if plugin IME has been
+  // cancelled, since the plugin host needs to be informed of that before
+  // receiving the keydown.
+  if ([theEvent type] == NSKeyDown)
+    [self checkForPluginImeCancellation];
+
   // Sends key down events to input method first, then we can decide what should
   // be done according to input method's feedback.
   // If a plugin is active, bypass this step since events are forwarded directly
   // to the plugin IME.
-  if (pluginImeIdentifier_ == -1)
+  if (focusedPluginIdentifier_ == -1)
     [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
 
   handlingKeyDown_ = NO;
@@ -2399,7 +2412,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 // nil when the caret is in non-editable content or password box to avoid
 // making input methods do their work.
 - (NSTextInputContext *)inputContext {
-  if (pluginImeIdentifier_ != -1)
+  if (focusedPluginIdentifier_ != -1)
     return [[ComplexTextInputPanel sharedComplexTextInputPanel] inputContext];
 
   switch(renderWidgetHostView_->text_input_type_) {
@@ -2632,33 +2645,30 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   [self cancelComposition];
 }
 
-- (void)setPluginImeEnabled:(BOOL)enabled forPlugin:(int)pluginId {
-  if ((enabled && pluginId == pluginImeIdentifier_) ||
-      (!enabled && pluginId != pluginImeIdentifier_))
+- (void)setPluginImeActive:(BOOL)active {
+  if (active == pluginImeActive_)
     return;
 
-  // If IME was already active then either it is being cancelled, or the plugin
-  // changed; either way the current input needs to be cleared.
-  if (pluginImeIdentifier_ != -1)
-    [[ComplexTextInputPanel sharedComplexTextInputPanel] cancelInput];
+  pluginImeActive_ = active;
+  if (!active) {
+    [[ComplexTextInputPanel sharedComplexTextInputPanel] cancelComposition];
+    renderWidgetHostView_->PluginImeCompositionCompleted(
+        string16(), focusedPluginIdentifier_);
+  }
+}
 
-  pluginImeIdentifier_ = enabled ? pluginId : -1;
+- (void)pluginFocusChanged:(BOOL)focused forPlugin:(int)pluginId {
+  if (focused)
+    focusedPluginIdentifier_ = pluginId;
+  else if (focusedPluginIdentifier_ == pluginId)
+    focusedPluginIdentifier_ = -1;
+
+  // Whenever plugin focus changes, plugin IME resets.
+  [self setPluginImeActive:NO];
 }
 
 - (BOOL)postProcessEventForPluginIme:(NSEvent*)event {
-  if (pluginImeIdentifier_ == -1)
-    return false;
-
-  // ComplexTextInputPanel only works on 10.6+.
-  static BOOL sImeSupported = NO;
-  static BOOL sHaveCheckedSupport = NO;
-  if (!sHaveCheckedSupport) {
-    int32 major, minor, bugfix;
-    base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-    sImeSupported = major > 10 || (major == 10 && minor > 5);
-    sHaveCheckedSupport = YES;
-  }
-  if (!sImeSupported)
+  if (!pluginImeActive_)
     return false;
 
   ComplexTextInputPanel* inputPanel =
@@ -2667,10 +2677,20 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   BOOL handled = [inputPanel interpretKeyEvent:event
                                         string:&composited_string];
   if (composited_string) {
-    renderWidgetHostView_->PluginImeCompositionConfirmed(
-        base::SysNSStringToUTF16(composited_string), pluginImeIdentifier_);
+    renderWidgetHostView_->PluginImeCompositionCompleted(
+        base::SysNSStringToUTF16(composited_string), focusedPluginIdentifier_);
+    pluginImeActive_ = NO;
   }
   return handled;
+}
+
+- (void)checkForPluginImeCancellation {
+  if (pluginImeActive_ &&
+      ![[ComplexTextInputPanel sharedComplexTextInputPanel] inComposition]) {
+    renderWidgetHostView_->PluginImeCompositionCompleted(
+        string16(), focusedPluginIdentifier_);
+    pluginImeActive_ = NO;
+  }
 }
 
 - (ViewID)viewID {
