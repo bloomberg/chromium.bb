@@ -117,6 +117,8 @@
         'browser/autocomplete/autocomplete_edit_view_mac.mm',
         'browser/autocomplete/autocomplete_edit_view_win.cc',
         'browser/autocomplete/autocomplete_edit_view_win.h',
+        'browser/autocomplete/autocomplete_edit_view_views.cc',
+        'browser/autocomplete/autocomplete_edit_view_views.h',
         'browser/autocomplete/autocomplete_match.cc',
         'browser/autocomplete/autocomplete_match.h',
         'browser/autocomplete/autocomplete_popup_model.cc',

@@ -149,6 +149,7 @@ KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
     case GDK_Insert:
       return VKEY_INSERT;  // (2D) INS key
     case GDK_Delete:
+    case GDK_KP_Delete:
       return VKEY_DELETE;  // (2E) DEL key
     case GDK_Help:
       return VKEY_HELP;  // (2F) HELP key

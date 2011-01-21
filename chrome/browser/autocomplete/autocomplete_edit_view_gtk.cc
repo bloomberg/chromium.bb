@@ -38,9 +38,11 @@
 #include "ui/base/animation/multi_animation.h"
 
 #if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/autocomplete/autocomplete_edit_view_views.h"
 #include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "views/controls/textfield/native_textfield_views.h"
 #else
 #include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
@@ -854,6 +856,18 @@ AutocompleteEditView* AutocompleteEditViewGtk::Create(
     CommandUpdater* command_updater,
     bool popup_window_mode,
     const views::View* location_bar) {
+  if (views::NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+    AutocompleteEditViewViews* autocomplete =
+        new AutocompleteEditViewViews(controller,
+                                      toolbar_model,
+                                      profile,
+                                      command_updater,
+                                      popup_window_mode,
+                                      location_bar);
+    autocomplete->Init();
+    return autocomplete;
+  }
+
   AutocompleteEditViewGtk* autocomplete =
       new AutocompleteEditViewGtk(controller,
                                   toolbar_model,
