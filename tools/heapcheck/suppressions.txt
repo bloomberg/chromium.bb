@@ -1209,3 +1209,14 @@
    fun:ResourceDispatcherHostTest::MakeTestRequest
    fun:ResourceDispatcherHostTest_TestMany_Test::TestBody
 }
+{
+   bug_70327
+   Heapcheck:Leak
+   fun:g_malloc
+   fun:gfx::CanvasSkia::SizeStringInt
+   fun:gfx::PlatformFontGtk::GetStringWidth
+   fun:gfx::Font::GetStringWidth
+   fun:ui::ElideUrl
+   fun:ui::::RunTest
+   fun:ui::TextEliderTest_TestGeneralEliding_Test::TestBody
+}
