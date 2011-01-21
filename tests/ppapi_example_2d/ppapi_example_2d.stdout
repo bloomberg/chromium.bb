@@ -14,7 +14,6 @@ replaying PPB_GetInterface:s:i:
 output 0:  i(1)
 replaying PPB_GetInterface:s:i:
 output 0:  i(1)
-PPP_InitializeModule RESULTS:   i(7150)  i(0)
 
 "*** INIT INSTANCE" 
 PPP_GetInterface RESULTS:   i(1)

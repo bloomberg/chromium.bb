@@ -35,9 +35,9 @@ node = env.CommandSelLdrTestNacl(
 
 # we the sysv shm feature in sel_universal which is only available on linux
 trusted_env = env.get('TRUSTED_ENV')
-is_broken = env.UsingEmulator() or not trusted_env.Bit('linux')
-# TODO(robertm): re-enable when this works
-is_broken = True
+is_broken = (env.UsingEmulator() or
+             (not trusted_env) or
+             (not trusted_env.Bit('linux')))
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_ppapi_example_2d_test',
