@@ -2685,6 +2685,61 @@ const BlockEntry* Segment::GetBlock(
 }
 
 
+const Cluster* Segment::FindOrPreloadCluster(long long requested_pos)
+{
+    if (requested_pos < 0)
+        return 0;
+
+    Cluster** const ii = m_clusters;
+    Cluster** i = ii;
+
+    const long count = m_clusterCount + m_clusterPreloadCount;
+
+    Cluster** const jj = ii + count;
+    Cluster** j = jj;
+
+    while (i < j)
+    {
+        //INVARIANT:
+        //[ii, i) < pTP->m_pos
+        //[i, j) ?
+        //[j, jj)  > pTP->m_pos
+
+        Cluster** const k = i + (j - i) / 2;
+        assert(k < jj);
+
+        Cluster* const pCluster = *k;
+        assert(pCluster);
+
+        const long long pos_ = pCluster->m_pos;
+        assert(pos_);
+
+        const long long pos = pos_ * ((pos_ < 0) ? -1 : 1);
+
+        if (pos < requested_pos)
+            i = k + 1;
+        else if (pos > requested_pos)
+            j = k;
+        else
+            return pCluster;
+    }
+
+    assert(i == j);
+    //assert(Cluster::HasBlockEntries(this, tp.m_pos));
+
+    Cluster* const pCluster = Cluster::Parse(this, -1, requested_pos, 0, 0);
+    assert(pCluster);
+
+    const ptrdiff_t idx = i - m_clusters;
+
+    PreloadCluster(pCluster, idx);
+    assert(m_clusters);
+    assert(m_clusterPreloadCount > 0);
+    assert(m_clusters[idx] == pCluster);
+
+    return pCluster;
+}
+
 
 CuePoint::CuePoint(size_t idx, long long pos) :
     m_element_start(0),
@@ -4872,6 +4927,195 @@ void Cluster::Load() const
     assert(timecode >= 0);
 
     m_timecode = timecode;
+}
+
+
+long Cluster::Load(long long& pos, long& len) const
+{
+    assert(m_pSegment);
+    assert(m_pos);
+    assert(m_size);
+
+    if (m_pos > 0)  //loaded
+    {
+        assert(m_size > 0);
+        assert(m_timecode >= 0);
+
+        return 0;
+    }
+
+    assert(m_pos < 0);  //not loaded yet
+    assert(m_size < 0);
+    assert(m_timecode < 0);
+
+    IMkvReader* const pReader = m_pSegment->m_pReader;
+
+    long long total, avail;
+
+    const int status = pReader->Length(&total, &avail);
+
+    if (status < 0)  //error
+        return status;
+
+    assert(total >= 0);
+    assert(avail <= total);
+
+    const long long segment_stop = m_pSegment->m_start + m_pSegment->m_size;
+
+    //m_pos *= -1;                      //relative to segment
+    pos = m_pSegment->m_start - m_pos;  //absolute
+
+    if ((pos + 1) > avail)
+    {
+        len = 1;
+        return E_BUFFER_NOT_FULL;
+    }
+
+    long long result = GetUIntLength(pReader, pos, len);
+
+    if (result < 0)  //error
+        return static_cast<long>(result);
+
+    if (result > 0)  //weird
+    {
+        len = 1;
+        return E_BUFFER_NOT_FULL;
+    }
+
+    if ((pos + len) > segment_stop)
+        return E_FILE_FORMAT_INVALID;
+
+    if ((pos + len) > avail)
+        return E_BUFFER_NOT_FULL;
+
+    const long long id_ = ReadUInt(pReader, pos, len);
+
+    if (id_ < 0)  //error
+        return static_cast<long>(id_);
+
+    if (id_ != 0x0F43B675)  //Cluster ID
+        return E_FILE_FORMAT_INVALID;
+
+    pos += len;  //consume id
+
+    //read cluster size
+
+    if ((pos + 1) > avail)
+    {
+        len = 1;
+        return E_BUFFER_NOT_FULL;
+    }
+
+    result = GetUIntLength(pReader, pos, len);
+
+    if (result < 0)  //error
+        return static_cast<long>(result);
+
+    if (result > 0)  //weird
+    {
+        len = 1;
+        return E_BUFFER_NOT_FULL;
+    }
+
+    if ((pos + len) > segment_stop)
+        return E_FILE_FORMAT_INVALID;
+
+    if ((pos + len) > avail)
+        return E_BUFFER_NOT_FULL;
+
+    const long long size_ = ReadUInt(pReader, pos, len);
+
+    if (size_ < 0)  //error
+        return static_cast<long>(size_);
+
+    if (size_ == 0)
+        return E_FILE_FORMAT_INVALID;
+
+    pos += len;  //consume length of size of element
+
+    //pos now points to start of payload
+
+    //m_size = size_;
+    const long long cluster_stop = pos + size_;
+
+    len = static_cast<long>(size_);
+
+    if (cluster_stop > avail)
+        return E_BUFFER_NOT_FULL;
+
+    long long timecode = -1;
+    bool bBlock = false;
+
+    while (pos < cluster_stop)
+    {
+        if (Match(pReader, pos, 0x67, timecode))
+        {
+            if (bBlock)
+                break;
+        }
+        else
+        {
+            const long long id = ReadUInt(pReader, pos, len);
+
+            if (id < 0) //error
+                return static_cast<long>(id);
+
+            if (id == 0)
+                return E_FILE_FORMAT_INVALID;
+
+            if ((pos + len) > cluster_stop)
+                return E_FILE_FORMAT_INVALID;
+
+            pos += len;  //consume id
+
+            const long long size = ReadUInt(pReader, pos, len);
+
+            if (size < 0)  //error
+                return static_cast<long>(size);
+
+            if ((pos + len) > cluster_stop)
+                return E_FILE_FORMAT_INVALID;
+
+            pos += len;  //consume size field
+
+            //pos now points to start of payload
+
+            if (size == 0)  //weird
+                continue;
+
+            if ((pos + size) > cluster_stop)
+                return E_FILE_FORMAT_INVALID;
+
+            if (id == 0x20)  //BlockGroup ID
+            {
+                bBlock = true;
+                break;
+            }
+
+            if (id == 0x23)  //SimpleBlock ID
+            {
+                bBlock = true;
+                break;
+            }
+
+            pos += size;  //consume payload
+            assert(pos <= cluster_stop);
+        }
+    }
+
+    assert(pos <= cluster_stop);
+
+    if (timecode < 0)
+        return E_FILE_FORMAT_INVALID;
+
+    if (!bBlock)
+        return E_FILE_FORMAT_INVALID;
+
+    m_pos *= -1;            // m_pos > 0 means we're partially loaded
+    m_size = size_;         // m_size > 0 means we're partially loaded
+    m_timecode = timecode;  // m_timecode >= 0 means we're partially loaded
+
+    return 0;
 }
 
 

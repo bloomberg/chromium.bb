@@ -371,7 +371,9 @@ public:
         long long size,
         long long element_start,
         long long element_size);
+
     ~SegmentInfo();
+
     long long GetTimeCodeScale() const;
     long long GetDuration() const;  //scaled
     const char* GetMuxingAppAsUTF8() const;
@@ -566,7 +568,9 @@ public:
     const BlockEntry* GetMaxKey(const VideoTrack*) const;
 
     static bool HasBlockEntries(const Segment*, long long);
+
     void Load() const;
+    long Load(long long& pos, long& size) const;
 
 protected:
     Cluster(
@@ -651,6 +655,8 @@ public:
 
     const Cluster* FindCluster(long long time_nanoseconds) const;
     //const BlockEntry* Seek(long long time_nanoseconds, const Track*) const;
+
+    const Cluster* FindOrPreloadCluster(long long pos);
 
     long ParseCues(
         long long cues_off,  //offset relative to start of segment
