@@ -41,12 +41,18 @@ cr.define('options', function() {
      */
     passwordExceptionsList_: null,
 
+    /** @inheritDoc */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
       this.createSavedPasswordsList_();
       this.createPasswordExceptionsList_();
+    },
 
+    /** @inheritDoc */
+    didShowPage: function() {
+      // Updating the password lists may cause a blocking platform dialog pop up
+      // (Mac, Linux), so we delay this operation until the page is shown.
       chrome.send('updatePasswordLists');
     },
 
