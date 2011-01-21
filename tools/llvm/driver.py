@@ -753,7 +753,11 @@ def LinkBC(inputs, output = None):
   # we need to specify the native libraries to be used in the final linking,
   # just so the linker can resolve the symbols. We'd like to eliminate
   # this somehow.
-  RunWithEnv('RUN_BCLD', arch = 'ARM',
+  if env.has('ARCH'):
+    arch = env.get('ARCH')
+  else:
+    arch = 'ARM'
+  RunWithEnv('RUN_BCLD', arch = arch,
              inputs = shell.join(inputs),
              output = bcld_output)
 
