@@ -288,7 +288,7 @@ void JingleSessionManager::OnSessionCreate(
     }
     JingleSession* jingle_session =
         JingleSession::CreateServerSession(this, certificate_,
-                                           private_key_.release());
+                                           private_key_.get());
     certificate_ = NULL;
     sessions_.push_back(make_scoped_refptr(jingle_session));
     jingle_session->Init(cricket_session);
