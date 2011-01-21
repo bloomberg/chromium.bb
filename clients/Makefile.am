@@ -8,7 +8,8 @@ noinst_PROGRAMS =				\
 	dnd					\
 	smoke					\
 	resizor					\
-	simple-client
+	simple-client				\
+	eventdemo
 
 noinst_LTLIBRARIES = libtoytoolkit.la
 
@@ -59,6 +60,9 @@ resizor_LDADD = $(toolkit_libs)
 simple_client_SOURCES = simple-client.c
 simple_client_LDADD = \
 	$(top_builddir)/wayland/libwayland-client.la -lm $(GLES2_LIBS)
+
+eventdemo_SOURCES = eventdemo.c
+eventdemo_LDADD = $(toolkit_libs)
 
 BUILT_SOURCES =					\
 	screenshooter-client-protocol.h		\
