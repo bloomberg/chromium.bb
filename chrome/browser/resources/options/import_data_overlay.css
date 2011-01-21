@@ -1,8 +1,4 @@
 #import-throbber {
-  background-image: url("../../../../app/resources/throbber.png");
-  width: 16px;
-  height: 16px;
   margin: -3px 10px;
-  display: inline-block;
   visibility: hidden;
 }

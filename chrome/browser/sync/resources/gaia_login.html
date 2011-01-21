@@ -58,11 +58,7 @@
     width: 200px;
     height: 70px;
   }
-  #throb {
-    background-image: url("../../../../app/resources/throbber.png");
-    width: 16px;
-    height: 16px;
-    background-position: 0px;
+  #logging_in_throbber {
     margin: 0px 10px 0px 10px;
   }
   .toppageverticalspace {
@@ -120,6 +116,7 @@
     text-align: center;
   }
 </style>
+<link rel="stylesheet" href="chrome://resources/css/throbber.css">
 </head>
 <body bgcolor="#ffffff" vlink="#666666"
       i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
@@ -168,15 +165,10 @@
       }
     }
 
-    function advanceThrobber() {
-      var throbber = document.getElementById('throb');
-      throbber.style.backgroundPositionX =
-          ((parseInt(getComputedStyle(throbber).backgroundPositionX) - 16) %
-          576) + 'px';
-    }
 
     function showGaiaLogin(args) {
-      document.getElementById('throbber_container').style.display = "none";
+      document.getElementById('logging_in_throbber').style.display = "none";
+
       document.getElementById('Email').disabled = false;
       document.getElementById('Passwd').disabled = false;
 
@@ -288,13 +280,11 @@
         }
         acct_text.textContent = translated_text.replace('Google','');
       }
-      setInterval(advanceThrobber, 30);
       var args = JSON.parse(chrome.dialogArguments);
       showGaiaLogin(args);
     }
 
     function sendCredentialsAndClose() {
-
       if (!setErrorVisibility())
         return false;
 
@@ -303,8 +293,8 @@
       document.getElementById('CaptchaValue').disabled = true;
       document.getElementById('AccessCode').disabled = true;
 
-      var throbber = document.getElementById('throbber_container');
-      throbber.style.display = "inline";
+      document.getElementById('logging_in_throbber').style.display = "block";
+
       var f = document.getElementById("gaia_loginform");
       var result = JSON.stringify({"user" : f.Email.value,
                                    "pass" : f.Passwd.value,
@@ -548,10 +538,7 @@
               <table align="center" cellpadding="0" cellspacing="0">
                 <tr>
                   <td>
-                    <div id="throbber_container" style="display:none;">
-                      <div id="throb">
-                      </div>
-                    </div>
+                    <div id="logging_in_throbber" class="throbber"></div>
                   </td>
                   <td class="noverticalpadding">
                     <input id="signIn" type="submit" class="gaia le button"

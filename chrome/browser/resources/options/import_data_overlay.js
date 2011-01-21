@@ -18,8 +18,6 @@ cr.define('options', function() {
                      'import-data-overlay');
   }
 
-  ImportDataOverlay.throbIntervalId = 0;
-
   cr.addSingletonGetter(ImportDataOverlay);
 
   ImportDataOverlay.prototype = {
@@ -168,18 +166,6 @@ cr.define('options', function() {
     $('import-browsers').disabled = state;
     $('import-data-commit').disabled = state;
     $('import-throbber').style.visibility = state ? "visible" : "hidden";
-
-    function advanceThrobber() {
-      var throbber = $('import-throbber');
-      throbber.style.backgroundPositionX =
-          ((parseInt(getComputedStyle(throbber).backgroundPositionX, 10) - 16)
-          % 576) + 'px';
-    }
-    if (state) {
-      ImportDataOverlay.throbIntervalId = setInterval(advanceThrobber, 30);
-    } else {
-      clearInterval(ImportDataOverlay.throbIntervalId);
-    }
   };
 
   /**

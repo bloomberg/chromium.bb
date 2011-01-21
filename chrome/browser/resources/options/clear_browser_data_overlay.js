@@ -90,20 +90,6 @@ cr.define('options', function() {
       $('clearBrowserDataCommit').disabled = true;
     else
       ClearBrowserDataOverlay.getInstance().updateCommitButtonState_();
-
-    function advanceThrobber() {
-      var throbber = $('cbdThrobber');
-      // TODO(csilv): make this smoother using time-based animation?
-      throbber.style.backgroundPositionX =
-          ((parseInt(getComputedStyle(throbber).backgroundPositionX, 10) - 16) %
-          576) + 'px';
-    }
-    if (state) {
-      ClearBrowserDataOverlay.throbIntervalId =
-          setInterval(advanceThrobber, 30);
-    } else {
-      clearInterval(ClearBrowserDataOverlay.throbIntervalId);
-    }
   };
 
   ClearBrowserDataOverlay.setClearLocalDataLabel = function(label) {
