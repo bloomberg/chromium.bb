@@ -1194,47 +1194,58 @@ void RecordLastRunAppBundlePath() {
   NSMenu* dockMenu = [[[NSMenu alloc] initWithTitle: @""] autorelease];
   Profile* profile = [self defaultProfile];
 
-  // TODO(rickcam): Mock out BackgroundApplicationListModel, then add unit
-  // tests which use the mock in place of the profile-initialized model.
-
-  // Avoid breaking unit tests which have no profile.
-  if (profile) {
-    int position = 0;
-    BackgroundApplicationListModel applications(profile);
-    for (ExtensionList::const_iterator cursor = applications.begin();
-         cursor != applications.end();
-         ++cursor, ++position) {
-      DCHECK(position == applications.GetPosition(*cursor));
-      scoped_nsobject<NSMenuItem> appItem([[NSMenuItem alloc]
-          initWithTitle:base::SysUTF16ToNSString(UTF8ToUTF16((*cursor)->name()))
-          action:@selector(commandFromDock:)
-          keyEquivalent:@""]);
-      [appItem setTarget:self];
-      [appItem setTag:position];
-      [dockMenu addItem:appItem];
-    }
-    if (applications.begin() != applications.end()) {
-      NSMenuItem* sepItem = [[NSMenuItem separatorItem] init];
-      [dockMenu addItem:sepItem];
-    }
-  }
-
   NSString* titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_WINDOW_MAC);
-  scoped_nsobject<NSMenuItem> item([[NSMenuItem alloc]
-                                    initWithTitle:titleStr
-                                    action:@selector(commandFromDock:)
-                                    keyEquivalent:@""]);
+  scoped_nsobject<NSMenuItem> item(
+      [[NSMenuItem alloc] initWithTitle:titleStr
+                                 action:@selector(commandFromDock:)
+                          keyEquivalent:@""]);
   [item setTarget:self];
   [item setTag:IDC_NEW_WINDOW];
   [dockMenu addItem:item];
 
   titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_INCOGNITO_WINDOW_MAC);
   item.reset([[NSMenuItem alloc] initWithTitle:titleStr
-                                 action:@selector(commandFromDock:)
+                                        action:@selector(commandFromDock:)
                                  keyEquivalent:@""]);
   [item setTarget:self];
   [item setTag:IDC_NEW_INCOGNITO_WINDOW];
   [dockMenu addItem:item];
+
+  // TODO(rickcam): Mock out BackgroundApplicationListModel, then add unit
+  // tests which use the mock in place of the profile-initialized model.
+
+  // Avoid breaking unit tests which have no profile.
+  if (profile) {
+    BackgroundApplicationListModel applications(profile);
+    if (applications.size()) {
+      int position = 0;
+      NSString* menuStr =
+          l10n_util::GetNSStringWithFixup(IDS_BACKGROUND_APPS_MAC);
+      scoped_nsobject<NSMenu> appMenu([[NSMenu alloc] initWithTitle:menuStr]);
+      for (ExtensionList::const_iterator cursor = applications.begin();
+           cursor != applications.end();
+           ++cursor, ++position) {
+        DCHECK(position == applications.GetPosition(*cursor));
+        NSString* itemStr =
+            base::SysUTF16ToNSString(UTF8ToUTF16((*cursor)->name()));
+        scoped_nsobject<NSMenuItem> appItem([[NSMenuItem alloc]
+            initWithTitle:itemStr
+                   action:@selector(commandFromDock:)
+            keyEquivalent:@""]);
+        [appItem setTarget:self];
+        [appItem setTag:position];
+        [appMenu addItem:appItem];
+      }
+      scoped_nsobject<NSMenuItem> appMenuItem([[NSMenuItem alloc]
+          initWithTitle:menuStr
+                 action:@selector(commandFromDock:)
+          keyEquivalent:@""]);
+      [appMenuItem setTarget:self];
+      [appMenuItem setTag:position];
+      [appMenuItem setSubmenu:appMenu];
+      [dockMenu addItem:appMenuItem];
+    }
+  }
 
   return dockMenu;
 }

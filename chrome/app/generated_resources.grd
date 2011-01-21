@@ -8641,6 +8641,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_NEW_INCOGNITO_WINDOW_MAC" desc="The Mac menu item for opening a new incognito window in the file menu.">
           New Incognito Window
         </message>
+        <message name="IDS_BACKGROUND_APPS_MAC" desc="The Mac submenu for opening Background Apps.">
+          Background Apps
+        </message>
         <message name="IDS_REOPEN_CLOSED_TABS_MAC" desc="The Mac menu item reopen recently closed tabs in the file menu.">
           Reopen Closed Tab
         </message>
