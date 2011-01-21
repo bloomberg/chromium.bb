@@ -8117,6 +8117,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_CONFIGURE_ENCRYPTION" desc="Link to configure sync encryption for passwords">
         Configure password sync.
       </message>
+      <message name="IDS_SYNC_NEW_PASSWORD_SYNC" desc="Promotional message for password sync setup.">
+        New! Configure password sync.
+      </message>
+      <message name="IDS_SYNC_PASSWORD_SYNC_ATTENTION" desc="Message indicating password sync needs attention.">
+        Password sync needs your attention.
+      </message>
+
       <message name="IDS_SYNC_PLEASE_SIGN_IN" desc="An title for a sign in dialog.">
         Please sign in
       </message>

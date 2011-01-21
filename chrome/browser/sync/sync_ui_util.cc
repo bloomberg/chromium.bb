@@ -107,21 +107,21 @@ MessageType GetStatusInfo(ProfileSyncService* service,
     } else if (service->observed_passphrase_required()) {
       if (service->passphrase_required_for_decryption()) {
         // NOT first machine.
-        // Show a link and present as an error ("needs attention").
+        // Show a link ("needs attention"), but still indicate the
+        // current synced status.  Return SYNC_PROMO so that
+        // the configure link will still be shown.
         if (status_label && link_label) {
-          status_label->assign(string16());
+          status_label->assign(GetSyncedStateStatusLabel(service));
           link_label->assign(
-              l10n_util::GetStringUTF16(IDS_SYNC_CONFIGURE_ENCRYPTION));
+              l10n_util::GetStringUTF16(IDS_SYNC_PASSWORD_SYNC_ATTENTION));
         }
-        result_type = SYNC_ERROR;
+        result_type = SYNC_PROMO;
       } else {
         // First machine.  Show as a promotion.
         if (status_label && link_label) {
-          status_label->assign(
-              l10n_util::GetStringFUTF16(IDS_SYNC_NTP_PASSWORD_PROMO,
-                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+          status_label->assign(GetSyncedStateStatusLabel(service));
           link_label->assign(
-              l10n_util::GetStringUTF16(IDS_SYNC_NTP_PASSWORD_ENABLE));
+              l10n_util::GetStringUTF16(IDS_SYNC_NEW_PASSWORD_SYNC));
         }
         result_type = SYNC_PROMO;
       }
@@ -176,6 +176,43 @@ MessageType GetStatusInfo(ProfileSyncService* service,
   return result_type;
 }
 
+// Returns the status info for use on the new tab page, where we want slightly
+// different information than in the settings panel.
+MessageType GetStatusInfoForNewTabPage(ProfileSyncService* service,
+                                       string16* status_label,
+                                       string16* link_label) {
+  DCHECK(status_label);
+  DCHECK(link_label);
+
+  if (service->HasSyncSetupCompleted() &&
+      service->observed_passphrase_required()) {
+    if (!service->passphrase_required_for_decryption()) {
+      // First machine migrating to passwords.  Show as a promotion.
+      if (status_label && link_label) {
+        status_label->assign(
+            l10n_util::GetStringFUTF16(
+                IDS_SYNC_NTP_PASSWORD_PROMO,
+                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+        link_label->assign(
+            l10n_util::GetStringUTF16(IDS_SYNC_NTP_PASSWORD_ENABLE));
+      }
+      return SYNC_PROMO;
+    } else {
+      // NOT first machine.
+      // Show a link and present as an error ("needs attention").
+      if (status_label && link_label) {
+        status_label->assign(string16());
+        link_label->assign(
+            l10n_util::GetStringUTF16(IDS_SYNC_CONFIGURE_ENCRYPTION));
+      }
+      return SYNC_ERROR;
+    }
+  }
+
+  // Fallback to default.
+  return GetStatusInfo(service, status_label, link_label);
+}
+
 }  // namespace
 
 // Returns an HTML chunk for a login prompt related to encryption.
@@ -198,6 +235,15 @@ MessageType GetStatusLabels(ProfileSyncService* service,
   DCHECK(status_label);
   DCHECK(link_label);
   return sync_ui_util::GetStatusInfo(service, status_label, link_label);
+}
+
+MessageType GetStatusLabelsForNewTabPage(ProfileSyncService* service,
+                                         string16* status_label,
+                                         string16* link_label) {
+  DCHECK(status_label);
+  DCHECK(link_label);
+  return sync_ui_util::GetStatusInfoForNewTabPage(
+      service, status_label, link_label);
 }
 
 MessageType GetStatus(ProfileSyncService* service) {

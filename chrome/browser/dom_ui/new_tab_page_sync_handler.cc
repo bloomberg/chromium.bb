@@ -144,7 +144,9 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   string16 status_msg;
   string16 link_text;
   sync_ui_util::MessageType type =
-      sync_ui_util::GetStatusLabels(sync_service_, &status_msg, &link_text);
+      sync_ui_util::GetStatusLabelsForNewTabPage(sync_service_,
+                                                 &status_msg,
+                                                 &link_text);
   SendSyncMessageToPage(FromSyncStatusMessageType(type),
                         UTF16ToUTF8(status_msg), UTF16ToUTF8(link_text));
 }

@@ -39,6 +39,11 @@ MessageType GetStatusLabels(ProfileSyncService* service,
                             string16* status_label,
                             string16* link_label);
 
+// Same as above but for use specifically on the New Tab Page.
+MessageType GetStatusLabelsForNewTabPage(ProfileSyncService* service,
+                                         string16* status_label,
+                                         string16* link_label);
+
 MessageType GetStatus(ProfileSyncService* service);
 
 // Determines whether or not the sync error button should be visible.
