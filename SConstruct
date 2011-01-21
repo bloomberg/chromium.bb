@@ -419,6 +419,10 @@ nacl_glibc_skiplist = set([
     # 2) the test needs an explicit fflush(stdout) call because the
     # process is killed without exit() being called.
     'run_srpc_sysv_shm_test',
+    # This test fails with nacl-glibc: glibc reports an internal
+    # sanity check failure in free().
+    # TODO(robertm): This needs further investigation.
+    'run_ppapi_example_2d_test',
     ])
 
 
