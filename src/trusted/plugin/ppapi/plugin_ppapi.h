@@ -131,9 +131,12 @@ class PluginPpapi : public pp::Instance, public Plugin {
   bool SelectNexeURLFromManifest(const nacl::string& nexe_manifest_json,
                                  nacl::string* result);
 
-  // A pointer to the browser (proxy) end of a Proxy pattern connecting the
-  // plugin to the .nexe's PPP interface (InitializeModule, Shutdown, and
-  // GetInterface).
+  // Shuts down the proxy for PPAPI nexes.
+  void ShutdownProxy();
+
+  // A pointer to the browser end of a proxy pattern connecting the
+  // NaCl plugin to the PPAPI .nexe's PPP interface
+  // (InitializeModule, Shutdown, and GetInterface).
   // TODO(sehr): this should be a scoped_ptr for shutdown.
   ppapi_proxy::BrowserPpp* ppapi_proxy_;
 
@@ -142,7 +145,6 @@ class PluginPpapi : public pp::Instance, public Plugin {
   bool replayDidChangeView;
   pp::Rect replayDidChangeViewPosition;
   pp::Rect replayDidChangeViewClip;
-
 };
 
 }  // namespace plugin

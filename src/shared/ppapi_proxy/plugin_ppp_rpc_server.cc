@@ -1,6 +1,8 @@
 // Copyright (c) 2010 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// SRPC-abstraction wrappers around PPP functions.
 
 #include <stdarg.h>
 
@@ -87,7 +89,8 @@ void PppRpcServer::PPP_InitializeModule(
     int32_t* success) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  DebugPrintf("PPP_InitializeModule: %s\n", service_description);
+  DebugPrintf("PPP_InitializeModule: module=%"NACL_PRIu32": %s\n",
+              module, service_description);
   // Set up the service for calling back into the browser.
   if (!StartMainSrpcChannel(const_cast<const char*>(service_description),
                             rpc->channel)) {
@@ -116,8 +119,11 @@ void PppRpcServer::PPP_ShutdownModule(NaClSrpcRpc* rpc,
   ::PPP_ShutdownModule();
   ppapi_proxy::UnsetModuleIdForSrpcChannel(rpc->channel);
   StopUpcallSrpcChannel();
-  StopMainSrpcChannel();
-  rpc->result = NACL_SRPC_RESULT_OK;
+  // TODO(sehr, polina): do we even need this function?
+  // Shouldn't the Dtor be called when nexe's main exits?
+  //StopMainSrpcChannel();
+  // Exit the srpc loop. The server won't answer any more requests.
+  rpc->result = NACL_SRPC_RESULT_BREAK;
 }
 
 void PppRpcServer::PPP_GetInterface(NaClSrpcRpc* rpc,
@@ -126,7 +132,7 @@ void PppRpcServer::PPP_GetInterface(NaClSrpcRpc* rpc,
                                     int32_t* exports_interface_name) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  DebugPrintf("PPP_GetInterface(%s)\n", interface_name);
+  DebugPrintf("PPP_GetInterface('%s')\n", interface_name);
   // Since the proxy will make calls to proxied interfaces, we need simply
   // to know whether the plugin exports a given interface.
   const void* plugin_interface = ::PPP_GetInterface(interface_name);

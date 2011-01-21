@@ -14,6 +14,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/ppp.h"
+#include "ppapi/c/ppp_instance.h"
 
 namespace ppapi_proxy {
 
@@ -27,7 +28,16 @@ class BrowserPpp {
                            PPB_GetInterface get_browser_interface,
                            PP_Instance instance);
   void ShutdownModule();
-  const void* GetInterface(const char* interface_name);
+  // Returns an interface pointer or NULL.
+  const void* GetPluginInterface(const char* interface_name);
+  // Returns an interface pointer or fails on a NULL CHECK.
+  const void* GetPluginInterfaceSafe(const char* interface_name);
+
+  // Guaranteed to be non-NULL if module initialization succeeded.
+  // Use this instead of GetPluginInterface for PPP_INSTANCE_INTERFACE.
+  const PPP_Instance* ppp_instance_interface() {
+    return ppp_instance_interface_;
+  }
 
   NaClSrpcChannel* main_channel() const { return main_channel_; }
   int plugin_pid() const { return plugin_pid_; }
@@ -37,7 +47,11 @@ class BrowserPpp {
   NaClSrpcChannel* main_channel_;
   // The PID of the plugin.
   int plugin_pid_;
-  // The thread used to handle CallOnMainThread, etc.
+
+  // Set on module initialization.
+  const PPP_Instance* ppp_instance_interface_;
+
+  // The thread used to handle calls on other than the main thread.
   struct NaClThread upcall_thread_;
   NACL_DISALLOW_COPY_AND_ASSIGN(BrowserPpp);
 };

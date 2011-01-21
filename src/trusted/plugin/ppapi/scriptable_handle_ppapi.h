@@ -32,6 +32,11 @@ class ScriptableHandlePpapi : public pp::deprecated::ScriptableObject,
   // If not NULL, this var should be reused to pass this object to the browser.
   pp::Var* var() { return var_; }
 
+  // If this scriptable handle corresponds to the NaCl plugin itself and the
+  // plugin has successfully loaded the NaCl module and started proxied
+  // execution, scripting should be redirected via this proxy.
+  void set_scriptable_proxy(pp::Var proxy) { scriptable_proxy_ = proxy; }
+
   // ------ Methods inherited from pp::deprecated::ScriptableObject:
 
   // Returns true for preloaded NaCl Plugin properties.
@@ -108,7 +113,9 @@ class ScriptableHandlePpapi : public pp::deprecated::ScriptableObject,
   // and only that owner should call Unref(). To CHECK for that keep a counter.
   int num_unref_calls_;
 
-  bool handle_is_plugin_;  // Whether handle() is a plugin.
+  bool handle_is_plugin_;  // Whether (portable) handle() is a plugin.
+
+  pp::Var scriptable_proxy_;  // Proxy for NaCl module's scripting interface.
 };
 
 }  // namespace plugin

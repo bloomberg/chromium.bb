@@ -150,7 +150,7 @@ PluginPpapi::~PluginPpapi() {
   NaClHandlePassBrowserDtor();
 #endif
 
-  delete ppapi_proxy_;
+  ShutdownProxy();
   ScriptableHandle* scriptable_handle_ = scriptable_handle();
   UnrefScriptableHandle(&scriptable_handle_);
   NaClSrpcModuleFini();
@@ -168,17 +168,8 @@ void PluginPpapi::DidChangeView(const pp::Rect& position,
     replayDidChangeViewClip     = clip;
     return;
   } else {
-    // TODO(polina): cache the instance_interface on the plugin.
-    const PPP_Instance* instance_interface =
-        reinterpret_cast<const PPP_Instance*>(
-            ppapi_proxy_->GetInterface(PPP_INSTANCE_INTERFACE));
-    if (instance_interface == NULL) {
-      // TODO(polina): report an error here.
-      return;
-    }
-    instance_interface->DidChangeView(pp_instance(),
-                                      &(position.pp_rect()),
-                                      &(clip.pp_rect()));
+    ppapi_proxy_->ppp_instance_interface()->DidChangeView(
+        pp_instance(), &(position.pp_rect()), &(clip.pp_rect()));
   }
 }
 
@@ -189,16 +180,8 @@ void PluginPpapi::DidChangeFocus(bool has_focus) {
   if (ppapi_proxy_ == NULL) {
     return;
   } else {
-    // TODO(polina): cache the instance_interface on the plugin.
-    const PPP_Instance* instance_interface =
-        reinterpret_cast<const PPP_Instance*>(
-            ppapi_proxy_->GetInterface(PPP_INSTANCE_INTERFACE));
-    if (instance_interface == NULL) {
-      // TODO(polina): report an error here.
-      return;
-    }
-    instance_interface->DidChangeFocus(pp_instance(),
-                                       pp::BoolToPPBool(has_focus));
+    ppapi_proxy_->ppp_instance_interface()->DidChangeFocus(
+        pp_instance(), pp::BoolToPPBool(has_focus));
   }
 }
 
@@ -209,16 +192,9 @@ bool PluginPpapi::HandleInputEvent(const PP_InputEvent& event) {
   if (ppapi_proxy_ == NULL) {
     return false;  // event is not handled here.
   } else {
-    // TODO(polina): cache the instance_interface on the plugin.
-    const PPP_Instance* instance_interface =
-        reinterpret_cast<const PPP_Instance*>(
-            ppapi_proxy_->GetInterface(PPP_INSTANCE_INTERFACE));
-    if (instance_interface == NULL) {
-      // TODO(polina): report an error here.
-      return false;  // event is not handled here.
-    }
     return pp::PPBoolToBool(
-        instance_interface->HandleInputEvent(pp_instance(), &event));
+      ppapi_proxy_->ppp_instance_interface()->HandleInputEvent(
+          pp_instance(), &event));
   }
 }
 
@@ -229,17 +205,9 @@ bool PluginPpapi::HandleDocumentLoad(const pp::URLLoader& url_loader) {
   if (ppapi_proxy_ == NULL) {
     return false;
   } else {
-    // TODO(polina): cache the instance_interface on the plugin.
-    const PPP_Instance* instance_interface =
-        reinterpret_cast<const PPP_Instance*>(
-            ppapi_proxy_->GetInterface(PPP_INSTANCE_INTERFACE));
-    if (instance_interface == NULL) {
-      // TODO(polina): report an error here.
-      return false;
-    }
     return pp::PPBoolToBool(
-        instance_interface->HandleDocumentLoad(pp_instance(),
-                                               url_loader.pp_resource()));
+        ppapi_proxy_->ppp_instance_interface()->HandleDocumentLoad(
+            pp_instance(), url_loader.pp_resource()));
   }
 }
 
@@ -247,41 +215,24 @@ bool PluginPpapi::HandleDocumentLoad(const pp::URLLoader& url_loader) {
 pp::Var PluginPpapi::GetInstanceObject() {
   PLUGIN_PRINTF(("PluginPpapi::GetInstanceObject (this=%p)\n",
                  static_cast<void*>(this)));
+  // The browser will unref when it discards the var for this object.
   ScriptableHandlePpapi* handle =
       static_cast<ScriptableHandlePpapi*>(scriptable_handle()->AddRef());
-  if (ppapi_proxy_ == NULL) {
-    pp::Var* handle_var = handle->var();
-    PLUGIN_PRINTF(("PluginPpapi::GetInstanceObject (handle=%p, "
-                   "handle_var=%p)\n",
-                  static_cast<void*>(handle), static_cast<void*>(handle_var)));
-    return *handle_var;  // make a copy
-  } else {
-    // TODO(sehr): cache the instance_interface on the plugin.
-    const PPP_Instance* instance_interface =
-        reinterpret_cast<const PPP_Instance*>(
-            ppapi_proxy_->GetInterface(PPP_INSTANCE_INTERFACE));
-    if (instance_interface == NULL) {
-      pp::Var* handle_var = handle->var();
-      PLUGIN_PRINTF(("PluginPpapi::GetInstanceObject failed\n"));
-      return *handle_var;  // make a copy
-    }
-    // Yuck.  This feels like another low-level interface usage.
-    // TODO(sehr,polina): add a better interface to rebuild Vars from
-    // low-level components we proxy.
-    return pp::Var(pp::Var::PassRef(),
-                   instance_interface->GetInstanceObject(pp_instance()));
-  }
+  pp::Var* handle_var = handle->var();
+  PLUGIN_PRINTF(("PluginPpapi::GetInstanceObject (handle=%p, handle_var=%p)\n",
+                 static_cast<void*>(handle), static_cast<void*>(handle_var)));
+  return *handle_var;  // make a copy
 }
 
 
 void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("PluginPpapi::RemoteFileDidOpen (pp_error=%"NACL_PRId32")\n",
+  PLUGIN_PRINTF(("PluginPpapi::NexeFileDidOpen (pp_error=%"NACL_PRId32")\n",
                  pp_error));
   if (pp_error != PP_OK) {
     return;
   }
   int32_t file_desc = url_downloader_.GetPOSIXFileDescriptor();
-  PLUGIN_PRINTF(("PluginPpapi::RemoteFileDidOpen (file_desc=%"NACL_PRId32")\n",
+  PLUGIN_PRINTF(("PluginPpapi::NexeFileDidOpen (file_desc=%"NACL_PRId32")\n",
                  file_desc));
   if (file_desc > NACL_NO_FILE_DESC) {
     LoadNaClModule(url_downloader_.url(), file_desc);
@@ -301,7 +252,7 @@ bool PluginPpapi::RequestNaClModule(const nacl::string& url) {
 
 
 void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
-  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (%p)\n",
+  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (srpc_channel=%p)\n",
                  reinterpret_cast<void*>(srpc_channel)));
   // Check that the .nexe exports the PPAPI intialization method.
   NaClSrpcService* client_service = srpc_channel->client;
@@ -314,50 +265,61 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
   }
   ppapi_proxy_ =
       new(std::nothrow) ppapi_proxy::BrowserPpp(srpc_channel);
-  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (ppapi_proxy_ = %p)\n",
+  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (ppapi_proxy=%p)\n",
                  reinterpret_cast<void*>(ppapi_proxy_)));
   if (ppapi_proxy_ == NULL) {
     return;
   }
   pp::Module* module = pp::Module::Get();
-  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (module = %p)\n",
+  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (module=%p)\n",
                  reinterpret_cast<void*>(module)));
   if (module == NULL) {
     return;
   }
-  int32_t init_retval =
+  int32_t pp_error =
       ppapi_proxy_->InitializeModule(module->pp_module(),
                                      module->get_browser_interface(),
                                      pp_instance());
-  if (init_retval != PP_OK) {
-      PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution failed\n"));
-    // For now we will leak the proxy, but no longer be allowed to access it.
-    ppapi_proxy_ = NULL;
+  if (pp_error != PP_OK) {
+    PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution failed\n"));
+    ShutdownProxy();
     return;
   }
   const PPP_Instance* instance_interface =
-      reinterpret_cast<const PPP_Instance*>(
-          ppapi_proxy_->GetInterface(PPP_INSTANCE_INTERFACE));
-  if (instance_interface == NULL) {
-      PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution failed\n"));
-    // TODO(sehr): Shut down the proxy.  For now we will leak the proxy, but
-    // no longer be allowed to access it.
-    ppapi_proxy_ = NULL;
-    return;
-  }
-  // Create an instance and initialize the instance's parameters.
-  if (!instance_interface->DidCreate(pp_instance(),
-                                     argc(),
-                                     const_cast<const char**>(argn()),
-                                     const_cast<const char**>(argv()))) {
+      ppapi_proxy_->ppp_instance_interface();
+  CHECK(instance_interface != NULL);  // Verified on module initialization.
+  PP_Bool did_create = instance_interface->DidCreate(
+      pp_instance(),
+      argc(),
+      const_cast<const char**>(argn()),
+      const_cast<const char**>(argv()));
+  if (did_create == PP_FALSE) {
     PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution failed\n"));
+    ShutdownProxy();
     return;
   }
+
+  ScriptableHandlePpapi* handle =
+      static_cast<ScriptableHandlePpapi*>(scriptable_handle());
+  PP_Var scriptable_proxy =
+      instance_interface->GetInstanceObject(pp_instance());
+  handle->set_scriptable_proxy(pp::Var(pp::Var::PassRef(), scriptable_proxy));
 
   // Replay missed events.
   if (replayDidChangeView) {
     replayDidChangeView = false;
     DidChangeView(replayDidChangeViewPosition, replayDidChangeViewClip);
+  }
+}
+
+
+void PluginPpapi::ShutdownProxy() {
+  PLUGIN_PRINTF(("PluginPpapi::ShutdownProxy (ppapi_proxy=%p)\n",
+                reinterpret_cast<void*>(ppapi_proxy_)));
+  if (ppapi_proxy_ != NULL) {
+    ppapi_proxy_->ShutdownModule();
+    delete ppapi_proxy_;
+    ppapi_proxy_ = NULL;
   }
 }
 

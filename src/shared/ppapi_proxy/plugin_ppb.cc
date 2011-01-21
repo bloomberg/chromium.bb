@@ -72,17 +72,20 @@ const void* GetBrowserInterface(const char* interface_name) {
                                      &exports_interface_name);
   DebugPrintf("PPB_GetInterface('%s'): %s\n",
               interface_name, NaClSrpcErrorString(srpc_result));
-  if (srpc_result != NACL_SRPC_RESULT_OK || !exports_interface_name)
-    return NULL;
-  // The key strings are macros that may not sort in an obvious order relative
-  // to the name.  Hence, although we would like to use bsearch, we search
-  // linearly.
-  for (size_t i = 0; i < NACL_ARRAY_SIZE(interface_map); ++i) {
-    if (strcmp(interface_name, interface_map[i].name) == 0) {
-      return interface_map[i].func();
+  const void* ppb_interface = NULL;
+  if (srpc_result == NACL_SRPC_RESULT_OK && exports_interface_name) {
+    // The key strings are macros that may not sort in an obvious order relative
+    // to the name.  Hence, although we would like to use bsearch, we search
+    // linearly.
+    for (size_t i = 0; i < NACL_ARRAY_SIZE(interface_map); ++i) {
+      if (strcmp(interface_name, interface_map[i].name) == 0) {
+        ppb_interface = interface_map[i].func();
+        break;
+      }
     }
   }
-  return NULL;
+  DebugPrintf("PPB_GetInterface('%s'): %p\n", interface_name, ppb_interface);
+  return ppb_interface;
 }
 
 }  // namespace ppapi_proxy
