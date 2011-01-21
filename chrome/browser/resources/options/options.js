@@ -75,22 +75,22 @@ function load() {
         new OptionsPage('languageChewing',
                         localStrings.getString('languageChewingPage'),
                         'languageChewingPage'),
-        SystemOptions.getInstance());
+        LanguageOptions.getInstance());
     OptionsPage.registerSubPage(
         new OptionsPage('languageHangul',
                         localStrings.getString('languageHangulPage'),
                         'languageHangulPage'),
-        SystemOptions.getInstance());
+        LanguageOptions.getInstance());
     OptionsPage.registerSubPage(
         new OptionsPage('languageMozc',
                         localStrings.getString('languageMozcPage'),
                         'languageMozcPage'),
-        SystemOptions.getInstance());
+        LanguageOptions.getInstance());
     OptionsPage.registerSubPage(
         new OptionsPage('languagePinyin',
                         localStrings.getString('languagePinyinPage'),
                         'languagePinyinPage'),
-        SystemOptions.getInstance());
+        LanguageOptions.getInstance());
     OptionsPage.register(InternetOptions.getInstance());
   }
   OptionsPage.register(AdvancedOptions.getInstance());
@@ -106,6 +106,11 @@ function load() {
   OptionsPage.registerSubPage(FontSettings.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('fontSettingsCustomizeFontsButton')]);
+  if (!cr.isChromeOS) {
+    OptionsPage.registerSubPage(LanguageOptions.getInstance(),
+                                AdvancedOptions.getInstance(),
+                                [$('language-button')]);
+  }
   if (!cr.isWindows && !cr.isMac) {
     OptionsPage.registerSubPage(CertificateManager.getInstance(),
                                 AdvancedOptions.getInstance(),
@@ -167,8 +172,14 @@ function load() {
   // Allow platform specific CSS rules.
   if (cr.isMac)
     document.documentElement.setAttribute('os', 'mac');
-  if (cr.isLinux)
+  if (cr.isWindows)
+    document.documentElement.setAttribute('os', 'windows');
+  if (cr.isChromeOS)
+    document.documentElement.setAttribute('os', 'chromeos');
+  if (cr.isLinux) {
+    document.documentElement.setAttribute('os', 'linux');
     document.documentElement.setAttribute('toolkit', 'gtk');
+  }
   if (cr.isViews)
     document.documentElement.setAttribute('toolkit', 'views');
 

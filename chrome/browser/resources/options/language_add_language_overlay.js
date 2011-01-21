@@ -39,23 +39,30 @@ cr.define('options.language', function() {
       };
 
       // Create the language list with which users can add a language.
-      // Note that we have about 40 languages.
       var addLanguageList = $('add-language-overlay-language-list');
       var languageListData = templateData.languageList;
       for (var i = 0; i < languageListData.length; i++) {
         var language = languageListData[i];
-        var button = document.createElement('button');
-        button.className = 'link-button';
-        button.textContent = language.displayName;
+        var displayText = language.displayName;
         // If the native name is different, add it.
         if (language.displayName != language.nativeDisplayName) {
-          button.textContent += ' - ' + language.nativeDisplayName;
+          displayText += ' - ' + language.nativeDisplayName;
         }
-        button.languageCode = language.code;
-        var li = document.createElement('li');
-        li.languageCode = language.code;
-        li.appendChild(button);
-        addLanguageList.appendChild(li);
+        if (cr.isChromeOS) {
+          var button = document.createElement('button');
+          button.className = 'link-button';
+          button.textContent = displayText;
+          button.languageCode = language.code;
+          var li = document.createElement('li');
+          li.languageCode = language.code;
+          li.appendChild(button);
+          addLanguageList.appendChild(li);
+        } else {
+          var option = document.createElement('option');
+          option.value = language.code;
+          option.textContent = displayText;
+          addLanguageList.appendChild(option);
+        }
       }
     },
   };

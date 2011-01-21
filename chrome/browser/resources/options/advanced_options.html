@@ -95,6 +95,12 @@
           </select>
         </label>
       </div>
+<if expr="not pp_ifdef('chromeos')">
+      <div>
+        <button id="language-button"
+            i18n-content="languageAndSpellCheckSettingsButton"></button>
+      </div>
+</if>
 <if expr="os == 'win32'">
       <div>
         <label style="display:inline;">

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,8 +58,12 @@ cr.define('options', function() {
       this.addEventListener('visibleChange',
                             this.handleVisibleChange_.bind(this));
 
-      this.initializeInputMethodList_();
-      this.initializeLanguageCodeToInputMehotdIdsMap_();
+      if (cr.isChromeOS) {
+        this.initializeInputMethodList_();
+        this.initializeLanguageCodeToInputMehotdIdsMap_();
+      }
+      Preferences.getInstance().addEventListener(this.spellCheckDictionaryPref,
+          this.handleSpellCheckDictionaryPrefChange_.bind(this));
 
       // Set up add button.
       $('language-options-add-button').onclick = function(e) {
@@ -80,10 +84,22 @@ cr.define('options', function() {
       // Setup add language overlay page.
       OptionsPage.registerOverlay(AddLanguageOverlay.getInstance());
 
-      // Listen to user clicks on the add language list.
-      var addLanguageList = $('add-language-overlay-language-list');
-      addLanguageList.addEventListener('click',
-          this.handleAddLanguageListClick_.bind(this));
+      if (cr.isChromeOS) {
+        // Listen to user clicks on the add language list.
+        var addLanguageList = $('add-language-overlay-language-list');
+        addLanguageList.addEventListener('click',
+            this.handleAddLanguageListClick_.bind(this));
+      } else {
+        // Listen to add language dialog ok button.
+        var addLanguageOkButton = $('add-language-overlay-ok-button');
+        addLanguageOkButton.addEventListener('click',
+            this.handleAddLanguageOkButtonClick_.bind(this));
+
+        // Show experimental features if enabled.
+        if (templateData.experimentalSpellCheckFeatures == 'true') {
+          $('auto-spell-correction-option').classList.remove('hidden');
+        }
+      }
     },
 
     // The preference is a CSV string that describes preload engines
@@ -137,8 +153,6 @@ cr.define('options', function() {
       // Listen to pref change once the input method list is initialized.
       Preferences.getInstance().addEventListener(this.preloadEnginesPref,
           this.handlePreloadEnginesPrefChange_.bind(this));
-      Preferences.getInstance().addEventListener(this.spellCheckDictionaryPref,
-          this.handleSpellCheckDictionaryPrefChange_.bind(this));
     },
 
     /**
@@ -191,9 +205,11 @@ cr.define('options', function() {
         }
       }
       this.updateSelectedLanguageName_(languageCode);
-      this.updateUiLanguageButton_(languageCode);
+      if (!cr.isMac)
+        this.updateUiLanguageButton_(languageCode);
       this.updateSpellCheckLanguageButton_(languageCode);
-      this.updateInputMethodList_(languageCode);
+      if (cr.isChromeOS)
+        this.updateInputMethodList_(languageCode);
       this.updateLanguageListInAddLanguageOverlay_();
     },
 
@@ -203,9 +219,11 @@ cr.define('options', function() {
      * @private
      */
     handleLanguageOptionsListSave_: function(e) {
-      // Sort the preload engines per the saved languages before save.
-      this.preloadEngines_ = this.sortPreloadEngines_(this.preloadEngines_);
-      this.savePreloadEnginesPref_();
+      if (cr.isChromeOS) {
+        // Sort the preload engines per the saved languages before save.
+        this.preloadEngines_ = this.sortPreloadEngines_(this.preloadEngines_);
+        this.savePreloadEnginesPref_();
+      }
     },
 
     /**
@@ -321,8 +339,8 @@ cr.define('options', function() {
         uiLanguageButton.onclick = function(e) {
           chrome.send('uiLanguageChange', [languageCode]);
         }
-        $('language-options-ui-sign-out-button').onclick = function(e) {
-          chrome.send('uiLanguageSignOut');
+        $('language-options-ui-restart-button').onclick = function(e) {
+          chrome.send('uiLanguageRestart');
         }
       } else {
         // If the language is not supported as UI language, the button
@@ -507,6 +525,19 @@ cr.define('options', function() {
     },
 
     /**
+     * Handles add language dialog ok button.
+     */
+    handleAddLanguageOkButtonClick_ : function() {
+      var languagesSelect = $('add-language-overlay-language-list');
+      var selectedIndex = languagesSelect.selectedIndex;
+      if (selectedIndex >= 0) {
+        var selection = languagesSelect.options[selectedIndex];
+        $('language-options-list').addLanguage(String(selection.value));
+        OptionsPage.clearOverlays();
+      }
+    },
+
+    /**
      * Handles remove button's click event.
      * @param {Event} e Click event.
      */
@@ -520,14 +551,16 @@ cr.define('options', function() {
             localStrings.getString('ok_button'));
         return;
       }
-      // Disable input methods associated with |languageCode|.
-      // Don't allow removing the language if cerntain conditions are met.
-      // See removePreloadEnginesByLanguageCode_() for details.
-      if (!this.removePreloadEnginesByLanguageCode_(languageCode)) {
-        this.showNotification_(
-            localStrings.getString('please_add_another_language'),
-            localStrings.getString('ok_button'));
-        return;
+      if (cr.isChromeOS) {
+        // Disable input methods associated with |languageCode|.
+        // Don't allow removing the language if cerntain conditions are met.
+        // See removePreloadEnginesByLanguageCode_() for details.
+        if (!this.removePreloadEnginesByLanguageCode_(languageCode)) {
+          this.showNotification_(
+              localStrings.getString('please_add_another_language'),
+              localStrings.getString('ok_button'));
+          return;
+        }
       }
       languageOptionsList.removeSelectedLanguage();
     },

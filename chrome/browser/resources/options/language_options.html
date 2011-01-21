@@ -6,7 +6,9 @@
   </div>
   <div class="language-options-header">
     <div i18n-content="add_language_instructions"></div>
+<if expr="pp_ifdef('chromeos')">
     <div i18n-content="input_method_instructions"></div>
+</if>
   </div>
   <div class="language-options">
     <div class="language-options-left">
@@ -21,26 +23,49 @@
     </div>
     <div class="language-options-right">
       <h3 id="language-options-language-name"></h3>
+<if expr="os != 'darwin'">
       <div class="language-options-contents">
         <button id="language-options-ui-language-button"></button>
       </div>
+</if>
       <div class="language-options-contents">
         <button id="language-options-spell-check-language-button"></button>
       </div>
       <div id="language-options-ui-notification-bar"
            class="language-options-notification">
-        <div i18n-content="sign_out_required"></div>
-        <button id="language-options-ui-sign-out-button"
-                i18n-content="sign_out_button"></button>
+        <div i18n-content="restart_required"></div>
+        <button id="language-options-ui-restart-button"
+                i18n-content="restart_button"></button>
       </div>
+<if expr="pp_ifdef('chromeos')">
       <h3 i18n-content="input_method"></h3>
       <div id="language-options-input-method-list"
            class="language-options-contents">
       </div>
+</if>
     </div>
   </div>
   <div class="language-options-footer">
+<if expr="pp_ifdef('chromeos')">
     <div i18n-content="switch_input_methods_hint"></div>
     <div i18n-content="select_previous_input_method_hint"></div>
+</if>
+<if expr="not pp_ifdef('chromeos')">
+    <div id="spell-check-option">
+      <label class="checkbox">
+        <input id="enable-spell-check" pref="browser.enable_spellchecking"
+            metric="Options_SpellCheck" type="checkbox">
+        <span i18n-content="enable_spell_check"></span>
+      </label>
+    </div>
+    <div id="auto-spell-correction-option" class="hidden">
+      <label class="checkbox">
+        <input id="enable-auto-spell-correction"
+            pref="browser.enable_autospellcorrect"
+            metric="Options_AutoSpellCorrection" type="checkbox">
+        <span i18n-content="enable_auto_spell_correction"></span>
+      </label>
+    </div>
+</if>
   </div>
 </div>

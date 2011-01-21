@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,8 +92,13 @@ cr.define('options.language', function() {
       window.addEventListener('resize', this.redraw.bind(this));
 
       // Listen to pref change.
-      Preferences.getInstance().addEventListener(this.preferredLanguagesPref,
-          this.handlePreferredLanguagesPrefChange_.bind(this));
+      if (cr.isChromeOS) {
+        Preferences.getInstance().addEventListener(this.preferredLanguagesPref,
+            this.handlePreferredLanguagesPrefChange_.bind(this));
+      } else {
+        Preferences.getInstance().addEventListener(this.acceptLanguagesPref,
+            this.handleAcceptLanguagesPrefChange_.bind(this));
+      }
 
       // Listen to drag and drop events.
       this.addEventListener('dragstart', this.handleDragStart_.bind(this));
@@ -184,6 +189,10 @@ cr.define('options.language', function() {
       if (target instanceof ListItem) {
         this.draggedItem = target;
         e.dataTransfer.effectAllowed = 'move';
+        // We need to put some kind of data in the drag or it will be
+        // ignored.  Use the display name in case the user drags to a text
+        // field or the desktop.
+        e.dataTransfer.setData('text/plain', target.title);
       }
     },
 
@@ -256,6 +265,18 @@ cr.define('options.language', function() {
     },
 
     /**
+     * Handles accept languages pref change.
+     * @param {Event} e The change event object.
+     * @private
+     */
+    handleAcceptLanguagesPrefChange_: function(e) {
+      var languageCodesInCsv = e.value.value;
+      var languageCodes = this.filterBadLanguageCodes_(
+          languageCodesInCsv.split(','));
+      this.load_(languageCodes);
+    },
+
+    /**
      * Loads given language list.
      * @param {Array} languageCodes List of language codes.
      * @private
@@ -286,8 +307,9 @@ cr.define('options.language', function() {
      */
     savePreference_: function() {
       // Encode the language codes into a CSV string.
-      Preferences.setStringPref(this.preferredLanguagesPref,
-                                this.dataModel.slice().join(','));
+      if (cr.isChromeOS)
+        Preferences.setStringPref(this.preferredLanguagesPref,
+                                  this.dataModel.slice().join(','));
       // Save the same language list as accept languages preference as
       // well, but we need to expand the language list, to make it more
       // acceptable. For instance, some web sites don't understand 'en-US'

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,6 +140,9 @@ void AdvancedOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("fontSettingsCustomizeFontsButton",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_FONTSETTINGS_CUSTOMIZE_FONTS_BUTTON));
+  localized_strings->SetString("languageAndSpellCheckSettingsButton",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON));
   localized_strings->SetString("advancedSectionTitlePrivacy",
       dom_options_util::StripColon(
           l10n_util::GetStringUTF16(

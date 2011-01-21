@@ -6,19 +6,16 @@
 #define CHROME_BROWSER_DOM_UI_OPTIONS_LANGUAGE_OPTIONS_HANDLER_H_
 #pragma once
 
-// TODO(csilv): This is for the move CL.  Changes to make this cross-platform
-// will come in the followup CL.
-#if defined(OS_CHROMEOS)
-
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/dom_ui/options/options_ui.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
+#endif  // defined(OS_CHROMEOS)
 
 class DictionaryValue;
 class ListValue;
 
-namespace chromeos {
-
-// ChromeOS language options page UI handler.
+// Language options page UI handler.
 class LanguageOptionsHandler : public OptionsPageUIHandler {
  public:
   LanguageOptionsHandler();
@@ -39,14 +36,21 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   //
   // Note that true in languageCodeSet does not mean anything. We just use
   // the dictionary as a set.
+#if defined(OS_CHROMEOS)
   static ListValue* GetInputMethodList(
-      const InputMethodDescriptors& descriptors);
+      const chromeos::InputMethodDescriptors& descriptors);
+#endif  // defined(OS_CHROMEOS)
 
   // Gets the list of languages from the given input descriptors.
   // The return value will look like:
   // [{'code': 'fi', 'displayName': 'Finnish', 'nativeDisplayName': 'suomi'},
   //  ...]
-  static ListValue* GetLanguageList(const InputMethodDescriptors& descriptors);
+#if defined(OS_CHROMEOS)
+  static ListValue* GetLanguageList(
+      const chromeos::InputMethodDescriptors& descriptors);
+#else
+  static ListValue* GetLanguageList();
+#endif  // defined(OS_CHROMEOS)
 
   // Gets the set of language codes that can be used as UI language.
   // The return value will look like:
@@ -54,7 +58,7 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   //
   // Note that true in values does not mean anything. We just use the
   // dictionary as a set.
-  static DictionaryValue* GetUiLanguageCodeSet();
+  static DictionaryValue* GetUILanguageCodeSet();
 
   // Gets the set of language codes that can be used for spellchecking.
   // The return value will look like:
@@ -65,6 +69,7 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   static DictionaryValue* GetSpellCheckLanguageCodeSet();
 
  private:
+#if defined(OS_CHROMEOS)
   // Called when the input method is disabled.
   // |args| will contain the input method ID as string (ex. "mozc").
   void InputMethodDisableCallback(const ListValue* args);
@@ -76,6 +81,7 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   // Called when the input method options page is opened.
   // |args| will contain the input method ID as string (ex. "mozc").
   void InputMethodOptionsOpenCallback(const ListValue* args);
+#endif  // defined(OS_CHROMEOS)
 
   // Called when the language options is opened.
   void LanguageOptionsOpenCallback(const ListValue* args);
@@ -88,15 +94,10 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   // |args| will contain the language code as string (ex. "fr").
   void SpellCheckLanguageChangeCallback(const ListValue* args);
 
-  // Called when the sign out button is clicked.
-  void SignOutCallback(const ListValue* args);
+  // Called when the restart/sign-out button is clicked.
+  void RestartCallback(const ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(LanguageOptionsHandler);
 };
 
-}  // namespace
-
-#endif  // OS_CHROMEOS
-
 #endif  // CHROME_BROWSER_DOM_UI_OPTIONS_LANGUAGE_OPTIONS_HANDLER_H_
-

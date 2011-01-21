@@ -60,6 +60,11 @@ var OptionsPage = options.OptionsPage;
         chrome.send('defaultFontSizeAction',
             [String(event.target.options[event.target.selectedIndex].value)]);
       };
+      $('language-button').onclick = function(event) {
+        OptionsPage.showPageByName('language');
+        chrome.send('coreOptionsUserMetricsAction',
+            ['Options_LanuageAndSpellCheckSettings']);
+      };
 
       if (cr.isWindows || cr.isMac) {
         $('certificatesManageButton').onclick = function(event) {

@@ -6360,6 +6360,69 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Lorem ipsum dolor sit amet, consectetur adipiscing elit.
       </message>
 
+      <!-- Language & spell-checker settings -->
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE">
+        Languages and Input
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES" desc="The label for the list of languages">
+        Languages
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON"
+               desc="The label for the add button for adding a language">
+        Add
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON"
+               desc="The label for the remove button for removing a language">
+        Remove
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_INSTRUCTIONS"
+               desc="Explanatory message about how to add and order languages">
+        Add languages and drag to order them based on your preference.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PLEASE_ADD_ANOTHER_LANGUAGE"
+               desc="Warning invoked when the user tries to remove the last language">
+        Please add another language before removing this one.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE"
+               desc="The label for a language that cannot be used for UI">
+        <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> cannot be displayed in this language
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE"
+               desc="The label for a language that is currently used for UI">
+        <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> is displayed in this language
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE"
+               desc="The label is used for a button that changes the UI
+                     language of Chrome OS">
+        Display <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> in this language
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_THIS_LANGUAGE_IS_CURRENTLY_IN_USE"
+               desc="Warning invoked when the user tries to remove the language used for displaying Chrome OS">
+        This language is currently in use for displaying <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph>.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_USE_THIS_FOR_SPELL_CHECKING"
+               desc="The label for a language a button that changes the spell check language of Chrome OS">
+        Use this language for spell checking
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_CANNOT_BE_USED_FOR_SPELL_CHECKING"
+               desc="The label for a language that cannot be used for spell checking">
+        This language cannot be used for spell checking
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING"
+               desc="The label for a language that is currently used for spell checking">
+        This language is used for spell checking
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_RESTART_BUTTON"
+               desc="The label for the restart button for changing UI language">
+        Restart
+      </message>
+      <message name="IDS_OPTIONS_LANGUAGES_ADD_TITLE" desc="The title for the add language dialog.">
+        Add language:
+      </message>
+      <message name="IDS_OPTIONS_LANGUAGES_ADD_SELECT_LABEL" desc="The label for the add language select control.">
+        Language:
+      </message>
+
       <!-- HTTP POST Warning -->
       <message name="IDS_HTTP_POST_WARNING_TITLE" desc="Title for dialog that warns users about a navigation that results in a repost">
         Confirm Form Resubmission
@@ -7782,15 +7845,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_FONT_SIZE_LABEL_CUSTOM" desc="The label of the 'Custom' option">
         Custom
       </message>
+      <message name="IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON" desc="Button title for invoking the 'Languages and Spell-checker' panel.">
+        Languages and Spell-checker settings
+      </message>
 
       <message name="IDS_OPTIONS_CHROME_DICTIONARY_LANGUAGE" desc="The documentation string of the 'Spell check dictionary language' preference">
         Spell-checker language:
       </message>
       <message name="IDS_OPTIONS_ENABLE_SPELLCHECK" desc="The documentation string of the 'Enable spellcheck' option">
-        Check spelling:
+        Enable spell checking
       </message>
       <message name="IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION" desc="The documentation string of the 'Enable auto spell correction' option">
-        Correct spelling automatically:
+        Enable automatic spell correction
       </message>
 
       <!-- TODO(kmadhusu): Remove "IDS_OPTIONS_RESET", "IDS_OPTIONS_RESET_OKLABEL", "IDS_OPTIONS_RESET_CANCELLABEL" after platform-specific dialogs are removed.-->
@@ -9552,12 +9618,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MODIFIER_KEYS_CUSTOMIZE" desc="In settings system options, the label for the customize button for modifier keys">
         Modifier keys...
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE">
-        Languages and Input
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES" desc="The label for the list of languages">
-        Languages
-      </message>
+
       <message name="IDS_EULA_BACK_BUTTON" desc="Back button shown on EULA screen.">
         « Back
       </message>
@@ -10070,18 +10131,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for the section header for input methods">
         Input Method
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_COMBOBOX"
-               desc="The label for the add language combobox">
-        Add language
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON"
-               desc="The label for the add button for adding a language">
-        Add
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON"
-               desc="The label for the remove button for removing a language">
-        Remove
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SIGN_OUT_BUTTON"
                desc="The label for the sign out button for changing UI language">
         Sign out
@@ -10089,18 +10138,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PLEASE_ADD_ANOTHER_INPUT_METHOD"
                desc="Warning invoked when the user tries to remove the last input method">
         Please add another input method before removing this one.
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PLEASE_ADD_ANOTHER_LANGUAGE"
-               desc="Warning invoked when the user tries to remove the last language">
-        Please add another language before removing this one.
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_THIS_LANGUAGE_IS_CURRENTLY_IN_USE"
-               desc="Warning invoked when the user tries to remove the language used for displaying Chrome OS">
-        This language is currently in use for displaying <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph>.
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_INSTRUCTIONS"
-               desc="Explanatory message about how to add and order languages">
-        Add languages and drag to order them based on your preference.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_INSTRUCTIONS"
                desc="Explanatory message about how to select input methods">
@@ -10113,31 +10150,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SELECT_PREVIOUS_INPUT_METHOD_HINT"
                desc="Explanatory message about how to select the previous input method">
         Press <ph name="HOTKEY_NAME">$1<ex>ctrl-space</ex></ph> to select the previous input method.
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE"
-               desc="The label is used for a button that changes the UI
-                     language of Chrome OS">
-        Display <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> in this language
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE"
-               desc="The label for a language that is currently used for UI">
-        <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> is displayed in this language
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE"
-               desc="The label for a language that cannot be used for UI">
-        <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> cannot be displayed in this language
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_USE_THIS_FOR_SPELL_CHECKING"
-               desc="The label for a language a button that changes the spell check language of Chrome OS">
-        Use this language for spell checking
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_CANNOT_BE_USED_FOR_SPELL_CHECKING"
-               desc="The label for a language that cannot be used for spell checking">
-        This language cannot be used for spell checking
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING"
-               desc="The label for a language that is currently used for spell checking">
-        This language is used for spell checking
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD"
                desc="The label for a input method">

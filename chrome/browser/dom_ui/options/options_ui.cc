@@ -153,6 +153,7 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new CookiesViewHandler());
   AddOptionsPageUIHandler(localized_strings, new FontSettingsHandler());
+  AddOptionsPageUIHandler(localized_strings, new LanguageOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new PasswordManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new PersonalOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new SearchEngineManagerHandler());
@@ -172,8 +173,6 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
                           new chromeos::LanguageHangulOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::LanguageMozcOptionsHandler());
-  AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::LanguageOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::LanguagePinyinOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new chromeos::ProxyHandler());

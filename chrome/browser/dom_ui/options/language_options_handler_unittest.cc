@@ -2,45 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(csilv): This is for the move CL.  Changes to make this cross-platform
-// will come in the followup CL.
-#if defined(OS_CHROMEOS)
-
 #include "chrome/browser/dom_ui/options/language_options_handler.h"
 
 #include <string>
 
 #include "base/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/input_method_library.h"
+#endif  // defined(OS_CHROMEOS)
 
-static InputMethodDescriptors CreateInputMethodDescriptors() {
-  InputMethodDescriptors descriptors;
+#if defined(OS_CHROMEOS)
+static chromeos::InputMethodDescriptors CreateInputMethodDescriptors() {
+  chromeos::InputMethodDescriptors descriptors;
   descriptors.push_back(
-      InputMethodDescriptor("xkb:us::eng", "USA", "us", "eng"));
+      chromeos::InputMethodDescriptor("xkb:us::eng", "USA", "us", "eng"));
   descriptors.push_back(
-      InputMethodDescriptor("xkb:fr::fra", "France", "fr", "fra"));
+      chromeos::InputMethodDescriptor("xkb:fr::fra", "France", "fr", "fra"));
   descriptors.push_back(
-      InputMethodDescriptor("xkb:be::fra", "Belgium", "be", "fr"));
+      chromeos::InputMethodDescriptor("xkb:be::fra", "Belgium", "be", "fr"));
   descriptors.push_back(
-      InputMethodDescriptor("mozc", "Mozc (US keyboard layout)", "us", "ja"));
+      chromeos::InputMethodDescriptor("mozc", "Mozc (US keyboard layout)", "us",
+                                      "ja"));
   return descriptors;
 }
 
 TEST(LanguageOptionsHandlerTest, GetInputMethodList) {
   // Use the stub libcros. The object will take care of the cleanup.
-  ScopedStubCrosEnabler stub_cros_enabler;
+  chromeos::ScopedStubCrosEnabler stub_cros_enabler;
 
   // Reset the library implementation so it will be initialized
   // again. Otherwise, non-stub implementation can be reused, if it's
   // already initialized elsewhere, which results in a crash.
-  CrosLibrary::Get()->GetTestApi()->SetInputMethodLibrary(NULL, false);
+  chromeos::CrosLibrary::Get()->GetTestApi()->SetInputMethodLibrary(NULL,
+                                                                    false);
 
-  InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
+  chromeos::InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
   scoped_ptr<ListValue> list(
       LanguageOptionsHandler::GetInputMethodList(descriptors));
   ASSERT_EQ(4U, list->GetSize());
@@ -94,7 +94,7 @@ TEST(LanguageOptionsHandlerTest, GetInputMethodList) {
 }
 
 TEST(LanguageOptionsHandlerTest, GetLanguageList) {
-  InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
+  chromeos::InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
   scoped_ptr<ListValue> list(
       LanguageOptionsHandler::GetLanguageList(descriptors));
   ASSERT_EQ(6U, list->GetSize());
@@ -158,23 +158,21 @@ TEST(LanguageOptionsHandlerTest, GetLanguageList) {
   EXPECT_EQ("espa\u00F1ol (Latinoam\u00E9rica y el Caribe)",
             native_display_name);
 }
+#endif  // defined(OS_CHROMEOS)
 
-TEST(LanguageOptionsHandlerTest, GetUiLanguageCodeSet) {
+#if !defined(OS_MACOSX)
+TEST(LanguageOptionsHandlerTest, GetUILanguageCodeSet) {
   scoped_ptr<DictionaryValue> dictionary(
-      LanguageOptionsHandler::GetUiLanguageCodeSet());
+      LanguageOptionsHandler::GetUILanguageCodeSet());
   EXPECT_TRUE(dictionary->HasKey("en-US"));
   // Note that we don't test a false case, as such an expectation will
   // fail when we add support for the language.
   // EXPECT_FALSE(dictionary->HasKey("no"));
 }
+#endif  // !defined(OS_MACOSX)
 
 TEST(LanguageOptionsHandlerTest, GetSpellCheckLanguageCodeSet) {
   scoped_ptr<DictionaryValue> dictionary(
       LanguageOptionsHandler::GetSpellCheckLanguageCodeSet());
   EXPECT_TRUE(dictionary->HasKey("en-US"));
 }
-
-}  // namespace chromeos
-
-#endif  // OS_CHROMEOS
-

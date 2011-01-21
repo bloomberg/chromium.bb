@@ -1,6 +1,22 @@
 <div class="page hidden" id="add-language-overlay-page">
+<if expr="pp_ifdef('chromeos')">
   <ul id="add-language-overlay-language-list">
   </ul>
   <button id="add-language-overlay-cancel-button"
           i18n-content="cancel"></button>
+</if>
+<if expr="not pp_ifdef('chromeos')">
+  <h1 i18n-content="add_language_title"></h1>
+  <label>
+    <span i18n-content="add_language_select_label"></span>
+    <select id="add-language-overlay-language-list"></select>
+  </label>
+  <div class="action-area">
+    <div class="button-strip">
+      <button id="add-language-overlay-cancel-button" i18n-content="cancel">
+      </button>
+      <button id="add-language-overlay-ok-button" i18n-content="ok"></button>
+    </div>
+  </div>
+</if>
 </div>
