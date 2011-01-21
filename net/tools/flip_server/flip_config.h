@@ -136,6 +136,7 @@ public:
    bool wait_for_iface_;
    int ssl_session_expiry_;
    bool ssl_disable_compression_;
+   int idle_timeout_s_;
 
    FlipConfig() :
        server_think_time_in_s_(0),
@@ -143,7 +144,8 @@ public:
        forward_ip_header_enabled_(false),
        wait_for_iface_(false),
        ssl_session_expiry_(300),
-       ssl_disable_compression_(false)
+       ssl_disable_compression_(false),
+       idle_timeout_s_(300)
        {}
 
    ~FlipConfig() {}
