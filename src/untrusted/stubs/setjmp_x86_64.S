@@ -42,10 +42,10 @@ setjmp:
 longjmp:
     /* edi has env argument */
     /* esi has val argument */
-    /* mov into %eax sets conditon codes */
-    /* if val is zero, we must return 1 -- otherwise return val */
     movl    %esi, %eax
-    je      .skip
+    /* if val is zero, we must return 1 -- otherwise return val */
+    testl   %eax, %eax
+    jne     .skip
     movl    $1, %eax
 .skip:
     movq    %nacl:0(%r15,%rdi), %rbx     /* restore rbx */
@@ -58,5 +58,5 @@ longjmp:
     movq    %nacl:40(%r15,%rdi), %r14    /* restore r14 */
     movq    %nacl:48(%r15,%rdi), %rcx
     nacljmp %ecx, %r15
-
+    .p2align NACLENTRYALIGN
 

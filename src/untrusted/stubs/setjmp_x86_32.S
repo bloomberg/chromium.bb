@@ -34,7 +34,6 @@ setjmp:
     nacljmp %edx
 
 
-
     .text
     .p2align NACLENTRYALIGN
     .globl   longjmp
@@ -44,9 +43,9 @@ setjmp:
 longjmp:
     movl    4(%esp), %ecx     /* ecx has env argument */
     movl    8(%esp), %eax     /* eax has val argument */
-    /* mov into %eax sets conditon codes */
     /* If val is zero, we must return 1 -- otherwise return val */
-    je      .skip
+    testl   %eax, %eax
+    jne     .skip
     movl    $1, %eax
 .skip:
     movl    0(%ecx), %ebx     /* restore ebx */
@@ -56,5 +55,5 @@ longjmp:
     movl    16(%ecx), %edi    /* restore edi */
     movl    20(%ecx), %ecx
     nacljmp %ecx
-
+    .p2align NACLENTRYALIGN
 
