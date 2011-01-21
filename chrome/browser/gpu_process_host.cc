@@ -13,8 +13,6 @@
 #include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/renderer_host/render_message_filter.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_feature_flags.h"
@@ -27,15 +25,6 @@
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
 #include "ui/base/resource/resource_bundle.h"
-
-#if defined(OS_LINUX)
-// These two #includes need to come after render_messages.h.
-#include <gdk/gdkwindow.h>  // NOLINT
-#include <gdk/gdkx.h>  // NOLINT
-#include "gfx/gtk_native_view_id_manager.h"
-#include "gfx/size.h"
-#include "ui/base/x/x11_util.h"
-#endif  // defined(OS_LINUX)
 
 namespace {
 
@@ -225,19 +214,6 @@ bool GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
     IPC_MESSAGE_HANDLER(GpuHostMsg_SynchronizeReply, OnSynchronizeReply)
-#if defined(OS_LINUX)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_GetViewXID, OnGetViewXID)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_ReleaseXID, OnReleaseXID)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_ResizeXID, OnResizeXID)
-#elif defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
-                        OnAcceleratedSurfaceSetIOSurface)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
-                        OnAcceleratedSurfaceBuffersSwapped)
-#elif defined(OS_WIN)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_GetCompositorHostWindow,
-                                    OnGetCompositorHostWindow)
-#endif
     // If the IO thread does not handle the message then automatically route it
     // to the UI thread. The UI thread will report an error if it does not
     // handle it.
@@ -284,232 +260,6 @@ void GpuProcessHost::OnSynchronizeReply() {
     queued_synchronization_replies_.pop();
   }
 }
-
-#if defined(OS_LINUX)
-
-namespace {
-
-void SendDelayedReply(IPC::Message* reply_msg) {
-  GpuProcessHost::Get()->Send(reply_msg);
-}
-
-void GetViewXIDDispatcher(gfx::NativeViewId id, IPC::Message* reply_msg) {
-  XID xid;
-
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  if (!manager->GetPermanentXIDForId(&xid, id)) {
-    DLOG(ERROR) << "Can't find XID for view id " << id;
-    xid = 0;
-  }
-
-  GpuHostMsg_GetViewXID::WriteReplyParams(reply_msg, xid);
-
-  // Have to reply from IO thread.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&SendDelayedReply, reply_msg));
-}
-
-void ReleaseXIDDispatcher(unsigned long xid) {
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  manager->ReleasePermanentXID(xid);
-}
-
-void ResizeXIDDispatcher(unsigned long xid, gfx::Size size,
-    IPC::Message *reply_msg) {
-  GdkWindow* window = reinterpret_cast<GdkWindow*>(gdk_xid_table_lookup(xid));
-  if (window) {
-    Display* display = GDK_WINDOW_XDISPLAY(window);
-    gdk_window_resize(window, size.width(), size.height());
-    XSync(display, False);
-  }
-
-  GpuHostMsg_ResizeXID::WriteReplyParams(reply_msg, (window != NULL));
-
-  // Have to reply from IO thread.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&SendDelayedReply, reply_msg));
-}
-
-}  // namespace
-
-void GpuProcessHost::OnGetViewXID(gfx::NativeViewId id,
-                                  IPC::Message *reply_msg) {
-  // Have to request a permanent XID from UI thread.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&GetViewXIDDispatcher, id, reply_msg));
-}
-
-void GpuProcessHost::OnReleaseXID(unsigned long xid) {
-  // Have to release a permanent XID from UI thread.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&ReleaseXIDDispatcher, xid));
-}
-
-void GpuProcessHost::OnResizeXID(unsigned long xid, gfx::Size size,
-                                 IPC::Message *reply_msg) {
-  // Have to resize the window from UI thread.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&ResizeXIDDispatcher, xid, size, reply_msg));
-}
-
-#elif defined(OS_MACOSX)
-
-namespace {
-
-class SetIOSurfaceDispatcher : public Task {
- public:
-  SetIOSurfaceDispatcher(
-      const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params)
-      : params_(params) {
-  }
-
-  void Run() {
-    RenderViewHost* host = RenderViewHost::FromID(params_.renderer_id,
-                                                  params_.render_view_id);
-    if (!host)
-      return;
-    RenderWidgetHostView* view = host->view();
-    if (!view)
-      return;
-    view->AcceleratedSurfaceSetIOSurface(params_.window,
-                                         params_.width,
-                                         params_.height,
-                                         params_.identifier);
-  }
-
- private:
-  GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params params_;
-
-  DISALLOW_COPY_AND_ASSIGN(SetIOSurfaceDispatcher);
-};
-
-}  // namespace
-
-void GpuProcessHost::OnAcceleratedSurfaceSetIOSurface(
-    const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      new SetIOSurfaceDispatcher(params));
-}
-
-namespace {
-
-class BuffersSwappedDispatcher : public Task {
- public:
-  BuffersSwappedDispatcher(
-      int renderer_id,
-      int render_view_id,
-      gfx::PluginWindowHandle window,
-      uint64 surface_id,
-      int32 route_id,
-      uint64 swap_buffers_count)
-      : renderer_id_(renderer_id),
-        render_view_id_(render_view_id),
-        window_(window),
-        surface_id_(surface_id),
-        route_id_(route_id),
-        swap_buffers_count_(swap_buffers_count) {
-  }
-
-  void Run() {
-    RenderViewHost* host = RenderViewHost::FromID(renderer_id_,
-                                                  render_view_id_);
-    if (!host)
-      return;
-    RenderWidgetHostView* view = host->view();
-    if (!view)
-      return;
-    view->AcceleratedSurfaceBuffersSwapped(
-        // Parameters needed to swap the IOSurface.
-        window_,
-        surface_id_,
-        // Parameters needed to formulate an acknowledgment.
-        renderer_id_,
-        route_id_,
-        swap_buffers_count_);
-  }
-
- private:
-  int renderer_id_;
-  int render_view_id_;
-  gfx::PluginWindowHandle window_;
-  uint64 surface_id_;
-  int32 route_id_;
-  uint64 swap_buffers_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(BuffersSwappedDispatcher);
-};
-
-}  // namespace
-
-void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
-    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      new BuffersSwappedDispatcher(
-          // These are the parameters needed to look up the IOSurface
-          // on this side.
-          params.renderer_id,
-          params.render_view_id,
-          params.window,
-          params.surface_id,
-          // These are additional parameters needed to formulate an
-          // acknowledgment.
-          params.route_id,
-          params.swap_buffers_count));
-}
-
-#elif defined(OS_WIN)
-
-namespace {
-
-void SendDelayedReply(IPC::Message* reply_msg) {
-  GpuProcessHost::Get()->Send(reply_msg);
-}
-
-void GetCompositorHostWindowDispatcher(
-    int renderer_id,
-    int render_view_id,
-    IPC::Message* reply_msg) {
-  RenderViewHost* host = RenderViewHost::FromID(renderer_id,
-                                                render_view_id);
-  if (!host) {
-    GpuHostMsg_GetCompositorHostWindow::WriteReplyParams(reply_msg,
-        gfx::kNullPluginWindow);
-    BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&SendDelayedReply, reply_msg));
-    return;
-  }
-
-  RenderWidgetHostView* view = host->view();
-  gfx::PluginWindowHandle id = view->GetCompositorHostWindow();
-
-
-  GpuHostMsg_GetCompositorHostWindow::WriteReplyParams(reply_msg, id);
-  BrowserThread::PostTask(
-    BrowserThread::IO, FROM_HERE,
-    NewRunnableFunction(&SendDelayedReply, reply_msg));
-}
-
-}  // namespace
-
-void GpuProcessHost::OnGetCompositorHostWindow(
-    int renderer_id,
-    int render_view_id,
-    IPC::Message* reply_message) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&GetCompositorHostWindowDispatcher,
-          renderer_id, render_view_id, reply_message));
-}
-
-#endif
 
 void GpuProcessHost::SendEstablishChannelReply(
     const IPC::ChannelHandle& channel,

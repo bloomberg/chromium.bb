@@ -20,6 +20,13 @@
 #include "ipc/ipc_channel.h"
 #include "gfx/native_widget_types.h"
 
+namespace gfx {
+class Size;
+}
+
+struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params;
+struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
+
 class GpuProcessHostUIShim : public IPC::Channel::Sender,
                              public IPC::Channel::Listener,
                              public base::NonThreadSafe {
@@ -71,8 +78,23 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
 
   // Message handlers.
   void OnGraphicsInfoCollected(const GPUInfo& gpu_info);
-  void OnScheduleComposite(int32 renderer_id, int32 render_view_id);
   bool OnControlMessageReceived(const IPC::Message& message);
+
+#if defined(OS_LINUX)
+  void OnGetViewXID(gfx::NativeViewId id, IPC::Message* reply_msg);
+  void OnReleaseXID(unsigned long xid);
+  void OnResizeXID(unsigned long xid, gfx::Size size, IPC::Message* reply_msg);
+#elif defined(OS_MACOSX)
+  void OnAcceleratedSurfaceSetIOSurface(
+      const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params);
+  void OnAcceleratedSurfaceBuffersSwapped(
+      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
+#elif defined(OS_WIN)
+  void OnGetCompositorHostWindow(int renderer_id,
+                                 int render_view_id,
+                                 IPC::Message* reply_message);
+  void OnScheduleComposite(int32 renderer_id, int32 render_view_id);
+#endif
 
   int last_routing_id_;
 

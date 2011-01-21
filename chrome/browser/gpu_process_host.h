@@ -14,15 +14,9 @@
 #include "chrome/browser/browser_child_process_host.h"
 #include "gfx/native_widget_types.h"
 
-struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params;
-struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 class GpuBlacklist;
 class GPUInfo;
 class RenderMessageFilter;
-
-namespace gfx {
-class Size;
-}
 
 namespace IPC {
 struct ChannelHandle;
@@ -84,20 +78,6 @@ class GpuProcessHost : public BrowserChildProcessHost,
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle,
                             const GPUInfo& gpu_info);
   void OnSynchronizeReply();
-#if defined(OS_LINUX)
-  void OnGetViewXID(gfx::NativeViewId id, IPC::Message* reply_msg);
-  void OnReleaseXID(unsigned long xid);
-  void OnResizeXID(unsigned long xid, gfx::Size size, IPC::Message* reply_msg);
-#elif defined(OS_MACOSX)
-  void OnAcceleratedSurfaceSetIOSurface(
-      const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params);
-  void OnAcceleratedSurfaceBuffersSwapped(
-      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
-#elif defined(OS_WIN)
-  void OnGetCompositorHostWindow(int renderer_id,
-                                    int render_view_id,
-                                    IPC::Message* reply_message);
-#endif
 
   // Sends the response for establish channel request to the renderer.
   void SendEstablishChannelReply(const IPC::ChannelHandle& channel,
