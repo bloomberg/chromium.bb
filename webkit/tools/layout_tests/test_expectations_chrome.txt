@@ -4,7 +4,7 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
-BUGCR54465 WIN : http/tests/media/video-play-stall-seek.html = FAIL
+BUGCR54465 WIN : http/tests/media/video-play-stall-seek.html = FAIL TIMEOUT
 BUG_OFFICALGOGREEN MAC : media/video-timeupdate-during-playback.html = TIMEOUT PASS
 BUG_OFFICALGOGREEN MAC : css1/font_properties/font.html = IMAGE+TEXT
 BUG_OFFICALGOGREEN MAC : css1/text_properties/text_transform.html = IMAGE+TEXT
@@ -767,5 +767,4 @@ BUG_OFFICIALGOGREEN WIN : fast/text/atsui-negative-spacing-features.html = IMAGE
 BUG_OFFICIALGOGREEN WIN : fast/text/international/danda-space.html = IMAGE
 BUG_OFFICIALGOGREEN WIN : fast/text/international/hebrew-vowels.html = IMAGE
 BUG_OFFICIALGOGREEN WIN : svg/batik/text/textFeatures.svg = IMAGE
-BUG_OFFICIALGOGREEN WIN : http/tests/media/video-play-stall-seek.html = TIMEOUT
 
