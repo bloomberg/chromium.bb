@@ -175,6 +175,14 @@ void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
   }
 
   DCHECK(result);
+  // Returning early here if |result| is NULL.  We've seen this happen on
+  // Linux due to NFS dismounting and causing sql failures.
+  // See http://crbug.com/68783.
+  if (!result) {
+    SendSuggestions(NULL);
+    return;
+  }
+
   DCHECK(result->GetType() == AUTOFILL_VALUE_RESULT);
   const WDResult<std::vector<string16> >* autofill_result =
       static_cast<const WDResult<std::vector<string16> >*>(result);
