@@ -50,6 +50,10 @@ const std::string kInvalidFeed1 = "files/feeds/feed_invalid1.xml";
 const std::string kInvalidFeed2 = "files/feeds/feed_invalid2.xml";
 const std::string kLocalization =
     "files/extensions/browsertest/title_localized_pa/simple.html";
+// We need a triple encoded string to prove that we are not decoding twice in
+// subscribe.js because one layer is also stripped off when subscribe.js passes
+// it to the XMLHttpRequest object.
+const std::string kFeedTripleEncoded = "files/feeds/url%25255Fdecoding.html";
 const std::string kHashPageA =
     "files/extensions/api_test/page_action/hash_change/test_page_A.html";
 const std::string kHashPageAHash = kHashPageA + "#asdf";
@@ -616,6 +620,26 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
 
   // Try a feed that doesn't exist.
   NavigateToFeedAndValidate(test_server(), "foo.xml", browser(), false,
+                            "Feed for Unknown feed name",
+                            "element 'anchor_0' not found",
+                            "element 'desc_0' not found",
+                            "This feed contains no entries.");
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed4) {
+  ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action")));
+
+  // subscribe.js shouldn't double-decode the URL passed in. Otherwise feed
+  // links such as http://search.twitter.com/search.atom?lang=en&q=%23chrome
+  // will result in no feed being downloaded because %23 gets decoded to # and
+  // therefore #chrome is not treated as part of the Twitter query. This test
+  // uses an underscore instead of a hash, but the principle is the same. If
+  // we start erroneously double decoding again, the path (and the feed) will
+  // become valid resulting in a failure for this test.
+  NavigateToFeedAndValidate(test_server(), kFeedTripleEncoded, browser(), true,
                             "Feed for Unknown feed name",
                             "element 'anchor_0' not found",
                             "element 'desc_0' not found",

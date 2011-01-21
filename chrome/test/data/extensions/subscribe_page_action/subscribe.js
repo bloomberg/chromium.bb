@@ -39,7 +39,7 @@ function navigate() {
   var select = document.getElementById('readerDropdown');
   var url =
       feedReaderList[select.selectedIndex].url.replace(
-          "%s", escape(encodeURI(feedUrl)));
+          "%s", encodeURIComponent(feedUrl));
 
   // Before we navigate, see if we want to skip this step in the future...
   if (storageEnabled) {
@@ -105,7 +105,6 @@ function main() {
                     "'></" + "script>";
   }
 
-  feedUrl = decodeURIComponent(feedUrl);
   req.onload = handleResponse;
   req.onerror = handleError;
   // Not everyone sets the mime type correctly, which causes handleResponse
