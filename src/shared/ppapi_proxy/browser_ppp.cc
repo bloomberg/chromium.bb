@@ -81,7 +81,9 @@ int32_t BrowserPpp::InitializeModule(
 
 void BrowserPpp::ShutdownModule() {
   DebugPrintf("PPP_ShutdownModule\n");
-  PppRpcClient::PPP_ShutdownModule(main_channel_);
+  NaClSrpcError srpc_result =
+      PppRpcClient::PPP_ShutdownModule(main_channel_);
+  DebugPrintf("PPP_ShutdownModule: %s\n", NaClSrpcErrorString(srpc_result));
   NaClThreadJoin(&upcall_thread_);
   UnsetModuleIdForSrpcChannel(main_channel_);
 }

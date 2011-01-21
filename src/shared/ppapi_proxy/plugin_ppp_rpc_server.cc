@@ -124,6 +124,7 @@ void PppRpcServer::PPP_ShutdownModule(NaClSrpcRpc* rpc,
   //StopMainSrpcChannel();
   // Exit the srpc loop. The server won't answer any more requests.
   rpc->result = NACL_SRPC_RESULT_BREAK;
+  DebugPrintf("PPP_ShutdownModule: %s\n", NaClSrpcErrorString(rpc->result));
 }
 
 void PppRpcServer::PPP_GetInterface(NaClSrpcRpc* rpc,
