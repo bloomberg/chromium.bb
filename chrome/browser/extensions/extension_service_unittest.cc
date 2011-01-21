@@ -3034,6 +3034,67 @@ TEST_F(ExtensionServiceTest, ExternalUninstall) {
   ASSERT_EQ(0u, loaded_.size());
 }
 
+// Test that running multiple update checks simultaneously does not
+// keep the update from succeeding.
+TEST_F(ExtensionServiceTest, MultipleExternalUpdateCheck) {
+  InitializeEmptyExtensionService();
+
+  MockExtensionProvider* provider =
+      new MockExtensionProvider(service_.get(), Extension::EXTERNAL_PREF);
+  AddMockExternalProvider(provider);
+
+  // Verify that starting with no providers loads no extensions.
+  service_->Init();
+  loop_.RunAllPending();
+  ASSERT_EQ(0u, loaded_.size());
+
+  // Start two checks for updates.
+  provider->set_visit_count(0);
+  service_->CheckForExternalUpdates();
+  service_->CheckForExternalUpdates();
+  loop_.RunAllPending();
+
+  // Two calls should cause two checks for external extensions.
+  EXPECT_EQ(2, provider->visit_count());
+  EXPECT_EQ(0u, GetErrors().size());
+  EXPECT_EQ(0u, loaded_.size());
+
+  // Register a test extension externally using the mock registry provider.
+  FilePath source_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_path));
+  source_path = source_path.AppendASCII("extensions").AppendASCII("good.crx");
+  provider->UpdateOrAddExtension(good_crx, "1.0.0.0", source_path);
+
+  // Two checks for external updates should find the extension, and install it
+  // once.
+  provider->set_visit_count(0);
+  service_->CheckForExternalUpdates();
+  service_->CheckForExternalUpdates();
+  loop_.RunAllPending();
+  EXPECT_EQ(2, provider->visit_count());
+  ASSERT_EQ(0u, GetErrors().size());
+  ASSERT_EQ(1u, loaded_.size());
+  ASSERT_EQ(Extension::EXTERNAL_PREF, loaded_[0]->location());
+  ASSERT_EQ("1.0.0.0", loaded_[0]->version()->GetString());
+  ValidatePrefKeyCount(1);
+  ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
+  ValidateIntegerPref(good_crx, "location", Extension::EXTERNAL_PREF);
+
+  provider->RemoveExtension(good_crx);
+  provider->set_visit_count(0);
+  service_->CheckForExternalUpdates();
+  service_->CheckForExternalUpdates();
+  loop_.RunAllPending();
+
+  // Two calls should cause two checks for external extensions.
+  // Because the external source no longer includes good_crx,
+  // good_crx will be uninstalled.  So, expect that no extensions
+  // are loaded.
+  EXPECT_EQ(2, provider->visit_count());
+  EXPECT_EQ(0u, GetErrors().size());
+  EXPECT_EQ(0u, loaded_.size());
+}
+
 TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
   InitializeEmptyExtensionService();
 

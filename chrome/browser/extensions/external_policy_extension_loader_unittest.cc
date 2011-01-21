@@ -85,11 +85,11 @@ class MockExternalPolicyExtensionProviderVisitor
     // Remove the extension from our list.
     StringValue ext_str(id + ";" + update_url.spec());
     EXPECT_NE(-1, remaining_extensions->Remove(ext_str));
- }
+  }
 
- virtual void OnExternalProviderReady() {
+  virtual void OnExternalProviderReady() {
     EXPECT_TRUE(provider_->IsReady());
- }
+  }
 
  private:
   ListValue* remaining_extensions;

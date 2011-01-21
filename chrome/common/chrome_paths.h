@@ -49,6 +49,12 @@ enum {
   DIR_MANAGED_PREFS,            // Directory that stores the managed prefs plist
                                 // files for the current user.
 #endif
+#if defined(OS_CHROMEOS)
+  DIR_USER_EXTERNAL_EXTENSIONS,  // Directory for per-user external extensions.
+                                 // Used for OEM customization on Chrome OS.
+                                 // Getting this path does not create it.
+#endif
+
   FILE_RESOURCE_MODULE,         // Full path and filename of the module that
                                 // contains embedded resources (version,
                                 // strings, images, etc.).

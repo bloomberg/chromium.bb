@@ -143,7 +143,7 @@ void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
         continue;
       }
       service_->OnExternalExtensionFileFound(extension_id, version.get(), path,
-                                            crx_location_);
+                                             crx_location_);
     } else { // if (has_external_update_url)
       CHECK(has_external_update_url);  // Checking of keys above ensures this.
       if (download_location_ == Extension::INVALID) {
@@ -227,9 +227,22 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
       linked_ptr<ExternalExtensionProviderInterface>(
           new ExternalExtensionProviderImpl(
               service,
-              new ExternalPrefExtensionLoader(app::DIR_EXTERNAL_EXTENSIONS),
+              new ExternalPrefExtensionLoader(
+                  app::DIR_EXTERNAL_EXTENSIONS),
               Extension::EXTERNAL_PREF,
               Extension::EXTERNAL_PREF_DOWNLOAD)));
+
+#if defined(OS_CHROMEOS)
+  // Chrome OS specific source for OEM customization.
+  provider_list->push_back(
+      linked_ptr<ExternalExtensionProviderInterface>(
+          new ExternalExtensionProviderImpl(
+              service,
+              new ExternalPrefExtensionLoader(
+                  chrome::DIR_USER_EXTERNAL_EXTENSIONS),
+              Extension::EXTERNAL_PREF,
+              Extension::EXTERNAL_PREF_DOWNLOAD)));
+#endif
 #if defined(OS_WIN)
   provider_list->push_back(
       linked_ptr<ExternalExtensionProviderInterface>(

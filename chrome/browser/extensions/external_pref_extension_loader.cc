@@ -14,15 +14,18 @@
 
 namespace {
 
-// Caller takes ownership of the returned dictionary
-DictionaryValue* ExtractPrefs(ValueSerializer* serializer) {
+// Caller takes ownership of the returned dictionary.
+DictionaryValue* ExtractPrefs(const FilePath& path,
+                              ValueSerializer* serializer) {
   std::string error_msg;
   Value* extensions = serializer->Deserialize(NULL, &error_msg);
   if (!extensions) {
-    LOG(WARNING) << "Unable to deserialize json data: " << error_msg;
+    LOG(WARNING) << "Unable to deserialize json data: " << error_msg
+                 << " In file " << path.value() << " .";
   } else {
     if (!extensions->IsType(Value::TYPE_DICTIONARY)) {
-      NOTREACHED() << "Invalid json data";
+      LOG(WARNING) << "Expected a JSON dictionary in file "
+                   << path.value() << " .";
     } else {
       return static_cast<DictionaryValue*>(extensions);
     }
@@ -40,11 +43,7 @@ ExternalPrefExtensionLoader::ExternalPrefExtensionLoader(int base_path_key)
 const FilePath ExternalPrefExtensionLoader::GetBaseCrxFilePath() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // LoadOnFileThread() should set |external_file_path_| to a non-empty
-  // path.  This function should not be called until after LoadOnFileThread()
-  // is complete.
-  CHECK(!base_path_.empty());
-
+  // |base_path_| was set in LoadOnFileThread().
   return base_path_;
 }
 
@@ -60,8 +59,14 @@ void ExternalPrefExtensionLoader::StartLoading() {
 void ExternalPrefExtensionLoader::LoadOnFileThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  scoped_ptr<DictionaryValue> prefs;
+  // TODO(skerner): Some values of base_path_key_ will cause
+  // PathService::Get() to return false, because the path does
+  // not exist.  Find and fix the build/install scripts so that
+  // this can become a CHECK().  Known examples include chrome
+  // OS developer builds and linux install packages.
+  // Tracked as crbug.com/70402 .
 
+  scoped_ptr<DictionaryValue> prefs;
   if (PathService::Get(base_path_key_, &base_path_)) {
     FilePath json_file;
     json_file =
@@ -69,7 +74,7 @@ void ExternalPrefExtensionLoader::LoadOnFileThread() {
 
     if (file_util::PathExists(json_file)) {
       JSONFileValueSerializer serializer(json_file);
-      prefs.reset(ExtractPrefs(&serializer));
+      prefs.reset(ExtractPrefs(json_file, &serializer));
     }
   }
 
@@ -77,11 +82,17 @@ void ExternalPrefExtensionLoader::LoadOnFileThread() {
     prefs.reset(new DictionaryValue());
 
   prefs_.reset(prefs.release());
+
+  // If we have any records to process, then we must have
+  // read the .json file.  If we read the .json file, then
+  // we were able to set |base_path_|.
+  CHECK(!prefs_->empty() || !base_path_.empty());
+
   BrowserThread::PostTask(
-       BrowserThread::UI, FROM_HERE,
-       NewRunnableMethod(
-           this,
-           &ExternalPrefExtensionLoader::LoadFinished));
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &ExternalPrefExtensionLoader::LoadFinished));
 }
 
 ExternalTestingExtensionLoader::ExternalTestingExtensionLoader(
@@ -90,7 +101,8 @@ ExternalTestingExtensionLoader::ExternalTestingExtensionLoader(
     : fake_base_path_(fake_base_path) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JSONStringValueSerializer serializer(json_data);
-  testing_prefs_.reset(ExtractPrefs(&serializer));
+  FilePath fake_json_path = fake_base_path.AppendASCII("fake.json");
+  testing_prefs_.reset(ExtractPrefs(fake_json_path, &serializer));
 }
 
 void ExternalTestingExtensionLoader::StartLoading() {

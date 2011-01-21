@@ -150,10 +150,10 @@ class ExtensionService
   // Constructor stores pointers to |profile| and |extension_prefs| but
   // ownership remains at caller.
   ExtensionService(Profile* profile,
-                    const CommandLine* command_line,
-                    const FilePath& install_directory,
-                    ExtensionPrefs* extension_prefs,
-                    bool autoupdate_enabled);
+                   const CommandLine* command_line,
+                   const FilePath& install_directory,
+                   ExtensionPrefs* extension_prefs,
+                   bool autoupdate_enabled);
 
   // Gets the list of currently installed extensions.
   virtual const ExtensionList* extensions() const;
@@ -623,7 +623,7 @@ class ExtensionService
   // Set to true by OnExternalExtensionUpdateUrlFound() when an external
   // extension URL is found.  Used in CheckForExternalUpdates() to see
   // if an update check is needed to install pending extensions.
-  bool external_extension_added_;
+  bool external_extension_url_added_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            UpdatePendingExtensionAlreadyInstalled);

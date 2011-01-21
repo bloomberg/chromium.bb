@@ -239,7 +239,7 @@ ExtensionServiceBackend::~ExtensionServiceBackend() {
 
 void ExtensionServiceBackend::LoadSingleExtension(
     const FilePath& path_in, scoped_refptr<ExtensionService> frontend) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   frontend_ = frontend;
 
@@ -272,7 +272,7 @@ void ExtensionServiceBackend::LoadSingleExtension(
 
 void ExtensionServiceBackend::ReportExtensionLoadError(
     const FilePath& extension_path, const std::string &error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
@@ -282,7 +282,7 @@ void ExtensionServiceBackend::ReportExtensionLoadError(
 }
 
 void ExtensionService::CheckExternalUninstall(const std::string& id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Check if the providers know about this extension.
   ProviderCollection::const_iterator i;
@@ -303,7 +303,7 @@ void ExtensionService::ClearProvidersForTesting() {
 
 void ExtensionService::AddProviderForTesting(
     ExternalExtensionProviderInterface* test_provider) {
-  DCHECK(test_provider);
+  CHECK(test_provider);
   external_extension_providers_.push_back(
       linked_ptr<ExternalExtensionProviderInterface>(test_provider));
 }
@@ -320,11 +320,11 @@ void ExtensionService::OnExternalExtensionUpdateUrlFound(
     return;
   }
   AddPendingExtensionFromExternalUpdateUrl(id, update_url, location);
-  external_extension_added_ |= true;
+  external_extension_url_added_ |= true;
 }
 
 bool ExtensionService::IsDownloadFromGallery(const GURL& download_url,
-                                              const GURL& referrer_url) {
+                                             const GURL& referrer_url) {
   // Special-case the themes mini-gallery.
   // TODO(erikkay) When that gallery goes away, remove this code.
   if (IsDownloadFromMiniGallery(download_url) &&
@@ -392,7 +392,6 @@ bool ExtensionService::IsInstalledApp(const GURL& url) {
 bool ExtensionService::UninstallExtensionHelper(
     ExtensionService* extensions_service,
     const std::string& extension_id) {
-  DCHECK(extensions_service);
 
   // We can't call UninstallExtension with an invalid extension ID, so check it
   // first.
@@ -422,7 +421,7 @@ ExtensionService::ExtensionService(Profile* profile,
       default_apps_(profile->GetPrefs(),
                     g_browser_process->GetApplicationLocale()),
       event_routers_initialized_(false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Figure out if extension installation should be enabled.
   if (command_line->HasSwitch(switches::kDisableExtensions)) {
@@ -519,7 +518,7 @@ const Extension* ExtensionService::GetExtensionById(const std::string& id,
 }
 
 void ExtensionService::Init() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DCHECK(!ready_);  // Can't redo init.
   DCHECK_EQ(extensions_.size(), 0u);
@@ -549,7 +548,7 @@ namespace {
   // TODO(akalin): Put this somewhere where both crx_installer.cc and
   // this file can use it.
   void DeleteFileHelper(const FilePath& path, bool recursive) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     file_util::Delete(path, recursive);
   }
 }  // namespace
@@ -557,7 +556,7 @@ namespace {
 void ExtensionService::UpdateExtension(const std::string& id,
                                         const FilePath& extension_path,
                                         const GURL& download_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   PendingExtensionMap::const_iterator it = pending_extensions_.find(id);
   bool is_pending_extension = (it != pending_extensions_.end());
@@ -675,7 +674,7 @@ void ExtensionService::AddPendingExtensionInternal(
     bool is_from_sync, bool install_silently,
     bool enable_on_install, bool enable_incognito_on_install,
     Extension::Location install_source) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If a non-sync update is pending, a sync request should not
   // overwrite it.  This is important for external extensions.
@@ -702,7 +701,7 @@ void ExtensionService::AddPendingExtensionInternal(
 }
 
 void ExtensionService::ReloadExtension(const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FilePath path;
   const Extension* current_extension = GetExtensionById(extension_id, false);
 
@@ -746,7 +745,7 @@ void ExtensionService::ReloadExtension(const std::string& extension_id) {
 
 void ExtensionService::UninstallExtension(const std::string& extension_id,
                                            bool external_uninstall) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const Extension* extension =
       GetExtensionByIdInternal(extension_id, true, true);
@@ -803,7 +802,7 @@ void ExtensionService::ClearExtensionData(const GURL& extension_url) {
 }
 
 void ExtensionService::EnableExtension(const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const Extension* extension =
       GetExtensionByIdInternal(extension_id, false, true);
@@ -830,7 +829,7 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
 }
 
 void ExtensionService::DisableExtension(const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const Extension* extension =
       GetExtensionByIdInternal(extension_id, true, false);
@@ -912,7 +911,7 @@ void ExtensionService::LoadComponentExtensions() {
 }
 
 void ExtensionService::LoadAllExtensions() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::TimeTicks start_time = base::TimeTicks::Now();
 
@@ -1338,14 +1337,18 @@ void ExtensionService::SetBrowserActionVisibility(const Extension* extension,
 // Errors are reported through ExtensionErrorReporter. Succcess is not
 // reported.
 void ExtensionService::CheckForExternalUpdates() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Note that this installation is intentionally silent (since it didn't
   // go through the front-end).  Extensions that are registered in this
   // way are effectively considered 'pre-bundled', and so implicitly
   // trusted.  In general, if something has HKLM or filesystem access,
   // they could install an extension manually themselves anyway.
-  external_extension_added_ = false;
+
+  // If any external extension records give a URL, a provider will set
+  // this to true.  Used by OnExternalProviderReady() to see if we need
+  // to start an update check to fetch a new external extension.
+  external_extension_url_added_ = false;
 
   // Ask each external extension provider to give us a call back for each
   // extension they know about. See OnExternalExtension(File|UpdateUrl)Found.
@@ -1357,26 +1360,30 @@ void ExtensionService::CheckForExternalUpdates() {
   }
 
   // Uninstall of unclaimed extensions will happen after all the providers
-  // had reported ready. Trigger uninstall even if there are no providers
-  // installed:
-  OnExternalProviderReady();
+  // had reported ready.  Every provider calls OnExternalProviderReady()
+  // when it finishes, and OnExternalProviderReady() only acts when all
+  // providers are ready.  In case there are no providers, we call it
+  // to trigger removal of extensions that used to have an external source.
+  if (external_extension_providers_.empty())
+    OnExternalProviderReady();
 }
 
 void ExtensionService::OnExternalProviderReady() {
-  // An external provider has finished loading. We only take action
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // An external provider has finished loading.  We only take action
   // if all of them are finished. So we check them first.
   ProviderCollection::const_iterator i;
   for (i = external_extension_providers_.begin();
        i != external_extension_providers_.end(); ++i) {
     ExternalExtensionProviderInterface* provider = i->get();
-    if (!provider->IsReady()) {
+    if (!provider->IsReady())
       return;
-    }
   }
 
-  // All the providers are ready. Install any pending extensions.
-  if (external_extension_added_ && updater()) {
-    external_extension_added_ = false;
+  // All the providers are ready.  Install any pending extensions.
+  if (external_extension_url_added_ && updater()) {
+    external_extension_url_added_ = false;
     updater()->CheckNow();
   }
 
@@ -1649,7 +1656,7 @@ void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
 }
 
 void ExtensionService::OnExtensionInstalled(const Extension* extension) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Ensure extension is deleted unless we transfer ownership.
   scoped_refptr<const Extension> scoped_extension(extension);

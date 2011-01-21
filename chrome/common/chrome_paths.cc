@@ -320,6 +320,14 @@ bool PathProvider(int key, FilePath* result) {
       break;
     }
 #endif
+#if defined(OS_CHROMEOS)
+    case chrome::DIR_USER_EXTERNAL_EXTENSIONS: {
+      if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("External Extensions"));
+      break;
+    }
+#endif
     default:
       return false;
   }
