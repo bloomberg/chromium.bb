@@ -300,7 +300,7 @@ void AudioMixerAlsa::DoSetVolumeMute(double pref_volume, int pref_mute) {
   if (mute) {
     save_volume_ = pref_volume;
     DoSetVolumeDb_Locked(min_volume_);
-  } else if (pref_mute == kPrefMuteOff) {
+  } else {
       DoSetVolumeDb_Locked(pref_volume);
   }
 
