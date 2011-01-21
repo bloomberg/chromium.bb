@@ -679,6 +679,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableAudio,
     switches::kSimpleDataSource,
     switches::kEnableBenchmarking,
+    switches::kEnableNaCl,
     switches::kInternalNaCl,
     switches::kInternalPepper,
     switches::kRegisterPepperPlugins,
