@@ -141,9 +141,9 @@ int main(int argc, char *argv[])
 	flower.width = 200;
 	flower.height = 200;
 	flower.display = d;
-	flower.window = window_create(d, "flower",
-				      flower.width, flower.height);
+	flower.window = window_create(d, flower.width, flower.height);
 
+	window_set_title(flower.window, "flower");
 	window_set_decoration(flower.window, 0);
 	window_draw(flower.window);
 	s = window_get_surface(flower.window);

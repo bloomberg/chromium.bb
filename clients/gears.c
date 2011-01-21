@@ -358,7 +358,8 @@ gears_create(struct display *display)
 	gears = malloc(sizeof *gears);
 	memset(gears, 0, sizeof *gears);
 	gears->d = display;
-	gears->window = window_create(display, "Wayland Gears", width, height);
+	gears->window = window_create(display, width, height);
+	window_set_title(gears->window, "Wayland Gears");
 
 	gears->display = display_get_egl_display(gears->d);
 	if (gears->display == NULL)

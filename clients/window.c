@@ -84,9 +84,11 @@ struct display {
 
 struct window {
 	struct display *display;
+	struct window *parent;
 	struct wl_surface *surface;
 	const char *title;
 	struct rectangle allocation, saved_allocation, server_allocation;
+	int x, y;
 	int resize_edges;
 	int redraw_scheduled;
 	int minimum_width, minimum_height;
@@ -598,7 +600,12 @@ window_attach_surface(struct window *window)
 	wl_display_sync_callback(display->display, free_surface, window);
 
 	if (!window->mapped) {
-		wl_surface_map_toplevel(window->surface);
+		if (!window->parent)
+			wl_surface_map_toplevel(window->surface);
+		else
+			wl_surface_map_transient(window->surface,
+						 window->parent->surface,
+						 window->x, window->y, 0);
 		window->mapped = 1;
 	}
 
@@ -648,6 +655,28 @@ window_create_surface(struct window *window)
 
 	window_set_surface(window, surface);
 	cairo_surface_destroy(surface);
+}
+
+static void
+window_draw_menu(struct window *window)
+{
+	cairo_t *cr;
+	int width, height, r = 5;
+
+	window_create_surface(window);
+
+	cr = cairo_create(window->cairo_surface);
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
+	cairo_paint(cr);
+
+	width = window->allocation.width;
+	height = window->allocation.height;
+	rounded_rect(cr, r, r, width - r, height - r, r);
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_set_source_rgba(cr, 1.0, 1.0, 0.0, 0.5);
+	cairo_fill(cr);
+	cairo_destroy(cr);
 }
 
 static void
@@ -707,6 +736,14 @@ window_draw_decorations(struct window *window)
 }
 
 void
+window_destroy(struct window *window)
+{
+	wl_surface_destroy(window->surface);
+	wl_list_remove(&window->link);
+	free(window);
+}
+
+void
 display_flush_cairo_device(struct display *display)
 {
 	cairo_device_flush (display->device);
@@ -715,7 +752,9 @@ display_flush_cairo_device(struct display *display)
 void
 window_draw(struct window *window)
 {
-	if (window->fullscreen || !window->decoration)
+	if (window->parent)
+		window_draw_menu(window);
+	else if (window->fullscreen || !window->decoration)
 		window_create_surface(window);
 	else
 		window_draw_decorations(window);
@@ -1202,9 +1241,9 @@ window_damage(struct window *window, int32_t x, int32_t y,
 	wl_surface_damage(window->surface, x, y, width, height);
 }
 
-struct window *
-window_create(struct display *display, const char *title,
-	      int32_t width, int32_t height)
+static struct window *
+window_create_internal(struct display *display, struct window *parent,
+			int32_t width, int32_t height)
 {
 	struct window *window;
 
@@ -1214,7 +1253,7 @@ window_create(struct display *display, const char *title,
 
 	memset(window, 0, sizeof *window);
 	window->display = display;
-	window->title = strdup(title);
+	window->parent = parent;
 	window->surface = wl_compositor_create_surface(display->compositor);
 	window->allocation.x = 0;
 	window->allocation.y = 0;
@@ -1231,6 +1270,41 @@ window_create(struct display *display, const char *title,
 
 	wl_surface_set_user_data(window->surface, window);
 	wl_list_insert(display->window_list.prev, &window->link);
+
+	return window;
+}
+
+void
+window_set_title(struct window *window, const char *title)
+{
+	window->title = strdup(title);
+}
+
+struct window *
+window_create(struct display *display, int32_t width, int32_t height)
+{
+	struct window *window;
+
+	window = window_create_internal(display, NULL, width, height);
+	if (!window)
+		return NULL;
+
+	return window;
+}
+
+struct window *
+window_create_transient(struct display *display, struct window *parent,
+			int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	struct window *window;
+
+	window = window_create_internal(parent->display,
+					parent, width, height);
+	if (!window)
+		return NULL;
+
+	window->x = x;
+	window->y = y;
 
 	return window;
 }

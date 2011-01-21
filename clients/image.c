@@ -216,7 +216,8 @@ image_create(struct display *display, uint32_t key, const char *filename)
 
 	image->filename = g_strdup(filename);
 
-	image->window = window_create(display, title, 500, 400);
+	image->window = window_create(display, 500, 400);
+	window_set_title(image->window, title);
 	image->display = display;
 
 	/* FIXME: Window uses key 1 for moves, need some kind of

@@ -277,7 +277,8 @@ int main(int argc, char *argv[])
 	smoke.width = 200;
 	smoke.height = 200;
 	smoke.display = d;
-	smoke.window = window_create(d, "smoke", smoke.width, smoke.height);
+	smoke.window = window_create(d, smoke.width, smoke.height);
+	window_set_title(smoke.window, "smoke");
 
 	window_set_buffer_type(smoke.window, WINDOW_BUFFER_TYPE_SHM);
 	clock_gettime(CLOCK_MONOTONIC, &ts);

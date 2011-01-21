@@ -628,7 +628,6 @@ static struct dnd *
 dnd_create(struct display *display)
 {
 	struct dnd *dnd;
-	gchar *title;
 	int i, x, y;
 	int32_t width, height;
 
@@ -637,9 +636,9 @@ dnd_create(struct display *display)
 		return dnd;
 	memset(dnd, 0, sizeof *dnd);
 
-	title = g_strdup_printf("Wayland Drag and Drop Demo");
+	dnd->window = window_create(display, 400, 400);
+	window_set_title(dnd->window, "Wayland Drag and Drop Demo");
 
-	dnd->window = window_create(display, title, 500, 400);
 	dnd->display = display;
 	dnd->key = 100;
 

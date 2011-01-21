@@ -127,8 +127,16 @@ typedef void (*display_global_handler_t)(struct display *display,
 					 uint32_t version);
 
 struct window *
-window_create(struct display *display, const char *title,
-	      int32_t width, int32_t height);
+window_create(struct display *display, int32_t width, int32_t height);
+struct window *
+window_create_transient(struct display *display, struct window *parent,
+			int32_t x, int32_t y, int32_t width, int32_t height);
+
+void
+window_destroy(struct window *window);
+
+void
+window_set_title(struct window *window, const char *title);
 
 void
 window_move(struct window *window, struct input *input, uint32_t time);

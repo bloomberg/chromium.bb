@@ -2213,8 +2213,8 @@ terminal_create(struct display *display, int fullscreen)
 	terminal_init(terminal);
 	terminal->margin_top = 0;
 	terminal->margin_bottom = -1;
-	terminal->window = window_create(display, "Wayland Terminal",
-					 500, 400);
+	terminal->window = window_create(display, 500, 400);
+	window_set_title(terminal->window, "Wayland Terminal");
 
 	init_state_machine(&terminal->state_machine);
 	init_color_table(terminal);
