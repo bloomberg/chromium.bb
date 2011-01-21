@@ -140,7 +140,6 @@ void ParamTraits<GPUInfo> ::Write(Message* m, const param_type& p) {
   WriteParam(m, p.gl_version_string());
   WriteParam(m, p.gl_vendor());
   WriteParam(m, p.gl_renderer());
-  WriteParam(m, p.gl_extensions());
   WriteParam(m, p.can_lose_context());
 
 #if defined(OS_WIN)
@@ -161,7 +160,6 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
   std::string gl_version_string;
   std::string gl_vendor;
   std::string gl_renderer;
-  std::string gl_extensions;
   bool can_lose_context;
   bool ret = ReadParam(m, iter, &progress);
   ret = ret && ReadParam(m, iter, &initialization_time);
@@ -175,7 +173,6 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
   ret = ret && ReadParam(m, iter, &gl_version_string);
   ret = ret && ReadParam(m, iter, &gl_vendor);
   ret = ret && ReadParam(m, iter, &gl_renderer);
-  ret = ret && ReadParam(m, iter, &gl_extensions);
   ret = ret && ReadParam(m, iter, &can_lose_context);
   p->SetProgress(static_cast<GPUInfo::Progress>(progress));
   if (!ret)
@@ -189,7 +186,6 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
   p->SetGLVersionString(gl_version_string);
   p->SetGLVendor(gl_vendor);
   p->SetGLRenderer(gl_renderer);
-  p->SetGLExtensions(gl_extensions);
   p->SetCanLoseContext(can_lose_context);
 
 #if defined(OS_WIN)

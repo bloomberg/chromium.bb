@@ -22,7 +22,6 @@ TEST(GPUIPCMessageTest, GPUInfo) {
   input.SetGLVersionString("3.2.0 NVIDIA 195.36.24");
   input.SetGLVendor("NVIDIA Corporation");
   input.SetGLRenderer("Quadro FX 380/PCI/SSE2");
-  input.SetGLExtensions("GL_ARB_texture_rg GL_ARB_window_pos");
   input.SetCanLoseContext(false);
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
@@ -44,7 +43,6 @@ TEST(GPUIPCMessageTest, GPUInfo) {
   EXPECT_EQ(input.gl_version_string(), output.gl_version_string());
   EXPECT_EQ(input.gl_vendor(), output.gl_vendor());
   EXPECT_EQ(input.gl_renderer(), output.gl_renderer());
-  EXPECT_EQ(input.gl_extensions(), output.gl_extensions());
   EXPECT_EQ(input.can_lose_context(), output.can_lose_context());
 
   std::string log_message;

@@ -89,7 +89,6 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   gpu_info->SetGLRenderer(GetGLString(GL_RENDERER));
   gpu_info->SetGLVendor(GetGLString(GL_VENDOR));
   gpu_info->SetGLVersionString(GetGLString(GL_VERSION));
-  gpu_info->SetGLExtensions(GetGLString(GL_EXTENSIONS));
 
   bool validGLVersionInfo = CollectGLVersionInfo(gpu_info);
   bool validVideoCardInfo = CollectVideoCardInfo(gpu_info);

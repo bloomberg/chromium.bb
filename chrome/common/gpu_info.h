@@ -79,10 +79,6 @@ class GPUInfo {
   // Return "" if we are not using OpenGL.
   std::string gl_renderer() const;
 
-  // Return the GL_EXTENSIONS string.
-  // Return "" if we are not using OpenGL.
-  std::string gl_extensions() const;
-
   // Return the device semantics, i.e. whether the Vista and Windows 7 specific
   // semantics are available.
   bool can_lose_context() const;
@@ -107,8 +103,6 @@ class GPUInfo {
 
   void SetGLRenderer(const std::string& gl_renderer);
 
-  void SetGLExtensions(const std::string& gl_extensions);
-
   void SetCanLoseContext(bool can_lose_context);
 
 #if defined(OS_WIN)
@@ -131,7 +125,6 @@ class GPUInfo {
   std::string gl_version_string_;
   std::string gl_vendor_;
   std::string gl_renderer_;
-  std::string gl_extensions_;
   bool can_lose_context_;
 
 #if defined(OS_WIN)

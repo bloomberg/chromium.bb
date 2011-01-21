@@ -16,7 +16,6 @@ GPUInfo::GPUInfo()
       gl_version_string_(""),
       gl_vendor_(""),
       gl_renderer_(""),
-      gl_extensions_(""),
       can_lose_context_(false) {
 }
 
@@ -68,10 +67,6 @@ std::string GPUInfo::gl_renderer() const {
   return gl_renderer_;
 }
 
-std::string GPUInfo::gl_extensions() const {
-  return gl_extensions_;
-}
-
 bool GPUInfo::can_lose_context() const {
   return can_lose_context_;
 }
@@ -116,10 +111,6 @@ void GPUInfo::SetGLVendor(const std::string& gl_vendor) {
 
 void GPUInfo::SetGLRenderer(const std::string& gl_renderer) {
   gl_renderer_ = gl_renderer;
-}
-
-void GPUInfo::SetGLExtensions(const std::string& gl_extensions) {
-  gl_extensions_ = gl_extensions;
 }
 
 void GPUInfo::SetCanLoseContext(bool can_lose_context) {

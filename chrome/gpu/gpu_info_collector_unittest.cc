@@ -33,9 +33,6 @@ class GPUInfoCollectorTest : public testing::Test {
     const char* gl_vendor = "NVIDIA Corporation";
     const char* gl_version_string = "3.1.0";
     const char* gl_shading_language_version = "1.40 NVIDIA via Cg compiler";
-    const char* gl_extensions =
-        "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
-        "GL_EXT_read_format_bgra";
 #elif defined(OS_MACOSX)
     const uint32 vendor_id = 0x10de;
     const uint32 device_id = 0x0640;
@@ -47,9 +44,6 @@ class GPUInfoCollectorTest : public testing::Test {
     const char* gl_vendor = "NVIDIA Corporation";
     const char* gl_version_string = "2.1 NVIDIA-1.6.18";
     const char* gl_shading_language_version = "1.20 ";
-    const char* gl_extensions =
-        "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
-        "GL_EXT_read_format_bgra";
 #else  // defined (OS_LINUX)
     const uint32 vendor_id = 0x10de;
     const uint32 device_id = 0x0658;
@@ -61,9 +55,6 @@ class GPUInfoCollectorTest : public testing::Test {
     const char* gl_vendor = "NVIDIA Corporation";
     const char* gl_version_string = "3.2.0 NVIDIA 195.36.24";
     const char* gl_shading_language_version = "1.50 NVIDIA via Cg compiler";
-    const char* gl_extensions =
-        "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
-        "GL_EXT_read_format_bgra";
 #endif
     test_values_.SetVideoCardInfo(vendor_id, device_id);
     test_values_.SetDriverInfo(driver_vendor, driver_version);
@@ -76,7 +67,8 @@ class GPUInfoCollectorTest : public testing::Test {
 
     EXPECT_CALL(*gl_, GetString(GL_EXTENSIONS))
         .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
-            gl_extensions)));
+            "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
+            "GL_EXT_read_format_bgra")));
     EXPECT_CALL(*gl_, GetString(GL_SHADING_LANGUAGE_VERSION))
         .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
             gl_shading_language_version)));
@@ -159,12 +151,5 @@ TEST_F(GPUInfoCollectorTest, GLVendorGL) {
   gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
   std::string gl_vendor = gpu_info.gl_vendor();
   EXPECT_EQ(test_values_.gl_vendor(), gl_vendor);
-}
-
-TEST_F(GPUInfoCollectorTest, GLExtensionsGL) {
-  GPUInfo gpu_info;
-  gpu_info_collector::CollectGraphicsInfoGL(&gpu_info);
-  std::string gl_extensions = gpu_info.gl_extensions();
-  EXPECT_EQ(test_values_.gl_extensions(), gl_extensions);
 }
 
