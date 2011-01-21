@@ -83,7 +83,8 @@
   bug_66994a
   ThreadSanitizer:Race
   fun:HistoryURLProvider::Stop*
-  fun:AutocompleteController::Stop*
+  ...
+  fun:AutocompleteController::St*
 }
 
 {

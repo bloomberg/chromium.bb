@@ -122,3 +122,7 @@ fun_r:inflate
 # X11 reads the _XErrorFunction callback in a racey way, see
 # http://crbug.com/65278
 fun:XSetErrorHandler
+
+# TSan doesn't support lockf and hence shared memory locks in this function;
+# http://crbug.com/45083
+fun_r:*base*StatsTable*AddCounter*
