@@ -1040,6 +1040,10 @@ void ResourceDispatcherHost::OnReceivedRedirect(net::URLRequest* request,
 void ResourceDispatcherHost::OnAuthRequired(
     net::URLRequest* request,
     net::AuthChallengeInfo* auth_info) {
+  if (request->load_flags() & net::LOAD_PREFETCH) {
+    request->CancelAuth();
+    return;
+  }
   // Create a login dialog on the UI thread to get authentication data,
   // or pull from cache and continue on the IO thread.
   // TODO(mpcomplete): We should block the parent tab while waiting for

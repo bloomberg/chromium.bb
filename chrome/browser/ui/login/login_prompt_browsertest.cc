@@ -7,6 +7,7 @@
 #include <map>
 
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -162,12 +163,57 @@ typedef WindowedNavigationObserver<NotificationType::AUTH_CANCELLED>
 typedef WindowedNavigationObserver<NotificationType::AUTH_SUPPLIED>
     WindowedAuthSuppliedObserver;
 
+const char* kPrefetchAuthPage = "files/login/prefetch.html";
+
 const char* kMultiRealmTestPage = "files/login/multi_realm.html";
 const int   kMultiRealmTestRealmCount = 2;
 const int   kMultiRealmTestResourceCount = 4;
 
 const char* kSingleRealmTestPage = "files/login/single_realm.html";
 const int   kSingleRealmTestResourceCount = 6;
+
+// Confirm that <link rel="prefetch"> targetting an auth required
+// resource does not provide a login dialog.  These types of requests
+// should instead just cancel the auth.
+
+// Unfortunately, this test doesn't assert on anything for its
+// correctness.  Instead, it relies on the auth dialog blocking the
+// browser, and triggering a timeout to cause failure when the
+// prefetch resource requires authorization.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, PrefetchAuthCancels) {
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL test_page = test_server()->GetURL(kPrefetchAuthPage);
+
+  class SetPrefetchForTest {
+   public:
+    explicit SetPrefetchForTest(bool prefetch)
+        : old_prefetch_state_(ResourceDispatcherHost::is_prefetch_enabled()) {
+      ResourceDispatcherHost::set_is_prefetch_enabled(prefetch);
+    }
+
+    ~SetPrefetchForTest() {
+      ResourceDispatcherHost::set_is_prefetch_enabled(old_prefetch_state_);
+    }
+   private:
+    bool old_prefetch_state_;
+  } set_prefetch_for_test(true);
+
+  TabContentsWrapper* contents =
+      browser()->GetSelectedTabContentsWrapper();
+  ASSERT_TRUE(contents);
+  NavigationController* controller = &contents->controller();
+  LoginPromptBrowserTestObserver observer;
+
+  observer.Register(Source<NavigationController>(controller));
+
+  WindowedLoadStopObserver load_stop_waiter(controller);
+  browser()->OpenURL(test_page, GURL(), CURRENT_TAB, PageTransition::TYPED);
+
+  load_stop_waiter.Wait();
+  EXPECT_TRUE(observer.handlers_.empty());
+  EXPECT_TRUE(test_server()->Stop());
+}
 
 // Test handling of resources that require authentication even though
 // the page they are included on doesn't.  In this case we should only
