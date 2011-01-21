@@ -3,6 +3,8 @@ JingleSessionTest.TestControlChannel
 JingleSessionTest.TestEventChannel
 JingleSessionTest.TestVideoChannel
 JingleSessionTest.TestVideoRtpChannel
+# http://crbug.com/70225
+JingleSessionTest.Connect
 
 # This test fails on an assertion, see http://crbug.com/57266
 DecoderVp8Test.EncodeAndDecode

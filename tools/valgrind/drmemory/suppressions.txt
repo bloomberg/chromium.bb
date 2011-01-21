@@ -263,6 +263,15 @@ LEAK
 ...
 *!std::use_facet<std::numpunct<char> >
 
+# http://code.google.com/p/drmemory/issues/detail?id=274
+POSSIBLE LEAK
+...
+GDI32.dll!CreateDCW
+
+LEAK
+...
+GDI32.dll!CreateDCW
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
