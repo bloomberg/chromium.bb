@@ -125,17 +125,12 @@ class MetricsService : public NotificationObserver,
   void StoreUnsentLogs();
 
 #if defined(OS_CHROMEOS)
-  // Returns the hardware class of the Chrome OS device (e.g.,
-  // hardware qualification ID), or "unknown" if the hardware class is
-  // not available.  The hardware class identifies the configured
-  // system components such us CPU, WiFi adapter, etc.  Note that this
-  // routine invokes an external utility to determine the hardware
-  // class.
-  static std::string GetHardwareClass();
-
   // Start the external metrics service, which collects metrics from Chrome OS
   // and passes them to UMA.
   void StartExternalMetrics();
+
+  // Records a Chrome OS crash.
+  void LogChromeOSCrash(const std::string &crash_type);
 #endif
 
   bool recording_active() const;

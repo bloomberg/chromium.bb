@@ -57,6 +57,13 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
   // Passes an action event to the UMA service.
   void RecordAction(const char* action_name);
 
+  // Records an external crash of the given string description to
+  // UMA service on the UI thread.
+  void RecordCrashUI(const std::string& crash_kind);
+
+  // Records an external crash of the given string description.
+  void RecordCrash(const std::string& crash_kind);
+
   // Passes an histogram event to the UMA service.  |histogram_data| is in the
   // form <histogram-name> <sample> <min> <max> <buckets_count>.
   void RecordHistogram(const char* histogram_data);

@@ -7,6 +7,9 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/metrics/metrics_log.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,10 +27,10 @@ static void NormalizeBuildtime(std::string* xml_encoded) {
   std::string prefix = "buildtime=\"";
   const char postfix = '\"';
   size_t offset = xml_encoded->find(prefix);
-  ASSERT_GT(offset, 0u);
+  ASSERT_NE(std::string::npos, offset);
   offset += prefix.size();
   size_t postfix_position = xml_encoded->find(postfix, offset);
-  ASSERT_GT(postfix_position, offset);
+  ASSERT_NE(std::string::npos, postfix_position);
   for (size_t i = offset; i < postfix_position; ++i) {
     char digit = xml_encoded->at(i);
     ASSERT_GE(digit, '0');
@@ -192,6 +195,52 @@ TEST(MetricsLogTest, ChromeOSLoadEvent) {
 
   ASSERT_EQ(expected_output, encoded);
 }
+
+TEST(MetricsLogTest, ChromeOSStabilityData) {
+  NoTimeMetricsLog log("bogus client ID", 0);
+  TestingProfile profile;
+  PrefService* pref = profile.GetPrefs();
+
+  pref->SetInteger(prefs::kStabilityChildProcessCrashCount, 10);
+  pref->SetInteger(prefs::kStabilityOtherUserCrashCount, 11);
+  pref->SetInteger(prefs::kStabilityKernelCrashCount, 12);
+  pref->SetInteger(prefs::kStabilitySystemUncleanShutdownCount, 13);
+  std::string expected_output = StringPrintf(
+      "<log clientid=\"bogus client ID\" buildtime=\"123456789\" "
+          "appversion=\"%s\">\n"
+      "<stability stuff>\n", MetricsLog::GetVersionString().c_str());
+  // Expect 3 warnings about not yet being able to send the
+  // Chrome OS stability stats.
+  log.WriteStabilityElement(profile.GetPrefs());
+  log.CloseLog();
+
+  int size = log.GetEncodedLogSize();
+  ASSERT_GT(size, 0);
+
+  EXPECT_EQ(0, pref->GetInteger(prefs::kStabilityChildProcessCrashCount));
+  EXPECT_EQ(0, pref->GetInteger(prefs::kStabilityOtherUserCrashCount));
+  EXPECT_EQ(0, pref->GetInteger(prefs::kStabilityKernelCrashCount));
+  EXPECT_EQ(0, pref->GetInteger(prefs::kStabilitySystemUncleanShutdownCount));
+
+  std::string encoded;
+  // Leave room for the NUL terminator.
+  bool encoding_result = log.GetEncodedLog(
+      WriteInto(&encoded, size + 1), size);
+  ASSERT_TRUE(encoding_result);
+
+  // Check that we can find childprocesscrashcount, but not
+  // any of the ChromeOS ones that we are not emitting until log
+  // servers can handle them.
+  EXPECT_NE(std::string::npos,
+            encoded.find(" childprocesscrashcount=\"10\""));
+  EXPECT_EQ(std::string::npos,
+            encoded.find(" otherusercrashcount="));
+  EXPECT_EQ(std::string::npos,
+            encoded.find(" kernelcrashcount="));
+  EXPECT_EQ(std::string::npos,
+            encoded.find(" systemuncleanshutdowns="));
+}
+
 #endif  // OS_CHROMEOS
 
 // Make sure our ID hashes are the same as what we see on the server side.

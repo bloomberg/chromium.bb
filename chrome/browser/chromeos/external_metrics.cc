@@ -18,7 +18,9 @@
 #include "base/metrics/histogram.h"
 #include "base/perftimer.h"
 #include "base/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
 
 // Steps to add an action.
@@ -78,6 +80,18 @@ void ExternalMetrics::RecordAction(const char* action) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &ExternalMetrics::RecordActionUI, action));
+}
+
+void ExternalMetrics::RecordCrashUI(const std::string& crash_kind) {
+  if (g_browser_process && g_browser_process->metrics_service()) {
+    g_browser_process->metrics_service()->LogChromeOSCrash(crash_kind);
+  }
+}
+
+void ExternalMetrics::RecordCrash(const std::string& crash_kind) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &ExternalMetrics::RecordCrashUI, crash_kind));
 }
 
 void ExternalMetrics::RecordHistogram(const char* histogram_data) {
@@ -194,6 +208,8 @@ void ExternalMetrics::CollectEvents() {
       char* value = reinterpret_cast<char*>(p + 1);
       if (test_recorder_ != NULL) {
         test_recorder_(name, value);
+      } else if (strcmp(name, "crash") == 0) {
+        RecordCrash(value);
       } else if (strcmp(name, "histogram") == 0) {
         RecordHistogram(value);
       } else if (strcmp(name, "linearhistogram") == 0) {

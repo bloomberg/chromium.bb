@@ -400,6 +400,12 @@ void MetricsService::RegisterPrefs(PrefService* local_state) {
                                    0);
   local_state->RegisterIntegerPref(prefs::kStabilityDebuggerPresent, 0);
   local_state->RegisterIntegerPref(prefs::kStabilityDebuggerNotPresent, 0);
+#if defined(OS_CHROMEOS)
+  local_state->RegisterIntegerPref(prefs::kStabilityOtherUserCrashCount, 0);
+  local_state->RegisterIntegerPref(prefs::kStabilityKernelCrashCount, 0);
+  local_state->RegisterIntegerPref(prefs::kStabilitySystemUncleanShutdownCount,
+                                   0);
+#endif  // OS_CHROMEOS
 
   local_state->RegisterDictionaryPref(prefs::kProfileMetrics);
   local_state->RegisterIntegerPref(prefs::kNumBookmarksOnBookmarkBar, 0);
@@ -1714,6 +1720,22 @@ void MetricsService::LogExtensionRendererCrash() {
 void MetricsService::LogRendererHang() {
   IncrementPrefValue(prefs::kStabilityRendererHangCount);
 }
+
+#if defined(OS_CHROMEOS)
+void MetricsService::LogChromeOSCrash(const std::string &crash_type) {
+  if (crash_type == "user")
+    IncrementPrefValue(prefs::kStabilityOtherUserCrashCount);
+  else if (crash_type == "kernel")
+    IncrementPrefValue(prefs::kStabilityKernelCrashCount);
+  else if (crash_type == "uncleanshutdown")
+    IncrementPrefValue(prefs::kStabilitySystemUncleanShutdownCount);
+  else
+    NOTREACHED() << "Unexpected Chrome OS crash type " << crash_type;
+  // Wake up metrics logs sending if necessary now that new
+  // log data is available.
+  HandleIdleSinceLastTransmission(false);
+}
+#endif  // OS_CHROMEOS
 
 void MetricsService::LogChildProcessChange(
     NotificationType type,

@@ -261,6 +261,9 @@ extern const char kStabilityLaunchTimeSec[];
 extern const char kStabilityLastTimestampSec[];
 extern const char kStabilityRendererHangCount[];
 extern const char kStabilityChildProcessCrashCount[];
+extern const char kStabilityOtherUserCrashCount[];
+extern const char kStabilityKernelCrashCount[];
+extern const char kStabilitySystemUncleanShutdownCount[];
 
 extern const char kStabilityBreakpadRegistrationSuccess[];
 extern const char kStabilityBreakpadRegistrationFail[];

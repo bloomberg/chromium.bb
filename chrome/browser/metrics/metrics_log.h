@@ -64,6 +64,8 @@ class MetricsLog : public MetricsLogBase {
   virtual MetricsLog* AsMetricsLog();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MetricsLogTest, ChromeOSStabilityData);
+
   // Returns the date at which the current metrics client ID was created as
   // a string containing milliseconds since the epoch, or "0" if none was found.
   std::string GetInstallDate() const;
@@ -71,7 +73,7 @@ class MetricsLog : public MetricsLogBase {
 
   // Writes application stability metrics (as part of the profile log).
   // NOTE: Has the side-effect of clearing those counts.
-  void WriteStabilityElement();
+  void WriteStabilityElement(PrefService* pref);
 
   // Within stability group, write plugin crash stats.
   void WritePluginStabilityElements(PrefService* pref);

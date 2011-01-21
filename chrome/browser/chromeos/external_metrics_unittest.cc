@@ -87,6 +87,12 @@ TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
     }
   }
 
+  // Sends a crash message.
+  int expect_count = nhist;
+  SendMessage(path, "crash", "user");
+  external_metrics->CollectEvents();
+  CheckMessage("crash", "user", ++expect_count);
+
   // Sends a message that's too large.
   char b[MAXLENGTH + 100];
   for (i = 0; i < MAXLENGTH + 99; i++) {
@@ -94,35 +100,36 @@ TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
   }
   b[i] = '\0';
   SendMessage(path, b, "yyy");
+  // Expect logged errors about bad message size.
   external_metrics->CollectEvents();
-  EXPECT_EQ(received_count, nhist);
+  EXPECT_EQ(expect_count, received_count);
 
   // Sends a malformed message (first string is not null-terminated).
   i = 100 + sizeof(i);
   int fd = open(path, O_CREAT | O_WRONLY, 0666);
   EXPECT_GT(fd, 0);
-  EXPECT_EQ(write(fd, &i, sizeof(i)), static_cast<int>(sizeof(i)));
-  EXPECT_EQ(write(fd, b, i), i);
-  EXPECT_EQ(close(fd), 0);
+  EXPECT_EQ(static_cast<int>(sizeof(i)), write(fd, &i, sizeof(i)));
+  EXPECT_EQ(i, write(fd, b, i));
+  EXPECT_EQ(0, close(fd));
 
   external_metrics->CollectEvents();
-  EXPECT_EQ(received_count, nhist);
+  EXPECT_EQ(expect_count, received_count);
 
   // Sends a malformed message (second string is not null-terminated).
   b[50] = '\0';
   fd = open(path, O_CREAT | O_WRONLY, 0666);
   EXPECT_GT(fd, 0);
-  EXPECT_EQ(write(fd, &i, sizeof(i)), static_cast<int>(sizeof(i)));
-  EXPECT_EQ(write(fd, b, i), i);
-  EXPECT_EQ(close(fd), 0);
+  EXPECT_EQ(static_cast<int>(sizeof(i)), write(fd, &i, sizeof(i)));
+  EXPECT_EQ(i, write(fd, b, i));
+  EXPECT_EQ(0, close(fd));
 
   external_metrics->CollectEvents();
-  EXPECT_EQ(received_count, nhist);
+  EXPECT_EQ(expect_count, received_count);
 
   // Checks that we survive when file doesn't exist.
-  EXPECT_EQ(unlink(path), 0);
+  EXPECT_EQ(0, unlink(path));
   external_metrics->CollectEvents();
-  EXPECT_EQ(received_count, nhist);
+  EXPECT_EQ(expect_count, received_count);
 }
 
 }  // namespace chromeos
