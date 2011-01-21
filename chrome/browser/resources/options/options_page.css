@@ -533,7 +533,7 @@ select:focus {
 }
 
 /* TEXT */
-input[type='password],
+input[type='password'],
 input[type='text'] {
   -webkit-border-radius: 2px;
   border: 1px solid #aaa;
