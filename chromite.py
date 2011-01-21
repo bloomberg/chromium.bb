@@ -14,7 +14,8 @@ import sys
 import tempfile
 
 
-# Local library imports
+# Local imports
+import chromite_cmd
 from lib import text_menu
 from lib.cros_build_lib import Die
 from lib.cros_build_lib import Info
@@ -53,16 +54,16 @@ _HOST_TARGET = 'HOST'
 #
 # TODO(dianders): Make a command superclass, then make these subclasses.
 _COMMAND_HANDLERS = [
-    '_CmdBuild',
-    '_CmdClean',
-    '_CmdEbuild',
-    '_CmdEmerge',
-    '_CmdEquery',
-    '_CmdPortageq',
-    '_CmdShell',
-    '_CmdWorkon',
+    'BuildCmd',
+    'CleanCmd',
+    'EbuildCmd',
+    'EmergeCmd',
+    'EqueryCmd',
+    'PortageqCmd',
+    'ShellCmd',
+    'WorkonCmd',
 ]
-_COMMAND_STRS = [fn_str[len('_Cmd'):].lower() for fn_str in _COMMAND_HANDLERS]
+_COMMAND_STRS = [cls_str[:-len('Cmd')].lower() for cls_str in _COMMAND_HANDLERS]
 
 
 def _GetBoardDir(build_config):
@@ -463,7 +464,8 @@ def _DoEnterChroot(chroot_config, fn, *args, **kwargs):
 
   Args:
     chroot_config: A SafeConfigParser representing the config for the chroot.
-    fn: The function to call.
+    fn: Either: a) the function to call or b) A tuple of an object and the
+        name of the method to call.
     args: All other arguments will be passed to the function as is.
     kwargs: All other arguments will be passed to the function as is.
   """
@@ -690,9 +692,8 @@ def _DoDistClean(chroot_config, want_force_yes):
   RunCommand(argv, cwd=cwd)
 
 
-def _DoWrappedChrootCommand(target_cmd, host_cmd, raw_argv, need_args=False,
-                            chroot_config=None, argv=None, build_config=None):
-  """Helper function for any command that is simply wrapped by chromite.
+class WrappedChrootCmd(chromite_cmd.ChromiteCmd):
+  """Superclass for any command that is simply wrapped by chromite.
 
   These are commands where:
   - We parse the command line only enough to figure out what board they
@@ -700,291 +701,317 @@ def _DoWrappedChrootCommand(target_cmd, host_cmd, raw_argv, need_args=False,
     Because of this, the board name _needs_ to be specified first.
   - Everything else (arg parsing, help, etc) is handled by the wrapped command.
     The usage string will be a little messed up, but hopefully that's OK.
-
-  Args:
-    target_cmd: We'll put this at the start of argv when calling a target
-        command.  We'll substiture %s with the target.
-        Like - ['my_command-%s'] or ['my_command', '--board=%s']
-    host_cmd: We'll put this at the start of argv when calling a host command.
-        Like - ['my_command']
-    raw_argv: Command line arguments, including this command's name, but not
-        the chromite command name or chromite options.
-    need_args: If True, we'll prompt for arguments if they weren't specified.
-        This makes the most sense when someone runs chromite with no arguments
-        and then walks through the menus.  It's not ideal, but less sucky than
-        just quitting.
-    chroot_config: A SafeConfigParser for the chroot config; or None chromite
-        was called from within the chroot.
-    argv: None when called normally, but contains argv with board stripped off
-        if we call ourselves with _DoEnterChroot().
-    build_config: None when called normally, but contains the SafeConfigParser
-        for the build config if we call ourselves with _DoEnterChroot().  Note
-        that even when called through _DoEnterChroot(), could still be None
-        if user chose 'HOST' as the target.
   """
-  # If we didn't get called through EnterChroot, we need to read the build
-  # config.
-  if argv is None:
-    # We look for the build config without calling OptionParser.  This means
-    # that the board _needs_ to be first (if it's specified) and all options
-    # will be passed straight to our subcommand.
-    argv, build_config = _GetBuildConfigFromArgs(raw_argv[1:])
 
-  # Enter the chroot if needed...
-  if not IsInsideChroot():
-    _DoEnterChroot(chroot_config, _DoWrappedChrootCommand, target_cmd, host_cmd,
-                   raw_argv, need_args=need_args, argv=argv,
-                   build_config=build_config)
-  else:
-    # We'll put CWD as src/scripts when running the command.  Since everyone
-    # running by hand has their cwd there, it is probably the safest.
-    cwd = os.path.join(_SRCROOT_PATH, 'src', 'scripts')
+  def __init__(self, target_cmd, host_cmd, need_args=False):
+    """WrappedChrootCmd constructor.
 
-    # Get command to call.  If build_config is None, it means host.
-    if build_config is None:
-      argv_prefix = host_cmd
+    Args:
+      target_cmd: We'll put this at the start of argv when calling a target
+          command.  We'll substiture %s with the target.
+          Like - ['my_command-%s'] or ['my_command', '--board=%s']
+      host_cmd: We'll put this at the start of argv when calling a host command.
+          Like - ['my_command'] or ['sudo', 'my_command']
+      need_args: If True, we'll prompt for arguments if they weren't specified.
+          This makes the most sense when someone runs chromite with no arguments
+          and then walks through the menus.  It's not ideal, but less sucky than
+          just quitting.
+    """
+    # Call superclass constructor.
+    super(WrappedChrootCmd, self).__init__()
+
+    # Save away params for use later in Run().
+    self._target_cmd = target_cmd
+    self._host_cmd = host_cmd
+    self._need_args = need_args
+
+  def Run(self, raw_argv, chroot_config=None, argv=None, build_config=None):
+    """Run the command.
+
+    Args:
+      raw_argv: Command line arguments, including this command's name, but not
+          the chromite command name or chromite options.
+      chroot_config: A SafeConfigParser for the chroot config; or None chromite
+          was called from within the chroot.
+      argv: None when called normally, but contains argv with board stripped off
+          if we call ourselves with _DoEnterChroot().
+      build_config: None when called normally, but contains the SafeConfigParser
+          for the build config if we call ourselves with _DoEnterChroot().  Note
+          that even when called through _DoEnterChroot(), could still be None
+          if user chose 'HOST' as the target.
+    """
+    # If we didn't get called through EnterChroot, we need to read the build
+    # config.
+    if argv is None:
+      # We look for the build config without calling OptionParser.  This means
+      # that the board _needs_ to be first (if it's specified) and all options
+      # will be passed straight to our subcommand.
+      argv, build_config = _GetBuildConfigFromArgs(raw_argv[1:])
+
+    # Enter the chroot if needed...
+    if not IsInsideChroot():
+      _DoEnterChroot(chroot_config, (self, 'Run'), raw_argv, argv=argv,
+                     build_config=build_config)
     else:
-      # Make argv_prefix w/ target.
-      target_name = build_config.get('BUILD', 'target')
-      argv_prefix = [arg % target_name for arg in target_cmd]
+      # We'll put CWD as src/scripts when running the command.  Since everyone
+      # running by hand has their cwd there, it is probably the safest.
+      cwd = os.path.join(_SRCROOT_PATH, 'src', 'scripts')
 
-    # Not a great way to to specify arguments, but works for now...  Wrapped
-    # commands are not wonderful interfaces anyway...
-    if need_args and not argv:
-      while True:
-        sys.stderr.write('arg %d (blank to exit): ' % (len(argv)+1))
-        arg = raw_input()
-        if not arg:
-          break
-        argv.append(arg)
+      # Get command to call.  If build_config is None, it means host.
+      if build_config is None:
+        argv_prefix = self._host_cmd
+      else:
+        # Make argv_prefix w/ target.
+        target_name = build_config.get('BUILD', 'target')
+        argv_prefix = [arg % target_name for arg in self._target_cmd]
 
-    # Add the prefix...
-    argv = argv_prefix + argv
+      # Not a great way to to specify arguments, but works for now...  Wrapped
+      # commands are not wonderful interfaces anyway...
+      if self._need_args and not argv:
+        while True:
+          sys.stderr.write('arg %d (blank to exit): ' % (len(argv)+1))
+          arg = raw_input()
+          if not arg:
+            break
+          argv.append(arg)
 
-    # Run, ignoring errors since some commands (ahem, cros_workon) seem to
-    # return errors from things like --help.
-    RunCommand(argv, cwd=cwd, ignore_sigint=True, error_ok=True)
+      # Add the prefix...
+      argv = argv_prefix + argv
 
-
-def _CmdBuild(raw_argv, chroot_config=None, loaded_config=False,
-              build_config=None):
-  """Build the chroot (if needed), the packages for a target, and the image.
-
-  Args:
-    raw_argv: Command line arguments, including this command's name, but not
-        the chromite command name or chromite options.
-    chroot_config: A SafeConfigParser for the chroot config; or None chromite
-        was called from within the chroot.
-    loaded_config: If True, we've already loaded the config.
-    build_config: None when called normally, but contains the SafeConfigParser
-        for the build config if we call ourselves with _DoEnterChroot().  Note
-        that even when called through _DoEnterChroot(), could still be None
-        if user chose 'HOST' as the target.
-  """
-  # Parse options for command...
-  usage_str = ('usage: %%prog [chromite_options] %s [options] [target]' %
-               raw_argv[0])
-  parser = optparse.OptionParser(usage=usage_str)
-  parser.add_option('--clean', default=False, action='store_true',
-                    help='Clean before building.')
-  (options, argv) = parser.parse_args(raw_argv[1:])
-
-  # Load the build config if needed...
-  if not loaded_config:
-    argv, build_config = _GetBuildConfigFromArgs(argv)
-    if argv:
-      Die('Unknown arguments: %s' % ' '.join(argv))
-
-  if not IsInsideChroot():
-    # Note: we only want to clean the chroot if they do --clean and have the
-    # host target.  If they do --clean and have a board target, it means
-    # that they just want to clean the board...
-    want_clean_chroot = options.clean and build_config is None
-
-    _DoMakeChroot(chroot_config, want_clean_chroot)
-
-    if build_config is not None:
-      _DoEnterChroot(chroot_config, _CmdBuild, raw_argv,
-                     build_config=build_config, loaded_config=True)
-
-    Info('Done building.')
-  else:
-    if build_config is None:
-      Die("You can't build the host chroot from within the chroot.")
-
-    _DoSetupBoard(build_config, options.clean)
-    _DoBuildPackages(build_config)
-    _DoBuildImage(build_config)
+      # Run, ignoring errors since some commands (ahem, cros_workon) seem to
+      # return errors from things like --help.
+      RunCommand(argv, cwd=cwd, ignore_sigint=True, error_ok=True)
 
 
-def _CmdWorkon(raw_argv, *args, **kwargs):
-  """Run cros_workon.
+class BuildCmd(chromite_cmd.ChromiteCmd):
+  """Build the chroot (if needed), the packages for a target, and the image."""
 
-  This is just a wrapped command.
+  def Run(self, raw_argv, chroot_config=None,
+          loaded_config=False, build_config=None):
+    """Run the command.
 
-  Args:
-    raw_argv: Command line arguments, including this command's name, but not
-        the chromite command name or chromite options.
-    args: The rest of the positional arguments.  See _DoWrappedChrootCommand.
-    kwargs: The keyword arguments.  See _DoWrappedChrootCommand.
-  """
-  # Slight optimization, just since I do this all the time...
-  if len(raw_argv) >= 2:
-    if raw_argv[1] in ('start', 'stop', 'list', 'list-all', 'iterate'):
-      Warn('OOPS, looks like you forgot a board name. Pick one.')
-      raw_argv = raw_argv[:1] + [''] + raw_argv[1:]
+    Args:
+      raw_argv: Command line arguments, including this command's name, but not
+          the chromite command name or chromite options.
+      chroot_config: A SafeConfigParser for the chroot config; or None chromite
+          was called from within the chroot.
+      loaded_config: If True, we've already loaded the config.
+      build_config: None when called normally, but contains the SafeConfigParser
+          for the build config if we call ourselves with _DoEnterChroot().  Note
+          that even when called through _DoEnterChroot(), could still be None
+          if user chose 'HOST' as the target.
+    """
+    # Parse options for command...
+    usage_str = ('usage: %%prog [chromite_options] %s [options] [target]' %
+                 raw_argv[0])
+    parser = optparse.OptionParser(usage=usage_str)
+    parser.add_option('--clean', default=False, action='store_true',
+                      help='Clean before building.')
+    (options, argv) = parser.parse_args(raw_argv[1:])
 
-  # Note that host version uses "./", since it's in src/scripts and not in the
-  # path...
-  _DoWrappedChrootCommand(['cros_workon-%s'], ['./cros_workon', '--host'],
-                          raw_argv, need_args=True, *args, **kwargs)
+    # Load the build config if needed...
+    if not loaded_config:
+      argv, build_config = _GetBuildConfigFromArgs(argv)
+      if argv:
+        Die('Unknown arguments: %s' % ' '.join(argv))
 
+    if not IsInsideChroot():
+      # Note: we only want to clean the chroot if they do --clean and have the
+      # host target.  If they do --clean and have a board target, it means
+      # that they just want to clean the board...
+      want_clean_chroot = options.clean and build_config is None
 
-def _CmdEbuild(raw_argv, *args, **kwargs):
-  """Run ebuild.
+      _DoMakeChroot(chroot_config, want_clean_chroot)
 
-  This is just a wrapped command.
+      if build_config is not None:
+        _DoEnterChroot(chroot_config, (self, 'Run'), raw_argv,
+                       build_config=build_config, loaded_config=True)
 
-  Args:
-    raw_argv: Command line arguments, including this command's name, but not
-        the chromite command name or chromite options.
-    args: The rest of the positional arguments.  See _DoWrappedChrootCommand.
-    kwargs: The keyword arguments.  See _DoWrappedChrootCommand.
-  """
-  _DoWrappedChrootCommand(['ebuild-%s'], ['ebuild'],
-                          raw_argv, need_args=True, *args, **kwargs)
+      Info('Done building.')
+    else:
+      if build_config is None:
+        Die("You can't build the host chroot from within the chroot.")
 
-
-def _CmdEmerge(raw_argv, *args, **kwargs):
-  """Run emerge.
-
-  This is just a wrapped command.
-
-  Args:
-    raw_argv: Command line arguments, including this command's name, but not
-        the chromite command name or chromite options.
-    args: The rest of the positional arguments.  See _DoWrappedChrootCommand.
-    kwargs: The keyword arguments.  See _DoWrappedChrootCommand.
-  """
-  _DoWrappedChrootCommand(['emerge-%s'], ['sudo', 'emerge'],
-                          raw_argv, need_args=True, *args, **kwargs)
-
-
-def _CmdEquery(raw_argv, *args, **kwargs):
-  """Run equery.
-
-  This is just a wrapped command.
-
-  Args:
-    raw_argv: Command line arguments, including this command's name, but not
-        the chromite command name or chromite options.
-    args: The rest of the positional arguments.  See _DoWrappedChrootCommand.
-    kwargs: The keyword arguments.  See _DoWrappedChrootCommand.
-  """
-  _DoWrappedChrootCommand(['equery-%s'], ['equery'],
-                          raw_argv, need_args=True, *args, **kwargs)
+      _DoSetupBoard(build_config, options.clean)
+      _DoBuildPackages(build_config)
+      _DoBuildImage(build_config)
 
 
-def _CmdPortageq(raw_argv, *args, **kwargs):
-  """Run portageq.
+class WorkonCmd(WrappedChrootCmd):
+  """Run cros_workon."""
 
-  This is just a wrapped command.
+  def __init__(self):
+    """WorkonCmd constructor."""
+    # Just call the WrappedChrootCmd superclass, which does most of the work.
+    # Note that host version uses "./", since it's in src/scripts and not in the
+    # path...
+    super(WorkonCmd, self).__init__(
+        ['cros_workon-%s'], ['./cros_workon', '--host'],
+        need_args=True
+    )
 
-  Args:
-    raw_argv: Command line arguments, including this command's name, but not
-        the chromite command name or chromite options.
-    args: The rest of the positional arguments.  See _DoWrappedChrootCommand.
-    kwargs: The keyword arguments.  See _DoWrappedChrootCommand.
-  """
-  _DoWrappedChrootCommand(['portageq-%s'], ['portageq'],
-                          raw_argv, need_args=True, *args, **kwargs)
+  def Run(self, raw_argv, *args, **kwargs):
+    """Run the command.
+
+    We do just a slight optimization to help users with a common typo.
+
+    Args:
+      raw_argv: Command line arguments, including this command's name, but not
+          the chromite command name or chromite options.
+      args: The rest of the positional arguments.  See _DoWrappedChrootCommand.
+      kwargs: The keyword arguments.  See _DoWrappedChrootCommand.
+    """
+    # Slight optimization, just since I do this all the time...
+    if len(raw_argv) >= 2:
+      if raw_argv[1] in ('start', 'stop', 'list', 'list-all', 'iterate'):
+        Warn('OOPS, looks like you forgot a board name. Pick one.')
+        raw_argv = raw_argv[:1] + [''] + raw_argv[1:]
+
+    super(WorkonCmd, self).Run(raw_argv, *args, **kwargs)
 
 
-def _CmdShell(raw_argv, chroot_config=None):
+class EbuildCmd(WrappedChrootCmd):
+  """Run ebuild."""
+
+  def __init__(self):
+    """EbuildCmd constructor."""
+    # Just call the WrappedChrootCmd superclass, which does most of the work.
+    super(EbuildCmd, self).__init__(
+        ['ebuild-%s'], ['ebuild'],
+        need_args=True
+    )
+
+
+class EmergeCmd(WrappedChrootCmd):
+  """Run emerge."""
+
+  def __init__(self):
+    """EmergeCmd constructor."""
+    # Just call the WrappedChrootCmd superclass, which does most of the work.
+    super(EmergeCmd, self).__init__(
+        ['emerge-%s'], ['sudo', 'emerge'],
+        need_args=True
+    )
+
+
+class EqueryCmd(WrappedChrootCmd):
+  """Run equery."""
+
+  def __init__(self):
+    """EqueryCmd constructor."""
+    # Just call the WrappedChrootCmd superclass, which does most of the work.
+    super(EqueryCmd, self).__init__(
+        ['equery-%s'], ['equery'],
+        need_args=True
+    )
+
+
+class PortageqCmd(WrappedChrootCmd):
+  """Run portageq."""
+
+  def __init__(self):
+    """PortageqCmd constructor."""
+    # Just call the WrappedChrootCmd superclass, which does most of the work.
+    super(PortageqCmd, self).__init__(
+        ['portageq-%s'], ['portageq'],
+        need_args=True
+    )
+
+
+class ShellCmd(chromite_cmd.ChromiteCmd):
   """Start a shell in the chroot.
 
   This can either just start a simple interactive shell, it can be used to
   run an arbirtary command inside the chroot and then exit.
-
-  Args:
-    raw_argv: Command line arguments, including this command's name, but not
-        the chromite command name or chromite options.
-    chroot_config: A SafeConfigParser for the chroot config; or None chromite
-        was called from within the chroot.
   """
-  # Parse options for command...
-  # ...note that OptionParser will eat the '--' if it's there, which is what
-  # we want..
-  usage_str = ('usage: %%prog [chromite_options] %s [options] [VAR=value] '
-               '[-- command [arg1] [arg2] ...]') % raw_argv[0]
-  parser = optparse.OptionParser(usage=usage_str)
-  (_, argv) = parser.parse_args(raw_argv[1:])
 
-  # Enter the chroot if needed...
-  if not IsInsideChroot():
-    _DoEnterChroot(chroot_config, _CmdShell, raw_argv)
-  else:
-    # We'll put CWD as src/scripts when running the command.  Since everyone
-    # running by hand has their cwd there, it is probably the safest.
-    cwd = os.path.join(_SRCROOT_PATH, 'src', 'scripts')
+  def Run(self, raw_argv, chroot_config=None):
+    """Run the command.
 
-    # By default, no special environment...
-    env = None
+    Args:
+      raw_argv: Command line arguments, including this command's name, but not
+          the chromite command name or chromite options.
+      chroot_config: A SafeConfigParser for the chroot config; or None chromite
+          was called from within the chroot.
+    """
+    # Parse options for command...
+    # ...note that OptionParser will eat the '--' if it's there, which is what
+    # we want..
+    usage_str = ('usage: %%prog [chromite_options] %s [options] [VAR=value] '
+                 '[-- command [arg1] [arg2] ...]') % raw_argv[0]
+    parser = optparse.OptionParser(usage=usage_str)
+    (_, argv) = parser.parse_args(raw_argv[1:])
 
-    if not argv:
-      # If no arguments, we'll just start bash.
-      argv = ['bash']
+    # Enter the chroot if needed...
+    if not IsInsideChroot():
+      _DoEnterChroot(chroot_config, (self, 'Run'), raw_argv)
     else:
-      # Parse the command line, looking at the beginning for VAR=value type
-      # statements.  I couldn't figure out a way to get bash to do this for me.
-      user_env, argv = _SplitEnvFromArgs(argv)
+      # We'll put CWD as src/scripts when running the command.  Since everyone
+      # running by hand has their cwd there, it is probably the safest.
+      cwd = os.path.join(_SRCROOT_PATH, 'src', 'scripts')
+
+      # By default, no special environment...
+      env = None
+
       if not argv:
-        Die('No command specified')
+        # If no arguments, we'll just start bash.
+        argv = ['bash']
+      else:
+        # Parse the command line, looking at the beginning for VAR=value type
+        # statements.  I couldn't figure out a way to get bash to do this for
+        # me.
+        user_env, argv = _SplitEnvFromArgs(argv)
+        if not argv:
+          Die('No command specified')
 
-      # If there was some environment, use it to override the standard
-      # environment.
-      if user_env:
-        env = dict(os.environ)
-        env.update(user_env)
+        # If there was some environment, use it to override the standard
+        # environment.
+        if user_env:
+          env = dict(os.environ)
+          env.update(user_env)
 
-    # Don't show anything special for errors; we'll let the shell report them.
-    RunCommand(argv, cwd=cwd, env=env, error_ok=True, ignore_sigint=True)
+      # Don't show anything special for errors; we'll let the shell report them.
+      RunCommand(argv, cwd=cwd, env=env, error_ok=True, ignore_sigint=True)
 
 
-def _CmdClean(raw_argv, chroot_config=None):
-  """Clean out built packages for a target; if target is host, deletes chroot.
+#def _CmdClean(raw_argv, chroot_config=None):
+class CleanCmd(chromite_cmd.ChromiteCmd):
+  """Clean out built packages for a target; if target=host, deletes chroot."""
 
-  Args:
-    raw_argv: Command line arguments, including this command's name, but not
-        the chromite command name or chromite options.
-    chroot_config: A SafeConfigParser for the chroot config; or None chromite
-        was called from within the chroot.
-  """
-  # Parse options for command...
-  usage_str = ('usage: %%prog [chromite_options] %s [options] [target]' %
-               raw_argv[0])
-  parser = optparse.OptionParser(usage=usage_str)
-  parser.add_option('-y', '--yes', default=False, action='store_true',
-                    help='Answer "YES" to "are you sure?" questions.')
-  (options, argv) = parser.parse_args(raw_argv[1:])
+  def Run(self, raw_argv, chroot_config=None):
+    """Run the command.
 
-  # Make sure the chroot exists first, before possibly prompting for board...
-  # ...not really required, but nice for the user...
-  if not IsInsideChroot():
-    if not _DoesChrootExist(chroot_config):
-      Die("Nothing to clean: the chroot doesn't exist.\n  %s" %
-          _GetChrootAbsDir(chroot_config))
+    Args:
+      raw_argv: Command line arguments, including this command's name, but not
+          the chromite command name or chromite options.
+      chroot_config: A SafeConfigParser for the chroot config; or None chromite
+          was called from within the chroot.
+    """
+    # Parse options for command...
+    usage_str = ('usage: %%prog [chromite_options] %s [options] [target]' %
+                 raw_argv[0])
+    parser = optparse.OptionParser(usage=usage_str)
+    parser.add_option('-y', '--yes', default=False, action='store_true',
+                      help='Answer "YES" to "are you sure?" questions.')
+    (options, argv) = parser.parse_args(raw_argv[1:])
 
-  # Load the build config...
-  argv, build_config = _GetBuildConfigFromArgs(argv)
-  if argv:
-    Die('Unknown arguments: %s' % ' '.join(argv))
+    # Make sure the chroot exists first, before possibly prompting for board...
+    # ...not really required, but nice for the user...
+    if not IsInsideChroot():
+      if not _DoesChrootExist(chroot_config):
+        Die("Nothing to clean: the chroot doesn't exist.\n  %s" %
+            _GetChrootAbsDir(chroot_config))
 
-  # If they do clean host, we'll delete the whole chroot
-  if build_config is None:
-    _DoDistClean(chroot_config, options.yes)
-  else:
-    _DoClean(chroot_config, build_config, options.yes)
+    # Load the build config...
+    argv, build_config = _GetBuildConfigFromArgs(argv)
+    if argv:
+      Die('Unknown arguments: %s' % ' '.join(argv))
+
+    # If they do clean host, we'll delete the whole chroot
+    if build_config is None:
+      _DoDistClean(chroot_config, options.yes)
+    else:
+      _DoClean(chroot_config, build_config, options.yes)
 
 
 def main():
@@ -1019,6 +1046,12 @@ def main():
     # ...actual resume state file is passed in sys.argv[2] for simplicity...
     assert len(sys.argv) == 3, 'Resume State not passed properly.'
     fn, args, kwargs = cPickle.load(open(sys.argv[2], 'rb'))
+
+    # Handle calling a method in a class; that can't be directly pickled.
+    if isinstance(fn, tuple):
+      obj, method = fn
+      fn = getattr(obj, method)
+
     fn(*args, **kwargs)
   else:
     # Start by skipping argv[0]
@@ -1052,17 +1085,18 @@ def main():
 
     # Get command and arguments
     if argv:
-      chromite_cmd = argv[0].lower()
+      cmd_str = argv[0].lower()
       argv = argv[1:]
     else:
-      chromite_cmd = ''
+      cmd_str = ''
 
     # Validate the chromite_cmd, popping a menu if needed.
-    chromite_cmd = _FindCommand(chromite_cmd)
+    cmd_str = _FindCommand(cmd_str)
 
     # Finally, call the function w/ standard argv.
-    cmd_fn = eval(_COMMAND_HANDLERS[_COMMAND_STRS.index(chromite_cmd)])
-    cmd_fn([chromite_cmd] + argv, chroot_config=chroot_config)
+    cmd_cls = eval(_COMMAND_HANDLERS[_COMMAND_STRS.index(cmd_str)])
+    cmd_obj = cmd_cls()
+    cmd_obj.Run([cmd_str] + argv, chroot_config=chroot_config)
 
 
 if __name__ == '__main__':
