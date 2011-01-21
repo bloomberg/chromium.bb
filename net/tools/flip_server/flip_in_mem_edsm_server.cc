@@ -1125,7 +1125,7 @@ class SMConnection:  public SMConnectionInterface,
               goto done;
             default:
               PrintSslError();
-              break;
+              goto error_or_close;
           }
         }
       } else {
