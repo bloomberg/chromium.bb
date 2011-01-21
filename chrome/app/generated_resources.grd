@@ -7812,9 +7812,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_FONT_SIZE_LABEL_CUSTOM" desc="The label of the 'Custom' option">
         Custom
       </message>
-      <message name="IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON" desc="Button title for invoking the 'Languages and Spell-checker' panel.">
-        Languages and Spell-checker settings
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON" desc="Button title for invoking the 'Languages and Spell-checker' panel.">
+          Languages and spell-checker settings...
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON" desc="Button title for invoking the 'Languages and Spell-checker' panel.">
+          Languages and Spell-checker Settings...
+        </message>
+      </if>
 
       <message name="IDS_OPTIONS_CHROME_DICTIONARY_LANGUAGE" desc="The documentation string of the 'Spell check dictionary language' preference">
         Spell-checker language:
@@ -8071,9 +8078,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Sync
         </message>
       </if>
-      <message name="IDS_SYNC_OPTIONS_SELECT_DATATYPES" desc="The select ooption that allows the user to select which datatypes to sync.">
-        Choose what to Sync
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_OPTIONS_SELECT_DATATYPES" desc="In sentence case: The select option that allows the user to select which datatypes to sync.">
+          Choose what to sync
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_OPTIONS_SELECT_DATATYPES" desc="In Title Case: The select option that allows the user to select which datatypes to sync.">
+          Choose What to Sync
+        </message>
+      </if>
       <message name="IDS_SYNC_OPTIONS_SELECT_EVERYTHING" desc="The select option that selects all features to be synced.">
         Everything
       </message>
