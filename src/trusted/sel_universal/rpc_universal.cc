@@ -207,8 +207,9 @@ bool NaClCommandLoop::HandleInstallUpcalls(NaClCommandLoop* ncl,
   curr->handler = 0;
 
   // Note, we do not care about this leak
-  NaClSrpcService* service = new NaClSrpcService;
-  if (!NaClSrpcServiceHandlerCtor(service, handlers)) {
+  NaClSrpcService* service =
+      reinterpret_cast<NaClSrpcService*>(malloc(sizeof *service));
+  if (service == NULL || !NaClSrpcServiceHandlerCtor(service, handlers)) {
     NaClLog(LOG_ERROR, "could not create upcall service");
   }
   ncl->channel_->server = service;
