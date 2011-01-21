@@ -200,7 +200,7 @@ TEST_F(VtablePatchManagerTest, DoublePatch) {
 
 namespace vtable_patch {
 // Expose internal implementation detail, purely for testing.
-extern Lock patch_lock_;
+extern base::Lock patch_lock_;
 
 }  // namespace vtable_patch
 

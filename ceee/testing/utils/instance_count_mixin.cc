@@ -14,7 +14,7 @@ testing::InstanceCountMixinBase::InstanceSet instances;
 
 namespace testing {
 
-Lock InstanceCountMixinBase::lock_;
+base::Lock InstanceCountMixinBase::lock_;
 
 InstanceCountMixinBase::InstanceCountMixinBase() {
   base::AutoLock lock(lock_);

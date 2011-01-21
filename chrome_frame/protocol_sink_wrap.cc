@@ -85,7 +85,7 @@ END_VTABLE_PATCHES()
 
 // Static map initialization
 ProtData::ProtocolDataMap ProtData::datamap_;
-Lock ProtData::datamap_lock_;
+base::Lock ProtData::datamap_lock_;
 
 ProtocolSinkWrap::ProtocolSinkWrap() {
   DVLOG(1) << __FUNCTION__ << base::StringPrintf(" 0x%08X", this);

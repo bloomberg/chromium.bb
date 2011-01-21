@@ -59,7 +59,7 @@ namespace {
 
 // Used to protect the LoadedModuleVector which is accessed
 // from both the UI thread and the FILE thread.
-Lock* lock = NULL;
+base::Lock* lock = NULL;
 
 // A struct to help de-duping modules before adding them to the enumerated
 // modules vector.

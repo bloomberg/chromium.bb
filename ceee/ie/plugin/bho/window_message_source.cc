@@ -13,7 +13,7 @@
 #include "ceee/ie/common/ceee_module_util.h"
 
 WindowMessageSource::MessageSourceMap WindowMessageSource::message_source_map_;
-Lock WindowMessageSource::lock_;
+base::Lock WindowMessageSource::lock_;
 
 WindowMessageSource::WindowMessageSource()
     : create_thread_id_(::GetCurrentThreadId()),

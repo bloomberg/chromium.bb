@@ -20,7 +20,7 @@
 namespace {
 // This lock ensures that histograms created by the broker are thread safe.
 // The histograms created here can be initialized on multiple threads.
-Lock g_metrics_lock;
+base::Lock g_metrics_lock;
 
 RPC_STATUS PrepareEndpoint(std::wstring endpoint) {
   std::wstring protocol = kRpcProtocol;

@@ -133,7 +133,7 @@ class ProtData : public base::RefCounted<ProtData> {
  private:
   typedef std::map<IInternetProtocol*, ProtData*> ProtocolDataMap;
   static ProtocolDataMap datamap_;
-  static Lock datamap_lock_;
+  static base::Lock datamap_lock_;
 
   // Url we are retrieving. Used for RendererTypeForUrl() only.
   std::wstring url_;

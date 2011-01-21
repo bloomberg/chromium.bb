@@ -83,7 +83,7 @@ class TypeInfoCache {
 
  protected:
   typedef std::map<const IID*, TypeInfoNameCache*> CacheMap;
-  Lock lock_;
+  base::Lock lock_;
   CacheMap cache_;
 };
 
