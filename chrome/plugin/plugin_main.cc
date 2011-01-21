@@ -149,8 +149,10 @@ int PluginMain(const MainFunctionParams& parameters) {
         BOOL result = run_security_tests(&test_count);
         DCHECK(result) << "Test number " << test_count << " has failed.";
         // If we are in release mode, crash or debug the process.
-        if (!result)
+        if (!result) {
           __debugbreak();
+          _exit(1);
+        }
       }
 
       FreeLibrary(sandbox_test_module);

@@ -137,10 +137,12 @@ void InvalidParameter(const wchar_t* expression, const wchar_t* function,
                       const wchar_t* file, unsigned int line,
                       uintptr_t reserved) {
   __debugbreak();
+  _exit(1);
 }
 
 void PureCall() {
   __debugbreak();
+  _exit(1);
 }
 
 #pragma warning(push)
@@ -162,6 +164,7 @@ void OnNoMemory() {
   // the buffer is then used, it provides a handy mapping of memory starting at
   // address 0 for an attacker to utilize.
   __debugbreak();
+  _exit(1);
 }
 #pragma warning(pop)
 
