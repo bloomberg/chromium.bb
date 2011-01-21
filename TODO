@@ -32,7 +32,6 @@ Core wayland protocol
       cache.retire: buffer /* cache has stopped using buffer, please
 			    * reupload whatever you had in that buffer */
 
-
  - DnD issues:
 
    Root window must send NULL type (to decline drop) or
@@ -49,56 +48,17 @@ Core wayland protocol
    that will participate in dnd.  Or just assume client is not
    participating until we receive an accept request.
 
- - Selection/copy+paste
-
-    - Similar to dnd, create a selection object for a device to offer
-      selection data:
-
-	 selection = shell.create(input_device)
-
-	Requests:
-	 - selection.offer(type)
-	 - selection.activate(time)
-	 - selection.destroy()
-
-	Events:
-	 - selection.finish(type, fd)
-	 - selection.discard() /* somebody else took the selection */
-
-    - Notes: no window owner, which seems to be mostly there as a way
-      to identify the client and to allow None (instead of a release
-      request).  Possibly also to make the selection go away
-      automatically when the window with the contents go away, or
-      possibly as a way for the source to distinguish between multiple
-      selections.  Toolkits generally just create a dummy-toplevel for
-      selections though.
-
-    - Per-device selection.  The selection is per device.  Different
-      keyboards copy and paste to different selections.
-
-    - Selection offer object.  Introduced just before a surface
-      receives keyboard_focus event or when somebody claims the
-      selection and on keyboard_focus?  That way only keyboard_focus
-      owner will know the types... limits pasting to the
-      keyboard_focus surface.
-
-	Requests:
-	 - selection_offer.receive(type, fd)
-
-	Events:
-	 - selection_offer.offer(type)
-	 - selection_offer.keyboard_focus()
+ - Selection/copy+paste issues: is it sufficient to only introduce the
+   selection offer when a client receives kb focus?  Or maybe it is
+   actually a security feature?  Clipboard manager in server for
+   retained selections?
 
  - Pointer image issue:
 
-    - A touch input device doesn't have a pointer; indicate that
-      somehow.
+    - A direct touch input device (eg touch screen) doesn't have a
+      pointer; indicate that somehow.
 
     - Cursor themes, tie in with glyph/image cache.
-
- - copy-n-paste, store data in server (only one mime-type available)
-   or do X style (content mime-type negotiation, but data goes away
-   when client quits).
 
  - Discard buffer, as in "wayland discarded your buffer, it's no
    longer visible, you can stop updating it now.", reattach, as in "oh
