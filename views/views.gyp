@@ -532,6 +532,7 @@
         'examples/single_split_view_example.cc',
         'examples/single_split_view_example.h',
         'examples/slider_example.h',
+        'examples/tabbed_pane_example.cc',
         'examples/tabbed_pane_example.h',
         'examples/textfield_example.h',
         'examples/throbber_example.cc',
