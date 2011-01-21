@@ -768,6 +768,11 @@
         'mac_framework_dirs': [
           '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
         ],
+        'defines': [
+          'SK_BUILD_NO_IMAGE_ENCODE',
+          'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
+          'GR_SKIP_2POINTRADIAL_PROGRAMS',
+        ],
       },
     },
 
