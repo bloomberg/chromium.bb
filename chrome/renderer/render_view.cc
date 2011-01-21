@@ -1146,15 +1146,7 @@ void RenderView::OnCaptureSnapshot() {
 }
 
 void RenderView::OnPrintPages() {
-  DCHECK(webview());
-  if (webview()) {
-    // If the user has selected text in the currently focused frame we print
-    // only that frame (this makes print selection work for multiple frames).
-    if (webview()->focusedFrame()->hasSelection())
-      Print(webview()->focusedFrame(), false, false);
-    else
-      Print(webview()->mainFrame(), false, false);
-  }
+  OnPrint(false);
 }
 
 void RenderView::OnPrintingDone(int document_cookie, bool success) {
@@ -1167,15 +1159,7 @@ void RenderView::OnPrintingDone(int document_cookie, bool success) {
 }
 
 void RenderView::OnPrintPreview() {
-  DCHECK(webview());
-  if (webview()) {
-    // If the user has selected text in the currently focused frame we print
-    // only that frame (this makes print selection work for multiple frames).
-    if (webview()->focusedFrame()->hasSelection())
-      Print(webview()->focusedFrame(), false, true);
-    else
-      Print(webview()->focusedFrame(), false, true);
-  }
+  OnPrint(true);
 }
 
 void RenderView::OnPrintNodeUnderContextMenu() {
@@ -5330,6 +5314,18 @@ void RenderView::postAccessibilityNotification(
         FROM_HERE,
         accessibility_method_factory_.NewRunnableMethod(
             &RenderView::SendPendingAccessibilityNotifications));
+  }
+}
+
+void RenderView::OnPrint(bool is_preview) {
+  DCHECK(webview());
+  if (webview()) {
+    // If the user has selected text in the currently focused frame we print
+    // only that frame (this makes print selection work for multiple frames).
+    if (webview()->focusedFrame()->hasSelection())
+      Print(webview()->focusedFrame(), false, is_preview);
+    else
+      Print(webview()->mainFrame(), false, is_preview);
   }
 }
 

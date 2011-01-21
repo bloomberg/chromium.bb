@@ -1087,6 +1087,9 @@ class RenderView : public RenderWidget,
                                    const WebKit::WebURLError& error,
                                    bool replace);
 
+  // Common method for OnPrintPages() and OnPrintPreview().
+  void OnPrint(bool is_preview);
+
   // Prints |frame|.
   void Print(WebKit::WebFrame* frame, bool script_initiated, bool is_preview);
 
