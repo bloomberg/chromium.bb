@@ -107,6 +107,8 @@
       '-content.ContentTest.testThreeWindows',  # crbug.com/47457
       '-instant.InstantTest.testInstantNavigation',  # crbug.com/69090
       '-crash_reporter.CrashReporterTest.testRendererCrash',  # crbug.com/69464
+      # crbug.com/70437
+      '-omnibox.OmniboxTest.testHistoryResult',
     ],
 
     'linux': [  # linux != chromeos
