@@ -147,21 +147,10 @@ int BrowserWebKitClientImpl::databaseDeleteFile(
   return file_util::Delete(path, false) ? 0 : 1;
 }
 
-void BrowserWebKitClientImpl::idbShutdown() {
-  if (indexed_db_key_utility_client_.get()) {
-    indexed_db_key_utility_client_->EndUtilityProcess();
-    indexed_db_key_utility_client_ = NULL;
-  }
-}
-
 void BrowserWebKitClientImpl::createIDBKeysFromSerializedValuesAndKeyPath(
     const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
     const WebKit::WebString& keyPath,
     WebKit::WebVector<WebKit::WebIDBKey>& keys) {
-  if (!indexed_db_key_utility_client_.get()) {
-    indexed_db_key_utility_client_ = new IndexedDBKeyUtilityClient();
-    indexed_db_key_utility_client_->StartUtilityProcess();
-  }
 
   std::vector<SerializedScriptValue> std_values;
   size_t size = values.size();
@@ -170,8 +159,9 @@ void BrowserWebKitClientImpl::createIDBKeysFromSerializedValuesAndKeyPath(
     std_values.push_back(SerializedScriptValue(values[i]));
 
   std::vector<IndexedDBKey> std_keys;
-  indexed_db_key_utility_client_->CreateIDBKeysFromSerializedValuesAndKeyPath(
-      std_values, keyPath, &std_keys);
+  IndexedDBKeyUtilityClient::
+      CreateIDBKeysFromSerializedValuesAndKeyPath(std_values, keyPath,
+                                                  &std_keys);
 
   keys = std_keys;
 }

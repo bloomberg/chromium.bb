@@ -15,6 +15,7 @@ function getByDateSuccess()
 function recordNotFound()
 {
   debug('Removed data can no longer be found');
+  shouldBe("event.result", "undefined");
 
   debug('Retrieving an index');
   shouldBe("objectStore.index('fname_index').name", "'fname_index'");
@@ -36,8 +37,8 @@ function removeSuccess()
   debug('Data removed');
 
   var result = objectStore.get(1);
-  result.onsuccess = unexpectedSuccessCallback;
-  result.onerror = recordNotFound;
+  result.onsuccess = recordNotFound;
+  result.onerror = unexpectedSuccessCallback;
 }
 
 function getSuccess()

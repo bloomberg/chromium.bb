@@ -52,9 +52,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("cursor_test.html"))));
 }
 
-// TODO(hans): Keep an eye out for these tests going flaky. See crbug.com/63675.
-// Crashy, http://crbug.com/67422.
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_IndexTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, IndexTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("index_test.html"))));
 }
 
@@ -73,8 +71,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionGetTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_get_test.html"))));
 }
 
-// Crashy, http://crbug.com/68446.
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_ObjectStoreTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ObjectStoreTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("object_store_test.html"))));
 }
 
@@ -82,13 +79,11 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DatabaseTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("database_test.html"))));
 }
 
-// Crashy, http://crbug.com/67422.
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_TransactionTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
 }
 
-// Crashy, http://crbug.com/66394.
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_DoesntHangTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DoesntHangTest) {
   SimpleTest(testUrl(FilePath(
       FILE_PATH_LITERAL("transaction_run_forever.html"))));
   ui_test_utils::CrashTab(browser()->GetSelectedTabContents());

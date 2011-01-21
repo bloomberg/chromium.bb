@@ -13,22 +13,23 @@ function finalTransactionAborted()
   fail('The final transaction should not abort.');
 }
 
-function emplyeeNotFound()
+function employeeNotFound()
 {
   debug('Employee not found.');
+  shouldBe("event.result", "undefined");
 }
 
 function newTransactionAborted()
 {
   debug('The transaction was aborted.');
 
-  var finalTransaction = db.transaction([], IDBTransaction.READ_ONLY, 0);
+  var finalTransaction = db.transaction({objectStoreNames: [], mode: IDBTransaction.READ_ONLY});
   finalTransaction.oncomplete = finalTransactionCompleted;
   finalTransaction.onabort = finalTransactionAborted;
 
   var request = finalTransaction.objectStore('employees').get(0);
-  request.onsuccess = unexpectedSuccessCallback;
-  request.onerror = emplyeeNotFound;
+  request.onsuccess = employeeNotFound;
+  request.onerror = unexpectedErrorCallback;
 }
 
 function newTransactionCompleted()
@@ -44,7 +45,7 @@ function employeeAdded()
 function onSetVersionComplete()
 {
   debug('Creating new transaction.');
-  var newTransaction = db.transaction([], IDBTransaction.READ_WRITE, 0);
+  var newTransaction = db.transaction({objectStoreNames: [], mode: IDBTransaction.READ_WRITE});
   newTransaction.oncomplete = newTransactionCompleted;
   newTransaction.onabort = newTransactionAborted;
 

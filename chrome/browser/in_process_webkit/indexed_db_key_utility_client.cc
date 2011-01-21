@@ -4,25 +4,155 @@
 
 #include "chrome/browser/in_process_webkit/indexed_db_key_utility_client.h"
 
-#include <vector>
-
+#include "base/lazy_instance.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/utility_process_host.h"
 #include "chrome/common/indexed_db_key.h"
 #include "chrome/common/serialized_script_value.h"
 
+// This class is used to obtain IndexedDBKeys from SerializedScriptValues
+// given an IDBKeyPath. It uses UtilityProcess to do this inside a sandbox
+// (a V8 lock is required there). At this level, all methods are synchronous
+// as required by the caller. The public API is used on WEBKIT thread,
+// but internally it moves around to UI and IO as needed.
+class KeyUtilityClientImpl
+    : public base::RefCountedThreadSafe<KeyUtilityClientImpl> {
+ public:
+  KeyUtilityClientImpl();
+
+  // Starts the UtilityProcess. Must be called before any other method.
+  void StartUtilityProcess();
+
+  // Stops the UtilityProcess. No further keys can be created after this.
+  void Shutdown();
+
+  // Synchronously obtain the |keys| from |values| for the given |key_path|.
+  void CreateIDBKeysFromSerializedValuesAndKeyPath(
+      const std::vector<SerializedScriptValue>& values,
+      const string16& key_path,
+      std::vector<IndexedDBKey>* keys);
+
+ private:
+  class Client : public UtilityProcessHost::Client {
+   public:
+    explicit Client(KeyUtilityClientImpl* parent);
+
+    // UtilityProcessHost::Client
+    virtual void OnProcessCrashed(int exit_code);
+    virtual void OnIDBKeysFromValuesAndKeyPathSucceeded(
+        int id, const std::vector<IndexedDBKey>& keys);
+    virtual void OnIDBKeysFromValuesAndKeyPathFailed(int id);
+
+   private:
+    KeyUtilityClientImpl* parent_;
+
+    DISALLOW_COPY_AND_ASSIGN(Client);
+  };
+
+  friend class base::RefCountedThreadSafe<KeyUtilityClientImpl>;
+  ~KeyUtilityClientImpl();
+
+  void GetRDHAndStartUtilityProcess();
+  void StartUtilityProcessInternal(ResourceDispatcherHost* rdh);
+  void EndUtilityProcessInternal();
+  void CallStartIDBKeyFromValueAndKeyPathFromIOThread(
+      const std::vector<SerializedScriptValue>& values,
+      const string16& key_path);
+
+  void SetKeys(const std::vector<IndexedDBKey>& keys);
+  void FinishCreatingKeys();
+
+  base::WaitableEvent waitable_event_;
+
+  // Used in both IO and WEBKIT threads, but guarded by WaitableEvent, i.e.,
+  // these members are only set / read when the other thread is blocked.
+  enum State {
+    STATE_UNINITIALIZED,
+    STATE_INITIALIZED,
+    STATE_CREATING_KEYS,
+    STATE_SHUTDOWN,
+  };
+  State state_;
+  std::vector<IndexedDBKey> keys_;
+
+  // Used in the IO thread.
+  UtilityProcessHost* utility_process_host_;
+  scoped_refptr<Client> client_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyUtilityClientImpl);
+};
+
+// IndexedDBKeyUtilityClient definitions.
+
+static base::LazyInstance<IndexedDBKeyUtilityClient> client_instance(
+    base::LINKER_INITIALIZED);
+
 IndexedDBKeyUtilityClient::IndexedDBKeyUtilityClient()
+    : is_shutdown_(false) {
+  // Note that creating the impl_ object is deferred until it is first needed,
+  // as this class can be constructed even though it never gets used.
+}
+
+IndexedDBKeyUtilityClient::~IndexedDBKeyUtilityClient() {
+  DCHECK(!impl_ || is_shutdown_);
+}
+
+//  static
+void IndexedDBKeyUtilityClient::Shutdown() {
+  IndexedDBKeyUtilityClient* instance = client_instance.Pointer();
+  if (!instance->impl_)
+    return;
+
+  instance->is_shutdown_ = true;
+  instance->impl_->Shutdown();
+}
+
+//  static
+void IndexedDBKeyUtilityClient::CreateIDBKeysFromSerializedValuesAndKeyPath(
+      const std::vector<SerializedScriptValue>& values,
+      const string16& key_path,
+      std::vector<IndexedDBKey>* keys) {
+  IndexedDBKeyUtilityClient* instance = client_instance.Pointer();
+
+  if (instance->is_shutdown_) {
+    keys->clear();
+    return;
+  }
+
+  if (!instance->impl_) {
+    instance->impl_ = new KeyUtilityClientImpl();
+    instance->impl_->StartUtilityProcess();
+  }
+
+  instance->impl_->CreateIDBKeysFromSerializedValuesAndKeyPath(values, key_path,
+                                                               keys);
+}
+
+// KeyUtilityClientImpl definitions.
+
+void KeyUtilityClientImpl::Shutdown() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  utility_process_host_->EndBatchMode();
+  utility_process_host_ = NULL;
+  client_ = NULL;
+  state_ = STATE_SHUTDOWN;
+}
+
+KeyUtilityClientImpl::KeyUtilityClientImpl()
     : waitable_event_(false, false),
       state_(STATE_UNINITIALIZED),
       utility_process_host_(NULL) {
 }
 
-IndexedDBKeyUtilityClient::~IndexedDBKeyUtilityClient() {
+KeyUtilityClientImpl::~KeyUtilityClientImpl() {
   DCHECK(state_ == STATE_UNINITIALIZED || state_ == STATE_SHUTDOWN);
   DCHECK(!utility_process_host_);
   DCHECK(!client_.get());
 }
 
-void IndexedDBKeyUtilityClient::StartUtilityProcess() {
+void KeyUtilityClientImpl::StartUtilityProcess() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   DCHECK(state_ == STATE_UNINITIALIZED);
 
@@ -32,21 +162,16 @@ void IndexedDBKeyUtilityClient::StartUtilityProcess() {
   DCHECK(ret && state_ == STATE_INITIALIZED);
 }
 
-void IndexedDBKeyUtilityClient::EndUtilityProcess() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
-  DCHECK(state_ == STATE_INITIALIZED);
-
-  EndUtilityProcessInternal();
-  bool ret = waitable_event_.Wait();
-
-  DCHECK(ret && state_ == STATE_SHUTDOWN);
-}
-
-void IndexedDBKeyUtilityClient::CreateIDBKeysFromSerializedValuesAndKeyPath(
+void KeyUtilityClientImpl::CreateIDBKeysFromSerializedValuesAndKeyPath(
     const std::vector<SerializedScriptValue>& values,
     const string16& key_path,
     std::vector<IndexedDBKey>* keys) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  if (state_ == STATE_SHUTDOWN) {
+    keys->clear();
+    return;
+  }
+
   DCHECK(state_ == STATE_INITIALIZED);
 
   state_ = STATE_CREATING_KEYS;
@@ -57,7 +182,7 @@ void IndexedDBKeyUtilityClient::CreateIDBKeysFromSerializedValuesAndKeyPath(
   *keys = keys_;
 }
 
-void IndexedDBKeyUtilityClient::GetRDHAndStartUtilityProcess() {
+void KeyUtilityClientImpl::GetRDHAndStartUtilityProcess() {
   // In order to start the UtilityProcess, we need to grab
   // a pointer to the ResourceDispatcherHost. This can only
   // be done on the UI thread. See the comment at the top of
@@ -67,14 +192,14 @@ void IndexedDBKeyUtilityClient::GetRDHAndStartUtilityProcess() {
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(
             this,
-            &IndexedDBKeyUtilityClient::GetRDHAndStartUtilityProcess));
+            &KeyUtilityClientImpl::GetRDHAndStartUtilityProcess));
     return;
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   StartUtilityProcessInternal(g_browser_process->resource_dispatcher_host());
 }
 
-void IndexedDBKeyUtilityClient::StartUtilityProcessInternal(
+void KeyUtilityClientImpl::StartUtilityProcessInternal(
     ResourceDispatcherHost* rdh) {
   DCHECK(rdh);
   // The ResourceDispatcherHost can only be used on the IO thread.
@@ -84,14 +209,14 @@ void IndexedDBKeyUtilityClient::StartUtilityProcessInternal(
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
             this,
-            &IndexedDBKeyUtilityClient::StartUtilityProcessInternal,
+            &KeyUtilityClientImpl::StartUtilityProcessInternal,
             rdh));
     return;
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(state_ == STATE_UNINITIALIZED);
 
-  client_ = new IndexedDBKeyUtilityClient::Client(this);
+  client_ = new KeyUtilityClientImpl::Client(this);
   utility_process_host_ = new UtilityProcessHost(
       rdh, client_.get(), BrowserThread::IO);
   utility_process_host_->StartBatchMode();
@@ -99,13 +224,13 @@ void IndexedDBKeyUtilityClient::StartUtilityProcessInternal(
   waitable_event_.Signal();
 }
 
-void IndexedDBKeyUtilityClient::EndUtilityProcessInternal() {
+void KeyUtilityClientImpl::EndUtilityProcessInternal() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
             this,
-            &IndexedDBKeyUtilityClient::EndUtilityProcessInternal));
+            &KeyUtilityClientImpl::EndUtilityProcessInternal));
     return;
   }
 
@@ -116,14 +241,14 @@ void IndexedDBKeyUtilityClient::EndUtilityProcessInternal() {
   waitable_event_.Signal();
 }
 
-void IndexedDBKeyUtilityClient::CallStartIDBKeyFromValueAndKeyPathFromIOThread(
+void KeyUtilityClientImpl::CallStartIDBKeyFromValueAndKeyPathFromIOThread(
     const std::vector<SerializedScriptValue>& values,
     const string16& key_path) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this,
-            &IndexedDBKeyUtilityClient::
+            &KeyUtilityClientImpl::
                 CallStartIDBKeyFromValueAndKeyPathFromIOThread,
             values, key_path));
     return;
@@ -134,33 +259,33 @@ void IndexedDBKeyUtilityClient::CallStartIDBKeyFromValueAndKeyPathFromIOThread(
       0, values, key_path);
 }
 
-void IndexedDBKeyUtilityClient::SetKeys(const std::vector<IndexedDBKey>& keys) {
+void KeyUtilityClientImpl::SetKeys(const std::vector<IndexedDBKey>& keys) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   keys_ = keys;
 }
 
-void IndexedDBKeyUtilityClient::FinishCreatingKeys() {
+void KeyUtilityClientImpl::FinishCreatingKeys() {
   DCHECK(state_ == STATE_CREATING_KEYS);
   state_ = STATE_INITIALIZED;
   waitable_event_.Signal();
 }
 
-IndexedDBKeyUtilityClient::Client::Client(IndexedDBKeyUtilityClient* parent)
+KeyUtilityClientImpl::Client::Client(KeyUtilityClientImpl* parent)
     : parent_(parent) {
 }
 
-void IndexedDBKeyUtilityClient::Client::OnProcessCrashed(int exit_code) {
+void KeyUtilityClientImpl::Client::OnProcessCrashed(int exit_code) {
   if (parent_->state_ == STATE_CREATING_KEYS)
     parent_->FinishCreatingKeys();
 }
 
-void IndexedDBKeyUtilityClient::Client::OnIDBKeysFromValuesAndKeyPathSucceeded(
+void KeyUtilityClientImpl::Client::OnIDBKeysFromValuesAndKeyPathSucceeded(
     int id, const std::vector<IndexedDBKey>& keys) {
   parent_->SetKeys(keys);
   parent_->FinishCreatingKeys();
 }
 
-void IndexedDBKeyUtilityClient::Client::OnIDBKeysFromValuesAndKeyPathFailed(
+void KeyUtilityClientImpl::Client::OnIDBKeysFromValuesAndKeyPathFailed(
     int id) {
   parent_->FinishCreatingKeys();
 }
