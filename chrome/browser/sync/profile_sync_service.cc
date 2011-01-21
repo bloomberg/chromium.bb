@@ -70,6 +70,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       tried_setting_explicit_passphrase_(false),
       observed_passphrase_required_(false),
       passphrase_required_for_decryption_(false),
+      passphrase_migration_in_progress_(false),
       factory_(factory),
       profile_(profile),
       cros_user_(cros_user),
@@ -749,7 +750,7 @@ void ProfileSyncService::ShowErrorUI(gfx::NativeWindow parent_window) {
     if (IsUsingSecondaryPassphrase())
       PromptForExistingPassphrase(parent_window);
     else
-      ShowLoginDialog(parent_window);
+      SigninForPassphraseMigration(parent_window);
     return;
   }
   const GoogleServiceAuthError& error = GetAuthError();
@@ -782,19 +783,10 @@ void ProfileSyncService::PromptForExistingPassphrase(
   wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
 }
 
-void ProfileSyncService::ShowPassphraseMigration(
+void ProfileSyncService::SigninForPassphraseMigration(
     gfx::NativeWindow parent_window) {
-  wizard_.SetParent(parent_window);
-  wizard_.Step(SyncSetupWizard::PASSPHRASE_MIGRATION);
-}
-
-void ProfileSyncService::SigninForPassphrase(TabContents* container) {
-  string16 prefilled_username = GetAuthenticatedUsername();
-  string16 login_message = sync_ui_util::GetLoginMessageForEncryption();
-  profile_->GetBrowserSignin()->RequestSignin(container,
-                                              prefilled_username,
-                                              login_message,
-                                              this);
+  passphrase_migration_in_progress_ = true;
+  ShowLoginDialog(parent_window);
 }
 
 SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {
@@ -1135,6 +1127,15 @@ void ProfileSyncService::Observe(NotificationType type,
       // becomes a no-op.
       tried_implicit_gaia_remove_when_bug_62103_fixed_ = true;
       SetPassphrase(successful->password, false, true);
+
+      // If this signin was to initiate a passphrase migration (on the
+      // first computer, thus not for decryption), continue the migration.
+      if (passphrase_migration_in_progress_ &&
+          !passphrase_required_for_decryption_) {
+        wizard_.Step(SyncSetupWizard::PASSPHRASE_MIGRATION);
+        passphrase_migration_in_progress_ = false;
+      }
+
       break;
     }
     case NotificationType::GOOGLE_SIGNIN_FAILED: {
@@ -1168,27 +1169,6 @@ void ProfileSyncService::Observe(NotificationType type,
       NOTREACHED();
     }
   }
-}
-
-// This is the delegate callback from BrowserSigin.
-void ProfileSyncService::OnLoginSuccess() {
-  // The reason for the browser signin was a non-explicit passphrase
-  // required signal.  If this is the first time through the passphrase
-  // process, we want to show the migration UI and offer an explicit
-  // passphrase.  Otherwise, we're done because the implicit is enough.
-
-  if (passphrase_required_for_decryption_) {
-    // NOT first time (decrypting something encrypted elsewhere).
-    // Do nothing.
-  } else {
-    ShowPassphraseMigration(NULL);
-  }
-}
-
-// This is the delegate callback from BrowserSigin.
-void ProfileSyncService::OnLoginFailure(const GoogleServiceAuthError& error) {
-  // Do nothing.  The UI will already reflect the fact that the
-  // user is not signed in.
 }
 
 void ProfileSyncService::AddObserver(Observer* observer) {

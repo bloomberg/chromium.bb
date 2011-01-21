@@ -555,6 +555,8 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
     case SyncSetupWizard::ENTER_PASSPHRASE:
       return current_state_ == SyncSetupWizard::CONFIGURE ||
              current_state_ == SyncSetupWizard::SETTING_UP;
+    case SyncSetupWizard::PASSPHRASE_MIGRATION:
+      return current_state_ == SyncSetupWizard::GAIA_LOGIN;
     case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR:
       return current_state_ == SyncSetupWizard::CONFIGURE;
     case SyncSetupWizard::SETTING_UP:
@@ -739,6 +741,7 @@ void SyncSetupFlow::OnPassphraseEntry(const std::string& passphrase) {
 void SyncSetupFlow::OnFirstPassphraseEntry(const std::string& option,
                                            const std::string& passphrase) {
   Advance(SyncSetupWizard::SETTING_UP);
+
   if (option == "explicit") {
     service_->SetPassphrase(passphrase, true, true);
   } else if (option == "nothanks") {

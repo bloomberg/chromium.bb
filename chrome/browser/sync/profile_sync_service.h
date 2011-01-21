@@ -15,7 +15,6 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/browser_signin.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
@@ -85,7 +84,6 @@ class TokenMigrator;
 //
 class ProfileSyncService : public browser_sync::SyncFrontend,
                            public browser_sync::UnrecoverableErrorHandler,
-                           public BrowserSignin::SigninDelegate,
                            public NotificationObserver {
  public:
   typedef ProfileSyncServiceObserver Observer;
@@ -234,8 +232,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   void ShowConfigure(gfx::NativeWindow parent_window);
   void PromptForExistingPassphrase(gfx::NativeWindow parent_window);
-  void SigninForPassphrase(TabContents* container);
-  void ShowPassphraseMigration(gfx::NativeWindow parent_window);
+  void SigninForPassphraseMigration(gfx::NativeWindow parent_window);
 
   // Pretty-printed strings for a given StatusSummary.
   static std::string BuildSyncStatusSummaryText(
@@ -339,10 +336,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
-
-  // BrowserSignin::SigninDelegate interface.
-  virtual void OnLoginSuccess();
-  virtual void OnLoginFailure(const GoogleServiceAuthError& error);
 
   // Changes which data types we're going to be syncing to |preferred_types|.
   // If it is running, the DataTypeManager will be instructed to reconfigure
@@ -452,6 +445,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
   // was required for decryption?
   bool passphrase_required_for_decryption_;
+
+  // Is the user in a passphrase migration?
+  bool passphrase_migration_in_progress_;
 
  private:
   friend class ProfileSyncServiceTest;
