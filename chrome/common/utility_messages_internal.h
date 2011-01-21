@@ -12,7 +12,7 @@
 #include "printing/page_range.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-#define IPC_MESSAGE_START NaClMsgStart
+#define IPC_MESSAGE_START UtilityMsgStart
 
 class FilePath;
 class IndexedDBKey;
