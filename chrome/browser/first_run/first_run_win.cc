@@ -643,7 +643,7 @@ class TryChromeDialog : public views::ButtonListener,
     root_view->set_background(
         views::Background::CreateSolidBackground(0xfc, 0xfc, 0xfc));
 
-    views::GridLayout* layout = CreatePanelGridLayout(root_view);
+    views::GridLayout* layout = views::GridLayout::CreatePanel(root_view);
     if (!layout) {
       NOTREACHED();
       return Upgrade::TD_DIALOG_ERROR;

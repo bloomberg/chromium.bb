@@ -277,7 +277,7 @@ void PasswordsPageView::InitControlLayout() {
 
   // Do the layout thing.
   const int top_column_set_id = 0;
-  GridLayout* layout = CreatePanelGridLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   // Design the grid.

@@ -257,7 +257,7 @@ void FontsPageView::InitControlLayout() {
   using views::GridLayout;
   using views::ColumnSet;
 
-  GridLayout* layout = CreatePanelGridLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   const int single_column_view_set_id = 0;

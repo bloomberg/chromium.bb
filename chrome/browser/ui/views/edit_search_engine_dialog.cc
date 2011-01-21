@@ -147,7 +147,7 @@ void EditSearchEngineDialog::Init() {
   const int unrelated_y = kUnrelatedControlVerticalSpacing;
 
   // View and GridLayout take care of deleting GridLayout for us.
-  GridLayout* layout = CreatePanelGridLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   // Define the structure of the layout.

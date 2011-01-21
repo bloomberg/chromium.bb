@@ -198,7 +198,7 @@ void KeywordEditorView::InitLayoutManager() {
   const int related_y = kRelatedControlVerticalSpacing;
   const int unrelated_y = kUnrelatedControlVerticalSpacing;
 
-  GridLayout* contents_layout = CreatePanelGridLayout(this);
+  GridLayout* contents_layout = GridLayout::CreatePanel(this);
   SetLayoutManager(contents_layout);
 
   // For the table and buttons.

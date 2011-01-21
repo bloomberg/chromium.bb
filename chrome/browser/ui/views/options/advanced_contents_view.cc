@@ -1570,7 +1570,7 @@ void AdvancedContentsView::DidChangeBounds(const gfx::Rect& previous,
 // AdvancedContentsView, OptionsPageView implementation:
 
 void AdvancedContentsView::InitControlLayout() {
-  GridLayout* layout = CreatePanelGridLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   const int single_column_view_set_id = 0;

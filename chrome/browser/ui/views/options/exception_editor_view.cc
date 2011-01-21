@@ -123,7 +123,7 @@ void ExceptionEditorView::Init() {
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXCEPTION_EDITOR_OTR_TITLE)));
   incognito_cb_->SetChecked(is_off_the_record_);
 
-  GridLayout* layout = CreatePanelGridLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   // For the Textfields.

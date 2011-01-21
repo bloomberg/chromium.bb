@@ -112,7 +112,7 @@ void ClearServerDataView::Init() {
 }
 
 void ClearServerDataView::InitControlLayout() {
-  GridLayout* layout = CreatePanelGridLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   this->SetLayoutManager(layout);
 
   int centered_column_set_id = 0;

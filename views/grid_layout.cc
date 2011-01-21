@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -676,6 +676,14 @@ GridLayout::~GridLayout() {
   STLDeleteElements(&rows_);
 }
 
+// static
+GridLayout* GridLayout::CreatePanel(View* host) {
+  GridLayout* layout = new GridLayout(host);
+  layout->SetInsets(kPanelVertMargin, kPanelHorizMargin,
+                    kPanelVertMargin, kPanelHorizMargin);
+  return layout;
+}
+
 void GridLayout::SetInsets(int top, int left, int bottom, int right) {
   top_inset_ = top;
   bottom_inset_ = bottom;
@@ -1060,10 +1068,3 @@ ColumnSet* GridLayout::GetLastValidColumnSet() {
 }
 
 }  // namespace views
-
-views::GridLayout* CreatePanelGridLayout(views::View* host) {
-  views::GridLayout* layout = new views::GridLayout(host);
-  layout->SetInsets(kPanelVertMargin, kPanelHorizMargin,
-                    kPanelVertMargin, kPanelHorizMargin);
-  return layout;
-}

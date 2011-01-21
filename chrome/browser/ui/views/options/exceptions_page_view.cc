@@ -129,7 +129,7 @@ void ExceptionsPageView::InitControlLayout() {
   SetupTable();
 
   // Do the layout thing.
-  GridLayout* layout = CreatePanelGridLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   const int top_column_set_id = 0;

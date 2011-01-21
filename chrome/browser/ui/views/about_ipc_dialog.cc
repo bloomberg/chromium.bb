@@ -222,7 +222,7 @@ void AboutIPCDialog::RunDialog() {
 }
 
 void AboutIPCDialog::SetupControls() {
-  views::GridLayout* layout = CreatePanelGridLayout(this);
+  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   track_toggle_ = new views::TextButton(this, kStartTrackingLabel);

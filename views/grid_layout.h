@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,6 +104,9 @@ class GridLayout : public LayoutManager {
 
   explicit GridLayout(View* host);
   virtual ~GridLayout();
+
+  // Creates a GridLayout with kPanel*Margin insets.
+  static GridLayout* CreatePanel(View* host);
 
   // Sets the insets. All views are placed relative to these offsets.
   void SetInsets(int top, int left, int bottom, int right);

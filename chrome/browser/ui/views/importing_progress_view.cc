@@ -228,7 +228,7 @@ void ImportingProgressView::InitControlLayout() {
   using views::GridLayout;
   using views::ColumnSet;
 
-  GridLayout* layout = CreatePanelGridLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   gfx::Size ps = state_history_->GetPreferredSize();

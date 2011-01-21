@@ -66,7 +66,7 @@ UrlPicker::UrlPicker(UrlPickerDelegate* delegate,
   url_table_->SetObserver(this);
 
   // Yummy layout code.
-  GridLayout* layout = CreatePanelGridLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   const int labels_column_set_id = 0;

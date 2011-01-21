@@ -314,7 +314,7 @@ void BookmarkEditorView::Init() {
   }
 
   // Yummy layout code.
-  GridLayout* layout = CreatePanelGridLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   const int labels_column_set_id = 0;

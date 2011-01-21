@@ -79,7 +79,7 @@ void ImporterView::SetupControl() {
 
   // Arranges controls by using GridLayout.
   const int column_set_id = 0;
-  GridLayout* layout = CreatePanelGridLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
   ColumnSet* column_set = layout->AddColumnSet(column_set_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,

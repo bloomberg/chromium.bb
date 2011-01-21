@@ -31,7 +31,7 @@ InstantConfirmView::InstantConfirmView(Profile* profile) : profile_(profile) {
   learn_more_link->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   learn_more_link->SetController(this);
 
-  views::GridLayout* layout = CreatePanelGridLayout(this);
+  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   const int first_column_set = 1;

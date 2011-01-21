@@ -156,7 +156,7 @@ void ClearBrowsingDataView2::Init() {
 }
 
 void ClearBrowsingDataView2::InitControlLayout() {
-  GridLayout* layout = CreatePanelGridLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   this->SetLayoutManager(layout);
 
   int leading_column_set_id = 0;

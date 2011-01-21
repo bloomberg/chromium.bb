@@ -534,7 +534,7 @@ void InternetPageContentView::DidChangeBounds(const gfx::Rect& previous,
 }
 
 void InternetPageContentView::InitControlLayout() {
-  GridLayout* layout = CreatePanelGridLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   int single_column_view_set_id = 0;

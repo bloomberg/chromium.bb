@@ -221,7 +221,7 @@ void CollectedCookiesWin::Init() {
 
   using views::GridLayout;
 
-  GridLayout* layout = CreatePanelGridLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   const int single_column_layout_id = 0;

@@ -43,7 +43,7 @@ LoginView::LoginView(const std::wstring& explanation,
   message_label_->SetAllowCharacterBreak(true);
 
   // Initialize the Grid Layout Manager used for this dialog box.
-  GridLayout* layout = CreatePanelGridLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   // Add the column set for the information message at the top of the dialog

@@ -468,7 +468,7 @@ void AutoFillProfilesView::Init() {
   remove_button_ = new views::NativeButton(this,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_AUTOFILL_DELETE_BUTTON)));
 
-  views::GridLayout* layout = CreatePanelGridLayout(this);
+  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   const int table_with_buttons_column_view_set_id = 0;
