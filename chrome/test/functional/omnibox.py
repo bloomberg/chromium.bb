@@ -301,32 +301,6 @@ class OmniboxTest(pyauto.PyUITest):
     self.assertTrue(self.WaitUntil(
         lambda: self._GotContentHistory('British throne', url)))
 
-  def _GotHistoryPageOption(self, search_text):
-    """Determines if omnibox returns an 'open history page' option for given
-       search text"""
-    # Omnibox doesn't change results if searching the same text repeatedly.
-    # So setting '' in omnibox before the next repeated search.
-    self.SetOmniboxText('')
-    matches = self._GetOmniboxMatchesFor(search_text)
-    matches_description = [x for x in matches if x['type'] ==
-                           'open-history-page']
-    return len(matches_description) != 0
-
-  def testRecentPageHistory(self):
-    """Verify that omnibox shows recent history option in the visited
-       url list."""
-    search_text = 'file'
-    sites = glob.glob(os.path.join(self.DataDir(), 'find_in_page', '*.html'))
-    for site in sites:
-      self.NavigateToURL(self.GetFileURLForPath(site))
-    # Using max timeout as 120 seconds, since expected page only shows up
-    # after > 60 seconds on some machines and default timeout is less than that.
-    # TODO (Nirnimesh): design an api using which we can push history changes to
-    # omnibox results.
-    self.assertTrue(self.WaitUntil(
-        lambda: self._GotHistoryPageOption(search_text),
-        timeout=120))
-
   def _VerifyHasBookmarkResult(self, matches):
     """Verify that we have a bookmark result."""
     matches_starred = [result for result in matches if result['starred']]
