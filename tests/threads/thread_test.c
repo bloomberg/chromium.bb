@@ -767,11 +767,15 @@ static void TestCondvar() {
   /* We try several times since the wait may return for a different reason. */
   while (i < 10) {
     res = pthread_cond_timedwait(&cv, &mu, &ts);
-    if (res == ETIMEDOUT)
+    /* TODO(mseaborn): Switch back to using the symbolic ETIMEDOUT
+       when the toolchain revision is updated in DEPS. */
+    if (res == 110 /* ETIMEDOUT */)
       break;
     i++;
   }
-  EXPECT_EQ(ETIMEDOUT, res);
+  /* TODO(mseaborn): Switch back to using the symbolic ETIMEDOUT
+     when the toolchain revision is updated in DEPS. */
+  EXPECT_EQ(110 /* ETIMEDOUT */, res);
 
 
   CHECK_OK(pthread_mutex_unlock(&mu));

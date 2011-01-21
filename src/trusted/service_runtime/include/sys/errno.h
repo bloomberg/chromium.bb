@@ -37,7 +37,11 @@ extern __IMPORT int _sys_nerr;
  * service_runtime/win/xlate_system_error.h.
  */
 
-/* errno values, mostly from linux/errno.h */
+/* 
+ * The errno values below 2048 here are the same as Linux's errno
+ * values.  See Linux's asm-generic/errno-base.h and
+ * asm-generic/errno.h.
+ */
 
 #define NACL_ABI_EPERM     1  /* Operation not permitted */
 #define NACL_ABI_ENOENT    2  /* No such file or directory */
@@ -83,24 +87,28 @@ extern __IMPORT int _sys_nerr;
  */
 #define NACL_ABI_EDOM 33   /* Math arg out of domain of func */
 #define NACL_ABI_ERANGE 34 /* Math result not representable */
-#define NACL_ABI_ENOMSG 35 /* No message of desired type */
-#define NACL_ABI_ECHRNG 37 /* Channel number out of range */
-#define NACL_ABI_EL3HLT 39 /* Level 3 halted */
-#define NACL_ABI_EL3RST 40 /* Level 3 reset */
-#define NACL_ABI_ELNRNG 41 /* Link number out of range */
-#define NACL_ABI_EUNATCH 42  /* Protocol driver not attached */
-#define NACL_ABI_ENOCSI 43 /* No CSI structure available */
-#define NACL_ABI_EL2HLT 44 /* Level 2 halted */
-#define NACL_ABI_EDEADLK 45  /* Deadlock condition */
-#define NACL_ABI_ENOLCK 46 /* No record locks available */
-#define NACL_ABI_EBADE 50  /* Invalid exchange */
-#define NACL_ABI_EBADR 51  /* Invalid request descriptor */
-#define NACL_ABI_EXFULL 52 /* Exchange full */
-#define NACL_ABI_ENOANO 53 /* No anode */
-#define NACL_ABI_EBADRQC 54  /* Invalid request code */
-#define NACL_ABI_EBADSLT 55  /* Invalid slot */
+#define NACL_ABI_EDEADLK 35  /* Deadlock condition */
+#define NACL_ABI_ENOLCK 37 /* No record locks available */
+#define NACL_ABI_ENOTEMPTY 39  /* Directory not empty */
+#define NACL_ABI_ELOOP 40  /* Too many symbolic links */
+#define NACL_ABI_ENOMSG 42 /* No message of desired type */
+#define NACL_ABI_EIDRM 43  /* Identifier removed */
+#define NACL_ABI_ECHRNG 44 /* Channel number out of range */
+#define NACL_ABI_EL2NSYNC 45 /* Level 2 not synchronized */
+#define NACL_ABI_EL3HLT 46 /* Level 3 halted */
+#define NACL_ABI_EL3RST 47 /* Level 3 reset */
+#define NACL_ABI_ELNRNG 48 /* Link number out of range */
+#define NACL_ABI_EUNATCH 49  /* Protocol driver not attached */
+#define NACL_ABI_ENOCSI 50 /* No CSI structure available */
+#define NACL_ABI_EL2HLT 51 /* Level 2 halted */
+#define NACL_ABI_EBADE 52  /* Invalid exchange */
+#define NACL_ABI_EBADR 53  /* Invalid request descriptor */
+#define NACL_ABI_EXFULL 54 /* Exchange full */
+#define NACL_ABI_ENOANO 55 /* No anode */
+#define NACL_ABI_EBADRQC 56  /* Invalid request code */
+#define NACL_ABI_EBADSLT 57  /* Invalid slot */
 #define NACL_ABI_EDEADLOCK NACL_ABI_EDEADLK  /* File locking deadlock error */
-#define NACL_ABI_EBFONT 57 /* Bad font file fmt */
+#define NACL_ABI_EBFONT 59 /* Bad font file fmt */
 #define NACL_ABI_ENOSTR 60 /* Device not a stream */
 #define NACL_ABI_ENODATA 61  /* No data (for no delay io) */
 #define NACL_ABI_ETIME 62  /* Timer expired */
@@ -113,66 +121,67 @@ extern __IMPORT int _sys_nerr;
 #define NACL_ABI_ESRMNT 69 /* Srmount error */
 #define NACL_ABI_ECOMM 70  /* Communication error on send */
 #define NACL_ABI_EPROTO 71 /* Protocol error */
-#define NACL_ABI_EMULTIHOP 74  /* Multihop attempted */
-#define NACL_ABI_ELBIN 75  /* Inode is remote (not really error) */
-#define NACL_ABI_EDOTDOT 76  /* Cross mount point (not really error) */
-#define NACL_ABI_EBADMSG 77  /* Trying to read unreadable message */
-#define NACL_ABI_EFTYPE 79 /* Inappropriate file type or format */
-#define NACL_ABI_ENOTUNIQ 80 /* Given log. name not unique */
-#define NACL_ABI_EBADFD 81 /* f.d. invalid for this operation */
-#define NACL_ABI_EREMCHG 82  /* Remote address changed */
-#define NACL_ABI_ELIBACC 83  /* Can't access a needed shared lib */
-#define NACL_ABI_ELIBBAD 84  /* Accessing a corrupted shared lib */
-#define NACL_ABI_ELIBSCN 85  /* .lib section in a.out corrupted */
-#define NACL_ABI_ELIBMAX 86  /* Attempting to link in too many libs */
-#define NACL_ABI_ELIBEXEC 87 /* Attempting to exec a shared library */
-#define NACL_ABI_ENMFILE 89      /* No more files */
-#define NACL_ABI_ENOTEMPTY 90  /* Directory not empty */
-#define NACL_ABI_ELOOP 92  /* Too many symbolic links */
+#define NACL_ABI_EMULTIHOP 72  /* Multihop attempted */
+#define NACL_ABI_EDOTDOT 73  /* Cross mount point (not really error) */
+#define NACL_ABI_EBADMSG 74  /* Trying to read unreadable message */
+#define NACL_ABI_EOVERFLOW 75 /* Value too large for defined data type */
+#define NACL_ABI_ENOTUNIQ 76 /* Given log. name not unique */
+#define NACL_ABI_EBADFD 77 /* f.d. invalid for this operation */
+#define NACL_ABI_EREMCHG 78  /* Remote address changed */
+#define NACL_ABI_ELIBACC 79  /* Can't access a needed shared lib */
+#define NACL_ABI_ELIBBAD 80  /* Accessing a corrupted shared lib */
+#define NACL_ABI_ELIBSCN 81  /* .lib section in a.out corrupted */
+#define NACL_ABI_ELIBMAX 82  /* Attempting to link in too many libs */
+#define NACL_ABI_ELIBEXEC 83 /* Attempting to exec a shared library */
+#define NACL_ABI_EILSEQ 84
+#define NACL_ABI_EUSERS 87
+#define NACL_ABI_ENOTSOCK 88  /* Socket operation on non-socket */
+#define NACL_ABI_EDESTADDRREQ 89  /* Destination address required */
+#define NACL_ABI_EMSGSIZE 90    /* Message too long */
+#define NACL_ABI_EPROTOTYPE 91  /* Protocol wrong type for socket */
+#define NACL_ABI_ENOPROTOOPT 92 /* Protocol not available */
+#define NACL_ABI_EPROTONOSUPPORT 93 /* Unknown protocol */
+#define NACL_ABI_ESOCKTNOSUPPORT 94 /* Socket type not supported */
 #define NACL_ABI_EOPNOTSUPP 95 /* Operation not supported on transport endpoint */
 #define NACL_ABI_EPFNOSUPPORT 96 /* Protocol family not supported */
+#define NACL_ABI_EAFNOSUPPORT 97 /* Address family not supported by protocol family */
+#define NACL_ABI_EADDRINUSE 98    /* Address already in use */
+#define NACL_ABI_EADDRNOTAVAIL 99 /* Address not available */
+#define NACL_ABI_ENETDOWN 100    /* Network interface is not configured */
+#define NACL_ABI_ENETUNREACH 101   /* Network is unreachable */
+#define NACL_ABI_ENETRESET 102
+#define NACL_ABI_ECONNABORTED 103  /* Connection aborted */
 #define NACL_ABI_ECONNRESET 104  /* Connection reset by peer */
 #define NACL_ABI_ENOBUFS 105 /* No buffer space available */
-#define NACL_ABI_EAFNOSUPPORT 106 /* Address family not supported by protocol family */
-#define NACL_ABI_EPROTOTYPE 107  /* Protocol wrong type for socket */
-#define NACL_ABI_ENOTSOCK 108  /* Socket operation on non-socket */
-#define NACL_ABI_ENOPROTOOPT 109 /* Protocol not available */
-#define NACL_ABI_ESHUTDOWN 110 /* Can't send after socket shutdown */
+#define NACL_ABI_EISCONN 106   /* Socket is already connected */
+#define NACL_ABI_ENOTCONN 107    /* Socket is not connected */
+#define NACL_ABI_ESHUTDOWN 108 /* Can't send after socket shutdown */
+#define NACL_ABI_ETOOMANYREFS 109
+#define NACL_ABI_ETIMEDOUT 110   /* Connection timed out */
 #define NACL_ABI_ECONNREFUSED 111  /* Connection refused */
-#define NACL_ABI_EADDRINUSE 112    /* Address already in use */
-#define NACL_ABI_ECONNABORTED 113  /* Connection aborted */
-#define NACL_ABI_ENETUNREACH 114   /* Network is unreachable */
-#define NACL_ABI_ENETDOWN 115    /* Network interface is not configured */
-#define NACL_ABI_ETIMEDOUT 116   /* Connection timed out */
-#define NACL_ABI_EHOSTDOWN 117   /* Host is down */
-#define NACL_ABI_EHOSTUNREACH 118  /* Host is unreachable */
-#define NACL_ABI_EINPROGRESS 119   /* Connection already in progress */
-#define NACL_ABI_EALREADY 120    /* Socket already connected */
-#define NACL_ABI_EDESTADDRREQ 121  /* Destination address required */
-#define NACL_ABI_EPROTONOSUPPORT 123 /* Unknown protocol */
-#define NACL_ABI_ESOCKTNOSUPPORT 124 /* Socket type not supported */
-#define NACL_ABI_EADDRNOTAVAIL 125 /* Address not available */
-#define NACL_ABI_ENETRESET 126
-#define NACL_ABI_EISCONN 127   /* Socket is already connected */
-#define NACL_ABI_ENOTCONN 128    /* Socket is not connected */
-#define NACL_ABI_ETOOMANYREFS 129
-#define NACL_ABI_EPROCLIM 130
-#define NACL_ABI_EUSERS 131
-#define NACL_ABI_ESTALE 133
+#define NACL_ABI_EHOSTDOWN 112   /* Host is down */
+#define NACL_ABI_EHOSTUNREACH 113  /* Host is unreachable */
+#define NACL_ABI_EALREADY 114    /* Socket already connected */
+#define NACL_ABI_EINPROGRESS 115   /* Connection already in progress */
+#define NACL_ABI_ESTALE 116
 #define NACL_ABI_ENOTSUP NACL_ABI_EOPNOTSUPP   /* Not supported */
-#define NACL_ABI_ENOMEDIUM 135   /* No medium (in tape drive) */
-#define NACL_ABI_ENOSHARE 136    /* No such host or network path */
-#define NACL_ABI_ECASECLASH 137  /* Filename exists with different case */
-#define NACL_ABI_EILSEQ 138
-#define NACL_ABI_EOVERFLOW 139 /* Value too large for defined data type */
-#define NACL_ABI_ECANCELED 140 /* Operation canceled. */
+#define NACL_ABI_ENOMEDIUM 123   /* No medium (in tape drive) */
+#define NACL_ABI_ECANCELED 125 /* Operation canceled. */
+
 
 /*
- * Changed due to conflict with NaCl definitions.
+ * Below are non-standard errno values which are not defined on Linux.
+ * Any new non-standard or NaCl-specific errno values should go here
+ * and have high (>=2048) values, so as not to conflict with errno
+ * values that Linux might add in the future.
  */
-#define NACL_ABI_EL2NSYNC 88 /* Level 2 not synchronized */
-#define NACL_ABI_EIDRM 91  /* Identifier removed */
-#define NACL_ABI_EMSGSIZE 132    /* Message too long */
+#define NACL_ABI_ELBIN       2048  /* Inode is remote (not really error) */
+#define NACL_ABI_EFTYPE      2049  /* Inappropriate file type or format */
+#define NACL_ABI_ENMFILE     2050  /* No more files */
+#define NACL_ABI_EPROCLIM    2051
+#define NACL_ABI_ENOSHARE    2052  /* No such host or network path */
+#define NACL_ABI_ECASECLASH  2053  /* Filename exists with different case */
+
 
 /* From cygwin32.  */
 #define NACL_ABI_EWOULDBLOCK NACL_ABI_EAGAIN      /* Operation would block */
