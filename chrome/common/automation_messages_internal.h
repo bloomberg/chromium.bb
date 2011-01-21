@@ -24,7 +24,7 @@
 //       any other purpose in these message types.
 
 // NOTE: All the new IPC messages should go at the end.
-//       The IPC message IDs need to match the reference builds.  Since we know
+//       The IPC message IDs need to match the reference builds.  Since we now
 //       define the IDs based on __LINE__, to allow these IPC messages to be
 //       used to control an old version of Chrome we need the message IDs to
 //       remain the same.  This means that you should not change the line number
@@ -764,6 +764,7 @@ IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_ClickInfoBarAccept,
                             int /* tab_handle */,
                             int /* info bar index */,
                             bool /* wait for navigation */,
+// This line blank on purpose, see comment atop file about __LINE__.
                             /* navigation result */
                             AutomationMsg_NavigationResponseValues)
 
@@ -778,6 +779,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_GetLastNavigationTime,
 IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_WaitForNavigation,
                             int /* tab_handle */,
                             int64 /* last navigation time */,
+// This line blank on purpose, see comment atop file about __LINE__.
                             /* navigation result */
                             AutomationMsg_NavigationResponseValues)
 
