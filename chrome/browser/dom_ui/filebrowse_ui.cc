@@ -897,7 +897,6 @@ void FilebrowseHandler::OnListDone(int error) {
   info_value.SetString(kPropertyPath, currentpath_.value());
   dom_ui_->CallJavascriptFunction(L"browseFileResult",
                                   info_value, *(filelist_value_.get()));
-  SendCurrentDownloads();
 }
 
 void FilebrowseHandler::HandleGetMetadata(const ListValue* args) {
