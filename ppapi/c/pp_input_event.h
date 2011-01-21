@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -27,17 +27,18 @@ typedef enum {
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_MouseButton, 4);
 
 typedef enum {
-  PP_INPUTEVENT_TYPE_UNDEFINED  = -1,
-  PP_INPUTEVENT_TYPE_MOUSEDOWN  = 0,
-  PP_INPUTEVENT_TYPE_MOUSEUP    = 1,
-  PP_INPUTEVENT_TYPE_MOUSEMOVE  = 2,
-  PP_INPUTEVENT_TYPE_MOUSEENTER = 3,
-  PP_INPUTEVENT_TYPE_MOUSELEAVE = 4,
-  PP_INPUTEVENT_TYPE_MOUSEWHEEL = 5,
-  PP_INPUTEVENT_TYPE_RAWKEYDOWN = 6,
-  PP_INPUTEVENT_TYPE_KEYDOWN    = 7,
-  PP_INPUTEVENT_TYPE_KEYUP      = 8,
-  PP_INPUTEVENT_TYPE_CHAR       = 9
+  PP_INPUTEVENT_TYPE_UNDEFINED   = -1,
+  PP_INPUTEVENT_TYPE_MOUSEDOWN   = 0,  // PP_InputEvent_Mouse
+  PP_INPUTEVENT_TYPE_MOUSEUP     = 1,  // PP_InputEvent_Mouse
+  PP_INPUTEVENT_TYPE_MOUSEMOVE   = 2,  // PP_InputEvent_Mouse
+  PP_INPUTEVENT_TYPE_MOUSEENTER  = 3,  // PP_InputEvent_Mouse
+  PP_INPUTEVENT_TYPE_MOUSELEAVE  = 4,  // PP_InputEvent_Mouse
+  PP_INPUTEVENT_TYPE_MOUSEWHEEL  = 5,  // PP_InputEvent_Wheel
+  PP_INPUTEVENT_TYPE_RAWKEYDOWN  = 6,  // PP_InputEvent_Key
+  PP_INPUTEVENT_TYPE_KEYDOWN     = 7,  // PP_InputEvent_Key
+  PP_INPUTEVENT_TYPE_KEYUP       = 8,  // PP_InputEvent_Key
+  PP_INPUTEVENT_TYPE_CHAR        = 9,  // PP_InputEvent_Character
+  PP_INPUTEVENT_TYPE_CONTEXTMENU = 10  // PP_InputEvent_Mouse
 } PP_InputEvent_Type;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Type, 4);
 
@@ -194,4 +195,3 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent, 80);
  */
 
 #endif  /* PPAPI_C_PP_INPUT_EVENT_H_ */
-

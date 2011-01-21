@@ -36,6 +36,8 @@ PP_InputEvent_Type ConvertEventTypes(WebInputEvent::Type wetype) {
       return PP_INPUTEVENT_TYPE_MOUSEENTER;
     case WebInputEvent::MouseLeave:
       return PP_INPUTEVENT_TYPE_MOUSELEAVE;
+    case WebInputEvent::ContextMenu:
+      return PP_INPUTEVENT_TYPE_CONTEXTMENU;
     case WebInputEvent::MouseWheel:
       return PP_INPUTEVENT_TYPE_MOUSEWHEEL;
     case WebInputEvent::RawKeyDown:
@@ -213,6 +215,9 @@ WebMouseEvent* BuildMouseEvent(const PP_InputEvent& event) {
     case PP_INPUTEVENT_TYPE_MOUSELEAVE:
       mouse_event->type = WebInputEvent::MouseLeave;
       break;
+    case PP_INPUTEVENT_TYPE_CONTEXTMENU:
+      mouse_event->type = WebInputEvent::ContextMenu;
+      break;
     default:
       NOTREACHED();
   }
@@ -251,6 +256,7 @@ void CreatePPEvent(const WebInputEvent& event,
     case WebInputEvent::MouseMove:
     case WebInputEvent::MouseEnter:
     case WebInputEvent::MouseLeave:
+    case WebInputEvent::ContextMenu:
       AppendMouseEvent(event, pp_events);
       break;
     case WebInputEvent::MouseWheel:
@@ -280,6 +286,7 @@ WebInputEvent* CreateWebInputEvent(const PP_InputEvent& event) {
     case PP_INPUTEVENT_TYPE_MOUSEMOVE:
     case PP_INPUTEVENT_TYPE_MOUSEENTER:
     case PP_INPUTEVENT_TYPE_MOUSELEAVE:
+    case PP_INPUTEVENT_TYPE_CONTEXTMENU:
       web_input_event.reset(BuildMouseEvent(event));
       break;
     case PP_INPUTEVENT_TYPE_MOUSEWHEEL:
@@ -297,6 +304,6 @@ WebInputEvent* CreateWebInputEvent(const PP_InputEvent& event) {
 
   return web_input_event.release();
 }
+
 }  // namespace ppapi
 }  // namespace webkit
-
