@@ -391,7 +391,7 @@ sdkdirs:
 # binutils:
 # Builds the cross assembler, linker, archiver, etc.
 ##################################################################
-BUILD/stamp-binutils: SRC/stamp-binutils | BUILD
+BUILD/stamp-$(CROSSARCH)-binutils: SRC/stamp-binutils | BUILD
 	rm -rf BUILD/build-binutils-$(CROSSARCH)
 	mkdir BUILD/build-binutils-$(CROSSARCH)
 	if ( [ -x /usr/bin/bison ] ) && ( [ -x /usr/bin/flex ] ) ; then \
@@ -415,14 +415,14 @@ BUILD/stamp-binutils: SRC/stamp-binutils | BUILD
 	$(MAKE) -f $(THISMAKEFILE) redirector
 
 .PHONY: binutils
-binutils: BUILD/stamp-binutils
+binutils: BUILD/stamp-$(CROSSARCH)-binutils
 
 ##################################################################
 # pregcc:
 # Builds the cross gcc used to build the libraries.
 ##################################################################
 
-BUILD/stamp-pregcc: SRC/stamp-gcc | BUILD
+BUILD/stamp-$(CROSSARCH)-pregcc: SRC/stamp-gcc | BUILD
 	rm -rf BUILD/build-pregcc-$(CROSSARCH)
 	mkdir BUILD/build-pregcc-$(CROSSARCH)
 	PATH=$(BUILDPATH) $(MAKE) \
@@ -451,7 +451,7 @@ BUILD/stamp-pregcc: SRC/stamp-gcc | BUILD
 	$(MAKE) -f $(THISMAKEFILE) redirector
 
 .PHONY: pregcc
-pregcc: BUILD/stamp-pregcc
+pregcc: BUILD/stamp-$(CROSSARCH)-pregcc
 
 
 ##################################################################
@@ -478,7 +478,7 @@ PREGCC_BUILD_DIR=BUILD/build-pregcc-$(CROSSARCH)
 #   the search path will include full gcc stuff that should not be picked.
 # make install:
 #   DESTDIR should be ignored at this step.
-BUILD/stamp-pregcc-standalone: SRC/stamp-gcc | BUILD
+BUILD/stamp-$(CROSSARCH)-pregcc-standalone: SRC/stamp-gcc | BUILD
 	rm -rf $(PREGCC_PREFIX)
 	mkdir -p $(PREGCC_PREFIX)/$(CROSSARCH)/bin
 	for f in '$(PREFIX)/$(CROSSARCH)/bin/*'; do \
@@ -517,7 +517,7 @@ BUILD/stamp-pregcc-standalone: SRC/stamp-gcc | BUILD
 # NOTE: removes the default pthread.h to enable correct install
 # by the Native Client threads package build.
 ##################################################################
-BUILD/stamp-newlib: SRC/stamp-newlib | BUILD
+BUILD/stamp-$(CROSSARCH)-newlib: SRC/stamp-newlib | BUILD
 	rm -rf BUILD/build-newlib-$(CROSSARCH)
 	mkdir BUILD/build-newlib-$(CROSSARCH)
 	(cd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) ; \
@@ -577,7 +577,7 @@ BUILD/stamp-newlib: SRC/stamp-newlib | BUILD
 	touch $@
 
 .PHONY: newlib
-newlib: BUILD/stamp-newlib
+newlib: BUILD/stamp-$(CROSSARCH)-newlib
 
 
 ##################################################################
@@ -607,7 +607,7 @@ SCONS_DESTINATIONS=\
  extra_sdk_include_destination=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include \
 
 # Build glibc:
-BUILD/stamp-glibc: SRC/stamp-glibc SRC/stamp-linux-headers
+BUILD/stamp-$(CROSSARCH)-glibc: SRC/stamp-glibc SRC/stamp-linux-headers
 	rm -rf $(GLIBC_BUILD_DIR)
 	mkdir -p $(GLIBC_BUILD_DIR)/lib
 	cd $(GLIBC_BUILD_DIR) && ../../SRC/glibc/configure \
@@ -628,7 +628,7 @@ BUILD/stamp-glibc: SRC/stamp-glibc SRC/stamp-linux-headers
 ##################################################################
 # Ad hoc linker scripts and a selection of NaCl headers for GCC.
 ##################################################################
-BUILD/stamp-glibc-adhoc-files:
+BUILD/stamp-$(CROSSARCH)-glibc-adhoc-files:
 	cp -f SRC/glibc/nacl/dyn-link/ldscripts/* \
 	    $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/ldscripts/
 	cp -rf $(LINUX_HEADERS)/* $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include
@@ -654,7 +654,7 @@ BUILD/stamp-glibc-adhoc-files:
 ##################################################################
 # Native Client libraries.
 ##################################################################
-BUILD/stamp-nacl-libs-glibc: BUILD/stamp-glibc-adhoc-files
+BUILD/stamp-$(CROSSARCH)-libs-glibc: BUILD/stamp-$(CROSSARCH)-glibc-adhoc-files
 	rm -rf BUILD/build-extra_sdk-$(CROSSARCH)
 	mkdir BUILD/build-extra_sdk-$(CROSSARCH)
 	cd .. && \
@@ -673,7 +673,7 @@ BUILD/stamp-nacl-libs-glibc: BUILD/stamp-glibc-adhoc-files
 # gcc:
 #   Builds GCC with glibc as a C library.
 ##################################################################
-BUILD/stamp-full-gcc: BUILD/stamp-glibc-adhoc-files
+BUILD/stamp-$(CROSSARCH)-full-gcc: BUILD/stamp-$(CROSSARCH)-glibc-adhoc-files
 	rm -rf BUILD/build-full-gcc-$(CROSSARCH)
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)
 	# See http://code.google.com/p/nativeclient/issues/detail?id=854
@@ -703,7 +703,7 @@ BUILD/stamp-full-gcc: BUILD/stamp-glibc-adhoc-files
 # gcc:
 # Builds the gcc that will be used to build applications.
 ##################################################################
-BUILD/stamp-gcc: SRC/stamp-gcc | BUILD
+BUILD/stamp-$(CROSSARCH)-gcc: SRC/stamp-gcc | BUILD
 	rm -rf BUILD/build-gcc-$(CROSSARCH)
 	mkdir BUILD/build-gcc-$(CROSSARCH)
 ifeq ($(CYGWIN17), 1)
@@ -767,7 +767,7 @@ endif
 	touch $@
 
 .PHONY: gcc
-gcc: BUILD/stamp-gcc
+gcc: BUILD/stamp-$(CROSSARCH)-gcc
 
 ##################################################################
 # gdb:
@@ -775,7 +775,7 @@ gcc: BUILD/stamp-gcc
 ##################################################################
 # TODO: Add 64-bit support.
 # Only linux is supported.
-BUILD/stamp-gdb: SRC/stamp-gdb | BUILD
+BUILD/stamp-$(CROSSARCH)-gdb: SRC/stamp-gdb | BUILD
 	case $$(SRC/gdb/config.guess) in \
 	*-linux*) ;; \
 	*) echo "Unsupported host" >&2 ; false ;; \
@@ -800,7 +800,7 @@ BUILD/stamp-gdb: SRC/stamp-gdb | BUILD
 	$(MAKE) -f $(THISMAKEFILE) redirector
 
 .PHONY: gdb
-gdb: BUILD/stamp-gdb
+gdb: BUILD/stamp-$(CROSSARCH)-gdb
 
 ##################################################################
 # Build the libraries and c runtime stubs.
@@ -871,7 +871,7 @@ sdk_minimal_test: ALWAYS
 	   ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
 	     --mode=nacl sdk_minimal_test platform=x86-32 --verbose;
 
-gdb_minimal_test: BUILD/stamp-gdb
+gdb_minimal_test: BUILD/stamp-$(CROSSARCH)-gdb
 	cd .. && \
 	  ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
 	    --mode=nacl,dbg-linux platform=x86-32 gdb_minimal_test
@@ -923,22 +923,22 @@ endif
 build-with-glibc: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
 	cp -f ../../third_party/gcc/COPYING* $(DESTDIR)$(SDKROOT)
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-binutils
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-pregcc-standalone
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-full-gcc
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-nacl-libs-glibc
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-pregcc-standalone
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-glibc
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-full-gcc
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-libs-glibc
 
 build: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
 	cp -f ../../third_party/gcc/COPYING* $(DESTDIR)$(SDKROOT)
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-binutils
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-pregcc
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-newlib
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-pregcc
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-newlib
 	$(MAKE) -f $(THISMAKEFILE) nc_threads
 	# We need libnacl.a for gfortran, but we don't have a c++ yet
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries_nocpp
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gcc
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gcc
 	case $$(SRC/binutils/config.guess) in \
 	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gdb ;; \
 	esac
