@@ -299,23 +299,11 @@ Chrome supports. -->
       <message name="IDS_FIRSTRUN_DLG_TITLE" desc="Dialog title for first-run dialog">
         Welcome to Google Chrome
       </message>
-      <message name="IDS_FIRSTRUN_DLG_TEXT" desc="Explains what the first-run dialog does">
-        Google Chrome is ready to complete your installation.
-      </message>
-      <message name="IDS_FIRSTRUN_DLG_DETAIL" desc="Text for detailed explanation of actions">
-        Google Chrome will do these tasks:
-      </message>
       <message name="IDS_FIRSTRUN_DLG_OK" desc="Text for OK button on first-run dialog">
         Start Google Chrome
       </message>
-      <message name="IDS_FIRSTRUN_DLG_ACTION2" desc="Second action item on first-run dialog">
-        Add Google Chrome shortcuts to your desktop, quick launch bar, and Start menu
-      </message>
       <message name="IDS_FR_CUSTOMIZE_DEFAULT_BROWSER" desc="Default browser checkbox label">
         Make Google Chrome the default browser
-      </message>
-      <message name="IDS_FR_CUSTOMIZE_SHORTCUTS" desc="Create shortcuts preface text">
-        Create Google Chrome shortcuts in these locations:
       </message>
       <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
                desc="Title for the hard-coded thumbnail that represents the Google Chrome Welcome page.  This is used on the NTP when there aren't enough thumbnails to show.">
@@ -382,9 +370,6 @@ Chrome supports. -->
       </message>
       <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Info bar message to save a password">
         Do you want Google Chrome to save your password?
-      </message>
-      <message name="IDS_IMPORT_PROGRESS_STATUS_CANCEL_CONFIRM" desc="Import cancellation confirmation">
-        If you cancel now, not all items will be imported. You can import again later from the Google Chrome menu.
       </message>
       <message name="IDS_FR_BUBBLE_QUESTION" desc="Main text for the bubble">
         Google Chrome uses your default search engine, which is currently set to <ph name="PAGE_TITLE">$1<ex>Google</ex></ph>. Do you want to keep your default search engine?
@@ -555,12 +540,6 @@ Chrome supports. -->
         </message>
         <message name="IDS_SHORT_UTILITY_APP_NAME" desc="The utility application's short name, used for the Mac's application menu, activity monitor, etc. Example: Chrome Utility, not Google Chrome Utility.">
           Chrome Utility
-        </message>
-        <message name="IDS_PROFILEIMPORTER_APP_NAME" desc="The profile importer application's name.  Should contain the Chrome application name (IDS_PRODUCT_NAME). Example: Google Chrome Profile Importer.">
-          Google Chrome Profile Importer
-        </message>
-        <message name="IDS_SHORT_PROFILEIMPORTER_APP_NAME" desc="The profile importer application's short name, used for the Mac's application menu, activity monitor, etc. Example: Chrome Profile Importer, not Google Chrome Profile Importer.">
-          Chrome Profile Importer
         </message>
       </if>
     </messages>

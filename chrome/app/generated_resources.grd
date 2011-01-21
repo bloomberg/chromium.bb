@@ -5461,12 +5461,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="The label of the tab context menu item for unpinning a tab.">
           Unpin tab
         </message>
-        <message name="IDS_TAB_CXMENU_SHOW_TOOLBAR" desc="The label of the tab context menu item for showing the toolbar of an app tab.">
-          Show toolbar
-        </message>
-        <message name="IDS_TAB_CXMENU_HIDE_TOOLBAR" desc="The label of the tab context menu item for hiding the toolbar of an app tab.">
-          Hide toolbar
-        </message>
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark all tabs...
         </message>
@@ -5493,20 +5487,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="In Title Case: The label of the 'Close Tabs to the Right' Tab context menu item.">
           Close Tabs to the Right
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETABSOPENEDBY" desc="In Title Case: The label of the 'Close Tabs opened by this Tab' Tab context menu item.">
-          Close Tabs Opened by This Tab
-        </message>
         <message name="IDS_TAB_CXMENU_PIN_TAB" desc="In Title Case: The label of the tab context menu item for pinning a tab.">
           Pin Tab
         </message>
         <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="In Title Case: The label of the tab context menu item for unpinning a tab.">
           Unpin Tab
-        </message>
-        <message name="IDS_TAB_CXMENU_SHOW_TOOLBAR" desc="In Title Case: The label of the tab context menu item for showing the toolbar of an app tab.">
-          Show Toolbar
-        </message>
-        <message name="IDS_TAB_CXMENU_HIDE_TOOLBAR" desc="In Title Case: The label of the tab context menu item for hiding the toolbar of an app tab.">
-          Hide Toolbar
         </message>
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="In Title Case: The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark All Tabs...
@@ -6118,10 +6103,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         All Files
       </message>
 
-      <message name="IDS_SECURE_CONNECTION" desc="Info popup text when hovering the mouse over the lock icon.  ie., we have a secure connection to the site.">
-        Secure connection to <ph name="DOMAIN">$1<ex>paypal.com</ex></ph>
-      </message>
-
       <message name="IDS_SECURE_CONNECTION_EV" desc="Short text shown in the location bar when the connection is secure with an EV cert.">
         <ph name="ORGANIZATION">$1<ex>Paypal Inc.</ex></ph> [<ph name="COUNTRY">$2<ex>US</ex></ph>]
       </message>
@@ -6142,9 +6123,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
       <message name="IDS_PAGE_INFO_HELP_CENTER_LINK" desc="This is the text of the link pointing to the Help Center. This appears at the bottom of the SSL dialog and 'this' refers to the sections within the bubble.">
         What do these mean?
-      </message>
-      <message name="IDS_PAGEINFO_CLOSE_BUTTON" desc="Text of button in the page info that closes the window.">
-        Close
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY" desc="The text of the identity section when the page is secure.">
         The identity of this website has been verified by <ph name="ISSUER">$1<ex>VeriSign</ex></ph>.
@@ -6239,14 +6217,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_SSL_ERROR_PAGE_BACK" desc="Back button text of the SSL error page.">
         Back
-      </message>
-
-      <!-- SSL Info Bar -->
-      <message name="IDS_SSL_INFO_BAR_FILTERED_CONTENT" desc="Message displayed in the info bar when we have filtered some mixed/unsafe content.">
-        Some of the elements on this page came from an unverified source and were not displayed.
-      </message>
-      <message name="IDS_SSL_INFO_BAR_SHOW_CONTENT" desc="Link displayed in the info bar when we have filtered some mixed/unsafe content to show all content.">
-        Show all content
       </message>
 
       <!-- Misc strings for SSL UI -->
@@ -7113,9 +7083,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_THEMES_RESET_BUTTON" desc="The button to reset your theme">
         Reset to default theme
       </message>
-      <message name="IDS_THEMES_DEFAULT_THEME_LABEL" desc="The label describing the default theme">
-        Default
-      </message>
       <message name="IDS_THEMES_GALLERY_BUTTON" desc="The button to get more themes">
         Get themes
       </message>
@@ -7751,9 +7718,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SAVE_PAGE_STATUS_CANCELED" desc="Save page status: canceled">
         Canceled
       </message>
-      <message name="IDS_SAVE_PAGE_STATUS_FAILED" desc="Save page status: failed">
-        Failed
-      </message>
       <message name="IDS_SAVE_PAGE_PROGRESS" desc="Text string for saving page progress, the number of saved files and total files">
         <ph name="SAVED_FILES">$1<ex>5</ex></ph> / <ph name="TOTAL_FILES">$2<ex>13</ex></ph> files
       </message>
@@ -7914,23 +7878,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_CLOUD_PRINT">
         <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
-      </message>
-
-      <!-- Script Timeout Dialog -->
-      <message name="IDS_SCRIPT_TIMEOUT_DIALOG_TITLE" desc="Title of the script timeout dialog.">
-        Unresponsive Script
-      </message>
-
-      <message name="IDS_SCRIPT_TIMEOUT_DIALOG_BODY" desc="Message to warn that a script is unresponsive. (For example, it may be in an infinite loop.)">
-        A script running on this page is taking a loooong time to do its job. Do you want to see if the script can complete, or just give up?
-      </message>
-
-      <message name="IDS_SCRIPT_TIMEOUT_DIALOG_STOP_SCRIPT_BUTTON" desc="Text for the button which kills the script.">
-        Give up
-      </message>
-
-      <message name="IDS_SCRIPT_TIMEOUT_DIALOG_CONTINUE_SCRIPT_BUTTON" desc="Text for the button which continues to run the script and resets the timeout.">
-        Continue
       </message>
 
       <!-- Multiple download warning-->
@@ -8164,9 +8111,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_GAIA_CAPTCHA_CASE_INSENSITIVE_TIP" desc="Message shown below a GAIA captcha explaining that the letters typed are not case sensitive">
         Letters are not case sensitive
       </message>
-      <message name="IDS_SYNC_GAIA_CAPTCHA_INCORRECT_TRY_AGAIN" desc="Message that appears below the captcha text input box when the user previously incorrectly typed the captcha and is being prompted to try again.">
-        Enter the letters as they are shown in the image above.
-      </message>
       <message name="IDS_SYNC_ERROR_SIGNING_IN" desc="An error was encountered while signing the user in.">
         Error signing in.
       </message>
@@ -8242,20 +8186,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Sync / Extension interaction messages -->
-      <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_ROADBLOCK" desc="A message shown on a dialog presented to the user when an extension is causing many changes to bookmarks and sync is malfunctioning">
-        Sync is malfunctioning because too many requests are being sent to the server. <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> seems to be making too many changes to your bookmarks.
-      </message>
-      <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_DISABLE_EXTENSION_OPTION" desc="The label of a button allowing the user to choose to disable an extension believed to be causing sync problems preventing bookmark sync operation.">
-        Disable <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph>
-      </message>
       <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_DISABLE_SYNC_OPTION" desc="The label of a button allowing the user to choose to disable sync when an extension is believed to be causing sync problems preventing sync operation.">
         Disable Sync
       </message>
       <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_EXTENSION_DISABLED" desc="A message shown on a dialog when an extension or app has been disabled due to problems arising from interactions with sync.">
         <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> has been disabled. If you stop syncing your bookmarks, you can re-enable it on the extensions page, accessible through the Tools menu.
-      </message>
-      <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_SYNC_DISABLED" desc="A message shown on a dialog when bookmark sync has been disabled due to problems arising from interactions with sync.">
-        Bookmark sync has been disabled on this computer. If you uninstall <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> you can re-enable Bookmark Sync by choosing "Set up sync..." in the Tools menu.
       </message>
 
       <!-- Sync New Tab Page strings -->
@@ -8411,9 +8346,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_CREATE_ACCOUNT" desc="The text of a hyperlink to create a Google account">
         Create a Google account
       </message>
-      <message name="IDS_SYNC_LOGIN_CUSTOMIZE" desc="The text of a button in the login dialog which lets you choose which datatypes to sync">
-        Customize sync...
-      </message>
       <message name="IDS_SYNC_CANNOT_BE_BLANK" desc="The input error message when the user hasn't entered a username or password">
         Required field cannot be left blank
       </message>
@@ -8520,9 +8452,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE" desc="Button label shown to always translate a specific language in the translate infobar">
         Always translate <ph name="language">$1<ex>English</ex></ph>
-      </message>
-      <message name="IDS_TRANSLATE_INFOBAR_TRANSLATING" desc="Text shown when page is currently being translated by servers">
-        Translating...
       </message>
       <message name="IDS_TRANSLATE_INFOBAR_TRANSLATING_TO" desc="Text shown when page is currently being translated by servers">
         Translating page to <ph name="language">$1<ex>English</ex></ph>...
@@ -9000,29 +8929,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_INSTALL_FROM_DMG_ERROR" desc="Error dialog message to be displayed when installation from the disk image fails.  Mac-only.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> couldn't complete installation, but will continue to run from its disk image.
       </message>
-
-      <!-- Update from disk image -->
-      <message name="IDS_UPDATE_FROM_DMG_TITLE" desc="Title of the dialog asking whether to update from the disk image.  Mac-only.">
-        Do you want to update <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>?
-      </message>
-      <message name="IDS_UPDATE_FROM_DMG_PROMPT" desc="Prompt asking whether to update from the disk image.  Mac-only.">
-        You're running <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from its disk image. If you update the installed copy, you can run it without the disk image in the future.
-      </message>
-      <message name="IDS_UPDATE_FROM_DMG_YES" desc="Button to approve update from the disk image.  Mac-only.">
-        Update
-      </message>
-      <message name="IDS_UPDATE_FROM_DMG_NO" desc="Button to cancel update from the disk image.  Mac-only.">
-        Don't Update
-      </message>
-      <message name="IDS_UPDATE_FROM_DMG_AUTHENTICATION_PROMPT" desc="The prompt to be displayed in the authentication dialog when updating from the disk image.  The system will add a sentence asking for an administrator's name and password.  Mac-only.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will be updated.
-      </message>
-      <message name="IDS_UPDATE_FROM_DMG_ERROR_TITLE" desc="Error dialog title to be displayed when update from the disk image fails.  Mac-only.">
-        Update failed.
-      </message>
-      <message name="IDS_UPDATE_FROM_DMG_ERROR" desc="Error dialog message to be displayed when update from the disk image fails.  Mac-only.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> couldn't update the installed copy, but will continue to run from its disk image.
-      </message>
     </if>
 
     <!-- Filebrowser Strings -->
@@ -9322,20 +9228,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD">
         Touchpad
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_PASSWORD">
-        Network Password
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE">
         Language
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY">
         Accessibility
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_NETWORK_CONFIG">
-        Wireless
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_IP_CONFIG">
-        Advanced Options
       </message>
       <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION" desc="In the settings tab, the text next to the timezone combobox.">
         Time zone:
