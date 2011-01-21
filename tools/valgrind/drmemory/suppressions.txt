@@ -272,6 +272,11 @@ LEAK
 ...
 GDI32.dll!CreateDCW
 
+# http://code.google.com/p/drmemory/issues/detail?id=274
+LEAK
+*!_getptd_noexit
+*!_getptd
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
