@@ -24,9 +24,8 @@
 // 'cpp/dev/[^/]*\.h' and will insert lines to #include each of those files.
 
 // From ppapi.gyp:ppapi_cpp_objects:cpp/dev/[^/]*\.h
-#include "ppapi/cpp/dev/audio_config_dev.h"
-#include "ppapi/cpp/dev/audio_dev.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
+#include "ppapi/cpp/dev/context_3d_dev.h"
 #include "ppapi/cpp/dev/directory_entry_dev.h"
 #include "ppapi/cpp/dev/directory_reader_dev.h"
 #include "ppapi/cpp/dev/file_chooser_dev.h"
@@ -41,6 +40,7 @@
 #include "ppapi/cpp/dev/printing_dev.h"
 #include "ppapi/cpp/dev/scrollbar_dev.h"
 #include "ppapi/cpp/dev/selection_dev.h"
+#include "ppapi/cpp/dev/surface_3d_dev.h"
 #include "ppapi/cpp/dev/transport_dev.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/dev/video_decoder_dev.h"

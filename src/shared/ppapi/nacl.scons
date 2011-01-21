@@ -52,8 +52,6 @@ cpp_sources = [
     'cpp/url_request_info.cc',
     'cpp/url_response_info.cc',
     'cpp/var.cc',
-    'cpp/dev/audio_config_dev.cc',
-    'cpp/dev/audio_dev.cc',
     'cpp/dev/buffer_dev.cc',
     'cpp/dev/context_3d_dev.cc',
     'cpp/dev/directory_entry_dev.cc',
@@ -128,9 +126,6 @@ c_dev_headers = [
     'c/dev/pp_file_info_dev.h',
     'c/dev/pp_graphics_3d_dev.h',
     'c/dev/pp_video_dev.h',
-    'c/dev/ppb_audio_config_dev.h',
-    'c/dev/ppb_audio_dev.h',
-    'c/dev/ppb_audio_trusted_dev.h',
     'c/dev/ppb_buffer_dev.h',
     'c/dev/ppb_char_set_dev.h',
     'c/dev/ppb_context_3d_dev.h',
@@ -203,8 +198,6 @@ cpp_headers = [
 cpp_dev_headers = [
     # Updated automatically by update-scons.py.
     # From ppapi.gyp:ppapi_cpp_objects:cpp/dev/[^/]*\.h
-    'cpp/dev/audio_config_dev.h',
-    'cpp/dev/audio_dev.h',
     'cpp/dev/buffer_dev.h',
     'cpp/dev/context_3d_dev.h',
     'cpp/dev/directory_entry_dev.h',

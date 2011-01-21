@@ -10,6 +10,8 @@
     'cpp_sources' : [
       # Updated automatically by update-scons.py.
       # From ppapi.gyp:ppapi_cpp_objects:.*\.cc
+      '<(DEPTH)/ppapi/cpp/audio.cc',
+      '<(DEPTH)/ppapi/cpp/audio_config.cc',
       '<(DEPTH)/ppapi/cpp/core.cc',
       '<(DEPTH)/ppapi/cpp/graphics_2d.cc',
       '<(DEPTH)/ppapi/cpp/image_data.cc',
@@ -23,8 +25,6 @@
       '<(DEPTH)/ppapi/cpp/url_request_info.cc',
       '<(DEPTH)/ppapi/cpp/url_response_info.cc',
       '<(DEPTH)/ppapi/cpp/var.cc',
-      '<(DEPTH)/ppapi/cpp/dev/audio_config_dev.cc',
-      '<(DEPTH)/ppapi/cpp/dev/audio_dev.cc',
       '<(DEPTH)/ppapi/cpp/dev/buffer_dev.cc',
       '<(DEPTH)/ppapi/cpp/dev/directory_entry_dev.cc',
       '<(DEPTH)/ppapi/cpp/dev/directory_reader_dev.cc',

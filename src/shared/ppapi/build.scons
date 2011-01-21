@@ -54,8 +54,6 @@ cpp_sources = [
     'cpp/url_request_info.cc',
     'cpp/url_response_info.cc',
     'cpp/var.cc',
-    'cpp/dev/audio_config_dev.cc',
-    'cpp/dev/audio_dev.cc',
     'cpp/dev/buffer_dev.cc',
     'cpp/dev/context_3d_dev.cc',
     'cpp/dev/directory_entry_dev.cc',

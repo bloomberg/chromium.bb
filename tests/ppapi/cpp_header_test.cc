@@ -24,6 +24,8 @@
 // and will insert lines to #include each of those files.
 
 // From ppapi.gyp:ppapi_cpp_objects:cpp/[^/]*\.h
+#include "ppapi/cpp/audio.h"
+#include "ppapi/cpp/audio_config.h"
 #include "ppapi/cpp/common.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/core.h"
@@ -33,6 +35,7 @@
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
+#include "ppapi/cpp/non_thread_safe_ref_count.h"
 #include "ppapi/cpp/paint_aggregator.h"
 #include "ppapi/cpp/paint_manager.h"
 #include "ppapi/cpp/point.h"
