@@ -85,6 +85,9 @@ void RendererCairo::Paint() {
   // without an alpha channel).
   cairo_push_group_with_content(current_drawing, CAIRO_CONTENT_COLOR);
 
+  // Set fill (and clip) rule.
+  cairo_set_fill_rule(current_drawing, CAIRO_FILL_RULE_EVEN_ODD);
+
   // Sort layers by z value.
   // TODO(tschmelcher): Only sort when changes are made.
   layer_list_.sort(LayerZValueLessThan);
@@ -103,19 +106,20 @@ void RendererCairo::Paint() {
     // Save the current drawing state.
     cairo_save(current_drawing);
 
-    // Clip areas that will be obscured anyway.
-    LayerList::iterator start_mask_it = i;
-    start_mask_it++;
-    ClipArea(current_drawing, start_mask_it);
-
-    // Define the region to fill.
+    // Clip the region outside the current Layer.
     cairo_rectangle(current_drawing,
                     cur->x(),
                     cur->y(),
                     cur->width(),
                     cur->height());
+    cairo_clip(current_drawing);
 
-    // Transform the pattern to fit into the fill region.
+    // Clip the regions within other Layers that will obscure this one.
+    LayerList::iterator start_mask_it = i;
+    start_mask_it++;
+    ClipArea(current_drawing, start_mask_it);
+
+    // Transform the pattern to fit into the Layer's region.
     cairo_translate(current_drawing, cur->x(), cur->y());
     cairo_scale(current_drawing, cur->scale_x(), cur->scale_y());
 
@@ -125,27 +129,31 @@ void RendererCairo::Paint() {
     // Paint the pattern to the off-screen surface.
     switch (cur->paint_operator()) {
       case Layer::BLEND:
-        cairo_fill(current_drawing);
+        cairo_paint(current_drawing);
         break;
 
       case Layer::BLEND_WITH_TRANSPARENCY:
-        {
-          cairo_pattern_t* mask = cairo_pattern_create_rgba(0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            cur->alpha());
-          cairo_mask(current_drawing, mask);
-          cairo_pattern_destroy(mask);
-        }
+        cairo_paint_with_alpha(current_drawing, cur->alpha());
         break;
 
-        // TODO(tschmelcher): COPY_WITH_FADING is not implemented yet. For now
-        // we treat it the same as COPY.
-      case Layer::COPY_WITH_FADING:
       case Layer::COPY:
         // Set Cairo to copy the pattern's alpha content instead of blending.
         cairo_set_operator(current_drawing, CAIRO_OPERATOR_SOURCE);
-        cairo_fill(current_drawing);
+        cairo_paint(current_drawing);
+        break;
+
+      case Layer::COPY_WITH_FADING:
+        // TODO(tschmelcher): This can also be done in a single operation with:
+        //
+        //   cairo_set_operator(current_drawing, CAIRO_OPERATOR_IN);
+        //   cairo_paint_with_alpha(current_drawing, cur->alpha());
+        //
+        // but surprisingly that is slightly slower for me. We should figure out
+        // why.
+        cairo_set_operator(current_drawing, CAIRO_OPERATOR_CLEAR);
+        cairo_paint(current_drawing);
+        cairo_set_operator(current_drawing, CAIRO_OPERATOR_OVER);
+        cairo_paint_with_alpha(current_drawing, cur->alpha());
         break;
 
       default:
@@ -177,8 +185,6 @@ void RendererCairo::PaintBackground(cairo_t* cr) {
 }
 
 void RendererCairo::ClipArea(cairo_t* cr,  LayerList::iterator it) {
-  cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-
   for (LayerList::iterator i = it; i != layer_list_.end(); i++) {
     // Preparing and updating the Layer.
     Layer* cur = *i;
