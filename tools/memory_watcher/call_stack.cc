@@ -35,7 +35,7 @@ typedef BOOL (__stdcall *t_SymGetModuleInfo64)(HANDLE, DWORD64,
                                                PIMAGEHLP_MODULE64);
 
 // static
-base:Lock CallStack::dbghelp_lock_;
+base::Lock CallStack::dbghelp_lock_;
 // static
 bool CallStack::dbghelp_loaded_ = false;
 // static
