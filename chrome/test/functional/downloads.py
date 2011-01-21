@@ -142,7 +142,10 @@ class DownloadsTest(pyauto.PyUITest):
 
     # Verify that download info exists in the correct profile.
     self.assertEqual(len(incognito_downloads), 1)
-    self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg))
+    self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg),
+        msg='%s (size %d) and %s (size %d) do not match' % (
+            file_path, os.path.getsize(file_path),
+            downloaded_pkg, os.path.getsize(downloaded_pkg)))
     self.assertTrue(self.IsDownloadShelfVisible(1))
 
   def testSaveDangerousFile(self):
