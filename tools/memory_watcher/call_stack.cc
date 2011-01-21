@@ -35,7 +35,7 @@ typedef BOOL (__stdcall *t_SymGetModuleInfo64)(HANDLE, DWORD64,
                                                PIMAGEHLP_MODULE64);
 
 // static
-Lock CallStack::dbghelp_lock_;
+base:Lock CallStack::dbghelp_lock_;
 // static
 bool CallStack::dbghelp_loaded_ = false;
 // static
@@ -373,7 +373,7 @@ void CallStack::ToString(PrivateAllocatorString* output) {
 }
 
 
-Lock AllocationStack::freelist_lock_;
+base::Lock AllocationStack::freelist_lock_;
 AllocationStack* AllocationStack::freelist_ = NULL;
 
 void* AllocationStack::operator new(size_t size) {

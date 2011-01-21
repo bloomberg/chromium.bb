@@ -275,7 +275,7 @@ static BOOL WINAPI Perftools_VirtualFreeEx(HANDLE process, LPVOID address,
   return patch_VirtualFreeEx()(process, address, size, type);
 }
 
-static Lock known_maps_lock;
+static base::Lock known_maps_lock;
 static std::map<void*, int> known_maps;
 
 static LPVOID WINAPI Perftools_MapViewOfFileEx(HANDLE hFileMappingObject,
