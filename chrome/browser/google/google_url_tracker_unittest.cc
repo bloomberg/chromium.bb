@@ -60,15 +60,16 @@ class TestInfoBarDelegate : public InfoBarDelegate {
  public:
   TestInfoBarDelegate(GoogleURLTracker* google_url_tracker,
                       const GURL& new_google_url);
-  virtual ~TestInfoBarDelegate();
-
-  // InfoBarDelegate
-  virtual InfoBar* CreateInfoBar();
 
   GoogleURLTracker* google_url_tracker() const { return google_url_tracker_; }
   GURL new_google_url() const { return new_google_url_; }
 
  private:
+  virtual ~TestInfoBarDelegate();
+
+  // InfoBarDelegate:
+  virtual InfoBar* CreateInfoBar();
+
   GoogleURLTracker* google_url_tracker_;
   GURL new_google_url_;
 };
@@ -299,7 +300,7 @@ void GoogleURLTrackerTest::InfoBarClosed() {
   ASSERT_TRUE(infobar);
   ASSERT_TRUE(infobar->google_url_tracker());
   infobar->google_url_tracker()->InfoBarClosed();
-  delete infobar;
+  delete g_browser_process->google_url_tracker()->infobar_;
 }
 
 void GoogleURLTrackerTest::ExpectDefaultURLs() {

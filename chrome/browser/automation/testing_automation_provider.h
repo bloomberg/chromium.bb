@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -296,7 +296,8 @@ class TestingAutomationProvider : public AutomationProvider,
   // Causes a click on the "accept" button of the info-bar at |info_bar_index|.
   // If |wait_for_navigation| is true, it sends the reply after a navigation has
   // occurred.
-  void ClickInfoBarAccept(int handle, int info_bar_index,
+  void ClickInfoBarAccept(int handle,
+                          int info_bar_index,
                           bool wait_for_navigation,
                           IPC::Message* reply_message);
 

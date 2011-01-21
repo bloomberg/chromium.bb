@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,8 @@
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
-DownloadRequestInfoBarDelegate::DownloadRequestInfoBarDelegate(TabContents* tab,
+DownloadRequestInfoBarDelegate::DownloadRequestInfoBarDelegate(
+    TabContents* tab,
     DownloadRequestLimiter::TabDownloadState* host)
     : ConfirmInfoBarDelegate(tab),
       host_(host) {
@@ -27,13 +28,13 @@ void DownloadRequestInfoBarDelegate::InfoBarClosed() {
   ConfirmInfoBarDelegate::InfoBarClosed();
 }
 
-string16 DownloadRequestInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING);
-}
-
 SkBitmap* DownloadRequestInfoBarDelegate::GetIcon() const {
   return ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_INFOBAR_MULTIPLE_DOWNLOADS);
+}
+
+string16 DownloadRequestInfoBarDelegate::GetMessageText() const {
+  return l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING);
 }
 
 int DownloadRequestInfoBarDelegate::GetButtons() const {
@@ -41,11 +42,9 @@ int DownloadRequestInfoBarDelegate::GetButtons() const {
 }
 
 string16 DownloadRequestInfoBarDelegate::GetButtonLabel(
-    ConfirmInfoBarDelegate::InfoBarButton button) const {
-  if (button == BUTTON_OK)
-    return l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING_ALLOW);
-  else
-    return l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING_DENY);
+    InfoBarButton button) const {
+  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
+      IDS_MULTI_DOWNLOAD_WARNING_ALLOW : IDS_MULTI_DOWNLOAD_WARNING_DENY);
 }
 
 bool DownloadRequestInfoBarDelegate::Accept() {

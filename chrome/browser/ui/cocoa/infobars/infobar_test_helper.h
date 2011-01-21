@@ -1,165 +1,123 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_TEST_HELPER_H_
+#define CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_TEST_HELPER_H_
+#pragma once
+
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 
-#include "base/utf_string_conversions.h"
 
-namespace {
-const char kMockAlertInfoBarMessage[] = "MockAlertInfoBarMessage";
-const char kMockLinkInfoBarMessage[] = "MockLinkInfoBarMessage";
-const char kMockLinkInfoBarLink[] = "http://dev.chromium.org";
-const char kMockConfirmInfoBarMessage[] = "MockConfirmInfoBarMessage";
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Mock InfoBarDelgates
+// MockAlertInfoBarDelegate ---------------------------------------------------
 
 class MockAlertInfoBarDelegate : public AlertInfoBarDelegate {
  public:
-  explicit MockAlertInfoBarDelegate()
-      : AlertInfoBarDelegate(NULL),
-        message_text_accessed(false),
-        icon_accessed(false),
-        closed(false) {
-  }
+  MockAlertInfoBarDelegate();
+  virtual ~MockAlertInfoBarDelegate();
 
-  virtual string16 GetMessageText() const {
-    message_text_accessed = true;
-    return ASCIIToUTF16(kMockAlertInfoBarMessage);
-  }
+  bool icon_accessed() const { return icon_accessed_; }
+  bool message_text_accessed() const { return message_text_accessed_; }
+  bool closed() const { return closed_; }
 
-  virtual SkBitmap* GetIcon() const {
-    icon_accessed = true;
-    return NULL;
-  }
+  static const char kMessage[];
 
-  virtual void InfoBarClosed() {
-    closed = true;
-  }
+ private:
+  // AlertInfoBarDelegate
+  virtual void InfoBarClosed();
+  virtual SkBitmap* GetIcon() const;
+  virtual string16 GetMessageText() const;
 
-  // These are declared mutable to get around const-ness issues.
-  mutable bool message_text_accessed;
-  mutable bool icon_accessed;
-  bool closed;
+  mutable bool icon_accessed_;
+  mutable bool message_text_accessed_;
+  bool closed_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockAlertInfoBarDelegate);
 };
+
+
+// MockLinkInfoBarDelegate ----------------------------------------------------
 
 class MockLinkInfoBarDelegate : public LinkInfoBarDelegate {
  public:
-  explicit MockLinkInfoBarDelegate()
-      : LinkInfoBarDelegate(NULL),
-        message_text_accessed(false),
-        link_text_accessed(false),
-        icon_accessed(false),
-        link_clicked(false),
-        closed(false),
-        closes_on_action(true) {
-  }
+  MockLinkInfoBarDelegate();
+  virtual ~MockLinkInfoBarDelegate();
 
-  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const {
-    message_text_accessed = true;
-    return ASCIIToUTF16(kMockLinkInfoBarMessage);
-  }
+  void set_dont_close_on_action() { closes_on_action_ = false; }
 
-  virtual string16 GetLinkText() const {
-    link_text_accessed = true;
-    return ASCIIToUTF16(kMockLinkInfoBarLink);
-  }
+  bool icon_accessed() const { return icon_accessed_; }
+  bool message_text_accessed() const { return message_text_accessed_; }
+  bool link_text_accessed() const { return link_text_accessed_; }
+  bool link_clicked() const { return link_clicked_; }
+  bool closed() const { return closed_; }
 
-  virtual SkBitmap* GetIcon() const {
-    icon_accessed = true;
-    return NULL;
-  }
+  static const char kMessage[];
+  static const char kLink[];
 
-  virtual bool LinkClicked(WindowOpenDisposition disposition) {
-    link_clicked = true;
-    return closes_on_action;
-  }
-
-  virtual void InfoBarClosed() {
-    closed = true;
-  }
-
-  // These are declared mutable to get around const-ness issues.
-  mutable bool message_text_accessed;
-  mutable bool link_text_accessed;
-  mutable bool icon_accessed;
-  bool link_clicked;
-  bool closed;
+ private:
+  // LinkInfoBarDelegate
+  virtual void InfoBarClosed();
+  virtual SkBitmap* GetIcon() const;
+  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const;
+  virtual string16 GetLinkText() const;
+  virtual bool LinkClicked(WindowOpenDisposition disposition);
 
   // Determines whether the infobar closes when an action is taken or not.
-  bool closes_on_action;
+  bool closes_on_action_;
+
+  mutable bool icon_accessed_;
+  mutable bool message_text_accessed_;
+  mutable bool link_text_accessed_;
+  bool link_clicked_;
+  bool closed_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockLinkInfoBarDelegate);
 };
+
+
+// MockConfirmInfoBarDelegate -------------------------------------------------
 
 class MockConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  explicit MockConfirmInfoBarDelegate()
-      : ConfirmInfoBarDelegate(NULL),
-        message_text_accessed(false),
-        link_text_accessed(false),
-        icon_accessed(false),
-        ok_clicked(false),
-        cancel_clicked(false),
-        link_clicked(false),
-        closed(false),
-        closes_on_action(true) {
-  }
+  MockConfirmInfoBarDelegate();
+  virtual ~MockConfirmInfoBarDelegate();
 
-  virtual int GetButtons() const {
-    return (BUTTON_OK | BUTTON_CANCEL);
-  }
+  void set_dont_close_on_action() { closes_on_action_ = false; }
 
-  virtual string16 GetButtonLabel(InfoBarButton button) const {
-    if (button == BUTTON_OK)
-      return ASCIIToUTF16("OK");
-    else
-      return ASCIIToUTF16("Cancel");
-  }
+  bool icon_accessed() const { return icon_accessed_; }
+  bool message_text_accessed() const { return message_text_accessed_; }
+  bool link_text_accessed() const { return link_text_accessed_; }
+  bool ok_clicked() const { return ok_clicked_; }
+  bool cancel_clicked() const { return cancel_clicked_; }
+  bool link_clicked() const { return link_clicked_; }
+  bool closed() const { return closed_; }
 
-  virtual bool Accept() {
-    ok_clicked = true;
-    return closes_on_action;
-  }
+  static const char kMessage[];
 
-  virtual bool Cancel() {
-    cancel_clicked = true;
-    return closes_on_action;
-  }
-
-  virtual string16 GetMessageText() const {
-    message_text_accessed = true;
-    return ASCIIToUTF16(kMockConfirmInfoBarMessage);
-  }
-
-  virtual SkBitmap* GetIcon() const {
-    icon_accessed = true;
-    return NULL;
-  }
-
-  virtual void InfoBarClosed() {
-    closed = true;
-  }
-
-  virtual string16 GetLinkText() {
-    link_text_accessed = true;
-    return string16();
-  }
-
-  virtual bool LinkClicked(WindowOpenDisposition disposition) {
-    link_clicked = true;
-    return closes_on_action;
-  }
-
-  // These are declared mutable to get around const-ness issues.
-  mutable bool message_text_accessed;
-  mutable bool link_text_accessed;
-  mutable bool icon_accessed;
-  bool ok_clicked;
-  bool cancel_clicked;
-  bool link_clicked;
-  bool closed;
+ private:
+  // ConfirmInfoBarDelegate
+  virtual void InfoBarClosed();
+  virtual SkBitmap* GetIcon() const;
+  virtual string16 GetMessageText() const;
+  virtual int GetButtons() const;
+  virtual string16 GetButtonLabel(InfoBarButton button) const;
+  virtual bool Accept();
+  virtual bool Cancel();
+  virtual string16 GetLinkText();
+  virtual bool LinkClicked(WindowOpenDisposition disposition);
 
   // Determines whether the infobar closes when an action is taken or not.
-  bool closes_on_action;
+  bool closes_on_action_;
+
+  mutable bool icon_accessed_;
+  mutable bool message_text_accessed_;
+  mutable bool link_text_accessed_;
+  bool ok_clicked_;
+  bool cancel_clicked_;
+  bool link_clicked_;
+  bool closed_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockConfirmInfoBarDelegate);
 };
+
+#endif  // CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_TEST_HELPER_H_

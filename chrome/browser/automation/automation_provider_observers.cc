@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -696,7 +696,8 @@ BrowserCountChangeNotificationObserver::BrowserCountChangeNotificationObserver(
 }
 
 void BrowserCountChangeNotificationObserver::Observe(
-    NotificationType type, const NotificationSource& source,
+    NotificationType type,
+    const NotificationSource& source,
     const NotificationDetails& details) {
   DCHECK(type == NotificationType::BROWSER_OPENED ||
          type == NotificationType::BROWSER_CLOSED);

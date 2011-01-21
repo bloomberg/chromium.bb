@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   virtual ~TranslateInfoBarDelegate();
 
   // Returns the number of languages supported.
-  int GetLanguageCount() const;
+  int GetLanguageCount() const { return static_cast<int>(languages_.size()); }
 
   // Returns the ISO code for the language at |index|.
   std::string GetLanguageCodeAt(int index) const;
@@ -82,7 +82,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
   // Returns true if the current infobar indicates an error (in which case it
   // should get a yellow background instead of a blue one).
-  bool IsError();
+  bool IsError() const { return type_ == TRANSLATION_ERROR; }
 
   // Returns what kind of background fading effect the infobar should use when
   // its is shown.
@@ -97,14 +97,6 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // Called when the user declines to translate a page, by either closing the
   // infobar or pressing the "Don't translate" button.
   void TranslationDeclined();
-
-  // InfoBarDelegate implementation:
-  virtual InfoBar* CreateInfoBar();
-  virtual void InfoBarDismissed();
-  virtual void InfoBarClosed();
-  virtual SkBitmap* GetIcon() const;
-  virtual InfoBarDelegate::Type GetInfoBarType();
-  virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 
   // Methods called by the Options menu delegate.
   virtual bool IsLanguageBlacklisted();
@@ -163,6 +155,14 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
  private:
   typedef std::pair<std::string, string16> LanguageNamePair;
+
+  // InfoBarDelegate implementation:
+  virtual InfoBar* CreateInfoBar();
+  virtual void InfoBarDismissed();
+  virtual void InfoBarClosed();
+  virtual SkBitmap* GetIcon() const;
+  virtual InfoBarDelegate::Type GetInfoBarType() const;
+  virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 
   // Gets the host of the page being translated, or an empty string if no URL is
   // associated with the current page.

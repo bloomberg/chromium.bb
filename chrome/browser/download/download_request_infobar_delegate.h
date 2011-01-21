@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,30 +19,25 @@ class TabContents;
 class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   DownloadRequestInfoBarDelegate(
-      TabContents* tab, DownloadRequestLimiter::TabDownloadState* host);
-
-  virtual ~DownloadRequestInfoBarDelegate();
+      TabContents* tab,
+      DownloadRequestLimiter::TabDownloadState* host);
 
   void set_host(DownloadRequestLimiter::TabDownloadState* host) {
     host_ = host;
   }
 
+ private:
+  virtual ~DownloadRequestInfoBarDelegate();
+
+  // ConfirmInfoBarDelegate:
   virtual void InfoBarClosed();
-
-  virtual string16 GetMessageText() const;
-
   virtual SkBitmap* GetIcon() const;
-
+  virtual string16 GetMessageText() const;
   virtual int GetButtons() const;
-
-  virtual string16 GetButtonLabel(
-      ConfirmInfoBarDelegate::InfoBarButton button) const;
-
+  virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();
-
   virtual bool Cancel();
 
- private:
   DownloadRequestLimiter::TabDownloadState* host_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadRequestInfoBarDelegate);

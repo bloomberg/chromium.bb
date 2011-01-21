@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,10 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 
-// InfoBarDelegate: ------------------------------------------------------------
+// InfoBarDelegate ------------------------------------------------------------
+
+InfoBarDelegate::~InfoBarDelegate() {
+}
 
 bool InfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
   return false;
@@ -20,38 +23,30 @@ bool InfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
 
 bool InfoBarDelegate::ShouldExpire(
     const NavigationController::LoadCommittedDetails& details) const {
-  bool is_reload =
-      PageTransition::StripQualifier(details.entry->transition_type()) ==
-          PageTransition::RELOAD;
-  return is_reload || (contents_unique_id_ != details.entry->unique_id());
+  return (contents_unique_id_ != details.entry->unique_id()) ||
+      (PageTransition::StripQualifier(details.entry->transition_type()) ==
+          PageTransition::RELOAD);
+}
+
+void InfoBarDelegate::InfoBarDismissed() {
+}
+
+void InfoBarDelegate::InfoBarClosed() {
 }
 
 SkBitmap* InfoBarDelegate::GetIcon() const {
   return NULL;
 }
 
+InfoBarDelegate::Type InfoBarDelegate::GetInfoBarType() const {
+  return WARNING_TYPE;
+}
+
 AlertInfoBarDelegate* InfoBarDelegate::AsAlertInfoBarDelegate() {
   return NULL;
 }
 
-LinkInfoBarDelegate* InfoBarDelegate::AsLinkInfoBarDelegate() {
-  return NULL;
-}
-
 ConfirmInfoBarDelegate* InfoBarDelegate::AsConfirmInfoBarDelegate() {
-  return NULL;
-}
-
-ThemeInstalledInfoBarDelegate*
-InfoBarDelegate::AsThemePreviewInfobarDelegate() {
-  return NULL;
-}
-
-TranslateInfoBarDelegate* InfoBarDelegate::AsTranslateInfoBarDelegate() {
-  return NULL;
-}
-
-ExtensionInfoBarDelegate* InfoBarDelegate::AsExtensionInfoBarDelegate() {
   return NULL;
 }
 
@@ -60,8 +55,21 @@ InfoBarDelegate::AsCrashedExtensionInfoBarDelegate() {
   return NULL;
 }
 
-InfoBarDelegate::Type InfoBarDelegate::GetInfoBarType() {
-  return WARNING_TYPE;
+ExtensionInfoBarDelegate* InfoBarDelegate::AsExtensionInfoBarDelegate() {
+  return NULL;
+}
+
+LinkInfoBarDelegate* InfoBarDelegate::AsLinkInfoBarDelegate() {
+  return NULL;
+}
+
+ThemeInstalledInfoBarDelegate*
+    InfoBarDelegate::AsThemePreviewInfobarDelegate() {
+  return NULL;
+}
+
+TranslateInfoBarDelegate* InfoBarDelegate::AsTranslateInfoBarDelegate() {
+  return NULL;
 }
 
 InfoBarDelegate::InfoBarDelegate(TabContents* contents)
@@ -75,29 +83,28 @@ void InfoBarDelegate::StoreActiveEntryUniqueID(TabContents* contents) {
   contents_unique_id_ = active_entry ? active_entry->unique_id() : 0;
 }
 
-// AlertInfoBarDelegate: -------------------------------------------------------
 
-SkBitmap* AlertInfoBarDelegate::GetIcon() const {
-  return NULL;
-}
+// AlertInfoBarDelegate -------------------------------------------------------
 
 bool AlertInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
   AlertInfoBarDelegate* alert_delegate = delegate->AsAlertInfoBarDelegate();
-  if (!alert_delegate)
-    return false;
-
-  return alert_delegate->GetMessageText() == GetMessageText();
-}
-
-AlertInfoBarDelegate* AlertInfoBarDelegate::AsAlertInfoBarDelegate() {
-  return this;
+  return alert_delegate &&
+      (alert_delegate->GetMessageText() == GetMessageText());
 }
 
 AlertInfoBarDelegate::AlertInfoBarDelegate(TabContents* contents)
     : InfoBarDelegate(contents) {
 }
 
-// LinkInfoBarDelegate: --------------------------------------------------------
+AlertInfoBarDelegate::~AlertInfoBarDelegate() {
+}
+
+AlertInfoBarDelegate* AlertInfoBarDelegate::AsAlertInfoBarDelegate() {
+  return this;
+}
+
+
+// LinkInfoBarDelegate --------------------------------------------------------
 
 string16 LinkInfoBarDelegate::GetMessageTextWithOffset(
     size_t* link_offset) const {
@@ -105,36 +112,30 @@ string16 LinkInfoBarDelegate::GetMessageTextWithOffset(
   return string16();
 }
 
-SkBitmap* LinkInfoBarDelegate::GetIcon() const {
-  return NULL;
-}
-
 bool LinkInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   return true;
-}
-
-LinkInfoBarDelegate* LinkInfoBarDelegate::AsLinkInfoBarDelegate() {
-  return this;
 }
 
 LinkInfoBarDelegate::LinkInfoBarDelegate(TabContents* contents)
     : InfoBarDelegate(contents) {
 }
 
-// ConfirmInfoBarDelegate: -----------------------------------------------------
+LinkInfoBarDelegate::~LinkInfoBarDelegate() {
+}
+
+LinkInfoBarDelegate* LinkInfoBarDelegate::AsLinkInfoBarDelegate() {
+  return this;
+}
+
+
+// ConfirmInfoBarDelegate -----------------------------------------------------
 
 int ConfirmInfoBarDelegate::GetButtons() const {
   return BUTTON_NONE;
 }
 
-string16 ConfirmInfoBarDelegate::GetButtonLabel(
-    InfoBarButton button) const {
-  if (button == BUTTON_OK)
-    return l10n_util::GetStringUTF16(IDS_OK);
-  if (button == BUTTON_CANCEL)
-    return l10n_util::GetStringUTF16(IDS_CANCEL);
-  NOTREACHED();
-  return string16();
+string16 ConfirmInfoBarDelegate::GetButtonLabel(InfoBarButton button) const {
+  return l10n_util::GetStringUTF16((button == BUTTON_OK) ? IDS_OK : IDS_CANCEL);
 }
 
 bool ConfirmInfoBarDelegate::NeedElevation(InfoBarButton button) const {
@@ -157,43 +158,47 @@ bool ConfirmInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   return true;
 }
 
-ConfirmInfoBarDelegate* ConfirmInfoBarDelegate::AsConfirmInfoBarDelegate() {
-  return this;
-}
-
 ConfirmInfoBarDelegate::ConfirmInfoBarDelegate(TabContents* contents)
     : AlertInfoBarDelegate(contents) {
 }
 
-// SimpleAlertInfoBarDelegate: -------------------------------------------------
+ConfirmInfoBarDelegate::~ConfirmInfoBarDelegate() {
+}
+
+ConfirmInfoBarDelegate* ConfirmInfoBarDelegate::AsConfirmInfoBarDelegate() {
+  return this;
+}
+
+
+// SimpleAlertInfoBarDelegate -------------------------------------------------
 
 SimpleAlertInfoBarDelegate::SimpleAlertInfoBarDelegate(
     TabContents* contents,
-    const string16& message,
     SkBitmap* icon,
+    const string16& message,
     bool auto_expire)
     : AlertInfoBarDelegate(contents),
-      message_(message),
       icon_(icon),
+      message_(message),
       auto_expire_(auto_expire) {
+}
+
+SimpleAlertInfoBarDelegate::~SimpleAlertInfoBarDelegate() {
 }
 
 bool SimpleAlertInfoBarDelegate::ShouldExpire(
       const NavigationController::LoadCommittedDetails& details) const {
-  if (auto_expire_)
-    return AlertInfoBarDelegate::ShouldExpire(details);
-
-  return false;
+  return auto_expire_ && AlertInfoBarDelegate::ShouldExpire(details);
 }
 
-string16 SimpleAlertInfoBarDelegate::GetMessageText() const {
-  return message_;
+void SimpleAlertInfoBarDelegate::InfoBarClosed() {
+  delete this;
 }
 
 SkBitmap* SimpleAlertInfoBarDelegate::GetIcon() const {
   return icon_;
 }
 
-void SimpleAlertInfoBarDelegate::InfoBarClosed() {
-  delete this;
+string16 SimpleAlertInfoBarDelegate::GetMessageText() const {
+  return message_;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,28 +21,33 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
   ThemeInstalledInfoBarDelegate(TabContents* tab_contents,
                                 const Extension* new_theme,
                                 const std::string& previous_theme_id);
-  virtual ~ThemeInstalledInfoBarDelegate();
-  virtual void InfoBarClosed();
-  virtual string16 GetMessageText() const;
-  virtual SkBitmap* GetIcon() const;
-  virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
-  virtual int GetButtons() const;
-  virtual string16 GetButtonLabel(
-      ConfirmInfoBarDelegate::InfoBarButton button) const;
-  virtual bool Cancel();
 
   // Returns true if the given theme is the same as the one associated with this
   // info bar.
   bool MatchesTheme(const Extension* theme);
 
-  // NotificationObserver implementation.
+ protected:
+  virtual ~ThemeInstalledInfoBarDelegate();
+
+  Profile* profile() { return profile_; }
+
+  // ConfirmInfoBarDelegate:
+  virtual bool Cancel();
+
+ private:
+  // ConfirmInfoBarDelegate:
+  virtual void InfoBarClosed();
+  virtual SkBitmap* GetIcon() const;
+  virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
+  virtual string16 GetMessageText() const;
+  virtual int GetButtons() const;
+  virtual string16 GetButtonLabel(InfoBarButton button) const;
+
+  // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
- protected:
-  Profile* profile() { return profile_; }
 
- private:
   Profile* profile_;
 
   // Name of theme that's just been installed.

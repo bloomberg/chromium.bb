@@ -1819,7 +1819,7 @@ AccessibilityTypes::Role BrowserView::GetAccessibleRole() {
   return AccessibilityTypes::ROLE_CLIENT;
 }
 
-void BrowserView::InfoBarSizeChanged(bool is_animating) {
+void BrowserView::InfoBarContainerSizeChanged(bool is_animating) {
   SelectedTabToolbarSizeChanged(is_animating);
 }
 

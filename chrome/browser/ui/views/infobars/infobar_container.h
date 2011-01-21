@@ -25,7 +25,7 @@ class InfoBarContainer : public AccessiblePaneView,
   class Delegate {
    public:
     virtual ~Delegate() {}
-    virtual void InfoBarSizeChanged(bool is_animating) = 0;
+    virtual void InfoBarContainerSizeChanged(bool is_animating) = 0;
   };
 
   explicit InfoBarContainer(Delegate* delegate);

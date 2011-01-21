@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,25 +28,21 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
     return browser()->profile()->GetExtensionProcessManager();
   }
 
-  CrashedExtensionInfoBarDelegate* GetCrashedExtensionInfoBarDelegate(
-      int index) {
+  ConfirmInfoBarDelegate* GetInfoBarDelegate(int index) {
     TabContents* current_tab = browser()->GetSelectedTabContents();
     EXPECT_LT(index, current_tab->infobar_delegate_count());
-    InfoBarDelegate* delegate = current_tab->GetInfoBarDelegateAt(index);
-    return delegate->AsCrashedExtensionInfoBarDelegate();
+    return current_tab->GetInfoBarDelegateAt(index)->AsConfirmInfoBarDelegate();
   }
 
-  void AcceptCrashedExtensionInfobar(int index) {
-    CrashedExtensionInfoBarDelegate* infobar =
-        GetCrashedExtensionInfoBarDelegate(index);
+  void AcceptInfoBar(int index) {
+    ConfirmInfoBarDelegate* infobar = GetInfoBarDelegate(index);
     ASSERT_TRUE(infobar);
     infobar->Accept();
     WaitForExtensionLoad();
   }
 
-  void CancelCrashedExtensionInfobar(int index) {
-    CrashedExtensionInfoBarDelegate* infobar =
-        GetCrashedExtensionInfoBarDelegate(index);
+  void CancelInfoBar(int index) {
+    ConfirmInfoBarDelegate* infobar = GetInfoBarDelegate(index);
     ASSERT_TRUE(infobar);
     infobar->Cancel();
   }
@@ -118,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, Basic) {
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
   ASSERT_EQ(crash_size_before + 1,
             GetExtensionService()->terminated_extensions()->size());
-  AcceptCrashedExtensionInfobar(0);
+  AcceptInfoBar(0);
 
   SCOPED_TRACE("after clicking the infobar");
   CheckExtensionConsistency(size_before);
@@ -136,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CloseAndReload) {
   ASSERT_EQ(crash_size_before + 1,
             GetExtensionService()->terminated_extensions()->size());
 
-  CancelCrashedExtensionInfobar(0);
+  CancelInfoBar(0);
   ReloadExtension(first_extension_id_);
 
   SCOPED_TRACE("after reloading");
@@ -306,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsCrashFirst) {
   LoadSecondExtension();
   CrashExtension(size_before);
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
-  AcceptCrashedExtensionInfobar(0);
+  AcceptInfoBar(0);
 
   SCOPED_TRACE("after clicking the infobar");
   CheckExtensionConsistency(size_before);
@@ -319,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsCrashSecond) {
   LoadSecondExtension();
   CrashExtension(size_before + 1);
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
-  AcceptCrashedExtensionInfobar(0);
+  AcceptInfoBar(0);
 
   SCOPED_TRACE("after clicking the infobar");
   CheckExtensionConsistency(size_before);
@@ -344,13 +340,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 
   {
     SCOPED_TRACE("first infobar");
-    AcceptCrashedExtensionInfobar(0);
+    AcceptInfoBar(0);
     CheckExtensionConsistency(size_before);
   }
 
   {
     SCOPED_TRACE("second infobar");
-    AcceptCrashedExtensionInfobar(0);
+    AcceptInfoBar(0);
     CheckExtensionConsistency(size_before);
     CheckExtensionConsistency(size_before + 1);
   }
@@ -367,13 +363,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsOneByOne) {
 
   {
     SCOPED_TRACE("first infobar");
-    AcceptCrashedExtensionInfobar(0);
+    AcceptInfoBar(0);
     CheckExtensionConsistency(size_before);
   }
 
   {
     SCOPED_TRACE("second infobar");
-    AcceptCrashedExtensionInfobar(0);
+    AcceptInfoBar(0);
     CheckExtensionConsistency(size_before);
     CheckExtensionConsistency(size_before + 1);
   }
@@ -403,8 +399,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   CrashExtension(size_before);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
 
-  CancelCrashedExtensionInfobar(0);
-  AcceptCrashedExtensionInfobar(1);
+  CancelInfoBar(0);
+  AcceptInfoBar(1);
 
   SCOPED_TRACE("infobars done");
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
@@ -435,7 +431,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
 
   {
     SCOPED_TRACE("second: infobar");
-    AcceptCrashedExtensionInfobar(0);
+    AcceptInfoBar(0);
     CheckExtensionConsistency(size_before);
     CheckExtensionConsistency(size_before + 1);
   }

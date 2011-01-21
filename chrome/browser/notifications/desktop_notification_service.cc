@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,167 @@ using WebKit::WebNotificationPresenter;
 using WebKit::WebTextDirection;
 
 const ContentSetting kDefaultSetting = CONTENT_SETTING_ASK;
+
+// NotificationPermissionCallbackTask -----------------------------------------
+
+// A task object which calls the renderer to inform the web page that the
+// permission request has completed.
+class NotificationPermissionCallbackTask : public Task {
+ public:
+  NotificationPermissionCallbackTask(int process_id,
+                                     int route_id,
+                                     int request_id);
+  virtual ~NotificationPermissionCallbackTask();
+
+ private:
+  virtual void Run();
+
+  int process_id_;
+  int route_id_;
+  int request_id_;
+};
+
+NotificationPermissionCallbackTask::NotificationPermissionCallbackTask(
+    int process_id,
+    int route_id,
+    int request_id)
+    : process_id_(process_id),
+      route_id_(route_id),
+      request_id_(request_id) {
+}
+
+NotificationPermissionCallbackTask::~NotificationPermissionCallbackTask() {
+}
+
+void NotificationPermissionCallbackTask::Run() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RenderViewHost* host = RenderViewHost::FromID(process_id_, route_id_);
+  if (host)
+    host->Send(new ViewMsg_PermissionRequestDone(route_id_, request_id_));
+}
+
+
+// NotificationPermissionInfoBarDelegate --------------------------------------
+
+// The delegate for the infobar shown when an origin requests notification
+// permissions.
+class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
+ public:
+  NotificationPermissionInfoBarDelegate(TabContents* contents,
+                                        const GURL& origin,
+                                        const string16& display_name,
+                                        int process_id,
+                                        int route_id,
+                                        int callback_context);
+
+ private:
+  virtual ~NotificationPermissionInfoBarDelegate();
+
+  // ConfirmInfoBarDelegate:
+  virtual void InfoBarClosed();
+  virtual SkBitmap* GetIcon() const;
+  virtual Type GetInfoBarType() const;
+  virtual string16 GetMessageText() const;
+  virtual int GetButtons() const;
+  virtual string16 GetButtonLabel(InfoBarButton button) const;
+  virtual bool Accept();
+  virtual bool Cancel();
+
+  // The origin we are asking for permissions on.
+  GURL origin_;
+
+  // The display name for the origin to be displayed.  Will be different from
+  // origin_ for extensions.
+  string16 display_name_;
+
+  // The Profile that we restore sessions from.
+  Profile* profile_;
+
+  // The callback information that tells us how to respond to javascript via
+  // the correct RenderView.
+  int process_id_;
+  int route_id_;
+  int callback_context_;
+
+  // Whether the user clicked one of the buttons.
+  bool action_taken_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationPermissionInfoBarDelegate);
+};
+
+NotificationPermissionInfoBarDelegate::NotificationPermissionInfoBarDelegate(
+    TabContents* contents,
+    const GURL& origin,
+    const string16& display_name,
+    int process_id,
+    int route_id,
+    int callback_context)
+    : ConfirmInfoBarDelegate(contents),
+      origin_(origin),
+      display_name_(display_name),
+      profile_(contents->profile()),
+      process_id_(process_id),
+      route_id_(route_id),
+      callback_context_(callback_context),
+      action_taken_(false) {
+}
+
+NotificationPermissionInfoBarDelegate::
+    ~NotificationPermissionInfoBarDelegate() {
+}
+
+void NotificationPermissionInfoBarDelegate::InfoBarClosed() {
+  if (!action_taken_)
+    UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Ignored", 1);
+
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+      new NotificationPermissionCallbackTask(process_id_, route_id_,
+                                             callback_context_));
+
+  delete this;
+}
+
+SkBitmap* NotificationPermissionInfoBarDelegate::GetIcon() const {
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+     IDR_PRODUCT_ICON_32);
+}
+
+InfoBarDelegate::Type
+    NotificationPermissionInfoBarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
+}
+
+string16 NotificationPermissionInfoBarDelegate::GetMessageText() const {
+  return l10n_util::GetStringFUTF16(IDS_NOTIFICATION_PERMISSIONS,
+                                    display_name_);
+}
+
+int NotificationPermissionInfoBarDelegate::GetButtons() const {
+  return BUTTON_OK | BUTTON_CANCEL;
+}
+
+string16 NotificationPermissionInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
+      IDS_NOTIFICATION_PERMISSION_YES : IDS_NOTIFICATION_PERMISSION_NO);
+}
+
+bool NotificationPermissionInfoBarDelegate::Accept() {
+  UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Allowed", 1);
+  profile_->GetDesktopNotificationService()->GrantPermission(origin_);
+  action_taken_ = true;
+  return true;
+}
+
+bool NotificationPermissionInfoBarDelegate::Cancel() {
+  UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Denied", 1);
+  profile_->GetDesktopNotificationService()->DenyPermission(origin_);
+  action_taken_ = true;
+  return true;
+}
+
+
+// DesktopNotificationService -------------------------------------------------
 
 // static
 string16 DesktopNotificationService::CreateDataUrl(
@@ -93,123 +254,6 @@ string16 DesktopNotificationService::CreateDataUrl(
   return UTF8ToUTF16("data:text/html;charset=utf-8," +
                       EscapeQueryParamValue(data, false));
 }
-
-// A task object which calls the renderer to inform the web page that the
-// permission request has completed.
-class NotificationPermissionCallbackTask : public Task {
- public:
-  NotificationPermissionCallbackTask(int process_id, int route_id,
-      int request_id)
-      : process_id_(process_id),
-        route_id_(route_id),
-        request_id_(request_id) {
-  }
-
-  virtual void Run() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    RenderViewHost* host = RenderViewHost::FromID(process_id_, route_id_);
-    if (host)
-      host->Send(new ViewMsg_PermissionRequestDone(route_id_, request_id_));
-  }
-
- private:
-  int process_id_;
-  int route_id_;
-  int request_id_;
-};
-
-// The delegate for the infobar shown when an origin requests notification
-// permissions.
-class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  NotificationPermissionInfoBarDelegate(TabContents* contents,
-                                        const GURL& origin,
-                                        const string16& display_name,
-                                        int process_id,
-                                        int route_id,
-                                        int callback_context)
-      : ConfirmInfoBarDelegate(contents),
-        origin_(origin),
-        display_name_(display_name),
-        profile_(contents->profile()),
-        process_id_(process_id),
-        route_id_(route_id),
-        callback_context_(callback_context),
-        action_taken_(false) {
-  }
-
-  // Overridden from ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed() {
-    if (!action_taken_)
-      UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Ignored", 1);
-
-    BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      new NotificationPermissionCallbackTask(
-          process_id_, route_id_, callback_context_));
-
-    delete this;
-  }
-
-  virtual string16 GetMessageText() const {
-    return l10n_util::GetStringFUTF16(IDS_NOTIFICATION_PERMISSIONS,
-                                      display_name_);
-  }
-
-  virtual SkBitmap* GetIcon() const {
-    return ResourceBundle::GetSharedInstance().GetBitmapNamed(
-       IDR_PRODUCT_ICON_32);
-  }
-
-  virtual int GetButtons() const {
-    return BUTTON_OK | BUTTON_CANCEL | BUTTON_OK_DEFAULT;
-  }
-
-  virtual string16 GetButtonLabel(InfoBarButton button) const {
-    return button == BUTTON_OK ?
-        l10n_util::GetStringUTF16(IDS_NOTIFICATION_PERMISSION_YES) :
-        l10n_util::GetStringUTF16(IDS_NOTIFICATION_PERMISSION_NO);
-  }
-
-  virtual bool Accept() {
-    UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Allowed", 1);
-    profile_->GetDesktopNotificationService()->GrantPermission(origin_);
-    action_taken_ = true;
-    return true;
-  }
-
-  virtual bool Cancel() {
-    UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Denied", 1);
-    profile_->GetDesktopNotificationService()->DenyPermission(origin_);
-    action_taken_ = true;
-    return true;
-  }
-
-  // Overridden from InfoBarDelegate:
-  virtual Type GetInfoBarType() { return PAGE_ACTION_TYPE; }
-
- private:
-  // The origin we are asking for permissions on.
-  GURL origin_;
-
-  // The display name for the origin to be displayed.  Will be different from
-  // origin_ for extensions.
-  string16 display_name_;
-
-  // The Profile that we restore sessions from.
-  Profile* profile_;
-
-  // The callback information that tells us how to respond to javascript via
-  // the correct RenderView.
-  int process_id_;
-  int route_id_;
-  int callback_context_;
-
-  // Whether the user clicked one of the buttons.
-  bool action_taken_;
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationPermissionInfoBarDelegate);
-};
 
 DesktopNotificationService::DesktopNotificationService(Profile* profile,
     NotificationUIManager* ui_manager)

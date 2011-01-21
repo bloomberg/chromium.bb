@@ -43,6 +43,7 @@ class AlternateNavURLFetcher : public NotificationObserver,
 
   State state() const { return state_; }
 
+ private:
   // NotificationObserver
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -57,13 +58,12 @@ class AlternateNavURLFetcher : public NotificationObserver,
                                   const std::string& data);
 
   // LinkInfoBarDelegate
+  virtual SkBitmap* GetIcon() const;
   virtual string16 GetMessageTextWithOffset(size_t* link_offset) const;
   virtual string16 GetLinkText() const;
-  virtual SkBitmap* GetIcon() const;
   virtual bool LinkClicked(WindowOpenDisposition disposition);
   virtual void InfoBarClosed();
 
- private:
   // Sets |state_| to either SUCCEEDED or FAILED depending on the result of the
   // fetch.
   void SetStatusFromURLFetch(const GURL& url,

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,21 +28,21 @@ class CrashedExtensionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   const std::string extension_id() { return extension_id_; }
 
-  // InfoBarDelegate
-  virtual CrashedExtensionInfoBarDelegate* AsCrashedExtensionInfoBarDelegate();
-  virtual bool ShouldExpire(
-      const NavigationController::LoadCommittedDetails& details) const;
+ private:
+   virtual ~CrashedExtensionInfoBarDelegate();
 
   // ConfirmInfoBarDelegate
-  virtual string16 GetMessageText() const;
+  virtual bool ShouldExpire(
+      const NavigationController::LoadCommittedDetails& details) const;
   virtual void InfoBarClosed();
   virtual SkBitmap* GetIcon() const;
+  virtual CrashedExtensionInfoBarDelegate* AsCrashedExtensionInfoBarDelegate();
+  virtual string16 GetMessageText() const;
   virtual int GetButtons() const;
   virtual string16 GetButtonLabel(
       ConfirmInfoBarDelegate::InfoBarButton button) const;
   virtual bool Accept();
 
- private:
   ExtensionService* extensions_service_;
 
   const std::string extension_id_;

@@ -23,7 +23,7 @@ TranslateInfoBarBase::TranslateInfoBarBase(
       normal_background_(InfoBarDelegate::PAGE_ACTION_TYPE),
       error_background_(InfoBarDelegate::WARNING_TYPE) {
   icon_ = new views::ImageView;
-  SkBitmap* image = delegate->GetIcon();
+  SkBitmap* image = static_cast<InfoBarDelegate*>(delegate)->GetIcon();
   if (image)
     icon_->SetImage(image);
   AddChildView(icon_);

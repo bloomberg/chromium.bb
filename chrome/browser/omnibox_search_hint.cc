@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,73 +42,30 @@ const char* kSearchEngineURLs[] = {
     "http://www.wolframalpha.com/",
 };
 
+
+// HintInfoBar ----------------------------------------------------------------
+
 class HintInfoBar : public ConfirmInfoBarDelegate {
  public:
-  explicit HintInfoBar(OmniboxSearchHint* omnibox_hint)
-      : ConfirmInfoBarDelegate(omnibox_hint->tab()),
-        omnibox_hint_(omnibox_hint),
-        action_taken_(false),
-        should_expire_(false),
-        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-    // We want the info-bar to stick-around for few seconds and then be hidden
-    // on the next navigation after that.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(&HintInfoBar::Expire),
-        8000);  // 8 seconds.
-  }
-
-  virtual bool ShouldExpire(
-      const NavigationController::LoadCommittedDetails& details) const {
-    return should_expire_;
-  }
-
-  // Overridden from ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed() {
-    if (!action_taken_)
-      UMA_HISTOGRAM_COUNTS("OmniboxSearchHint.Ignored", 1);
-    delete this;
-  }
-
-  virtual void InfoBarDismissed() {
-    action_taken_ = true;
-    UMA_HISTOGRAM_COUNTS("OmniboxSearchHint.Closed", 1);
-    // User closed the infobar, let's not bug him again with this in the future.
-    omnibox_hint_->DisableHint();
-  }
-
-  virtual string16 GetMessageText() const {
-    return l10n_util::GetStringUTF16(IDS_OMNIBOX_SEARCH_HINT_INFOBAR_TEXT);
-  }
-
-  virtual SkBitmap* GetIcon() const {
-    return ResourceBundle::GetSharedInstance().GetBitmapNamed(
-       IDR_INFOBAR_QUESTION_MARK);
-  }
-
-  virtual int GetButtons() const {
-    return BUTTON_OK;
-  }
-
-  virtual string16 GetButtonLabel(InfoBarButton button) const {
-    return l10n_util::GetStringUTF16(
-        IDS_OMNIBOX_SEARCH_HINT_INFOBAR_BUTTON_LABEL);
-  }
-
-  virtual Type GetInfoBarType() { return PAGE_ACTION_TYPE; }
-
-  virtual bool Accept() {
-    action_taken_ = true;
-    UMA_HISTOGRAM_COUNTS("OmniboxSearchHint.ShowMe", 1);
-    omnibox_hint_->DisableHint();
-    omnibox_hint_->ShowEnteringQuery();
-    return true;
-  }
-
-  void Expire() {
-    should_expire_ = true;
-  }
+  explicit HintInfoBar(OmniboxSearchHint* omnibox_hint);
 
  private:
+  virtual ~HintInfoBar();
+
+  void AllowExpiry() { should_expire_ = true; }
+
+  // ConfirmInfoBarDelegate:
+  virtual bool ShouldExpire(
+      const NavigationController::LoadCommittedDetails& details) const;
+  virtual void InfoBarDismissed();
+  virtual void InfoBarClosed();
+  virtual SkBitmap* GetIcon() const;
+  virtual Type GetInfoBarType() const;
+  virtual string16 GetMessageText() const;
+  virtual int GetButtons() const;
+  virtual string16 GetButtonLabel(InfoBarButton button) const;
+  virtual bool Accept();
+
   // The omnibox hint that shows us.
   OmniboxSearchHint* omnibox_hint_;
 
@@ -123,6 +80,72 @@ class HintInfoBar : public ConfirmInfoBarDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(HintInfoBar);
 };
+
+HintInfoBar::HintInfoBar(OmniboxSearchHint* omnibox_hint)
+    : ConfirmInfoBarDelegate(omnibox_hint->tab()),
+      omnibox_hint_(omnibox_hint),
+      action_taken_(false),
+      should_expire_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  // We want the info-bar to stick-around for few seconds and then be hidden
+  // on the next navigation after that.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      method_factory_.NewRunnableMethod(&HintInfoBar::AllowExpiry),
+      8000);  // 8 seconds.
+}
+HintInfoBar::~HintInfoBar() {
+}
+
+bool HintInfoBar::ShouldExpire(
+    const NavigationController::LoadCommittedDetails& details) const {
+  return should_expire_;
+}
+
+void HintInfoBar::InfoBarDismissed() {
+  action_taken_ = true;
+  UMA_HISTOGRAM_COUNTS("OmniboxSearchHint.Closed", 1);
+  // User closed the infobar, let's not bug him again with this in the future.
+  omnibox_hint_->DisableHint();
+}
+
+void HintInfoBar::InfoBarClosed() {
+  if (!action_taken_)
+    UMA_HISTOGRAM_COUNTS("OmniboxSearchHint.Ignored", 1);
+  delete this;
+}
+
+SkBitmap* HintInfoBar::GetIcon() const {
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+     IDR_INFOBAR_QUESTION_MARK);
+}
+
+InfoBarDelegate::Type HintInfoBar::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
+}
+
+string16 HintInfoBar::GetMessageText() const {
+  return l10n_util::GetStringUTF16(IDS_OMNIBOX_SEARCH_HINT_INFOBAR_TEXT);
+}
+
+int HintInfoBar::GetButtons() const {
+  return BUTTON_OK;
+}
+
+string16 HintInfoBar::GetButtonLabel(InfoBarButton button) const {
+  return l10n_util::GetStringUTF16(
+      IDS_OMNIBOX_SEARCH_HINT_INFOBAR_BUTTON_LABEL);
+}
+
+bool HintInfoBar::Accept() {
+  action_taken_ = true;
+  UMA_HISTOGRAM_COUNTS("OmniboxSearchHint.ShowMe", 1);
+  omnibox_hint_->DisableHint();
+  omnibox_hint_->ShowEnteringQuery();
+  return true;
+}
+
+
+// OmniboxSearchHint ----------------------------------------------------------
 
 OmniboxSearchHint::OmniboxSearchHint(TabContents* tab) : tab_(tab) {
   NavigationController* controller = &(tab->controller());

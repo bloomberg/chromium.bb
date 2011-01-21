@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,16 +21,16 @@ LanguagesMenuModel::~LanguagesMenuModel() {
 }
 
 bool LanguagesMenuModel::IsCommandIdChecked(int command_id) const {
-  if (language_type_ == ORIGINAL)
-    return command_id == translate_infobar_delegate_->original_language_index();
-  return command_id == translate_infobar_delegate_->target_language_index();
+  return command_id == ((language_type_ == ORIGINAL) ?
+      translate_infobar_delegate_->original_language_index() :
+      translate_infobar_delegate_->target_language_index());
 }
 
 bool LanguagesMenuModel::IsCommandIdEnabled(int command_id) const {
-  // Prevent from having the same language selectable in original and target.
-  if (language_type_ == ORIGINAL)
-    return command_id != translate_infobar_delegate_->target_language_index();
-  return command_id != translate_infobar_delegate_->original_language_index();
+  // Prevent the same language from being selectable in original and target.
+  return command_id != ((language_type_ == ORIGINAL) ?
+      translate_infobar_delegate_->target_language_index() :
+      translate_infobar_delegate_->original_language_index());
 }
 
 bool LanguagesMenuModel::GetAcceleratorForCommandId(

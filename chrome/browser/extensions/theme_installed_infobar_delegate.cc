@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,44 +33,15 @@ ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
                  NotificationService::AllSources());
 }
 
+bool ThemeInstalledInfoBarDelegate::MatchesTheme(const Extension* theme) {
+  return theme && (theme->id() == theme_id_);
+}
+
 ThemeInstalledInfoBarDelegate::~ThemeInstalledInfoBarDelegate() {
   // We don't want any notifications while we're running our destructor.
   registrar_.RemoveAll();
 
   profile_->GetThemeProvider()->OnInfobarDestroyed();
-}
-
-void ThemeInstalledInfoBarDelegate::InfoBarClosed() {
-  delete this;
-}
-
-string16 ThemeInstalledInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(IDS_THEME_INSTALL_INFOBAR_LABEL,
-                                    UTF8ToUTF16(name_));
-}
-
-SkBitmap* ThemeInstalledInfoBarDelegate::GetIcon() const {
-  // TODO(aa): Reply with the theme's icon, but this requires reading it
-  // asynchronously from disk.
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_INFOBAR_THEME);
-}
-
-ThemeInstalledInfoBarDelegate*
-    ThemeInstalledInfoBarDelegate::AsThemePreviewInfobarDelegate() {
-  return this;
-}
-
-int ThemeInstalledInfoBarDelegate::GetButtons() const {
-  return BUTTON_CANCEL;
-}
-
-string16 ThemeInstalledInfoBarDelegate::GetButtonLabel(
-    ConfirmInfoBarDelegate::InfoBarButton button) const {
-  // The InfoBar will create a default OK button and make it invisible.
-  // TODO(mirandac): remove the default OK button from ConfirmInfoBar.
-  return (button == BUTTON_CANCEL) ?
-      l10n_util::GetStringUTF16(IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON) :
-      string16();
 }
 
 bool ThemeInstalledInfoBarDelegate::Cancel() {
@@ -88,6 +59,36 @@ bool ThemeInstalledInfoBarDelegate::Cancel() {
 
   profile_->ClearTheme();
   return true;
+}
+
+void ThemeInstalledInfoBarDelegate::InfoBarClosed() {
+  delete this;
+}
+
+SkBitmap* ThemeInstalledInfoBarDelegate::GetIcon() const {
+  // TODO(aa): Reply with the theme's icon, but this requires reading it
+  // asynchronously from disk.
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_INFOBAR_THEME);
+}
+
+ThemeInstalledInfoBarDelegate*
+    ThemeInstalledInfoBarDelegate::AsThemePreviewInfobarDelegate() {
+  return this;
+}
+
+string16 ThemeInstalledInfoBarDelegate::GetMessageText() const {
+  return l10n_util::GetStringFUTF16(IDS_THEME_INSTALL_INFOBAR_LABEL,
+                                    UTF8ToUTF16(name_));
+}
+
+int ThemeInstalledInfoBarDelegate::GetButtons() const {
+  return BUTTON_CANCEL;
+}
+
+string16 ThemeInstalledInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  DCHECK_EQ(BUTTON_CANCEL, button);
+  return l10n_util::GetStringUTF16(IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON);
 }
 
 void ThemeInstalledInfoBarDelegate::Observe(
@@ -114,8 +115,4 @@ void ThemeInstalledInfoBarDelegate::Observe(
       // http://crbug.com/62154.
     }
   }
-}
-
-bool ThemeInstalledInfoBarDelegate::MatchesTheme(const Extension* theme) {
-  return (theme && theme->id() == theme_id_);
 }

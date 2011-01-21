@@ -65,7 +65,7 @@ class FileSelectHelper;
 class InfoBarDelegate;
 class LoadNotificationDetails;
 class OmniboxSearchHint;
-class PluginInstaller;
+class PluginInstallerInfoBarDelegate;
 class Profile;
 class PrerenderManager;
 struct RendererPreferences;
@@ -146,8 +146,8 @@ class TabContents : public PageNavigator,
   // Returns true if contains content rendered by an extension.
   bool HostsExtension() const;
 
-  // Returns the PluginInstaller, creating it if necessary.
-  PluginInstaller* GetPluginInstaller();
+  // Returns the PluginInstallerInfoBarDelegate, creating it if necessary.
+  PluginInstallerInfoBarDelegate* GetPluginInstaller();
 
   // Returns the TabContentsSSLHelper, creating it if necessary.
   TabContentsSSLHelper* GetSSLHelper();
@@ -1125,8 +1125,8 @@ class TabContents : public PageNavigator,
   // AutoFillManager.
   scoped_ptr<AutoFillManager> autofill_manager_;
 
-  // PluginInstaller, lazily created.
-  scoped_ptr<PluginInstaller> plugin_installer_;
+  // PluginInstallerInfoBarDelegate, lazily created.
+  scoped_ptr<PluginInstallerInfoBarDelegate> plugin_installer_;
 
   // TabContentsSSLHelper, lazily created.
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;

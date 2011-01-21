@@ -4,6 +4,8 @@
 
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 
+#include <set>
+
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -84,15 +86,15 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
   // Returns the translate infobar if there is 1 infobar and it is a translate
   // infobar.
   TranslateInfoBarDelegate* GetTranslateInfoBar() {
-    if (contents()->infobar_delegate_count() != 1)
-      return NULL;
-    return contents()->GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
+    return (contents()->infobar_delegate_count() == 1) ?
+        contents()->GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate() :
+        NULL;
   }
 
   // If there is 1 infobar and it is a translate infobar, closes it and returns
   // true.  Returns false otherwise.
   bool CloseTranslateInfoBar() {
-    TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+    InfoBarDelegate* infobar = GetTranslateInfoBar();
     if (!infobar)
       return false;
     infobar->InfoBarDismissed();  // Simulates closing the infobar.
@@ -102,9 +104,8 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
 
   // Checks whether |infobar| has been removed and clears the removed infobar
   // list.
-  bool CheckInfoBarRemovedAndReset(InfoBarDelegate* infobar) {
-    bool found = std::find(removed_infobars_.begin(), removed_infobars_.end(),
-                           infobar) != removed_infobars_.end();
+  bool CheckInfoBarRemovedAndReset(InfoBarDelegate* delegate) {
+    bool found = removed_infobars_.count(delegate) != 0;
     removed_infobars_.clear();
     return found;
   }
@@ -137,8 +138,8 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    DCHECK(type == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED);
-    removed_infobars_.push_back(Details<InfoBarDelegate>(details).ptr());
+    DCHECK_EQ(NotificationType::TAB_CONTENTS_INFOBAR_REMOVED, type.value);
+    removed_infobars_.insert(Details<InfoBarDelegate>(details).ptr());
   }
 
  protected:
@@ -159,8 +160,7 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
 
     RenderViewHostTestHarness::SetUp();
 
-    notification_registrar_.Add(
-        this,
+    notification_registrar_.Add(this,
         NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
         Source<TabContents>(contents()));
   }
@@ -168,8 +168,7 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
   virtual void TearDown() {
     process()->sink().ClearMessages();
 
-    notification_registrar_.Remove(
-        this,
+    notification_registrar_.Remove(this,
         NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
         Source<TabContents>(contents()));
 
@@ -204,9 +203,9 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
   NotificationRegistrar notification_registrar_;
   TestURLFetcherFactory url_fetcher_factory_;
 
-  // The list of infobars that have been removed.
-  // WARNING: the pointers points to deleted objects, use only for comparison.
-  std::vector<InfoBarDelegate*> removed_infobars_;
+  // The infobars that have been removed.
+  // WARNING: the pointers point to deleted objects, use only for comparison.
+  std::set<InfoBarDelegate*> removed_infobars_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateManagerTest);
 };

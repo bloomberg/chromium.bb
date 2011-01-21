@@ -921,10 +921,9 @@ void ExternalTabContainer::SetEnableExtensionAutomation(
   }
 }
 
-void ExternalTabContainer::InfoBarSizeChanged(bool is_animating) {
-  if (external_tab_view_) {
+void ExternalTabContainer::InfoBarContainerSizeChanged(bool is_animating) {
+  if (external_tab_view_)
     external_tab_view_->Layout();
-  }
 }
 
 // ExternalTabContainer instances do not have a window.

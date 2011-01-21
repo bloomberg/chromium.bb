@@ -49,7 +49,7 @@
 #include "chrome/browser/modal_html_dialog_delegate.h"
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/plugin_installer.h"
+#include "chrome/browser/plugin_installer_infobar_delegate.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
@@ -247,82 +247,101 @@ void MakeNavigateParams(const NavigationEntry& entry,
   params->request_time = base::Time::Now();
 }
 
+
+// OutdatedPluginInfoBar ------------------------------------------------------
+
 class OutdatedPluginInfoBar : public ConfirmInfoBarDelegate {
  public:
   OutdatedPluginInfoBar(TabContents* tab_contents,
                         const string16& name,
-                        const GURL& update_url)
-      : ConfirmInfoBarDelegate(tab_contents),
-        tab_contents_(tab_contents),
-        name_(name),
-        update_url_(update_url) {
-    UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
-    tab_contents->AddInfoBar(this);
-  }
-
-  virtual int GetButtons() const {
-    return BUTTON_OK | BUTTON_CANCEL | BUTTON_OK_DEFAULT;
-  }
-
-  virtual string16 GetButtonLabel(InfoBarButton button) const {
-    if (button == BUTTON_CANCEL)
-      return l10n_util::GetStringUTF16(IDS_PLUGIN_ENABLE_TEMPORARILY);
-    if (button == BUTTON_OK)
-      return l10n_util::GetStringUTF16(IDS_PLUGIN_UPDATE);
-    return ConfirmInfoBarDelegate::GetButtonLabel(button);
-  }
-
-  virtual string16 GetMessageText() const {
-    return l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED_PROMPT, name_);
-  }
-
-  virtual string16 GetLinkText() {
-    return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-  }
-
-  virtual SkBitmap* GetIcon() const {
-    return ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_INFOBAR_PLUGIN_INSTALL);
-  }
-
-  virtual bool Accept() {
-    UserMetrics::RecordAction(
-        UserMetricsAction("OutdatedPluginInfobar.Update"));
-    tab_contents_->OpenURL(update_url_, GURL(),
-                           NEW_FOREGROUND_TAB, PageTransition::LINK);
-    return false;
-  }
-
-  virtual bool Cancel() {
-    UserMetrics::RecordAction(
-        UserMetricsAction("OutdatedPluginInfobar.AllowThisTime"));
-    tab_contents_->render_view_host()->LoadBlockedPlugins();
-    return true;
-  }
-
-  virtual bool LinkClicked(WindowOpenDisposition disposition) {
-    UserMetrics::RecordAction(
-        UserMetricsAction("OutdatedPluginInfobar.LearnMore"));
-    // TODO(bauerb): Navigate to a help page explaining why we disabled
-    // the plugin, once we have one.
-    return false;
-  }
-
-  virtual void InfoBarClosed() {
-    UserMetrics::RecordAction(
-        UserMetricsAction("OutdatedPluginInfobar.Closed"));
-    delete this;
-  }
+                        const GURL& update_url);
 
  private:
+  virtual ~OutdatedPluginInfoBar();
+
+  // ConfirmInfoBarDelegate:
+  virtual void InfoBarClosed();
+  virtual SkBitmap* GetIcon() const;
+  virtual string16 GetMessageText() const;
+  virtual int GetButtons() const;
+  virtual string16 GetButtonLabel(InfoBarButton button) const;
+  virtual bool Accept();
+  virtual bool Cancel();
+  virtual string16 GetLinkText();
+  virtual bool LinkClicked(WindowOpenDisposition disposition);
+
   TabContents* tab_contents_;
   string16 name_;
   GURL update_url_;
 };
 
+OutdatedPluginInfoBar::OutdatedPluginInfoBar(TabContents* tab_contents,
+                                             const string16& name,
+                                             const GURL& update_url)
+    : ConfirmInfoBarDelegate(tab_contents),
+      tab_contents_(tab_contents),
+      name_(name),
+      update_url_(update_url) {
+  UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
+  tab_contents->AddInfoBar(this);
+}
+
+OutdatedPluginInfoBar::~OutdatedPluginInfoBar() {
+}
+
+void OutdatedPluginInfoBar::InfoBarClosed() {
+  UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Closed"));
+  delete this;
+}
+
+SkBitmap* OutdatedPluginInfoBar::GetIcon() const {
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      IDR_INFOBAR_PLUGIN_INSTALL);
+}
+
+string16 OutdatedPluginInfoBar::GetMessageText() const {
+  return l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED_PROMPT, name_);
+}
+
+int OutdatedPluginInfoBar::GetButtons() const {
+  return BUTTON_OK | BUTTON_CANCEL;
+}
+
+string16 OutdatedPluginInfoBar::GetButtonLabel(InfoBarButton button) const {
+  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
+      IDS_PLUGIN_UPDATE : IDS_PLUGIN_ENABLE_TEMPORARILY);
+}
+
+bool OutdatedPluginInfoBar::Accept() {
+  UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Update"));
+  tab_contents_->OpenURL(update_url_, GURL(), NEW_FOREGROUND_TAB,
+                         PageTransition::LINK);
+  return false;
+}
+
+bool OutdatedPluginInfoBar::Cancel() {
+  UserMetrics::RecordAction(
+      UserMetricsAction("OutdatedPluginInfobar.AllowThisTime"));
+  tab_contents_->render_view_host()->LoadBlockedPlugins();
+  return false;
+}
+
+string16 OutdatedPluginInfoBar::GetLinkText() {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
+bool OutdatedPluginInfoBar::LinkClicked(WindowOpenDisposition disposition) {
+  UserMetrics::RecordAction(
+      UserMetricsAction("OutdatedPluginInfobar.LearnMore"));
+  // TODO(bauerb): Navigate to a help page explaining why we disabled
+  // the plugin, once we have one.
+  return false;
+}
+
 }  // namespace
 
-// -----------------------------------------------------------------------------
+
+// TabContents ----------------------------------------------------------------
 
 // static
 int TabContents::find_request_id_counter_ = -1;
@@ -612,9 +631,9 @@ bool TabContents::HostsExtension() const {
   return GetURL().SchemeIs(chrome::kExtensionScheme);
 }
 
-PluginInstaller* TabContents::GetPluginInstaller() {
+PluginInstallerInfoBarDelegate* TabContents::GetPluginInstaller() {
   if (plugin_installer_.get() == NULL)
-    plugin_installer_.reset(new PluginInstaller(this));
+    plugin_installer_.reset(new PluginInstallerInfoBarDelegate(this));
   return plugin_installer_.get();
 }
 
@@ -1192,8 +1211,7 @@ void TabContents::AddInfoBar(InfoBarDelegate* delegate) {
 
   infobar_delegates_.push_back(delegate);
   NotificationService::current()->Notify(
-      NotificationType::TAB_CONTENTS_INFOBAR_ADDED,
-      Source<TabContents>(this),
+      NotificationType::TAB_CONTENTS_INFOBAR_ADDED, Source<TabContents>(this),
       Details<InfoBarDelegate>(delegate));
 
   // Add ourselves as an observer for navigations the first time a delegate is
@@ -1219,19 +1237,11 @@ void TabContents::RemoveInfoBar(InfoBarDelegate* delegate) {
         Source<TabContents>(this),
         Details<InfoBarDelegate>(delegate));
 
-    // Just to be safe, make sure the delegate was not removed by an observer.
-    it = find(infobar_delegates_.begin(), infobar_delegates_.end(), delegate);
-    if (it != infobar_delegates_.end()) {
-      infobar_delegates_.erase(it);
-      // Remove ourselves as an observer if we are tracking no more InfoBars.
-      if (infobar_delegates_.empty()) {
-        registrar_.Remove(this, NotificationType::NAV_ENTRY_COMMITTED,
-                          Source<NavigationController>(&controller_));
-      }
-    } else {
-      // If you hit this NOTREACHED, please comment in bug
-      // http://crbug.com/50428 how you got there.
-      NOTREACHED();
+    infobar_delegates_.erase(it);
+    // Remove ourselves as an observer if we are tracking no more InfoBars.
+    if (infobar_delegates_.empty()) {
+      registrar_.Remove(this, NotificationType::NAV_ENTRY_COMMITTED,
+                        Source<NavigationController>(&controller_));
     }
   }
 }
@@ -1256,16 +1266,8 @@ void TabContents::ReplaceInfoBar(InfoBarDelegate* old_delegate,
       Source<TabContents>(this),
       Details<std::pair<InfoBarDelegate*, InfoBarDelegate*> >(details.get()));
 
-  // Just to be safe, make sure the delegate was not removed by an observer.
-  it = find(infobar_delegates_.begin(), infobar_delegates_.end(), old_delegate);
-  if (it != infobar_delegates_.end()) {
-    // Remove the old one.
-    infobar_delegates_.erase(it);
-  } else {
-    // If you hit this NOTREACHED, please comment in bug
-    // http://crbug.com/50428 how you got there.
-    NOTREACHED();
-  }
+  // Remove the old one.
+  infobar_delegates_.erase(it);
 
   // Add the new one.
   DCHECK(find(infobar_delegates_.begin(),
@@ -1845,13 +1847,6 @@ void TabContents::ExpireInfoBars(
 
   for (int i = infobar_delegate_count() - 1; i >= 0; --i) {
     InfoBarDelegate* delegate = GetInfoBarDelegateAt(i);
-    if (!delegate) {
-      // If you hit this NOTREACHED, please comment in bug
-      // http://crbug.com/50428 how you got there.
-      NOTREACHED();
-      continue;
-    }
-
     if (delegate->ShouldExpire(details))
       RemoveInfoBar(delegate);
   }
@@ -2316,16 +2311,14 @@ void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
   }
   SkBitmap* crash_icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_INFOBAR_PLUGIN_CRASHED);
-  AddInfoBar(new SimpleAlertInfoBarDelegate(
-      this, l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT,
-                                       WideToUTF16Hack(plugin_name)),
-      crash_icon, true));
+  AddInfoBar(new SimpleAlertInfoBarDelegate(this, crash_icon,
+      l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT,
+                                 WideToUTF16Hack(plugin_name)), true));
 }
 
 void TabContents::OnCrashedWorker() {
-  AddInfoBar(new SimpleAlertInfoBarDelegate(
-      this, l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT),
-      NULL, true));
+  AddInfoBar(new SimpleAlertInfoBarDelegate(this, NULL,
+      l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT), true));
 }
 
 void TabContents::OnDidGetApplicationInfo(int32 page_id,
@@ -3054,9 +3047,8 @@ void TabContents::OnIgnoredUIEvent() {
 }
 
 void TabContents::OnJSOutOfMemory() {
-  AddInfoBar(new SimpleAlertInfoBarDelegate(
-                 this, l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT),
-                 NULL, true));
+  AddInfoBar(new SimpleAlertInfoBarDelegate(this, NULL,
+      l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT), true));
 }
 
 void TabContents::OnCrossSiteResponse(int new_render_process_host_id,

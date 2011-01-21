@@ -471,10 +471,14 @@ ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
       link_(NULL),
       initialized_(false) {
   ok_button_ = InfoBarTextButton::Create(this,
-      delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
+      (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) ?
+          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK) :
+          string16());
   ok_button_->SetAccessibleName(WideToUTF16Hack(ok_button_->text()));
   cancel_button_ = InfoBarTextButton::Create(this,
-      delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+      (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_CANCEL) ?
+          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL) :
+          string16());
   cancel_button_->SetAccessibleName(WideToUTF16Hack(cancel_button_->text()));
 
   // Set up the link.

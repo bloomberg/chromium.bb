@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,10 +39,6 @@ ExtensionInfoBarDelegate::~ExtensionInfoBarDelegate() {
     observer_->OnDelegateDeleted();
 }
 
-void ExtensionInfoBarDelegate::InfoBarDismissed() {
-  closing_ = true;
-}
-
 bool ExtensionInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
   ExtensionInfoBarDelegate* extension_delegate =
       delegate->AsExtensionInfoBarDelegate();
@@ -59,17 +55,21 @@ bool ExtensionInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
          extension_host_->extension();
 }
 
+void ExtensionInfoBarDelegate::InfoBarDismissed() {
+  closing_ = true;
+}
+
 void ExtensionInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-ExtensionInfoBarDelegate*
-ExtensionInfoBarDelegate::AsExtensionInfoBarDelegate() {
-  return this;
+InfoBarDelegate::Type ExtensionInfoBarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
 }
 
-InfoBarDelegate::Type ExtensionInfoBarDelegate::GetInfoBarType() {
-  return PAGE_ACTION_TYPE;
+ExtensionInfoBarDelegate*
+    ExtensionInfoBarDelegate::AsExtensionInfoBarDelegate() {
+  return this;
 }
 
 void ExtensionInfoBarDelegate::Observe(NotificationType type,

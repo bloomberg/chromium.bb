@@ -51,7 +51,7 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
 
   // Creates a combobox that displays the languages currently available.
   // |selected_language| is the language index (as used in the
-  // TranslateInfoDelegate) that should be selected initially.
+  // TranslateInfoBarDelegate) that should be selected initially.
   // |exclude_language| is the language index of the language that should not be
   // included in the list (-1 means no language excluded).
   GtkWidget* CreateLanguageCombobox(int selected_language,

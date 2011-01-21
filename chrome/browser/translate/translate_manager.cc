@@ -415,8 +415,7 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
 
   // Prompts the user if he/she wants the page translated.
   tab->AddInfoBar(TranslateInfoBarDelegate::CreateDelegate(
-      TranslateInfoBarDelegate::BEFORE_TRANSLATE, tab,
-      page_lang, target_lang));
+      TranslateInfoBarDelegate::BEFORE_TRANSLATE, tab, page_lang, target_lang));
 }
 
 void TranslateManager::InitiateTranslationPosted(
@@ -529,9 +528,8 @@ void TranslateManager::PageTranslated(TabContents* tab,
   // Create the new infobar to display.
   TranslateInfoBarDelegate* infobar;
   if (details->error_type != TranslateErrors::NONE) {
-    infobar = TranslateInfoBarDelegate::CreateErrorDelegate(
-        details->error_type, tab,
-        details->source_language, details->target_language);
+    infobar = TranslateInfoBarDelegate::CreateErrorDelegate(details->error_type,
+        tab, details->source_language, details->target_language);
   } else if (!IsSupportedLanguage(details->source_language)) {
     // TODO(jcivelli): http://crbug.com/9390 We should change the "after
     //                 translate" infobar to support unknown as the original
@@ -627,9 +625,7 @@ void TranslateManager::ShowInfoBar(TabContents* tab,
 std::string TranslateManager::GetTargetLanguage() {
   std::string target_lang =
       GetLanguageCode(g_browser_process->GetApplicationLocale());
-  if (IsSupportedLanguage(target_lang))
-    return target_lang;
-  return std::string();
+  return IsSupportedLanguage(target_lang) ? target_lang : std::string();
 }
 
 // static

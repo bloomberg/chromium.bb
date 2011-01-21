@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,8 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
     TabContents* tab_contents = browser()->GetSelectedTabContents();
     ASSERT_TRUE(tab_contents);
     ASSERT_EQ(1, tab_contents->infobar_delegate_count());
-    ThemeInstalledInfoBarDelegate* delegate = tab_contents->
-        GetInfoBarDelegateAt(0)->AsThemePreviewInfobarDelegate();
+    ConfirmInfoBarDelegate* delegate =
+        tab_contents->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
     ASSERT_TRUE(delegate);
     delegate->Cancel();
     ASSERT_EQ(0, tab_contents->infobar_delegate_count());

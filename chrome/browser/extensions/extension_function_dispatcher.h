@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class ExtensionFunctionDispatcher {
    public:
     // Returns the browser that this delegate is associated with, if any.
     // Returns NULL otherwise.
-    virtual Browser* GetBrowser() const = 0;
+    virtual Browser* GetBrowser() = 0;
 
     // Returns the native view for this extension view, if any. This may be NULL
     // if the view is not visible.

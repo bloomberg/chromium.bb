@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -381,7 +381,7 @@ class RenderViewHost : public RenderWidgetHost {
   void UpdateWebPreferences(const WebPreferences& prefs);
 
   // Request the Renderer to ask the default plugin to start installation of
-  // missing plugin. Called by PluginInstaller.
+  // missing plugin. Called by PluginInstallerInfoBarDelegate.
   void InstallMissingPlugin();
 
   // Load all blocked plugins in the RenderView.

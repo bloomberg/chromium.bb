@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -168,12 +168,10 @@ TEST_F(GeolocationPermissionContextTests, SinglePermission) {
 TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   GURL requesting_frame_0("http://www.example.com/geolocation");
   GURL requesting_frame_1("http://www.example-2.com/geolocation");
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
+  EXPECT_EQ(CONTENT_SETTING_ASK,
       profile()->GetGeolocationContentSettingsMap()->GetContentSetting(
           requesting_frame_0, requesting_frame_0));
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
+  EXPECT_EQ(CONTENT_SETTING_ASK,
       profile()->GetGeolocationContentSettingsMap()->GetContentSetting(
           requesting_frame_1, requesting_frame_0));
 
@@ -219,12 +217,10 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   infobar_1->InfoBarClosed();
   EXPECT_EQ(0, contents()->infobar_delegate_count());
   // Ensure the persisted permissions are ok.
-  EXPECT_EQ(
-      CONTENT_SETTING_ALLOW,
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
       profile()->GetGeolocationContentSettingsMap()->GetContentSetting(
           requesting_frame_0, requesting_frame_0));
-  EXPECT_EQ(
-      CONTENT_SETTING_BLOCK,
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
       profile()->GetGeolocationContentSettingsMap()->GetContentSetting(
           requesting_frame_1, requesting_frame_0));
 }
@@ -232,12 +228,10 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
 TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   GURL requesting_frame_0("http://www.example.com/geolocation");
   GURL requesting_frame_1("http://www.example-2.com/geolocation");
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
+  EXPECT_EQ(CONTENT_SETTING_ASK,
       profile()->GetGeolocationContentSettingsMap()->GetContentSetting(
           requesting_frame_0, requesting_frame_0));
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
+  EXPECT_EQ(CONTENT_SETTING_ASK,
       profile()->GetGeolocationContentSettingsMap()->GetContentSetting(
           requesting_frame_1, requesting_frame_0));
 
@@ -280,12 +274,10 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   infobar_1->InfoBarClosed();
   EXPECT_EQ(0, contents()->infobar_delegate_count());
   // Ensure the persisted permissions are ok.
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
+  EXPECT_EQ(CONTENT_SETTING_ASK,
       profile()->GetGeolocationContentSettingsMap()->GetContentSetting(
           requesting_frame_0, requesting_frame_0));
-  EXPECT_EQ(
-      CONTENT_SETTING_ALLOW,
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
       profile()->GetGeolocationContentSettingsMap()->GetContentSetting(
           requesting_frame_1, requesting_frame_0));
 }

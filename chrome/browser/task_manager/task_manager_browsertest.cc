@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -386,11 +386,10 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   // gets reloaded and noticed in the task manager.
   TabContents* current_tab = browser()->GetSelectedTabContents();
   ASSERT_EQ(1, current_tab->infobar_delegate_count());
-  InfoBarDelegate* delegate = current_tab->GetInfoBarDelegateAt(0);
-  CrashedExtensionInfoBarDelegate* crashed_delegate =
-      delegate->AsCrashedExtensionInfoBarDelegate();
-  ASSERT_TRUE(crashed_delegate);
-  crashed_delegate->Accept();
+  ConfirmInfoBarDelegate* delegate =
+      current_tab->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
+  ASSERT_TRUE(delegate);
+  delegate->Accept();
   WaitForResourceChange(3);
 }
 

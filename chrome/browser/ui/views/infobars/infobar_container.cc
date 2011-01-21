@@ -52,7 +52,7 @@ void InfoBarContainer::ChangeTabContents(TabContents* contents) {
 
 void InfoBarContainer::InfoBarAnimated(bool completed) {
   if (delegate_)
-    delegate_->InfoBarSizeChanged(!completed);
+    delegate_->InfoBarContainerSizeChanged(!completed);
 }
 
 void InfoBarContainer::RemoveDelegate(InfoBarDelegate* delegate) {
@@ -92,7 +92,7 @@ void InfoBarContainer::ViewHierarchyChanged(bool is_add,
     if (delegate_) {
       // An InfoBar child was added or removed. Tell the delegate it needs to
       // re-layout since our preferred size will have changed.
-      delegate_->InfoBarSizeChanged(false);
+      delegate_->InfoBarContainerSizeChanged(false);
     }
   }
 }

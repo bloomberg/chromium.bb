@@ -764,7 +764,6 @@ IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_ClickInfoBarAccept,
                             int /* tab_handle */,
                             int /* info bar index */,
                             bool /* wait for navigation */,
-
                             /* navigation result */
                             AutomationMsg_NavigationResponseValues)
 
@@ -779,7 +778,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_GetLastNavigationTime,
 IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_WaitForNavigation,
                             int /* tab_handle */,
                             int64 /* last navigation time */,
-
                             /* navigation result */
                             AutomationMsg_NavigationResponseValues)
 
@@ -1027,7 +1025,7 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_NavigateExternalTabAtIndex,
 // This message requests the provider to wait until the window count
 // reached the specified value.
 // Request:
-//   - int: target browser window count
+//  - int: target browser window count
 // Response:
 //  - bool: whether the operation was successful.
 IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_WaitForBrowserWindowCountToBecome,

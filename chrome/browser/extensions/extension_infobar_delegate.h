@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,30 +27,33 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
     virtual ~DelegateObserver() {}
   };
 
-  ExtensionInfoBarDelegate(Browser* browser, TabContents* contents,
-                           const Extension* extension, const GURL& url);
-  ~ExtensionInfoBarDelegate();
-
+  ExtensionInfoBarDelegate(Browser* browser,
+                           TabContents* contents,
+                           const Extension* extension,
+                           const GURL& url);
   const Extension* extension() { return extension_; }
   ExtensionHost* extension_host() { return extension_host_.get(); }
 
   void set_observer(DelegateObserver* observer) { observer_ = observer; }
 
-  // Overridden from InfoBarDelegate:
-  virtual void InfoBarDismissed();
-  virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
-  virtual void InfoBarClosed();
-  virtual InfoBar* CreateInfoBar();
-  virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate();
-  virtual Type GetInfoBarType();
+  bool closing() { return closing_; }
 
-  // Overridden from NotificationObserver:
+ private:
+  virtual ~ExtensionInfoBarDelegate();
+
+  // InfoBarDelegate:
+  virtual InfoBar* CreateInfoBar();
+  virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
+  virtual void InfoBarDismissed();
+  virtual void InfoBarClosed();
+  virtual Type GetInfoBarType() const;
+  virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate();
+
+  // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  bool closing() { return closing_; }
- private:
   // The extension host we are showing the InfoBar for. The delegate needs to
   // own this since the InfoBar gets deleted and recreated when you switch tabs
   // and come back (and we don't want the user's interaction with the InfoBar to
@@ -61,9 +64,7 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   DelegateObserver* observer_;
 
   const Extension* extension_;
-
   TabContents* tab_contents_;
-
   NotificationRegistrar registrar_;
 
   // Whether we are currently animating to close. This is used to ignore

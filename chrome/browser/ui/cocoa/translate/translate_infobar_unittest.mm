@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,7 +97,8 @@ class TranslationInfoBarTest : public CocoaTest {
     infobar_delegate.reset(
         new MockTranslateInfoBarDelegate(type, error, tab_contents.get()));
     [[infobar_controller view] removeFromSuperview];
-    scoped_ptr<InfoBar> infobar(infobar_delegate->CreateInfoBar());
+    scoped_ptr<InfoBar> infobar(
+        static_cast<InfoBarDelegate*>(infobar_delegate.get())->CreateInfoBar());
     infobar_controller.reset(
         reinterpret_cast<TranslateInfoBarControllerBase*>(
             infobar->controller()));

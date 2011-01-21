@@ -101,88 +101,53 @@
 
 namespace {
 
+// SetAsDefaultBrowserTask ----------------------------------------------------
+
 class SetAsDefaultBrowserTask : public Task {
  public:
-  SetAsDefaultBrowserTask() { }
-  virtual void Run() {
-    ShellIntegration::SetAsDefaultBrowser();
-  }
+  SetAsDefaultBrowserTask();
+  virtual ~SetAsDefaultBrowserTask();
 
  private:
+  virtual void Run();
+
   DISALLOW_COPY_AND_ASSIGN(SetAsDefaultBrowserTask);
 };
+
+SetAsDefaultBrowserTask::SetAsDefaultBrowserTask() {
+}
+
+SetAsDefaultBrowserTask::~SetAsDefaultBrowserTask() {
+}
+
+void SetAsDefaultBrowserTask::Run() {
+  ShellIntegration::SetAsDefaultBrowser();
+}
+
+
+// DefaultBrowserInfoBarDelegate ----------------------------------------------
 
 // The delegate for the infobar shown when Chrome is not the default browser.
 class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  explicit DefaultBrowserInfoBarDelegate(TabContents* contents)
-      : ConfirmInfoBarDelegate(contents),
-        profile_(contents->profile()),
-        action_taken_(false),
-        should_expire_(false),
-        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-    // We want the info-bar to stick-around for few seconds and then be hidden
-    // on the next navigation after that.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &DefaultBrowserInfoBarDelegate::Expire),
-        8000);  // 8 seconds.
-  }
+  explicit DefaultBrowserInfoBarDelegate(TabContents* contents);
 
+ private:
+  virtual ~DefaultBrowserInfoBarDelegate();
+
+  void AllowExpiry() { should_expire_ = true; }
+
+  // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(
-      const NavigationController::LoadCommittedDetails& details) const {
-    return should_expire_;
-  }
-
-  // Overridden from ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed() {
-    if (!action_taken_)
-      UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.Ignored", 1);
-    delete this;
-  }
-
-  virtual string16 GetMessageText() const {
-    return l10n_util::GetStringUTF16(IDS_DEFAULT_BROWSER_INFOBAR_SHORT_TEXT);
-  }
-
-  virtual SkBitmap* GetIcon() const {
-    return ResourceBundle::GetSharedInstance().GetBitmapNamed(
-       IDR_PRODUCT_ICON_32);
-  }
-
-  virtual int GetButtons() const {
-    return BUTTON_OK | BUTTON_CANCEL | BUTTON_OK_DEFAULT;
-  }
-
-  virtual string16 GetButtonLabel(InfoBarButton button) const {
-    return button == BUTTON_OK ?
-        l10n_util::GetStringUTF16(IDS_SET_AS_DEFAULT_INFOBAR_BUTTON_LABEL) :
-        l10n_util::GetStringUTF16(IDS_DONT_ASK_AGAIN_INFOBAR_BUTTON_LABEL);
-  }
-
-  virtual bool NeedElevation(InfoBarButton button) const {
-    return button == BUTTON_OK;
-  }
-
-  virtual bool Accept() {
-    action_taken_ = true;
-    UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefault", 1);
-    g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
-        new SetAsDefaultBrowserTask());
-    return true;
-  }
-
-  virtual bool Cancel() {
-    action_taken_ = true;
-    UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.DontSetAsDefault", 1);
-    // User clicked "Don't ask me again", remember that.
-    profile_->GetPrefs()->SetBoolean(prefs::kCheckDefaultBrowser, false);
-    return true;
-  }
-
-  void Expire() {
-    should_expire_ = true;
-  }
+      const NavigationController::LoadCommittedDetails& details) const;
+  virtual void InfoBarClosed();
+  virtual SkBitmap* GetIcon() const;
+  virtual string16 GetMessageText() const;
+  virtual int GetButtons() const;
+  virtual string16 GetButtonLabel(InfoBarButton button) const;
+  virtual bool NeedElevation(InfoBarButton button) const;
+  virtual bool Accept();
+  virtual bool Cancel();
 
  private:
   // The Profile that we restore sessions from.
@@ -200,87 +165,204 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(DefaultBrowserInfoBarDelegate);
 };
 
+DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(
+    TabContents* contents)
+    : ConfirmInfoBarDelegate(contents),
+      profile_(contents->profile()),
+      action_taken_(false),
+      should_expire_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  // We want the info-bar to stick-around for few seconds and then be hidden
+  // on the next navigation after that.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &DefaultBrowserInfoBarDelegate::AllowExpiry), 8000);  // 8 seconds.
+}
+
+DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() {
+}
+
+bool DefaultBrowserInfoBarDelegate::ShouldExpire(
+    const NavigationController::LoadCommittedDetails& details) const {
+  return should_expire_;
+}
+
+void DefaultBrowserInfoBarDelegate::InfoBarClosed() {
+  if (!action_taken_)
+    UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.Ignored", 1);
+  delete this;
+}
+
+SkBitmap* DefaultBrowserInfoBarDelegate::GetIcon() const {
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+     IDR_PRODUCT_ICON_32);
+}
+
+string16 DefaultBrowserInfoBarDelegate::GetMessageText() const {
+  return l10n_util::GetStringUTF16(IDS_DEFAULT_BROWSER_INFOBAR_SHORT_TEXT);
+}
+
+int DefaultBrowserInfoBarDelegate::GetButtons() const {
+  return BUTTON_OK | BUTTON_CANCEL;
+}
+
+string16 DefaultBrowserInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  return button == BUTTON_OK ?
+      l10n_util::GetStringUTF16(IDS_SET_AS_DEFAULT_INFOBAR_BUTTON_LABEL) :
+      l10n_util::GetStringUTF16(IDS_DONT_ASK_AGAIN_INFOBAR_BUTTON_LABEL);
+}
+
+bool DefaultBrowserInfoBarDelegate::NeedElevation(InfoBarButton button) const {
+  return button == BUTTON_OK;
+}
+
+bool DefaultBrowserInfoBarDelegate::Accept() {
+  action_taken_ = true;
+  UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefault", 1);
+  g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
+      new SetAsDefaultBrowserTask());
+  return true;
+}
+
+bool DefaultBrowserInfoBarDelegate::Cancel() {
+  action_taken_ = true;
+  UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.DontSetAsDefault", 1);
+  // User clicked "Don't ask me again", remember that.
+  profile_->GetPrefs()->SetBoolean(prefs::kCheckDefaultBrowser, false);
+  return true;
+}
+
+
+// NotifyNotDefaultBrowserTask ------------------------------------------------
+
 class NotifyNotDefaultBrowserTask : public Task {
  public:
-  NotifyNotDefaultBrowserTask() { }
-
-  virtual void Run() {
-    Browser* browser = BrowserList::GetLastActive();
-    if (!browser) {
-      // Reached during ui tests.
-      return;
-    }
-    TabContents* tab = browser->GetSelectedTabContents();
-    // Don't show the info-bar if there are already info-bars showing.
-    // In ChromeBot tests, there might be a race. This line appears to get
-    // called during shutdown and |tab| can be NULL.
-    if (!tab || tab->infobar_delegate_count() > 0)
-      return;
-    tab->AddInfoBar(new DefaultBrowserInfoBarDelegate(tab));
-  }
+  NotifyNotDefaultBrowserTask();
+  virtual ~NotifyNotDefaultBrowserTask();
 
  private:
+  virtual void Run();
+
   DISALLOW_COPY_AND_ASSIGN(NotifyNotDefaultBrowserTask);
 };
 
+NotifyNotDefaultBrowserTask::NotifyNotDefaultBrowserTask() {
+}
+
+NotifyNotDefaultBrowserTask::~NotifyNotDefaultBrowserTask() {
+}
+
+void NotifyNotDefaultBrowserTask::Run() {
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser)
+    return;  // Reached during ui tests.
+  // Don't show the info-bar if there are already info-bars showing.
+  // In ChromeBot tests, there might be a race. This line appears to get
+  // called during shutdown and |tab| can be NULL.
+  TabContents* tab = browser->GetSelectedTabContents();
+  if (!tab || tab->infobar_delegate_count() > 0)
+    return;
+  tab->AddInfoBar(new DefaultBrowserInfoBarDelegate(tab));
+}
+
+
+// CheckDefaultBrowserTask ----------------------------------------------------
+
 class CheckDefaultBrowserTask : public Task {
  public:
-  CheckDefaultBrowserTask() {
-  }
-
-  virtual void Run() {
-    if (ShellIntegration::IsDefaultBrowser())
-      return;
-#if defined(OS_WIN)
-    if (!BrowserDistribution::GetDistribution()->CanSetAsDefault())
-      return;
-#endif
-
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, new NotifyNotDefaultBrowserTask());
-  }
+  CheckDefaultBrowserTask();
+  virtual ~CheckDefaultBrowserTask();
 
  private:
+  virtual void Run();
+
   DISALLOW_COPY_AND_ASSIGN(CheckDefaultBrowserTask);
 };
+
+CheckDefaultBrowserTask::CheckDefaultBrowserTask() {
+}
+
+CheckDefaultBrowserTask::~CheckDefaultBrowserTask() {
+}
+
+void CheckDefaultBrowserTask::Run() {
+  if (ShellIntegration::IsDefaultBrowser())
+    return;
+#if defined(OS_WIN)
+  if (!BrowserDistribution::GetDistribution()->CanSetAsDefault())
+    return;
+#endif
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          new NotifyNotDefaultBrowserTask());
+}
+
+
+// SessionCrashedInfoBarDelegate ----------------------------------------------
 
 // A delegate for the InfoBar shown when the previous session has crashed. The
 // bar deletes itself automatically after it is closed.
 class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  explicit SessionCrashedInfoBarDelegate(TabContents* contents)
-      : ConfirmInfoBarDelegate(contents),
-        profile_(contents->profile()) {
-  }
-
-  // Overridden from ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed() {
-    delete this;
-  }
-  virtual string16 GetMessageText() const {
-    return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_MESSAGE);
-  }
-  virtual SkBitmap* GetIcon() const {
-    return ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_INFOBAR_RESTORE_SESSION);
-  }
-  virtual int GetButtons() const { return BUTTON_OK; }
-  virtual string16 GetButtonLabel(InfoBarButton button) const {
-    return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON);
-  }
-  virtual bool Accept() {
-    // Restore the session.
-    SessionRestore::RestoreSession(profile_, NULL, true, false,
-                                   std::vector<GURL>());
-    return true;
-  }
+  explicit SessionCrashedInfoBarDelegate(TabContents* contents);
 
  private:
+  virtual ~SessionCrashedInfoBarDelegate();
+
+  // ConfirmInfoBarDelegate:
+  virtual void InfoBarClosed();
+  virtual SkBitmap* GetIcon() const;
+  virtual string16 GetMessageText() const;
+  virtual int GetButtons() const;
+  virtual string16 GetButtonLabel(InfoBarButton button) const;
+  virtual bool Accept();
+
   // The Profile that we restore sessions from.
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionCrashedInfoBarDelegate);
 };
+
+SessionCrashedInfoBarDelegate::SessionCrashedInfoBarDelegate(
+    TabContents* contents)
+    : ConfirmInfoBarDelegate(contents),
+      profile_(contents->profile()) {
+}
+
+SessionCrashedInfoBarDelegate::~SessionCrashedInfoBarDelegate() {
+}
+
+void SessionCrashedInfoBarDelegate::InfoBarClosed() {
+  delete this;
+}
+
+SkBitmap* SessionCrashedInfoBarDelegate::GetIcon() const {
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      IDR_INFOBAR_RESTORE_SESSION);
+}
+
+string16 SessionCrashedInfoBarDelegate::GetMessageText() const {
+  return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_MESSAGE);
+}
+
+int SessionCrashedInfoBarDelegate::GetButtons() const {
+  return BUTTON_OK;
+}
+
+string16 SessionCrashedInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  DCHECK_EQ(BUTTON_OK, button);
+  return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON);
+}
+
+bool SessionCrashedInfoBarDelegate::Accept() {
+  SessionRestore::RestoreSession(profile_, NULL, true, false,
+                                 std::vector<GURL>());
+  return true;
+}
+
+
+// Utility functions ----------------------------------------------------------
 
 SessionStartupPref GetSessionStartupPref(const CommandLine& command_line,
                                          Profile* profile) {
@@ -366,6 +448,9 @@ void UrlsToTabs(const std::vector<GURL>& urls,
 }
 
 }  // namespace
+
+
+// BrowserInit ----------------------------------------------------------------
 
 BrowserInit::BrowserInit() {}
 
@@ -472,13 +557,15 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   return true;
 }
 
-// Tab ------------------------------------------------------------------------
+
+// BrowserInit::LaunchWithProfile::Tab ----------------------------------------
 
 BrowserInit::LaunchWithProfile::Tab::Tab() : is_app(false), is_pinned(true) {}
 
 BrowserInit::LaunchWithProfile::Tab::~Tab() {}
 
-// LaunchWithProfile ----------------------------------------------------------
+
+// BrowserInit::LaunchWithProfile ---------------------------------------------
 
 BrowserInit::LaunchWithProfile::LaunchWithProfile(
     const FilePath& cur_dir,
@@ -859,10 +946,10 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
   }
 
   if (bad_flag) {
-    tab->AddInfoBar(new SimpleAlertInfoBarDelegate(tab,
+    tab->AddInfoBar(new SimpleAlertInfoBarDelegate(tab, NULL,
         l10n_util::GetStringFUTF16(IDS_BAD_FLAGS_WARNING_MESSAGE,
                                    UTF8ToUTF16(std::string("--") + bad_flag)),
-        NULL, false));
+        false));
   }
 }
 

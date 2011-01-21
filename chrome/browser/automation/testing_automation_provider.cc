@@ -1676,11 +1676,10 @@ void TestingAutomationProvider::ClickInfoBarAccept(
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* nav_controller = tab_tracker_->GetResource(handle);
     if (nav_controller) {
-      int count = nav_controller->tab_contents()->infobar_delegate_count();
-      if (info_bar_index >= 0 && info_bar_index < count) {
-        if (wait_for_navigation) {
+      if (info_bar_index >= 0 && info_bar_index < nav_controller->
+          tab_contents()->infobar_delegate_count()) {
+        if (wait_for_navigation)
           AddNavigationStatusListener(nav_controller, reply_message, 1, false);
-        }
         InfoBarDelegate* delegate =
             nav_controller->tab_contents()->GetInfoBarDelegateAt(
                 info_bar_index);
@@ -1814,7 +1813,8 @@ void TestingAutomationProvider::ClickAppModalDialogButton(int button,
 }
 
 void TestingAutomationProvider::WaitForBrowserWindowCountToBecome(
-    int target_count, IPC::Message* reply_message) {
+    int target_count,
+    IPC::Message* reply_message) {
   if (static_cast<int>(BrowserList::size()) == target_count) {
     AutomationMsg_WaitForBrowserWindowCountToBecome::WriteReplyParams(
         reply_message, true);
@@ -2123,11 +2123,9 @@ void TestingAutomationProvider::SetWindowDimensions(
 ListValue* TestingAutomationProvider::GetInfobarsInfo(TabContents* tc) {
   // Each infobar may have different properties depending on the type.
   ListValue* infobars = new ListValue;
-  for (int infobar_index = 0;
-       infobar_index < tc->infobar_delegate_count();
-       ++infobar_index) {
+  for (int i = 0; i < tc->infobar_delegate_count(); ++i) {
     DictionaryValue* infobar_item = new DictionaryValue;
-    InfoBarDelegate* infobar = tc->GetInfoBarDelegateAt(infobar_index);
+    InfoBarDelegate* infobar = tc->GetInfoBarDelegateAt(i);
     if (infobar->AsConfirmInfoBarDelegate()) {
       // Also covers ThemeInstalledInfoBarDelegate and
       // CrashedExtensionInfoBarDelegate.
@@ -2138,13 +2136,13 @@ ListValue* TestingAutomationProvider::GetInfobarsInfo(TabContents* tc) {
       infobar_item->SetString("link_text", confirm_infobar->GetLinkText());
       ListValue* buttons_list = new ListValue;
       int buttons = confirm_infobar->GetButtons();
-      if (ConfirmInfoBarDelegate::BUTTON_OK & buttons) {
+      if (buttons & ConfirmInfoBarDelegate::BUTTON_OK) {
         StringValue* button_label = new StringValue(
             confirm_infobar->GetButtonLabel(
               ConfirmInfoBarDelegate::BUTTON_OK));
         buttons_list->Append(button_label);
       }
-      if (ConfirmInfoBarDelegate::BUTTON_CANCEL & buttons) {
+      if (buttons & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
         StringValue* button_label = new StringValue(
             confirm_infobar->GetButtonLabel(
               ConfirmInfoBarDelegate::BUTTON_CANCEL));

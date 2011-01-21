@@ -98,6 +98,11 @@ void AlternateNavURLFetcher::OnURLFetchComplete(
   ShowInfobarIfPossible();
 }
 
+SkBitmap* AlternateNavURLFetcher::GetIcon() const {
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      IDR_INFOBAR_ALT_NAV_URL);
+}
+
 string16 AlternateNavURLFetcher::GetMessageTextWithOffset(
     size_t* link_offset) const {
   const string16 label = l10n_util::GetStringFUTF16(
@@ -108,11 +113,6 @@ string16 AlternateNavURLFetcher::GetMessageTextWithOffset(
 
 string16 AlternateNavURLFetcher::GetLinkText() const {
   return UTF8ToUTF16(alternate_nav_url_.spec());
-}
-
-SkBitmap* AlternateNavURLFetcher::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_INFOBAR_ALT_NAV_URL);
 }
 
 bool AlternateNavURLFetcher::LinkClicked(WindowOpenDisposition disposition) {

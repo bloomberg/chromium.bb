@@ -53,14 +53,14 @@ class ExtensionHost : public RenderViewHostDelegate,
 
 #if defined(TOOLKIT_VIEWS)
   void set_view(ExtensionView* view) { view_.reset(view); }
-  ExtensionView* view() const { return view_.get(); }
+  const ExtensionView* view() const { return view_.get(); }
+  ExtensionView* view() { return view_.get(); }
 #elif defined(OS_MACOSX)
-  ExtensionViewMac* view() const { return view_.get(); }
+  const ExtensionViewMac* view() const { return view_.get(); }
+  ExtensionViewMac* view() { return view_.get(); }
 #elif defined(TOOLKIT_GTK)
-  ExtensionViewGtk* view() const { return view_.get(); }
-#else
-  // TODO(port): implement
-  void* view() const { return NULL; }
+  const ExtensionViewGtk* view() const { return view_.get(); }
+  ExtensionViewGtk* view() { return view_.get(); }
 #endif
 
   // Create an ExtensionView and tie it to this host and |browser|.  Note NULL
@@ -69,7 +69,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   // instantiate Browser objects.
   void CreateView(Browser* browser);
 
-  const Extension* extension() { return extension_; }
+  const Extension* extension() const { return extension_; }
   RenderViewHost* render_view_host() const { return render_view_host_; }
   RenderProcessHost* render_process_host() const;
   SiteInstance* site_instance() const;
@@ -220,8 +220,11 @@ class ExtensionHost : public RenderViewHostDelegate,
   // Actually create the RenderView for this host. See CreateRenderViewSoon.
   void CreateRenderViewNow();
 
+  // Const version of below function.
+  const Browser* GetBrowser() const;
+
   // ExtensionFunctionDispatcher::Delegate
-  virtual Browser* GetBrowser() const;
+  virtual Browser* GetBrowser();
   virtual gfx::NativeView GetNativeViewOfHost();
 
   // Handles keyboard events that were not handled by HandleKeyboardEvent().

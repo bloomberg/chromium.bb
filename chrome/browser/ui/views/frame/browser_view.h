@@ -395,7 +395,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual gfx::Size GetMinimumSize();
 
   // InfoBarContainer::Delegate overrides
-  virtual void InfoBarSizeChanged(bool is_animating);
+  virtual void InfoBarContainerSizeChanged(bool is_animating);
 
   // views::SingleSplitView::Observer overrides:
   virtual bool SplitHandleMoved(views::SingleSplitView* view);

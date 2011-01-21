@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,133 +29,151 @@ SkBitmap* GetCertIcon() {
       IDR_INFOBAR_SAVE_PASSWORD);
 }
 
+
+// SSLCertAddedInfoBarDelegate ------------------------------------------------
+
 class SSLCertAddedInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   SSLCertAddedInfoBarDelegate(TabContents* tab_contents,
-                              net::X509Certificate* cert)
-      : ConfirmInfoBarDelegate(tab_contents),
-        tab_contents_(tab_contents),
-        cert_(cert) {
-  }
-
-  virtual ~SSLCertAddedInfoBarDelegate() {
-  }
-
-  // Overridden from ConfirmInfoBarDelegate:
-  virtual string16 GetMessageText() const {
-    // TODO(evanm): GetDisplayName should return UTF-16.
-    return l10n_util::GetStringFUTF16(
-        IDS_ADD_CERT_SUCCESS_INFOBAR_LABEL,
-        UTF8ToUTF16(cert_->issuer().GetDisplayName()));
-  }
-
-  virtual SkBitmap* GetIcon() const {
-    return GetCertIcon();
-  }
-
-  virtual int GetButtons() const {
-    return BUTTON_OK;
-  }
-
-  virtual string16 GetButtonLabel(InfoBarButton button) const {
-    switch (button) {
-      case BUTTON_OK:
-        return l10n_util::GetStringUTF16(IDS_ADD_CERT_SUCCESS_INFOBAR_BUTTON);
-      default:
-        return string16();
-    }
-  }
-
-  virtual Type GetInfoBarType() {
-    return PAGE_ACTION_TYPE;
-  }
-
-  virtual bool Accept() {
-    ShowCertificateViewer(tab_contents_->GetMessageBoxRootWindow(), cert_);
-    return false;  // Hiding the infobar just as the dialog opens looks weird.
-  }
-
-  virtual void InfoBarClosed() {
-    // ConfirmInfoBarDelegate doesn't delete itself.
-    delete this;
-  }
+                              net::X509Certificate* cert);
 
  private:
+  virtual ~SSLCertAddedInfoBarDelegate();
+
+  // ConfirmInfoBarDelegate:
+  virtual void InfoBarClosed();
+  virtual SkBitmap* GetIcon() const;
+  virtual Type GetInfoBarType() const;
+  virtual string16 GetMessageText() const;
+  virtual int GetButtons() const;
+  virtual string16 GetButtonLabel(InfoBarButton button) const;
+  virtual bool Accept();
+
   // The TabContents we are attached to
   TabContents* tab_contents_;
   // The cert we added.
   scoped_refptr<net::X509Certificate> cert_;
 };
 
+SSLCertAddedInfoBarDelegate::SSLCertAddedInfoBarDelegate(
+    TabContents* tab_contents,
+    net::X509Certificate* cert)
+    : ConfirmInfoBarDelegate(tab_contents),
+      tab_contents_(tab_contents),
+      cert_(cert) {
+}
+
+SSLCertAddedInfoBarDelegate::~SSLCertAddedInfoBarDelegate() {
+}
+
+void SSLCertAddedInfoBarDelegate::InfoBarClosed() {
+  // ConfirmInfoBarDelegate doesn't delete itself.
+  delete this;
+}
+
+SkBitmap* SSLCertAddedInfoBarDelegate::GetIcon() const {
+  return GetCertIcon();
+}
+
+InfoBarDelegate::Type SSLCertAddedInfoBarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
+}
+
+string16 SSLCertAddedInfoBarDelegate::GetMessageText() const {
+  // TODO(evanm): GetDisplayName should return UTF-16.
+  return l10n_util::GetStringFUTF16(IDS_ADD_CERT_SUCCESS_INFOBAR_LABEL,
+      UTF8ToUTF16(cert_->issuer().GetDisplayName()));
+}
+
+int SSLCertAddedInfoBarDelegate::GetButtons() const {
+  return BUTTON_OK;
+}
+
+string16 SSLCertAddedInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  DCHECK_EQ(BUTTON_OK, button);
+  return l10n_util::GetStringUTF16(IDS_ADD_CERT_SUCCESS_INFOBAR_BUTTON);
+}
+
+bool SSLCertAddedInfoBarDelegate::Accept() {
+  ShowCertificateViewer(tab_contents_->GetMessageBoxRootWindow(), cert_);
+  return false;  // Hiding the infobar just as the dialog opens looks weird.
+}
+
 }  // namespace
+
+
+// TabContentsSSLHelper::SSLAddCertData ---------------------------------------
 
 class TabContentsSSLHelper::SSLAddCertData : public NotificationObserver {
  public:
-  SSLAddCertData(TabContents* tab, SSLAddCertHandler* handler)
-      : tab_(tab),
-        handler_(handler),
-        infobar_delegate_(NULL) {
-    // Listen for disappearing InfoBars.
-    Source<TabContents> tc_source(tab_);
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
-                   tc_source);
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REPLACED,
-                   tc_source);
-  }
-  ~SSLAddCertData() {}
+  SSLAddCertData(TabContents* tab, SSLAddCertHandler* handler);
+  virtual ~SSLAddCertData();
 
   // Displays |delegate| as an infobar in |tab_|, replacing our current one if
   // still active.
-  void ShowInfoBar(InfoBarDelegate* delegate) {
-    if (infobar_delegate_) {
-      tab_->ReplaceInfoBar(infobar_delegate_, delegate);
-    } else {
-      tab_->AddInfoBar(delegate);
-    }
-    infobar_delegate_ = delegate;
-  }
+  void ShowInfoBar(InfoBarDelegate* delegate);
 
-  void ShowErrorInfoBar(const string16& message) {
-    ShowInfoBar(
-        new SimpleAlertInfoBarDelegate(tab_, message, GetCertIcon(), true));
-  }
-
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    switch (type.value) {
-      case NotificationType::TAB_CONTENTS_INFOBAR_REMOVED:
-        InfoBarClosed(Details<InfoBarDelegate>(details).ptr());
-        break;
-      case NotificationType::TAB_CONTENTS_INFOBAR_REPLACED:
-        typedef std::pair<InfoBarDelegate*, InfoBarDelegate*>
-            InfoBarDelegatePair;
-        InfoBarClosed(Details<InfoBarDelegatePair>(details).ptr()->first);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
+  // Same as above, for the common case of wanting to show a simple alert
+  // message.
+  void ShowErrorInfoBar(const string16& message);
 
  private:
-  void InfoBarClosed(InfoBarDelegate* delegate) {
-    if (infobar_delegate_ == delegate)
-      infobar_delegate_ = NULL;
-  }
+  // NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
-  // The TabContents we are attached to.
-  TabContents* tab_;
-  // The handler we call back to.
-  scoped_refptr<SSLAddCertHandler> handler_;
-  // The current InfoBarDelegate we're displaying.
+  TabContents* tab_contents_;
+  scoped_refptr<SSLAddCertHandler> handler_;  // The handler we call back to.
   InfoBarDelegate* infobar_delegate_;
-
   NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLAddCertData);
 };
+
+TabContentsSSLHelper::SSLAddCertData::SSLAddCertData(TabContents* tab_contents,
+                                                     SSLAddCertHandler* handler)
+    : tab_contents_(tab_contents),
+      handler_(handler),
+      infobar_delegate_(NULL) {
+  Source<TabContents> source(tab_contents_);
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED, source);
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REPLACED, source);
+}
+
+TabContentsSSLHelper::SSLAddCertData::~SSLAddCertData() {
+}
+
+void TabContentsSSLHelper::SSLAddCertData::ShowInfoBar(
+    InfoBarDelegate* delegate) {
+  if (infobar_delegate_)
+    tab_contents_->ReplaceInfoBar(infobar_delegate_, delegate);
+  else
+    tab_contents_->AddInfoBar(delegate);
+  infobar_delegate_ = delegate;
+}
+
+void TabContentsSSLHelper::SSLAddCertData::ShowErrorInfoBar(
+    const string16& message) {
+  ShowInfoBar(new SimpleAlertInfoBarDelegate(tab_contents_, GetCertIcon(),
+                                             message, true));
+}
+
+void TabContentsSSLHelper::SSLAddCertData::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> InfoBarDelegatePair;
+  if (infobar_delegate_ ==
+      ((type.value == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED) ?
+          Details<InfoBarDelegate>(details).ptr() :
+          Details<InfoBarDelegatePair>(details).ptr()->first))
+    infobar_delegate_ = NULL;
+}
+
+
+// TabContentsSSLHelper -------------------------------------------------------
 
 TabContentsSSLHelper::TabContentsSSLHelper(TabContents* tab_contents)
     : tab_contents_(tab_contents) {
