@@ -218,8 +218,10 @@ PluginService::~PluginService() {
   // Release the events since they're owned by RegKey, not WaitableEvent.
   hkcu_watcher_.StopWatching();
   hklm_watcher_.StopWatching();
-  hkcu_event_->Release();
-  hklm_event_->Release();
+  if (hkcu_event_.get())
+    hkcu_event_->Release();
+  if (hklm_event_.get())
+    hklm_event_->Release();
 #endif
 }
 
