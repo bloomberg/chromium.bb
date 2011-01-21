@@ -8,7 +8,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/notifications/system_notification.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,6 +26,21 @@ base::LazyInstance<chromeos::LocaleChangeGuard> g_locale_change_guard(
 }  // namespace
 
 namespace chromeos {
+
+class LocaleChangeGuard::Delegate : public NotificationDelegate {
+ public:
+  explicit Delegate(chromeos::LocaleChangeGuard* master) : master_(master) {}
+  void Close(bool by_user);
+  void Display() {}
+  void Error() {}
+  void Click() {}
+  std::string id() const;
+
+ private:
+  chromeos::LocaleChangeGuard* master_;
+
+  DISALLOW_COPY_AND_ASSIGN(Delegate);
+};
 
 LocaleChangeGuard::LocaleChangeGuard()
     : profile_id_(Profile::InvalidProfileId),

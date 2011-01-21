@@ -8,14 +8,14 @@
 
 #include "base/lazy_instance.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/chromeos/notifications/system_notification.h"
-#include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 
 class ListValue;
 class TabContents;
 
 namespace chromeos {
+
+class SystemNotification;
 
 class LocaleChangeGuard {
  public:
@@ -26,20 +26,7 @@ class LocaleChangeGuard {
   static void Check(TabContents* tab_contents);
 
  private:
-  class Delegate : public NotificationDelegate {
-   public:
-    explicit Delegate(chromeos::LocaleChangeGuard* master) : master_(master) {}
-    void Close(bool by_user);
-    void Display() {}
-    void Error() {}
-    void Click() {}
-    std::string id() const;
-
-   private:
-    chromeos::LocaleChangeGuard* master_;
-
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
-  };
+  class Delegate;
 
   LocaleChangeGuard();
   void CheckLocaleChange(TabContents* tab_contents);
