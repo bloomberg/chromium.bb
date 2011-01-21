@@ -267,15 +267,10 @@ class MockWebFrame : public WebKit::WebFrame {
   virtual bool selectWordAroundCaret() {
     return false;
   }
-#if defined(WEBFRAME_PRINTBEGIN_TAKES_NODE)
   virtual int printBegin(const WebSize& pageSize,
                          const WebNode& constrainToNode,
                          int printerDPI = 72,
                          bool* useBrowserOverlays = 0) {
-#else
-virtual int printBegin(const WebSize& pageSize, int printerDPI = 72,
-                         bool* useBrowserOverlays = 0) {
-#endif
     return 0;
   }
   virtual float getPrintPageShrink(int page) {
