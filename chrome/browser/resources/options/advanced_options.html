@@ -124,10 +124,10 @@
       </label>
     </div>
   </section>
+<if expr="not pp_ifdef('chromeos')">
   <section>
     <h3 i18n-content="downloadLocationGroupName"></h3>
     <div>
-<if expr="not pp_ifdef('chromeos')">
       <div>
         <label>
           <span i18n-content="downloadLocationBrowseTitle"></span>
@@ -141,12 +141,12 @@
             metric="Options_AskForSaveLocation" type="checkbox">
         <span i18n-content="downloadLocationAskForSaveLocation"></span>
       </label>
-</if>
       <div i18n-content="autoOpenFileTypesInfo"></div>
       <div><button id="autoOpenFileTypesResetToDefault"
           i18n-content="autoOpenFileTypesResetToDefault"></button></div>
     </div>
   </section>
+</if>
   <section>
     <h3 i18n-content="advancedSectionTitleSecurity"></h3>
     <div>
