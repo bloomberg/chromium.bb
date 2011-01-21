@@ -1102,30 +1102,6 @@ window_set_child_size(struct window *window, int32_t width, int32_t height)
 	}
 }
 
-void
-window_copy_image(struct window *window,
-		  struct rectangle *rectangle, EGLImageKHR image)
-{
-	/* set image as read buffer, copy pixels or something... */
-}
-
-void
-window_copy_surface(struct window *window,
-		    struct rectangle *rectangle,
-		    cairo_surface_t *surface)
-{
-	cairo_t *cr;
-
-	cr = cairo_create (window->cairo_surface);
-
-	cairo_set_source_surface (cr,
-				  surface,
-				  rectangle->x, rectangle->y);
-
-	cairo_paint (cr);
-	cairo_destroy (cr);
-}
-
 static gboolean
 idle_redraw(void *data)
 {

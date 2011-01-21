@@ -141,10 +141,6 @@ window_get_child_allocation(struct window *window,
 void
 window_set_child_size(struct window *window, int32_t width, int32_t height);
 void
-window_copy_image(struct window *window,
-		  struct rectangle *rectangle,
-		  void *image);
-void
 window_schedule_redraw(struct window *window);
 
 void
@@ -153,11 +149,6 @@ window_damage(struct window *window, int32_t x, int32_t y,
 
 cairo_surface_t *
 window_get_surface(struct window *window);
-
-void
-window_copy_surface(struct window *window,
-		    struct rectangle *rectangle,
-		    cairo_surface_t *surface);
 
 void
 window_flush(struct window *window);

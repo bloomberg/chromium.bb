@@ -171,21 +171,20 @@ dnd_draw(struct dnd *dnd)
 {
 	struct rectangle allocation;
 	cairo_t *cr;
-	cairo_surface_t *wsurface, *surface;
+	cairo_surface_t *surface;
 	int i;
 
 	window_draw(dnd->window);
 
-	window_get_child_allocation(dnd->window, &allocation);
-
-	wsurface = window_get_surface(dnd->window);
-	surface = cairo_surface_create_similar(wsurface,
-					       CAIRO_CONTENT_COLOR_ALPHA,
-					       allocation.width,
-					       allocation.height);
-	cairo_surface_destroy(wsurface);
-
+	surface = window_get_surface(dnd->window);
 	cr = cairo_create(surface);
+	window_get_child_allocation(dnd->window, &allocation);
+	cairo_rectangle(cr, allocation.x, allocation.y,
+			allocation.width, allocation.height);
+	cairo_clip(cr);
+	cairo_push_group(cr);
+
+	cairo_translate(cr, allocation.x, allocation.y);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.8);
 	cairo_paint(cr);
@@ -199,9 +198,9 @@ dnd_draw(struct dnd *dnd)
 		cairo_paint(cr);
 	}
 
+	cairo_pop_group_to_source(cr);
+	cairo_paint(cr);
 	cairo_destroy(cr);
-
-	window_copy_surface(dnd->window, &allocation, surface);
 	cairo_surface_destroy(surface);
 	window_flush(dnd->window);
 }
