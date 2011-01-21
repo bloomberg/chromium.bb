@@ -1323,23 +1323,18 @@ input_offers_mime_type(struct input *input, const char *type)
 	return 0;
 }
 
-int
-input_receive_mime_type(struct input *input, const char *type)
+void
+input_receive_mime_type(struct input *input, const char *type, int fd)
 {
 	struct selection_offer *offer = input->offer;
-	int p[2];
 
-	pipe(p);
 	/* FIXME: A number of things can go wrong here: the object may
 	 * not be the current selection offer any more (which could
 	 * still work, but the source may have gone away or just
 	 * destroyed its wl_selection) or the offer may not have the
 	 * requested type after all (programmer/client error,
 	 * typically) */
-	wl_selection_offer_receive(offer->offer, type, p[1]);
-	close(p[1]);
-
-	return p[0];
+	wl_selection_offer_receive(offer->offer, type, fd);
 }
 
 static void

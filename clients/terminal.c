@@ -391,7 +391,6 @@ struct terminal {
 	cairo_font_extents_t extents;
 	cairo_scaled_font_t *font_normal, *font_bold;
 
-	uint32_t tag;
 	struct wl_selection *selection;
 	struct wl_selection_offer *selection_offer;
 	uint32_t selection_offer_has_text;
@@ -1978,34 +1977,11 @@ static const struct wl_selection_listener selection_listener = {
 	selection_listener_cancelled
 };
 
-static gboolean
-selection_io_func(GIOChannel *source, GIOCondition condition, gpointer data)
-{
-	struct terminal *terminal = data;
-	char buffer[256];
-	unsigned int len;
-	int fd;
-
-	fd = g_io_channel_unix_get_fd(source);
-	len = read(fd, buffer, sizeof buffer);
-
-	write(terminal->master, buffer, len);
-
-	close(fd);
-	g_source_remove(terminal->tag);
-
-	g_io_channel_unref(source);
-
-	return TRUE;
-}
-
 static int
 handle_bound_key(struct terminal *terminal,
 		 struct input *input, uint32_t sym, uint32_t time)
 {
 	struct wl_shell *shell;
-	GIOChannel *channel;
-	int fd;
 
 	switch (sym) {
 	case XK_C:
@@ -2019,14 +1995,11 @@ handle_bound_key(struct terminal *terminal,
 
 		return 1;
 	case XK_V:
-		if (input_offers_mime_type(input, "text/plain")) {
-			fd = input_receive_mime_type(input, "text/plain");
-			channel = g_io_channel_unix_new(fd);
-			terminal->tag = g_io_add_watch(channel, G_IO_IN,
-						       selection_io_func,
-						       terminal);
-		}
-
+		/* Just pass the master fd of the pty to receive the
+		 * selection. */
+		if (input_offers_mime_type(input, "text/plain"))
+			input_receive_mime_type(input, "text/plain",
+						terminal->master);
 		return 1;
 	case XK_X:
 		/* cut selection; terminal doesn't do cut */

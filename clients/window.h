@@ -232,8 +232,8 @@ input_get_input_device(struct input *input);
 
 int
 input_offers_mime_type(struct input *input, const char *type);
-int
-input_receive_mime_type(struct input *input, const char *type);
+void
+input_receive_mime_type(struct input *input, const char *type, int fd);
 
 
 #endif
