@@ -122,8 +122,7 @@
         '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
       ],
       'conditions': [
-        # http://code.google.com/p/chromium/issues/detail?id=18337
-        ['target_arch!="x64" and target_arch!="arm"', {
+        ['target_arch!="arm"', {
           'dependencies': [
             'copy_npapi_test_plugin',
           ],
@@ -504,7 +503,7 @@
     },
   ],
   'conditions': [
-    ['target_arch!="x64" and target_arch!="arm"', {
+    ['target_arch!="arm"', {
       'targets': [
         {
           'target_name': 'npapi_test_common',

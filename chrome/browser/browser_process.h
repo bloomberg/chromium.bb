@@ -187,9 +187,20 @@ class BrowserProcess {
   virtual void SetIPCLoggingEnabled(bool enable) = 0;
 #endif
 
+  const std::string& plugin_data_remover_mime_type() const {
+    return plugin_data_remover_mime_type_;
+  }
+
+  void set_plugin_data_remover_mime_type(const std::string& mime_type) {
+    plugin_data_remover_mime_type_ = mime_type;
+  }
+
  private:
   // User-data-dir based profiles.
   std::vector<std::wstring> user_data_dir_profiles_;
+
+  // Used for testing plugin data removal at shutdown.
+  std::string plugin_data_remover_mime_type_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);
 };

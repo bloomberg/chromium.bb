@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@ class Task;
 
 namespace base {
 class MessageLoopProxy;
+class WaitableEvent;
 }
 
 class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
@@ -23,9 +24,11 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
  public:
   PluginDataRemover();
 
-  // Starts removing plug-in data stored since |begin_time|. If |done_task| is
-  // not NULL, it is run on the current thread when removing has finished.
-  void StartRemoving(base::Time begin_time, Task* done_task);
+  // Used in tests to call a different plugin.
+  void set_mime_type(const std::string& mime_type) { mime_type_ = mime_type; }
+
+  // Starts removing plug-in data stored since |begin_time|.
+  base::WaitableEvent* StartRemoving(const base::Time& begin_time);
 
   // Returns whether there is a plug-in installed that supports removing
   // LSO data. Because this method possibly has to load the plug-in list, it
@@ -34,9 +37,10 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
 
   bool is_removing() const { return is_removing_; }
 
-  // Sets the task to run when removing has finished. Takes ownership of
-  // the passed task.
-  void set_done_task(Task* task) { done_task_.reset(task); }
+  // Wait until removing has finished. When the browser is still running (i.e.
+  // not during shutdown), you should use a WaitableEventWatcher in combination
+  // with the WaitableEvent returned by StartRemoving.
+  void Wait();
 
   // PluginProcessHost::Client methods
   virtual int ID();
@@ -51,6 +55,7 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
 
  private:
   friend class base::RefCountedThreadSafe<PluginDataRemover>;
+  friend class PluginDataRemoverTest;
   ~PluginDataRemover();
 
   void SignalDone();
@@ -58,13 +63,13 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
   void OnClearSiteDataResult(bool success);
   void OnTimeout();
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  std::string mime_type_;
   bool is_removing_;
-  scoped_ptr<Task> done_task_;
   // The point in time when we start removing data.
   base::Time remove_start_time_;
   // The point in time from which on we remove data.
   base::Time begin_time_;
+  scoped_ptr<base::WaitableEvent> event_;
   // We own the channel, but it's used on the IO thread, so it needs to be
   // deleted there as well.
   IPC::Channel* channel_;

@@ -373,7 +373,7 @@
             'test/interactive_ui/npapi_interactive_test.cc',
           ],
         }],
-        ['target_arch!="x64" and target_arch!="arm"', {
+        ['target_arch!="arm"', {
           'dependencies': [
             # run time dependency
             '../webkit/webkit.gyp:npapi_test_plugin',
@@ -554,8 +554,7 @@
         'worker/worker_uitest.cc',
       ],
       'conditions': [
-        # http://code.google.com/p/chromium/issues/detail?id=18337
-        ['target_arch!="x64" and target_arch!="arm"', {
+        ['target_arch!="arm"', {
           'dependencies': [
             '../webkit/webkit.gyp:copy_npapi_test_plugin',
           ],
@@ -2131,6 +2130,7 @@
         'browser/in_process_webkit/indexed_db_browsertest.cc',
         'browser/net/cookie_policy_browsertest.cc',
         'browser/net/ftp_browsertest.cc',
+        'browser/plugin_data_remover_browsertest.cc',
         'browser/plugin_service_browsertest.cc',
         'browser/policy/device_management_backend_mock.cc',
         'browser/policy/device_management_backend_mock.h',
@@ -2327,6 +2327,12 @@
             'browser/ui/views/html_dialog_view_browsertest.cc',
           ],
         }],
+        ['target_arch!="arm"', {
+          'dependencies': [
+            # run time dependency
+            '../webkit/webkit.gyp:copy_npapi_test_plugin',
+          ],
+        }],  
       ],  # conditions
     },  # target browser_tests
     {

@@ -260,9 +260,9 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     waiting_for_clear_lso_data_ = true;
     if (!plugin_data_remover_.get())
       plugin_data_remover_ = new PluginDataRemover();
-    plugin_data_remover_->StartRemoving(
-        delete_begin_,
-        NewRunnableMethod(this, &BrowsingDataRemover::OnClearedPluginData));
+    base::WaitableEvent* event =
+        plugin_data_remover_->StartRemoving(delete_begin_);
+    watcher_.StartWatching(event, this);
   }
 
   NotifyAndDeleteIfDone();
@@ -509,7 +509,8 @@ ChromeAppCacheService* BrowsingDataRemover::GetAppCacheService() {
                          : NULL;
 }
 
-void BrowsingDataRemover::OnClearedPluginData() {
+void BrowsingDataRemover::OnWaitableEventSignaled(
+    base::WaitableEvent* waitable_event) {
   waiting_for_clear_lso_data_ = false;
   NotifyAndDeleteIfDone();
 }

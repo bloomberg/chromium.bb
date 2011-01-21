@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,9 @@ const uint64 kClearAllData = 0;
 }  // namespace
 
 PluginDataRemover::PluginDataRemover()
-    : is_removing_(false),
+    : mime_type_(kFlashMimeType),
+      is_removing_(false),
+      event_(new base::WaitableEvent(true, false)),
       channel_(NULL) { }
 
 PluginDataRemover::~PluginDataRemover() {
@@ -38,25 +40,37 @@ PluginDataRemover::~PluginDataRemover() {
     BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, channel_);
 }
 
-void PluginDataRemover::StartRemoving(base::Time begin_time, Task* done_task) {
-  DCHECK(!done_task_.get());
+base::WaitableEvent* PluginDataRemover::StartRemoving(
+    const base::Time& begin_time) {
   DCHECK(!is_removing_);
   remove_start_time_ = base::Time::Now();
   begin_time_ = begin_time;
 
-  message_loop_ = base::MessageLoopProxy::CreateForCurrentThread();
-  done_task_.reset(done_task);
   is_removing_ = true;
 
   AddRef();
   PluginService::GetInstance()->OpenChannelToPlugin(
-      GURL(), kFlashMimeType, this);
+      GURL(), mime_type_, this);
 
   BrowserThread::PostDelayedTask(
       BrowserThread::IO,
       FROM_HERE,
       NewRunnableMethod(this, &PluginDataRemover::OnTimeout),
       kRemovalTimeoutMs);
+
+  return event_.get();
+}
+
+void PluginDataRemover::Wait() {
+  base::Time start_time(base::Time::Now());
+  bool result = true;
+  if (is_removing_)
+    result = event_->Wait();
+  UMA_HISTOGRAM_TIMES("ClearPluginData.wait_at_shutdown",
+                      base::Time::Now() - start_time);
+  UMA_HISTOGRAM_TIMES("ClearPluginData.time_at_shutdown",
+                      base::Time::Now() - remove_start_time_);
+  DCHECK(result) << "Error waiting for plugin process";
 }
 
 int PluginDataRemover::ID() {
@@ -87,7 +101,7 @@ void PluginDataRemover::ConnectToChannel(const IPC::ChannelHandle& handle) {
   DCHECK(!channel_);
   channel_ = new IPC::Channel(handle, IPC::Channel::MODE_CLIENT, this);
   if (!channel_->Connect()) {
-    LOG(DFATAL) << "Couldn't connect to plugin";
+    NOTREACHED() << "Couldn't connect to plugin";
     SignalDone();
     return;
   }
@@ -96,27 +110,27 @@ void PluginDataRemover::ConnectToChannel(const IPC::ChannelHandle& handle) {
           new PluginMsg_ClearSiteData(std::string(),
                                       kClearAllData,
                                       begin_time_))) {
-    LOG(DFATAL) << "Couldn't send ClearSiteData message";
+    NOTREACHED() << "Couldn't send ClearSiteData message";
     SignalDone();
+    return;
   }
 }
 
 void PluginDataRemover::OnError() {
-  NOTREACHED() << "Couldn't open plugin channel";
+  LOG(DFATAL) << "Couldn't open plugin channel";
   SignalDone();
   Release();
 }
 
 void PluginDataRemover::OnClearSiteDataResult(bool success) {
-  if (!success)
-    LOG(DFATAL) << "ClearSiteData returned error";
+  LOG_IF(DFATAL, !success) << "ClearSiteData returned error";
   UMA_HISTOGRAM_TIMES("ClearPluginData.time",
                       base::Time::Now() - remove_start_time_);
   SignalDone();
 }
 
 void PluginDataRemover::OnTimeout() {
-  NOTREACHED() << "Timed out";
+  LOG_IF(DFATAL, is_removing_) << "Timed out";
   SignalDone();
 }
 
@@ -131,8 +145,10 @@ bool PluginDataRemover::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void PluginDataRemover::OnChannelError() {
-  LOG(DFATAL) << "Channel error";
-  SignalDone();
+  if (is_removing_) {
+    NOTREACHED() << "Channel error";
+    SignalDone();
+  }
 }
 
 void PluginDataRemover::SignalDone() {
@@ -140,10 +156,7 @@ void PluginDataRemover::SignalDone() {
   if (!is_removing_)
     return;
   is_removing_ = false;
-  if (done_task_.get()) {
-    message_loop_->PostTask(FROM_HERE, done_task_.release());
-    message_loop_ = NULL;
-  }
+  event_->Signal();
 }
 
 // static

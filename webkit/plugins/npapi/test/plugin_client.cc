@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,7 @@ NPError PluginClient::GetEntryPoints(NPPluginFuncs* pFuncs) {
   pFuncs->setvalue      = NPP_SetValue;
   pFuncs->javaClass     = NULL;
   pFuncs->urlredirectnotify = NPP_URLRedirectNotify;
+  pFuncs->clearsitedata = NPP_ClearSiteData;
 
   return NPERR_NO_ERROR;
 }
@@ -236,5 +237,12 @@ void NPP_URLRedirectNotify(NPP instance, const char* url, int32_t status,
         reinterpret_cast<NPAPIClient::PluginTest*>(instance->pdata);
     plugin->URLRedirectNotify(url, status, notify_data);
   }
+}
+
+NPError NPP_ClearSiteData(const char* site,
+                          uint64 flags,
+                          uint64 max_age) {
+  LOG(INFO) << "NPP_ClearSiteData called";
+  return NPERR_NO_ERROR;
 }
 } // extern "C"

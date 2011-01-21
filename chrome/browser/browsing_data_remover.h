@@ -10,6 +10,7 @@
 
 #include "base/observer_list.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/waitable_event_watcher.h"
 #include "base/time.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/cancelable_request.h"
@@ -30,7 +31,8 @@ class DatabaseTracker;
 // BrowsingDataRemover is responsible for removing data related to browsing:
 // visits in url database, downloads, cookies ...
 
-class BrowsingDataRemover : public NotificationObserver {
+class BrowsingDataRemover : public NotificationObserver,
+                            public base::WaitableEventWatcher::Delegate {
  public:
   // Time period ranges available when doing browsing data removals.
   enum TimePeriod {
@@ -106,6 +108,10 @@ class BrowsingDataRemover : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // WaitableEventWatcher implementation.
+  // Called when plug-in data has been cleared. Invokes NotifyAndDeleteIfDone.
+  virtual void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
+
   // If we're not waiting on anything, notifies observers and deletes this
   // object.
   void NotifyAndDeleteIfDone();
@@ -141,9 +147,6 @@ class BrowsingDataRemover : public NotificationObserver {
   void OnGotAppCacheInfo(int rv);
   void OnAppCacheDeleted(int rv);
   ChromeAppCacheService* GetAppCacheService();
-
-  // Callback when plug-in data has been cleared. Invokes NotifyAndDeleteIfDone.
-  void OnClearedPluginData();
 
   // Calculate the begin time for the deletion range specified by |time_period|.
   base::Time CalculateBeginDeleteTime(TimePeriod time_period);
@@ -191,6 +194,7 @@ class BrowsingDataRemover : public NotificationObserver {
 
   // Used to delete plugin data.
   scoped_refptr<PluginDataRemover> plugin_data_remover_;
+  base::WaitableEventWatcher watcher_;
 
   // True if we're waiting for various data to be deleted.
   bool waiting_for_clear_databases_;

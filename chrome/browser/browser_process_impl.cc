@@ -544,7 +544,9 @@ void BrowserProcessImpl::Observe(NotificationType type,
       if (prefs->GetBoolean(prefs::kClearSiteDataOnExit) &&
           local_state()->GetBoolean(prefs::kClearPluginLSODataEnabled)) {
         plugin_data_remover_ = new PluginDataRemover();
-        plugin_data_remover_->StartRemoving(base::Time(), NULL);
+        if (!plugin_data_remover_mime_type().empty())
+          plugin_data_remover_->set_mime_type(plugin_data_remover_mime_type());
+        plugin_data_remover_->StartRemoving(base::Time());
       }
     }
   } else {
@@ -553,13 +555,8 @@ void BrowserProcessImpl::Observe(NotificationType type,
 }
 
 void BrowserProcessImpl::WaitForPluginDataRemoverToFinish() {
-  if (!plugin_data_remover_.get() || !plugin_data_remover_->is_removing())
-    return;
-  plugin_data_remover_->set_done_task(new MessageLoop::QuitTask());
-  base::Time start_time(base::Time::Now());
-  MessageLoop::current()->Run();
-  UMA_HISTOGRAM_TIMES("ClearPluginData.wait_at_shutdown",
-                      base::Time::Now() - start_time);
+  if (plugin_data_remover_.get())
+    plugin_data_remover_->Wait();
 }
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
