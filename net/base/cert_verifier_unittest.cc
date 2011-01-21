@@ -257,4 +257,26 @@ TEST_F(CertVerifierTest, CancelRequest) {
   }
 }
 
+// Tests that a canceled request is not leaked.
+TEST_F(CertVerifierTest, CancelRequestThenQuit) {
+  CertVerifier verifier;
+
+  FilePath certs_dir = GetTestCertsDirectory();
+  scoped_refptr<X509Certificate> google_cert(
+      ImportCertFromFile(certs_dir, "google.single.der"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_cert);
+
+  int error;
+  CertVerifyResult verify_result;
+  TestCompletionCallback callback;
+  CertVerifier::RequestHandle request_handle;
+
+  error = verifier.Verify(google_cert, "www.example.com", 0, &verify_result,
+                          &callback, &request_handle);
+  ASSERT_EQ(ERR_IO_PENDING, error);
+  ASSERT_TRUE(request_handle != NULL);
+  verifier.CancelRequest(request_handle);
+  // Destroy |verifier| by going out of scope.
+}
+
 }  // namespace net
