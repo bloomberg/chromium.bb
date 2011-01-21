@@ -4,11 +4,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import cgi
 import os
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
-import urlparse
 
 
 class InstantTest(pyauto.PyUITest):
@@ -33,7 +33,7 @@ class InstantTest(pyauto.PyUITest):
     self.assertTrue(self.WaitUntil(self._DoneLoading))
     location = self.GetInstantInfo().get('location')
     if location is not None:
-      q = urlparse.parse_qs(location).get('q')
+      q = cgi.parse_qs(location).get('q')
       if q is not None and query in q:
         return True
     return False
