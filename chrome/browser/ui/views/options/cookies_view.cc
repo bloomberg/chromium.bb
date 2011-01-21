@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +19,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/cookie_monster.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/border.h"
 #include "views/grid_layout.h"
 #include "views/controls/label.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 
-#include "app/l10n_util.h"
 #include "base/base64.h"
 #include "base/callback.h"
 #include "base/file_path.h"
@@ -24,6 +23,7 @@
 #include "net/base/escape.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

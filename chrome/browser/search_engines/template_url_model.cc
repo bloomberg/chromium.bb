@@ -4,7 +4,6 @@
 
 #include "chrome/browser/search_engines/template_url_model.h"
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/stl_util-inl.h"
@@ -33,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/net_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::Time;
 typedef SearchHostToURLsMap::TemplateURLSet TemplateURLSet;

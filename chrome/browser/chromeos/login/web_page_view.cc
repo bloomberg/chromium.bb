@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/web_page_view.h"
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -21,6 +20,7 @@
 #include "grit/theme_resources.h"
 #include "ipc/ipc_message.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/background.h"
 #include "views/border.h"

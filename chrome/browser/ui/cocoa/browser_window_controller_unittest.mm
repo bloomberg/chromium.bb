@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util_mac.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -16,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 @interface BrowserWindowController (JustForTesting)
 // Already defined in BWC.

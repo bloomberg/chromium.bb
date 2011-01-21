@@ -4,12 +4,12 @@
 
 #include "chrome/browser/bookmarks/bookmark_folder_editor_controller.h"
 
-#include "app/l10n_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 BookmarkFolderEditorController::~BookmarkFolderEditorController() {
   if (model_)

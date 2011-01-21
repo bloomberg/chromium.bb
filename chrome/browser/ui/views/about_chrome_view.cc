@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/string_number_conversions.h"
@@ -35,6 +34,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/throbber.h"

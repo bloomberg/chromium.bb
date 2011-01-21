@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/views/bookmark_bar_instructions_view.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/label.h"
 
 using views::View;

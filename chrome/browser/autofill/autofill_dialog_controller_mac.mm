@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/autofill/autofill_dialog_controller_mac.h"
-#include "app/l10n_util.h"
 #include "base/lazy_instance.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
@@ -25,6 +24,7 @@
 #include "grit/generated_resources.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

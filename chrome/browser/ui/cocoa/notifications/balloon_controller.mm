@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/cocoa/notifications/balloon_controller.h"
 
-#include "app/l10n_util.h"
 #include "app/mac/nsimage_cache.h"
 #import "base/mac/cocoa_protocols.h"
 #include "base/mac/mac_util.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/ui/cocoa/notifications/balloon_view_host_mac.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

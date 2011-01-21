@@ -1,8 +1,7 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util.h"
 #include "grit/app_resources.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -10,6 +9,7 @@
 #include "grit/locale_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using testing::HasSubstr;
 using testing::Not;

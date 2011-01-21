@@ -7,7 +7,6 @@
 #include <objidl.h>
 #include <winspool.h>
 
-#include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
@@ -25,6 +24,7 @@
 #include "printing/backend/win_helper.h"
 #include "printing/native_metafile.h"
 #include "printing/page_range.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::win::ScopedBstr;
 using base::win::ScopedComPtr;

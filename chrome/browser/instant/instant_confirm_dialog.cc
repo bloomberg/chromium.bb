@@ -4,7 +4,6 @@
 
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 
-#include "app/l10n_util.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/promo_counter.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -12,6 +11,7 @@
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace browser {
 

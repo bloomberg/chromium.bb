@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/cocoa/translate/before_translate_infobar_controller.h"
 
-#include "app/l10n_util.h"
 #include "base/sys_string_conversions.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using TranslateInfoBarUtilities::MoveControl;
 using TranslateInfoBarUtilities::VerifyControlOrderAndSpacing;

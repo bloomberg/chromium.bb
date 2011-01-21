@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -26,6 +25,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 
 #if defined(TOOLKIT_VIEWS)

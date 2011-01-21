@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/gtk/import_lock_dialog_gtk.h"
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // static
 void ImportLockDialogGtk::Show(GtkWindow* parent, ImporterHost* importer_host) {

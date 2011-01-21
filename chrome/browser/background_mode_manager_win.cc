@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

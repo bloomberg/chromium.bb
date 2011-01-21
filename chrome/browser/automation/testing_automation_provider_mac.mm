@@ -6,8 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_mac.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 void TestingAutomationProvider::ActivateWindow(int handle) {
   NOTIMPLEMENTED();

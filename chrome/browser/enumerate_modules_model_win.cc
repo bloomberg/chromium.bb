@@ -7,7 +7,6 @@
 #include <Tlhelp32.h>
 #include <wintrust.h>
 
-#include "app/l10n_util.h"
 #include "app/win/win_util.h"
 #include "base/command_line.h"
 #include "base/environment.h"
@@ -28,6 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // The period of time (in milliseconds) to wait until checking to see if any
 // incompatible modules exist.

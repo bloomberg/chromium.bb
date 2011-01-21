@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,6 +16,7 @@
 #include "chrome/common/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // The width of this button in GTK+ theme mode. The Stop and Refresh stock icons
 // can be different sizes; this variable is used to make sure that the button

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/external_protocol_dialog.h"
 
-#include "app/l10n_util.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -16,6 +15,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/message_box_flags.h"
 #include "ui/base/text/text_elider.h"
 #include "views/controls/message_box_view.h"

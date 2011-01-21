@@ -4,8 +4,6 @@
 
 #import "chrome/browser/app_controller_mac.h"
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_mac.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -55,6 +53,8 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 // 10.6 adds a public API for the Spotlight-backed search menu item in the Help
 // menu.  Provide the declaration so it can be called below when building with

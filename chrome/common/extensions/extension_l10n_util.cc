@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/linked_ptr.h"
 #include "base/logging.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/url_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "unicode/uloc.h"
 
 namespace errors = extension_manifest_errors;

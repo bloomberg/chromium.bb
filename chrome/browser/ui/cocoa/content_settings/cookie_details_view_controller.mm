@@ -4,11 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
 
-#include "app/l10n_util_mac.h"
 #import "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/content_settings/cookie_tree_node.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

@@ -7,7 +7,6 @@
 #include <map>
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/ref_counted.h"
@@ -25,6 +24,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "media/audio/audio_manager.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/wmi.h"

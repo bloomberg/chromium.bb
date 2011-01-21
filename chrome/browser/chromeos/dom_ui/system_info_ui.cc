@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/dom_ui/system_info_ui.h"
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -28,6 +27,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 class SystemInfoUIHTMLSource : public ChromeURLDataManager::DataSource {

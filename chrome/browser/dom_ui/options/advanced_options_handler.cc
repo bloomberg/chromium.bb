@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -36,6 +35,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"

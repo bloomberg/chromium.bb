@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
 
-#include "app/l10n_util_mac.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"  // TODO(viettrungluu): remove
@@ -17,6 +16,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 
 // Simple class to watch for tab creation/destruction and close the bubble.

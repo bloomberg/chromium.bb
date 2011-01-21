@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/network_message_observer.h"
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

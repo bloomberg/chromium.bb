@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/download/download_manager.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 DownloadInProgressDialogGtk::DownloadInProgressDialogGtk(Browser* browser)
     : browser_(browser) {

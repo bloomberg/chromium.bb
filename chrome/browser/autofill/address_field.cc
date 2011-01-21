@@ -4,7 +4,6 @@
 
 #include "chrome/browser/autofill/address_field.h"
 
-#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -12,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "grit/autofill_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
   AutoFillFieldType address_company;

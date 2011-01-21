@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
 
-#include "app/l10n_util_mac.h"
 #include "app/mac/nsimage_cache.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
@@ -14,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 
 @interface BookmarkButtonCell(Private)

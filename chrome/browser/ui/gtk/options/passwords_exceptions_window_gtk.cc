@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
@@ -19,6 +18,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // PasswordsExceptionsWindowGtk

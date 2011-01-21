@@ -4,8 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/importer/import_progress_dialog.h"
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_mac.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/message_loop.h"
@@ -14,6 +12,8 @@
 #include "base/utf_string_conversions.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
 

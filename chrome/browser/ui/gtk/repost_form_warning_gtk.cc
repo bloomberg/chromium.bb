@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/gtk/repost_form_warning_gtk.h"
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/repost_form_warning_controller.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 RepostFormWarningGtk::RepostFormWarningGtk(GtkWindow* parent,
                                            TabContents* tab_contents)

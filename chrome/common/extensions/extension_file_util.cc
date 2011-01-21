@@ -7,7 +7,6 @@
 #include <map>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -25,6 +24,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/file_stream.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace errors = extension_manifest_errors;
 

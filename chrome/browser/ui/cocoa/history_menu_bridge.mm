@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
@@ -25,6 +24,7 @@
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

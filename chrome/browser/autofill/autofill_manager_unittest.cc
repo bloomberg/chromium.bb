@@ -4,7 +4,6 @@
 
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
@@ -31,6 +30,7 @@
 #include "grit/generated_resources.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 

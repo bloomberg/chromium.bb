@@ -4,10 +4,10 @@
 
 #include "chrome/browser/dom_ui/options/startup_page_manager_handler.h"
 
-#include "app/l10n_util.h"
 #include "base/values.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 StartupPageManagerHandler::StartupPageManagerHandler() {
 }

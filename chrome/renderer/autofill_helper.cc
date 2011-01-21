@@ -4,7 +4,6 @@
 
 #include "chrome/renderer/autofill_helper.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
@@ -18,6 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"

@@ -9,8 +9,6 @@
 
 #include <vector>
 
-#include "app/l10n_util.h"
-#import "app/l10n_util_mac.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -22,6 +20,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
 

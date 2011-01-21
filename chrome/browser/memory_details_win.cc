@@ -6,7 +6,6 @@
 
 #include <psapi.h>
 
-#include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // Known browsers which we collect details for.
 enum {

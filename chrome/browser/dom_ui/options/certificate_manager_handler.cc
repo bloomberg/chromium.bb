@@ -4,8 +4,6 @@
 
 #include "chrome/browser/dom_ui/options/certificate_manager_handler.h"
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_collator.h"
 #include "base/file_util.h"  // for FileAccessProvider
 #include "base/safe_strerror_posix.h"
 #include "base/scoped_vector.h"
@@ -22,6 +20,8 @@
 #include "grit/generated_resources.h"
 #include "net/base/crypto_module.h"
 #include "net/base/x509_certificate.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_collator.h"
 
 namespace {
 

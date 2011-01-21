@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -40,6 +39,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/registry_controlled_domain.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/image_decoder.h"
 
 namespace keys = extension_manifest_keys;

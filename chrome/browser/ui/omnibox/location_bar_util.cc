@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace location_bar_util {
 

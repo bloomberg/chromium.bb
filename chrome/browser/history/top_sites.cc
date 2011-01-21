@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <set>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/md5.h"
@@ -34,6 +33,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace history {
 

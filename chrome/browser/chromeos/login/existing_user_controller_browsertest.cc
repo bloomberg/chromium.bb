@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/cros_mock.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
@@ -18,6 +17,7 @@
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
@@ -65,7 +65,7 @@ class ExistingUserControllerTest : public WizardInProcessBrowserTest {
   virtual void SetUpWizard() {
     gfx::Rect background_bounds(login::kWizardScreenWidth,
                                 login::kWizardScreenHeight);
-    ExistingUserController* controller = 
+    ExistingUserController* controller =
         new ExistingUserController(std::vector<UserManager::User>(),
                                    background_bounds);
     controller->Init();

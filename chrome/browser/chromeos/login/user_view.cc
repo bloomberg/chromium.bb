@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/user_view.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
@@ -15,6 +14,7 @@
 #include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/background.h"
 #include "views/controls/button/text_button.h"

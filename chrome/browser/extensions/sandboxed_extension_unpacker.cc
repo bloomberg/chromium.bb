@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "app/l10n_util.h"
 #include "base/base64.h"
 #include "base/crypto/signature_verifier.h"
 #include "base/file_util.h"
@@ -31,6 +30,7 @@
 #include "gfx/codec/png_codec.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 
 const char SandboxedExtensionUnpacker::kExtensionHeaderMagic[] = "Cr24";
 

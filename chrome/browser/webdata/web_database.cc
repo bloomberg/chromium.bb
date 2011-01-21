@@ -9,7 +9,6 @@
 #include <set>
 #include <string>
 
-#include "app/l10n_util.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/string_number_conversions.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/notification_service.h"
 #include "gfx/codec/png_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"
 

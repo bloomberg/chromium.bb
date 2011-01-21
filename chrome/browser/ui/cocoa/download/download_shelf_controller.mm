@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 
-#include "app/l10n_util.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/download/download_item.h"
@@ -22,6 +21,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 // Download shelf autoclose behavior:

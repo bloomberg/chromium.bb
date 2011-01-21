@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
@@ -26,6 +25,7 @@
 #include "grit/generated_resources.h"
 #import "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/l10n/l10n_util.h"
 
 
 // C++ class that receives EXTENSION_LOADED notifications and proxies them back

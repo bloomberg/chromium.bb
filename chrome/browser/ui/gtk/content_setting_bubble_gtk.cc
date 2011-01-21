@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/blocked_content_container.h"
@@ -26,6 +25,7 @@
 #include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/text_elider.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 

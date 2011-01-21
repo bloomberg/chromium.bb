@@ -4,7 +4,6 @@
 
 #include "chrome/browser/importer/importer.h"
 
-#include "app/l10n_util.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -26,6 +25,7 @@
 #include "gfx/favicon_size.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/image_operations.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/image_decoder.h"
 
 // TODO(port): Port these files.

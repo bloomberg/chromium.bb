@@ -4,10 +4,10 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
 
-#include "app/l10n_util.h"
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "ui/base/l10n/l10n_util.h"
 
 @interface BookmarkEditorController (Private)
 

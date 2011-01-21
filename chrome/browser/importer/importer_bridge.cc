@@ -4,7 +4,6 @@
 
 #include "chrome/browser/importer/importer_bridge.h"
 
-#include "app/l10n_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string16.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/child_thread.h"
 #include "chrome/browser/importer/importer_messages.h"
 #include "chrome/profile_import/profile_import_thread.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/password_form.h"
 
 ImporterBridge::ImporterBridge() { }

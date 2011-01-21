@@ -6,7 +6,6 @@
 
 #import <AppKit/AppKit.h>
 
-#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -17,6 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using WebKit::WebFrame;
 using WebKit::WebCanvas;

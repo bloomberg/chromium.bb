@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/timer.h"
@@ -42,6 +41,7 @@
 #include "gfx/codec/png_codec.h"
 #include "ipc/ipc_message.h"
 #include "net/http/http_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

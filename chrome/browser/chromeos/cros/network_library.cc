@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <map>
 
-#include "app/l10n_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

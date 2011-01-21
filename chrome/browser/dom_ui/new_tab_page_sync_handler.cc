@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -19,6 +18,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // Default URL for the sync web interface.
 //

@@ -6,13 +6,13 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/notification_source.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 // Width and height of the cookie tree view.

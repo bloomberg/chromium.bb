@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -32,6 +31,7 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 // GeolocationInfoBarQueueController ------------------------------------------

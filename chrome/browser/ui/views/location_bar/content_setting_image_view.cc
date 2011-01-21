@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_setting_bubble_model.h"
@@ -18,6 +17,7 @@
 #include "gfx/canvas_skia.h"
 #include "gfx/skia_util.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/border.h"
 

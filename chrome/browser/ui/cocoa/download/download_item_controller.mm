@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
 
-#include "app/l10n_util_mac.h"
 #include "base/mac/mac_util.h"
 #include "base/metrics/histogram.h"
 #include "base/string16.h"
@@ -25,6 +24,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 

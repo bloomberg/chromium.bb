@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/views/options/plugin_filter_page_view.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/options/show_options_url.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
 

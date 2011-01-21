@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/options/passwords_page_view.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/background.h"
 #include "views/controls/button/native_button.h"
 #include "views/grid_layout.h"

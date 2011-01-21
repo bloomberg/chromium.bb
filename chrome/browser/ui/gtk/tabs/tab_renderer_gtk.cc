@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +26,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/animation/throb_animation.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

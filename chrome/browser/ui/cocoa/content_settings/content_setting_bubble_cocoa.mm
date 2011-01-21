@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
@@ -20,6 +19,7 @@
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
 namespace {

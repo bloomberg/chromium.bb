@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/options/fonts_languages_window_view.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/options/fonts_page_view.h"
@@ -13,6 +12,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/window/window.h"
 

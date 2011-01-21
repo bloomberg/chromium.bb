@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/options/advanced_page_view.h"
 
-#include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,6 +14,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/message_box_flags.h"
 #include "views/controls/message_box_view.h"
 #include "views/controls/button/native_button.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/edit_search_engine_dialog.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -14,6 +13,7 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/label.h"
 #include "views/controls/image_view.h"

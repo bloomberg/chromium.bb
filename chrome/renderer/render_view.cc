@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -158,6 +157,7 @@
 #include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/message_box_flags.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 #include "v8/include/v8-testing.h"

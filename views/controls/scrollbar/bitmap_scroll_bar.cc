@@ -8,7 +8,6 @@
 #include "views/screen.h"
 #endif
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
@@ -18,6 +17,7 @@
 #include "grit/app_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/menu/menu.h"
 #include "views/controls/scroll_view.h"
 #include "views/widget/widget.h"

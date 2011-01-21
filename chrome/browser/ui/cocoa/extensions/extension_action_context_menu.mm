@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
 
-#include "app/l10n_util_mac.h"
 #include "base/sys_string_conversions.h"
 #include "base/task.h"
 #include "chrome/browser/browser_list.h"
@@ -30,6 +29,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 // A class that loads the extension icon on the I/O thread before showing the
 // confirmation dialog to uninstall the given extension.

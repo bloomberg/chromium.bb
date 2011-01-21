@@ -7,7 +7,6 @@
 
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -52,10 +51,11 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
-#include "webkit/glue/webmenuitem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "webkit/glue/webmenuitem.h"
 
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;

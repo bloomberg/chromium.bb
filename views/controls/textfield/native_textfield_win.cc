@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_win.h"
 #include "app/win/win_util.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
@@ -20,6 +18,8 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_win.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_win.h"
 #include "views/controls/menu/menu_2.h"

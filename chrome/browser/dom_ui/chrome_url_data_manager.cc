@@ -4,7 +4,6 @@
 
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 
-#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
@@ -33,6 +32,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // URLRequestChromeJob is a net::URLRequestJob that manages running
 // chrome-internal resource requests asynchronously.

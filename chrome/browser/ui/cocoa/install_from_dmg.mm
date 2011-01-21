@@ -13,8 +13,6 @@
 #include <sys/param.h>
 #include <sys/mount.h>
 
-#include "app/l10n_util.h"
-#import "app/l10n_util_mac.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -25,6 +23,8 @@
 #import "chrome/browser/ui/cocoa/keystone_glue.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 // When C++ exceptions are disabled, the C++ library defines |try| and
 // |catch| so as to allow exception-expecting C++ code to build properly when

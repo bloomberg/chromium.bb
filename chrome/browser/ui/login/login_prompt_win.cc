@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/login/login_prompt.h"
 
-#include "app/l10n_util.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/views/login_view.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/window/dialog_delegate.h"
 
 using webkit_glue::PasswordForm;

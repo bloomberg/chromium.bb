@@ -4,7 +4,6 @@
 
 #include "chrome/browser/custom_home_pages_table_model.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
@@ -20,6 +19,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/base/resource/resource_bundle.h"
 

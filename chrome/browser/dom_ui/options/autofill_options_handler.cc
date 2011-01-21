@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/guid.h"
 #include "grit/generated_resources.h"
 #include "grit/webkit_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

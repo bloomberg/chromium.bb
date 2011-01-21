@@ -11,7 +11,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
@@ -32,6 +31,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/button/radio_button.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"

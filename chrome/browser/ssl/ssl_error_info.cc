@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ssl/ssl_error_info.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/common/time_format.h"
@@ -14,6 +13,7 @@
 #include "net/base/cert_status_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/ssl_info.h"
+#include "ui/base/l10n/l10n_util.h"
 
 SSLErrorInfo::SSLErrorInfo(const string16& title,
                            const string16& details,

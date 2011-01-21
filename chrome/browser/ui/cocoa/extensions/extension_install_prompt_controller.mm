@@ -4,8 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/extensions/extension_install_prompt_controller.h"
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_mac.h"
 #include "base/mac/mac_util.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -16,6 +14,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
 

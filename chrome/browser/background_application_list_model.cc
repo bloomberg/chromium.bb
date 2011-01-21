@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <set>
 
-#include "app/l10n_util_collator.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
+#include "ui/base/l10n/l10n_util_collator.h"
 
 class ExtensionNameComparator {
  public:

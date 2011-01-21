@@ -7,9 +7,9 @@
 #include <commctrl.h>
 #include <windowsx.h>
 
-#include "app/l10n_util_win.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/font.h"
+#include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/listbox/listbox.h"
 #include "views/widget/widget.h"

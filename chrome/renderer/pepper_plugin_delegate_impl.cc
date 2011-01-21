@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "app/l10n_util.h"
 #include "app/surface/transport_dib.h"
 #include "base/callback.h"
 #include "base/file_path.h"
@@ -41,6 +40,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/ppapi/ppb_file_io_impl.h"

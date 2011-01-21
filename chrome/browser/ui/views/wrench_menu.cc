@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "app/l10n_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -25,6 +24,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/background.h"
 #include "views/controls/button/image_button.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/sync_ui_util.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_util.h"
@@ -16,6 +15,7 @@
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 typedef GoogleServiceAuthError AuthError;

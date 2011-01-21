@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/cocoa/repost_form_warning_mac.h"
 
-#include "app/l10n_util_mac.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/repost_form_warning_controller.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 // The delegate of the NSAlert used to display the dialog. Forwards the alert's
 // completion event to the C++ class |RepostFormWarningController|.

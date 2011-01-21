@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/views/js_modal_dialog_views.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/views/window.h"
 #include "grit/generated_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/message_box_flags.h"
 #include "views/controls/message_box_view.h"
 #include "views/window/window.h"

@@ -4,10 +4,10 @@
 
 #include "ui/base/models/table_model.h"
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_collator.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_collator.h"
 
 namespace ui {
 

@@ -6,10 +6,10 @@
 
 #import <Security/Security.h>
 
-#include "app/l10n_util.h"
 #include "chrome/browser/keychain_mac.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

@@ -4,7 +4,6 @@
 
 #include "chrome/renderer/blocked_plugin.h"
 
-#include "app/l10n_util.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -22,6 +21,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCaseSensitivity.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/plugin_group.h"

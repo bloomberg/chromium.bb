@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_container.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -13,6 +12,7 @@
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // InfoBarContainer, public: ---------------------------------------------------
 

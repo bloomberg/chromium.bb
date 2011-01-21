@@ -4,7 +4,6 @@
 
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -19,6 +18,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_errors.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

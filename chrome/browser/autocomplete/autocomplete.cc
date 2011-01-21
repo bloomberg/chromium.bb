@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
@@ -37,6 +36,7 @@
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::TimeDelta;
 

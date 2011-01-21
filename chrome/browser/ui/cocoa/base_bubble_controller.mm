@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
-#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/scoped_nsobject.h"
@@ -15,6 +14,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 @interface BaseBubbleController (Private)
 - (void)updateOriginFromAnchor;

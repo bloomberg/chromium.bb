@@ -6,7 +6,6 @@
 
 #include <limits>
 
-#include "app/l10n_util.h"
 #include "base/atomicops.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -15,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 ChildProcessInfo::ChildProcessInfo(ProcessType type, int id) :
     type_(type),

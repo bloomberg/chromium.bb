@@ -4,13 +4,13 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.h"
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_mac.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 @implementation BookmarkNameFolderController
 

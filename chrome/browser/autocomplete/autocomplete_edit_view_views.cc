@@ -4,7 +4,6 @@
 
 #include "chrome/browser/autocomplete/autocomplete_edit_view_views.h"
 
-#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -21,6 +20,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/border.h"
 #include "views/fill_layout.h"
 

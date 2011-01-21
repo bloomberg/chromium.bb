@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
@@ -17,6 +16,7 @@
 #include "grit/chromium_strings.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/l10n/l10n_util.h"
 
 BrowserRootView::BrowserRootView(BrowserView* browser_view,
                                  views::Widget* widget)

@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

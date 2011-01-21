@@ -7,7 +7,6 @@
 #include <set>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
@@ -33,6 +32,7 @@
 #include "gfx/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

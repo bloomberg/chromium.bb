@@ -10,8 +10,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_win.h"
 #include "app/win/win_util.h"
 #include "base/command_line.h"
 #include "base/environment.h"
@@ -37,6 +35,8 @@
 #include "grit/generated_resources.h"
 #include "net/base/winsock_init.h"
 #include "net/socket/ssl_client_socket_nss_factory.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_win.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/window/window.h"
 

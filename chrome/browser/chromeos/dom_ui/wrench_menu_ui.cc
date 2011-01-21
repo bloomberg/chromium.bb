@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/dom_ui/wrench_menu_ui.h"
 
-#include "app/l10n_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -22,6 +21,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/menu/menu_2.h"
 
 namespace {

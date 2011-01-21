@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#import "app/l10n_util_mac.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #import "base/scoped_nsobject.h"
@@ -21,6 +20,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
 

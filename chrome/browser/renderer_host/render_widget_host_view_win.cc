@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_win.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
@@ -39,6 +37,8 @@
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebInputEventFactory.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"

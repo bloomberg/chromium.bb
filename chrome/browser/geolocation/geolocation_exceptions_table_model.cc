@@ -4,12 +4,12 @@
 
 #include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_collator.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/content_settings_helper.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/base/models/table_model_observer.h"
 
 namespace {

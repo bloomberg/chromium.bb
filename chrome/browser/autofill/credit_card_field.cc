@@ -4,12 +4,12 @@
 
 #include "chrome/browser/autofill/credit_card_field.h"
 
-#include "app/l10n_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "grit/autofill_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 bool CreditCardField::GetFieldInfo(FieldTypeMap* field_type_map) const {
   bool ok = Add(field_type_map, number_, AutoFillType(CREDIT_CARD_NUMBER));

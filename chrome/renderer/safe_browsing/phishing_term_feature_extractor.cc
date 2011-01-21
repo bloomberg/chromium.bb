@@ -7,7 +7,6 @@
 #include <list>
 #include <map>
 
-#include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -17,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "unicode/ubrk.h"
 
 namespace safe_browsing {

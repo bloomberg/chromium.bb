@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -28,6 +27,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

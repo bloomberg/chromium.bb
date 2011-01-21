@@ -4,7 +4,6 @@
 
 #include "chrome/browser/dom_ui/options/add_startup_page_handler.h"
 
-#include "app/l10n_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -15,6 +14,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 AddStartupPageHandler::AddStartupPageHandler() {
 }

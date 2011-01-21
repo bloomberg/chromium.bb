@@ -7,7 +7,6 @@
 #include <map>
 #include <set>
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -45,6 +44,7 @@
 #include "grit/generated_resources.h"
 #include "jingle/notifier/communicator/const_communicator.h"
 #include "net/base/cookie_monster.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;

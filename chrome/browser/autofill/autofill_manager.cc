@@ -9,7 +9,6 @@
 #include <set>
 #include <utility>
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/string16.h"
@@ -35,6 +34,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 

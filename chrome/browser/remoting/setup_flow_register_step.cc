@@ -4,11 +4,11 @@
 
 #include "chrome/browser/remoting/setup_flow_register_step.h"
 
-#include "app/l10n_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/remoting/setup_flow_login_step.h"
 #include "chrome/browser/remoting/setup_flow_start_host_step.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace remoting {
 

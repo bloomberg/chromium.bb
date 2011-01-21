@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
@@ -19,6 +18,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 // Markup for the text of the Omnibox search label

@@ -9,7 +9,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -36,6 +35,7 @@
 #include "net/base/escape.h"
 #include "third_party/undoview/undo_view.h"
 #include "ui/base/animation/multi_animation.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/autocomplete/autocomplete_edit_view_views.h"

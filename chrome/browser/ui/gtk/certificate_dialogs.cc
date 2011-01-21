@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/base64.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

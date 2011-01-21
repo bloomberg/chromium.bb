@@ -8,7 +8,6 @@
 #include <gdk/gdk.h>
 #endif
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/blocked_content_container.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/button/radio_button.h"
 #include "views/controls/image_view.h"

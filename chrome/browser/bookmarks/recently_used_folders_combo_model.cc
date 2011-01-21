@@ -4,9 +4,9 @@
 
 #include "chrome/browser/bookmarks/recently_used_folders_combo_model.h"
 
-#include "app/l10n_util.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

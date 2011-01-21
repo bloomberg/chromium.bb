@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/favicon_size.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/context_menu.h"
 
 ExtensionMenuItem::ExtensionMenuItem(const Id& id,

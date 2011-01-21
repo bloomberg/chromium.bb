@@ -4,8 +4,8 @@
 
 #include "chrome/browser/background_mode_manager.h"
 
-#include "app/l10n_util.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
   NOTREACHED();

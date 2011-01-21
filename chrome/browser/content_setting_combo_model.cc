@@ -4,11 +4,11 @@
 
 #include "chrome/browser/content_setting_combo_model.h"
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/string16.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

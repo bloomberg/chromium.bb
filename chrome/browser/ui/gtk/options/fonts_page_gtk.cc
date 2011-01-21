@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/default_encoding_combo_model.h"
@@ -16,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "gfx/font.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

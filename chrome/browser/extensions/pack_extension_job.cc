@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/pack_extension_job.h"
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/common/chrome_constants.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 PackExtensionJob::PackExtensionJob(Client* client,
                                    const FilePath& root_directory,

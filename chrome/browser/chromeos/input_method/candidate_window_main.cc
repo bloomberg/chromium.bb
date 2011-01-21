@@ -9,7 +9,6 @@
 #include <string>
 
 #include "app/app_paths.h"
-#include "app/l10n_util.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "grit/app_locale_settings.h"
 #include "third_party/cros/chromeos_cros_api.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "views/focus/accelerator_handler.h"

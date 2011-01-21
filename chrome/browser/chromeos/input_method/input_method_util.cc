@@ -11,8 +11,6 @@
 
 #include "unicode/uloc.h"
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_collator.h"
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/scoped_ptr.h"
@@ -25,6 +23,8 @@
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_collator.h"
 
 namespace {
 

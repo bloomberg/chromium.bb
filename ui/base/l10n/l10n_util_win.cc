@@ -1,20 +1,20 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util_win.h"
+#include "ui/base/l10n/l10n_util_win.h"
 
 #include <windowsx.h>
 #include <algorithm>
 #include <iterator>
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/string_number_conversions.h"
 #include "base/win/i18n.h"
 #include "base/win/windows_version.h"
 #include "grit/app_locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/message_loop.h"
@@ -31,6 +30,7 @@
 #include "net/base/escape.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::Time;
 using base::TimeDelta;

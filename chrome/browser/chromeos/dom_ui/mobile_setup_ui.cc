@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
@@ -38,6 +37,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

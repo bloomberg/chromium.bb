@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 
-#include "app/l10n_util_mac.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -48,6 +47,7 @@
 #include "gfx/rect.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
                                        BrowserWindowController* controller,

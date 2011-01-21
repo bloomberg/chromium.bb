@@ -4,13 +4,13 @@
 
 #import "chrome/browser/ui/cocoa/first_run_bubble_controller.h"
 
-#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/util.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 @interface FirstRunBubbleController(Private)
 - (id)initRelativeToView:(NSView*)view

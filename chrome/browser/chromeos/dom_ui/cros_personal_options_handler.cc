@@ -4,12 +4,12 @@
 
 #include "chrome/browser/chromeos/dom_ui/cros_personal_options_handler.h"
 
-#include "app/l10n_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 

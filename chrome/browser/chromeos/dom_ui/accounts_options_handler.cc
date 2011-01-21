@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/dom_ui/accounts_options_handler.h"
 
-#include "app/l10n_util.h"
 #include "base/json/json_reader.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 

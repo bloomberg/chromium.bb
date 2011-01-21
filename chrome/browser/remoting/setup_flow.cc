@@ -4,7 +4,6 @@
 
 #include "chrome/browser/remoting/setup_flow.h"
 
-#include "app/l10n_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/utf_string_conversions.h"
@@ -23,6 +22,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_font_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace remoting {
 

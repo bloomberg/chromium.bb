@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
 #include "chrome/browser/chromeos/notifications/balloon_view.h"
 #include "chrome/common/notification_details.h"
@@ -16,6 +15,7 @@
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/background.h"
 #include "views/controls/native/native_view_host.h"

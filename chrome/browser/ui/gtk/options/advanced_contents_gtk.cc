@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/environment.h"
@@ -47,6 +46,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

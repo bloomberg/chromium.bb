@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -36,10 +35,11 @@
 #include "gfx/codec/png_codec.h"
 #include "gfx/icon_util.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
+
 
 namespace {
 

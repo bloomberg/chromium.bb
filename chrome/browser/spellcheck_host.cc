@@ -6,7 +6,6 @@
 
 #include <fcntl.h>
 
-#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -25,6 +24,7 @@
 #include "chrome/common/spellcheck_common.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/hunspell/google/bdict.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

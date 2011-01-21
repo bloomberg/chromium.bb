@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/spellcheck_common.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

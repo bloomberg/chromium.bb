@@ -4,13 +4,13 @@
 
 #include "views/widget/widget_win.h"
 
-#include "app/l10n_util_win.h"
 #include "app/win/win_util.h"
 #include "base/string_util.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/native_theme_win.h"
 #include "gfx/path.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
+#include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/system_monitor/system_monitor.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/view_prop.h"

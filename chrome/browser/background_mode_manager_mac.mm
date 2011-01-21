@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "chrome/browser/background_mode_manager.h"
@@ -10,6 +9,7 @@
 #include "chrome/common/app_mode_common_mac.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

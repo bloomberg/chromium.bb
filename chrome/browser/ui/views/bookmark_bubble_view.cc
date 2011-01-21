@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/bookmark_bubble_view.h"
 
-#include "app/l10n_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -21,6 +20,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/event.h"
 #include "views/standard_layout.h"

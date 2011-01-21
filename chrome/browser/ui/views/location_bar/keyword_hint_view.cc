@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 
-#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -14,6 +13,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/label.h"
 

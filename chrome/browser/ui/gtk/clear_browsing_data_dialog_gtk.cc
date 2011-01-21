@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +17,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

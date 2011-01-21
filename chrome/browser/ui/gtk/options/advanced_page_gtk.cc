@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/gtk/options/advanced_page_gtk.h"
 
-#include "app/l10n_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 AdvancedPageGtk::AdvancedPageGtk(Profile* profile)
     : OptionsPageBase(profile),

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/instant_confirm_view.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
@@ -14,6 +13,7 @@
 #include "grit/generated_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/label.h"
 #include "views/grid_layout.h"
 #include "views/layout_manager.h"

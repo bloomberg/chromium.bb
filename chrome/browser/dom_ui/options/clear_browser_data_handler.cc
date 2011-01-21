@@ -4,7 +4,6 @@
 
 #include "chrome/browser/dom_ui/options/clear_browser_data_handler.h"
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "base/values.h"
@@ -16,6 +15,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 ClearBrowserDataHandler::ClearBrowserDataHandler() : remover_(NULL) {
 }

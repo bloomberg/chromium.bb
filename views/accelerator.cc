@@ -10,12 +10,12 @@
 #include <gdk/gdk.h>
 #endif
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "grit/app_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace views {
 

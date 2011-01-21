@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/infobars/infobars.h"
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/views/event_utils.h"
@@ -14,6 +13,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/background.h"
 #include "views/controls/button/image_button.h"

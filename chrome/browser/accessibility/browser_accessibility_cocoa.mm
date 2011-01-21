@@ -6,12 +6,12 @@
 
 #import "chrome/browser/accessibility/browser_accessibility_cocoa.h"
 
-#include "app/l10n_util_mac.h"
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "grit/webkit_strings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
 

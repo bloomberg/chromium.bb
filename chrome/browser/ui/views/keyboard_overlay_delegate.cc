@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/keyboard_overlay_delegate.h"
 
-#include "app/l10n_util.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
@@ -12,7 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
-
+#include "ui/base/l10n/l10n_util.h"
 
 void KeyboardOverlayDelegate::ShowDialog(gfx::NativeWindow owning_window) {
   Browser* browser = BrowserList::GetLastActive();

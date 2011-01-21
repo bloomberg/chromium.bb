@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/dom_ui/keyboard_overlay_ui.h"
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/values.h"
 #include "base/weak_ptr.h"
@@ -18,6 +17,7 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "third_party/cros/chromeos_input_method.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 

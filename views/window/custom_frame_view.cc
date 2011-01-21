@@ -4,13 +4,13 @@
 
 #include "views/window/custom_frame_view.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "gfx/path.h"
 #include "grit/app_resources.h"
 #include "grit/app_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/window/client_view.h"
 #include "views/window/window_shape.h"

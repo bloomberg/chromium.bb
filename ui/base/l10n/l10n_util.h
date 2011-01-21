@@ -5,8 +5,8 @@
 // This file contains utility functions for dealing with localized
 // content.
 
-#ifndef APP_L10N_UTIL_H_
-#define APP_L10N_UTIL_H_
+#ifndef UI_BASE_L10N_L10N_UTIL_H_
+#define UI_BASE_L10N_L10N_UTIL_H_
 #pragma once
 
 #include <algorithm>
@@ -22,7 +22,7 @@
 #include "base/string_util.h"
 
 #if defined(OS_MACOSX)
-#include "app/l10n_util_mac.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #endif  // OS_MACOSX
 
 namespace l10n_util {
@@ -158,4 +158,4 @@ void GetAcceptLanguagesForLocale(const std::string& display_locale,
 
 }  // namespace l10n_util
 
-#endif  // APP_L10N_UTIL_H_
+#endif  // UI_BASE_L10N_L10N_UTIL_H_

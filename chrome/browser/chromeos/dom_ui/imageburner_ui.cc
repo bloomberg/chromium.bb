@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -26,6 +25,7 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 ////////////////////////////////////////////////////////////////////////////////

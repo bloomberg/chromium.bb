@@ -4,10 +4,10 @@
 
 #include "chrome/common/security_filter_peer.h"
 
-#include "app/l10n_util.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "ui/base/l10n/l10n_util.h"
 
 SecurityFilterPeer::SecurityFilterPeer(
     webkit_glue::ResourceLoaderBridge* resource_loader_bridge,

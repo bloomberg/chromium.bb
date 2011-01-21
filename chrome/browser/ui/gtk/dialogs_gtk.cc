@@ -6,7 +6,6 @@
 #include <map>
 #include <set>
 
-#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/shell_dialogs.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // The size of the preview we display for selected image files. We set height
 // larger than width because generally there is more free space vertically

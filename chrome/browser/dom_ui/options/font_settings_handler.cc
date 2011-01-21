@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 FontSettingsHandler::FontSettingsHandler() {
 }

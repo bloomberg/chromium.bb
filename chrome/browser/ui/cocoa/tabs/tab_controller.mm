@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util_mac.h"
 #include "base/mac/mac_util.h"
 #import "chrome/browser/themes/browser_theme_provider.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
@@ -12,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 @implementation TabController
 

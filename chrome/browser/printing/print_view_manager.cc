@@ -4,7 +4,6 @@
 
 #include "chrome/browser/printing/print_view_manager.h"
 
-#include "app/l10n_util.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -20,6 +19,7 @@
 #include "grit/generated_resources.h"
 #include "printing/native_metafile.h"
 #include "printing/printed_document.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::TimeDelta;
 

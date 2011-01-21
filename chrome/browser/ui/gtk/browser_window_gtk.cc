@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -87,6 +86,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

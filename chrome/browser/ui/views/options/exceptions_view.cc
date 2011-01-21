@@ -7,12 +7,12 @@
 #include <algorithm>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/views/options/content_exceptions_table_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "gfx/rect.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/table/table_view.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/importer/importer_list.h"
 
-#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/stl_util-inl.h"
 #include "base/values.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/importer/toolbar_importer.h"
 #include "chrome/browser/shell_integration.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/importer/ie_importer.h"

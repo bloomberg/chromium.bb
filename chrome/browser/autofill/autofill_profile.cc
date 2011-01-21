@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <set>
 
-#include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/address.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/autofill/home_phone_number.h"
 #include "chrome/common/guid.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/dom_ui/options/stop_syncing_handler.h"
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/values.h"
 #include "base/callback.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "ui/base/l10n/l10n_util.h"
 
 StopSyncingHandler::StopSyncingHandler() {
 }

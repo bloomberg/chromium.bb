@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -14,6 +13,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 static const int kMessageWidth = 400;
 

@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
@@ -17,6 +16,7 @@
 #include "gfx/color_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/border.h"
 #include "views/grid_layout.h"
 #include "views/controls/label.h"

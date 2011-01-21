@@ -7,7 +7,6 @@
 #include <map>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/rand_util.h"
@@ -28,6 +27,7 @@
 #include "jingle/notifier/listener/push_notifications_thread.h"
 #include "jingle/notifier/listener/talk_mediator_impl.h"
 #include "net/url_request/url_request_status.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // The real guts of CloudPrintProxyBackend, to keep the public client API clean.
 class CloudPrintProxyBackend::Core

@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include <glib/gutils.h>
@@ -12,7 +12,6 @@
 #include <cstdlib>
 #include <iterator>
 
-#include "app/l10n_util_collator.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
@@ -26,15 +25,16 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "gfx/canvas.h"
+#include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "unicode/rbbi.h"
 #include "unicode/uloc.h"
 
 #if defined(OS_MACOSX)
-#include "app/l10n_util_mac.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #elif defined(OS_WIN)
-#include "app/l10n_util_win.h"
+#include "ui/base/l10n/l10n_util_win.h"
 #endif
 
 namespace {

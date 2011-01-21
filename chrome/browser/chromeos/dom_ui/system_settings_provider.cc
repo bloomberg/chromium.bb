@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "unicode/calendar.h"
 #include "unicode/timezone.h"
 #include "unicode/ures.h"

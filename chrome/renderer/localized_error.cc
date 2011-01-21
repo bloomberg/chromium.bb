@@ -4,7 +4,6 @@
 
 #include "chrome/renderer/localized_error.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/string16.h"
@@ -19,6 +18,7 @@
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebURLError;

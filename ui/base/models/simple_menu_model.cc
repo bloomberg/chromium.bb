@@ -4,8 +4,8 @@
 
 #include "ui/base/models/simple_menu_model.h"
 
-#include "app/l10n_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace ui {
 

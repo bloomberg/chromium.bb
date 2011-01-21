@@ -9,7 +9,6 @@
 
 #include "chrome/browser/ui/views/options/languages_page_view.h"
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
@@ -31,6 +30,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "unicode/uloc.h"
 #include "views/controls/button/radio_button.h"

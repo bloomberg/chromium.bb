@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/gtk/options/content_filter_page_gtk.h"
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
@@ -28,6 +27,7 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 ContentFilterPageGtk::ContentFilterPageGtk(Profile* profile,
                                            ContentSettingsType content_type)

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/clear_data_view.h"
 
-#include "app/l10n_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_window.h"
@@ -16,6 +15,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/url_request/url_request_context.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/background.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/label.h"

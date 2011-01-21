@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
@@ -35,6 +34,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

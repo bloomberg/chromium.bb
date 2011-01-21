@@ -18,7 +18,6 @@
 #include <algorithm>
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -37,6 +36,7 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "gfx/gtk_preserve_window.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor_gtk_data.h"

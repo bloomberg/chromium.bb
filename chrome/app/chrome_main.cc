@@ -50,7 +50,6 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "app/l10n_util_mac.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/os_crash_dumps.h"
 #include "base/mach_ipc_mac.h"
@@ -59,6 +58,7 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "grit/chromium_strings.h"
 #include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #endif
 
 #if defined(OS_POSIX)

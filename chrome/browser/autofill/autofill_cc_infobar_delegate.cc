@@ -4,13 +4,13 @@
 
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 
-#include "app/l10n_util.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/autofill/autofill_cc_infobar.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/browser_list.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 AutoFillCCInfoBarDelegate::AutoFillCCInfoBarDelegate(TabContents* tab_contents,

@@ -4,13 +4,13 @@
 
 #import "chrome/browser/ui/cocoa/toolbar/reload_button.h"
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_mac.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "app/mac/nsimage_cache.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
 

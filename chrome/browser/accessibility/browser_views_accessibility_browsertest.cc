@@ -4,7 +4,6 @@
 
 #include <oleacc.h>
 
-#include "app/l10n_util.h"
 #include "base/scoped_comptr_win.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_window.h"
@@ -18,6 +17,7 @@
 #include "chrome/test/ui_test_utils.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/accessibility/view_accessibility.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"

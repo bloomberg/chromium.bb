@@ -7,7 +7,6 @@
 #include <set>
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_version_info.h"
@@ -26,6 +25,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // TODO(viettrungluu): Many of the TODOs below are subsumed by a general need to
 // refactor the about:memory code (not just on Mac, but probably on other

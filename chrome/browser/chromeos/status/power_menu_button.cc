@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/status/power_menu_button.h"
 
-#include "app/l10n_util.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -12,6 +11,7 @@
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {

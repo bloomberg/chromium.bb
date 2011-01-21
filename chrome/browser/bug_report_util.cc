@@ -7,7 +7,6 @@
 #include <sstream>
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/file_version_info.h"
 #include "base/file_util.h"
@@ -27,6 +26,7 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "net/url_request/url_request_status.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "unicode/locid.h"
 
 #if defined(OS_CHROMEOS)

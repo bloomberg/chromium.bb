@@ -4,7 +4,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -21,6 +20,7 @@
 #include "gfx/codec/png_codec.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

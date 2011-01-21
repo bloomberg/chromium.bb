@@ -4,10 +4,10 @@
 
 #include "chrome/browser/content_exceptions_table_model.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 
 ContentExceptionsTableModel::ContentExceptionsTableModel(

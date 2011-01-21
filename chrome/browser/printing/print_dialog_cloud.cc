@@ -5,7 +5,6 @@
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/printing/print_dialog_cloud_internal.h"
 
-#include "app/l10n_util.h"
 #include "base/base64.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
@@ -28,6 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/webpreferences.h"
 
 #include "grit/generated_resources.h"

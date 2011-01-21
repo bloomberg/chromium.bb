@@ -4,7 +4,6 @@
 
 #include "chrome/browser/content_setting_bubble_model.h"
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/blocked_content_container.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
  public:

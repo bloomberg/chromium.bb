@@ -6,8 +6,6 @@
 
 #include <Carbon/Carbon.h>
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_mac.h"
 #include "app/mac/scoped_nsdisable_screen_updates.h"
 #include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
@@ -61,6 +59,8 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 // ORGANIZATION: This is a big file. It is (in principle) organized as follows
 // (in order):

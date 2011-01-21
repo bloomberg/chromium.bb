@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/file_version_info.h"
 #include "base/i18n/rtl.h"
@@ -40,6 +39,7 @@
 #include "chrome/common/sqlite_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_MACOSX)

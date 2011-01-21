@@ -9,11 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "app/sql/statement.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace history {
 

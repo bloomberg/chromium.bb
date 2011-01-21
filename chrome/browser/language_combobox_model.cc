@@ -4,7 +4,6 @@
 
 #include "chrome/browser/language_combobox_model.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/string_split.h"
 #include "base/stringprintf.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "unicode/uloc.h"
 
 ///////////////////////////////////////////////////////////////////////////////

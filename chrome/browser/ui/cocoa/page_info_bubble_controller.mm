@@ -4,8 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/page_info_bubble_controller.h"
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_mac.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "base/task.h"
@@ -25,6 +23,8 @@
 #include "net/base/cert_status_flags.h"
 #include "net/base/x509_certificate.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 @interface PageInfoBubbleController (Private)
 - (PageInfoModel*)model;

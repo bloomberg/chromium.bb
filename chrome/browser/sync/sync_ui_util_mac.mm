@@ -6,11 +6,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/l10n_util_mac.h"
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 namespace sync_ui_util {
 

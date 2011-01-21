@@ -7,7 +7,6 @@
 #include <vector>
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/crypto/rsa_private_key.h"
 #include "base/crypto/signature_creator.h"
 #include "base/file_util.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/zip.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
   const int kRSAKeySize = 1024;

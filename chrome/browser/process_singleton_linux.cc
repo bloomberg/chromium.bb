@@ -55,7 +55,6 @@
 #include <set>
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/base_paths.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -91,6 +90,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 const int ProcessSingleton::kTimeoutInSeconds;
 

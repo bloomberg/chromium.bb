@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
@@ -28,6 +27,7 @@
 #include "chrome/common/spellcheck_common.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"

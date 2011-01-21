@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -25,6 +24,7 @@
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/button/text_button.h"
 
 namespace chromeos {

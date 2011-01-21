@@ -4,10 +4,10 @@
 
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 
-#include "app/l10n_util.h"
 #include "base/scoped_nsobject.h"
 #include "grit/generated_resources.h"
 #import "third_party/molokocacao/NSBezierPath+MCAdditions.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace  {
 // Convenience function to return the middle point of the given |rect|.

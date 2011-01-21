@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 
-#include "app/l10n_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background_page_tracker.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 
 @interface WrenchMenuController (Private)

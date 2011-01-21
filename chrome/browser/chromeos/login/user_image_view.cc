@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -17,6 +16,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/native_button.h"

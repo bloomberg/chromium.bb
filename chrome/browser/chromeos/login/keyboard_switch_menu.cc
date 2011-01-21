@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/keyboard_switch_menu.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/widget/widget_gtk.h"
 
 namespace chromeos {

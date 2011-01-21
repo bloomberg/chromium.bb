@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/ui/gtk/options/languages_page_gtk.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // FontsLanguagesWindowGtk

@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/hash_tables.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace errors = extension_manifest_errors;
 

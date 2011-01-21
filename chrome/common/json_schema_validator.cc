@@ -7,10 +7,10 @@
 #include <cfloat>
 #include <cmath>
 
-#include "app/l10n_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

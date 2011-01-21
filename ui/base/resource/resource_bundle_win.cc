@@ -6,7 +6,6 @@
 
 #include <atlbase.h>
 
-#include "app/l10n_util.h"
 #include "base/debug/stack_trace.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -17,8 +16,9 @@
 #include "base/synchronization/lock.h"
 #include "base/win/windows_version.h"
 #include "gfx/font.h"
-#include "ui/base/ui_base_paths.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/data_pack.h"
+#include "ui/base/ui_base_paths.h"
 
 namespace ui {
 

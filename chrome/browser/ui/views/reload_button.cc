@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/views/reload_button.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // ReloadButton, public:

@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
@@ -51,6 +50,7 @@
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::Time;
 using WebKit::WebPageSerializerClient;

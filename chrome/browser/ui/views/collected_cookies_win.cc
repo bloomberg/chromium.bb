@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/collected_cookies_win.h"
 
-#include "app/l10n_util.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -14,6 +13,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/box_layout.h"
 #include "views/controls/button/native_button.h"

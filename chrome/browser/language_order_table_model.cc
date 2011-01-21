@@ -6,10 +6,10 @@
 
 #include <set>
 
-#include "app/l10n_util.h"
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 
 LanguageOrderTableModel::LanguageOrderTableModel()

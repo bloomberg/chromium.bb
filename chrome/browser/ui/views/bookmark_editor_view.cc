@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/bookmark_editor_view.h"
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -21,6 +20,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/net_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/background.h"
 #include "views/focus/focus_manager.h"
 #include "views/grid_layout.h"

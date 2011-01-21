@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 
-#include "app/l10n_util_mac.h"
 #include "base/string_util.h"
 #include "grit/generated_resources.h"
 #include "base/sys_string_conversions.h"
@@ -14,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 @implementation AutocompleteTextFieldEditor
 

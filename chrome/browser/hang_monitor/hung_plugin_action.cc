@@ -6,10 +6,10 @@
 
 #include "chrome/browser/hang_monitor/hung_plugin_action.h"
 
-#include "app/l10n_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/logging_chrome.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/hwnd_util.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 

@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
@@ -30,6 +29,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_MACOSX)

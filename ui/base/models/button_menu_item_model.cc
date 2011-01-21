@@ -4,7 +4,7 @@
 
 #include "ui/base/models/button_menu_item_model.h"
 
-#include "app/l10n_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace ui {
 

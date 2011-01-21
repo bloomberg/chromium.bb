@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/infobars/after_translate_infobar.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/ui/views/infobars/infobar_text_button.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"

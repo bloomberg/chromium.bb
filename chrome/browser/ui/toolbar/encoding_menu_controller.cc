@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 const int EncodingMenuController::kValidEncodingIds[] = {
     IDC_ENCODING_UTF8,

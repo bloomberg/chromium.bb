@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/render_messages_params.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 FileSelectHelper::FileSelectHelper(Profile* profile)
     : profile_(profile),

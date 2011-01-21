@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/l10n_util_mac.h"
 #import "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
@@ -28,6 +27,7 @@
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/tree_model.h"
 
 // Used to test FindCocoaNode. This only sets the title and node, without

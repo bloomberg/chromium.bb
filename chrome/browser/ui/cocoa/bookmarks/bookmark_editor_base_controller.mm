@@ -6,8 +6,6 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_base_controller.h"
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_mac.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
@@ -18,6 +16,8 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_tree_browser_cell.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 @interface BookmarkEditorBaseController ()
 

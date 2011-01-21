@@ -8,9 +8,9 @@
 #include <commctrl.h>
 #include <shlobj.h>
 
-#include "app/l10n_util_win.h"
 #include "base/message_loop.h"
 #include "gfx/point.h"
+#include "ui/base/l10n/l10n_util_win.h"
 
 namespace views {
 

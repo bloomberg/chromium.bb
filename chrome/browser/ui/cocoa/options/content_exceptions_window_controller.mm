@@ -4,8 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/options/content_exceptions_window_controller.h"
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_mac.h"
 #include "base/command_line.h"
 #import "base/mac/mac_util.h"
 #import "base/scoped_nsobject.h"
@@ -16,6 +14,8 @@
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/table_model_observer.h"
 
 @interface ContentExceptionsWindowController (Private)

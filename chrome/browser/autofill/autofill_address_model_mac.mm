@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/autofill/autofill_address_model_mac.h"
-#include "app/l10n_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 @implementation AutoFillAddressModel
 

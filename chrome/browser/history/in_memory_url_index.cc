@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <limits>
 
-#include "app/l10n_util.h"
 #include "base/i18n/break_iterator.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/history/url_database.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "unicode/utypes.h"  // for int32_t
 
 using base::Time;

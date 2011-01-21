@@ -4,7 +4,6 @@
 
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,6 +15,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 AlternateNavURLFetcher::AlternateNavURLFetcher(

@@ -10,7 +10,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/third_party/icu/icu_utf.h"
@@ -28,6 +27,7 @@
 #include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 // Copied from third_party/WebKit/Source/WebCore/page/EventHandler.cpp

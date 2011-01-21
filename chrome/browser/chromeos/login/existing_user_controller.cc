@@ -8,7 +8,6 @@
 #include <functional>
 #include <map>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
@@ -37,6 +36,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/screen.h"
 #include "views/widget/widget_gtk.h"

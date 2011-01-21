@@ -4,7 +4,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -23,6 +22,7 @@
 #include "grit/locale_settings.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

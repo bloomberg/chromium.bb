@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
@@ -20,6 +19,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "ui/base/l10n/l10n_util.h"
 
 ImportDataHandler::ImportDataHandler() : importer_host_(NULL) {
 }

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/toolbar_view.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -30,6 +29,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/button/button_dropdown.h"
 #include "views/focus/view_storage.h"

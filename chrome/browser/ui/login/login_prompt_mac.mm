@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/login/login_prompt.h"
 #import "chrome/browser/ui/login/login_prompt_mac.h"
 
-#include "app/l10n_util.h"
 #include "base/mac/mac_util.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -21,6 +20,7 @@
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using webkit_glue::PasswordForm;
 

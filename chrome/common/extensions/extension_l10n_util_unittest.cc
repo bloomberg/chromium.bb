@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/linked_ptr.h"
@@ -16,6 +15,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;

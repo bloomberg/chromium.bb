@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/login_screen.h"
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {

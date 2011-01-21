@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // ExtensionDisabledDialogDelegate --------------------------------------------
 

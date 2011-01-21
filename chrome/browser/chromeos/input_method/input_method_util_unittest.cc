@@ -6,10 +6,10 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 namespace input_method {

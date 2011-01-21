@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/cocoa/content_settings/cookie_details.h"
 
-#include "app/l10n_util_mac.h"
 #import "base/i18n/time_formatting.h"
 #include "base/sys_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "chrome/browser/cookies_tree_model.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "webkit/appcache/appcache_service.h"
 
 #pragma mark Cocoa Cookie Details

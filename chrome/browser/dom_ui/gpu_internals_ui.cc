@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -38,6 +37,7 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

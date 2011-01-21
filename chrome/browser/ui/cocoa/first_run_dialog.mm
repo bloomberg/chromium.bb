@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/first_run_dialog.h"
 
-#include "app/l10n_util_mac.h"
 #include "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
@@ -14,6 +13,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/locale_settings.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 @interface FirstRunDialogController (PrivateMethods)
 // Show the dialog.

@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/process_util.h"
 #include "base/task.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/process_watcher.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 class Profile;
 

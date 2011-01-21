@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -14,6 +13,7 @@
 #include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {

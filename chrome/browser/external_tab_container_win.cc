@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -45,6 +44,7 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/view_prop.h"
 #include "views/grid_layout.h"
 #include "views/widget/root_view.h"

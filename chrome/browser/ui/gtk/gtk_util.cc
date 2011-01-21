@@ -11,7 +11,6 @@
 #include <cstdarg>
 #include <map>
 
-#include "app/l10n_util.h"
 #include "base/environment.h"
 #include "base/i18n/rtl.h"
 #include "base/linux_util.h"
@@ -35,6 +34,7 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/x/x11_util.h"
 

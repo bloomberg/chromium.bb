@@ -6,12 +6,12 @@
 
 #import "chrome/browser/ui/cocoa/importer/importer_lock_dialog.h"
 
-#include "app/l10n_util_mac.h"
 #include "base/message_loop.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/importer/importer.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 void ImportLockDialogCocoa::ShowWarning(ImporterHost* importer) {
   scoped_nsobject<NSAlert> lock_alert([[NSAlert alloc] init]);

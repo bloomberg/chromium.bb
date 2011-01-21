@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/gtk/bookmark_utils_gtk.h"
 
-#include "app/l10n_util.h"
 #include "base/pickle.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -20,6 +19,7 @@
 #include "gfx/font.h"
 #include "gfx/gtk_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

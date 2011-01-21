@@ -6,12 +6,12 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/scoped_vector.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "unicode/uscript.h"
 
 namespace {

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_text_button.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/views/infobars/infobar_button_border.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 // static

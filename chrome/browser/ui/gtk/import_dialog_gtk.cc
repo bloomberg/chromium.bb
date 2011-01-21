@@ -6,13 +6,13 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

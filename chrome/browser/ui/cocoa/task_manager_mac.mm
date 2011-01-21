@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "app/l10n_util_mac.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -15,6 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
 

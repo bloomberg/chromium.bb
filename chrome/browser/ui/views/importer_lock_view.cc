@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/views/importer_lock_view.h"
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/importer.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/label.h"
 #include "views/standard_layout.h"
 #include "views/window/window.h"

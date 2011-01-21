@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/gtk/download_item_gtk.h"
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/metrics/histogram.h"
@@ -33,6 +32,7 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 

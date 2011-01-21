@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/task.h"
@@ -22,6 +21,7 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

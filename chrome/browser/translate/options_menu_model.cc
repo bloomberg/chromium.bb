@@ -4,7 +4,6 @@
 
 #include "chrome/browser/translate/options_menu_model.h"
 
-#include "app/l10n_util.h"
 #include "base/metrics/histogram.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/google/google_util.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

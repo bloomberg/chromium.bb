@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
@@ -28,6 +27,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 class Profile;
 

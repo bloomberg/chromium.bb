@@ -44,7 +44,6 @@
 #include <prprf.h>
 #include <unicode/uidna.h>
 
-#include "app/l10n_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -53,6 +52,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "net/third_party/mozilla_security_manager/nsNSSCertTrust.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/options/content_settings_window_view.h"
 
-#include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -19,6 +18,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/label.h"
 #include "views/widget/root_view.h"
 #include "views/window/dialog_delegate.h"

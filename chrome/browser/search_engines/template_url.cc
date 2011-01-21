@@ -4,7 +4,6 @@
 
 #include "chrome/browser/search_engines/template_url.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -16,6 +15,7 @@
 #include "chrome/common/url_constants.h"
 #include "gfx/favicon_size.h"
 #include "net/base/escape.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // The TemplateURLRef has any number of terms that need to be replaced. Each of
 // the terms is enclosed in braces. If the character preceeding the final

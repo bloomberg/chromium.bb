@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -23,6 +22,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/window_open_disposition.h"
 
 namespace {

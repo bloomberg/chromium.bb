@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
@@ -11,6 +10,7 @@
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/standard_layout.h"

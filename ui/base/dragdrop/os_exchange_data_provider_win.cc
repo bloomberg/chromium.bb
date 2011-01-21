@@ -4,7 +4,6 @@
 
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 
-#include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/logging.h"
@@ -17,6 +16,7 @@
 #include "grit/app_strings.h"
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace ui {
 

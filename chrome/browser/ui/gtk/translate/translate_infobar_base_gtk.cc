@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/gtk/translate/translate_infobar_base_gtk.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -16,6 +15,7 @@
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

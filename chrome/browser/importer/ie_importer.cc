@@ -15,7 +15,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "app/win/scoped_co_mem.h"
 #include "app/win/scoped_com_initializer.h"
 #include "base/file_path.h"
@@ -40,6 +39,7 @@
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/password_form.h"
 
 using base::Time;

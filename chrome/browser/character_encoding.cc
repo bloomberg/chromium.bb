@@ -7,8 +7,6 @@
 #include <map>
 #include <set>
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_collator.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_tokenizer.h"
@@ -16,6 +14,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_collator.h"
 #include "unicode/ucnv.h"
 
 namespace {

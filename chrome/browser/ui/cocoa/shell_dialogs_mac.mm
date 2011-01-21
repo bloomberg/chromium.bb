@@ -11,7 +11,6 @@
 #include <set>
 #include <vector>
 
-#include "app/l10n_util_mac.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #import "base/mac/cocoa_protocols.h"
@@ -21,6 +20,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 static const int kFileTypePopupTag = 1234;
 

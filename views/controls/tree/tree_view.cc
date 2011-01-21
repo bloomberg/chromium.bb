@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "app/l10n_util_win.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
@@ -21,6 +20,7 @@
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/base/l10n/l10n_util_win.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 

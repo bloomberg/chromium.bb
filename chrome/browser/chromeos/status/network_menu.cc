@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -22,6 +21,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/window/window.h"

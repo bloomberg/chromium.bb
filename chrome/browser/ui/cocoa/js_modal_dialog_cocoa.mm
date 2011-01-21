@@ -6,7 +6,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/l10n_util_mac.h"
 #include "base/logging.h"
 #import "base/mac/cocoa_protocols.h"
 #include "base/sys_string_conversions.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "grit/app_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/message_box_flags.h"
 
 // Helper object that receives the notification that the dialog/sheet is

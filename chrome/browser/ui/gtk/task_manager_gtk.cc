@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -30,6 +29,7 @@
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 

@@ -4,12 +4,12 @@
 
 #include "chrome/browser/plugin_exceptions_table_model.h"
 
-#include "app/l10n_util.h"
 #include "base/auto_reset.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 
 PluginExceptionsTableModel::PluginExceptionsTableModel(

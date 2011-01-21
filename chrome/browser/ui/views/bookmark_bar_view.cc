@@ -9,7 +9,6 @@
 #include <set>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -41,6 +40,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "views/controls/button/menu_button.h"

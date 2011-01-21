@@ -8,7 +8,6 @@
 #include <set>
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/cookies_tree_model.h"
@@ -17,6 +16,7 @@
 #include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <set>
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
@@ -39,6 +38,7 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 // Maximum number of search results to return in a given search. We should

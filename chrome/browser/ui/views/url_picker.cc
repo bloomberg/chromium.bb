@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/url_picker.h"
 
-#include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -18,6 +17,7 @@
 #include "grit/locale_settings.h"
 #include "net/base/net_util.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/background.h"

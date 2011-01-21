@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/options/internet_page_view.h"
@@ -22,6 +21,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_gtk.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"

@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -23,6 +22,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/background.h"
 #include "views/grid_layout.h"
 #include "views/controls/button/native_button.h"

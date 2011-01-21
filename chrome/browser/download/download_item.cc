@@ -4,7 +4,6 @@
 
 #include "chrome/browser/download/download_item.h"
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

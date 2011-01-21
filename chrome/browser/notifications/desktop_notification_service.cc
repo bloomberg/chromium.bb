@@ -4,7 +4,6 @@
 
 #include "chrome/browser/notifications/desktop_notification_service.h"
 
-#include "app/l10n_util.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -36,6 +35,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using WebKit::WebNotificationPresenter;

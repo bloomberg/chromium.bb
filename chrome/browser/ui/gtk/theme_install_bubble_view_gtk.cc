@@ -6,12 +6,12 @@
 
 #include <math.h>
 
-#include "app/l10n_util.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // Roundedness of bubble.
 static const int kBubbleCornerRadius = 4;

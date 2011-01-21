@@ -9,7 +9,6 @@
 #include <map>
 #include <set>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/singleton.h"
 #include "base/string_number_conversions.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace about_flags {
 

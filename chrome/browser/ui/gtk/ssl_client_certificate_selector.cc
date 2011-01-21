@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/nss_util.h"
@@ -26,6 +25,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

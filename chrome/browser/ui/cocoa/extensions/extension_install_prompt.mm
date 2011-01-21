@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/l10n_util_mac.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -15,6 +14,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
 class Profile;

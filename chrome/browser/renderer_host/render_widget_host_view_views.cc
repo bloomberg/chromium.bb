@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -24,6 +23,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
 #include "views/event.h"
 #include "views/widget/widget.h"

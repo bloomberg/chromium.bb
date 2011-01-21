@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
@@ -15,6 +14,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "unicode/datefmt.h"
 #include "unicode/locid.h"
 #include "unicode/plurfmt.h"

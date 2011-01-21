@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/i18n/rtl.h"
@@ -24,6 +23,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "views/controls/button/native_button.h"

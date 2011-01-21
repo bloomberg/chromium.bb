@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -33,6 +32,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/x/x11_util.h"
 #include "views/controls/button/text_button.h"

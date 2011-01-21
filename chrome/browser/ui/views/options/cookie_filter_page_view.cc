@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/options/cookie_filter_page_view.h"
 
-#include "app/l10n_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/options/show_options_url.h"
@@ -12,6 +11,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/button/checkbox.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"

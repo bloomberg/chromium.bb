@@ -7,7 +7,6 @@
 #include <stack>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_messages.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // TODO(sanjeevr): Localize the product name?
 const char kCloudPrintProductName[] = "Google Cloud Print";

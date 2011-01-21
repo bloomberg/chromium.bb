@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/json/json_writer.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace keys = extension_bookmarks_module_constants;
 

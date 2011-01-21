@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_L10N_UTIL_WIN_H_
-#define APP_L10N_UTIL_WIN_H_
+#ifndef UI_BASE_L10N_L10N_UTIL_WIN_H_
+#define UI_BASE_L10N_L10N_UTIL_WIN_H_
 #pragma once
 
 #include <windows.h>
@@ -60,4 +60,4 @@ const std::vector<std::string>& GetLocaleOverrides();
 
 }  // namespace l10n_util
 
-#endif  // APP_L10N_UTIL_WIN_H_
+#endif  // UI_BASE_L10N_L10N_UTIL_WIN_H_

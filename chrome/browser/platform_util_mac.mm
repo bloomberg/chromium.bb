@@ -8,14 +8,14 @@
 #import <Cocoa/Cocoa.h>
 #import <CoreServices/CoreServices.h>
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_mac.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/mac/scoped_aedesc.h"
 #include "base/sys_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 namespace platform_util {
 

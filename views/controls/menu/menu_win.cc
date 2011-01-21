@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_win.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -15,6 +13,8 @@
 #include "gfx/font.h"
 #include "gfx/rect.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/win/window_impl.h"
 #include "views/accelerator.h"
 

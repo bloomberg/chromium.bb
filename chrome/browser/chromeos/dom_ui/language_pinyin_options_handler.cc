@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/dom_ui/language_pinyin_options_handler.h"
 
-#include "app/l10n_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/dom_ui/language_options_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 const char kI18nPrefix[] = "Pinyin";

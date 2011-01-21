@@ -4,7 +4,6 @@
 
 #include "chrome/browser/task_manager/task_manager.h"
 
-#include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background_contents_service.h"
@@ -29,6 +28,7 @@
 #include "chrome/test/ui_test_utils.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

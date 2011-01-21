@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "unicode/timezone.h"
 #include "views/controls/button/checkbox.h"

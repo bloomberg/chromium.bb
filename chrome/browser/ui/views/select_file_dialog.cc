@@ -4,7 +4,6 @@
 
 #include "chrome/browser/shell_dialogs.h"
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/json/json_reader.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/ui/views/html_dialog_view.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
 

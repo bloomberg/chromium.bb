@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/sys_info.h"
@@ -39,6 +38,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
 #include "base/i18n/rtl.h"

@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace keys = extension_accessibility_api_constants;
 

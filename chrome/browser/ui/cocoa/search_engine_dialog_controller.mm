@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util_mac.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
@@ -17,6 +16,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
 // Horizontal spacing between search engine choices.

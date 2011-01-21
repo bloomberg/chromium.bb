@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
 
-#include "app/l10n_util.h"
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_service.h"
+#include "ui/base/l10n/l10n_util.h"
 
 AccessibleWidgetHelper::AccessibleWidgetHelper(
     GtkWidget* root_widget, Profile* profile)

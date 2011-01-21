@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -62,6 +61,7 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "ipc/ipc_logging.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/database/database_tracker.h"
 
 #if defined(OS_WIN)

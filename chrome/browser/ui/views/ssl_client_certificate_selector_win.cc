@@ -8,7 +8,6 @@
 #include <cryptuiapi.h>
 #pragma comment(lib, "cryptui.lib")
 
-#include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace browser {
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/dom_ui/options/cookies_view_handler.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

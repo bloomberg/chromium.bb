@@ -4,7 +4,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/accessibility_events.h"
@@ -24,6 +23,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/options/internet_page_view.h"

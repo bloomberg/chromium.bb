@@ -4,7 +4,6 @@
 
 #include "chrome/browser/autofill/form_field.h"
 
-#include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/address_field.h"
@@ -16,6 +15,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRegularExpression.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "grit/autofill_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // Field names from the ECML specification; see RFC 3106.  We've
 // made these names lowercase since we convert labels and field names to

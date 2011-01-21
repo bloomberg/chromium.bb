@@ -9,8 +9,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_win.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -24,6 +22,8 @@
 #include "gfx/codec/png_codec.h"
 #include "gfx/font.h"
 #include "gfx/gdi_util.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_win.h"
 
 namespace app {
 namespace win {

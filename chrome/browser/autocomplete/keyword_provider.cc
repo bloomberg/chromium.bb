@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
@@ -21,6 +20,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // Helper functor for Start(), for ending keyword mode unless explicitly told
 // otherwise.

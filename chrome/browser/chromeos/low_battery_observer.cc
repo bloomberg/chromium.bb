@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/low_battery_observer.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/gtk/options/cookie_filter_page_gtk.h"
 
-#include "app/l10n_util.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

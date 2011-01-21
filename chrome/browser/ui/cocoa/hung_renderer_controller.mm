@@ -6,7 +6,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/l10n_util_mac.h"
 #include "base/mac/mac_util.h"
 #include "base/process_util.h"
 #include "base/sys_string_conversions.h"
@@ -24,6 +23,7 @@
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

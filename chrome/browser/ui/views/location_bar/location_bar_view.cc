@@ -8,7 +8,6 @@
 #include <gtk/gtk.h>
 #endif
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
@@ -42,6 +41,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "views/controls/label.h"

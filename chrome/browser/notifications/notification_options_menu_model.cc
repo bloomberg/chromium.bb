@@ -4,7 +4,6 @@
 
 #include "chrome/browser/notifications/notification_options_menu_model.h"
 
-#include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/browser_dialogs.h"

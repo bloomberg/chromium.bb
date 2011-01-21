@@ -4,11 +4,11 @@
 
 #include "views/controls/button/button_dropdown.h"
 
-#include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "grit/app_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/widget/widget.h"
 

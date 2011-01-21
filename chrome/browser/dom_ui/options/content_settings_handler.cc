@@ -4,7 +4,6 @@
 
 #include "chrome/browser/dom_ui/options/content_settings_handler.h"
 
-#include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
@@ -25,6 +24,7 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
@@ -24,6 +23,7 @@
 #include "net/base/auth.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using webkit_glue::PasswordForm;
 

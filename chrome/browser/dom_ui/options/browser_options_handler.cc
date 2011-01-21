@@ -4,7 +4,6 @@
 
 #include "chrome/browser/dom_ui/options/browser_options_handler.h"
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
@@ -28,6 +27,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 BrowserOptionsHandler::BrowserOptionsHandler()
     : template_url_model_(NULL), startup_custom_pages_table_model_(NULL) {

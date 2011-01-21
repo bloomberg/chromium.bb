@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "app/l10n_util.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
@@ -103,6 +102,7 @@
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/plugins/npapi/plugin_list.h"

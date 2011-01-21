@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"
@@ -20,6 +19,7 @@
 #include "net/base/ssl_connection_status_flags.h"
 #include "net/base/ssl_cipher_suite_names.h"
 #include "net/base/x509_certificate.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_MACOSX)

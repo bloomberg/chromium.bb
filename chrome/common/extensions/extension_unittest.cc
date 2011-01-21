@@ -8,7 +8,6 @@
 #include <gtk/gtk.h>
 #endif
 
-#include "app/l10n_util.h"
 #include "base/format_macros.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -32,6 +31,7 @@
 #include "net/base/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;

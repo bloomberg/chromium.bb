@@ -6,9 +6,9 @@
 
 #include <unicode/uidna.h>
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace x509_certificate_model {
 

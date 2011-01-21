@@ -4,7 +4,6 @@
 
 #include "chrome/browser/download/download_item_model.h"
 
-#include "app/l10n_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/string16.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/download/save_package.h"
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::TimeDelta;
 

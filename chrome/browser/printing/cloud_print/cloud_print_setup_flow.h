@@ -8,13 +8,13 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/time.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 class GaiaAuthFetcher;
 class CloudPrintServiceProcessHelper;

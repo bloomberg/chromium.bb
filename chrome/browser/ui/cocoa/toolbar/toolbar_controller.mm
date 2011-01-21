@@ -6,8 +6,7 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_mac.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
 #include "base/singleton.h"
@@ -54,6 +53,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/accelerator_cocoa.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"

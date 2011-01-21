@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,11 +8,6 @@
 #include <cstdlib>
 #endif
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_collator.h"
-#if !defined(OS_MACOSX)
-#include "app/test/data/resource.h"
-#endif
 #include "base/basictypes.h"
 #include "base/environment.h"
 #include "base/file_util.h"
@@ -20,13 +15,20 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_collator.h"
+#include "ui/base/ui_base_paths.h"
+#include "unicode/locid.h"
+
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
-#include "ui/base/ui_base_paths.h"
-#include "unicode/locid.h"
+
+#if !defined(OS_MACOSX)
+#include "ui/base/test/data/resource.h"
+#endif
 
 namespace {
 

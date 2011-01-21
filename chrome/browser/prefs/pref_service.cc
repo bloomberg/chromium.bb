@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -30,6 +29,7 @@
 #include "chrome/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

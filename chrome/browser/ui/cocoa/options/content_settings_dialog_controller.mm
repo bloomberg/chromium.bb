@@ -6,7 +6,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #import "chrome/browser/content_settings/content_settings_details.h"
@@ -31,6 +30,7 @@
 #include "chrome/common/url_constants.h"
 #include "grit/locale_settings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

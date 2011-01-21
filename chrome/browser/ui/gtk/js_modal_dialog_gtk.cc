@@ -6,13 +6,13 @@
 
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/message_box_flags.h"
 
 namespace {

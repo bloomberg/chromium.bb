@@ -4,10 +4,10 @@
 
 #include "views/controls/menu/menu_item_view.h"
 
-#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
 #include "grit/app_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/button/menu_button.h"

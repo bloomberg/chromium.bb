@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 
-#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser_process.h"
@@ -16,6 +15,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/accelerator.h"
 #include "views/view.h"
 

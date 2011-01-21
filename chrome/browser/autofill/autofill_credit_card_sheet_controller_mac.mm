@@ -4,13 +4,13 @@
 
 #import "chrome/browser/autofill/autofill_credit_card_sheet_controller_mac.h"
 
-#include "app/l10n_util.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/autofill/autofill_credit_card_model_mac.h"
 #import "chrome/browser/autofill/autofill_dialog_controller_mac.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // Interface exposed for unit testing.
 @implementation AutoFillCreditCardSheetController (ExposedForUnitTests)

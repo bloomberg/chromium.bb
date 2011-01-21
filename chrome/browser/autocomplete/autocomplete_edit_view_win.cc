@@ -11,8 +11,6 @@
 #include <richedit.h>
 #include <textserv.h>
 
-#include "app/l10n_util.h"
-#include "app/l10n_util_win.h"
 #include "app/win/iat_patch_function.h"
 #include "app/win/win_util.h"
 #include "base/auto_reset.h"
@@ -50,6 +48,8 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_win.h"
 #include "views/drag_utils.h"
 #include "views/focus/focus_util_win.h"
 #include "views/widget/widget.h"

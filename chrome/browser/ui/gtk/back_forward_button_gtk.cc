@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // The time in milliseconds between when the user clicks and the menu appears.
 static const int kMenuTimerDelay = 500;

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util_mac.h"
 #include "base/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -14,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 @interface FakeEditSearchEngineController : EditSearchEngineCocoaController {
 }

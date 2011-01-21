@@ -4,7 +4,6 @@
 
 #include "chrome/browser/download/download_shelf.h"
 
-#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "chrome/browser/dom_ui/downloads_ui.h"
 #include "chrome/browser/download/download_item.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // DownloadShelfContextMenu ----------------------------------------------------
 

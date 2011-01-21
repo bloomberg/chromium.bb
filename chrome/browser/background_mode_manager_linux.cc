@@ -4,7 +4,6 @@
 
 #include <unistd.h>
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_path.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

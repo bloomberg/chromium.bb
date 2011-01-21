@@ -4,7 +4,6 @@
 
 #include "chrome/browser/dom_ui/downloads_ui.h"
 
-#include "app/l10n_util.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/threading/thread.h"
@@ -20,6 +19,7 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

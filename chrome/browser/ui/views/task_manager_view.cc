@@ -4,7 +4,6 @@
 
 #include "chrome/browser/task_manager/task_manager.h"
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/stats_table.h"
@@ -21,6 +20,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 #include "views/accelerator.h"
 #include "views/background.h"

@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -34,6 +33,7 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/window/window.h"
 

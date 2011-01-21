@@ -16,7 +16,7 @@ TEST(DataPackTest, Load) {
   FilePath data_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &data_path);
   data_path = data_path.Append(
-      FILE_PATH_LITERAL("app/test/data/data_pack_unittest/sample.pak"));
+      FILE_PATH_LITERAL("ui/base/test/data/data_pack_unittest/sample.pak"));
 
   DataPack pack;
   ASSERT_TRUE(pack.Load(data_path));

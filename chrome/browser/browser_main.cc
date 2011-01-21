@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -130,7 +130,6 @@
 #include <shellapi.h>
 #include <windows.h>
 
-#include "app/l10n_util_win.h"
 #include "app/win/scoped_com_initializer.h"
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -146,6 +145,7 @@
 #include "net/base/sdch_manager.h"
 #include "printing/printed_document.h"
 #include "sandbox/src/sandbox.h"
+#include "ui/base/l10n/l10n_util_win.h"
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)

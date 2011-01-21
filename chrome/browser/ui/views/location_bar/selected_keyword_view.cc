@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 
-#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 SelectedKeywordView::SelectedKeywordView(const int background_images[],
                                          int contained_image,

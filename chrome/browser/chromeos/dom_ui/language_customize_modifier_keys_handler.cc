@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/dom_ui/language_customize_modifier_keys_handler.h"
 
-#include "app/l10n_util.h"
 #include "base/values.h"
 #include "grit/generated_resources.h"
 #include "third_party/cros/chromeos_keyboard.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 const struct ModifierKeysSelectItem {

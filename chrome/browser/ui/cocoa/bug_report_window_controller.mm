@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/bug_report_window_controller.h"
 
-#include "app/l10n_util_mac.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bug_report_util.h"
@@ -13,6 +12,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 @implementation BugReportWindowController
 

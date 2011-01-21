@@ -4,7 +4,6 @@
 
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
 
-#include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 BookmarkContextMenuController::BookmarkContextMenuController(
     gfx::NativeWindow parent_window,

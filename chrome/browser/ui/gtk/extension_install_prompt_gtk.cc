@@ -7,7 +7,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
@@ -18,6 +17,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 class Profile;
 

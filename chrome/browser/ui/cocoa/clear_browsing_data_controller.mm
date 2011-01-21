@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/clear_browsing_data_controller.h"
 
-#include "app/l10n_util.h"
 #include "base/lazy_instance.h"
 #include "base/mac/mac_util.h"
 #include "base/scoped_nsobject.h"
@@ -16,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/locale_settings.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/l10n/l10n_util.h"
 
 NSString* const kClearBrowsingDataControllerDidDelete =
     @"kClearBrowsingDataControllerDidDelete";

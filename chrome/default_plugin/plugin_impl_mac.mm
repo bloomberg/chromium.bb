@@ -6,7 +6,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/l10n_util_mac.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -14,6 +13,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/default_plugin_resources.h"
 #include "grit/webkit_strings.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "unicode/locid.h"
 #include "webkit/glue/webkit_glue.h"

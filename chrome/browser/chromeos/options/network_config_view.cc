@@ -6,13 +6,13 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
 #include "views/widget/widget_gtk.h"

@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
@@ -24,6 +23,7 @@
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/background.h"
 #include "views/controls/button/native_button.h"

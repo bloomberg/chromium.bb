@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/gtk/translate/after_translate_infobar_gtk.h"
 
-#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 AfterTranslateInfoBar::AfterTranslateInfoBar(
     TranslateInfoBarDelegate* delegate)

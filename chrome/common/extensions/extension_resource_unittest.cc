@@ -4,7 +4,6 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
@@ -13,6 +12,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 TEST(ExtensionResourceTest, CreateEmptyResource) {
   ExtensionResource resource;

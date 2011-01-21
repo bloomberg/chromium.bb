@@ -6,13 +6,13 @@
 
 #include <algorithm>
 
-#include "app/l10n_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::Time;
 

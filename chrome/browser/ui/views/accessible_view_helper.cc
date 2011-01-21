@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/views/accessible_view_helper.h"
 
-#include "app/l10n_util.h"
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/accessibility_event_router_views.h"
 #include "chrome/common/notification_service.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/widget/widget.h"
 #include "views/view.h"

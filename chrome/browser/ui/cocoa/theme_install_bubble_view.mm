@@ -6,10 +6,10 @@
 
 #import "chrome/browser/ui/cocoa/theme_install_bubble_view.h"
 
-#include "app/l10n_util_mac.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
 
