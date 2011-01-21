@@ -319,7 +319,7 @@ struct attr {
 	char a;        /* attributes format:
 	                * 76543210
 			*    cilub */
-	char r;        /* reserved */
+	char s;        /* in selection */
 };
 struct color_scheme {
 	struct terminal_color palette[16];
@@ -530,7 +530,7 @@ terminal_decode_attr(struct terminal *terminal, int row, int col,
 {
 	struct attr attr;
 	int foreground, background, tmp;
-	int inverse = 0, start_cmp, end_cmp;
+	int start_cmp, end_cmp;
 
 	start_cmp =
 		terminal_compare_position(terminal,
@@ -542,15 +542,16 @@ terminal_decode_attr(struct terminal *terminal, int row, int col,
 					  terminal->selection_end_x,
 					  terminal->selection_end_y,
 					  row, col);
+	decoded->attr.s = 0;
 	if (start_cmp < 0 && end_cmp > 0)
-		inverse = 1;
+		decoded->attr.s = 1;
 	else if (end_cmp < 0 && start_cmp > 0)
-		inverse = 1;
+		decoded->attr.s = 1;
 
 	/* get the attributes for this character cell */
 	attr = terminal_get_attr_row(terminal, row)[col];
 	if ((attr.a & ATTRMASK_INVERSE) ||
-	    inverse ||
+	    decoded->attr.s ||
 	    ((terminal->mode & MODE_SHOW_CURSOR) &&
 	     terminal->focused && terminal->row == row &&
 	     terminal->column == col)) {
@@ -579,6 +580,7 @@ terminal_decode_attr(struct terminal *terminal, int row, int col,
 	decoded->attr.bg = background;
 	decoded->attr.a = attr.a;
 }
+
 
 static void
 terminal_scroll_buffer(struct terminal *terminal, int d)
@@ -814,6 +816,30 @@ terminal_set_color(struct terminal *terminal, cairo_t *cr, int index)
 			      terminal->color_table[index].g,
 			      terminal->color_table[index].b,
 			      terminal->color_table[index].a);
+}
+
+static void
+terminal_send_selection(struct terminal *terminal, int fd)
+{
+	int row, col;
+	union utf8_char *p_row;
+	union decoded_attr attr;
+	FILE *fp;
+	int len;
+
+	fp = fdopen(fd, "w");
+	for (row = 0; row < terminal->height; row++) {
+		p_row = terminal_get_row(terminal, row);
+		for (col = 0; col < terminal->width; col++) {
+			/* get the attributes for this character cell */
+			terminal_decode_attr(terminal, row, col, &attr);
+			if (!attr.attr.s)
+				continue;
+			len = strnlen((char *) p_row[col].byte, 4);
+			fwrite(p_row[col].byte, 1, len, fp);
+		}
+	}
+	fclose(fp);
 }
 
 struct glyph_run {
@@ -1933,10 +1959,10 @@ static void
 selection_listener_send(void *data, struct wl_selection *selection,
 			const char *mime_type, int fd)
 {
-	static const char msg[] = "selection data";
+	struct terminal *terminal = data;
 
 	fprintf(stderr, "selection send, fd is %d\n", fd);
-	write(fd, msg, sizeof msg - 1);
+	terminal_send_selection(terminal, fd);
 	close(fd);
 }
 
@@ -1962,7 +1988,6 @@ selection_io_func(GIOChannel *source, GIOCondition condition, gpointer data)
 
 	fd = g_io_channel_unix_get_fd(source);
 	len = read(fd, buffer, sizeof buffer);
-	fprintf(stderr, "read %d bytes: %.*s\n", len, len, buffer);
 
 	write(terminal->master, buffer, len);
 
