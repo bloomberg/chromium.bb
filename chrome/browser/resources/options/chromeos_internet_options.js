@@ -31,6 +31,11 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
+      if (templateData.accessLocked) {
+        var page = $('internetPage');
+        page.setAttribute('accesslocked', true);
+      }
+
       options.internet.NetworkElement.decorate($('wiredList'));
       $('wiredList').load(templateData.wiredList);
       options.internet.NetworkElement.decorate($('wirelessList'));
@@ -175,6 +180,12 @@ cr.define('options', function() {
   //Chrome callbacks
   //
   InternetOptions.refreshNetworkData = function (data) {
+    var page = $('internetPage');
+    if (data.accessLocked) {
+      page.setAttribute('accesslocked', true);
+      return;
+    }
+    page.removeAttribute('accesslocked');
     if (InternetOptions.updateLocked) {
       InternetOptions.updateData = data;
       InternetOptions.updatePending = true;

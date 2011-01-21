@@ -842,6 +842,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         connected_devices_(0),
         wifi_scanning_(false),
         offline_mode_(false),
+        is_locked_(false),
         update_task_(NULL) {
     if (EnsureCrosLoaded()) {
       Init();
@@ -938,6 +939,25 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         ++map_iter;
       }
     }
+  }
+
+  virtual void Lock() {
+    if (is_locked_)
+      return;
+    is_locked_ = true;
+    NotifyNetworkManagerChanged();
+ }
+
+  virtual void Unlock() {
+    DCHECK(is_locked_);
+    if (!is_locked_)
+      return;
+    is_locked_ = false;
+    NotifyNetworkManagerChanged();
+  }
+
+  virtual bool IsLocked() {
+    return is_locked_;
   }
 
   virtual void AddCellularDataPlanObserver(CellularDataPlanObserver* observer) {
@@ -1300,14 +1320,20 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   virtual void EnableEthernetNetworkDevice(bool enable) {
+    if (is_locked_)
+      return;
     EnableNetworkDeviceType(TYPE_ETHERNET, enable);
   }
 
   virtual void EnableWifiNetworkDevice(bool enable) {
+    if (is_locked_)
+      return;
     EnableNetworkDeviceType(TYPE_WIFI, enable);
   }
 
   virtual void EnableCellularNetworkDevice(bool enable) {
+    if (is_locked_)
+      return;
     EnableNetworkDeviceType(TYPE_CELLULAR, enable);
   }
 
@@ -1597,6 +1623,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   void InitTestData() {
+    is_locked_ = true;
     ethernet_ = new EthernetNetwork();
     ethernet_->set_connected(true);
     ethernet_->set_service_path("eth1");
@@ -1914,6 +1941,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   // Currently not implemented. TODO: implement or eliminate.
   bool offline_mode_;
 
+  // True if access network library is locked.
+  bool is_locked_;
+
   // Delayed task to retrieve the network information.
   CancelableTask* update_task_;
 
@@ -1939,6 +1969,9 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual void RemoveNetworkObserver(const std::string& service_path,
                                      NetworkObserver* observer) {}
   virtual void RemoveObserverForAllNetworks(NetworkObserver* observer) {}
+  virtual void Lock() {}
+  virtual void Unlock() {}
+  virtual bool IsLocked() { return true; }
   virtual void AddCellularDataPlanObserver(
       CellularDataPlanObserver* observer) {}
   virtual void RemoveCellularDataPlanObserver(

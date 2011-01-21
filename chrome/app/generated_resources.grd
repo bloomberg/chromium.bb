@@ -10187,6 +10187,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for the Chrome OS configuration dialog">
         fast
       </message>
+      <message name="IDS_STATUSBAR_NETWORK_LOCKED" desc="Message displayed while access to network devices is temporarily locked due to mobile network activation">
+        Please wait while we setup your mobile network.
+      </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="The ethernet network device.">
         Ethernet
       </message>

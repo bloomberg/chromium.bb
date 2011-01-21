@@ -495,6 +495,15 @@ class NetworkLibrary {
   // Stop |observer| from observing any networks
   virtual void RemoveObserverForAllNetworks(NetworkObserver* observer) = 0;
 
+  // Temporarily locks down certain functionality in network library to prevent
+  // unplanned side effects. During the lock down, Enable*Device() calls cannot
+  // be made.
+  virtual void Lock() = 0;
+  // Removes temporarily lock of network library.
+  virtual void Unlock() = 0;
+  // Checks if access to network library is locked.
+  virtual bool IsLocked() = 0;
+
   virtual void AddCellularDataPlanObserver(
       CellularDataPlanObserver* observer) = 0;
   virtual void RemoveCellularDataPlanObserver(

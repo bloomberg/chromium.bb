@@ -143,6 +143,9 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS));
 
+  localized_strings->SetString("accessLockedMsg",
+      l10n_util::GetStringUTF16(
+          IDS_STATUSBAR_NETWORK_LOCKED));
   localized_strings->SetString("inetSsid",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID));
@@ -1028,6 +1031,7 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
 
 void InternetOptionsHandler::FillNetworkInfo(
     DictionaryValue* dictionary, chromeos::NetworkLibrary* cros) {
+  dictionary->SetBoolean("accessLocked", cros->IsLocked());
   dictionary->Set("wiredList", GetWiredList());
   dictionary->Set("wirelessList", GetWirelessList());
   dictionary->Set("rememberedList", GetRememberedList());

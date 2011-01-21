@@ -483,6 +483,15 @@ void NetworkMenu::InitMenuItems() {
 
   string16 label;
 
+  if (cros->IsLocked()) {
+    label = l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_LOCKED);
+    menu_items_.push_back(
+        MenuItem(ui::MenuModel::TYPE_COMMAND,
+                 label, SkBitmap(),
+                 std::string(), FLAG_DISABLED));
+    return;
+  }
+
   // Ethernet
   bool ethernet_available = cros->ethernet_available();
   bool ethernet_enabled = cros->ethernet_enabled();

@@ -150,6 +150,38 @@ html[dir='rtl'] .details-button {
   float: left;
 }
 
+#lockedNetworkBanner {
+  height: 31px;
+  width: 100%;
+  margin: 0;
+  padding-top: 10px;
+  vertical-align: middle;
+}
+
+#lockedNetworkIcon {
+  background-image: url("chrome://theme/IDR_WARNING");
+  background-repeat: no-repeat;
+  background-position:center;
+  display: inline-block;
+  padding: 5px;
+  height: 21px;
+  vertical-align: middle;
+  width: 24px;
+}
+
+#accessLockedText {
+  vertical-align: middle;
+}
+
+#internetPage:not([accesslocked]) #lockedNetworkBanner,
+#internetPage[accesslocked] #wirelessButtons,
+#internetPage[accesslocked] #wiredSection,
+#internetPage[accesslocked] #wirelessSection,
+#internetPage[accesslocked] #rememberedSection,
+#internetPage[accesslocked] #detailsInternetPage {
+  display: none;
+}
+
 #detailsInternetPage:not([connected]) > #advancedSection,
 #detailsInternetPage[connecting] > * > #detailsInternetLogin,
 #detailsInternetPage[connected] > * > #detailsInternetLogin,
