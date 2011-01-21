@@ -432,5 +432,19 @@ POSSIBLE LEAK
 *!remoting::DecompressorZlib::InitStream
 *!remoting::DecompressorZlib::Reset
 
+# http://crbug.com/70388
+LEAK
+*!operator new
+*!NewCallback<PrintingContextTest,enum printing::PrintingContext::Result>
+*!PrintingContextTest_PrintAll_Test::TestBody
+
+# http://crbug.com/70389
+POSSIBLE LEAK
+...
+WINSPOOL.DRV!OpenPrinterW
+*!PrintDlgExMock
+*!printing::PrintingContextWin::AskUserForSettings
+*!PrintingContextTest_PrintAll_Test::TestBody
+
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
