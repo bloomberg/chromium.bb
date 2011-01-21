@@ -83,6 +83,7 @@ class PluginVarTracker {
 
  private:
   friend struct DefaultSingletonTraits<PluginVarTracker>;
+  friend class PluginVarTrackerTest;
 
   // Represents a var as received from the host.
   struct HostVar {

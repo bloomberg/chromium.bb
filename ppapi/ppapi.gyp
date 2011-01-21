@@ -647,5 +647,25 @@
         }]
       ],
     },
+    {
+      'target_name': 'ppapi_unittests',
+      'type': 'executable',
+      'variables': {
+        'chromium_code': 1,
+      },
+      'msvs_guid': 'C2BD9365-5BD7-44A7-854E-A49E606BE8E4',
+      'dependencies': [
+        'ppapi_proxy',
+        '../base/base.gyp:test_support_base',
+        '../ipc/ipc.gyp:test_support_ipc',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'proxy/run_all_unittests.cc',
+
+        'proxy/plugin_var_tracker_unittest.cc',
+      ],
+    },
   ],
 }
