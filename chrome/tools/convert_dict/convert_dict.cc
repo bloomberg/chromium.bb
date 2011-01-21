@@ -76,8 +76,8 @@ bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
 int PrintHelp() {
   printf("Usage: convert_dict <dicfile base name>\n\n");
   printf("Example:\n");
-  printf("  convert_dict en-US\nwill read en-US.dic / en-US.aff and\n");
-  printf("generate en-US.bdic\n\n");
+  printf("  convert_dict en-US\nwill read en-US.dic, en-US.dic_delta, and "
+         "en-US.aff from the current directory and generate en-US.bdic\n\n");
   return 1;
 }
 
@@ -107,6 +107,7 @@ int main(int argc, char* argv[]) {
 
   FilePath dic_path = file_base.ReplaceExtension(FILE_PATH_LITERAL(".dic"));
   printf("Reading %" PRFilePath " ...\n", dic_path.value().c_str());
+  // DicReader will also read the .dic_delta file.
   convert_dict::DicReader dic_reader(dic_path);
   if (!dic_reader.Read(&aff_reader)) {
     printf("Unable to read the dic file.\n");
