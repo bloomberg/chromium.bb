@@ -4,18 +4,3 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
-
-// All these need to be rebaselined upstream. I will do this in the next
-// few hours, and after the next roll all these can be removed again.
-// TODO(thakis): Remove these after the next webkit roll.
-BUGTHAKIS LINUX : media/video-display-toggle.html = IMAGE
-BUGTHAKIS WIN : media/video-display-toggle.html = IMAGE
-
-// New test that was non-deterministic.
-BUGYURYS : userscripts/window-onerror-for-isolated-world-1.html = PASS TEXT
-BUGYURYS : userscripts/window-onerror-for-isolated-world-2.html = PASS TEXT
-BUGYURYS : http/tests/security/aboutBlank/xss-DENIED-navigate-opener-document-write.html = PASS TEXT
-BUGYURYS : http/tests/security/aboutBlank/xss-DENIED-navigate-opener-javascript-url.html = PASS TEXT
-BUGYURYS : http/tests/security/xss-DENIED-frame-name.html = PASS TEXT
-
-BUGTONY : fast/dom/52776.html = IMAGE+TEXT
