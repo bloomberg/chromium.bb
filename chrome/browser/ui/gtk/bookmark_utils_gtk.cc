@@ -420,8 +420,8 @@ bool CreateNewBookmarksFromURIList(GtkSelectionData* selection_data,
   std::vector<GURL> urls;
   ui::ExtractURIList(selection_data, &urls);
   for (size_t i = 0; i < urls.size(); ++i) {
-    std::string title = GetNameForURL(urls[i]);
-    model->AddURL(parent, idx++, UTF8ToUTF16(title), urls[i]);
+    string16 title = GetNameForURL(urls[i]);
+    model->AddURL(parent, idx++, title, urls[i]);
   }
   return true;
 }

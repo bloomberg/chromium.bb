@@ -428,12 +428,12 @@ bool CanPasteFromClipboard(const BookmarkNode* node) {
   return BookmarkNodeData::ClipboardContainsBookmarks();
 }
 
-std::string GetNameForURL(const GURL& url) {
+string16 GetNameForURL(const GURL& url) {
   if (url.is_valid()) {
-    return WideToUTF8(net::GetSuggestedFilename(
+    return WideToUTF16(net::GetSuggestedFilename(
         url, std::string(), std::string(), FilePath()).ToWStringHack());
   } else {
-    return l10n_util::GetStringUTF8(IDS_APP_UNTITLED_SHORTCUT_FILE_NAME);
+    return l10n_util::GetStringUTF16(IDS_APP_UNTITLED_SHORTCUT_FILE_NAME);
   }
 }
 
