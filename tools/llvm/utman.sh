@@ -1665,7 +1665,7 @@ llvm-tools-sb-make() {
       NACL_SRPC=${build_with_srpc} \
       KEEP_SYMBOLS=1 \
       VERBOSE=1 \
-      make ENABLE_OPTIMIZED=1 OPTIMIZE_OPTION=-O0 tools-only ${MAKE_OPTS}
+      make ENABLE_OPTIMIZED=1 OPTIMIZE_OPTION=-O3 tools-only ${MAKE_OPTS}
 
   ts-touch-commit "${objdir}"
 
@@ -1789,7 +1789,7 @@ binutils-sb-configure() {
       CXX="${NACL_TOOLCHAIN}/bin/${nacl}-g++" \
       LD="${NACL_TOOLCHAIN}/bin/${nacl}-ld" \
       RANLIB="${NACL_TOOLCHAIN}/bin/${nacl}-ranlib" \
-      CFLAGS="-m${bitsize} -O2 ${flags} -I${NACL_TOOLCHAIN}/${nacl}/include" \
+      CFLAGS="-m${bitsize} -O3 ${flags} -I${NACL_TOOLCHAIN}/${nacl}/include" \
       LDFLAGS="-s" \
       LDFLAGS_FOR_BUILD="-L ." \
       ${srcdir}/binutils-2.20/configure \
