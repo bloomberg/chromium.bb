@@ -467,7 +467,9 @@ void PPB_URLLoader_Impl::RegisterCallback(PP_CompletionCallback callback) {
 void PPB_URLLoader_Impl::RunCallback(int32_t result) {
   // This may be null only when this is a main document loader.
   if (!pending_callback_.get()) {
-    CHECK(main_document_loader_);
+    // TODO(viettrungluu): put this CHECK back when the callback race condition
+    // is fixed: http://code.google.com/p/chromium/issues/detail?id=70347.
+    //CHECK(main_document_loader_);
     return;
   }
 
@@ -541,4 +543,3 @@ bool PPB_URLLoader_Impl::RecordUploadProgress() const {
 
 }  // namespace ppapi
 }  // namespace webkit
-
