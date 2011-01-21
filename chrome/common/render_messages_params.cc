@@ -234,7 +234,8 @@ ViewHostMsg_CreateWindow_Params::ViewHostMsg_CreateWindow_Params()
     : opener_id(0),
       user_gesture(false),
       window_container_type(WINDOW_CONTAINER_TYPE_NORMAL),
-      session_storage_namespace_id(0) {
+      session_storage_namespace_id(0),
+      opener_frame_id(0) {
 }
 
 ViewHostMsg_CreateWindow_Params::~ViewHostMsg_CreateWindow_Params() {
@@ -1356,6 +1357,10 @@ void ParamTraits<ViewHostMsg_CreateWindow_Params>::Write(Message* m,
   WriteParam(m, p.window_container_type);
   WriteParam(m, p.session_storage_namespace_id);
   WriteParam(m, p.frame_name);
+  WriteParam(m, p.opener_frame_id);
+  WriteParam(m, p.opener_url);
+  WriteParam(m, p.opener_security_origin);
+  WriteParam(m, p.target_url);
 }
 
 bool ParamTraits<ViewHostMsg_CreateWindow_Params>::Read(const Message* m,
@@ -1366,7 +1371,11 @@ bool ParamTraits<ViewHostMsg_CreateWindow_Params>::Read(const Message* m,
       ReadParam(m, iter, &p->user_gesture) &&
       ReadParam(m, iter, &p->window_container_type) &&
       ReadParam(m, iter, &p->session_storage_namespace_id) &&
-      ReadParam(m, iter, &p->frame_name);
+      ReadParam(m, iter, &p->frame_name) &&
+      ReadParam(m, iter, &p->opener_frame_id) &&
+      ReadParam(m, iter, &p->opener_url) &&
+      ReadParam(m, iter, &p->opener_security_origin) &&
+      ReadParam(m, iter, &p->target_url);
 }
 
 void ParamTraits<ViewHostMsg_CreateWindow_Params>::Log(const param_type& p,
@@ -1381,6 +1390,14 @@ void ParamTraits<ViewHostMsg_CreateWindow_Params>::Log(const param_type& p,
   LogParam(p.session_storage_namespace_id, l);
   l->append(", ");
   LogParam(p.frame_name, l);
+  l->append(", ");
+  LogParam(p.opener_frame_id, l);
+  l->append(", ");
+  LogParam(p.opener_url, l);
+  l->append(", ");
+  LogParam(p.opener_security_origin, l);
+  l->append(", ");
+  LogParam(p.target_url, l);
   l->append(")");
 }
 

@@ -2052,6 +2052,11 @@ WebView* RenderView::createView(
   params.window_container_type = WindowFeaturesToContainerType(features);
   params.session_storage_namespace_id = session_storage_namespace_id_;
   params.frame_name = frame_name;
+  params.opener_frame_id = creator->identifier();
+  params.opener_url = creator->url();
+  params.opener_security_origin = creator->securityOrigin().toString().utf8();
+  if (!request.isNull())
+    params.target_url = request.url();
 
   int32 routing_id = MSG_ROUTING_NONE;
   int64 cloned_session_storage_namespace_id;

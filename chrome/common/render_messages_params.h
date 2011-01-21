@@ -787,6 +787,19 @@ struct ViewHostMsg_CreateWindow_Params {
   // The name of the resulting frame that should be created (empty if none
   // has been specified).
   string16 frame_name;
+
+  // The frame identifier of the frame initiating the open.
+  int64 opener_frame_id;
+
+  // The URL of the frame initiating the open.
+  GURL opener_url;
+
+  // The security origin of the frame initiating the open.
+  std::string opener_security_origin;
+
+  // The URL that will be loaded in the new window (empty if none has been
+  // sepcified).
+  GURL target_url;
 };
 
 struct ViewHostMsg_RunFileChooser_Params {
