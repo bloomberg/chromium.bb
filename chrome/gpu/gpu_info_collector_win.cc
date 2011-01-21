@@ -11,6 +11,7 @@
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/file_path.h"
 #include "base/scoped_native_library.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 
 // ANGLE seems to require that main.h be included before any other ANGLE header.
@@ -20,9 +21,15 @@
 namespace gpu_info_collector {
 
 bool CollectGraphicsInfo(GPUInfo* gpu_info) {
-  // TODO: collect OpenGL info if not using ANGLE?
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2)
-    return true;
+  DCHECK(gpu_info);
+
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+    gpu_info->SetProgress(GPUInfo::kComplete);
+    return CollectGraphicsInfoGL(gpu_info);
+  }
+
+  // TODO(zmo): the following code only works if running on top of ANGLE.
+  // Need to handle the case when running on top of real EGL/GLES2 drivers.
 
   egl::Display* display = static_cast<egl::Display*>(
       gfx::BaseEGLContext::GetDisplay());
@@ -43,7 +50,6 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   // DirectX diagnostics are collected asynchronously because it takes a
   // couple of seconds. Do not mark as complete until that is done.
   gpu_info->SetProgress(GPUInfo::kPartial);
-
   return true;
 }
 
@@ -51,35 +57,39 @@ bool CollectGraphicsInfoD3D(IDirect3D9* d3d, GPUInfo* gpu_info) {
   DCHECK(d3d);
   DCHECK(gpu_info);
 
-  // Get device information
+  bool succeed = true;
+
+  // Get device/driver information
   D3DADAPTER_IDENTIFIER9 identifier;
-  HRESULT hr = d3d->GetAdapterIdentifier(D3DADAPTER_DEFAULT, 0, &identifier);
-  if (hr != D3D_OK) {
-    d3d->Release();
-    return false;
+  if (d3d->GetAdapterIdentifier(D3DADAPTER_DEFAULT, 0, &identifier) == D3D_OK) {
+    gpu_info->SetVideoCardInfo(identifier.VendorId, identifier.DeviceId);
+
+    uint32 driver_major_version_hi = HIWORD(identifier.DriverVersion.HighPart);
+    uint32 driver_major_version_lo = LOWORD(identifier.DriverVersion.HighPart);
+    uint32 driver_minor_version_hi = HIWORD(identifier.DriverVersion.LowPart);
+    uint32 driver_minor_version_lo = LOWORD(identifier.DriverVersion.LowPart);
+    std::string driver_version = StringPrintf("%d.%d.%d.%d",
+                                              driver_major_version_hi,
+                                              driver_major_version_lo,
+                                              driver_minor_version_hi,
+                                              driver_minor_version_lo);
+    gpu_info->SetDriverInfo("", driver_version);
+  } else {
+    succeed = false;
   }
-  uint32 vendor_id = identifier.VendorId;
-  uint32 device_id = identifier.DeviceId;
 
   // Get version information
   D3DCAPS9 d3d_caps;
-  HRESULT caps_result = d3d->GetDeviceCaps(D3DADAPTER_DEFAULT,
-                                           D3DDEVTYPE_HAL,
-                                           &d3d_caps);
-  if (caps_result != D3D_OK) {
-    d3d->Release();
-    return false;
+  if (d3d->GetDeviceCaps(D3DADAPTER_DEFAULT,
+                         D3DDEVTYPE_HAL,
+                         &d3d_caps) == D3D_OK) {
+    gpu_info->SetShaderVersion(d3d_caps.PixelShaderVersion,
+                               d3d_caps.VertexShaderVersion);
+  } else {
+    succeed = false;
   }
-  uint32 driver_major_version_hi = HIWORD(identifier.DriverVersion.HighPart);
-  uint32 driver_major_version_lo = LOWORD(identifier.DriverVersion.HighPart);
-  uint32 driver_minor_version_hi = HIWORD(identifier.DriverVersion.LowPart);
-  uint32 driver_minor_version_lo = LOWORD(identifier.DriverVersion.LowPart);
-  std::wstring driver_version = StringPrintf(L"%d.%d.%d.%d",
-                                             driver_major_version_hi,
-                                             driver_major_version_lo,
-                                             driver_minor_version_hi,
-                                             driver_minor_version_lo);
 
+  // Get can_lose_context
   bool can_lose_context = false;
   IDirect3D9Ex* d3dex = NULL;
   if (SUCCEEDED(d3d->QueryInterface(__uuidof(IDirect3D9Ex),
@@ -88,24 +98,15 @@ bool CollectGraphicsInfoD3D(IDirect3D9* d3d, GPUInfo* gpu_info) {
   } else {
     can_lose_context = true;
   }
+  gpu_info->SetCanLoseContext(can_lose_context);
 
   d3d->Release();
-
-  // Get shader versions
-  uint32 pixel_shader_version = d3d_caps.PixelShaderVersion;
-  uint32 vertex_shader_version = d3d_caps.VertexShaderVersion;
-
-  gpu_info->SetGraphicsInfo(vendor_id,
-                           device_id,
-                           driver_version,
-                           pixel_shader_version,
-                           vertex_shader_version,
-                           0,
-                           can_lose_context);
   return true;
 }
 
-bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
+bool CollectVideoCardInfo(GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
+
   // Taken from http://developer.nvidia.com/object/device_ids.html
   DISPLAY_DEVICE dd;
   dd.cb = sizeof(DISPLAY_DEVICE);
@@ -117,27 +118,33 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
       break;
     }
   }
-  if (id.empty()) {
-    return false;
+
+  if (id.length() > 20) {
+    int vendor_id = 0, device_id = 0;
+    std::wstring vendor_id_string = id.substr(8, 4);
+    std::wstring device_id_string = id.substr(17, 4);
+    base::HexStringToInt(WideToASCII(vendor_id_string), &vendor_id);
+    base::HexStringToInt(WideToASCII(device_id_string), &device_id);
+    gpu_info->SetVideoCardInfo(vendor_id, device_id);
+    return true;
   }
-  uint32 vendor_id;
-  uint32 device_id;
-  std::wstring vendorid = id.substr(8, 4);
-  std::wstring deviceid = id.substr(17, 4);
-  swscanf_s(vendorid.c_str(), L"%x", &vendor_id);
-  swscanf_s(deviceid.c_str(), L"%x", &device_id);
+  return false;
+}
 
-  std::wstring driver_version = L"";
-  uint32 pixel_shader_version = 0;
-  uint32 vertex_shader_version = 0;
-  gpu_info->SetGraphicsInfo(vendor_id, device_id, driver_version,
-                            pixel_shader_version,
-                            vertex_shader_version,
-                            0,  // GL version of 0 indicates D3D
-                            false);
-  return true;
+bool CollectDriverInfo(GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
 
-  // TODO(rlp): Add driver and pixel versions
+  std::string gl_version_string = gpu_info->gl_version_string();
+
+  // TODO(zmo): We assume the driver version is in the end of GL_VERSION
+  // string.  Need to verify if it is true for majority drivers.
+
+  size_t pos = gl_version_string.find_last_not_of("0123456789.");
+  if (pos != std::string::npos && pos < gl_version_string.length() - 1) {
+    gpu_info->SetDriverInfo("", gl_version_string.substr(pos + 1));
+    return true;
+  }
+  return false;
 }
 
 }  // namespace gpu_info_collector

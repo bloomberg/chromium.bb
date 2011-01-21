@@ -151,7 +151,7 @@ void SetGpuInfoImpl(const GPUInfo& gpu_info,
                  base::UintToString(gpu_info.device_id()),
                  set_key_func);
   SetGpuKeyValue(kGPUDriverVersionParamName,
-                 WideToUTF8(gpu_info.driver_version()),
+                 gpu_info.driver_version(),
                  set_key_func);
   SetGpuKeyValue(kGPUPixelShaderVersionParamName,
                  base::UintToString(gpu_info.pixel_shader_version()),

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/string_piece.h"
+#include "base/sys_string_conversions.h"
 #include "chrome/common/gpu_create_command_buffer_config.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/dx_diag_node.h"
@@ -130,10 +132,14 @@ void ParamTraits<GPUInfo> ::Write(Message* m, const param_type& p) {
   WriteParam(m, p.initialization_time());
   WriteParam(m, p.vendor_id());
   WriteParam(m, p.device_id());
+  WriteParam(m, p.driver_vendor());
   WriteParam(m, p.driver_version());
   WriteParam(m, p.pixel_shader_version());
   WriteParam(m, p.vertex_shader_version());
   WriteParam(m, p.gl_version());
+  WriteParam(m, p.gl_version_string());
+  WriteParam(m, p.gl_vendor());
+  WriteParam(m, p.gl_renderer());
   WriteParam(m, p.can_lose_context());
 
 #if defined(OS_WIN)
@@ -146,32 +152,41 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
   base::TimeDelta initialization_time;
   uint32 vendor_id;
   uint32 device_id;
-  std::wstring driver_version;
+  std::string driver_vendor;
+  std::string driver_version;
   uint32 pixel_shader_version;
   uint32 vertex_shader_version;
   uint32 gl_version;
+  std::string gl_version_string;
+  std::string gl_vendor;
+  std::string gl_renderer;
   bool can_lose_context;
   bool ret = ReadParam(m, iter, &progress);
   ret = ret && ReadParam(m, iter, &initialization_time);
   ret = ret && ReadParam(m, iter, &vendor_id);
   ret = ret && ReadParam(m, iter, &device_id);
+  ret = ret && ReadParam(m, iter, &driver_vendor);
   ret = ret && ReadParam(m, iter, &driver_version);
   ret = ret && ReadParam(m, iter, &pixel_shader_version);
   ret = ret && ReadParam(m, iter, &vertex_shader_version);
   ret = ret && ReadParam(m, iter, &gl_version);
+  ret = ret && ReadParam(m, iter, &gl_version_string);
+  ret = ret && ReadParam(m, iter, &gl_vendor);
+  ret = ret && ReadParam(m, iter, &gl_renderer);
   ret = ret && ReadParam(m, iter, &can_lose_context);
   p->SetProgress(static_cast<GPUInfo::Progress>(progress));
   if (!ret)
     return false;
 
   p->SetInitializationTime(initialization_time);
-  p->SetGraphicsInfo(vendor_id,
-                     device_id,
-                     driver_version,
-                     pixel_shader_version,
-                     vertex_shader_version,
-                     gl_version,
-                     can_lose_context);
+  p->SetVideoCardInfo(vendor_id, device_id);
+  p->SetDriverInfo(driver_vendor, driver_version);
+  p->SetShaderVersion(pixel_shader_version, vertex_shader_version);
+  p->SetGLVersion(gl_version);
+  p->SetGLVersionString(gl_version_string);
+  p->SetGLVendor(gl_vendor);
+  p->SetGLRenderer(gl_renderer);
+  p->SetCanLoseContext(can_lose_context);
 
 #if defined(OS_WIN)
   DxDiagNode dx_diagnostics;
@@ -185,13 +200,17 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
 }
 
 void ParamTraits<GPUInfo> ::Log(const param_type& p, std::string* l) {
-  l->append(base::StringPrintf("<GPUInfo> %d %d %x %x %ls %d",
+  l->append(base::StringPrintf("<GPUInfo> %d %d %x %x %s %s %x %x %x %d",
                                p.progress(),
                                static_cast<int32>(
                                    p.initialization_time().InMilliseconds()),
                                p.vendor_id(),
                                p.device_id(),
+                               p.driver_vendor().c_str(),
                                p.driver_version().c_str(),
+                               p.pixel_shader_version(),
+                               p.vertex_shader_version(),
+                               p.gl_version(),
                                p.can_lose_context()));
 }
 

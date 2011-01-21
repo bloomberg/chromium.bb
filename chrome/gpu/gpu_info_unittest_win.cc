@@ -62,9 +62,9 @@ TEST_F(GPUInfoTest, DeviceIdD3D) {
 TEST_F(GPUInfoTest, DriverVersionD3D) {
   GPUInfo gpu_info;
   ASSERT_TRUE(gpu_info_collector::CollectGraphicsInfoD3D(&d3d_, &gpu_info));
-  std::wstring driver_version = gpu_info.driver_version();
+  std::string driver_version = gpu_info.driver_version();
   EXPECT_FALSE(driver_version.empty());
-  EXPECT_EQ(driver_version, L"6.14.11.7715");
+  EXPECT_EQ(driver_version, "6.14.11.7715");
 }
 
 TEST_F(GPUInfoTest, PixelShaderVersionD3D) {

@@ -370,7 +370,7 @@ GpuFeatureFlags GpuBlacklist::DetermineGpuFeatureFlags(
   if (gpu_info.progress() == GPUInfo::kUninitialized)
     return flags;
   scoped_ptr<Version> driver_version(
-      Version::GetVersionFromString(WideToASCII(gpu_info.driver_version())));
+      Version::GetVersionFromString(gpu_info.driver_version()));
   if (driver_version.get() == NULL)
     return flags;
 
@@ -391,6 +391,9 @@ GpuFeatureFlags GpuBlacklist::DetermineGpuFeatureFlags(
                                         version_bugfix);
 #else
     version_string = base::SysInfo::OperatingSystemVersion();
+    size_t pos = version_string.find_first_not_of("0123456789.");
+    if (pos != std::string::npos)
+      version_string = version_string.substr(0, pos);
 #endif
     my_os_version.reset(Version::GetVersionFromString(version_string));
     os_version = my_os_version.get();

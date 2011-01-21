@@ -280,7 +280,7 @@ DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
   basic_info->Append(NewDescriptionValuePair("Device Id",
       base::StringPrintf("0x%04x", gpu_info.device_id())));
   basic_info->Append(NewDescriptionValuePair("Driver version",
-      WideToASCII(gpu_info.driver_version()).c_str()));
+      gpu_info.driver_version()));
   basic_info->Append(NewDescriptionValuePair("Pixel shader version",
       VersionNumberToString(gpu_info.pixel_shader_version())));
   basic_info->Append(NewDescriptionValuePair("Vertex shader version",

@@ -675,6 +675,7 @@
         'gpu/gpu_info_collector_linux.cc',
         'gpu/gpu_info_collector_mac.mm',
         'gpu/gpu_info_collector_win.cc',
+        'gpu/gpu_info_collector.cc',
         'gpu/gpu_info_collector.h',
         'gpu/gpu_main.cc',
         'gpu/gpu_process.cc',

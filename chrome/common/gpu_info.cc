@@ -8,10 +8,14 @@ GPUInfo::GPUInfo()
     : progress_(kUninitialized),
       vendor_id_(0),
       device_id_(0),
-      driver_version_(L""),
+      driver_vendor_(""),
+      driver_version_(""),
       pixel_shader_version_(0),
       vertex_shader_version_(0),
       gl_version_(0),
+      gl_version_string_(""),
+      gl_vendor_(""),
+      gl_renderer_(""),
       can_lose_context_(false) {
 }
 
@@ -31,7 +35,11 @@ uint32 GPUInfo::device_id() const {
   return device_id_;
 }
 
-std::wstring GPUInfo::driver_version() const {
+std::string GPUInfo::driver_vendor() const {
+  return driver_vendor_;
+}
+
+std::string GPUInfo::driver_version() const {
   return driver_version_;
 }
 
@@ -47,9 +55,24 @@ uint32 GPUInfo::gl_version() const {
   return gl_version_;
 }
 
+std::string GPUInfo::gl_version_string() const {
+  return gl_version_string_;
+}
+
+std::string GPUInfo::gl_vendor() const {
+  return gl_vendor_;
+}
+
+std::string GPUInfo::gl_renderer() const {
+  return gl_renderer_;
+}
 
 bool GPUInfo::can_lose_context() const {
   return can_lose_context_;
+}
+
+void GPUInfo::SetProgress(Progress progress) {
+  progress_ = progress;
 }
 
 void GPUInfo::SetInitializationTime(
@@ -57,24 +80,41 @@ void GPUInfo::SetInitializationTime(
   initialization_time_ = initialization_time;
 }
 
-
-void GPUInfo::SetGraphicsInfo(uint32 vendor_id, uint32 device_id,
-                              const std::wstring& driver_version,
-                              uint32 pixel_shader_version,
-                              uint32 vertex_shader_version,
-                              uint32 gl_version,
-                              bool can_lose_context) {
+void GPUInfo::SetVideoCardInfo(uint32 vendor_id, uint32 device_id) {
   vendor_id_ = vendor_id;
   device_id_ = device_id;
-  driver_version_ = driver_version;
-  pixel_shader_version_ = pixel_shader_version;
-  vertex_shader_version_ = vertex_shader_version;
-  gl_version_ = gl_version;
-  can_lose_context_ = can_lose_context;
 }
 
-void GPUInfo::SetProgress(Progress progress) {
-  progress_ = progress;
+void GPUInfo::SetDriverInfo(const std::string& driver_vendor,
+                            const std::string& driver_version) {
+  driver_vendor_ = driver_vendor;
+  driver_version_ = driver_version;
+}
+
+void GPUInfo::SetShaderVersion(uint32 pixel_shader_version,
+                               uint32 vertex_shader_version) {
+  pixel_shader_version_ = pixel_shader_version;
+  vertex_shader_version_ = vertex_shader_version;
+}
+
+void GPUInfo::SetGLVersion(uint32 gl_version) {
+  gl_version_ = gl_version;
+}
+
+void GPUInfo::SetGLVersionString(const std::string& gl_version_string) {
+  gl_version_string_ = gl_version_string;
+}
+
+void GPUInfo::SetGLVendor(const std::string& gl_vendor) {
+  gl_vendor_ = gl_vendor;
+}
+
+void GPUInfo::SetGLRenderer(const std::string& gl_renderer) {
+  gl_renderer_ = gl_renderer;
+}
+
+void GPUInfo::SetCanLoseContext(bool can_lose_context) {
+  can_lose_context_ = can_lose_context;
 }
 
 #if defined(OS_WIN)

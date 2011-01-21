@@ -9,13 +9,10 @@
 
 TEST(GpuBlacklistTest, BlacklistLogic) {
   GPUInfo gpu_info;
-  gpu_info.SetGraphicsInfo(0x10de,  // Vendor ID
-                           0x0640,  // Device ID
-                           L"1.6.18",  // Driver Version
-                           0x0114,  // Pixel Shader Version
-                           0x0114,  // Vertex Shader Version
-                           0x0201,  // GL version,
-                           true);  // can_lose_context
+  gpu_info.SetVideoCardInfo(0x10de,  // Vendor ID
+                            0x0640);  // Device ID
+  gpu_info.SetDriverInfo("NVIDIA",  // Driver vendor
+                         "1.6.18");  // Driver Version
   gpu_info.SetProgress(GPUInfo::kComplete);
   scoped_ptr<Version> os_version(Version::GetVersionFromString("10.6.4"));
 

@@ -27,12 +27,21 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info);
 // A D3D argument is passed in for testing purposes
 bool CollectGraphicsInfoD3D(IDirect3D9* d3d, GPUInfo* gpu_info);
 
-// The GL version of collecting information
-bool CollectGraphicsInfoGL(GPUInfo* gpu_info);
-
 // Collect the DirectX Disagnostics information about the attached displays.
 bool GetDxDiagnostics(DxDiagNode* output);
 #endif
+
+// All platforms have a GL version for collecting information
+bool CollectGraphicsInfoGL(GPUInfo* gpu_info);
+
+// Collect GL and Shading language version information
+bool CollectGLVersionInfo(GPUInfo* gpu_info);
+
+// Platform specific method for collecting vendor and device ids
+bool CollectVideoCardInfo(GPUInfo* gpu_info);
+
+// Each platform stores the driver version on the GL_VERSION string differently
+bool CollectDriverInfo(GPUInfo* gpu_info);
 
 }  // namespace gpu_info_collector
 

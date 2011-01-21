@@ -12,6 +12,8 @@
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/string_piece.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 
 namespace {
@@ -113,40 +115,11 @@ PciInterface* InitializeLibPci(const char* lib_name) {
 }
 
 // This close the dynamically opened libpci and delete the interface.
-void FinalizeLibPci(PciInterface*& interface) {
-  DCHECK(interface != NULL && interface->lib_handle != NULL);
-  dlclose(interface->lib_handle);
-  delete interface;
-  interface = NULL;
-}
-
-// This creates an offscreen GL context for gl queries.  Returned GLContext
-// should be deleted in FinalizeGLContext.
-gfx::GLContext* InitializeGLContext() {
-  if (!gfx::GLContext::InitializeOneOff()) {
-    LOG(ERROR) << "gfx::GLContext::InitializeOneOff() failed";
-    return NULL;
-  }
-  gfx::GLContext* context = gfx::GLContext::CreateOffscreenGLContext(NULL);
-  if (context == NULL) {
-    LOG(ERROR) << "gfx::GLContext::CreateOffscreenGLContext(NULL) failed";
-    return NULL;
-  }
-  if (!context->MakeCurrent()) {
-    LOG(ERROR) << "gfx::GLContext::MakeCurrent() failed";
-    context->Destroy();
-    delete context;
-    return NULL;
-  }
-  return context;
-}
-
-// This destroy and delete the GL context.
-void FinalizeGLContext(gfx::GLContext*& context) {
-  DCHECK(context != NULL);
-  context->Destroy();
-  delete context;
-  context = NULL;
+void FinalizeLibPci(PciInterface** interface) {
+  DCHECK(interface && *interface && (*interface)->lib_handle);
+  dlclose((*interface)->lib_handle);
+  delete (*interface);
+  *interface = NULL;
 }
 
 }  // namespace anonymous
@@ -154,25 +127,23 @@ void FinalizeGLContext(gfx::GLContext*& context) {
 namespace gpu_info_collector {
 
 bool CollectGraphicsInfo(GPUInfo* gpu_info) {
-  gfx::GLContext* context = InitializeGLContext();
-  if (context == NULL)
-    return false;
+  DCHECK(gpu_info);
 
-  // TODO(zmo): collect driver version, pixel shader version, vertex shader
-  // version, and gl version.
-  std::wstring driver_version = L"";
-  uint32 pixel_shader_version = 0;
-  uint32 vertex_shader_version = 0;
-  uint32 gl_version = 0;
-  bool can_lose_context =
-      (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
+  // TODO(zmo): need to consider the case where we are running on top of
+  // desktop GL and GL_ARB_robustness extension is available.
+  gpu_info->SetCanLoseContext(
+      gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
+  gpu_info->SetProgress(GPUInfo::kComplete);
+  return CollectGraphicsInfoGL(gpu_info);
+}
+
+bool CollectVideoCardInfo(GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
 
   // TODO(zmo): be more flexible about library name.
   PciInterface* interface = InitializeLibPci("libpci.so.3");
-  if (interface == NULL) {
-    FinalizeGLContext(context);
+  if (interface == NULL)
     return false;
-  }
 
   PciAccess* access = (interface->pci_alloc)();
   DCHECK(access != NULL);
@@ -183,6 +154,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   for (PciDevice* device = access->device_list;
        device != NULL; device = device->next) {
     (interface->pci_fill_info)(device, 33);  // Fill the IDs and class fields.
+    // TODO(zmo): there might be other classes that qualify as display devices.
     if (device->device_class == 0x0300) {  // Device class is DISPLAY_VGA.
       gpu_list.push_back(device);
     }
@@ -192,10 +164,8 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   } else {
     // If more than one graphics card are identified, find the one that matches
     // gl VENDOR and RENDERER info.
-    std::string gl_vendor_string =
-        reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-    std::string gl_renderer_string =
-        reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+    std::string gl_vendor_string = gpu_info->gl_vendor();
+    std::string gl_renderer_string = gpu_info->gl_renderer();
     const int buffer_size = 255;
     scoped_array<char> buffer(new char[buffer_size]);
     std::vector<PciDevice*> candidates;
@@ -240,20 +210,33 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
     if (gpu_active == NULL && candidates.size() == 1)
       gpu_active = candidates[0];
   }
-  if (gpu_active != NULL) {
-    gpu_info->SetGraphicsInfo(gpu_active->vendor_id,
-                              gpu_active->device_id,
-                              driver_version,
-                              pixel_shader_version,
-                              vertex_shader_version,
-                              gl_version,
-                              can_lose_context);
-    gpu_info->SetProgress(GPUInfo::kComplete);
-  }
+  if (gpu_active != NULL)
+    gpu_info->SetVideoCardInfo(gpu_active->vendor_id, gpu_active->device_id);
   (interface->pci_cleanup)(access);
-  FinalizeLibPci(interface);
-  FinalizeGLContext(context);
+  FinalizeLibPci(&interface);
   return (gpu_active != NULL);
+}
+
+bool CollectDriverInfo(GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
+
+  std::string gl_version_string = gpu_info->gl_version_string();
+  std::vector<std::string> pieces;
+  base::SplitStringAlongWhitespace(gl_version_string, &pieces);
+  // In linux, the gl version string might be in the format of
+  //   GLVersion DriverVendor DriverVersion
+  if (pieces.size() < 3)
+    return false;
+
+  std::string driver_version = pieces[2];
+  size_t pos = driver_version.find_first_not_of("0123456789.");
+  if (pos == 0)
+    return false;
+  if (pos != std::string::npos)
+    driver_version = driver_version.substr(0, pos);
+
+  gpu_info->SetDriverInfo(pieces[1], driver_version);
+  return true;
 }
 
 }  // namespace gpu_info_collector
