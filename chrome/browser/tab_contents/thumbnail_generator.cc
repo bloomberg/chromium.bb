@@ -11,14 +11,22 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/property_bag.h"
+#include "chrome/common/thumbnail_score.h"
+#include "gfx/color_utils.h"
 #include "gfx/rect.h"
 #include "gfx/skbitmap_operations.h"
+#include "googleurl/src/gurl.h"
+#include "skia/ext/bitmap_platform_device.h"
+#include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -99,9 +107,12 @@ WidgetThumbnail* GetDataForHost(RenderWidgetHost* host) {
 
 // Creates a downsampled thumbnail for the given backing store. The returned
 // bitmap will be isNull if there was an error creating it.
-SkBitmap GetBitmapForBackingStore(BackingStore* backing_store,
-                                  int desired_width,
-                                  int desired_height) {
+SkBitmap GetBitmapForBackingStore(
+    BackingStore* backing_store,
+    int desired_width,
+    int desired_height,
+    int options,
+    ThumbnailGenerator::ClipResult* clip_result) {
   base::TimeTicks begin_compute_thumbnail = base::TimeTicks::Now();
 
   SkBitmap result;
@@ -115,20 +126,31 @@ SkBitmap GetBitmapForBackingStore(BackingStore* backing_store,
     return result;
   const SkBitmap& bmp = temp_canvas.getTopPlatformDevice().accessBitmap(false);
 
-  // Need to resize it to the size we want, so downsample until it's
-  // close, and let the caller make it the exact size if desired.
-  result = SkBitmapOperations::DownsampleByTwoUntilSize(
-      bmp, desired_width, desired_height);
+  // Check if a clipped thumbnail is requested.
+  if (options & ThumbnailGenerator::kClippedThumbnail) {
+    SkBitmap clipped_bitmap = ThumbnailGenerator::GetClippedBitmap(
+        bmp, desired_width, desired_height, clip_result);
 
-  // This is a bit subtle. SkBitmaps are refcounted, but the magic
-  // ones in PlatformCanvas can't be assigned to SkBitmap with proper
-  // refcounting.  If the bitmap doesn't change, then the downsampler
-  // will return the input bitmap, which will be the reference to the
-  // weird PlatformCanvas one insetad of a regular one. To get a
-  // regular refcounted bitmap, we need to copy it.
-  if (bmp.width() == result.width() &&
-      bmp.height() == result.height())
-    bmp.copyTo(&result, SkBitmap::kARGB_8888_Config);
+    // Need to resize it to the size we want, so downsample until it's
+    // close, and let the caller make it the exact size if desired.
+    result = SkBitmapOperations::DownsampleByTwoUntilSize(
+        clipped_bitmap, desired_width, desired_height);
+  } else {
+    // Need to resize it to the size we want, so downsample until it's
+    // close, and let the caller make it the exact size if desired.
+    result = SkBitmapOperations::DownsampleByTwoUntilSize(
+        bmp, desired_width, desired_height);
+
+    // This is a bit subtle. SkBitmaps are refcounted, but the magic
+    // ones in PlatformCanvas can't be assigned to SkBitmap with proper
+    // refcounting.  If the bitmap doesn't change, then the downsampler
+    // will return the input bitmap, which will be the reference to the
+    // weird PlatformCanvas one insetad of a regular one. To get a
+    // regular refcounted bitmap, we need to copy it.
+    if (bmp.width() == result.width() &&
+        bmp.height() == result.height())
+      bmp.copyTo(&result, SkBitmap::kARGB_8888_Config);
+  }
 
   HISTOGRAM_TIMES(kThumbnailHistogramName,
                   base::TimeTicks::Now() - begin_compute_thumbnail);
@@ -223,7 +245,9 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
       // we'll go with it.
       SkBitmap first_try = GetBitmapForBackingStore(backing_store,
                                                     desired_size.width(),
-                                                    desired_size.height());
+                                                    desired_size.height(),
+                                                    kNoOptions,
+                                                    NULL);
       callback->Run(first_try);
 
       delete callback;
@@ -275,6 +299,13 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
 
 SkBitmap ThumbnailGenerator::GetThumbnailForRenderer(
     RenderWidgetHost* renderer) const {
+  return GetThumbnailForRendererWithOptions(renderer, kNoOptions, NULL);
+}
+
+SkBitmap ThumbnailGenerator::GetThumbnailForRendererWithOptions(
+    RenderWidgetHost* renderer,
+    int options,
+    ClipResult* clip_result) const {
   WidgetThumbnail* wt = GetDataForHost(renderer);
 
   BackingStore* backing_store = renderer->GetBackingStore(false);
@@ -299,7 +330,9 @@ SkBitmap ThumbnailGenerator::GetThumbnailForRenderer(
   // invalidated on the next paint.
   wt->thumbnail = GetBitmapForBackingStore(backing_store,
                                            kThumbnailWidth,
-                                           kThumbnailHeight);
+                                           kThumbnailHeight,
+                                           options,
+                                           clip_result);
   return wt->thumbnail;
 }
 
@@ -320,7 +353,9 @@ void ThumbnailGenerator::WidgetWillDestroyBackingStore(
   // an existing thumbnail.
   SkBitmap new_thumbnail = GetBitmapForBackingStore(backing_store,
                                                     kThumbnailWidth,
-                                                    kThumbnailHeight);
+                                                    kThumbnailHeight,
+                                                    kNoOptions,
+                                                    NULL);
   if (!new_thumbnail.isNull())
     wt->thumbnail = new_thumbnail;
 }
@@ -533,4 +568,98 @@ void ThumbnailGenerator::EraseHostFromShownList(RenderWidgetHost* widget) {
       std::find(shown_hosts_.begin(), shown_hosts_.end(), widget);
   if (found != shown_hosts_.end())
     shown_hosts_.erase(found);
+}
+
+double ThumbnailGenerator::CalculateBoringScore(SkBitmap* bitmap) {
+  if (bitmap->isNull() || bitmap->empty())
+    return 1.0;
+  int histogram[256] = {0};
+  color_utils::BuildLumaHistogram(bitmap, histogram);
+
+  int color_count = *std::max_element(histogram, histogram + 256);
+  int pixel_count = bitmap->width() * bitmap->height();
+  return static_cast<double>(color_count) / pixel_count;
+}
+
+SkBitmap ThumbnailGenerator::GetClippedBitmap(const SkBitmap& bitmap,
+                                              int desired_width,
+                                              int desired_height,
+                                              ClipResult* clip_result) {
+  const SkRect dest_rect = { 0, 0,
+                             SkIntToScalar(desired_width),
+                             SkIntToScalar(desired_height) };
+  const float dest_aspect = dest_rect.width() / dest_rect.height();
+
+  // Get the src rect so that we can preserve the aspect ratio while filling
+  // the destination.
+  SkIRect src_rect;
+  if (bitmap.width() < dest_rect.width() ||
+      bitmap.height() < dest_rect.height()) {
+    // Source image is smaller: we clip the part of source image within the
+    // dest rect, and then stretch it to fill the dest rect. We don't respect
+    // the aspect ratio in this case.
+    src_rect.set(0, 0, static_cast<S16CPU>(dest_rect.width()),
+                 static_cast<S16CPU>(dest_rect.height()));
+    if (clip_result)
+      *clip_result = ThumbnailGenerator::kSourceIsSmaller;
+  } else {
+    const float src_aspect =
+        static_cast<float>(bitmap.width()) / bitmap.height();
+    if (src_aspect > dest_aspect) {
+      // Wider than tall, clip horizontally: we center the smaller
+      // thumbnail in the wider screen.
+      S16CPU new_width = static_cast<S16CPU>(bitmap.height() * dest_aspect);
+      S16CPU x_offset = (bitmap.width() - new_width) / 2;
+      src_rect.set(x_offset, 0, new_width + x_offset, bitmap.height());
+      if (clip_result)
+        *clip_result = ThumbnailGenerator::kWiderThanTall;
+    } else if (src_aspect < dest_aspect) {
+      src_rect.set(0, 0, bitmap.width(),
+                   static_cast<S16CPU>(bitmap.width() / dest_aspect));
+      if (clip_result)
+        *clip_result = ThumbnailGenerator::kTallerThanWide;
+    } else {
+      src_rect.set(0, 0, bitmap.width(), bitmap.height());
+      if (clip_result)
+        *clip_result = ThumbnailGenerator::kNotClipped;
+    }
+  }
+
+  SkBitmap clipped_bitmap;
+  bitmap.extractSubset(&clipped_bitmap, src_rect);
+  return clipped_bitmap;
+}
+
+void ThumbnailGenerator::UpdateThumbnailIfNecessary(
+    TabContents* tab_contents, const GURL& url) {
+  if (tab_contents->profile()->IsOffTheRecord() ||
+      (url.SchemeIs("chrome") && url.host() == "newtab"))
+    return;
+  // TODO(satorux): Add more conditions here to avoid unnecessary
+  // thumbnail generation.
+
+  ThumbnailGenerator* generator = g_browser_process->GetThumbnailGenerator();
+  const int options = ThumbnailGenerator::kClippedThumbnail;
+  ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
+  SkBitmap thumbnail = generator->GetThumbnailForRendererWithOptions(
+      tab_contents->render_view_host(), options, &clip_result);
+  // Failed to generate a thumbnail. Maybe the tab is in the background?
+  if (thumbnail.isNull())
+    return;
+
+  // Compute the thumbnail score.
+  ThumbnailScore score;
+  score.at_top =
+      (tab_contents->render_view_host()->last_scroll_offset().height() == 0);
+  score.boring_score = ThumbnailGenerator::CalculateBoringScore(&thumbnail);
+  score.good_clipping =
+      (clip_result == ThumbnailGenerator::kTallerThanWide ||
+       clip_result == ThumbnailGenerator::kNotClipped);
+
+  history::TopSites* top_sites = tab_contents->profile()->GetTopSites();
+  top_sites->SetPageThumbnail(url, thumbnail, score);
+  VLOG(1) << "Thumbnail taken for " << url
+          << ", at_top: " << score.at_top
+          << ", boring_score: " << score.boring_score
+          << ", good_clipping: " << score.good_clipping;
 }

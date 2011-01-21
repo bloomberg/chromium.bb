@@ -74,6 +74,7 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/tab_contents/web_navigation_observer.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
@@ -2378,6 +2379,12 @@ void TabContents::OnPageContents(const GURL& url,
       NotificationType::TAB_LANGUAGE_DETERMINED,
       Source<TabContents>(this),
       Details<std::string>(&lang));
+
+  // Generate the thumbnail here if the in-browser thumbnailing is enabled.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableInBrowserThumbnailing)) {
+    ThumbnailGenerator::UpdateThumbnailIfNecessary(this, url);
+  }
 }
 
 void TabContents::OnPageTranslated(int32 page_id,

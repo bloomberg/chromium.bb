@@ -497,6 +497,11 @@ const char kEnableFastback[]                = "enable-fastback";
 // testing, for example page cycler and layout tests.  See bug 1157243.
 const char kEnableFileCookies[]             = "enable-file-cookies";
 
+// Enable the in-browser thumbnailing, which is more efficient than the
+// in-renderer thumbnailing, as we can use more information to determine
+// if we need to update thumbnails.
+const char kEnableInBrowserThumbnailing[]   = "enable-in-browser-thumbnailing";
+
 // Enable IPv6 support, even if probes suggest that it may not be fully
 // supported.  Some probes may require internet connections, and this flag will
 // allow support independent of application testing.

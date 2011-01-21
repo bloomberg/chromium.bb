@@ -790,6 +790,7 @@ void ParamTraits<ViewHostMsg_UpdateRect_Params>::Write(
   WriteParam(m, p.dx);
   WriteParam(m, p.dy);
   WriteParam(m, p.scroll_rect);
+  WriteParam(m, p.scroll_offset);
   WriteParam(m, p.copy_rects);
   WriteParam(m, p.view_size);
   WriteParam(m, p.resizer_rect);
@@ -805,6 +806,7 @@ bool ParamTraits<ViewHostMsg_UpdateRect_Params>::Read(
       ReadParam(m, iter, &p->dx) &&
       ReadParam(m, iter, &p->dy) &&
       ReadParam(m, iter, &p->scroll_rect) &&
+      ReadParam(m, iter, &p->scroll_offset) &&
       ReadParam(m, iter, &p->copy_rects) &&
       ReadParam(m, iter, &p->view_size) &&
       ReadParam(m, iter, &p->resizer_rect) &&

@@ -219,6 +219,10 @@ class RenderWidget : public IPC::Channel::Listener,
       gfx::Rect* location,
       gfx::Rect* clip);
 
+  // Gets the scroll offset of this widget, if this widget has a notion of
+  // scroll offset.
+  virtual gfx::Size GetScrollOffset();
+
   // Sets the "hidden" state of this widget.  All accesses to is_hidden_ should
   // use this method so that we can properly inform the RenderThread of our
   // state.

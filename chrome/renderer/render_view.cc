@@ -1227,7 +1227,13 @@ void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
         TranslateHelper::IsPageTranslatable(&document)));
   }
 
-  OnCaptureThumbnail();
+  // Generate the thumbnail here if the in-browser thumbnailing isn't
+  // enabled. TODO(satorux): Remove this and related code once
+  // crbug.com/65936 is complete.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableInBrowserThumbnailing)) {
+    OnCaptureThumbnail();
+  }
 
   if (phishing_delegate_.get())
     phishing_delegate_->FinishedLoad(&contents);
@@ -5173,6 +5179,11 @@ webkit::ppapi::PluginInstance* RenderView::GetBitmapForOptimizedPluginPaint(
     gfx::Rect* clip) {
   return pepper_delegate_.GetBitmapForOptimizedPluginPaint(
       paint_bounds, dib, location, clip);
+}
+
+gfx::Size RenderView::GetScrollOffset() {
+  WebKit::WebSize scroll_offset = webview()->mainFrame()->scrollOffset();
+  return gfx::Size(scroll_offset.width, scroll_offset.height);
 }
 
 void RenderView::OnClearFocusedNode() {

@@ -18,6 +18,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+class GURL;
 class RenderWidgetHost;
 class SkBitmap;
 class TabContents;
@@ -25,6 +26,27 @@ class TabContents;
 class ThumbnailGenerator : NotificationObserver {
  public:
   typedef Callback1<const SkBitmap&>::Type ThumbnailReadyCallback;
+  // The result of clipping. This can be used to determine if the
+  // generated thumbnail is good or not.
+  enum ClipResult {
+    // The source image is smaller.
+    kSourceIsSmaller,
+    // Wider than tall, clip horizontally.
+    kWiderThanTall,
+    // Taller than wide, clip vertically.
+    kTallerThanWide,
+    // The source and destination aspect ratios are identical.
+    kNotClipped,
+  };
+
+  // Bitmasks of options for generating a thumbnail.
+  enum ThumbnailOptions {
+    // No options.
+    kNoOptions = 0,
+    // Request a clipped thumbnail with the aspect ratio preserved.
+    kClippedThumbnail = 1 << 0,
+  };
+
   // This class will do nothing until you call StartThumbnailing.
   ThumbnailGenerator();
   ~ThumbnailGenerator();
@@ -60,6 +82,13 @@ class ThumbnailGenerator : NotificationObserver {
   // renderer.
   SkBitmap GetThumbnailForRenderer(RenderWidgetHost* renderer) const;
 
+  // This returns a thumbnail of a fixed, small size for the given
+  // renderer. |options| is a bitmask of ThumbnailOptions. If
+  // |clip_result| is non-NULL, the result of clipping will be written.
+  SkBitmap GetThumbnailForRendererWithOptions(RenderWidgetHost* renderer,
+                                              int options,
+                                              ClipResult* clip_result) const;
+
   // Start or stop monitoring notifications for |renderer| based on the value
   // of |monitor|.
   void MonitorRenderer(RenderWidgetHost* renderer, bool monitor);
@@ -71,6 +100,26 @@ class ThumbnailGenerator : NotificationObserver {
   // loop runs.
   void set_no_timeout(bool no_timeout) { no_timeout_ = no_timeout; }
 #endif
+
+  // Calculates how "boring" a thumbnail is. The boring score is the
+  // 0,1 ranged percentage of pixels that are the most common
+  // luma. Higher boring scores indicate that a higher percentage of a
+  // bitmap are all the same brightness.
+  static double CalculateBoringScore(SkBitmap* bitmap);
+
+  // Gets the clipped bitmap from |bitmap| per the aspect ratio of the
+  // desired width and the desired height. For instance, if the input
+  // bitmap is vertically long (ex. 400x900) and the desired size is
+  // square (ex. 100x100), the clipped bitmap will be the top half of the
+  // input bitmap (400x400).
+  static SkBitmap GetClippedBitmap(const SkBitmap& bitmap,
+                                   int desired_width,
+                                   int desired_height,
+                                   ClipResult* clip_result);
+
+  // Update the thumbnail of the given URL if necessary.
+  static void UpdateThumbnailIfNecessary(TabContents* tab_contents,
+                                         const GURL& url);
 
  private:
   // RenderWidgetHostPaintingObserver implementation.

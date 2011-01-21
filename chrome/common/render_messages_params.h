@@ -344,6 +344,9 @@ struct ViewHostMsg_UpdateRect_Params {
   // The rectangular region to scroll.
   gfx::Rect scroll_rect;
 
+  // The scroll offset of the render view.
+  gfx::Size scroll_offset;
+
   // The regions of the bitmap (in view coords) that contain updated pixels.
   // In the case of scrolling, this includes the scroll damage rect.
   std::vector<gfx::Rect> copy_rects;

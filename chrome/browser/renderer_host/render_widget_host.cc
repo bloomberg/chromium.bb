@@ -815,6 +815,8 @@ void RenderWidgetHost::OnMsgUpdateRect(
 
   // Update our knowledge of the RenderWidget's size.
   current_size_ = params.view_size;
+  // Update our knowledge of the RenderWidget's scroll offset.
+  last_scroll_offset_ = params.scroll_offset;
 
   bool is_resize_ack =
       ViewHostMsg_UpdateRect_Flags::is_resize_ack(params.flags);

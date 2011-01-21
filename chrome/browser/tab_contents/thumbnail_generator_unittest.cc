@@ -11,6 +11,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/testing_profile.h"
+#include "gfx/canvas_skia.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
@@ -178,3 +179,102 @@ TEST_F(ThumbnailGeneratorTest, QuickShow) {
 }
 
 #endif
+
+TEST(ThumbnailGeneratorSimpleTest, CalculateBoringScore_Empty) {
+  SkBitmap bitmap;
+  EXPECT_DOUBLE_EQ(1.0, ThumbnailGenerator::CalculateBoringScore(&bitmap));
+}
+
+TEST(ThumbnailGeneratorSimpleTest, CalculateBoringScore_SingleColor) {
+  const SkColor kBlack = SkColorSetRGB(0, 0, 0);
+  const gfx::Size kSize(20, 10);
+  gfx::CanvasSkia canvas(kSize.width(), kSize.height(), true);
+  // Fill all pixesl in black.
+  canvas.FillRectInt(kBlack, 0, 0, kSize.width(), kSize.height());
+
+  SkBitmap bitmap = canvas.getTopPlatformDevice().accessBitmap(false);
+  // The thumbnail should deserve the highest boring score.
+  EXPECT_DOUBLE_EQ(1.0, ThumbnailGenerator::CalculateBoringScore(&bitmap));
+}
+
+TEST(ThumbnailGeneratorSimpleTest, CalculateBoringScore_TwoColors) {
+  const SkColor kBlack = SkColorSetRGB(0, 0, 0);
+  const SkColor kWhite = SkColorSetRGB(0xFF, 0xFF, 0xFF);
+  const gfx::Size kSize(20, 10);
+
+  gfx::CanvasSkia canvas(kSize.width(), kSize.height(), true);
+  // Fill all pixesl in black.
+  canvas.FillRectInt(kBlack, 0, 0, kSize.width(), kSize.height());
+  // Fill the left half pixels in white.
+  canvas.FillRectInt(kWhite, 0, 0, kSize.width() / 2, kSize.height());
+
+  SkBitmap bitmap = canvas.getTopPlatformDevice().accessBitmap(false);
+  ASSERT_EQ(kSize.width(), bitmap.width());
+  ASSERT_EQ(kSize.height(), bitmap.height());
+  // The thumbnail should be less boring because two colors are used.
+  EXPECT_DOUBLE_EQ(0.5, ThumbnailGenerator::CalculateBoringScore(&bitmap));
+}
+
+TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_TallerThanWide) {
+  // The input bitmap is vertically long.
+  gfx::CanvasSkia canvas(40, 90, true);
+  const SkBitmap bitmap = canvas.getTopPlatformDevice().accessBitmap(false);
+
+  // The desired size is square.
+  ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
+  SkBitmap clipped_bitmap = ThumbnailGenerator::GetClippedBitmap(
+      bitmap, 10, 10, &clip_result);
+  // The clipped bitmap should be square.
+  EXPECT_EQ(40, clipped_bitmap.width());
+  EXPECT_EQ(40, clipped_bitmap.height());
+  // The input was taller than wide.
+  EXPECT_EQ(ThumbnailGenerator::kTallerThanWide, clip_result);
+}
+
+TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_WiderThanTall) {
+  // The input bitmap is horizontally long.
+  gfx::CanvasSkia canvas(90, 40, true);
+  const SkBitmap bitmap = canvas.getTopPlatformDevice().accessBitmap(false);
+
+  // The desired size is square.
+  ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
+  SkBitmap clipped_bitmap = ThumbnailGenerator::GetClippedBitmap(
+      bitmap, 10, 10, &clip_result);
+  // The clipped bitmap should be square.
+  EXPECT_EQ(40, clipped_bitmap.width());
+  EXPECT_EQ(40, clipped_bitmap.height());
+  // The input was wider than tall.
+  EXPECT_EQ(ThumbnailGenerator::kWiderThanTall, clip_result);
+}
+
+TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_NotClipped) {
+  // The input bitmap is square.
+  gfx::CanvasSkia canvas(40, 40, true);
+  const SkBitmap bitmap = canvas.getTopPlatformDevice().accessBitmap(false);
+
+  // The desired size is square.
+  ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
+  SkBitmap clipped_bitmap = ThumbnailGenerator::GetClippedBitmap(
+      bitmap, 10, 10, &clip_result);
+  // The clipped bitmap should be square.
+  EXPECT_EQ(40, clipped_bitmap.width());
+  EXPECT_EQ(40, clipped_bitmap.height());
+  // There was no need to clip.
+  EXPECT_EQ(ThumbnailGenerator::kNotClipped, clip_result);
+}
+
+TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_NonSquareOutput) {
+  // The input bitmap is square.
+  gfx::CanvasSkia canvas(40, 40, true);
+  const SkBitmap bitmap = canvas.getTopPlatformDevice().accessBitmap(false);
+
+  // The desired size is horizontally long.
+  ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
+  SkBitmap clipped_bitmap = ThumbnailGenerator::GetClippedBitmap(
+      bitmap, 20, 10, &clip_result);
+  // The clipped bitmap should have the same aspect ratio of the desired size.
+  EXPECT_EQ(40, clipped_bitmap.width());
+  EXPECT_EQ(20, clipped_bitmap.height());
+  // The input was taller than wide.
+  EXPECT_EQ(ThumbnailGenerator::kTallerThanWide, clip_result);
+}

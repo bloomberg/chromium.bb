@@ -393,6 +393,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Activate deferred plugin handles.
   void ActivateDeferredPluginHandles();
 
+  const gfx::Size& last_scroll_offset() const { return last_scroll_offset_; }
+
  protected:
   // Internal implementation of the public Forward*Event() methods.
   void ForwardInputEvent(const WebKit::WebInputEvent& input_event,
@@ -664,6 +666,9 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   bool suppress_next_char_events_;
 
   std::vector<gfx::PluginWindowHandle> deferred_plugin_handles_;
+
+  // The last scroll offset of the render widget.
+  gfx::Size last_scroll_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHost);
 };

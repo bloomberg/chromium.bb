@@ -729,7 +729,8 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kPpapiOutOfProcess,
     switches::kEnablePrintPreview,
     switches::kEnableCrxlessWebApps,
-    switches::kDisable3DAPIs
+    switches::kDisable3DAPIs,
+    switches::kEnableInBrowserThumbnailing,
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
