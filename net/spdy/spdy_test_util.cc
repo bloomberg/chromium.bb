@@ -852,6 +852,102 @@ int CombineFrames(const spdy::SpdyFrame** frames, int num_frames,
   return total_len;
 }
 
+SpdySessionDependencies::SpdySessionDependencies()
+    : host_resolver(new MockHostResolver),
+      cert_verifier(new CertVerifier),
+      proxy_service(ProxyService::CreateDirect()),
+      ssl_config_service(new SSLConfigServiceDefaults),
+      socket_factory(new MockClientSocketFactory),
+      deterministic_socket_factory(new DeterministicMockClientSocketFactory),
+      http_auth_handler_factory(
+          HttpAuthHandlerFactory::CreateDefault(host_resolver.get())) {
+  // Note: The CancelledTransaction test does cleanup by running all
+  // tasks in the message loop (RunAllPending).  Unfortunately, that
+  // doesn't clean up tasks on the host resolver thread; and
+  // TCPConnectJob is currently not cancellable.  Using synchronous
+  // lookups allows the test to shutdown cleanly.  Until we have
+  // cancellable TCPConnectJobs, use synchronous lookups.
+  host_resolver->set_synchronous_mode(true);
+}
+
+SpdySessionDependencies::SpdySessionDependencies(ProxyService* proxy_service)
+    : host_resolver(new MockHostResolver),
+      cert_verifier(new CertVerifier),
+      proxy_service(proxy_service),
+      ssl_config_service(new SSLConfigServiceDefaults),
+      socket_factory(new MockClientSocketFactory),
+      deterministic_socket_factory(new DeterministicMockClientSocketFactory),
+      http_auth_handler_factory(
+          HttpAuthHandlerFactory::CreateDefault(host_resolver.get())) {}
+
+SpdySessionDependencies::~SpdySessionDependencies() {}
+
+// static
+HttpNetworkSession* SpdySessionDependencies::SpdyCreateSession(
+    SpdySessionDependencies* session_deps) {
+  return new HttpNetworkSession(session_deps->host_resolver.get(),
+                                session_deps->cert_verifier.get(),
+                                NULL /* dnsrr_resolver */,
+                                NULL /* dns_cert_checker */,
+                                NULL /* ssl_host_info_factory */,
+                                session_deps->proxy_service,
+                                session_deps->socket_factory.get(),
+                                session_deps->ssl_config_service,
+                                new SpdySessionPool(NULL),
+                                session_deps->http_auth_handler_factory.get(),
+                                NULL,
+                                NULL);
+}
+
+// static
+HttpNetworkSession* SpdySessionDependencies::SpdyCreateSessionDeterministic(
+    SpdySessionDependencies* session_deps) {
+  return new HttpNetworkSession(session_deps->host_resolver.get(),
+                                session_deps->cert_verifier.get(),
+                                NULL /* dnsrr_resolver */,
+                                NULL /* dns_cert_checker */,
+                                NULL /* ssl_host_info_factory */,
+                                session_deps->proxy_service,
+                                session_deps->
+                                deterministic_socket_factory.get(),
+                                session_deps->ssl_config_service,
+                                new SpdySessionPool(NULL),
+                                session_deps->http_auth_handler_factory.get(),
+                                NULL,
+                                NULL);
+}
+
+SpdyURLRequestContext::SpdyURLRequestContext() {
+  host_resolver_ = new MockHostResolver();
+  cert_verifier_ = new CertVerifier;
+  proxy_service_ = ProxyService::CreateDirect();
+  ssl_config_service_ = new SSLConfigServiceDefaults;
+  http_auth_handler_factory_ = HttpAuthHandlerFactory::CreateDefault(
+      host_resolver_);
+  http_transaction_factory_ = new HttpCache(
+      new HttpNetworkLayer(&socket_factory_,
+                           host_resolver_,
+                           cert_verifier_,
+                           NULL /* dnsrr_resolver */,
+                           NULL /* dns_cert_checker */,
+                           NULL /* ssl_host_info_factory */,
+                           proxy_service_,
+                           ssl_config_service_,
+                           new SpdySessionPool(NULL),
+                           http_auth_handler_factory_,
+                           network_delegate_,
+                           NULL),
+      NULL /* net_log */,
+      HttpCache::DefaultBackend::InMemory(0));
+}
+
+SpdyURLRequestContext::~SpdyURLRequestContext() {
+  delete http_transaction_factory_;
+  delete http_auth_handler_factory_;
+  delete cert_verifier_;
+  delete host_resolver_;
+}
+
 const SpdyHeaderInfo make_spdy_header(spdy::SpdyControlType type) {
   const SpdyHeaderInfo kHeader = {
     type,                         // Kind = Syn

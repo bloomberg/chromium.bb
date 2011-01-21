@@ -51,12 +51,14 @@
 
 namespace net {
 
-static const int kExceptionRule = 1;
-static const int kWildcardRule = 2;
+namespace {
 
-RegistryControlledDomainService::RegistryControlledDomainService()
-    : find_domain_function_(Perfect_Hash::FindDomain) {
-}
+const int kExceptionRule = 1;
+const int kWildcardRule = 2;
+
+RegistryControlledDomainService* test_instance_;
+
+}  // namespace
 
 // static
 std::string RegistryControlledDomainService::GetDomainAndRegistry(
@@ -152,6 +154,34 @@ size_t RegistryControlledDomainService::GetRegistryLength(
     return 0;
   return GetInstance()->GetRegistryLengthImpl(canon_host,
                                               allow_unknown_registries);
+}
+
+// static
+RegistryControlledDomainService* RegistryControlledDomainService::GetInstance()
+{
+  if (test_instance_)
+    return test_instance_;
+
+  return Singleton<RegistryControlledDomainService>::get();
+}
+
+RegistryControlledDomainService::RegistryControlledDomainService()
+    : find_domain_function_(Perfect_Hash::FindDomain) {
+}
+
+// static
+RegistryControlledDomainService* RegistryControlledDomainService::SetInstance(
+    RegistryControlledDomainService* instance) {
+  RegistryControlledDomainService* old_instance = test_instance_;
+  test_instance_ = instance;
+  return old_instance;
+}
+
+// static
+void RegistryControlledDomainService::UseFindDomainFunction(
+    FindDomainPtr function) {
+  RegistryControlledDomainService* instance = GetInstance();
+  instance->find_domain_function_ = function;
 }
 
 // static
@@ -259,32 +289,6 @@ size_t RegistryControlledDomainService::GetRegistryLengthImpl(
   // character of the last subcomponent of the host, so if we allow unknown
   // registries, return the length of this subcomponent.
   return allow_unknown_registries ? (host.length() - curr_start) : 0;
-}
-
-static RegistryControlledDomainService* test_instance_;
-
-// static
-RegistryControlledDomainService* RegistryControlledDomainService::SetInstance(
-    RegistryControlledDomainService* instance) {
-  RegistryControlledDomainService* old_instance = test_instance_;
-  test_instance_ = instance;
-  return old_instance;
-}
-
-// static
-RegistryControlledDomainService* RegistryControlledDomainService::GetInstance()
-{
-  if (test_instance_)
-    return test_instance_;
-
-  return Singleton<RegistryControlledDomainService>::get();
-}
-
-// static
-void RegistryControlledDomainService::UseFindDomainFunction(
-    FindDomainPtr function) {
-  RegistryControlledDomainService* instance = GetInstance();
-  instance->find_domain_function_ = function;
 }
 
 }  // namespace net

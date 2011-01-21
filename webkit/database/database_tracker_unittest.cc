@@ -8,6 +8,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/database/database_tracker.h"

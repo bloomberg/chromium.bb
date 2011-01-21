@@ -12,6 +12,7 @@
 #include "base/win/scoped_handle.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/backend_impl.h"
 #include "net/disk_cache/entry_impl.h"
