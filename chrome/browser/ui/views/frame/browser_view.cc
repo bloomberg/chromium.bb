@@ -2102,8 +2102,8 @@ void BrowserView::UpdateDevToolsForContents(TabContentsWrapper* wrapper) {
     }
 
     // Restore split offset.
-    int split_offset = browser_->profile()->GetPrefs()->
-        GetInteger(prefs::kDevToolsSplitLocation);
+    int split_offset = g_browser_process->local_state()->GetInteger(
+        prefs::kDevToolsSplitLocation);
     if (split_offset == -1) {
       // Initial load, set to default value.
       split_offset = 2 * contents_split_->height() / 3;
@@ -2119,8 +2119,8 @@ void BrowserView::UpdateDevToolsForContents(TabContentsWrapper* wrapper) {
     Layout();
   } else if (should_hide) {
     // Store split offset when hiding devtools window only.
-    browser_->profile()->GetPrefs()->SetInteger(prefs::kDevToolsSplitLocation,
-        contents_split_->divider_offset());
+    g_browser_process->local_state()->SetInteger(
+        prefs::kDevToolsSplitLocation, contents_split_->divider_offset());
 
     // Restore focus to the last focused view when hiding devtools window.
     devtools_focus_tracker_->FocusLastFocusedExternalView();

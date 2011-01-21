@@ -6,7 +6,6 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -17,9 +16,9 @@
 // and persistent state from the browser window and the user's profile.
 class DefaultStateProvider : public WindowSizer::StateProvider {
  public:
-  explicit DefaultStateProvider(const std::string& app_name,
-      const Browser* browser) : app_name_(app_name),
-                                browser_(browser) {
+  explicit DefaultStateProvider(const std::string& app_name, Browser* browser)
+      : app_name_(app_name),
+        browser_(browser) {
   }
 
   // Overridden from WindowSizer::StateProvider:
@@ -34,11 +33,11 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
       key.append(app_name_);
     }
 
-    if (!browser_->profile()->GetPrefs())
+    if (!g_browser_process->local_state())
       return false;
 
     const DictionaryValue* wp_pref =
-        browser_->profile()->GetPrefs()->GetDictionary(key.c_str());
+        g_browser_process->local_state()->GetDictionary(key.c_str());
     int top = 0, left = 0, bottom = 0, right = 0;
     bool has_prefs =
         wp_pref &&
@@ -75,9 +74,9 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     // If a reference browser is set, use its window. Otherwise find last
     // active.
     BrowserWindow* window = NULL;
-    // Window may be null if browser is just starting up.
-    if (browser_ && browser_->window()) {
+    if (browser_) {
       window = browser_->window();
+      DCHECK(window);
     } else {
       BrowserList::const_reverse_iterator it = BrowserList::begin_last_active();
       BrowserList::const_reverse_iterator end = BrowserList::end_last_active();
@@ -103,7 +102,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
   std::string app_name_;
 
   // If set, is used as the reference browser for GetLastActiveWindowState.
-  const Browser* browser_;
+  Browser* browser_;
   DISALLOW_COPY_AND_ASSIGN(DefaultStateProvider);
 };
 
@@ -133,7 +132,7 @@ WindowSizer::~WindowSizer() {
 // static
 void WindowSizer::GetBrowserWindowBounds(const std::string& app_name,
                                          const gfx::Rect& specified_bounds,
-                                         const Browser* browser,
+                                         Browser* browser,
                                          gfx::Rect* window_bounds,
                                          bool* maximized) {
   const WindowSizer sizer(new DefaultStateProvider(app_name, browser),

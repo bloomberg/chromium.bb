@@ -62,12 +62,11 @@ const CGFloat kLocBarBottomInset = 1;
   if (browser_ != BrowserList::GetLastActive())
     return;
 
-  if (!browser_->profile()->GetPrefs() ||
-      !browser_->ShouldSaveWindowPlacement()) {
+  if (!g_browser_process || !g_browser_process->local_state() ||
+      !browser_->ShouldSaveWindowPlacement())
     return;
-  }
 
-  [self saveWindowPositionToPrefs:browser_->profile()->GetPrefs()];
+  [self saveWindowPositionToPrefs:g_browser_process->local_state()];
 }
 
 - (void)saveWindowPositionToPrefs:(PrefService*)prefs {

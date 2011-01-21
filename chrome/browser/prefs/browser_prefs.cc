@@ -55,7 +55,6 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/upgrade_detector.h"
-#include "chrome/common/pref_names.h"
 
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
 #include "chrome/browser/ui/views/browser_actions_container.h"
@@ -158,37 +157,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   InstantController::RegisterUserPrefs(user_prefs);
   NetPrefObserver::RegisterPrefs(user_prefs);
   policy::ProfilePolicyContext::RegisterUserPrefs(user_prefs);
-}
-
-void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {
-  // Copy pref values which have been migrated to user_prefs from local_state,
-  // or remove them from local_state outright, if copying is not required.
-  int current_version =
-      local_state->GetInteger(prefs::kMultipleProfilePrefMigration);
-
-  if ((current_version & WINDOWS_PREFS) == 0) {
-    // Migrate the devtools split location preference.
-    local_state->RegisterIntegerPref(prefs::kDevToolsSplitLocation, -1);
-    DCHECK(user_prefs->FindPreference(prefs::kDevToolsSplitLocation));
-    if (local_state->HasPrefPath(prefs::kDevToolsSplitLocation)) {
-      user_prefs->SetInteger(prefs::kDevToolsSplitLocation,
-          local_state->GetInteger(prefs::kDevToolsSplitLocation));
-    }
-    local_state->ClearPref(prefs::kDevToolsSplitLocation);
-
-    // Migrate the browser window placement preference.
-    local_state->RegisterDictionaryPref(prefs::kBrowserWindowPlacement);
-    DCHECK(user_prefs->FindPreference(prefs::kBrowserWindowPlacement));
-    if (local_state->HasPrefPath(prefs::kBrowserWindowPlacement)) {
-      user_prefs->Set(prefs::kBrowserWindowPlacement,
-          *(local_state->FindPreference(prefs::kBrowserWindowPlacement)->
-              GetValue()->DeepCopy()));
-    }
-    local_state->ClearPref(prefs::kBrowserWindowPlacement);
-
-    local_state->SetInteger(prefs::kMultipleProfilePrefMigration,
-                            current_version | WINDOWS_PREFS);
-  }
 }
 
 }  // namespace browser

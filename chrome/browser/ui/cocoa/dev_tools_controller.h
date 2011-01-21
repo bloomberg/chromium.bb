@@ -14,12 +14,11 @@
 @class NSSplitView;
 @class NSView;
 
-class Profile;
 class TabContents;
 
 // A class that handles updates of the devTools view within a browser window.
 // It swaps in the relevant devTools contents for a given TabContents or removes
-// the view, if there's no devTools contents to show.
+// the vew, if there's no devTools contents to show.
 @interface DevToolsController : NSObject {
  @private
   // A view hosting docked devTools contents.
@@ -41,8 +40,7 @@ class TabContents;
 // Depending on |contents|'s state, decides whether the docked web inspector
 // should be shown or hidden and adjusts its height (|delegate_| handles
 // the actual resize).
-- (void)updateDevToolsForTabContents:(TabContents*)contents
-                         withProfile:(Profile*)profile;
+- (void)updateDevToolsForTabContents:(TabContents*)contents;
 
 // Call when the devTools view is properly sized and the render widget host view
 // should be put into the view hierarchy.

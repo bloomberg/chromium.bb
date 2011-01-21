@@ -121,7 +121,7 @@ class WindowSizer {
   // non-NULL value for |browser|.
   static void GetBrowserWindowBounds(const std::string& app_name,
                                      const gfx::Rect& specified_bounds,
-                                     const Browser* browser,
+                                     Browser* browser,
                                      gfx::Rect* window_bounds,
                                      bool* maximized);
 
@@ -181,5 +181,4 @@ class WindowSizer {
   DISALLOW_COPY_AND_ASSIGN(WindowSizer);
 };
 
-#endif  // CHROME_BROWSER_UI_WINDOW_SIZER_H_
-
+#endif  // CHROME_BROWSER_WINDOW_SIZER_H_

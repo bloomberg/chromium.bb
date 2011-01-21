@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -216,7 +216,7 @@ void DevToolsWindow::CreateDevToolsBrowser() {
   wp_key.append("_");
   wp_key.append(kDevToolsApp);
 
-  PrefService* prefs = profile_->GetPrefs();
+  PrefService* prefs = g_browser_process->local_state();
   if (!prefs->FindPreference(wp_key.c_str())) {
     prefs->RegisterDictionaryPref(wp_key.c_str());
   }
