@@ -155,18 +155,13 @@ void ResourceTracker::ForceDeletePluginResourceRefs(PP_Resource res) {
   live_resources_.erase(i);
 }
 
-uint32 ResourceTracker::GetLiveObjectsForModule(PluginModule* module) const {
-  // Since this is for testing only, we'll just go through all of them and
-  // count.
-  //
-  // TODO(brettw) we will eventually need to implement more efficient
-  // module->resource lookup to free resources when a module is unloaded. In
-  // this case, this function can be implemented using that system.
-  uint32 count = 0;
-  for (ResourceMap::const_iterator i = live_resources_.begin();
-       i != live_resources_.end(); ++i)
-    count++;
-  return count;
+uint32 ResourceTracker::GetLiveObjectsForInstance(
+    PP_Instance instance) const {
+  InstanceToResourceMap::const_iterator found =
+      instance_to_resources_.find(instance);
+  if (found == instance_to_resources_.end())
+    return 0;
+  return static_cast<uint32>(found->second.size());
 }
 
 scoped_refptr<Var> ResourceTracker::GetVar(int32 var_id) const {

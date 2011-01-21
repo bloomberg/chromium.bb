@@ -23,24 +23,24 @@ namespace {
 // PPP_Var_Deprecated plugin ---------------------------------------------------
 
 void AddRefVar(PP_Var var) {
-  PluginDispatcher::Get()->plugin_var_tracker()->AddRef(var);
+  PluginVarTracker::GetInstance()->AddRef(var);
 }
 
 void ReleaseVar(PP_Var var) {
-  PluginDispatcher::Get()->plugin_var_tracker()->Release(var);
+  PluginVarTracker::GetInstance()->Release(var);
 }
 
 PP_Var VarFromUtf8(PP_Module module, const char* data, uint32_t len) {
   PP_Var ret;
   ret.type = PP_VARTYPE_STRING;
-  ret.value.as_id = PluginDispatcher::Get()->plugin_var_tracker()->MakeString(
+  ret.value.as_id = PluginVarTracker::GetInstance()->MakeString(
       data, len);
   return ret;
 }
 
 const char* VarToUtf8(PP_Var var, uint32_t* len) {
   const std::string* str =
-      PluginDispatcher::Get()->plugin_var_tracker()->GetExistingString(var);
+      PluginVarTracker::GetInstance()->GetExistingString(var);
   if (str) {
     *len = static_cast<uint32_t>(str->size());
     return str->c_str();

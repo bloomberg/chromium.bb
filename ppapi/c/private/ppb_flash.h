@@ -9,6 +9,7 @@
 #include <windows.h>
 #endif
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_point.h"
@@ -18,7 +19,7 @@
 
 // PPB_Flash -------------------------------------------------------------------
 
-#define PPB_FLASH_INTERFACE "PPB_Flash;3"
+#define PPB_FLASH_INTERFACE "PPB_Flash;4"
 
 #ifdef _WIN32
 typedef HANDLE PP_FileHandle;
@@ -34,7 +35,7 @@ struct PP_FileInfo_Dev;
 
 struct PP_DirEntry_Dev {
   const char* name;
-  bool is_dir;
+  PP_Bool is_dir;
 };
 
 struct PP_DirContents_Dev {
@@ -46,18 +47,18 @@ struct PPB_Flash {
   // Sets or clears the rendering hint that the given plugin instance is always
   // on top of page content. Somewhat more optimized painting can be used in
   // this case.
-  void (*SetInstanceAlwaysOnTop)(PP_Instance instance, bool on_top);
+  void (*SetInstanceAlwaysOnTop)(PP_Instance instance, PP_Bool on_top);
 
-  bool (*DrawGlyphs)(PP_Instance instance,
-                     PP_Resource pp_image_data,
-                     const PP_FontDescription_Dev* font_desc,
-                     uint32_t color,
-                     PP_Point position,
-                     PP_Rect clip,
-                     const float transformation[3][3],
-                     uint32_t glyph_count,
-                     const uint16_t glyph_indices[],
-                     const PP_Point glyph_advances[]);
+  PP_Bool (*DrawGlyphs)(PP_Instance instance,
+                        PP_Resource pp_image_data,
+                        const PP_FontDescription_Dev* font_desc,
+                        uint32_t color,
+                        PP_Point position,
+                        PP_Rect clip,
+                        const float transformation[3][3],
+                        uint32_t glyph_count,
+                        const uint16_t glyph_indices[],
+                        const PP_Point glyph_advances[]);
 
   // Retrieves the proxy that will be used for the given URL. The result will
   // be a string in PAC format, or an undefined var on error.
@@ -85,7 +86,7 @@ struct PPB_Flash {
   // case of failure.
   int32_t (*DeleteModuleLocalFileOrDir)(PP_Instance instance,
                                         const char* path,
-                                        bool recursive);
+                                        PP_Bool recursive);
 
   // Creates a module-local directory. The return value is the ppapi error,
   // PP_OK if success, one of the PP_ERROR_* in case of failure.
@@ -112,9 +113,9 @@ struct PPB_Flash {
   // Navigate to URL. May open a new tab if target is not "_self". Return true
   // if success. This differs from javascript:window.open() in that it bypasses
   // the popup blocker, even when this is not called from an event handler.
-  bool (*NavigateToURL)(PP_Instance instance,
-                        const char* url,
-                        const char* target);
+  PP_Bool (*NavigateToURL)(PP_Instance instance,
+                           const char* url,
+                           const char* target);
 };
 
 // PPB_Flash_NetConnector ------------------------------------------------------

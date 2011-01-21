@@ -14,6 +14,7 @@
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
+#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
 namespace pp {
@@ -21,7 +22,7 @@ namespace proxy {
 
 class PrivateFontFile : public PluginResource {
  public:
-  PrivateFontFile() {}
+  PrivateFontFile(PP_Instance instance) : PluginResource(instance) {}
   virtual ~PrivateFontFile() {}
 
   // Resource overrides.
@@ -60,7 +61,10 @@ PP_Resource GetFontFileWithFallback(
     PP_Instance instance,
     const PP_FontDescription_Dev* description,
     PP_PrivateFontCharset charset) {
-  PluginDispatcher* dispatcher = PluginDispatcher::Get();
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return 0;
+
   SerializedFontDescription desc;
   desc.SetFromPPFontDescription(dispatcher, *description, true);
 
@@ -70,8 +74,8 @@ PP_Resource GetFontFileWithFallback(
   if (!result)
     return 0;
 
-  linked_ptr<PrivateFontFile> object(new PrivateFontFile);
-  dispatcher->plugin_resource_tracker()->AddResource(result, object);
+  linked_ptr<PrivateFontFile> object(new PrivateFontFile(instance));
+  PluginResourceTracker::GetInstance()->AddResource(result, object);
   return result;
 }
 
@@ -82,13 +86,16 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
   PrivateFontFile* object = PluginResource::GetAs<PrivateFontFile>(font_file);
   if (!object)
     return false;
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
+      object->instance());
+  if (!dispatcher)
+    return false;
 
   std::string* contents = object->GetFontTable(table);
   if (!contents) {
     std::string deserialized;
-    PluginDispatcher::Get()->Send(
-        new PpapiHostMsg_PPBPDF_GetFontTableForPrivateFontFile(
-            INTERFACE_ID_PPB_PDF, font_file, table, &deserialized));
+    dispatcher->Send(new PpapiHostMsg_PPBPDF_GetFontTableForPrivateFontFile(
+        INTERFACE_ID_PPB_PDF, font_file, table, &deserialized));
     if (deserialized.empty())
       return false;
     contents = object->AddFontTable(table, deserialized);

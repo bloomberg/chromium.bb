@@ -20,15 +20,17 @@ HostVarSerializationRules::HostVarSerializationRules(
 HostVarSerializationRules::~HostVarSerializationRules() {
 }
 
-void HostVarSerializationRules::SendCallerOwned(const PP_Var& var,
-                                                std::string* str_val) {
+PP_Var HostVarSerializationRules::SendCallerOwned(const PP_Var& var,
+                                                  std::string* str_val) {
   if (var.type == PP_VARTYPE_STRING)
     VarToString(var, str_val);
+  return var;
 }
 
 PP_Var HostVarSerializationRules::BeginReceiveCallerOwned(
     const PP_Var& var,
-    const std::string* str_val) {
+    const std::string* str_val,
+    Dispatcher* /* dispatcher */) {
   if (var.type == PP_VARTYPE_STRING) {
     // Convert the string to the context of the current process.
     return var_interface_->VarFromUtf8(pp_module_, str_val->c_str(),
@@ -45,7 +47,8 @@ void HostVarSerializationRules::EndReceiveCallerOwned(const PP_Var& var) {
 }
 
 PP_Var HostVarSerializationRules::ReceivePassRef(const PP_Var& var,
-                                                 const std::string& str_val) {
+                                                 const std::string& str_val,
+                                                 Dispatcher* /* dispatcher */) {
   if (var.type == PP_VARTYPE_STRING) {
     // Convert the string to the context of the current process.
     return var_interface_->VarFromUtf8(pp_module_, str_val.c_str(),
@@ -58,12 +61,13 @@ PP_Var HostVarSerializationRules::ReceivePassRef(const PP_Var& var,
   return var;
 }
 
-void HostVarSerializationRules::BeginSendPassRef(const PP_Var& var,
+PP_Var HostVarSerializationRules::BeginSendPassRef(const PP_Var& var,
                                                  std::string* str_val) {
   // See PluginVarSerialization::ReceivePassRef for an example. We don't need
   // to do anything here other than convert the string.
   if (var.type == PP_VARTYPE_STRING)
     VarToString(var, str_val);
+  return var;
 }
 
 void HostVarSerializationRules::EndSendPassRef(const PP_Var& var) {

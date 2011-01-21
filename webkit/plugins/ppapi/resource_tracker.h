@@ -63,9 +63,7 @@ class ResourceTracker {
   void ForceDeletePluginResourceRefs(PP_Resource res);
 
   // Returns the number of resources associated with this module.
-  //
-  // This is slow, use only for testing.
-  uint32 GetLiveObjectsForModule(PluginModule* module) const;
+  uint32 GetLiveObjectsForInstance(PP_Instance instance) const;
 
   // PP_Vars -------------------------------------------------------------------
 

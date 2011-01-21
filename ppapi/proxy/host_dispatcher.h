@@ -13,7 +13,6 @@
 #include "base/scoped_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/dispatcher.h"
-#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 
 struct PPB_Var_Deprecated;

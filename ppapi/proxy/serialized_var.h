@@ -228,6 +228,8 @@ class ReceiveSerializedException : public SerializedVar {
   bool IsThrown() const;
 
  private:
+  Dispatcher* dispatcher_;
+
   // The input/output exception we're wrapping. May be NULL.
   PP_Var* exception_;
 

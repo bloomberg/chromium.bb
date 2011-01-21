@@ -14,12 +14,16 @@ namespace proxy {
 namespace {
 
 PP_Bool SetCursor(PP_Instance instance_id,
-               PP_CursorType_Dev type,
-               PP_Resource custom_image_id,
-               const PP_Point* hot_spot) {
+                  PP_CursorType_Dev type,
+                  PP_Resource custom_image_id,
+                  const PP_Point* hot_spot) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance_id);
+  if (!dispatcher)
+    return PP_FALSE;
+
   PP_Bool result = PP_FALSE;
   PP_Point empty_point = { 0, 0 };
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBCursorControl_SetCursor(
+  dispatcher->Send(new PpapiHostMsg_PPBCursorControl_SetCursor(
       INTERFACE_ID_PPB_CURSORCONTROL,
       instance_id, static_cast<int32_t>(type), custom_image_id,
       hot_spot ? *hot_spot : empty_point, &result));
@@ -27,29 +31,45 @@ PP_Bool SetCursor(PP_Instance instance_id,
 }
 
 PP_Bool LockCursor(PP_Instance instance_id) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance_id);
+  if (!dispatcher)
+    return PP_FALSE;
+
   PP_Bool result = PP_FALSE;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBCursorControl_LockCursor(
+  dispatcher->Send(new PpapiHostMsg_PPBCursorControl_LockCursor(
       INTERFACE_ID_PPB_CURSORCONTROL, instance_id, &result));
   return result;
 }
 
 PP_Bool UnlockCursor(PP_Instance instance_id) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance_id);
+  if (!dispatcher)
+    return PP_FALSE;
+
   PP_Bool result = PP_FALSE;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBCursorControl_UnlockCursor(
+  dispatcher->Send(new PpapiHostMsg_PPBCursorControl_UnlockCursor(
       INTERFACE_ID_PPB_CURSORCONTROL, instance_id, &result));
   return result;
 }
 
 PP_Bool HasCursorLock(PP_Instance instance_id) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance_id);
+  if (!dispatcher)
+    return PP_FALSE;
+
   PP_Bool result = PP_FALSE;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBCursorControl_HasCursorLock(
+  dispatcher->Send(new PpapiHostMsg_PPBCursorControl_HasCursorLock(
       INTERFACE_ID_PPB_CURSORCONTROL, instance_id, &result));
   return result;
 }
 
 PP_Bool CanLockCursor(PP_Instance instance_id) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance_id);
+  if (!dispatcher)
+    return PP_FALSE;
+
   PP_Bool result = PP_FALSE;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBCursorControl_CanLockCursor(
+  dispatcher->Send(new PpapiHostMsg_PPBCursorControl_CanLockCursor(
       INTERFACE_ID_PPB_CURSORCONTROL, instance_id, &result));
   return result;
 }

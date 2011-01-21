@@ -1,33 +1,39 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/proxy/plugin_var_serialization_rules.h"
 
+#include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 
 namespace pp {
 namespace proxy {
 
-PluginVarSerializationRules::PluginVarSerializationRules(
-    PluginVarTracker* var_tracker)
-    : var_tracker_(var_tracker) {
+PluginVarSerializationRules::PluginVarSerializationRules()
+    : var_tracker_(PluginVarTracker::GetInstance()) {
 }
 
 PluginVarSerializationRules::~PluginVarSerializationRules() {
 }
 
-void PluginVarSerializationRules::SendCallerOwned(const PP_Var& var,
-                                                  std::string* str_val) {
+PP_Var PluginVarSerializationRules::SendCallerOwned(const PP_Var& var,
+                                                    std::string* str_val) {
+  // Objects need special translations to get the IDs valid in the host.
+  if (var.type == PP_VARTYPE_OBJECT)
+    return var_tracker_->GetHostObject(var);
+
   // Nothing to do since we manage the refcount, other than retrieve the string
   // to use for IPC.
   if (var.type == PP_VARTYPE_STRING)
     *str_val = var_tracker_->GetString(var);
+  return var;
 }
 
 PP_Var PluginVarSerializationRules::BeginReceiveCallerOwned(
     const PP_Var& var,
-    const std::string* str_val) {
+    const std::string* str_val,
+    Dispatcher* dispatcher) {
   if (var.type == PP_VARTYPE_STRING) {
     // Convert the string to the context of the current process.
     PP_Var ret;
@@ -36,6 +42,9 @@ PP_Var PluginVarSerializationRules::BeginReceiveCallerOwned(
     return ret;
   }
 
+  if (var.type == PP_VARTYPE_OBJECT)
+    return var_tracker_->TrackObjectWithNoReference(var, dispatcher);
+
   return var;
 }
 
@@ -43,11 +52,14 @@ void PluginVarSerializationRules::EndReceiveCallerOwned(const PP_Var& var) {
   if (var.type == PP_VARTYPE_STRING) {
     // Destroy the string BeginReceiveCallerOwned created above.
     var_tracker_->Release(var);
+  } else if (var.type == PP_VARTYPE_OBJECT) {
+    var_tracker_->StopTrackingObjectWithNoReference(var);
   }
 }
 
 PP_Var PluginVarSerializationRules::ReceivePassRef(const PP_Var& var,
-                                                   const std::string& str_val) {
+                                                   const std::string& str_val,
+                                                   Dispatcher* dispatcher) {
   if (var.type == PP_VARTYPE_STRING) {
     // Convert the string to the context of the current process.
     PP_Var ret;
@@ -72,13 +84,16 @@ PP_Var PluginVarSerializationRules::ReceivePassRef(const PP_Var& var,
   // on behalf of the caller. This needs to be transferred to the plugin and
   // folded in to its set of refs it maintains (with one ref representing all
   // fo them in the browser).
-  if (var.type == PP_VARTYPE_OBJECT)
-    var_tracker_->ReceiveObjectPassRef(var);
+  if (var.type == PP_VARTYPE_OBJECT) {
+    return var_tracker_->ReceiveObjectPassRef(var, dispatcher);
+  }
+
+  // Other types are unchanged.
   return var;
 }
 
-void PluginVarSerializationRules::BeginSendPassRef(const PP_Var& var,
-                                                   std::string* str_val) {
+PP_Var PluginVarSerializationRules::BeginSendPassRef(const PP_Var& var,
+                                                     std::string* str_val) {
   // Overview of sending an object with "pass ref" from the plugin to the
   // browser:
   //                                  Example 1             Example 2
@@ -94,8 +109,13 @@ void PluginVarSerializationRules::BeginSendPassRef(const PP_Var& var,
   // transferring the object ref to the browser involves no net change in the
   // browser's refcount.
 
+  // Objects need special translations to get the IDs valid in the host.
+  if (var.type == PP_VARTYPE_OBJECT)
+    return var_tracker_->GetHostObject(var);
+
   if (var.type == PP_VARTYPE_STRING)
     *str_val = var_tracker_->GetString(var);
+  return var;
 }
 
 void PluginVarSerializationRules::EndSendPassRef(const PP_Var& var) {

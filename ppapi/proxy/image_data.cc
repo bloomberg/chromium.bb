@@ -16,8 +16,11 @@
 namespace pp {
 namespace proxy {
 
-ImageData::ImageData(const PP_ImageDataDesc& desc, ImageHandle handle)
-    : desc_(desc),
+ImageData::ImageData(PP_Instance instance,
+                     const PP_ImageDataDesc& desc,
+                     ImageHandle handle)
+    : PluginResource(instance),
+      desc_(desc),
       handle_(handle),
       mapped_data_(NULL) {
 }

@@ -155,19 +155,23 @@ struct PPB_Font_Dev {
   // Note that this function handles complex scripts such as Arabic, combining
   // accents, etc. so that adding the width of substrings won't necessarily
   // produce the correct width of the entire string.
+  //
+  // Returns -1 on failure.
   int32_t (*MeasureText)(PP_Resource font,
                          const struct PP_TextRun_Dev* text);
 
   // Returns the character at the given pixel X position from the beginning of
   // the string. This handles complex scripts such as Arabic, where characters
-  // may be combined or replaced depending on the context.
+  // may be combined or replaced depending on the context. Returns (uint32)-1
+  // on failure.
   uint32_t (*CharacterOffsetForPixel)(PP_Resource font,
                                       const struct PP_TextRun_Dev* text,
                                       int32_t pixel_position);
 
   // Returns the horizontal advance to the given character if the string was
   // placed at the given position. This handles complex scripts such as Arabic,
-  // where characters may be combined or replaced depending on context.
+  // where characters may be combined or replaced depending on context. Returns
+  // -1 on error.
   int32_t (*PixelOffsetForCharacter)(PP_Resource font,
                                      const struct PP_TextRun_Dev* text,
                                      uint32_t char_offset);

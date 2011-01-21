@@ -20,9 +20,14 @@ char* UTF16ToCharSet(PP_Instance instance,
                      const char* output_char_set,
                      PP_CharSet_ConversionError on_error,
                      uint32_t* output_length) {
+  *output_length = 0;
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return NULL;
+
   bool output_is_success = false;
   std::string result;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBCharSet_UTF16ToCharSet(
+  dispatcher->Send(new PpapiHostMsg_PPBCharSet_UTF16ToCharSet(
       INTERFACE_ID_PPB_CHAR_SET, instance,
       string16(reinterpret_cast<const char16*>(utf16), utf16_len),
       std::string(output_char_set), static_cast<int32_t>(on_error),
@@ -41,9 +46,14 @@ uint16_t* CharSetToUTF16(PP_Instance instance,
                          const char* input_char_set,
                          PP_CharSet_ConversionError on_error,
                          uint32_t* output_length) {
+  *output_length = 0;
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return NULL;
+
   bool output_is_success = false;
   string16 result;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBCharSet_CharSetToUTF16(
+  dispatcher->Send(new PpapiHostMsg_PPBCharSet_CharSetToUTF16(
       INTERFACE_ID_PPB_CHAR_SET, instance,
       std::string(input, input_len),
       std::string(input_char_set), static_cast<int32_t>(on_error),
@@ -59,10 +69,14 @@ uint16_t* CharSetToUTF16(PP_Instance instance,
 }
 
 PP_Var GetDefaultCharSet(PP_Instance instance) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_MakeUndefined();
+
   ReceiveSerializedVarReturnValue result;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBCharSet_GetDefaultCharSet(
+  dispatcher->Send(new PpapiHostMsg_PPBCharSet_GetDefaultCharSet(
       INTERFACE_ID_PPB_CHAR_SET, instance, &result));
-  return result.Return(PluginDispatcher::Get());
+  return result.Return(dispatcher);
 }
 
 const PPB_CharSet_Dev ppb_charset_interface = {

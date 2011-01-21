@@ -12,6 +12,8 @@
 namespace pp {
 namespace proxy {
 
+class Dispatcher;
+
 // Encapsulates the rules for serializing and deserializing vars to and from
 // the local process. The renderer and the plugin process each have separate
 // bookkeeping rules.
@@ -27,8 +29,9 @@ class VarSerializationRules {
 
   // Prepares the given var for sending to the callee. If the var is a string,
   // the value of that string will be placed in *str_val. If the var is not
-  // a string, str_val will be untouched and may be NULL.
-  virtual void SendCallerOwned(const PP_Var& var, std::string* str_val) = 0;
+  // a string, str_val will be untouched and may be NULL. The return value will
+  // be the var valid for the host process.
+  virtual PP_Var SendCallerOwned(const PP_Var& var, std::string* str_val) = 0;
 
   // When receiving a caller-owned variable, normally we don't have to do
   // anything. However, in the case of strings, we need to deserialize the
@@ -39,13 +42,13 @@ class VarSerializationRules {
   // BeginReceiveCallerOwned takes a var from IPC and an optional pointer to
   // the deserialized string (which will be used only when var is a
   // VARTYPE_STRING and may be NULL otherwise) and returns a new var
-  // representing the input in the local process. The output will be the same
-  // as the input except for strings.
+  // representing the input in the local process.
   //
   // EndReceiveCallerOwned destroys the string created by Begin* and does
   // nothing otherwise. It should be called with the result of Begin*.
   virtual PP_Var BeginReceiveCallerOwned(const PP_Var& var,
-                                         const std::string* str_val) = 0;
+                                         const std::string* str_val,
+                                         Dispatcher* dispatcher) = 0;
   virtual void EndReceiveCallerOwned(const PP_Var& var) = 0;
 
   // Passinag refs -------------------------------------------------------------
@@ -61,14 +64,18 @@ class VarSerializationRules {
   // Creates a var in the context of the local process from the given
   // deserialized var and deserialized string (which will be used only when var
   // is a VARTYPE_STRING and may be NULL otherwise). The input var/string
-  // should be the result of calling SendPassRef in the remote process.
+  // should be the result of calling SendPassRef in the remote process. The
+  // return value is the var valid in the plugin process.
   virtual PP_Var ReceivePassRef(const PP_Var& var,
-                                const std::string& str_val) = 0;
+                                const std::string& str_val,
+                                Dispatcher* dispatcher) = 0;
 
   // Prepares a var to be sent to the remote side. One local reference will
   // be passed to the remote side. Call Begin* before doing the send and End*
   // after doing the send. See SendCallerOwned for a description of the string.
-  virtual void BeginSendPassRef(const PP_Var& var, std::string* str_val) = 0;
+  // The return value from BeginSendPassRef will be the var valid for the host
+  // process.
+  virtual PP_Var BeginSendPassRef(const PP_Var& var, std::string* str_val) = 0;
   virtual void EndSendPassRef(const PP_Var& var) = 0;
 
   // ---------------------------------------------------------------------------

@@ -36,13 +36,8 @@ PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
                                    ShutdownModuleFunc shutdown_module)
     : Dispatcher(remote_process_handle, get_interface),
       init_module_(init_module),
-      shutdown_module_(shutdown_module),
-      plugin_resource_tracker_(new PluginResourceTracker(
-          ALLOW_THIS_IN_INITIALIZER_LIST(this))),
-      plugin_var_tracker_(new PluginVarTracker(
-          ALLOW_THIS_IN_INITIALIZER_LIST(this))) {
-  SetSerializationRules(
-      new PluginVarSerializationRules(plugin_var_tracker_.get()));
+      shutdown_module_(shutdown_module) {
+  SetSerializationRules(new PluginVarSerializationRules);
 
   // As a plugin, we always support the PPP_Class interface. There's no
   // GetInterface call or name for it, so we insert it into our table now.
@@ -64,6 +59,13 @@ PluginDispatcher* PluginDispatcher::Get() {
 void PluginDispatcher::SetGlobal(PluginDispatcher* dispatcher) {
   DCHECK(!dispatcher || !g_dispatcher);
   g_dispatcher = dispatcher;
+}
+
+// static
+PluginDispatcher* PluginDispatcher::GetForInstance(PP_Instance instance) {
+  // TODO(brettw) implement "real" per-instance dispatcher map.
+  DCHECK(instance != 0);
+  return Get();
 }
 
 bool PluginDispatcher::IsPlugin() const {

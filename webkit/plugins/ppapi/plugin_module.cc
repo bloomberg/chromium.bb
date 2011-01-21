@@ -191,18 +191,15 @@ void QuitMessageLoop() {
   MessageLoop::current()->QuitNow();
 }
 
-uint32_t GetLiveObjectCount(PP_Module module_id) {
-  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
-  if (!module)
-    return static_cast<uint32_t>(-1);
-  return ResourceTracker::Get()->GetLiveObjectsForModule(module);
+uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {
+  return ResourceTracker::Get()->GetLiveObjectsForInstance(instance_id);
 }
 
 const PPB_Testing_Dev testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
   &QuitMessageLoop,
-  &GetLiveObjectCount
+  &GetLiveObjectsForInstance
 };
 
 // GetInterface ----------------------------------------------------------------

@@ -19,15 +19,17 @@ namespace proxy {
 
 class Audio : public PluginResource, public pp::shared_impl::AudioImpl {
  public:
-  Audio(PP_Resource config_id, PPB_Audio_Callback callback, void* user_data)
-      : config_(config_id) {
+  Audio(PP_Instance instance,
+        PP_Resource config_id,
+        PPB_Audio_Callback callback,
+        void* user_data)
+      : PluginResource(instance),
+        config_(config_id) {
     SetCallback(callback, user_data);
-    PluginDispatcher::Get()->plugin_resource_tracker()->AddRefResource(
-        config_);
+    PluginResourceTracker::GetInstance()->AddRefResource(config_);
   }
   virtual ~Audio() {
-    PluginDispatcher::Get()->plugin_resource_tracker()->ReleaseResource(
-        config_);
+    PluginResourceTracker::GetInstance()->ReleaseResource(config_);
   }
 
   // Resource overrides.
@@ -39,15 +41,17 @@ class Audio : public PluginResource, public pp::shared_impl::AudioImpl {
     if (playing())
       return;
     SetStartPlaybackState();
-    PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBAudio_StartOrStop(
-        INTERFACE_ID_PPB_AUDIO, resource, true));
+    PluginDispatcher::GetForInstance(instance())->Send(
+        new PpapiHostMsg_PPBAudio_StartOrStop(
+            INTERFACE_ID_PPB_AUDIO, resource, true));
   }
 
   void StopPlayback(PP_Resource resource) {
     if (!playing())
       return;
-    PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBAudio_StartOrStop(
-        INTERFACE_ID_PPB_AUDIO, resource, false));
+    PluginDispatcher::GetForInstance(instance())->Send(
+        new PpapiHostMsg_PPBAudio_StartOrStop(
+            INTERFACE_ID_PPB_AUDIO, resource, false));
     SetStopPlaybackState();
   }
 
@@ -69,9 +73,9 @@ PP_Resource Create(PP_Instance instance_id,
   if (!result)
     return 0;
 
-  linked_ptr<Audio> object(new Audio(config_id, callback, user_data));
-  PluginDispatcher::Get()->plugin_resource_tracker()->AddResource(
-      result, object);
+  linked_ptr<Audio> object(new Audio(instance_id, config_id,
+                                     callback, user_data));
+  PluginResourceTracker::GetInstance()->AddResource(result, object);
   return result;
 }
 
@@ -85,7 +89,7 @@ PP_Resource GetCurrentConfiguration(PP_Resource audio_id) {
   if (!object)
     return 0;
   PP_Resource result = object->config();
-  PluginDispatcher::Get()->plugin_resource_tracker()->AddRefResource(result);
+  PluginResourceTracker::GetInstance()->AddRefResource(result);
   return result;
 }
 

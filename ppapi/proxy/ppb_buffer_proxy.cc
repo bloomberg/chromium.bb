@@ -20,7 +20,7 @@ namespace proxy {
 
 class Buffer : public PluginResource {
  public:
-  Buffer(int memory_handle, uint32_t size);
+  Buffer(PP_Instance instance, int memory_handle, uint32_t size);
   virtual ~Buffer();
 
   // Resource overrides.
@@ -40,8 +40,9 @@ class Buffer : public PluginResource {
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
 
-Buffer::Buffer(int memory_handle, uint32_t size)
-    : memory_handle_(memory_handle),
+Buffer::Buffer(PP_Instance instance, int memory_handle, uint32_t size)
+    : PluginResource(instance),
+      memory_handle_(memory_handle),
       size_(size),
       mapped_data_(NULL) {
 }
@@ -64,16 +65,16 @@ namespace {
 PP_Resource Create(PP_Instance instance, uint32_t size) {
   PP_Resource result = 0;
   int32_t shm_handle = -1;
-  PluginDispatcher::Get()->Send(
+  PluginDispatcher::GetForInstance(instance)->Send(
       new PpapiHostMsg_PPBBuffer_Create(
           INTERFACE_ID_PPB_BUFFER, instance, size,
           &result, &shm_handle));
   if (!result)
     return 0;
 
-  linked_ptr<Buffer> object(new Buffer(static_cast<int>(shm_handle), size));
-  PluginDispatcher::Get()->plugin_resource_tracker()->AddResource(
-      result, object);
+  linked_ptr<Buffer> object(new Buffer(instance, static_cast<int>(shm_handle),
+                                       size));
+  PluginResourceTracker::GetInstance()->AddResource(result, object);
   return result;
 }
 

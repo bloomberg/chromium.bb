@@ -14,15 +14,23 @@ namespace proxy {
 namespace {
 
 PP_Bool IsFullscreen(PP_Instance instance) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_FALSE;
+
   PP_Bool result = PP_FALSE;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBFullscreen_IsFullscreen(
+  dispatcher->Send(new PpapiHostMsg_PPBFullscreen_IsFullscreen(
       INTERFACE_ID_PPB_FULLSCREEN, instance, &result));
   return result;
 }
 
 PP_Bool SetFullscreen(PP_Instance instance, PP_Bool fullscreen) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_FALSE;
+
   PP_Bool result = PP_FALSE;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBFullscreen_SetFullscreen(
+  dispatcher->Send(new PpapiHostMsg_PPBFullscreen_SetFullscreen(
       INTERFACE_ID_PPB_FULLSCREEN, instance, fullscreen, &result));
   return result;
 }

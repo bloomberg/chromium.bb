@@ -49,23 +49,27 @@ IPC::PlatformFileForTransit PlatformFileToPlatformFileForTransit(
 #endif
 }
 
-void SetInstanceAlwaysOnTop(PP_Instance pp_instance, bool on_top) {
-  PluginDispatcher::Get()->Send(
-      new PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop(
-          INTERFACE_ID_PPB_FLASH, pp_instance, on_top));
+void SetInstanceAlwaysOnTop(PP_Instance pp_instance, PP_Bool on_top) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(pp_instance);
+  if (dispatcher) {
+    dispatcher->Send(new PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop(
+        INTERFACE_ID_PPB_FLASH, pp_instance, on_top));
+  }
 }
 
-bool DrawGlyphs(PP_Instance instance,
-                PP_Resource pp_image_data,
-                const PP_FontDescription_Dev* font_desc,
-                uint32_t color,
-                PP_Point position,
-                PP_Rect clip,
-                const float transformation[3][3],
-                uint32_t glyph_count,
-                const uint16_t glyph_indices[],
-                const PP_Point glyph_advances[]) {
-  Dispatcher* dispatcher = PluginDispatcher::Get();
+PP_Bool DrawGlyphs(PP_Instance instance,
+                   PP_Resource pp_image_data,
+                   const PP_FontDescription_Dev* font_desc,
+                   uint32_t color,
+                   PP_Point position,
+                   PP_Rect clip,
+                   const float transformation[3][3],
+                   uint32_t glyph_count,
+                   const uint16_t glyph_indices[],
+                   const PP_Point glyph_advances[]) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_FALSE;
 
   PPBFlash_DrawGlyphs_Params params;
   params.instance = instance,
@@ -86,26 +90,34 @@ bool DrawGlyphs(PP_Instance instance,
                                &glyph_advances[0],
                                &glyph_advances[glyph_count]);
 
-  bool result = false;
+  PP_Bool result = PP_FALSE;
   dispatcher->Send(new PpapiHostMsg_PPBFlash_DrawGlyphs(
       INTERFACE_ID_PPB_FLASH, params, &result));
   return result;
 }
 
 PP_Var GetProxyForURL(PP_Instance instance, const char* url) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_MakeUndefined();
+
   ReceiveSerializedVarReturnValue result;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBFlash_GetProxyForURL(
+  dispatcher->Send(new PpapiHostMsg_PPBFlash_GetProxyForURL(
       INTERFACE_ID_PPB_FLASH, instance, url, &result));
-  return result.Return(PluginDispatcher::Get());
+  return result.Return(dispatcher);
 }
 
 int32_t OpenModuleLocalFile(PP_Instance instance,
                             const char* path,
                             int32_t mode,
                             PP_FileHandle* file) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_ERROR_BADARGUMENT;
+
   int32_t result = PP_ERROR_FAILED;
   IPC::PlatformFileForTransit transit;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBFlash_OpenModuleLocalFile(
+  dispatcher->Send(new PpapiHostMsg_PPBFlash_OpenModuleLocalFile(
       INTERFACE_ID_PPB_FLASH, instance, path, mode, &transit, &result));
   *file = IPC::PlatformFileForTransitToPlatformFile(transit);
   return result;
@@ -114,25 +126,36 @@ int32_t OpenModuleLocalFile(PP_Instance instance,
 int32_t RenameModuleLocalFile(PP_Instance instance,
                               const char* path_from,
                               const char* path_to) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_ERROR_BADARGUMENT;
+
   int32_t result = PP_ERROR_FAILED;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBFlash_RenameModuleLocalFile(
+  dispatcher->Send(new PpapiHostMsg_PPBFlash_RenameModuleLocalFile(
       INTERFACE_ID_PPB_FLASH, instance, path_from, path_to, &result));
   return result;
 }
 
 int32_t DeleteModuleLocalFileOrDir(PP_Instance instance,
                                    const char* path,
-                                   bool recursive) {
+                                   PP_Bool recursive) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_ERROR_BADARGUMENT;
+
   int32_t result = PP_ERROR_FAILED;
-  PluginDispatcher::Get()->Send(
-      new PpapiHostMsg_PPBFlash_DeleteModuleLocalFileOrDir(
-          INTERFACE_ID_PPB_FLASH, instance, path, recursive, &result));
+  dispatcher->Send(new PpapiHostMsg_PPBFlash_DeleteModuleLocalFileOrDir(
+      INTERFACE_ID_PPB_FLASH, instance, path, recursive, &result));
   return result;
 }
 
 int32_t CreateModuleLocalDir(PP_Instance instance, const char* path) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_ERROR_BADARGUMENT;
+
   int32_t result = PP_ERROR_FAILED;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBFlash_CreateModuleLocalDir(
+  dispatcher->Send(new PpapiHostMsg_PPBFlash_CreateModuleLocalDir(
       INTERFACE_ID_PPB_FLASH, instance, path, &result));
   return result;
 }
@@ -140,21 +163,27 @@ int32_t CreateModuleLocalDir(PP_Instance instance, const char* path) {
 int32_t QueryModuleLocalFile(PP_Instance instance,
                              const char* path,
                              PP_FileInfo_Dev* info) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_ERROR_BADARGUMENT;
+
   int32_t result = PP_ERROR_FAILED;
-  PluginDispatcher::Get()->Send(
-      new PpapiHostMsg_PPBFlash_QueryModuleLocalFile(
-          INTERFACE_ID_PPB_FLASH, instance, path, info, &result));
+  dispatcher->Send(new PpapiHostMsg_PPBFlash_QueryModuleLocalFile(
+      INTERFACE_ID_PPB_FLASH, instance, path, info, &result));
   return result;
 }
 
 int32_t GetModuleLocalDirContents(PP_Instance instance,
                                   const char* path,
                                   PP_DirContents_Dev** contents) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_ERROR_BADARGUMENT;
+
   int32_t result = PP_ERROR_FAILED;
   std::vector<SerializedDirEntry> entries;
-  PluginDispatcher::Get()->Send(
-      new PpapiHostMsg_PPBFlash_GetModuleLocalDirContents(
-          INTERFACE_ID_PPB_FLASH, instance, path, &entries, &result));
+  dispatcher->Send(new PpapiHostMsg_PPBFlash_GetModuleLocalDirContents(
+      INTERFACE_ID_PPB_FLASH, instance, path, &entries, &result));
 
   if (result != PP_OK)
     return result;
@@ -170,13 +199,13 @@ int32_t GetModuleLocalDirContents(PP_Instance instance,
     char* name_copy = new char[source.name.size() + 1];
     memcpy(name_copy, source.name.c_str(), source.name.size() + 1);
     dest->name = name_copy;
-    dest->is_dir = source.is_dir;
+    dest->is_dir = BoolToPPBool(source.is_dir);
   }
 
   return result;
 }
 
-void FreeModuleLocalDirContents(PP_Instance instance,
+void FreeModuleLocalDirContents(PP_Instance /* instance */,
                                 PP_DirContents_Dev* contents) {
   for (int32_t i = 0; i < contents->count; ++i)
     delete[] contents->entries[i].name;
@@ -184,13 +213,16 @@ void FreeModuleLocalDirContents(PP_Instance instance,
   delete contents;
 }
 
-bool NavigateToURL(PP_Instance pp_instance,
-                   const char* url,
-                   const char* target) {
-  bool result = false;
-  PluginDispatcher::Get()->Send(
-      new PpapiHostMsg_PPBFlash_NavigateToURL(
-          INTERFACE_ID_PPB_FLASH, pp_instance, url, target, &result));
+PP_Bool NavigateToURL(PP_Instance instance,
+                      const char* url,
+                      const char* target) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_FALSE;
+
+  PP_Bool result = PP_FALSE;
+  dispatcher->Send(new PpapiHostMsg_PPBFlash_NavigateToURL(
+      INTERFACE_ID_PPB_FLASH, instance, url, target, &result));
   return result;
 }
 
@@ -211,7 +243,7 @@ const PPB_Flash ppb_flash = {
 }  // namespace
 
 PPB_Flash_Proxy::PPB_Flash_Proxy(Dispatcher* dispatcher,
-                                   const void* target_interface)
+                                 const void* target_interface)
     : InterfaceProxy(dispatcher, target_interface) {
 }
 
@@ -256,14 +288,14 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPB_Flash_Proxy::OnMsgSetInstanceAlwaysOnTop(
     PP_Instance instance,
-    bool on_top) {
+    PP_Bool on_top) {
   ppb_flash_target()->SetInstanceAlwaysOnTop(instance, on_top);
 }
 
 void PPB_Flash_Proxy::OnMsgDrawGlyphs(
     const pp::proxy::PPBFlash_DrawGlyphs_Params& params,
-    bool* result) {
-  *result = false;
+    PP_Bool* result) {
+  *result = PP_FALSE;
 
   PP_FontDescription_Dev font_desc;
   params.font_desc.SetToPPFontDescription(dispatcher(), &font_desc, false);
@@ -313,7 +345,7 @@ void PPB_Flash_Proxy::OnMsgRenameModuleLocalFile(
 void PPB_Flash_Proxy::OnMsgDeleteModuleLocalFileOrDir(
     PP_Instance instance,
     const std::string& path,
-    bool recursive,
+    PP_Bool recursive,
     int32_t* result) {
   *result = ppb_flash_target()->DeleteModuleLocalFileOrDir(instance,
                                                            path.c_str(),
@@ -350,7 +382,7 @@ void PPB_Flash_Proxy::OnMsgGetModuleLocalDirContents(
   entries->resize(contents->count);
   for (int32_t i = 0; i < contents->count; i++) {
     (*entries)[i].name.assign(contents->entries[i].name);
-    (*entries)[i].is_dir = contents->entries[i].is_dir;
+    (*entries)[i].is_dir = PPBoolToBool(contents->entries[i].is_dir);
   }
   ppb_flash_target()->FreeModuleLocalDirContents(instance, contents);
 }
@@ -358,7 +390,7 @@ void PPB_Flash_Proxy::OnMsgGetModuleLocalDirContents(
 void PPB_Flash_Proxy::OnMsgNavigateToURL(PP_Instance instance,
                                          const std::string& url,
                                          const std::string& target,
-                                         bool* result) {
+                                         PP_Bool* result) {
   *result = ppb_flash_target()->NavigateToURL(instance, url.c_str(),
                                               target.c_str());
 }

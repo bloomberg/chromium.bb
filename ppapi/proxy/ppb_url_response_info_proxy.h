@@ -6,6 +6,7 @@
 #define PPAPI_PROXY_PPB_URL_RESPONSE_INFO_PROXY_H_
 
 #include "base/basictypes.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
@@ -26,7 +27,8 @@ class PPB_URLResponseInfo_Proxy : public InterfaceProxy {
   // URLResponseInfo objects are actually returned by the URLLoader class.
   // This function allows the URLLoader proxy to start the tracking of
   // a response info object in the plugin.
-  static void TrackPluginResource(PP_Resource response_resource);
+  static void TrackPluginResource(PP_Instance instance,
+                                  PP_Resource response_resource);
 
   const PPB_URLResponseInfo* ppb_url_response_info_target() const {
     return static_cast<const PPB_URLResponseInfo*>(target_interface());

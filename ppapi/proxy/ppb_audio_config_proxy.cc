@@ -14,8 +14,11 @@ namespace proxy {
 
 class AudioConfig : public PluginResource {
  public:
-  AudioConfig(PP_AudioSampleRate sample_rate, uint32_t sample_frame_count)
-      : sample_rate_(sample_rate),
+  AudioConfig(PP_Instance instance,
+              PP_AudioSampleRate sample_rate,
+              uint32_t sample_frame_count)
+      : PluginResource(instance),
+        sample_rate_(sample_rate),
         sample_frame_count_(sample_frame_count) {
   }
   virtual ~AudioConfig() {}
@@ -39,28 +42,31 @@ PP_Resource CreateStereo16bit(PP_Instance instance,
                               PP_AudioSampleRate sample_rate,
                               uint32_t sample_frame_count) {
   PP_Resource result = 0;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBAudioConfig_Create(
-      INTERFACE_ID_PPB_AUDIO_CONFIG, instance,
-      static_cast<int32_t>(sample_rate), sample_frame_count,
-      &result));
+  PluginDispatcher::GetForInstance(instance)->Send(
+      new PpapiHostMsg_PPBAudioConfig_Create(
+          INTERFACE_ID_PPB_AUDIO_CONFIG, instance,
+          static_cast<int32_t>(sample_rate), sample_frame_count,
+          &result));
   if (!result)
     return 0;
 
   linked_ptr<AudioConfig> object(
-      new AudioConfig(sample_rate, sample_frame_count));
-  PluginDispatcher::Get()->plugin_resource_tracker()->AddResource(
-      result, object);
+      new AudioConfig(instance, sample_rate, sample_frame_count));
+  PluginResourceTracker::GetInstance()->AddResource(result, object);
   return result;
 }
 
 uint32_t RecommendSampleFrameCount(PP_AudioSampleRate sample_rate,
                                    uint32_t requested_sample_frame_count) {
-  uint32_t result = 0;
-  PluginDispatcher::Get()->Send(
-      new PpapiHostMsg_PPBAudioConfig_RecommendSampleFrameCount(
-          INTERFACE_ID_PPB_AUDIO_CONFIG, static_cast<int32_t>(sample_rate),
-          requested_sample_frame_count, &result));
-  return result;
+  // TODO(brettw) Currently we don't actually query to get a value from the
+  // hardware, so we always return the input for in-range values.
+  //
+  // Danger: this code is duplicated in the audio config implementation.
+  if (requested_sample_frame_count < PP_AUDIOMINSAMPLEFRAMECOUNT)
+    return PP_AUDIOMINSAMPLEFRAMECOUNT;
+  if (requested_sample_frame_count > PP_AUDIOMAXSAMPLEFRAMECOUNT)
+    return PP_AUDIOMAXSAMPLEFRAMECOUNT;
+  return requested_sample_frame_count;
 }
 
 PP_Bool IsAudioConfig(PP_Resource resource) {

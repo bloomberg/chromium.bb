@@ -30,7 +30,8 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   // they are also provided to PPP_Instance.OnMsgHandleDocumentLoad. This
   // function allows the proxy for DocumentLoad to create the correct plugin
   // proxied info for the given browser-supplied URLLoader resource ID.
-  static void TrackPluginResource(PP_Resource url_loader_resource);
+  static void TrackPluginResource(PP_Instance instance,
+                                  PP_Resource url_loader_resource);
 
   const PPB_URLLoader* ppb_url_loader_target() const {
     return reinterpret_cast<const PPB_URLLoader*>(target_interface());

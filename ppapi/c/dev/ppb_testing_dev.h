@@ -6,13 +6,13 @@
 #define PPAPI_C_DEV_PPB_TESTING_DEV_H_
 
 #include "ppapi/c/pp_bool.h"
-#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
 struct PP_Point;
 
-#define PPB_TESTING_DEV_INTERFACE "PPB_Testing(Dev);0.4"
+#define PPB_TESTING_DEV_INTERFACE "PPB_Testing(Dev);0.5"
 
 // This interface contains functions used for unit testing. Do not use in
 // production code. They are not guaranteed to be available in normal plugin
@@ -64,8 +64,9 @@ struct PPB_Testing_Dev {
   void (*QuitMessageLoop)();
 
   // Returns the number of live objects (resources + strings + objects)
-  // associated with this plugin module. Used for detecting leaks.
-  uint32_t (*GetLiveObjectCount)(PP_Module module);
+  // associated with this plugin instance. Used for detecting leaks. Returns
+  // (uint32_t)-1 on failure.
+  uint32_t (*GetLiveObjectsForInstance)(PP_Instance instance);
 };
 
 #endif  /* PPAPI_C_DEV_PPB_TESTING_DEV_H_ */

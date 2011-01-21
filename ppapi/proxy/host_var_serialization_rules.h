@@ -24,13 +24,15 @@ class HostVarSerializationRules : public VarSerializationRules {
   ~HostVarSerializationRules();
 
   // VarSerialization implementation.
-  virtual void SendCallerOwned(const PP_Var& var, std::string* str_val);
+  virtual PP_Var SendCallerOwned(const PP_Var& var, std::string* str_val);
   virtual PP_Var BeginReceiveCallerOwned(const PP_Var& var,
-                                         const std::string* str_val);
+                                         const std::string* str_val,
+                                         Dispatcher* dispatcher);
   virtual void EndReceiveCallerOwned(const PP_Var& var);
   virtual PP_Var ReceivePassRef(const PP_Var& var,
-                                const std::string& str_val);
-  virtual void BeginSendPassRef(const PP_Var& var, std::string* str_val);
+                                const std::string& str_val,
+                                Dispatcher* dispatcher);
+  virtual PP_Var BeginSendPassRef(const PP_Var& var, std::string* str_val);
   virtual void EndSendPassRef(const PP_Var& var);
   virtual void ReleaseObjectRef(const PP_Var& var);
 

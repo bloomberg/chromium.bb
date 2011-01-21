@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define PPAPI_PROXY_PPB_TESTING_PROXY_H_
 
 #include "base/basictypes.h"
-#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
@@ -38,7 +38,7 @@ class PPB_Testing_Proxy : public InterfaceProxy {
                           PP_Bool* result);
   void OnMsgRunMessageLoop(bool* dummy);
   void OnMsgQuitMessageLoop();
-  void OnMsgGetLiveObjectCount(PP_Module module_id, uint32_t* result);
+  void OnMsgGetLiveObjectsForInstance(PP_Instance instance, uint32_t* result);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Testing_Proxy);
 };

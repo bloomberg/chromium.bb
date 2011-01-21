@@ -6,16 +6,21 @@
 #define PPAPI_PROXY_IMAGE_DATA_H_
 
 #include "base/shared_memory.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/serialized_structs.h"
+#include "ppapi/shared_impl/image_data_impl.h"
 
 namespace pp {
 namespace proxy {
 
-class ImageData : public PluginResource {
+class ImageData : public PluginResource,
+                  public pp::shared_impl::ImageDataImpl {
  public:
-  ImageData(const PP_ImageDataDesc& desc, ImageHandle handle);
+  ImageData(PP_Instance instance,
+            const PP_ImageDataDesc& desc,
+            ImageHandle handle);
   virtual ~ImageData();
 
   // Resource overrides.

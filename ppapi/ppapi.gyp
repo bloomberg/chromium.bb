@@ -576,6 +576,8 @@
       'sources': [
         'shared_impl/audio_impl.cc',
         'shared_impl/audio_impl.h',
+        'shared_impl/image_data_impl.cc',
+        'shared_impl/image_data_impl.h',
       ],
       'conditions': [
         ['OS=="win"', {

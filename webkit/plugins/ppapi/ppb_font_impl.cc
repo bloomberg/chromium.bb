@@ -161,7 +161,7 @@ uint32_t CharacterOffsetForPixel(PP_Resource font_id,
                                  int32_t pixel_position) {
   scoped_refptr<PPB_Font_Impl> font(Resource::GetAs<PPB_Font_Impl>(font_id));
   if (!font.get())
-    return false;
+    return -1;
   return font->CharacterOffsetForPixel(text, pixel_position);
 }
 

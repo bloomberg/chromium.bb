@@ -129,23 +129,6 @@ const PPB_ImageDataTrusted* PPB_ImageData_Impl::GetTrustedInterface() {
   return &ppb_imagedata_trusted;
 }
 
-// static
-PP_ImageDataFormat PPB_ImageData_Impl::GetNativeImageDataFormat() {
-  if (SK_B32_SHIFT == 0)
-    return PP_IMAGEDATAFORMAT_BGRA_PREMUL;
-  else if (SK_R32_SHIFT == 0)
-    return PP_IMAGEDATAFORMAT_RGBA_PREMUL;
-  else
-    return PP_IMAGEDATAFORMAT_BGRA_PREMUL;  // Default to something on failure.
-}
-
-// static
-bool PPB_ImageData_Impl::IsImageDataFormatSupported(
-    PP_ImageDataFormat format) {
-  return format == PP_IMAGEDATAFORMAT_BGRA_PREMUL ||
-      format == PP_IMAGEDATAFORMAT_RGBA_PREMUL;
-}
-
 PPB_ImageData_Impl* PPB_ImageData_Impl::AsPPB_ImageData_Impl() {
   return this;
 }

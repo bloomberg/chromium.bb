@@ -53,7 +53,8 @@ class ResourceTrackerTest : public PpapiUnittest {
 
 TEST_F(ResourceTrackerTest, Ref) {
   ASSERT_EQ(0, TrackedMockResource::tracked_objects_alive);
-  EXPECT_EQ(0u, tracker().GetLiveObjectsForModule(module()));
+  EXPECT_EQ(0u,
+            tracker().GetLiveObjectsForInstance(instance()->pp_instance()));
   {
     scoped_refptr<TrackedMockResource> new_resource(
         new TrackedMockResource(instance()));
@@ -61,7 +62,8 @@ TEST_F(ResourceTrackerTest, Ref) {
 
     // Since we haven't gotten a PP_Resource, it's not associated with the
     // module.
-    EXPECT_EQ(0u, tracker().GetLiveObjectsForModule(module()));
+    EXPECT_EQ(0u,
+              tracker().GetLiveObjectsForInstance(instance()->pp_instance()));
   }
   ASSERT_EQ(0, TrackedMockResource::tracked_objects_alive);
 
@@ -72,7 +74,8 @@ TEST_F(ResourceTrackerTest, Ref) {
         new TrackedMockResource(instance()));
     ASSERT_EQ(1, TrackedMockResource::tracked_objects_alive);
     resource_id = new_resource->GetReference();
-    EXPECT_EQ(1u, tracker().GetLiveObjectsForModule(module()));
+    EXPECT_EQ(1u,
+              tracker().GetLiveObjectsForInstance(instance()->pp_instance()));
 
     // Resource IDs should be consistent.
     PP_Resource resource_id_2 = new_resource->GetReference();
@@ -96,6 +99,7 @@ TEST_F(ResourceTrackerTest, ForceDeleteWithInstance) {
       new PluginInstance(delegate(), module(),
                          static_cast<const PPP_Instance*>(
                              GetMockInterface(PPP_INSTANCE_INTERFACE))));
+  PP_Instance pp_instance2 = instance2->pp_instance();
 
   // Make two resources and take refs on behalf of the "plugin" for each.
   scoped_refptr<TrackedMockResource> resource1(
@@ -110,11 +114,11 @@ TEST_F(ResourceTrackerTest, ForceDeleteWithInstance) {
   resource2 = NULL;
 
   ASSERT_EQ(2, TrackedMockResource::tracked_objects_alive);
-  EXPECT_EQ(2u, tracker().GetLiveObjectsForModule(module()));
+  EXPECT_EQ(2u, tracker().GetLiveObjectsForInstance(pp_instance2));
 
   // Free the instance, this should release both plugin refs.
   instance2 = NULL;
-  EXPECT_EQ(0u, tracker().GetLiveObjectsForModule(module()));
+  EXPECT_EQ(0u, tracker().GetLiveObjectsForInstance(pp_instance2));
 
   // The resource we have a scoped_refptr to should still be alive, but it
   // should have a NULL instance.

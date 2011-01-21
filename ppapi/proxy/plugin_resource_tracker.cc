@@ -5,6 +5,7 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 
 #include "base/logging.h"
+#include "base/singleton.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/plugin_resource.h"
@@ -38,11 +39,15 @@ PluginResourceTracker::ResourceInfo::operator=(
   return *this;
 }
 
-PluginResourceTracker::PluginResourceTracker(PluginDispatcher* dispatcher)
-    : dispatcher_(dispatcher) {
+PluginResourceTracker::PluginResourceTracker() {
 }
 
 PluginResourceTracker::~PluginResourceTracker() {
+}
+
+// static
+PluginResourceTracker* PluginResourceTracker::GetInstance() {
+  return Singleton<PluginResourceTracker>::get();
 }
 
 PluginResource* PluginResourceTracker::GetResourceObject(
@@ -81,8 +86,8 @@ bool PluginResourceTracker::PreparePreviouslyTrackedResource(
   // in the plugin for the additional ref, and then a Release in the renderer
   // because the code in the renderer addrefed on behalf of the caller.
   found->second.ref_count++;
-  dispatcher_->Send(new PpapiHostMsg_PPBCore_ReleaseResource(
-      INTERFACE_ID_PPB_CORE, resource));
+
+  SendReleaseResourceToHost(resource, found->second.resource.get());
   return true;
 }
 
@@ -94,11 +99,22 @@ void PluginResourceTracker::ReleasePluginResourceRef(
     return;
   found->second.ref_count--;
   if (found->second.ref_count == 0) {
-    if (notify_browser_on_release) {
-      dispatcher_->Send(new PpapiHostMsg_PPBCore_ReleaseResource(
-          INTERFACE_ID_PPB_CORE, resource));
-    }
+    if (notify_browser_on_release)
+      SendReleaseResourceToHost(resource, found->second.resource.get());
     resource_map_.erase(found);
+  }
+}
+
+void PluginResourceTracker::SendReleaseResourceToHost(
+    PP_Resource resource_id,
+    PluginResource* resource) {
+  PluginDispatcher* dispatcher =
+      PluginDispatcher::GetForInstance(resource->instance());
+  if (dispatcher) {
+    dispatcher->Send(new PpapiHostMsg_PPBCore_ReleaseResource(
+        INTERFACE_ID_PPB_CORE, resource_id));
+  } else {
+    NOTREACHED();
   }
 }
 

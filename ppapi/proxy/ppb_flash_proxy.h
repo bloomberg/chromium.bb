@@ -40,9 +40,9 @@ class PPB_Flash_Proxy : public InterfaceProxy {
  private:
   // Message handlers.
   void OnMsgSetInstanceAlwaysOnTop(PP_Instance instance,
-                                   bool on_top);
+                                   PP_Bool on_top);
   void OnMsgDrawGlyphs(const pp::proxy::PPBFlash_DrawGlyphs_Params& params,
-                       bool* result);
+                       PP_Bool* result);
   void OnMsgGetProxyForURL(PP_Instance instance,
                            const std::string& url,
                            SerializedVarReturnValue result);
@@ -57,7 +57,7 @@ class PPB_Flash_Proxy : public InterfaceProxy {
                                   int32_t* result);
   void OnMsgDeleteModuleLocalFileOrDir(PP_Instance instance,
                                        const std::string& path,
-                                       bool recursive,
+                                       PP_Bool recursive,
                                        int32_t* result);
   void OnMsgCreateModuleLocalDir(PP_Instance instance,
                                  const std::string& path,
@@ -74,7 +74,7 @@ class PPB_Flash_Proxy : public InterfaceProxy {
   void OnMsgNavigateToURL(PP_Instance instance,
                           const std::string& url,
                           const std::string& target,
-                          bool* result);
+                          PP_Bool* result);
 };
 
 }  // namespace proxy

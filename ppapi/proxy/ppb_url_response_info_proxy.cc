@@ -15,7 +15,7 @@ namespace proxy {
 
 class URLResponseInfo : public PluginResource {
  public:
-  URLResponseInfo() {}
+  URLResponseInfo(PP_Instance instance) : PluginResource(instance) {}
   virtual ~URLResponseInfo() {}
 
   // Resource overrides.
@@ -33,7 +33,14 @@ PP_Bool IsURLResponseInfo(PP_Resource resource) {
 }
 
 PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
-  Dispatcher* dispatcher = PluginDispatcher::Get();
+  URLResponseInfo* object = PluginResource::GetAs<URLResponseInfo>(response);
+  if (!object)
+    return PP_MakeUndefined();
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
+      object->instance());
+  if (!dispatcher)
+    return PP_MakeUndefined();
+
   ReceiveSerializedVarReturnValue result;
   dispatcher->Send(new PpapiHostMsg_PPBURLResponseInfo_GetProperty(
       INTERFACE_ID_PPB_URL_RESPONSE_INFO, response, property, &result));
@@ -43,7 +50,6 @@ PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
 PP_Resource GetBodyAsFileRef(PP_Resource response) {
   PP_Resource result = 0;
   /*
-  Dispatcher* dispatcher = PluginDispatcher::Get();
   dispatcher->Send(new PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef(
       INTERFACE_ID_PPB_URL_RESPONSE_INFO, response, &result));
   // TODO(brettw) when we have FileRef proxied, make an object from that
@@ -71,9 +77,10 @@ PPB_URLResponseInfo_Proxy::~PPB_URLResponseInfo_Proxy() {
 
 // static
 void PPB_URLResponseInfo_Proxy::TrackPluginResource(
+    PP_Instance instance,
     PP_Resource response_resource) {
-  linked_ptr<URLResponseInfo> object(new URLResponseInfo);
-  PluginDispatcher::Get()->plugin_resource_tracker()->AddResource(
+  linked_ptr<URLResponseInfo> object(new URLResponseInfo(instance));
+  PluginResourceTracker::GetInstance()->AddResource(
       response_resource, object);
 }
 

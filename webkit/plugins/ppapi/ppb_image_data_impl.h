@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "ppapi/c/ppb_image_data.h"
+#include "ppapi/shared_impl/image_data_impl.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/resource.h"
 
@@ -21,7 +22,8 @@ class SkBitmap;
 namespace webkit {
 namespace ppapi {
 
-class PPB_ImageData_Impl : public Resource {
+class PPB_ImageData_Impl : public Resource,
+                           public pp::shared_impl::ImageDataImpl {
  public:
   explicit PPB_ImageData_Impl(PluginInstance* instance);
   virtual ~PPB_ImageData_Impl();
@@ -44,14 +46,6 @@ class PPB_ImageData_Impl : public Resource {
   // exposed to the plugin.
   static const PPB_ImageData* GetInterface();
   static const PPB_ImageDataTrusted* GetTrustedInterface();
-
-  // Returns the image data format used by the browser. If the plugin uses the
-  // same format, there is no conversion. Otherwise the browser will be in
-  // charge of converting from a supported format to its native format.
-  static PP_ImageDataFormat GetNativeImageDataFormat();
-
-  // Returns true if the format is supported by the browser.
-  static bool IsImageDataFormatSupported(PP_ImageDataFormat format);
 
   // Resource overrides.
   virtual PPB_ImageData_Impl* AsPPB_ImageData_Impl();

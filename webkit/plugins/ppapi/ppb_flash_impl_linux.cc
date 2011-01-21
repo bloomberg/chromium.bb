@@ -20,28 +20,28 @@
 namespace webkit {
 namespace ppapi {
 
-bool PPB_Flash_Impl::DrawGlyphs(PP_Instance,
-                                PP_Resource pp_image_data,
-                                const PP_FontDescription_Dev* font_desc,
-                                uint32_t color,
-                                PP_Point position,
-                                PP_Rect clip,
-                                const float transformation[3][3],
-                                uint32_t glyph_count,
-                                const uint16_t glyph_indices[],
-                                const PP_Point glyph_advances[]) {
+PP_Bool PPB_Flash_Impl::DrawGlyphs(PP_Instance,
+                                   PP_Resource pp_image_data,
+                                   const PP_FontDescription_Dev* font_desc,
+                                   uint32_t color,
+                                   PP_Point position,
+                                   PP_Rect clip,
+                                   const float transformation[3][3],
+                                   uint32_t glyph_count,
+                                   const uint16_t glyph_indices[],
+                                   const PP_Point glyph_advances[]) {
   scoped_refptr<PPB_ImageData_Impl> image_resource(
       Resource::GetAs<PPB_ImageData_Impl>(pp_image_data));
   if (!image_resource.get())
-    return false;
+    return PP_FALSE;
   ImageDataAutoMapper mapper(image_resource);
   if (!mapper.is_valid())
-    return false;
+    return PP_FALSE;
 
   // Set up the typeface.
   scoped_refptr<StringVar> face_name(StringVar::FromPPVar(font_desc->face));
   if (!face_name)
-    return false;
+    return PP_FALSE;
   int style = SkTypeface::kNormal;
   if (font_desc->weight >= PP_FONTWEIGHT_BOLD)
     style |= SkTypeface::kBold;
@@ -51,7 +51,7 @@ bool PPB_Flash_Impl::DrawGlyphs(PP_Instance,
       SkTypeface::CreateFromName(face_name->value().c_str(),
                                  static_cast<SkTypeface::Style>(style));
   if (!typeface)
-    return false;
+    return PP_FALSE;
 
   // Set up the canvas.
   SkCanvas* canvas = image_resource->mapped_canvas();
@@ -105,7 +105,7 @@ bool PPB_Flash_Impl::DrawGlyphs(PP_Instance,
   canvas->drawPosText(glyph_indices, glyph_count * 2, sk_positions, paint);
 
   canvas->restore();
-  return true;
+  return PP_TRUE;
 }
 
 }  // namespace ppapi

@@ -28,11 +28,11 @@ namespace ppapi {
 
 namespace {
 
-void SetInstanceAlwaysOnTop(PP_Instance pp_instance, bool on_top) {
+void SetInstanceAlwaysOnTop(PP_Instance pp_instance, PP_Bool on_top) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
     return;
-  instance->set_always_on_top(on_top);
+  instance->set_always_on_top(PPBoolToBool(on_top));
 }
 
 PP_Var GetProxyForURL(PP_Instance pp_instance, const char* url) {
@@ -114,14 +114,15 @@ int32_t RenameModuleLocalFile(PP_Instance pp_instance,
 
 int32_t DeleteModuleLocalFileOrDir(PP_Instance pp_instance,
                                    const char* path,
-                                   bool recursive) {
+                                   PP_Bool recursive) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
   base::PlatformFileError result =
       instance->delegate()->DeleteModuleLocalFileOrDir(
-          instance->module()->name(), GetFilePathFromUTF8(path), recursive);
+          instance->module()->name(), GetFilePathFromUTF8(path),
+          PPBoolToBool(recursive));
   return PlatformFileErrorToPepperError(result);
 }
 
@@ -192,7 +193,7 @@ int32_t GetModuleLocalDirContents(PP_Instance pp_instance,
     char* name_copy = new char[size];
     memcpy(name_copy, name.c_str(), size);
     entry.name = name_copy;
-    entry.is_dir = pepper_contents[i].is_dir;
+    entry.is_dir = BoolToPPBool(pepper_contents[i].is_dir);
   }
   return PP_OK;
 }
@@ -207,13 +208,13 @@ void FreeModuleLocalDirContents(PP_Instance instance,
   delete contents;
 }
 
-bool NavigateToURL(PP_Instance pp_instance,
-                   const char* url,
-                   const char* target) {
+PP_Bool NavigateToURL(PP_Instance pp_instance,
+                      const char* url,
+                      const char* target) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
-    return false;
-  return instance->NavigateToURL(url, target);
+    return PP_FALSE;
+  return BoolToPPBool(instance->NavigateToURL(url, target));
 }
 
 const PPB_Flash ppb_flash = {

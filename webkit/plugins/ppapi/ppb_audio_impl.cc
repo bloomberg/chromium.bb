@@ -49,6 +49,8 @@ uint32_t RecommendSampleFrameCount(PP_AudioSampleRate sample_rate,
                                    uint32_t requested_sample_frame_count) {
   // TODO(brettw) Currently we don't actually query to get a value from the
   // hardware, so we always return the input for in-range values.
+  //
+  // Danger: this code is duplicated in the audio config proxy.
   if (requested_sample_frame_count < PP_AUDIOMINSAMPLEFRAMECOUNT)
     return PP_AUDIOMINSAMPLEFRAMECOUNT;
   if (requested_sample_frame_count > PP_AUDIOMAXSAMPLEFRAMECOUNT)
@@ -219,8 +221,10 @@ PPB_Audio_Impl::PPB_Audio_Impl(PluginInstance* instance)
 
 PPB_Audio_Impl::~PPB_Audio_Impl() {
   // Calling ShutDown() makes sure StreamCreated cannot be called anymore.
-  audio_->ShutDown();
-  audio_ = NULL;
+  if (audio_) {
+    audio_->ShutDown();
+    audio_ = NULL;
+  }
 
   // If the completion callback hasn't fired yet, do so here
   // with an error condition.
@@ -263,6 +267,8 @@ PP_Resource PPB_Audio_Impl::GetCurrentConfig() {
 }
 
 bool PPB_Audio_Impl::StartPlayback() {
+  if (!audio_)
+    return false;
   if (playing())
     return true;
   SetStartPlaybackState();
@@ -270,6 +276,8 @@ bool PPB_Audio_Impl::StartPlayback() {
 }
 
 bool PPB_Audio_Impl::StopPlayback() {
+  if (!audio_)
+    return false;
   if (!playing())
     return true;
   if (!audio_->StopPlayback())

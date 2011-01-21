@@ -14,7 +14,7 @@ namespace proxy {
 
 class Font : public PluginResource {
  public:
-  Font();
+  Font(PP_Instance instance);
   virtual ~Font();
 
   // PluginResource overrides.
@@ -31,21 +31,23 @@ class Font : public PluginResource {
   DISALLOW_COPY_AND_ASSIGN(Font);
 };
 
-Font::Font() {
+Font::Font(PP_Instance instance) : PluginResource(instance) {
   memset(&desc_, 0, sizeof(PP_FontDescription_Dev));
   desc_.face.type = PP_VARTYPE_UNDEFINED;
   memset(&metrics_, 0, sizeof(PP_FontMetrics_Dev));
 }
 
 Font::~Font() {
-  PluginDispatcher::Get()->plugin_var_tracker()->Release(desc_.face);
+  PluginVarTracker::GetInstance()->Release(desc_.face);
 }
 
 namespace {
 
 PP_Resource Create(PP_Instance instance,
                    const PP_FontDescription_Dev* description) {
-  PluginDispatcher* dispatcher = PluginDispatcher::Get();
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return 0;
 
   SerializedFontDescription in_description;
   in_description.SetFromPPFontDescription(dispatcher, *description, true);
@@ -53,14 +55,14 @@ PP_Resource Create(PP_Instance instance,
   PP_Resource result;
   SerializedFontDescription out_description;
   std::string out_metrics;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBFont_Create(
+  dispatcher->Send(new PpapiHostMsg_PPBFont_Create(
       INTERFACE_ID_PPB_FONT,
       instance, in_description, &result, &out_description, &out_metrics));
 
   if (!result)
     return 0;  // Failure creating font.
 
-  linked_ptr<Font> object(new Font);
+  linked_ptr<Font> object(new Font(instance));
   out_description.SetToPPFontDescription(dispatcher, object->desc_ptr(), true);
 
   // Convert the metrics, this is just serialized as a string of bytes.
@@ -68,7 +70,7 @@ PP_Resource Create(PP_Instance instance,
     return 0;
   memcpy(&object->metrics(), out_metrics.data(), sizeof(PP_FontMetrics_Dev));
 
-  dispatcher->plugin_resource_tracker()->AddResource(result, object);
+  PluginResourceTracker::GetInstance()->AddResource(result, object);
   return result;
 }
 
@@ -78,8 +80,8 @@ PP_Bool IsFont(PP_Resource resource) {
 }
 
 PP_Bool Describe(PP_Resource font_id,
-              PP_FontDescription_Dev* description,
-              PP_FontMetrics_Dev* metrics) {
+                 PP_FontDescription_Dev* description,
+                 PP_FontMetrics_Dev* metrics) {
   Font* object = PluginResource::GetAs<Font>(font_id);
   if (!object)
     return PP_FALSE;
@@ -87,7 +89,7 @@ PP_Bool Describe(PP_Resource font_id,
   // Copy the description, the caller expects its face PP_Var to have a ref
   // added to it on its behalf.
   memcpy(description, &object->desc(), sizeof(PP_FontDescription_Dev));
-  PluginDispatcher::Get()->plugin_var_tracker()->AddRef(description->face);
+  PluginVarTracker::GetInstance()->AddRef(description->face);
 
   memcpy(metrics, &object->metrics(), sizeof(PP_FontMetrics_Dev));
   return PP_TRUE;
@@ -100,6 +102,10 @@ PP_Bool DrawTextAt(PP_Resource font_id,
                    uint32_t color,
                    const PP_Rect* clip,
                    PP_Bool image_data_is_opaque) {
+  Font* object = PluginResource::GetAs<Font>(font_id);
+  if (!object)
+    return PP_FALSE;
+
   PPBFont_DrawTextAt_Params params;
   params.font = font_id;
   params.image_data = image_data;
@@ -116,17 +122,23 @@ PP_Bool DrawTextAt(PP_Resource font_id,
   }
   params.image_data_is_opaque = image_data_is_opaque;
 
-  Dispatcher* dispatcher = PluginDispatcher::Get();
+  Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
   PP_Bool result = PP_FALSE;
-  dispatcher->Send(new PpapiHostMsg_PPBFont_DrawTextAt(
-      INTERFACE_ID_PPB_FONT,
-      SerializedVarSendInput(dispatcher, text->text),
-      params, &result));
+  if (dispatcher) {
+    dispatcher->Send(new PpapiHostMsg_PPBFont_DrawTextAt(
+        INTERFACE_ID_PPB_FONT,
+        SerializedVarSendInput(dispatcher, text->text),
+        params, &result));
+  }
   return result;
 }
 
 int32_t MeasureText(PP_Resource font_id, const PP_TextRun_Dev* text) {
-  Dispatcher* dispatcher = PluginDispatcher::Get();
+  Font* object = PluginResource::GetAs<Font>(font_id);
+  if (!object)
+    return -1;
+
+  Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
   int32_t result = 0;
   dispatcher->Send(new PpapiHostMsg_PPBFont_MeasureText(
       INTERFACE_ID_PPB_FONT, font_id,
@@ -138,7 +150,11 @@ int32_t MeasureText(PP_Resource font_id, const PP_TextRun_Dev* text) {
 uint32_t CharacterOffsetForPixel(PP_Resource font_id,
                                  const PP_TextRun_Dev* text,
                                  int32_t pixel_position) {
-  Dispatcher* dispatcher = PluginDispatcher::Get();
+  Font* object = PluginResource::GetAs<Font>(font_id);
+  if (!object)
+    return -1;
+
+  Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
   uint32_t result = 0;
   dispatcher->Send(new PpapiHostMsg_PPBFont_CharacterOffsetForPixel(
       INTERFACE_ID_PPB_FONT, font_id,
@@ -150,7 +166,11 @@ uint32_t CharacterOffsetForPixel(PP_Resource font_id,
 int32_t PixelOffsetForCharacter(PP_Resource font_id,
                                 const PP_TextRun_Dev* text,
                                 uint32_t char_offset) {
-  Dispatcher* dispatcher = PluginDispatcher::Get();
+  Font* object = PluginResource::GetAs<Font>(font_id);
+  if (!object)
+    return -1;
+
+  Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
   int32_t result = 0;
   dispatcher->Send(new PpapiHostMsg_PPBFont_PixelOffsetForCharacter(
       INTERFACE_ID_PPB_FONT, font_id,

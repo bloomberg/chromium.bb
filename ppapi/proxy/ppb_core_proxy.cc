@@ -14,6 +14,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
 namespace pp {
@@ -28,11 +29,11 @@ base::MessageLoopProxy* GetMainThreadMessageLoop() {
 }
 
 void AddRefResource(PP_Resource resource) {
-  PluginDispatcher::Get()->plugin_resource_tracker()->AddRefResource(resource);
+  PluginResourceTracker::GetInstance()->AddRefResource(resource);
 }
 
 void ReleaseResource(PP_Resource resource) {
-  PluginDispatcher::Get()->plugin_resource_tracker()->ReleaseResource(resource);
+  PluginResourceTracker::GetInstance()->ReleaseResource(resource);
 }
 
 void* MemAlloc(size_t num_bytes) {

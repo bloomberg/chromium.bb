@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/proxy/image_data.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
 namespace pp {
@@ -24,43 +25,35 @@ namespace proxy {
 namespace {
 
 PP_ImageDataFormat GetNativeImageDataFormat() {
-  int32 format = 0;
-  PluginDispatcher::Get()->Send(
-      new PpapiHostMsg_PPBImageData_GetNativeImageDataFormat(
-          INTERFACE_ID_PPB_IMAGE_DATA, &format));
-  return static_cast<PP_ImageDataFormat>(format);
+  return ImageData::GetNativeImageDataFormat();
 }
 
 PP_Bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
-  PP_Bool supported = PP_FALSE;
-  PluginDispatcher::Get()->Send(
-      new PpapiHostMsg_PPBImageData_IsImageDataFormatSupported(
-          INTERFACE_ID_PPB_IMAGE_DATA, static_cast<int32_t>(format),
-          &supported));
-  return supported;
+  return BoolToPPBool(ImageData::IsImageDataFormatSupported(format));
 }
 
 PP_Resource Create(PP_Instance instance,
                    PP_ImageDataFormat format,
                    const PP_Size* size,
                    PP_Bool init_to_zero) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_ERROR_BADARGUMENT;
+
   PP_Resource result = 0;
   std::string image_data_desc;
   ImageHandle image_handle = ImageData::NullHandle;
-  PluginDispatcher::Get()->Send(
-      new PpapiHostMsg_PPBImageData_Create(
-          INTERFACE_ID_PPB_IMAGE_DATA, instance, format, *size, init_to_zero,
-          &result, &image_data_desc, &image_handle));
+  dispatcher->Send(new PpapiHostMsg_PPBImageData_Create(
+      INTERFACE_ID_PPB_IMAGE_DATA, instance, format, *size, init_to_zero,
+      &result, &image_data_desc, &image_handle));
 
   if (result && image_data_desc.size() == sizeof(PP_ImageDataDesc)) {
     // We serialize the PP_ImageDataDesc just by copying to a string.
     PP_ImageDataDesc desc;
     memcpy(&desc, image_data_desc.data(), sizeof(PP_ImageDataDesc));
 
-    linked_ptr<ImageData> object(
-        new ImageData(desc, image_handle));
-    PluginDispatcher::Get()->plugin_resource_tracker()->AddResource(
-        result, object);
+    linked_ptr<ImageData> object(new ImageData(instance, desc, image_handle));
+    PluginResourceTracker::GetInstance()->AddResource(result, object);
   }
   return result;
 }
@@ -122,25 +115,11 @@ InterfaceID PPB_ImageData_Proxy::GetInterfaceId() const {
 bool PPB_ImageData_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_ImageData_Proxy, msg)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_GetNativeImageDataFormat,
-                        OnMsgGetNativeImageDataFormat)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_IsImageDataFormatSupported,
-                        OnMsgIsImageDataFormatSupported)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_Create, OnMsgCreate)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // FIXME(brettw) handle bad messages!
   return handled;
-}
-
-void PPB_ImageData_Proxy::OnMsgGetNativeImageDataFormat(int32* result) {
-  *result = ppb_image_data_target()->GetNativeImageDataFormat();
-}
-
-void PPB_ImageData_Proxy::OnMsgIsImageDataFormatSupported(int32 format,
-                                                          PP_Bool* result) {
-  *result = ppb_image_data_target()->IsImageDataFormatSupported(
-      static_cast<PP_ImageDataFormat>(format));
 }
 
 void PPB_ImageData_Proxy::OnMsgCreate(PP_Instance instance,

@@ -47,8 +47,8 @@ void TestVarDeprecated::RunTest() {
 }
 
 std::string TestVarDeprecated::TestBasicString() {
-  uint32_t before_object = testing_interface_->GetLiveObjectCount(
-      pp::Module::Get()->pp_module());
+  uint32_t before_object = testing_interface_->GetLiveObjectsForInstance(
+      instance_->pp_instance());
   {
     const uint32_t kStrLen = 5;
     const char kStr[kStrLen + 1] = "Hello";
@@ -70,8 +70,8 @@ std::string TestVarDeprecated::TestBasicString() {
   }
 
   // Make sure nothing leaked.
-  ASSERT_TRUE(testing_interface_->GetLiveObjectCount(
-      pp::Module::Get()->pp_module()) == before_object);
+  ASSERT_TRUE(testing_interface_->GetLiveObjectsForInstance(
+      instance_->pp_instance()) == before_object);
 
   PASS();
 }
@@ -251,8 +251,8 @@ std::string TestVarDeprecated::TestVarToUtf8ForWrongType() {
 }
 
 std::string TestVarDeprecated::TestHasPropertyAndMethod() {
-  uint32_t before_objects = testing_interface_->GetLiveObjectCount(
-      pp::Module::Get()->pp_module());
+  uint32_t before_objects = testing_interface_->GetLiveObjectsForInstance(
+      instance_->pp_instance());
   {
     pp::Var window = instance_->GetWindowObject();
     ASSERT_TRUE(window.is_object());
@@ -321,8 +321,8 @@ std::string TestVarDeprecated::TestHasPropertyAndMethod() {
   }
 
   // Make sure nothing leaked.
-  ASSERT_TRUE(testing_interface_->GetLiveObjectCount(
-      pp::Module::Get()->pp_module()) == before_objects);
+  ASSERT_TRUE(testing_interface_->GetLiveObjectsForInstance(
+      instance_->pp_instance()) == before_objects);
 
   PASS();
 }

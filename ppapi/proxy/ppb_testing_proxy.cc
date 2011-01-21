@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
+#include "ppapi/proxy/image_data.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
@@ -17,8 +18,16 @@ namespace {
 PP_Bool ReadImageData(PP_Resource device_context_2d,
                       PP_Resource image,
                       const PP_Point* top_left) {
+  ImageData* image_object = PluginResource::GetAs<ImageData>(image);
+  if (!image_object)
+    return PP_FALSE;
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
+      image_object->instance());
+  if (!dispatcher)
+    return PP_FALSE;
+
   PP_Bool result = PP_FALSE;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBTesting_ReadImageData(
+  dispatcher->Send(new PpapiHostMsg_PPBTesting_ReadImageData(
       INTERFACE_ID_PPB_TESTING, device_context_2d, image, *top_left, &result));
   return result;
 }
@@ -34,10 +43,14 @@ void QuitMessageLoop() {
   MessageLoop::current()->QuitNow();
 }
 
-uint32_t GetLiveObjectCount(PP_Module module_id) {
+uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance_id);
+  if (!dispatcher)
+    return static_cast<uint32_t>(-1);
+
   uint32_t result = 0;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBTesting_GetLiveObjectCount(
-      INTERFACE_ID_PPB_TESTING, module_id, &result));
+  dispatcher->Send(new PpapiHostMsg_PPBTesting_GetLiveObjectsForInstance(
+      INTERFACE_ID_PPB_TESTING, instance_id, &result));
   return result;
 }
 
@@ -45,7 +58,7 @@ const PPB_Testing_Dev testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
   &QuitMessageLoop,
-  &GetLiveObjectCount
+  &GetLiveObjectsForInstance
 };
 
 }  // namespace
@@ -75,8 +88,8 @@ bool PPB_Testing_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgRunMessageLoop)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_QuitMessageLoop,
                         OnMsgQuitMessageLoop)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_GetLiveObjectCount,
-                        OnMsgGetLiveObjectCount)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_GetLiveObjectsForInstance,
+                        OnMsgGetLiveObjectsForInstance)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -99,9 +112,9 @@ void PPB_Testing_Proxy::OnMsgQuitMessageLoop() {
   ppb_testing_target()->QuitMessageLoop();
 }
 
-void PPB_Testing_Proxy::OnMsgGetLiveObjectCount(PP_Module module_id,
+void PPB_Testing_Proxy::OnMsgGetLiveObjectsForInstance(PP_Instance instance,
                                                 uint32_t* result) {
-  *result = ppb_testing_target()->GetLiveObjectCount(module_id);
+  *result = ppb_testing_target()->GetLiveObjectsForInstance(instance);
 }
 
 }  // namespace proxy

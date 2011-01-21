@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,8 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 
+template<typename T> struct DefaultSingletonTraits;
+
 namespace pp {
 namespace proxy {
 
@@ -21,8 +23,8 @@ class PluginResource;
 
 class PluginResourceTracker {
  public:
-  PluginResourceTracker(PluginDispatcher* dispatcher);
-  ~PluginResourceTracker();
+  // Returns the global singleton resource tracker for the plugin.
+  static PluginResourceTracker* GetInstance();
 
   // Returns the object associated with the given resource ID, or NULL if
   // there isn't one.
@@ -50,15 +52,20 @@ class PluginResourceTracker {
   //
   //   PP_Resource result;
   //   dispatcher->Send(new MyMessage(..., &result));
-  //   if (dispatcher->plugin_resource_tracker()->
+  //   if (PluginResourceTracker::GetInstance()->
   //           PreparePreviouslyTrackedResource(result))
   //     return result;
   //   ... create resource object ...
-  //   dispatcher->plugin_resource_tracker()->AddResource(result, object);
+  //   PluginResourceTracker::GetInstance()->AddResource(result, object);
   //   return result;
   bool PreparePreviouslyTrackedResource(PP_Resource resource);
 
  private:
+  friend struct DefaultSingletonTraits<PluginResourceTracker>;
+
+  PluginResourceTracker();
+  ~PluginResourceTracker();
+
   struct ResourceInfo {
     ResourceInfo();
     ResourceInfo(int ref_count, linked_ptr<PluginResource> r);
@@ -74,8 +81,10 @@ class PluginResourceTracker {
   void ReleasePluginResourceRef(const PP_Resource& var,
                                 bool notify_browser_on_release);
 
-  // Pointer to the dispatcher that owns us.
-  PluginDispatcher* dispatcher_;
+  // Sends a ReleaseResource message to the host corresponding to the given
+  // resource.
+  void SendReleaseResourceToHost(PP_Resource resource_id,
+                                 PluginResource* resource);
 
   typedef std::map<PP_Resource, ResourceInfo> ResourceMap;
   ResourceMap resource_map_;

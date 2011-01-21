@@ -225,9 +225,9 @@ SerializedVar::~SerializedVar() {
 
 SerializedVarSendInput::SerializedVarSendInput(Dispatcher* dispatcher,
                                                const PP_Var& var)
-    : SerializedVar(dispatcher->serialization_rules(), var) {
-  dispatcher->serialization_rules()->SendCallerOwned(var,
-                                                     inner_->GetStringPtr());
+    : SerializedVar(dispatcher->serialization_rules()) {
+  inner_->SetVar(dispatcher->serialization_rules()->SendCallerOwned(
+      var, inner_->GetStringPtr()));
 }
 
 // static
@@ -237,9 +237,10 @@ void SerializedVarSendInput::ConvertVector(Dispatcher* dispatcher,
                                            std::vector<SerializedVar>* output) {
   output->resize(input_count);
   for (size_t i = 0; i < input_count; i++) {
-    (*output)[i] = SerializedVar(dispatcher->serialization_rules(), input[i]);
-    dispatcher->serialization_rules()->SendCallerOwned(
-        input[i], (*output)[i].inner_->GetStringPtr());
+    SerializedVar& cur = (*output)[i];
+    cur = SerializedVar(dispatcher->serialization_rules());
+    cur.inner_->SetVar(dispatcher->serialization_rules()->SendCallerOwned(
+        input[i], cur.inner_->GetStringPtr()));
   }
 }
 
@@ -251,7 +252,7 @@ ReceiveSerializedVarReturnValue::ReceiveSerializedVarReturnValue() {
 PP_Var ReceiveSerializedVarReturnValue::Return(Dispatcher* dispatcher) {
   inner_->set_serialization_rules(dispatcher->serialization_rules());
   inner_->SetVar(inner_->serialization_rules()->ReceivePassRef(
-      inner_->GetIncompleteVar(), inner_->GetString()));
+      inner_->GetIncompleteVar(), inner_->GetString(), dispatcher));
   return inner_->GetVar();
 }
 
@@ -260,6 +261,7 @@ PP_Var ReceiveSerializedVarReturnValue::Return(Dispatcher* dispatcher) {
 ReceiveSerializedException::ReceiveSerializedException(Dispatcher* dispatcher,
                                                        PP_Var* exception)
     : SerializedVar(dispatcher->serialization_rules()),
+      dispatcher_(dispatcher),
       exception_(exception) {
 }
 
@@ -268,7 +270,7 @@ ReceiveSerializedException::~ReceiveSerializedException() {
     // When an output exception is specified, it will take ownership of the
     // reference.
     inner_->SetVar(inner_->serialization_rules()->ReceivePassRef(
-        inner_->GetIncompleteVar(), inner_->GetString()));
+        inner_->GetIncompleteVar(), inner_->GetString(), dispatcher_));
     *exception_ = inner_->GetVar();
   } else {
     // When no output exception is specified, the browser thinks we have a ref
@@ -342,7 +344,8 @@ PP_Var SerializedVarReceiveInput::Get(Dispatcher* dispatcher) {
   serialized_.inner_->SetVar(
       serialized_.inner_->serialization_rules()->BeginReceiveCallerOwned(
           serialized_.inner_->GetIncompleteVar(),
-          serialized_.inner_->GetStringPtr()));
+          serialized_.inner_->GetStringPtr(),
+          dispatcher));
   return serialized_.inner_->GetVar();
 }
 
@@ -372,7 +375,8 @@ PP_Var* SerializedVarVectorReceiveInput::Get(Dispatcher* dispatcher,
     serialized_[i].inner_->SetVar(
         serialized_[i].inner_->serialization_rules()->BeginReceiveCallerOwned(
             serialized_[i].inner_->GetIncompleteVar(),
-            serialized_[i].inner_->GetStringPtr()));
+            serialized_[i].inner_->GetStringPtr(),
+            dispatcher));
     deserialized_[i] = serialized_[i].inner_->GetVar();
   }
 
@@ -390,14 +394,14 @@ void SerializedVarReturnValue::Return(Dispatcher* dispatcher,
                                       const PP_Var& var) {
   serialized_->inner_->set_serialization_rules(
       dispatcher->serialization_rules());
-  serialized_->inner_->SetVar(var);
 
   // Var must clean up after our BeginSendPassRef call.
   serialized_->inner_->set_cleanup_mode(SerializedVar::END_SEND_PASS_REF);
 
-  dispatcher->serialization_rules()->BeginSendPassRef(
-      serialized_->inner_->GetIncompleteVar(),
-      serialized_->inner_->GetStringPtr());
+  serialized_->inner_->SetVar(
+      dispatcher->serialization_rules()->BeginSendPassRef(
+          var,
+          serialized_->inner_->GetStringPtr()));
 }
 
 // SerializedVarOutParam -------------------------------------------------------
@@ -411,9 +415,9 @@ SerializedVarOutParam::~SerializedVarOutParam() {
   if (serialized_->inner_->serialization_rules()) {
     // When unset, OutParam wasn't called. We'll just leave the var untouched
     // in that case.
-    serialized_->inner_->SetVar(writable_var_);
-    serialized_->inner_->serialization_rules()->BeginSendPassRef(
-        writable_var_, serialized_->inner_->GetStringPtr());
+    serialized_->inner_->SetVar(
+        serialized_->inner_->serialization_rules()->BeginSendPassRef(
+            writable_var_, serialized_->inner_->GetStringPtr()));
 
     // Normally the current object will be created on the stack to wrap a
     // SerializedVar and won't have a scope around the actual IPC send. So we

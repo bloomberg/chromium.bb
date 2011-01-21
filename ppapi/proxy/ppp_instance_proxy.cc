@@ -182,7 +182,7 @@ void PPP_Instance_Proxy::OnMsgHandleInputEvent(PP_Instance instance,
 void PPP_Instance_Proxy::OnMsgHandleDocumentLoad(PP_Instance instance,
                                                  PP_Resource url_loader,
                                                  PP_Bool* result) {
-  PPB_URLLoader_Proxy::TrackPluginResource(url_loader);
+  PPB_URLLoader_Proxy::TrackPluginResource(instance, url_loader);
   *result = ppp_instance_target()->HandleDocumentLoad(
       instance, url_loader);
 }

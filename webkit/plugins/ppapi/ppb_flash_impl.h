@@ -23,20 +23,20 @@ class PPB_Flash_Impl {
   // exposed to the plugin.
   static const PPB_Flash* GetInterface();
 
-  static bool DrawGlyphs(PP_Instance pp_instance,
-                         PP_Resource pp_image_data,
-                         const PP_FontDescription_Dev* font_desc,
-                         uint32_t color,
-                         PP_Point position,
-                         PP_Rect clip,
-                         const float transformation[3][3],
-                         uint32_t glyph_count,
-                         const uint16_t glyph_indices[],
-                         const PP_Point glyph_advances[])
+  static PP_Bool DrawGlyphs(PP_Instance pp_instance,
+                            PP_Resource pp_image_data,
+                            const PP_FontDescription_Dev* font_desc,
+                            uint32_t color,
+                            PP_Point position,
+                            PP_Rect clip,
+                            const float transformation[3][3],
+                            uint32_t glyph_count,
+                            const uint16_t glyph_indices[],
+                            const PP_Point glyph_advances[])
 #if defined(OS_LINUX)
       ;
 #else
-      { return false; }
+      { return PP_FALSE; }
 #endif
 
  private:

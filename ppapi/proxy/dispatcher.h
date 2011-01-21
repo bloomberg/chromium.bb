@@ -18,7 +18,6 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/proxy/callback_tracker.h"
 #include "ppapi/proxy/interface_id.h"
-#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 
 class MessageLoop;

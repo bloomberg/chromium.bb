@@ -230,12 +230,12 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCursorControl_CanLockCursor,
 // PPB_Flash.
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop,
                     PP_Instance /* instance */,
-                    bool /* on_top */)
+                    PP_Bool /* on_top */)
 // This has to be synchronous becuase the caller may want to composite on
 // top of the resulting text after the call is complete.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlash_DrawGlyphs,
                            pp::proxy::PPBFlash_DrawGlyphs_Params /* params */,
-                           bool /* result */)
+                           PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_GetProxyForURL,
                            PP_Instance /* instance */,
                            std::string /* url */,
@@ -254,7 +254,7 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_RenameModuleLocalFile,
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_DeleteModuleLocalFileOrDir,
                            PP_Instance /* instance */,
                            std::string /* path */,
-                           bool /* recursive */,
+                           PP_Bool /* recursive */,
                            int32_t /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_CreateModuleLocalDir,
                            PP_Instance /* instance */,
@@ -275,7 +275,7 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_NavigateToURL,
                            PP_Instance /* instance */,
                            std::string /* url */,
                            std::string /* target */,
-                           bool /* result */)
+                           PP_Bool /* result */)
 
 // PPB_Font.
 IPC_SYNC_MESSAGE_ROUTED2_3(
@@ -343,13 +343,6 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics2D_Flush,
                     PP_Resource /* graphics_2d */)
 
 // PPB_ImageData.
-IPC_SYNC_MESSAGE_ROUTED0_1(
-    PpapiHostMsg_PPBImageData_GetNativeImageDataFormat,
-    int32 /* result_format */)
-IPC_SYNC_MESSAGE_ROUTED1_1(
-    PpapiHostMsg_PPBImageData_IsImageDataFormatSupported,
-    int32 /* format */,
-    PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_Create,
                            PP_Instance /* instance */,
                            int32 /* format */,
@@ -400,8 +393,8 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBTesting_ReadImageData,
 IPC_SYNC_MESSAGE_ROUTED0_1(PpapiHostMsg_PPBTesting_RunMessageLoop,
                            bool /* dummy since there's no 0_0 variant */)
 IPC_MESSAGE_ROUTED0(PpapiHostMsg_PPBTesting_QuitMessageLoop)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBTesting_GetLiveObjectCount,
-                           PP_Module /* module */,
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBTesting_GetLiveObjectsForInstance,
+                           PP_Instance /* instance */,
                            uint32 /* result */)
 
 // PPB_URLLoader.
