@@ -845,10 +845,16 @@ void TaskManagerModel::BytesRead(BytesReadParam param) {
     if (resource)
       break;
   }
+
   if (resource == NULL) {
-    // We may not have that resource anymore (example: close a tab while a
-    // a network resource is being retrieved), in which case we just ignore the
-    // notification.
+    // We can't match a resource to the notification.  That might mean the
+    // tab that started a download was closed, or the request may have had
+    // no originating resource associated with it in the first place.
+    // We attribute orphaned/unaccounted activity to the Browser process.
+    CHECK(param.origin_child_id != base::GetCurrentProcId());
+    param.origin_child_id = base::GetCurrentProcId();
+    param.render_process_host_child_id = param.routing_id = -1;
+    BytesRead(param);
     return;
   }
 
@@ -887,18 +893,15 @@ void TaskManagerModel::OnJobRedirect(net::URLRequestJob* job,
 
 void TaskManagerModel::OnBytesRead(net::URLRequestJob* job, const char* buf,
                                    int byte_count) {
+  // Only net::URLRequestJob instances created by the ResourceDispatcherHost
+  // have a render view associated.  All other jobs will have -1 returned for
+  // the render process child and routing ids - the jobs may still match a
+  // resource based on their origin id, otherwise BytesRead() will attribute
+  // the activity to the Browser resource.
   int render_process_host_child_id = -1, routing_id = -1;
-  if (!ResourceDispatcherHost::RenderViewForRequest(job->request(),
+  ResourceDispatcherHost::RenderViewForRequest(job->request(),
                                                &render_process_host_child_id,
-                                               &routing_id)) {
-    // Only net::URLRequestJob instances created by the ResourceDispatcherHost
-    // have a render view associated.  Jobs from components such as the
-    // SearchProvider for autocomplete, have no associated view, so we can't
-    // correctly attribute the bandwidth they consume.
-    // TODO(wez): All jobs' resources should ideally be accountable, even if
-    // only by contributing to the Browser process' stats.
-    return;
-  }
+                                               &routing_id);
 
   // This happens in the IO thread, post it to the UI thread.
   int origin_child_id =
