@@ -49,9 +49,12 @@ var OptionsPage = options.OptionsPage;
         };
       }
 
-      $('autoOpenFileTypesResetToDefault').onclick = function(event) {
-        chrome.send('autoOpenFileTypesAction');
-      };
+      if (!cr.isChromeOS) {
+        $('autoOpenFileTypesResetToDefault').onclick = function(event) {
+          chrome.send('autoOpenFileTypesAction');
+        };
+      }
+
       $('fontSettingsCustomizeFontsButton').onclick = function(event) {
         OptionsPage.showPageByName('fontSettings');
         chrome.send('coreOptionsUserMetricsAction', ['Options_FontSettings']);
@@ -201,7 +204,8 @@ var OptionsPage = options.OptionsPage;
 
   // Set the enabled state for the autoOpenFileTypesResetToDefault button.
   AdvancedOptions.SetAutoOpenFileTypesDisabledAttribute = function(disabled) {
-    $('autoOpenFileTypesResetToDefault').disabled = disabled;
+    if (!cr.isChromeOS)
+      $('autoOpenFileTypesResetToDefault').disabled = disabled;
   };
 
   // Set the enabled state for the proxy settings button.
