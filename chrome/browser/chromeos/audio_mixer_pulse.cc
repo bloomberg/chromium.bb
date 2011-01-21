@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/task.h"
+#include "base/threading/thread_restrictions.h"
 
 namespace chromeos {
 
@@ -59,6 +60,11 @@ AudioMixerPulse::AudioMixerPulse()
 AudioMixerPulse::~AudioMixerPulse() {
   PulseAudioFree();
   if (thread_ != NULL) {
+    // A ScopedAllowIO object is required to join the thread when calling Stop.
+    // The worker thread should be idle at this time.
+    // See http://crosbug.com/11110 for discussion.
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
+
     thread_->Stop();
     thread_.reset();
   }

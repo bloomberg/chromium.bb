@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/task.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -51,6 +52,11 @@ AudioMixerAlsa::AudioMixerAlsa()
 AudioMixerAlsa::~AudioMixerAlsa() {
   FreeAlsaMixer();
   if (thread_ != NULL) {
+    // A ScopedAllowIO object is required to join the thread when calling Stop.
+    // The worker thread should be idle at this time.
+    // See http://crosbug.com/11110 for discussion.
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
+
     thread_->Stop();
     thread_.reset();
   }
@@ -301,7 +307,7 @@ void AudioMixerAlsa::DoSetVolumeMute(double pref_volume, int pref_mute) {
     save_volume_ = pref_volume;
     DoSetVolumeDb_Locked(min_volume_);
   } else {
-      DoSetVolumeDb_Locked(pref_volume);
+    DoSetVolumeDb_Locked(pref_volume);
   }
 
   SetElementMuted_Locked(elem_master_, mute);
