@@ -24,12 +24,8 @@ class URLRequest;
 //   - The final URL (after redirects) has a scheme of http or https.
 //   - The response status code is a 200.
 //   - The MIME type of the response (sniffed or explicit) is text/html.
-//   - The resource will not need to revalidate within 30 seconds. This prevents
-//     no-cache or very quickly refreshing resources from being prerendered.
 class PrerenderResourceHandler : public ResourceHandler {
  public:
-  typedef base::Time (*GetCurrentTimeFunction)();
-
   // Creates a new PrerenderResourceHandler if appropriate for the
   // given |request| and |context|, otherwise NULL is returned. The
   // caller is resposible for deleting the returned handler.
@@ -74,8 +70,6 @@ class PrerenderResourceHandler : public ResourceHandler {
   typedef Callback2<const GURL&, const std::vector<GURL>&>::Type
       PrerenderCallback;
 
-  static const int kDefaultPrerenderDurationSeconds;
-
   PrerenderResourceHandler(ResourceHandler* next_handler,
                            PrerenderManager* prerender_manager);
   PrerenderResourceHandler(ResourceHandler* next_handler,
@@ -86,8 +80,6 @@ class PrerenderResourceHandler : public ResourceHandler {
                                const std::vector<GURL>& alias_urls);
   void StartPrerender(const GURL& url,
                       const std::vector<GURL>& alias_urls);
-  void set_prerender_duration(base::TimeDelta prerender_duration);
-  void set_get_current_time_function(GetCurrentTimeFunction get_current_time);
 
   // The set of URLs that are aliases to the URL to be prerendered,
   // as a result of redirects.
@@ -96,8 +88,6 @@ class PrerenderResourceHandler : public ResourceHandler {
   scoped_refptr<ResourceHandler> next_handler_;
   scoped_refptr<PrerenderManager> prerender_manager_;
   scoped_ptr<PrerenderCallback> prerender_callback_;
-  base::TimeDelta prerender_duration_;
-  GetCurrentTimeFunction get_current_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderResourceHandler);
 };

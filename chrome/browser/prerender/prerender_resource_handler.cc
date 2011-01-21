@@ -12,14 +12,7 @@
 
 namespace {
 
-base::Time DefaultGetCurrentTime() {
-  return base::Time::Now();
-}
-
-bool ShouldPrerender(const GURL& url,
-                     const ResourceResponse* response,
-                     PrerenderResourceHandler::GetCurrentTimeFunction get_time,
-                     base::TimeDelta prerender_duration) {
+bool ShouldPrerender(const GURL& url, const ResourceResponse* response) {
   if (!response)
     return false;
   const ResourceResponseHead& rrh = response->response_head;
@@ -32,11 +25,6 @@ bool ShouldPrerender(const GURL& url,
   if (rrh.mime_type != "text/html")
     return false;
   if (rrh.headers->response_code() != 200)
-    return false;
-  if (rrh.headers->RequiresValidation(
-          rrh.request_time,
-          rrh.response_time,
-          get_time() + prerender_duration))
     return false;
   return true;
 }
@@ -64,10 +52,7 @@ PrerenderResourceHandler::PrerenderResourceHandler(
       prerender_manager_(prerender_manager),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           prerender_callback_(NewCallback(
-              this, &PrerenderResourceHandler::StartPrerender))),
-      prerender_duration_(
-          base::TimeDelta::FromSeconds(kDefaultPrerenderDurationSeconds)),
-      get_current_time_(&DefaultGetCurrentTime) {
+              this, &PrerenderResourceHandler::StartPrerender))) {
   DCHECK(next_handler);
   DCHECK(prerender_manager);
 }
@@ -77,10 +62,7 @@ PrerenderResourceHandler::PrerenderResourceHandler(
     ResourceHandler* next_handler,
     PrerenderCallback* callback)
     : next_handler_(next_handler),
-      prerender_callback_(callback),
-      prerender_duration_(
-          base::TimeDelta::FromSeconds(kDefaultPrerenderDurationSeconds)),
-      get_current_time_(&DefaultGetCurrentTime) {
+      prerender_callback_(callback) {
   DCHECK(next_handler);
   DCHECK(callback);
 }
@@ -109,10 +91,7 @@ bool PrerenderResourceHandler::OnRequestRedirected(int request_id,
 
 bool PrerenderResourceHandler::OnResponseStarted(int request_id,
                                                  ResourceResponse* response) {
-  if (ShouldPrerender(url_,
-                      response,
-                      get_current_time_,
-                      prerender_duration_)) {
+  if (ShouldPrerender(url_, response)) {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -172,17 +151,3 @@ void PrerenderResourceHandler::StartPrerender(const GURL& url,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   prerender_manager_->AddPreload(url, alias_urls);
 }
-
-void PrerenderResourceHandler::set_prerender_duration(base::TimeDelta dt) {
-  prerender_duration_ = dt;
-}
-
-void PrerenderResourceHandler::set_get_current_time_function(
-    GetCurrentTimeFunction get_current_time) {
-  DCHECK(get_current_time);
-  get_current_time_ = get_current_time;
-}
-
-// Note: this should stay in line with prerendermanager
-// static
-const int PrerenderResourceHandler::kDefaultPrerenderDurationSeconds = 20;

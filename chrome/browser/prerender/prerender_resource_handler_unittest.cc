@@ -59,10 +59,6 @@ class MockResourceHandler : public ResourceHandler {
   virtual void OnDataDownloaded(int request_id, int bytes_downloaded) {}
 };
 
-base::Time FixedGetCurrentTime() {
-  return base::Time();
-}
-
 // HttpResponseHeaders expects the raw input for it's constructor
 // to be a NUL ('\0') separated string for each line. This is a little
 // difficult to do for string literals, so this helper function accepts
@@ -86,8 +82,7 @@ net::HttpResponseHeaders* CreateResponseHeaders(
 class PrerenderResourceHandlerTest : public testing::Test {
  protected:
   PrerenderResourceHandlerTest()
-      : prerender_duration_(base::TimeDelta::FromSeconds(10)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
+      : ALLOW_THIS_IN_INITIALIZER_LIST(
             pre_handler_(new PrerenderResourceHandler(
                 new MockResourceHandler(),
                 NewCallback(
@@ -96,8 +91,6 @@ class PrerenderResourceHandlerTest : public testing::Test {
         ui_thread_(BrowserThread::UI, &loop_),
         io_thread_(BrowserThread::IO, &loop_),
         default_url_("http://www.prerender.com") {
-    pre_handler_->set_prerender_duration(prerender_duration_);
-    pre_handler_->set_get_current_time_function(&FixedGetCurrentTime);
   }
 
   virtual ~PrerenderResourceHandlerTest() {
@@ -123,8 +116,6 @@ class PrerenderResourceHandlerTest : public testing::Test {
     EXPECT_TRUE(pre_handler_->OnWillStart(request_id, default_url_, &defer));
     EXPECT_FALSE(defer);
     scoped_refptr<ResourceResponse> response(new ResourceResponse);
-    response->response_head.request_time = FixedGetCurrentTime();
-    response->response_head.response_time = FixedGetCurrentTime();
     response->response_head.mime_type = mime_type;
     response->response_head.headers = CreateResponseHeaders(headers);
     EXPECT_TRUE(last_handled_url_.is_empty());
@@ -141,7 +132,6 @@ class PrerenderResourceHandlerTest : public testing::Test {
         != alias_urls_.end();
   }
 
-  base::TimeDelta prerender_duration_;
   scoped_refptr<PrerenderResourceHandler> pre_handler_;
   MessageLoop loop_;
   BrowserThread ui_thread_;
@@ -160,45 +150,8 @@ TEST_F(PrerenderResourceHandlerTest, NoOp) {
 // to the PrerenderManager.
 TEST_F(PrerenderResourceHandlerTest, Prerender) {
   StartPrerendering("text/html",
-                    "HTTP/1.1 200 OK\n"
-                    "cache-control: max-age=86400\n");
+                    "HTTP/1.1 200 OK\n");
   EXPECT_EQ(default_url_, last_handled_url_);
-}
-
-// Tests that a no-cache HTML resource will not get diverted
-// to the PrerenderManager.
-TEST_F(PrerenderResourceHandlerTest, PrerenderNoCache) {
-  StartPrerendering("text/html",
-                    "HTTP/1.1 200 OK\n"
-                    "cache-control: no-cache\n");
-  EXPECT_TRUE(last_handled_url_.is_empty());
-}
-
-// Tests that a cacheable HTML resource which needs to be revalidated
-// shortly will not be prerendered.
-TEST_F(PrerenderResourceHandlerTest, PrerenderShortMaxAge) {
-  StartPrerendering("text/html",
-                    "HTTP/1.1 200 OK\n"
-                    "cache-control: max-age=5\n");
-  EXPECT_TRUE(last_handled_url_.is_empty());
-}
-
-// Tests that a resource with the wrong MIME type (a GIF in this example)
-// will not be diverted to the PrerenderManager.
-TEST_F(PrerenderResourceHandlerTest, PrerenderWrongMimeType) {
-  StartPrerendering("image/gif",
-                    "HTTP/1.1 200 OK\n"
-                    "cache-control: max-age=86400\n");
-  EXPECT_TRUE(last_handled_url_.is_empty());
-}
-
-// Tests that a resource with a non-200 response will not be diverted
-// to the PrerenderManager
-TEST_F(PrerenderResourceHandlerTest, PrerenderBadResponseCode) {
-  StartPrerendering("text/html",
-                    "HTTP/1.1 403 Forbidden\n"
-                    "cache-control: max-age=86400\n");
-  EXPECT_TRUE(last_handled_url_.is_empty());
 }
 
 // Tests that the final request in a redirect chain will
@@ -216,11 +169,8 @@ TEST_F(PrerenderResourceHandlerTest, PrerenderRedirect) {
   EXPECT_FALSE(defer);
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
   response->response_head.mime_type = "text/html";
-  response->response_head.request_time = FixedGetCurrentTime();
-  response->response_head.response_time = FixedGetCurrentTime();
   response->response_head.headers = CreateResponseHeaders(
-      "HTTP/1.1 200 OK\n"
-      "cache-control: max-age=86400\n");
+      "HTTP/1.1 200 OK\n");
   EXPECT_TRUE(pre_handler_->OnResponseStarted(request_id, response));
   EXPECT_TRUE(last_handled_url_.is_empty());
   loop_.RunAllPending();
