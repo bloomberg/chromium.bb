@@ -817,7 +817,7 @@ EnumerateModulesModel::EnumerateModulesModel()
         this, &EnumerateModulesModel::ScanNow);
   }
 
-  lock = new Lock();
+  lock = new base::Lock();
 }
 
 EnumerateModulesModel::~EnumerateModulesModel() {
