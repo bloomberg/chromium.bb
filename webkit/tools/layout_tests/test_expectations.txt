@@ -11,10 +11,6 @@
 BUGTHAKIS LINUX : media/video-display-toggle.html = IMAGE
 BUGTHAKIS WIN : media/video-display-toggle.html = IMAGE
 
-BUGDIMICH : fast/js/toString-recursion.html = PASS TEXT
-BUGDIMICH : fast/loader/stateobjects/pushstate-object-types.html = PASS TEXT
-BUGDIMICH : fast/regex/cross-frame-callable.html = PASS TEXT
-
 // New test that was non-deterministic.
 BUGYURYS : userscripts/window-onerror-for-isolated-world-1.html = PASS TEXT
 BUGYURYS : userscripts/window-onerror-for-isolated-world-2.html = PASS TEXT
