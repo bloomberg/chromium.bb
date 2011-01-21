@@ -29,17 +29,17 @@ body {
 }
 
 .overlay {
-  position: fixed;
-  left: 0;
-  right: 0;
-  background: rgba(233, 238, 242, .5);
-  top: 0;
-  bottom: 0;
-  z-index: 10;
-  padding: 20px;
-  display: -webkit-box;
   -webkit-box-align: center;
   -webkit-box-pack: center;
+  background: rgba(233, 238, 242, .5);
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  padding: 20px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 10;
 }
 
 .raw-button,
@@ -112,13 +112,13 @@ html[toolkit=views] .button-strip {
   display: block;
 }
 
-.overlay > div {
+.overlay .page {
   -webkit-box-shadow: 3px 3px 3px #666;
   background: white;
-  border-radius: 5px;
-  padding: 15px;
   border: 1px solid #666;
-  padding-bottom: 50px;
+  border-radius: 5px;
+  min-width: 400px;
+  padding: 0 15px 50px 15px;
   position: relative;
 }
 
@@ -275,13 +275,21 @@ html[hide-menu=true] #mainview {
   padding-top: 13px;
 }
 
-.page list {
-  min-height: 200px;
-}
-
 .subpage-sheet .page h1 {
   padding-top: 4px;
   margin-bottom: 10px;
+}
+
+.overlay .page h1 {
+  background: -webkit-linear-gradient(white, #F8F8F8);
+  border-bottom: 1px solid rgba(188, 193, 208, .5);
+  font-size: 105%;
+  font-weight: bold;
+  padding: 10px 15px 8px 15px;
+}
+
+.page list {
+  min-height: 200px;
 }
 
 section {

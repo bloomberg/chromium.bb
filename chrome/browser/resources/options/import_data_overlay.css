@@ -1,3 +1,13 @@
+#import-from-div {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+#import-checkboxes > div:not(:first-child) {
+  -webkit-padding-start: 8px;
+  margin: 5px 0;
+}
+
 #import-throbber {
   margin: -3px 10px;
   visibility: hidden;
