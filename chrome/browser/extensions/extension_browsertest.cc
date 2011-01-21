@@ -8,10 +8,12 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -101,6 +103,40 @@ bool ExtensionBrowserTest::LoadExtensionIncognito(const FilePath& path) {
   return LoadExtensionImpl(path, true);
 }
 
+FilePath ExtensionBrowserTest::PackExtension(const FilePath& dir_path) {
+  FilePath crx_path;
+  if (!PathService::Get(base::DIR_TEMP, &crx_path)) {
+    ADD_FAILURE() << "Failed to get DIR_TEMP from PathService.";
+    return FilePath();
+  }
+  crx_path = crx_path.AppendASCII("temp.crx");
+  if (!file_util::Delete(crx_path, false)) {
+    ADD_FAILURE() << "Failed to delete crx: " << crx_path.value();
+    return FilePath();
+  }
+
+  FilePath pem_path = crx_path.DirName().AppendASCII("temp.pem");
+  if (!file_util::Delete(pem_path, false)) {
+    ADD_FAILURE() << "Failed to delete pem: " << pem_path.value();
+    return FilePath();
+  }
+
+  scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
+  if (!creator->Run(dir_path,
+                    crx_path,
+                    FilePath(),  // no existing pem, use empty path
+                    pem_path)) {
+    ADD_FAILURE() << "ExtensionCreator::Run() failed.";
+    return FilePath();
+  }
+
+  if (!file_util::PathExists(crx_path)) {
+    ADD_FAILURE() << crx_path.value() << " was not created.";
+    return FilePath();
+  }
+  return crx_path;
+}
+
 // This class is used to simulate an installation abort by the user.
 class MockAbortExtensionInstallUI : public ExtensionInstallUI {
  public:
@@ -120,11 +156,31 @@ class MockAbortExtensionInstallUI : public ExtensionInstallUI {
   virtual void OnInstallFailure(const std::string& error) {}
 };
 
+class MockAutoConfirmExtensionInstallUI : public ExtensionInstallUI {
+ public:
+  MockAutoConfirmExtensionInstallUI(Profile* profile) :
+      ExtensionInstallUI(profile) {}
+
+  // Proceed without confirmation prompt.
+  virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
+    delegate->InstallUIProceed();
+  }
+};
+
 bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
                                                     const FilePath& path,
                                                     InstallUIType ui_type,
                                                     int expected_change) {
-  ExtensionService* service = browser()->profile()->GetExtensionService();
+  return InstallOrUpdateExtension(id, path, ui_type, expected_change,
+                                  browser()->profile());
+}
+
+bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
+                                                    const FilePath& path,
+                                                    InstallUIType ui_type,
+                                                    int expected_change,
+                                                    Profile* profile) {
+  ExtensionService* service = profile->GetExtensionService();
   service->set_show_extensions_prompts(false);
   size_t num_before = service->extensions()->size();
 
@@ -141,12 +197,23 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
     if (ui_type == INSTALL_UI_TYPE_CANCEL)
       install_ui = new MockAbortExtensionInstallUI();
     else if (ui_type == INSTALL_UI_TYPE_NORMAL)
-      install_ui = new ExtensionInstallUI(browser()->profile());
+      install_ui = new ExtensionInstallUI(profile);
+    else if (ui_type == INSTALL_UI_TYPE_AUTO_CONFIRM)
+      install_ui = new MockAutoConfirmExtensionInstallUI(profile);
+
+    // TODO(tessamac): Update callers to always pass an unpacked extension
+    //                 and then always pack the extension here.
+    FilePath crx_path = path;
+    if (crx_path.Extension() != FILE_PATH_LITERAL(".crx")) {
+      crx_path = PackExtension(path);
+    }
+    if (crx_path.empty())
+      return false;
 
     scoped_refptr<CrxInstaller> installer(
         new CrxInstaller(service, install_ui));
     installer->set_expected_id(id);
-    installer->InstallCrx(path);
+    installer->InstallCrx(crx_path);
 
     ui_test_utils::RunMessageLoop();
   }

@@ -29,6 +29,10 @@ class ExtensionBrowserTest
   // Same as above, but enables the extension in incognito mode first.
   bool LoadExtensionIncognito(const FilePath& path);
 
+  // Pack the extension in |dir_path| into a crx file and return its path.
+  // Return an empty FilePath if there were errors.
+  FilePath PackExtension(const FilePath& dir_path);
+
   // |expected_change| indicates how many extensions should be installed (or
   // disabled, if negative).
   // 1 means you expect a new install, 0 means you expect an upgrade, -1 means
@@ -51,6 +55,12 @@ class ExtensionBrowserTest
   bool InstallExtensionWithUI(const FilePath& path, int expected_change) {
     return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NORMAL,
                                     expected_change);
+  }
+  bool InstallExtensionWithUIAutoConfirm(const FilePath& path,
+                                         int expected_change,
+                                         Profile* profile) {
+    return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_AUTO_CONFIRM,
+                                    expected_change, profile);
   }
 
   // Begins install process but simulates a user cancel.
@@ -109,11 +119,16 @@ class ExtensionBrowserTest
     INSTALL_UI_TYPE_NONE,
     INSTALL_UI_TYPE_CANCEL,
     INSTALL_UI_TYPE_NORMAL,
+    INSTALL_UI_TYPE_AUTO_CONFIRM,
   };
 
   bool InstallOrUpdateExtension(const std::string& id, const FilePath& path,
                                 InstallUIType ui_type,
                                 int expected_change);
+  bool InstallOrUpdateExtension(const std::string& id, const FilePath& path,
+                                InstallUIType ui_type,
+                                int expected_change,
+                                Profile* profile);
   bool LoadExtensionImpl(const FilePath& path, bool incognito_enabled);
 
   bool WaitForExtensionHostsToLoad();

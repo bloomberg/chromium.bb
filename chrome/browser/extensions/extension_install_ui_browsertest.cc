@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/string_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
@@ -59,4 +60,42 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   ASSERT_EQ(theme_crx, theme->id());
   VerifyThemeInfoBarAndUndoInstall();
   ASSERT_EQ(NULL, browser()->profile()->GetTheme());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
+                       AppInstallConfirmation) {
+  int num_tabs = browser()->tab_count();
+
+  FilePath app_dir = test_data_dir_.AppendASCII("app");
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(app_dir, 1,
+                                                browser()->profile()));
+
+  EXPECT_EQ(num_tabs + 1, browser()->tab_count());
+  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  ASSERT_TRUE(tab_contents);
+  EXPECT_TRUE(StartsWithASCII(tab_contents->GetURL().spec(),
+                              "chrome://newtab/#app-id=",  // id changes
+                              false));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
+                       AppInstallConfirmation_Incognito) {
+  Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
+  Browser* incognito_browser = Browser::GetOrCreateTabbedBrowser(
+      incognito_profile);
+
+  int num_incognito_tabs = incognito_browser->tab_count();
+  int num_normal_tabs = browser()->tab_count();
+
+  FilePath app_dir = test_data_dir_.AppendASCII("app");
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(app_dir, 1,
+                                                incognito_profile));
+
+  EXPECT_EQ(num_incognito_tabs, incognito_browser->tab_count());
+  EXPECT_EQ(num_normal_tabs + 1, browser()->tab_count());
+  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  ASSERT_TRUE(tab_contents);
+  EXPECT_TRUE(StartsWithASCII(tab_contents->GetURL().spec(),
+                              "chrome://newtab/#app-id=",  // id changes
+                              false));
 }
