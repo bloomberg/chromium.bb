@@ -667,6 +667,11 @@ PrefService* ProfileImpl::GetPrefs() {
     // register known prefs as soon as possible.
     Profile::RegisterUserPrefs(prefs_.get());
     browser::RegisterUserPrefs(prefs_.get());
+    // TODO(mirandac): remove migration code after 6 months (crbug.com/69995).
+    if (g_browser_process->local_state()) {
+      browser::MigrateBrowserPrefs(prefs_.get(),
+                                   g_browser_process->local_state());
+    }
 
     // The last session exited cleanly if there is no pref for
     // kSessionExitedCleanly or the value for kSessionExitedCleanly is true.

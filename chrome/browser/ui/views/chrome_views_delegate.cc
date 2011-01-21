@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/accessibility_event_router_views.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "gfx/rect.h"
@@ -27,12 +28,12 @@ ui::Clipboard* ChromeViewsDelegate::GetClipboard() const {
 void ChromeViewsDelegate::SaveWindowPlacement(const std::wstring& window_name,
                                               const gfx::Rect& bounds,
                                               bool maximized) {
-  if (!g_browser_process->local_state())
+  if (!g_browser_process->profile_manager())
     return;
 
   DictionaryValue* window_preferences =
-      g_browser_process->local_state()->GetMutableDictionary(
-          WideToUTF8(window_name).c_str());
+      g_browser_process->profile_manager()->GetDefaultProfile()->GetPrefs()->
+          GetMutableDictionary(WideToUTF8(window_name).c_str());
   window_preferences->SetInteger("left", bounds.x());
   window_preferences->SetInteger("top", bounds.y());
   window_preferences->SetInteger("right", bounds.right());
@@ -51,12 +52,12 @@ void ChromeViewsDelegate::SaveWindowPlacement(const std::wstring& window_name,
 
 bool ChromeViewsDelegate::GetSavedWindowBounds(const std::wstring& window_name,
                                                gfx::Rect* bounds) const {
-  if (!g_browser_process->local_state())
+  if (!g_browser_process->profile_manager())
     return false;
 
   const DictionaryValue* dictionary =
-      g_browser_process->local_state()->GetDictionary(
-          WideToUTF8(window_name).c_str());
+      g_browser_process->profile_manager()->GetDefaultProfile()->GetPrefs()->
+          GetDictionary(WideToUTF8(window_name).c_str());
   int left, top, right, bottom;
   if (!dictionary || !dictionary->GetInteger("left", &left) ||
       !dictionary->GetInteger("top", &top) ||
@@ -71,12 +72,13 @@ bool ChromeViewsDelegate::GetSavedWindowBounds(const std::wstring& window_name,
 bool ChromeViewsDelegate::GetSavedMaximizedState(
     const std::wstring& window_name,
     bool* maximized) const {
-  if (!g_browser_process->local_state())
+  if (!g_browser_process->profile_manager())
     return false;
 
   const DictionaryValue* dictionary =
-      g_browser_process->local_state()->GetDictionary(
-          WideToUTF8(window_name).c_str());
+      g_browser_process->profile_manager()->GetDefaultProfile()->GetPrefs()->
+          GetDictionary(WideToUTF8(window_name).c_str());
+
   return dictionary && dictionary->GetBoolean("maximized", maximized) &&
       maximized;
 }

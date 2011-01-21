@@ -959,9 +959,10 @@ class Browser : public TabHandlerDelegate,
   void TabDetachedAtImpl(TabContentsWrapper* contents,
       int index, DetachType type);
 
-  // Create a preference dictionary for the provided application name. This is
-  // done only once per application name / per session.
-  static void RegisterAppPrefs(const std::string& app_name);
+  // Create a preference dictionary for the provided application name, in the
+  // given user profile. This is done only once per application name / per
+  // session / per user profile.
+  static void RegisterAppPrefs(const std::string& app_name, Profile* profile);
 
   // Shared code between Reload() and ReloadIgnoringCache().
   void ReloadInternal(WindowOpenDisposition disposition, bool ignore_cache);
