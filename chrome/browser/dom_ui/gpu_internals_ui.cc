@@ -295,6 +295,8 @@ DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
       gpu_info.gl_renderer()));
   basic_info->Append(NewDescriptionValuePair("GL_VERSION",
       gpu_info.gl_version_string()));
+  basic_info->Append(NewDescriptionValuePair("GL_EXTENSIONS",
+      gpu_info.gl_extensions()));
 
   DictionaryValue* info = new DictionaryValue();
   info->Set("basic_info", basic_info);
