@@ -559,6 +559,7 @@ void MenuController::OnMouseMoved(SubmenuView* source,
   if (part.type == MenuPart::MENU_ITEM && part.menu) {
     SetSelection(part.menu, SELECTION_OPEN_SUBMENU);
   } else if (!part.is_scroll() && pending_state_.item &&
+             pending_state_.item->GetParentMenuItem() &&
              (!pending_state_.item->HasSubmenu() ||
               !pending_state_.item->GetSubmenu()->IsShowing())) {
     // On exit if the user hasn't selected an item with a submenu, move the
