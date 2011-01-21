@@ -1426,6 +1426,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   scoped_ptr<Callback1<gfx::Size>::Type> resize_callback_;
   scoped_ptr<Callback0::Type> swap_buffers_callback_;
 
+  // The format of the back buffer_
+  GLenum back_buffer_color_format_;
+
   // The last error message set.
   std::string last_error_;
 
@@ -1756,6 +1759,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       offscreen_target_stencil_format_(0),
       offscreen_target_samples_(0),
       offscreen_saved_color_format_(0),
+      back_buffer_color_format_(0),
       current_decoder_error_(error::kNoError),
       use_shader_translator_(true),
       validators_(group_->feature_info()->validators()),
@@ -1813,6 +1817,10 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   CHECK_GL_ERROR();
 
   vertex_attrib_manager_.Initialize(group_->max_vertex_attribs());
+
+  GLint v = 0;
+  glGetIntegerv(GL_ALPHA_BITS, &v);
+  back_buffer_color_format_ = v ? GL_RGBA : GL_RGB;
 
   // We have to enable vertex array 0 on OpenGL or it won't render. Note that
   // OpenGL ES 2.0 does not have this issue.
@@ -2223,8 +2231,7 @@ GLenum GLES2DecoderImpl::GetBoundReadFrameBufferInternalFormat() {
   } else if (offscreen_target_frame_buffer_.get()) {
     return offscreen_target_color_format_;
   } else {
-    // TODO(gman): return correct format
-    return GL_RGBA;
+    return back_buffer_color_format_;
   }
 }
 

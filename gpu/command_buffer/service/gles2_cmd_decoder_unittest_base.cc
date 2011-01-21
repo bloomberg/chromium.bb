@@ -47,6 +47,9 @@ void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
 
   EXPECT_TRUE(group_->Initialize(extensions));
 
+  EXPECT_CALL(*gl_, GetIntegerv(GL_ALPHA_BITS, _))
+      .WillOnce(SetArgumentPointee<1>(8))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, EnableVertexAttribArray(0))
       .Times(1)
       .RetiresOnSaturation();
