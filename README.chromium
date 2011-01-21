@@ -95,3 +95,5 @@ sv_SE:  Added words
 tr_TR:  No changes
 
 vi_VN:  Added words.
+
+On Jan 20, 2011, en_US.dic_delta was copied to en_AU.dic_delta and en_GB.dic_delta so these locales would get the same additional words.
