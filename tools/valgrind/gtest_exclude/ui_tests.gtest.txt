@@ -62,3 +62,7 @@ GPUUITest.UITestCanLaunchWithOSMesa
 # from properly SIGTERMing the browser process.
 # See http://crbug.com/42105
 BrowserTest.PosixSessionEnd
+
+# Fails flakily.
+# http://crbug.com/70323
+AutomatedUITestBase.ShowBookmarkBar
