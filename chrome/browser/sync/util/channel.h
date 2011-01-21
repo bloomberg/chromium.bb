@@ -50,8 +50,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "base/lock.h"
 #include "base/observer_list.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 
 namespace browser_sync {
@@ -98,7 +98,7 @@ class Channel {
 
   ChannelHookup<EventType>* AddObserver(
       ChannelEventHandler<EventType>* observer) {
-    AutoLock scoped_lock(event_handlers_mutex_);
+    base::AutoLock scoped_lock(event_handlers_mutex_);
     event_handlers_.AddObserver(observer);
     return new ChannelHookup<EventType>(this, observer);
   }
@@ -117,7 +117,7 @@ class Channel {
   }
 
   void Notify(const EventType& event) {
-    AutoLock scoped_lock(event_handlers_mutex_);
+    base::AutoLock scoped_lock(event_handlers_mutex_);
 
     // This may result in an observer trying to remove itself, so keep track
     // of the thread we're locked on.
@@ -135,7 +135,7 @@ class Channel {
   }
 
  private:
-  Lock event_handlers_mutex_;
+  base::Lock event_handlers_mutex_;
   base::PlatformThreadId locking_thread_;
   ObserverList<EventHandler> event_handlers_;
 };

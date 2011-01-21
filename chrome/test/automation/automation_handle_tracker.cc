@@ -34,12 +34,12 @@ AutomationHandleTracker::~AutomationHandleTracker() {
 }
 
 void AutomationHandleTracker::Add(AutomationResourceProxy* proxy) {
-  AutoLock lock(map_lock_);
+  base::AutoLock lock(map_lock_);
   handle_to_object_.insert(MapEntry(proxy->handle(), proxy));
 }
 
 void AutomationHandleTracker::Remove(AutomationResourceProxy* proxy) {
-  AutoLock lock(map_lock_);
+  base::AutoLock lock(map_lock_);
   HandleToObjectMap::iterator iter = handle_to_object_.find(proxy->handle());
   if (iter != handle_to_object_.end()) {
     AutomationHandle proxy_handle = proxy->handle();
@@ -51,7 +51,7 @@ void AutomationHandleTracker::Remove(AutomationResourceProxy* proxy) {
 
 void AutomationHandleTracker::InvalidateHandle(AutomationHandle handle) {
   // Called in background thread.
-  AutoLock lock(map_lock_);
+  base::AutoLock lock(map_lock_);
   HandleToObjectMap::iterator iter = handle_to_object_.find(handle);
   if (iter != handle_to_object_.end()) {
     scoped_refptr<AutomationResourceProxy> proxy = iter->second;
@@ -62,7 +62,7 @@ void AutomationHandleTracker::InvalidateHandle(AutomationHandle handle) {
 
 AutomationResourceProxy* AutomationHandleTracker::GetResource(
     AutomationHandle handle) {
-  AutoLock lock(map_lock_);
+  base::AutoLock lock(map_lock_);
   HandleToObjectMap::iterator iter = handle_to_object_.find(handle);
   if (iter == handle_to_object_.end())
     return NULL;

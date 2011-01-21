@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/debug/trace_event.h"
-#include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
 #include "base/metrics/histogram.h"
@@ -22,6 +21,7 @@
 #include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "grit/webkit_resources.h"
@@ -78,7 +78,7 @@ class MemoryUsageCache {
   // Returns true if the cached value is fresh.
   // Returns false if the cached value is stale, or if |cached_value| is NULL.
   bool IsCachedValueValid(size_t* cached_value) {
-    AutoLock scoped_lock(lock_);
+    base::AutoLock scoped_lock(lock_);
     if (!cached_value)
       return false;
     if (base::Time::Now() - last_updated_time_ > cache_valid_time_)
@@ -89,7 +89,7 @@ class MemoryUsageCache {
 
   // Setter for |memory_value_|, refreshes |last_updated_time_|.
   void SetMemoryValue(const size_t value) {
-    AutoLock scoped_lock(lock_);
+    base::AutoLock scoped_lock(lock_);
     memory_value_ = value;
     last_updated_time_ = base::Time::Now();
   }
@@ -104,7 +104,7 @@ class MemoryUsageCache {
   // The last time the cached value was updated.
   base::Time last_updated_time_;
 
-  Lock lock_;
+  base::Lock lock_;
 };
 
 }  // anonymous namespace

@@ -38,7 +38,7 @@ media::VideoFrame::Format Capturer::pixel_format() const {
 }
 
 void Capturer::ClearInvalidRects() {
-  AutoLock auto_inval_rects_lock(inval_rects_lock_);
+  base::AutoLock auto_inval_rects_lock(inval_rects_lock_);
   inval_rects_.clear();
 }
 
@@ -48,13 +48,13 @@ void Capturer::InvalidateRects(const InvalidRects& inval_rects) {
                  inval_rects.begin(), inval_rects.end(),
                  std::inserter(temp_rects, temp_rects.begin()));
   {
-    AutoLock auto_inval_rects_lock(inval_rects_lock_);
+    base::AutoLock auto_inval_rects_lock(inval_rects_lock_);
     inval_rects_.swap(temp_rects);
   }
 }
 
 void Capturer::InvalidateFullScreen() {
-  AutoLock auto_inval_rects_lock(inval_rects_lock_);
+  base::AutoLock auto_inval_rects_lock(inval_rects_lock_);
   inval_rects_.clear();
   inval_rects_.insert(gfx::Rect(0, 0, width_, height_));
 }
@@ -68,7 +68,7 @@ void Capturer::CaptureInvalidRects(CaptureCompletedCallback* callback) {
   // Braced to scope the lock.
   InvalidRects local_rects;
   {
-    AutoLock auto_inval_rects_lock(inval_rects_lock_);
+    base::AutoLock auto_inval_rects_lock(inval_rects_lock_);
     local_rects.swap(inval_rects_);
   }
 

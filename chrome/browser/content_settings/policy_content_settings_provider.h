@@ -9,7 +9,7 @@
 // A content settings provider that takes its settings out of policies.
 
 #include "base/basictypes.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/notification_observer.h"
@@ -67,7 +67,7 @@ class PolicyContentSettingsProvider : public ContentSettingsProviderInterface,
 
   // Used around accesses to the managed_default_content_settings_ object to
   // guarantee thread safety.
-  mutable Lock lock_;
+  mutable base::Lock lock_;
 
   PrefChangeRegistrar pref_change_registrar_;
   NotificationRegistrar notification_registrar_;

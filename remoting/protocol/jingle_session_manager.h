@@ -8,7 +8,6 @@
 #include <list>
 #include <string>
 
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "net/base/x509_certificate.h"
 #include "remoting/protocol/jingle_session.h"

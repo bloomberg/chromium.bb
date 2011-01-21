@@ -13,9 +13,9 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/ref_counted_memory.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/cancelable_request.h"
@@ -297,7 +297,7 @@ class TopSites
   Profile* profile_;
 
   // Lock used to access |thread_safe_cache_|.
-  mutable Lock lock_;
+  mutable base::Lock lock_;
 
   CancelableRequestConsumer cancelable_consumer_;
 

@@ -48,7 +48,7 @@ bool HungWindowDetector::Initialize(HWND top_level_window,
 
 void HungWindowDetector::OnTick() {
   do {
-    AutoLock lock(hang_detection_lock_);
+    base::AutoLock lock(hang_detection_lock_);
     // If we already are checking for hung windows on another thread,
     // don't do this again.
     if (enumerating_) {

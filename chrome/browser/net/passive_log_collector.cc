@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/compiler_specific.h"
-#include "base/lock.h"
 #include "base/string_util.h"
 #include "base/format_macros.h"
 #include "net/url_request/url_request_netlog_params.h"

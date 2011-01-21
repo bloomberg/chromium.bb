@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop_proxy.h"
+#include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/values.h"
 
@@ -35,7 +36,7 @@ bool JsonHostConfig::Read() {
   }
 
   DictionaryValue* dictionary = static_cast<DictionaryValue*>(value.release());
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   values_.reset(dictionary);
   return true;
 }
@@ -47,7 +48,7 @@ void JsonHostConfig::Save() {
 
 void JsonHostConfig::DoWrite() {
   std::string file_content;
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   base::JSONWriter::Write(values_.get(), true, &file_content);
   // TODO(sergeyu): Move ImportantFileWriter to base and use it here.
   file_util::WriteFile(filename_, file_content.c_str(), file_content.size());

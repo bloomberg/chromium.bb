@@ -148,7 +148,7 @@ void CloudPrintDataSenderHelper::CallJavascriptFunction(
 // potentially expensive enough that stopping whatever is in progress
 // is worth it.
 void CloudPrintDataSender::CancelPrintDataFile() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   // We don't own helper, it was passed in to us, so no need to
   // delete, just let it go.
   helper_ = NULL;
@@ -202,7 +202,7 @@ void CloudPrintDataSender::ReadPrintDataFile(const FilePath& path_to_pdf) {
 // needed. - 4/1/2010
 void CloudPrintDataSender::SendPrintDataFile() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   if (helper_ && print_data_.get()) {
     StringValue title(print_job_title_);
 

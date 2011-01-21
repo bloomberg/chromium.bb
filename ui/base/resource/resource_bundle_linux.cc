@@ -10,11 +10,11 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/synchronization/lock.h"
 #include "gfx/font.h"
 #include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -92,7 +92,7 @@ GdkPixbuf* ResourceBundle::GetPixbufImpl(int resource_id, bool rtl_enabled) {
 
   // Check to see if we already have the pixbuf in the cache.
   {
-    AutoLock lock_scope(*lock_);
+    base::AutoLock lock_scope(*lock_);
     GdkPixbufMap::const_iterator found = gdk_pixbufs_.find(key);
     if (found != gdk_pixbufs_.end())
       return found->second;
@@ -104,7 +104,7 @@ GdkPixbuf* ResourceBundle::GetPixbufImpl(int resource_id, bool rtl_enabled) {
 
   // We loaded successfully.  Cache the pixbuf.
   if (pixbuf) {
-    AutoLock lock_scope(*lock_);
+    base::AutoLock lock_scope(*lock_);
 
     // Another thread raced us, and has already cached the pixbuf.
     if (gdk_pixbufs_.count(key)) {
@@ -121,7 +121,7 @@ GdkPixbuf* ResourceBundle::GetPixbufImpl(int resource_id, bool rtl_enabled) {
     LOG(WARNING) << "Unable to load GdkPixbuf with id " << resource_id;
     NOTREACHED();  // Want to assert in debug mode.
 
-    AutoLock lock_scope(*lock_);  // Guard empty_bitmap initialization.
+    base::AutoLock lock_scope(*lock_);  // Guard empty_bitmap initialization.
 
     static GdkPixbuf* empty_bitmap = NULL;
     if (!empty_bitmap) {

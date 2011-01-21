@@ -13,7 +13,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/linked_ptr.h"
-#include "base/lock.h"
 #include "base/timer.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/common/notification_observer.h"

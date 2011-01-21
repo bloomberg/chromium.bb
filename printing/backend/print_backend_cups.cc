@@ -13,9 +13,9 @@
 
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "printing/backend/cups_helper.h"
@@ -220,8 +220,8 @@ int PrintBackendCUPS::GetDests(cups_dest_t** dests) {
 FilePath PrintBackendCUPS::GetPPD(const char* name) {
   // cupsGetPPD returns a filename stored in a static buffer in CUPS.
   // Protect this code with lock.
-  static Lock ppd_lock;
-  AutoLock ppd_autolock(ppd_lock);
+  static base::Lock ppd_lock;
+  base::AutoLock ppd_autolock(ppd_lock);
   FilePath ppd_path;
   const char* ppd_file_path = NULL;
   if (print_server_url_.is_empty()) {  // Use default (local) print server.

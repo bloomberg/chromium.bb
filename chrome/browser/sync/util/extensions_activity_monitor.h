@@ -8,8 +8,8 @@
 
 #include <map>
 
-#include "base/lock.h"
 #include "base/message_loop.h"
+#include "base/synchronization/lock.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -62,7 +62,7 @@ class ExtensionsActivityMonitor : public NotificationObserver {
                        const NotificationDetails& details);
  private:
   Records records_;
-  mutable Lock records_lock_;
+  mutable base::Lock records_lock_;
 
   // Used only from UI loop.
   NotificationRegistrar registrar_;

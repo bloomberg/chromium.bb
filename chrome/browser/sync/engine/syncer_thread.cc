@@ -556,7 +556,7 @@ SyncSession* SyncerThread::SyncMain(Syncer* syncer, bool was_throttled,
       continue_sync_cycle, initial_sync_for_thread, was_nudged));
   scoped_ptr<SyncSession> session;
 
-  AutoUnlock unlock(lock_);
+  base::AutoUnlock unlock(lock_);
   do {
     session.reset(new SyncSession(session_context_.get(), this,
                                   info, routes, workers));

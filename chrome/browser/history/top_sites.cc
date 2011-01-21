@@ -217,7 +217,7 @@ void TopSites::GetMostVisitedURLs(CancelableRequestConsumer* consumer,
   AddRequest(request, consumer);
   MostVisitedURLList filtered_urls;
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     if (!loaded_) {
       // A request came in before we finished loading. Put the request in
       // pending_callbacks_ and we'll notify it when we finish loading.
@@ -233,7 +233,7 @@ void TopSites::GetMostVisitedURLs(CancelableRequestConsumer* consumer,
 bool TopSites::GetPageThumbnail(const GURL& url,
                                 scoped_refptr<RefCountedBytes>* bytes) {
   // WARNING: this may be invoked on any thread.
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   return thread_safe_cache_->GetPageThumbnail(url, bytes);
 }
 
@@ -800,7 +800,7 @@ void TopSites::MoveStateToLoaded() {
   MostVisitedURLList filtered_urls;
   PendingCallbackSet pending_callbacks;
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
 
     if (loaded_)
       return;  // Don't do anything if we're already loaded.
@@ -822,14 +822,14 @@ void TopSites::MoveStateToLoaded() {
 }
 
 void TopSites::ResetThreadSafeCache() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   MostVisitedURLList cached;
   ApplyBlacklistAndPinnedURLs(cache_->top_sites(), &cached);
   thread_safe_cache_->SetTopSites(cached);
 }
 
 void TopSites::ResetThreadSafeImageCache() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   thread_safe_cache_->SetThumbnails(cache_->images());
   thread_safe_cache_->RemoveUnreferencedThumbnails();
 }

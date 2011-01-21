@@ -44,7 +44,7 @@ DirectoryManager::DirectoryManager(const FilePath& path)
 }
 
 DirectoryManager::~DirectoryManager() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   DCHECK_EQ(managed_directory_, static_cast<Directory*>(NULL))
       << "Dir " << managed_directory_->name() << " not closed!";
   delete channel_;
@@ -63,7 +63,7 @@ DirOpenResult DirectoryManager::OpenImpl(const std::string& name,
                                          bool* was_open) {
   bool opened = false;
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     // Check to see if it's already open.
     if (managed_directory_) {
       DCHECK_EQ(ComparePathNames(name, managed_directory_->name()), 0)
@@ -79,7 +79,7 @@ DirOpenResult DirectoryManager::OpenImpl(const std::string& name,
   scoped_ptr<Directory> dir(new Directory);
   const DirOpenResult result = dir->Open(path, name);
   if (syncable::OPENED == result) {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     managed_directory_ = dir.release();
   }
   return result;
@@ -90,7 +90,7 @@ DirOpenResult DirectoryManager::OpenImpl(const std::string& name,
 void DirectoryManager::Close(const std::string& name) {
   // Erase from mounted and opened directory lists.
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     if (!managed_directory_ ||
         ComparePathNames(name, managed_directory_->name()) != 0) {
       // It wasn't open.
@@ -109,14 +109,14 @@ void DirectoryManager::Close(const std::string& name) {
 }
 
 void DirectoryManager::FinalSaveChangesForAll() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   if (managed_directory_)
     managed_directory_->SaveChanges();
 }
 
 void DirectoryManager::GetOpenDirectories(DirNames* result) {
   result->clear();
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   if (managed_directory_)
     result->push_back(managed_directory_->name());
 }

@@ -13,9 +13,9 @@
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
-#include "base/lock.h"
 #include "base/metrics/histogram.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
 #include "chrome/common/metrics_helpers.h"
@@ -148,7 +148,7 @@ class MetricsService : public MetricsServiceBase {
   int transmission_timer_id_;
 
   // Used to serialize the Start and Stop operations on the metrics service.
-  static Lock metrics_service_lock_;
+  static base::Lock metrics_service_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
 };

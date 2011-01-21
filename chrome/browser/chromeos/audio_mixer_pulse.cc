@@ -144,7 +144,7 @@ void AudioMixerPulse::SetMute(bool mute) {
 }
 
 AudioMixer::State AudioMixerPulse::GetState() const {
-  AutoLock lock(mixer_state_lock_);
+  base::AutoLock lock(mixer_state_lock_);
   // If we think it's ready, verify it is actually so.
   if ((mixer_state_ == READY) &&
       (pa_context_get_state(pa_context_) != PA_CONTEXT_READY))
@@ -162,7 +162,7 @@ void AudioMixerPulse::DoInit(InitDoneCallback* callback) {
 }
 
 bool AudioMixerPulse::InitThread() {
-  AutoLock lock(mixer_state_lock_);
+  base::AutoLock lock(mixer_state_lock_);
 
   if (mixer_state_ != UNINITIALIZED)
     return false;
@@ -202,7 +202,7 @@ bool AudioMixerPulse::PulseAudioInit() {
   pa_context_state_t state = PA_CONTEXT_FAILED;
 
   {
-    AutoLock lock(mixer_state_lock_);
+    base::AutoLock lock(mixer_state_lock_);
     if (mixer_state_ != INITIALIZING)
       return false;
 
@@ -286,7 +286,7 @@ bool AudioMixerPulse::PulseAudioInit() {
       break;
 
     {
-      AutoLock lock(mixer_state_lock_);
+      base::AutoLock lock(mixer_state_lock_);
       if (mixer_state_ == SHUTTING_DOWN)
         return false;
       mixer_state_ = READY;
@@ -302,7 +302,7 @@ bool AudioMixerPulse::PulseAudioInit() {
 
 void AudioMixerPulse::PulseAudioFree() {
   {
-    AutoLock lock(mixer_state_lock_);
+    base::AutoLock lock(mixer_state_lock_);
     if (!pa_mainloop_)
       mixer_state_ = UNINITIALIZED;
     if ((mixer_state_ == UNINITIALIZED) || (mixer_state_ == SHUTTING_DOWN))
@@ -327,7 +327,7 @@ void AudioMixerPulse::PulseAudioFree() {
   pa_mainloop_ = NULL;
 
   {
-    AutoLock lock(mixer_state_lock_);
+    base::AutoLock lock(mixer_state_lock_);
     mixer_state_ = UNINITIALIZED;
   }
 }
@@ -441,7 +441,7 @@ inline void AudioMixerPulse::MainloopSignal() const {
 }
 
 inline bool AudioMixerPulse::MainloopSafeLock() const {
-  AutoLock lock(mixer_state_lock_);
+  base::AutoLock lock(mixer_state_lock_);
   if ((mixer_state_ == SHUTTING_DOWN) || (!pa_mainloop_))
     return false;
 
@@ -451,7 +451,7 @@ inline bool AudioMixerPulse::MainloopSafeLock() const {
 }
 
 inline bool AudioMixerPulse::MainloopLockIfReady() const {
-  AutoLock lock(mixer_state_lock_);
+  base::AutoLock lock(mixer_state_lock_);
   if (mixer_state_ != READY)
     return false;
   if (!pa_mainloop_)

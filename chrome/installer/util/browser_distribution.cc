@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/win/registry.h"
 #include "chrome/common/env_vars.h"

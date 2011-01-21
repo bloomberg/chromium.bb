@@ -586,7 +586,7 @@ bool Directory::SaveChanges() {
   bool success = false;
   DCHECK(store_);
 
-  AutoLock scoped_lock(kernel_->save_changes_mutex);
+  base::AutoLock scoped_lock(kernel_->save_changes_mutex);
 
   // Snapshot and save.
   SaveChangesSnapshot snapshot;
@@ -1141,7 +1141,7 @@ bool BaseTransaction::NotifyTransactionChangingAndEnding(
   {
     // Scoped_lock is only active through the calculate_changes and
     // transaction_ending events.
-    AutoLock scoped_lock(dirkernel_->changes_channel_mutex);
+    base::AutoLock scoped_lock(dirkernel_->changes_channel_mutex);
 
     // Tell listeners to calculate changes while we still have the mutex.
     DirectoryChangeEvent event = { DirectoryChangeEvent::CALCULATE_CHANGES,

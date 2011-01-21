@@ -4,21 +4,21 @@
 
 #include "chrome/browser/mach_broker_mac.h"
 
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MachBrokerTest : public testing::Test {
  public:
   // Helper function to acquire/release locks and call |PlaceholderForPid()|.
   void AddPlaceholderForPid(base::ProcessHandle pid) {
-    AutoLock lock(broker_.GetLock());
+    base::AutoLock lock(broker_.GetLock());
     broker_.AddPlaceholderForPid(pid);
   }
 
   // Helper function to acquire/release locks and call |FinalizePid()|.
   void FinalizePid(base::ProcessHandle pid,
                    const MachBroker::MachInfo& mach_info) {
-    AutoLock lock(broker_.GetLock());
+    base::AutoLock lock(broker_.GetLock());
     broker_.FinalizePid(pid, mach_info);
   }
 
@@ -28,7 +28,7 @@ class MachBrokerTest : public testing::Test {
 
 TEST_F(MachBrokerTest, Locks) {
   // Acquire and release the locks.  Nothing bad should happen.
-  AutoLock lock(broker_.GetLock());
+  base::AutoLock lock(broker_.GetLock());
 }
 
 TEST_F(MachBrokerTest, AddPlaceholderAndFinalize) {

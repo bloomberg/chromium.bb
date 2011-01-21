@@ -13,7 +13,7 @@
 #include "base/hash_tables.h"
 #include "base/process.h"
 #include "base/ref_counted.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
@@ -197,7 +197,7 @@ class RenderWidgetHelper
 
   // On OSX we keep file descriptors to all the allocated DIBs around until
   // the renderer frees them.
-  Lock allocated_dibs_lock_;
+  base::Lock allocated_dibs_lock_;
   std::map<TransportDIB::Id, int> allocated_dibs_;
 #endif
 
@@ -205,7 +205,7 @@ class RenderWidgetHelper
   // The UpdateMsgProxy objects are not owned by this map.  (See UpdateMsgProxy
   // for details about how the lifetime of instances are managed.)
   UpdateMsgProxyMap pending_paints_;
-  Lock pending_paints_lock_;
+  base::Lock pending_paints_lock_;
 
   int render_process_id_;
 

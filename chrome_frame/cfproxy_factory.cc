@@ -30,7 +30,7 @@ ChromeProxyFactory::ChromeProxyFactory() {
 }
 
 ChromeProxyFactory::~ChromeProxyFactory() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   ProxyMap::iterator it = proxies_.begin();
   for (; it != proxies_.end(); ++it) {
     ChromeProxy* proxy = it->second;
@@ -41,7 +41,7 @@ ChromeProxyFactory::~ChromeProxyFactory() {
 
 void ChromeProxyFactory::GetProxy(ChromeProxyDelegate* delegate,
                                   const ProxyParams& params) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   ChromeProxy* proxy = NULL;
   // TODO(stoyan): consider extra_params/timeout
   ProxyMap::iterator it = proxies_.find(params.profile);
@@ -59,7 +59,7 @@ void ChromeProxyFactory::GetProxy(ChromeProxyDelegate* delegate,
 
 bool ChromeProxyFactory::ReleaseProxy(ChromeProxyDelegate* delegate,
                                       const std::string& profile) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   ProxyMap::iterator it = proxies_.find(profile);
   if (it == proxies_.end())
     return false;

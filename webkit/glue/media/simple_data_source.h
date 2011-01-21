@@ -120,7 +120,7 @@ class SimpleDataSource : public WebDataSource,
   State state_;
 
   // Used for accessing |state_|.
-  Lock lock_;
+  base::Lock lock_;
 
   // Filter callbacks.
   scoped_ptr<media::FilterCallback> initialize_callback_;

@@ -19,8 +19,8 @@
 #include <map>
 #include <string>
 
-#include "base/lock.h"
 #include "base/logging.h"
+#include "base/synchronization/lock.h"
 #include "third_party/activscp/activdbg.h"
 #include "ceee/common/initializing_coclass.h"
 
@@ -293,7 +293,7 @@ class ScriptHost::DebugApplication {
   void RegisterDebugApplication();  // Under lock_.
 
   // Protects all members below.
-  ::Lock lock_;  // Our containing class has a Lock method.
+  base::Lock lock_;
 
   // Number of initialization calls.
   size_t initialization_count_;

@@ -53,11 +53,11 @@
 #ifndef WEBKIT_GLUE_WEBMEDIAPLAYER_IMPL_H_
 #define WEBKIT_GLUE_WEBMEDIAPLAYER_IMPL_H_
 
-#include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/threading/thread.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
@@ -149,7 +149,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     scoped_refptr<WebDataSource> data_source_;
     scoped_refptr<WebVideoRenderer> video_renderer_;
 
-    Lock lock_;
+    base::Lock lock_;
     int outstanding_repaints_;
   };
 

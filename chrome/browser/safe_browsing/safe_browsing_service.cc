@@ -592,7 +592,7 @@ void SafeBrowsingService::OnIOShutdown() {
 }
 
 bool SafeBrowsingService::DatabaseAvailable() const {
-  AutoLock lock(database_lock_);
+  base::AutoLock lock(database_lock_);
   return !closing_database_ && (database_ != NULL);
 }
 
@@ -625,7 +625,7 @@ SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
   {
     // Acquiring the lock here guarantees correct ordering between the writes to
     // the new database object above, and the setting of |databse_| below.
-    AutoLock lock(database_lock_);
+    base::AutoLock lock(database_lock_);
     database_ = database;
   }
 
@@ -829,7 +829,7 @@ void SafeBrowsingService::OnCloseDatabase() {
   // of |database_| above and of |closing_database_| below, which ensures there
   // won't be a window during which the IO thread falsely believes the database
   // is available.
-  AutoLock lock(database_lock_);
+  base::AutoLock lock(database_lock_);
   closing_database_ = false;
 }
 

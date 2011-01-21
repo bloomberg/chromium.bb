@@ -14,7 +14,7 @@
 #include <map>
 #include <functional>
 
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "tools/memory_watcher/memory_hook.h"
 
 class CallStack;
@@ -76,7 +76,7 @@ class MemoryWatcher : MemoryObserver {
   // a stack track.  Used to avoid recursive tracking.
   DWORD active_thread_id_;
 
-  Lock block_map_lock_;
+  base::Lock block_map_lock_;
   // The block_map provides quick lookups based on the allocation
   // pointer.  This is important for having fast round trips through
   // malloc/free.

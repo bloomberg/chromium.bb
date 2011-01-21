@@ -17,7 +17,7 @@ void PrintedDocument::RenderPrintedPage(
 #ifndef NDEBUG
   {
     // Make sure the page is from our list.
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     DCHECK(&page == mutable_.pages_.find(page.page_number() - 1)->second.get());
   }
 #endif

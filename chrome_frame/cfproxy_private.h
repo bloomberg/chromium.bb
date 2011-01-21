@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 #include <vector>
+
 #include "chrome_frame/cfproxy.h"
 #include "base/threading/thread.h"
 // Since we can't forward declare IPC::Message::Sender or IPC::Channel::Listener
@@ -55,7 +56,7 @@ class SyncMsgSender {
   SingleSentMessage* RemoveMessage(int id);
   typedef std::map<int, SingleSentMessage*> SentMessages;
   SentMessages messages_;
-  Lock messages_lock_;
+  base::Lock messages_lock_;
   TabsMap* tab2delegate_;
 };
 

@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "webkit/glue/media/buffered_resource_loader.h"
 
 namespace webkit_glue {
@@ -175,7 +175,7 @@ class BufferedDataSource : public WebDataSource {
   MessageLoop* render_loop_;
 
   // Protects |stopped_|.
-  Lock lock_;
+  base::Lock lock_;
 
   // Stop signal to suppressing activities. This variable is set on the pipeline
   // thread and read from the render thread.

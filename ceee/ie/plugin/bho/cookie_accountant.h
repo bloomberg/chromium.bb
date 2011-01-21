@@ -13,8 +13,8 @@
 #include <string>
 
 #include "app/win/iat_patch_function.h"
-#include "base/lock.h"
 #include "base/singleton.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "ceee/ie/plugin/bho/cookie_events_funnel.h"
 #include "net/base/cookie_monster.h"
@@ -86,7 +86,7 @@ class CookieAccountant {
   bool initializing_;
 
   // A lock that protects access to the function patches.
-  Lock lock_;
+  base::Lock lock_;
 
   // Cached singleton instance. Useful for unit testing.
   static CookieAccountant* singleton_instance_;

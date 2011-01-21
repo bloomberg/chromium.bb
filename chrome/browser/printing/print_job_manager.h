@@ -8,8 +8,8 @@
 
 #include <vector>
 
-#include "base/lock.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -62,10 +62,10 @@ class PrintJobManager : public NotificationObserver {
   NotificationRegistrar registrar_;
 
   // Used to serialize access to queued_workers_.
-  Lock lock_;
+  base::Lock lock_;
 
   // Used to serialize access to printing_enabled_
-  Lock enabled_lock_;
+  base::Lock enabled_lock_;
 
   PrinterQueries queued_queries_;
 

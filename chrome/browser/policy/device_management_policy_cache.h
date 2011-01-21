@@ -7,9 +7,9 @@
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
@@ -74,7 +74,7 @@ class DeviceManagementPolicyCache {
   const FilePath backing_file_path_;
 
   // Protects |policy_|.
-  Lock lock_;
+  base::Lock lock_;
 
   // Policy key-value information.
   scoped_ptr<DictionaryValue> policy_;

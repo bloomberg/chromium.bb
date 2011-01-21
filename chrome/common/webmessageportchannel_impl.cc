@@ -53,7 +53,7 @@ WebMessagePortChannelImpl::~WebMessagePortChannelImpl() {
 
 void WebMessagePortChannelImpl::setClient(WebMessagePortChannelClient* client) {
   // Must lock here since client_ is called on the main thread.
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   client_ = client;
 }
 
@@ -105,7 +105,7 @@ void WebMessagePortChannelImpl::postMessage(
 bool WebMessagePortChannelImpl::tryGetMessage(
     WebString* message,
     WebMessagePortChannelArray& channels) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (message_queue_.empty())
     return false;
 
@@ -194,7 +194,7 @@ void WebMessagePortChannelImpl::OnMessage(
     const string16& message,
     const std::vector<int>& sent_message_port_ids,
     const std::vector<int>& new_routing_ids) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   Message msg;
   msg.message = message;
   if (!sent_message_port_ids.empty()) {
@@ -215,7 +215,7 @@ void WebMessagePortChannelImpl::OnMessagedQueued() {
   std::vector<QueuedMessage> queued_messages;
 
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     queued_messages.reserve(message_queue_.size());
     while (!message_queue_.empty()) {
       string16 message = message_queue_.front().message;

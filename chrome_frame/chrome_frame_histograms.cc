@@ -24,7 +24,7 @@ ChromeFrameHistogramSnapshots::ChromeFrameHistogramSnapshots() {
 ChromeFrameHistogramSnapshots::HistogramPickledList
   ChromeFrameHistogramSnapshots::GatherAllHistograms() {
 
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
 
   StatisticsRecorder::Histograms histograms;
   StatisticsRecorder::GetHistograms(&histograms);

@@ -1,5 +1,4 @@
-
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +6,7 @@
 #include "chrome_frame/crash_reporting/crash_report.h"
 
 #include "base/basictypes.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 
@@ -15,7 +14,7 @@
 const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
 
 // This lock protects against concurrent access to g_breakpad.
-static Lock g_breakpad_lock;
+static base::Lock g_breakpad_lock;
 static google_breakpad::ExceptionHandler* g_breakpad = NULL;
 
 // These minidump flag combinations have been tested safe against the
@@ -54,7 +53,8 @@ class CrashHandler {
 
   // Note that breakpad_lock is used to protect accesses to breakpad and must
   // be held when Init() is called.
-  bool Init(google_breakpad::ExceptionHandler* breakpad, Lock* breakpad_lock);
+  bool Init(google_breakpad::ExceptionHandler* breakpad,
+            base::Lock* breakpad_lock);
 
   void Shutdown();
  private:
@@ -78,7 +78,7 @@ LONG WINAPI CrashHandler::VectoredHandlerEntryPoint(
 #pragma code_seg(pop)
 
 bool CrashHandler::Init(google_breakpad::ExceptionHandler* breakpad,
-                        Lock* breakpad_lock) {
+                        base::Lock* breakpad_lock) {
   DCHECK(breakpad);
   DCHECK(breakpad_lock);
   breakpad_lock->AssertAcquired();
@@ -119,7 +119,7 @@ bool InitializeVectoredCrashReportingWithPipeName(
     const wchar_t* pipe_name,
     const std::wstring& dump_path,
     google_breakpad::CustomClientInfo* client_info) {
-  AutoLock lock(g_breakpad_lock);
+  base::AutoLock lock(g_breakpad_lock);
   if (g_breakpad)
     return true;
 
@@ -165,14 +165,14 @@ bool InitializeVectoredCrashReporting(
 
 bool ShutdownVectoredCrashReporting() {
   g_crash_handler.Shutdown();
-  AutoLock lock(g_breakpad_lock);
+  base::AutoLock lock(g_breakpad_lock);
   delete g_breakpad;
   g_breakpad = NULL;
   return true;
 }
 
 bool WriteMinidumpForException(EXCEPTION_POINTERS* p) {
-  AutoLock lock(g_breakpad_lock);
+  base::AutoLock lock(g_breakpad_lock);
   CrashMetricsReporter::GetInstance()->IncrementMetric(
       CrashMetricsReporter::CRASH_COUNT);
   bool success = false;

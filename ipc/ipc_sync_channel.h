@@ -10,8 +10,8 @@
 #include <deque>
 
 #include "base/basictypes.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -119,7 +119,7 @@ class SyncChannel : public ChannelProxy,
 
     typedef std::deque<PendingSyncMsg> PendingSyncMessageQueue;
     PendingSyncMessageQueue deserializers_;
-    Lock deserializers_lock_;
+    base::Lock deserializers_lock_;
 
     scoped_refptr<ReceivedSyncMsgQueue> received_sync_msgs_;
 

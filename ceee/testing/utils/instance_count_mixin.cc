@@ -17,13 +17,13 @@ namespace testing {
 Lock InstanceCountMixinBase::lock_;
 
 InstanceCountMixinBase::InstanceCountMixinBase() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   instances.insert(this);
 }
 
 InstanceCountMixinBase::~InstanceCountMixinBase() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   EXPECT_EQ(1, instances.erase(this));
 }
@@ -34,7 +34,7 @@ void InstanceCountMixinBase::GetDescription(std::string* description) const {
 }
 
 void InstanceCountMixinBase::LogLeakedInstances() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   InstanceSet::const_iterator it(instances.begin());
   InstanceSet::const_iterator end(instances.end());
@@ -49,7 +49,7 @@ void InstanceCountMixinBase::LogLeakedInstances() {
 typedef InstanceCountMixinBase::InstanceSet InstanceSet;
 
 size_t InstanceCountMixinBase::all_instance_count() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   return instances.size();
 }
 

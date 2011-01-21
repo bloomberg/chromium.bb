@@ -79,7 +79,7 @@ bool ExecutorsManager::IsKnownWindow(HWND window) {
 }
 
 bool ExecutorsManager::IsKnownWindowImpl(HWND window) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   return handle_map_.find(window) != handle_map_.end() ||
       frame_window_families_.find(window) != frame_window_families_.end();
 }
@@ -92,7 +92,7 @@ HWND ExecutorsManager::FindTabChildImpl(HWND window) {
   if (!common_api::CommonApiResult::IsIeFrameClass(window))
     return NULL;
 
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   FrameTabsMap::iterator it = frame_window_families_.find(window);
   if (it == frame_window_families_.end())
     return NULL;
@@ -107,7 +107,7 @@ HRESULT ExecutorsManager::RegisterTabExecutor(ThreadId thread_id,
   // This way we can add a ref to the module for the existence of the map.
   bool map_was_empty = false;
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     map_was_empty = executors_.empty();
     if (!map_was_empty && executors_.find(thread_id) != executors_.end()) {
       return S_OK;
@@ -136,7 +136,7 @@ HRESULT ExecutorsManager::RegisterWindowExecutor(ThreadId thread_id,
   // our map in a thread safe way...
   CHandle executor_registration_gate;
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     if (executors_.find(thread_id) != executors_.end()) {
       DCHECK(false) << "Unexpected registered thread_id: " << thread_id;
       return E_UNEXPECTED;
@@ -173,7 +173,7 @@ HRESULT ExecutorsManager::RegisterWindowExecutor(ThreadId thread_id,
   // This way we can add a ref to the module for the existence of the map.
   bool map_was_empty = false;
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     map_was_empty = executors_.empty();
     // We should not get here if we already have an executor for that thread.
     DCHECK(executors_.find(thread_id) == executors_.end());
@@ -206,7 +206,7 @@ HRESULT ExecutorsManager::GetExecutor(ThreadId thread_id, HWND window,
   // But we must create the executor creator outside of the lock.
   bool create_executor = false;
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     ExecutorsMap::iterator exec_iter = executors_.find(thread_id);
     if (exec_iter != executors_.end()) {
       // Found it... We're done... That was quick!!! :-)
@@ -266,7 +266,7 @@ HRESULT ExecutorsManager::GetExecutor(ThreadId thread_id, HWND window,
         reinterpret_cast<CeeeWindowHandle>(window));
     if (FAILED(hr)) {
       // This could happen if the thread we want to hook to died prematurely.
-      AutoLock lock(lock_);
+      base::AutoLock lock(lock_);
       pending_registrations_.erase(thread_id);
       return hr;
     }
@@ -285,7 +285,7 @@ HRESULT ExecutorsManager::GetExecutor(ThreadId thread_id, HWND window,
   }
 
   // Do our own cleanup and return a reference thread safely...
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   pending_registrations_.erase(thread_id);
   ExecutorsMap::iterator iter = executors_.find(thread_id);
   if (iter == executors_.end()) {
@@ -302,7 +302,7 @@ HRESULT ExecutorsManager::RemoveExecutor(ThreadId thread_id) {
   CComPtr<IUnknown> dead_executor;
   bool map_is_empty = false;
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     ExecutorsMap::iterator iter = executors_.find(thread_id);
     if (iter == executors_.end()) {
       return S_FALSE;
@@ -348,7 +348,7 @@ void ExecutorsManager::SetTabIdForHandle(int tab_id, HWND handle) {
   DCHECK(common_api::CommonApiResult::IsIeFrameClass(frame_window));
   bool send_on_create = false;
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     if (tab_id_map_.end() != tab_id_map_.find(tab_id) ||
         handle_map_.end() != handle_map_.find(handle)) {
       // Avoid double-setting of tab id -> handle mappings, which could
@@ -382,7 +382,7 @@ void ExecutorsManager::SetTabIdForHandle(int tab_id, HWND handle) {
 
 void ExecutorsManager::SetTabToolBandIdForHandle(int tool_band_id,
                                                  HWND handle) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   if (tool_band_id_map_.end() != tool_band_id_map_.find(tool_band_id) ||
       tool_band_handle_map_.end() != tool_band_handle_map_.find(handle)) {
     // Avoid double-setting of tool band id -> handle mappings, which could
@@ -412,7 +412,7 @@ void ExecutorsManager::DeleteTabHandle(HWND handle) {
     frame_window = NULL;
 
   bool send_on_removed = false;
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   {
     HandleMap::iterator handle_it = handle_map_.find(handle);
     // Don't DCHECK, we may be called more than once, but it's fine,
@@ -492,7 +492,7 @@ void ExecutorsManager::CleanupMapsForThread(DWORD thread_id) {
   // of that for us, and 2) we can't call DeleteHandle from within a lock.
   std::vector<HWND> tab_handles_to_remove;
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     HandleMap::iterator handle_it = handle_map_.begin();
     for (; handle_it != handle_map_.end(); ++ handle_it) {
       if (::GetWindowThreadProcessId(handle_it->first, NULL) == thread_id)
@@ -507,7 +507,7 @@ void ExecutorsManager::CleanupMapsForThread(DWORD thread_id) {
 }
 
 bool ExecutorsManager::IsTabIdValid(int tab_id) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   TabIdMap::const_iterator it = tab_id_map_.find(tab_id);
 #ifdef DEBUG
   return it != tab_id_map_.end() && it->second != INVALID_HANDLE_VALUE;
@@ -517,7 +517,7 @@ bool ExecutorsManager::IsTabIdValid(int tab_id) {
 }
 
 HWND ExecutorsManager::GetTabHandleFromId(int tab_id) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   TabIdMap::const_iterator it = tab_id_map_.find(tab_id);
   DCHECK(it != tab_id_map_.end());
 
@@ -530,7 +530,7 @@ HWND ExecutorsManager::GetTabHandleFromId(int tab_id) {
 }
 
 bool ExecutorsManager::IsTabHandleValid(HWND tab_handle) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   HandleMap::const_iterator it = handle_map_.find(tab_handle);
 #ifdef DEBUG
   return it != handle_map_.end() && it->second != kInvalidChromeSessionId;
@@ -540,7 +540,7 @@ bool ExecutorsManager::IsTabHandleValid(HWND tab_handle) {
 }
 
 int ExecutorsManager::GetTabIdFromHandle(HWND tab_handle) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   HandleMap::const_iterator it = handle_map_.find(tab_handle);
   if (it == handle_map_.end())
     return kInvalidChromeSessionId;
@@ -549,7 +549,7 @@ int ExecutorsManager::GetTabIdFromHandle(HWND tab_handle) {
 }
 
 HWND ExecutorsManager::GetTabHandleFromToolBandId(int tool_band_id) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   TabIdMap::const_iterator it = tool_band_id_map_.find(tool_band_id);
 
   if (it == tool_band_id_map_.end())
@@ -567,7 +567,7 @@ HRESULT ExecutorsManager::GetExecutorCreator(
 
 size_t ExecutorsManager::GetThreadHandles(
     CHandle thread_handles[], ThreadId thread_ids[], size_t num_threads) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   ExecutorsMap::iterator iter = executors_.begin();
   size_t index = 0;
   for (; index < num_threads && iter != executors_.end(); ++index, ++iter) {

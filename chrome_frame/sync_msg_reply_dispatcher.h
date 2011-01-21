@@ -8,7 +8,7 @@
 #include <deque>
 
 #include "base/callback.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "ipc/ipc_channel_proxy.h"
 
 // Base class used to allow synchronous IPC messages to be sent and
@@ -113,7 +113,7 @@ class SyncMessageReplyDispatcher : public IPC::ChannelProxy::MessageFilter {
   }
 
   PendingSyncMessageQueue message_queue_;
-  Lock message_queue_lock_;
+  base::Lock message_queue_lock_;
 };
 
 #endif  // CHROME_FRAME_SYNC_MSG_REPLY_DISPATCHER_H_

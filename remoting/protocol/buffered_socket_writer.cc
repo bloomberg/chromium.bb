@@ -48,7 +48,7 @@ BufferedSocketWriterBase::~BufferedSocketWriterBase() { }
 void BufferedSocketWriterBase::Init(net::Socket* socket,
                                     WriteFailedCallback* callback) {
   // TODO(garykac) Save copy of WriteFailedCallback.
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   message_loop_ = MessageLoop::current();
   socket_ = socket;
   DCHECK(socket_);
@@ -56,7 +56,7 @@ void BufferedSocketWriterBase::Init(net::Socket* socket,
 
 bool BufferedSocketWriterBase::Write(
     scoped_refptr<net::IOBufferWithSize> data, Task* done_task) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (!socket_)
     return false;
   queue_.push_back(new PendingPacket(data, done_task));
@@ -76,7 +76,7 @@ void BufferedSocketWriterBase::DoWrite() {
 
   // Don't write after Close().
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     if (closed_)
       return;
   }
@@ -85,7 +85,7 @@ void BufferedSocketWriterBase::DoWrite() {
     net::IOBuffer* current_packet;
     int current_packet_size;
     {
-      AutoLock auto_lock(lock_);
+      base::AutoLock auto_lock(lock_);
       GetNextPacket_Locked(&current_packet, &current_packet_size);
     }
 
@@ -96,7 +96,7 @@ void BufferedSocketWriterBase::DoWrite() {
     int result = socket_->Write(current_packet, current_packet_size,
                                 &written_callback_);
     if (result >= 0) {
-      AutoLock auto_lock(lock_);
+      base::AutoLock auto_lock(lock_);
       AdvanceBufferPosition_Locked(result);
     } else {
       if (result == net::ERR_IO_PENDING) {
@@ -123,7 +123,7 @@ void BufferedSocketWriterBase::OnWritten(int result) {
   }
 
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     AdvanceBufferPosition_Locked(result);
   }
 
@@ -133,7 +133,7 @@ void BufferedSocketWriterBase::OnWritten(int result) {
 }
 
 void BufferedSocketWriterBase::HandleError(int result) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   closed_ = true;
   STLDeleteElements(&queue_);
 
@@ -142,17 +142,17 @@ void BufferedSocketWriterBase::HandleError(int result) {
 }
 
 int BufferedSocketWriterBase::GetBufferSize() {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   return buffer_size_;
 }
 
 int BufferedSocketWriterBase::GetBufferChunks() {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   return queue_.size();
 }
 
 void BufferedSocketWriterBase::Close() {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   closed_ = true;
 }
 

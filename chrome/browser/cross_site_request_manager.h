@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/basictypes.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -47,7 +47,7 @@ class CrossSiteRequestManager {
 
   // You must acquire this lock before reading or writing any members of this
   // class.  You must not block while holding this lock.
-  Lock lock_;
+  base::Lock lock_;
 
   // Set of (render_process_host_id, render_view_id) pairs of all
   // RenderViewHosts that have pending cross-site requests.  Used to pass

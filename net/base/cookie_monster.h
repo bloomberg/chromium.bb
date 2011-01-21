@@ -15,9 +15,9 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "net/base/cookie_store.h"
@@ -485,7 +485,7 @@ class CookieMonster : public CookieStore {
   scoped_refptr<Delegate> delegate_;
 
   // Lock for thread-safety
-  Lock lock_;
+  base::Lock lock_;
 
   base::Time last_statistic_record_time_;
 

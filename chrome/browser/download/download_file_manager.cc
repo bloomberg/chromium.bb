@@ -196,7 +196,7 @@ void DownloadFileManager::UpdateDownload(int id, DownloadBuffer* buffer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::vector<DownloadBuffer::Contents> contents;
   {
-    AutoLock auto_lock(buffer->lock);
+    base::AutoLock auto_lock(buffer->lock);
     contents.swap(buffer->contents);
   }
 

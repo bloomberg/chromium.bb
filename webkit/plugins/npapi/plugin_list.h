@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/linked_ptr.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "third_party/npapi/bindings/nphostapi.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
@@ -329,7 +329,7 @@ class PluginList {
 
   // Need synchronization for the above members since this object can be
   // accessed on multiple threads.
-  Lock lock_;
+  base::Lock lock_;
 
   friend struct base::DefaultLazyInstanceTraits<PluginList>;
 

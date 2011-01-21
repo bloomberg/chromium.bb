@@ -71,7 +71,7 @@ bool AudioRendererImpl::OnInitialize(const media::MediaFormat& media_format) {
 }
 
 void AudioRendererImpl::OnStop() {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
   stopped_ = true;
@@ -84,7 +84,7 @@ void AudioRendererImpl::OnStop() {
 
 void AudioRendererImpl::ConsumeAudioSamples(
     scoped_refptr<media::Buffer> buffer_in) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
 
@@ -101,7 +101,7 @@ void AudioRendererImpl::ConsumeAudioSamples(
 void AudioRendererImpl::SetPlaybackRate(float rate) {
   DCHECK(rate >= 0.0f);
 
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   // Handle the case where we stopped due to |io_loop_| dying.
   if (stopped_) {
     AudioRendererBase::SetPlaybackRate(rate);
@@ -132,7 +132,7 @@ void AudioRendererImpl::SetPlaybackRate(float rate) {
 
 void AudioRendererImpl::Pause(media::FilterCallback* callback) {
   AudioRendererBase::Pause(callback);
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
 
@@ -143,7 +143,7 @@ void AudioRendererImpl::Pause(media::FilterCallback* callback) {
 void AudioRendererImpl::Seek(base::TimeDelta time,
                              media::FilterCallback* callback) {
   AudioRendererBase::Seek(time, callback);
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
 
@@ -154,7 +154,7 @@ void AudioRendererImpl::Seek(base::TimeDelta time,
 
 void AudioRendererImpl::Play(media::FilterCallback* callback) {
   AudioRendererBase::Play(callback);
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
 
@@ -168,7 +168,7 @@ void AudioRendererImpl::Play(media::FilterCallback* callback) {
 }
 
 void AudioRendererImpl::SetVolume(float volume) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
   io_loop_->PostTask(FROM_HERE,
@@ -180,7 +180,7 @@ void AudioRendererImpl::OnCreated(base::SharedMemoryHandle handle,
                                   uint32 length) {
   DCHECK(MessageLoop::current() == io_loop_);
 
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
 
@@ -199,7 +199,7 @@ void AudioRendererImpl::OnRequestPacket(AudioBuffersState buffers_state) {
   DCHECK(MessageLoop::current() == io_loop_);
 
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     DCHECK(!pending_request_);
     pending_request_ = true;
     request_buffers_state_ = buffers_state;
@@ -213,7 +213,7 @@ void AudioRendererImpl::OnStateChanged(
     const ViewMsg_AudioStreamState_Params& state) {
   DCHECK(MessageLoop::current() == io_loop_);
 
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
 
@@ -244,7 +244,7 @@ void AudioRendererImpl::OnVolume(double volume) {
 void AudioRendererImpl::CreateStreamTask(AudioParameters audio_params) {
   DCHECK(MessageLoop::current() == io_loop_);
 
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
 
@@ -297,7 +297,7 @@ void AudioRendererImpl::DestroyTask() {
 void AudioRendererImpl::SetVolumeTask(double volume) {
   DCHECK(MessageLoop::current() == io_loop_);
 
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
   filter_->Send(new ViewHostMsg_SetAudioVolume(0, stream_id_, volume));
@@ -306,7 +306,7 @@ void AudioRendererImpl::SetVolumeTask(double volume) {
 void AudioRendererImpl::NotifyPacketReadyTask() {
   DCHECK(MessageLoop::current() == io_loop_);
 
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
   if (pending_request_ && GetPlaybackRate() > 0.0f) {
@@ -352,7 +352,7 @@ void AudioRendererImpl::WillDestroyCurrentMessageLoop() {
   DCHECK(MessageLoop::current() == io_loop_);
 
   // We treat the IO loop going away the same as stopping.
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stopped_)
     return;
 

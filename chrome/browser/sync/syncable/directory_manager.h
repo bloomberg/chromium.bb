@@ -18,7 +18,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
 #include "chrome/browser/sync/syncable/path_name_cmp.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -87,7 +87,7 @@ class DirectoryManager {
   const FilePath root_path_;
 
   // protects managed_directory_
-  Lock lock_;
+  base::Lock lock_;
   Directory* managed_directory_;
 
   Channel* const channel_;

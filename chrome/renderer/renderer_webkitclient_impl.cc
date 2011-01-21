@@ -59,7 +59,7 @@
 #include <string>
 #include <map>
 
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "chrome/renderer/renderer_sandbox_support_linux.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebSandboxSupport.h"
 #endif
@@ -124,7 +124,7 @@ class RendererWebKitClientImpl::SandboxSupport
   // unicode code points. It needs this information frequently so we cache it
   // here. The key in this map is an array of 16-bit UTF16 values from WebKit.
   // The value is a string containing the correct font family.
-  Lock unicode_font_families_mutex_;
+  base::Lock unicode_font_families_mutex_;
   std::map<std::string, std::string> unicode_font_families_;
 #endif
 };
@@ -423,7 +423,7 @@ bool RendererWebKitClientImpl::SandboxSupport::ensureFontLoaded(HFONT font) {
 
 WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
     const WebKit::WebUChar* characters, size_t num_characters) {
-  AutoLock lock(unicode_font_families_mutex_);
+  base::AutoLock lock(unicode_font_families_mutex_);
   const std::string key(reinterpret_cast<const char*>(characters),
                         num_characters * sizeof(characters[0]));
   const std::map<std::string, std::string>::const_iterator iter =

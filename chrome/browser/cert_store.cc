@@ -46,7 +46,7 @@ CertStore::~CertStore() {
 
 int CertStore::StoreCert(net::X509Certificate* cert, int process_id) {
   DCHECK(cert);
-  AutoLock autoLock(cert_lock_);
+  base::AutoLock autoLock(cert_lock_);
 
   int cert_id;
 
@@ -86,7 +86,7 @@ int CertStore::StoreCert(net::X509Certificate* cert, int process_id) {
 
 bool CertStore::RetrieveCert(int cert_id,
                              scoped_refptr<net::X509Certificate>* cert) {
-  AutoLock autoLock(cert_lock_);
+  base::AutoLock autoLock(cert_lock_);
 
   CertMap::iterator iter = id_to_cert_.find(cert_id);
   if (iter == id_to_cert_.end())
@@ -109,7 +109,7 @@ void CertStore::RemoveCertInternal(int cert_id) {
 }
 
 void CertStore::RemoveCertsForRenderProcesHost(int process_id) {
-  AutoLock autoLock(cert_lock_);
+  base::AutoLock autoLock(cert_lock_);
 
   // We iterate through all the cert ids for that process.
   IDMap::iterator ids_iter;

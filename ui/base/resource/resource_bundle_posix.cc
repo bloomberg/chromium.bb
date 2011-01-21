@@ -5,11 +5,11 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #include "app/l10n_util.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
+#include "base/synchronization/lock.h"
 #include "gfx/font.h"
 #include "ui/base/resource/data_pack.h"
 

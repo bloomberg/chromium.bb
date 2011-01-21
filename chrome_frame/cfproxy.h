@@ -10,7 +10,7 @@
 #include <map>  // for proxy factory
 #include <vector>
 #include <string>
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"         // for base::TimeDelta
 #include "base/file_path.h"
 #include "chrome/common/automation_constants.h"
@@ -192,7 +192,7 @@ class ChromeProxyFactory {
   virtual ChromeProxy* CreateProxy();
   typedef std::map<std::string, ChromeProxy*> ProxyMap;
   ProxyMap proxies_;
-  Lock lock_;
+  base::Lock lock_;
 };
 
 #endif  // CHROME_FRAME_CFPROXY_H_

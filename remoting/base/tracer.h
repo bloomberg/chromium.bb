@@ -53,9 +53,9 @@
 
 #include <string>
 
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/singleton.h"
+#include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/scoped_ptr.h"
 #include "remoting/proto/trace.pb.h"
@@ -82,7 +82,7 @@ class Tracer : public base::RefCountedThreadSafe<Tracer> {
   friend class base::RefCountedThreadSafe<Tracer>;
   virtual ~Tracer();
 
-  Lock lock_;
+  base::Lock lock_;
   scoped_ptr<TraceBuffer> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(Tracer);

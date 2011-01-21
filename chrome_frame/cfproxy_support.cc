@@ -220,7 +220,7 @@ void SyncMsgSender::QueueSyncMessage(const IPC::SyncMessage* msg,
                                      SyncMessageContext* ctx) {
   if (delegate) {
     // We are interested of the result.
-    AutoLock lock(messages_lock_);
+    base::AutoLock lock(messages_lock_);
     int id = IPC::SyncMessage::GetMessageId(*msg);
     // A message can be sent only once.
     DCHECK(messages_.end() == messages_.find(id));
@@ -232,7 +232,7 @@ void SyncMsgSender::QueueSyncMessage(const IPC::SyncMessage* msg,
 void SyncMsgSender::Cancel(ChromeProxyDelegate* delegate) {
   std::vector<SingleSentMessage*> cancelled;
   {
-    AutoLock lock(messages_lock_);
+    base::AutoLock lock(messages_lock_);
     SentMessages::iterator it = messages_.begin();
     for (; it != messages_.end(); ) {
       SingleSentMessage* origin = it->second;
@@ -254,7 +254,7 @@ void SyncMsgSender::Cancel(ChromeProxyDelegate* delegate) {
 }
 
 SyncMsgSender::SingleSentMessage* SyncMsgSender::RemoveMessage(int id) {
-  AutoLock lock(messages_lock_);
+  base::AutoLock lock(messages_lock_);
   SentMessages::iterator it = messages_.find(id);
   if (it == messages_.end()) {
     // Delegate is not interested in this sync message response.
@@ -287,7 +287,7 @@ void SyncMsgSender::OnChannelClosed() {
   SentMessages messages_sent;
   // Make a copy of the messages queue
   {
-    AutoLock lock(messages_lock_);
+    base::AutoLock lock(messages_lock_);
     messages_.swap(messages_sent);
   }
 

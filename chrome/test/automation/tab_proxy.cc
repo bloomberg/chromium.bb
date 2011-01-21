@@ -789,25 +789,25 @@ void TabProxy::JavaScriptStressTestControl(int cmd, int param) {
 }
 
 void TabProxy::AddObserver(TabProxyDelegate* observer) {
-  AutoLock lock(list_lock_);
+  base::AutoLock lock(list_lock_);
   observers_list_.AddObserver(observer);
 }
 
 void TabProxy::RemoveObserver(TabProxyDelegate* observer) {
-  AutoLock lock(list_lock_);
+  base::AutoLock lock(list_lock_);
   observers_list_.RemoveObserver(observer);
 }
 
 // Called on Channel background thread, if TabMessages filter is installed.
 bool TabProxy::OnMessageReceived(const IPC::Message& message) {
-  AutoLock lock(list_lock_);
+  base::AutoLock lock(list_lock_);
   FOR_EACH_OBSERVER(TabProxyDelegate, observers_list_,
                     OnMessageReceived(this, message));
   return true;
 }
 
 void TabProxy::OnChannelError() {
-  AutoLock lock(list_lock_);
+  base::AutoLock lock(list_lock_);
   FOR_EACH_OBSERVER(TabProxyDelegate, observers_list_, OnChannelError(this));
 }
 

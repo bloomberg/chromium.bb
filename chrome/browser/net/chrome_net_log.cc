@@ -36,7 +36,7 @@ void ChromeNetLog::ThreadSafeObserver::AssertNetLogLockAcquired() const {
 void ChromeNetLog::ThreadSafeObserver::SetLogLevel(
     net::NetLog::LogLevel log_level) {
   DCHECK(net_log_);
-  AutoLock lock(net_log_->lock_);
+  base::AutoLock lock(net_log_->lock_);
   log_level_ = log_level;
   net_log_->UpdateLogLevel_();
 }
@@ -85,7 +85,7 @@ void ChromeNetLog::AddEntry(EventType type,
                             const Source& source,
                             EventPhase phase,
                             EventParameters* params) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   // Notify all of the log observers.
   FOR_EACH_OBSERVER(ThreadSafeObserver, observers_,
@@ -102,12 +102,12 @@ net::NetLog::LogLevel ChromeNetLog::GetLogLevel() const {
 }
 
 void ChromeNetLog::AddObserver(ThreadSafeObserver* observer) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   AddObserverWhileLockHeld(observer);
 }
 
 void ChromeNetLog::RemoveObserver(ThreadSafeObserver* observer) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   DCHECK_EQ(observer->net_log_, this);
   observer->net_log_ = NULL;
   observers_.RemoveObserver(observer);
@@ -116,18 +116,18 @@ void ChromeNetLog::RemoveObserver(ThreadSafeObserver* observer) {
 
 void ChromeNetLog::AddObserverAndGetAllPassivelyCapturedEvents(
     ThreadSafeObserver* observer, EntryList* passive_entries) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   AddObserverWhileLockHeld(observer);
   passive_collector_->GetAllCapturedEvents(passive_entries);
 }
 
 void ChromeNetLog::GetAllPassivelyCapturedEvents(EntryList* passive_entries) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   passive_collector_->GetAllCapturedEvents(passive_entries);
 }
 
 void ChromeNetLog::ClearAllPassivelyCapturedEvents() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   passive_collector_->Clear();
 }
 

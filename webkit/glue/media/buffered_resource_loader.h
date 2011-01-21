@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"

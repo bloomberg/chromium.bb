@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 
 // A WindowMessageSource instance monitors keyboard and mouse messages on the
 // same thread as the one that creates the instance, and fires events to those
@@ -95,7 +95,7 @@ class WindowMessageSource {
   static MessageSourceMap message_source_map_;
 
   // Used to protect access to the message_source_map_.
-  static Lock lock_;
+  static base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowMessageSource);
 };

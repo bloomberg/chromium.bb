@@ -7,8 +7,8 @@
 
 #include <list>
 
-#include "base/lock.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "net/base/io_buffer.h"
 #include "net/socket/socket.h"
 
@@ -86,7 +86,7 @@ class BufferedSocketWriterBase
   void HandleError(int result);
 
   // Must be locked when accessing |socket_|, |queue_| and |buffer_size_|;
-  Lock lock_;
+  base::Lock lock_;
 
   net::Socket* socket_;
   MessageLoop* message_loop_;

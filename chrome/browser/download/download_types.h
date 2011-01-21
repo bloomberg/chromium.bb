@@ -10,7 +10,7 @@
 
 #include "base/file_path.h"
 #include "base/linked_ptr.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "net/base/file_stream.h"
 
 namespace net {
@@ -27,7 +27,7 @@ struct DownloadBuffer {
   DownloadBuffer();
   ~DownloadBuffer();
 
-  Lock lock;
+  base::Lock lock;
   typedef std::pair<net::IOBuffer*, int> Contents;
   std::vector<Contents> contents;
 };

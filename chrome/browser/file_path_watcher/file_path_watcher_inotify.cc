@@ -21,10 +21,10 @@
 #include "base/file_util.h"
 #include "base/hash_tables.h"
 #include "base/lazy_instance.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 
@@ -62,7 +62,7 @@ class InotifyReader {
   base::hash_map<Watch, WatcherSet> watchers_;
 
   // Lock to protect watchers_.
-  Lock lock_;
+  base::Lock lock_;
 
   // Separate thread on which we run blocking read for inotify events.
   base::Thread thread_;
@@ -237,7 +237,7 @@ InotifyReader::Watch InotifyReader::AddWatch(
   if (!valid_)
     return kInvalidWatch;
 
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
 
   Watch watch = inotify_add_watch(inotify_fd_, path.value().c_str(),
                                   IN_CREATE | IN_DELETE |
@@ -257,7 +257,7 @@ bool InotifyReader::RemoveWatch(Watch watch,
   if (!valid_)
     return false;
 
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
 
   watchers_[watch].erase(watcher);
 
@@ -274,7 +274,7 @@ void InotifyReader::OnInotifyEvent(const inotify_event* event) {
     return;
 
   FilePath::StringType child(event->len ? event->name : FILE_PATH_LITERAL(""));
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
 
   for (WatcherSet::iterator watcher = watchers_[event->wd].begin();
        watcher != watchers_[event->wd].end();

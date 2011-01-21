@@ -9,7 +9,8 @@
 #include <windows.h>
 #include <deque>
 #include <queue>
-#include "base/lock.h"
+
+#include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 
@@ -58,7 +59,7 @@ class TaskMarshallerThroughMessageQueue : public base::NonThreadSafe {
 
   std::priority_queue<DelayedTask> delayed_tasks_;
   std::queue<Task*> pending_tasks_;
-  Lock lock_;
+  base::Lock lock_;
   HWND wnd_;
   UINT msg_;
   int invoke_task_;

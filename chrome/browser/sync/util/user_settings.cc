@@ -79,7 +79,7 @@ UserSettings::UserSettings() : dbhandle_(NULL) {
 }
 
 string UserSettings::email() const {
-  AutoLock lock(mutex_);
+  base::AutoLock lock(mutex_);
   return email_;
 }
 
@@ -421,7 +421,7 @@ bool UserSettings::VerifyAgainstStoredHash(const string& email,
 
 void UserSettings::SwitchUser(const string& username) {
   {
-    AutoLock lock(mutex_);
+    base::AutoLock lock(mutex_);
     email_ = username;
   }
 }

@@ -11,10 +11,10 @@
 #include <map>
 #include <vector>
 
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_handle.h"
 #include "base/stack_container.h"
+#include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/timer.h"
@@ -303,7 +303,7 @@ class ProxyFactory {
   typedef StackVector<scoped_refptr<AutomationProxyCacheEntry>, 4> Vector;
   Vector proxies_;
   // Lock if we are going to call GetAutomationServer from more than one thread.
-  Lock lock_;
+  base::Lock lock_;
 
   // Gathers histograms to be sent to Chrome.
   ChromeFrameHistogramSnapshots chrome_frame_histograms_;

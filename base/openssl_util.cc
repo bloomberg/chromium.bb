@@ -7,11 +7,11 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/scoped_vector.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
+#include "base/synchronization/lock.h"
 
 namespace base {
 
@@ -46,7 +46,7 @@ class OpenSSLInitSingleton {
     int num_locks = CRYPTO_num_locks();
     locks_.reserve(num_locks);
     for (int i = 0; i < num_locks; ++i)
-      locks_.push_back(new Lock());
+      locks_.push_back(new base::Lock());
     CRYPTO_set_locking_callback(LockingCallback);
     CRYPTO_set_id_callback(CurrentThreadId);
   }
@@ -70,7 +70,7 @@ class OpenSSLInitSingleton {
   }
 
   // These locks are used and managed by OpenSSL via LockingCallback().
-  ScopedVector<Lock> locks_;
+  ScopedVector<base::Lock> locks_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenSSLInitSingleton);
 };

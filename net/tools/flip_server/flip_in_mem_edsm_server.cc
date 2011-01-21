@@ -21,9 +21,9 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/simple_thread.h"
 #include "base/timer.h"
-#include "base/lock.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
@@ -2781,15 +2781,15 @@ class Notification {
    explicit Notification(bool value) : value_(value) {}
 
    void Notify() {
-     AutoLock al(lock_);
+     base::AutoLock al(lock_);
      value_ = true;
    }
    bool HasBeenNotified() {
-     AutoLock al(lock_);
+     base::AutoLock al(lock_);
      return value_;
    }
    bool value_;
-   Lock lock_;
+   base::Lock lock_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

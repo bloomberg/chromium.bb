@@ -503,7 +503,7 @@ bool CookieMonster::SetCookieWithDetails(
     const GURL& url, const std::string& name, const std::string& value,
     const std::string& domain, const std::string& path,
     const base::Time& expiration_time, bool secure, bool http_only) {
-  AutoLock autolock(lock_);
+  base::AutoLock autolock(lock_);
 
   if (!HasCookieableScheme(url))
     return false;
@@ -529,7 +529,7 @@ bool CookieMonster::SetCookieWithDetails(
 
 
 CookieList CookieMonster::GetAllCookies() {
-  AutoLock autolock(lock_);
+  base::AutoLock autolock(lock_);
   InitIfNecessary();
 
   // This function is being called to scrape the cookie list for management UI
@@ -564,7 +564,7 @@ CookieList CookieMonster::GetAllCookies() {
 CookieList CookieMonster::GetAllCookiesForURLWithOptions(
     const GURL& url,
     const CookieOptions& options) {
-  AutoLock autolock(lock_);
+  base::AutoLock autolock(lock_);
   InitIfNecessary();
 
   std::vector<CanonicalCookie*> cookie_ptrs;
@@ -587,7 +587,7 @@ CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
 }
 
 int CookieMonster::DeleteAll(bool sync_to_store) {
-  AutoLock autolock(lock_);
+  base::AutoLock autolock(lock_);
   if (sync_to_store)
     InitIfNecessary();
 
@@ -607,7 +607,7 @@ int CookieMonster::DeleteAll(bool sync_to_store) {
 int CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
                                            const Time& delete_end,
                                            bool sync_to_store) {
-  AutoLock autolock(lock_);
+  base::AutoLock autolock(lock_);
   InitIfNecessary();
 
   int num_deleted = 0;
@@ -632,7 +632,7 @@ int CookieMonster::DeleteAllCreatedAfter(const Time& delete_begin,
 }
 
 int CookieMonster::DeleteAllForHost(const GURL& url) {
-  AutoLock autolock(lock_);
+  base::AutoLock autolock(lock_);
   InitIfNecessary();
 
   if (!HasCookieableScheme(url))
@@ -663,7 +663,7 @@ int CookieMonster::DeleteAllForHost(const GURL& url) {
 }
 
 bool CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie) {
-  AutoLock autolock(lock_);
+  base::AutoLock autolock(lock_);
   InitIfNecessary();
 
   for (CookieMapItPair its = cookies_.equal_range(GetKey(cookie.Domain()));
@@ -679,7 +679,7 @@ bool CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie) {
 
 void CookieMonster::SetCookieableSchemes(
     const char* schemes[], size_t num_schemes) {
-  AutoLock autolock(lock_);
+  base::AutoLock autolock(lock_);
 
   // Cookieable Schemes must be set before first use of function.
   DCHECK(!initialized_);
@@ -705,7 +705,7 @@ void CookieMonster::EnableFileScheme() {
 }
 
 void CookieMonster::FlushStore(Task* completion_task) {
-  AutoLock autolock(lock_);
+  base::AutoLock autolock(lock_);
   if (initialized_ && store_)
     store_->Flush(completion_task);
   else if (completion_task)
@@ -715,7 +715,7 @@ void CookieMonster::FlushStore(Task* completion_task) {
 bool CookieMonster::SetCookieWithOptions(const GURL& url,
                                          const std::string& cookie_line,
                                          const CookieOptions& options) {
-  AutoLock autolock(lock_);
+  base::AutoLock autolock(lock_);
 
   if (!HasCookieableScheme(url)) {
     return false;
@@ -728,7 +728,7 @@ bool CookieMonster::SetCookieWithOptions(const GURL& url,
 
 std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
                                                  const CookieOptions& options) {
-  AutoLock autolock(lock_);
+  base::AutoLock autolock(lock_);
   InitIfNecessary();
 
   if (!HasCookieableScheme(url)) {
@@ -764,7 +764,7 @@ std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
 
 void CookieMonster::DeleteCookie(const GURL& url,
                                  const std::string& cookie_name) {
-  AutoLock autolock(lock_);
+  base::AutoLock autolock(lock_);
   InitIfNecessary();
 
   if (!HasCookieableScheme(url))
@@ -806,7 +806,7 @@ CookieMonster::~CookieMonster() {
 bool CookieMonster::SetCookieWithCreationTime(const GURL& url,
                                               const std::string& cookie_line,
                                               const base::Time& creation_time) {
-  AutoLock autolock(lock_);
+  base::AutoLock autolock(lock_);
 
   if (!HasCookieableScheme(url)) {
     return false;

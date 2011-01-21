@@ -13,7 +13,6 @@
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/lazy_instance.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"

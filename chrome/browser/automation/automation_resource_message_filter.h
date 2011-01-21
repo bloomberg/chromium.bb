@@ -10,7 +10,6 @@
 
 #include "base/atomicops.h"
 #include "base/lazy_instance.h"
-#include "base/lock.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "net/base/completion_callback.h"
 #include "net/base/cookie_store.h"

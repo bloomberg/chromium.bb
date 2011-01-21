@@ -129,7 +129,7 @@ bool AutofillProfileModelAssociator::AssociateModels() {
   VLOG(1) << "Associating Autofill Models";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   {
-    AutoLock lock(abort_association_pending_lock_);
+    base::AutoLock lock(abort_association_pending_lock_);
     abort_association_pending_ = false;
   }
 
@@ -458,7 +458,7 @@ int64 AutofillProfileModelAssociator::GetSyncIdFromChromeId(
 
 void AutofillProfileModelAssociator::AbortAssociation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  AutoLock lock(abort_association_pending_lock_);
+  base::AutoLock lock(abort_association_pending_lock_);
   abort_association_pending_ = true;
 }
 
@@ -469,7 +469,7 @@ const std::string* AutofillProfileModelAssociator::GetChromeNodeFromSyncId(
 }
 
 bool AutofillProfileModelAssociator::IsAbortPending() {
-  AutoLock lock(abort_association_pending_lock_);
+  base::AutoLock lock(abort_association_pending_lock_);
   return abort_association_pending_;
 }
 

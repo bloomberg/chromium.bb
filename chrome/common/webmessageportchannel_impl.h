@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/lock.h"
 #include "base/string16.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMessagePortChannel.h"
 
@@ -67,7 +67,7 @@ class WebMessagePortChannelImpl
   MessageQueue message_queue_;
 
   WebKit::WebMessagePortChannelClient* client_;
-  Lock lock_;  // Locks access to above.
+  base::Lock lock_;  // Locks access to above.
 
   int route_id_;  // The routing id for this object.
   int message_port_id_;  // A globally unique identifier for this message port.

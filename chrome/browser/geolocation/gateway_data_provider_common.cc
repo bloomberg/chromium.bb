@@ -32,7 +32,7 @@ void GatewayDataProviderCommon::StopDataProvider() {
 bool GatewayDataProviderCommon::GetData(GatewayData *data) {
   DCHECK(CalledOnClientThread());
   DCHECK(data);
-  AutoLock lock(data_mutex_);
+  base::AutoLock lock(data_mutex_);
   *data = gateway_data_;
   // If we've successfully completed a scan, indicate that we have all of the
   // data we can get.
@@ -67,7 +67,7 @@ void GatewayDataProviderCommon::DoRouterScanTask() {
     ScheduleNextScan(polling_policy_->NoRouterInterval());
   } else {
     {
-      AutoLock lock(data_mutex_);
+      base::AutoLock lock(data_mutex_);
       update_available = gateway_data_.DiffersSignificantly(new_data);
       gateway_data_ = new_data;
     }

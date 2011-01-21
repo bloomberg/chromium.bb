@@ -17,12 +17,12 @@ InMemoryHostConfig::~InMemoryHostConfig() {}
 
 bool InMemoryHostConfig::GetString(const std::string& path,
                                    std::string* out_value) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   return values_->GetString(path, out_value);
 }
 
 bool InMemoryHostConfig::GetBoolean(const std::string& path, bool* out_value) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   return values_->GetBoolean(path, out_value);
 }
 
@@ -32,12 +32,12 @@ void InMemoryHostConfig::Save() {
 
 void InMemoryHostConfig::SetString(const std::string& path,
                                    const std::string& in_value) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   values_->SetString(path, in_value);
 }
 
 void InMemoryHostConfig::SetBoolean(const std::string& path, bool in_value) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   values_->SetBoolean(path, in_value);
 }
 

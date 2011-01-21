@@ -287,7 +287,7 @@ void SafeBrowsingDatabaseNew::Init(const FilePath& filename_base) {
   // until it returns, there are no pointers to this class on other
   // threads.  Then again, that means there is no possibility of
   // contention on the lock...
-  AutoLock locked(lookup_lock_);
+  base::AutoLock locked(lookup_lock_);
 
   DCHECK(browse_filename_.empty());  // Ensure we haven't been run before.
   DCHECK(download_filename_.empty());  // Ensure we haven't been run before.
@@ -324,7 +324,7 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
 
   // Reset objects in memory.
   {
-    AutoLock locked(lookup_lock_);
+    base::AutoLock locked(lookup_lock_);
     full_browse_hashes_.clear();
     pending_browse_hashes_.clear();
     prefix_miss_cache_.clear();
@@ -355,7 +355,7 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
 
   // This function is called on the I/O thread, prevent changes to
   // bloom filter and caches.
-  AutoLock locked(lookup_lock_);
+  base::AutoLock locked(lookup_lock_);
 
   if (!browse_bloom_filter_.get())
     return false;
@@ -607,7 +607,7 @@ void SafeBrowsingDatabaseNew::CacheHashResults(
     const std::vector<SBPrefix>& prefixes,
     const std::vector<SBFullHashResult>& full_hits) {
   // This is called on the I/O thread, lock against updates.
-  AutoLock locked(lookup_lock_);
+  base::AutoLock locked(lookup_lock_);
 
   if (full_hits.empty()) {
     prefix_miss_cache_.insert(prefixes.begin(), prefixes.end());
@@ -729,7 +729,7 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
   // case |ContainsBrowseURL()| is called before the new filter is complete.
   std::vector<SBAddFullHash> pending_add_hashes;
   {
-    AutoLock locked(lookup_lock_);
+    base::AutoLock locked(lookup_lock_);
     pending_add_hashes.insert(pending_add_hashes.end(),
                               pending_browse_hashes_.begin(),
                               pending_browse_hashes_.end());
@@ -778,7 +778,7 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
 
   // Swap in the newly built filter and cache.
   {
-    AutoLock locked(lookup_lock_);
+    base::AutoLock locked(lookup_lock_);
     full_browse_hashes_.swap(add_full_hashes);
 
     // TODO(shess): If |CacheHashResults()| is posted between the

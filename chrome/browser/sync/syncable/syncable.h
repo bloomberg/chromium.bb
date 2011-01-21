@@ -18,7 +18,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/autofill_migration.h"
@@ -807,7 +807,7 @@ class Directory {
     }
   };
  public:
-  typedef EventChannel<DirectoryEventTraits, Lock> Channel;
+  typedef EventChannel<DirectoryEventTraits, base::Lock> Channel;
   typedef std::vector<int64> ChildHandles;
 
   // Returns the child meta handles for given parent id.
@@ -960,7 +960,7 @@ class Directory {
     volatile base::subtle::AtomicWord refcount;
 
     // Implements ReadTransaction / WriteTransaction using a simple lock.
-    Lock transaction_mutex;
+    base::Lock transaction_mutex;
 
     // The name of this directory.
     std::string const name;
@@ -972,7 +972,7 @@ class Directory {
     //
     // Never hold the mutex and do anything with the database or any
     // other buffered IO.  Violating this rule will result in deadlock.
-    Lock mutex;
+    base::Lock mutex;
     MetahandlesIndex* metahandles_index;  // Entries indexed by metahandle
     IdsIndex* ids_index;  // Entries indexed by id
     ParentIdChildIndex* parent_id_child_index;
@@ -1000,7 +1000,7 @@ class Directory {
     // releasing the transaction mutex.
     browser_sync::Channel<DirectoryChangeEvent> changes_channel;
 
-    Lock changes_channel_mutex;
+    base::Lock changes_channel_mutex;
     KernelShareInfoStatus info_status;
 
     // These 3 members are backed in the share_info table, and
@@ -1016,7 +1016,7 @@ class Directory {
 
     // It doesn't make sense for two threads to run SaveChanges at the same
     // time; this mutex protects that activity.
-    Lock save_changes_mutex;
+    base::Lock save_changes_mutex;
 
     // The next metahandle is protected by kernel mutex.
     int64 next_metahandle;
@@ -1036,7 +1036,7 @@ class ScopedKernelLock {
   explicit ScopedKernelLock(const Directory*);
   ~ScopedKernelLock() {}
 
-  AutoLock scoped_lock_;
+  base::AutoLock scoped_lock_;
   Directory* const dir_;
   DISALLOW_COPY_AND_ASSIGN(ScopedKernelLock);
 };

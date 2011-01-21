@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/audio_mixer.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -88,7 +88,7 @@ class AudioMixerAlsa : public AudioMixer {
   // no effect.
   double save_volume_;
 
-  mutable Lock mixer_state_lock_;
+  mutable base::Lock mixer_state_lock_;
   mutable State mixer_state_;
 
   // Cached contexts for use in ALSA calls.

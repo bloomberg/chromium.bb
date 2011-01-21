@@ -105,7 +105,7 @@ class WifiDataProviderCommon
   void ScheduleNextScan(int interval);
 
   WifiData wifi_data_;
-  Lock data_mutex_;
+  base::Lock data_mutex_;
 
   // Whether we've successfully completed a scan for WiFi data (or the polling
   // thread has terminated early).

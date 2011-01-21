@@ -4,8 +4,8 @@
 
 #include <queue>
 
-#include "base/lock.h"
 #include "base/message_loop.h"
+#include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "chrome/browser/device_orientation/data_fetcher.h"
 #include "chrome/browser/device_orientation/orientation.h"
@@ -78,7 +78,7 @@ class MockOrientationFactory : public base::RefCounted<MockOrientationFactory> {
   }
 
   void SetOrientation(const Orientation& orientation) {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     orientation_ = orientation;
   }
 
@@ -91,7 +91,7 @@ class MockOrientationFactory : public base::RefCounted<MockOrientationFactory> {
 
     // From DataFetcher. Called by the Provider.
     virtual bool GetOrientation(Orientation* orientation) {
-      AutoLock auto_lock(orientation_factory_->lock_);
+      base::AutoLock auto_lock(orientation_factory_->lock_);
       *orientation = orientation_factory_->orientation_;
       return true;
     }
@@ -102,7 +102,7 @@ class MockOrientationFactory : public base::RefCounted<MockOrientationFactory> {
 
   static MockOrientationFactory* instance_;
   Orientation orientation_;
-  Lock lock_;
+  base::Lock lock_;
 };
 
 MockOrientationFactory* MockOrientationFactory::instance_;

@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/common/notification_observer.h"
@@ -70,7 +70,7 @@ class CloudPrintDataSender
   friend class base::RefCountedThreadSafe<CloudPrintDataSender>;
   virtual ~CloudPrintDataSender();
 
-  Lock lock_;
+  base::Lock lock_;
   CloudPrintDataSenderHelper* volatile helper_;
   scoped_ptr<StringValue> print_data_;
   string16 print_job_title_;

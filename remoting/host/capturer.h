@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/types.h"
@@ -138,7 +138,7 @@ class Capturer {
   InvalidRects inval_rects_;
 
   // A lock protecting |inval_rects_| across threads.
-  Lock inval_rects_lock_;
+  base::Lock inval_rects_lock_;
 };
 
 }  // namespace remoting

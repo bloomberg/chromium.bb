@@ -8,8 +8,8 @@
 
 #include <atlbase.h>
 
-#include "base/lock.h"
 #include "base/logging.h"
+#include "base/synchronization/lock.h"
 #include "base/tuple.h"
 #include "base/win/scoped_comptr.h"
 #include "ceee/common/com_utils.h"

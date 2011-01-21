@@ -71,7 +71,7 @@ static void UltraSafeDebugBreak() {
 // static
 bool CallStack::LoadDbgHelp() {
   if (!dbghelp_loaded_) {
-    AutoLock Lock(dbghelp_lock_);
+    base::AutoLock Lock(dbghelp_lock_);
 
     // Re-check if we've loaded successfully now that we have the lock.
     if (dbghelp_loaded_)
@@ -289,7 +289,7 @@ void CallStack::ToString(PrivateAllocatorString* output) {
     return;
   }
 
-  AutoLock lock(dbghelp_lock_);
+  base::AutoLock lock(dbghelp_lock_);
 
   // Iterate through each frame in the call stack.
   for (int32 index = 0; index < frame_count_; index++) {
@@ -379,7 +379,7 @@ AllocationStack* AllocationStack::freelist_ = NULL;
 void* AllocationStack::operator new(size_t size) {
   DCHECK(size == sizeof(AllocationStack));
   {
-    AutoLock lock(freelist_lock_);
+    base::AutoLock lock(freelist_lock_);
     if (freelist_ != NULL) {
       AllocationStack* stack = freelist_;
       freelist_ = freelist_->next_;
@@ -392,7 +392,7 @@ void* AllocationStack::operator new(size_t size) {
 
 void AllocationStack::operator delete(void* ptr) {
   AllocationStack *stack = reinterpret_cast<AllocationStack*>(ptr);
-  AutoLock lock(freelist_lock_);
+  base::AutoLock lock(freelist_lock_);
   DCHECK(stack->next_ == NULL);
   stack->next_ = freelist_;
   freelist_ = stack;

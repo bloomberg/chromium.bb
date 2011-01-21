@@ -9,12 +9,12 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/lock.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -172,7 +172,7 @@ class LoginUtilsWrapper {
   }
 
   LoginUtils* get() {
-    AutoLock create(create_lock_);
+    base::AutoLock create(create_lock_);
     if (!ptr_.get())
       reset(new LoginUtilsImpl);
     return ptr_.get();
@@ -187,7 +187,7 @@ class LoginUtilsWrapper {
 
   LoginUtilsWrapper() {}
 
-  Lock create_lock_;
+  base::Lock create_lock_;
   scoped_ptr<LoginUtils> ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsWrapper);

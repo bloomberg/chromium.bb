@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "remoting/host/host_config.h"
 
 class DictionaryValue;
@@ -34,7 +34,7 @@ class InMemoryHostConfig : public MutableHostConfig {
 
  protected:
   // |lock_| must be locked whenever |values_| is used.
-  Lock lock_;
+  base::Lock lock_;
   scoped_ptr<DictionaryValue> values_;
 
  private:

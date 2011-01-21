@@ -12,8 +12,8 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "ipc/ipc_channel.h"
 
 // This represents a value that the app's AutomationProvider returns
@@ -106,7 +106,7 @@ class AutomationHandleTracker {
 
   HandleToObjectMap handle_to_object_;
 
-  Lock map_lock_;
+  base::Lock map_lock_;
   IPC::Channel* channel_;
   DISALLOW_COPY_AND_ASSIGN(AutomationHandleTracker);
 };

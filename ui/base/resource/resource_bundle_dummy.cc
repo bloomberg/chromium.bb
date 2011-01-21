@@ -6,8 +6,8 @@
 
 #include <windows.h>
 
-#include "base/lock.h"
 #include "base/logging.h"
+#include "base/synchronization/lock.h"
 #include "gfx/font.h"
 #include "gfx/platform_font_win.h"
 
@@ -51,7 +51,7 @@ ResourceBundle& ResourceBundle::GetSharedInstance() {
 }
 
 ResourceBundle::ResourceBundle()
-    : lock_(new Lock),
+    : lock_(new base::Lock),
       resources_data_(NULL),
       locale_resources_data_(NULL) {
 }

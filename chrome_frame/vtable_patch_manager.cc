@@ -9,10 +9,9 @@
 #include <algorithm>
 
 #include "base/atomicops.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-
+#include "base/synchronization/lock.h"
 #include "chrome_frame/function_stub.h"
 #include "chrome_frame/utils.h"
 
@@ -25,7 +24,7 @@ const int kMaxRetries = 3;
 // We hold a lock over all patching operations to make sure that we don't
 // e.g. race on VM operations to the same patches, or to physical pages
 // shared across different VTABLEs.
-Lock patch_lock_;
+base::Lock patch_lock_;
 
 namespace internal {
 // Because other parties in our process might be attempting to patch the same
@@ -75,7 +74,7 @@ HRESULT PatchInterfaceMethods(void* unknown, MethodPatchInfo* patches) {
   // is done under a global lock, to ensure multiple threads don't
   // race, whether on an individual patch, or on VM operations to
   // the same physical pages.
-  AutoLock lock(patch_lock_);
+  base::AutoLock lock(patch_lock_);
 
   for (MethodPatchInfo* it = patches; it->index_ != -1; ++it) {
     if (it->stub_ != NULL) {
@@ -153,7 +152,7 @@ HRESULT PatchInterfaceMethods(void* unknown, MethodPatchInfo* patches) {
 }
 
 HRESULT UnpatchInterfaceMethods(MethodPatchInfo* patches) {
-  AutoLock lock(patch_lock_);
+  base::AutoLock lock(patch_lock_);
 
   for (MethodPatchInfo* it = patches; it->index_ != -1; ++it) {
     if (it->stub_) {

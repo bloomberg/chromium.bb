@@ -28,7 +28,7 @@ TypeInfoNameCache* TypeInfoCache::Lookup(const IID* iid) {
 
   TypeInfoNameCache* tih = NULL;
 
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   CacheMap::iterator it = cache_.find(iid);
   if (it == cache_.end()) {
     tih = new TypeInfoNameCache();
@@ -104,7 +104,7 @@ HRESULT TypeInfoNameCache::Invoke(IDispatch* p, DISPID dispid, WORD flags,
 // NameToDispIdCache
 
 bool NameToDispIdCache::Lookup(HashType hash, DISPID* dispid) const {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   const DispidMap::const_iterator it = map_.find(hash);
   bool found = (it != map_.end());
   if (found)
@@ -113,7 +113,7 @@ bool NameToDispIdCache::Lookup(HashType hash, DISPID* dispid) const {
 }
 
 void NameToDispIdCache::Add(HashType hash, DISPID dispid) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   map_[hash] = dispid;
 }
 

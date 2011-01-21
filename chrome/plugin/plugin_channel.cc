@@ -5,9 +5,9 @@
 #include "chrome/plugin/plugin_channel.h"
 
 #include "base/command_line.h"
-#include "base/lock.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "chrome/common/child_process.h"
@@ -50,7 +50,7 @@ class PluginChannel::MessageFilter : public IPC::ChannelProxy::MessageFilter {
 
   base::WaitableEvent* GetModalDialogEvent(
       gfx::NativeViewId containing_window) {
-    AutoLock auto_lock(modal_dialog_event_map_lock_);
+    base::AutoLock auto_lock(modal_dialog_event_map_lock_);
     if (!modal_dialog_event_map_.count(containing_window)) {
       NOTREACHED();
       return NULL;
@@ -62,7 +62,7 @@ class PluginChannel::MessageFilter : public IPC::ChannelProxy::MessageFilter {
   // Decrement the ref count associated with the modal dialog event for the
   // given tab.
   void ReleaseModalDialogEvent(gfx::NativeViewId containing_window) {
-    AutoLock auto_lock(modal_dialog_event_map_lock_);
+    base::AutoLock auto_lock(modal_dialog_event_map_lock_);
     if (!modal_dialog_event_map_.count(containing_window)) {
       NOTREACHED();
       return;
@@ -98,7 +98,7 @@ class PluginChannel::MessageFilter : public IPC::ChannelProxy::MessageFilter {
   }
 
   void OnInit(const PluginMsg_Init_Params& params, IPC::Message* reply_msg) {
-    AutoLock auto_lock(modal_dialog_event_map_lock_);
+    base::AutoLock auto_lock(modal_dialog_event_map_lock_);
     if (modal_dialog_event_map_.count(params.containing_window)) {
       modal_dialog_event_map_[params.containing_window].refcount++;
       return;
@@ -111,13 +111,13 @@ class PluginChannel::MessageFilter : public IPC::ChannelProxy::MessageFilter {
   }
 
   void OnSignalModalDialogEvent(gfx::NativeViewId containing_window) {
-    AutoLock auto_lock(modal_dialog_event_map_lock_);
+    base::AutoLock auto_lock(modal_dialog_event_map_lock_);
     if (modal_dialog_event_map_.count(containing_window))
       modal_dialog_event_map_[containing_window].event->Signal();
   }
 
   void OnResetModalDialogEvent(gfx::NativeViewId containing_window) {
-    AutoLock auto_lock(modal_dialog_event_map_lock_);
+    base::AutoLock auto_lock(modal_dialog_event_map_lock_);
     if (modal_dialog_event_map_.count(containing_window))
       modal_dialog_event_map_[containing_window].event->Reset();
   }
@@ -128,7 +128,7 @@ class PluginChannel::MessageFilter : public IPC::ChannelProxy::MessageFilter {
   };
   typedef std::map<gfx::NativeViewId, WaitableEventWrapper> ModalDialogEventMap;
   ModalDialogEventMap modal_dialog_event_map_;
-  Lock modal_dialog_event_map_lock_;
+  base::Lock modal_dialog_event_map_lock_;
 
   IPC::Channel* channel_;
 };

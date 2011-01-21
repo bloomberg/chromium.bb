@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/lock.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 
 class MessageLoop;
@@ -123,11 +123,12 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   // The XmppClient and its state and jid.
   buzz::XmppClient* client_;
   State state_;
-  Lock full_jid_lock_;
+  base::Lock full_jid_lock_;
   std::string full_jid_;
 
   // Current state of the object.
-  Lock state_lock_;  // Must be locked when accessing initialized_ or closed_.
+  // Must be locked when accessing initialized_ or closed_.
+  base::Lock state_lock_;
   bool initialized_;
   bool closed_;
   scoped_ptr<Task> closed_task_;

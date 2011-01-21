@@ -63,7 +63,7 @@ class BrowserThreadMessageLoopProxy : public base::MessageLoopProxy {
 };
 
 
-Lock BrowserThread::lock_;
+base::Lock BrowserThread::lock_;
 
 BrowserThread* BrowserThread::browser_threads_[ID_COUNT];
 
@@ -81,7 +81,7 @@ BrowserThread::BrowserThread(ID identifier, MessageLoop* message_loop)
 }
 
 void BrowserThread::Initialize() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   DCHECK(identifier_ >= 0 && identifier_ < ID_COUNT);
   DCHECK(browser_threads_[identifier_] == NULL);
   browser_threads_[identifier_] = this;
@@ -93,7 +93,7 @@ BrowserThread::~BrowserThread() {
   // correct BrowserThread succeeds.
   Stop();
 
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   browser_threads_[identifier_] = NULL;
 #ifndef NDEBUG
   // Double check that the threads are ordered correctly in the enumeration.
@@ -106,7 +106,7 @@ BrowserThread::~BrowserThread() {
 
 // static
 bool BrowserThread::IsWellKnownThread(ID identifier) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   return (identifier >= 0 && identifier < ID_COUNT &&
           browser_threads_[identifier]);
 }
@@ -118,7 +118,7 @@ bool BrowserThread::CurrentlyOn(ID identifier) {
   // function.
   // http://crbug.com/63678
   base::ThreadRestrictions::ScopedAllowSingleton allow_singleton;
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
   return browser_threads_[identifier] &&
          browser_threads_[identifier]->message_loop() == MessageLoop::current();
@@ -126,7 +126,7 @@ bool BrowserThread::CurrentlyOn(ID identifier) {
 
 // static
 bool BrowserThread::IsMessageLoopValid(ID identifier) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
   return browser_threads_[identifier] &&
          browser_threads_[identifier]->message_loop();

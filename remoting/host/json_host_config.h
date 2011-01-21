@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "remoting/host/in_memory_host_config.h"

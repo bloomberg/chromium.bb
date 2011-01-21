@@ -255,7 +255,7 @@ bool ServerConnectionManager::CheckServerReachable() {
 
 void ServerConnectionManager::kill() {
   {
-    AutoLock lock(terminate_all_io_mutex_);
+    base::AutoLock lock(terminate_all_io_mutex_);
     terminate_all_io_ = true;
   }
 }
@@ -294,7 +294,7 @@ void ServerConnectionManager::SetServerParameters(const string& server_url,
                                                   int port,
                                                   bool use_ssl) {
   {
-    AutoLock lock(server_parameters_mutex_);
+    base::AutoLock lock(server_parameters_mutex_);
     sync_server_ = server_url;
     sync_server_port_ = port;
     use_ssl_ = use_ssl;
@@ -305,7 +305,7 @@ void ServerConnectionManager::SetServerParameters(const string& server_url,
 void ServerConnectionManager::GetServerParameters(string* server_url,
                                                   int* port,
                                                   bool* use_ssl) const {
-  AutoLock lock(server_parameters_mutex_);
+  base::AutoLock lock(server_parameters_mutex_);
   if (server_url != NULL)
     *server_url = sync_server_;
   if (port != NULL)

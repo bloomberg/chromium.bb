@@ -8,9 +8,9 @@
 
 #include <vector>
 
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
 
@@ -229,7 +229,7 @@ class ChannelProxy : public Message::Sender {
     // IPC thread when they're added to filters_.
     std::vector<scoped_refptr<MessageFilter> > pending_filters_;
     // Lock for pending_filters_.
-    Lock pending_filters_lock_;
+    base::Lock pending_filters_lock_;
   };
 
   Context* context() { return context_; }

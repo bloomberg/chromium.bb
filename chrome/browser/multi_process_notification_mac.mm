@@ -163,7 +163,7 @@ class LeopardSwitchboardThread
 
   // all accesses to entries_ must be controlled by entries_lock_.
   std::vector<SwitchboardEntry> entries_;
-  Lock entries_lock_;
+  base::Lock entries_lock_;
   base::MessagePumpLibevent::FileDescriptorWatcher watcher_;
 };
 
@@ -192,7 +192,7 @@ class ListenerImpl : public base::MessagePumpLibevent::Watcher {
   bool started_;
   int fd_;
   int token_;
-  Lock switchboard_lock_;
+  base::Lock switchboard_lock_;
   static LeopardSwitchboardThread* g_switchboard_thread_;
   base::MessagePumpLibevent::FileDescriptorWatcher watcher_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;

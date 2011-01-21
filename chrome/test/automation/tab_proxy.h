@@ -432,7 +432,7 @@ class TabProxy : public AutomationResourceProxy,
   void LastObjectRemoved();
 
  private:
-  Lock list_lock_;  // Protects the observers_list_.
+  base::Lock list_lock_;  // Protects the observers_list_.
   ObserverList<TabProxyDelegate> observers_list_;
   DISALLOW_COPY_AND_ASSIGN(TabProxy);
 };

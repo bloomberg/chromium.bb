@@ -38,7 +38,7 @@ void TaskMarshallerThroughMessageQueue::PostDelayedTask(
     Task* task,
     base::TimeDelta& delay) {
   DCHECK(wnd_ != NULL);
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   DelayedTask delayed_task(task, base::Time::Now() + delay);
   delayed_tasks_.push(delayed_task);
   // If we become the 'top' task - reschedule the timer.
@@ -70,7 +70,7 @@ BOOL TaskMarshallerThroughMessageQueue::ProcessWindowMessage(HWND hWnd,
 }
 
 Task* TaskMarshallerThroughMessageQueue::PopTask() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   Task* task = NULL;
   if (!pending_tasks_.empty()) {
     task = pending_tasks_.front();
@@ -118,7 +118,7 @@ void TaskMarshallerThroughMessageQueue::ExecuteDelayedTasks() {
 }
 
 void TaskMarshallerThroughMessageQueue::DeleteAll() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   DVLOG_IF(1, !pending_tasks_.empty()) << "Destroying "
                                        << pending_tasks_.size()
                                        << " pending tasks.";

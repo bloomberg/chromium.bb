@@ -156,7 +156,7 @@ std::string SyncBackendHost::RestoreEncryptionBootstrapToken() {
 }
 
 bool SyncBackendHost::IsNigoriEnabled() const {
-  AutoLock lock(registrar_lock_);
+  base::AutoLock lock(registrar_lock_);
   // Note that NIGORI is only ever added/removed from routing_info once,
   // during initialization / first configuration, so there is no real 'race'
   // possible here or possibility of stale return value.
@@ -333,7 +333,7 @@ void SyncBackendHost::ConfigureDataTypes(
   bool deleted_type = false;
 
   {
-    AutoLock lock(registrar_lock_);
+    base::AutoLock lock(registrar_lock_);
     for (DataTypeController::TypeMap::const_iterator it =
              data_type_controllers.begin();
          it != data_type_controllers.end(); ++it) {
@@ -391,7 +391,7 @@ void SyncBackendHost::RequestNudge() {
 void SyncBackendHost::ActivateDataType(
     DataTypeController* data_type_controller,
     ChangeProcessor* change_processor) {
-  AutoLock lock(registrar_lock_);
+  base::AutoLock lock(registrar_lock_);
 
   // Ensure that the given data type is in the PASSIVE group.
   browser_sync::ModelSafeRoutingInfo::iterator i =
@@ -411,7 +411,7 @@ void SyncBackendHost::ActivateDataType(
 void SyncBackendHost::DeactivateDataType(
     DataTypeController* data_type_controller,
     ChangeProcessor* change_processor) {
-  AutoLock lock(registrar_lock_);
+  base::AutoLock lock(registrar_lock_);
   registrar_.routing_info.erase(data_type_controller->type());
 
   std::map<syncable::ModelType, ChangeProcessor*>::size_type erased =
@@ -516,7 +516,7 @@ const SyncSessionSnapshot* SyncBackendHost::GetLastSessionSnapshot() const {
 }
 
 void SyncBackendHost::GetWorkers(std::vector<ModelSafeWorker*>* out) {
-  AutoLock lock(registrar_lock_);
+  base::AutoLock lock(registrar_lock_);
   out->clear();
   for (WorkerMap::const_iterator it = registrar_.workers.begin();
        it != registrar_.workers.end(); ++it) {
@@ -525,7 +525,7 @@ void SyncBackendHost::GetWorkers(std::vector<ModelSafeWorker*>* out) {
 }
 
 void SyncBackendHost::GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
-  AutoLock lock(registrar_lock_);
+  base::AutoLock lock(registrar_lock_);
   ModelSafeRoutingInfo copy(registrar_.routing_info);
   out->swap(copy);
 }
@@ -771,7 +771,7 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop() {
 
 bool SyncBackendHost::Core::IsCurrentThreadSafeForModel(
     syncable::ModelType model_type) {
-  AutoLock lock(host_->registrar_lock_);
+  base::AutoLock lock(host_->registrar_lock_);
 
   browser_sync::ModelSafeRoutingInfo::const_iterator routing_it =
       host_->registrar_.routing_info.find(model_type);

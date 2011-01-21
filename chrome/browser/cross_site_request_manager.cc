@@ -8,7 +8,7 @@
 
 bool CrossSiteRequestManager::HasPendingCrossSiteRequest(int renderer_id,
                                                          int render_view_id) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   std::pair<int, int> key(renderer_id, render_view_id);
   return pending_cross_site_views_.find(key) !=
@@ -18,7 +18,7 @@ bool CrossSiteRequestManager::HasPendingCrossSiteRequest(int renderer_id,
 void CrossSiteRequestManager::SetHasPendingCrossSiteRequest(int renderer_id,
                                                             int render_view_id,
                                                             bool has_pending) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   std::pair<int, int> key(renderer_id, render_view_id);
   if (has_pending) {

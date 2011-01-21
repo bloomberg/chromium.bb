@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -117,7 +117,7 @@ class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
 
   // True if we've handled auth (SetAuth or CancelAuth has been called).
   bool handled_auth_;
-  mutable Lock handled_auth_lock_;
+  mutable base::Lock handled_auth_lock_;
 
   // The ConstrainedWindow that is hosting our LoginView.
   // This should only be accessed on the UI loop.

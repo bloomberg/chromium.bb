@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/lock.h"
 #include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/task.h"
 
 // This class gathers histogram data in the host browser process and
@@ -50,7 +50,7 @@ class ChromeFrameHistogramSnapshots {
   LoggedSampleMap logged_samples_;
 
   // Synchronizes the histogram gathering operation.
-  Lock lock_;
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeFrameHistogramSnapshots);
 };

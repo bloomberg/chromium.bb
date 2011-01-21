@@ -20,12 +20,12 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/global_descriptors_posix.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
+#include "base/synchronization/lock.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/file_descriptor_set_posix.h"
@@ -91,7 +91,7 @@ class PipeMap {
 
   // Lookup a given channel id. Return -1 if not found.
   int Lookup(const std::string& channel_id) {
-    AutoLock locked(lock_);
+    base::AutoLock locked(lock_);
 
     ChannelToFDMap::const_iterator i = map_.find(channel_id);
     if (i == map_.end())
@@ -102,7 +102,7 @@ class PipeMap {
   // Remove the mapping for the given channel id. No error is signaled if the
   // channel_id doesn't exist
   void RemoveAndClose(const std::string& channel_id) {
-    AutoLock locked(lock_);
+    base::AutoLock locked(lock_);
 
     ChannelToFDMap::iterator i = map_.find(channel_id);
     if (i != map_.end()) {
@@ -115,7 +115,7 @@ class PipeMap {
   // Insert a mapping from @channel_id to @fd. It's a fatal error to insert a
   // mapping if one already exists for the given channel_id
   void Insert(const std::string& channel_id, int fd) {
-    AutoLock locked(lock_);
+    base::AutoLock locked(lock_);
     DCHECK(fd != -1);
 
     ChannelToFDMap::const_iterator i = map_.find(channel_id);
@@ -126,7 +126,7 @@ class PipeMap {
   }
 
  private:
-  Lock lock_;
+  base::Lock lock_;
   typedef std::map<std::string, int> ChannelToFDMap;
   ChannelToFDMap map_;
 

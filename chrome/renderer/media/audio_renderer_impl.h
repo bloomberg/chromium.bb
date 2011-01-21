@@ -41,8 +41,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
-#include "base/lock.h"
 #include "base/shared_memory.h"
+#include "base/synchronization/lock.h"
 #include "chrome/renderer/audio_message_filter.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
@@ -134,7 +134,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
   // - |stopped_|
   // - |pending_request_|
   // - |request_buffers_state_|
-  Lock lock_;
+  base::Lock lock_;
 
   // A flag that indicates this filter is called to stop.
   bool stopped_;

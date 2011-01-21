@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sync/glue/model_associator.h"
@@ -132,7 +132,7 @@ class PasswordModelAssociator
   // Abort association pending flag and lock.  If this is set to true
   // (via the AbortAssociation method), return from the
   // AssociateModels method as soon as possible.
-  Lock abort_association_pending_lock_;
+  base::Lock abort_association_pending_lock_;
   bool abort_association_pending_;
 
   MessageLoop* expected_loop_;

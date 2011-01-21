@@ -162,7 +162,7 @@ CrashService::CrashService(const std::wstring& report_dir)
 }
 
 CrashService::~CrashService() {
-  AutoLock lock(sending_);
+  base::AutoLock lock(sending_);
   delete dumper_;
   delete sender_;
 }
@@ -316,7 +316,7 @@ void CrashService::OnClientExited(void* context,
     // thread takes the sending_ lock, so the sleep is just to give it a
     // chance to start.
     ::Sleep(1000);
-    AutoLock lock(self->sending_);
+    base::AutoLock lock(self->sending_);
     // Some people can restart chrome very fast, check again if we have
     // a new client before exiting for real.
     if (self->clients_connected_ == self->clients_terminated_) {
@@ -396,7 +396,7 @@ unsigned long CrashService::AsyncSendDump(void* context) {
     {
       // Take the server lock while sending. This also prevent early
       // termination of the service object.
-      AutoLock lock(info->self->sending_);
+      base::AutoLock lock(info->self->sending_);
       VLOG(1) << "trying to send report for pid = " << info->pid;
       google_breakpad::ReportResult send_result
           = info->self->sender_->SendCrashReport(kCrashReportURL, info->map,

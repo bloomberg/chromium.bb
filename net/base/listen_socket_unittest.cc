@@ -73,13 +73,13 @@ void ListenSocketTester::TearDown() {
 }
 
 void ListenSocketTester::ReportAction(const ListenSocketTestAction& action) {
-  AutoLock locked(lock_);
+  base::AutoLock locked(lock_);
   queue_.push_back(action);
   cv_.Broadcast();
 }
 
 void ListenSocketTester::NextAction() {
-  AutoLock locked(lock_);
+  base::AutoLock locked(lock_);
   while (queue_.empty())
     cv_.Wait();
   last_action_ = queue_.front();

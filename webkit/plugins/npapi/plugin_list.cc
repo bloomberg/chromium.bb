@@ -182,25 +182,25 @@ bool PluginList::DebugPluginLoading() {
 }
 
 bool PluginList::PluginsLoaded() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   return plugins_loaded_;
 }
 
 void PluginList::RefreshPlugins() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   plugins_need_refresh_ = true;
 }
 
 void PluginList::AddExtraPluginPath(const FilePath& plugin_path) {
   // Chrome OS only loads plugins from /opt/google/chrome/plugins.
 #if !defined(OS_CHROMEOS)
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   extra_plugin_paths_.push_back(plugin_path);
 #endif
 }
 
 void PluginList::RemoveExtraPluginPath(const FilePath& plugin_path) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   std::vector<FilePath>::iterator it =
       std::find(extra_plugin_paths_.begin(), extra_plugin_paths_.end(),
                 plugin_path);
@@ -211,7 +211,7 @@ void PluginList::RemoveExtraPluginPath(const FilePath& plugin_path) {
 void PluginList::AddExtraPluginDir(const FilePath& plugin_dir) {
   // Chrome OS only loads plugins from /opt/google/chrome/plugins.
 #if !defined(OS_CHROMEOS)
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   extra_plugin_dirs_.push_back(plugin_dir);
 #endif
 }
@@ -220,7 +220,7 @@ void PluginList::RegisterInternalPlugin(const WebPluginInfo& info) {
   PluginEntryPoints entry_points = {0};
   InternalPlugin plugin = { info, entry_points };
 
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   internal_plugins_.push_back(plugin);
 }
 
@@ -242,12 +242,12 @@ void PluginList::RegisterInternalPlugin(const FilePath& filename,
 
   plugin.entry_points = entry_points;
 
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   internal_plugins_.push_back(plugin);
 }
 
 void PluginList::UnregisterInternalPlugin(const FilePath& path) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   for (size_t i = 0; i < internal_plugins_.size(); i++) {
     if (internal_plugins_[i].info.path == path) {
       internal_plugins_.erase(internal_plugins_.begin() + i);
@@ -261,7 +261,7 @@ bool PluginList::ReadPluginInfo(const FilePath& filename,
                                 WebPluginInfo* info,
                                 const PluginEntryPoints** entry_points) {
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     for (size_t i = 0; i < internal_plugins_.size(); ++i) {
       if (filename == internal_plugins_[i].info.path) {
         *entry_points = &internal_plugins_[i].entry_points;
@@ -331,7 +331,7 @@ PluginList::PluginList()
 }
 
 bool PluginList::ShouldDisableGroup(const string16& group_name) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   if (PluginGroup::IsPluginNameDisabledByPolicy(group_name)) {
     disabled_groups_.insert(group_name);
     return true;
@@ -346,7 +346,7 @@ void PluginList::LoadPlugins(bool refresh) {
   std::vector<FilePath> extra_plugin_dirs;
   std::vector<InternalPlugin> internal_plugins;
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     if (plugins_loaded_ && !refresh && !plugins_need_refresh_)
       return;
 
@@ -414,13 +414,13 @@ void PluginList::LoadPlugins(bool refresh) {
       group->DisableOutdatedPlugins();
     }
     if (!group->Enabled()) {
-      AutoLock lock(lock_);
+      base::AutoLock lock(lock_);
       disabled_groups_.insert(group_name);
     }
   }
 
   // Only update the data now since loading plugins can take a while.
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   plugins_ = new_plugins;
   plugins_loaded_ = true;
@@ -463,7 +463,7 @@ void PluginList::LoadPlugin(const FilePath& path,
     plugin_info.enabled = true;
   }
 
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   plugins->push_back(plugin_info);
   AddToPluginGroups(plugin_info);
 }
@@ -508,7 +508,7 @@ bool PluginList::SupportsExtension(const WebPluginInfo& info,
 void PluginList::GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
   LoadPlugins(refresh);
 
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   *plugins = plugins_;
 }
 
@@ -517,7 +517,7 @@ void PluginList::GetEnabledPlugins(bool refresh,
   LoadPlugins(refresh);
 
   plugins->clear();
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   for (std::vector<WebPluginInfo>::const_iterator it = plugins_.begin();
        it != plugins_.end();
        ++it) {
@@ -536,7 +536,7 @@ void PluginList::GetPluginInfoArray(
   DCHECK(info);
 
   LoadPlugins(false);
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   info->clear();
   if (actual_mime_types)
     actual_mime_types->clear();
@@ -636,7 +636,7 @@ bool PluginList::GetPluginInfo(const GURL& url,
 bool PluginList::GetPluginInfoByPath(const FilePath& plugin_path,
                                      WebPluginInfo* info) {
   LoadPlugins(false);
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   for (size_t i = 0; i < plugins_.size(); ++i) {
     if (plugins_[i].path == plugin_path) {
       *info = plugins_[i];
@@ -662,7 +662,7 @@ void PluginList::GetPluginGroups(
 
 const PluginGroup* PluginList::GetPluginGroup(
     const WebPluginInfo& web_plugin_info) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   return AddToPluginGroups(web_plugin_info);
 }
 
@@ -676,13 +676,13 @@ string16 PluginList::GetPluginGroupName(std::string identifier) {
 
 std::string PluginList::GetPluginGroupIdentifier(
     const WebPluginInfo& web_plugin_info) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   PluginGroup* group = AddToPluginGroups(web_plugin_info);
   return group->identifier();
 }
 
 void PluginList::AddHardcodedPluginGroups() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   const PluginGroupDefinition* definitions = GetPluginGroupDefinitions();
   for (size_t i = 0; i < GetPluginGroupDefinitionsSize(); ++i) {
     PluginGroup* definition_group = PluginGroup::FromPluginGroupDefinition(
@@ -720,7 +720,7 @@ PluginGroup* PluginList::AddToPluginGroups(
 }
 
 bool PluginList::EnablePlugin(const FilePath& filename) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   bool did_enable = false;
 
@@ -745,7 +745,7 @@ bool PluginList::EnablePlugin(const FilePath& filename) {
 }
 
 bool PluginList::DisablePlugin(const FilePath& filename) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   bool did_disable = false;
 
@@ -771,7 +771,7 @@ bool PluginList::DisablePlugin(const FilePath& filename) {
 bool PluginList::EnableGroup(bool enable, const string16& group_name) {
   bool did_change = false;
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
 
     std::set<string16>::iterator entry = disabled_groups_.find(group_name);
     if (enable) {

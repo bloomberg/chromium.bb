@@ -109,7 +109,7 @@ void AutofillDataTypeController::Stop() {
   // thread to finish the StartImpl() task.
   if (state_ == ASSOCIATING) {
     {
-      AutoLock lock(abort_association_lock_);
+      base::AutoLock lock(abort_association_lock_);
       abort_association_ = true;
       if (model_associator_.get())
         model_associator_->AbortAssociation();
@@ -189,7 +189,7 @@ void AutofillDataTypeController::StartImpl() {
   // No additional services need to be started before we can proceed
   // with model association.
   {
-    AutoLock lock(abort_association_lock_);
+    base::AutoLock lock(abort_association_lock_);
     if (abort_association_) {
       abort_association_complete_.Signal();
       return;
@@ -232,7 +232,7 @@ void AutofillDataTypeController::StartDone(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   abort_association_complete_.Signal();
-  AutoLock lock(abort_association_lock_);
+  base::AutoLock lock(abort_association_lock_);
   if (!abort_association_) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             NewRunnableMethod(

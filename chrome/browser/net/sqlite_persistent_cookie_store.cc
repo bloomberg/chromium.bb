@@ -107,7 +107,7 @@ class SQLitePersistentCookieStore::Backend
   // True if the persistent store should be deleted upon destruction.
   bool clear_local_state_on_exit_;
   // Guard |pending_|, |num_pending_| and |clear_local_state_on_exit_|.
-  Lock lock_;
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
@@ -306,7 +306,7 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
 
   PendingOperationsList::size_type num_pending;
   {
-    AutoLock locked(lock_);
+    base::AutoLock locked(lock_);
     pending_.push_back(po.release());
     num_pending = ++num_pending_;
   }
@@ -329,7 +329,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
 
   PendingOperationsList ops;
   {
-    AutoLock locked(lock_);
+    base::AutoLock locked(lock_);
     pending_.swap(ops);
     num_pending_ = 0;
   }
@@ -449,7 +449,7 @@ void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
 
 void SQLitePersistentCookieStore::Backend::SetClearLocalStateOnExit(
     bool clear_local_state) {
-  AutoLock locked(lock_);
+  base::AutoLock locked(lock_);
   clear_local_state_on_exit_ = clear_local_state;
 }
 SQLitePersistentCookieStore::SQLitePersistentCookieStore(const FilePath& path)

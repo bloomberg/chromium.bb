@@ -140,7 +140,7 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
   }
 
   {
-    AutoLock lock(response_code_override_lock_);
+    base::AutoLock lock(response_code_override_lock_);
     if (throttling_) {
       response.set_error_code(ClientToServerResponse::THROTTLED);
       throttling_ = false;
@@ -543,7 +543,7 @@ const CommitResponse& MockConnectionManager::last_commit_response() const {
 
 void MockConnectionManager::ThrottleNextRequest(
     ResponseCodeOverrideRequestor* visitor) {
-  AutoLock lock(response_code_override_lock_);
+  base::AutoLock lock(response_code_override_lock_);
   throttling_ = true;
   if (visitor)
     visitor->OnOverrideComplete();
@@ -551,7 +551,7 @@ void MockConnectionManager::ThrottleNextRequest(
 
 void MockConnectionManager::FailWithAuthInvalid(
     ResponseCodeOverrideRequestor* visitor) {
-  AutoLock lock(response_code_override_lock_);
+  base::AutoLock lock(response_code_override_lock_);
   fail_with_auth_invalid_ = true;
   if (visitor)
     visitor->OnOverrideComplete();
@@ -559,7 +559,7 @@ void MockConnectionManager::FailWithAuthInvalid(
 
 void MockConnectionManager::StopFailingWithAuthInvalid(
     ResponseCodeOverrideRequestor* visitor) {
-  AutoLock lock(response_code_override_lock_);
+  base::AutoLock lock(response_code_override_lock_);
   fail_with_auth_invalid_ = false;
   if (visitor)
     visitor->OnOverrideComplete();

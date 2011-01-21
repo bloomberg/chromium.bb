@@ -115,7 +115,7 @@ bool BufferedDataSource::IsUrlSupported(const std::string& url) {
 
 void BufferedDataSource::Stop(media::FilterCallback* callback) {
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     stop_signal_received_ = true;
   }
   if (callback) {
@@ -166,7 +166,7 @@ void BufferedDataSource::Abort() {
   // If we are told to abort, immediately return from any pending read
   // with an error.
   if (read_callback_.get()) {
-      AutoLock auto_lock(lock_);
+      base::AutoLock auto_lock(lock_);
       DoneRead_Locked(net::ERR_FAILED);
   }
 
@@ -414,7 +414,7 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
   // let tasks on render thread to run but make sure they don't call outside
   // this object when Stop() method is ever called. Locking this method is safe
   // because |lock_| is only acquired in tasks on render thread.
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stop_signal_received_)
     return;
 
@@ -465,7 +465,7 @@ void BufferedDataSource::NonHttpInitialStartCallback(int error) {
   // let tasks on render thread to run but make sure they don't call outside
   // this object when Stop() method is ever called. Locking this method is safe
   // because |lock_| is only acquired in tasks on render thread.
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stop_signal_received_)
     return;
 
@@ -504,7 +504,7 @@ void BufferedDataSource::PartialReadStartCallback(int error) {
   // let tasks on render thread to run but make sure they don't call outside
   // this object when Stop() method is ever called. Locking this method is
   // safe because |lock_| is only acquired in tasks on render thread.
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stop_signal_received_)
     return;
   DoneRead_Locked(net::ERR_INVALID_RESPONSE);
@@ -534,7 +534,7 @@ void BufferedDataSource::ReadCallback(int error) {
   // let tasks on render thread to run but make sure they don't call outside
   // this object when Stop() method is ever called. Locking this method is safe
   // because |lock_| is only acquired in tasks on render thread.
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stop_signal_received_)
     return;
 
@@ -570,7 +570,7 @@ void BufferedDataSource::NetworkEventCallback() {
   // let tasks on render thread to run but make sure they don't call outside
   // this object when Stop() method is ever called. Locking this method is safe
   // because |lock_| is only acquired in tasks on render thread.
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (stop_signal_received_)
     return;
 

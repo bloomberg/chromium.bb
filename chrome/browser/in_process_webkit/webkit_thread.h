@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_thread.h"

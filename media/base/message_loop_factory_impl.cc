@@ -9,7 +9,7 @@ namespace media {
 MessageLoopFactoryImpl::MessageLoopFactoryImpl() {}
 
 MessageLoopFactoryImpl::~MessageLoopFactoryImpl() {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
 
   for (ThreadMap::iterator iter = thread_map_.begin();
        iter != thread_map_.end();
@@ -30,7 +30,7 @@ MessageLoop* MessageLoopFactoryImpl::GetMessageLoop(const std::string& name) {
     return NULL;
   }
 
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
 
   ThreadMap::iterator it = thread_map_.find(name);
   if (it != thread_map_.end())

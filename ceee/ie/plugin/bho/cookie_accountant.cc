@@ -235,7 +235,7 @@ void CookieAccountant::ConnectBroker() {
 
 void CookieAccountant::Initialize() {
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     if (initializing_)
       return;
     initializing_ = true;
@@ -257,7 +257,7 @@ void CookieAccountant::Initialize() {
   DCHECK(internet_set_cookie_ex_a_patch_.is_patched() ||
          internet_set_cookie_ex_w_patch_.is_patched());
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     initializing_ = false;
   }
 }

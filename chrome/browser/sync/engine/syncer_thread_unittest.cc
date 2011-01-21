@@ -5,8 +5,8 @@
 #include <list>
 #include <map>
 
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
@@ -125,7 +125,7 @@ class SyncerThreadWithSyncerTest : public testing::Test,
   void WaitForDisconnect() {
     // Wait for the SyncerThread to detect loss of connection, up to a max of
     // 10 seconds to timeout the test.
-    AutoLock lock(syncer_thread()->lock_);
+    base::AutoLock lock(syncer_thread()->lock_);
     TimeTicks start = TimeTicks::Now();
     TimeDelta ten_seconds = TimeDelta::FromSeconds(10);
     while (syncer_thread()->vault_.connected_) {
@@ -139,7 +139,7 @@ class SyncerThreadWithSyncerTest : public testing::Test,
   bool Pause(ListenerMock* listener) {
     WaitableEvent event(false, false);
     {
-      AutoLock lock(syncer_thread()->lock_);
+      base::AutoLock lock(syncer_thread()->lock_);
       EXPECT_CALL(*listener, OnSyncEngineEvent(
           Field(&SyncEngineEvent::what_happened,
           SyncEngineEvent::SYNCER_THREAD_PAUSED))).
@@ -153,7 +153,7 @@ class SyncerThreadWithSyncerTest : public testing::Test,
   bool Resume(ListenerMock* listener) {
     WaitableEvent event(false, false);
     {
-      AutoLock lock(syncer_thread()->lock_);
+      base::AutoLock lock(syncer_thread()->lock_);
       EXPECT_CALL(*listener, OnSyncEngineEvent(
           Field(&SyncEngineEvent::what_happened,
           SyncEngineEvent::SYNCER_THREAD_RESUMED))).
@@ -330,7 +330,7 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context));
   syncer_thread->DisableIdleDetection();
   // Hold the lock to appease asserts in code.
-  AutoLock lock(syncer_thread->lock_);
+  base::AutoLock lock(syncer_thread->lock_);
 
   // Notifications disabled should result in a polling interval of
   // kDefaultShortPollInterval.

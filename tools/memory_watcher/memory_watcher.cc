@@ -8,10 +8,10 @@
 
 #include "tools/memory_watcher/memory_watcher.h"
 #include "base/file_util.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/metrics/stats_counters.h"
 #include "base/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
 #include "tools/memory_watcher/call_stack.h"
 #include "tools/memory_watcher/preamble_patcher.h"
@@ -107,7 +107,7 @@ void MemoryWatcher::OnTrack(HANDLE heap, int32 id, int32 size) {
   if (!stack->Valid()) return;  // Recursion blocked generation of stack.
 
   {
-    AutoLock lock(block_map_lock_);
+    base::AutoLock lock(block_map_lock_);
 
     // Ideally, we'd like to verify that the block being added
     // here is not already in our list of tracked blocks.  However,
@@ -151,7 +151,7 @@ void MemoryWatcher::OnUntrack(HANDLE heap, int32 id, int32 size) {
     return;
 
   {
-    AutoLock lock(block_map_lock_);
+    base::AutoLock lock(block_map_lock_);
     active_thread_id_ = GetCurrentThreadId();
 
     // First, find the block in our block_map.
@@ -197,7 +197,7 @@ void MemoryWatcher::DumpLeaks() {
     return;
   Unhook();
 
-  AutoLock lock(block_map_lock_);
+  base::AutoLock lock(block_map_lock_);
   active_thread_id_ = GetCurrentThreadId();
 
   OpenLogFile();

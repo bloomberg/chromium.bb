@@ -11,8 +11,8 @@
 
 #include "app/sql/init_status.h"
 #include "base/file_path.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "webkit/glue/form_field.h"
@@ -627,7 +627,7 @@ class WebDataService
   bool should_commit_;
 
   // A lock to protect pending requests and next request handle.
-  Lock pending_lock_;
+  base::Lock pending_lock_;
 
   // Next handle to be used for requests. Incremented for each use.
   Handle next_request_handle_;

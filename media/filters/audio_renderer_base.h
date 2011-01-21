@@ -20,7 +20,7 @@
 
 #include <deque>
 
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "media/base/buffers.h"
 #include "media/base/filters.h"
 #include "media/filters/audio_renderer_algorithm_base.h"
@@ -102,7 +102,7 @@ class AudioRendererBase : public AudioRenderer {
   // Algorithm for scaling audio.
   scoped_ptr<AudioRendererAlgorithmBase> algorithm_;
 
-  Lock lock_;
+  base::Lock lock_;
 
   // Simple state tracking variable.
   enum State {

@@ -11,9 +11,9 @@
 #include <set>
 #include <vector>
 
-#include "base/lock.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
@@ -455,7 +455,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // such, be sure and wrap all usage of it around url_lock_.
   typedef std::multiset<BookmarkNode*, NodeURLComparator> NodesOrderedByURLSet;
   NodesOrderedByURLSet nodes_ordered_by_url_set_;
-  Lock url_lock_;
+  base::Lock url_lock_;
 
   // Used for loading favicons and the empty history request.
   CancelableRequestConsumerTSimple<BookmarkNode*> load_consumer_;

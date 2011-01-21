@@ -101,7 +101,7 @@ class AutofillDataTypeController : public DataTypeController,
 
   NotificationRegistrar notification_registrar_;
 
-  Lock abort_association_lock_;
+  base::Lock abort_association_lock_;
   bool abort_association_;
   base::WaitableEvent abort_association_complete_;
 

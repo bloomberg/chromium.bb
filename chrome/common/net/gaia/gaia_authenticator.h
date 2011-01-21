@@ -250,7 +250,7 @@ class GaiaAuthenticator {
     return auth_results_;
   }
 
-  typedef EventChannel<GaiaAuthEvent, Lock> Channel;
+  typedef EventChannel<GaiaAuthEvent, base::Lock> Channel;
 
   inline Channel* channel() const {
     return channel_;

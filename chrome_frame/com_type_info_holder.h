@@ -8,8 +8,8 @@
 #include <map>
 #include <ocidl.h>  // IProvideClassInfo2
 
-#include "base/lock.h"
 #include "base/scoped_comptr_win.h"
+#include "base/synchronization/lock.h"
 
 #define NO_VTABLE __declspec(novtable)
 
@@ -32,7 +32,7 @@ class NameToDispIdCache {
  protected:
   typedef std::map<HashType, DISPID> DispidMap;
   DispidMap map_;
-  mutable Lock lock_;
+  mutable base::Lock lock_;
 };
 
 // Wraps an instance of ITypeInfo and builds+maintains a cache of names

@@ -705,7 +705,7 @@ void ScriptHost::DebugApplication::RegisterDebugApplication() {
 }
 
 void ScriptHost::DebugApplication::Initialize() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   ++initialization_count_;
 
@@ -715,7 +715,7 @@ void ScriptHost::DebugApplication::Initialize() {
 
 void ScriptHost::DebugApplication::Initialize(
     IUnknown* debug_application_provider) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   ++initialization_count_;
 
@@ -742,7 +742,7 @@ void ScriptHost::DebugApplication::Initialize(
 
 void ScriptHost::DebugApplication::Initialize(
     IProcessDebugManager* manager, IDebugApplication* app) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   // This function is exposed for testing only.
   DCHECK_EQ(0U, initialization_count_);
 
@@ -758,7 +758,7 @@ void ScriptHost::DebugApplication::Initialize(
 
 
 void ScriptHost::DebugApplication::Terminate() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   DCHECK_GT(initialization_count_, (size_t)0);
   --initialization_count_;
 
@@ -778,7 +778,7 @@ void ScriptHost::DebugApplication::Terminate() {
 
 HRESULT ScriptHost::DebugApplication::GetDebugApplication(
     IDebugApplication** app) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   if (debug_application_ == NULL)
     return E_NOTIMPL;
@@ -788,7 +788,7 @@ HRESULT ScriptHost::DebugApplication::GetDebugApplication(
 
 HRESULT ScriptHost::DebugApplication::GetRootApplicationNode(
     IDebugApplicationNode** debug_app_node) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   if (debug_application_ == NULL) {
     *debug_app_node = NULL;
@@ -801,7 +801,7 @@ HRESULT ScriptHost::DebugApplication::GetRootApplicationNode(
 HRESULT ScriptHost::DebugApplication::CreateDebugDocumentHelper(
     const wchar_t* long_name, const wchar_t* code, TEXT_DOC_ATTR attributes,
     IDebugDocumentHelper** helper) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   if (debug_application_ == NULL)
     return S_OK;

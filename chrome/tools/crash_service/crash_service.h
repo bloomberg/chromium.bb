@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 
 namespace google_breakpad {
 
@@ -109,7 +109,7 @@ class CrashService {
   int requests_sent_;
   volatile long clients_connected_;
   volatile long clients_terminated_;
-  Lock sending_;
+  base::Lock sending_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashService);
 };

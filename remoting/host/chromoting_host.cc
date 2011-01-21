@@ -70,7 +70,7 @@ void ChromotingHost::Start(Task* shutdown_task) {
 
   // Make sure this object is not started.
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     if (state_ != kInitial)
       return;
     state_ = kStarted;
@@ -113,7 +113,7 @@ void ChromotingHost::Shutdown() {
 
   // No-op if this object is not started yet.
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     if (state_ != kStarted) {
       state_ = kStopped;
       return;
@@ -264,7 +264,7 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
 void ChromotingHost::OnNewClientSession(
     protocol::Session* session,
     protocol::SessionManager::IncomingSessionResponse* response) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   // TODO(hclam): Allow multiple clients to connect to the host.
   if (connection_.get() || state_ != kStarted) {
     *response = protocol::SessionManager::DECLINE;

@@ -85,7 +85,7 @@ bool PrefContentSettingsProvider::CanProvideDefaultSetting(
 
 ContentSetting PrefContentSettingsProvider::ProvideDefaultSetting(
     ContentSettingsType content_type) const {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   return default_content_settings_.settings[content_type];
 }
 
@@ -111,7 +111,7 @@ void PrefContentSettingsProvider::UpdateDefaultSetting(
   std::string dictionary_path(kTypeNames[content_type]);
   updating_preferences_ = true;
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     ScopedPrefUpdate update(prefs, prefs::kDefaultContentSettings);
     if ((setting == CONTENT_SETTING_DEFAULT) ||
         (setting == kDefaultSettings[content_type])) {
@@ -138,7 +138,7 @@ bool PrefContentSettingsProvider::DefaultSettingIsManaged(
 
 void PrefContentSettingsProvider::ResetToDefaults() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   default_content_settings_ = ContentSettings();
   ForceDefaultsToBeExplicit();
 
@@ -195,7 +195,7 @@ void PrefContentSettingsProvider::ReadDefaultSettings(bool overwrite) {
   const DictionaryValue* default_settings_dictionary =
       prefs->GetDictionary(prefs::kDefaultContentSettings);
 
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   if (overwrite)
     default_content_settings_ = ContentSettings();

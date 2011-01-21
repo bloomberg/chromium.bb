@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/logging_win.h"
 #include "base/path_service.h"

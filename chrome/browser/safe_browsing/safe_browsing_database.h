@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -236,7 +236,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // Lock for protecting access to variables that may be used on the
   // IO thread.  This includes |browse_bloom_filter_|, |full_browse_hashes_|,
   // |pending_browse_hashes_|, and |prefix_miss_cache_|.
-  Lock lookup_lock_;
+  base::Lock lookup_lock_;
 
   // Underlying persistent store for chunk data.
   // For browsing related (phishing and malware URLs) chunks and prefixes.

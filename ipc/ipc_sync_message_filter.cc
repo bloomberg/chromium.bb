@@ -23,7 +23,7 @@ SyncMessageFilter::~SyncMessageFilter() {
 
 bool SyncMessageFilter::Send(Message* message) {
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     if (!io_loop_) {
       delete message;
       return false;
@@ -44,7 +44,7 @@ bool SyncMessageFilter::Send(Message* message) {
       &done_event);
 
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     // Can't use this class on the main thread or else it can lead to deadlocks.
     // Also by definition, can't use this on IO thread since we're blocking it.
     DCHECK(MessageLoop::current() != listener_loop_);
@@ -60,7 +60,7 @@ bool SyncMessageFilter::Send(Message* message) {
   base::WaitableEvent::WaitMany(events, 2);
 
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     delete pending_message.deserializer;
     pending_sync_messages_.erase(&pending_message);
   }
@@ -84,7 +84,7 @@ void SyncMessageFilter::SendOnIOThread(Message* message) {
 }
 
 void SyncMessageFilter::SignalAllEvents() {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   for (PendingSyncMessages::iterator iter = pending_sync_messages_.begin();
        iter != pending_sync_messages_.end(); ++iter) {
     (*iter)->done_event->Signal();
@@ -93,7 +93,7 @@ void SyncMessageFilter::SignalAllEvents() {
 
 void SyncMessageFilter::OnFilterAdded(Channel* channel) {
   channel_ = channel;
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   io_loop_ = MessageLoop::current();
 }
 
@@ -108,7 +108,7 @@ void SyncMessageFilter::OnChannelClosing() {
 }
 
 bool SyncMessageFilter::OnMessageReceived(const Message& message) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   for (PendingSyncMessages::iterator iter = pending_sync_messages_.begin();
        iter != pending_sync_messages_.end(); ++iter) {
     if (SyncMessage::IsMessageReplyTo(message, (*iter)->id)) {

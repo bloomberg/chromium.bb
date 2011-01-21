@@ -15,9 +15,9 @@
 #include <vector>
 
 #include "base/hash_tables.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "googleurl/src/gurl.h"
@@ -353,7 +353,7 @@ class SafeBrowsingService
   SafeBrowsingDatabase* database_;
 
   // Lock used to prevent possible data races due to compiler optimizations.
-  mutable Lock database_lock_;
+  mutable base::Lock database_lock_;
 
   // Handles interaction with SafeBrowsing servers.
   SafeBrowsingProtocolManager* protocol_manager_;

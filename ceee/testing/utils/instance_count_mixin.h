@@ -10,7 +10,7 @@
 #include <string>
 #include <set>
 
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 
 namespace testing {
 
@@ -47,7 +47,7 @@ class InstanceCountMixinBase {
   static InstanceSet::const_iterator end();
 
  protected:
-  static Lock lock_;
+  static base::Lock lock_;
 };
 
 // Inherit test classes from this class to get a per-class instance count.
@@ -60,11 +60,11 @@ template <class T>
 class InstanceCountMixin : public InstanceCountMixinBase {
  public:
   InstanceCountMixin() {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     ++instance_count_;
   }
   ~InstanceCountMixin() {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     --instance_count_;
   }
 

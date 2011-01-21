@@ -91,7 +91,7 @@ class MachListenerThreadDelegate : public base::PlatformThread::Delegate {
       // leaking MachBroker map entries in this case, lock around both these
       // calls.  If the child dies, the death notification will be processed
       // after the call to FinalizePid(), ensuring proper cleanup.
-      AutoLock lock(broker_->GetLock());
+      base::AutoLock lock(broker_->GetLock());
 
       int pid;
       err = pid_for_task(child_task, &pid);
@@ -170,7 +170,7 @@ void MachBroker::FinalizePid(base::ProcessHandle pid,
 
 // Removes all mappings belonging to |pid| from the broker.
 void MachBroker::InvalidatePid(base::ProcessHandle pid) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   MachBroker::MachMap::iterator it = mach_map_.find(pid);
   if (it == mach_map_.end())
     return;
@@ -183,13 +183,13 @@ void MachBroker::InvalidatePid(base::ProcessHandle pid) {
   mach_map_.erase(it);
 }
 
-Lock& MachBroker::GetLock() {
+base::Lock& MachBroker::GetLock() {
   return lock_;
 }
 
 // Returns the mach task belonging to |pid|.
 mach_port_t MachBroker::TaskForPid(base::ProcessHandle pid) const {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   MachBroker::MachMap::const_iterator it = mach_map_.find(pid);
   if (it == mach_map_.end())
     return MACH_PORT_NULL;

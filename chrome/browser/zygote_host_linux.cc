@@ -235,7 +235,7 @@ pid_t ZygoteHost::ForkRenderer(
 
   pid_t pid;
   {
-    AutoLock lock(control_lock_);
+    base::AutoLock lock(control_lock_);
     if (!UnixDomainSocket::SendMsg(control_fd_, pickle.data(), pickle.size(),
                                    fds))
       return base::kNullProcessHandle;
@@ -331,7 +331,7 @@ base::TerminationStatus ZygoteHost::GetTerminationStatus(
   char buf[kMaxMessageLength];
   ssize_t len;
   {
-    AutoLock lock(control_lock_);
+    base::AutoLock lock(control_lock_);
     if (HANDLE_EINTR(write(control_fd_, pickle.data(), pickle.size())) < 0)
       PLOG(ERROR) << "write";
 

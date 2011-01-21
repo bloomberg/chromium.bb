@@ -11,10 +11,10 @@
 
 #include <mach/mach.h>
 
-#include "base/lock.h"
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/singleton.h"
+#include "base/synchronization/lock.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -70,7 +70,7 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
 
   // The lock that protects this MachBroker object.  Clients MUST acquire and
   // release this lock around calls to PlaceholderForPid() and FinalizePid().
-  Lock& GetLock();
+  base::Lock& GetLock();
 
   // Returns the Mach port name to use when sending or receiving messages.
   // Does the Right Thing in the browser and in child processes.
@@ -99,7 +99,7 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
   MachMap mach_map_;
 
   // Mutex that guards |mach_map_|.
-  mutable Lock lock_;
+  mutable base::Lock lock_;
 
   friend class MachBrokerTest;
   friend class RegisterNotificationTask;

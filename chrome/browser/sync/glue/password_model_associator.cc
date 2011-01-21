@@ -41,7 +41,7 @@ PasswordModelAssociator::~PasswordModelAssociator() {}
 bool PasswordModelAssociator::AssociateModels() {
   DCHECK(expected_loop_ == MessageLoop::current());
   {
-    AutoLock lock(abort_association_pending_lock_);
+    base::AutoLock lock(abort_association_pending_lock_);
     abort_association_pending_ = false;
   }
 
@@ -194,7 +194,7 @@ bool PasswordModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 
 void PasswordModelAssociator::AbortAssociation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  AutoLock lock(abort_association_pending_lock_);
+  base::AutoLock lock(abort_association_pending_lock_);
   abort_association_pending_ = true;
 }
 
@@ -210,7 +210,7 @@ bool PasswordModelAssociator::InitSyncNodeFromChromeId(
 }
 
 bool PasswordModelAssociator::IsAbortPending() {
-  AutoLock lock(abort_association_pending_lock_);
+  base::AutoLock lock(abort_association_pending_lock_);
   return abort_association_pending_;
 }
 

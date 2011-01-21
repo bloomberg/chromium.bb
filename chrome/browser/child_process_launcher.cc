@@ -7,9 +7,9 @@
 #include <utility>  // For std::pair.
 
 #include "base/command_line.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_descriptors.h"
@@ -174,7 +174,7 @@ class ChildProcessLauncher::Context
       // AddPlaceholderForPid(), enabling proper cleanup.
       {  // begin scope for AutoLock
         MachBroker* broker = MachBroker::GetInstance();
-        AutoLock lock(broker->GetLock());
+        base::AutoLock lock(broker->GetLock());
 
         // This call to |PrepareForFork()| will start the MachBroker listener
         // thread, if it is not already running.  Therefore the browser process

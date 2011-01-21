@@ -14,7 +14,7 @@ void SyncMessageReplyDispatcher::Push(IPC::SyncMessage* msg,
     context->id_ = IPC::SyncMessage::GetMessageId(*msg);
     context->key_ = key;
 
-    AutoLock lock(message_queue_lock_);
+    base::AutoLock lock(message_queue_lock_);
     message_queue_.push_back(context);
   }
 }
@@ -36,7 +36,7 @@ bool SyncMessageReplyDispatcher::OnMessageReceived(const IPC::Message& msg) {
 
 void SyncMessageReplyDispatcher::Cancel(void* key) {
   DCHECK(key != NULL);
-  AutoLock lock(message_queue_lock_);
+  base::AutoLock lock(message_queue_lock_);
   PendingSyncMessageQueue::iterator it = message_queue_.begin();
   while (it != message_queue_.end()) {
     SyncMessageCallContext* context = *it;
@@ -55,7 +55,7 @@ SyncMessageReplyDispatcher::SyncMessageCallContext*
     return NULL;
 
   int id = IPC::SyncMessage::GetMessageId(msg);
-  AutoLock lock(message_queue_lock_);
+  base::AutoLock lock(message_queue_lock_);
   PendingSyncMessageQueue::iterator it;
   for (it = message_queue_.begin(); it != message_queue_.end(); ++it) {
     SyncMessageCallContext* context = *it;

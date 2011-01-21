@@ -104,7 +104,7 @@ void DeviceManagementPolicyCache::LoadPolicyFromFile() {
   // Decode and swap in the new policy information.
   scoped_ptr<DictionaryValue> value(DecodePolicy(cached_policy.policy()));
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     if (!fresh_policy_)
       policy_.reset(value.release());
     last_policy_refresh_time_ = timestamp;
@@ -118,7 +118,7 @@ bool DeviceManagementPolicyCache::SetPolicy(
   const bool new_policy_differs = !(value->Equals(policy_.get()));
   base::Time now(base::Time::NowFromSystemTime());
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     policy_.reset(value);
     fresh_policy_ = true;
     last_policy_refresh_time_ = now;
@@ -134,7 +134,7 @@ bool DeviceManagementPolicyCache::SetPolicy(
 }
 
 DictionaryValue* DeviceManagementPolicyCache::GetPolicy() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   return policy_->DeepCopy();
 }
 
@@ -142,7 +142,7 @@ void DeviceManagementPolicyCache::SetDeviceUnmanaged() {
   is_device_unmanaged_ = true;
   base::Time now(base::Time::NowFromSystemTime());
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     policy_.reset(new DictionaryValue);
     last_policy_refresh_time_ = now;
   }

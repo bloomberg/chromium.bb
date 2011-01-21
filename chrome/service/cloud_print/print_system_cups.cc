@@ -15,7 +15,6 @@
 
 #include "base/file_path.h"
 #include "base/json/json_reader.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/message_loop.h"

@@ -28,7 +28,7 @@ AudioRendererBase::~AudioRendererBase() {
 }
 
 void AudioRendererBase::Play(FilterCallback* callback) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   DCHECK_EQ(kPaused, state_);
   scoped_ptr<FilterCallback> c(callback);
   state_ = kPlaying;
@@ -36,7 +36,7 @@ void AudioRendererBase::Play(FilterCallback* callback) {
 }
 
 void AudioRendererBase::Pause(FilterCallback* callback) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   DCHECK_EQ(kPlaying, state_);
   pause_callback_.reset(callback);
   state_ = kPaused;
@@ -53,7 +53,7 @@ void AudioRendererBase::Pause(FilterCallback* callback) {
 void AudioRendererBase::Stop(FilterCallback* callback) {
   OnStop();
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     state_ = kStopped;
     algorithm_.reset(NULL);
   }
@@ -64,7 +64,7 @@ void AudioRendererBase::Stop(FilterCallback* callback) {
 }
 
 void AudioRendererBase::Seek(base::TimeDelta time, FilterCallback* callback) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   DCHECK_EQ(kPaused, state_);
   DCHECK_EQ(0u, pending_reads_) << "Pending reads should have completed";
   state_ = kSeeking;
@@ -129,7 +129,7 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
 }
 
 bool AudioRendererBase::HasEnded() {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (rendered_end_of_stream_) {
     DCHECK(algorithm_->IsQueueEmpty())
         << "Audio queue should be empty if we have rendered end of stream";
@@ -138,7 +138,7 @@ bool AudioRendererBase::HasEnded() {
 }
 
 void AudioRendererBase::ConsumeAudioSamples(scoped_refptr<Buffer> buffer_in) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   DCHECK(state_ == kPaused || state_ == kSeeking || state_ == kPlaying);
   DCHECK_GT(pending_reads_, 0u);
   --pending_reads_;
@@ -191,7 +191,7 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
   base::TimeDelta last_fill_buffer_time;
   size_t dest_written = 0;
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
 
     // Mute audio by returning 0 when not playing.
     if (state_ != kPlaying) {

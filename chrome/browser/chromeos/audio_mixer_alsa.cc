@@ -79,7 +79,7 @@ bool AudioMixerAlsa::InitSync() {
 }
 
 double AudioMixerAlsa::GetVolumeDb() const {
-  AutoLock lock(mixer_state_lock_);
+  base::AutoLock lock(mixer_state_lock_);
   if (mixer_state_ != READY)
     return kSilenceDb;
 
@@ -87,7 +87,7 @@ double AudioMixerAlsa::GetVolumeDb() const {
 }
 
 bool AudioMixerAlsa::GetVolumeLimits(double* vol_min, double* vol_max) {
-  AutoLock lock(mixer_state_lock_);
+  base::AutoLock lock(mixer_state_lock_);
   if (mixer_state_ != READY)
     return false;
   if (vol_min)
@@ -98,7 +98,7 @@ bool AudioMixerAlsa::GetVolumeLimits(double* vol_min, double* vol_max) {
 }
 
 void AudioMixerAlsa::SetVolumeDb(double vol_db) {
-  AutoLock lock(mixer_state_lock_);
+  base::AutoLock lock(mixer_state_lock_);
   if (mixer_state_ != READY)
     return;
   if (vol_db < kSilenceDb)
@@ -108,7 +108,7 @@ void AudioMixerAlsa::SetVolumeDb(double vol_db) {
 }
 
 bool AudioMixerAlsa::IsMute() const {
-  AutoLock lock(mixer_state_lock_);
+  base::AutoLock lock(mixer_state_lock_);
   if (mixer_state_ != READY)
     return false;
   return GetElementMuted_Locked(elem_master_);
@@ -121,7 +121,7 @@ static bool PrefVolumeValid(double volume) {
 }
 
 void AudioMixerAlsa::SetMute(bool mute) {
-  AutoLock lock(mixer_state_lock_);
+  base::AutoLock lock(mixer_state_lock_);
   if (mixer_state_ != READY)
     return;
 
@@ -150,7 +150,7 @@ void AudioMixerAlsa::SetMute(bool mute) {
 }
 
 AudioMixer::State AudioMixerAlsa::GetState() const {
-  AutoLock lock(mixer_state_lock_);
+  base::AutoLock lock(mixer_state_lock_);
   // If we think it's ready, verify it is actually so.
   if ((mixer_state_ == READY) && (alsa_mixer_ == NULL))
     mixer_state_ = IN_ERROR;
@@ -184,7 +184,7 @@ void AudioMixerAlsa::DoInit(InitDoneCallback* callback) {
 }
 
 bool AudioMixerAlsa::InitThread() {
-  AutoLock lock(mixer_state_lock_);
+  base::AutoLock lock(mixer_state_lock_);
 
   if (mixer_state_ != UNINITIALIZED)
     return false;
@@ -209,7 +209,7 @@ void AudioMixerAlsa::InitPrefs() {
 }
 
 bool AudioMixerAlsa::InitializeAlsaMixer() {
-  AutoLock lock(mixer_state_lock_);
+  base::AutoLock lock(mixer_state_lock_);
   if (mixer_state_ != INITIALIZING)
     return false;
 
@@ -273,7 +273,7 @@ bool AudioMixerAlsa::InitializeAlsaMixer() {
 }
 
 void AudioMixerAlsa::FreeAlsaMixer() {
-  AutoLock lock(mixer_state_lock_);
+  base::AutoLock lock(mixer_state_lock_);
   mixer_state_ = SHUTTING_DOWN;
   if (alsa_mixer_) {
     snd_mixer_close(alsa_mixer_);
@@ -282,7 +282,7 @@ void AudioMixerAlsa::FreeAlsaMixer() {
 }
 
 void AudioMixerAlsa::DoSetVolumeMute(double pref_volume, int pref_mute) {
-  AutoLock lock(mixer_state_lock_);
+  base::AutoLock lock(mixer_state_lock_);
   if (mixer_state_ != READY)
     return;
 

@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
@@ -507,7 +507,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // pointer value", and then invoke methods), because lifetimes are managed on
   // the UI thread.  Of course, this comment only applies to ModelSafeWorker
   // impls that are themselves thread-safe, such as UIModelWorker.
-  mutable Lock registrar_lock_;
+  mutable base::Lock registrar_lock_;
 
   // The frontend which we serve (and are owned by).
   SyncFrontend* frontend_;

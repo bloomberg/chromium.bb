@@ -5,19 +5,19 @@
 #ifndef GOOGLE_CACHEINVALIDATION_MUTEX_H_
 #define GOOGLE_CACHEINVALIDATION_MUTEX_H_
 
-#include "base/lock.h"
 #include "base/logging.h"
+#include "base/synchronization/lock.h"
 
 namespace invalidation {
 
-typedef ::Lock Mutex;
+typedef base::Lock Mutex;
 
 class MutexLock {
  public:
   explicit MutexLock(Mutex* m) : auto_lock_(*m) {}
 
  private:
-  AutoLock auto_lock_;
+  base::AutoLock auto_lock_;
   DISALLOW_COPY_AND_ASSIGN(MutexLock);
 };
 

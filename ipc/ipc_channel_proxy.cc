@@ -195,7 +195,7 @@ void ChannelProxy::Context::OnSendMessage(Message* message) {
 void ChannelProxy::Context::OnAddFilter() {
   std::vector<scoped_refptr<MessageFilter> > filters;
   {
-    AutoLock auto_lock(pending_filters_lock_);
+    base::AutoLock auto_lock(pending_filters_lock_);
     filters.swap(pending_filters_);
   }
 
@@ -227,7 +227,7 @@ void ChannelProxy::Context::OnRemoveFilter(MessageFilter* filter) {
 
 // Called on the listener's thread
 void ChannelProxy::Context::AddFilter(MessageFilter* filter) {
-  AutoLock auto_lock(pending_filters_lock_);
+  base::AutoLock auto_lock(pending_filters_lock_);
   pending_filters_.push_back(make_scoped_refptr(filter));
   ipc_message_loop_->PostTask(
       FROM_HERE,

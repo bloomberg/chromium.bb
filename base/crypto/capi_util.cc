@@ -5,8 +5,8 @@
 #include "base/crypto/capi_util.h"
 
 #include "base/basictypes.h"
-#include "base/lock.h"
 #include "base/singleton.h"
+#include "base/synchronization/lock.h"
 
 namespace {
 
@@ -18,7 +18,7 @@ class CAPIUtilSingleton {
 
   // Returns a lock to guard calls to CryptAcquireContext with
   // CRYPT_DELETEKEYSET or CRYPT_NEWKEYSET.
-  Lock& acquire_context_lock() {
+  base::Lock& acquire_context_lock() {
     return acquire_context_lock_;
   }
 
@@ -28,7 +28,7 @@ class CAPIUtilSingleton {
 
   CAPIUtilSingleton() {}
 
-  Lock acquire_context_lock_;
+  base::Lock acquire_context_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(CAPIUtilSingleton);
 };
@@ -43,7 +43,7 @@ BOOL CryptAcquireContextLocked(HCRYPTPROV* prov,
                                DWORD prov_type,
                                DWORD flags)
 {
-  AutoLock lock(CAPIUtilSingleton::GetInstance()->acquire_context_lock());
+  base::AutoLock lock(CAPIUtilSingleton::GetInstance()->acquire_context_lock());
   return CryptAcquireContext(prov, container, provider, prov_type, flags);
 }
 

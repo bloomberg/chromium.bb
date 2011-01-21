@@ -138,7 +138,7 @@ void AllStatus::HandleServerConnectionEvent(
 }
 
 sync_api::SyncManager::Status AllStatus::status() const {
-  AutoLock lock(mutex_);
+  base::AutoLock lock(mutex_);
   return status_;
 }
 

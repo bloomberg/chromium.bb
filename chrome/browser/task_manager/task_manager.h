@@ -13,7 +13,6 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/lock.h"
 #include "base/observer_list.h"
 #include "base/process_util.h"
 #include "base/ref_counted.h"

@@ -35,7 +35,6 @@
 #pragma once
 
 #include "base/file_path.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "net/base/transport_security_state.h"

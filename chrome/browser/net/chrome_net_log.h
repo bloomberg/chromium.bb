@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/atomicops.h"
-#include "base/lock.h"
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "net/base/net_log.h"
 
@@ -142,7 +142,7 @@ class ChromeNetLog : public net::NetLog {
 
   // |lock_| protects access to |observers_| and, indirectly, to
   // |passive_collector_|.  Should not be acquired by observers.
-  Lock lock_;
+  base::Lock lock_;
 
   // Last assigned source ID.  Incremented to get the next one.
   base::subtle::Atomic32 last_id_;

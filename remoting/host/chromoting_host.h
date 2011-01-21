@@ -174,7 +174,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   State state_;
 
   // Lock is to lock the access to |state_|.
-  Lock lock_;
+  base::Lock lock_;
 
   // Configuration of the protocol.
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config_;

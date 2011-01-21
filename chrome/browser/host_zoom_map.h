@@ -14,8 +14,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/notification_observer.h"
@@ -112,7 +112,7 @@ class HostZoomMap :
 
   // Used around accesses to |host_zoom_levels_|, |default_zoom_level_| and
   // |temporary_zoom_levels_| to guarantee thread safety.
-  mutable Lock lock_;
+  mutable base::Lock lock_;
 
   // Whether we are currently updating preferences, this is used to ignore
   // notifications from the preference service that we triggered ourself.

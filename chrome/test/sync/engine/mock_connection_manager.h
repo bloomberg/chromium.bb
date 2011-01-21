@@ -191,7 +191,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   void set_store_birthday(string new_birthday) {
     // Multiple threads can set store_birthday_ in our tests, need to lock it to
     // ensure atomic read/writes and avoid race conditions.
-    AutoLock lock(store_birthday_lock_);
+    base::AutoLock lock(store_birthday_lock_);
     store_birthday_ = new_birthday;
   }
 
@@ -219,7 +219,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   // Const necessary to avoid any hidden copy-on-write issues that would break
   // in multithreaded scenarios (see |set_store_birthday|).
   const std::string& store_birthday() {
-    AutoLock lock(store_birthday_lock_);
+    base::AutoLock lock(store_birthday_lock_);
     return store_birthday_;
   }
 
@@ -285,7 +285,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   // The store birthday we send to the client.
   string store_birthday_;
-  Lock store_birthday_lock_;
+  base::Lock store_birthday_lock_;
   bool store_birthday_sent_;
   bool client_stuck_;
   string commit_time_rename_prepended_string_;
@@ -320,7 +320,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   // Protected by |response_code_override_lock_|.
   bool fail_with_auth_invalid_;
 
-  Lock response_code_override_lock_;
+  base::Lock response_code_override_lock_;
 
   // True if we are only accepting GetUpdatesCallerInfo::PERIODIC requests.
   bool fail_non_periodic_get_updates_;

@@ -10,8 +10,8 @@
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -62,7 +62,7 @@ class OptionalRequestInfo
 
   void GetHardwareInfo() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     can_report_metrics_ = true;
 #if defined(OS_WIN)
     value_ = UTF16ToUTF8(
@@ -75,17 +75,17 @@ class OptionalRequestInfo
   }
 
   std::string value() {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     return value_;
   }
 
   bool can_report_metrics() {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     return can_report_metrics_;
   }
 
  private:
-  Lock lock_;
+  base::Lock lock_;
   std::string value_;
   bool can_report_metrics_;
 

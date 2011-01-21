@@ -7,10 +7,10 @@
 
 #include <map>
 
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/synchronization/lock.h"
 #include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "printing/print_settings.h"
@@ -194,7 +194,7 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
 
   // All writable data member access must be guarded by this lock. Needs to be
   // mutable since it can be acquired from const member functions.
-  mutable Lock lock_;
+  mutable base::Lock lock_;
 
   // All the mutable members.
   Mutable mutable_;

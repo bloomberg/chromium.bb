@@ -53,12 +53,12 @@
 #endif
 
 #include "base/file_version_info.h"
-#include "base/lock.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/threading/thread.h"
+#include "base/synchronization/lock.h"
 #include "base/string_number_conversions.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/url_fetcher.h"
@@ -97,7 +97,7 @@ static const int kMinMilliSecondsPerUMAUpload = 600000;
 base::LazyInstance<MetricsService>
     g_metrics_instance_(base::LINKER_INITIALIZED);
 
-Lock MetricsService::metrics_service_lock_;
+base::Lock MetricsService::metrics_service_lock_;
 
 // Traits to create an instance of the ChromeFrame upload thread.
 struct UploadThreadInstanceTraits
@@ -127,7 +127,7 @@ struct UploadThreadInstanceTraits
 base::LazyInstance<base::Thread, UploadThreadInstanceTraits>
     g_metrics_upload_thread_(base::LINKER_INITIALIZED);
 
-Lock g_metrics_service_lock;
+base::Lock g_metrics_service_lock;
 
 extern base::LazyInstance<base::StatisticsRecorder> g_statistics_recorder_;
 
@@ -354,7 +354,7 @@ class ChromeFrameMetricsDataUploader
 };
 
 MetricsService* MetricsService::GetInstance() {
-  AutoLock lock(g_metrics_service_lock);
+  base::AutoLock lock(g_metrics_service_lock);
   return &g_metrics_instance_.Get();
 }
 
@@ -403,7 +403,7 @@ void MetricsService::InitializeMetricsState() {
 
 // static
 void MetricsService::Start() {
-  AutoLock lock(metrics_service_lock_);
+  base::AutoLock lock(metrics_service_lock_);
 
   if (GetInstance()->state_ == ACTIVE)
     return;
@@ -416,7 +416,7 @@ void MetricsService::Start() {
 // static
 void MetricsService::Stop() {
   {
-    AutoLock lock(metrics_service_lock_);
+    base::AutoLock lock(metrics_service_lock_);
 
     GetInstance()->SetReporting(false);
     GetInstance()->SetRecording(false);

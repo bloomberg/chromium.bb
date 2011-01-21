@@ -13,9 +13,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
 #include "gfx/rect.h"
@@ -425,7 +425,7 @@ bool IsTopLevelWindow(HWND window);
 // Seeks a stream back to position 0.
 HRESULT RewindStream(IStream* stream);
 
-extern Lock g_ChromeFrameHistogramLock;
+extern base::Lock g_ChromeFrameHistogramLock;
 
 // Thread safe versions of the UMA histogram macros we use for ChromeFrame.
 // These should be used for histograms in ChromeFrame. If other histogram
@@ -433,17 +433,17 @@ extern Lock g_ChromeFrameHistogramLock;
 // those should be defined and used.
 #define THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, \
                                                 bucket_count) { \
-  AutoLock lock(g_ChromeFrameHistogramLock); \
+  base::AutoLock lock(g_ChromeFrameHistogramLock); \
   UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count); \
 }
 
 #define THREAD_SAFE_UMA_HISTOGRAM_TIMES(name, sample) { \
-  AutoLock lock(g_ChromeFrameHistogramLock); \
+  base::AutoLock lock(g_ChromeFrameHistogramLock); \
   UMA_HISTOGRAM_TIMES(name, sample); \
 }
 
 #define THREAD_SAFE_UMA_HISTOGRAM_COUNTS(name, sample) { \
-  AutoLock lock(g_ChromeFrameHistogramLock); \
+  base::AutoLock lock(g_ChromeFrameHistogramLock); \
   UMA_HISTOGRAM_COUNTS(name, sample); \
 }
 

@@ -62,12 +62,12 @@ Syncer::Syncer()
 Syncer::~Syncer() {}
 
 bool Syncer::ExitRequested() {
-  AutoLock lock(early_exit_requested_lock_);
+  base::AutoLock lock(early_exit_requested_lock_);
   return early_exit_requested_;
 }
 
 void Syncer::RequestEarlyExit() {
-  AutoLock lock(early_exit_requested_lock_);
+  base::AutoLock lock(early_exit_requested_lock_);
   early_exit_requested_ = true;
 }
 

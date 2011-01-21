@@ -55,7 +55,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
   void QueueMessage(const Message& msg, SyncChannel::SyncContext* context) {
     bool was_task_pending;
     {
-      AutoLock auto_lock(message_lock_);
+      base::AutoLock auto_lock(message_lock_);
 
       was_task_pending = task_pending_;
       task_pending_ = true;
@@ -80,7 +80,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
   // messages.
   void DispatchMessagesTask() {
     {
-      AutoLock auto_lock(message_lock_);
+      base::AutoLock auto_lock(message_lock_);
       task_pending_ = false;
     }
     DispatchMessages();
@@ -91,7 +91,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
       Message* message;
       scoped_refptr<SyncChannel::SyncContext> context;
       {
-        AutoLock auto_lock(message_lock_);
+        base::AutoLock auto_lock(message_lock_);
         if (message_queue_.empty())
           break;
 
@@ -107,7 +107,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
 
   // SyncChannel calls this in its destructor.
   void RemoveContext(SyncContext* context) {
-    AutoLock auto_lock(message_lock_);
+    base::AutoLock auto_lock(message_lock_);
 
     SyncMessageQueue::iterator iter = message_queue_.begin();
     while (iter != message_queue_.end()) {
@@ -185,7 +185,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
   // message.
   WaitableEvent dispatch_event_;
   MessageLoop* listener_message_loop_;
-  Lock message_lock_;
+  base::Lock message_lock_;
   bool task_pending_;
   int listener_count_;
 
@@ -223,14 +223,14 @@ void SyncChannel::SyncContext::Push(SyncMessage* sync_msg) {
   PendingSyncMsg pending(SyncMessage::GetMessageId(*sync_msg),
                          sync_msg->GetReplyDeserializer(),
                          new WaitableEvent(true, false));
-  AutoLock auto_lock(deserializers_lock_);
+  base::AutoLock auto_lock(deserializers_lock_);
   deserializers_.push_back(pending);
 }
 
 bool SyncChannel::SyncContext::Pop() {
   bool result;
   {
-    AutoLock auto_lock(deserializers_lock_);
+    base::AutoLock auto_lock(deserializers_lock_);
     PendingSyncMsg msg = deserializers_.back();
     delete msg.deserializer;
     delete msg.done_event;
@@ -251,7 +251,7 @@ bool SyncChannel::SyncContext::Pop() {
 }
 
 WaitableEvent* SyncChannel::SyncContext::GetSendDoneEvent() {
-  AutoLock auto_lock(deserializers_lock_);
+  base::AutoLock auto_lock(deserializers_lock_);
   return deserializers_.back().done_event;
 }
 
@@ -264,7 +264,7 @@ void SyncChannel::SyncContext::DispatchMessages() {
 }
 
 bool SyncChannel::SyncContext::TryToUnblockListener(const Message* msg) {
-  AutoLock auto_lock(deserializers_lock_);
+  base::AutoLock auto_lock(deserializers_lock_);
   if (deserializers_.empty() ||
       !SyncMessage::IsMessageReplyTo(*msg, deserializers_.back().id)) {
     return false;
@@ -324,7 +324,7 @@ void SyncChannel::SyncContext::OnChannelClosed() {
 }
 
 void SyncChannel::SyncContext::OnSendTimeout(int message_id) {
-  AutoLock auto_lock(deserializers_lock_);
+  base::AutoLock auto_lock(deserializers_lock_);
   PendingSyncMessageQueue::iterator iter;
   for (iter = deserializers_.begin(); iter != deserializers_.end(); iter++) {
     if (iter->id == message_id) {
@@ -335,7 +335,7 @@ void SyncChannel::SyncContext::OnSendTimeout(int message_id) {
 }
 
 void SyncChannel::SyncContext::CancelPendingSends() {
-  AutoLock auto_lock(deserializers_lock_);
+  base::AutoLock auto_lock(deserializers_lock_);
   PendingSyncMessageQueue::iterator iter;
   for (iter = deserializers_.begin(); iter != deserializers_.end(); iter++)
     iter->done_event->Signal();

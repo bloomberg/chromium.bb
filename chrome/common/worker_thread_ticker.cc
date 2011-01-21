@@ -44,7 +44,7 @@ WorkerThreadTicker::~WorkerThreadTicker() {
 
 bool WorkerThreadTicker::RegisterTickHandler(Callback *tick_handler) {
   DCHECK(tick_handler);
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   // You cannot change the list of handlers when the timer is running.
   // You need to call Stop first.
   if (IsRunning())
@@ -55,7 +55,7 @@ bool WorkerThreadTicker::RegisterTickHandler(Callback *tick_handler) {
 
 bool WorkerThreadTicker::UnregisterTickHandler(Callback *tick_handler) {
   DCHECK(tick_handler);
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   // You cannot change the list of handlers when the timer is running.
   // You need to call Stop first.
   if (IsRunning()) {
@@ -74,7 +74,7 @@ bool WorkerThreadTicker::UnregisterTickHandler(Callback *tick_handler) {
 bool WorkerThreadTicker::Start() {
   // Do this in a lock because we don't want 2 threads to
   // call Start at the same time
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   if (IsRunning())
     return false;
   if (!timer_thread_.Start())
@@ -87,7 +87,7 @@ bool WorkerThreadTicker::Start() {
 bool WorkerThreadTicker::Stop() {
   // Do this in a lock because we don't want 2 threads to
   // call Stop at the same time
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   if (!IsRunning())
     return false;
   is_running_ = false;

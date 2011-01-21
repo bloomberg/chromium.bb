@@ -11,12 +11,12 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/sha1.h"
 #include "base/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
@@ -1070,7 +1070,7 @@ class SyncManager::SyncInternal
   // Whether we're initialized to the point of being able to accept changes
   // (and hence allow transaction creation). See initialized_ for details.
   bool initialized() const {
-    AutoLock lock(initialized_mutex_);
+    base::AutoLock lock(initialized_mutex_);
     return initialized_;
   }
 
@@ -1310,7 +1310,7 @@ class SyncManager::SyncInternal
   // meaning we are ready to accept changes.  Protected by initialized_mutex_
   // as it can get read/set by both the SyncerThread and the AuthWatcherThread.
   bool initialized_;
-  mutable Lock initialized_mutex_;
+  mutable base::Lock initialized_mutex_;
 
   notifier::NotifierOptions notifier_options_;
 
@@ -1531,7 +1531,7 @@ void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
   // between their respective threads to call MarkAndNotify.  We need to make
   // sure the observer is notified once and only once.
   {
-    AutoLock lock(initialized_mutex_);
+    base::AutoLock lock(initialized_mutex_);
     if (initialized_)
       return;
     initialized_ = true;

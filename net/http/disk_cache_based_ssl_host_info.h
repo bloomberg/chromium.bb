@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/weak_ptr.h"

@@ -92,12 +92,12 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/synchronization/cancellation_flag.h"
+#include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "build/build_config.h"
 

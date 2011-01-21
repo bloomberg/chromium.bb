@@ -21,7 +21,7 @@ PrintJobManager::PrintJobManager() {
 }
 
 PrintJobManager::~PrintJobManager() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   queued_queries_.clear();
 }
 
@@ -59,7 +59,7 @@ void PrintJobManager::StopJobs(bool wait_for_finish) {
 }
 
 void PrintJobManager::QueuePrinterQuery(PrinterQuery* job) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   DCHECK(job);
   queued_queries_.push_back(make_scoped_refptr(job));
   DCHECK(job->is_valid());
@@ -67,7 +67,7 @@ void PrintJobManager::QueuePrinterQuery(PrinterQuery* job) {
 
 void PrintJobManager::PopPrinterQuery(int document_cookie,
                                       scoped_refptr<PrinterQuery>* job) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   for (PrinterQueries::iterator itr = queued_queries_.begin();
        itr != queued_queries_.end();
        ++itr) {
@@ -162,12 +162,12 @@ void PrintJobManager::OnPrintJobEvent(
 }
 
 bool PrintJobManager::printing_enabled() {
-  AutoLock lock(enabled_lock_);
+  base::AutoLock lock(enabled_lock_);
   return printing_enabled_;
 }
 
 void PrintJobManager::set_printing_enabled(bool printing_enabled) {
-  AutoLock lock(enabled_lock_);
+  base::AutoLock lock(enabled_lock_);
   printing_enabled_ = printing_enabled;
 }
 

@@ -186,7 +186,7 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   if (!*bytes_read)
     return true;
   DCHECK(read_buffer_);
-  AutoLock auto_lock(buffer_->lock);
+  base::AutoLock auto_lock(buffer_->lock);
   bool need_update = buffer_->contents.empty();
 
   // We are passing ownership of this buffer to the download file manager.
@@ -265,7 +265,7 @@ void DownloadResourceHandler::CheckWriteProgress() {
 
   size_t contents_size;
   {
-    AutoLock lock(buffer_->lock);
+    base::AutoLock lock(buffer_->lock);
     contents_size = buffer_->contents.size();
   }
 

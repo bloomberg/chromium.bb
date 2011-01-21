@@ -42,7 +42,7 @@ void WifiDataProviderCommon::StopDataProvider() {
 bool WifiDataProviderCommon::GetData(WifiData *data) {
   DCHECK(CalledOnClientThread());
   DCHECK(data);
-  AutoLock lock(data_mutex_);
+  base::AutoLock lock(data_mutex_);
   *data = wifi_data_;
   // If we've successfully completed a scan, indicate that we have all of the
   // data we can get.
@@ -81,7 +81,7 @@ void WifiDataProviderCommon::DoWifiScanTask() {
     ScheduleNextScan(polling_policy_->NoWifiInterval());
   } else {
     {
-      AutoLock lock(data_mutex_);
+      base::AutoLock lock(data_mutex_);
       update_available = wifi_data_.DiffersSignificantly(new_data);
       wifi_data_ = new_data;
     }

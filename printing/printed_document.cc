@@ -78,7 +78,7 @@ void PrintedDocument::SetPage(int page_number,
                       page_rect,
                       has_visible_overlays));
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     mutable_.pages_[page_number] = page;
     if (mutable_.shrink_factor == 0) {
       mutable_.shrink_factor = shrink;
@@ -91,7 +91,7 @@ void PrintedDocument::SetPage(int page_number,
 
 bool PrintedDocument::GetPage(int page_number,
                               scoped_refptr<PrintedPage>* page) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   PrintedPages::const_iterator itr = mutable_.pages_.find(page_number);
   if (itr != mutable_.pages_.end()) {
     if (itr->second.get()) {
@@ -103,7 +103,7 @@ bool PrintedDocument::GetPage(int page_number,
 }
 
 bool PrintedDocument::IsComplete() const {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   if (!mutable_.page_count_)
     return false;
   PageNumber page(immutable_.settings_, mutable_.page_count_);
@@ -119,14 +119,14 @@ bool PrintedDocument::IsComplete() const {
 }
 
 void PrintedDocument::DisconnectSource() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   mutable_.source_ = NULL;
 }
 
 uint32 PrintedDocument::MemoryUsage() const {
   std::vector< scoped_refptr<PrintedPage> > pages_copy;
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     pages_copy.reserve(mutable_.pages_.size());
     PrintedPages::const_iterator end = mutable_.pages_.end();
     for (PrintedPages::const_iterator itr = mutable_.pages_.begin();
@@ -144,7 +144,7 @@ uint32 PrintedDocument::MemoryUsage() const {
 }
 
 void PrintedDocument::set_page_count(int max_page) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   DCHECK_EQ(0, mutable_.page_count_);
   mutable_.page_count_ = max_page;
   if (immutable_.settings_.ranges.empty()) {
@@ -157,12 +157,12 @@ void PrintedDocument::set_page_count(int max_page) {
 }
 
 int PrintedDocument::page_count() const {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   return mutable_.page_count_;
 }
 
 int PrintedDocument::expected_page_count() const {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   return mutable_.expected_page_count_;
 }
 

@@ -8,7 +8,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
-#include "base/lock.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"

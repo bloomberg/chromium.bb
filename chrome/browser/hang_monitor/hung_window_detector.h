@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_HANG_MONITOR_HUNG_WINDOW_DETECTOR_H__
 #pragma once
 
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "chrome/common/worker_thread_ticker.h"
 
 // This class provides the following functionality:
@@ -81,7 +81,7 @@ class HungWindowDetector : public WorkerThreadTicker::Callback {
 
   // How long do we wait before we consider a window hung (in ms)
   int message_response_timeout_;
-  Lock hang_detection_lock_;
+  base::Lock hang_detection_lock_;
   // Indicates if this object is currently enumerating hung windows
   bool enumerating_;
 

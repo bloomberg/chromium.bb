@@ -9,7 +9,7 @@
 #include <map>
 #include <string>
 
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "build/build_config.h"
 
 extern "C" struct sqlite3;
@@ -79,7 +79,7 @@ class UserSettings {
   struct ScopedDBHandle {
     explicit ScopedDBHandle(UserSettings* settings);
     inline sqlite3* get() const { return *handle_; }
-    AutoLock mutex_lock_;
+    base::AutoLock mutex_lock_;
     sqlite3** const handle_;
   };
 
@@ -90,11 +90,11 @@ class UserSettings {
 
  private:
   std::string email_;
-  mutable Lock mutex_;  // protects email_.
+  mutable base::Lock mutex_;  // protects email_.
 
   // We keep a single dbhandle.
   sqlite3* dbhandle_;
-  Lock dbhandle_mutex_;
+  base::Lock dbhandle_mutex_;
 
   // TODO(sync): Use in-memory cache for service auth tokens on posix.
   // Have someone competent in Windows switch it over to not use Sqlite in the

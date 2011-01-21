@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/atomicops.h"
-#include "base/lock.h"
 #include "base/string_util.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
@@ -149,7 +149,7 @@ class ScopedServerStatusWatcher {
 //  one instance for every server that you need to talk to.
 class ServerConnectionManager {
  public:
-  typedef EventChannel<ServerConnectionEvent, Lock> Channel;
+  typedef EventChannel<ServerConnectionEvent, base::Lock> Channel;
 
   // buffer_in - will be POSTed
   // buffer_out - string will be overwritten with response
@@ -192,7 +192,7 @@ class ServerConnectionManager {
     void GetServerParams(std::string* server,
                          int* server_port,
                          bool* use_ssl) const {
-      AutoLock lock(scm_->server_parameters_mutex_);
+      base::AutoLock lock(scm_->server_parameters_mutex_);
       server->assign(scm_->sync_server_);
       *server_port = scm_->sync_server_port_;
       *use_ssl = scm_->use_ssl_;
@@ -269,7 +269,7 @@ class ServerConnectionManager {
   std::string GetServerHost() const;
 
   bool terminate_all_io() const {
-    AutoLock lock(terminate_all_io_mutex_);
+    base::AutoLock lock(terminate_all_io_mutex_);
     return terminate_all_io_;
   }
 
@@ -284,23 +284,23 @@ class ServerConnectionManager {
 
   void set_auth_token(const std::string& auth_token) {
     // TODO(chron): Consider adding a message loop check here.
-    AutoLock lock(auth_token_mutex_);
+    base::AutoLock lock(auth_token_mutex_);
     auth_token_.assign(auth_token);
   }
 
   const std::string auth_token() const {
-    AutoLock lock(auth_token_mutex_);
+    base::AutoLock lock(auth_token_mutex_);
     return auth_token_;
   }
 
  protected:
   inline std::string proto_sync_path() const {
-    AutoLock lock(path_mutex_);
+    base::AutoLock lock(path_mutex_);
     return proto_sync_path_;
   }
 
   std::string get_time_path() const {
-    AutoLock lock(path_mutex_);
+    base::AutoLock lock(path_mutex_);
     return get_time_path_;
   }
 
@@ -317,7 +317,7 @@ class ServerConnectionManager {
                                 ScopedServerStatusWatcher* watcher);
 
   // Protects access to sync_server_, sync_server_port_ and use_ssl_:
-  mutable Lock server_parameters_mutex_;
+  mutable base::Lock server_parameters_mutex_;
 
   // The sync_server_ is the server that requests will be made to.
   std::string sync_server_;
@@ -335,15 +335,15 @@ class ServerConnectionManager {
   bool use_ssl_;
 
   // The paths we post to.
-  mutable Lock path_mutex_;
+  mutable base::Lock path_mutex_;
   std::string proto_sync_path_;
   std::string get_time_path_;
 
-  mutable Lock auth_token_mutex_;
+  mutable base::Lock auth_token_mutex_;
   // The auth token to use in authenticated requests. Set by the AuthWatcher.
   std::string auth_token_;
 
-  Lock error_count_mutex_;  // Protects error_count_
+  base::Lock error_count_mutex_;  // Protects error_count_
   int error_count_;  // Tracks the number of connection errors.
 
   Channel* const channel_;
@@ -363,7 +363,7 @@ class ServerConnectionManager {
   void NotifyStatusChanged();
   void ResetConnection();
 
-  mutable Lock terminate_all_io_mutex_;
+  mutable base::Lock terminate_all_io_mutex_;
   bool terminate_all_io_;  // When set to true, terminate all connections asap.
   DISALLOW_COPY_AND_ASSIGN(ServerConnectionManager);
 };

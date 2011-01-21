@@ -25,7 +25,7 @@ class MessageLoopFactoryImpl : public MessageLoopFactory {
 
  private:
   // Lock used to serialize access for the following data members.
-  Lock lock_;
+  base::Lock lock_;
 
   typedef std::map<std::string, base::Thread*> ThreadMap;
   ThreadMap thread_map_;

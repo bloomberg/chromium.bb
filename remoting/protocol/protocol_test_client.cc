@@ -114,7 +114,7 @@ class ProtocolTestClient
   scoped_refptr<JingleClient> client_;
   scoped_refptr<JingleSessionManager> session_manager_;
   ConnectionsList connections_;
-  Lock connections_lock_;
+  base::Lock connections_lock_;
   base::WaitableEvent closed_event_;
 };
 
@@ -236,7 +236,7 @@ void ProtocolTestClient::Run(const std::string& username,
     std::getline(std::cin, line);
 
     {
-      AutoLock auto_lock(connections_lock_);
+      base::AutoLock auto_lock(connections_lock_);
 
       // Broadcast message to all clients.
       for (ConnectionsList::iterator it = connections_.begin();
@@ -309,7 +309,7 @@ void ProtocolTestClient::OnNewSession(
   session->SetStateChangeCallback(
       NewCallback(test_connection, &ProtocolTestConnection::OnStateChange));
   test_connection->Init(session);
-  AutoLock auto_lock(connections_lock_);
+  base::AutoLock auto_lock(connections_lock_);
   connections_.push_back(make_scoped_refptr(test_connection));
 }
 
@@ -320,7 +320,7 @@ void ProtocolTestClient::OnFinishedClosing() {
 void ProtocolTestClient::DestroyConnection(
     scoped_refptr<ProtocolTestConnection> connection) {
   connection->Close();
-  AutoLock auto_lock(connections_lock_);
+  base::AutoLock auto_lock(connections_lock_);
   for (ConnectionsList::iterator it = connections_.begin();
        it != connections_.end(); ++it) {
     if ((*it) == connection) {

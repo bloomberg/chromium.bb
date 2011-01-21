@@ -8,11 +8,11 @@
 
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -120,7 +120,7 @@ static const char* kTimeZones[] = {
     "Pacific/Tongatapu",
 };
 
-static Lock timezone_bundle_lock;
+static base::Lock timezone_bundle_lock;
 
 struct UResClose {
   inline void operator() (UResourceBundle* b) const {
@@ -138,7 +138,7 @@ string16 GetExemplarCity(const icu::TimeZone& zone) {
 
   UErrorCode status = U_ZERO_ERROR;
   {
-    AutoLock lock(timezone_bundle_lock);
+    base::AutoLock lock(timezone_bundle_lock);
     if (zone_bundle == NULL)
       zone_bundle = ures_open(zone_bundle_name, uloc_getDefault(), &status);
 

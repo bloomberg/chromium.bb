@@ -80,7 +80,7 @@ WebMediaPlayerImpl::Proxy::~Proxy() {
 }
 
 void WebMediaPlayerImpl::Proxy::Repaint() {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   if (outstanding_repaints_ < kMaxOutstandingRepaints) {
     ++outstanding_repaints_;
 
@@ -164,7 +164,7 @@ void WebMediaPlayerImpl::Proxy::NetworkEventCallback() {
 void WebMediaPlayerImpl::Proxy::RepaintTask() {
   DCHECK(MessageLoop::current() == render_loop_);
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     --outstanding_repaints_;
     DCHECK_GE(outstanding_repaints_, 0);
   }

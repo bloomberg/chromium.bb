@@ -11,8 +11,8 @@
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/lazy_instance.h"
-#include "base/lock.h"
 #include "base/logging.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
@@ -26,8 +26,8 @@ namespace {
 PrintDialogGtk* g_print_dialog = NULL;
 
 // Used to make accesses to the above thread safe.
-Lock& DialogLock() {
-  static base::LazyInstance<Lock> dialog_lock(base::LINKER_INITIALIZED);
+base::Lock& DialogLock() {
+  static base::LazyInstance<base::Lock> dialog_lock(base::LINKER_INITIALIZED);
   return dialog_lock.Get();
 }
 
@@ -77,7 +77,7 @@ void PrintDialogGtk::CreatePrintDialogForPdf(const FilePath& path) {
 
 // static
 bool PrintDialogGtk::DialogShowing() {
-  AutoLock lock(DialogLock());
+  base::AutoLock lock(DialogLock());
   return !!g_print_dialog;
 }
 
@@ -87,7 +87,7 @@ void PrintDialogGtk::CreateDialogImpl(const FilePath& path) {
   // locking up the system with
   //
   //   while(true){print();}
-  AutoLock lock(DialogLock());
+  base::AutoLock lock(DialogLock());
   if (g_print_dialog) {
     // Clean up the temporary file.
     base::FileUtilProxy::Delete(
@@ -112,7 +112,7 @@ PrintDialogGtk::PrintDialogGtk(const FilePath& path_to_pdf)
 }
 
 PrintDialogGtk::~PrintDialogGtk() {
-  AutoLock lock(DialogLock());
+  base::AutoLock lock(DialogLock());
   DCHECK_EQ(this, g_print_dialog);
   g_print_dialog = NULL;
 }

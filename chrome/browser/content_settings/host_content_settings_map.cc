@@ -225,7 +225,7 @@ ContentSetting HostContentSettingsMap::GetNonDefaultContentSetting(
     return GetDefaultContentSetting(content_type);
   }
 
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
 
   const std::string host(net::GetHostOrSpecFromURL(url));
   ContentSettingsTypeResourceIdentifierPair
@@ -307,7 +307,7 @@ ContentSettings HostContentSettingsMap::GetNonDefaultContentSettings(
   if (ShouldAllowAllContent(url))
       return ContentSettings(CONTENT_SETTING_ALLOW);
 
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
 
   const std::string host(net::GetHostOrSpecFromURL(url));
   ContentSettings output;
@@ -371,7 +371,7 @@ void HostContentSettingsMap::GetSettingsForOneType(
   ContentSettingsTypeResourceIdentifierPair
       requested_setting(content_type, resource_identifier);
 
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   for (HostContentSettings::const_iterator i(map_to_return->begin());
        i != map_to_return->end(); ++i) {
     ContentSetting setting;
@@ -446,7 +446,7 @@ void HostContentSettingsMap::SetContentSetting(
   }
 
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     if (!map_to_modify->count(pattern_str))
       (*map_to_modify)[pattern_str].content_settings = ContentSettings();
     HostContentSettings::iterator
@@ -556,7 +556,7 @@ void HostContentSettingsMap::ClearSettingsForOneType(
   }
 
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     for (HostContentSettings::iterator i(map_to_modify->begin());
          i != map_to_modify->end(); ) {
       if (RequiresResourceIdentifier(content_type) ||
@@ -626,7 +626,7 @@ void HostContentSettingsMap::SetBlockThirdPartyCookies(bool block) {
   }
 
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     block_third_party_cookies_ = block;
   }
 
@@ -647,7 +647,7 @@ void HostContentSettingsMap::SetBlockNonsandboxedPlugins(bool block) {
   }
 
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     block_nonsandboxed_plugins_ = block;
   }
 
@@ -668,7 +668,7 @@ void HostContentSettingsMap::ResetToDefaults() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     for (provider_iterator provider = content_settings_providers_.begin();
          provider != content_settings_providers_.end(); ++provider) {
       (*provider)->ResetToDefaults();
@@ -711,14 +711,14 @@ void HostContentSettingsMap::Observe(NotificationType type,
     if (*name == prefs::kContentSettingsPatterns) {
       ReadExceptions(true);
     } else if (*name == prefs::kBlockThirdPartyCookies) {
-      AutoLock auto_lock(lock_);
+      base::AutoLock auto_lock(lock_);
       block_third_party_cookies_ = profile_->GetPrefs()->GetBoolean(
           prefs::kBlockThirdPartyCookies);
       is_block_third_party_cookies_managed_ =
           profile_->GetPrefs()->IsManagedPreference(
               prefs::kBlockThirdPartyCookies);
     } else if (*name == prefs::kBlockNonsandboxedPlugins) {
-      AutoLock auto_lock(lock_);
+      base::AutoLock auto_lock(lock_);
       block_nonsandboxed_plugins_ = profile_->GetPrefs()->GetBoolean(
           prefs::kBlockNonsandboxedPlugins);
     } else {
@@ -822,7 +822,7 @@ bool HostContentSettingsMap::IsDefaultContentSettingManaged(
 }
 
 void HostContentSettingsMap::ReadExceptions(bool overwrite) {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   PrefService* prefs = profile_->GetPrefs();
   DictionaryValue* all_settings_dictionary =

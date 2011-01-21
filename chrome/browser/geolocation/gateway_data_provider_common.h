@@ -83,7 +83,7 @@ class GatewayDataProviderCommon
   // Will schedule a scan; i.e. enqueue DoRouterScanTask deferred task.
   void ScheduleNextScan(int interval);
 
-  Lock data_mutex_;
+  base::Lock data_mutex_;
   // Whether we've successfully completed a scan for gateway data (or the
   // polling thread has terminated early).
   bool is_first_scan_complete_;

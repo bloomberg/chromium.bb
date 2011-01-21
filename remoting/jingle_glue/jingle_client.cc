@@ -32,7 +32,7 @@ JingleClient::JingleClient(JingleThread* thread)
 }
 
 JingleClient::~JingleClient() {
-  AutoLock auto_lock(state_lock_);
+  base::AutoLock auto_lock(state_lock_);
   DCHECK(!initialized_ || closed_);
 }
 
@@ -42,7 +42,7 @@ void JingleClient::Init(
   DCHECK_NE(username, "");
 
   {
-    AutoLock auto_lock(state_lock_);
+    base::AutoLock auto_lock(state_lock_);
     DCHECK(!initialized_ && !closed_);
     initialized_ = true;
 
@@ -101,7 +101,7 @@ void JingleClient::Close() {
 
 void JingleClient::Close(Task* closed_task) {
   {
-    AutoLock auto_lock(state_lock_);
+    base::AutoLock auto_lock(state_lock_);
     // If the client is already closed then don't close again.
     if (closed_) {
       if (closed_task)
@@ -137,7 +137,7 @@ void JingleClient::DoClose() {
 }
 
 std::string JingleClient::GetFullJid() {
-  AutoLock auto_lock(full_jid_lock_);
+  base::AutoLock auto_lock(full_jid_lock_);
   return full_jid_;
 }
 
@@ -179,7 +179,7 @@ void JingleClient::OnConnectionStateChanged(buzz::XmppEngine::State state) {
 }
 
 void JingleClient::SetFullJid(const std::string& full_jid) {
-  AutoLock auto_lock(full_jid_lock_);
+  base::AutoLock auto_lock(full_jid_lock_);
   full_jid_ = full_jid;
 }
 
@@ -189,7 +189,7 @@ void JingleClient::UpdateState(State new_state) {
     {
       // We have to have the lock held, otherwise we cannot be sure that
       // the client hasn't been closed when we call the callback.
-      AutoLock auto_lock(state_lock_);
+      base::AutoLock auto_lock(state_lock_);
       if (!closed_)
         callback_->OnStateChange(this, new_state);
     }

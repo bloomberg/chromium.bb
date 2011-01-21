@@ -102,7 +102,7 @@ bool RenderWidgetHelper::WaitForUpdateMsg(int render_widget_id,
   for (;;) {
     UpdateMsgProxy* proxy = NULL;
     {
-      AutoLock lock(pending_paints_lock_);
+      base::AutoLock lock(pending_paints_lock_);
 
       UpdateMsgProxyMap::iterator it = pending_paints_.find(render_widget_id);
       if (it != pending_paints_.end()) {
@@ -139,7 +139,7 @@ void RenderWidgetHelper::DidReceiveUpdateMsg(const IPC::Message& msg) {
 
   UpdateMsgProxy* proxy = NULL;
   {
-    AutoLock lock(pending_paints_lock_);
+    base::AutoLock lock(pending_paints_lock_);
 
     UpdateMsgProxyMap::value_type new_value(render_widget_id, NULL);
 
@@ -169,7 +169,7 @@ void RenderWidgetHelper::OnDiscardUpdateMsg(UpdateMsgProxy* proxy) {
 
   // Remove the proxy from the map now that we are going to handle it normally.
   {
-    AutoLock lock(pending_paints_lock_);
+    base::AutoLock lock(pending_paints_lock_);
 
     UpdateMsgProxyMap::iterator it = pending_paints_.find(msg.routing_id());
     DCHECK(it != pending_paints_.end());
@@ -276,7 +276,7 @@ void RenderWidgetHelper::OnCreateFullscreenWidgetOnUI(
 
 #if defined(OS_MACOSX)
 TransportDIB* RenderWidgetHelper::MapTransportDIB(TransportDIB::Id dib_id) {
-  AutoLock locked(allocated_dibs_lock_);
+  base::AutoLock locked(allocated_dibs_lock_);
 
   const std::map<TransportDIB::Id, int>::iterator
       i = allocated_dibs_.find(dib_id);
@@ -300,13 +300,13 @@ void RenderWidgetHelper::AllocTransportDIB(
 
   if (cache_in_browser) {
     // Keep a copy of the file descriptor around
-    AutoLock locked(allocated_dibs_lock_);
+    base::AutoLock locked(allocated_dibs_lock_);
     allocated_dibs_[shared_memory->id()] = dup(result->fd);
   }
 }
 
 void RenderWidgetHelper::FreeTransportDIB(TransportDIB::Id dib_id) {
-  AutoLock locked(allocated_dibs_lock_);
+  base::AutoLock locked(allocated_dibs_lock_);
 
   const std::map<TransportDIB::Id, int>::iterator
     i = allocated_dibs_.find(dib_id);

@@ -175,7 +175,7 @@ void SimpleDatabaseSystem::SetFullFilePathsForVfsFile(
   FilePath file_name =
       DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
 
-  AutoLock file_names_auto_lock(file_names_lock_);
+  base::AutoLock file_names_auto_lock(file_names_lock_);
   file_names_[vfs_file_name] = file_name;
   file_names_[vfs_file_name + ASCIIToUTF16("-journal")] =
       FilePath::FromWStringHack(file_name.ToWStringHack() +
@@ -187,7 +187,7 @@ FilePath SimpleDatabaseSystem::GetFullFilePathForVfsFile(
   if (vfs_file_name.empty())  // temp file, used for vacuuming
     return FilePath();
 
-  AutoLock file_names_auto_lock(file_names_lock_);
+  base::AutoLock file_names_auto_lock(file_names_lock_);
   DCHECK(file_names_.find(vfs_file_name) != file_names_.end());
   return file_names_[vfs_file_name];
 }

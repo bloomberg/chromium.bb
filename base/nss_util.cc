@@ -31,8 +31,8 @@
 #if defined(USE_NSS)
 #include "base/crypto/crypto_module_blocking_password_delegate.h"
 #include "base/environment.h"
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #endif  // defined(USE_NSS)
 
 namespace base {

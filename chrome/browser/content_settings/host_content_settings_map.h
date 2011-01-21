@@ -16,8 +16,8 @@
 
 #include "base/basictypes.h"
 #include "base/linked_ptr.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -233,7 +233,7 @@ class HostContentSettingsMap
       content_settings_providers_;
 
   // Used around accesses to the following objects to guarantee thread safety.
-  mutable Lock lock_;
+  mutable base::Lock lock_;
 
   // Copies of the pref data, so that we can read it on threads other than the
   // UI thread.

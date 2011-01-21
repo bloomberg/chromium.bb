@@ -10,8 +10,8 @@
 
 #import <objc/objc-class.h>
 
-#include "base/lock.h"
 #include "base/logging.h"
+#include "base/synchronization/lock.h"
 #import "chrome/app/breakpad_mac.h"
 #import "chrome/browser/ui/cocoa/objc_method_swizzle.h"
 
@@ -56,7 +56,7 @@ size_t g_fatZombieSize = 0;
 BOOL g_zombieAllObjects = NO;
 
 // Protects |g_zombieCount|, |g_zombieIndex|, and |g_zombies|.
-Lock lock_;
+base::Lock lock_;
 
 // How many zombies to keep before freeing, and the current head of
 // the circular buffer.
@@ -147,7 +147,7 @@ void ZombieDealloc(id self, SEL _cmd) {
 
   // Don't involve the lock when creating zombies without a treadmill.
   if (g_zombieCount > 0) {
-    AutoLock pin(lock_);
+    base::AutoLock pin(lock_);
 
     // Check the count again in a thread-safe manner.
     if (g_zombieCount > 0) {
@@ -175,7 +175,7 @@ Class ZombieWasa(id object) {
 
   // For instances which weren't big enough to store |wasa|, check if
   // the object is still on the treadmill.
-  AutoLock pin(lock_);
+  base::AutoLock pin(lock_);
   for (size_t i=0; i < g_zombieCount; ++i) {
     if (g_zombies[i].object == object)
       return g_zombies[i].wasa;
@@ -325,7 +325,7 @@ BOOL ZombieEnable(BOOL zombieAllObjects,
   ZombieRecord* oldZombies = g_zombies;
 
   {
-    AutoLock pin(lock_);
+    base::AutoLock pin(lock_);
 
     // Save the old index in case zombies need to be transferred.
     size_t oldIndex = g_zombieIndex;
@@ -396,7 +396,7 @@ void ZombieDisable() {
   ZombieRecord* oldZombies = g_zombies;
 
   {
-    AutoLock pin(lock_);  // In case any |-dealloc| are in-progress.
+    base::AutoLock pin(lock_);  // In case any |-dealloc| are in-progress.
     g_zombieCount = 0;
     g_zombies = NULL;
   }

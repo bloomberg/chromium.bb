@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "chrome/common/automation_messages.h"
 #include "ipc/ipc_message.h"
 
@@ -153,7 +153,7 @@ template <class T> class TaskMarshallerThroughWindowsMessages
   }
 
   void DeleteAllPendingTasks() {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     DVLOG_IF(1, !pending_tasks_.empty()) << "Destroying "
                                          << pending_tasks_.size()
                                          << " pending tasks";
@@ -184,7 +184,7 @@ template <class T> class TaskMarshallerThroughWindowsMessages
   }
 
   inline void PushTask(Task* task) {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     pending_tasks_.push(task);
   }
 
@@ -192,7 +192,7 @@ template <class T> class TaskMarshallerThroughWindowsMessages
   // otherwise we assume this is an already destroyed task (but Window message
   // had remained in the thread queue).
   inline bool PopTask(Task* task) {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     if (!pending_tasks_.empty() && task == pending_tasks_.front()) {
       pending_tasks_.pop();
       return true;
@@ -201,7 +201,7 @@ template <class T> class TaskMarshallerThroughWindowsMessages
     return false;
   }
 
-  Lock lock_;
+  base::Lock lock_;
   std::queue<Task*> pending_tasks_;
 };
 

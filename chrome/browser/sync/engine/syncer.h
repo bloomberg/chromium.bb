@@ -12,8 +12,8 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncproto.h"
@@ -109,7 +109,7 @@ class Syncer {
                  SyncerStep last_step);
 
   bool early_exit_requested_;
-  Lock early_exit_requested_lock_;
+  base::Lock early_exit_requested_lock_;
 
   int32 max_commit_batch_size_;
 

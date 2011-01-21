@@ -13,8 +13,8 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/lock.h"
 #include "base/singleton.h"
+#include "base/synchronization/lock.h"
 
 class FilePath;
 class GURL;
@@ -141,7 +141,7 @@ class ChildProcessSecurityPolicy {
 
   // You must acquire this lock before reading or writing any members of this
   // class.  You must not block while holding this lock.
-  Lock lock_;
+  base::Lock lock_;
 
   // These schemes are white-listed for all child processes.  This set is
   // protected by |lock_|.

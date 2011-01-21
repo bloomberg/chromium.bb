@@ -11,8 +11,8 @@
 
 #include <map>
 
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 
@@ -57,7 +57,7 @@ class AllStatus : public SyncEngineEventListener {
 
   sync_api::SyncManager::Status status_;
 
-  mutable Lock mutex_;  // Protects all data members.
+  mutable base::Lock mutex_;  // Protects all data members.
   DISALLOW_COPY_AND_ASSIGN(AllStatus);
 };
 

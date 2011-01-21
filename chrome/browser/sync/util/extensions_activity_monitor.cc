@@ -65,13 +65,13 @@ ExtensionsActivityMonitor::~ExtensionsActivityMonitor() {
 }
 
 void ExtensionsActivityMonitor::GetAndClearRecords(Records* buffer) {
-  AutoLock lock(records_lock_);
+  base::AutoLock lock(records_lock_);
   buffer->clear();
   buffer->swap(records_);
 }
 
 void ExtensionsActivityMonitor::PutRecords(const Records& records) {
-  AutoLock lock(records_lock_);
+  base::AutoLock lock(records_lock_);
   for (Records::const_iterator i = records.begin(); i != records.end(); ++i) {
     records_[i->first].extension_id = i->second.extension_id;
     records_[i->first].bookmark_write_count += i->second.bookmark_write_count;
@@ -81,7 +81,7 @@ void ExtensionsActivityMonitor::PutRecords(const Records& records) {
 void ExtensionsActivityMonitor::Observe(NotificationType type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
-  AutoLock lock(records_lock_);
+  base::AutoLock lock(records_lock_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const Extension* extension = Source<const Extension>(source).ptr();
   const BookmarksFunction* f = Details<const BookmarksFunction>(details).ptr();

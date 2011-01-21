@@ -17,8 +17,8 @@
 #include <map>
 #include <string>
 
-#include "base/lock.h"
 #include "base/logging.h"
+#include "base/synchronization/lock.h"
 #include "tools/memory_watcher/memory_watcher.h"
 
 // The CallStack Class
@@ -110,7 +110,7 @@ class CallStack {
   // dbghelp_lock_ is used to serialize access across all calls to the DbgHelp
   // library.  This may be overly conservative (serializing them all together),
   // but does guarantee correctness.
-  static Lock dbghelp_lock_;
+  static base::Lock dbghelp_lock_;
 
   // Record the fact that dbghelp has been loaded.
   // Changes to this variable are protected by dbghelp_lock_.
@@ -160,7 +160,7 @@ class AllocationStack : public CallStack {
   AllocationStack* next_;     // Pointer used when on the freelist.
   int32 size_;                // Size of block allocated.
   static AllocationStack* freelist_;
-  static Lock freelist_lock_;
+  static base::Lock freelist_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AllocationStack);
 };

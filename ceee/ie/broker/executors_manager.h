@@ -14,8 +14,8 @@
 #include <map>
 #include <list>
 
-#include "base/lock.h"
 #include "base/singleton.h"
+#include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "ceee/common/window_utils.h"
 #include "ceee/ie/broker/window_events_funnel.h"
@@ -252,7 +252,7 @@ class ExecutorsManager {
 
   // To protect the access to the maps (ExecutorsManager::executors_ &
   // ExecutorsManager::pending_registrations_ & tab_id_map_/handle_map_).
-  Lock lock_;
+  base::Lock lock_;
 
   // Test seam.
   WindowEventsFunnel windows_events_funnel_;

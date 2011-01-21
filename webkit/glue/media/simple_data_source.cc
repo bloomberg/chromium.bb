@@ -35,12 +35,12 @@ SimpleDataSource::SimpleDataSource(
 }
 
 SimpleDataSource::~SimpleDataSource() {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   DCHECK(state_ == UNINITIALIZED || state_ == STOPPED);
 }
 
 void SimpleDataSource::Stop(media::FilterCallback* callback) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   state_ = STOPPED;
   if (callback) {
     callback->Run();
@@ -54,7 +54,7 @@ void SimpleDataSource::Stop(media::FilterCallback* callback) {
 
 void SimpleDataSource::Initialize(const std::string& url,
                                   media::FilterCallback* callback) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, UNINITIALIZED);
   DCHECK(callback);
   state_ = INITIALIZING;
@@ -157,7 +157,7 @@ void SimpleDataSource::didFinishLoading(
     WebKit::WebURLLoader* loader,
     double finishTime) {
   DCHECK(MessageLoop::current() == render_loop_);
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   // It's possible this gets called after Stop(), in which case |host_| is no
   // longer valid.
   if (state_ == STOPPED)
@@ -179,7 +179,7 @@ void SimpleDataSource::didFail(
     WebKit::WebURLLoader* loader,
     const WebKit::WebURLError& error) {
   DCHECK(MessageLoop::current() == render_loop_);
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   // It's possible this gets called after Stop(), in which case |host_| is no
   // longer valid.
   if (state_ == STOPPED)
@@ -217,7 +217,7 @@ void SimpleDataSource::SetURL(const GURL& url) {
 
 void SimpleDataSource::StartTask() {
   DCHECK(MessageLoop::current() == render_loop_);
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
 
   // We may have stopped.
   if (state_ == STOPPED)
@@ -253,7 +253,7 @@ void SimpleDataSource::StartTask() {
 
 void SimpleDataSource::CancelTask() {
   DCHECK(MessageLoop::current() == render_loop_);
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, STOPPED);
 
   // Cancel any pending requests.

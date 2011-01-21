@@ -64,7 +64,7 @@ void RenderMessageFilter::DoOnGetWindowRect(gfx::NativeViewId view,
   gfx::Rect rect;
   XID window;
 
-  AutoLock lock(GtkNativeViewManager::GetInstance()->unrealize_lock());
+  base::AutoLock lock(GtkNativeViewManager::GetInstance()->unrealize_lock());
   if (GtkNativeViewManager::GetInstance()->GetXIDForId(&window, view)) {
     if (window) {
       int x, y;
@@ -100,7 +100,7 @@ void RenderMessageFilter::DoOnGetRootWindowRect(gfx::NativeViewId view,
   gfx::Rect rect;
   XID window;
 
-  AutoLock lock(GtkNativeViewManager::GetInstance()->unrealize_lock());
+  base::AutoLock lock(GtkNativeViewManager::GetInstance()->unrealize_lock());
   if (GtkNativeViewManager::GetInstance()->GetXIDForId(&window, view)) {
     if (window) {
       const XID toplevel = GetTopLevelWindow(window);

@@ -1,10 +1,12 @@
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome_frame/function_stub.h"
 
 #include <new>
-#include "base/lock.h"
+
+#include "base/synchronization/lock.h"
 #include "base/logging.h"
 
 #ifndef _M_IX86
@@ -48,14 +50,14 @@ class ExecutableHeap {
   }
 
   void CreateHeap() {
-    AutoLock lock(init_lock_);
+    base::AutoLock lock(init_lock_);
 
     if (heap_ == NULL)
       heap_ = ::HeapCreate(HEAP_CREATE_ENABLE_EXECUTE, 0, 0);
   }
 
  private:
-  Lock init_lock_;
+  base::Lock init_lock_;
   HANDLE heap_;
 };
 

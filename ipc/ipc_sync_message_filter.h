@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_message.h"
 #include <set>
@@ -58,7 +58,7 @@ class SyncMessageFilter : public ChannelProxy::MessageFilter,
   PendingSyncMessages pending_sync_messages_;
 
   // Locks data members above.
-  Lock lock_;
+  base::Lock lock_;
 
   base::WaitableEvent* shutdown_event_;
 

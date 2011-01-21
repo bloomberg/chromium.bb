@@ -71,7 +71,7 @@ PolicyContentSettingsProvider::~PolicyContentSettingsProvider() {
 
 bool PolicyContentSettingsProvider::CanProvideDefaultSetting(
     ContentSettingsType content_type) const {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   if (managed_default_content_settings_.settings[content_type] !=
       CONTENT_SETTING_DEFAULT) {
     return true;
@@ -82,7 +82,7 @@ bool PolicyContentSettingsProvider::CanProvideDefaultSetting(
 
 ContentSetting PolicyContentSettingsProvider::ProvideDefaultSetting(
     ContentSettingsType content_type) const {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   return managed_default_content_settings_.settings[content_type];
 }
 
@@ -93,7 +93,7 @@ void PolicyContentSettingsProvider::UpdateDefaultSetting(
 
 bool PolicyContentSettingsProvider::DefaultSettingIsManaged(
     ContentSettingsType content_type) const {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   if (managed_default_content_settings_.settings[content_type] !=
       CONTENT_SETTING_DEFAULT) {
     return true;
@@ -183,7 +183,7 @@ void PolicyContentSettingsProvider::UpdateManagedDefaultSetting(
   PrefService* prefs = profile_->GetPrefs();
   DCHECK(!prefs->HasPrefPath(kPrefToManageType[type]) ||
           prefs->IsManagedPreference(kPrefToManageType[type]));
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   managed_default_content_settings_.settings[type] = IntToContentSetting(
       prefs->GetInteger(kPrefToManageType[type]));
 }

@@ -8,7 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "base/command_line.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -318,14 +318,14 @@ void LoginHandler::ReleaseSoon() {
 
 // Returns whether authentication had been handled (SetAuth or CancelAuth).
 bool LoginHandler::WasAuthHandled() const {
-  AutoLock lock(handled_auth_lock_);
+  base::AutoLock lock(handled_auth_lock_);
   bool was_handled = handled_auth_;
   return was_handled;
 }
 
 // Marks authentication as handled and returns the previous handled state.
 bool LoginHandler::TestAndSetAuthHandled() {
-  AutoLock lock(handled_auth_lock_);
+  base::AutoLock lock(handled_auth_lock_);
   bool was_handled = handled_auth_;
   handled_auth_ = true;
   return was_handled;

@@ -9,7 +9,7 @@
 
 #include <list>
 
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 
 struct FunctionStub;
 
@@ -83,7 +83,7 @@ class DynamicPatchManager {
 
   typedef std::list<PatchedObject*> PatchList;
   const MethodPatchInfo* patch_prototype_;
-  mutable Lock patch_list_lock_;
+  mutable base::Lock patch_list_lock_;
   PatchList patch_list_;
 };
 #endif  // disable DynamicPatchManager
