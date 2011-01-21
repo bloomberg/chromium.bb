@@ -1,0 +1,31 @@
+<html>
+<script>
+var iframe_hosts = ['http://127.0.0.1', 'http://localhost', 'http://127.0.0.1'];
+function getIFrameSrc(iframe_id) {
+  var port = location.port;
+  var path = location.pathname.substring(0, location.pathname.lastIndexOf('/'));
+  var file = 'simple.html';
+  if (iframe_id >= 1)
+     file = 'tab_destroyed_frame.html';
+  var url = iframe_hosts[iframe_id] + ':' + port + path + '/' + file;
+  return url;
+}
+function addIFrame(iframe_id, iframe_src) {
+  var id = 'iframe_' + iframe_id;
+  var iframe = document.getElementById(id);
+  if (iframe_src) {
+    iframe.src = iframe_src;
+  } else {
+    iframe.src = getIFrameSrc(iframe_id);
+  }
+  return "" + iframe_id;
+}
+</script>
+<body>
+<iframe id="iframe_0"></iframe>
+<iframe id="iframe_1"></iframe>
+<iframe id="iframe_2"></iframe>
+Testing Geolocation with iframes.
+</body>
+</html>
+

@@ -399,3 +399,33 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
 
   extra_tabs_.reset();
 }
+
+TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
+  GURL requesting_frame_0("http://www.example.com/geolocation");
+  GURL requesting_frame_1("http://www.example-2.com/geolocation");
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      profile()->GetGeolocationContentSettingsMap()->GetContentSetting(
+          requesting_frame_0, requesting_frame_0));
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      profile()->GetGeolocationContentSettingsMap()->GetContentSetting(
+          requesting_frame_1, requesting_frame_0));
+
+  NavigateAndCommit(requesting_frame_0);
+  EXPECT_EQ(0, contents()->infobar_delegate_count());
+  // Request permission for two frames.
+  geolocation_permission_context_->RequestGeolocationPermission(
+      process_id(), render_id(), bridge_id(), requesting_frame_0);
+  geolocation_permission_context_->RequestGeolocationPermission(
+      process_id(), render_id(), bridge_id() + 1, requesting_frame_1);
+  // Ensure only one infobar is created.
+  EXPECT_EQ(1, contents()->infobar_delegate_count());
+  ConfirmInfoBarDelegate* infobar_0 =
+      contents()->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
+  ASSERT_TRUE(infobar_0);
+  string16 text_0 = infobar_0->GetMessageText();
+
+  // Delete the tab contents.
+  DeleteContents();
+}

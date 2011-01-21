@@ -23,6 +23,9 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "grit/generated_resources.h"
@@ -50,7 +53,7 @@ const char kGeolocationLearnMoreUrl[] =
 // things listening for such notifications.
 // For the time being this class is self-contained and it doesn't seem pulling
 // the notification infrastructure would simplify.
-class GeolocationInfoBarQueueController {
+class GeolocationInfoBarQueueController : NotificationObserver {
  public:
   GeolocationInfoBarQueueController(
       GeolocationPermissionContext* geolocation_permission_context,
@@ -79,6 +82,11 @@ class GeolocationInfoBarQueueController {
       int render_process_id, int render_view_id, int bridge_id,
       const GURL& requesting_frame, const GURL& embedder, bool allowed);
 
+  // NotificationObserver
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   struct PendingInfoBarRequest;
   typedef std::vector<PendingInfoBarRequest> PendingInfoBarRequests;
@@ -89,6 +97,8 @@ class GeolocationInfoBarQueueController {
   // Cancels an InfoBar request and returns the next iterator position.
   std::vector<PendingInfoBarRequest>::iterator CancelInfoBarRequestInternal(
       std::vector<PendingInfoBarRequest>::iterator i);
+
+  NotificationRegistrar registrar_;
 
   GeolocationPermissionContext* const geolocation_permission_context_;
   Profile* const profile_;
@@ -307,6 +317,24 @@ void GeolocationInfoBarQueueController::OnPermissionSet(
   }
 }
 
+void GeolocationInfoBarQueueController::Observe(
+    NotificationType type, const NotificationSource& source,
+    const NotificationDetails& details) {
+  registrar_.Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
+                    source);
+  TabContents* tab_contents = Source<TabContents>(source).ptr();
+  for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
+       i != pending_infobar_requests_.end();) {
+    if (i->infobar_delegate == NULL &&
+        tab_contents == tab_util::GetTabContentsByID(i->render_process_id,
+                                                     i->render_view_id)) {
+      i = pending_infobar_requests_.erase(i);
+    } else {
+      ++i;
+    }
+  }
+}
+
 void GeolocationInfoBarQueueController::ShowQueuedInfoBar(
     int render_process_id, int render_view_id) {
   TabContents* tab_contents =
@@ -324,6 +352,13 @@ void GeolocationInfoBarQueueController::ShowQueuedInfoBar(
     // Check if already displayed.
     if (i->infobar_delegate)
       break;
+    if (!registrar_.IsRegistered(
+        this, NotificationType::TAB_CONTENTS_DESTROYED,
+        Source<TabContents>(tab_contents))) {
+      registrar_.Add(
+          this, NotificationType::TAB_CONTENTS_DESTROYED,
+          Source<TabContents>(tab_contents));
+    }
     i->infobar_delegate = new GeolocationConfirmInfoBarDelegate(
         tab_contents, this,
         render_process_id, render_view_id,
