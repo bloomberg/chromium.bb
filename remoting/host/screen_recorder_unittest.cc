@@ -17,11 +17,51 @@ using ::remoting::protocol::MockVideoStub;
 
 using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::DeleteArg;
+using ::testing::DoAll;
+using ::testing::InSequence;
+using ::testing::InvokeWithoutArgs;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArg;
 
 namespace remoting {
+
+namespace {
+
+ACTION_P2(RunCallback, rects, data) {
+  InvalidRects& dirty_rects = data->mutable_dirty_rects();
+  InvalidRects temp_rects;
+  std::set_union(dirty_rects.begin(), dirty_rects.end(),
+                 rects.begin(), rects.end(),
+                 std::inserter(temp_rects, temp_rects.begin()));
+  dirty_rects.swap(temp_rects);
+  arg0->Run(data);
+  delete arg0;
+}
+
+ACTION(FinishEncode) {
+  scoped_ptr<VideoPacket> packet(new VideoPacket());
+  packet->set_flags(VideoPacket::LAST_PACKET | VideoPacket::LAST_PARTITION);
+  arg2->Run(packet.release());
+  delete arg2;
+}
+
+ACTION(FinishSend) {
+  arg1->Run();
+  delete arg1;
+}
+
+// Helper method to quit the main message loop.
+void QuitMessageLoop(MessageLoop* message_loop) {
+  message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+}
+
+ACTION_P2(StopScreenRecorder, recorder, task) {
+  recorder->Stop(task);
+}
+
+}  // namespace
 
 static const int kWidth = 640;
 static const int kHeight = 480;
@@ -56,22 +96,8 @@ class ScreenRecorderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ScreenRecorderTest);
 };
 
-ACTION_P2(RunCallback, rects, data) {
-  InvalidRects& dirty_rects = data->mutable_dirty_rects();
-  InvalidRects temp_rects;
-  std::set_union(dirty_rects.begin(), dirty_rects.end(),
-                 rects.begin(), rects.end(),
-                 std::inserter(temp_rects, temp_rects.begin()));
-  dirty_rects.swap(temp_rects);
-  arg0->Run(data);
-  delete arg0;
-}
-
-ACTION_P(FinishEncode, msg) {
-  arg2->Run(msg);
-  delete arg2;
-}
-
+// This test mocks capturer, encoder and network layer to operate one recording
+// cycle.
 TEST_F(ScreenRecorderTest, OneRecordCycle) {
   InvalidRects update_rects;
   update_rects.insert(gfx::Rect(0, 0, 10, 10));
@@ -82,49 +108,94 @@ TEST_F(ScreenRecorderTest, OneRecordCycle) {
   }
   scoped_refptr<CaptureData> data(new CaptureData(planes, kWidth,
                                                   kHeight, kFormat));
-  // Set the recording rate to very low to avoid capture twice.
-  record_->SetMaxRate(0.01);
-
-  // Add the mock client connection to the session.
   EXPECT_CALL(*capturer_, width()).WillRepeatedly(Return(kWidth));
   EXPECT_CALL(*capturer_, height()).WillRepeatedly(Return(kHeight));
-  record_->AddConnection(connection_);
 
   // First the capturer is called.
   EXPECT_CALL(*capturer_, CaptureInvalidRects(NotNull()))
       .WillOnce(RunCallback(update_rects, data));
 
   // Expect the encoder be called.
-  VideoPacket* packet = new VideoPacket();
   EXPECT_CALL(*encoder_, Encode(data, false, NotNull()))
-      .WillOnce(FinishEncode(packet));
+      .WillOnce(FinishEncode());
 
   MockVideoStub video_stub;
   EXPECT_CALL(*connection_, video_stub())
       .WillRepeatedly(Return(&video_stub));
 
-  Task* done_task = NULL;
-
   // Expect the client be notified.
   EXPECT_CALL(video_stub, ProcessVideoPacket(_, _))
       .Times(1)
-      .WillOnce(SaveArg<1>(&done_task));
+      .WillOnce(DoAll(DeleteArg<0>(), DeleteArg<1>()));
   EXPECT_CALL(video_stub, GetPendingPackets())
       .Times(AtLeast(0))
       .WillRepeatedly(Return(0));
+
+  // Set the recording rate to very low to avoid capture twice.
+  record_->SetMaxRate(0.01);
+
+  // Add the mock client connection to the session.
+  record_->AddConnection(connection_);
 
   // Start the recording.
   record_->Start();
 
   // Make sure all tasks are completed.
   message_loop_.RunAllPending();
+}
 
-  done_task->Run();
-  delete done_task;
+// This test mocks capturer, encoder and network layer to simulate one recording
+// cycle. When the first encoded packet is submitted to the network
+// ScreenRecorder is instructed to come to a complete stop. We expect the stop
+// sequence to be executed successfully.
+TEST_F(ScreenRecorderTest, StartAndStop) {
+  InvalidRects update_rects;
+  update_rects.insert(gfx::Rect(0, 0, 10, 10));
+  DataPlanes planes;
+  for (int i = 0; i < DataPlanes::kPlaneCount; ++i) {
+    planes.data[i] = reinterpret_cast<uint8*>(i);
+    planes.strides[i] = kWidth * 4;
+  }
+  scoped_refptr<CaptureData> data(new CaptureData(planes, kWidth,
+                                                  kHeight, kFormat));
+  EXPECT_CALL(*capturer_, width()).WillRepeatedly(Return(kWidth));
+  EXPECT_CALL(*capturer_, height()).WillRepeatedly(Return(kHeight));
+
+  // First the capturer is called.
+  EXPECT_CALL(*capturer_, CaptureInvalidRects(NotNull()))
+      .WillRepeatedly(RunCallback(update_rects, data));
+
+  // Expect the encoder be called.
+  EXPECT_CALL(*encoder_, Encode(data, false, NotNull()))
+      .WillRepeatedly(FinishEncode());
+
+  MockVideoStub video_stub;
+  EXPECT_CALL(*connection_, video_stub())
+      .WillRepeatedly(Return(&video_stub));
+
+  // By default delete the arguments when ProcessVideoPacket is received.
+  EXPECT_CALL(video_stub, ProcessVideoPacket(_, _))
+      .WillRepeatedly(FinishSend());
+
+  // For the first time when ProcessVideoPacket is received we stop the
+  // ScreenRecorder.
+  EXPECT_CALL(video_stub, ProcessVideoPacket(_, _))
+      .WillOnce(DoAll(
+          FinishSend(),
+          StopScreenRecorder(record_,
+                             NewRunnableFunction(&QuitMessageLoop,
+                                                 &message_loop_))))
+      .RetiresOnSaturation();
+
+  // Add the mock client connection to the session.
+  record_->AddConnection(connection_);
+
+  // Start the recording.
+  record_->Start();
+  message_loop_.Run();
 }
 
 // TODO(hclam): Add test for double buffering.
 // TODO(hclam): Add test for multiple captures.
-// TODO(hclam): Add test for interruption.
 
 }  // namespace remoting

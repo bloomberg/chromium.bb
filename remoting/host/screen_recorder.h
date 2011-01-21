@@ -60,6 +60,12 @@ class CaptureData;
 // 1. Make sure capture and encode occurs no more frequently than |rate|.
 // 2. Make sure there is at most one outstanding capture not being encoded.
 // 3. Distribute tasks on three threads on a timely fashion to minimize latency.
+//
+// This class has the following state variables:
+// |is_recording_| - If this is set to false there should be no activity on
+//                      the capture thread by this object.
+// |network_stopped_| - This state is to prevent activity on the network thread
+//                      if set to false.
 class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
  public:
 
@@ -76,8 +82,9 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   // Start recording.
   void Start();
 
-  // Pause the recording session.
-  void Pause();
+  // Stop the recording session. |done_task| is executed when recording is fully
+  // stopped. This object cannot be used again after |task| is executed.
+  void Stop(Task* done_task);
 
   // Set the maximum capture rate. This is denoted by number of updates
   // in one second. The actual system may run in a slower rate than the maximum
@@ -103,7 +110,8 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   // Capturer thread ----------------------------------------------------------
 
   void DoStart();
-  void DoPause();
+  void DoStop(Task* done_task);
+  void DoCompleteStop(Task* done_task);
 
   void DoSetMaxRate(double max_rate);
 
@@ -112,7 +120,7 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
 
   void DoCapture();
   void CaptureDoneCallback(scoped_refptr<CaptureData> capture_data);
-  void DoFinishSend();
+  void DoFinishOneRecording();
 
   // Network thread -----------------------------------------------------------
 
@@ -127,16 +135,22 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   void DoRemoveClient(scoped_refptr<protocol::ConnectionToClient> connection);
   void DoRemoveAllClients();
 
+  // Signal network thread to cease activities.
+  void DoStopOnNetworkThread(Task* done_task);
+
   // Callback for the last packet in one update. Deletes |packet| and
   // schedules next screen capture.
-  void OnFrameSent(VideoPacket* packet);
+  void FrameSentCallback(VideoPacket* packet);
 
   // Encoder thread -----------------------------------------------------------
 
   void DoEncode(scoped_refptr<CaptureData> capture_data);
 
-  // EncodeDataAvailableTask takes ownership of |packet|.
-  void EncodeDataAvailableTask(VideoPacket* packet);
+  // Perform stop operations on encode thread.
+  void DoStopOnEncodeThread(Task* done_task);
+
+  // EncodedDataAvailableCallback takes ownership of |packet|.
+  void EncodedDataAvailableCallback(VideoPacket* packet);
   void SendVideoPacket(VideoPacket* packet);
 
   // Message loops used by this class.
@@ -153,15 +167,18 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   scoped_ptr<Encoder> encoder_;
 
   // A list of clients connected to this hosts.
-  // This member is always accessed on the NETWORK thread.
-  // TODO(hclam): Have to scoped_refptr the clients since they have a shorter
-  // lifetime than this object.
+  // This member is always accessed on the network thread.
   typedef std::vector<scoped_refptr<protocol::ConnectionToClient> >
       ConnectionToClientList;
   ConnectionToClientList connections_;
 
-  // The following members are accessed on the capture thread.
-  bool started_;
+  // Flag that indicates recording has been started. This variable should only
+  // be used on the capture thread.
+  bool is_recording_;
+
+  // Flag that indicates network is being stopped. This variable should only
+  // be used on the network thread.
+  bool network_stopped_;
 
   // Timer that calls DoCapture.
   base::RepeatingTimer<ScreenRecorder> capture_timer_;

@@ -45,7 +45,8 @@ ScreenRecorder::ScreenRecorder(
       network_loop_(network_loop),
       capturer_(capturer),
       encoder_(encoder),
-      started_(false),
+      is_recording_(false),
+      network_stopped_(false),
       recordings_(0),
       frame_skipped_(false),
       max_rate_(kDefaultCaptureRate) {
@@ -55,7 +56,6 @@ ScreenRecorder::ScreenRecorder(
 }
 
 ScreenRecorder::~ScreenRecorder() {
-  connections_.clear();
 }
 
 // Public methods --------------------------------------------------------------
@@ -65,9 +65,9 @@ void ScreenRecorder::Start() {
       FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoStart));
 }
 
-void ScreenRecorder::Pause() {
+void ScreenRecorder::Stop(Task* done_task) {
   capture_loop_->PostTask(
-      FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoPause));
+      FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoStop, done_task));
 }
 
 void ScreenRecorder::SetMaxRate(double rate) {
@@ -116,30 +116,49 @@ Encoder* ScreenRecorder::encoder() {
 
 void ScreenRecorder::DoStart() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
-  DCHECK(!started_);
 
-  if (started_) {
+  if (is_recording_) {
     NOTREACHED() << "Record session already started.";
     return;
   }
 
-  started_ = true;
+  is_recording_ = true;
   StartCaptureTimer();
 
   // Capture first frame immedately.
   DoCapture();
 }
 
-void ScreenRecorder::DoPause() {
+void ScreenRecorder::DoStop(Task* done_task) {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
-  if (!started_) {
+  if (!is_recording_) {
     NOTREACHED() << "Record session not started.";
     return;
   }
 
   capture_timer_.Stop();
-  started_ = false;
+  is_recording_ = false;
+
+  DCHECK_GE(recordings_, 0);
+  if (recordings_) {
+     network_loop_->PostTask(
+        FROM_HERE,
+        NewTracedMethod(this,
+                        &ScreenRecorder::DoStopOnNetworkThread, done_task));
+    return;
+  }
+
+  DoCompleteStop(done_task);
+}
+
+void ScreenRecorder::DoCompleteStop(Task* done_task) {
+  DCHECK_EQ(capture_loop_, MessageLoop::current());
+
+  if (done_task) {
+    done_task->Run();
+    delete done_task;
+  }
 }
 
 void ScreenRecorder::DoSetMaxRate(double max_rate) {
@@ -151,7 +170,7 @@ void ScreenRecorder::DoSetMaxRate(double max_rate) {
   max_rate_ = max_rate;
 
   // Restart the timer with the new rate.
-  if (started_) {
+  if (is_recording_) {
     capture_timer_.Stop();
     StartCaptureTimer();
   }
@@ -170,7 +189,7 @@ void ScreenRecorder::DoCapture() {
   // Make sure we have at most two oustanding recordings. We can simply return
   // if we can't make a capture now, the next capture will be started by the
   // end of an encode operation.
-  if (recordings_ >= kMaxRecordings || !started_) {
+  if (recordings_ >= kMaxRecordings || !is_recording_) {
     frame_skipped_ = true;
     return;
   }
@@ -184,6 +203,7 @@ void ScreenRecorder::DoCapture() {
 
   // At this point we are going to perform one capture so save the current time.
   ++recordings_;
+  DCHECK_LE(recordings_, kMaxRecordings);
 
   // And finally perform one capture.
   capturer()->CaptureInvalidRects(
@@ -192,21 +212,27 @@ void ScreenRecorder::DoCapture() {
 
 void ScreenRecorder::CaptureDoneCallback(
     scoped_refptr<CaptureData> capture_data) {
-  // TODO(hclam): There is a bug if the capturer doesn't produce any dirty
-  // rects.
   DCHECK_EQ(capture_loop_, MessageLoop::current());
+
+  if (!is_recording_)
+    return;
+
   TraceContext::tracer()->PrintString("Capture Done");
   encode_loop_->PostTask(
       FROM_HERE,
       NewTracedMethod(this, &ScreenRecorder::DoEncode, capture_data));
 }
 
-void ScreenRecorder::DoFinishSend() {
+void ScreenRecorder::DoFinishOneRecording() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
+
+  if (!is_recording_)
+    return;
 
   // Decrement the number of recording in process since we have completed
   // one cycle.
   --recordings_;
+  DCHECK_GE(recordings_, 0);
 
   // Try to do a capture again. Note that the following method may do nothing
   // if it is too early to perform a capture.
@@ -222,14 +248,23 @@ void ScreenRecorder::DoSendVideoPacket(VideoPacket* packet) {
 
   bool last = (packet->flags() & VideoPacket::LAST_PARTITION) != 0;
 
+  if (network_stopped_) {
+    delete packet;
+    return;
+  }
+
   for (ConnectionToClientList::const_iterator i = connections_.begin();
        i < connections_.end(); ++i) {
     Task* done_task = NULL;
 
-    // Call OnFrameSent() only for the last packet in the first connection.
+    // Call FrameSentCallback() only for the last packet in the first
+    // connection.
     if (last && i == connections_.begin()) {
-      done_task = NewTracedMethod(this, &ScreenRecorder::OnFrameSent, packet);
+      done_task = NewTracedMethod(this, &ScreenRecorder::FrameSentCallback,
+                                  packet);
     } else {
+      // TODO(hclam): Fix this code since it causes multiple deletion if there's
+      // more than one connection.
       done_task = new DeleteTask<VideoPacket>(packet);
     }
 
@@ -239,10 +274,14 @@ void ScreenRecorder::DoSendVideoPacket(VideoPacket* packet) {
   TraceContext::tracer()->PrintString("DoSendVideoPacket done");
 }
 
-void ScreenRecorder::OnFrameSent(VideoPacket* packet) {
+void ScreenRecorder::FrameSentCallback(VideoPacket* packet) {
   delete packet;
+
+  if (network_stopped_)
+    return;
+
   capture_loop_->PostTask(
-      FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoFinishSend));
+      FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoFinishOneRecording));
 }
 
 void ScreenRecorder::DoAddConnection(
@@ -272,6 +311,22 @@ void ScreenRecorder::DoRemoveAllClients() {
   connections_.clear();
 }
 
+void ScreenRecorder::DoStopOnNetworkThread(Task* done_task) {
+  DCHECK_EQ(network_loop_, MessageLoop::current());
+
+  // There could be tasks on the network thread when this method is being
+  // executed. By setting the flag we'll not post anymore tasks from network
+  // thread.
+  //
+  // After that a task is posted on encode thread to continue the stop
+  // sequence.
+  network_stopped_ = true;
+
+  encode_loop_->PostTask(
+      FROM_HERE,
+      NewTracedMethod(this, &ScreenRecorder::DoStopOnEncodeThread, done_task));
+}
+
 // Encoder thread --------------------------------------------------------------
 
 void ScreenRecorder::DoEncode(
@@ -282,19 +337,31 @@ void ScreenRecorder::DoEncode(
   // Early out if there's nothing to encode.
   if (!capture_data->dirty_rects().size()) {
     capture_loop_->PostTask(
-        FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoFinishSend));
+        FROM_HERE,
+        NewTracedMethod(this, &ScreenRecorder::DoFinishOneRecording));
     return;
   }
 
-  // TODO(hclam): Enable |force_refresh| if a new connection was
-  // added.
+  // TODO(hclam): Invalidate the full screen if there is a new connection added.
   TraceContext::tracer()->PrintString("Encode start");
-  encoder()->Encode(capture_data, false,
-                   NewCallback(this, &ScreenRecorder::EncodeDataAvailableTask));
+  encoder()->Encode(
+      capture_data, false,
+      NewCallback(this, &ScreenRecorder::EncodedDataAvailableCallback));
   TraceContext::tracer()->PrintString("Encode Done");
 }
 
-void ScreenRecorder::EncodeDataAvailableTask(VideoPacket* packet) {
+void ScreenRecorder::DoStopOnEncodeThread(Task* done_task) {
+  DCHECK_EQ(encode_loop_, MessageLoop::current());
+
+  // When this method is being executed there are no more tasks on encode thread
+  // for this object. We can then post a task to capture thread to finish the
+  // stop sequence.
+  capture_loop_->PostTask(
+      FROM_HERE,
+      NewTracedMethod(this, &ScreenRecorder::DoCompleteStop, done_task));
+}
+
+void ScreenRecorder::EncodedDataAvailableCallback(VideoPacket* packet) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
 
   network_loop_->PostTask(

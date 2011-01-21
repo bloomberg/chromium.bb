@@ -121,9 +121,9 @@ void ChromotingHost::Shutdown() {
     state_ = kStopped;
   }
 
-  // Tell the session to pause and then disconnect all clients.
+  // Tell the session to stop and then disconnect all clients.
   if (recorder_.get()) {
-    recorder_->Pause();
+    recorder_->Stop(NULL);
     recorder_->RemoveAllConnections();
   }
 
@@ -182,11 +182,11 @@ void ChromotingHost::OnClientConnected(ConnectionToClient* connection) {
 void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
-  // Remove the connection from the session manager and pause the session.
-  // TODO(hclam): Pause only if the last connection disconnected.
+  // Remove the connection from the session manager and stop the session.
+  // TODO(hclam): Stop only if the last connection disconnected.
   if (recorder_.get()) {
     recorder_->RemoveConnection(connection);
-    recorder_->Pause();
+    recorder_->Stop(NULL);
   }
 
   // Close the connection to connection just to be safe.
