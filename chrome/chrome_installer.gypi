@@ -340,7 +340,7 @@
         # Always google_chrome since this only applies to branding==Chrome.
         'branding_dir': 'app/theme/google_chrome',
         'version' : '<!(python <(version_py_path) -f <(DEPTH)/chrome/VERSION -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
-        'revision' : '<!(python <(DEPTH)/build/util/lastchange.py | cut -d "=" -f 2)',
+        'revision' : '<!(python <(DEPTH)/build/util/lastchange.py --revision-only)',
         'packaging_files_common': [
           'installer/linux/internal/common/apt.include',
           'installer/linux/internal/common/default-app.template',
