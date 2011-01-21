@@ -418,7 +418,7 @@ class MemcheckAnalyzer:
           # 3 minutes if it was killed. See http://crbug.com/17453
           ps_out = subprocess.Popen("ps p %s" % pid, shell=True,
                                     stdout=subprocess.PIPE).stdout
-          if ps_out.readlines() < 2:
+          if len(ps_out.readlines()) < 2:
             running = False
         found = find_and_truncate(f)
         if not running and not found:
