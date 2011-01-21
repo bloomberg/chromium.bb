@@ -3,9 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'includes': [
-    '../third_party/mesa/mesa.gypi',
-  ],
   'variables': {
     'chromium_code': 1,  # Use higher warning level.
   },
@@ -263,43 +260,6 @@
             'WARNING_CFLAGS': ['-Wextra', '-pedantic'],
            },
         }]
-      ],
-    },
-    {
-      'target_name': 'ppapi_egl',
-      'type': 'static_library',
-      'dependencies': [
-        'ppapi_c',
-      ],
-      'include_dirs': [
-        'lib/gl/include',
-      ],
-      'defines': [
-        # Do not export internal Mesa funcations. Exporting them is not
-        # required because we are compiling both - API dispatcher and driver
-        # into a single library.
-        'PUBLIC=',
-        # Define a new PPAPI platform.
-        '_EGL_PLATFORM_PPAPI=_EGL_NUM_PLATFORMS',
-        '_EGL_NATIVE_PLATFORM=_EGL_PLATFORM_PPAPI',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'defines': [
-            '_EGL_OS_WINDOWS',
-          ],
-        }],
-        ['OS=="mac"', {
-          # TODO(alokp): Make this compile on mac.
-          'suppress_wildcard': 1,
-        }],
-      ],
-      'sources': [
-        # Mesa EGL API dispatcher sources.
-        '<@(mesa_egl_sources)',
-        # PPAPI EGL driver sources.
-        'lib/gl/egl/egldriver.c',
-        'lib/gl/egl/egldriver_ppapi.c',
       ],
     },
     {
