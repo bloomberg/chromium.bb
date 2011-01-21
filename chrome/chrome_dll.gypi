@@ -83,7 +83,6 @@
                 'worker',
                 '../printing/printing.gyp:printing',
                 '../net/net.gyp:net_resources',
-                '../build/util/support/support.gyp:*',
                 '../third_party/cld/cld.gyp:cld',
                 '../views/views.gyp:views',
                 '../webkit/support/webkit_support.gyp:webkit_resources',
@@ -288,7 +287,6 @@
               'dependencies': [
                 # Bring in pdfsqueeze and run it on all pdfs
                 '../build/temp_gyp/pdfsqueeze.gyp:pdfsqueeze',
-                '../build/util/support/support.gyp:*',
                 # On Mac, Flash gets put into the framework, so we need this
                 # dependency here. flash_player.gyp will copy the Flash bundle
                 # into PRODUCT_DIR.
