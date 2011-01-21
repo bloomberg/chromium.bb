@@ -133,16 +133,6 @@ def AddComputedActions(actions):
     actions.add('LanguageOptions_UiLanguageChange_%s' % language_code)
     actions.add('LanguageOptions_SpellCheckLanguageChange_%s' % language_code)
 
-  # Actions sent by the Chrome OS window manager.
-  actions.add('Accel_NextWindow_Tab')
-  actions.add('Accel_PrevWindow_Tab')
-  actions.add('Accel_NextWindow_F5')
-  actions.add('Accel_PrevWindow_F5')
-
-  # Actions sent by the Chrome OS power manager.
-  actions.add('Accel_BrightnessDown_F6')
-  actions.add('Accel_BrightnessUp_F7')
-
 def AddWebKitEditorActions(actions):
   """Add editor actions from editor_client_impl.cc.
 
@@ -191,6 +181,22 @@ def AddAboutFlagsActions(actions):
     elif 'FLAGS:RECORD_UMA' in line and line[0:2] != '//':
       print >>sys.stderr, 'WARNING: This line is marked for recording ' + \
           'about:flags metrics, but is not in the proper format:\n' + line
+
+def AddChromeOSActions(actions):
+  """Add actions reported by non-Chrome processes in Chrome OS.
+
+  Arguments:
+    actions: set of actions to add to.
+  """
+  # Actions sent by the Chrome OS window manager.
+  actions.add('Accel_NextWindow_Tab')
+  actions.add('Accel_PrevWindow_Tab')
+  actions.add('Accel_NextWindow_F5')
+  actions.add('Accel_PrevWindow_F5')
+
+  # Actions sent by the Chrome OS power manager.
+  actions.add('Accel_BrightnessDown_F6')
+  actions.add('Accel_BrightnessUp_F7')
 
 def GrepForActions(path, actions):
   """Grep a source file for calls to UserMetrics functions.
@@ -264,6 +270,7 @@ def main(argv):
   # print "Found {0} entries".format(len(actions))
 
   AddClosedSourceActions(actions)
+  AddChromeOSActions(actions)
 
   if hash_output:
     f = open(chromeactions_path, "w")

@@ -26,7 +26,7 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
   friend class base::RefCountedThreadSafe<ExternalMetrics>;
 
  public:
-  ExternalMetrics() : test_recorder_(NULL) {}
+  ExternalMetrics();
 
   // Begins the external data collection.  This service is started and stopped
   // by the chrome metrics service.  Calls to RecordAction originate in the
@@ -43,13 +43,6 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
   static const int kMetricsMessageMaxLength = 1024;  // be generous
 
   ~ExternalMetrics() {}
-
-  // Registers a user action by associating the action name with a function
-  // that records instances of that action.
-  void DefineUserAction(const std::string& name, RecordFunctionType f);
-
-  // Registers all user actions external to the browser.
-  void InitializeUserActions();
 
   // Passes an action event to the UMA service on the UI thread.
   void RecordActionUI(std::string action_string);
@@ -84,6 +77,9 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
 
   // Maps histogram or action names to recorder structs.
   base::hash_map<std::string, RecordFunctionType> action_recorders_;
+
+  // Set containing known user actions.
+  base::hash_set<std::string> valid_user_actions_;
 
   // Used for testing only.
   RecorderType test_recorder_;
