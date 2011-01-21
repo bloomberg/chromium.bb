@@ -354,9 +354,14 @@ label.radio {
   text-decoration: underline;
 }
 
-.text-button {
-  background-color: transparent;
+.text-button,
+.text-button:active,
+.text-button:focus,
+.text-button:hover {
+  -webkit-box-shadow: none;
+  background: transparent none;
   border-color: transparent;
+  color: #000;
 }
 
 .settings-list {
