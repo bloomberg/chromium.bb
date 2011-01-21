@@ -67,6 +67,10 @@
       'search_engines',
       # crbug.com/67628
       '-search_engines.SearchEnginesTest.testTabToSearch',
+      # crbug.com/70439
+      '-search_engines.SearchEnginesTest.testAddSearchEngine',
+      '-search_engines.SearchEnginesTest.testEditSearchEngine',
+      '-search_engines.SearchEnginesTest.testSearchEngineSpecialChars',
       'special_tabs',
       # crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
