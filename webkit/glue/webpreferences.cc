@@ -60,6 +60,7 @@ WebPreferences::WebPreferences()
       frame_flattening_enabled(false),
       allow_universal_access_from_file_urls(false),
       allow_file_access_from_file_urls(false),
+      webaudio_enabled(false),
       experimental_webgl_enabled(false),
       show_composited_layer_borders(false),
       accelerated_compositing_enabled(false),
@@ -141,6 +142,11 @@ void WebPreferences::Apply(WebView* web_view) const {
   // submenu to a context menu. it is not only because we don't need the result
   // but also because it cause a possible crash in Editor::hasBidiSelection().
   settings->setTextDirectionSubmenuInclusionBehaviorNeverIncluded();
+
+#ifdef HAS_WEBAUDIO_FEATURE_ENABLE
+  // Enable the web audio API if requested on the command line.
+  settings->setWebAudioEnabled(webaudio_enabled);
+#endif  // HAS_WEBAUDIO_FEATURE_ENABLE
 
   // Enable experimental WebGL support if requested on command line
   // and support is compiled in.

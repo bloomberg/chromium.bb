@@ -272,6 +272,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kBlockReadingThirdPartyCookies)
   },
   {
+    "webaudio",
+    IDS_FLAGS_WEBAUDIO_NAME,
+    IDS_FLAGS_WEBAUDIO_DESCRIPTION,
+    kOsMac,  // TODO(crogers): add windows and linux when FFT is ready.
+    SINGLE_VALUE_TYPE(switches::kEnableWebAudio)
+  },
+  {
     "disable-interactive-form-validation",
     IDS_FLAGS_DISABLE_INTERACTIVE_FORM_VALIDATION_NAME,
     IDS_FLAGS_DISABLE_INTERACTIVE_FORM_VALIDATION_DESCRIPTION,
