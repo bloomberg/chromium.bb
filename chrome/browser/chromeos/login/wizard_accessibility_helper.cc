@@ -118,10 +118,13 @@ void WizardAccessibilityHelper::ToggleAccessibility(views::View* view_tree) {
     EnableAccessibilityForView(view_tree);
   } else {
     SetAccessibilityEnabled(false);
+    if (registered_notifications_)
+      UnregisterNotifications();
   }
 }
 
 void WizardAccessibilityHelper::SetAccessibilityEnabled(bool enabled) {
+  bool doSpeak = (IsAccessibilityEnabled() != enabled);
   if (g_browser_process) {
     PrefService* prefService = g_browser_process->local_state();
     prefService->SetBoolean(prefs::kAccessibilityEnabled, enabled);
@@ -129,10 +132,12 @@ void WizardAccessibilityHelper::SetAccessibilityEnabled(bool enabled) {
   }
   ExtensionAccessibilityEventRouter::GetInstance()->
       SetAccessibilityEnabled(enabled);
-  accessibility_handler_->Speak(enabled ?
-      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_ENABLED).c_str() :
-      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_DISABLED).c_str(),
-      false, true);
+  if (doSpeak) {
+    accessibility_handler_->Speak(enabled ?
+        l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_ENABLED).c_str() :
+        l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_DISABLED).c_str(),
+        false, true);
+  }
 }
 
 void WizardAccessibilityHelper::AddViewToBuffer(views::View* view_tree) {
