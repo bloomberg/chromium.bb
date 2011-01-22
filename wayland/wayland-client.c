@@ -494,6 +494,13 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 	uint32_t p[2], object, opcode, size;
 	int len;
 
+	mask &= display->mask;
+	if (mask == 0) {
+		fprintf(stderr,
+			"wl_display_iterate called with unsolicited flags");
+		return;
+	}
+
 	len = wl_connection_data(display->connection, mask);
 	while (len > 0) {
 		if (len < sizeof p)
