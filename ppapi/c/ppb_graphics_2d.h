@@ -122,9 +122,9 @@ struct PPB_Graphics2D {
    * THE NEW IMAGE WILL NOT BE PAINTED UNTIL YOU CALL FLUSH.
    *
    * After this call, you should take care to release your references to the
-   * image. If you paint to the image after a Swap, there is the possibility of
-   * significant painting artifacts because the page might use partially-
-   * rendered data when copying out of the backing store.
+   * image. If you paint to the image after ReplaceContents, there is the
+   * possibility of significant painting artifacts because the page might use
+   * partially-rendered data when copying out of the backing store.
    *
    * In the case of an animation, you will want to allocate a new image for the
    * next frame. It is best if you wait until the flush callback has executed
@@ -137,7 +137,7 @@ struct PPB_Graphics2D {
   void (*ReplaceContents)(PP_Resource graphics_2d, PP_Resource image_data);
 
   /**
-   * Flushes any enqueued paint, scroll, and swap commands for the backing
+   * Flushes any enqueued paint, scroll, and replace commands for the backing
    * store. This actually executes the updates, and causes a repaint of the
    * webpage, assuming this graphics context is bound to a plugin instance. This
    * can run in two modes:
