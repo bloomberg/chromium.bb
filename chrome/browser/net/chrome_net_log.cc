@@ -88,10 +88,8 @@ void ChromeNetLog::AddEntry(EventType type,
   base::AutoLock lock(lock_);
 
   // Notify all of the log observers.
-#if 0
   FOR_EACH_OBSERVER(ThreadSafeObserver, observers_,
                     OnAddEntry(type, time, source, phase, params));
-#endif
 }
 
 uint32 ChromeNetLog::NextID() {
