@@ -71,8 +71,23 @@ class SubprocessCpuTimer:
 
   @staticmethod
   def _GetTimePosix():
-    t = os.times()
-    return t[2] + t[3]
+    try:
+      t = os.times()
+    except OSError:
+      # This works around a bug in the calling conventions for the
+      # times() system call on Linux.  This syscall returns a number
+      # of clock ticks since an arbitrary time in the past, but if
+      # this happens to be between -4095 and -1, it is interpreted as
+      # an errno value, and we get an exception here.
+      # Returning 0 as a dummy value may result in ElapsedCpuTime()
+      # below returning a negative value.  This is OK for our use
+      # because a test that takes too long is likely to be caught
+      # elsewhere.
+      if sys.platform == "linux2":
+        return 0
+      raise
+    else:
+      return t[2] + t[3]
 
 
   @staticmethod
