@@ -366,7 +366,7 @@ bool PluginService::GetFirstAllowedPluginInfo(
   return false;
 #else
   {
-    AutoLock auto_lock(overridden_plugins_lock_);
+    base::AutoLock auto_lock(overridden_plugins_lock_);
     for (size_t i = 0; i < overridden_plugins_.size(); ++i) {
       if (overridden_plugins_[i].render_process_id == render_process_id &&
           overridden_plugins_[i].render_view_id == render_view_id &&
@@ -462,7 +462,7 @@ void PluginService::Observe(NotificationType type,
     case NotificationType::RENDERER_PROCESS_CLOSED: {
       int render_process_id = Source<RenderProcessHost>(source).ptr()->id();
 
-      AutoLock auto_lock(overridden_plugins_lock_);
+      base::AutoLock auto_lock(overridden_plugins_lock_);
       for (size_t i = 0; i < overridden_plugins_.size(); ++i) {
         if (overridden_plugins_[i].render_process_id == render_process_id) {
           overridden_plugins_.erase(overridden_plugins_.begin() + i);
@@ -493,7 +493,7 @@ bool PluginService::PrivatePluginAllowedForURL(const FilePath& plugin_path,
 }
 
 void PluginService::OverridePluginForTab(OverriddenPlugin plugin) {
-  AutoLock auto_lock(overridden_plugins_lock_);
+  base::AutoLock auto_lock(overridden_plugins_lock_);
   overridden_plugins_.push_back(plugin);
 }
 
