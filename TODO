@@ -68,9 +68,9 @@ Core wayland protocol
    switching away from.  for minimized windows that we don't want live
    thumb nails for. etc.
 
- - Initial placement of surfaces.  Guess we can do, 1)
-   surface-relative (menus), 2) pointer-relative (tooltips and
-   right-click menus) or 3) server-decides (all other top-levels).
+ - Import relevants bits from EWMH spec, stuff like window title,
+   window class, app groups, icons, lower window, need attention,
+   fullscreen (maybe different types of fullscreen).
 
  - Per client id space.  Each client has an entire 32 bit id namespace
    to itself.  On the server side, each struct wl_client has an object
