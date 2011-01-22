@@ -89,7 +89,6 @@ struct WebPreferences;
 class TabContents : public PageNavigator,
                     public NotificationObserver,
                     public RenderViewHostDelegate,
-                    public RenderViewHostDelegate::BrowserIntegration,
                     public RenderViewHostManager::Delegate,
                     public JavaScriptAppModalDialogDelegate,
                     public ImageLoadingTracker::Observer,
@@ -764,6 +763,8 @@ class TabContents : public PageNavigator,
   FRIEND_TEST_ALL_PREFIXES(TabContentsTest, UpdateTitle);
   FRIEND_TEST_ALL_PREFIXES(TabContentsTest, CrossSiteCantPreemptAfterUnload);
   FRIEND_TEST_ALL_PREFIXES(FormStructureBrowserTest, HTMLFiles);
+  FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest, HistoryNavigate);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewHostManagerTest, PageDoesBackAndReload);
 
   // Temporary until the view/contents separation is complete.
   friend class TabContentsView;
@@ -810,6 +811,30 @@ class TabContents : public PageNavigator,
   void OnDidFinishLoad(int64 frame_id);
   void OnUpdateContentRestrictions(int restrictions);
   void OnPDFHasUnsupportedFeature();
+
+  void OnFindReply(int request_id,
+                   int number_of_matches,
+                   const gfx::Rect& selection_rect,
+                   int active_match_ordinal,
+                   bool final_update);
+  void OnGoToEntryAtOffset(int offset);
+  void OnMissingPluginStatus(int status);
+  void OnCrashedPlugin(const FilePath& plugin_path);
+  void OnDidGetApplicationInfo(int32 page_id, const WebApplicationInfo& info);
+  void OnInstallApplication(const WebApplicationInfo& info);
+  void OnBlockedOutdatedPlugin(const string16& name, const GURL& update_url);
+  void OnPageContents(const GURL& url,
+                      int32 page_id,
+                      const string16& contents,
+                      const std::string& language,
+                      bool page_translatable);
+  void OnPageTranslated(int32 page_id,
+                        const std::string& original_lang,
+                        const std::string& translated_lang,
+                        TranslateErrors::Type error_type);
+  void OnSetSuggestions(int32 page_id,
+                        const std::vector<std::string>& suggestions);
+  void OnInstantSupportDetermined(int32 page_id, bool result);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
@@ -916,42 +941,10 @@ class TabContents : public PageNavigator,
 
   // RenderViewHostDelegate ----------------------------------------------------
 
-  // RenderViewHostDelegate::BrowserIntegration implementation.
-  virtual void OnUserGesture();
-  virtual void OnFindReply(int request_id,
-                           int number_of_matches,
-                           const gfx::Rect& selection_rect,
-                           int active_match_ordinal,
-                           bool final_update);
-  virtual void GoToEntryAtOffset(int offset);
-  virtual void OnMissingPluginStatus(int status);
-  virtual void OnCrashedPlugin(const FilePath& plugin_path);
-  virtual void OnCrashedWorker();
-  virtual void OnDidGetApplicationInfo(int32 page_id,
-                                       const WebApplicationInfo& info);
-  virtual void OnInstallApplication(const WebApplicationInfo& info);
-  virtual void OnBlockedOutdatedPlugin(const string16& name,
-                                       const GURL& update_url);
-  virtual void OnPageContents(const GURL& url,
-                              int renderer_process_id,
-                              int32 page_id,
-                              const string16& contents,
-                              const std::string& language,
-                              bool page_translatable);
-  virtual void OnPageTranslated(int32 page_id,
-                                const std::string& original_lang,
-                                const std::string& translated_lang,
-                                TranslateErrors::Type error_type);
-  virtual void OnSetSuggestions(int32 page_id,
-                                const std::vector<std::string>& suggestions);
-  virtual void OnInstantSupportDetermined(int32 page_id, bool result);
-
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();
   virtual RenderViewHostDelegate::RendererManagement*
       GetRendererManagementDelegate();
-  virtual RenderViewHostDelegate::BrowserIntegration*
-      GetBrowserIntegrationDelegate();
   virtual RenderViewHostDelegate::ContentSettings* GetContentSettingsDelegate();
   virtual RenderViewHostDelegate::Save* GetSaveDelegate();
   virtual RenderViewHostDelegate::Printing* GetPrintingDelegate();
@@ -1020,6 +1013,7 @@ class TabContents : public PageNavigator,
   virtual GURL GetAlternateErrorPageURL() const;
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
   virtual WebPreferences GetWebkitPrefs();
+  virtual void OnUserGesture();
   virtual void OnIgnoredUIEvent();
   virtual void OnJSOutOfMemory();
   virtual void OnCrossSiteResponse(int new_render_process_host_id,
@@ -1035,6 +1029,7 @@ class TabContents : public PageNavigator,
   virtual void UpdateZoomLimits(int minimum_percent,
                                 int maximum_percent,
                                 bool remember);
+  virtual void WorkerCrashed();
 
   // RenderViewHostManager::Delegate -------------------------------------------
 

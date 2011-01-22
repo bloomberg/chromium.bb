@@ -248,80 +248,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
     virtual ~RendererManagement() {}
   };
 
-  // BrowserIntegration --------------------------------------------------------
-  // Functions that integrate with other browser services.
-
-  class BrowserIntegration {
-   public:
-    // Notification the user has made a gesture while focus was on the
-    // page. This is used to avoid uninitiated user downloads (aka carpet
-    // bombing), see DownloadRequestLimiter for details.
-    virtual void OnUserGesture() = 0;
-
-    // A find operation in the current page completed.
-    virtual void OnFindReply(int request_id,
-                             int number_of_matches,
-                             const gfx::Rect& selection_rect,
-                             int active_match_ordinal,
-                             bool final_update) = 0;
-
-    // Navigate to the history entry for the given offset from the current
-    // position within the NavigationController.  Makes no change if offset is
-    // not valid.
-    virtual void GoToEntryAtOffset(int offset) = 0;
-
-    // Notification when default plugin updates status of the missing plugin.
-    virtual void OnMissingPluginStatus(int status) = 0;
-
-    // Notification from the renderer that a plugin instance has crashed.
-    //
-    // BrowserIntegration isn't necessarily the best place for this, if you
-    // need to implement this function somewhere that doesn't need any other
-    // BrowserIntegration callbacks, feel free to move it elsewhere.
-    virtual void OnCrashedPlugin(const FilePath& plugin_path) = 0;
-
-    // Notification that a worker process has crashed.
-    virtual void OnCrashedWorker() = 0;
-
-    virtual void OnBlockedOutdatedPlugin(const string16& name,
-                                         const GURL& update_url) = 0;
-
-    // Notification that a user's request to install an application has
-    // completed.
-    virtual void OnDidGetApplicationInfo(
-        int32 page_id,
-        const WebApplicationInfo& app_info) = 0;
-
-    // Notification when an application programmatically requests installation.
-    virtual void OnInstallApplication(
-        const WebApplicationInfo& app_info) = 0;
-
-    // Notification that the contents of the page has been loaded.
-    virtual void OnPageContents(const GURL& url,
-                                int renderer_process_id,
-                                int32 page_id,
-                                const string16& contents,
-                                const std::string& language,
-                                bool page_translatable) = 0;
-
-    // Notification that the page has been translated.
-    virtual void OnPageTranslated(int32 page_id,
-                                  const std::string& original_lang,
-                                  const std::string& translated_lang,
-                                  TranslateErrors::Type error_type) = 0;
-
-    // Notification that the page has a suggest result.
-    virtual void OnSetSuggestions(
-        int32 page_id,
-        const std::vector<std::string>& result) = 0;
-
-    // Notification of whether the page supports instant-style interaction.
-    virtual void OnInstantSupportDetermined(int32 page_id, bool result) = 0;
-
-   protected:
-    virtual ~BrowserIntegration() {}
-  };
-
   // ContentSettings------------------------------------------------------------
   // Interface for content settings related events.
 
@@ -539,7 +465,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   // there is no corresponding delegate.
   virtual View* GetViewDelegate();
   virtual RendererManagement* GetRendererManagementDelegate();
-  virtual BrowserIntegration* GetBrowserIntegrationDelegate();
   virtual ContentSettings* GetContentSettingsDelegate();
   virtual Save* GetSaveDelegate();
   virtual Printing* GetPrintingDelegate();
@@ -708,6 +633,11 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   // associated with the owning render view host.
   virtual WebPreferences GetWebkitPrefs();
 
+  // Notification the user has made a gesture while focus was on the
+  // page. This is used to avoid uninitiated user downloads (aka carpet
+  // bombing), see DownloadRequestLimiter for details.
+  virtual void OnUserGesture() {}
+
   // Notification from the renderer host that blocked UI event occurred.
   // This happens when there are tab-modal dialogs. In this case, the
   // notification is needed to let us draw attention to the dialog (i.e.
@@ -744,6 +674,9 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual void UpdateZoomLimits(int minimum_percent,
                                 int maximum_percent,
                                 bool remember) {}
+
+  // Notification that a worker process has crashed.
+  void WorkerCrashed() {}
 
  protected:
   virtual ~RenderViewHostDelegate() {}

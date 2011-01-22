@@ -569,11 +569,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgDidChangeLoadProgress(double load_progress);
   void OnMsgDocumentAvailableInMainFrame();
   void OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id);
-  void OnMsgFindReply(int request_id,
-                      int number_of_matches,
-                      const gfx::Rect& selection_rect,
-                      int active_match_ordinal,
-                      bool final_update);
   void OnExecuteCodeFinished(int request_id, bool success);
   void OnMsgUpdateFavIconURL(int32 page_id, const GURL& icon_url);
   void OnMsgDidDownloadFavIcon(int id,
@@ -592,7 +587,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgForwardMessageToExternalHost(const std::string& message,
                                          const std::string& origin,
                                          const std::string& target);
-  void OnMsgGoToEntryAtOffset(int offset);
   void OnMsgSetTooltipText(const std::wstring& tooltip_text,
                            WebKit::WebTextDirection text_direction_hint);
   void OnMsgSelectionChanged(const std::string& text);
@@ -633,21 +627,14 @@ class RenderViewHost : public RenderWidgetHost {
   void OnRequestUndockDevToolsWindow();
   void OnDevToolsRuntimePropertyChanged(const std::string& name,
                                         const std::string& value);
-  void OnMissingPluginStatus(int status);
-  void OnCrashedPlugin(const FilePath& plugin_path);
-  void OnBlockedOutdatedPlugin(const string16& name, const GURL& update_url);
-
   void OnReceivedSavableResourceLinksForCurrentPage(
       const std::vector<GURL>& resources_list,
       const std::vector<GURL>& referrers_list,
       const std::vector<GURL>& frames_list);
-
   void OnReceivedSerializedHtmlData(const GURL& frame_url,
                                     const std::string& data,
                                     int32 status);
 
-  void OnDidGetApplicationInfo(int32 page_id, const WebApplicationInfo& info);
-  void OnInstallApplication(const WebApplicationInfo& info);
   void OnMsgShouldCloseACK(bool proceed);
   void OnShowDesktopNotification(
       const ViewHostMsg_ShowNotification_Params& params);
@@ -659,15 +646,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
   void OnCSSInserted();
-  void OnPageContents(const GURL& url,
-                      int32 page_id,
-                      const string16& contents,
-                      const std::string& language,
-                      bool page_translatable);
-  void OnPageTranslated(int32 page_id,
-                        const std::string& original_lang,
-                        const std::string& translated_lang,
-                        TranslateErrors::Type error_type);
   void OnContentBlocked(ContentSettingsType type,
                         const std::string& resource_identifier);
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
@@ -679,9 +657,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnUpdateZoomLimits(int minimum_percent,
                           int maximum_percent,
                           bool remember);
-  void OnSetSuggestions(int32 page_id,
-                        const std::vector<std::string>& suggestions);
-  void OnInstantSupportDetermined(int32 page_id, bool result);
   void OnDetectedPhishingSite(const GURL& phishing_url, double phishing_score);
   void OnScriptEvalResponse(int id, const ListValue& result);
   void OnPagesReadyForPreview(

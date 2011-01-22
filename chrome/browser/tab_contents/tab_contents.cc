@@ -620,6 +620,21 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
                         OnUpdateContentRestrictions)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PDFHasUnsupportedFeature,
                         OnPDFHasUnsupportedFeature)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_MissingPluginStatus, OnMissingPluginStatus)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_BlockedOutdatedPlugin,
+                        OnBlockedOutdatedPlugin)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidGetApplicationInfo,
+                        OnDidGetApplicationInfo)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_InstallApplication,
+                        OnInstallApplication)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PageTranslated, OnPageTranslated)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetSuggestions, OnSetSuggestions)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_InstantSupportDetermined,
+                        OnInstantSupportDetermined)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -2241,51 +2256,47 @@ void TabContents::GenerateKeywordIfNecessary(
   url_model->Add(new_url);
 }
 
-void TabContents::OnUserGesture() {
-  // See comment in RenderViewHostDelegate::OnUserGesture as to why we do this.
-  DownloadRequestLimiter* limiter =
-      g_browser_process->download_request_limiter();
-  if (limiter)
-    limiter->OnUserGesture(this);
-  ExternalProtocolHandler::PermitLaunchUrl();
-}
-
 void TabContents::OnFindReply(int request_id,
                               int number_of_matches,
                               const gfx::Rect& selection_rect,
                               int active_match_ordinal,
                               bool final_update) {
   // Ignore responses for requests that have been aborted.
-  if (find_op_aborted_)
-    return;
-
   // Ignore responses for requests other than the one we have most recently
   // issued. That way we won't act on stale results when the user has
   // already typed in another query.
-  if (request_id != current_find_request_id_)
-    return;
+  if (!find_op_aborted_ && request_id == current_find_request_id_) {
+    if (number_of_matches == -1)
+      number_of_matches = last_search_result_.number_of_matches();
+    if (active_match_ordinal == -1)
+      active_match_ordinal = last_search_result_.active_match_ordinal();
 
-  if (number_of_matches == -1)
-    number_of_matches = last_search_result_.number_of_matches();
-  if (active_match_ordinal == -1)
-    active_match_ordinal = last_search_result_.active_match_ordinal();
+    gfx::Rect selection = selection_rect;
+    if (selection.IsEmpty())
+      selection = last_search_result_.selection_rect();
 
-  gfx::Rect selection = selection_rect;
-  if (selection.IsEmpty())
-    selection = last_search_result_.selection_rect();
+    // Notify the UI, automation and any other observers that a find result was
+    // found.
+    last_search_result_ = FindNotificationDetails(
+        request_id, number_of_matches, selection, active_match_ordinal,
+        final_update);
+    NotificationService::current()->Notify(
+        NotificationType::FIND_RESULT_AVAILABLE,
+        Source<TabContents>(this),
+        Details<FindNotificationDetails>(&last_search_result_));
+  }
 
-  // Notify the UI, automation and any other observers that a find result was
-  // found.
-  last_search_result_ = FindNotificationDetails(request_id, number_of_matches,
-                                                selection, active_match_ordinal,
-                                                final_update);
-  NotificationService::current()->Notify(
-      NotificationType::FIND_RESULT_AVAILABLE,
-      Source<TabContents>(this),
-      Details<FindNotificationDetails>(&last_search_result_));
+  // Send a notification to the renderer that we are ready to receive more
+  // results from the scoping effort of the Find operation. The FindInPage
+  // scoping is asynchronous and periodically sends results back up to the
+  // browser using IPC. In an effort to not spam the browser we have the
+  // browser send an ACK for each FindReply message and have the renderer
+  // queue up the latest status message while waiting for this ACK.
+  render_view_host()->Send(new ViewMsg_FindReplyACK(
+      render_view_host()->routing_id()));
 }
 
-void TabContents::GoToEntryAtOffset(int offset) {
+void TabContents::OnGoToEntryAtOffset(int offset) {
   if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {
     NavigationEntry* entry = controller_.GetEntryAtOffset(offset);
     if (!entry)
@@ -2330,11 +2341,6 @@ void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
                                  WideToUTF16Hack(plugin_name)), true));
 }
 
-void TabContents::OnCrashedWorker() {
-  AddInfoBar(new SimpleAlertInfoBarDelegate(this, NULL,
-      l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT), true));
-}
-
 void TabContents::OnDidGetApplicationInfo(int32 page_id,
                                           const WebApplicationInfo& info) {
   web_app_info_ = info;
@@ -2354,7 +2360,6 @@ void TabContents::OnBlockedOutdatedPlugin(const string16& name,
 }
 
 void TabContents::OnPageContents(const GURL& url,
-                                 int renderer_process_id,
                                  int32 page_id,
                                  const string16& contents,
                                  const std::string& language,
@@ -2430,11 +2435,6 @@ RenderViewHostDelegate::View* TabContents::GetViewDelegate() {
 RenderViewHostDelegate::RendererManagement*
 TabContents::GetRendererManagementDelegate() {
   return &render_manager_;
-}
-
-RenderViewHostDelegate::BrowserIntegration*
-    TabContents::GetBrowserIntegrationDelegate() {
-  return this;
 }
 
 RenderViewHostDelegate::ContentSettings*
@@ -3053,6 +3053,15 @@ WebPreferences TabContents::GetWebkitPrefs() {
   return web_prefs;
 }
 
+void TabContents::OnUserGesture() {
+  // See comment in RenderViewHostDelegate::OnUserGesture as to why we do this.
+  DownloadRequestLimiter* limiter =
+      g_browser_process->download_request_limiter();
+  if (limiter)
+    limiter->OnUserGesture(this);
+  ExternalProtocolHandler::PermitLaunchUrl();
+}
+
 void TabContents::OnIgnoredUIEvent() {
   if (constrained_window_count()) {
     ConstrainedWindow* window = *constrained_window_begin();
@@ -3142,6 +3151,11 @@ void TabContents::UpdateZoomLimits(int minimum_percent,
   minimum_zoom_percent_ = minimum_percent;
   maximum_zoom_percent_ = maximum_percent;
   temporary_zoom_settings_ = !remember;
+}
+
+void TabContents::WorkerCrashed() {
+  AddInfoBar(new SimpleAlertInfoBarDelegate(this, NULL,
+      l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT), true));
 }
 
 void TabContents::BeforeUnloadFiredFromRenderManager(

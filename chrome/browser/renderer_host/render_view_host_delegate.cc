@@ -25,12 +25,6 @@ RenderViewHostDelegate::GetRendererManagementDelegate() {
   return NULL;
 }
 
-RenderViewHostDelegate::BrowserIntegration*
-RenderViewHostDelegate::GetBrowserIntegrationDelegate() {
-  return NULL;
-}
-
-
 RenderViewHostDelegate::ContentSettings*
 RenderViewHostDelegate::GetContentSettingsDelegate() {
   return NULL;

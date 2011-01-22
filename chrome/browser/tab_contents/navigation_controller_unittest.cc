@@ -31,8 +31,6 @@
 
 using base::Time;
 
-namespace {
-
 // NavigationControllerTest ----------------------------------------------------
 
 class NavigationControllerTest : public RenderViewHostTestHarness {
@@ -1824,14 +1822,9 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   controller().GoBack();
   contents()->CommitPendingNavigation();
 
-  // Casts the TabContents to a RenderViewHostDelegate::BrowserIntegration so we
-  // can call GoToEntryAtOffset which is private.
-  RenderViewHostDelegate::BrowserIntegration* rvh_delegate =
-      static_cast<RenderViewHostDelegate::BrowserIntegration*>(contents());
-
   // Simulate the page calling history.back(), it should not create a pending
   // entry.
-  rvh_delegate->GoToEntryAtOffset(-1);
+  contents()->OnGoToEntryAtOffset(-1);
   EXPECT_EQ(-1, controller().pending_entry_index());
   // The actual cross-navigation is suspended until the current RVH tells us
   // it unloaded, simulate that.
@@ -1846,7 +1839,7 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   process()->sink().ClearMessages();
 
   // Now test history.forward()
-  rvh_delegate->GoToEntryAtOffset(1);
+  contents()->OnGoToEntryAtOffset(1);
   EXPECT_EQ(-1, controller().pending_entry_index());
   // The actual cross-navigation is suspended until the current RVH tells us
   // it unloaded, simulate that.
@@ -1858,7 +1851,7 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   process()->sink().ClearMessages();
 
   // Make sure an extravagant history.go() doesn't break.
-  rvh_delegate->GoToEntryAtOffset(120);  // Out of bounds.
+  contents()->OnGoToEntryAtOffset(120);  // Out of bounds.
   EXPECT_EQ(-1, controller().pending_entry_index());
   message = process()->sink().GetFirstMessageMatching(ViewMsg_Navigate::ID);
   EXPECT_TRUE(message == NULL);
@@ -2030,5 +2023,3 @@ TEST_F(NavigationControllerHistoryTest, NavigationPruning) {
                                          windows_[0]->tabs[0]->navigations[1]);
 }
 */
-
-}  // namespace

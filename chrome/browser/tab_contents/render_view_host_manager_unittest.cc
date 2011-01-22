@@ -313,13 +313,8 @@ TEST_F(RenderViewHostManagerTest, PageDoesBackAndReload) {
   contents()->NavigateAndCommit(url2);
   RenderViewHost* evil_rvh = contents()->render_view_host();
 
-  // Casts the TabContents to a RenderViewHostDelegate::BrowserIntegration so we
-  // can call GoToEntryAtOffset which is private.
-  RenderViewHostDelegate::BrowserIntegration* rvh_delegate =
-      static_cast<RenderViewHostDelegate::BrowserIntegration*>(contents());
-
   // Now let's simulate the evil page calling history.back().
-  rvh_delegate->GoToEntryAtOffset(-1);
+  contents()->OnGoToEntryAtOffset(-1);
   // We should have a new pending RVH.
   // Note that in this case, the navigation has not committed, so evil_rvh will
   // not be deleted yet.

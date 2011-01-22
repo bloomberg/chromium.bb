@@ -419,9 +419,8 @@ void Navigate(NavigateParams* params) {
     }
 
     if (user_initiated) {
-      RenderViewHostDelegate::BrowserIntegration* integration =
-          params->target_contents->tab_contents();
-      integration->OnUserGesture();
+      static_cast<RenderViewHostDelegate*>(params->target_contents->
+          tab_contents())->OnUserGesture();
     }
 
     // Perform the actual navigation.

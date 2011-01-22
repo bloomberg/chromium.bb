@@ -761,7 +761,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentOnLoadCompletedInMainFrame,
                         OnMsgDocumentOnLoadCompletedInMainFrame)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnMsgFindReply)
     IPC_MESSAGE_HANDLER(ViewMsg_ExecuteCodeFinished,
                         OnExecuteCodeFinished)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFavIconURL, OnMsgUpdateFavIconURL)
@@ -775,7 +774,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DOMUISend, OnMsgDOMUISend)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardMessageToExternalHost,
                         OnMsgForwardMessageToExternalHost)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnMsgGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnMsgSetTooltipText)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnMsgRunFileChooser)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunJavaScriptMessage,
@@ -806,18 +804,10 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnRequestUndockDevToolsWindow)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DevToolsRuntimePropertyChanged,
                         OnDevToolsRuntimePropertyChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MissingPluginStatus, OnMissingPluginStatus)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_BlockedOutdatedPlugin,
-                        OnBlockedOutdatedPlugin)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SendCurrentPageAllSavableResourceLinks,
                         OnReceivedSavableResourceLinksForCurrentPage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SendSerializedHtmlData,
                         OnReceivedSerializedHtmlData)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidGetApplicationInfo,
-                        OnDidGetApplicationInfo)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_InstallApplication,
-                        OnInstallApplication)
     IPC_MESSAGE_FORWARD(ViewHostMsg_JSOutOfMemory, delegate_,
                         RenderViewHostDelegate::OnJSOutOfMemory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK)
@@ -834,16 +824,11 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityNotifications,
                         OnAccessibilityNotifications)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OnCSSInserted, OnCSSInserted)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PageTranslated, OnPageTranslated)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ContentBlocked, OnContentBlocked)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebDatabaseAccessed, OnWebDatabaseAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetSuggestions, OnSetSuggestions)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_InstantSupportDetermined,
-                        OnInstantSupportDetermined)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DetectedPhishingSite,
                         OnDetectedPhishingSite)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
@@ -1110,28 +1095,6 @@ void RenderViewHost::OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id) {
   delegate_->DocumentOnLoadCompletedInMainFrame(this, page_id);
 }
 
-void RenderViewHost::OnMsgFindReply(int request_id,
-                                    int number_of_matches,
-                                    const gfx::Rect& selection_rect,
-                                    int active_match_ordinal,
-                                    bool final_update) {
-  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
-      delegate_->GetBrowserIntegrationDelegate();
-  if (integration_delegate) {
-    integration_delegate->OnFindReply(request_id, number_of_matches,
-                                      selection_rect,
-                                      active_match_ordinal, final_update);
-  }
-
-  // Send a notification to the renderer that we are ready to receive more
-  // results from the scoping effort of the Find operation. The FindInPage
-  // scoping is asynchronous and periodically sends results back up to the
-  // browser using IPC. In an effort to not spam the browser we have the
-  // browser send an ACK for each FindReply message and have the renderer
-  // queue up the latest status message while waiting for this ACK.
-  Send(new ViewMsg_FindReplyACK(routing_id()));
-}
-
 void RenderViewHost::OnExecuteCodeFinished(int request_id, bool success) {
   std::pair<int, bool> result_details(request_id, success);
   NotificationService::current()->Notify(
@@ -1255,13 +1218,6 @@ void RenderViewHost::DisassociateFromPopupCount() {
 
 void RenderViewHost::AllowScriptToClose(bool script_can_close) {
   Send(new ViewMsg_AllowScriptToClose(routing_id(), script_can_close));
-}
-
-void RenderViewHost::OnMsgGoToEntryAtOffset(int offset) {
-  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
-      delegate_->GetBrowserIntegrationDelegate();
-  if (integration_delegate)
-    integration_delegate->GoToEntryAtOffset(offset);
 }
 
 void RenderViewHost::OnMsgSetTooltipText(
@@ -1453,32 +1409,7 @@ void RenderViewHost::UnhandledKeyboardEvent(
 }
 
 void RenderViewHost::OnUserGesture() {
-  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
-      delegate_->GetBrowserIntegrationDelegate();
-  if (integration_delegate)
-    integration_delegate->OnUserGesture();
-}
-
-void RenderViewHost::OnMissingPluginStatus(int status) {
-  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
-      delegate_->GetBrowserIntegrationDelegate();
-  if (integration_delegate)
-    integration_delegate->OnMissingPluginStatus(status);
-}
-
-void RenderViewHost::OnCrashedPlugin(const FilePath& plugin_path) {
-  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
-      delegate_->GetBrowserIntegrationDelegate();
-  if (integration_delegate)
-    integration_delegate->OnCrashedPlugin(plugin_path);
-}
-
-void RenderViewHost::OnBlockedOutdatedPlugin(const string16& name,
-                                              const GURL& update_url) {
-  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
-      delegate_->GetBrowserIntegrationDelegate();
-  if (integration_delegate)
-    integration_delegate->OnBlockedOutdatedPlugin(name, update_url);
+  delegate_->OnUserGesture();
 }
 
 void RenderViewHost::GetAllSavableResourceLinksForCurrentPage(
@@ -1496,22 +1427,6 @@ void RenderViewHost::OnReceivedSavableResourceLinksForCurrentPage(
     save_delegate->OnReceivedSavableResourceLinksForCurrentPage(
         resources_list, referrers_list, frames_list);
   }
-}
-
-void RenderViewHost::OnDidGetApplicationInfo(
-    int32 page_id, const WebApplicationInfo& info) {
-  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
-      delegate_->GetBrowserIntegrationDelegate();
-  if (integration_delegate)
-    integration_delegate->OnDidGetApplicationInfo(page_id, info);
-}
-
-void RenderViewHost::OnInstallApplication(
-    const WebApplicationInfo& info) {
-  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
-      delegate_->GetBrowserIntegrationDelegate();
-  if (integration_delegate)
-    integration_delegate->OnInstallApplication(info);
 }
 
 void RenderViewHost::GetSerializedHtmlDataForCurrentPageWithLocalLinks(
@@ -1829,31 +1744,6 @@ void RenderViewHost::OnCSSInserted() {
   delegate_->DidInsertCSS();
 }
 
-void RenderViewHost::OnPageContents(const GURL& url,
-                                    int32 page_id,
-                                    const string16& contents,
-                                    const std::string& language,
-                                    bool page_translatable) {
-  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
-      delegate_->GetBrowserIntegrationDelegate();
-  if (!integration_delegate)
-    return;
-  integration_delegate->OnPageContents(url, process()->id(), page_id, contents,
-                                       language, page_translatable);
-}
-
-void RenderViewHost::OnPageTranslated(int32 page_id,
-                                      const std::string& original_lang,
-                                      const std::string& translated_lang,
-                                      TranslateErrors::Type error_type) {
-  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
-      delegate_->GetBrowserIntegrationDelegate();
-  if (!integration_delegate)
-    return;
-  integration_delegate->OnPageTranslated(page_id, original_lang,
-                                         translated_lang, error_type);
-}
-
 void RenderViewHost::OnContentBlocked(ContentSettingsType type,
                                       const std::string& resource_identifier) {
   RenderViewHostDelegate::ContentSettings* content_settings_delegate =
@@ -1887,24 +1777,6 @@ void RenderViewHost::OnUpdateZoomLimits(int minimum_percent,
                                         int maximum_percent,
                                         bool remember) {
   delegate_->UpdateZoomLimits(minimum_percent, maximum_percent, remember);
-}
-
-void RenderViewHost::OnSetSuggestions(
-    int32 page_id,
-    const std::vector<std::string>& suggestions) {
-  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
-      delegate_->GetBrowserIntegrationDelegate();
-  if (!integration_delegate)
-    return;
-  integration_delegate->OnSetSuggestions(page_id, suggestions);
-}
-
-void RenderViewHost::OnInstantSupportDetermined(int32 page_id, bool result) {
-  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
-      delegate_->GetBrowserIntegrationDelegate();
-  if (!integration_delegate)
-    return;
-  integration_delegate->OnInstantSupportDetermined(page_id, result);
 }
 
 void RenderViewHost::OnDetectedPhishingSite(const GURL& phishing_url,
