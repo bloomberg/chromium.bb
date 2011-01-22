@@ -1026,6 +1026,7 @@
 0x3b86156dcf560cdb	ShowSections_RecentSitesEnabled
 0x5118181c3ece5e84	ShowSessions
 0x26f93e6e68e28a69	Star
+0x2fbe99005588ef01	StartupTick
 0x11a755d598c0c417	Stop
 0x926a51baad949d12	Strikethrough
 0x4d56afb0a9837d41	TabContextMenu_BookmarkAllTabs

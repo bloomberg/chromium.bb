@@ -535,6 +535,7 @@ void RecordUMAStatistics(const PrefService* prefs) {
   // stats can be made meaningful.
   if (flags.size())
     UserMetrics::RecordAction(UserMetricsAction("AboutFlags_StartupTick"));
+  UserMetrics::RecordAction(UserMetricsAction("StartupTick"));
 }
 
 //////////////////////////////////////////////////////////////////////////////
