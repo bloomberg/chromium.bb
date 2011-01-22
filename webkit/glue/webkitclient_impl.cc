@@ -24,6 +24,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "grit/webkit_chromium_resources.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCookie.h"
@@ -291,6 +292,59 @@ void WebKitClientImpl::traceEventEnd(const char* name, void* id,
   TRACE_EVENT_END(name, id, extra);
 }
 
+namespace {
+
+WebData loadAudioSpatializationResource(const char* name) {
+#ifdef IDR_AUDIO_SPATIALIZATION_T000_P000
+  const size_t kExpectedSpatializationNameLength = 31;
+  if (strlen(name) != kExpectedSpatializationNameLength) {
+    return WebData();
+  }
+
+  // Extract the azimuth and elevation from the resource name.
+  int azimuth = 0;
+  int elevation = 0;
+  int values_parsed =
+      sscanf(name, "IRC_Composite_C_R0195_T%3d_P%3d", &azimuth, &elevation);
+  if (values_parsed != 2) {
+    return WebData();
+  }
+
+  // The resource index values go through the elevations first, then azimuths.
+  const int kAngleSpacing = 15;
+
+  // 0 <= elevation <= 90 (or 315 <= elevation <= 345)
+  // in increments of 15 degrees.
+  int elevation_index =
+      elevation <= 90 ? elevation / kAngleSpacing :
+      7 + (elevation - 315) / kAngleSpacing;
+  bool is_elevation_index_good = 0 <= elevation_index && elevation_index < 10;
+
+  // 0 <= azimuth < 360 in increments of 15 degrees.
+  int azimuth_index = azimuth / kAngleSpacing;
+  bool is_azimuth_index_good = 0 <= azimuth_index && azimuth_index < 24;
+
+  const int kNumberOfElevations = 10;
+  const int kNumberOfAudioResources = 240;
+  int resource_index = kNumberOfElevations * azimuth_index + elevation_index;
+  bool is_resource_index_good = 0 <= resource_index &&
+      resource_index < kNumberOfAudioResources;
+
+  if (is_azimuth_index_good && is_elevation_index_good &&
+      is_resource_index_good) {
+    const int kFirstAudioResourceIndex = IDR_AUDIO_SPATIALIZATION_T000_P000;
+    base::StringPiece resource =
+        GetDataResource(kFirstAudioResourceIndex + resource_index);
+    return WebData(resource.data(), resource.size());
+  }
+#endif  // IDR_AUDIO_SPATIALIZATION_T000_P000
+
+  NOTREACHED();
+  return WebData();
+}
+
+}  // namespace
+
 WebData WebKitClientImpl::loadResource(const char* name) {
   struct {
     const char* name;
@@ -342,10 +396,16 @@ WebData WebKitClientImpl::loadResource(const char* name) {
     { "linuxProgressValue", IDR_PROGRESS_VALUE },
 #endif
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i) {
-    if (!strcmp(name, resources[i].name)) {
-      base::StringPiece resource = GetDataResource(resources[i].id);
-      return WebData(resource.data(), resource.size());
+
+  // Check the name prefix to see if it's an audio resource.
+  if (StartsWithASCII(name, "IRC_Composite", true)) {
+    return loadAudioSpatializationResource(name);
+  } else {
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i) {
+      if (!strcmp(name, resources[i].name)) {
+        base::StringPiece resource = GetDataResource(resources[i].id);
+        return WebData(resource.data(), resource.size());
+      }
     }
   }
   // TODO(jhawkins): Restore this NOTREACHED once WK stops sending in empty
