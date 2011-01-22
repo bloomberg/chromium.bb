@@ -47,6 +47,8 @@ static const char* const kBlockedPluginDataURL = "chrome://blockedplugindata/";
 static const unsigned kMenuActionLoad = 1;
 static const unsigned kMenuActionRemove = 2;
 
+static const BlockedPlugin* gLastActiveMenu;
+
 BlockedPlugin::BlockedPlugin(RenderView* render_view,
                              WebFrame* frame,
                              const webkit::npapi::PluginGroup& info,
@@ -122,6 +124,7 @@ void BlockedPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {
   menu_data.customItems.swap(custom_items);
   menu_data.mousePosition = WebPoint(event.windowX, event.windowY);
   render_view()->showContextMenu(NULL, menu_data);
+  gLastActiveMenu = this;
 }
 
 bool BlockedPlugin::OnMessageReceived(const IPC::Message& message) {
@@ -129,7 +132,8 @@ bool BlockedPlugin::OnMessageReceived(const IPC::Message& message) {
   // custom menu IDs, and not just our own. We don't swallow
   // ViewMsg_LoadBlockedPlugins because multiple blocked plugins have an
   // interest in it.
-  if (message.type() == ViewMsg_CustomContextMenuAction::ID) {
+  if (message.type() == ViewMsg_CustomContextMenuAction::ID &&
+      gLastActiveMenu == this) {
     ViewMsg_CustomContextMenuAction::Dispatch(
         &message, this, this, &BlockedPlugin::OnMenuItemSelected);
   } else if (message.type() == ViewMsg_LoadBlockedPlugins::ID) {
