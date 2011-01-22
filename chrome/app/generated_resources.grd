@@ -6932,18 +6932,34 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="Text of the edit button in the Autofill editor">
         Edit...
       </message>
-      <message name="IDS_AUTOFILL_EDIT_ADDRESS_CAPTION" desc="The caption on the edit Autofill address dialog.">
-        Edit address
-      </message>
-      <message name="IDS_AUTOFILL_ADD_ADDRESS_CAPTION" desc="The caption on the edit Autofill address dialog for the new entry.">
-        Add an address
-      </message>
-      <message name="IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION" desc="The caption on the edit Autofill credit card dialog.">
-        Edit credit card
-      </message>
-      <message name="IDS_AUTOFILL_ADD_CREDITCARD_CAPTION" desc="The caption on the edit Autofill credit card dialog the new entry.">
-        Add a credit card
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_AUTOFILL_EDIT_ADDRESS_CAPTION" desc="In sentence case: The caption on the edit Autofill address dialog.">
+          Edit address
+        </message>
+        <message name="IDS_AUTOFILL_ADD_ADDRESS_CAPTION" desc="In sentence case: The caption on the edit Autofill address dialog for the new entry.">
+          Add an address
+        </message>
+        <message name="IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION" desc="In sentence case: The caption on the edit Autofill credit card dialog.">
+          Edit credit card
+        </message>
+        <message name="IDS_AUTOFILL_ADD_CREDITCARD_CAPTION" desc="In sentence case: The caption on the edit Autofill credit card dialog the new entry.">
+          Add a credit card
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_AUTOFILL_EDIT_ADDRESS_CAPTION" desc="In Title Case: The caption on the edit Autofill address dialog.">
+          Edit Address
+        </message>
+        <message name="IDS_AUTOFILL_ADD_ADDRESS_CAPTION" desc="In Title Case: The caption on the edit Autofill address dialog for the new entry.">
+          Add an Address
+        </message>
+        <message name="IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION" desc="In Title Case: The caption on the edit Autofill credit card dialog.">
+          Edit Credit Card
+        </message>
+        <message name="IDS_AUTOFILL_ADD_CREDITCARD_CAPTION" desc="In Title Case: The caption on the edit Autofill credit card dialog the new entry.">
+          Add a Credit Card
+        </message>
+      </if>
       <message name="IDS_AUTOFILL_LIST_HEADER_SUMMARY" desc="The text on the list view header over the summary.">
         Summary
       </message>
