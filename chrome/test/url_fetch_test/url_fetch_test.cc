@@ -53,8 +53,8 @@ class UrlFetchTest : public UITest {
                const char* wait_cookie_name,
                const char* wait_cookie_value,
                const char* var_to_fetch,
-               const std::wstring& wait_js_expr,
-               const std::wstring& wait_js_frame_xpath,
+               const std::string& wait_js_expr,
+               const std::string& wait_js_frame_xpath,
                int wait_js_timeout_ms,
                UrlFetchTestResult* result) {
     scoped_refptr<TabProxy> tab(GetActiveTab());
@@ -74,10 +74,11 @@ class UrlFetchTest : public UITest {
         ASSERT_TRUE(result->cookie_value.length());
       }
     } else if (!wait_js_expr.empty()) {
-      bool completed = WaitUntilJavaScriptCondition(tab.get(),
-                                                    wait_js_frame_xpath,
-                                                    wait_js_expr,
-                                                    wait_js_timeout_ms);
+      bool completed = WaitUntilJavaScriptCondition(
+          tab.get(),
+          UTF8ToWide(wait_js_frame_xpath),
+          UTF8ToWide(wait_js_expr),
+          wait_js_timeout_ms);
       ASSERT_TRUE(completed);
     }
     if (var_to_fetch) {
@@ -150,10 +151,10 @@ TEST_F(UrlFetchTest, UrlFetch) {
       cmd_line->GetSwitchValueASCII("wait_cookie_name");
   std::string cookie_value =
       cmd_line->GetSwitchValueASCII("wait_cookie_value");
-  std::wstring js_expr =
-      UTF8ToWide(cmd_line->GetSwitchValueASCII("wait_js_expr"));
-  std::wstring js_frame_xpath =
-      UTF8ToWide(cmd_line->GetSwitchValueASCII("wait_js_frame_xpath"));
+  std::string js_expr =
+      cmd_line->GetSwitchValueASCII("wait_js_expr");
+  std::string js_frame_xpath =
+      cmd_line->GetSwitchValueASCII("wait_js_frame_xpath");
   std::string js_timeout_ms_str =
       cmd_line->GetSwitchValueASCII("wait_js_timeout");
 
