@@ -27,10 +27,11 @@ class FakeSocket : public net::Socket {
   FakeSocket();
   virtual ~FakeSocket();
 
-  const std::string& written_data() { return written_data_; }
+  const std::string& written_data() const { return written_data_; }
 
-  void AppendInputData(char* data, int data_size);
-  int input_pos() { return input_pos_; }
+  void AppendInputData(const char* data, int data_size);
+  int input_pos() const { return input_pos_; }
+  bool read_pending() const { return read_pending_; }
 
   // net::Socket interface.
   virtual int Read(net::IOBuffer* buf, int buf_len,
@@ -60,12 +61,12 @@ class FakeUdpSocket : public net::Socket {
   FakeUdpSocket();
   virtual ~FakeUdpSocket();
 
-  const std::vector<std::string>& written_packets() {
+  const std::vector<std::string>& written_packets() const {
     return written_packets_;
   }
 
-  void AppendInputPacket(char* data, int data_size);
-  int input_pos() { return input_pos_; }
+  void AppendInputPacket(const char* data, int data_size);
+  int input_pos() const { return input_pos_; }
 
   // net::Socket interface.
   virtual int Read(net::IOBuffer* buf, int buf_len,
@@ -100,7 +101,7 @@ class FakeSession : public Session {
     message_loop_ = message_loop;
   }
 
-  bool is_closed() { return closed_; }
+  bool is_closed() const { return closed_; }
 
   virtual void SetStateChangeCallback(StateChangeCallback* callback);
 

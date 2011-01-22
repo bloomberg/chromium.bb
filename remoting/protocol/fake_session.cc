@@ -21,7 +21,7 @@ FakeSocket::FakeSocket()
 FakeSocket::~FakeSocket() {
 }
 
-void FakeSocket::AppendInputData(char* data, int data_size) {
+void FakeSocket::AppendInputData(const char* data, int data_size) {
   input_data_.insert(input_data_.end(), data, data + data_size);
   // Complete pending read if any.
   if (read_pending_) {
@@ -78,7 +78,7 @@ FakeUdpSocket::FakeUdpSocket()
 FakeUdpSocket::~FakeUdpSocket() {
 }
 
-void FakeUdpSocket::AppendInputPacket(char* data, int data_size) {
+void FakeUdpSocket::AppendInputPacket(const char* data, int data_size) {
   input_packets_.push_back(std::string());
   input_packets_.back().assign(data, data + data_size);
 

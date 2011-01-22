@@ -486,6 +486,7 @@
         'protocol/fake_session.h',
         'protocol/jingle_session_unittest.cc',
         'protocol/message_decoder_unittest.cc',
+        'protocol/message_reader_unittest.cc',
         'protocol/mock_objects.h',
         'protocol/rtp_video_reader_unittest.cc',
         'protocol/rtp_video_writer_unittest.cc',

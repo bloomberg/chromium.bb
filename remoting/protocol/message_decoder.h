@@ -35,10 +35,11 @@ class MessageDecoder {
   // its bytes are consumed.
   void AddData(scoped_refptr<net::IOBuffer> data, int data_size);
 
-  // Get next message from the stream and puts it in
-  // |message_buffer|. Returns false if there are no complete messages
-  // yet.
-  bool GetNextMessage(CompoundBuffer* message_buffer);
+  // Returns next message from the stream. Ownership of the result is
+  // passed to the caller. Returns NULL if there are no complete
+  // messages yet, otherwise returns a buffer that contains one
+  // message.
+  CompoundBuffer* GetNextMessage();
 
  private:
   // Retrieves the read payload size of the current protocol buffer via |size|.

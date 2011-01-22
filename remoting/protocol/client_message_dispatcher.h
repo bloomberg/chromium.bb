@@ -40,7 +40,7 @@ class ClientMessageDispatcher {
   void Initialize(protocol::Session* session, ClientStub* client_stub);
 
  private:
-  void OnControlMessageReceived(ControlMessage* message);
+  void OnControlMessageReceived(ControlMessage* message, Task* done_task);
 
   // MessageReader that runs on the control channel. It runs a loop
   // that parses data on the channel and then calls the corresponding handler

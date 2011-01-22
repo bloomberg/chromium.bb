@@ -23,7 +23,7 @@ class ProtobufVideoReader : public VideoReader {
   virtual void Init(protocol::Session* session, VideoStub* video_stub);
 
  private:
-  void OnNewData(VideoPacket* packet);
+  void OnNewData(VideoPacket* packet, Task* done_task);
 
   VideoPacketFormat::Encoding encoding_;
 

@@ -25,8 +25,8 @@ void ProtobufVideoReader::Init(protocol::Session* session,
   video_stub_ = video_stub;
 }
 
-void ProtobufVideoReader::OnNewData(VideoPacket* packet) {
-  video_stub_->ProcessVideoPacket(packet, new DeleteTask<VideoPacket>(packet));
+void ProtobufVideoReader::OnNewData(VideoPacket* packet, Task* done_task) {
+  video_stub_->ProcessVideoPacket(packet, done_task);
 }
 
 }  // namespace protocol

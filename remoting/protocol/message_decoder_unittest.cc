@@ -6,7 +6,9 @@
 
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
+#include "base/string_number_conversions.h"
 #include "remoting/proto/event.pb.h"
+#include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_decoder.h"
 #include "remoting/protocol/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,16 +31,13 @@ static void PrepareData(uint8** buffer, int* size) {
   // Contains all encoded messages.
   std::string encoded_data;
 
-  EventMessage msg;
-
   // Then append 10 update sequences to the data.
   for (int i = 0; i < 10; ++i) {
-    Event* event = msg.add_event();
-    event->set_timestamp(i);
-    event->mutable_key()->set_keycode(kTestKey + i);
-    event->mutable_key()->set_pressed((i % 2) != 0);
+    EventMessage msg;
+    msg.set_timestamp(i);
+    msg.mutable_key_event()->set_keycode(kTestKey + i);
+    msg.mutable_key_event()->set_pressed((i % 2) != 0);
     AppendMessage(msg, &encoded_data);
-    msg.Clear();
   }
 
   *size = encoded_data.length();
@@ -62,25 +61,27 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
   // Then feed the protocol decoder using the above generated data and the
   // read pattern.
   std::list<EventMessage*> message_list;
-  for (int i = 0; i < size;) {
+  for (int pos = 0; pos < size;) {
+    SCOPED_TRACE("Input position: " + base::IntToString(pos));
+
     // First generate the amount to feed the decoder.
-    int read = std::min(size - i, read_sequence[i % sequence_size]);
+    int read = std::min(size - pos, read_sequence[pos % sequence_size]);
 
     // And then prepare an IOBuffer for feeding it.
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(read));
-    memcpy(buffer->data(), test_data + i, read);
+    memcpy(buffer->data(), test_data + pos, read);
     decoder.AddData(buffer, read);
     while (true) {
-      CompoundBuffer message;
-      if (!decoder.GetNextMessage(&message))
+      scoped_ptr<CompoundBuffer> message(decoder.GetNextMessage());
+      if (!message.get())
         break;
 
       EventMessage* event = new EventMessage();
-      CompoundBufferInputStream stream(&message);
+      CompoundBufferInputStream stream(message.get());
       ASSERT_TRUE(event->ParseFromZeroCopyStream(&stream));
       message_list.push_back(event);
     }
-    i += read;
+    pos += read;
   }
 
   // Then verify the decoded messages.
@@ -90,15 +91,16 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
   for (std::list<EventMessage*>::iterator it =
            message_list.begin();
        it != message_list.end(); ++it) {
+    SCOPED_TRACE("Message " + base::IntToString(index));
+
     EventMessage* message = *it;
     // Partial update stream.
-    EXPECT_EQ(message->event_size(), 1);
-    EXPECT_TRUE(message->event(0).has_key());
+    EXPECT_TRUE(message->has_key_event());
 
     // TODO(sergeyu): Don't use index here. Instead store the expected values
     // in an array.
-    EXPECT_EQ(kTestKey + index, message->event(0).key().keycode());
-    EXPECT_EQ((index % 2) != 0, message->event(0).key().pressed());
+    EXPECT_EQ(kTestKey + index, message->key_event().keycode());
+    EXPECT_EQ((index % 2) != 0, message->key_event().pressed());
     ++index;
   }
   STLDeleteElements(&message_list);

@@ -22,3 +22,12 @@ message ControlMessage {
   optional BeginSessionRequest begin_session_request = 3;
   optional BeginSessionResponse begin_session_response = 4;
 }
+
+// Defines an event message on the event channel.
+message EventMessage {
+  required int32 timestamp = 1;  // Client timestamp for event
+  optional bool dummy = 2;       // Is this a dummy event?
+
+  optional KeyEvent key_event = 3;
+  optional MouseEvent mouse_event = 4;
+}

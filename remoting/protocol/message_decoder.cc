@@ -25,7 +25,7 @@ void MessageDecoder::AddData(scoped_refptr<net::IOBuffer> data,
   buffer_.Append(data, data_size);
 }
 
-bool MessageDecoder::GetNextMessage(CompoundBuffer* message_buffer) {
+CompoundBuffer* MessageDecoder::GetNextMessage() {
   // Determine the payload size. If we already know it then skip this part.
   // We may not have enough data to determine the payload size so use a
   // utility function to find out.
@@ -39,14 +39,15 @@ bool MessageDecoder::GetNextMessage(CompoundBuffer* message_buffer) {
   // If the next payload size is still not known or we don't have enough
   // data for parsing then exit.
   if (!next_payload_known_ || buffer_.total_bytes() < next_payload_)
-    return false;
+    return NULL;
 
+  CompoundBuffer* message_buffer = new CompoundBuffer();
   message_buffer->CopyFrom(buffer_, 0, next_payload_);
   message_buffer->Lock();
   buffer_.CropFront(next_payload_);
   next_payload_known_ = false;
 
-  return true;
+  return message_buffer;
 }
 
 bool MessageDecoder::GetPayloadSize(int* size) {

@@ -11,12 +11,10 @@
 #include "remoting/protocol/message_reader.h"
 
 namespace remoting {
-
-class EventMessage;
-
 namespace protocol {
 
 class ControlMessage;
+class EventMessage;
 class HostStub;
 class InputStub;
 class Session;
@@ -45,11 +43,11 @@ class HostMessageDispatcher {
  private:
   // This method is called by |control_channel_reader_| when a control
   // message is received.
-  void OnControlMessageReceived(ControlMessage* message);
+  void OnControlMessageReceived(ControlMessage* message, Task* done_task);
 
   // This method is called by |event_channel_reader_| when a event
   // message is received.
-  void OnEventMessageReceived(EventMessage* message);
+  void OnEventMessageReceived(EventMessage* message, Task* done_task);
 
   // MessageReader that runs on the control channel. It runs a loop
   // that parses data on the channel and then delegates the message to this

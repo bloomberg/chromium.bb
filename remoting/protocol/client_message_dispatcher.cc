@@ -11,7 +11,6 @@
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/message_reader.h"
-#include "remoting/protocol/ref_counted_message.h"
 #include "remoting/protocol/session.h"
 
 namespace remoting {
@@ -39,18 +38,18 @@ void ClientMessageDispatcher::Initialize(
 }
 
 void ClientMessageDispatcher::OnControlMessageReceived(
-    ControlMessage* message) {
-  scoped_refptr<RefCountedMessage<ControlMessage> > ref_msg =
-      new RefCountedMessage<ControlMessage>(message);
+    ControlMessage* message, Task* done_task) {
+  // TODO(sergeyu): Add message validation.
   if (message->has_notify_resolution()) {
     client_stub_->NotifyResolution(
-        &message->notify_resolution(), NewDeleteTask(ref_msg));
+        &message->notify_resolution(), done_task);
   } else if (message->has_begin_session_response()) {
     client_stub_->BeginSessionResponse(
-        &message->begin_session_response().login_status(),
-        NewDeleteTask(ref_msg));
+        &message->begin_session_response().login_status(), done_task);
   } else {
-    NOTREACHED() << "Invalid control message received";
+    LOG(WARNING) << "Invalid control message received.";
+    done_task->Run();
+    delete done_task;
   }
 }
 

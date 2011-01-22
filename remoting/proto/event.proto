@@ -40,17 +40,3 @@ message MouseEvent {
   optional MouseButton button = 5;
   optional bool button_down = 6;
 }
-
-// Defines an event message on the event channel.
-message Event {
-  required int32 timestamp = 1;  // Client timestamp for event
-  optional bool dummy = 2;       // Is this a dummy event?
-
-  optional KeyEvent key = 3;
-  optional MouseEvent mouse = 4;
-}
-
-// Message sent in the event channel.
-message EventMessage {
-  repeated Event event = 1;
-}

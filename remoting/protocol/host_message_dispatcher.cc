@@ -11,7 +11,6 @@
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/message_reader.h"
-#include "remoting/protocol/ref_counted_message.h"
 #include "remoting/protocol/session.h"
 
 namespace remoting {
@@ -47,34 +46,32 @@ void HostMessageDispatcher::Initialize(
       NewCallback(this, &HostMessageDispatcher::OnControlMessageReceived));
 }
 
-void HostMessageDispatcher::OnControlMessageReceived(ControlMessage* message) {
-  scoped_refptr<RefCountedMessage<ControlMessage> > ref_msg =
-      new RefCountedMessage<ControlMessage>(message);
+void HostMessageDispatcher::OnControlMessageReceived(
+    ControlMessage* message, Task* done_task) {
+  // TODO(sergeyu): Add message validation.
   if (message->has_suggest_resolution()) {
-    host_stub_->SuggestResolution(
-        &message->suggest_resolution(), NewDeleteTask(ref_msg));
+    host_stub_->SuggestResolution(&message->suggest_resolution(), done_task);
   } else if (message->has_begin_session_request()) {
     host_stub_->BeginSessionRequest(
-        &message->begin_session_request().credentials(),
-        NewDeleteTask(ref_msg));
+        &message->begin_session_request().credentials(), done_task);
   } else {
-    NOTREACHED() << "Invalid control message received";
+    LOG(WARNING) << "Invalid control message received.";
+    done_task->Run();
+    delete done_task;
   }
 }
 
 void HostMessageDispatcher::OnEventMessageReceived(
-    EventMessage* message) {
-  scoped_refptr<RefCountedMessage<EventMessage> > ref_msg =
-      new RefCountedMessage<EventMessage>(message);
-  for (int i = 0; i < message->event_size(); ++i) {
-    if (message->event(i).has_key()) {
-      input_stub_->InjectKeyEvent(
-          &message->event(i).key(), NewDeleteTask(ref_msg));
-    }
-    if (message->event(i).has_mouse()) {
-      input_stub_->InjectMouseEvent(
-          &message->event(i).mouse(), NewDeleteTask(ref_msg));
-    }
+    EventMessage* message, Task* done_task) {
+  // TODO(sergeyu): Add message validation.
+  if (message->has_key_event()) {
+    input_stub_->InjectKeyEvent(&message->key_event(), done_task);
+  } else if (message->has_mouse_event()) {
+    input_stub_->InjectMouseEvent(&message->mouse_event(), done_task);
+  } else {
+    LOG(WARNING) << "Invalid event message received.";
+    done_task->Run();
+    delete done_task;
   }
 }
 

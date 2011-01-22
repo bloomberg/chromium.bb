@@ -105,6 +105,8 @@ class CompoundBufferInputStream
   explicit CompoundBufferInputStream(const CompoundBuffer* buffer);
   virtual ~CompoundBufferInputStream();
 
+  int position() const { return position_; }
+
   // google::protobuf::io::ZeroCopyInputStream interface.
   virtual bool Next(const void** data, int* size);
   virtual void BackUp(int count);
