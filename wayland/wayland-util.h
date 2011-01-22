@@ -149,23 +149,6 @@ void wl_array_init(struct wl_array *array);
 void wl_array_release(struct wl_array *array);
 void *wl_array_add(struct wl_array *array, int size);
 
-/* FIXME: These should be part of the protocol document */
-enum wl_grab_type {
-	WL_GRAB_NONE = 0,
-	WL_GRAB_RESIZE_TOP = 1,
-	WL_GRAB_RESIZE_BOTTOM = 2,
-	WL_GRAB_RESIZE_LEFT = 4,
-	WL_GRAB_RESIZE_TOP_LEFT = 5,
-	WL_GRAB_RESIZE_BOTTOM_LEFT = 6,
-	WL_GRAB_RESIZE_RIGHT = 8,
-	WL_GRAB_RESIZE_TOP_RIGHT = 9,
-	WL_GRAB_RESIZE_BOTTOM_RIGHT = 10,
-	WL_GRAB_RESIZE_MASK = 15,
-	WL_GRAB_MOVE = 16,
-	WL_GRAB_MOTION = 17,
-	WL_GRAB_DRAG = 18
-};
-
 #ifdef  __cplusplus
 }
 #endif

@@ -68,6 +68,7 @@ struct interface {
 	int version;
 	struct wl_list request_list;
 	struct wl_list event_list;
+	struct wl_list enumeration_list;
 	struct wl_list link;
 };
 
@@ -96,10 +97,25 @@ struct arg {
 	struct wl_list link;
 };
 
+struct enumeration {
+	char *name;
+	char *uppercase_name;
+	struct wl_list entry_list;
+	struct wl_list link;
+};
+
+struct entry {
+	char *name;
+	char *uppercase_name;
+	char *value;
+	struct wl_list link;
+};
+
 struct parse_context {
 	struct protocol *protocol;
 	struct interface *interface;
 	struct message *message;
+	struct enumeration *enumeration;
 };
 
 static char *
@@ -123,13 +139,16 @@ start_element(void *data, const char *element_name, const char **atts)
 	struct interface *interface;
 	struct message *message;
 	struct arg *arg;
-	const char *name, *type, *interface_name;
+	struct enumeration *enumeration;
+	struct entry *entry;
+	const char *name, *type, *interface_name, *value;
 	int i, version;
 
 	name = NULL;
 	type = NULL;
 	version = 0;
 	interface_name = NULL;
+	value = NULL;
 	for (i = 0; atts[i]; i += 2) {
 		if (strcmp(atts[i], "name") == 0)
 			name = atts[i + 1];
@@ -137,6 +156,8 @@ start_element(void *data, const char *element_name, const char **atts)
 			version = atoi(atts[i + 1]);
 		if (strcmp(atts[i], "type") == 0)
 			type = atts[i + 1];
+		if (strcmp(atts[i], "value") == 0)
+			value = atts[i + 1];
 		if (strcmp(atts[i], "interface") == 0)
 			interface_name = atts[i + 1];
 	}
@@ -166,6 +187,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		interface->version = version;
 		wl_list_init(&interface->request_list);
 		wl_list_init(&interface->event_list);
+		wl_list_init(&interface->enumeration_list);
 		wl_list_insert(ctx->protocol->interface_list.prev,
 			       &interface->link);
 		ctx->interface = interface;
@@ -227,8 +249,29 @@ start_element(void *data, const char *element_name, const char **atts)
 			exit(EXIT_FAILURE);
 		}
 
-		wl_list_insert(ctx->message->arg_list.prev,
-			       &arg->link);
+		wl_list_insert(ctx->message->arg_list.prev, &arg->link);
+	} else if (strcmp(element_name, "enum") == 0) {
+		if (name == NULL) {
+			fprintf(stderr, "no enum name given\n");
+			exit(EXIT_FAILURE);
+		}
+
+		enumeration = malloc(sizeof *enumeration);
+		enumeration->name = strdup(name);
+		enumeration->uppercase_name = uppercase_dup(name);
+		wl_list_init(&enumeration->entry_list);
+
+		wl_list_insert(ctx->interface->enumeration_list.prev,
+			       &enumeration->link);
+
+		ctx->enumeration = enumeration;
+	} else if (strcmp(element_name, "entry") == 0) {
+		entry = malloc(sizeof *entry);
+		entry->name = strdup(name);
+		entry->uppercase_name = uppercase_dup(name);
+		entry->value = strdup(value);
+		wl_list_insert(ctx->enumeration->entry_list.prev,
+			       &entry->link);
 	}
 }
 
@@ -421,6 +464,23 @@ static const char *indent(int n)
 }
 
 static void
+emit_enumerations(struct interface *interface)
+{
+	struct enumeration *e;
+	struct entry *entry;
+
+	wl_list_for_each(e, &interface->enumeration_list, link) {
+		printf("enum wl_%s_%s {\n", interface->name, e->name);
+		wl_list_for_each(entry, &e->entry_list, link)
+			printf("\tWL_%s_%s_%s = %s,\n",
+			       interface->uppercase_name,
+			       e->uppercase_name,
+			       entry->uppercase_name, entry->value);
+		printf("};\n\n");
+	}
+}
+
+static void
 emit_structs(struct wl_list *message_list, struct interface *interface)
 {
 	struct message *m;
@@ -542,6 +602,8 @@ emit_header(struct protocol *protocol, int server)
 	printf("\n");
 
 	wl_list_for_each(i, &protocol->interface_list, link) {
+
+		emit_enumerations(i);
 
 		if (server) {
 			emit_structs(&i->request_list, i);

@@ -723,7 +723,7 @@ notify_button(struct wl_input_device *device,
 		shell_resize(NULL,
 			     (struct wl_shell *) &compositor->shell,
 			     &surface->surface, device, time,
-			     WL_GRAB_RESIZE_BOTTOM_RIGHT);
+			     WL_SHELL_RESIZE_BOTTOM_RIGHT);
 
 	if (device->grab)
 		device->grab->interface->button(device->grab, time,

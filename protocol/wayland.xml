@@ -152,6 +152,18 @@
       <arg name="time" type="uint"/>
     </request>
 
+    <enum name="resize">
+      <entry name="none" value="0"/>
+      <entry name="top" value="1"/>
+      <entry name="bottom" value="2"/>
+      <entry name="left" value="4"/>
+      <entry name="top_left" value="5"/>
+      <entry name="bottom_left" value="6"/>
+      <entry name="right" value="8"/>
+      <entry name="top_right" value="9"/>
+      <entry name="bottom_right" value="10"/>
+    </enum>
+
     <request name="resize">
       <arg name="surface" type="object" interface="surface"/>
       <arg name="input_device" type="object" interface="input_device"/>

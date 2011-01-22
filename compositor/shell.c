@@ -117,17 +117,17 @@ resize_grab_motion(struct wl_grab *grab,
 	struct wl_surface *surface = &resize->surface->surface;
 	int32_t width, height;
 
-	if (resize->edges & WL_GRAB_RESIZE_LEFT) {
+	if (resize->edges & WL_SHELL_RESIZE_LEFT) {
 		width = device->grab_x - x + resize->width;
-	} else if (resize->edges & WL_GRAB_RESIZE_RIGHT) {
+	} else if (resize->edges & WL_SHELL_RESIZE_RIGHT) {
 		width = x - device->grab_x + resize->width;
 	} else {
 		width = resize->width;
 	}
 
-	if (resize->edges & WL_GRAB_RESIZE_TOP) {
+	if (resize->edges & WL_SHELL_RESIZE_TOP) {
 		height = device->grab_y - y + resize->height;
-	} else if (resize->edges & WL_GRAB_RESIZE_BOTTOM) {
+	} else if (resize->edges & WL_SHELL_RESIZE_BOTTOM) {
 		height = y - device->grab_y + resize->height;
 	} else {
 		height = resize->height;
@@ -193,28 +193,28 @@ shell_resize(struct wl_client *client, struct wl_shell *shell,
 		return;
 
 	switch (edges) {
-	case WL_GRAB_RESIZE_TOP:
+	case WL_SHELL_RESIZE_TOP:
 		pointer = WLSC_POINTER_TOP;
 		break;
-	case WL_GRAB_RESIZE_BOTTOM:
+	case WL_SHELL_RESIZE_BOTTOM:
 		pointer = WLSC_POINTER_BOTTOM;
 		break;
-	case WL_GRAB_RESIZE_LEFT:
+	case WL_SHELL_RESIZE_LEFT:
 		pointer = WLSC_POINTER_LEFT;
 		break;
-	case WL_GRAB_RESIZE_TOP_LEFT:
+	case WL_SHELL_RESIZE_TOP_LEFT:
 		pointer = WLSC_POINTER_TOP_LEFT;
 		break;
-	case WL_GRAB_RESIZE_BOTTOM_LEFT:
+	case WL_SHELL_RESIZE_BOTTOM_LEFT:
 		pointer = WLSC_POINTER_BOTTOM_LEFT;
 		break;
-	case WL_GRAB_RESIZE_RIGHT:
+	case WL_SHELL_RESIZE_RIGHT:
 		pointer = WLSC_POINTER_RIGHT;
 		break;
-	case WL_GRAB_RESIZE_TOP_RIGHT:
+	case WL_SHELL_RESIZE_TOP_RIGHT:
 		pointer = WLSC_POINTER_TOP_RIGHT;
 		break;
-	case WL_GRAB_RESIZE_BOTTOM_RIGHT:
+	case WL_SHELL_RESIZE_BOTTOM_RIGHT:
 		pointer = WLSC_POINTER_BOTTOM_RIGHT;
 		break;
 	}
