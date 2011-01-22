@@ -22,8 +22,14 @@ namespace webkit_glue {
 std::string GetProductVersion();
 
 std::string GetWebKitVersion() {
-  return base::StringPrintf("%d.%d", WEBKIT_VERSION_MAJOR,
-                                     WEBKIT_VERSION_MINOR);
+  return base::StringPrintf("%d.%d (%s)",
+                            WEBKIT_VERSION_MAJOR,
+                            WEBKIT_VERSION_MINOR,
+                            WEBKIT_SVN_REVISION);
+}
+
+std::string GetWebKitRevision() {
+  return WEBKIT_SVN_REVISION;
 }
 
 std::string BuildOSCpuInfo() {

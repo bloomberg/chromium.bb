@@ -120,13 +120,23 @@
         {
           'action_name': 'webkit_version',
           'inputs': [
-            '../build/webkit_version.py',
-            '<(webkit_src_dir)/Source/WebCore/Configurations/Version.xcconfig',
+            '<(script)',
+            '<(webkit_src_dir)<(version_file)',
+            '../../build/util/lastchange.py',  # Used by the script.
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/webkit_version.h',
           ],
-          'action': ['python', '<@(_inputs)', '<(INTERMEDIATE_DIR)'],
+          'action': ['python', '<(script)', '<(webkit_src_dir)',
+                     '<(version_file)', '<(INTERMEDIATE_DIR)'],
+          'variables': {
+            'script': '../build/webkit_version.py',
+            # version_file is a relative path from |webkit_src_dir| to
+            # the version file.  But gyp will eat the variable unless
+            # it looks like an absolute path, so write it like one and
+            # then use it carefully above.
+            'version_file': '/Source/WebCore/Configurations/Version.xcconfig',
+          },
         },
       ],
       'include_dirs': [

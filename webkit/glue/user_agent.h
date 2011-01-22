@@ -19,7 +19,7 @@ void BuildUserAgent(bool mimic_windows, std::string* result);
 // Builds a User-agent compatible string that describes the OS and CPU type.
 std::string BuildOSCpuInfo();
 
-// Returns the WebKit version (major.minor).
+// Returns the WebKit version, in the form "major.minor (branch@revision)".
 std::string GetWebKitVersion();
 
 }  // namespace webkit_glue
