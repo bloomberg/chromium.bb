@@ -278,6 +278,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableInteractiveFormValidation)
   },
+  {
+    "webaudio",
+    IDS_FLAGS_WEBAUDIO_NAME,
+    IDS_FLAGS_WEBAUDIO_DESCRIPTION,
+    kOsMac,  // TODO(crogers): add windows and linux when FFT is ready.
+    SINGLE_VALUE_TYPE(switches::kEnableWebAudio)
+  },
 };
 
 const Experiment* experiments = kExperiments;

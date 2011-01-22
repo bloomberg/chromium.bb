@@ -613,6 +613,9 @@ const char kEnableVideoLogging[]            = "enable-video-logging";
 // Order of the listed sub-arguments does not matter.
 const char kEnableWatchdog[]                = "enable-watchdog";
 
+// Enable web audio API.
+const char kEnableWebAudio[]                = "enable-webaudio";
+
 // Disable WebKit's XSSAuditor.  The XSSAuditor mitigates reflective XSS.
 const char kEnableXSSAuditor[]              = "enable-xss-auditor";
 

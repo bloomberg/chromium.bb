@@ -182,6 +182,7 @@ extern const char kEnableVerticalTabs[];
 extern const char kEnableVideoFullscreen[];
 extern const char kEnableVideoLogging[];
 extern const char kEnableWatchdog[];
+extern const char kEnableWebAudio[];
 extern const char kEnableXSSAuditor[];
 // Experimental features.
 extern const char kExperimentalLocationFeatures[];
