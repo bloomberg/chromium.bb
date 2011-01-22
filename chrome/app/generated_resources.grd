@@ -8154,13 +8154,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         To sync passwords, <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> requires you to encrypt certain data using either your Google password or your own passphrase.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_OPT_GOOGLE" desc="Radio button label for using Google password.">
-        Use my Google password.
+        Use my Google password
       </message>
       <message name="IDS_SYNC_PASSPHRASE_OPT_EXPLICIT" desc="Radio button label for using explicit passphrase.">
-        Choose my own passphrase.
+        Choose my own passphrase
       </message>
       <message name="IDS_SYNC_PASSPHRASE_OPT_CANCEL" desc="Radio button label for not syncing encrypted types.">
-        Do not sync my passwords.
+        Do not sync my passwords
       </message>
       <message name="IDS_SYNC_PASSPHRASE_MSG_GOOGLE" desc="Message when Google password is selected.">
         You have chosen to encrypt data using your Google password; you can always change your mind later by changing your sync settings.
@@ -8184,7 +8184,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Sign in again
       </message>
       <message name="IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL" desc="The label on a link that brings users to the Google Privacy Dashboard to control sync">
-        Control sync from Google Dashboard
+        Remove synced data on Google Dashboard
       </message>
       <message name="IDS_SYNC_CUSTOMIZE_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
         Customize...
@@ -8199,7 +8199,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Stop syncing this account
       </message>
       <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
-        Stopping <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync prevents sharing your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data from this computer.  All your data will remain within <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and your Google Account, but your Google Account will no longer receive changes to your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data.
+        If you stop syncing, the data stored on this computer as well as the data stored in your Google Account will remain in both places. However, new data or changes you make to your data will not be synchronized between them.
       </message>
       <!-- Sync time strings -->
       <message name="IDS_SYNC_TIME_NEVER" desc="Indicates that the first sync has never completed.">

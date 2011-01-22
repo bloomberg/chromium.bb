@@ -1395,9 +1395,8 @@ const int kDisabledIndex = 1;
         IDS_CANCEL)];
     [alert setMessageText:l10n_util::GetNSStringWithFixup(
         IDS_SYNC_STOP_SYNCING_DIALOG_TITLE)];
-    [alert setInformativeText:l10n_util::GetNSStringFWithFixup(
-        IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL,
-        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))];
+    [alert setInformativeText:l10n_util::GetNSStringWithFixup(
+        IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL)];
     [alert setAlertStyle:NSWarningAlertStyle];
     const SEL kEndSelector =
         @selector(stopSyncAlertDidEnd:returnCode:contextInfo:);

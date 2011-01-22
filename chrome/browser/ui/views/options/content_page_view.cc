@@ -128,9 +128,8 @@ void ContentPageView::ButtonPressed(
       ConfirmMessageBoxDialog::RunWithCustomConfiguration(
           GetWindow()->GetNativeWindow(),
           this,
-          UTF16ToWide(l10n_util::GetStringFUTF16(
-              IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL,
-              l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))),
+          UTF16ToWide(l10n_util::GetStringUTF16(
+              IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL)),
           UTF16ToWide(l10n_util::GetStringUTF16(
               IDS_SYNC_STOP_SYNCING_DIALOG_TITLE)),
           UTF16ToWide(l10n_util::GetStringUTF16(
