@@ -437,16 +437,13 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
   if (load_flags_ & net::LOAD_BYPASS_CACHE)
     *bind_flags |= BINDF_GETNEWESTVERSION;
 
-  bool upload_data = false;
 
   if (LowerCaseEqualsASCII(method(), "get")) {
     bind_info->dwBindVerb = BINDVERB_GET;
   } else if (LowerCaseEqualsASCII(method(), "post")) {
     bind_info->dwBindVerb = BINDVERB_POST;
-    upload_data = true;
   } else if (LowerCaseEqualsASCII(method(), "put")) {
     bind_info->dwBindVerb = BINDVERB_PUT;
-    upload_data = true;
   } else {
     std::wstring verb(ASCIIToWide(StringToUpperASCII(method())));
     bind_info->dwBindVerb = BINDVERB_CUSTOM;
@@ -455,12 +452,12 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
     lstrcpyW(bind_info->szCustomVerb, verb.c_str());
   }
 
-  if (upload_data) {
-    // Bypass caching proxies on POSTs and PUTs and avoid writing responses to
-    // these requests to the browser's cache
+  if (post_data_len()) {
+    // Bypass caching proxies on upload requests and avoid writing responses to
+    // the browser's cache.
     *bind_flags |= BINDF_GETNEWESTVERSION | BINDF_PRAGMA_NO_CACHE;
 
-    // Attempt to avoid storing the response for XHR request.
+    // Attempt to avoid storing the response for upload requests.
     // See http://crbug.com/55918
     if (resource_type_ != ResourceType::MAIN_FRAME)
       *bind_flags |= BINDF_NOWRITECACHE;
@@ -468,7 +465,9 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
     // Initialize the STGMEDIUM.
     memset(&bind_info->stgmedData, 0, sizeof(STGMEDIUM));
     bind_info->grfBindInfoF = 0;
-    bind_info->szCustomVerb = NULL;
+
+    if (bind_info->dwBindVerb != BINDVERB_CUSTOM)
+      bind_info->szCustomVerb = NULL;
 
     if (get_upload_data(&bind_info->stgmedData.pstm) == S_OK) {
       bind_info->stgmedData.tymed = TYMED_ISTREAM;
