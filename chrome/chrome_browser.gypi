@@ -3798,9 +3798,7 @@
               '$(SDKROOT)/System/Library/Frameworks/IOKit.framework',
               '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
               '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
-              '$(SDKROOT)/System/Library/Frameworks/AudioUnit.framework',
-              '$(SDKROOT)/System/Library/Frameworks/Accelerate.framework',
-'$(SDKROOT)/System/Library/Frameworks/SecurityInterface.framework',
+              '$(SDKROOT)/System/Library/Frameworks/SecurityInterface.framework',
             ],
             'mac_bundle_resources': [
               'browser/gpu.sb',
