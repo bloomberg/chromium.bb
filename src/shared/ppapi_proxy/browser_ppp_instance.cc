@@ -70,7 +70,7 @@ PP_Bool DidCreate(PP_Instance instance,
                   uint32_t argc,
                   const char* argn[],
                   const char* argv[]) {
-  DebugPrintf("PPP_Instance::DidCreate(%"NACL_PRId32")\n", instance);
+  DebugPrintf("PPP_Instance::DidCreate: instance=%"NACL_PRIx32"\n", instance);
   uint32_t argn_size;
   scoped_array<char> argn_serial(ArgArraySerialize(argc, argn, &argn_size));
   if (argn_serial.get() == NULL) {
@@ -92,6 +92,7 @@ PP_Bool DidCreate(PP_Instance instance,
                                                    argv_size,
                                                    argv_serial.get(),
                                                    &success);
+  DebugPrintf("PPP_Instance::DidCreate: %s\n", NaClSrpcErrorString(retval));
   if (retval != NACL_SRPC_RESULT_OK) {
     return PP_FALSE;
   }
@@ -99,15 +100,16 @@ PP_Bool DidCreate(PP_Instance instance,
 }
 
 void DidDestroy(PP_Instance instance) {
-  DebugPrintf("PPP_Instance::Delete(%"NACL_PRId32")\n", instance);
-  (void) PppInstanceRpcClient::PPP_Instance_DidDestroy(
+  DebugPrintf("PPP_Instance::DidDestroy: instance=%"NACL_PRIx32"\n", instance);
+  NaClSrpcError retval = PppInstanceRpcClient::PPP_Instance_DidDestroy(
       GetMainSrpcChannel(instance), instance);
+  DebugPrintf("PPP_Instance::DidDestroy: %s\n", NaClSrpcErrorString(retval));
 }
 
 void DidChangeView(PP_Instance instance,
                    const PP_Rect* position,
                    const PP_Rect* clip) {
-  DebugPrintf("PPP_Instance::DidChangeView(%"NACL_PRId32")\n",
+  DebugPrintf("PPP_Instance::DidChangeView: instance=%"NACL_PRIx32"\n",
               instance);
   int32_t position_array[4];
   const uint32_t kPositionArraySize = NACL_ARRAY_SIZE(position_array);
@@ -121,27 +123,29 @@ void DidChangeView(PP_Instance instance,
   clip_array[1] = clip->point.y;
   clip_array[2] = clip->size.width;
   clip_array[3] = clip->size.height;
-  (void) PppInstanceRpcClient::PPP_Instance_DidChangeView(
+  NaClSrpcError retval = PppInstanceRpcClient::PPP_Instance_DidChangeView(
       GetMainSrpcChannel(instance),
       instance,
       kPositionArraySize,
       position_array,
       kClipArraySize,
       clip_array);
+  DebugPrintf("PPP_Instance::DidChangeView: %s\n", NaClSrpcErrorString(retval));
 }
 
 void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
-  DebugPrintf("PPP_Instance::DidChangeFocus(%"NACL_PRId32")\n",
-              instance);
-  // DidChangeFocus() always succeeds, no need to check the SRPC return value.
-  (void) PppInstanceRpcClient::PPP_Instance_DidChangeFocus(
+  DebugPrintf("PPP_Instance::DidChangeFocus: instance=%"NACL_PRIx32", "
+              "has_focus = %d\n", instance, has_focus);
+  NaClSrpcError retval = PppInstanceRpcClient::PPP_Instance_DidChangeFocus(
       GetMainSrpcChannel(instance),
       instance,
       static_cast<bool>(PP_TRUE == has_focus));
+  DebugPrintf("PPP_Instance::DidChangeFocus: %s\n",
+              NaClSrpcErrorString(retval));
 }
 
 PP_Bool HandleInputEvent(PP_Instance instance, const PP_InputEvent* event) {
-  DebugPrintf("PPP_Instance::HandleInputEvent(%"NACL_PRId32")\n",
+  DebugPrintf("PPP_Instance::HandleInputEvent: instance=%"NACL_PRIx32"\n",
               instance);
   int32_t success;
   char* event_data = const_cast<char*>(reinterpret_cast<const char*>(event));
@@ -152,6 +156,8 @@ PP_Bool HandleInputEvent(PP_Instance instance, const PP_InputEvent* event) {
           sizeof(*event),
           event_data,
           &success);
+  DebugPrintf("PPP_Instance::HandleInputEvent: %s\n",
+              NaClSrpcErrorString(retval));
   if (retval != NACL_SRPC_RESULT_OK) {
     return PP_FALSE;
   }
@@ -159,16 +165,17 @@ PP_Bool HandleInputEvent(PP_Instance instance, const PP_InputEvent* event) {
 }
 
 PP_Bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
-  DebugPrintf("PPP_Instance::HandleDocumentLoad(%"NACL_PRId32")\n",
-              instance);
+  DebugPrintf("PPP_Instance::HandleDocumentLoad: instance=%"NACL_PRIx32", "
+              "url_loader=%"NACL_PRIx32"\n", instance, url_loader);
   // TODO(sehr): implement HandleDocumentLoad.
+  NACL_UNIMPLEMENTED();
   UNREFERENCED_PARAMETER(instance);
   UNREFERENCED_PARAMETER(url_loader);
   return PP_FALSE;
 }
 
 PP_Var GetInstanceObject(PP_Instance instance) {
-  DebugPrintf("PPP_Instance::GetInstanceObject(%"NACL_PRId32")\n",
+  DebugPrintf("PPP_Instance::GetInstanceObject: instance=%"NACL_PRIx32"\n",
               instance);
   ObjectCapability capability;
   uint32_t capability_bytes = static_cast<uint32_t>(sizeof(capability));
@@ -179,6 +186,8 @@ PP_Var GetInstanceObject(PP_Instance instance) {
           instance,
           &capability_bytes,
           reinterpret_cast<char*>(&capability));
+  DebugPrintf("PPP_Instance::GetInstanceObject: %s\n",
+              NaClSrpcErrorString(retval));
   if (retval != NACL_SRPC_RESULT_OK) {
     return PP_MakeUndefined();
   }

@@ -36,6 +36,8 @@ PP_Var GetWindowObject(PP_Instance instance) {
           instance,
           &window_size,
           window_bytes.get());
+  DebugPrintf("PPB_Instance::GetWindowObject: %s\n",
+              NaClSrpcErrorString(srpc_result));
   if (srpc_result == NACL_SRPC_RESULT_OK)
     (void) DeserializeTo(channel, window_bytes.get(), window_size, 1, &window);
   return window;
@@ -57,14 +59,16 @@ PP_Var GetOwnerElementObject(PP_Instance instance) {
           instance,
           &owner_size,
           owner_bytes.get());
+  DebugPrintf("PPB_Instance::GetOwnerElementObject: %s\n",
+              NaClSrpcErrorString(srpc_result));
   if (srpc_result == NACL_SRPC_RESULT_OK)
     (void) DeserializeTo(channel, owner_bytes.get(), owner_size, 1, &owner);
   return owner;
 }
 
 PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
-  DebugPrintf("PPB_Instance::BindGraphicsDeviceContext: instance=%"
-              NACL_PRIx32 ", device=%" NACL_PRIu32 "\n", instance, device);
+  DebugPrintf("PPB_Instance::BindGraphics: instance=%"NACL_PRIx32 ", "
+              "device=%" NACL_PRIu32 "\n", instance, device);
   int32_t success = 0;
 
   NaClSrpcError srpc_result =
@@ -73,6 +77,8 @@ PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
           instance,
           device,
           &success);
+  DebugPrintf("PPB_Instance::BindGraphics: %s\n",
+              NaClSrpcErrorString(srpc_result));
   if (srpc_result == NACL_SRPC_RESULT_OK && success)
     return PP_TRUE;
   else
@@ -90,6 +96,8 @@ PP_Bool IsFullFrame(PP_Instance instance) {
           GetMainSrpcChannel(),
           instance,
           &is_full_frame);
+  DebugPrintf("PPB_Instance::IsFullFrame: %s\n",
+              NaClSrpcErrorString(srpc_result));
   if (srpc_result == NACL_SRPC_RESULT_OK && is_full_frame)
     return PP_TRUE;
   else
@@ -128,6 +136,8 @@ PP_Var ExecuteScript(PP_Instance instance, PP_Var script, PP_Var* exception) {
           result_bytes.get(),
           &exception_size,
           exception_bytes.get());
+  DebugPrintf("PPB_Instance::ExecuteScript: %s\n",
+              NaClSrpcErrorString(srpc_result));
   if (srpc_result == NACL_SRPC_RESULT_OK) {
     (void) DeserializeTo(
         channel, result_bytes.get(), result_size, 1, &result);
