@@ -25,8 +25,8 @@ namespace {
 // TODO(aa): Needs to be updated to match newest NTP - http://crbug.com/57440
 void NotifySectionDisabled(int new_mode, int old_mode, Profile *profile) {
   // If the oldmode HAD either thumbs or lists visible.
-  bool old_had_it = (old_mode & THUMB) && !(old_mode & MINIMIZED_THUMB);
-  bool new_has_it = (new_mode & THUMB) && !(new_mode & MINIMIZED_THUMB);
+  bool old_had_it = (old_mode & THUMB) && !(old_mode & MENU_THUMB);
+  bool new_has_it = (new_mode & THUMB) && !(new_mode & MENU_THUMB);
 
   if (old_had_it && !new_has_it) {
     UserMetrics::RecordAction(
@@ -106,7 +106,7 @@ void ShownSectionsHandler::RegisterUserPrefs(PrefService* pref_service) {
 #if defined(OS_CHROMEOS)
   // Default to have expanded APPS and all other secions are minimized.
   pref_service->RegisterIntegerPref(prefs::kNTPShownSections,
-                                    APPS | MINIMIZED_THUMB | MINIMIZED_RECENT);
+                                    APPS | MENU_THUMB | MENU_RECENT);
 #else
   pref_service->RegisterIntegerPref(prefs::kNTPShownSections, THUMB);
 #endif
@@ -147,8 +147,8 @@ void ShownSectionsHandler::OnExtensionInstalled(PrefService* prefs,
   if (extension->is_app()) {
     int mode = prefs->GetInteger(prefs::kNTPShownSections);
 
-    // De-minimize the apps section.
-    mode &= ~MINIMIZED_APPS;
+    // De-menu-mode the apps section.
+    mode &= ~MENU_APPS;
 
     // Hide any open sections.
     mode &= ~ALL_SECTIONS_MASK;

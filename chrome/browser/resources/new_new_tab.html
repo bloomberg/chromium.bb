@@ -75,12 +75,15 @@ var Section = {
   APPS: 1 << 6
 };
 
-// These are used to hide sections and are part of the |shownSections| bitmask,
-// but are not sections themselves.
-var MINIMIZED_THUMB = 1 << (0 + 16);
-var MINIMIZED_RECENT = 1 << (2 + 16);
-var MINIMIZED_APPS = 1 << (6 + 16);
+// These are used to put sections into menu mode and are part of the
+// |shownSections| bitmask, but are not sections themselves.
+var MENU_THUMB = 1 << (0 + 16);
+var MENU_RECENT = 1 << (2 + 16);
+var MENU_APPS = 1 << (6 + 16);
 
+// TODO(aa): This state is duplicated. We keep this variable up to date, but we
+// also have the same information in the DOM. We can probably just have the DOM
+// be the truth and translate to and from the bitmask when needed.
 var shownSections = templateData['shown_sections'];
 
 // Until themes can clear the cache, force-reload the theme stylesheet.
@@ -178,8 +181,8 @@ if ('mode' in hashParams) {
 
     <!-- Start this section disabled because it might not have data, and looks
          silly without any. -->
-    <div id="recently-closed" class="section hidden disabled" section="RECENT"
-        noexpand="true">
+    <div id="recently-closed" class="section collapsed disabled"
+        section="RECENT" noexpand="true">
       <h2>
         <div class="back"></div>
         <span i18n-content="recentlyclosed"></span>
@@ -190,7 +193,8 @@ if ('mode' in hashParams) {
 
     <!-- Start disabled until sync is enabled and foreign sessions are
          available. -->
-    <div id="foreign-sessions" class="section hidden disabled" section="SYNC">
+    <div id="foreign-sessions" class="section collapsed disabled"
+        section="SYNC">
       <h2>
         <div class="back"></div>
         <span i18n-content="foreignsessions"></span>
@@ -215,7 +219,6 @@ if ('mode' in hashParams) {
       <img src="ntp/ntp_disclosure_triangle.png">
     </button>
     <button id="most-visited-button"
-            class="disabled"
             menu="#most-visited-menu">
       <span i18n-content="mostvisited"></span>
       <img src="ntp/ntp_disclosure_triangle.png">
@@ -300,40 +303,20 @@ i18nTemplate.process(document, templateData);
 
   initializeLogin();
 
-  initializeSection('apps', MINIMIZED_APPS, Section.APPS);
-  initializeSection('most-visited', MINIMIZED_THUMB, Section.THUMB);
-  initializeSection('recently-closed', MINIMIZED_RECENT);
+  initializeSection('apps', MENU_APPS, Section.APPS);
+  initializeSection('most-visited', MENU_THUMB, Section.THUMB);
+  initializeSection('recently-closed', MENU_RECENT);
 
   updateSimpleSection('apps', Section.APPS);
   updateSimpleSection('most-visited', Section.THUMB);
-  var appsInitiallyVisible = !(shownSections & MINIMIZED_APPS);
-  var mostVisitedInitiallyVisible = !(shownSections & MINIMIZED_THUMB);
-  var recentlyClosedInitiallyVisible = !(shownSections & MINIMIZED_RECENT);
-  // Apps and recently closed start as hidden in the HTML, most visited is
-  // initially visible. Adapt to the change received from the prefs by forcing
-  // all three sections to update.
-  shownSections &= ~MINIMIZED_THUMB;
-  shownSections |= MINIMIZED_APPS | MINIMIZED_RECENT;
-  setSectionVisible('apps', Section.APPS, appsInitiallyVisible, MINIMIZED_APPS);
-  setSectionVisible(
-      'most-visited', Section.THUMB,
-      mostVisitedInitiallyVisible, MINIMIZED_THUMB);
-  setSectionVisible(
-      'recently-closed', undefined,
-      recentlyClosedInitiallyVisible, MINIMIZED_RECENT);
-
-  // This is insane, but we use the CSS class 'disabled' for both 'minimized'
-  // sections and sections that are actually disabled, as in not accessible in
-  // any way.
-  //
-  // The above code syncs up the DOM and shownSection wrt minimized. But we
-  // don't know until we receive the apps data whether the apps section will be
-  // disabled or not. So we need to add the 'disabled' class back to the apps
-  // section here. We remove it later, once we know for sure we want it to be
-  // enabled.
-  //
-  // See also: crbug.com/67273.
-  $('apps').classList.add('disabled');
+  var appsInitiallyMenu = shownSections & MENU_APPS;
+  var mostVisitedInitiallyMenu = shownSections & MENU_THUMB;
+  var recentlyClosedInitiallyMenu = shownSections & MENU_RECENT;
+  setSectionMenuMode('apps', Section.APPS, appsInitiallyMenu, MENU_APPS);
+  setSectionMenuMode('most-visited', Section.THUMB, mostVisitedInitiallyMenu,
+                     MENU_THUMB);
+  setSectionMenuMode('recently-closed', undefined, recentlyClosedInitiallyMenu,
+                     MENU_RECENT);
 
   layoutSections();
 </script>

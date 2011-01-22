@@ -620,7 +620,7 @@ var MostVisited = (function() {
         }
       }
       addClosedMenuFooter(
-          this.menu, 'most-visited', MINIMIZED_THUMB, Section.THUMB);
+          this.menu, 'most-visited', MENU_THUMB, Section.THUMB);
     },
 
     handleClick_: function(e) {

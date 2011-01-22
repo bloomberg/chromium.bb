@@ -21,29 +21,21 @@ function getSectionMenuButtonTextId(sectionId) {
   return sectionId.replace(/-/g, '');
 }
 
-function setSectionVisible(sectionId, section, visible, hideMask) {
-  if (visible && !(shownSections & hideMask) ||
-      !visible && (shownSections & hideMask))
-    return;
-
-  if (visible) {
-    // Because sections are collapsed when they are minimized, it is not
+function setSectionMenuMode(sectionId, section, menuModeEnabled, menuModeMask) {
+  var el = $(sectionId);
+  if (!menuModeEnabled) {
+    // Because sections are collapsed when they are in menu mode, it is not
     // necessary to restore the maxiview here. It will happen if the section
     // header is clicked.
-    var el = $(sectionId);
-    el.classList.remove('disabled');
-    el = getSectionMenuButton(sectionId);
-    el.classList.add('disabled');
-    shownSections &= ~hideMask;
+    // TODO(aa): Sections should maintain their collapse state when minimized.
+    el.classList.remove('menu');
+    shownSections &= ~menuModeMask;
   } else {
     if (section) {
       hideSection(section);  // To hide the maxiview.
     }
-    var el = $(sectionId);
-    el.classList.add('disabled');
-    el = getSectionMenuButton(sectionId);
-    el.classList.remove('disabled');
-    shownSections |= hideMask;
+    el.classList.add('menu');
+    shownSections |= menuModeMask;
   }
   layoutSections();
 }
@@ -85,7 +77,7 @@ function addClosedMenuFooter(menu, sectionId, mask, opt_section) {
       function(e) {
         getSectionMenuButton(sectionId).hideMenu();
         e.preventDefault();
-        setSectionVisible(sectionId, opt_section, true, mask);
+        setSectionMenuMode(sectionId, opt_section, false, mask);
         shownSections &= ~mask;
         saveShownSections();
       });
@@ -97,7 +89,7 @@ function initializeSection(sectionId, mask, opt_section) {
   button.addEventListener(
     'click',
     function() {
-      setSectionVisible(sectionId, opt_section, false, mask);
+      setSectionMenuMode(sectionId, opt_section, true, mask);
       saveShownSections();
     });
 }
@@ -109,19 +101,19 @@ function updateSimpleSection(id, section) {
   if (shownSections & section) {
     // The section is expanded, so the maxiview should be opaque (visible) and
     // the miniview should be hidden.
-    elm.classList.remove('hidden');
+    elm.classList.remove('collapsed');
     if (maxiview) {
-      maxiview.classList.remove('hidden');
+      maxiview.classList.remove('collapsed');
       maxiview.classList.add('opaque');
     }
     if (miniview)
       miniview.classList.remove('opaque');
   } else {
-    // The section is minimized, so the maxiview should be hidden and the
+    // The section is collapsed, so the maxiview should be hidden and the
     // miniview should be opaque.
-    elm.classList.add('hidden');
+    elm.classList.add('collapsed');
     if (maxiview) {
-      maxiview.classList.add('hidden');
+      maxiview.classList.add('collapsed');
       maxiview.classList.remove('opaque');
     }
     if (miniview)
@@ -243,7 +235,7 @@ function renderRecentlyClosed() {
     parentEl.appendChild(createRecentItem(item));
     addRecentMenuItem(recentMenu, item);
   });
-  addClosedMenuFooter(recentMenu, 'recently-closed', MINIMIZED_RECENT);
+  addClosedMenuFooter(recentMenu, 'recently-closed', MENU_RECENT);
 
   layoutRecentlyClosed();
 }
@@ -332,7 +324,7 @@ function SectionLayoutInfo(section) {
   this.header = section.querySelector('h2');
   this.miniview = section.querySelector('.miniview');
   this.maxiview = getSectionMaxiview(section);
-  this.expanded = this.maxiview && !section.classList.contains('hidden');
+  this.expanded = this.maxiview && !section.classList.contains('collapsed');
   this.fixedHeight = this.section.offsetHeight;
   this.scrollingHeight = 0;
 
@@ -342,7 +334,8 @@ function SectionLayoutInfo(section) {
 
 // Get all sections to be layed out.
 SectionLayoutInfo.getAll = function() {
-  var sections = document.querySelectorAll('.section:not(.disabled)');
+  var sections = document.querySelectorAll(
+      '.section:not(.disabled):not(.menu)');
   var result = [];
   for (var i = 0, section; section = sections[i]; i++) {
     result.push(new SectionLayoutInfo(section));
@@ -367,7 +360,7 @@ function updateMiniviewClipping(miniview) {
 
 // Ensure none of the miniviews have any clipped items.
 function updateAllMiniviewClippings() {
-  var miniviews = document.querySelectorAll('.section.hidden .miniview');
+  var miniviews = document.querySelectorAll('.section.collapsed .miniview');
   for (var i = 0, miniview; miniview = miniviews[i]; i++) {
     updateMiniviewClipping(miniview);
   }
@@ -486,7 +479,7 @@ function layoutSections() {
     }
   } else {
     // We only set the document height when a section is expanded. If
-    // all sections are minimized, then get rid of the previous height.
+    // all sections are collapsed, then get rid of the previous height.
     document.body.style.height = '';
   }
 
@@ -518,6 +511,7 @@ function layoutSections() {
   if (cr.isChromeOS)
     $('closed-sections-bar').style.top = y + 'px';
 
+  updateMenuSections();
   updateAttributionDisplay(y);
 }
 
@@ -557,6 +551,24 @@ function getColorStopString(height, color) {
   return color + ' ' + height * 100 + '%';
 }
 
+// Updates the visibility of the menu buttons for each section, based on
+// whether they are currently enabled and in menu mode.
+function updateMenuSections() {
+  var elms = document.getElementsByClassName('section');
+  for (var i = 0, elm; elm = elms[i]; i++) {
+    var button = getSectionMenuButton(elm.id);
+    if (!button)
+      continue;
+
+    if (!elm.classList.contains('disabled') &&
+        elm.classList.contains('menu')) {
+      button.style.display = 'inline-block';
+    } else {
+      button.style.display = 'none';
+    }
+  }
+}
+
 window.addEventListener('resize', handleWindowResize);
 
 var sectionToElementMap;
@@ -585,16 +597,16 @@ function showSection(section) {
     shownSections |= section;
     var el = getSectionElement(section);
     if (el) {
-      el.classList.remove('hidden');
+      el.classList.remove('collapsed');
 
       var maxiview = getSectionMaxiview(el);
       if (maxiview) {
-        maxiview.classList.remove('hiding');
-        maxiview.classList.remove('hidden');
+        maxiview.classList.remove('collapsing');
+        maxiview.classList.remove('collapsed');
         // The opacity won't transition if you toggle the display property
         // at the same time. To get a fade effect, we set the opacity
         // asynchronously from another function, after the display is toggled.
-        //   1) 'hidden' (display: none, opacity: 0)
+        //   1) 'collapsed' (display: none, opacity: 0)
         //   2) none (display: block, opacity: 0)
         //   3) 'opaque' (display: block, opacity: 1)
         setTimeout(function () {
@@ -642,11 +654,11 @@ function hideSection(section) {
 
     var el = getSectionElement(section);
     if (el) {
-      el.classList.add('hidden');
+      el.classList.add('collapsed');
 
       var maxiview = getSectionMaxiview(el);
       if (maxiview) {
-        maxiview.classList.add(isDoneLoading() ? 'hiding' : 'hidden');
+        maxiview.classList.add(isDoneLoading() ? 'collapsing' : 'collapsed');
         maxiview.classList.remove('opaque');
       }
 
@@ -663,9 +675,9 @@ function hideSection(section) {
 }
 
 window.addEventListener('webkitTransitionEnd', function(e) {
-  if (e.target.classList.contains('hiding')) {
-    e.target.classList.add('hidden');
-    e.target.classList.remove('hiding');
+  if (e.target.classList.contains('collapsing')) {
+    e.target.classList.add('collapsed');
+    e.target.classList.remove('collapsing');
   }
 
   if (e.target.classList.contains('maxiview') ||
@@ -686,15 +698,12 @@ function setShownSections(newShownSections) {
     else
       hideSection(Section[key]);
   }
-  setSectionVisible(
-      'apps', Section.APPS,
-      !(newShownSections & MINIMIZED_APPS), MINIMIZED_APPS);
-  setSectionVisible(
-      'most-visited', Section.THUMB,
-      !(newShownSections & MINIMIZED_THUMB), MINIMIZED_THUMB);
-  setSectionVisible(
-      'recently-closed', undefined,
-      !(newShownSections & MINIMIZED_RECENT), MINIMIZED_RECENT);
+  setSectionMenuMode('apps', Section.APPS, newShownSections & MENU_APPS,
+                     MENU_APPS);
+  setSectionMenuMode('most-visited', Section.THUMB,
+                     newShownSections & MENU_THUMB, MENU_THUMB);
+  setSectionMenuMode('recently-closed', undefined,
+                     newShownSections & MENU_RECENT, MENU_RECENT);
   layoutSections();
 }
 
@@ -707,14 +716,14 @@ function layoutRecentlyClosed() {
   updateMiniviewClipping(miniview);
 
   if (miniview.hasChildNodes()) {
-    if (!(shownSections & MINIMIZED_RECENT)) {
-      recentElement.classList.remove('disabled');
-      miniview.classList.add('opaque');
-    }
+    recentElement.classList.remove('disabled');
+    miniview.classList.add('opaque');
   } else {
     recentElement.classList.add('disabled');
     miniview.classList.remove('opaque');
   }
+
+  layoutSections();
 }
 
 /**

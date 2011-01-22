@@ -24,14 +24,14 @@ enum Section {
   THUMB = 1 << 0,
   APPS = 1 << 6,
 
-  // We use the low 16 bits for sections, the high 16 bits for minimized state.
+  // We use the low 16 bits for sections, the high 16 bits for menu mode.
   ALL_SECTIONS_MASK = 0x0000FFFF,
 
-  // If one of these is set, then the corresponding section is shown minimized
+  // If one of these is set, then the corresponding section is shown in a menu
   // at the bottom of the NTP and no data is directly visible on the NTP.
-  MINIMIZED_THUMB = 1 << (0 + 16),
-  MINIMIZED_RECENT = 1 << (2 + 16),
-  MINIMIZED_APPS = 1 << (6 + 16),
+  MENU_THUMB = 1 << (0 + 16),
+  MENU_RECENT = 1 << (2 + 16),
+  MENU_APPS = 1 << (6 + 16),
 };
 
 class ShownSectionsHandler : public DOMMessageHandler,

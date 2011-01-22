@@ -274,6 +274,6 @@ html[dir=rtl] #most-visited-settings {
   right: auto;
 }
 
-#most-visited:not(.hidden) #most-visited-settings.has-blacklist {
+#most-visited:not(.collapsed) #most-visited-settings.has-blacklist {
   visibility: visible;
 }

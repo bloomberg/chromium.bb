@@ -66,12 +66,12 @@ function getAppsCallback(data) {
                                apps.createWebStoreClosedMenuElement());
   }
 
-  if (!data.showLauncher || (shownSections & MINIMIZED_APPS)) {
+  if (!data.showLauncher)
     appsSection.classList.add('disabled');
-  } else {
+  else
     appsSection.classList.remove('disabled');
-  }
-  addClosedMenuFooter(apps.menu, 'apps', MINIMIZED_APPS, Section.APPS);
+
+  addClosedMenuFooter(apps.menu, 'apps', MENU_APPS, Section.APPS);
 
   apps.loaded = true;
   if (apps.showPromo)
@@ -121,7 +121,7 @@ var apps = (function() {
 
   function launchApp(appId) {
     var appsSection = $('apps');
-    var expanded = !appsSection.classList.contains('hidden');
+    var expanded = !appsSection.classList.contains('collapsed');
     var element = document.querySelector(
         (expanded ? '.maxiview' : '.miniview') + ' a[app-id=' + appId + ']');
 

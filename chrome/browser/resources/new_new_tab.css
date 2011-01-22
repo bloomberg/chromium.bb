@@ -335,8 +335,20 @@ html[anim=true][enable-section-animations=true] .section {
   text-align: end;
 }
 
-.section.disabled,
-#closed-sections-bar .disabled {
+/* A section in menu mode doesn't display its contents at all. Instead it is
+rendered as a menu along the bottom of the screen. We have a separate class for
+this so that when a hidden section is unhidden it can go back to its previous
+collapsed state. */
+.section.menu {
+  display: none !important;
+}
+
+/* A disabled section is not rendered in the UI in any way. Examples of this
+state include the 'recently closed' section when we have no data for it, or this
+'sync status' section, when there is no status to display. We have a separate
+class for this so that when a section is enabled, it can go back to its previous
+menu and collapsed state. */
+.section.disabled {
   display: none !important;
 }
 
@@ -369,7 +381,7 @@ html[anim=true] .section > h2 > .disclosure {
   -webkit-transition: -webkit-transform .15s;
 }
 
-.section:not(.hidden) > h2 > .disclosure {
+.section:not(.collapsed) > h2 > .disclosure {
   -webkit-transform: rotate(90deg);
 }
 
@@ -433,6 +445,9 @@ html[dir=rtl] .section-close-button {
 }
 
 #closed-sections-bar > button {
+  /* We hide all these buttons by default and turn them on when needed. */
+  display: none;
+
   -webkit-appearance: none;
   background: none;
   border: 0;
@@ -467,11 +482,11 @@ html[dir=rtl] .section-close-button {
   opacity: 1;
 }
 
-.maxiview.hiding {
+.maxiview.collapsing {
   opacity: 0;
 }
 
-.maxiview.hidden {
+.maxiview.collapsed {
   display: none;
   opacity: 0;
 }
@@ -491,24 +506,24 @@ html[anim=true][enable-section-animations=true] .miniview {
   overflow-x: hidden;
 }
 
-.section.hidden > * {
+.section.collapsed > * {
   display: none;
 }
 
-.section.hidden > h2 {
+.section.collapsed > h2 {
   display: block;
 }
 
-.section.hidden > .miniview {
+.section.collapsed > .miniview {
   display: block;
   opacity: 0;
 }
 
-.section.hidden > .miniview.opaque {
+.section.collapsed > .miniview.opaque {
   opacity: 1;
 }
 
-.section.hidden > h2 {
+.section.collapsed > h2 {
   margin-right: 0;
 }
 
