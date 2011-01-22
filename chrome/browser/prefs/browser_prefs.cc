@@ -86,7 +86,6 @@ void RegisterAllPrefs(PrefService* user_prefs, PrefService* local_state) {
 void RegisterLocalState(PrefService* local_state) {
   // Prefs in Local State
   Browser::RegisterPrefs(local_state);
-  FlagsUI::RegisterPrefs(local_state);
   WebCacheManager::RegisterPrefs(local_state);
   ExternalProtocolHandler::RegisterPrefs(local_state);
   GoogleURLTracker::RegisterPrefs(local_state);
@@ -129,6 +128,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
   ExtensionDOMUI::RegisterUserPrefs(user_prefs);
   ExtensionsUI::RegisterUserPrefs(user_prefs);
+  FlagsUI::RegisterUserPrefs(user_prefs);
   NewTabUI::RegisterUserPrefs(user_prefs);
   PluginsUI::RegisterUserPrefs(user_prefs);
   ProfileImpl::RegisterUserPrefs(user_prefs);

@@ -16,7 +16,7 @@ class FlagsUI : public DOMUI {
   explicit FlagsUI(TabContents* contents);
 
   static RefCountedMemory* GetFaviconResourceBytes();
-  static void RegisterPrefs(PrefService* local_state);
+  static void RegisterUserPrefs(PrefService* prefs);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FlagsUI);
