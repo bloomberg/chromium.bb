@@ -239,11 +239,16 @@ class FindMatchTests(pyauto.PyUITest):
     properties = self.GetBrowserInfo()['properties']
     if properties['branding'] != 'Google Chrome':
       return
+    # Search in pdf file over file://.
     url = self.GetFileURLForPath(os.path.join(
         self.DataDir(), 'plugin', 'Embed.pdf'))
     self.NavigateToURL(url)
     search_count = self.FindInPage('adobe')['match_count']
-    self.assertEqual(8, search_count, 'Failed to find in the pdf file')
+    self.assertEqual(8, search_count, 'Failed to find in the file:// pdf file')
+    # Search in pdf file over http://.
+    self.NavigateToURL('http://www.irs.gov/pub/irs-pdf/fw4.pdf')
+    search_count = self.FindInPage('Allowances')['match_count']
+    self.assertEqual(16, search_count, 'Failed to find in the http:// pdf file')
 
 
 if __name__ == '__main__':

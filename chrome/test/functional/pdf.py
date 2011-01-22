@@ -41,6 +41,9 @@ class PDFTest(pyauto.PyUITest):
     old_dmp_files = glob.glob(os.path.join(breakpad_folder, '*.dmp'))
     pdf_files_path = os.path.join(self.DataDir(), 'pyauto_private', 'pdf')
     pdf_files = glob.glob(os.path.join(pdf_files_path, '*.pdf'))
+    # Add a pdf file over http:// to the list of pdf files.
+    # crbug.com/70454
+    pdf_files += ['http://www.irs.gov/pub/irs-pdf/fw4.pdf']
     for pdf_file in pdf_files:
       # Some pdfs cause known crashes. Exclude them. crbug.com/63549
       if os.path.basename(pdf_file) in ('nullip.pdf', 'sample.pdf'):
