@@ -101,8 +101,6 @@ without changes to the corresponding grd file. etaa -->
         <include name="IDR_NETWORK_MENU_JS" file="resources\network_menu.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_WRENCH_MENU_JS" file="resources\wrench_menu.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_WRENCH_MENU_CSS" file="resources\wrench_menu.css" flattenhtml="true" type="BINDATA" />
-        <!-- manifest file of ChromeVox accessibility extension -->
-        <include name="IDR_CHROMEVOX_MANIFEST" file="resources\access_chromevox\manifest.json" type="BINDATA" />
       </if>
     </includes>
   </release>

@@ -268,12 +268,6 @@ namespace extension_misc {
     PROMO_SEEN,
     PROMO_BUCKET_BOUNDARY
   };
-
-#if defined(OS_CHROMEOS)
-  // The directory path on a ChromeOS device where accessibility extensions are
-  // stored.
-  extern const char* kAccessExtensionPath;
-#endif
 }  // extension_misc
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_
