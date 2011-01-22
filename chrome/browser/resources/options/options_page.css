@@ -226,7 +226,7 @@ html[hide-menu=true] #mainview {
 }
 
 .subpage-sheet {
-  -webkit-box-shadow: #666 0px 3px 5px;
+  -webkit-box-shadow: #666 0px 2px 5px;
   background-color: white;
   border: 1px solid #b8b8b8;
   border-radius: 2px;
@@ -289,7 +289,8 @@ html[hide-menu=true] #mainview {
 }
 
 .page list {
-  min-height: 200px;
+  /* Min height is a multiple of the list item height (32) */
+  min-height: 192px;
 }
 
 section {
@@ -446,6 +447,7 @@ list .close-button {
   /* TODO(stuartmorgan): Replace with real images once they are available. */
   background-image: url("../../../app/theme/close_bar.png");
   border: none;
+  display: block;
   height: 16px;
   opacity: 1;
   width: 16px;
@@ -606,7 +608,7 @@ select {
   font-size: inherit;
   margin: 0;
   overflow: hidden;
-  padding: 2px 20px 2px 12px;
+  padding: 2px 20px 2px 5px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

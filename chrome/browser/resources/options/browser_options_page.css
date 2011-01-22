@@ -4,6 +4,10 @@
   padding: 5px 10px;
 }
 
+#startupPagesShortList {
+  min-height: 0;
+}
+
 .startup-page-list .title {
   width: 40%;
 }
