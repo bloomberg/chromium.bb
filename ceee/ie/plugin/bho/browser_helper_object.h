@@ -38,6 +38,8 @@
 #include "broker_lib.h"  // NOLINT
 #include "toolband.h"  // NOLINT
 
+struct IObjectWithSite;
+
 // Implementation of an IE browser helper object.
 class ATL_NO_VTABLE BrowserHelperObject
     : public CComObjectRootEx<CComSingleThreadModel>,
@@ -464,6 +466,10 @@ class ATL_NO_VTABLE BrowserHelperObject
 
   // Used to dispatch tab events back to Chrome.
   TabEventsFunnel tab_events_funnel_;
+
+  // List of BHOs which could be unregistered from IE and loaded by
+  // CEEE instead.
+  std::vector<base::win::ScopedComPtr<IObjectWithSite> > nested_bho_;
 };
 
 #endif  // CEEE_IE_PLUGIN_BHO_BROWSER_HELPER_OBJECT_H_

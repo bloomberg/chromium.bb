@@ -14,6 +14,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/tuple.h"
 #include "base/utf_string_conversions.h"
@@ -120,6 +121,32 @@ HRESULT BrowserHelperObject::FinalConstruct() {
         "Refused to instantiate the BHO when the visual component is hidden.";
     return E_FAIL;
   }
+
+  const wchar_t* bho_list = NULL;
+  ::LoadString(_pModule->m_hInstResource, IDS_CEEE_NESTED_BHO_LIST,
+               reinterpret_cast<wchar_t*>(&bho_list), 0);
+  if (bho_list == NULL) {
+    LOG(ERROR) << "Failed to load string: " << GetLastError();
+  } else {
+    std::vector<std::wstring> guids;
+    base::SplitString(bho_list, ',', &guids);
+    for (size_t i = 0; i < guids.size(); ++i) {
+      CLSID clsid;
+      base::win::ScopedComPtr<IObjectWithSite> factory;
+      HRESULT hr = ::CLSIDFromString(guids[i].c_str(), &clsid);
+      if (SUCCEEDED(hr)) {
+        hr = factory.CreateInstance(clsid);
+        if (SUCCEEDED(hr)) {
+          nested_bho_.push_back(factory);
+        } else {
+          LOG(ERROR) << "Failed to load " << guids[i] << " " << com::LogWe(hr);
+        }
+      } else {
+        LOG(ERROR) << "Invalid CLSID " << guids[i] << " " << com::LogWe(hr);
+      }
+    }
+  }
+
   return S_OK;
 }
 
@@ -128,6 +155,7 @@ void BrowserHelperObject::FinalRelease() {
   // for unit testing.
   broker_rpc().Disconnect();
   web_browser_.Release();
+  nested_bho_.clear();
 }
 
 void BrowserHelperObject::ReportAddonTimes(const char* name,
@@ -165,7 +193,11 @@ void BrowserHelperObject::ReportSingleAddonTime(const char* name,
 }
 
 STDMETHODIMP BrowserHelperObject::SetSite(IUnknown* site) {
-  typedef IObjectWithSiteImpl<BrowserHelperObject> SuperSite;
+  for (size_t i = 0; i < nested_bho_.size(); ++i) {
+    HRESULT hr = nested_bho_[i]->SetSite(site);
+    LOG_IF(ERROR, FAILED(hr)) << "Failed to set site of nested BHO" <<
+        com::LogWe(hr);
+  }
 
   // From experience, we know the site may be set multiple times.
   // Let's ignore second and subsequent set or unset.
@@ -193,6 +225,7 @@ STDMETHODIMP BrowserHelperObject::SetSite(IUnknown* site) {
     FireOnUnmappedEvent();
   }
 
+  typedef IObjectWithSiteImpl<BrowserHelperObject> SuperSite;
   HRESULT hr = SuperSite::SetSite(site);
   if (FAILED(hr))
     return hr;
