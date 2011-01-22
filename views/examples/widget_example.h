@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@
 #pragma once
 
 #include "views/background.h"
-#include "views/box_layout.h"
 #include "views/controls/button/text_button.h"
 #include "views/examples/example_base.h"
+#include "views/layout/box_layout.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"

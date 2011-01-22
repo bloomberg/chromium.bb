@@ -8,9 +8,9 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "views/box_layout.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
+#include "views/layout/box_layout.h"
 #include "views/standard_layout.h"
 
 // Spacing between the banner frame and its contents.
