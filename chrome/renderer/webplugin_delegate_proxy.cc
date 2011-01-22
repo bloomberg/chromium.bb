@@ -274,7 +274,8 @@ bool WebPluginDelegateProxy::Initialize(
     bool load_manually) {
   IPC::ChannelHandle channel_handle;
   if (!RenderThread::current()->Send(new ViewHostMsg_OpenChannelToPlugin(
-          url, mime_type_, &channel_handle, &info_))) {
+          render_view_->routing_id(), url, mime_type_, &channel_handle,
+          &info_))) {
     return false;
   }
 

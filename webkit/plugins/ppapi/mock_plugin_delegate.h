@@ -99,6 +99,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void DidStartLoading();
   virtual void DidStopLoading();
   virtual void SetContentRestriction(int restrictions);
+  virtual void HasUnsupportedFeature();
 };
 
 }  // namespace ppapi

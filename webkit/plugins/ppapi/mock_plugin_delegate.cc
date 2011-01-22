@@ -199,6 +199,9 @@ void MockPluginDelegate::DidStopLoading() {
 void MockPluginDelegate::SetContentRestriction(int restrictions) {
 }
 
+void MockPluginDelegate::HasUnsupportedFeature() {
+}
+
 }  // namespace ppapi
 }  // namespace webkit
 

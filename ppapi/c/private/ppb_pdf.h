@@ -130,6 +130,9 @@ struct PPB_PDF {
 
   // Notifies the browser that the given action has been performed.
   void (*UserMetricsRecordAction)(PP_Var action);
+
+  // Notifies the browser that the PDF has an unsupported feature.
+  void (*HasUnsupportedFeature)(PP_Instance instance);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_PDF_H_

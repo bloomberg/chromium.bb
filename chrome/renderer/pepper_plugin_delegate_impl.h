@@ -163,6 +163,7 @@ class PepperPluginDelegateImpl
   virtual void DidStartLoading();
   virtual void DidStopLoading();
   virtual void SetContentRestriction(int restrictions);
+  virtual void HasUnsupportedFeature();
 
  private:
   // Pointer to the RenderView that owns us.

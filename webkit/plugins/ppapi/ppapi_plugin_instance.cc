@@ -250,9 +250,8 @@ void ZoomChanged(PP_Instance instance_id, double factor) {
     return;
 
   // We only want to tell the page to change its zoom if the whole page is the
-  // PDF.  If we're in an iframe, then don't do anything.
-  WebFrame* frame = instance->container()->element().document().frame();
-  if (!frame->view()->mainFrame()->document().isPluginDocument())
+  // plugin.  If we're in an iframe, then don't do anything.
+  if (!instance->IsFullPagePlugin())
     return;
 
   double zoom_level = WebView::zoomFactorToZoomLevel(factor);
@@ -1229,6 +1228,11 @@ ObjectVar* PluginInstance::ObjectVarForNPObject(NPObject* np_object) const {
   if (found == np_object_to_object_var_.end())
     return NULL;
   return found->second;
+}
+
+bool PluginInstance::IsFullPagePlugin() const {
+  WebFrame* frame = container()->element().document().frame();
+  return frame->view()->mainFrame()->document().isPluginDocument();
 }
 
 }  // namespace ppapi

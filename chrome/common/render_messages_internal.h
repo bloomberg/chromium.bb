@@ -1393,7 +1393,8 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetPlugins,
 // |actual_mime_type| is the actual mime type supported by the
 // plugin found that match the URL given (one for each item in
 // |info|).
-IPC_SYNC_MESSAGE_CONTROL3_4(ViewHostMsg_GetPluginInfo,
+IPC_SYNC_MESSAGE_CONTROL4_4(ViewHostMsg_GetPluginInfo,
+                            int /* routing_id */,
                             GURL /* url */,
                             GURL /* policy_url */,
                             std::string /* mime_type */,
@@ -1538,7 +1539,8 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_ForwardMessageToExternalHost,
 // create a plugin.  The browser will create the plugin process if
 // necessary, and will return a handle to the channel on success.
 // On error an empty string is returned.
-IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_OpenChannelToPlugin,
+IPC_SYNC_MESSAGE_CONTROL3_2(ViewHostMsg_OpenChannelToPlugin,
+                            int /* routing_id */,
                             GURL /* url */,
                             std::string /* mime_type */,
                             IPC::ChannelHandle /* channel_handle */,
@@ -2586,6 +2588,9 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ScriptEvalResponse,
 // Updates the content restrictions, i.e. to disable print/copy.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateContentRestrictions,
                     int /* restrictions */)
+
+// The currently displayed PDF has an unsupported feature.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_PDFHasUnsupportedFeature)
 
 // Pepper-related messages -----------------------------------------------------
 

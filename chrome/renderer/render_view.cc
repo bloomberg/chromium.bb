@@ -918,8 +918,8 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
   ContentSetting setting;
   std::string mime_type;
   Send(new ViewHostMsg_GetPluginInfo(
-      params.url, frame->top()->url(), params.mimeType.utf8(), &found,
-      &info, &setting, &mime_type));
+      routing_id_, params.url, frame->top()->url(), params.mimeType.utf8(),
+      &found, &info, &setting, &mime_type));
   if (!found || !info.enabled)
     return NULL;
 
@@ -2687,7 +2687,8 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   webkit::npapi::WebPluginInfo info;
   GURL url(params.url);
   std::string actual_mime_type;
-  Send(new ViewHostMsg_GetPluginInfo(url,
+  Send(new ViewHostMsg_GetPluginInfo(routing_id_,
+                                     url,
                                      frame->top()->url(),
                                      params.mimeType.utf8(),
                                      &found,

@@ -143,11 +143,13 @@ class RenderMessageFilter : public BrowserMessageFilter,
 #endif
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
   void OnGetPluginsOnFileThread(bool refresh, IPC::Message* reply_msg);
-  void OnGetPluginInfo(const GURL& url,
+  void OnGetPluginInfo(int routing_id,
+                       const GURL& url,
                        const GURL& policy_url,
                        const std::string& mime_type,
                        IPC::Message* reply_msg);
-  void OnGetPluginInfoOnFileThread(const GURL& url,
+  void OnGetPluginInfoOnFileThread(int render_view_id,
+                                   const GURL& url,
                                    const GURL& policy_url,
                                    const std::string& mime_type,
                                    IPC::Message* reply_msg);
@@ -156,7 +158,8 @@ class RenderMessageFilter : public BrowserMessageFilter,
                        const std::string& actual_mime_type,
                        const GURL& policy_url,
                        IPC::Message* reply_msg);
-  void OnOpenChannelToPlugin(const GURL& url,
+  void OnOpenChannelToPlugin(int routing_id,
+                             const GURL& url,
                              const std::string& mime_type,
                              IPC::Message* reply_msg);
   void OnOpenChannelToPepperPlugin(const FilePath& path,

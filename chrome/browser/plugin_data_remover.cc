@@ -50,7 +50,7 @@ base::WaitableEvent* PluginDataRemover::StartRemoving(
 
   AddRef();
   PluginService::GetInstance()->OpenChannelToPlugin(
-      GURL(), mime_type_, this);
+      0, 0, GURL(), mime_type_, this);
 
   BrowserThread::PostDelayedTask(
       BrowserThread::IO,

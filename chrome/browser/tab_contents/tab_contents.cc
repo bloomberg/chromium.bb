@@ -47,6 +47,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/modal_html_dialog_delegate.h"
 #include "chrome/browser/omnibox_search_hint.h"
+#include "chrome/browser/pdf_unsupported_feature.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_installer_infobar_delegate.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -615,6 +616,10 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentLoadedInFrame,
                         OnDocumentLoadedInFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFinishLoad, OnDidFinishLoad)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateContentRestrictions,
+                        OnUpdateContentRestrictions)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PDFHasUnsupportedFeature,
+                        OnPDFHasUnsupportedFeature)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -1776,6 +1781,15 @@ void TabContents::OnDidFinishLoad(int64 frame_id) {
       NotificationType::FRAME_DID_FINISH_LOAD,
       Source<NavigationController>(&controller_),
       Details<int64>(&frame_id));
+}
+
+void TabContents::OnUpdateContentRestrictions(int restrictions) {
+  content_restrictions_ = restrictions;
+  delegate()->ContentRestrictionsChanged(this);
+}
+
+void TabContents::OnPDFHasUnsupportedFeature() {
+  PDFHasUnsupportedFeature(this);
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is
@@ -3128,11 +3142,6 @@ void TabContents::UpdateZoomLimits(int minimum_percent,
   minimum_zoom_percent_ = minimum_percent;
   maximum_zoom_percent_ = maximum_percent;
   temporary_zoom_settings_ = !remember;
-}
-
-void TabContents::UpdateContentRestrictions(int restrictions) {
-  content_restrictions_ = restrictions;
-  delegate()->ContentRestrictionsChanged(this);
 }
 
 void TabContents::BeforeUnloadFiredFromRenderManager(

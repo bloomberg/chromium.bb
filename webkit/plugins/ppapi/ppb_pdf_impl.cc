@@ -268,6 +268,18 @@ void UserMetricsRecordAction(PP_Var action) {
     webkit_glue::UserMetricsRecordAction(action_str->value());
 }
 
+void HasUnsupportedFeature(PP_Instance instance_id) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return;
+
+  // Only want to show an info bar if the pdf is the whole tab.
+  if (!instance->IsFullPagePlugin())
+    return;
+
+  instance->delegate()->HasUnsupportedFeature();
+}
+
 const PPB_PDF ppb_pdf = {
   &GetLocalizedString,
   &GetResourceImage,
@@ -278,7 +290,8 @@ const PPB_PDF ppb_pdf = {
   &DidStopLoading,
   &SetContentRestriction,
   &HistogramPDFPageCount,
-  &UserMetricsRecordAction
+  &UserMetricsRecordAction,
+  &HasUnsupportedFeature
 };
 
 }  // namespace

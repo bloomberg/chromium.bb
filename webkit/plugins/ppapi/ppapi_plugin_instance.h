@@ -203,6 +203,10 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // NPObject for the given module. See AddNPObjectVar above.
   ObjectVar* ObjectVarForNPObject(NPObject* np_object) const;
 
+  // Returns true iff the plugin is a full-page plugin (i.e. not in an iframe or
+  // embedded in a page).
+  bool IsFullPagePlugin() const;
+
  private:
   bool LoadFindInterface();
   bool LoadPdfInterface();

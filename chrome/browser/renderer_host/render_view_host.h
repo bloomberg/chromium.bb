@@ -684,7 +684,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnInstantSupportDetermined(int32 page_id, bool result);
   void OnDetectedPhishingSite(const GURL& phishing_url, double phishing_score);
   void OnScriptEvalResponse(int id, const ListValue& result);
-  void OnUpdateContentRestrictions(int restrictions);
   void OnPagesReadyForPreview(
       const ViewHostMsg_DidPreviewDocument_Params& params);
 

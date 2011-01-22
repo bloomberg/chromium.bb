@@ -847,8 +847,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DetectedPhishingSite,
                         OnDetectedPhishingSite)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateContentRestrictions,
-                        OnUpdateContentRestrictions)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
 #endif
@@ -1923,10 +1921,6 @@ void RenderViewHost::OnScriptEvalResponse(int id, const ListValue& result) {
       NotificationType::EXECUTE_JAVASCRIPT_RESULT,
       Source<RenderViewHost>(this),
       Details<std::pair<int, Value*> >(&details));
-}
-
-void RenderViewHost::OnUpdateContentRestrictions(int restrictions) {
-  delegate_->UpdateContentRestrictions(restrictions);
 }
 
 #if defined(OS_MACOSX)

@@ -162,6 +162,17 @@ def AddClosedSourceActions(actions):
   actions.add('PDF.ZoomFromBrowser')
   actions.add('PDF.ZoomOutButton')
   actions.add('PDF.ZoomInButton')
+  actions.add('PDF_Unsupported_Rights_Management')
+  actions.add('PDF_Unsupported_XFA')
+  actions.add('PDF_Unsupported_3D')
+  actions.add('PDF_Unsupported_Movie')
+  actions.add('PDF_Unsupported_Sound')
+  actions.add('PDF_Unsupported_Screen')
+  actions.add('PDF_Unsupported_Portfolios')
+  actions.add('PDF_Unsupported_Attachments')
+  actions.add('PDF_Unsupported_Digital_Signatures')
+  actions.add('PDF_Unsupported_Shared_Review')
+  actions.add('PDF_Unsupported_Shared_Form')
 
 def AddAboutFlagsActions(actions):
   """This parses the experimental feature flags for UMA actions.

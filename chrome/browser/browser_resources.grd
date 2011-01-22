@@ -52,6 +52,7 @@ without changes to the corresponding grd file. etaa -->
       <include name="IDR_NOTIFICATION_ICON_HTML" file="resources\notification_icon.html" type="BINDATA" />
       <include name="IDR_OPTIONS_HTML" file="resources\options\options.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_PLUGINS_HTML" file="resources\plugins.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_READER_OUT_OF_DATE_HTML" file="resources\reader_out_of_date.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_PRINT_PREVIEW_HTML" file="resources\print_preview.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SAFE_BROWSING_MALWARE_BLOCK" file="resources\safe_browsing_malware_block.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SAFE_BROWSING_MULTIPLE_THREAT_BLOCK" file="resources\safe_browsing_multiple_threat_block.html" flattenhtml="true" type="BINDATA" />

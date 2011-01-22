@@ -1330,6 +1330,8 @@
         'browser/gpu_process_host.h',
         'browser/gpu_process_host_ui_shim.cc',
         'browser/gpu_process_host_ui_shim.h',
+        'browser/pdf_unsupported_feature.cc',
+        'browser/pdf_unsupported_feature.h',
         'browser/ui/gtk/about_chrome_dialog.cc',
         'browser/ui/gtk/about_chrome_dialog.h',
         'browser/ui/gtk/accelerators_gtk.cc',

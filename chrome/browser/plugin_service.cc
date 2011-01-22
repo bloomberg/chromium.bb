@@ -20,6 +20,7 @@
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -211,6 +212,9 @@ PluginService::PluginService()
 #endif
   registrar_.Add(this, NotificationType::PLUGIN_ENABLE_STATUS_CHANGED,
                  NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::RENDERER_PROCESS_CLOSED,
+                 NotificationService::AllSources());
 }
 
 PluginService::~PluginService() {
@@ -285,6 +289,8 @@ PluginProcessHost* PluginService::FindOrStartPluginProcess(
 }
 
 void PluginService::OpenChannelToPlugin(
+    int render_process_id,
+    int render_view_id,
     const GURL& url,
     const std::string& mime_type,
     PluginProcessHost::Client* client) {
@@ -294,16 +300,19 @@ void PluginService::OpenChannelToPlugin(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &PluginService::GetAllowedPluginForOpenChannelToPlugin,
-          url, mime_type, client));
+          render_process_id, render_view_id, url, mime_type, client));
 }
 
 void PluginService::GetAllowedPluginForOpenChannelToPlugin(
+    int render_process_id,
+    int render_view_id,
     const GURL& url,
     const std::string& mime_type,
     PluginProcessHost::Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   webkit::npapi::WebPluginInfo info;
-  bool found = GetFirstAllowedPluginInfo(url, mime_type, &info, NULL);
+  bool found = GetFirstAllowedPluginInfo(
+      render_process_id, render_view_id, url, mime_type, &info, NULL);
   FilePath plugin_path;
   if (found && info.enabled)
     plugin_path = FilePath(info.path);
@@ -329,6 +338,8 @@ void PluginService::FinishOpenChannelToPlugin(
 }
 
 bool PluginService::GetFirstAllowedPluginInfo(
+    int render_process_id,
+    int render_view_id,
     const GURL& url,
     const std::string& mime_type,
     webkit::npapi::WebPluginInfo* info,
@@ -354,6 +365,18 @@ bool PluginService::GetFirstAllowedPluginInfo(
   }
   return false;
 #else
+  {
+    AutoLock auto_lock(overridden_plugins_lock_);
+    for (size_t i = 0; i < overridden_plugins_.size(); ++i) {
+      if (overridden_plugins_[i].render_process_id == render_process_id &&
+          overridden_plugins_[i].render_view_id == render_view_id &&
+          overridden_plugins_[i].url == url) {
+        *actual_mime_type = mime_type;
+        *info = overridden_plugins_[i].plugin;
+        return true;
+      }
+    }
+  }
   return webkit::npapi::PluginList::Singleton()->GetPluginInfo(
       url, mime_type, allow_wildcard, info, actual_mime_type);
 #endif
@@ -436,6 +459,18 @@ void PluginService::Observe(NotificationType type,
       PurgePluginListCache(false);
       break;
     }
+    case NotificationType::RENDERER_PROCESS_CLOSED: {
+      int render_process_id = Source<RenderProcessHost>(source).ptr()->id();
+
+      AutoLock auto_lock(overridden_plugins_lock_);
+      for (size_t i = 0; i < overridden_plugins_.size(); ++i) {
+        if (overridden_plugins_[i].render_process_id == render_process_id) {
+          overridden_plugins_.erase(overridden_plugins_.begin() + i);
+          break;
+        }
+      }
+      break;
+    }
     default:
       NOTREACHED();
   }
@@ -455,6 +490,11 @@ bool PluginService::PrivatePluginAllowedForURL(const FilePath& plugin_path,
   const GURL& required_url = it->second;
   return (url.scheme() == required_url.scheme() &&
           url.host() == required_url.host());
+}
+
+void PluginService::OverridePluginForTab(OverriddenPlugin plugin) {
+  AutoLock auto_lock(overridden_plugins_lock_);
+  overridden_plugins_.push_back(plugin);
 }
 
 void PluginService::RegisterPepperPlugins() {

@@ -11144,6 +11144,35 @@ Keep your key file in a safe place. You will need it to create new versions of y
       The credentials used to share your printers to  <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> have expired. Please click here to re-enter your username and password.
     </message>
 
+    <!-- PDF with unsupported feature Info Bar -->
+    <message name="IDS_PDF_INFOBAR_QUESTION_READER_INSTALLED" desc="Question asked on the info bar when a user views a PDF with an unsupported feature and they have Adobe Reader installed.">
+      Parts of this PDF document could not be displayed.  View with Adobe Reader?
+    </message>
+
+    <message name="IDS_PDF_INFOBAR_QUESTION_READER_NOT_INSTALLED" desc="Question asked on the info bar when a user views a PDF with an unsupported feature and they don't have Adobe Reader installed.">
+      Parts of this PDF document could not be displayed.  Install Adobe Reader?
+    </message>
+
+    <!-- Adobe Reader is out of date Blocking Page -->
+    <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_TITLE" desc="The title of the Adobe Reader out of date blocking page.">
+      Adobe Reader Out Of Date
+    </message>
+    <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_BODY" desc="The body of the Adobe Reader out of date blocking page.">
+      Adobe Reader is out of date and may be insecure.
+    </message>
+    <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_UPDATE" desc="The name of the radio button option to go to the Adobe Reader installer website.">
+      Update Adobe Reader now
+    </message>
+    <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_PROCEED" desc="The name of the radio button to proceed to open the PDF with the out of date Adobe Reader.">
+      Proceed without updating Adobe Reader (not recommended)
+    </message>
+    <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_OK" desc="OK button text of the Adobe Reader out of date blocking page.">
+      OK
+    </message>
+    <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_CANCEL" desc="Cancel button text of the Adobe Reader out of date blocking page.">
+      Cancel
+    </message>
+
     </messages>
     <includes>
       <if expr="pp_ifdef('_google_chrome')">

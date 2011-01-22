@@ -78,6 +78,7 @@ class PluginGroup {
   // Used by about:plugins to disable Reader plugin when internal PDF viewer is
   // enabled.
   static const char* kAdobeReaderGroupName;
+  static const char* kAdobeReaderUpdateURL;
 
   PluginGroup(const PluginGroup& other);
 
@@ -144,6 +145,8 @@ class PluginGroup {
   // Parse a version string as used by a plug-in. This method is more lenient
   // in accepting weird version strings than Version::GetFromString().
   static Version* CreateVersionFromString(const string16& version_string);
+
+  std::vector<WebPluginInfo> web_plugin_infos() { return web_plugin_infos_; }
 
  private:
   typedef std::map<std::string, PluginGroup*> PluginMap;

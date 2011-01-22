@@ -891,3 +891,8 @@ void PepperPluginDelegateImpl::SetContentRestriction(int restrictions) {
   render_view_->Send(new ViewHostMsg_UpdateContentRestrictions(
       render_view_->routing_id(), restrictions));
 }
+
+void PepperPluginDelegateImpl::HasUnsupportedFeature() {
+  render_view_->Send(new ViewHostMsg_PDFHasUnsupportedFeature(
+      render_view_->routing_id()));
+}

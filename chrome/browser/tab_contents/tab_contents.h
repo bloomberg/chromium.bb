@@ -808,6 +808,8 @@ class TabContents : public PageNavigator,
                                const GURL& target_url);
   void OnDocumentLoadedInFrame(int64 frame_id);
   void OnDidFinishLoad(int64 frame_id);
+  void OnUpdateContentRestrictions(int restrictions);
+  void OnPDFHasUnsupportedFeature();
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
@@ -1033,7 +1035,6 @@ class TabContents : public PageNavigator,
   virtual void UpdateZoomLimits(int minimum_percent,
                                 int maximum_percent,
                                 bool remember);
-  virtual void UpdateContentRestrictions(int restrictions);
 
   // RenderViewHostManager::Delegate -------------------------------------------
 

@@ -648,7 +648,8 @@ void RenderMessageFilter::OnGetPluginsOnFileThread(
       NewRunnableMethod(this, &RenderMessageFilter::Send, reply_msg));
 }
 
-void RenderMessageFilter::OnGetPluginInfo(const GURL& url,
+void RenderMessageFilter::OnGetPluginInfo(int routing_id,
+                                          const GURL& url,
                                           const GURL& policy_url,
                                           const std::string& mime_type,
                                           IPC::Message* reply_msg) {
@@ -658,20 +659,20 @@ void RenderMessageFilter::OnGetPluginInfo(const GURL& url,
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &RenderMessageFilter::OnGetPluginInfoOnFileThread,
-          url, policy_url, mime_type, reply_msg));
+          routing_id, url, policy_url, mime_type, reply_msg));
 }
 
 void RenderMessageFilter::OnGetPluginInfoOnFileThread(
+    int render_view_id,
     const GURL& url,
     const GURL& policy_url,
     const std::string& mime_type,
     IPC::Message* reply_msg) {
   std::string actual_mime_type;
   webkit::npapi::WebPluginInfo info;
-  bool found = plugin_service_->GetFirstAllowedPluginInfo(url,
-                                                          mime_type,
-                                                          &info,
-                                                          &actual_mime_type);
+  bool found = plugin_service_->GetFirstAllowedPluginInfo(
+      render_process_id_, render_view_id, url, mime_type, &info,
+      &actual_mime_type);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
@@ -704,12 +705,12 @@ void RenderMessageFilter::OnGotPluginInfo(
   Send(reply_msg);
 }
 
-void RenderMessageFilter::OnOpenChannelToPlugin(const GURL& url,
+void RenderMessageFilter::OnOpenChannelToPlugin(int routing_id,
+                                                const GURL& url,
                                                 const std::string& mime_type,
                                                 IPC::Message* reply_msg) {
   plugin_service_->OpenChannelToPlugin(
-      url,
-      mime_type,
+      render_process_id_, routing_id, url, mime_type,
       new OpenChannelToPluginCallback(this, reply_msg));
 }
 
