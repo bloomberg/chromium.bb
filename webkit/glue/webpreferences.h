@@ -66,7 +66,6 @@ struct WebPreferences {
   bool frame_flattening_enabled;
   bool allow_universal_access_from_file_urls;
   bool allow_file_access_from_file_urls;
-  bool webaudio_enabled;
   bool experimental_webgl_enabled;
   bool show_composited_layer_borders;
   bool accelerated_compositing_enabled;

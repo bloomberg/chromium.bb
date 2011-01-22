@@ -4009,12 +4009,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ACCELERATED_CANVAS_2D_DESCRIPTION" desc="Description of the 'GPU Accelerated Canvas 2D' lab.">
         Enables higher performance of canvas tags with a 2D context by rendering using Graphics Processor Unit (GPU) hardware.
       </message>
-      <message name="IDS_FLAGS_WEBAUDIO_NAME" desc="Name of the 'Web Audio' lab.">
-        Web Audio
-      </message>
-      <message name="IDS_FLAGS_WEBAUDIO_DESCRIPTION" desc="Description of the 'Web Audio' lab.">
-        Enables the Web Audio API.
-      </message>
       <message name="IDS_FLAGS_WEBGL_NAME" desc="Name of the 'WebGL' lab.">
         WebGL
       </message>

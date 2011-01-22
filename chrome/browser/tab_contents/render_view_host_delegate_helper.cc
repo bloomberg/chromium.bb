@@ -273,8 +273,6 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         !command_line.HasSwitch(switches::kDisableLocalStorage);
     web_prefs.databases_enabled =
         !command_line.HasSwitch(switches::kDisableDatabases);
-    web_prefs.webaudio_enabled =
-        command_line.HasSwitch(switches::kEnableWebAudio);
     web_prefs.experimental_webgl_enabled =
         gpu_enabled() &&
         !command_line.HasSwitch(switches::kDisable3DAPIs) &&
