@@ -684,7 +684,6 @@ window_draw_decorations(struct window *window)
 {
 	cairo_t *cr;
 	cairo_text_extents_t extents;
-	cairo_pattern_t *outline, *bright, *dim;
 	cairo_surface_t *frame;
 	int width, height, shadow_dx = 3, shadow_dy = 3;
 
@@ -692,10 +691,6 @@ window_draw_decorations(struct window *window)
 
 	width = window->allocation.width;
 	height = window->allocation.height;
-
-	outline = cairo_pattern_create_rgb(0.1, 0.1, 0.1);
-	bright = cairo_pattern_create_rgb(0.8, 0.8, 0.8);
-	dim = cairo_pattern_create_rgb(0.4, 0.4, 0.4);
 
 	cr = cairo_create(window->cairo_surface);
 
@@ -721,9 +716,6 @@ window_draw_decorations(struct window *window)
 	cairo_set_font_size(cr, 14);
 	cairo_text_extents(cr, window->title, &extents);
 	cairo_move_to(cr, (width - extents.width) / 2, 32 - extents.y_bearing);
-	cairo_set_line_cap (cr, CAIRO_LINE_CAP_ROUND);
-	cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
-	cairo_set_line_width (cr, 4);
 	if (window->keyboard_device)
 		cairo_set_source_rgb(cr, 0, 0, 0);
 	else
