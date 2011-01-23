@@ -39,14 +39,16 @@ if test x$enable_x11_compositor == xyes; then
 fi
 
 
-AC_ARG_ENABLE(drm-compositor, [  --enable-drm-compositor])
+AC_ARG_ENABLE(drm-compositor, [  --enable-drm-compositor],,
+	      enable_drm_compositor=yes)
 AM_CONDITIONAL(ENABLE_DRM_COMPOSITOR, test x$enable_drm_compositor == xyes)
 if test x$enable_drm_compositor == xyes; then
   AC_DEFINE([BUILD_DRM_COMPOSITOR], [1], [Build the DRM compositor])
 fi
 
 
-AC_ARG_ENABLE(wayland-compositor, [  --enable-wayland-compositor])
+AC_ARG_ENABLE(wayland-compositor, [  --enable-wayland-compositor],,
+	      enable_wayland_compositor=yes)
 AM_CONDITIONAL(ENABLE_WAYLAND_COMPOSITOR,
 	       test x$enable_wayland_compositor == xyes)
 if test x$enable_wayland_compositor == xyes; then
