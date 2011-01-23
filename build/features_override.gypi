@@ -80,6 +80,11 @@
         ],
         'use_accelerated_compositing': 1,
       }],
+      ['OS=="mac"', {
+        'feature_defines': [
+          'ENABLE_WEB_AUDIO=1',
+        ],
+      }],
     ],
     # TODO: If the need arises, create a mechanism that will intelligently
     # merge the lists rather than replace one with the other. This may

@@ -937,10 +937,8 @@ void RenderThread::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableGeolocation(
       !command_line.HasSwitch(switches::kDisableGeolocation));
 
-#ifdef HAS_WEBAUDIO_RUNTIMEFEATURES
   WebRuntimeFeatures::enableWebAudio(
       command_line.HasSwitch(switches::kEnableWebAudio));
-#endif
 
   WebRuntimeFeatures::enableWebGL(
       !command_line.HasSwitch(switches::kDisable3DAPIs) &&
