@@ -113,31 +113,30 @@ bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
   if (!auto_fillable)
     return false;
 
-  buzz::XmlElement autofil_request_xml(buzz::QName("autofillupload"));
+  buzz::XmlElement autofill_request_xml(buzz::QName("autofillupload"));
 
   // Attributes for the <autofillupload> element.
   //
   // TODO(jhawkins): Work with toolbar devs to make a spec for autofill clients.
   // For now these values are hacked from the toolbar code.
-  autofil_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
-                              "6.1.1715.1442/en (GGLL)");
+  autofill_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
+                               "6.1.1715.1442/en (GGLL)");
 
-  autofil_request_xml.SetAttr(buzz::QName(kAttributeFormSignature),
-                              FormSignature());
+  autofill_request_xml.SetAttr(buzz::QName(kAttributeFormSignature),
+                               FormSignature());
 
-  autofil_request_xml.SetAttr(buzz::QName(kAttributeAutoFillUsed),
-                              auto_fill_used ? "true" : "false");
+  autofill_request_xml.SetAttr(buzz::QName(kAttributeAutoFillUsed),
+                               auto_fill_used ? "true" : "false");
 
-  // TODO(jhawkins): Hook this up to the personal data manager.
-  // personaldata_manager_->GetDataPresent();
-  autofil_request_xml.SetAttr(buzz::QName(kAttributeDataPresent), "");
+  autofill_request_xml.SetAttr(buzz::QName(kAttributeDataPresent),
+                               ConvertPresenceBitsToString().c_str());
 
-  if (!EncodeFormRequest(FormStructure::UPLOAD, &autofil_request_xml))
+  if (!EncodeFormRequest(FormStructure::UPLOAD, &autofill_request_xml))
     return false;  // Malformed form, skip it.
 
   // Obtain the XML structure as a string.
   *encoded_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-  *encoded_xml += autofil_request_xml.Str().c_str();
+  *encoded_xml += autofill_request_xml.Str().c_str();
 
   return true;
 }
@@ -151,13 +150,13 @@ bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
   encoded_xml->clear();
   encoded_signatures->clear();
   encoded_signatures->reserve(forms.size());
-  buzz::XmlElement autofil_request_xml(buzz::QName("autofillquery"));
+  buzz::XmlElement autofill_request_xml(buzz::QName("autofillquery"));
   // Attributes for the <autofillquery> element.
   //
   // TODO(jhawkins): Work with toolbar devs to make a spec for autofill clients.
   // For now these values are hacked from the toolbar code.
-  autofil_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
-                              "6.1.1715.1442/en (GGLL)");
+  autofill_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
+                               "6.1.1715.1442/en (GGLL)");
   // Some badly formatted web sites repeat forms - detect that and encode only
   // one form as returned data would be the same for all the repeated forms.
   std::set<std::string> processed_forms;
@@ -177,7 +176,7 @@ bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
                                   encompassing_xml_element.get()))
       continue;  // Malformed form, skip it.
 
-    autofil_request_xml.AddElement(encompassing_xml_element.release());
+    autofill_request_xml.AddElement(encompassing_xml_element.release());
     encoded_signatures->push_back(signature);
   }
 
@@ -186,7 +185,7 @@ bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
 
   // Obtain the XML structure as a string.
   *encoded_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-  *encoded_xml += autofil_request_xml.Str().c_str();
+  *encoded_xml += autofill_request_xml.Str().c_str();
 
   return true;
 }
@@ -413,15 +412,16 @@ bool FormStructure::EncodeFormRequest(
     const AutoFillField* field = fields_[index];
     if (request_type == FormStructure::UPLOAD) {
       FieldTypeSet types = field->possible_types();
-      for (FieldTypeSet::const_iterator type = types.begin();
-           type != types.end(); type++) {
+      DCHECK(!types.empty());
+      for (FieldTypeSet::iterator field_type = types.begin();
+           field_type != types.end(); ++field_type) {
         buzz::XmlElement *field_element = new buzz::XmlElement(
             buzz::QName(kXMLElementField));
 
         field_element->SetAttr(buzz::QName(kAttributeSignature),
                                field->FieldSignature());
         field_element->SetAttr(buzz::QName(kAttributeAutoFillType),
-                               base::IntToString(*type));
+                               base::IntToString(*field_type));
         encompassing_xml_element->AddElement(field_element);
       }
     } else {
@@ -434,3 +434,42 @@ bool FormStructure::EncodeFormRequest(
   }
   return true;
 }
+
+std::string FormStructure::ConvertPresenceBitsToString() const {
+  std::vector<uint8> presence_bitfield;
+  // Determine all of the field types that were autofilled. Pack bits into
+  // |presence_bitfield|. The necessary size for |presence_bitfield| is
+  // ceil((MAX_VALID_FIELD_TYPE + 7) / 8) bytes (uint8).
+  presence_bitfield.resize((MAX_VALID_FIELD_TYPE + 0x7) / 8);
+  for (size_t i = 0; i < presence_bitfield.size(); ++i)
+    presence_bitfield[i] = 0;
+
+  for (size_t i = 0; i < field_count(); ++i) {
+    const AutoFillField* field = fields_[i];
+    FieldTypeSet types = field->possible_types();
+    DCHECK(!types.empty());
+    for (FieldTypeSet::iterator field_type = types.begin();
+         field_type != types.end(); ++field_type) {
+      DCHECK(presence_bitfield.size() > (static_cast<size_t>(*field_type) / 8));
+      // Set bit in the bitfield: byte |field_type| / 8, bit in byte
+      // |field_type| % 8 from the left.
+      presence_bitfield[*field_type / 8] |= (0x80 >> (*field_type % 8));
+    }
+  }
+
+  std::string data_presence;
+  data_presence.reserve(presence_bitfield.size() * 2 + 1);
+
+  // Skip trailing zeroes. If all mask is 0 - return empty string.
+  size_t data_end = presence_bitfield.size();
+  for (; data_end > 0 && !presence_bitfield[data_end - 1]; --data_end) {
+  }
+
+  // Print all meaningfull bytes into the string.
+  for (size_t i = 0; i < data_end; ++i) {
+    base::StringAppendF(&data_presence, "%02x", presence_bitfield[i]);
+  }
+
+  return data_presence;
+}
+
