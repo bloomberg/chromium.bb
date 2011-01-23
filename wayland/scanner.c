@@ -470,13 +470,19 @@ emit_enumerations(struct interface *interface)
 	struct entry *entry;
 
 	wl_list_for_each(e, &interface->enumeration_list, link) {
+		printf("#ifndef WL_%s_%s_ENUM\n",
+		       interface->uppercase_name, e->uppercase_name);
+		printf("#define WL_%s_%s_ENUM\n",
+		       interface->uppercase_name, e->uppercase_name);
 		printf("enum wl_%s_%s {\n", interface->name, e->name);
 		wl_list_for_each(entry, &e->entry_list, link)
 			printf("\tWL_%s_%s_%s = %s,\n",
 			       interface->uppercase_name,
 			       e->uppercase_name,
 			       entry->uppercase_name, entry->value);
-		printf("};\n\n");
+		printf("};\n");
+		printf("#endif /* WL_%s_%s_ENUM */\n\n",
+		       interface->uppercase_name, e->uppercase_name);
 	}
 }
 
