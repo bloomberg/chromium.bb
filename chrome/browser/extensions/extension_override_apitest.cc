@@ -72,7 +72,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideNewtab) {
   // Verify behavior, then unload the first and verify behavior, etc.
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideNewtabIncognito) {
+#if defined(OS_MACOSX)
+// Hangy: http://crbug.com/70511
+#define MAYBE_OverrideNewtabIncognito DISABLED_OverrideNewtabIncognito
+#else
+#define MAYBE_OverrideNewtabIncognito OverrideNewtabIncognito
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, MAYBE_OverrideNewtabIncognito) {
   ASSERT_TRUE(RunExtensionTest("override/newtab")) << message_;
 
   // Navigate an incognito tab to the new tab page.  We should get the actual
