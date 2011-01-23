@@ -36,13 +36,6 @@
     # but that doesn't work as we'd like.
     'msvs_debug_link_incremental%': '2',
 
-    # Enable/disable breakpad in the nacl runtime. Breakpad does lots of
-    # funky behind-the-scenes stuff, so the ability to remove it from the
-    # build is nice.
-    'linux_breakpad%': 0,
-    'win32_breakpad%': 0,
-    'win64_breakpad%': 0,
-
     # Doing this in a sub-dict so that it can be referred to below.
     'variables': {
       # By default we assume that we are building as part of Chrome
@@ -153,16 +146,6 @@
             'msvs_target_platform': 'x64',
           },
         },
-      }],
-      ['win_target=="x64" and <(win64_breakpad)==1', {
-        'defines': [
-          'NACL_BREAKPAD'
-        ],
-      }],
-      ['win_target=="x32" and <(win32_breakpad)==1', {
-        'defines': [
-          'NACL_BREAKPAD'
-        ],
       }],
     ],
     'conditions': [

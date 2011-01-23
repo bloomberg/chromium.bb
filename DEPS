@@ -4,9 +4,7 @@ vars = {
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
   "x86_toolchain_version": "4206",
   "arm_toolchain_version": "4206",
-  "breakpad_rev": "452",
   "chrome_rev": "72090",
-  "nacl_breakpad_gyp_rev": "1806",
   "gyp_rev": "856",
   "gtest_rev": "364",
   "tools_rev": "4058",
@@ -25,13 +23,6 @@ deps = {
   "third_party/binutils":
     (Var("native_client_trunk") + "/src/third_party/binutils@" +
      Var("tools_rev")),
-  "breakpad":
-    Var("native_client_trunk")
-    + "/src/native_client/src/third_party/breakpad@"
-    + Var("nacl_breakpad_gyp_rev"),
-  "breakpad/src":
-    "http://google-breakpad.googlecode.com/svn/trunk/src@" +
-    Var("breakpad_rev"),
   "third_party/gcc":
     Var("native_client_trunk") + "/src/third_party/gcc@" + Var("tools_rev"),
   "third_party/gdb":

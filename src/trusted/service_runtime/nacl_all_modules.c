@@ -11,7 +11,6 @@
 #include "native_client/src/trusted/debug_stub/debug_stub.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/handle_pass/ldr_handle.h"
-#include "native_client/src/trusted/nacl_breakpad/nacl_breakpad.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
@@ -20,9 +19,6 @@
 
 
 void  NaClAllModulesInit(void) {
-#ifdef NACL_BREAKPAD
-  NaClBreakpadInit();
-#endif
 #ifdef NACL_DEBUG_STUB
   NaClDebugStubInit();
 #endif
@@ -47,8 +43,5 @@ void NaClAllModulesFini(void) {
   NaClNrdAllModulesFini();
 #ifdef NACL_DEBUG_STUB
   NaClDebugStubFini();
-#endif
-#ifdef NACL_BREAKPAD
-  NaClBreakpadFini();
 #endif
 }

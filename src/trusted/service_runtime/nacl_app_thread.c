@@ -11,10 +11,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 #include "native_client/src/trusted/service_runtime/nacl_debug.h"
 
-#ifdef NACL_BREAKPAD
-#include "native_client/src/trusted/nacl_breakpad/nacl_breakpad.h"
-#endif
-
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"

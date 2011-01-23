@@ -21,7 +21,6 @@
         '../src/trusted/desc/desc.gyp:*',
         '../src/trusted/gdb_rsp/gdb_rsp.gyp:*',
         '../src/trusted/nacl_base/nacl_base.gyp:*',
-#        '../src/trusted/nacl_breakpad/nacl_breakpad.gyp:*',
         '../src/trusted/nonnacl_util/nonnacl_util.gyp:*',
         '../src/trusted/perf_counter/perf_counter.gyp:*',
         '../src/trusted/platform_qualify/platform_qualify.gyp:*',

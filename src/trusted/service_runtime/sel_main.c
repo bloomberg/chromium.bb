@@ -29,9 +29,6 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
-#ifdef NACL_BREAKPAD
-#include "native_client/src/trusted/nacl_breakpad/nacl_breakpad.h"
-#endif
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
