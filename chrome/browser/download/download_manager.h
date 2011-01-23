@@ -125,6 +125,17 @@ class DownloadManager
   void PauseDownload(int32 download_id, bool pause);
   void RemoveDownload(int64 download_handle);
 
+  // Determine if the download is ready for completion, i.e. has had
+  // all data received, and completed the filename determination and
+  // history insertion.
+  bool IsDownloadReadyForCompletion(DownloadItem* download);
+
+  // If all pre-requisites have been met, complete download processing, i.e.
+  // do internal cleanup, file rename, and potentially auto-open.
+  // (Dangerous downloads still may block on user acceptance after this
+  // point.)
+  void MaybeCompleteDownload(DownloadItem* download);
+
   // Called when the download is renamed to its final name.
   void DownloadRenamedToFinalName(int download_id, const FilePath& full_path);
 
@@ -368,14 +379,6 @@ class DownloadManager
   // The user's last choice for download directory. This is only used when the
   // user wants us to prompt for a save location for each download.
   FilePath last_download_path_;
-
-  // Keep track of downloads that are completed before the user selects the
-  // destination, so that observers are appropriately notified of completion
-  // after this determination is made.
-  // The map is of download_id->remaining size (bytes), both of which are
-  // required when calling OnAllDataSaved.
-  typedef std::map<int32, int64> PendingFinishedMap;
-  PendingFinishedMap pending_finished_downloads_;
 
   // The "Save As" dialog box used to ask the user where a file should be
   // saved.

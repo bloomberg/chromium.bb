@@ -40,8 +40,19 @@ class DownloadItem {
  public:
   enum DownloadState {
     IN_PROGRESS,
+
+    // Note that COMPLETE indicates that the download has gotten all of its
+    // data, has figured out its final destination file, has been entered
+    // into the history store, and has been shown in the UI.  The only
+    // operations remaining are acceptance by the user of
+    // a dangerous download (if dangerous), renaming the file
+    // to the final name, and auto-opening it (if it auto-opens).
     COMPLETE,
+
     CANCELLED,
+
+    // This state indicates that the download item is about to be destroyed,
+    // and observers seeing this state should release all references.
     REMOVING
   };
 
@@ -128,8 +139,12 @@ class DownloadItem {
   // when resuming a download (assuming the server supports byte ranges).
   void Cancel(bool update_history);
 
-  // Called when all data has been saved.
+  // Called when all data has been saved.  Only has display effects.
   void OnAllDataSaved(int64 size);
+
+  // Called when ready to consider the data received and move on to the
+  // next stage.
+  void MarkAsComplete();
 
   // Called when the entire download operation (including renaming etc)
   // is finished.
@@ -151,6 +166,9 @@ class DownloadItem {
   // Rough percent complete, -1 means we don't know (since we didn't receive a
   // total size).
   int PercentComplete() const;
+
+  // Whether or not this download has saved all of its data.
+  bool all_data_saved() const { return all_data_saved_; }
 
   // Update the fields that may have changed in DownloadCreateInfo as a
   // result of analyzing the file and figuring out its type, location, etc.
@@ -339,6 +357,9 @@ class DownloadItem {
 
   // True if the item was downloaded temporarily.
   bool is_temporary_;
+
+  // True if we've saved all the data for the download.
+  bool all_data_saved_;
 
   // Did the user open the item either directly or indirectly (such as by
   // setting always open files of this type)? The shelf also sets this field

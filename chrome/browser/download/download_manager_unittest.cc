@@ -157,28 +157,29 @@ const struct {
   bool will_delete_crdownload;
   int expected_rename_count;
 } kDownloadRenameCases[] = {
-  // Safe download, download finishes BEFORE rename.
-  // Needs to be renamed only once.  Crdownload file needs to be deleted.
+  // Safe download, download finishes BEFORE file name determined.
+  // Renamed twice (linear path through UI).  Crdownload file does not need
+  // to be deleted.
   { FILE_PATH_LITERAL("foo.zip"),
     false,
     true,
-    true,
-    1, },
-  // Dangerous download, download finishes BEFORE rename.
+    false,
+    2, },
+  // Dangerous download, download finishes BEFORE file name determined.
   // Needs to be renamed only once.
   { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
     true,
     true,
     false,
     1, },
-  // Safe download, download finishes AFTER rename.
+  // Safe download, download finishes AFTER file name determined.
   // Needs to be renamed twice.
   { FILE_PATH_LITERAL("foo.zip"),
     false,
     false,
     false,
     2, },
-  // Dangerous download, download finishes AFTER rename.
+  // Dangerous download, download finishes AFTER file name determined.
   // Needs to be renamed only once.
   { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
     true,

@@ -27,6 +27,23 @@
 #include "chrome/common/pref_names.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// A DownloadItem normally goes through the following states:
+//      * Created (when download starts)
+//      * Made visible to consumers (e.g. Javascript) after the
+//        destination file has been determined.
+//      * Entered into the history database.
+//      * Made visible in the download shelf.
+//      * All data is received.  Note that the actual data download occurs
+//        in parallel with the above steps, but until those steps are
+//        complete, completion of the data download will be ignored.
+//      * Download file is renamed to its final name, and possibly
+//        auto-opened.
+// TODO(rdsmith): This progress should be reflected in
+// DownloadItem::DownloadState and a state transition table/state diagram.
+//
+// TODO(rdsmith): This description should be updated to reflect the cancel
+// pathways.
+
 namespace {
 
 // Update frequency (milliseconds).
@@ -102,9 +119,12 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_extension_install_(info.is_extension_install),
       name_finalized_(false),
       is_temporary_(false),
+      all_data_saved_(false),
       opened_(false) {
   if (state_ == IN_PROGRESS)
     state_ = CANCELLED;
+  if (state_ == COMPLETE)
+    all_data_saved_ = true;
   Init(false /* don't start progress timer */);
 }
 
@@ -139,6 +159,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_extension_install_(info.is_extension_install),
       name_finalized_(false),
       is_temporary_(!info.save_info.file_path.empty()),
+      all_data_saved_(false),
       opened_(false) {
   Init(true /* start progress timer */);
 }
@@ -174,6 +195,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_extension_install_(false),
       name_finalized_(false),
       is_temporary_(false),
+      all_data_saved_(false),
       opened_(false) {
   Init(true /* start progress timer */);
 }
@@ -299,8 +321,14 @@ void DownloadItem::Cancel(bool update_history) {
     download_manager_->DownloadCancelled(id_);
 }
 
-void DownloadItem::OnAllDataSaved(int64 size) {
+void DownloadItem::MarkAsComplete() {
+  DCHECK(all_data_saved_);
   state_ = COMPLETE;
+}
+
+void DownloadItem::OnAllDataSaved(int64 size) {
+  DCHECK(!all_data_saved_);
+  all_data_saved_ = true;
   UpdateSize(size);
   StopProgressTimer();
 }
@@ -324,7 +352,7 @@ void DownloadItem::Finished() {
     auto_opened_ = true;
   }
 
-  // Notify our observers that we are complete (the call to OnAllDataSaved()
+  // Notify our observers that we are complete (the call to MarkAsComplete()
   // set the state to complete but did not notify).
   UpdateObservers();
 
