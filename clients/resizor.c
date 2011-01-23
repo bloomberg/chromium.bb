@@ -152,7 +152,6 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 static void
 show_menu(struct resizor *resizor, struct input *input)
 {
-	cairo_surface_t *surface;
 	int32_t x, y, width = 200, height = 200;
 
 	input_get_position(input, &x, &y);
