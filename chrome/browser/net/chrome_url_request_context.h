@@ -79,9 +79,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   bool is_off_the_record() const {
     return is_off_the_record_;
   }
-  bool is_media() const {
-    return is_media_;
-  }
 
   virtual const std::string& GetUserAgent(const GURL& url) const;
 
@@ -141,9 +138,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   void set_is_off_the_record(bool is_off_the_record) {
     is_off_the_record_ = is_off_the_record;
   }
-  void set_is_media(bool is_media) {
-    is_media_ = is_media;
-  }
   void set_host_content_settings_map(
       HostContentSettingsMap* host_content_settings_map) {
     host_content_settings_map_ = host_content_settings_map;
@@ -195,7 +189,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_refptr<PrerenderManager> prerender_manager_;
 
-  bool is_media_;
   bool is_off_the_record_;
 
  private:

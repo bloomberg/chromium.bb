@@ -450,7 +450,6 @@ class FactoryForMedia : public ChromeURLRequestContextFactory {
                 profile->GetRequestContext())),
         disk_cache_path_(disk_cache_path),
         cache_size_(cache_size) {
-    is_media_ = true;
     is_off_the_record_ = off_the_record;
   }
 
@@ -767,8 +766,7 @@ void ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper(
 // ----------------------------------------------------------------------------
 
 ChromeURLRequestContext::ChromeURLRequestContext()
-    : is_media_(false),
-      is_off_the_record_(false) {
+    : is_off_the_record_(false) {
   CheckCurrentlyOnIOThread();
 }
 
@@ -843,8 +841,7 @@ void ChromeURLRequestContext::OnDefaultCharsetChange(
 // ChromeURLRequestContext on the IO thread (see
 // ApplyProfileParametersToContext() which reverses this).
 ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
-    : is_media_(false),
-      is_off_the_record_(profile->IsOffTheRecord()),
+    : is_off_the_record_(profile->IsOffTheRecord()),
       io_thread_(g_browser_process->io_thread()) {
   CheckCurrentlyOnMainThread();
   PrefService* prefs = profile->GetPrefs();
@@ -897,7 +894,6 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
     ChromeURLRequestContext* context) {
   // Apply all the parameters. NOTE: keep this in sync with
   // ChromeURLRequestContextFactory(Profile*).
-  context->set_is_media(is_media_);
   context->set_is_off_the_record(is_off_the_record_);
   context->set_accept_language(accept_language_);
   context->set_accept_charset(accept_charset_);
