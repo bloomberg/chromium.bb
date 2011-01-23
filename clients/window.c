@@ -1641,6 +1641,7 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 		exit(EXIT_FAILURE);
 	}
 
+        g_option_context_free(context);
 
 	d = malloc(sizeof *d);
 	if (d == NULL)
