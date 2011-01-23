@@ -1647,6 +1647,8 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	if (d == NULL)
 		return NULL;
 
+        memset(d, 0, sizeof *d);
+
 	d->display = wl_display_connect(NULL);
 	if (d->display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
