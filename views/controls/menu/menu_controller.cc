@@ -745,7 +745,7 @@ void MenuController::SetSelection(MenuItemView* menu_item,
   if (menu_item && menu_item->GetDelegate())
     menu_item->GetDelegate()->SelectionChanged(menu_item);
 
-  CHECK(menu_item || (selection_types & SELECTION_EXIT) != 0);
+  DCHECK(menu_item || (selection_types & SELECTION_EXIT) != 0);
 
   pending_state_.item = menu_item;
   pending_state_.submenu_open = (selection_types & SELECTION_OPEN_SUBMENU) != 0;
@@ -1668,7 +1668,7 @@ void MenuController::RepostEvent(SubmenuView* source,
     // We some times get an event after closing all the menus. Ignore it.
     // Make sure the menu is in fact not visible. If the menu is visible, then
     // we're in a bad state where we think the menu isn't visibile but it is.
-    CHECK(!source->GetWidget()->IsVisible());
+    DCHECK(!source->GetWidget()->IsVisible());
     return;
   }
 
