@@ -5,6 +5,7 @@
 <title i18n-content="title"></title>
 <link rel="icon" href="../../app/theme/history_favicon.png">
 <script src="shared/js/local_strings.js"></script>
+<script src="shared/js/util.js"></script>
 <script>
 ///////////////////////////////////////////////////////////////////////////////
 // Globals:
@@ -162,6 +163,7 @@ Page.prototype.getTitleDOM_ = function() {
   node.className = 'title';
   var link = document.createElement('a');
   link.href = this.url_;
+
   link.style.backgroundImage =
       'url(chrome://favicon/' + encodeURIForCSS(this.url_) + ')';
   link.id = "id-" + this.id_;

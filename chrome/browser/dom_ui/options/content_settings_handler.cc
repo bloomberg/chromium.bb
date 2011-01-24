@@ -597,9 +597,6 @@ void ContentSettingsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("checkExceptionPatternValidity",
       NewCallback(this,
                   &ContentSettingsHandler::CheckExceptionPatternValidity));
-  dom_ui_->RegisterMessageCallback(
-      "openPluginsTab",
-      NewCallback(this, &ContentSettingsHandler::OpenPluginsTab));
 }
 
 void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
@@ -743,10 +740,6 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
                                                        *mode_value.get(),
                                                        *pattern_value.get(),
                                                        *valid_value.get());
-}
-
-void ContentSettingsHandler::OpenPluginsTab(const ListValue* args) {
-  BrowserList::GetLastActive()->OpenPluginsTabAndActivate();
 }
 
 // static

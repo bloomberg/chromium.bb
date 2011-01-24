@@ -663,9 +663,3 @@ html[os=mac] label > input[type=radio] {
 .suboption {
   -webkit-margin-start: 16px;
 }
-
-.link {
-  margin: 10px 0;
-  position: relative;
-  top: 4px;
-}

@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/dom_ui/generic_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -45,6 +46,8 @@ DOMUI::DOMUI(TabContents* contents)
       link_transition_type_(PageTransition::LINK),
       bindings_(BindingsPolicy::DOM_UI),
       tab_contents_(contents) {
+  GenericHandler* handler = new GenericHandler();
+  AddMessageHandler(handler->Attach(this));
 }
 
 DOMUI::~DOMUI() {

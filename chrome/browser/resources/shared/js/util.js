@@ -70,4 +70,31 @@ function parseQueryParams(location) {
     params[pair[0]] = pair[1];
   }
   return params;
- }
+}
+
+/*
+ * Handles a click or mouseup on a link. If the link points to a chrome: or
+ * file: url, then call into the browser to do the navigation.
+ * @return {Object} e The click or mouseup event.
+ */
+function handleLinkClickOrMouseUp(e) {
+  var el = e.target;
+  if (el.nodeType == Node.ELEMENT_NODE &&
+      el.webkitMatchesSelector('A, A *')) {
+    while (el.tagName != 'A') {
+      el = el.parentElement;
+    }
+
+    if ((el.protocol == 'file:' || el.protocol == 'about:') &&
+        ((e.button == 0 && e.type == 'click') ||
+        (e.button == 1 && e.type == 'mouseup'))) {
+      chrome.send('navigateToUrl',
+          [el.href, String(e.button), String(e.ctrlKey), String(e.shiftKey),
+           String(e.altKey)]);
+      e.preventDefault();
+    }
+  }
+}
+
+document.addEventListener('click', handleLinkClickOrMouseUp, true);
+document.addEventListener('mouseup', handleLinkClickOrMouseUp, true);

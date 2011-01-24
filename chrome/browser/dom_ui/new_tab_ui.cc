@@ -159,7 +159,6 @@ void RecentlyClosedTabsHandler::TabRestoreServiceDestroyed(
   tab_restore_service_ = NULL;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // MetricsHandler
 

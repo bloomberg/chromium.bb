@@ -50,11 +50,6 @@ cr.define('options', function() {
         OptionsPage.showPageByName('cookiesView');
       };
 
-      $('plugins-tab').onclick = function(event) {
-        chrome.send('openPluginsTab');
-        return false;
-      };
-
       if (!templateData.enable_click_to_play)
         $('click_to_play').style.display = 'none';
     },

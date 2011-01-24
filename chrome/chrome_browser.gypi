@@ -888,6 +888,8 @@
         'browser/dom_ui/flags_ui.h',
         'browser/dom_ui/foreign_session_handler.cc',
         'browser/dom_ui/foreign_session_handler.h',
+        'browser/dom_ui/generic_handler.cc',
+        'browser/dom_ui/generic_handler.h',
         'browser/dom_ui/gpu_internals_ui.cc',
         'browser/dom_ui/gpu_internals_ui.h',
         'browser/dom_ui/history_ui.cc',
