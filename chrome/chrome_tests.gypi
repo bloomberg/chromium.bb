@@ -199,6 +199,11 @@
         'test/ui/ui_test_suite.h',
       ],
       'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            'chrome.gyp:crash_service',  # run time dependency
+          ],
+        }],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
@@ -407,7 +412,6 @@
           'dependencies': [
             '../app/app.gyp:app_resources',
             'chrome.gyp:chrome_dll_version',
-            'chrome.gyp:crash_service',  # run time dependency
             'chrome.gyp:installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
@@ -595,7 +599,6 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
-            'crash_service',  # run time dependency
             'security_tests',  # run time dependency
             'test_support_common',
             '../google_update/google_update.gyp:google_update',
@@ -740,7 +743,6 @@
             'third_party/wtl/include',
           ],
           'dependencies': [
-            'crash_service',  # run time dependency
             'test_support_common',
             '../google_update/google_update.gyp:google_update',
             '../views/views.gyp:views',
@@ -860,7 +862,6 @@
         ['OS=="win"', {
           'dependencies': [
             'chrome_nacl_win64',
-            'crash_service',  # run time dependency
             'nacl_security_tests', # run time dependency
             'nacl_security_tests64', # run time dependency
             'test_support_common',
@@ -928,7 +929,6 @@
         ['OS=="win"', {
           'dependencies': [
             'chrome_nacl_win64',
-            'crash_service',  # run time dependency
             'security_tests',  # run time dependency
             'test_support_common',
             '../google_update/google_update.gyp:google_update',
