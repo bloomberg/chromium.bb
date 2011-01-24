@@ -284,13 +284,15 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 
 // Tests that debugger works correctly if pause event occurs when DevTools
 // frontend is being loaded.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenLoadingDevTools) {
+// Disabled in http://crbug.com/70639
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseWhenLoadingDevTools) {
   RunTest("testPauseWhenLoadingDevTools", kPauseWhenLoadingDevTools);
 }
 
 // Tests that pressing 'Pause' will pause script execution if the script
 // is already running.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenScriptIsRunning) {
+// Disabled in http://crbug.com/70639
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
 }
 
