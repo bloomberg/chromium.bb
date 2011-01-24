@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -20,8 +20,10 @@
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -45,6 +47,7 @@ enum {
 // Tracks if we have tried and succeeded sending the ping. This helps us
 // decide if we need to refresh the some cached strings.
 volatile int access_values_state = ACCESS_VALUES_STALE;
+base::Lock rlz_lock;
 
 bool SendFinancialPing(const std::wstring& brand, const std::wstring& lang,
                        const std::wstring& referral, bool exclude_id) {
@@ -147,6 +150,7 @@ class DailyPingTask : public Task {
     std::wstring referral;
     GoogleUpdateSettings::GetReferral(&referral);
     if (SendFinancialPing(brand, lang, referral, is_organic(brand))) {
+      base::AutoLock lock(rlz_lock);
       access_values_state = ACCESS_VALUES_STALE;
       GoogleUpdateSettings::ClearReferral();
     }
@@ -168,9 +172,6 @@ class DelayedInitTask : public Task {
   virtual ~DelayedInitTask() {
   }
   virtual void Run() {
-    // Needs to be evaluated. See http://crbug.com/62328.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-
     // For non-interactive tests we don't do the rest of the initialization
     // because sometimes the very act of loading the dll causes QEMU to crash.
     if (::GetEnvironmentVariableW(ASCIIToWide(env_vars::kHeadless).c_str(),
@@ -212,9 +213,7 @@ class DelayedInitTask : public Task {
                                      rlz_lib::FIRST_SEARCH);
     }
     // Schedule the daily RLZ ping.
-    base::Thread* thread = g_browser_process->file_thread();
-    if (thread)
-      thread->message_loop()->PostTask(FROM_HERE, new DailyPingTask());
+    MessageLoop::current()->PostTask(FROM_HERE, new DailyPingTask());
   }
 
  private:
@@ -258,8 +257,8 @@ bool RLZTracker::InitRlzDelayed(bool first_run, int delay) {
     new OmniBoxUsageObserver();
 
   // Schedule the delayed init items.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      new DelayedInitTask(first_run), delay);
+  BrowserThread::PostDelayedTask(
+      BrowserThread::FILE, FROM_HERE, new DelayedInitTask(first_run), delay);
   return true;
 }
 
@@ -280,18 +279,40 @@ bool RLZTracker::ClearAllProductEvents(rlz_lib::Product product) {
 bool RLZTracker::GetAccessPointRlz(rlz_lib::AccessPoint point,
                                    std::wstring* rlz) {
   static std::wstring cached_ommibox_rlz;
-  if ((rlz_lib::CHROME_OMNIBOX == point) &&
-      (access_values_state == ACCESS_VALUES_FRESH)) {
-    *rlz = cached_ommibox_rlz;
-    return true;
+  if (rlz_lib::CHROME_OMNIBOX == point) {
+    base::AutoLock lock(rlz_lock);
+    if (access_values_state == ACCESS_VALUES_FRESH) {
+      *rlz = cached_ommibox_rlz;
+      return true;
+    }
   }
+
+  // Make sure we don't access disk outside of the file context.
+  // In such case we repost the task on the right thread and return error.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    // Caching of access points is now only implemented for the CHROME_OMNIBOX.
+    // Thus it is not possible to call this function on another thread for
+    // other access points until proper caching for these has been implemented
+    // and the code that calls this function can handle synchronous fetching
+    // of the access point.
+    DCHECK_EQ(rlz_lib::CHROME_OMNIBOX, point);
+
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableFunction(&RLZTracker::GetAccessPointRlz,
+                            point, &cached_ommibox_rlz));
+      rlz->erase();
+      return false;
+  }
+
   char str_rlz[kMaxRlzLength + 1];
   if (!rlz_lib::GetAccessPointRlz(point, str_rlz, rlz_lib::kMaxRlzLength, NULL))
     return false;
   *rlz = ASCIIToWide(std::string(str_rlz));
   if (rlz_lib::CHROME_OMNIBOX == point) {
-    access_values_state = ACCESS_VALUES_FRESH;
+    base::AutoLock lock(rlz_lock);
     cached_ommibox_rlz.assign(*rlz);
+    access_values_state = ACCESS_VALUES_FRESH;
   }
   return true;
 }
