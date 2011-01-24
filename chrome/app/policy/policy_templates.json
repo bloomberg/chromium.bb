@@ -617,8 +617,7 @@
       'features': {'dynamic_refresh': 1},
       'example_value': True,
       'caption': '''Show Home button on toolbar''',
-      'desc': '''Shows the Home button on <ph name="PRODUCT_NAME">$1<ex>Google
-      Chrome</ex></ph>'s toolbar.
+      'desc': '''Shows the Home button on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s toolbar.
 
       If you enable this setting, the Home button is always shown.
 
