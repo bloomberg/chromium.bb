@@ -204,6 +204,11 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     AddString(dict, "confirmLabel", IDS_SYNC_CONFIRM_PASSPHRASE_LABEL);
     AddString(dict, "emptyErrorMessage", IDS_SYNC_EMPTY_PASSPHRASE_ERROR);
     AddString(dict, "mismatchErrorMessage", IDS_SYNC_PASSPHRASE_MISMATCH_ERROR);
+
+    AddString(dict, "learnmore", IDS_LEARN_MORE);
+    dict->SetString("encryptionhelpurl",
+                    GetLocalizedUrl(kEncryptionHelpUrl));
+
     AddString(dict, "ok", IDS_OK);
     AddString(dict, "cancel", IDS_CANCEL);
   } else if (path_raw == kSyncSettingUpPath) {

@@ -39,6 +39,11 @@ form {
   margin: 5px;
   padding: 10px;
 }
+
+#learn-more-link {
+  float: right;
+}
+
 html[dir='rtl'] .sync-footer {
   text-align: left;
   left: 0px;
@@ -57,15 +62,6 @@ html[os='mac'] input[type='submit'] {
 
 #passphrase {
   margin-top: 5px;
-}
-
-#passphraseLabel,
-#confirmPassphraseLabel {
-  width: 145px;
-  float: left;
-  text-align: right;
-  margin-right: 4px;
-  padding-top: 3px;
 }
 
 </style>
@@ -127,8 +123,7 @@ html[os='mac'] input[type='submit'] {
       emptyError.style.display = "block";
       return false;
     }
-    if (f.confirmpassphrase.value.length > 0 &&
-        f.confirmpassphrase.value != f.passphrase.value) {
+    if (f.confirmpassphrase.value != f.passphrase.value) {
       mismatchError.style.display = "block";
       return false;
     }
@@ -159,6 +154,10 @@ html[os='mac'] input[type='submit'] {
   </div>
   <div>
     <input name="option" type="radio" value="explicit" onchange="onRadioChange();">
+    <div id="learn-more-link">
+      <a i18n-values="href:encryptionhelpurl" target="_blank"
+         i18n-content="learnmore"></a>
+    </div>
     <span i18n-content="explicitOption"></span>
     </input>
   </div>
@@ -176,16 +175,13 @@ html[os='mac'] input[type='submit'] {
     <div>
       <div i18n-content="passphraseLabel" id="passphraseLabel"></div>
       <input id="passphrase" name="passphrase" label="passphraseLabel"
-             type="password" onkeyup="checkPassphraseMatch();"
-             onchange="checkPassphraseMatch();"/>
+             type="password"/>
     </div>
     <div>
       <div i18n-content="confirmLabel" id="confirmPassphraseLabel">
       </div>
       <input id="confirmpassphrase" name="confirmpassphrase" type="password"
-             label="confirmPassphraseLabel"
-             onkeyup="checkPassphraseMatch();"
-             onchange="checkPassphraseMatch();" />
+             label="confirmPassphraseLabel" />
     </div>
     <div class="error" style="display:none"
          id="emptyerror" i18n-content="emptyErrorMessage"></div>
