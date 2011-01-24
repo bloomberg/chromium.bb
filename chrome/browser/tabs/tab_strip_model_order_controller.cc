@@ -64,7 +64,7 @@ int TabStripModelOrderController::DetermineInsertionIndexForAppending() {
 }
 
 int TabStripModelOrderController::DetermineNewSelectedIndex(
-    int removing_index, volatile int* reason) const {
+    int removing_index) const {
   int tab_count = tabstrip_->count();
   DCHECK(removing_index >= 0 && removing_index < tab_count);
   NavigationController* parent_opener =
@@ -75,43 +75,34 @@ int TabStripModelOrderController::DetermineNewSelectedIndex(
   NavigationController* removed_controller =
       &tabstrip_->GetTabContentsAt(removing_index)->controller();
   // The parent opener should never be the same as the controller being removed.
-  CHECK(parent_opener != removed_controller);
+  DCHECK(parent_opener != removed_controller);
   int index = tabstrip_->GetIndexOfNextTabContentsOpenedBy(removed_controller,
                                                            removing_index,
                                                            false);
-  if (index != TabStripModel::kNoTab) {
-    *reason = 1;
+  if (index != TabStripModel::kNoTab)
     return GetValidIndex(index, removing_index);
-  }
 
   if (parent_opener) {
     // If the tab was in a group, shift selection to the next tab in the group.
     int index = tabstrip_->GetIndexOfNextTabContentsOpenedBy(parent_opener,
                                                              removing_index,
                                                              false);
-    if (index != TabStripModel::kNoTab) {
-      *reason = 2;
+    if (index != TabStripModel::kNoTab)
       return GetValidIndex(index, removing_index);
-    }
 
     // If we can't find a subsequent group member, just fall back to the
     // parent_opener itself. Note that we use "group" here since opener is
     // reset by select operations..
     index = tabstrip_->GetIndexOfController(parent_opener);
-    if (index != TabStripModel::kNoTab) {
-      *reason = 3;
+    if (index != TabStripModel::kNoTab)
       return GetValidIndex(index, removing_index);
-    }
   }
 
   // No opener set, fall through to the default handler...
   int selected_index = tabstrip_->selected_index();
-  if (selected_index >= (tab_count - 1)) {
-    *reason = 4;
+  if (selected_index >= (tab_count - 1))
     return selected_index - 1;
-  }
 
-  *reason = 5;
   return selected_index;
 }
 

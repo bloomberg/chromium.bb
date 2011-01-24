@@ -141,8 +141,6 @@ void TabStripModel::InsertTabContentsAt(int index,
     }
     // Anything opened by a link we deem to have an opener.
     data->SetGroup(&selected_contents->controller());
-    // TODO(sky): nuke when we figure out what is causing 34135.
-    CHECK(data->opener != &(contents->controller()));
   } else if ((add_types & ADD_INHERIT_OPENER) && selected_contents) {
     if (foreground) {
       // Forget any existing relationships, we don't want to make things too
@@ -150,8 +148,6 @@ void TabStripModel::InsertTabContentsAt(int index,
       ForgetAllOpeners();
     }
     data->opener = &selected_contents->controller();
-    // TODO(sky): nuke when we figure out what is causing 34135.
-    CHECK(data->opener != &(contents->controller()));
   }
 
   contents_data_.insert(contents_data_.begin() + index, data);
@@ -213,12 +209,7 @@ TabContentsWrapper* TabStripModel::DetachTabContentsAt(int index) {
   DCHECK(ContainsIndex(index));
 
   TabContentsWrapper* removed_contents = GetContentsAt(index);
-  // TODO(sky): nuke reason and old_data when we figure out what is causing
-  // 34135.
-  volatile int reason = 0;
-  int next_selected_index =
-      order_controller_->DetermineNewSelectedIndex(index, &reason);
-  volatile TabContentsData old_data = *contents_data_.at(index);
+  int next_selected_index = order_controller_->DetermineNewSelectedIndex(index);
   delete contents_data_.at(index);
   contents_data_.erase(contents_data_.begin() + index);
   ForgetOpenersAndGroupsReferencing(&(removed_contents->controller()));
