@@ -55,8 +55,8 @@ DragAndDropController.prototype = {
   getCoordinates_: function(e) {
     var rect = this.delegate_.dragContainer.getBoundingClientRect();
     var coordinates = {
-      x: e.clientX + window.scrollX - rect.left,
-      y: e.clientY + window.scrollY - rect.top
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
     };
 
     // If we're in an RTL language, reflect the coordinates so the delegate
@@ -71,8 +71,10 @@ DragAndDropController.prototype = {
   // starting drag and drop.
   handleMouseDown_: function(e) {
     var item = this.delegate_.getItem(e);
-    if (!item)
+    if (!item) {
+      e.preventDefault();
       return;
+    }
 
     this.startX_ = item.offsetLeft;
     this.startY_ = item.offsetTop;
@@ -96,6 +98,7 @@ DragAndDropController.prototype = {
     // url-list. Instead, we just rely on the dragging of link behavior.
     this.delegate_.dragItem = item;
     item.classList.add('dragging');
+    item.style.zIndex = 2;
 
     e.dataTransfer.effectAllowed = 'copyLinkMove';
   },
@@ -127,9 +130,10 @@ DragAndDropController.prototype = {
 
     this.delegate_.dragItem = null;
     this.delegate_.saveDrag();
+    dragItem.classList.remove('dragging');
 
     setTimeout(function() {
-      dragItem.classList.remove('dragging');
+      dragItem.style.zIndex = 0;
     }, this.delegate_.transitionsDuration + 10);
   },
 

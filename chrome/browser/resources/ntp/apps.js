@@ -367,7 +367,7 @@ var apps = (function() {
       var item = findAncestorByClass(e.target, 'app');
 
       // You can't drag the web store launcher.
-      if (item.classList.contains('web-store-entry'))
+      if (item && item.classList.contains('web-store-entry'))
         return null;
 
       return item;
@@ -410,17 +410,23 @@ var apps = (function() {
     },
 
     getIndexAt_: function(coordinates) {
-      var x = coordinates.x;
-      var y = coordinates.y;
-
       var w = this.dimensions.width;
       var h = this.dimensions.height;
 
       var availableWidth = this.dragContainer.offsetWidth;
 
-      var row = Math.floor(y / h);
-      var col = Math.floor(x / w);
+      var row = Math.floor(coordinates.y / h);
+      var col = Math.floor(coordinates.x / w);
       var index = Math.floor(availableWidth / w) * row + col;
+
+      var appCount = this.data.length;
+      var cols = MAX_APPS_PER_ROW[layoutMode];
+      var rows = Math.ceil(appCount / cols);
+
+      // Rather than making the free space on the last row invalid, we
+      // map it to the last valid position.
+      if (index >= appCount && index < cols * rows)
+        return appCount-1;
 
       return index;
     },

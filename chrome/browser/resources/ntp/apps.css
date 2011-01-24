@@ -93,11 +93,10 @@ html.apps-promo-visible #apps-content {
 
 .app.dragging {
   opacity: .7;
-  z-index: 2;
 }
 
 #apps-content[launcher-animations=true] .app {
-  -webkit-transition: top .2s, left .2s, right .2s;
+  -webkit-transition: top .2s, left .2s, right .2s, opacity .2s;
 }
 
 @-webkit-keyframes bounce {
