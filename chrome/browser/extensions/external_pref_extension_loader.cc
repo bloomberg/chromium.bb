@@ -85,8 +85,9 @@ void ExternalPrefExtensionLoader::LoadOnFileThread() {
 
   // If we have any records to process, then we must have
   // read the .json file.  If we read the .json file, then
-  // we were able to set |base_path_|.
-  CHECK(!prefs_->empty() || !base_path_.empty());
+  // we were should have set |base_path_|.
+  if (!prefs_->empty())
+    CHECK(!base_path_.empty());
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
