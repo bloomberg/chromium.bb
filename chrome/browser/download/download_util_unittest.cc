@@ -188,11 +188,7 @@ const struct {
   {"filename=..\\foo.txt",
    "http://www.evil.com/..\\foo.txt",
    "text/plain",
-#if defined(OS_WIN)
    L"foo.txt"
-#else
-   L"\\foo.txt"
-#endif
   },
 
   {"filename=.hidden",
@@ -437,7 +433,8 @@ TEST(DownloadUtilTest, GenerateFileName) {
   std::string locale = setlocale(LC_CTYPE, NULL);
   StringToLowerASCII(&locale);
   EXPECT_NE(std::string::npos, locale.find("utf-8"))
-      << "Your locale must be set to UTF-8 for this test to pass!";
+      << "Your locale (" << locale << ") must be set to UTF-8 "
+      << "for this test to pass!";
 #endif
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kGenerateFileNameTestCases); ++i) {

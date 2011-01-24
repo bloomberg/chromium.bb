@@ -48,7 +48,10 @@ FilePath GetFileNameFromDragData(const WebDropData& drop_data) {
 
   if (file_name.empty()) {
     // Retrieve the name from the URL.
-    file_name = net::GetSuggestedFilename(drop_data.url, "", "", FilePath());
+    string16 suggested_filename =
+        net::GetSuggestedFilename(drop_data.url, "", "", string16());
+    file_name = FilePath(
+        [SysUTF16ToNSString(suggested_filename) fileSystemRepresentation]);
   }
 
   file_name = file_name.ReplaceExtension([SysUTF16ToNSString(

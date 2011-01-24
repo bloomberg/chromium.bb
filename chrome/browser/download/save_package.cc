@@ -14,6 +14,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
+#include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
@@ -62,8 +63,7 @@ int g_save_package_id = 0;
 
 // Default name which will be used when we can not get proper name from
 // resource URL.
-const FilePath::CharType kDefaultSaveName[] =
-    FILE_PATH_LITERAL("saved_resource");
+const char kDefaultSaveName[] = "saved_resource";
 
 const FilePath::CharType kDefaultHtmlExtension[] =
 #if defined(OS_WIN)
@@ -375,8 +375,20 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
                                    FilePath::StringType* generated_name) {
   // TODO(jungshik): Figure out the referrer charset when having one
   // makes sense and pass it to GetSuggestedFilename.
-  FilePath file_path = net::GetSuggestedFilename(url, disposition, "",
-                                                 FilePath(kDefaultSaveName));
+  string16 suggested_name =
+      net::GetSuggestedFilename(url, disposition, "",
+                                ASCIIToUTF16(kDefaultSaveName));
+
+  // TODO(evan): this code is totally wrong -- we should just generate
+  // Unicode filenames and do all this encoding switching at the end.
+  // However, I'm just shuffling wrong code around, at least not adding
+  // to it.
+#if defined(OS_WIN)
+  FilePath file_path = FilePath(suggested_name);
+#else
+  FilePath file_path = FilePath(
+      base::SysWideToNativeMB(UTF16ToWide(suggested_name)));
+#endif
 
   DCHECK(!file_path.empty());
   FilePath::StringType pure_file_name =

@@ -244,8 +244,8 @@ void PopulateURLResponse(
   // pass it to GetSuggestedFilename.
   std::string value;
   if (headers->EnumerateHeader(NULL, "content-disposition", &value)) {
-    response->setSuggestedFileName(FilePathToWebString(
-        net::GetSuggestedFilename(url, value, "", FilePath())));
+    response->setSuggestedFileName(
+        net::GetSuggestedFilename(url, value, "", string16()));
   }
 
   Time time_val;
