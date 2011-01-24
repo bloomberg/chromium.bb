@@ -61,11 +61,13 @@ PluginAudio::PluginAudio()
     thread_id_(),
     user_callback_(NULL),
     user_data_(NULL) {
+  DebugPrintf("PluginAudio::PluginAudio()\n");
 }
 
 PluginAudio::~PluginAudio() {
   // Stop playback should terminate the audio thread, if
   // one is currently running.
+  DebugPrintf("PluginAudio::~PluginAudio()\n");
   GetInterface()->StopPlayback(GetReference());
   // Unmap the shared memory buffer, if present.
   if (shm_buffer_) {
@@ -85,11 +87,14 @@ PluginAudio::~PluginAudio() {
 }
 
 bool PluginAudio::InitFromBrowserResource(PP_Resource resource) {
+  DebugPrintf("PluginAudio::InitFromBrowserResource resource=%"NACL_PRIx32"\n",
+              resource);
   return true;
 }
 
 void* PluginAudio::AudioThread(void* self) {
   PluginAudio* audio = static_cast<PluginAudio*>(self);
+  DebugPrintf("PluginAudio::AudioThread self=%p\n", self);
   while (true) {
     int32_t sync_value;
     // block on socket read
@@ -108,6 +113,8 @@ void* PluginAudio::AudioThread(void* self) {
 
 void PluginAudio::StreamCreated(NaClSrpcImcDescType socket,
       NaClSrpcImcDescType shm, size_t shm_size) {
+  DebugPrintf("PluginAudio::StreamCreated shm=%"NACL_PRIx32""
+              " shm_size=%"NACL_PRIuS"\n", shm, shm_size);
   socket_ = socket;
   shm_ = shm;
   shm_size_ = shm_size;
@@ -130,6 +137,7 @@ void PluginAudio::StreamCreated(NaClSrpcImcDescType socket,
 
 bool PluginAudio::StartAudioThread() {
   // clear contents of shm buffer before spinning up audio thread
+  DebugPrintf("PluginAudio::StartAudioThread\n");
   memset(shm_buffer_, 0, shm_size_);
   int ret = pthread_create(&thread_id_, NULL, AudioThread, this);
   if (0 == ret) {
@@ -140,6 +148,7 @@ bool PluginAudio::StartAudioThread() {
 }
 
 bool PluginAudio::StopAudioThread() {
+  DebugPrintf("PluginAudio::StopAudioThread\n");
   int ret = pthread_join(thread_id_, NULL);
   if (0 == ret) {
     set_state(AUDIO_READY);
@@ -155,6 +164,10 @@ PP_Resource Create(PP_Instance instance,
                    PP_Resource config,
                    PPB_Audio_Callback user_callback,
                    void* user_data) {
+  DebugPrintf("PPB_Audio -- Create instance=%"NACL_PRIx32""
+              " config=%"NACL_PRIx32" user_callback=%"NACL_PRIx32""
+              " user_data=%p\n",
+               instance, config, user_callback, user_data);
   PP_Resource audioResource;
   NaClSrpcError retval = NACL_SRPC_RESULT_OK;
   NaClSrpcChannel* channel = NULL;
@@ -184,6 +197,7 @@ PP_Resource Create(PP_Instance instance,
 PP_Bool IsAudio(PP_Resource resource) {
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   int32_t out_bool;
+  DebugPrintf("IsAudio resource=%"NACL_PRIx32"\n", resource);
   NaClSrpcError retval =
       PpbAudioRpcClient::PPB_Audio_IsAudio(
           channel,
@@ -198,6 +212,7 @@ PP_Bool IsAudio(PP_Resource resource) {
 PP_Resource GetCurrentConfig(PP_Resource audio) {
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   PP_Resource out_resource;
+  DebugPrintf("GetCurrentConfig audio=%"NACL_PRIx32"\n", audio);
   NaClSrpcError retval =
       PpbAudioRpcClient::PPB_Audio_GetCurrentConfig(
           channel,
@@ -214,6 +229,7 @@ PP_Bool StartPlayback(PP_Resource audioResource) {
   int32_t out_bool;
   scoped_refptr<PluginAudio> audio =
       PluginResource::GetAs<PluginAudio>(audioResource);
+  DebugPrintf("StartPlayback audioResource=%"NACL_PRIx32"\n", audioResource);
 
   if (NULL == audio.get()) {
     return PP_FALSE;
@@ -241,6 +257,7 @@ PP_Bool StartPlayback(PP_Resource audioResource) {
 }
 
 PP_Bool StopPlayback(PP_Resource audioResource) {
+  DebugPrintf("StopPlayback audioResource=%"NACL_PRIx32"\n", audioResource);
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   int32_t out_bool;
   scoped_refptr<PluginAudio> audio =
@@ -271,6 +288,7 @@ PP_Bool StopPlayback(PP_Resource audioResource) {
 }  // namespace
 
 const PPB_Audio* PluginAudio::GetInterface() {
+  DebugPrintf("PluginAudio::GetInterface\n");
   static const PPB_Audio intf = {
     Create,
     IsAudio,
@@ -281,6 +299,8 @@ const PPB_Audio* PluginAudio::GetInterface() {
   return &intf;
 }
 }  // namespace ppapi_proxy
+
+using ppapi_proxy::DebugPrintf;
 
 // PppAudioRpcServer::PPP_Audio_StreamCreated() must be in global
 // namespace.  This function receives handles for the socket and shared
@@ -294,6 +314,11 @@ void PppAudioRpcServer::PPP_Audio_StreamCreated(
     NaClSrpcImcDescType sync_socket) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  DebugPrintf("PppAudioRpcServer::PPP_Audio_StreamCreated"
+              " rpc=%"NACL_PRIx32" done=%"NACL_PRIx32""
+              " audioResource=%"NACL_PRIx32" shm=%"NACL_PRIx32""
+              " shm_size=%"NACL_PRIuS" sync_socket=%"NACL_PRIx32"\n",
+              rpc, done, audioResource, shm, shm_size, sync_socket);
   scoped_refptr<ppapi_proxy::PluginAudio> audio =
       ppapi_proxy::PluginResource::
       GetAs<ppapi_proxy::PluginAudio>(audioResource);
