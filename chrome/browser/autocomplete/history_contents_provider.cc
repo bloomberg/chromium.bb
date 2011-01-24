@@ -82,7 +82,7 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
   if ((input.type() == AutocompleteInput::URL) ||
       (((input.type() == AutocompleteInput::REQUESTED_URL) ||
         (input.type() == AutocompleteInput::UNKNOWN)) &&
-       (input.text().find('.') != string16::npos))) {
+       (input.text().find('.') != std::wstring::npos))) {
     Stop();
     return;
   }
@@ -134,7 +134,7 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
       history::QueryOptions options;
       options.SetRecentDayRange(kDaysToSearch);
       options.max_count = kMaxMatches;
-      history->QueryHistory(input.text(), options,
+      history->QueryHistory(WideToUTF16(input.text()), options,
           &request_consumer_,
           NewCallback(this, &HistoryContentsProvider::QueryComplete));
     }
@@ -212,7 +212,7 @@ AutocompleteMatch HistoryContentsProvider::ResultToMatch(
   match.destination_url = result.url();
   match.contents_class.push_back(
       ACMatchClassification(0, ACMatchClassification::URL));
-  match.description = result.title();
+  match.description = UTF16ToWide(result.title());
   match.starred =
       (profile_->GetBookmarkModel() &&
        profile_->GetBookmarkModel()->IsBookmarked(result.url()));
@@ -265,7 +265,7 @@ void HistoryContentsProvider::QueryBookmarks(const AutocompleteInput& input) {
 
   TimeTicks start_time = TimeTicks::Now();
   std::vector<bookmark_utils::TitleMatch> matches;
-  bookmark_model->GetBookmarksWithTitlesMatching(input.text(),
+  bookmark_model->GetBookmarksWithTitlesMatching(WideToUTF16Hack(input.text()),
                                                  kMaxMatches, &matches);
   for (size_t i = 0; i < matches.size(); ++i)
     AddBookmarkTitleMatchToResults(matches[i]);

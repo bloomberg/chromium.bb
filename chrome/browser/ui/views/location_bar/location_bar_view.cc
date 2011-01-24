@@ -447,7 +447,7 @@ void LocationBarView::Layout() {
   int ev_bubble_width = 0;
   location_icon_view_->SetVisible(false);
   ev_bubble_view_->SetVisible(false);
-  const string16 keyword(location_entry_->model()->keyword());
+  const std::wstring keyword(location_entry_->model()->keyword());
   const bool is_keyword_hint(location_entry_->model()->is_keyword_hint());
   const bool show_selected_keyword = !keyword.empty() && !is_keyword_hint;
   if (show_selected_keyword) {
@@ -516,7 +516,8 @@ void LocationBarView::Layout() {
     if (selected_keyword_view_->keyword() != keyword) {
       selected_keyword_view_->SetKeyword(keyword);
       const TemplateURL* template_url =
-          profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
+          profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(
+              WideToUTF16Hack(keyword));
       if (template_url && template_url->IsExtensionKeyword()) {
         const SkBitmap& bitmap = profile_->GetExtensionService()->
             GetOmniboxIcon(template_url->GetExtensionId());
@@ -768,11 +769,11 @@ void LocationBarView::OnAutocompleteWillAccept() {
   update_instant_ = false;
 }
 
-bool LocationBarView::OnCommitSuggestedText(const string16& typed_text) {
+bool LocationBarView::OnCommitSuggestedText(const std::wstring& typed_text) {
   InstantController* instant = delegate_->GetInstant();
   if (!instant)
     return false;
-  string16 suggestion;
+  std::wstring suggestion;
 #if defined(OS_WIN)
   if (!HasValidSuggestText())
     return false;
@@ -848,17 +849,17 @@ void LocationBarView::OnChanged() {
         location_entry_->model()->popup_model()->IsOpen()) {
       instant->Update(GetTabContentsWrapper(),
                       location_entry_->model()->CurrentMatch(),
-                      location_entry_->GetText(),
+                      WideToUTF16(location_entry_->GetText()),
                       location_entry_->model()->UseVerbatimInstant(),
                       &suggested_text);
       if (!instant->MightSupportInstant()) {
-        location_entry_->model()->FinalizeInstantQuery(string16(),
-                                                       string16());
+        location_entry_->model()->FinalizeInstantQuery(std::wstring(),
+                                                       std::wstring());
       }
     } else {
       instant->DestroyPreviewContents();
-      location_entry_->model()->FinalizeInstantQuery(string16(),
-                                                     string16());
+      location_entry_->model()->FinalizeInstantQuery(std::wstring(),
+                                                     std::wstring());
     }
   }
 
@@ -894,8 +895,8 @@ SkBitmap LocationBarView::GetFavIcon() const {
   return GetTabContentsFromDelegate(delegate_)->GetFavIcon();
 }
 
-string16 LocationBarView::GetTitle() const {
-  return GetTabContentsFromDelegate(delegate_)->GetTitle();
+std::wstring LocationBarView::GetTitle() const {
+  return UTF16ToWideHack(GetTabContentsFromDelegate(delegate_)->GetTitle());
 }
 
 int LocationBarView::AvailableWidth(int location_bar_width) {
@@ -1129,7 +1130,7 @@ void LocationBarView::SetSuggestedText(const string16& input) {
     // text.
     if (!input.empty()) {
       location_entry_->model()->FinalizeInstantQuery(location_entry_->GetText(),
-                                                     input);
+                                                     UTF16ToWide(input));
     }
     return;
   }

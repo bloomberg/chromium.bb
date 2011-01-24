@@ -52,22 +52,20 @@ class OmniboxTest : public UITest {
   // http://www.google.com/ is suggested that should be considered a match.
   // This could probably be accomplished with regex as well.  Note that this
   // method is called even when suggestion isn't a URL.
-  bool IsMatch(const string16& input_test, const string16& suggestion);
+  bool IsMatch(const std::wstring& input_test, const std::wstring& suggestion);
   // Runs a query chain. This sends each proper prefix of the input to the
   // omnibox and scores the autocompelte results returned.
-  void RunQueryChain(const string16& input_text);
+  void RunQueryChain(const std::wstring& input_text);
 };
 
-bool OmniboxTest::IsMatch(const string16& input_text,
-                          const string16& suggestion) {
+bool OmniboxTest::IsMatch(const std::wstring& input_text,
+                          const std::wstring& suggestion) {
   // This prefix list comes from the list used in history_url_provider.cc
   // with the exception of "ftp." and "www.".
-  string16 prefixes[] = {ASCIIToUTF16(""), ASCIIToUTF16("ftp://"),
-    ASCIIToUTF16("http://"), ASCIIToUTF16("https://"), ASCIIToUTF16("ftp."),
-    ASCIIToUTF16("www."), ASCIIToUTF16("ftp://www."),
-    ASCIIToUTF16("ftp://ftp."), ASCIIToUTF16("http://www."),
-    ASCIIToUTF16("https://www.")};
-  string16 postfixes[] = {ASCIIToUTF16(""), ASCIIToUTF16("/")};
+  std::wstring prefixes[] = {L"", L"ftp://", L"http://", L"https://",
+                             L"ftp.", L"www.", L"ftp://www.", L"ftp://ftp.",
+                             L"http://www.", L"https://www."};
+  std::wstring postfixes[] = {L"", L"/"};
   for (size_t i = 0; i < arraysize(prefixes); ++i) {
     for (size_t j = 0; j < arraysize(postfixes); ++j) {
       if (prefixes[i] + input_text + postfixes[j] == suggestion)
@@ -77,7 +75,7 @@ bool OmniboxTest::IsMatch(const string16& input_text,
   return false;
 }
 
-void OmniboxTest::RunQueryChain(const string16& input_text) {
+void OmniboxTest::RunQueryChain(const std::wstring& input_text) {
   // Get a handle on the omnibox and give it focus.
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
@@ -165,7 +163,7 @@ TEST_F(OmniboxTest, Measure) {
         expected_providers.push_back(provider);
         reader.Read();
       }
-      RunQueryChain(ASCIIToUTF16(query));
+      RunQueryChain(ASCIIToWide(query));
       reader.Read();
     }
     reader.Read();

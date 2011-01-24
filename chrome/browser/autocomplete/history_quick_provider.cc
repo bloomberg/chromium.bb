@@ -52,7 +52,7 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
   // NOTE: This purposefully doesn't take input.desired_tld() into account; if
   // it did, then holding "ctrl" would change all the results from the
   // HistoryQuickProvider provider, not just the What You Typed Result.
-  const string16 fixed_text(FixupUserInput(input));
+  const std::wstring fixed_text(FixupUserInput(input));
   if (fixed_text.empty()) {
     // Conceivably fixup could result in an empty string (although I don't
     // have cases where this happens offhand).  We can't do anything with
@@ -76,7 +76,7 @@ void HistoryQuickProvider::DeleteMatch(const AutocompleteMatch& match) {}
 
 void HistoryQuickProvider::DoAutocomplete() {
   // Get the matching URLs from the DB.
-  string16 term_string = autocomplete_input_.text();
+  string16 term_string(WideToUTF16(autocomplete_input_.text()));
   term_string = UnescapeURLComponent(term_string,
       UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
   history::InMemoryURLIndex::String16Vector terms(
@@ -114,33 +114,34 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
       match_type == WHAT_YOU_TYPED ? std::string() : languages_;
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(info.url(),
-          net::FormatUrl(info.url(), languages, format_types,
-                         UnescapeRule::SPACES, NULL, NULL,
-                         &inline_autocomplete_offset));
+          UTF16ToWide(net::FormatUrl(info.url(), languages, format_types,
+                                     UnescapeRule::SPACES, NULL, NULL,
+                                     &inline_autocomplete_offset)));
   if (!autocomplete_input_.prevent_inline_autocomplete())
     match.inline_autocomplete_offset = inline_autocomplete_offset;
-  DCHECK((match.inline_autocomplete_offset == string16::npos) ||
+  DCHECK((match.inline_autocomplete_offset == std::wstring::npos) ||
          (match.inline_autocomplete_offset <= match.fill_into_edit.length()));
 
   size_t match_start = history_match.input_location;
-  match.contents = net::FormatUrl(info.url(), languages, format_types,
-                                  UnescapeRule::SPACES, NULL, NULL,
-                                  &match_start);
-  if ((match_start != string16::npos) &&
-      (inline_autocomplete_offset != string16::npos) &&
+  match.contents =
+      UTF16ToWide(net::FormatUrl(info.url(), languages, format_types,
+                                 UnescapeRule::SPACES, NULL, NULL,
+                                 &match_start));
+  if ((match_start != std::wstring::npos) &&
+      (inline_autocomplete_offset != std::wstring::npos) &&
       (inline_autocomplete_offset != match_start)) {
     DCHECK(inline_autocomplete_offset > match_start);
     AutocompleteMatch::ClassifyLocationInString(match_start,
         inline_autocomplete_offset - match_start, match.contents.length(),
         ACMatchClassification::URL, &match.contents_class);
   } else {
-    AutocompleteMatch::ClassifyLocationInString(string16::npos, 0,
+    AutocompleteMatch::ClassifyLocationInString(std::wstring::npos, 0,
         match.contents.length(), ACMatchClassification::URL,
         &match.contents_class);
   }
-  match.description = info.title();
+  match.description = UTF16ToWide(info.title());
   AutocompleteMatch::ClassifyMatchInString(autocomplete_input_.text(),
-                                           info.title(),
+                                           UTF16ToWide(info.title()),
                                            ACMatchClassification::NONE,
                                            &match.description_class);
 

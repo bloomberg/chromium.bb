@@ -53,11 +53,9 @@ std::wstring ToolbarModel::GetText() const {
   // Note that we can't unescape spaces here, because if the user copies this
   // and pastes it into another program, that program may think the URL ends at
   // the space.
-  return UTF16ToWideHack(
-      AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          url,
-          net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
-                         UnescapeRule::NORMAL, NULL, NULL, NULL)));
+  return AutocompleteInput::FormattedStringWithEquivalentMeaning(url,
+      UTF16ToWideHack(net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
+                                     UnescapeRule::NORMAL, NULL, NULL, NULL)));
 }
 
 ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {

@@ -50,7 +50,7 @@ void SelectedKeywordView::Layout() {
   IconLabelBubbleView::Layout();
 }
 
-void SelectedKeywordView::SetKeyword(const string16& keyword) {
+void SelectedKeywordView::SetKeyword(const std::wstring& keyword) {
   keyword_ = keyword;
   if (keyword.empty())
     return;
@@ -60,7 +60,7 @@ void SelectedKeywordView::SetKeyword(const string16& keyword) {
 
   bool is_extension_keyword;
   const string16 short_name = profile_->GetTemplateURLModel()->
-      GetKeywordShortName(keyword, &is_extension_keyword);
+      GetKeywordShortName(WideToUTF16Hack(keyword), &is_extension_keyword);
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;
   full_label_.SetText(UTF16ToWide(

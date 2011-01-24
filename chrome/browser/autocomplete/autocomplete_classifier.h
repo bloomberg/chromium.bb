@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "base/string16.h"
 
 class AutocompleteController;
 struct AutocompleteMatch;
@@ -34,8 +33,8 @@ class AutocompleteClassifier {
   // non-NULL, will be set to the navigational URL (if any) in case of an
   // accidental search; see comments on
   // AutocompleteResult::alternate_nav_url_ in autocomplete.h.
-  void Classify(const string16& text,
-                const string16& desired_tld,
+  void Classify(const std::wstring& text,
+                const std::wstring& desired_tld,
                 bool allow_exact_keyword_match,
                 AutocompleteMatch* match,
                 GURL* alternate_nav_url);

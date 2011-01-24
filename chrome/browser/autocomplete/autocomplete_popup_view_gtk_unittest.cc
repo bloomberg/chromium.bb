@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -45,7 +44,7 @@ class AutocompletePopupViewGtkTest : public PlatformTest {
   // friend of the class being tested.  This method just proxies the
   // call through after adding the fixture's layout_.
   void SetupLayoutForMatch(
-      const string16& text,
+      const std::wstring& text,
       const AutocompleteMatch::ACMatchClassifications& classifications,
       const GdkColor* base_color,
       const GdkColor* dim_color,
@@ -189,7 +188,7 @@ class AutocompletePopupViewGtkTest : public PlatformTest {
 // text matches the input string, with the passed-in color, and
 // nothing bolded.
 TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringNoMatch) {
-  const string16 kContents = ASCIIToUTF16("This is a test");
+  const std::wstring kContents = L"This is a test";
 
   AutocompleteMatch::ACMatchClassifications classifications;
 
@@ -225,7 +224,7 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringNoMatch) {
 // Identical to DecorateMatchedStringNoMatch, except test that URL
 // style gets a different color than we passed in.
 TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringURLNoMatch) {
-  const string16 kContents = ASCIIToUTF16("This is a test");
+  const std::wstring kContents = L"This is a test";
   AutocompleteMatch::ACMatchClassifications classifications;
 
   classifications.push_back(
@@ -261,7 +260,7 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringURLNoMatch) {
 
 // Test that DIM works as expected.
 TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringDimNoMatch) {
-  const string16 kContents = ASCIIToUTF16("This is a test");
+  const std::wstring kContents = L"This is a test";
   // Dim "is".
   const guint runLength1 = 5, runLength2 = 2, runLength3 = 7;
   // Make sure nobody messed up the inputs.
@@ -323,7 +322,7 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringDimNoMatch) {
 // Test that the matched run gets bold-faced, but keeps the same
 // color.
 TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringMatch) {
-  const string16 kContents = ASCIIToUTF16("This is a test");
+  const std::wstring kContents = L"This is a test";
   // Match "is".
   const guint runLength1 = 5, runLength2 = 2, runLength3 = 7;
   // Make sure nobody messed up the inputs.
@@ -381,7 +380,7 @@ TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringMatch) {
 
 // Just like DecorateMatchedStringURLMatch, this time with URL style.
 TEST_F(AutocompletePopupViewGtkTest, DecorateMatchedStringURLMatch) {
-  const string16 kContents = ASCIIToUTF16("http://hello.world/");
+  const std::wstring kContents = L"http://hello.world/";
   // Match "hello".
   const guint runLength1 = 7, runLength2 = 5, runLength3 = 7;
   // Make sure nobody messed up the inputs.

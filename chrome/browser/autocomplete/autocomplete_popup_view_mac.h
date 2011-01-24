@@ -102,7 +102,7 @@ class AutocompletePopupViewMac : public AutocompletePopupView,
   // and description cases.  Returns NSMutableAttributedString as a
   // convenience for MatchText().
   static NSMutableAttributedString* DecorateMatchedString(
-      const string16 &matchString,
+      const std::wstring &matchString,
       const AutocompleteMatch::ACMatchClassifications &classifications,
       NSColor* textColor, NSColor* dimTextColor, gfx::Font& font);
 
@@ -114,7 +114,7 @@ class AutocompletePopupViewMac : public AutocompletePopupView,
   // cleaner.
   static NSMutableAttributedString* ElideString(
       NSMutableAttributedString* aString,
-      const string16 originalString,
+      const std::wstring originalString,
       const gfx::Font& font,
       const float cellWidth);
 

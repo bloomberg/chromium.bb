@@ -78,7 +78,7 @@ bool CompareHistoryMatch(const HistoryMatch& a, const HistoryMatch& b) {
 // Given the user's |input| and a |match| created from it, reduce the
 // match's URL to just a host.  If this host still matches the user input,
 // return it.  Returns the empty string on failure.
-GURL ConvertToHostOnly(const HistoryMatch& match, const string16& input) {
+GURL ConvertToHostOnly(const HistoryMatch& match, const std::wstring& input) {
   // See if we should try to do host-only suggestions for this URL. Nonstandard
   // schemes means there's no authority section, so suggesting the host name
   // is useless. File URLs are standard, but host suggestion is not useful for
@@ -93,7 +93,7 @@ GURL ConvertToHostOnly(const HistoryMatch& match, const string16& input) {
   if ((host.spec().length() < (match.input_location + input.length())))
     return GURL();  // User typing is longer than this host suggestion.
 
-  const string16 spec = UTF8ToUTF16(host.spec());
+  const std::wstring spec = UTF8ToWide(host.spec());
   if (spec.compare(match.input_location, input.length(), input))
     return GURL();  // User typing is no longer a prefix.
 
@@ -188,7 +188,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
       (params->input.type() != AutocompleteInput::QUERY) &&
       ((params->input.type() != AutocompleteInput::UNKNOWN) ||
           !params->trim_http ||
-          url_util::FindAndCompareScheme(UTF16ToUTF8(params->input.text()),
+          url_util::FindAndCompareScheme(WideToUTF8(params->input.text()),
                                          chrome::kHttpsScheme, NULL));
   AutocompleteMatch what_you_typed_match(SuggestExactInput(params->input,
                                                            params->trim_http));
@@ -208,11 +208,11 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     // for more results than we need, of every prefix type, in hopes this will
     // give us far more than enough to work with.  CullRedirects() will then
     // reduce the list to the best kMaxMatches results.
-    db->AutocompleteForPrefix(i->prefix + params->input.text(),
+    db->AutocompleteForPrefix(WideToUTF16(i->prefix + params->input.text()),
                               kMaxMatches * 2, (backend == NULL), &url_matches);
     for (URLRowVector::const_iterator j(url_matches.begin());
          j != url_matches.end(); ++j) {
-      const Prefix* best_prefix = BestPrefix(j->url(), string16());
+      const Prefix* best_prefix = BestPrefix(j->url(), std::wstring());
       DCHECK(best_prefix != NULL);
       history_matches.push_back(HistoryMatch(*j, i->prefix.length(),
           !i->num_components,
@@ -313,7 +313,7 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     // |match_location| below.  StringForURLDisplay() and TrimHttpPrefix() have
     // slightly different behavior as well (the latter will strip even without
     // two slashes after the scheme).
-    string16 display_string(StringForURLDisplay(url, false, false));
+    std::wstring display_string(StringForURLDisplay(url, false, false));
     const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
     match.fill_into_edit =
         AutocompleteInput::FormattedStringWithEquivalentMeaning(url,
@@ -331,7 +331,7 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     // to not contain the user's input at all.  In this case don't mark anything
     // as a match.
     const size_t match_location = (best_prefix == NULL) ?
-        string16::npos : best_prefix->prefix.length() - offset;
+        std::wstring::npos : best_prefix->prefix.length() - offset;
     AutocompleteMatch::ClassifyLocationInString(match_location,
                                                 input.text().length(),
                                                 match.contents.length(),
@@ -371,7 +371,7 @@ bool HistoryURLProvider::FixupExactSuggestion(history::URLDatabase* db,
   if (!db->GetRowForURL(match->destination_url, &info)) {
     if (input.desired_tld().empty())
       return false;
-    GURL destination_url(URLFixerUpper::FixupURL(UTF16ToUTF8(input.text()),
+    GURL destination_url(URLFixerUpper::FixupURL(WideToUTF8(input.text()),
                                                  std::string()));
     if (!db->GetRowForURL(destination_url, NULL))
       return false;
@@ -382,9 +382,9 @@ bool HistoryURLProvider::FixupExactSuggestion(history::URLDatabase* db,
   } else {
     // We have data for this match, use it.
     match->deletable = true;
-    match->description = info.title();
+    match->description = UTF16ToWide(info.title());
     AutocompleteMatch::ClassifyMatchInString(input.text(),
-        info.title(),
+        UTF16ToWide(info.title()),
         ACMatchClassification::NONE, &match->description_class);
     if (!info.typed_count()) {
       // If we reach here, we must be in the second pass, and we must not have
@@ -402,7 +402,7 @@ bool HistoryURLProvider::FixupExactSuggestion(history::URLDatabase* db,
   match->relevance = CalculateRelevance(input.type(), type, 0);
 
   // Put it on the front of the HistoryMatches for redirect culling.
-  EnsureMatchPresent(info, string16::npos, false, matches, true);
+  EnsureMatchPresent(info, std::wstring::npos, false, matches, true);
   return true;
 }
 
@@ -430,15 +430,14 @@ history::Prefixes HistoryURLProvider::GetPrefixes() {
   // We'll complete text following these prefixes.
   // NOTE: There's no requirement that these be in any particular order.
   Prefixes prefixes;
-  prefixes.push_back(Prefix(ASCIIToUTF16("https://www."), 2));
-  prefixes.push_back(Prefix(ASCIIToUTF16("http://www."), 2));
-  prefixes.push_back(Prefix(ASCIIToUTF16("ftp://ftp."), 2));
-  prefixes.push_back(Prefix(ASCIIToUTF16("ftp://www."), 2));
-  prefixes.push_back(Prefix(ASCIIToUTF16("https://"), 1));
-  prefixes.push_back(Prefix(ASCIIToUTF16("http://"), 1));
-  prefixes.push_back(Prefix(ASCIIToUTF16("ftp://"), 1));
-  // Empty string catches within-scheme matches as well.
-  prefixes.push_back(Prefix(string16(), 0));
+  prefixes.push_back(Prefix(L"https://www.", 2));
+  prefixes.push_back(Prefix(L"http://www.", 2));
+  prefixes.push_back(Prefix(L"ftp://ftp.", 2));
+  prefixes.push_back(Prefix(L"ftp://www.", 2));
+  prefixes.push_back(Prefix(L"https://", 1));
+  prefixes.push_back(Prefix(L"http://", 1));
+  prefixes.push_back(Prefix(L"ftp://", 1));
+  prefixes.push_back(Prefix(L"", 0));  // Catches within-scheme matches as well
   return prefixes;
 }
 
@@ -530,7 +529,7 @@ void HistoryURLProvider::PromoteOrCreateShorterSuggestion(
 // static
 void HistoryURLProvider::EnsureMatchPresent(
     const history::URLRow& info,
-    string16::size_type input_location,
+    std::wstring::size_type input_location,
     bool match_in_scheme,
     HistoryMatches* matches,
     bool promote) {
@@ -595,7 +594,7 @@ void HistoryURLProvider::RunAutocompletePasses(
     // NOTE: This purposefully doesn't take input.desired_tld() into account; if
     // it did, then holding "ctrl" would change all the results from the
     // HistoryURLProvider provider, not just the What You Typed Result.
-    const string16 fixed_text(FixupUserInput(input));
+    const std::wstring fixed_text(FixupUserInput(input));
     if (fixed_text.empty()) {
       // Conceivably fixup could result in an empty string (although I don't
       // have cases where this happens offhand).  We can't do anything with
@@ -636,14 +635,14 @@ void HistoryURLProvider::RunAutocompletePasses(
 
 const history::Prefix* HistoryURLProvider::BestPrefix(
     const GURL& url,
-    const string16& prefix_suffix) const {
+    const std::wstring& prefix_suffix) const {
   const Prefix* best_prefix = NULL;
-  const string16 text(UTF8ToUTF16(url.spec()));
+  const std::wstring text(UTF8ToWide(url.spec()));
   for (Prefixes::const_iterator i(prefixes_.begin()); i != prefixes_.end();
        ++i) {
     if ((best_prefix == NULL) ||
         (i->num_components > best_prefix->num_components)) {
-      string16 prefix_with_suffix(i->prefix + prefix_suffix);
+      std::wstring prefix_with_suffix(i->prefix + prefix_suffix);
       if ((text.length() >= prefix_with_suffix.length()) &&
           !text.compare(0, prefix_with_suffix.length(), prefix_with_suffix))
         best_prefix = &(*i);
@@ -779,32 +778,32 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
           0 : net::kFormatUrlOmitHTTP);
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(info.url(),
-          net::FormatUrl(info.url(), languages, format_types,
-                         UnescapeRule::SPACES, NULL, NULL,
-                         &inline_autocomplete_offset));
+          UTF16ToWideHack(net::FormatUrl(info.url(), languages, format_types,
+                                         UnescapeRule::SPACES, NULL, NULL,
+                                         &inline_autocomplete_offset)));
   if (!params->input.prevent_inline_autocomplete())
     match.inline_autocomplete_offset = inline_autocomplete_offset;
-  DCHECK((match.inline_autocomplete_offset == string16::npos) ||
+  DCHECK((match.inline_autocomplete_offset == std::wstring::npos) ||
          (match.inline_autocomplete_offset <= match.fill_into_edit.length()));
 
   size_t match_start = history_match.input_location;
-  match.contents = net::FormatUrl(info.url(), languages,
-      format_types, UnescapeRule::SPACES, NULL, NULL, &match_start);
-  if ((match_start != string16::npos) &&
-      (inline_autocomplete_offset != string16::npos) &&
+  match.contents = UTF16ToWideHack(net::FormatUrl(info.url(), languages,
+      format_types, UnescapeRule::SPACES, NULL, NULL, &match_start));
+  if ((match_start != std::wstring::npos) &&
+      (inline_autocomplete_offset != std::wstring::npos) &&
       (inline_autocomplete_offset != match_start)) {
     DCHECK(inline_autocomplete_offset > match_start);
     AutocompleteMatch::ClassifyLocationInString(match_start,
         inline_autocomplete_offset - match_start, match.contents.length(),
         ACMatchClassification::URL, &match.contents_class);
   } else {
-    AutocompleteMatch::ClassifyLocationInString(string16::npos, 0,
+    AutocompleteMatch::ClassifyLocationInString(std::wstring::npos, 0,
         match.contents.length(), ACMatchClassification::URL,
         &match.contents_class);
   }
-  match.description = info.title();
+  match.description = UTF16ToWide(info.title());
   AutocompleteMatch::ClassifyMatchInString(params->input.text(),
-                                           info.title(),
+                                           UTF16ToWide(info.title()),
                                            ACMatchClassification::NONE,
                                            &match.description_class);
 

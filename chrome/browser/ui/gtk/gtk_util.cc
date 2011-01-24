@@ -965,8 +965,8 @@ bool URLFromPrimarySelection(Profile* profile, GURL* url) {
   // Use autocomplete to clean up the text, going so far as to turn it into
   // a search query if necessary.
   AutocompleteMatch match;
-  profile->GetAutocompleteClassifier()->Classify(UTF8ToUTF16(selection_text),
-      string16(), false, &match, NULL);
+  profile->GetAutocompleteClassifier()->Classify(UTF8ToWide(selection_text),
+      std::wstring(), false, &match, NULL);
   g_free(selection_text);
   if (!match.destination_url.is_valid())
     return false;

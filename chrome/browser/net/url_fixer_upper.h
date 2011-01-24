@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/string16.h"
 #include "googleurl/src/gurl.h"
 
 namespace url_parse {
@@ -30,11 +29,8 @@ namespace URLFixerUpper {
   // Returns the canonicalized scheme, or the empty string when |text| is only
   // whitespace.
   std::string SegmentURL(const std::string& text, url_parse::Parsed* parts);
-  // Deprecated temporary compatibility functions.
+  // Deprecated temporary compatibility function.
   std::wstring SegmentURL(const std::wstring& text, url_parse::Parsed* parts);
-#if defined(WCHAR_T_IS_UTF32)
-  string16 SegmentURL(const string16& text, url_parse::Parsed* parts);
-#endif
 
   // Converts |text| to a fixed-up URL and returns it. Attempts to make
   // some "smart" adjustments to obviously-invalid input where possible.

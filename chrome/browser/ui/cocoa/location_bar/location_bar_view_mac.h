@@ -132,7 +132,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual void OnAutocompleteWillClosePopup();
   virtual void OnAutocompleteLosingFocus(gfx::NativeView unused);
   virtual void OnAutocompleteWillAccept();
-  virtual bool OnCommitSuggestedText(const string16& typed_text);
+  virtual bool OnCommitSuggestedText(const std::wstring& typed_text);
   virtual bool AcceptCurrentInstantPreview();
   virtual void OnPopupBoundsChanged(const gfx::Rect& bounds);
   virtual void OnAutocompleteAccept(const GURL& url,
@@ -145,9 +145,9 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual void OnKillFocus();
   virtual void OnSetFocus();
   virtual SkBitmap GetFavIcon() const;
-  virtual string16 GetTitle() const;
+  virtual std::wstring GetTitle() const;
 
-  NSImage* GetKeywordImage(const string16& keyword);
+  NSImage* GetKeywordImage(const std::wstring& keyword);
 
   AutocompleteTextField* GetAutocompleteTextField() { return field_; }
 

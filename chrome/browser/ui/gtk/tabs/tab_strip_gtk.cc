@@ -1631,7 +1631,7 @@ bool TabStripGtk::CompleteDrop(guchar* data, bool is_plain_text) {
   if (is_plain_text) {
     AutocompleteMatch match;
     model_->profile()->GetAutocompleteClassifier()->Classify(
-        UTF8ToUTF16(reinterpret_cast<char*>(data)), string16(), false,
+        UTF8ToWide(reinterpret_cast<char*>(data)), std::wstring(), false,
         &match, NULL);
     url = match.destination_url;
   } else {

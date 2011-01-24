@@ -96,7 +96,7 @@ class HistoryQuickProviderTest : public testing::Test,
   // Runs an autocomplete query on |text| and checks to see that the returned
   // results' destination URLs match those provided. |expected_urls| does not
   // need to be in sorted order.
-  void RunTest(const string16 text,
+  void RunTest(const std::wstring text,
                std::vector<std::string> expected_urls,
                std::string expected_top_result);
 
@@ -163,13 +163,13 @@ class SetShouldContain : public std::unary_function<const std::string&,
   std::set<std::string> matches_;
 };
 
-void HistoryQuickProviderTest::RunTest(const string16 text,
+void HistoryQuickProviderTest::RunTest(const std::wstring text,
                                        std::vector<std::string> expected_urls,
                                        std::string expected_top_result) {
   std::sort(expected_urls.begin(), expected_urls.end());
 
   MessageLoop::current()->RunAllPending();
-  AutocompleteInput input(text, string16(), false, false, true, false);
+  AutocompleteInput input(text, std::wstring(), false, false, true, false);
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->done());
 
@@ -194,7 +194,7 @@ void HistoryQuickProviderTest::RunTest(const string16 text,
 }
 
 TEST_F(HistoryQuickProviderTest, SimpleSingleMatch) {
-  string16 text(ASCIIToUTF16("slashdot"));
+  std::wstring text(L"slashdot");
   std::string expected_url("http://slashdot.org/favorite_page.html");
   std::vector<std::string> expected_urls;
   expected_urls.push_back(expected_url);
@@ -202,7 +202,7 @@ TEST_F(HistoryQuickProviderTest, SimpleSingleMatch) {
 }
 
 TEST_F(HistoryQuickProviderTest, MultiMatch) {
-  string16 text(ASCIIToUTF16("foo"));
+  std::wstring text(L"foo");
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://foo.com/");
   expected_urls.push_back("http://foo.com/dir/");
@@ -214,7 +214,7 @@ TEST_F(HistoryQuickProviderTest, MultiMatch) {
 }
 
 TEST_F(HistoryQuickProviderTest, StartRelativeMatch) {
-  string16 text(ASCIIToUTF16("xyz"));
+  std::wstring text(L"xyz");
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://xyzabcdefghijklmnopqrstuvw.com/a");
   expected_urls.push_back("http://abcxyzdefghijklmnopqrstuvw.com/a");
@@ -225,7 +225,7 @@ TEST_F(HistoryQuickProviderTest, StartRelativeMatch) {
 }
 
 TEST_F(HistoryQuickProviderTest, RecencyMatch) {
-  string16 text(ASCIIToUTF16("startest"));
+  std::wstring text(L"startest");
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://startest.com/y/a");
   expected_urls.push_back("http://startest.com/y/b");

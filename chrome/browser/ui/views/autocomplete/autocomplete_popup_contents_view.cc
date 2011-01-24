@@ -108,7 +108,7 @@ SkColor GetColor(ResultViewState state, ColorKind kind) {
   return colors[state][kind];
 }
 
-const char16 kEllipsis[] = { 0x2026 };
+const wchar_t kEllipsis[] = L"\x2026";
 
 const SkAlpha kGlassPopupAlpha = 240;
 const SkAlpha kOpaquePopupAlpha = 255;
@@ -293,7 +293,7 @@ class AutocompleteResultView : public views::View {
   // Precalculated data used to draw the portion of a match classification that
   // fits entirely within one run.
   struct ClassificationData {
-    string16 text;
+    std::wstring text;
     const gfx::Font* font;
     SkColor color;
     int pixel_width;
@@ -327,7 +327,7 @@ class AutocompleteResultView : public views::View {
   // added to all of the classifications. Returns the x position to the right
   // of the string.
   int DrawString(gfx::Canvas* canvas,
-                 const string16& text,
+                 const std::wstring& text,
                  const ACMatchClassifications& classifications,
                  bool force_dim,
                  int x,
@@ -422,7 +422,7 @@ AutocompleteResultView::AutocompleteResultView(
       model_index_(model_index),
       normal_font_(font),
       bold_font_(bold_font),
-      ellipsis_width_(font.GetStringWidth(string16(kEllipsis))),
+      ellipsis_width_(font.GetStringWidth(WideToUTF16(kEllipsis))),
       mirroring_context_(new MirroringContext()),
       match_(NULL, 0, false, AutocompleteMatch::URL_WHAT_YOU_TYPED) {
   CHECK(model_index >= 0);
@@ -458,8 +458,8 @@ void AutocompleteResultView::Paint(gfx::Canvas* canvas) {
   // would also let us use a more properly-localizable string than we get with
   // just the IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR.
   if (!match_.description.empty()) {
-    string16 separator =
-        l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
+    std::wstring separator = UTF16ToWide(l10n_util::GetStringUTF16(
+        IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR));
     ACMatchClassifications classifications;
     classifications.push_back(
         ACMatchClassification(0, ACMatchClassification::NONE));
@@ -534,7 +534,7 @@ const SkBitmap* AutocompleteResultView::GetIcon() const {
 
 int AutocompleteResultView::DrawString(
     gfx::Canvas* canvas,
-    const string16& text,
+    const std::wstring& text,
     const ACMatchClassifications& classifications,
     bool force_dim,
     int x,
@@ -558,7 +558,7 @@ int AutocompleteResultView::DrawString(
   // unintended ways, e.g. by removing directional markings or by adding an
   // ellipsis that's not enclosed in appropriate markings.
   base::i18n::BiDiLineIterator bidi_line;
-  if (!bidi_line.Open(text, base::i18n::IsRTL(), is_url))
+  if (!bidi_line.Open(WideToUTF16Hack(text), base::i18n::IsRTL(), is_url))
     return x;
   const int num_runs = bidi_line.CountRuns();
   Runs runs;
@@ -613,7 +613,8 @@ int AutocompleteResultView::DrawString(
       else
         current_data->color = GetColor(state, force_dim ? DIMMED_TEXT : TEXT);
       current_data->pixel_width =
-          current_data->font->GetStringWidth(current_data->text);
+          current_data->font->GetStringWidth(
+              WideToUTF16Hack(current_data->text));
       current_run->pixel_width += current_data->pixel_width;
     }
     DCHECK(!current_run->classifications.empty());
@@ -669,7 +670,7 @@ int AutocompleteResultView::DrawString(
     for (Classifications::const_iterator j(i->classifications.begin());
          j != i->classifications.end(); ++j) {
       int left = mirroring_context_->mirrored_left_coord(x, x + j->pixel_width);
-      canvas->DrawStringInt(j->text, *j->font, j->color, left,
+      canvas->DrawStringInt(WideToUTF16Hack(j->text), *j->font, j->color, left,
                             y, j->pixel_width, j->font->GetHeight(), flags);
       x += j->pixel_width;
     }
@@ -708,8 +709,9 @@ void AutocompleteResultView::Elide(Runs* runs, int remaining_width) const {
       first_classification = false;
 
       // Can we fit at least an ellipsis?
-      string16 elided_text =
-          ui::ElideText(j->text, *j->font, remaining_width, false);
+      std::wstring elided_text(UTF16ToWideHack(
+          ui::ElideText(WideToUTF16Hack(j->text), *j->font, remaining_width,
+                        false)));
       Classifications::reverse_iterator prior_classification(j);
       ++prior_classification;
       const bool on_first_classification =
@@ -738,7 +740,7 @@ void AutocompleteResultView::Elide(Runs* runs, int remaining_width) const {
              (prior_classification->font == &normal_font_)))
           j->font = &normal_font_;
 
-        j->pixel_width = j->font->GetStringWidth(elided_text);
+        j->pixel_width = j->font->GetStringWidth(WideToUTF16Hack(elided_text));
 
         // Erase any other classifications that come after the elided one.
         i->classifications.erase(j.base(), i->classifications.end());
@@ -1150,10 +1152,10 @@ void AutocompletePopupContentsView::OpenIndex(
   // extension, |match| and its contents.  So copy the relevant strings out to
   // make sure they stay alive until the call completes.
   const GURL url(match.destination_url);
-  string16 keyword;
+  std::wstring keyword;
   const bool is_keyword_hint = model_->GetKeywordForMatch(match, &keyword);
   edit_view_->OpenURL(url, disposition, match.transition, GURL(), index,
-                      is_keyword_hint ? string16() : keyword);
+                      is_keyword_hint ? std::wstring() : keyword);
 }
 
 size_t AutocompletePopupContentsView::GetIndexForPoint(

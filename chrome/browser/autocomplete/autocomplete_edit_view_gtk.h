@@ -105,27 +105,27 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                        PageTransition::Type transition,
                        const GURL& alternate_nav_url,
                        size_t selected_line,
-                       const string16& keyword);
+                       const std::wstring& keyword);
 
-  virtual string16 GetText() const;
+  virtual std::wstring GetText() const;
 
   virtual bool IsEditingOrEmpty() const;
   virtual int GetIcon() const;
 
-  virtual void SetUserText(const string16& text);
-  virtual void SetUserText(const string16& text,
-                           const string16& display_text,
+  virtual void SetUserText(const std::wstring& text);
+  virtual void SetUserText(const std::wstring& text,
+                           const std::wstring& display_text,
                            bool update_popup);
 
-  virtual void SetWindowTextAndCaretPos(const string16& text,
+  virtual void SetWindowTextAndCaretPos(const std::wstring& text,
                                         size_t caret_pos);
 
   virtual void SetForcedQuery();
 
   virtual bool IsSelectAll();
   virtual bool DeleteAtEndPressed();
-  virtual void GetSelectionBounds(string16::size_type* start,
-                                  string16::size_type* end);
+  virtual void GetSelectionBounds(std::wstring::size_type* start,
+                                  std::wstring::size_type* end);
   virtual void SelectAll(bool reversed);
   virtual void RevertAll();
 
@@ -134,10 +134,10 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
   virtual void SetFocus();
 
-  virtual void OnTemporaryTextMaybeChanged(const string16& display_text,
+  virtual void OnTemporaryTextMaybeChanged(const std::wstring& display_text,
                                            bool save_original_selection);
   virtual bool OnInlineAutocompleteTextMaybeChanged(
-      const string16& display_text, size_t user_text_length);
+      const std::wstring& display_text, size_t user_text_length);
   virtual void OnRevertTemporaryText();
   virtual void OnBeforePossibleChange();
   virtual bool OnAfterPossibleChange();
@@ -149,8 +149,8 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
 #if defined(TOOLKIT_VIEWS)
   virtual views::View* AddToView(views::View* parent);
-  virtual bool CommitInstantSuggestion(const string16& typed_text,
-                                       const string16& suggested_text);
+  virtual bool CommitInstantSuggestion(const std::wstring& typed_text,
+                                       const std::wstring& suggested_text);
 
   // Enables accessibility on AutocompleteEditView.
   void EnableAccessibility();
@@ -323,7 +323,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   void SavePrimarySelection(const std::string& selected_text);
 
   // Update the field with |text| and set the selection.
-  void SetTextAndSelectedRange(const string16& text,
+  void SetTextAndSelectedRange(const std::wstring& text,
                                const CharRange& range);
 
   // Set the selection to |range|.
@@ -408,7 +408,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   CharRange saved_temporary_selection_;
 
   // Tracking state before and after a possible change.
-  string16 text_before_change_;
+  std::wstring text_before_change_;
   CharRange sel_before_change_;
 
   // The most-recently-selected text from the entry that was copied to the
@@ -511,7 +511,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
 #if GTK_CHECK_VERSION(2, 20, 0)
   // Stores the text being composed by the input method.
-  string16 preedit_;
+  std::wstring preedit_;
 
   // Tracking preedit state before and after a possible change. We don't need to
   // track preedit_'s content, as it'll be treated as part of text content.

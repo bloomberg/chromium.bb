@@ -44,13 +44,13 @@ class HistoryProvider : public AutocompleteProvider {
   // Note that we don't do this in AutocompleteInput's constructor, because if
   // e.g. we convert a Unicode hostname to punycode, other providers will show
   // output that surprises the user ("Search Google for xn--6ca.com").
-  static string16 FixupUserInput(const AutocompleteInput& input);
+  static std::wstring FixupUserInput(const AutocompleteInput& input);
 
   // Trims "http:" and up to two subsequent slashes from |url|.  Returns the
   // number of characters that were trimmed.
   // NOTE: For a view-source: URL, this will trim from after "view-source:" and
   // return 0.
-  static size_t TrimHttpPrefix(string16* url);
+  static size_t TrimHttpPrefix(std::wstring* url);
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_H_

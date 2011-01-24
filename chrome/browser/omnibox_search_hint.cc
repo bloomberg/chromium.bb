@@ -208,8 +208,8 @@ void OmniboxSearchHint::ShowEnteringQuery() {
       GetLocationBar();
   AutocompleteEditView*  edit_view = location_bar->location_entry();
   location_bar->FocusLocation(true);
-  edit_view->SetUserText(
-      l10n_util::GetStringUTF16(IDS_OMNIBOX_SEARCH_HINT_OMNIBOX_TEXT));
+  edit_view->SetUserText(UTF16ToWideHack(
+      l10n_util::GetStringUTF16(IDS_OMNIBOX_SEARCH_HINT_OMNIBOX_TEXT)));
   edit_view->SelectAll(false);
   // Entering text in the autocomplete edit view triggers the suggestion popup
   // that we don't want to show in this case.

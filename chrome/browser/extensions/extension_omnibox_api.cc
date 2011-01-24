@@ -261,5 +261,5 @@ void ApplyDefaultSuggestionForExtensionKeyword(
     }
   }
 
-  match->contents.assign(description);
+  match->contents.assign(UTF16ToWide(description));
 }

@@ -12,7 +12,7 @@ const int kLowQualityMatchAgeLimitInDays = 3;
 
 HistoryMatch::HistoryMatch()
     : url_info(),
-      input_location(string16::npos),
+      input_location(std::wstring::npos),
       match_in_scheme(false),
       innermost_match(true) {
 }

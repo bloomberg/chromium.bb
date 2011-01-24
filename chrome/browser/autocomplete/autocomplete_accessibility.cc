@@ -120,7 +120,7 @@ STDMETHODIMP AutocompleteAccessibility::get_accValue(VARIANT var_id,
     return E_INVALIDARG;
   }
 
-  string16 temp_value;
+  std::wstring temp_value;
 
   if (var_id.lVal != CHILDID_SELF)
     return E_INVALIDARG;

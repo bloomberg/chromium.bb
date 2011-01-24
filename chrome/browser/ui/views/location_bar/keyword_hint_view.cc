@@ -48,7 +48,7 @@ void KeywordHintView::SetColor(const SkColor& color) {
   trailing_label_->SetColor(color);
 }
 
-void KeywordHintView::SetKeyword(const string16& keyword) {
+void KeywordHintView::SetKeyword(const std::wstring& keyword) {
   keyword_ = keyword;
   if (keyword_.empty())
     return;
@@ -59,7 +59,7 @@ void KeywordHintView::SetKeyword(const string16& keyword) {
   std::vector<size_t> content_param_offsets;
   bool is_extension_keyword;
   string16 short_name = profile_->GetTemplateURLModel()->
-      GetKeywordShortName(keyword, &is_extension_keyword);
+      GetKeywordShortName(WideToUTF16Hack(keyword), &is_extension_keyword);
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
   const std::wstring keyword_hint =

@@ -1384,8 +1384,8 @@ TEST_F(AutomationProxyTest, AutocompleteGetSetText) {
       browser->GetAutocompleteEdit());
   ASSERT_TRUE(edit.get());
   EXPECT_TRUE(edit->is_valid());
-  const string16 text_to_set = ASCIIToUTF16("Lollerskates");
-  string16 actual_text;
+  const std::wstring text_to_set = L"Lollerskates";
+  std::wstring actual_text;
   EXPECT_TRUE(edit->SetText(text_to_set));
   EXPECT_TRUE(edit->GetText(&actual_text));
   EXPECT_EQ(text_to_set, actual_text);
@@ -1409,9 +1409,9 @@ TEST_F(AutomationProxyTest, AutocompleteParallelProxy) {
   ASSERT_TRUE(edit2.get());
   EXPECT_TRUE(browser2->GetTab(0)->WaitForTabToBeRestored(
       TestTimeouts::action_max_timeout_ms()));
-  const string16 text_to_set1 = ASCIIToUTF16("Lollerskates");
-  const string16 text_to_set2 = ASCIIToUTF16("Roflcopter");
-  string16 actual_text1, actual_text2;
+  const std::wstring text_to_set1 = L"Lollerskates";
+  const std::wstring text_to_set2 = L"Roflcopter";
+  std::wstring actual_text1, actual_text2;
   EXPECT_TRUE(edit1->SetText(text_to_set1));
   EXPECT_TRUE(edit2->SetText(text_to_set2));
   EXPECT_TRUE(edit1->GetText(&actual_text1));
@@ -1438,7 +1438,7 @@ TEST_F(AutomationProxyVisibleTest, AutocompleteMatchesTest) {
   EXPECT_TRUE(edit->is_valid());
   EXPECT_TRUE(browser->ApplyAccelerator(IDC_FOCUS_LOCATION));
   ASSERT_TRUE(edit->WaitForFocus());
-  EXPECT_TRUE(edit->SetText(ASCIIToUTF16("Roflcopter")));
+  EXPECT_TRUE(edit->SetText(L"Roflcopter"));
   EXPECT_TRUE(edit->WaitForQuery(TestTimeouts::action_max_timeout_ms()));
   bool query_in_progress;
   EXPECT_TRUE(edit->IsQueryInProgress(&query_in_progress));
@@ -1513,8 +1513,7 @@ TEST_F(AutomationProxyTest, FLAKY_AppModalDialogTest) {
   EXPECT_FALSE(modal_dialog_showing);
   int result = -1;
   EXPECT_TRUE(tab->ExecuteAndExtractInt(
-      std::wstring(),
-      L"window.domAutomationController.send(result);", &result));
+      L"", L"window.domAutomationController.send(result);", &result));
   EXPECT_EQ(0, result);
 
   // Try again.
@@ -1534,8 +1533,7 @@ TEST_F(AutomationProxyTest, FLAKY_AppModalDialogTest) {
                                                      &button));
   EXPECT_FALSE(modal_dialog_showing);
   EXPECT_TRUE(tab->ExecuteAndExtractInt(
-      std::wstring(),
-      L"window.domAutomationController.send(result);", &result));
+      L"", L"window.domAutomationController.send(result);", &result));
   EXPECT_EQ(1, result);
 }
 

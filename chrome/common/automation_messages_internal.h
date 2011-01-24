@@ -653,7 +653,7 @@ IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_SavePage,
 IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_AutocompleteEditGetText,
                             int /* autocomplete edit handle */,
                             bool /* the requested autocomplete edit exists */,
-                            string16 /* omnibox text */)
+                            std::wstring /* omnibox text */)
 
 // This message sets the text being displayed in the AutocompleteEdit.  The
 // first parameter is the handle to the omnibox and the second parameter is
@@ -662,7 +662,7 @@ IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_AutocompleteEditGetText,
 // completed.
 IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_AutocompleteEditSetText,
                             int /* autocomplete edit handle */,
-                            string16 /* text to set */,
+                            std::wstring /* text to set */,
                             bool /* the requested autocomplete edit exists */)
 
 // This message requests if a query to a autocomplete provider is still in

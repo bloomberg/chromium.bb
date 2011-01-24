@@ -79,7 +79,7 @@ class InstantTest : public InProcessBrowserTest {
   // Type a character to get instant to trigger.
   void SetupLocationBar() {
     FindLocationBar();
-    location_bar_->location_entry()->SetUserText(ASCIIToUTF16("a"));
+    location_bar_->location_entry()->SetUserText(L"a");
   }
 
   // Waits for preview to be shown.
@@ -111,7 +111,7 @@ class InstantTest : public InProcessBrowserTest {
 
   void SetLocationBarText(const std::wstring& text) {
     ASSERT_NO_FATAL_FAILURE(FindLocationBar());
-    location_bar_->location_entry()->SetUserText(WideToUTF16Hack(text));
+    location_bar_->location_entry()->SetUserText(text);
     ui_test_utils::WaitForNotification(
         NotificationType::INSTANT_CONTROLLER_SHOWN);
   }
@@ -413,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearch) {
 
   // Now type in some search text.
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
-  location_bar_->location_entry()->SetUserText(ASCIIToUTF16("abc"));
+  location_bar_->location_entry()->SetUserText(L"abc");
 
   // Wait for the preview to navigate.
   ASSERT_NO_FATAL_FAILURE(WaitForPreviewToNavigate(false));
@@ -445,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearch) {
 
   // Reset the user text so that the page is told the text changed. We should be
   // able to nuke this once 66104 is fixed.
-  location_bar_->location_entry()->SetUserText(ASCIIToUTF16("abcd"));
+  location_bar_->location_entry()->SetUserText(L"abcd");
 
   // Wait for the renderer to process it.
   ASSERT_NO_FATAL_FAILURE(
@@ -472,7 +472,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SearchServerDoesntSupportInstant) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("empty.html"));
   ASSERT_NO_FATAL_FAILURE(FindLocationBar());
-  location_bar_->location_entry()->SetUserText(ASCIIToUTF16("a"));
+  location_bar_->location_entry()->SetUserText(L"a");
   ASSERT_TRUE(browser()->instant());
   // Because we typed in a search string we should think we're showing instant
   // results.
@@ -511,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearchDoesntSupportInstant) {
   ASSERT_TRUE(rwhv->IsShowing());
 
   // Now type in some search text.
-  location_bar_->location_entry()->SetUserText(ASCIIToUTF16("a"));
+  location_bar_->location_entry()->SetUserText(L"a");
 
   // Instant should still be live.
   ASSERT_TRUE(browser()->instant()->is_displayable());
@@ -561,7 +561,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, HideOn403) {
   ASSERT_TRUE(test_server()->Start());
   GURL url(test_server()->GetURL("files/instant/403.html"));
   ASSERT_NO_FATAL_FAILURE(FindLocationBar());
-  location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
+  location_bar_->location_entry()->SetUserText(UTF8ToWide(url.spec()));
   // The preview shouldn't be showing, but it should be loading.
   ASSERT_TRUE(browser()->instant()->GetPreviewContents());
   ASSERT_TRUE(browser()->instant()->is_active());
@@ -576,7 +576,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, HideOn403) {
   // Try loading another url on the server. Instant shouldn't create a new tab
   // as the server returned 403.
   GURL url2(test_server()->GetURL("files/instant/empty.html"));
-  location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url2.spec()));
+  location_bar_->location_entry()->SetUserText(UTF8ToWide(url2.spec()));
   ASSERT_FALSE(browser()->instant()->GetPreviewContents());
   ASSERT_TRUE(browser()->instant()->is_active());
   ASSERT_FALSE(browser()->instant()->is_displayable());
@@ -648,7 +648,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_TabKey) {
   // Pressing tab to convert instant suggest into inline autocomplete.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB));
 
-  ASSERT_EQ(ASCIIToUTF16("abcdef"), location_bar_->location_entry()->GetText());
+  ASSERT_EQ(L"abcdef", location_bar_->location_entry()->GetText());
 
   EXPECT_EQ("true 0 0 2 2 a false abcdef false 6 6",
       GetSearchStateAsString(preview_));

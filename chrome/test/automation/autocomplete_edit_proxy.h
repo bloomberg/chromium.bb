@@ -48,11 +48,11 @@ struct AutocompleteMatchData {
   std::string provider_name;
   int relevance;
   bool deletable;
-  string16 fill_into_edit;
+  std::wstring fill_into_edit;
   size_t inline_autocomplete_offset;
   GURL destination_url;
-  string16 contents;
-  string16 description;
+  std::wstring contents;
+  std::wstring description;
   bool is_history_what_you_typed_match;
   std::string type;
   bool starred;
@@ -68,11 +68,11 @@ struct ParamTraits<AutocompleteMatchData> {
     m->WriteString(p.provider_name);
     m->WriteInt(p.relevance);
     m->WriteBool(p.deletable);
-    m->WriteString16(p.fill_into_edit);
+    m->WriteWString(p.fill_into_edit);
     m->WriteSize(p.inline_autocomplete_offset);
     m->WriteString(p.destination_url.possibly_invalid_spec());
-    m->WriteString16(p.contents);
-    m->WriteString16(p.description);
+    m->WriteWString(p.contents);
+    m->WriteWString(p.description);
     m->WriteBool(p.is_history_what_you_typed_match);
     m->WriteString(p.type);
     m->WriteBool(p.starred);
@@ -83,11 +83,11 @@ struct ParamTraits<AutocompleteMatchData> {
     if (!m->ReadString(iter, &r->provider_name) ||
         !m->ReadInt(iter, &r->relevance) ||
         !m->ReadBool(iter, &r->deletable) ||
-        !m->ReadString16(iter, &r->fill_into_edit) ||
+        !m->ReadWString(iter, &r->fill_into_edit) ||
         !m->ReadSize(iter, &r->inline_autocomplete_offset) ||
         !m->ReadString(iter, &destination_url) ||
-        !m->ReadString16(iter, &r->contents) ||
-        !m->ReadString16(iter, &r->description) ||
+        !m->ReadWString(iter, &r->contents) ||
+        !m->ReadWString(iter, &r->description) ||
         !m->ReadBool(iter, &r->is_history_what_you_typed_match) ||
         !m->ReadString(iter, &r->type) ||
         !m->ReadBool(iter, &r->starred))
@@ -136,10 +136,10 @@ class AutocompleteEditProxy : public AutomationResourceProxy {
   // there are no IPC errors.
 
   // Gets the text visible in the omnibox.
-  bool GetText(string16* text) const;
+  bool GetText(std::wstring* text) const;
 
   // Sets the text visible in the omnibox.
-  bool SetText(const string16& text);
+  bool SetText(const std::wstring& text);
 
   // Determines if a query to an autocomplete provider is still in progress.
   // NOTE: No autocomplete queries will be made if the omnibox doesn't have

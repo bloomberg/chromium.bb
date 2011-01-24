@@ -43,8 +43,8 @@ AutocompleteEditController::~AutocompleteEditController() {
 // AutocompleteEditModel::State
 
 AutocompleteEditModel::State::State(bool user_input_in_progress,
-                                    const string16& user_text,
-                                    const string16& keyword,
+                                    const std::wstring& user_text,
+                                    const std::wstring& keyword,
                                     bool is_keyword_hint)
     : user_input_in_progress(user_input_in_progress),
       user_text(user_text),
@@ -101,7 +101,7 @@ const AutocompleteEditModel::State
     // Weird edge case to match other browsers: if the edit is empty, revert to
     // the permanent text (so the user can get it back easily) but select it (so
     // on switching back, typing will "just work").
-    const string16 user_text(UserTextFromDisplayText(view_->GetText()));
+    const std::wstring user_text(UserTextFromDisplayText(view_->GetText()));
     if (user_text.empty()) {
       view_->RevertAll();
       view_->SelectAll(true);
@@ -132,7 +132,7 @@ AutocompleteMatch AutocompleteEditModel::CurrentMatch() {
 }
 
 bool AutocompleteEditModel::UpdatePermanentText(
-    const string16& new_permanent_text) {
+    const std::wstring& new_permanent_text) {
   // When there's a new URL, and the user is not editing anything or the edit
   // doesn't have focus, we want to revert the edit to show the new URL.  (The
   // common case where the edit doesn't have focus is when the user has started
@@ -145,7 +145,7 @@ bool AutocompleteEditModel::UpdatePermanentText(
   return visibly_changed_permanent_text;
 }
 
-void AutocompleteEditModel::SetUserText(const string16& text) {
+void AutocompleteEditModel::SetUserText(const std::wstring& text) {
   SetInputInProgress(true);
   InternalSetUserText(text);
   paste_state_ = NONE;
@@ -153,18 +153,18 @@ void AutocompleteEditModel::SetUserText(const string16& text) {
 }
 
 void AutocompleteEditModel::FinalizeInstantQuery(
-    const string16& input_text,
-    const string16& suggest_text) {
+    const std::wstring& input_text,
+    const std::wstring& suggest_text) {
   popup_->FinalizeInstantQuery(input_text, suggest_text);
 }
 
 void AutocompleteEditModel::GetDataForURLExport(GURL* url,
-                                                string16* title,
+                                                std::wstring* title,
                                                 SkBitmap* favicon) {
   AutocompleteMatch match;
   GetInfoForCurrentText(&match, NULL);
   *url = match.destination_url;
-  if (*url == URLFixerUpper::FixupURL(UTF16ToUTF8(permanent_text_),
+  if (*url == URLFixerUpper::FixupURL(WideToUTF8(permanent_text_),
                                       std::string())) {
     *title = controller_->GetTitle();
     *favicon = controller_->GetFavIcon();
@@ -191,12 +191,12 @@ bool AutocompleteEditModel::UseVerbatimInstant() {
       just_deleted_text_)
     return true;
 
-  string16::size_type start, end;
+  std::wstring::size_type start, end;
   view_->GetSelectionBounds(&start, &end);
   return (start != end) || (start != view_->GetText().size());
 }
 
-string16 AutocompleteEditModel::GetDesiredTLD() const {
+std::wstring AutocompleteEditModel::GetDesiredTLD() const {
   // Tricky corner case: The user has typed "foo" and currently sees an inline
   // autocomplete suggestion of "foo.net".  He now presses ctrl-a (e.g. to
   // select all, on Windows).  If we treat the ctrl press as potentially for the
@@ -211,7 +211,7 @@ string16 AutocompleteEditModel::GetDesiredTLD() const {
   // * the user is not typing a keyword query.
   return (control_key_state_ == DOWN_WITHOUT_CHANGE &&
           inline_autocomplete_text_.empty() && !KeywordIsSelected())?
-    ASCIIToUTF16("com") : string16();
+    std::wstring(L"com") : std::wstring();
 }
 
 bool AutocompleteEditModel::CurrentTextIsURL() const {
@@ -235,7 +235,7 @@ AutocompleteMatch::Type AutocompleteEditModel::CurrentTextType() const {
 
 void AutocompleteEditModel::AdjustTextForCopy(int sel_min,
                                               bool is_all_selected,
-                                              string16* text,
+                                              std::wstring* text,
                                               GURL* url,
                                               bool* write_url) {
   *write_url = false;
@@ -253,7 +253,7 @@ void AutocompleteEditModel::AdjustTextForCopy(int sel_min,
     // The user selected all the text and has not edited it. Use the url as the
     // text so that if the scheme was stripped it's added back, and the url
     // is unescaped (we escape parts of the url for display).
-    *text = UTF8ToUTF16(url->spec());
+    *text = UTF8ToWide(url->spec());
     *write_url = true;
     return;
   }
@@ -269,8 +269,8 @@ void AutocompleteEditModel::AdjustTextForCopy(int sel_min,
       perm_url.host() == url->host()) {
     *write_url = true;
 
-    string16 http = ASCIIToUTF16(chrome::kHttpScheme) +
-        ASCIIToUTF16(chrome::kStandardSchemeSeparator);
+    std::wstring http = ASCIIToWide(chrome::kHttpScheme) +
+        ASCIIToWide(chrome::kStandardSchemeSeparator);
     if (text->compare(0, http.length(), http) != 0)
       *text = http + *text;
   }
@@ -287,7 +287,7 @@ void AutocompleteEditModel::SetInputInProgress(bool in_progress) {
 void AutocompleteEditModel::Revert() {
   SetInputInProgress(false);
   paste_state_ = NONE;
-  InternalSetUserText(string16());
+  InternalSetUserText(std::wstring());
   keyword_.clear();
   is_keyword_hint_ = false;
   has_temporary_text_ = false;
@@ -305,12 +305,12 @@ void AutocompleteEditModel::StartAutocomplete(
       (paste_state_ != NONE), keyword_is_selected, keyword_is_selected);
 }
 
-bool AutocompleteEditModel::CanPasteAndGo(const string16& text) const {
+bool AutocompleteEditModel::CanPasteAndGo(const std::wstring& text) const {
   if (!view_->GetCommandUpdater()->IsCommandEnabled(IDC_OPEN_CURRENT_URL))
     return false;
 
   AutocompleteMatch match;
-  profile_->GetAutocompleteClassifier()->Classify(text, string16(), false,
+  profile_->GetAutocompleteClassifier()->Classify(text, std::wstring(), false,
       &match, &paste_and_go_alternate_nav_url_);
   paste_and_go_url_ = match.destination_url;
   paste_and_go_transition_ = match.transition;
@@ -324,7 +324,7 @@ void AutocompleteEditModel::PasteAndGo() {
   view_->RevertAll();
   view_->OpenURL(paste_and_go_url_, CURRENT_TAB, paste_and_go_transition_,
       paste_and_go_alternate_nav_url_, AutocompletePopupModel::kNoMatch,
-      string16());
+      std::wstring());
 }
 
 void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
@@ -338,7 +338,7 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
     return;
 
   if ((match.transition == PageTransition::TYPED) && (match.destination_url ==
-      URLFixerUpper::FixupURL(UTF16ToUTF8(permanent_text_), std::string()))) {
+      URLFixerUpper::FixupURL(WideToUTF8(permanent_text_), std::string()))) {
     // When the user hit enter on the existing permanent URL, treat it like a
     // reload for scoring purposes.  We could detect this by just checking
     // user_input_in_progress_, but it seems better to treat "edits" that end
@@ -368,7 +368,7 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
   }
   view_->OpenURL(match.destination_url, disposition, match.transition,
                  alternate_nav_url, AutocompletePopupModel::kNoMatch,
-                 is_keyword_hint_ ? string16() : keyword_);
+                 is_keyword_hint_ ? std::wstring() : keyword_);
 }
 
 void AutocompleteEditModel::OpenURL(const GURL& url,
@@ -376,7 +376,7 @@ void AutocompleteEditModel::OpenURL(const GURL& url,
                                     PageTransition::Type transition,
                                     const GURL& alternate_nav_url,
                                     size_t index,
-                                    const string16& keyword) {
+                                    const std::wstring& keyword) {
   // We only care about cases where there is a selection (i.e. the popup is
   // open).
   if (popup_->IsOpen()) {
@@ -393,7 +393,7 @@ void AutocompleteEditModel::OpenURL(const GURL& url,
   TemplateURLModel* template_url_model = profile_->GetTemplateURLModel();
   if (template_url_model && !keyword.empty()) {
     const TemplateURL* const template_url =
-        template_url_model->GetTemplateURLForKeyword(keyword);
+        template_url_model->GetTemplateURLForKeyword(WideToUTF16Hack(keyword));
 
     // Special case for extension keywords. Don't increment usage count for
     // these.
@@ -409,7 +409,7 @@ void AutocompleteEditModel::OpenURL(const GURL& url,
       size_t prefix_length = match.template_url->keyword().size() + 1;
       ExtensionOmniboxEventRouter::OnInputEntered(
           profile_, match.template_url->GetExtensionId(),
-          UTF16ToUTF8(match.fill_into_edit.substr(prefix_length)));
+          WideToUTF8(match.fill_into_edit.substr(prefix_length)));
       view_->RevertAll();
       return;
     }
@@ -435,7 +435,7 @@ bool AutocompleteEditModel::AcceptKeyword() {
   DCHECK(is_keyword_hint_ && !keyword_.empty());
 
   view_->OnBeforePossibleChange();
-  view_->SetWindowTextAndCaretPos(string16(), 0);
+  view_->SetWindowTextAndCaretPos(std::wstring(), 0);
   is_keyword_hint_ = false;
   view_->OnAfterPossibleChange();
   just_deleted_text_ = false;  // OnAfterPossibleChange() erroneously sets this
@@ -446,9 +446,9 @@ bool AutocompleteEditModel::AcceptKeyword() {
   return true;
 }
 
-void AutocompleteEditModel::ClearKeyword(const string16& visible_text) {
+void AutocompleteEditModel::ClearKeyword(const std::wstring& visible_text) {
   view_->OnBeforePossibleChange();
-  const string16 window_text(keyword_ + visible_text);
+  const std::wstring window_text(keyword_ + visible_text);
   view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length());
   keyword_.clear();
   is_keyword_hint_ = false;
@@ -566,9 +566,9 @@ void AutocompleteEditModel::OnUpOrDownKeyPressed(int count) {
 }
 
 void AutocompleteEditModel::OnPopupDataChanged(
-    const string16& text,
+    const std::wstring& text,
     GURL* destination_for_temporary_text_change,
-    const string16& keyword,
+    const std::wstring& keyword,
     bool is_keyword_hint) {
   // Update keyword/hint-related local state.
   bool keyword_state_changed = (keyword_ != keyword) ||
@@ -622,7 +622,7 @@ void AutocompleteEditModel::OnPopupDataChanged(
 }
 
 bool AutocompleteEditModel::OnAfterPossibleChange(
-    const string16& new_text,
+    const std::wstring& new_text,
     bool selection_differs,
     bool text_differs,
     bool just_deleted_text,
@@ -655,7 +655,7 @@ bool AutocompleteEditModel::OnAfterPossibleChange(
   // state associated with the text.  Otherwise, we can get surprising behavior
   // where the autocompleted text unexpectedly reappears, e.g. crbug.com/55983
   if (user_text_changed) {
-    const string16 new_user_text = UserTextFromDisplayText(new_text);
+    const std::wstring new_user_text = UserTextFromDisplayText(new_text);
 
     // Try to accept the current keyword if the user only typed a space at the
     // end of content. Model's state and popup will be updated when the keyword
@@ -705,14 +705,14 @@ void AutocompleteEditModel::Observe(NotificationType type,
   DCHECK_EQ(NotificationType::AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED,
             type.value);
 
-  string16 inline_autocomplete_text;
-  string16 keyword;
+  std::wstring inline_autocomplete_text;
+  std::wstring keyword;
   bool is_keyword_hint = false;
   const AutocompleteResult* result =
       Details<const AutocompleteResult>(details).ptr();
   const AutocompleteResult::const_iterator match(result->default_match());
   if (match != result->end()) {
-    if ((match->inline_autocomplete_offset != string16::npos) &&
+    if ((match->inline_autocomplete_offset != std::wstring::npos) &&
         (match->inline_autocomplete_offset < match->fill_into_edit.length())) {
       inline_autocomplete_text =
           match->fill_into_edit.substr(match->inline_autocomplete_offset);
@@ -734,7 +734,7 @@ void AutocompleteEditModel::Observe(NotificationType type,
   OnPopupDataChanged(inline_autocomplete_text, NULL, keyword, is_keyword_hint);
 }
 
-void AutocompleteEditModel::InternalSetUserText(const string16& text) {
+void AutocompleteEditModel::InternalSetUserText(const std::wstring& text) {
   user_text_ = text;
   just_deleted_text_ = false;
   inline_autocomplete_text_.clear();
@@ -744,15 +744,15 @@ bool AutocompleteEditModel::KeywordIsSelected() const {
   return !is_keyword_hint_ && !keyword_.empty();
 }
 
-string16 AutocompleteEditModel::DisplayTextFromUserText(
-    const string16& text) const {
+std::wstring AutocompleteEditModel::DisplayTextFromUserText(
+    const std::wstring& text) const {
   return KeywordIsSelected() ?
       KeywordProvider::SplitReplacementStringFromInput(text, false) : text;
 }
 
-string16 AutocompleteEditModel::UserTextFromDisplayText(
-    const string16& text) const {
-  return KeywordIsSelected() ? (keyword_ + char16(' ') + text) : text;
+std::wstring AutocompleteEditModel::UserTextFromDisplayText(
+    const std::wstring& text) const {
+  return KeywordIsSelected() ? (keyword_ + L" " + text) : text;
 }
 
 void AutocompleteEditModel::GetInfoForCurrentText(
@@ -767,11 +767,11 @@ void AutocompleteEditModel::GetInfoForCurrentText(
   }
 }
 
-bool AutocompleteEditModel::GetURLForText(const string16& text,
+bool AutocompleteEditModel::GetURLForText(const std::wstring& text,
                                           GURL* url) const {
   GURL parsed_url;
   const AutocompleteInput::Type type = AutocompleteInput::Parse(
-      UserTextFromDisplayText(text), string16(), NULL, NULL, &parsed_url);
+      UserTextFromDisplayText(text), std::wstring(), NULL, NULL, &parsed_url);
   if (type != AutocompleteInput::URL)
     return false;
 
@@ -780,7 +780,7 @@ bool AutocompleteEditModel::GetURLForText(const string16& text,
 }
 
 bool AutocompleteEditModel::MaybeAcceptKeywordBySpace(
-    const string16& new_user_text) {
+    const std::wstring& new_user_text) {
   return (paste_state_ == NONE) && is_keyword_hint_ && !keyword_.empty() &&
       inline_autocomplete_text_.empty() && !user_text_.empty() &&
       (new_user_text.length() == user_text_.length() + 1) &&

@@ -57,11 +57,11 @@ struct HistoryMatch {
 typedef std::deque<HistoryMatch> HistoryMatches;
 
 struct Prefix {
-  Prefix(const string16& prefix, int num_components)
+  Prefix(const std::wstring& prefix, int num_components)
       : prefix(prefix),
         num_components(num_components) {}
 
-  string16 prefix;
+  std::wstring prefix;
 
   // The number of "components" in the prefix.  The scheme is a component,
   // and the initial "www." or "ftp." is a component.  So "http://foo.com"

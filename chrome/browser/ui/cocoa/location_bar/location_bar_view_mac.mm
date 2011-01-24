@@ -248,7 +248,7 @@ void LocationBarViewMac::OnAutocompleteWillAccept() {
   update_instant_ = false;
 }
 
-bool LocationBarViewMac::OnCommitSuggestedText(const string16& typed_text) {
+bool LocationBarViewMac::OnCommitSuggestedText(const std::wstring& typed_text) {
   return edit_view_->CommitSuggestText();
 }
 
@@ -317,17 +317,17 @@ void LocationBarViewMac::OnChanged() {
       instant->Update
           (browser_->GetSelectedTabContentsWrapper(),
            edit_view_->model()->CurrentMatch(),
-           edit_view_->GetText(),
+           WideToUTF16(edit_view_->GetText()),
            edit_view_->model()->UseVerbatimInstant(),
            &suggested_text);
       if (!instant->MightSupportInstant()) {
-        edit_view_->model()->FinalizeInstantQuery(string16(),
-                                                  string16());
+        edit_view_->model()->FinalizeInstantQuery(std::wstring(),
+                                                  std::wstring());
       }
     } else {
       instant->DestroyPreviewContents();
-      edit_view_->model()->FinalizeInstantQuery(string16(),
-                                                string16());
+      edit_view_->model()->FinalizeInstantQuery(std::wstring(),
+                                                std::wstring());
     }
   }
 
@@ -357,9 +357,9 @@ SkBitmap LocationBarViewMac::GetFavIcon() const {
   return SkBitmap();
 }
 
-string16 LocationBarViewMac::GetTitle() const {
+std::wstring LocationBarViewMac::GetTitle() const {
   NOTIMPLEMENTED();
-  return string16();
+  return std::wstring();
 }
 
 void LocationBarViewMac::Revert() {
@@ -520,9 +520,10 @@ NSPoint LocationBarViewMac::GetPageInfoBubblePoint() const {
   }
 }
 
-NSImage* LocationBarViewMac::GetKeywordImage(const string16& keyword) {
+NSImage* LocationBarViewMac::GetKeywordImage(const std::wstring& keyword) {
   const TemplateURL* template_url =
-      profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
+      profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(
+          WideToUTF16Hack(keyword));
   if (template_url && template_url->IsExtensionKeyword()) {
     const SkBitmap& bitmap = profile_->GetExtensionService()->
         GetOmniboxIcon(template_url->GetExtensionId());
@@ -650,12 +651,12 @@ void LocationBarViewMac::Layout() {
   keyword_hint_decoration_->SetVisible(false);
 
   // Get the keyword to use for keyword-search and hinting.
-  const string16 keyword = edit_view_->model()->keyword();
+  const std::wstring keyword(edit_view_->model()->keyword());
   string16 short_name;
   bool is_extension_keyword = false;
   if (!keyword.empty()) {
     short_name = profile_->GetTemplateURLModel()->
-        GetKeywordShortName(keyword, &is_extension_keyword);
+        GetKeywordShortName(WideToUTF16Hack(keyword), &is_extension_keyword);
   }
 
   const bool is_keyword_hint = edit_view_->model()->is_keyword_hint();
@@ -664,7 +665,8 @@ void LocationBarViewMac::Layout() {
     // Switch from location icon to keyword mode.
     location_icon_decoration_->SetVisible(false);
     selected_keyword_decoration_->SetVisible(true);
-    selected_keyword_decoration_->SetKeyword(short_name, is_extension_keyword);
+    selected_keyword_decoration_->SetKeyword(UTF16ToWideHack(short_name),
+                                             is_extension_keyword);
     selected_keyword_decoration_->SetImage(GetKeywordImage(keyword));
   } else if (toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
     // Switch from location icon to show the EV bubble instead.

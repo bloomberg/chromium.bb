@@ -102,14 +102,14 @@ static NSColor* URLTextColor() {
 // and description cases.  Returns NSMutableAttributedString as a
 // convenience for MatchText().
 NSMutableAttributedString* AutocompletePopupViewMac::DecorateMatchedString(
-    const string16 &matchString,
+    const std::wstring &matchString,
     const AutocompleteMatch::ACMatchClassifications &classifications,
     NSColor* textColor, NSColor* dimTextColor, gfx::Font& font) {
   // Cache for on-demand computation of the bold version of |font|.
   NSFont* boldFont = nil;
 
   // Start out with a string using the default style info.
-  NSString* s = base::SysUTF16ToNSString(matchString);
+  NSString* s = base::SysWideToNSString(matchString);
   NSDictionary* attributes = [NSDictionary dictionaryWithObjectsAndKeys:
                                   font.GetNativeFont(), NSFontAttributeName,
                                   textColor, NSForegroundColorAttributeName,
@@ -154,7 +154,7 @@ NSMutableAttributedString* AutocompletePopupViewMac::DecorateMatchedString(
 
 NSMutableAttributedString* AutocompletePopupViewMac::ElideString(
     NSMutableAttributedString* aString,
-    const string16 originalString,
+    const std::wstring originalString,
     const gfx::Font& font,
     const float width) {
   // If it already fits, nothing to be done.
@@ -163,7 +163,8 @@ NSMutableAttributedString* AutocompletePopupViewMac::ElideString(
   }
 
   // If ElideText() decides to do nothing, nothing to be done.
-  const string16 elided = ui::ElideText(originalString, font, width, false);
+  const std::wstring elided(UTF16ToWideHack(ui::ElideText(
+      WideToUTF16Hack(originalString), font, width, false)));
   if (0 == elided.compare(originalString)) {
     return aString;
   }
@@ -180,7 +181,7 @@ NSMutableAttributedString* AutocompletePopupViewMac::ElideString(
   DCHECK(0 != elided.compare(0, i, originalString));
 
   // Replace the end of |aString| with the ellipses from |elided|.
-  NSString* s = base::SysUTF16ToNSString(elided.substr(i));
+  NSString* s = base::SysWideToNSString(elided.substr(i));
   [aString replaceCharactersInRange:NSMakeRange(i, [aString length] - i)
                          withString:s];
 
@@ -547,10 +548,10 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
   // completes.
   const AutocompleteMatch& match = model_->result().match_at(row);
   const GURL url(match.destination_url);
-  string16 keyword;
+  std::wstring keyword;
   const bool is_keyword_hint = model_->GetKeywordForMatch(match, &keyword);
   edit_view_->OpenURL(url, disposition, match.transition, GURL(), row,
-                      is_keyword_hint ? string16() : keyword);
+                      is_keyword_hint ? std::wstring() : keyword);
 }
 
 void AutocompletePopupViewMac::UserPressedOptIn(bool opt_in) {

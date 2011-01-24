@@ -12,7 +12,7 @@ AutocompleteMatch::AutocompleteMatch()
     : provider(NULL),
       relevance(0),
       deletable(false),
-      inline_autocomplete_offset(string16::npos),
+      inline_autocomplete_offset(std::wstring::npos),
       transition(PageTransition::GENERATED),
       is_history_what_you_typed_match(false),
       type(SEARCH_WHAT_YOU_TYPED),
@@ -27,7 +27,7 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
     : provider(provider),
       relevance(relevance),
       deletable(deletable),
-      inline_autocomplete_offset(string16::npos),
+      inline_autocomplete_offset(std::wstring::npos),
       transition(PageTransition::TYPED),
       is_history_what_you_typed_match(false),
       type(type),
@@ -105,8 +105,8 @@ bool AutocompleteMatch::DestinationsEqual(const AutocompleteMatch& elem1,
 
 // static
 void AutocompleteMatch::ClassifyMatchInString(
-    const string16& find_text,
-    const string16& text,
+    const std::wstring& find_text,
+    const std::wstring& text,
     int style,
     ACMatchClassifications* classification) {
   ClassifyLocationInString(text.find(find_text), find_text.length(),
@@ -132,7 +132,7 @@ void AutocompleteMatch::ClassifyLocationInString(
   }
 
   // Mark matching portion of string.
-  if (match_location == string16::npos) {
+  if (match_location == std::wstring::npos) {
     // No match, above classification will suffice for whole string.
     return;
   }
@@ -156,7 +156,7 @@ void AutocompleteMatch::Validate() const {
 }
 
 void AutocompleteMatch::ValidateClassifications(
-    const string16& text,
+    const std::wstring& text,
     const ACMatchClassifications& classifications) const {
   if (text.empty()) {
     DCHECK(classifications.size() == 0);
