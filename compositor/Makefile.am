@@ -1,12 +1,12 @@
 noinst_PROGRAMS = compositor
 
-INCLUDES =					\
+AM_CPPFLAGS =					\
+	-DDATADIR='"$(datadir)"'		\
 	-I$(top_builddir)/wayland		\
 	-I$(top_srcdir)/wayland			\
 	$(COMPOSITOR_CFLAGS)
 
 AM_CFLAGS = $(GCC_CFLAGS)
-AM_CPPFLAGS = -DDATADIR='"$(datadir)"'
 
 compositor_LDADD =					\
 	$(top_builddir)/wayland/libwayland-server.la	\
