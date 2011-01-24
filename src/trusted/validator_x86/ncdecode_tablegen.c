@@ -1484,45 +1484,28 @@ static int NaClExtractByte(const char* chars, const char* opcode_seq) {
   return strtoul(buffer, NULL, 16);
 }
 
-static NaClInstNode* NaClNewInstNode() {
-  int i;
+static NaClInstNode* NaClNewInstNode(uint8_t byte) {
   NaClInstNode* root = (NaClInstNode*) malloc(sizeof(NaClInstNode));
+  root->matching_byte = byte;
   root->matching_inst = NULL;
-  for (i = 0; i < NACL_NUM_BYTE_VALUES; ++i) {
-    root->succs[i] = NULL;
-  }
+  root->success = NULL;
+  root->fail = NULL;
   return root;
 }
 
-/* Simple (fast hack) recursive routine to automatically install
- * an opcode sequence into the rooted trie.
- */
-static NaClInstNode* NaClInstallInstSeq(int index,
-                                        const char* opcode_seq,
-                                        const char* chars_left,
-                                        NaClInstNode** root_ptr) {
-  NaClInstNode* root = *root_ptr;
-  if (index > NACL_MAX_BYTES_PER_X86_INSTRUCTION) {
-    NaClLog(LOG_ERROR,
-            "Too many bytes specified for opcode sequence: '%s'\n",
-            opcode_seq);
-    NaClFatal("Fix before continuing!\n");
-  }
-  if (NULL == root) {
-    root = NaClNewInstNode();
-    *root_ptr = root;
-  }
-  if (*chars_left) {
-    int byte = NaClExtractByte(chars_left, opcode_seq);
-    return NaClInstallInstSeq(
-        index+1, opcode_seq, chars_left + 2,
-        ((NaClInstNode**)(&(root->succs[byte]))));
-  } else {
-    return root;
-  }
-}
-
+/* Install an opcode sequence into the instruction trie. */
 static void NaClDefInstSeq(const char* opcode_seq) {
+  /* Next is a (reference) pointer to the next node. The reference
+   * is used so that we can easily update the trie when we add nodes.
+   */
+  NaClInstNode** next = &inst_node_root;
+  /* Last is the last visited node in trie that is still matching
+   * the opcode sequence being added.
+   */
+  NaClInstNode* last = NULL;
+  /* Index is the position of the next byte in the opcode sequence. */
+  int index = 0;
+
   /* First check that opcode sequence not defined twice without a corresponding
    * call to NaClDefInst.
    */
@@ -1531,9 +1514,32 @@ static void NaClDefInstSeq(const char* opcode_seq) {
             "Multiple definitions for opcode sequence: '%s'\n", opcode_seq);
     NaClFatal("Fix before continuing!");
   }
+
   /* Now install into lookup trie. */
-  current_cand_inst_node =
-      NaClInstallInstSeq(0, opcode_seq, opcode_seq, &inst_node_root);
+  while (opcode_seq[index]) {
+    uint8_t byte = (uint8_t) NaClExtractByte(opcode_seq + index, opcode_seq);
+    if (index >= 2 * NACL_MAX_BYTES_PER_X86_INSTRUCTION) {
+      NaClLog(LOG_ERROR,
+              "Too many bytes specified for opcode sequence: '%s'\n",
+              opcode_seq);
+      NaClFatal("Fix before continuing!\n");
+    }
+    if ((NULL == *next) || (byte < (*next)->matching_byte)) {
+      /* byte not in trie, add. */
+      NaClInstNode* node = NaClNewInstNode(byte);
+      node->fail = *next;
+      *next = node;
+    }
+    if (byte == (*next)->matching_byte) {
+      last = *next;
+      next = (NaClInstNode**)&((*next)->success);
+      index += 2;
+    } else {
+      next = (NaClInstNode**)&((*next)->fail);
+    }
+  }
+  /* Last points to matching node, make it candidate instruction. */
+  current_cand_inst_node = last;
 }
 
 /* Apply checks to current instruction flags, and update model as
@@ -1988,11 +1994,9 @@ static int NaClCountInstSeqs(const NaClInstNode* root) {
     return 0;
   } else {
     int count = 0;
-    int index;
     if (NULL != root->matching_inst) count++;
-    for (index = 0; index < NACL_NUM_BYTE_VALUES; ++index) {
-      count += NaClCountInstSeqs(root->succs[index]);
-    }
+    count += NaClCountInstSeqs(root->success);
+    count += NaClCountInstSeqs(root->fail);
     return count;
   }
 }
@@ -2002,12 +2006,24 @@ static int NaClCountInstNodes(const NaClInstNode* root) {
     return 0;
   } else {
     int count = 1;
-    int index;
-    for (index = 0; index < NACL_NUM_BYTE_VALUES; ++index) {
-      count += NaClCountInstNodes(root->succs[index]);
-    }
+    count += NaClCountInstNodes(root->success);
+    count += NaClCountInstNodes(root->fail);
     return count;
   }
+}
+
+static void NaClPrintInstTrieEdge(const NaClInstNode* edge,
+                                  int* edge_index,
+                                  struct Gio* f) {
+  gprintf(f, "    ");
+  if (NULL == edge) {
+    gprintf(f, "NULL");
+  }
+  else {
+    gprintf(f, "g_OpcodeSeq + %d", *edge_index);
+    *edge_index += NaClCountInstNodes(edge);
+  }
+  gprintf(f, ",\n");
 }
 
 static void NaClPrintInstTrieNode(const NaClInstNode* root,
@@ -2016,34 +2032,24 @@ static void NaClPrintInstTrieNode(const NaClInstNode* root,
   if (NULL == root) {
     return;
   } else {
-    int i = 0;
     int next_index = root_index + 1;
     gprintf(f, "  /* %d */\n", root_index);
-    gprintf(f, "  { ");
+    gprintf(f, "  { 0x%02x,\n    ", root->matching_byte);
     if (NULL == root->matching_inst) {
       gprintf(f, "NULL");
     } else {
       gprintf(f, "g_Opcodes + %d", g_opcode_index);
+      ++g_opcode_index;
     }
-    gprintf(f, ", {\n");
-    for (i = 0; i < NACL_NUM_BYTE_VALUES; ++i) {
-      gprintf(f, "    /* %02x */ ", i);
-      if (NULL == root->succs[i]) {
-        gprintf(f, "NULL");
-      } else {
-        gprintf(f, "g_OpcodeSeq + %d", next_index);
-        next_index +=
-            NaClCountInstNodes((NaClInstNode*) (root->succs[i]));
-      }
-      gprintf(f, ",\n");
-    }
-    gprintf(f, "    } },\n");
+    gprintf(f, ",\n");
+    NaClPrintInstTrieEdge(root->success, &next_index, f);
+    NaClPrintInstTrieEdge(root->fail, &next_index, f);
+    gprintf(f, "  },\n");
     next_index = root_index + 1;
-    for (i = 0; i < NACL_NUM_BYTE_VALUES; ++i) {
-      NaClPrintInstTrieNode(root->succs[i], g_opcode_index, next_index, f);
-      g_opcode_index += NaClCountInstSeqs(root->succs[i]);
-      next_index += NaClCountInstNodes(root->succs[i]);
-    }
+    NaClPrintInstTrieNode(root->success, g_opcode_index, next_index, f);
+    g_opcode_index += NaClCountInstSeqs(root->success);
+    next_index += NaClCountInstNodes(root->success);
+    NaClPrintInstTrieNode(root->fail, g_opcode_index, next_index, f);
   }
 }
 
@@ -2055,7 +2061,7 @@ static void NaClPrintInstSeqTrie(int g_opcode_index,
                                  struct Gio* f) {
   /* Make sure trie isn't empty, since empty arrays create warning messages. */
   int num_trie_nodes;
-  if (root == NULL) root = NaClNewInstNode();
+  if (root == NULL) root = NaClNewInstNode(0);
   num_trie_nodes = NaClCountInstNodes(root);
   gprintf(f, "static const NaClInstNode g_OpcodeSeq[%d] = {\n", num_trie_nodes);
   NaClPrintInstTrieNode(root, g_opcode_index, 0, f);
@@ -2065,16 +2071,14 @@ static void NaClPrintInstSeqTrie(int g_opcode_index,
 static void NaClPrintInstsInInstTrie(int current_index,
                                      const NaClInstNode* root,
                                      struct Gio* f) {
-  int index;
   if (NULL == root) return;
   if (NULL != root->matching_inst) {
     NaClInstPrintInternal(f, TRUE, current_index, root->matching_inst, 0);
     current_index++;
   }
-  for (index = 0; index < NACL_NUM_BYTE_VALUES; ++index) {
-    NaClPrintInstsInInstTrie(current_index, root->succs[index], f);
-    current_index += NaClCountInstSeqs(root->succs[index]);
-  }
+  NaClPrintInstsInInstTrie(current_index, root->success, f);
+  current_index += NaClCountInstSeqs(root->success);
+  NaClPrintInstsInInstTrie(current_index, root->fail, f);
 }
 
 /* Returns true if the given operands are equal. */
@@ -2135,12 +2139,10 @@ static void NaClInstOpCompress(NaClInst* inst) {
  * the given node.
  */
 static void NaClOpNodeCompress(const NaClInstNode* node) {
-  int i;
   if (NULL == node) return;
   NaClInstOpCompress((NaClInst*) node->matching_inst);
-  for (i = 0; i < NACL_NUM_BYTE_VALUES; ++i) {
-    NaClOpNodeCompress(node->succs[i]);
-  }
+  NaClOpNodeCompress(node->success);
+  NaClOpNodeCompress(node->fail);
 }
 
 /* Walks over the modeled instructions and replaces duplicate
@@ -2277,8 +2279,9 @@ static void PrintInstructionSequence(
 static void PrintHardCodedInstructionsNode(
     struct Gio* f, const NaClInstNode* node,
     uint8_t inst_sequence[NACL_MAX_BYTES_PER_X86_INSTRUCTION+1], int length) {
-  int i;
   if (NULL == node) return;
+  inst_sequence[length] = node->matching_byte;
+  ++length;
   if (NACL_MAX_BYTES_PER_X86_INSTRUCTION < length) {
     struct Gio* glog = NaClLogGetGio();
     NaClLog(LOG_ERROR, "%s", "");
@@ -2293,10 +2296,8 @@ static void PrintHardCodedInstructionsNode(
     NaClInstPrint(f, node->matching_inst);
     gprintf(f, "\n");
   }
-  for (i = 0; i < 256; ++i) {
-    inst_sequence[length] = (uint8_t) i;
-    PrintHardCodedInstructionsNode(f, node->succs[i], inst_sequence, length+1);
-  }
+  PrintHardCodedInstructionsNode(f, node->success, inst_sequence, length);
+  PrintHardCodedInstructionsNode(f, node->fail, inst_sequence, length-1);
 }
 
 /* Walks over specifically encoded instruction trie, and prints
@@ -2305,7 +2306,6 @@ static void PrintHardCodedInstructionsNode(
 static void NaClPrintHardCodedInstructions(struct Gio* f) {
   uint8_t inst_sequence[NACL_MAX_BYTES_PER_X86_INSTRUCTION+1];
   PrintHardCodedInstructionsNode(f, inst_node_root, inst_sequence, 0);
-  PrintHardCodedInstructionsNode(f, NULL, inst_sequence, 0);
 }
 
 /* Prints out documentation on the modeled instruction set. */
@@ -2387,14 +2387,12 @@ static void GenerateTables(struct Gio* f, const char* cmd,
  * explicitly defined.
  */
 static void FillInTrieMissingOperandsDescs(NaClInstNode* node) {
-  int i;
   NaClInst* inst;
   if (NULL == node) return;
   inst = (NaClInst*) (node->matching_inst);
   NaClFillOperandDescs(inst);
-  for (i = 0; i < NACL_NUM_BYTE_VALUES; ++i) {
-    FillInTrieMissingOperandsDescs((NaClInstNode*) (node->succs[i]));
-  }
+  FillInTrieMissingOperandsDescs((NaClInstNode*) node->success);
+  FillInTrieMissingOperandsDescs((NaClInstNode*) node->fail);
 }
 
 /* Define the operands description field of each modeled

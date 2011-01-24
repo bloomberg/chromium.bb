@@ -124,8 +124,19 @@ typedef struct NaClInst {
  * a specific sequence of bytes. Used to handle NOP cases.
  */
 typedef struct NaClInstNode {
+  /* The matching byte for the trie node. */
+  uint8_t matching_byte;
+  /* The matching modeled instruction, if byte matched. */
   const NaClInst* matching_inst;
-  const struct NaClInstNode* succs[256];
+  /* Node to match remaining bytes if matching_byte matches. */
+  const struct NaClInstNode* success;
+  /* Node to try next if match_byte doesn't match. Note:
+   * The trie is generated in such a way that if the next input
+   * byte is > matching_byte, no node in the fail subtree will
+   * match the current input. That is, nodes in the trie are
+   * sorted by the sequence of matching bytes.
+   */
+  const struct NaClInstNode* fail;
 } NaClInstNode;
 
 /* Returns the number of logical operands an instruction has. That is,

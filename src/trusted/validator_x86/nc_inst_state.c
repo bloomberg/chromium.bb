@@ -780,40 +780,52 @@ static const NaClInst* NaClGetNextInstCandidates(
 
 static Bool NaClConsumeOpcodeSequence(NaClInstState* state) {
   uint8_t next_byte;
-  const NaClInstNode* root;
-  uint8_t orig_length;
+  const NaClInstNode* next;
+  uint8_t next_length = state->length;
+  const NaClInst* matching_inst = NULL;
+  uint8_t matching_length = 0;
 
   /* Cut quick if first byte not applicable. */
   if (state->length >= state->length_limit) return FALSE;
-  next_byte = state->mpc[state->length];
-  root = g_OpcodeSeq[0].succs[next_byte];
-  if (NULL == root) return FALSE;
-  DEBUG(NaClLog(LOG_INFO,
-                "NaClConsume opcode char: %"NACL_PRIx8"\n", next_byte));
+  next_byte = state->mpc[next_length];
+  next = g_OpcodeSeq + 0;
 
-  /* If this point is reached, we are committed to attempting
-   * a match, and must reset state if it fails.
-   */
-  orig_length = state->length;
-  do {
-    state->length++;
-    if (NULL != root->matching_inst) {
-      state->inst = root->matching_inst;
-      DEBUG(NaClLog(LOG_INFO, "matched inst sequence!\n"));
-      return TRUE;
+  /* Find maximal match in trie. */
+  while (NULL != next) {
+    if (next_byte == next->matching_byte) {
+      DEBUG(NaClLog(LOG_INFO,
+                    "NaClConsume opcode char: %"NACL_PRIx8"\n", next_byte));
+      next_length++;
+      if (NULL != next->matching_inst) {
+        matching_inst = next->matching_inst;
+        matching_length = next_length;
+      }
+      if (next_length < state->length_limit) {
+        next_byte = state->mpc[next_length];
+        next = next->success;
+      } else {
+        break;
+      }
+    } else if (next->matching_byte < next_byte) {
+      next = next->fail;
+    } else {
+      break;
     }
-    next_byte = state->mpc[state->length];
-    root = root->succs[next_byte];
-    if (root == NULL) break;
-    DEBUG(NaClLog(LOG_INFO,
-                  "NaClConsume opcode char: %"NACL_PRIx8"\n", next_byte));
-  } while (state->length <= state->length_limit);
-
-  /* If reached, we updated the state, but did not find a match. Hence, revert
-   * the state.
-   */
-  NaClClearInstState(state, orig_length);
-  return FALSE;
+  }
+  if (NULL == matching_inst) {
+    return FALSE;
+  } else {
+    /* TODO(karl) Make this more general. Currently assumes that no
+     * additional processing (other than opcode selection) is needed.
+     * This is currently safe only because all instructions modeled
+     * using opcode sequences have no (useful) operands, and hence
+     * no additional information is needed.
+     */
+    state->inst = matching_inst;
+    state->length = matching_length;
+    DEBUG(NaClLog(LOG_INFO, "matched inst sequence [%d]!\n", matching_length));
+    return TRUE;
+  }
 }
 
 /* Given the current location of the (relative) pc of the given instruction
@@ -834,10 +846,6 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
    */
   NaClInstStateInit(iter, state);
   if (NaClConsumeOpcodeSequence(state)) {
-    /* TODO(karl) Make this more general. Currently assumes that all
-     * opcode sequences are nop's, and hence no additional processing
-     * (other than opcode selection) is needed.
-     */
     found_match = TRUE;
   } else if (NaClConsumePrefixBytes(state)) {
     NaClInstPrefixDescriptor prefix_desc;
