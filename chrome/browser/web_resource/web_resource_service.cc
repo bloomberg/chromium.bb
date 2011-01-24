@@ -221,8 +221,7 @@ class WebResourceService::UnpackerClient
 // Server for dynamically loaded NTP HTML elements. TODO(mirandac): append
 // locale for future usage, when we're serving localizable strings.
 const char* WebResourceService::kDefaultWebResourceServer =
-//    "https://www.google.com/support/chrome/bin/topic/30248/inproduct";
-  "http://www.corp.google.com/~mirandac/testprefs.json";
+    "https://www.google.com/support/chrome/bin/topic/30248/inproduct";
 
 WebResourceService::WebResourceService(Profile* profile)
     : prefs_(profile->GetPrefs()),
