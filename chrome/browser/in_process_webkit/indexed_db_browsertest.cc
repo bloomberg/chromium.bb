@@ -58,13 +58,14 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, FLAKY_IndexTest) {
 }
 
 // Flaky on windows, see http://crbug.com/67422 and http://crbug.com/69293.
-#if defined(OS_WIN)
-#define MAYBE_KeyPathTest FLAKY_KeyPathTest
-#else
-#define MAYBE_KeyPathTest KeyPathTest
-#endif
+//#if defined(OS_WIN)
+//#define MAYBE_KeyPathTest FLAKY_KeyPathTest
+//#else
+//#define MAYBE_KeyPathTest KeyPathTest
+//#endif
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_KeyPathTest) {
+// Disabled per http://trac.webkit.org/changeset/76531. See http://crbug.com/70665.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_KeyPathTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("key_path_test.html"))));
 }
 
