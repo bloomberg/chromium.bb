@@ -551,9 +551,11 @@
         <include name="IDR_STATUSBAR_NETWORK_3G" file="statusbar_network_3g.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_3G_WARN" file="statusbar_network_3g_warn.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_3G_ERROR" file="statusbar_network_3g_error.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_3G_UNKNOWN" file="statusbar_network_3g_unknown.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_1X" file="statusbar_network_1x.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_1X_WARN" file="statusbar_network_1x_warn.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_1X_ERROR" file="statusbar_network_1x_error.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_1X_UNKNOWN" file="statusbar_network_1x_unknown.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS0" file="statusbar_network_bars0.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS0_BLACK" file="statusbar_network_bars0b.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS1" file="statusbar_network_bars1.png" type="BINDATA" />

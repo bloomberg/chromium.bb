@@ -218,6 +218,7 @@ typedef ScopedVector<CellularDataPlan> CellularDataPlanVector;
 class CellularNetwork : public WirelessNetwork {
  public:
   enum DataLeft {
+    DATA_UNKNOWN,
     DATA_NORMAL,
     DATA_LOW,
     DATA_VERY_LOW,

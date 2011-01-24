@@ -615,7 +615,7 @@ CellularNetwork::DataLeft CellularNetwork::GetDataLeft() const {
     return DATA_NONE;
   const CellularDataPlan* plan = GetSignificantDataPlan();
   if (!plan)
-    return DATA_NORMAL;
+    return DATA_UNKNOWN;
   if (plan->plan_type == CELLULAR_DATA_PLAN_UNLIMITED) {
     base::TimeDelta remaining = plan->remaining_time();
     if (remaining <= base::TimeDelta::FromSeconds(0))

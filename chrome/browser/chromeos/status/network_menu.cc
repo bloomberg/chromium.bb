@@ -418,6 +418,9 @@ SkBitmap NetworkMenu::BadgeForNetworkTechnology(
       case CellularNetwork::DATA_NORMAL:
         id = IDR_STATUSBAR_NETWORK_3G;
         break;
+      case CellularNetwork::DATA_UNKNOWN:
+        id = IDR_STATUSBAR_NETWORK_3G_UNKNOWN;
+        break;
     }
   } else if (cellular->network_technology() == NETWORK_TECHNOLOGY_1XRTT) {
     switch (cellular->GetDataLeft()) {
@@ -428,6 +431,9 @@ SkBitmap NetworkMenu::BadgeForNetworkTechnology(
       case CellularNetwork::DATA_LOW:
       case CellularNetwork::DATA_NORMAL:
         id = IDR_STATUSBAR_NETWORK_1X;
+        break;
+      case CellularNetwork::DATA_UNKNOWN:
+        id = IDR_STATUSBAR_NETWORK_1X_UNKNOWN;
         break;
     }
   }
