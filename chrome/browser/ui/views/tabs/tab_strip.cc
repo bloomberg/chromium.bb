@@ -429,13 +429,6 @@ void TabStrip::StartInsertTabAnimation(int model_index, bool foreground) {
   AnimateToIdealBounds();
 }
 
-void TabStrip::StartMoveTabAnimation() {
-  PrepareForAnimation();
-
-  GenerateIdealBounds();
-  AnimateToIdealBounds();
-}
-
 void TabStrip::AnimateToIdealBounds() {
   for (int i = 0; i < tab_count(); ++i) {
     Tab* tab = GetTabAtTabDataIndex(i);
@@ -940,18 +933,6 @@ void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
   bounds_animator().SetAnimationDelegate(tab_closing,
                                          CreateRemoveTabDelegate(tab_closing),
                                          true);
-}
-
-void TabStrip::StopAnimating(bool layout) {
-  if (!IsAnimating())
-    return;
-
-  bounds_animator().Cancel();
-
-  DCHECK(!IsAnimating());
-
-  if (layout)
-    DoLayout();
 }
 
 int TabStrip::GetMiniTabCount() const {

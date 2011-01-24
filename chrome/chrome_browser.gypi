@@ -3132,6 +3132,11 @@
         'browser/ui/touch/frame/keyboard_container_view.h',
         'browser/ui/touch/frame/touch_browser_frame_view.cc',
         'browser/ui/touch/frame/touch_browser_frame_view.h',
+        'browser/ui/touch/tabs/tab_strip_factory.cc',
+        'browser/ui/touch/tabs/touch_tab.cc',
+        'browser/ui/touch/tabs/touch_tab.h',
+        'browser/ui/touch/tabs/touch_tab_strip.cc',
+        'browser/ui/touch/tabs/touch_tab_strip.h',
         'browser/ui/view_ids.h',
         'browser/ui/views/about_chrome_view.cc',
         'browser/ui/views/about_chrome_view.h',
@@ -3473,6 +3478,8 @@
         'browser/ui/views/tabs/tab_strip.cc',
         'browser/ui/views/tabs/tab_strip.h',
         'browser/ui/views/tabs/tab_strip_controller.h',
+        'browser/ui/views/tabs/tab_strip_factory.h',
+        'browser/ui/views/tabs/tab_strip_factory.cc',
         'browser/ui/views/task_manager_view.cc',
         'browser/ui/views/textfield_views.cc',
         'browser/ui/views/textfield_views.h',
@@ -3620,7 +3627,6 @@
         }],
         ['touchui==1 and chromeos==1', {
           'sources/': [
-            ['include', '^browser/chromeos/dom_ui/login/'],
           ],
         }],
         ['OS=="linux"', {
@@ -4165,6 +4171,8 @@
                 ['include', '^browser/ui/views/tabs/tab_strip.h'],
                 ['include', '^browser/ui/views/tabs/tab_strip_2.cc'],
                 ['include', '^browser/ui/views/tabs/tab_strip_2.h'],
+                ['include', '^browser/ui/views/tabs/tab_strip_factory.cc'],
+                ['include', '^browser/ui/views/tabs/tab_strip_factory.h'],
                 ['include', '^browser/ui/views/textfield_views.cc'],
                 ['include', '^browser/ui/views/textfield_views.h'],
                 ['include', '^browser/ui/views/theme_background.cc'],
@@ -4314,6 +4322,7 @@
                 ['exclude', '^browser/ui/views/frame/browser_non_client_frame_view_factory_gtk.cc'],
                 ['exclude', '^browser/ui/views/tab_contents/tab_contents_view_gtk.cc'],
                 ['exclude', '^browser/ui/views/tab_contents/tab_contents_view_gtk.h'],
+                ['exclude', '^browser/ui/views/tabs/tab_strip_factory.cc'],
                 # TODO(anicolao): exclude these once we have DOMUI dialogs
                 # ['exclude', '^browser/ui/gtk/constrained_window_gtk.cc'],
                 # ['exclude', '^browser/ui/gtk/constrained_window_gtk.h'],

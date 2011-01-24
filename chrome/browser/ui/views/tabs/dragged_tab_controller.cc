@@ -641,7 +641,7 @@ void DraggedTabController::ContinueDragging() {
   // guaranteed to be correct regardless of monitor config.
   gfx::Point screen_point = GetCursorScreenPoint();
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(TOUCH_UI)
   // We don't allow detaching in chrome os.
   BaseTabStrip* target_tabstrip = source_tabstrip_;
 #else

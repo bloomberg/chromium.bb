@@ -214,23 +214,6 @@ void SideTabStrip::StartInsertTabAnimation(int model_index, bool foreground) {
   AnimateToIdealBounds();
 }
 
-void SideTabStrip::StartMoveTabAnimation() {
-  PrepareForAnimation();
-
-  GenerateIdealBounds();
-  AnimateToIdealBounds();
-}
-
-void SideTabStrip::StopAnimating(bool layout) {
-  if (!IsAnimating())
-    return;
-
-  bounds_animator().Cancel();
-
-  if (layout)
-    DoLayout();
-}
-
 void SideTabStrip::AnimateToIdealBounds() {
   for (int i = 0; i < tab_count(); ++i) {
     BaseTab* tab = base_tab_at_tab_index(i);

@@ -53,7 +53,7 @@
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
-#include "chrome/browser/ui/views/tabs/side_tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_factory.h"
 #include "chrome/browser/ui/views/theme_install_bubble_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
@@ -1845,10 +1845,7 @@ void BrowserView::InitTabStrip(TabStripModel* model) {
   BrowserTabStripController* tabstrip_controller =
       new BrowserTabStripController(browser_.get(), model);
 
-  if (UseVerticalTabs())
-    tabstrip_ = new SideTabStrip(tabstrip_controller);
-  else
-    tabstrip_ = new TabStrip(tabstrip_controller);
+  tabstrip_ = CreateTabStrip(tabstrip_controller, UseVerticalTabs());
 
   tabstrip_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_TABSTRIP));
   AddChildView(tabstrip_);

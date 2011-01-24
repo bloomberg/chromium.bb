@@ -85,7 +85,6 @@ class TabStrip : public BaseTabStrip,
   // BaseTabStrip overrides:
   virtual BaseTab* CreateTab();
   virtual void StartInsertTabAnimation(int model_index, bool foreground);
-  virtual void StartMoveTabAnimation();
   virtual void AnimateToIdealBounds();
   virtual bool ShouldHighlightCloseButtonAfterRemove();
   virtual void DoLayout();
@@ -219,10 +218,6 @@ class TabStrip : public BaseTabStrip,
                              int to_model_index);
   void StartMiniTabAnimation();
   void StartMouseInitiatedRemoveTabAnimation(int model_index);
-
-  // Stops any ongoing animations. If |layout| is true and an animation is
-  // ongoing this does a layout.
-  virtual void StopAnimating(bool layout);
 
   // Calculates the available width for tabs, assuming a Tab is to be closed.
   int GetAvailableWidthForTabs(Tab* last_tab) const;

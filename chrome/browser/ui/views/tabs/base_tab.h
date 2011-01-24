@@ -135,6 +135,14 @@ class BaseTab : public ui::AnimationDelegate,
   // Returns the bounds of the title.
   virtual const gfx::Rect& title_bounds() const = 0;
 
+  virtual int loading_animation_frame() const {
+    return loading_animation_frame_;
+  }
+  virtual bool should_display_crashed_favicon() const {
+    return should_display_crashed_favicon_;
+  }
+  virtual int fav_icon_hiding_offset() const { return fav_icon_hiding_offset_; }
+
   static gfx::Font* font() { return font_; }
   static int font_height() { return font_height_; }
 
@@ -170,6 +178,15 @@ class BaseTab : public ui::AnimationDelegate,
   // True if the tab is being dragged.
   bool dragging_;
 
+  // The offset used to animate the favicon location. This is used when the tab
+  // crashes.
+  int fav_icon_hiding_offset_;
+
+  // The current index of the loading animation.
+  int loading_animation_frame_;
+
+  bool should_display_crashed_favicon_;
+
   // Pulse animation.
   scoped_ptr<ui::ThrobAnimation> pulse_animation_;
 
@@ -183,21 +200,12 @@ class BaseTab : public ui::AnimationDelegate,
 
   views::ImageButton* close_button_;
 
-  // The current index of the loading animation.
-  int loading_animation_frame_;
-
   // Whether to disable throbber animations. Only true if this is an app tab
   // renderer and a command line flag has been passed in to disable the
   // animations.
   bool throbber_disabled_;
 
   ui::ThemeProvider* theme_provider_;
-
-  // The offset used to animate the favicon location. This is used when the tab
-  // crashes.
-  int fav_icon_hiding_offset_;
-
-  bool should_display_crashed_favicon_;
 
   static gfx::Font* font_;
   static int font_height_;

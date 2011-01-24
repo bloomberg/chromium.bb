@@ -357,6 +357,12 @@ void BaseTabStrip::OnMouseReleased(const views::MouseEvent& event,
   EndDrag(canceled);
 }
 
+void BaseTabStrip::StartMoveTabAnimation() {
+  PrepareForAnimation();
+  GenerateIdealBounds();
+  AnimateToIdealBounds();
+}
+
 void BaseTabStrip::StartRemoveTabAnimation(int model_index) {
   PrepareForAnimation();
 
@@ -406,6 +412,16 @@ int BaseTabStrip::TabIndexOfTab(BaseTab* tab) const {
       return i;
   }
   return -1;
+}
+
+void BaseTabStrip::StopAnimating(bool layout) {
+  if (!IsAnimating())
+    return;
+
+  bounds_animator().Cancel();
+
+  if (layout)
+    DoLayout();
 }
 
 void BaseTabStrip::DestroyDragController() {

@@ -120,11 +120,11 @@ BaseTab::BaseTab(TabController* controller)
     : controller_(controller),
       closing_(false),
       dragging_(false),
-      loading_animation_frame_(0),
-      throbber_disabled_(false),
-      theme_provider_(NULL),
       fav_icon_hiding_offset_(0),
-      should_display_crashed_favicon_(false) {
+      loading_animation_frame_(0),
+      should_display_crashed_favicon_(false),
+      throbber_disabled_(false),
+      theme_provider_(NULL) {
   BaseTab::InitResources();
 
   SetID(VIEW_ID_TAB);

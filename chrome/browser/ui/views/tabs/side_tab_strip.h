@@ -39,8 +39,6 @@ class SideTabStrip : public BaseTabStrip {
   virtual BaseTab* CreateTab();
   virtual void GenerateIdealBounds();
   virtual void StartInsertTabAnimation(int model_index, bool foreground);
-  virtual void StartMoveTabAnimation();
-  virtual void StopAnimating(bool layout);
   virtual void AnimateToIdealBounds();
   virtual void DoLayout();
 

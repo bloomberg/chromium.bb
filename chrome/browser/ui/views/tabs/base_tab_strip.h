@@ -171,7 +171,7 @@ class BaseTabStrip : public views::View,
 
   // Invoked from |MoveTab| after |tab_data_| has been updated to animate the
   // move.
-  virtual void StartMoveTabAnimation() = 0;
+  virtual void StartMoveTabAnimation();
 
   // Starts the remove tab animation.
   virtual void StartRemoveTabAnimation(int model_index);
@@ -204,7 +204,7 @@ class BaseTabStrip : public views::View,
 
   // Stops any ongoing animations. If |layout| is true and an animation is
   // ongoing this does a layout.
-  virtual void StopAnimating(bool layout) = 0;
+  virtual void StopAnimating(bool layout);
 
   // Destroys the active drag controller.
   void DestroyDragController();
