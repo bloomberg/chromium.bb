@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/sad_tab_view.h"
+#import "chrome/browser/ui/cocoa/tab_contents/sad_tab_view.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 
 namespace {

@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/ui/cocoa/web_contents_drag_source.h"
+#include "chrome/browser/ui/cocoa/tab_contents/web_contents_drag_source.h"
 
 // A class that handles tracking and event processing for a drag and drop
 // originating from the content area.

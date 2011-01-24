@@ -7,7 +7,7 @@
 #import "base/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/previewable_contents_controller.h"
+#import "chrome/browser/ui/cocoa/tab_contents/previewable_contents_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

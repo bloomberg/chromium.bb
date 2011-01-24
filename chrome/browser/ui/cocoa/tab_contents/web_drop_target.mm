@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/web_drop_target.h"
+#import "chrome/browser/ui/cocoa/tab_contents/web_drop_target.h"
 
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"

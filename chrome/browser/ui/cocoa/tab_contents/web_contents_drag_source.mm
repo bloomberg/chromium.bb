@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/web_contents_drag_source.h"
+#import "chrome/browser/ui/cocoa/tab_contents/web_contents_drag_source.h"
 
 #include "app/mac/nsimage_cache.h"
 #include "base/string_util.h"

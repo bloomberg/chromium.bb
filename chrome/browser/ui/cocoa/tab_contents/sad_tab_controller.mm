@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/sad_tab_controller.h"
+#include "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 
 #include "base/mac/mac_util.h"
-#import "chrome/browser/ui/cocoa/sad_tab_view.h"
+#import "chrome/browser/ui/cocoa/tab_contents/sad_tab_view.h"
 
 @implementation SadTabController
 

@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/tab_contents_controller.h"
+#import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 
 @class NSSplitView;
 @class NSView;
