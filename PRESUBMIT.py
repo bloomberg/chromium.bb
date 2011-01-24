@@ -89,7 +89,9 @@ def _CheckSubversionConfig(input_api, output_api):
   error_msg = (
       'Please look at http://dev.chromium.org/developers/coding-style to\n'
       'configure your subversion configuration file. This enables automatic\n'
-      'properties to simplify the project maintenance.')
+      'properties to simplify the project maintenance.\n'
+      'Pro-tip: just download and install\n'
+      'http://src.chromium.org/viewvc/chrome/trunk/tools/build/slave/config\n')
 
   try:
     lines = open(path, 'r').read().splitlines()
