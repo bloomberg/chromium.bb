@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/update_view.h"
@@ -208,6 +209,9 @@ bool UpdateScreen::HasCriticalUpdate() {
     return true;
 
   std::string deadline;
+  // Checking for update flag file causes us to do blocking IO on UI thread.
+  // Temporarily allow it until we fix http://crosbug.com/11106
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   FilePath update_deadline_file_path(kUpdateDeadlineFile);
   if (!file_util::ReadFileToString(update_deadline_file_path, &deadline) ||
       deadline.empty()) {

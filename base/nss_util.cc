@@ -165,6 +165,9 @@ class NSSInitSingleton {
 #if defined(OS_CHROMEOS)
   void OpenPersistentNSSDB() {
     if (!chromeos_user_logged_in_) {
+      // GetDefaultConfigDirectory causes us to do blocking IO on UI thread.
+      // Temporarily allow it until we fix http://crbug.com.70119
+      ThreadRestrictions::ScopedAllowIO allow_io;
       chromeos_user_logged_in_ = true;
       real_db_slot_ = OpenUserDB(GetDefaultConfigDirectory(),
                                  "Real NSS database");

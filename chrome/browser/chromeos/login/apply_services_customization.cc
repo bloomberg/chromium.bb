@@ -21,7 +21,6 @@
 namespace {
 
 // URL where to fetch OEM services customization manifest from.
-// TODO(denisromanov): Change this to real URL when it becomes available.
 const char kServicesCustomizationManifestUrl[] =
     "file:///mnt/partner_partition/etc/chromeos/services_manifest.json";
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 
 #include "base/i18n/rtl.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -91,10 +92,14 @@ void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
   if (!prefs->IsManagedPreference(prefs::kApplicationLocale)) {
     prefs->SetString(prefs::kApplicationLocale, locale);
     prefs->SavePersistentPrefs();
-
-    // Switch the locale.
-    const std::string loaded_locale =
-        ResourceBundle::ReloadSharedInstance(locale);
+    std::string loaded_locale;
+    {
+      // Reloading resource bundle causes us to do blocking IO on UI thread.
+      // Temporarily allow it until we fix http://crosbug.com/11102
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      // Switch the locale.
+      loaded_locale = ResourceBundle::ReloadSharedInstance(locale);
+    }
     CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
 
     // Enable the keyboard layouts that are necessary for the new locale.

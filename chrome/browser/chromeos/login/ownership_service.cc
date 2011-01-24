@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_thread.h"
 
 namespace chromeos {
@@ -28,6 +29,9 @@ OwnershipService::~OwnershipService() {}
 
 
 bool OwnershipService::IsAlreadyOwned() {
+  // This should not do blocking IO from the UI thread.
+  // Temporarily allow it for now. http://crbug.com/70097
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   return file_util::PathExists(utils_->GetOwnerKeyFilePath());
 }
 

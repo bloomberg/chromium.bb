@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/common/url_constants.h"
@@ -39,6 +40,9 @@ HelpAppLauncher::HelpAppLauncher(gfx::NativeWindow parent_window)
 // returns GURL instance for it. Otherwise returns an empty GURL.
 static GURL GetLocalFileUrl(const std::string& base_path,
                             const std::string& filename) {
+  // Checking for help dir existence causes us to do blocking IO on UI thread.
+  // Temporarily allow it until we fix http://crosbug.com/11105
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   FilePath file_path(base_path + filename);
   if (file_util::PathExists(file_path)) {
     const std::string path_url = std::string(chrome::kFileScheme) +

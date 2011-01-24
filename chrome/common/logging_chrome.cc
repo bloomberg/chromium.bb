@@ -40,6 +40,7 @@
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
@@ -213,6 +214,9 @@ void RedirectChromeLogging(const CommandLine& command_line) {
   // defaults to the profile dir.
   FilePath log_path = GetSessionLogFile(command_line);
 
+  // Creating symlink causes us to do blocking IO on UI thread.
+  // Temporarily allow it until we fix http://crbug.com/61143
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   // Always force a new symlink when redirecting.
   FilePath target_path = SetUpSymlinkIfNeeded(log_path, true);
 

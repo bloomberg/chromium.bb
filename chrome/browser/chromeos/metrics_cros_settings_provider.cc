@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
 
 #include "base/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
@@ -43,7 +44,14 @@ bool MetricsCrosSettingsProvider::SetMetricsStatus(bool enabled) {
   if (user->user_is_logged_in() && !user->current_user_is_owner())
     return false;
   VLOG(1) << "Setting cros stats/crash metric reporting to " << enabled;
-  if (enabled != GoogleUpdateSettings::GetCollectStatsConsent()) {
+  bool collect_stats_consent = false;
+  {
+    // Loading consent file state causes us to do blocking IO on UI thread.
+    // Temporarily allow it until we fix http://crbug.com/62626
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    collect_stats_consent = GoogleUpdateSettings::GetCollectStatsConsent();
+  }
+  if (enabled != collect_stats_consent) {
     bool new_enabled = OptionsUtil::ResolveMetricsReportingEnabled(enabled);
 #if defined(USE_LINUX_BREAKPAD)
     if (new_enabled)
@@ -62,6 +70,9 @@ bool MetricsCrosSettingsProvider::SetMetricsStatus(bool enabled) {
 
 // static
 bool MetricsCrosSettingsProvider::GetMetricsStatus() {
+  // Loading consent file state causes us to do blocking IO on UI thread.
+  // Temporarily allow it until we fix http://crbug.com/62626
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   return GoogleUpdateSettings::GetCollectStatsConsent();
 }
 

@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
@@ -192,7 +193,9 @@ void DeleteWizardControllerAndLaunchBrowser(WizardController* controller) {
 }
 
 const chromeos::StartupCustomizationDocument* LoadStartupManifest() {
-  // Load partner customization startup manifest if it is available.
+  // Loading manifest causes us to do blocking IO on UI thread.
+  // Temporarily allow it until we fix http://crosbug.com/11103
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   FilePath startup_manifest_path(kStartupCustomizationManifestPath);
   if (file_util::PathExists(startup_manifest_path)) {
     scoped_ptr<chromeos::StartupCustomizationDocument> customization(
@@ -828,6 +831,9 @@ void WizardController::MarkOobeCompleted() {
 
 // static
 bool WizardController::IsDeviceRegistered() {
+  // Checking for flag file causes us to do blocking IO on UI thread.
+  // Temporarily allow it until we fix http://crbug.com/70131
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   FilePath oobe_complete_flag_file_path(kOobeCompleteFlagFilePath);
   return file_util::PathExists(oobe_complete_flag_file_path);
 }
@@ -846,6 +852,9 @@ bool WizardController::IsRegisterScreenDefined() {
 
 // static
 void WizardController::MarkDeviceRegistered() {
+  // Creating flag file causes us to do blocking IO on UI thread.
+  // Temporarily allow it until we fix http://crbug.com/70131
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   // Create flag file for boot-time init scripts.
   FilePath oobe_complete_path(kOobeCompleteFlagFilePath);
   FILE* oobe_flag_file = file_util::OpenFile(oobe_complete_path, "w+b");
@@ -1009,6 +1018,9 @@ void ShowLoginWizard(const std::string& first_screen_name,
       locale = controller->GetCustomization()->initial_locale();
       VLOG(1) << "Initial locale: " << locale;
       if (!locale.empty()) {
+        // Reloading resource bundle causes us to do blocking IO on UI thread.
+        // Temporarily allow it until we fix http://crosbug.com/11102
+        base::ThreadRestrictions::ScopedAllowIO allow_io;
         const std::string loaded_locale =
             ResourceBundle::ReloadSharedInstance(locale);
         CHECK(!loaded_locale.empty()) << "Locale could not be found for "

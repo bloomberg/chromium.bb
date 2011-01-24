@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -221,9 +222,15 @@ void LoginUtilsImpl::CompleteLogin(
   logging::RedirectChromeLogging(*(CommandLine::ForCurrentProcess()));
   btl->AddLoginTimeMarker("LoggingRedirected", false);
 
-  // The default profile will have been changed because the ProfileManager
-  // will process the notification that the UserManager sends out.
-  Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
+  Profile* profile = NULL;
+  {
+    // Loading user profile causes us to do blocking IO on UI thread.
+    // Temporarily allow it until we fix http://crosbug.com/11104
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    // The default profile will have been changed because the ProfileManager
+    // will process the notification that the UserManager sends out.
+    profile = profile_manager->GetDefaultProfile(user_data_dir);
+  }
   btl->AddLoginTimeMarker("UserProfileGotten", false);
 
   // Change the proxy configuration service of the default request context to
