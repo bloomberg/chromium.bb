@@ -25,5 +25,5 @@
   // Shown above all the tab names. May be |nil|.
   scoped_nsobject<NSString> heading_;
 }
-@property (nonatomic, copy) NSString* heading;
+@property(nonatomic, copy) NSString* heading;
 @end

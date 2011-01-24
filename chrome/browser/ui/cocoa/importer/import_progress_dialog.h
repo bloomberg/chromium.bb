@@ -41,6 +41,17 @@ class ImporterObserverBridge;
   NSString* done_text_;
 }
 
+@property(nonatomic, retain) NSString* explanatoryText;
+@property(nonatomic, retain) NSString* favoritesStatusText;
+@property(nonatomic, retain) NSString* searchStatusText;
+@property(nonatomic, retain) NSString* savedPasswordStatusText;
+@property(nonatomic, retain) NSString* historyStatusText;
+
+@property(nonatomic, retain) NSColor* favoritesImportEnabled;
+@property(nonatomic, retain) NSColor* searchImportEnabled;
+@property(nonatomic, retain) NSColor* passwordImportEnabled;
+@property(nonatomic, retain) NSColor* historyImportEnabled;
+
 // Cancel button calls this.
 - (IBAction)cancel:(id)sender;
 
@@ -51,17 +62,6 @@ class ImporterObserverBridge;
 - (void)ImportItemStarted:(importer::ImportItem)item;
 - (void)ImportItemEnded:(importer::ImportItem)item;
 - (void)ImportEnded;
-
-@property (nonatomic, retain) NSString* explanatoryText;
-@property (nonatomic, retain) NSString* favoritesStatusText;
-@property (nonatomic, retain) NSString* searchStatusText;
-@property (nonatomic, retain) NSString* savedPasswordStatusText;
-@property (nonatomic, retain) NSString* historyStatusText;
-
-@property (nonatomic, retain) NSColor* favoritesImportEnabled;
-@property (nonatomic, retain) NSColor* searchImportEnabled;
-@property (nonatomic, retain) NSColor* passwordImportEnabled;
-@property (nonatomic, retain) NSColor* historyImportEnabled;
 
 @end
 

@@ -108,8 +108,8 @@ class CookiesTreeModelObserverBridge : public CookiesTreeModel::Observer {
   BrowsingDataAppCacheHelper* appcacheHelper_;  // weak
   BrowsingDataIndexedDBHelper* indexedDBHelper_;  // weak
 }
-@property (assign, nonatomic) BOOL removeButtonEnabled;
-@property (readonly, nonatomic) NSTreeController* treeController;
+@property(assign, nonatomic) BOOL removeButtonEnabled;
+@property(readonly, nonatomic) NSTreeController* treeController;
 
 // Designated initializer. Profile cannot be NULL.
 - (id)initWithProfile:(Profile*)profile

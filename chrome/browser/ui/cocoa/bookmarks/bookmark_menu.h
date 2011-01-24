@@ -15,6 +15,6 @@
   int64 id_;  // id of the bookmark node we represent.
 }
 - (void)setRepresentedObject:(id)object;
-@property (nonatomic) int64 id;
+@property(nonatomic) int64 id;
 @end
 

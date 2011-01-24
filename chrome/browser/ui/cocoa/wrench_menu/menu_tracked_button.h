@@ -36,7 +36,7 @@
   NSTrackingRectTag trackingTag_;
 }
 
-@property (nonatomic, readonly, getter=isTracking) BOOL tracking;
+@property(nonatomic, readonly, getter=isTracking) BOOL tracking;
 
 @end
 

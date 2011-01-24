@@ -82,7 +82,7 @@ class KeywordEditorModelObserver : public TemplateURLModelObserver,
 
   scoped_nsobject<WindowSizeAutosaver> sizeSaver_;
 }
-@property (nonatomic, readonly) KeywordEditorController* controller;
+@property(nonatomic, readonly) KeywordEditorController* controller;
 
 // Show the keyword editor associated with the given profile (or the
 // original profile if this is an incognito profile).  If no keyword

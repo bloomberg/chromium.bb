@@ -27,10 +27,10 @@ class CreditCard;
   NSString* expirationYear_;
 }
 
-@property (nonatomic, copy) NSString* nameOnCard;
-@property (nonatomic, copy) NSString* creditCardNumber;
-@property (nonatomic, copy) NSString* expirationMonth;
-@property (nonatomic, copy) NSString* expirationYear;
+@property(nonatomic, copy) NSString* nameOnCard;
+@property(nonatomic, copy) NSString* creditCardNumber;
+@property(nonatomic, copy) NSString* expirationMonth;
+@property(nonatomic, copy) NSString* expirationYear;
 
 // Designated initializer.  Initializes the property strings to values retrieved
 // from the |creditCard| object.

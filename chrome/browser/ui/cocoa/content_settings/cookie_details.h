@@ -121,9 +121,9 @@ enum CocoaCookieDetailsType {
   scoped_nsobject<NSString> manifestURL_;
 }
 
-@property (nonatomic, readonly) BOOL canEditExpiration;
-@property (nonatomic) BOOL hasExpiration;
-@property (nonatomic, readonly) CocoaCookieDetailsType type;
+@property(nonatomic, readonly) BOOL canEditExpiration;
+@property(nonatomic) BOOL hasExpiration;
+@property(nonatomic, readonly) CocoaCookieDetailsType type;
 
 // The following methods are used in the bindings of subviews inside
 // the cookie detail view. Note that the method that tests the

@@ -36,11 +36,11 @@
 // in the button. This might change if we ever switch to a pop-up. Our direct
 // use of the given NSMenu object means that the one can set and use NSMenu's
 // delegate as usual.)
-@property (retain, nonatomic) IBOutlet NSMenu* attachedMenu;
+@property(retain, nonatomic) IBOutlet NSMenu* attachedMenu;
 
 // Whether or not to open the menu when the button is clicked. Otherwise, the
 // menu will only be opened when clicked and held.
-@property (assign, nonatomic) BOOL openMenuOnClick;
+@property(assign, nonatomic) BOOL openMenuOnClick;
 
 @end  // @interface MenuButton
 

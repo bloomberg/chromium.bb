@@ -14,7 +14,7 @@
  @private
   CGFloat height_;
 }
-@property (nonatomic) CGFloat height;
+@property(nonatomic) CGFloat height;
 
 - (void)resizeView:(NSView*)view newHeight:(CGFloat)height;
 @end

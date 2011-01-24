@@ -29,7 +29,7 @@ enum BubbleArrowLocation {
   info_bubble::BubbleArrowLocation arrowLocation_;
 }
 
-@property (assign, nonatomic) info_bubble::BubbleArrowLocation arrowLocation;
+@property(assign, nonatomic) info_bubble::BubbleArrowLocation arrowLocation;
 
 // Returns the point location in view coordinates of the tip of the arrow.
 - (NSPoint)arrowTip;

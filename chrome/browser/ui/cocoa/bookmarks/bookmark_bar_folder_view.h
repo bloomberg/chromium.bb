@@ -23,7 +23,7 @@
 @end
 
 @interface BookmarkBarFolderView()  // TestingOrInternalAPI
-@property (assign) BOOL dropIndicatorShown;
-@property (readonly) CGFloat dropIndicatorPosition;
+@property(assign) BOOL dropIndicatorShown;
+@property(readonly) CGFloat dropIndicatorPosition;
 - (void)setController:(id)controller;
 @end

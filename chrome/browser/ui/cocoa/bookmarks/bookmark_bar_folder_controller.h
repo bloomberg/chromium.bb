@@ -180,7 +180,7 @@
 - (IBAction)openBookmarkInNewForegroundTab:(id)sender;
 - (IBAction)openBookmarkInNewWindow:(id)sender;
 
-@property (assign, nonatomic) BOOL subFolderGrowthToRight;
+@property(assign, nonatomic) BOOL subFolderGrowthToRight;
 
 @end
 

@@ -23,7 +23,7 @@ class BookmarkModel;
  @public
   BrowserTestHelper* helper_;  // weak.
 }
-@property (nonatomic) BrowserTestHelper* helper;
+@property(nonatomic) BrowserTestHelper* helper;
 // Return the |TestingProfile*| which is used for testing.
 - (Profile*)defaultProfile;
 @end

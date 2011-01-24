@@ -19,9 +19,9 @@
   NSString* containerProperty_;
 }
 
-@property (nonatomic, copy) NSNumber* uniqueID;
-@property (nonatomic, retain) id container;
-@property (nonatomic, copy) NSString* containerProperty;
+@property(nonatomic, copy) NSNumber* uniqueID;
+@property(nonatomic, retain) id container;
+@property(nonatomic, copy) NSString* containerProperty;
 
 // Calculates the objectspecifier by using the uniqueID, container and
 // container property.

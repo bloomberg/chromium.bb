@@ -19,7 +19,7 @@
   IBOutlet NSTextField* urlField_;
 }
 
-@property (nonatomic, copy) NSString* displayURL;
+@property(nonatomic, copy) NSString* displayURL;
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                    profile:(Profile*)profile

@@ -39,7 +39,7 @@ typedef NSInteger AutoFillAddressMode;
   AutoFillAddressMode mode_;
 }
 
-@property (nonatomic, retain) AutoFillAddressModel* addressModel;
+@property(nonatomic, retain) AutoFillAddressModel* addressModel;
 
 // IBActions for save and cancel buttons.  Both invoke |endSheet:|.
 - (IBAction)save:(id)sender;

@@ -33,9 +33,9 @@ class Bridge;
   scoped_ptr<BaseBubbleControllerInternal::Bridge> base_bridge_;
 }
 
-@property (nonatomic, readonly) NSWindow* parentWindow;
-@property (nonatomic, assign) NSPoint anchorPoint;
-@property (nonatomic, readonly) InfoBubbleView* bubble;
+@property(nonatomic, readonly) NSWindow* parentWindow;
+@property(nonatomic, assign) NSPoint anchorPoint;
+@property(nonatomic, readonly) InfoBubbleView* bubble;
 
 // Creates a bubble. |nibPath| is just the basename, e.g. @"FirstRunBubble".
 // |anchoredAt| is in screen space. You need to call -showWindow: to make the

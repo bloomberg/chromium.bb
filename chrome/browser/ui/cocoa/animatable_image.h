@@ -36,11 +36,11 @@
   CGFloat duration_;
 }
 
-@property (nonatomic) CGRect startFrame;
-@property (nonatomic) CGRect endFrame;
-@property (nonatomic) CGFloat startOpacity;
-@property (nonatomic) CGFloat endOpacity;
-@property (nonatomic) CGFloat duration;
+@property(nonatomic) CGRect startFrame;
+@property(nonatomic) CGRect endFrame;
+@property(nonatomic) CGFloat startOpacity;
+@property(nonatomic) CGFloat endOpacity;
+@property(nonatomic) CGFloat duration;
 
 // Designated initializer. Do not use any other NSWindow initializers. Creates
 // but does not show the blank animation window of the given size. The

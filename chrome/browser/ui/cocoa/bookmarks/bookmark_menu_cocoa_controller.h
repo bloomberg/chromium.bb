@@ -23,7 +23,7 @@ class BookmarkMenuBridge;
 }
 
 // The Bookmarks menu
-@property (nonatomic, readonly) NSMenu* menu;
+@property(nonatomic, readonly) NSMenu* menu;
 
 // Return an autoreleased string to be used as a menu title for the
 // given bookmark node.

@@ -34,17 +34,17 @@ class AutoFillProfile;
   NSString* faxWholeNumber_;
 }
 
-@property (nonatomic, copy) NSString* fullName;
-@property (nonatomic, copy) NSString* email;
-@property (nonatomic, copy) NSString* companyName;
-@property (nonatomic, copy) NSString* addressLine1;
-@property (nonatomic, copy) NSString* addressLine2;
-@property (nonatomic, copy) NSString* addressCity;
-@property (nonatomic, copy) NSString* addressState;
-@property (nonatomic, copy) NSString* addressZip;
-@property (nonatomic, copy) NSString* addressCountry;
-@property (nonatomic, copy) NSString* phoneWholeNumber;
-@property (nonatomic, copy) NSString* faxWholeNumber;
+@property(nonatomic, copy) NSString* fullName;
+@property(nonatomic, copy) NSString* email;
+@property(nonatomic, copy) NSString* companyName;
+@property(nonatomic, copy) NSString* addressLine1;
+@property(nonatomic, copy) NSString* addressLine2;
+@property(nonatomic, copy) NSString* addressCity;
+@property(nonatomic, copy) NSString* addressState;
+@property(nonatomic, copy) NSString* addressZip;
+@property(nonatomic, copy) NSString* addressCountry;
+@property(nonatomic, copy) NSString* phoneWholeNumber;
+@property(nonatomic, copy) NSString* faxWholeNumber;
 
 // The designated initializer. Initializes the property strings to values
 // retrieved from the |profile|.

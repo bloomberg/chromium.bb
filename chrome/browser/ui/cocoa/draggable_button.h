@@ -13,7 +13,7 @@
 }
 
 // Enable or disable dragability for special buttons like "Other Bookmarks".
-@property (nonatomic) BOOL draggable;
+@property(nonatomic) BOOL draggable;
 
 // Called when a drag should start. Subclasses must override this to do any
 // pasteboard manipulation and begin the drag, usually with

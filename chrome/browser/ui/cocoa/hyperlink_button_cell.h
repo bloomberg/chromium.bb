@@ -18,7 +18,7 @@
 @interface HyperlinkButtonCell : NSButtonCell {
   scoped_nsobject<NSColor> textColor_;
 }
-@property (nonatomic, retain) NSColor* textColor;
+@property(nonatomic, retain) NSColor* textColor;
 
 + (NSColor*)defaultTextColor;
 

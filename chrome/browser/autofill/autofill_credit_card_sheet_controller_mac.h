@@ -53,9 +53,9 @@ typedef NSInteger AutoFillCreditCardMode;
   AutoFillCreditCardMode mode_;
 }
 
-@property (nonatomic, retain) AutoFillCreditCardModel* creditCardModel;
-@property (nonatomic, retain) NSArray* expirationMonthContents;
-@property (nonatomic, retain) NSArray* expirationYearContents;
+@property(nonatomic, retain) AutoFillCreditCardModel* creditCardModel;
+@property(nonatomic, retain) NSArray* expirationMonthContents;
+@property(nonatomic, retain) NSArray* expirationYearContents;
 
 // Designated initializer.  Takes a copy of the data in |creditCard|,
 // it is not held as a reference.

@@ -44,7 +44,7 @@ class BookmarkNode;
   IBOutlet InfoBubbleView* bubble_;  // to set arrow position
 }
 
-@property (readonly, nonatomic) const BookmarkNode* node;
+@property(readonly, nonatomic) const BookmarkNode* node;
 
 // |node| is the bookmark node we edit in this bubble.
 // |alreadyBookmarked| tells us if the node was bookmarked before the

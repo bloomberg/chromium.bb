@@ -18,7 +18,7 @@
   NSMenuItem* menuItem_;  // weak
 }
 
-@property (assign, nonatomic) NSMenuItem* menuItem;
+@property(assign, nonatomic) NSMenuItem* menuItem;
 
 @end
 

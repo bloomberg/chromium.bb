@@ -28,10 +28,10 @@ class MenuModel;
   BOOL useWithPopUpButtonCell_;  // If YES, 0th item is blank
 }
 
-@property (nonatomic, assign) ui::MenuModel* model;
+@property(nonatomic, assign) ui::MenuModel* model;
 // Note that changing this will have no effect if you use
 // |-initWithModel:useWithPopUpButtonCell:| or after the first call to |-menu|.
-@property (nonatomic) BOOL useWithPopUpButtonCell;
+@property(nonatomic) BOOL useWithPopUpButtonCell;
 
 // NIB-based initializer. This does not create a menu. Clients can set the
 // properties of the object and the menu will be created upon the first call to

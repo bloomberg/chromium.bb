@@ -29,12 +29,12 @@
 - (NSButton*)importBookmarksButton;
 - (BookmarkBarController*)controller;
 
-@property (nonatomic, assign) IBOutlet NSView* noItemContainer;
+@property(nonatomic, assign) IBOutlet NSView* noItemContainer;
 @end
 
 @interface BookmarkBarView()  // TestingOrInternalAPI
-@property (nonatomic, readonly) BOOL dropIndicatorShown;
-@property (nonatomic, readonly) CGFloat dropIndicatorPosition;
+@property(nonatomic, readonly) BOOL dropIndicatorShown;
+@property(nonatomic, readonly) CGFloat dropIndicatorPosition;
 - (void)setController:(id)controller;
 @end
 

@@ -22,11 +22,11 @@ class AppNotificationBridge;
   scoped_ptr<AppNotificationBridge> notificationBridge_;
 }
 
+@property(nonatomic) BOOL delayOnClose;
+
 // Returns YES if the window is in the process of closing.
 // Can't use "windowWillClose" notification because that will be sent
 // after the closing animation has completed.
 - (BOOL)isClosing;
-
-@property (nonatomic) BOOL delayOnClose;
 
 @end

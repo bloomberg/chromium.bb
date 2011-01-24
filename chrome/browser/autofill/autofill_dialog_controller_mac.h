@@ -99,28 +99,28 @@ class Profile;
 // Property representing state of the AutoFill enabled preference.  Checkbox is
 // bound to this in nib.  Also, enabled state of other controls are also bound
 // to this property.
-@property (nonatomic) BOOL autoFillEnabled;
+@property(nonatomic) BOOL autoFillEnabled;
 
 // Property indicating whether AutoFill is under control of configuration
 // management. The enabled state of the AutoFill enabled checkbox is bound to
 // this property.
-@property (nonatomic) BOOL autoFillManaged;
+@property(nonatomic) BOOL autoFillManaged;
 
 // Property that is true iff AutoFill is managed and disabled. The save button's
 // enabled state is bound to this property.
-@property (nonatomic) BOOL autoFillManagedAndDisabled;
+@property(nonatomic) BOOL autoFillManagedAndDisabled;
 
 // Property representing state of Address Book "me" card usage.  Checkbox is
 // bound to this in nib.
-@property (nonatomic) BOOL auxiliaryEnabled;
+@property(nonatomic) BOOL auxiliaryEnabled;
 
 // Property representing selection state in |tableView_|.  Enabled state of
 // edit and delete buttons are bound to this property.
-@property (nonatomic) BOOL itemIsSelected;
+@property(nonatomic) BOOL itemIsSelected;
 
 // Property representing multiple selection state in |tableView_|.  Enabled
 // state of edit button is bound to this property.
-@property (nonatomic) BOOL multipleSelected;
+@property(nonatomic) BOOL multipleSelected;
 
 // Main interface for displaying a modeless AutoFill dialog on screen.
 // This class method creates a new |AutoFillDialogController| and runs it as a
