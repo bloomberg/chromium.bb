@@ -68,15 +68,9 @@ BackgroundModeManager::BackgroundModeManager(Profile* profile,
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKeepAliveForTest))
     OnBackgroundAppLoaded();
 
-  // When an extension is installed, make sure launch on startup is properly
-  // set if appropriate. Likewise, turn off launch on startup when the last
-  // background app is uninstalled.
-  registrar_.Add(this, NotificationType::EXTENSION_INSTALLED,
-                 Source<Profile>(profile));
-  registrar_.Add(this, NotificationType::EXTENSION_UNINSTALLED,
-                 Source<Profile>(profile));
   // Listen for when extensions are loaded/unloaded so we can track the
-  // number of background apps.
+  // number of background apps and modify our keep-alive and launch-on-startup
+  // state appropriately.
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                  Source<Profile>(profile));
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
@@ -117,7 +111,10 @@ void BackgroundModeManager::Observe(NotificationType type,
 
       // On a Mac, we use 'login items' mechanism which has user-facing UI so we
       // don't want to stomp on user choice every time we start and load
-      // registered extensions.
+      // registered extensions. This means that if a background app is removed
+      // or added while Chrome is not running, we could leave Chrome in the
+      // wrong state, but this is better than constantly forcing Chrome to
+      // launch on startup even after the user removes the LoginItem manually.
 #if !defined(OS_MACOSX)
       EnableLaunchOnStartup(background_app_count_ > 0);
 #endif
@@ -125,6 +122,10 @@ void BackgroundModeManager::Observe(NotificationType type,
     case NotificationType::EXTENSION_LOADED:
       if (BackgroundApplicationListModel::IsBackgroundApp(
               *Details<Extension>(details).ptr())) {
+        // Extensions loaded after the ExtensionsService is ready should be
+        // treated as new installs.
+        if (profile_->GetExtensionService()->is_ready())
+          OnBackgroundAppInstalled();
         OnBackgroundAppLoaded();
       }
       break;
@@ -132,19 +133,6 @@ void BackgroundModeManager::Observe(NotificationType type,
       if (BackgroundApplicationListModel::IsBackgroundApp(
               *Details<UnloadedExtensionInfo>(details)->extension)) {
         OnBackgroundAppUnloaded();
-      }
-      break;
-    case NotificationType::EXTENSION_INSTALLED:
-      if (BackgroundApplicationListModel::IsBackgroundApp(
-              *Details<Extension>(details).ptr())) {
-        OnBackgroundAppInstalled();
-      }
-      break;
-    case NotificationType::EXTENSION_UNINSTALLED:
-      if (Extension::HasApiPermission(
-            Details<UninstalledExtensionInfo>(details).ptr()->
-                extension_api_permissions,
-            Extension::kBackgroundPermission)) {
         OnBackgroundAppUninstalled();
       }
       break;
