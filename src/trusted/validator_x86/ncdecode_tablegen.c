@@ -208,23 +208,23 @@ static void CharAdvance(char** buffer, size_t* buffer_size, size_t count) {
  * By moving it here, we remove this code, and runtime cost, from
  * the validator runtime.
  */
-static char* NaClDefaultOperandsDesc(NaClInst* inst) {
+static void NaClFillOperandDescs(NaClInst* inst) {
   char buffer[BUFFER_SIZE];
-  char* buf = buffer;
-  size_t buf_size = BUFFER_SIZE;
-  Bool is_first = TRUE;
   int i;
-  buffer[0] = '\0';  /* just in case there isn't any operands. */
+
+  /* Make sure inst is defined before trying to fix. */
+  if (NULL == inst) return;
+
   for (i = 0; i < inst->num_operands; ++i) {
+    char* buf = buffer;
+    size_t buf_size = BUFFER_SIZE;
     Bool is_implicit = (NACL_EMPTY_OPFLAGS != (inst->operands[i].flags &
                                                NACL_OPFLAG(OpImplicit)));
     NaClOpKind kind = inst->operands[i].kind;
-    if (is_first) {
-      is_first = FALSE;
-    } else {
-      CharAdvance(&buf, &buf_size,
-                  SNPRINTF(buf, buf_size, ", "));
-    }
+
+    if (NULL != inst->operands[i].format_string) continue;
+
+    buffer[0] = '\0';  /* just in case there isn't any operands. */
     if (is_implicit) {
       CharAdvance(&buf, &buf_size,
                   SNPRINTF(buf, buf_size, "{"));
@@ -282,8 +282,15 @@ static char* NaClDefaultOperandsDesc(NaClInst* inst) {
       case Mv_Operand:
       case Mo_Operand:
       case Mdq_Operand:
-        CharAdvance(&buf, &buf_size,
-                    SNPRINTF(buf, buf_size, "$M"));
+        /* Special case $Ma, which adds two operands. */
+        if ((i > 0) && (NULL != inst->operands[i-1].format_string) &&
+            (0 == strcmp(inst->operands[i-1].format_string, "$Ma"))) {
+          /* Don't add a format string in this case. */
+          continue;
+        } else {
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "$M"));
+        }
         break;
       case Mpw_Operand:
         CharAdvance(&buf, &buf_size,
@@ -480,8 +487,8 @@ static char* NaClDefaultOperandsDesc(NaClInst* inst) {
       CharAdvance(&buf, &buf_size,
                   SNPRINTF(buf, buf_size, "}"));
     }
+    *((char**)(inst->operands[i].format_string)) = strdup(buffer);
   }
-  return strdup(buffer);
 }
 
 /* Define the prefix name for the given opcode, for the given run mode. */
@@ -840,6 +847,7 @@ static void NaClDefOpInternal(NaClOpKind kind, NaClOpFlags flags) {
   index = current_inst->num_operands++;
   ((NaClOp*) current_inst->operands)[index].kind = kind;
   ((NaClOp*) current_inst->operands)[index].flags = flags;
+  ((NaClOp*) current_inst->operands)[index].format_string = NULL;
 }
 
 static void NaClInstallCurrentIntoOpcodeMrm(const NaClInstPrefix prefix,
@@ -1083,7 +1091,7 @@ void NaClAddOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
       struct Gio* g = NaClLogGetGio();
       gprintf(g, "Adding flags:");
       NaClPrintlnOpFlags(g, more_flags));
-  if (operand_index <= current_inst->num_operands) {
+  if (operand_index < current_inst->num_operands) {
     ((NaClOp*) current_inst->operands)[operand_index].flags |= more_flags;
     NaClApplySanityChecksToOp(operand_index);
   } else {
@@ -1091,18 +1099,25 @@ void NaClAddOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
   }
 }
 
-void NaClAddOperandFlags(uint8_t operand_index, NaClOpFlags more_flags) {
-  NaClAddOpFlags(operand_index, more_flags);
-}
-
 void NaClRemoveOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
   DEBUG(NaClLog(LOG_INFO, "Removing flags:");
         NaClPrintlnOpFlags(NaClLogGetGio(), more_flags));
-  if (operand_index <= current_inst->num_operands) {
+  if (operand_index < current_inst->num_operands) {
     ((NaClOp*) current_inst->operands)[operand_index].flags &= ~more_flags;
     NaClApplySanityChecksToOp(operand_index);
   } else {
     NaClFatalOp((int) operand_index, "NaClRemoveOpFlags: index out of range\n");
+  }
+}
+
+void NaClAddOpFormat(uint8_t operand_index, const char* format) {
+  DEBUG(NaClLog(LOG_INFO, "Adding format[%"NACL_PRIu8"]: '%s'\n",
+                operand_index, format));
+  if (operand_index < current_inst->num_operands) {
+    ((NaClOp*) current_inst->operands)[operand_index].format_string =
+        strdup(format);
+  } else {
+    NaClFatalOp((int) operand_index, "NaClAddOpFormat: index out of range\n");
   }
 }
 
@@ -1402,7 +1417,6 @@ static void NaClDefInstInternal(
   current_inst->insttype = insttype;
   current_inst->flags = NACL_EMPTY_IFLAGS;
   current_inst->name = name;
-  current_inst->operands_desc = NULL;
   current_inst->next_rule = NULL;
 
   /* undefine all operands. */
@@ -1520,10 +1534,6 @@ static void NaClDefInstSeq(const char* opcode_seq) {
   /* Now install into lookup trie. */
   current_cand_inst_node =
       NaClInstallInstSeq(0, opcode_seq, opcode_seq, &inst_node_root);
-}
-
-void NaClAddOperandsDesc(const char* desc) {
-  current_inst->operands_desc = strdup(desc);
 }
 
 /* Apply checks to current instruction flags, and update model as
@@ -1865,6 +1875,12 @@ static void NaClOpFlagsPrintInternal(struct Gio* f, NaClOpFlags flags) {
 static void NaClOpPrintInternal(struct Gio* f, const NaClOp* operand) {
   gprintf(f, "{ %s, ", NaClOpKindName(operand->kind));
   NaClOpFlagsPrintInternal(f, operand->flags);
+  gprintf(f, ", ");
+  if (NULL == operand->format_string) {
+    gprintf(f, "NULL");
+  } else {
+    gprintf(f, "\"%s\"", operand->format_string);
+  }
   gprintf(f, " },\n");
 }
 
@@ -1911,7 +1927,6 @@ static void NaClInstPrintInternal(struct Gio* f, Bool as_array_element,
   gprintf(f, "    Inst%s,\n", NaClMnemonicName(inst->name));
   gprintf(f, "    %u, g_Operands + %"NACL_PRIuS",\n",
           inst->num_operands, NaClOpOffset(inst->operands));
-  gprintf(f, "    \"%s\",\n", inst->operands_desc);
   if (index < 0 || NULL == inst->next_rule) {
     gprintf(f, "    NULL\n");
   } else {
@@ -2064,7 +2079,14 @@ static void NaClPrintInstsInInstTrie(int current_index,
 
 /* Returns true if the given operands are equal. */
 static Bool NaClOpSame(const NaClOp* op1, const NaClOp* op2) {
-  return (op1->kind == op2->kind) && (op1->flags == op2->flags);
+  if ((op1->kind == op2->kind) && (op1->flags == op2->flags)) {
+    if (NULL == op1->format_string) {
+      return NULL == op2->format_string;
+    } else if (NULL != op2->format_string) {
+      return 0 == strcmp(op1->format_string, op2->format_string);
+    }
+  }
+  return FALSE;
 }
 
 /* Compress the operands in the given instruction. */
@@ -2100,6 +2122,8 @@ static void NaClInstOpCompress(NaClInst* inst) {
           inst->operands[i].kind;
       ((NaClOp*) NaClOpsCompressed)[nacl_ops_compressed_size + i].flags =
           inst->operands[i].flags;
+      ((NaClOp*) NaClOpsCompressed)[nacl_ops_compressed_size + i].format_string
+          = inst->operands[i].format_string;
     }
     inst->operands = NaClOpsCompressed + nacl_ops_compressed_size;
     nacl_ops_compressed_size += inst->num_operands;
@@ -2367,9 +2391,7 @@ static void FillInTrieMissingOperandsDescs(NaClInstNode* node) {
   NaClInst* inst;
   if (NULL == node) return;
   inst = (NaClInst*) (node->matching_inst);
-  if ((NULL != inst) && (NULL == inst->operands_desc)) {
-    inst->operands_desc = NaClDefaultOperandsDesc(inst);
-  }
+  NaClFillOperandDescs(inst);
   for (i = 0; i < NACL_NUM_BYTE_VALUES; ++i) {
     FillInTrieMissingOperandsDescs((NaClInstNode*) (node->succs[i]));
   }
@@ -2385,9 +2407,7 @@ static void FillInMissingOperandsDescs() {
     for (i = 0; i < NCDTABLESIZE; ++i) {
       NaClInst* next = NaClInstTable[i][prefix];
       while (NULL != next) {
-        if (NULL == next->operands_desc) {
-          next->operands_desc = NaClDefaultOperandsDesc(next);
-        }
+        NaClFillOperandDescs(next);
         next = (NaClInst*) (next->next_rule);
       }
     }

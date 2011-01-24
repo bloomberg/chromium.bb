@@ -1646,7 +1646,8 @@ static NaClOpFlags NaClExtractOperand(const char* operand) {
  * string, define the corresponding operand in the model being generated.
  */
 static void NaClParseOperand(const char* operand, int arg_index) {
-  NaClAddOperandFlags(arg_index, NaClExtractOperand(operand));
+  NaClAddOpFlags(arg_index, NaClExtractOperand(operand));
+  NaClAddOpFormat(arg_index, operand);
 }
 
 void NaClBegDef(const char* desc, NaClInstType insttype,
@@ -1656,7 +1657,6 @@ void NaClBegDef(const char* desc, NaClInstType insttype,
   int num_args = 0;
   char buffer[BUFSIZE];
   char expanded_desc[BUFSIZE];
-  char operands_desc[BUFSIZE];
   char* opcode;
   char* assem_desc;
   NaClMnemonic mnemonic;
@@ -1668,7 +1668,6 @@ void NaClBegDef(const char* desc, NaClInstType insttype,
   NaClStExpand(buffer, st);
   strcpy(expanded_desc, buffer);
   kCachedDesc = expanded_desc;
-  operands_desc[0] = '\0';
 
   /* Separate the description into opcode sequence and
    * assembly description.
@@ -1701,15 +1700,7 @@ void NaClBegDef(const char* desc, NaClInstType insttype,
     if (num_args == MAX_OPERANDS) {
       NaClDefFatal("Too many operands");
     }
-    if (1 == num_args) {
-      SNPRINTF(operands_desc, BUFSIZE, "%s", arg);
-    } else {
-      char* cpy_operands_desc = strdup(operands_desc);
-      SNPRINTF(operands_desc, BUFSIZE, "%s, %s",
-               cpy_operands_desc, arg);
-    }
   }
-  NaClAddOperandsDesc(operands_desc);
   kCachedDesc = old_kdesc;
 }
 

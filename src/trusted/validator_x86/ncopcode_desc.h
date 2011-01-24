@@ -69,6 +69,8 @@ typedef struct NaClOp {
   NaClOpKind kind;
   /* Flags defining additional facts about the operand. */
   NaClOpFlags flags;
+  /* Printing format string for operand. */
+  const char* format_string;
 } NaClOp;
 
 /* Maxmimum number of opcode bytes per instruction. */
@@ -112,11 +114,6 @@ typedef struct NaClInst {
   /* The corresponding models of the operands. */
   /* NaClOp operands[NACL_MAX_NUM_OPERANDS]; */
   const NaClOp* operands;
-  /* A human readable description of the operands. Used
-   * by NaClInstPrint to print out the corresponding description
-   * of the operands.
-   */
-  const char* operands_desc;
   /* Pointer to the next pattern to try and match for the
    * given sequence of opcode bytes.
    */

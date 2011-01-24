@@ -112,11 +112,6 @@ void NaClDefineOpcodeModRmRmExtension(int value);
 /* Define a register value embedded in the opcode value. */
 void NaClDefOpcodeRegisterValue(int r);
 
-/* Adds the given operands description to the current instruction being
- * processed.
- */
-void NaClAddOperandsDesc(const char* desc);
-
 /* Add additional instruction flags to the current instruction being
  * processed.
  */
@@ -133,19 +128,16 @@ void NaClDefOp(NaClOpKind kind, NaClOpFlags flags);
 
 /* Add additional operand flags to the indexed operand of the current
  * instruction being processed (index is 0 based).
- *
- * Note: Index must be adjusted by one if the first (hidden) operand
- * is an opcode extention.
  */
 void NaClAddOpFlags(uint8_t operand_index, NaClOpFlags more_flags);
 
-/* Add additional operand flags to the indexed operand of hte current
- * instruction being processed (index is 0 based).
+/* Add format string to the indexed oeprand of the current instruction
+ * being processed (index is 0 based).
  *
- * Note: Index is positional. It will automatically be incremented by
- * one (internally) if the first (hidden) operand is an opcode extension.
+ * Note: the passed in string is copied, and hence its contents can
+ * change once this function returns.
  */
-void NaClAddOperandFlags(uint8_t operand_index, NaClOpFlags more_flags);
+void NaClAddOpFormat(uint8_t operand_index, const char* format);
 
 /* Removes operand flags from the indexed operand of the current
  * instruction being processed (index is 0 based).

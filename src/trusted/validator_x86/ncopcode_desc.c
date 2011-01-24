@@ -158,9 +158,17 @@ void NaClInstPrint(struct Gio* f, const NaClInst* inst) {
    */
   if ((NACLi_INVALID != inst->insttype) ||
       ((inst->flags & NACL_IFLAG(Opcode0F0F)))) {
+    Bool is_first = TRUE;
+    int i;
     gprintf(f, "    %s", NaClMnemonicName(inst->name));
-    if ((NULL != inst->operands_desc) && inst->operands_desc[0]) {
-      gprintf(f, " %s", inst->operands_desc);
+    for (i = 0; i < inst->num_operands; ++i) {
+      if (NULL == inst->operands[i].format_string) continue;
+      if (is_first) {
+        is_first = FALSE;
+      } else {
+        gprintf(f, ",");
+      }
+      gprintf(f, " %s", inst->operands[i].format_string);
     }
     gprintf(f, "\n");
     /* Now print actual encoding of each operand. */
