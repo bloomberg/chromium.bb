@@ -375,7 +375,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, Geoposition) {
   CheckGeoposition(MockLocationProvider::instance_->position_);
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, ErrorOnPermissionDenied) {
+// Crashy, http://crbug.com/70585.
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
+                       DISABLED_ErrorOnPermissionDenied) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
   // Infobar was displayed, deny access and check for error code.
@@ -609,7 +611,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   CheckGeoposition(final_position);
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TabDestroyed) {
+// Hangs flakily, http://crbug.com/70588.
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_TabDestroyed) {
   html_for_tests_ = "files/geolocation/tab_destroyed.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(3);
@@ -623,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TabDestroyed) {
   iframe_xpath_ = L"//iframe[@id='iframe_2']";
   AddGeolocationWatch(false);
 
-  std::string script = 
+  std::string script =
       "window.domAutomationController.setAutomationId(0);"
       "window.domAutomationController.send(window.close());";
   bool result =
