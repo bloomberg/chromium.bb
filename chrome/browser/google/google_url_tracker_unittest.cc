@@ -295,12 +295,13 @@ void GoogleURLTrackerTest::CancelGoogleURL() {
 }
 
 void GoogleURLTrackerTest::InfoBarClosed() {
-  TestInfoBarDelegate* infobar = static_cast<TestInfoBarDelegate*>(
-      g_browser_process->google_url_tracker()->infobar_);
+  InfoBarDelegate* infobar = g_browser_process->google_url_tracker()->infobar_;
   ASSERT_TRUE(infobar);
-  ASSERT_TRUE(infobar->google_url_tracker());
-  infobar->google_url_tracker()->InfoBarClosed();
-  delete g_browser_process->google_url_tracker()->infobar_;
+  GoogleURLTracker* url_tracker =
+      static_cast<TestInfoBarDelegate*>(infobar)->google_url_tracker();
+  ASSERT_TRUE(url_tracker);
+  url_tracker->InfoBarClosed();
+  delete infobar;
 }
 
 void GoogleURLTrackerTest::ExpectDefaultURLs() {
