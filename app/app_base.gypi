@@ -371,6 +371,8 @@
         ['OS=="mac"', {
           'link_settings': {
             'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/Accelerate.framework',
+              '$(SDKROOT)/System/Library/Frameworks/AudioUnit.framework',
               '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
             ],
           },
