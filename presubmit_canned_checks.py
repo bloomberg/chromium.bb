@@ -12,7 +12,8 @@ def CheckChangeHasTestField(input_api, output_api):
     return []
   else:
     return [output_api.PresubmitNotifyResult(
-        'Changelist should have a TEST= field. TEST=none is allowed.')]
+        'If this change requires manual test instructions to QA team, add '
+        'TEST=[instructions].')]
 
 
 def CheckChangeHasBugField(input_api, output_api):
@@ -21,7 +22,7 @@ def CheckChangeHasBugField(input_api, output_api):
     return []
   else:
     return [output_api.PresubmitNotifyResult(
-        'Changelist should have a BUG= field. BUG=none is allowed.')]
+        'If this change has an associated bug, add BUG=[bug number].')]
 
 
 def CheckChangeHasTestedField(input_api, output_api):
