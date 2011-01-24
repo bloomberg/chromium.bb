@@ -3371,34 +3371,6 @@
    fun:_ZN13ResourcesUtil18GetThemeResourceIdERKSs
 }
 {
-   bug_65664a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11webkit_glue26BufferedResourceLoaderTest10InitializeEPKcii
-   fun:_ZN11webkit_glue*BufferedResourceLoaderTest*
-}
-{
-   bug_65664b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11webkit_glue22BufferedDataSourceTest20InitializeDataSource*
-   fun:_ZN11webkit_glue*BufferedDataSourceTest*
-}
-{
-   bug_65664c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11webkit_glue20SimpleDataSourceTest20InitializeDataSourceEPKcPN5media12MockCallbackE
-   fun:_ZN11webkit_glue*SimpleDataSourceTest*
-}
-{
-   bug_65664d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11webkit_glue40SimpleDataSourceTest_InitializeData_Test8TestBodyEv
-   fun:_ZN7testing*HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
-}
-{
    bug_65680a
    Memcheck:Leak
    fun:_Znw*
@@ -3653,4 +3625,3 @@
    fun:_ZN9talk_base12MessageQueue8DispatchEPNS_7MessageE
    fun:_ZN9talk_base6Thread15ProcessMessagesEi
  }
- 

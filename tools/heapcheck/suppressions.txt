@@ -1073,30 +1073,6 @@
    fun:testing::Test::Run
 }
 {
-   bug_65664a
-   Heapcheck:Leak
-   fun:webkit_glue::BufferedResourceLoaderTest::Initialize
-   fun:webkit_glue::BufferedResourceLoaderTest*
-}
-{
-   bug_65664b
-   Heapcheck:Leak
-   fun:webkit_glue::BufferedDataSourceTest::InitializeDataSource
-   fun:webkit_glue::BufferedDataSourceTest*
-}
-{
-   bug_65664c
-   Heapcheck:Leak
-   fun:webkit_glue::SimpleDataSourceTest::InitializeDataSource
-   fun:webkit_glue::SimpleDataSourceTest*
-}
-{
-   bug_65664d
-   Heapcheck:Leak
-   fun:webkit_glue::SimpleDataSourceTest_InitializeData_Test::TestBody
-   fun:testing::HandleExceptionsInMethodIfSupported
-}
-{
    bug_65680a
    Heapcheck:Leak
    fun:remoting::ScreenRecorderTest_OneRecordCycle_Test::TestBody

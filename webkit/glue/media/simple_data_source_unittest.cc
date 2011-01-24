@@ -56,7 +56,6 @@ class SimpleDataSourceTest : public testing::Test {
   }
 
   virtual ~SimpleDataSourceTest() {
-    ignore_result(frame_.release());
   }
 
   void InitializeDataSource(const char* url,

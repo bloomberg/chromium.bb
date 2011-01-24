@@ -105,7 +105,6 @@ class BufferedDataSourceTest : public testing::Test {
   }
 
   virtual ~BufferedDataSourceTest() {
-    ignore_result(frame_.release());
   }
 
   void ExpectCreateAndStartResourceLoader(int start_error) {

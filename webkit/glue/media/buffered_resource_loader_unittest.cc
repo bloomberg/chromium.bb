@@ -74,7 +74,6 @@ class BufferedResourceLoaderTest : public testing::Test {
   }
 
   virtual ~BufferedResourceLoaderTest() {
-    ignore_result(frame_.release());
   }
 
   void Initialize(const char* url, int first_position, int last_position) {
@@ -483,4 +482,3 @@ TEST_F(BufferedResourceLoaderTest, AllowDefer_DeferredReadPastWindow) {
 // TODO(hclam): add unit test for defer loading.
 
 }  // namespace webkit_glue
-
