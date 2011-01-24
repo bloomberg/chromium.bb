@@ -60,6 +60,7 @@
         '<(DEPTH)/common/windows/guid_string.h',
         '<(DEPTH)/common/windows/http_upload.cc',
         '<(DEPTH)/common/windows/http_upload.h',
+        '<(DEPTH)/common/windows/string_utils.cc',
       ]
     }
   ]

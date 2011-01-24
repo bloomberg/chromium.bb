@@ -33,12 +33,20 @@
 #include <objbase.h>
 #include <shellapi.h>
 
+#include <string>
+
 #include "../../../breakpad_googletest_includes.h"
+#include "../../../../common/windows/string_utils-inl.h"
+#include "../../../../google_breakpad/processor/minidump.h"
 #include "../crash_generation/crash_generation_server.h"
 #include "../handler/exception_handler.h"
 #include "dump_analysis.h"  // NOLINT
 
 namespace {
+
+using std::wstring;
+using namespace google_breakpad;
+
 const wchar_t kPipeName[] = L"\\\\.\\pipe\\BreakpadCrashTest\\TestCaseServer";
 const char kSuccessIndicator[] = "success";
 const char kFailureIndicator[] = "failure";
@@ -71,6 +79,13 @@ class ExceptionHandlerTest : public ::testing::Test {
       void *dump_context,
       const google_breakpad::ClientInfo *client_info,
       const std::wstring *dump_path);
+
+  static bool DumpCallback(const wchar_t* dump_path,
+                           const wchar_t* minidump_id,
+                           void* context,
+                           EXCEPTION_POINTERS* exinfo,
+                           MDRawAssertionInfo* assertion,
+                           bool succeeded);
 
   static std::wstring dump_file;
   static std::wstring full_dump_file;
@@ -119,13 +134,28 @@ BOOL ExceptionHandlerTest::DoesPathExist(const TCHAR *path_name) {
   return TRUE;
 }
 
+// static
 void ExceptionHandlerTest::ClientDumpCallback(
     void *dump_context,
     const google_breakpad::ClientInfo *client_info,
-    const std::wstring *dump_path) {
+    const wstring *dump_path) {
   dump_file = *dump_path;
   // Create the full dump file name from the dump path.
   full_dump_file = dump_file.substr(0, dump_file.length() - 4) + L"-full.dmp";
+}
+
+// static
+bool ExceptionHandlerTest::DumpCallback(const wchar_t* dump_path,
+                    const wchar_t* minidump_id,
+                    void* context,
+                    EXCEPTION_POINTERS* exinfo,
+                    MDRawAssertionInfo* assertion,
+                    bool succeeded) {
+  dump_file = dump_path;
+  dump_file += L"\\";
+  dump_file += minidump_id;
+  dump_file += L".dmp";
+    return succeeded;
 }
 
 void ExceptionHandlerTest::DoCrashInvalidParameter() {
@@ -188,7 +218,7 @@ TEST_F(ExceptionHandlerTest, InvalidParameterMiniDumpTest) {
 
   // Call with a bad argument
   ASSERT_TRUE(DoesPathExist(temp_path_));
-  std::wstring dump_path(temp_path_);
+  wstring dump_path(temp_path_);
   google_breakpad::CrashGenerationServer server(
       kPipeName, NULL, NULL, NULL, ClientDumpCallback, NULL, NULL, NULL, true,
       &dump_path);
@@ -259,7 +289,7 @@ TEST_F(ExceptionHandlerTest, PureVirtualCallMiniDumpTest) {
 
   // Call with a bad argument
   ASSERT_TRUE(DoesPathExist(temp_path_));
-  std::wstring dump_path(temp_path_);
+  wstring dump_path(temp_path_);
   google_breakpad::CrashGenerationServer server(
       kPipeName, NULL, NULL, NULL, ClientDumpCallback, NULL, NULL, NULL, true,
       &dump_path);
@@ -322,4 +352,26 @@ TEST_F(ExceptionHandlerTest, PureVirtualCallMiniDumpTest) {
   EXPECT_FALSE(mini.HasStream(TokenStream));
   EXPECT_FALSE(full.HasStream(TokenStream));
 }
+
+// Test that writing a minidump produces a valid minidump containing
+// some expected structures.
+TEST_F(ExceptionHandlerTest, WriteMinidumpTest) {
+  ExceptionHandler handler(temp_path_,
+                           NULL,
+                           DumpCallback,
+                           NULL,
+                           ExceptionHandler::HANDLER_ALL);
+  ASSERT_TRUE(handler.WriteMinidump());
+  ASSERT_FALSE(dump_file.empty());
+
+  string minidump_filename;
+  ASSERT_TRUE(WindowsStringUtils::safe_wcstombs(dump_file,
+                                                &minidump_filename));
+
+  // Read the minidump and verify some info.
+  Minidump minidump(minidump_filename);
+  ASSERT_TRUE(minidump.Read());
+  //TODO(ted): more comprehensive tests...
 }
+
+}  // namespace

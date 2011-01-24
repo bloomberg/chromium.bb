@@ -560,7 +560,7 @@ void ExceptionHandler::HandleInvalidParameter(const wchar_t* expression,
 
 // static
 void ExceptionHandler::HandlePureVirtualCall() {
-  // This is an pure virtual funciton call, not an exception.  It's safe to
+  // This is an pure virtual function call, not an exception.  It's safe to
   // play with sprintf here.
   AutoExceptionHandler auto_exception_handler;
   ExceptionHandler* current_handler = auto_exception_handler.get_handler();
