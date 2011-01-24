@@ -4,15 +4,15 @@
 
 #include "chrome_frame/ready_mode/internal/ready_prompt_content.h"
 
-#include <atlbase.h>
-#include <atlwin.h>
-
 #include "base/logging.h"
 #include "chrome_frame/ready_mode/internal/ready_mode_state.h"
 #include "chrome_frame/ready_mode/internal/ready_prompt_window.h"
+#include "chrome_frame/ready_mode/internal/url_launcher.h"
 
-ReadyPromptContent::ReadyPromptContent(ReadyModeState* ready_mode_state)
-    : ready_mode_state_(ready_mode_state) {
+ReadyPromptContent::ReadyPromptContent(ReadyModeState* ready_mode_state,
+                                       UrlLauncher* url_launcher)
+    : ready_mode_state_(ready_mode_state),
+      url_launcher_(url_launcher) {
 }
 
 ReadyPromptContent::~ReadyPromptContent() {
@@ -26,10 +26,11 @@ ReadyPromptContent::~ReadyPromptContent() {
 bool ReadyPromptContent::InstallInFrame(Frame* frame) {
   DCHECK(window_ == NULL);
   DCHECK(ready_mode_state_ != NULL);
+  DCHECK(url_launcher_ != NULL);
 
-  // The window owns itself upon call to Initialize.
-  ReadyPromptWindow* new_window_ = new ReadyPromptWindow();
-  window_ = new_window_->Initialize(frame, ready_mode_state_.release());
+  // Pass ownership of our ready_mode_state_ and url_launcher_ to the window.
+  window_ = ReadyPromptWindow::CreateInstance(
+      frame, ready_mode_state_.release(), url_launcher_.release());
 
   return window_ != NULL;
 }

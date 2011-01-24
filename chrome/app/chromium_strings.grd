@@ -176,6 +176,12 @@ be available for now. -->
         <message name="IDS_CHROME_FRAME_MENU_ABOUT" desc="About Chrome Frame label">
           About Chromium Frame...
         </message>
+	<message name="IDS_CHROME_FRAME_READY_MODE_LEARN_MORE_URL" desc="Link to knowledge-base article about Chromium Frame Ready Mode">
+	  http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=161796
+	</message>
+	<message name="IDS_CHROME_FRAME_READY_MODE_PROMPT" desc="Ready Mode prompt message">
+	  This site recommends Chromium Frame (already installed).
+	</message>
       </if>
       <message name="IDS_INSTANT_OPT_IN_TITLE" desc="Title of the instant opt-in dialog">
         Instant

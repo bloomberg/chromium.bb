@@ -18,6 +18,7 @@
 #include "chrome_frame/ready_mode/internal/ready_prompt_content.h"
 #include "chrome_frame/ready_mode/internal/ready_prompt_window.h"
 #include "chrome_frame/ready_mode/internal/registry_ready_mode_state.h"
+#include "chrome_frame/ready_mode/internal/url_launcher.h"
 #include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 
@@ -97,6 +98,12 @@ class MockReadyModeState : public ReadyModeState {
   MOCK_METHOD0(AcceptChromeFrame, void(void));
 };  // class MockReadyModeState
 
+class MockUrlLauncher : public UrlLauncher {
+ public:
+  // UrlLauncher implementation
+  MOCK_METHOD1(LaunchUrl, void(const std::wstring& url));
+};  // class MockUrlLauncher
+
 }  // namespace
 
 class ReadyPromptTest : public testing::Test {
@@ -126,8 +133,10 @@ class ReadyPromptWindowTest : public ReadyPromptTest {
 
     // owned by ReadyPromptWindow
     state_ = new MockReadyModeState();
-    ready_prompt_window_ = (new ReadyPromptWindow())->Initialize(&frame_,
-                                                                 state_);
+    url_launcher_ = new MockUrlLauncher();
+
+    ready_prompt_window_ = ReadyPromptWindow::CreateInstance(
+        &frame_, state_, url_launcher_);
 
     ASSERT_TRUE(ready_prompt_window_ != NULL);
     RECT position = {0, 0, 800, 39};
@@ -137,6 +146,7 @@ class ReadyPromptWindowTest : public ReadyPromptTest {
 
  protected:
   MockReadyModeState* state_;
+  MockUrlLauncher* url_launcher_;
   base::WeakPtr<ReadyPromptWindow> ready_prompt_window_;
 };  // class ReadyPromptWindowTest
 
@@ -212,7 +222,10 @@ class ReadyPromptWindowButtonTest : public ReadyPromptWindowTest {
 TEST_F(ReadyPromptTest, ReadyPromptContentTest) {
   // owned by ReadyPromptContent
   MockReadyModeState* state = new MockReadyModeState();
-  scoped_ptr<ReadyPromptContent> content_(new ReadyPromptContent(state));
+  MockUrlLauncher* url_launcher = new MockUrlLauncher();
+
+  scoped_ptr<ReadyPromptContent> content_(new ReadyPromptContent(state,
+                                                                 url_launcher));
 
   content_->InstallInFrame(&frame_);
 
@@ -255,21 +268,15 @@ TEST_F(ReadyPromptWindowTest, Destroy) {
   ready_prompt_window_->DestroyWindow();
 }
 
-TEST_F(ReadyPromptWindowButtonTest, ClickYes) {
+TEST_F(ReadyPromptWindowButtonTest, ClickEnable) {
   EXPECT_CALL(*state_, AcceptChromeFrame());
-  ASSERT_TRUE(ClickOnCaption(L"&Yes"));
+  ASSERT_TRUE(ClickOnCaption(L"Enable"));
   RunUntilCloseInfobar();
 }
 
-TEST_F(ReadyPromptWindowButtonTest, ClickRemindMeLater) {
-  EXPECT_CALL(*state_, TemporarilyDeclineChromeFrame());
-  ASSERT_TRUE(ClickOnCaption(L"Remind me &Later"));
-  RunUntilCloseInfobar();
-}
-
-TEST_F(ReadyPromptWindowButtonTest, ClickNo) {
+TEST_F(ReadyPromptWindowButtonTest, ClickIgnore) {
   EXPECT_CALL(*state_, PermanentlyDeclineChromeFrame());
-  ASSERT_TRUE(ClickOnCaption(L"&No"));
+  ASSERT_TRUE(ClickOnCaption(L"Ignore"));
   RunUntilCloseInfobar();
 }
 

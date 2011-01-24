@@ -872,6 +872,7 @@
         'ready_mode/internal/ready_prompt_window.h',
         'ready_mode/internal/registry_ready_mode_state.cc',
         'ready_mode/internal/registry_ready_mode_state.h',
+        'ready_mode/internal/url_launcher.h',
         'ready_mode/ready_mode.cc',
         'ready_mode/ready_mode.h',
         'register_bho.rgs',

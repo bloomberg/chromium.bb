@@ -40,9 +40,9 @@ IDD_CHROME_FRAME_READY_PROMPT DIALOGEX 0, 0, 446, 22
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_BORDER
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    LTEXT           "This site recommends the Google Chrome Frame add-on for Internet Explorer. Would you like to enable it now? No download or browser restart is required.",IDC_PROMPT_MESSAGE,34,3,254,16
-    ICON            IDI_CHROME_FRAME_ICON,IDC_PROMPT_ICON,7,1,21,20
-    DEFPUSHBUTTON   "&Yes",IDACTIVATE,287,4,50,14
-    PUSHBUTTON      "Remind me &Later",IDLATER,340,4,66,14
-    PUSHBUTTON      "&No",IDNEVER,409,4,34,14
+    LTEXT           "This site performs better with Google Chrome Frame.",IDC_PROMPT_MESSAGE,34,3,198,16
+    LTEXT           "Learn more.",IDC_PROMPT_LINK,300,3,42,16
+    ICON            10750,IDC_PROMPT_ICON,7,1,20,20
+    DEFPUSHBUTTON   "Enable",IDACTIVATE,349,4,50,14
+    PUSHBUTTON      "Ignore",IDNEVER,409,4,34,14
 END

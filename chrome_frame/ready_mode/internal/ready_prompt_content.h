@@ -13,14 +13,18 @@
 
 class ReadyModeState;
 class ReadyPromptWindow;
+class UrlLauncher;
 
 // Encapsulates the Ready Mode prompt inviting users to permanently activate
 // Chrome Frame, temporarily disable Ready Mode, or permanently disable Ready
 // Mode.
 class ReadyPromptContent : public InfobarContent {
  public:
-  explicit ReadyPromptContent(ReadyModeState* ready_mode_state);
-  ~ReadyPromptContent();
+  // Takes ownership of the ReadyModeState and UrlLauncher instances, which
+  // will be freed upon destruction of the ReadyPromptContent.
+  ReadyPromptContent(ReadyModeState* ready_mode_state,
+                     UrlLauncher* url_launcher);
+  virtual ~ReadyPromptContent();
 
   // InfobarContent implementation
   virtual bool InstallInFrame(Frame* frame);
@@ -30,6 +34,7 @@ class ReadyPromptContent : public InfobarContent {
  private:
   base::WeakPtr<ReadyPromptWindow> window_;
   scoped_ptr<ReadyModeState> ready_mode_state_;
+  scoped_ptr<UrlLauncher> url_launcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadyPromptContent);
 };  // class ReadyPromptContent
