@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
@@ -36,8 +37,9 @@ const int kRetriesDelayInSec = 2;
 
 }  // namespace
 
-namespace chromeos {
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::ApplyServicesCustomization);
 
+namespace chromeos {
 
 // static
 void ApplyServicesCustomization::StartIfNeeded() {
@@ -79,18 +81,14 @@ bool ApplyServicesCustomization::Init() {
   }
 
   if (url_.SchemeIsFile()) {
-    std::string manifest;
-    if (file_util::ReadFileToString(FilePath(url_.path()), &manifest)) {
-      Apply(manifest);
-    } else {
-      LOG(ERROR) << "Failed to load services customization manifest from: "
-                 << url_.path();
-    }
-
-    return false;
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(this,
+            &ApplyServicesCustomization::ReadFileInBackground,
+            FilePath(url_.path())));
+  } else {
+    StartFileFetch();
   }
 
-  StartFileFetch();
   return true;
 }
 
@@ -125,7 +123,29 @@ void ApplyServicesCustomization::OnURLFetchComplete(
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
+void ApplyServicesCustomization::ReadFileInBackground(const FilePath& file) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  std::string manifest;
+  if (file_util::ReadFileToString(file, &manifest)) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(
+            this, &ApplyServicesCustomization::ApplyAndDelete, manifest));
+  } else {
+    VLOG(1) << "Failed to load services customization manifest from: "
+            << file.value();
+    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
+  }
+}
+
+void ApplyServicesCustomization::ApplyAndDelete(const std::string& manifest) {
+  Apply(manifest);
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
 void ApplyServicesCustomization::Apply(const std::string& manifest) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   chromeos::ServicesCustomizationDocument customization;
   if (!customization.LoadManifestFromString(manifest)) {
     LOG(ERROR) << "Failed to partner parse services customizations manifest";
@@ -146,4 +166,4 @@ void ApplyServicesCustomization::Apply(const std::string& manifest) {
   SetApplied(true);
 }
 
-}
+}  // namespace chromeos

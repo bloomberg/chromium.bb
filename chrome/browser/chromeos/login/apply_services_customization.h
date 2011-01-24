@@ -13,6 +13,7 @@
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
+class FilePath;
 class PrefService;
 
 namespace chromeos {
@@ -50,6 +51,12 @@ class ApplyServicesCustomization : public URLFetcher::Delegate {
 
   // Applies given |manifest|.
   void Apply(const std::string& manifest);
+
+  // Applies given |manifest| and delete this object.
+  void ApplyAndDelete(const std::string& manifest);
+
+  // Executes on FILE thread and reads file to string.
+  void ReadFileInBackground(const FilePath& file);
 
   // Remember in local state status of kServicesCustomizationAppliedPref.
   static void SetApplied(bool val);
