@@ -4,6 +4,10 @@
 
 #include "chrome/browser/automation/testing_automation_provider.h"
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -2590,7 +2594,7 @@ DownloadItem* GetDownloadItemFromId(int id, DownloadManager* download_manager) {
   return selected_item;
 }
 
-} // namespace
+}  // namespace
 
 // See PerformActionOnDownload() in chrome/test/pyautolib/pyauto.py for sample
 // json input and output.
@@ -2979,7 +2983,7 @@ void TestingAutomationProvider::GetPluginsInfo(
     item->SetString("path", it->path.value());
     item->SetString("version", it->version);
     item->SetString("desc", it->desc);
-    item->SetBoolean("enabled", it->enabled);
+    item->SetBoolean("enabled", webkit::npapi::IsPluginEnabled(*it));
     // Add info about mime types.
     ListValue* mime_types = new ListValue();
     for (std::vector<webkit::npapi::WebPluginMimeType>::const_iterator type_it =
@@ -3197,7 +3201,7 @@ webkit_glue::PasswordForm GetPasswordFormFromDict(
   return password_form;
 }
 
-} // namespace
+}  // namespace
 
 // See AddSavedPassword() in chrome/test/functional/pyauto.py for sample json
 // input.

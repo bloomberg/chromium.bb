@@ -176,7 +176,7 @@ bool PluginDataRemover::IsSupported() {
           switches::kMinClearSiteDataFlashVersion)));
   if (!min_version.get())
     min_version.reset(Version::GetVersionFromString(kMinFlashVersion));
-  return plugin.enabled &&
+  return webkit::npapi::IsPluginEnabled(plugin) &&
          version.get() &&
          min_version->CompareTo(*version) == -1;
 }

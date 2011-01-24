@@ -159,7 +159,7 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
   }
 
   info->path = filename;
-  info->enabled = true;
+  info->enabled = WebPluginInfo::USER_ENABLED;
 
   // Attempt to swap in the wrapped plugin if this is nspluginwrapper.
   UnwrapNSPluginWrapper(&dl, &info->path);

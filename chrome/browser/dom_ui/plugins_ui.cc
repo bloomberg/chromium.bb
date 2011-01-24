@@ -83,8 +83,6 @@ void PluginsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_PLUGINS_DOWNLOAD));
   localized_strings.SetString("pluginName",
       l10n_util::GetStringUTF16(IDS_PLUGINS_NAME));
-  localized_strings.SetString("pluginPriority",
-      l10n_util::GetStringUTF16(IDS_PLUGINS_PRIORITY));
   localized_strings.SetString("pluginVersion",
       l10n_util::GetStringUTF16(IDS_PLUGINS_VERSION));
   localized_strings.SetString("pluginDescription",
@@ -237,7 +235,7 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
     if (!args->GetString(0, &file_path))
       return;
 
-    plugin_updater->EnablePluginFile(enable, file_path);
+    plugin_updater->EnablePlugin(enable, file_path);
   }
 
   // TODO(viettrungluu): We might also want to ensure that the plugins

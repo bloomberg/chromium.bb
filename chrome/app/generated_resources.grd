@@ -3887,9 +3887,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGINS_NAME" desc="The label for the name of this plug-in">
         Name:
       </message>
-      <message name="IDS_PLUGINS_PRIORITY" desc="The label for the priority of this plug-in in the list">
-        Priority:
-      </message>
 
       <!-- about:flags -->
       <message name="IDS_FLAGS_LONG_TITLE" desc="Long version of the title for the about:flags page.">

@@ -40,7 +40,7 @@ DictionaryValue* PluginUpdater::CreatePluginFileSummary(
   data->SetString("path", plugin.path.value());
   data->SetString("name", plugin.name);
   data->SetString("version", plugin.version);
-  data->SetBoolean("enabled", plugin.enabled);
+  data->SetBoolean("enabled", webkit::npapi::IsPluginEnabled(plugin));
   return data;
 }
 
@@ -58,17 +58,14 @@ ListValue* PluginUpdater::GetPluginGroupsData() {
 }
 
 void PluginUpdater::EnablePluginGroup(bool enable, const string16& group_name) {
-  if (webkit::npapi::PluginGroup::IsPluginNameDisabledByPolicy(group_name))
-    enable = false;
   webkit::npapi::PluginList::Singleton()->EnableGroup(enable, group_name);
   NotifyPluginStatusChanged();
 }
 
-void PluginUpdater::EnablePluginFile(bool enable,
-                                     const FilePath::StringType& path) {
+void PluginUpdater::EnablePlugin(bool enable,
+                                 const FilePath::StringType& path) {
   FilePath file_path(path);
-  if (enable &&
-      !webkit::npapi::PluginGroup::IsPluginPathDisabledByPolicy(file_path))
+  if (enable)
     webkit::npapi::PluginList::Singleton()->EnablePlugin(file_path);
   else
     webkit::npapi::PluginList::Singleton()->DisablePlugin(file_path);
@@ -250,9 +247,9 @@ void PluginUpdater::GetPreferencesDataOnFileThread(void* profile) {
   BrowserThread::PostTask(
     BrowserThread::UI,
     FROM_HERE,
-    NewRunnableFunction(
-        &PluginUpdater::OnUpdatePreferences,
-        static_cast<Profile*>(profile), plugins, groups));
+    NewRunnableFunction(&PluginUpdater::OnUpdatePreferences,
+                        static_cast<Profile*>(profile),
+                        plugins, groups));
 }
 
 void PluginUpdater::OnUpdatePreferences(
@@ -269,16 +266,29 @@ void PluginUpdater::OnUpdatePreferences(
                                      internal_dir);
 
   // Add the plugin files.
-  for (std::vector<webkit::npapi::WebPluginInfo>::const_iterator it =
-           plugins.begin();
-       it != plugins.end();
-       ++it) {
-    plugins_list->Append(CreatePluginFileSummary(*it));
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    DictionaryValue* summary = CreatePluginFileSummary(plugins[i]);
+    // If the plugin is disabled only by policy don't store this state in the
+    // user pref store.
+    if (plugins[i].enabled ==
+        webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_DISABLED) {
+      summary->SetBoolean("enabled", true);
+    }
+    bool enabled_val;
+    summary->GetBoolean("enabled", &enabled_val);
+    plugins_list->Append(summary);
   }
 
   // Add the groups as well.
   for (size_t i = 0; i < groups.size(); ++i) {
-    plugins_list->Append(groups[i].GetSummary());
+      DictionaryValue* summary = groups[i].GetSummary();
+      // If the plugin is disabled only by policy don't store this state in the
+      // user pref store.
+      if (!groups[i].Enabled() &&
+          webkit::npapi::PluginGroup::IsPluginNameDisabledByPolicy(
+              groups[i].GetGroupName()))
+        summary->SetBoolean("enabled", true);
+      plugins_list->Append(summary);
   }
 }
 

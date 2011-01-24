@@ -92,7 +92,7 @@ TEST(PluginGroupTest, PluginGroupMatch) {
   EXPECT_TRUE(group->Match(kPlugin3045));
   EXPECT_TRUE(group->Match(kPlugin3045r));
   EXPECT_FALSE(group->Match(kPluginNoVersion));
-  group->AddPlugin(kPlugin3045, 0);
+  group->AddPlugin(kPlugin3045);
   EXPECT_FALSE(group->IsVulnerable());
 
   group.reset(PluginGroupTest::CreatePluginGroup(kPluginDef));
@@ -130,42 +130,26 @@ TEST(PluginGroupTest, PluginGroupDescription) {
       scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
           plugindefs[i]));
       EXPECT_TRUE(group->Match(plugin3043));
-      group->AddPlugin(plugin3043, 0);
+      group->AddPlugin(plugin3043);
       EXPECT_EQ(desc3043, group->description());
       EXPECT_TRUE(group->IsVulnerable());
       EXPECT_TRUE(group->Match(plugin3045));
-      group->AddPlugin(plugin3045, 1);
+      group->AddPlugin(plugin3045);
       EXPECT_EQ(desc3043, group->description());
       EXPECT_TRUE(group->IsVulnerable());
     }
-
-    {
-      // Disable the first plugin.
-      plugin3043.enabled = false;
-      scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
-          plugindefs[i]));
-      EXPECT_TRUE(group->Match(plugin3043));
-      group->AddPlugin(plugin3043, 0);
-      EXPECT_EQ(desc3043, group->description());
-      EXPECT_TRUE(group->IsVulnerable());
-      EXPECT_FALSE(group->Enabled());
-      EXPECT_TRUE(group->Match(plugin3045));
-      group->AddPlugin(plugin3045, 1);
-      EXPECT_EQ(desc3045, group->description());
-      EXPECT_FALSE(group->IsVulnerable());
-    }
-
     {
       // Disable the second plugin.
-      plugin3045.enabled = false;
+      plugin3045.enabled =
+          webkit::npapi::WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED;
       scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
           plugindefs[i]));
       EXPECT_TRUE(group->Match(plugin3043));
-      group->AddPlugin(plugin3043, 1);
+      group->AddPlugin(plugin3043);
       EXPECT_EQ(desc3043, group->description());
       EXPECT_TRUE(group->IsVulnerable());
       EXPECT_TRUE(group->Match(plugin3045));
-      group->AddPlugin(plugin3045, 0);
+      group->AddPlugin(plugin3045);
       EXPECT_EQ(desc3043, group->description());
       EXPECT_TRUE(group->IsVulnerable());
     }
@@ -188,8 +172,9 @@ TEST(PluginGroupTest, DisableOutdated) {
   for (size_t i = 0; i < 2; ++i) {
     scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
         plugindefs[i]));
-    group->AddPlugin(kPlugin3043, 0);
-    group->AddPlugin(kPlugin3045, 1);
+    group->AddPlugin(kPlugin3043);
+    group->AddPlugin(kPlugin3045);
+
     EXPECT_EQ(ASCIIToUTF16("MyPlugin version 3.0.43"), group->description());
     EXPECT_TRUE(group->IsVulnerable());
 
@@ -218,7 +203,7 @@ TEST(PluginGroupTest, VersionExtraction) {
         ASCIIToUTF16(versions[i][0]), string16());
     scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(plugin));
     EXPECT_TRUE(group->Match(plugin));
-    group->AddPlugin(plugin, 0);
+    group->AddPlugin(plugin);
     scoped_ptr<DictionaryValue> data(group->GetDataForUI());
     std::string version;
     data->GetString("version", &version);
@@ -256,7 +241,7 @@ TEST(PluginGroupTest, IsVulnerable) {
                                     ASCIIToUTF16("adobe reader 10"));
   scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
       adobe_reader_plugin_def));
-  group->AddPlugin(adobe_reader_plugin, 0);
+  group->AddPlugin(adobe_reader_plugin);
   PluginGroup group_copy(*group);  // Exercise the copy constructor.
   EXPECT_FALSE(group_copy.IsVulnerable());
 
@@ -274,7 +259,7 @@ TEST(PluginGroupTest, IsVulnerable) {
                                    ASCIIToUTF16("4.0.50917.0"),
                                    ASCIIToUTF16("silverlight 4"));
   group.reset(PluginGroupTest::CreatePluginGroup(silverlight_plugin_def));
-  group->AddPlugin(silverlight_plugin, 0);
+  group->AddPlugin(silverlight_plugin);
   EXPECT_FALSE(PluginGroup(*group).IsVulnerable());
 }
 }  // namespace npapi

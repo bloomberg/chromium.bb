@@ -4,6 +4,8 @@
 
 #include "webkit/plugins/npapi/webplugininfo.h"
 
+#include "base/logging.h"
+
 namespace webkit {
 namespace npapi {
 
@@ -11,7 +13,9 @@ WebPluginMimeType::WebPluginMimeType() {}
 
 WebPluginMimeType::~WebPluginMimeType() {}
 
-WebPluginInfo::WebPluginInfo() : enabled(false) {}
+WebPluginInfo::WebPluginInfo()
+    : enabled(USER_DISABLED_POLICY_UNMANAGED) {
+}
 
 WebPluginInfo::WebPluginInfo(const WebPluginInfo& rhs)
     : name(rhs.name),
@@ -43,9 +47,13 @@ WebPluginInfo::WebPluginInfo(const string16& fake_name,
       version(fake_version),
       desc(fake_desc),
       mime_types(),
-      enabled(true) {
+      enabled(USER_ENABLED_POLICY_UNMANAGED) {
+}
+
+bool IsPluginEnabled(const WebPluginInfo& plugin) {
+  return ((plugin.enabled & WebPluginInfo::POLICY_ENABLED) ||
+          plugin.enabled == WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED);
 }
 
 }  // namespace npapi
 }  // namespace webkit
-

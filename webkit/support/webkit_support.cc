@@ -253,7 +253,7 @@ WebPlugin* CreateWebPlugin(WebFrame* frame,
   std::string actual_mime_type;
   if (!webkit::npapi::PluginList::Singleton()->GetPluginInfo(
           params.url, params.mimeType.utf8(), kAllowWildcard, &info,
-          &actual_mime_type) || !info.enabled) {
+          &actual_mime_type) || !webkit::npapi::IsPluginEnabled(info)) {
     return NULL;
   }
 

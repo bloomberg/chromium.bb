@@ -434,7 +434,8 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
   webkit::npapi::WebPluginInfo info;
   bool allow_wildcard = false;
   return !webkit::npapi::PluginList::Singleton()->GetPluginInfo(
-      GURL(), type, allow_wildcard, &info, NULL) || !info.enabled;
+      GURL(), type, allow_wildcard, &info, NULL) ||
+      !webkit::npapi::IsPluginEnabled(info);
 }
 
 void BufferedResourceHandler::UseAlternateResourceHandler(

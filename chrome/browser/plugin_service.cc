@@ -314,7 +314,7 @@ void PluginService::GetAllowedPluginForOpenChannelToPlugin(
   bool found = GetFirstAllowedPluginInfo(
       render_process_id, render_view_id, url, mime_type, &info, NULL);
   FilePath plugin_path;
-  if (found && info.enabled)
+  if (found && webkit::npapi::IsPluginEnabled(info))
     plugin_path = FilePath(info.path);
 
   // Now we jump back to the IO thread to finish opening the channel.
@@ -456,6 +456,7 @@ void PluginService::Observe(NotificationType type,
 #endif
 
     case NotificationType::PLUGIN_ENABLE_STATUS_CHANGED: {
+      webkit::npapi::PluginList::Singleton()->RefreshPlugins();
       PurgePluginListCache(false);
       break;
     }
@@ -507,7 +508,7 @@ void PluginService::RegisterPepperPlugins() {
         WideToUTF16(plugins[i].path.BaseName().ToWStringHack()) :
         ASCIIToUTF16(plugins[i].name);
     info.desc = ASCIIToUTF16(plugins[i].description);
-    info.enabled = true;
+    info.enabled = webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
 
     // TODO(evan): Pepper shouldn't require us to parse strings to get
     // the list of mime types out.

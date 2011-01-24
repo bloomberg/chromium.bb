@@ -920,7 +920,7 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
   Send(new ViewHostMsg_GetPluginInfo(
       routing_id_, params.url, frame->top()->url(), params.mimeType.utf8(),
       &found, &info, &setting, &mime_type));
-  if (!found || !info.enabled)
+  if (!found || !webkit::npapi::IsPluginEnabled(info))
     return NULL;
 
   scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
@@ -2717,7 +2717,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                    false);
   }
 
-  if (!info.enabled)
+  if (!webkit::npapi::IsPluginEnabled(info))
     return NULL;
 
   ContentSetting host_setting =

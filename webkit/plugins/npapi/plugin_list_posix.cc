@@ -165,7 +165,7 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
 }
 
 void PluginList::LoadPluginsFromDir(const FilePath& dir_path,
-                                    std::vector<WebPluginInfo>* plugins,
+                                    ScopedVector<PluginGroup>* plugin_groups,
                                     std::set<FilePath>* visited_plugins) {
   // See ScanPluginsDirectory near
   // http://mxr.mozilla.org/firefox/source/modules/plugin/base/src/nsPluginHostImpl.cpp#5052
@@ -234,12 +234,12 @@ void PluginList::LoadPluginsFromDir(const FilePath& dir_path,
 
   // Load the files in order.
   for (FileTimeList::const_iterator i = files.begin(); i != files.end(); ++i) {
-    LoadPlugin(i->first, plugins);
+    LoadPlugin(i->first, plugin_groups);
   }
 }
 
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
-                                  std::vector<WebPluginInfo>* plugins) {
+                                  ScopedVector<PluginGroup>* plugin_groups) {
   LOG_IF(ERROR, PluginList::DebugPluginLoading())
       << "Considering " << info.path.value() << " (" << info.name << ")";
 
@@ -248,15 +248,19 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
         << info.path.value() << " is undesirable.";
 
     // See if we have a better version of this plugin.
-    for (size_t i = 0; i < plugins->size(); ++i) {
-      if (plugins->at(i).name == info.name &&
-          !IsUndesirablePlugin(plugins->at(i))) {
-        // Skip the current undesirable one so we can use the better one
-        // we just found.
-        LOG_IF(ERROR, PluginList::DebugPluginLoading())
-            << "Skipping " << info.path.value() << ", preferring "
-            << plugins->at(i).path.value();
-        return false;
+    for (size_t i = 0; i < plugin_groups->size(); ++i) {
+      const std::vector<WebPluginInfo>& plugins =
+          (*plugin_groups)[i]->web_plugins_info();
+      for (size_t j = 0; j < plugins.size(); ++j) {
+        if (plugins[j].name == info.name &&
+            !IsUndesirablePlugin(plugins[j])) {
+          // Skip the current undesirable one so we can use the better one
+          // we just found.
+          LOG_IF(ERROR, PluginList::DebugPluginLoading())
+              << "Skipping " << info.path.value() << ", preferring "
+              << plugins[j].path.value();
+          return false;
+        }
       }
     }
   }

@@ -129,7 +129,7 @@ bool ReadPlistPluginInfo(const FilePath& filename, CFBundleRef bundle,
     info->desc = base::SysNSStringToUTF16(plugin_desc);
   else
     info->desc = UTF8ToUTF16(filename.BaseName().value());
-  info->enabled = true;
+  info->enabled = WebPluginInfo::USER_ENABLED;
 
   return true;
 }
@@ -223,7 +223,7 @@ bool ReadSTRPluginInfo(const FilePath& filename, CFBundleRef bundle,
     info->desc = UTF8ToUTF16(plugin_descs[0]);
   else
     info->desc = UTF8ToUTF16(filename.BaseName().value());
-  info->enabled = true;
+  info->enabled = WebPluginInfo::USER_ENABLED;
 
   return true;
 }

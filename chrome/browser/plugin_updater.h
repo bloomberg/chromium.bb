@@ -36,7 +36,7 @@ class PluginUpdater : public NotificationObserver {
   void EnablePluginGroup(bool enable, const string16& group_name);
 
   // Enable or disable a specific plugin file.
-  void EnablePluginFile(bool enable, const FilePath::StringType& file_path);
+  void EnablePlugin(bool enable, const FilePath::StringType& file_path);
 
   // Disable all plugin groups as defined by the user's preference file.
   void DisablePluginGroupsFromPrefs(Profile* profile);

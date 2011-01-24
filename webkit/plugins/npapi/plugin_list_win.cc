@@ -250,7 +250,7 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
 }
 
 void PluginList::LoadPluginsFromDir(const FilePath &path,
-                                    std::vector<WebPluginInfo>* plugins,
+                                    ScopedVector<PluginGroup>* plugin_groups,
                                     std::set<FilePath>* visited_plugins) {
   WIN32_FIND_DATA find_file_data;
   HANDLE find_handle;
@@ -266,7 +266,7 @@ void PluginList::LoadPluginsFromDir(const FilePath &path,
   do {
     if (!(find_file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
       FilePath filename = path.Append(find_file_data.cFileName);
-      LoadPlugin(filename, plugins);
+      LoadPlugin(filename, plugin_groups);
       visited_plugins->insert(filename);
     }
   } while (FindNextFile(find_handle, &find_file_data) != 0);
@@ -276,7 +276,7 @@ void PluginList::LoadPluginsFromDir(const FilePath &path,
 }
 
 void PluginList::LoadPluginsFromRegistry(
-    std::vector<WebPluginInfo>* plugins,
+    ScopedVector<PluginGroup>* plugin_groups,
     std::set<FilePath>* visited_plugins) {
   std::set<FilePath> plugin_dirs;
 
@@ -287,7 +287,7 @@ void PluginList::LoadPluginsFromRegistry(
 
   for (std::set<FilePath>::iterator i = plugin_dirs.begin();
        i != plugin_dirs.end(); ++i) {
-    LoadPlugin(*i, plugins);
+    LoadPlugin(*i, plugin_groups);
     visited_plugins->insert(*i);
   }
 }
@@ -335,22 +335,26 @@ bool IsNewerVersion(const std::wstring& a, const std::wstring& b) {
 }
 
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
-                                  std::vector<WebPluginInfo>* plugins) {
+                                  ScopedVector<PluginGroup>* plugin_groups) {
   // Version check
 
-  for (size_t i = 0; i < plugins->size(); ++i) {
-    std::wstring plugin1 =
-        StringToLowerASCII((*plugins)[i].path.BaseName().ToWStringHack());
-    std::wstring plugin2 =
-        StringToLowerASCII(info.path.BaseName().ToWStringHack());
-    if ((plugin1 == plugin2 && HaveSharedMimeType((*plugins)[i], info)) ||
-        (plugin1 == kJavaDeploy1 && plugin2 == kJavaDeploy2) ||
-        (plugin1 == kJavaDeploy2 && plugin2 == kJavaDeploy1)) {
-      if (!IsNewerVersion((*plugins)[i].version, info.version))
-        return false;  // We have loaded a plugin whose version is newer.
+  for (size_t i = 0; i < plugin_groups->size(); ++i) {
+    const std::vector<WebPluginInfo>& plugins =
+        (*plugin_groups)[i]->web_plugins_info();
+    for (size_t j = 0; j < plugins.size(); ++j) {
+      std::wstring plugin1 =
+          StringToLowerASCII(plugins[j].path.BaseName().ToWStringHack());
+      std::wstring plugin2 =
+          StringToLowerASCII(info.path.BaseName().ToWStringHack());
+      if ((plugin1 == plugin2 && HaveSharedMimeType(plugins[j], info)) ||
+          (plugin1 == kJavaDeploy1 && plugin2 == kJavaDeploy2) ||
+          (plugin1 == kJavaDeploy2 && plugin2 == kJavaDeploy1)) {
+        if (!IsNewerVersion(plugins[j].version, info.version))
+          return false;  // We have loaded a plugin whose version is newer.
 
-      plugins->erase(plugins->begin() + i);
-      break;
+        (*plugin_groups)[i]->RemovePlugin(plugins[j].path);
+        break;
+      }
     }
   }
 
@@ -396,16 +400,24 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
     if (dont_load_new_wmp_)
       return false;
 
-    for (size_t i = 0; i < plugins->size(); ++i) {
-      if ((*plugins)[i].path.BaseName().value() == kOldWMPPlugin) {
-        plugins->erase(plugins->begin() + i);
-        break;
+    for (size_t i = 0; i < plugin_groups->size(); ++i) {
+      const std::vector<WebPluginInfo>& plugins =
+          (*plugin_groups)[i]->web_plugins_info();
+      for (size_t j = 0; j < plugins.size(); ++j) {
+        if (plugins[j].path.BaseName().value() == kOldWMPPlugin) {
+          (*plugin_groups)[i]->RemovePlugin(plugins[j].path);
+          break;
+        }
       }
     }
   } else if (filename == kOldWMPPlugin) {
-    for (size_t i = 0; i < plugins->size(); ++i) {
-      if ((*plugins)[i].path.BaseName().value() == kNewWMPPlugin)
-        return false;
+    for (size_t i = 0; i < plugin_groups->size(); ++i) {
+      const std::vector<WebPluginInfo>& plugins =
+          (*plugin_groups)[i]->web_plugins_info();
+      for (size_t j = 0; j < plugins.size(); ++j) {
+        if (plugins[j].path.BaseName().value() == kNewWMPPlugin)
+          return false;
+      }
     }
   }
 

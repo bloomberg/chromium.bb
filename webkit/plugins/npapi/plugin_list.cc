@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -234,7 +233,7 @@ void PluginList::RegisterInternalPlugin(const FilePath& filename,
   plugin.info.name = ASCIIToUTF16(name);
   plugin.info.version = ASCIIToUTF16("1");
   plugin.info.desc = ASCIIToUTF16(description);
-  plugin.info.enabled = true;
+  plugin.info.enabled = WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
 
   WebPluginMimeType mime_type;
   mime_type.mime_type = mime_type_str;
@@ -324,22 +323,12 @@ bool PluginList::ParseMimeTypes(
 PluginList::PluginList()
     : plugins_loaded_(false),
       plugins_need_refresh_(false),
-      disable_outdated_plugins_(false),
-      next_priority_(0) {
+      disable_outdated_plugins_(false) {
   PlatformInit();
   AddHardcodedPluginGroups();
 }
 
-bool PluginList::ShouldDisableGroup(const string16& group_name) {
-  base::AutoLock lock(lock_);
-  if (PluginGroup::IsPluginNameDisabledByPolicy(group_name)) {
-    disabled_groups_.insert(group_name);
-    return true;
-  }
-  return disabled_groups_.count(group_name) > 0;
-}
-
-void PluginList::LoadPlugins(bool refresh) {
+void PluginList::LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups) {
   // Don't want to hold the lock while loading new plugins, so we don't block
   // other methods if they're called on other threads.
   std::vector<FilePath> extra_plugin_paths;
@@ -347,9 +336,6 @@ void PluginList::LoadPlugins(bool refresh) {
   std::vector<InternalPlugin> internal_plugins;
   {
     base::AutoLock lock(lock_);
-    if (plugins_loaded_ && !refresh && !plugins_need_refresh_)
-      return;
-
     // Clear the refresh bit now, because it might get set again before we
     // reach the end of the method.
     plugins_need_refresh_ = false;
@@ -358,7 +344,6 @@ void PluginList::LoadPlugins(bool refresh) {
     internal_plugins = internal_plugins_;
   }
 
-  std::vector<WebPluginInfo> new_plugins;
   std::set<FilePath> visited_plugins;
 
   std::vector<FilePath> directories_to_scan;
@@ -370,74 +355,110 @@ void PluginList::LoadPlugins(bool refresh) {
   for (size_t i = 0; i < internal_plugins.size(); ++i) {
     if (internal_plugins[i].info.path.value() == kDefaultPluginLibraryName)
       continue;
-    LoadPlugin(internal_plugins[i].info.path, &new_plugins);
+    LoadPlugin(internal_plugins[i].info.path, plugin_groups);
   }
 
   for (size_t i = 0; i < extra_plugin_paths.size(); ++i) {
     const FilePath& path = extra_plugin_paths[i];
     if (visited_plugins.find(path) != visited_plugins.end())
       continue;
-    LoadPlugin(path, &new_plugins);
+    LoadPlugin(path, plugin_groups);
     visited_plugins.insert(path);
   }
 
   for (size_t i = 0; i < extra_plugin_dirs.size(); ++i) {
-    LoadPluginsFromDir(extra_plugin_dirs[i], &new_plugins, &visited_plugins);
+    LoadPluginsFromDir(
+        extra_plugin_dirs[i], plugin_groups, &visited_plugins);
   }
 
   for (size_t i = 0; i < directories_to_scan.size(); ++i) {
-    LoadPluginsFromDir(directories_to_scan[i], &new_plugins, &visited_plugins);
+    LoadPluginsFromDir(
+        directories_to_scan[i], plugin_groups, &visited_plugins);
   }
 
 #if defined(OS_WIN)
-  LoadPluginsFromRegistry(&new_plugins, &visited_plugins);
+  LoadPluginsFromRegistry(plugin_groups, &visited_plugins);
 #endif
 
   // Load the default plugin last.
   if (webkit_glue::IsDefaultPluginEnabled())
-    LoadPlugin(FilePath(kDefaultPluginLibraryName), &new_plugins);
+    LoadPlugin(FilePath(kDefaultPluginLibraryName), plugin_groups);
+}
 
-  // Disable all of the plugins and plugin groups that are disabled by policy.
-  // There's currenly a bug that makes it impossible to correctly re-enable
-  // plugins or plugin-groups to their original, "pre-policy" state, so
-  // plugins and groups are only changed to a more "safe" state after a policy
-  // change, i.e. from enabled to disabled. See bug 54681.
-  for (PluginGroup::PluginMap::iterator it = plugin_groups_.begin();
-       it != plugin_groups_.end(); ++it) {
-    PluginGroup* group = it->second;
-    string16 group_name = group->GetGroupName();
-    if (ShouldDisableGroup(group_name)) {
-      group->Enable(false);
-    }
-
-    if (disable_outdated_plugins_) {
-      group->DisableOutdatedPlugins();
-    }
-    if (!group->Enabled()) {
-      base::AutoLock lock(lock_);
-      disabled_groups_.insert(group_name);
-    }
+void PluginList::LoadPlugins(bool refresh) {
+  {
+    base::AutoLock lock(lock_);
+    if (plugins_loaded_ && !refresh && !plugins_need_refresh_)
+      return;
   }
 
-  // Only update the data now since loading plugins can take a while.
-  base::AutoLock lock(lock_);
+  ScopedVector<PluginGroup> new_plugin_groups;
+  // Do the actual loading of the plugins.
+  LoadPluginsInternal(&new_plugin_groups);
 
-  plugins_ = new_plugins;
+  base::AutoLock lock(lock_);
+  // Grab all plugins that were found before to copy enabled statuses.
+  std::vector<WebPluginInfo> old_plugins;
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    const std::vector<WebPluginInfo>& gr_plugins =
+        plugin_groups_[i]->web_plugins_info();
+    old_plugins.insert(old_plugins.end(), gr_plugins.begin(), gr_plugins.end());
+  }
+  // Disable all of the plugins and plugin groups that are disabled by policy.
+  for (size_t i = 0; i < new_plugin_groups.size(); ++i) {
+    PluginGroup* group = new_plugin_groups[i];
+    string16 group_name = group->GetGroupName();
+
+    std::vector<WebPluginInfo>& gr_plugins = group->GetPluginsContainer();
+    for (size_t j = 0; j < gr_plugins.size(); ++j) {
+      int plugin_found = -1;
+      for (size_t k = 0; k < old_plugins.size(); ++k) {
+        if (gr_plugins[j].path == old_plugins[k].path) {
+          plugin_found = k;
+          break;
+        }
+      }
+      if (plugin_found >= 0)
+        gr_plugins[j].enabled = old_plugins[plugin_found].enabled;
+      // Set the disabled flag of all plugins scheduled for disabling.
+      if (plugins_to_disable_.find(gr_plugins[j].path) !=
+          plugins_to_disable_.end()) {
+          group->DisablePlugin(gr_plugins[j].path);
+      }
+    }
+    if (group->IsEmpty()) {
+      if (!group->Enabled())
+        groups_to_disable_.insert(group->GetGroupName());
+      new_plugin_groups.erase(new_plugin_groups.begin() + i);
+      --i;
+      continue;
+    }
+
+    group->EnforceGroupPolicy();
+    if (disable_outdated_plugins_)
+      group->DisableOutdatedPlugins();
+  }
+  // We flush the list of prematurely disabled plugins after the load has
+  // finished. If for some reason a plugin reappears on a second load it is
+  // going to be loaded normally. This is only true for non-policy controlled
+  // plugins though.
+  plugins_to_disable_.clear();
+
+  plugin_groups_.swap(new_plugin_groups);
   plugins_loaded_ = true;
 }
 
 void PluginList::LoadPlugin(const FilePath& path,
-                            std::vector<WebPluginInfo>* plugins) {
+                            ScopedVector<PluginGroup>* plugin_groups) {
   LOG_IF(ERROR, PluginList::DebugPluginLoading())
       << "Loading plugin " << path.value();
-
   WebPluginInfo plugin_info;
   const PluginEntryPoints* entry_points;
 
   if (!ReadPluginInfo(path, &plugin_info, &entry_points))
     return;
 
-  if (!ShouldLoadPlugin(plugin_info, plugins))
+  if (!ShouldLoadPlugin(plugin_info, plugin_groups))
     return;
 
   if (path.value() != kDefaultPluginLibraryName
@@ -455,61 +476,18 @@ void PluginList::LoadPlugin(const FilePath& path,
     }
   }
 
-  // Mark disabled plugins as such. (This has to happen before calling
-  // |AddToPluginGroups(plugin_info)|.)
-  if (disabled_plugins_.count(plugin_info.path)) {
-    plugin_info.enabled = false;
-  } else {
-    plugin_info.enabled = true;
-  }
-
-  base::AutoLock lock(lock_);
-  plugins->push_back(plugin_info);
-  AddToPluginGroups(plugin_info);
+  AddToPluginGroups(plugin_info, plugin_groups);
 }
-
-bool PluginList::SupportsType(const WebPluginInfo& info,
-                              const std::string &mime_type,
-                              bool allow_wildcard) {
-  // Webkit will ask for a plugin to handle empty mime types.
-  if (mime_type.empty())
-    return false;
-
-  for (size_t i = 0; i < info.mime_types.size(); ++i) {
-    const WebPluginMimeType& mime_info = info.mime_types[i];
-    if (net::MatchesMimeType(mime_info.mime_type, mime_type)) {
-      if (!allow_wildcard && mime_info.mime_type == "*") {
-        continue;
-      }
-      return true;
-    }
-  }
-  return false;
-}
-
-bool PluginList::SupportsExtension(const WebPluginInfo& info,
-                                   const std::string &extension,
-                                   std::string* actual_mime_type) {
-  for (size_t i = 0; i < info.mime_types.size(); ++i) {
-    const WebPluginMimeType& mime_type = info.mime_types[i];
-    for (size_t j = 0; j < mime_type.file_extensions.size(); ++j) {
-      if (mime_type.file_extensions[j] == extension) {
-        if (actual_mime_type)
-          *actual_mime_type = mime_type.mime_type;
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
 
 void PluginList::GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
   LoadPlugins(refresh);
 
   base::AutoLock lock(lock_);
-  *plugins = plugins_;
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    const std::vector<WebPluginInfo>& gr_plugins =
+        plugin_groups_[i]->web_plugins_info();
+    plugins->insert(plugins->end(), gr_plugins.begin(), gr_plugins.end());
+  }
 }
 
 void PluginList::GetEnabledPlugins(bool refresh,
@@ -518,11 +496,13 @@ void PluginList::GetEnabledPlugins(bool refresh,
 
   plugins->clear();
   base::AutoLock lock(lock_);
-  for (std::vector<WebPluginInfo>::const_iterator it = plugins_.begin();
-       it != plugins_.end();
-       ++it) {
-    if (it->enabled)
-      plugins->push_back(*it);
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    const std::vector<WebPluginInfo>& gr_plugins =
+        plugin_groups_[i]->web_plugins_info();
+    for (size_t i = 0; i < gr_plugins.size(); ++i) {
+      if (IsPluginEnabled(gr_plugins[i]))
+        plugins->push_back(gr_plugins[i]);
+    }
   }
 }
 
@@ -545,15 +525,19 @@ void PluginList::GetPluginInfoArray(
 
   // Add in enabled plugins by mime type.
   WebPluginInfo default_plugin;
-  for (size_t i = 0; i < plugins_.size(); ++i) {
-    if (plugins_[i].enabled &&
-        SupportsType(plugins_[i], mime_type, allow_wildcard)) {
-      FilePath path = plugins_[i].path;
-      if (path.value() != kDefaultPluginLibraryName &&
-          visited_plugins.insert(path).second) {
-        info->push_back(plugins_[i]);
-        if (actual_mime_types)
-          actual_mime_types->push_back(mime_type);
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    const std::vector<WebPluginInfo>& plugins =
+        plugin_groups_[i]->web_plugins_info();
+    for (size_t i = 0; i < plugins.size(); ++i) {
+      if (IsPluginEnabled(plugins[i]) && SupportsType(plugins[i],
+                                             mime_type, allow_wildcard)) {
+        FilePath path = plugins[i].path;
+        if (path.value() != kDefaultPluginLibraryName &&
+            visited_plugins.insert(path).second) {
+          info->push_back(plugins[i]);
+          if (actual_mime_types)
+            actual_mime_types->push_back(mime_type);
+        }
       }
     }
   }
@@ -564,42 +548,60 @@ void PluginList::GetPluginInfoArray(
   if (last_dot != std::string::npos) {
     std::string extension = StringToLowerASCII(std::string(path, last_dot+1));
     std::string actual_mime_type;
-    for (size_t i = 0; i < plugins_.size(); ++i) {
-      if (plugins_[i].enabled &&
-          SupportsExtension(plugins_[i], extension, &actual_mime_type)) {
-        FilePath path = plugins_[i].path;
-        if (path.value() != kDefaultPluginLibraryName &&
-            visited_plugins.insert(path).second) {
-          info->push_back(plugins_[i]);
-          if (actual_mime_types)
-            actual_mime_types->push_back(actual_mime_type);
+    for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+      const std::vector<WebPluginInfo>& plugins =
+          plugin_groups_[i]->web_plugins_info();
+      for (size_t i = 0; i < plugins.size(); ++i) {
+        if (IsPluginEnabled(plugins[i]) &&
+            SupportsExtension(plugins[i], extension, &actual_mime_type)) {
+          FilePath path = plugins[i].path;
+          if (path.value() != kDefaultPluginLibraryName &&
+              visited_plugins.insert(path).second) {
+            info->push_back(plugins[i]);
+            if (actual_mime_types)
+              actual_mime_types->push_back(actual_mime_type);
+          }
         }
       }
     }
   }
 
   // Add in disabled plugins by mime type.
-  for (size_t i = 0; i < plugins_.size(); ++i) {
-    if (!plugins_[i].enabled &&
-        SupportsType(plugins_[i], mime_type, allow_wildcard)) {
-      FilePath path = plugins_[i].path;
-      if (path.value() != kDefaultPluginLibraryName &&
-          visited_plugins.insert(path).second) {
-        info->push_back(plugins_[i]);
-        if (actual_mime_types)
-          actual_mime_types->push_back(mime_type);
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    const std::vector<WebPluginInfo>& plugins =
+        plugin_groups_[i]->web_plugins_info();
+    for (size_t i = 0; i < plugins.size(); ++i) {
+      if (!IsPluginEnabled(plugins[i]) &&
+          SupportsType(plugins[i], mime_type, allow_wildcard)) {
+        FilePath path = plugins[i].path;
+        if (path.value() != kDefaultPluginLibraryName &&
+            visited_plugins.insert(path).second) {
+          info->push_back(plugins[i]);
+          if (actual_mime_types)
+            actual_mime_types->push_back(mime_type);
+        }
       }
     }
   }
 
   // Add the default plugin at the end if it supports the mime type given,
   // and the default plugin is enabled.
-  if (!plugins_.empty() && webkit_glue::IsDefaultPluginEnabled()) {
-    const WebPluginInfo& default_info = plugins_.back();
-    if (SupportsType(default_info, mime_type, allow_wildcard)) {
-      info->push_back(default_info);
-      if (actual_mime_types)
-        actual_mime_types->push_back(mime_type);
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+#if defined(OS_WIN)
+    if (plugin_groups_[i]->identifier().compare(
+        WideToUTF8(kDefaultPluginLibraryName)) == 0) {
+#else
+    if (plugin_groups_[i]->identifier().compare(
+        kDefaultPluginLibraryName) == 0) {
+#endif
+      DCHECK_NE(0U, plugin_groups_[i]->web_plugins_info().size());
+      const WebPluginInfo& default_info =
+          plugin_groups_[i]->web_plugins_info()[0];
+      if (SupportsType(default_info, mime_type, allow_wildcard)) {
+        info->push_back(default_info);
+        if (actual_mime_types)
+          actual_mime_types->push_back(mime_type);
+      }
     }
   }
 }
@@ -637,10 +639,14 @@ bool PluginList::GetPluginInfoByPath(const FilePath& plugin_path,
                                      WebPluginInfo* info) {
   LoadPlugins(false);
   base::AutoLock lock(lock_);
-  for (size_t i = 0; i < plugins_.size(); ++i) {
-    if (plugins_[i].path == plugin_path) {
-      *info = plugins_[i];
-      return true;
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    const std::vector<WebPluginInfo>& plugins =
+        plugin_groups_[i]->web_plugins_info();
+    for (size_t i = 0; i < plugins.size(); ++i) {
+      if (plugins[i].path == plugin_path) {
+        *info = plugins[i];
+        return true;
+      }
     }
   }
 
@@ -652,32 +658,34 @@ void PluginList::GetPluginGroups(
     std::vector<PluginGroup>* plugin_groups) {
   if (load_if_necessary)
     LoadPlugins(false);
+  base::AutoLock lock(lock_);
   plugin_groups->clear();
-  for (PluginGroup::PluginMap::const_iterator it = plugin_groups_.begin();
-       it != plugin_groups_.end(); ++it) {
-    if (!it->second->IsEmpty())
-      plugin_groups->push_back(*it->second);
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    // In some unit tests we can get confronted with empty groups but in real
+    // world code this if should never be false here.
+    if (!plugin_groups_[i]->IsEmpty())
+      plugin_groups->push_back(*plugin_groups_[i]);
   }
 }
 
 const PluginGroup* PluginList::GetPluginGroup(
     const WebPluginInfo& web_plugin_info) {
   base::AutoLock lock(lock_);
-  return AddToPluginGroups(web_plugin_info);
+  return AddToPluginGroups(web_plugin_info, &plugin_groups_);
 }
 
-string16 PluginList::GetPluginGroupName(std::string identifier) {
-  PluginGroup::PluginMap::iterator it = plugin_groups_.find(identifier);
-  if (it == plugin_groups_.end()) {
-    return string16();
+string16 PluginList::GetPluginGroupName(const std::string& identifier) {
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    if (plugin_groups_[i]->identifier() == identifier)
+      return plugin_groups_[i]->GetGroupName();
   }
-  return it->second->GetGroupName();
+  return string16();
 }
 
 std::string PluginList::GetPluginGroupIdentifier(
     const WebPluginInfo& web_plugin_info) {
   base::AutoLock lock(lock_);
-  PluginGroup* group = AddToPluginGroups(web_plugin_info);
+  PluginGroup* group = AddToPluginGroups(web_plugin_info, &plugin_groups_);
   return group->identifier();
 }
 
@@ -687,22 +695,29 @@ void PluginList::AddHardcodedPluginGroups() {
   for (size_t i = 0; i < GetPluginGroupDefinitionsSize(); ++i) {
     PluginGroup* definition_group = PluginGroup::FromPluginGroupDefinition(
         definitions[i]);
-    std::string identifier = definition_group->identifier();
-    DCHECK(plugin_groups_.find(identifier) == plugin_groups_.end());
-    plugin_groups_.insert(std::make_pair(identifier, definition_group));
+    plugin_groups_.push_back(definition_group);
   }
 }
 
 PluginGroup* PluginList::AddToPluginGroups(
-    const WebPluginInfo& web_plugin_info) {
+    const WebPluginInfo& web_plugin_info,
+    ScopedVector<PluginGroup>* plugin_groups) {
   PluginGroup* group = NULL;
-  for (PluginGroup::PluginMap::iterator it = plugin_groups_.begin();
-       it != plugin_groups_.end(); ++it) {
-    if (it->second->Match(web_plugin_info))
-      group = it->second;
+  for (size_t i = 0; i < plugin_groups->size(); ++i) {
+    if ((*plugin_groups)[i]->Match(web_plugin_info)) {
+      group = (*plugin_groups)[i];
+      break;
+    }
   }
   if (!group) {
     group = PluginGroup::FromWebPluginInfo(web_plugin_info);
+    // If group is scheduled for disabling do that now and remove it from the
+    // list.
+    if (groups_to_disable_.find(group->GetGroupName()) !=
+        groups_to_disable_.end()) {
+        group->EnableGroup(false);
+        groups_to_disable_.erase(group->GetGroupName());
+    }
     std::string identifier = group->identifier();
     // If the identifier is not unique, use the full path. This means that we
     // probably won't be able to search for this group by identifier, but at
@@ -710,93 +725,97 @@ PluginGroup* PluginList::AddToPluginGroups(
     // is already a plug-in with the same filename, it's probably going to
     // handle the same MIME types (and it has a higher priority), so this one
     // is not going to run anyway.
-    if (plugin_groups_.find(identifier) != plugin_groups_.end())
-      identifier = PluginGroup::GetLongIdentifier(web_plugin_info);
-    DCHECK(plugin_groups_.find(identifier) == plugin_groups_.end());
-    plugin_groups_.insert(std::make_pair(identifier, group));
+    for (size_t i = 0; i < plugin_groups->size(); ++i) {
+      if ((*plugin_groups)[i]->identifier() == identifier) {
+        group->set_identifier(PluginGroup::GetLongIdentifier(web_plugin_info));
+        break;
+      }
+    }
+    plugin_groups->push_back(group);
   }
-  group->AddPlugin(web_plugin_info, next_priority_++);
+  group->AddPlugin(web_plugin_info);
   return group;
 }
 
 bool PluginList::EnablePlugin(const FilePath& filename) {
   base::AutoLock lock(lock_);
-
-  bool did_enable = false;
-
-  std::set<FilePath>::iterator entry = disabled_plugins_.find(filename);
-  if (entry == disabled_plugins_.end())
-    return did_enable;  // Early exit if plugin not in disabled list.
-
-  disabled_plugins_.erase(entry);  // Remove from disabled list.
-
-  // Set enabled flags if necessary.
-  for (std::vector<WebPluginInfo>::iterator it = plugins_.begin();
-       it != plugins_.end();
-       ++it) {
-    if (it->path == filename) {
-      DCHECK(!it->enabled);  // Should have been disabled.
-      it->enabled = true;
-      did_enable = true;
-    }
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    if (plugin_groups_[i]->ContainsPlugin(filename))
+      return plugin_groups_[i]->EnablePlugin(filename);
   }
-
-  return did_enable;
+  // Non existing plugin is being enabled. Check if it has been disabled before
+  // and remove it.
+  return (plugins_to_disable_.erase(filename) != 0);
 }
 
 bool PluginList::DisablePlugin(const FilePath& filename) {
   base::AutoLock lock(lock_);
-
-  bool did_disable = false;
-
-  if (disabled_plugins_.find(filename) != disabled_plugins_.end())
-    return did_disable;  // Early exit if plugin already in disabled list.
-
-  disabled_plugins_.insert(filename);  // Add to disabled list.
-
-  // Unset enabled flags if necessary.
-  for (std::vector<WebPluginInfo>::iterator it = plugins_.begin();
-       it != plugins_.end();
-       ++it) {
-    if (it->path == filename) {
-      DCHECK(it->enabled);  // Should have been enabled.
-      it->enabled = false;
-      did_disable = true;
-    }
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    if (plugin_groups_[i]->ContainsPlugin(filename))
+      return plugin_groups_[i]->DisablePlugin(filename);
   }
-
-  return did_disable;
+  // Non existing plugin is being disabled. Queue the plugin so that on the next
+  // load plugins call they will be disabled.
+  // Check if we already have this one to avoid double inclusion.
+  plugins_to_disable_.insert(filename);
+  return true;
 }
 
 bool PluginList::EnableGroup(bool enable, const string16& group_name) {
-  bool did_change = false;
-  {
-    base::AutoLock lock(lock_);
-
-    std::set<string16>::iterator entry = disabled_groups_.find(group_name);
-    if (enable) {
-      if (entry == disabled_groups_.end())
-        return did_change;  // Early exit if group not in disabled list.
-      disabled_groups_.erase(entry);  // Remove from disabled list.
+  base::AutoLock lock(lock_);
+  PluginGroup* group = NULL;
+  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
+    if (plugin_groups_[i]->GetGroupName().find(group_name) != string16::npos) {
+      group = plugin_groups_[i];
+      break;
+    }
+  }
+  if (!group) {
+    // Non existing group is being enabled. Queue the group so that on the next
+    // load plugins call they will be disabled.
+    if (!enable) {
+      groups_to_disable_.insert(group_name);
+      return true;
     } else {
-      if (entry != disabled_groups_.end())
-        return did_change;  // Early exit if group already in disabled list.
-      disabled_groups_.insert(group_name);
+      return (groups_to_disable_.erase(group_name) != 0);
     }
   }
 
-  for (PluginGroup::PluginMap::iterator it = plugin_groups_.begin();
-       it != plugin_groups_.end(); ++it) {
-    if (it->second->GetGroupName() == group_name) {
-      if (it->second->Enabled() != enable) {
-        it->second->Enable(enable);
-        did_change = true;
-        break;
+  return group->EnableGroup(enable);
+}
+
+bool PluginList::SupportsType(const WebPluginInfo& plugin,
+                              const std::string& mime_type,
+                              bool allow_wildcard) {
+  // Webkit will ask for a plugin to handle empty mime types.
+  if (mime_type.empty())
+    return false;
+
+  for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
+    const WebPluginMimeType& mime_info = plugin.mime_types[i];
+    if (net::MatchesMimeType(mime_info.mime_type, mime_type)) {
+      if (!allow_wildcard && mime_info.mime_type == "*")
+        continue;
+      return true;
+    }
+  }
+  return false;
+}
+
+bool PluginList::SupportsExtension(const WebPluginInfo& plugin,
+                                   const std::string& extension,
+                                   std::string* actual_mime_type) {
+  for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
+    const WebPluginMimeType& mime_type = plugin.mime_types[i];
+    for (size_t j = 0; j < mime_type.file_extensions.size(); ++j) {
+      if (mime_type.file_extensions[j] == extension) {
+        if (actual_mime_type)
+          *actual_mime_type = mime_type.mime_type;
+        return true;
       }
     }
   }
-
-  return did_change;
+  return false;
 }
 
 void PluginList::DisableOutdatedPluginGroups() {
@@ -804,13 +823,8 @@ void PluginList::DisableOutdatedPluginGroups() {
 }
 
 PluginList::~PluginList() {
-  Shutdown();
 }
 
-void PluginList::Shutdown() {
-  STLDeleteContainerPairSecondPointers(plugin_groups_.begin(),
-                                       plugin_groups_.end());
-}
 
 }  // namespace npapi
 }  // namespace webkit

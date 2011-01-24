@@ -47,21 +47,6 @@ bool PluginGroup::IsPluginNameDisabledByPolicy(const string16& plugin_name) {
   return false;
 }
 
-/*static*/
-bool PluginGroup::IsPluginPathDisabledByPolicy(const FilePath& plugin_path) {
-  std::vector<WebPluginInfo> plugins;
-  PluginList::Singleton()->GetPlugins(false, &plugins);
-  for (std::vector<WebPluginInfo>::const_iterator it = plugins.begin();
-       it != plugins.end();
-       ++it) {
-    if (FilePath::CompareEqualIgnoreCase(it->path.value(),
-        plugin_path.value()) && IsPluginNameDisabledByPolicy(it->name)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 VersionRange::VersionRange(VersionRangeDefinition definition)
     : low_str(definition.version_matcher_low),
       high_str(definition.version_matcher_high),
@@ -102,7 +87,7 @@ PluginGroup::PluginGroup(const string16& group_name,
       group_name_(group_name),
       name_matcher_(name_matcher),
       update_url_(update_url),
-      enabled_(false),
+      enabled_(true),
       version_(Version::GetVersionFromString("0")) {
 }
 
@@ -116,7 +101,6 @@ void PluginGroup::InitFrom(const PluginGroup& other) {
   version_ranges_ = other.version_ranges_;
   version_.reset(other.version_->Clone());
   web_plugin_infos_ = other.web_plugin_infos_;
-  web_plugin_positions_ = other.web_plugin_positions_;
 }
 
 PluginGroup::PluginGroup(const PluginGroup& other) {
@@ -214,12 +198,15 @@ Version* PluginGroup::CreateVersionFromString(const string16& version_string) {
 
 void PluginGroup::UpdateActivePlugin(const WebPluginInfo& plugin) {
   // A group is enabled if any of the files are enabled.
-  if (plugin.enabled) {
-    if (!enabled_) {
-      // If this is the first enabled plugin, use its description.
-      enabled_ = true;
+  if (IsPluginEnabled(plugin)) {
+    // The description of the group needs update either when it's state is
+    // about to change to enabled or if has never been set.
+    if (!enabled_ || description_.empty())
       UpdateDescriptionAndVersion(plugin);
-    }
+    // In case an enabled plugin has been added to a group that is currently
+    // disabled then we should enable the group.
+    if (!enabled_)
+      enabled_ = true;
   } else {
     // If this is the first plugin and it's disabled,
     // use its description for now.
@@ -236,24 +223,61 @@ void PluginGroup::UpdateDescriptionAndVersion(const WebPluginInfo& plugin) {
     version_.reset(Version::GetVersionFromString("0"));
 }
 
-void PluginGroup::AddPlugin(const WebPluginInfo& plugin, int position) {
+void PluginGroup::AddPlugin(const WebPluginInfo& plugin) {
   // Check if this group already contains this plugin.
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
-    if (web_plugin_infos_[i].name == plugin.name &&
-        web_plugin_infos_[i].version == plugin.version &&
-        FilePath::CompareEqualIgnoreCase(web_plugin_infos_[i].path.value(),
+    if (FilePath::CompareEqualIgnoreCase(web_plugin_infos_[i].path.value(),
                                          plugin.path.value())) {
       return;
     }
   }
   web_plugin_infos_.push_back(plugin);
-  // The position of this plugin relative to the global list of plugins.
-  web_plugin_positions_.push_back(position);
-  UpdateActivePlugin(plugin);
+  // If the group is disabled disable new plugins in it too. This should cover
+  // the case where a plugin has been upgraded that has been disabled and should
+  // stay disabled after the upgrade.
+  if (!enabled_)
+    DisablePlugin(web_plugin_infos_.back().path);
+  UpdateActivePlugin(web_plugin_infos_.back());
+  RefreshEnabledState();
 }
 
-bool PluginGroup::IsEmpty() const {
-  return web_plugin_infos_.empty();
+bool PluginGroup::RemovePlugin(const FilePath& filename) {
+  for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
+    if (web_plugin_infos_[i].path == filename) {
+      web_plugin_infos_.erase(web_plugin_infos_.begin() + i);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool PluginGroup::EnablePlugin(const FilePath& filename) {
+  for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
+    if (web_plugin_infos_[i].path == filename) {
+      bool did_enable = Enable(&web_plugin_infos_[i],
+                               WebPluginInfo::USER_ENABLED);
+      RefreshEnabledState();
+      return did_enable;
+    }
+  }
+  return false;
+}
+
+bool PluginGroup::DisablePlugin(const FilePath& filename) {
+  for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
+    if (web_plugin_infos_[i].path == filename) {
+      // We are only called for user intervention however we should respect a
+      // policy that might as well be active on this plugin.
+      bool did_disable = Disable(
+          &web_plugin_infos_[i],
+          IsPluginNameDisabledByPolicy(web_plugin_infos_[i].name) ?
+              WebPluginInfo::USER_DISABLED_POLICY_DISABLED :
+              WebPluginInfo::USER_DISABLED);
+      RefreshEnabledState();
+      return did_disable;
+    }
+  }
+  return false;
 }
 
 string16 PluginGroup::GetGroupName() const {
@@ -268,6 +292,15 @@ string16 PluginGroup::GetGroupName() const {
   return WideToUTF16(path);
 #endif
 }
+
+bool PluginGroup::ContainsPlugin(const FilePath& path) const {
+  for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
+    if (web_plugin_infos_[i].path == path)
+      return true;
+  }
+  return false;
+}
+
 
 DictionaryValue* PluginGroup::GetSummary() const {
   DictionaryValue* result = new DictionaryValue();
@@ -289,40 +322,35 @@ DictionaryValue* PluginGroup::GetDataForUI() const {
   ListValue* plugin_files = new ListValue();
   bool all_plugins_disabled_by_policy = true;
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
-    const WebPluginInfo& web_plugin = web_plugin_infos_[i];
-    int priority = web_plugin_positions_[i];
     DictionaryValue* plugin_file = new DictionaryValue();
-    plugin_file->SetString("name", web_plugin.name);
-    plugin_file->SetString("description", web_plugin.desc);
-    plugin_file->SetString("path", web_plugin.path.value());
-    plugin_file->SetString("version", web_plugin.version);
+    plugin_file->SetString("name", web_plugin_infos_[i].name);
+    plugin_file->SetString("description", web_plugin_infos_[i].desc);
+    plugin_file->SetString("path", web_plugin_infos_[i].path.value());
+    plugin_file->SetString("version", web_plugin_infos_[i].version);
     bool plugin_disabled_by_policy = group_disabled_by_policy ||
-        IsPluginNameDisabledByPolicy(web_plugin.name);
+        ((web_plugin_infos_[i].enabled & WebPluginInfo::POLICY_DISABLED) != 0);
     if (plugin_disabled_by_policy) {
       plugin_file->SetString("enabledMode", "disabledByPolicy");
     } else {
       all_plugins_disabled_by_policy = false;
-      plugin_file->SetString("enabledMode",
-                             web_plugin.enabled ? "enabled" : "disabledByUser");
+      plugin_file->SetString(
+          "enabledMode", IsPluginEnabled(web_plugin_infos_[i]) ?
+              "enabled" : "disabledByUser");
     }
-    plugin_file->SetInteger("priority", priority);
 
     ListValue* mime_types = new ListValue();
-    for (std::vector<WebPluginMimeType>::const_iterator type_it =
-         web_plugin.mime_types.begin();
-         type_it != web_plugin.mime_types.end();
-         ++type_it) {
+    const std::vector<WebPluginMimeType>& plugin_mime_types =
+        web_plugin_infos_[i].mime_types;
+    for (size_t j = 0; j < plugin_mime_types.size(); ++j) {
       DictionaryValue* mime_type = new DictionaryValue();
-      mime_type->SetString("mimeType", type_it->mime_type);
-      mime_type->SetString("description", type_it->description);
+      mime_type->SetString("mimeType", plugin_mime_types[j].mime_type);
+      mime_type->SetString("description", plugin_mime_types[j].description);
 
       ListValue* file_extensions = new ListValue();
-      for (std::vector<std::string>::const_iterator ext_it =
-           type_it->file_extensions.begin();
-           ext_it != type_it->file_extensions.end();
-           ++ext_it) {
-        file_extensions->Append(new StringValue(*ext_it));
-      }
+      const std::vector<std::string>& mime_file_extensions =
+          plugin_mime_types[j].file_extensions;
+      for (size_t k = 0; k < mime_file_extensions.size(); ++k)
+        file_extensions->Append(new StringValue(mime_file_extensions[k]));
       mime_type->Set("fileExtensions", file_extensions);
 
       mime_types->Append(mime_type);
@@ -373,41 +401,129 @@ bool PluginGroup::IsVulnerable() const {
   return false;
 }
 
-void PluginGroup::DisableOutdatedPlugins() {
-  description_ = string16();
-  enabled_ = false;
+bool PluginGroup::IsEmpty() const {
+  return web_plugin_infos_.size() == 0;
+}
 
-  for (std::vector<WebPluginInfo>::iterator it =
-           web_plugin_infos_.begin();
-       it != web_plugin_infos_.end(); ++it) {
-    scoped_ptr<Version> version(CreateVersionFromString(it->version));
+void PluginGroup::DisableOutdatedPlugins() {
+  bool first_enabled = true;
+
+  for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
+    scoped_ptr<Version> version(
+        CreateVersionFromString(web_plugin_infos_[i].version));
     if (version.get()) {
-      for (size_t i = 0; i < version_ranges_.size(); ++i) {
-        if (IsPluginOutdated(*version, version_ranges_[i])) {
-          it->enabled = false;
-          PluginList::Singleton()->DisablePlugin(it->path);
+      bool plugin_is_outdated = false;
+      for (size_t j = 0; j < version_ranges_.size(); ++j) {
+        if (IsPluginOutdated(*version, version_ranges_[j])) {
+          Disable(&web_plugin_infos_[i], WebPluginInfo::USER_DISABLED);
+          plugin_is_outdated = true;
+          break;
         }
       }
+      if (!plugin_is_outdated && first_enabled) {
+        first_enabled = false;
+        UpdateDescriptionAndVersion(web_plugin_infos_[i]);
+      }
     }
-    UpdateActivePlugin(*it);
   }
 }
 
-void PluginGroup::Enable(bool enable) {
+bool PluginGroup::EnableGroup(bool enable) {
   bool enabled_plugin_exists = false;
-  for (std::vector<WebPluginInfo>::iterator it =
-       web_plugin_infos_.begin();
-       it != web_plugin_infos_.end(); ++it) {
-    if (enable && !IsPluginNameDisabledByPolicy(it->name)) {
-      PluginList::Singleton()->EnablePlugin(it->path);
-      it->enabled = true;
+  bool group_disabled_by_policy = IsPluginNameDisabledByPolicy(group_name_);
+  // We can't enable groups disabled by policy
+  if (group_disabled_by_policy && enable)
+    return false;
+
+  for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
+    bool policy_disabled =
+        IsPluginNameDisabledByPolicy(web_plugin_infos_[i].name);
+    if (enable && !policy_disabled) {
+      Enable(&web_plugin_infos_[i], WebPluginInfo::USER_ENABLED);
       enabled_plugin_exists = true;
     } else {
-      it->enabled = false;
-      PluginList::Singleton()->DisablePlugin(it->path);
+      Disable(&web_plugin_infos_[i],
+              policy_disabled || group_disabled_by_policy ?
+                  WebPluginInfo::POLICY_DISABLED :
+                  WebPluginInfo::USER_DISABLED);
     }
   }
   enabled_ = enabled_plugin_exists;
+  return enabled_ == enable;
+}
+
+void PluginGroup::EnforceGroupPolicy() {
+  bool enabled_plugin_exists = false;
+  bool group_disabled_by_policy = IsPluginNameDisabledByPolicy(group_name_);
+
+  for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
+    bool policy_disabled =
+        IsPluginNameDisabledByPolicy(web_plugin_infos_[i].name) |
+        group_disabled_by_policy;
+
+    // TODO(pastarmovj): Add the code for enforcing enabled by policy...
+    if (policy_disabled) {
+      Disable(&web_plugin_infos_[i], WebPluginInfo::POLICY_DISABLED);
+    // ...here would a else if (policy_enabled) { ... } be then.
+    } else {
+      Enable(&web_plugin_infos_[i], WebPluginInfo::POLICY_UNMANAGED);
+      if (IsPluginEnabled(web_plugin_infos_[i]))
+        enabled_plugin_exists = true;
+    }
+  }
+  enabled_ = enabled_plugin_exists;
+}
+
+void PluginGroup::RefreshEnabledState() {
+  bool enabled_plugin_exists = false;
+  for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
+    if (IsPluginEnabled(web_plugin_infos_[i])) {
+      enabled_plugin_exists = true;
+      break;
+    }
+  }
+  enabled_ = enabled_plugin_exists;
+}
+
+bool PluginGroup::Enable(WebPluginInfo* plugin,
+                         int new_reason) {
+  DCHECK(new_reason == WebPluginInfo::USER_ENABLED ||
+         new_reason == WebPluginInfo::POLICY_UNMANAGED ||
+         new_reason == WebPluginInfo::POLICY_ENABLED);
+  // If we are only stripping the policy then mask the policy bits.
+  if (new_reason == WebPluginInfo::POLICY_UNMANAGED) {
+    plugin->enabled &= WebPluginInfo::USER_MASK;
+    return true;
+  }
+  // If already enabled just upgrade the reason.
+  if (IsPluginEnabled(*plugin)) {
+    plugin->enabled |= new_reason;
+    return true;
+  } else {
+    // Only changeable if not managed.
+    if (plugin->enabled & WebPluginInfo::MANAGED_MASK)
+      return false;
+    plugin->enabled = new_reason;
+  }
+  return true;
+}
+
+bool PluginGroup::Disable(WebPluginInfo* plugin,
+                          int new_reason) {
+  DCHECK(new_reason == WebPluginInfo::USER_DISABLED ||
+         new_reason == WebPluginInfo::POLICY_DISABLED ||
+         new_reason == WebPluginInfo::USER_DISABLED_POLICY_DISABLED);
+  // If already disabled just upgrade the reason.
+  if (!IsPluginEnabled(*plugin)) {
+    plugin->enabled |= new_reason;
+    return true;
+  } else {
+    // Only changeable if not managed.
+    if (plugin->enabled & WebPluginInfo::MANAGED_MASK)
+      return false;
+    plugin->enabled = new_reason;
+  }
+  return true;
 }
 
 }  // namespace npapi

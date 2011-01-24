@@ -67,7 +67,7 @@ net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
     PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
     if (webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
             pdf_path, &info) &&
-        info.enabled)
+            webkit::npapi::IsPluginEnabled(info))
       return NULL;
   }
   // If supported, build the URL to the Google Document Viewer

@@ -77,29 +77,33 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
 }
 
 void PluginList::LoadPluginsFromDir(const FilePath &path,
-                                    std::vector<WebPluginInfo>* plugins,
+                                    ScopedVector<PluginGroup>* plugin_groups,
                                     std::set<FilePath>* visited_plugins) {
   file_util::FileEnumerator enumerator(path,
                                        false, // not recursive
                                        file_util::FileEnumerator::DIRECTORIES);
   for (FilePath path = enumerator.Next(); !path.value().empty();
        path = enumerator.Next()) {
-    LoadPlugin(path, plugins);
+    LoadPlugin(path, plugin_groups);
     visited_plugins->insert(path);
   }
 }
 
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
-                                  std::vector<WebPluginInfo>* plugins) {
+                                  ScopedVector<PluginGroup>* plugin_groups) {
   if (IsBlacklistedPlugin(info))
     return false;
 
   // Hierarchy check
   // (we're loading plugins hierarchically from Library folders, so plugins we
   //  encounter earlier must override plugins we encounter later)
-  for (size_t i = 0; i < plugins->size(); ++i) {
-    if ((*plugins)[i].path.BaseName() == info.path.BaseName()) {
-      return false;  // We already have a loaded plugin higher in the hierarchy.
+  for (size_t i = 0; i < plugin_groups->size(); ++i) {
+    const std::vector<WebPluginInfo>& plugins =
+        (*plugin_groups)[i]->web_plugins_info();
+    for (size_t j = 0; j < plugins.size(); ++j) {
+      if (plugins[j].path.BaseName() == info.path.BaseName()) {
+        return false;  // Already have a loaded plugin higher in the hierarchy.
+      }
     }
   }
 

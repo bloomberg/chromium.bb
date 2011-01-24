@@ -38,7 +38,7 @@ bool PluginLib::ReadWebPluginInfo(const FilePath &filename,
   info->desc = version_info->file_description();
   info->version = version_info->file_version();
   info->path = filename;
-  info->enabled = true;
+  info->enabled = WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
 
   // TODO(evan): Move the ParseMimeTypes code inline once Pepper is updated.
   if (!PluginList::ParseMimeTypes(

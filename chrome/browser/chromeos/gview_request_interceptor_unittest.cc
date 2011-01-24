@@ -68,7 +68,8 @@ class GViewRequestInterceptorTest : public testing::Test {
   void RegisterPDFPlugin() {
     webkit::npapi::WebPluginInfo info;
     info.path = pdf_path_;
-    info.enabled = true;
+    info.name = ASCIIToUTF16("Internal PDF Plugin");
+    info.enabled = webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
     webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
     webkit::npapi::PluginList::Singleton()->RefreshPlugins();
   }
@@ -96,7 +97,7 @@ class GViewRequestInterceptorTest : public testing::Test {
           pdf_path_, &info);
     }
     EXPECT_EQ(want_loaded, is_loaded);
-    *out_is_enabled = info.enabled;
+    *out_is_enabled = webkit::npapi::IsPluginEnabled(info);
   }
 
  protected:

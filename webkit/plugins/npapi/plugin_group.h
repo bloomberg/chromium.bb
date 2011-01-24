@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "webkit/plugins/npapi/webplugininfo.h"
 
 class DictionaryValue;
 class FilePath;
@@ -25,8 +26,9 @@ namespace webkit {
 namespace npapi {
 
 class PluginList;
-struct WebPluginInfo;
-
+namespace plugin_test_internal {
+class PluginListWithoutFileIO;
+}
 // Hard-coded version ranges for plugin groups.
 struct VersionRangeDefinition {
   // Matcher for lowest version matched by this range (inclusive). May be empty
@@ -94,22 +96,29 @@ class PluginGroup {
   // the lookup key.
   static bool IsPluginNameDisabledByPolicy(const string16& plugin_name);
 
-  // Tests to see if a plugin is on the blacklist using its path as
-  // the lookup key.
-  static bool IsPluginPathDisabledByPolicy(const FilePath& plugin_path);
-
   // Returns true if the given plugin matches this group.
   bool Match(const WebPluginInfo& plugin) const;
 
-  // Adds the given plugin to this group. Provide the position of the
-  // plugin as given by PluginList so we can display its priority.
-  void AddPlugin(const WebPluginInfo& plugin, int position);
+  // Adds the given plugin to this group.
+  void AddPlugin(const WebPluginInfo& plugin);
 
-  bool IsEmpty() const;
+  // Removes a plugin from the group by its path.
+  bool RemovePlugin(const FilePath& filename);
+
+  // The two following functions enable/disable a plugin given its filename. The
+  // function returns true if the plugin could be enabled/disabled. Plugins
+  // might not get enabled/disabled if they are controlled by policy or are
+  // already in the wanted state.
+  bool EnablePlugin(const FilePath& filename);
+  bool DisablePlugin(const FilePath& filename);
 
   // Enables/disables this group. This enables/disables all plugins in the
   // group.
-  void Enable(bool enable);
+  bool EnableGroup(bool enable);
+
+  // Checks whether the group should be disabled/enabled by a policy and puts
+  // it in the needed state. Updates all contained plugins too.
+  void EnforceGroupPolicy();
 
   // Returns whether the plugin group is enabled or not.
   bool Enabled() const { return enabled_; }
@@ -118,9 +127,22 @@ class PluginGroup {
   // string otherwise.
   const std::string& identifier() const { return identifier_; }
 
+  // Sets a unique identifier for this group or if none is set an empty string.
+  void set_identifier(const std::string& identifier) {
+    identifier_ = identifier;
+  }
+
   // Returns this group's name, or the filename without extension if the name
   // is empty.
   string16 GetGroupName() const;
+
+  // Returns all plugins added to the group.
+  const std::vector<WebPluginInfo>& web_plugins_info() const {
+    return web_plugin_infos_;
+  }
+
+  // Checks whether a plugin exists in the group with the given path.
+  bool ContainsPlugin(const FilePath& path) const;
 
   // Returns the description of the highest-priority plug-in in the group.
   const string16& description() const { return description_; }
@@ -138,6 +160,10 @@ class PluginGroup {
   // security problems.
   bool IsVulnerable() const;
 
+  // Check if the group has no plugins. Could happen after a reload if the plug-
+  // in has disappeared from the pc (or in the process of updating).
+  bool IsEmpty() const;
+
   // Disables all plugins in this group that are older than the
   // minimum version.
   void DisableOutdatedPlugins();
@@ -149,12 +175,12 @@ class PluginGroup {
   std::vector<WebPluginInfo> web_plugin_infos() { return web_plugin_infos_; }
 
  private:
-  typedef std::map<std::string, PluginGroup*> PluginMap;
-
   friend class PluginList;
+  friend class plugin_test_internal::PluginListWithoutFileIO;
   friend class PluginGroupTest;
   friend class ::TableModelArrayControllerTest;
   friend class ::PluginExceptionsTableModelTest;
+  FRIEND_TEST_ALL_PREFIXES(PluginListTest, DisableOutdated);
 
   // Generates the (short) identifier string for the given plugin.
   static std::string GetIdentifier(const WebPluginInfo& wpi);
@@ -196,6 +222,23 @@ class PluginGroup {
   // enabled one, or if all plugins are disabled, simply the first one.
   void UpdateActivePlugin(const WebPluginInfo& plugin);
 
+  // Refreshes the enabled flag based on the state of its plugins.
+  void RefreshEnabledState();
+
+  // Enables the plugin if not already enabled and if policy allows it to.
+  // Returns true on success.
+  static bool Enable(WebPluginInfo* plugin, int reason);
+
+  // Disables the plugin if not already disabled and if policy allows it to.
+  // Returns true on success.
+  static bool Disable(WebPluginInfo* plugin, int reason);
+
+  // Returns a non-const vector of all plugins in the group. This is only used
+  // by PluginList.
+  std::vector<WebPluginInfo>& GetPluginsContainer() {
+    return web_plugin_infos_;
+  }
+
   static std::set<string16>* policy_disabled_plugin_patterns_;
 
   std::string identifier_;
@@ -207,7 +250,6 @@ class PluginGroup {
   std::vector<VersionRange> version_ranges_;
   scoped_ptr<Version> version_;
   std::vector<WebPluginInfo> web_plugin_infos_;
-  std::vector<int> web_plugin_positions_;
 };
 
 }  // namespace npapi
