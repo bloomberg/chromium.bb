@@ -138,6 +138,9 @@ class DownloadsTest(pyauto.PyUITest):
     # Trigger download and wait in new incognito window.
     self.DownloadAndWaitForStart(file_url, 1)
     self.WaitForAllDownloadsToComplete(1)
+    # Remove next line when WaitForAllDownloadsToComplete can reliably wait
+    # for downloads in incognito window. crbug.com/69738
+    self.WaitForDownloadToComplete(downloaded_pkg)
     incognito_downloads = self.GetDownloadsInfo(1).Downloads()
 
     # Verify that download info exists in the correct profile.
