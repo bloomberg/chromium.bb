@@ -69,6 +69,7 @@
       'dependencies': [
         '../breakpad/breakpad.gyp:breakpad_handler',
         '../chrome/chrome.gyp:chrome_version_header',
+        '../google_update/google_update.gyp:google_update',
         'chrome_frame.gyp:chrome_frame_utils',
       ],
       'resource_include_dirs': [
@@ -80,6 +81,8 @@
         'chrome_launcher_version.rc',
         'chrome_launcher.cc',
         'chrome_launcher.h',
+        'update_launcher.cc',
+        'update_launcher.h'
       ],
       'msvs_settings': {
         'VCLinkerTool': {

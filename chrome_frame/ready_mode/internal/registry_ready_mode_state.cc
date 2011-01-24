@@ -14,12 +14,13 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/util_constants.h"
+#include "chrome_frame/chrome_launcher_utils.h"
 #include "chrome_frame/ready_mode/ready_mode.h"
-#include "google_update_idl.h"  // NOLINT
 
 namespace {
 
@@ -53,28 +54,15 @@ HANDLE LaunchCommandDirectly(const std::wstring& command_field) {
 // the launched process, which the caller is responsible for closing, or NULL
 // upon failure.
 HANDLE LaunchCommandViaProcessLauncher(const std::wstring& command_field) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  HANDLE launched_process = NULL;
 
-  base::win::ScopedComPtr<IProcessLauncher> ipl;
-  HRESULT hr = ipl.CreateInstance(__uuidof(ProcessLauncherClass));
+  scoped_ptr<CommandLine> command_line(
+      chrome_launcher::CreateUpdateCommandLine(command_field));
 
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to instantiate IProcessLauncher: "
-                << base::StringPrintf("0x%08x", hr);
-  } else {
-    ULONG_PTR phandle = NULL;
-    DWORD id = GetCurrentProcessId();
+  if (command_line != NULL)
+    base::LaunchApp(*command_line, false, true, &launched_process);
 
-    hr = ipl->LaunchCmdElevated(dist->GetAppGuid().c_str(),
-                                command_field.c_str(), id, &phandle);
-    if (SUCCEEDED(hr))
-      return reinterpret_cast<HANDLE>(phandle);
-
-    DLOG(ERROR) << "Failed to invoke IProcessLauncher::LaunchCmdElevated: "
-                << base::StringPrintf("0x%08x", hr);
-  }
-
-  return NULL;
+  return launched_process;
 }
 
 // Waits for the provided process to exit, and verifies that its exit code
@@ -114,17 +102,34 @@ bool CheckProcessExitCode(HANDLE handle) {
   return false;
 }
 
+// If we are running on XP (no protected mode) or in a high-integrity process,
+// we can invoke the installer directly. If not, we will have to go via the
+// ProcessLauncher.
+bool CanLaunchDirectly() {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return true;
+
+  base::IntegrityLevel integrity_level = base::INTEGRITY_UNKNOWN;
+  if (!base::GetProcessIntegrityLevel(base::GetCurrentProcessHandle(),
+                                      &integrity_level)) {
+    DLOG(ERROR) << "Failed to determine process integrity level.";
+    return false;
+  }
+
+  return integrity_level == base::HIGH_INTEGRITY;
+}
+
 // Attempts to launch the specified command either directly or via the
 // ProcessLauncher. Returns true if the command is launched and returns a
 // success code.
 bool LaunchAndCheckCommand(const std::wstring& command_field) {
   base::win::ScopedHandle handle;
 
-  handle.Set(LaunchCommandDirectly(command_field));
-  if (handle.IsValid() && CheckProcessExitCode(handle))
-    return true;
+  if (CanLaunchDirectly())
+    handle.Set(LaunchCommandDirectly(command_field));
+  else
+    handle.Set(LaunchCommandViaProcessLauncher(command_field));
 
-  handle.Set(LaunchCommandViaProcessLauncher(command_field));
   if (handle.IsValid() && CheckProcessExitCode(handle))
     return true;
 

@@ -23,6 +23,12 @@ extern const wchar_t kLauncherExeBaseName[];
 // returned command line.
 CommandLine* CreateLaunchCommandLine();
 
+// Creates a command line suitable for launching the specified command through
+// Google Update.
+//
+// You must delete the returned command line.
+CommandLine* CreateUpdateCommandLine(const std::wstring& update_command);
+
 // Returns the full path to the Chrome executable.
 FilePath GetChromeExecutablePath();
 
