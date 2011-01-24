@@ -1305,6 +1305,9 @@ class NotificationType {
     // |webkit_glue::PasswordForm|s that were affected.
     LOGINS_CHANGED,
 
+    // Sent when the applications in the NTP app launcher have been reordered.
+    EXTENSION_LAUNCHER_REORDERED,
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.

@@ -1101,6 +1101,17 @@ int ExtensionPrefs::GetNextAppLaunchIndex() {
   return max_value + 1;
 }
 
+void ExtensionPrefs::SetAppLauncherOrder(
+    const std::vector<std::string>& extension_ids) {
+  for (size_t i = 0; i < extension_ids.size(); ++i)
+    SetAppLaunchIndex(extension_ids.at(i), i);
+
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_LAUNCHER_REORDERED,
+      Source<ExtensionPrefs>(this),
+      NotificationService::NoDetails());
+}
+
 void ExtensionPrefs::SetUpdateUrlData(const std::string& extension_id,
                                       const std::string& data) {
   DictionaryValue* dictionary = GetExtensionPref(extension_id);

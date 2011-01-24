@@ -251,6 +251,9 @@ class ExtensionPrefs {
   // highest current application launch index found.
   int GetNextAppLaunchIndex();
 
+  // Sets the order the apps should be displayed in the app launcher.
+  void SetAppLauncherOrder(const std::vector<std::string>& extension_ids);
+
   // The extension's update URL data.  If not empty, the ExtensionUpdater
   // will append a ap= parameter to the URL when checking if a new version
   // of the extension is available.

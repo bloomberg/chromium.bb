@@ -45,6 +45,15 @@ function getAppsCallback(data) {
     return a.app_launch_index - b.app_launch_index;
   });
 
+  // Determines if the web store link should be detached and place in the
+  // top right of the screen.
+  apps.detachWebstoreEntry =
+      !apps.showPromo && data.apps.length >= MAX_APPS_PER_ROW[layoutMode];
+
+  apps.data = data.apps;
+  if (!apps.detachWebstoreEntry)
+    apps.data.push('web-store-entry');
+
   clearClosedMenu(apps.menu);
   data.apps.forEach(function(app) {
     appsSectionContent.appendChild(apps.createElement(app));
@@ -84,12 +93,15 @@ function getAppsCallback(data) {
     appsPromoLink.setAttribute('ping', appsPromoPing);
   maybeDoneLoading();
 
-  if (isDoneLoading()) {
-    if (!apps.showPromo && data.apps.length >= MAX_APPS_PER_ROW[layoutMode])
-      webStoreEntry.classList.add('loner');
-    else
-      webStoreEntry.classList.remove('loner');
+  // Disable the animations when the app launcher is being (re)initailized.
+  apps.layout({disableAnimations:true});
 
+  if (apps.detachWebstoreEntry)
+    webStoreEntry.classList.add('loner');
+  else
+    webStoreEntry.classList.remove('loner');
+
+  if (isDoneLoading()) {
     updateMiniviewClipping(appsMiniview);
     layoutSections();
   }
@@ -261,12 +273,242 @@ var apps = (function() {
     }
   });
 
+  // Moves the element at position |from| in array |arr| to position |to|.
+  function arrayMove(arr, from, to) {
+    var element = arr.splice(from, 1);
+    arr.splice(to, 0, element[0]);
+  }
+
   return {
     loaded: false,
 
     menu: $('apps-menu'),
 
     showPromo: false,
+
+    detachWebstoreEntry: false,
+
+    // The list of app ids, in order, of each app in the launcher.
+    data_: null,
+    get data() { return this.data_; },
+    set data(data) {
+      this.data_ = data.map(function(app) {
+        return app.id;
+      });
+      this.invalidate_();
+    },
+
+    dirty_: true,
+    invalidate_: function() {
+      this.dirty_ = true;
+    },
+
+    visible_: true,
+    get visible() {
+      return this.visible_;
+    },
+    set visible(visible) {
+      this.visible_ = visible;
+      this.invalidate_();
+    },
+
+    // DragAndDropDelegate
+
+    dragContainer: $('apps-content'),
+    transitionsDuration: 200,
+
+    get dragItem() { return this.dragItem_; },
+    set dragItem(dragItem) {
+      if (this.dragItem_ != dragItem) {
+        this.dragItem_ = dragItem;
+        this.invalidate_();
+      }
+    },
+
+    // The dimensions of each item in the app launcher. This calculates the
+    // dimensions dynamically, so it should be called after creating the DOM.
+    dimensions_: null,
+    get dimensions() {
+      if (this.dimensions_)
+        return this.dimensions_;
+
+      var app = this.dragContainer.firstChild;
+
+      var width = app.offsetWidth;
+      var height = app.offsetHeight;
+
+      // If the apps haven't properly loaded yet, don't cache the result.
+      if (app.offsetWidth == 0 || app.offsetHeight == 0)
+        return {width:0, height:0};
+
+      var style = getComputedStyle(app);
+
+      var marginWidth =
+          parseInt(style.marginLeft) + parseInt(style.marginRight);
+      var marginHeight =
+          parseInt(style.marginTop) + parseInt(style.marginBottom);
+
+      var borderWidth = parseInt(style.borderLeftWidth) +
+                        parseInt(style.borderRightWidth);
+      var borderHeight = parseInt(style.borderTopWidth) +
+                         parseInt(style.borderBottomWidth);
+
+      this.dimensions_ = {
+        width: width + marginWidth + borderWidth,
+        height: height + marginHeight + borderHeight
+      };
+
+      return this.dimensions_;
+    },
+
+    // Gets the item under the mouse event |e|. Returns null if there is no
+    // item or if the item is not draggable.
+    getItem: function(e) {
+      var item = findAncestorByClass(e.target, 'app');
+
+      // You can't drag the web store launcher.
+      if (item.classList.contains('web-store-entry'))
+        return null;
+
+      return item;
+    },
+
+    // Returns true if |coordinates| point to a valid drop location. The
+    // coordinates are relative to the drag container and the object should
+    // have the 'x' and 'y' properties set.
+    canDropOn: function(coordinates) {
+      var cols = MAX_APPS_PER_ROW[layoutMode];
+      var rows = Math.ceil(this.data.length / cols);
+
+      var bottom = rows * this.dimensions.height;
+      var right = cols * this.dimensions.width;
+
+      if (coordinates.x > right || coordinates.x < 0 ||
+          coordinates.y > bottom || coordinates.y < 0)
+        return false;
+
+      var position = this.getIndexAt_(coordinates);
+      var appCount = this.data.length;
+
+      if (!this.detachWebstoreEntry)
+        appCount--;
+
+      return position >= 0 && position < appCount;
+    },
+
+    setDragPlaceholder: function(coordinates) {
+      var position = this.getIndexAt_(coordinates);
+      var appId = this.dragItem.querySelector('a').getAttribute('app-id');
+      var current = this.data.indexOf(appId);
+
+      if (current == position || current < 0)
+        return;
+
+      arrayMove(this.data, current, position);
+      this.invalidate_();
+      this.layout();
+    },
+
+    getIndexAt_: function(coordinates) {
+      var x = coordinates.x;
+      var y = coordinates.y;
+
+      var w = this.dimensions.width;
+      var h = this.dimensions.height;
+
+      var availableWidth = this.dragContainer.offsetWidth;
+
+      var row = Math.floor(y / h);
+      var col = Math.floor(x / w);
+      var index = Math.floor(availableWidth / w) * row + col;
+
+      return index;
+    },
+
+    saveDrag: function() {
+      this.invalidate_();
+      this.layout();
+
+      var appIds = this.data.filter(function(id) {
+          return id != 'web-store-entry';
+      });
+
+      // Wait until the transitions are complete before notifying the browser.
+      // Otherwise, the apps will be re-rendered while still transitioning.
+      setTimeout(function() {
+        chrome.send('reorderApps', appIds);
+      }, this.transitionsDuration + 10);
+    },
+
+    layout: function(options) {
+      options = options || {};
+      if (!this.dirty_ && options.force != true)
+        return;
+
+      try {
+        var container = this.dragContainer;
+        if (options.disableAnimations)
+          container.setAttribute('launcher-animations', false);
+        var d0 = Date.now();
+        this.layoutImpl_();
+        this.dirty_ = false;
+        logEvent('apps.layout: ' + (Date.now() - d0));
+
+      } finally {
+        if (options.disableAnimations) {
+          // We need to re-enable animations asynchronously, so that the
+          // animations are still disabled for this layout update.
+          setTimeout(function() {
+            container.setAttribute('launcher-animations', true);
+          }, 0);
+        }
+      }
+    },
+
+    layoutImpl_: function() {
+      var apps = this.data;
+      var rects = this.getLayoutRects_(apps.length);
+      var appsContent = this.dragContainer;
+
+      if (!this.visible)
+        return;
+
+      for (var i = 0; i < apps.length; i++) {
+        var app = appsContent.querySelector('[app-id='+apps[i]+']').parentNode;
+
+        // If the node is being dragged, don't try to place it in the grid.
+        if (app == this.dragItem)
+          continue;
+
+        app.style.left = rects[i].left + 'px';
+        app.style.top = rects[i].top + 'px';
+      }
+
+      // We need to set the container's height manually because the apps use
+      // absolute positioning.
+      var rows = Math.ceil(apps.length / MAX_APPS_PER_ROW[layoutMode]);
+      appsContent.style.height = (rows * this.dimensions.height) + 'px';
+    },
+
+    getLayoutRects_: function(appCount) {
+      var availableWidth = this.dragContainer.offsetWidth;
+      var rtl = isRtl();
+      var rects = [];
+      var w = this.dimensions.width;
+      var h = this.dimensions.height;
+
+      for (var i = 0; i < appCount; i++) {
+        var row = Math.floor((w * i) / availableWidth);
+        var top = row * h;
+        var left = (w * i) % availableWidth;
+
+        // Reflect the X axis if an RTL language is active.
+        if (rtl)
+          left = availableWidth - left - w;
+        rects[i] = {left: left, top: top, row: row};
+      }
+      return rects;
+    },
 
     createElement: function(app) {
       var div = createElement(app);
@@ -344,7 +586,7 @@ var apps = (function() {
         'name': localStrings.getString('web_store_title'),
         'launch_url': localStrings.getString('web_store_url')
       });
-      elm.setAttribute('app-id', 'web-store-entry');
+      elm.classList.add('web-store-entry');
       return elm;
     },
 
@@ -364,3 +606,6 @@ var apps = (function() {
     }
   };
 })();
+
+// Enable drag and drop reordering of the app launcher.
+var appDragAndDrop = new DragAndDropController(apps);

@@ -2,7 +2,6 @@
 
 #apps-content {
   position: relative;
-  width: intrinsic;
   max-width: 780px;  /* (124 + margin * 2) * 6 */
 }
 
@@ -28,9 +27,8 @@ html.apps-promo-visible #apps-content {
   -webkit-perspective: 400;
   border-radius: 10px;
   color: black;
-  display: inline-block;
   margin: 5px 3px;
-  position: relative;
+  position: absolute;
   height: 136px;
   width: 124px; /* 920 / 7 - margin * 2 */
 }
@@ -89,6 +87,19 @@ html.apps-promo-visible #apps-content {
   opacity: .9;
 }
 
+.app.dragging > .app-settings {
+  background-image: none;
+}
+
+.app.dragging {
+  opacity: .7;
+  z-index: 2;
+}
+
+#apps-content[launcher-animations=true] .app {
+  -webkit-transition: top .2s, left .2s, right .2s;
+}
+
 @-webkit-keyframes bounce {
   0% {
     -webkit-transform: scale(0, 0);
@@ -112,7 +123,7 @@ html[install-animation-enabled=true] .app[new=installed] {
   -webkit-transition: opacity .5s;
 }
 
-.app[app-id=web-store-entry] > a {
+.app.web-store-entry > a {
   background-image: url("chrome://theme/IDR_WEBSTORE_ICON");
 }
 
@@ -154,18 +165,18 @@ html[dir=rtl] #apps-promo-hide {
   float: left;
 }
 
-html.apps-promo-visible .app[app-id=web-store-entry] {
+html.apps-promo-visible .app.web-store-entry {
   position: absolute;
   left: 100%;
   top: 0;
   -webkit-margin-start: 22px;
 }
 
-html.apps-promo-visible[dir=rtl] .app[app-id=web-store-entry] {
+html.apps-promo-visible[dir=rtl] .app.web-store-entry {
   right: 100%;
 }
 
-html.apps-promo-visible .app[app-id=web-store-entry] a {
+html.apps-promo-visible .app.web-store-entry a {
   font-weight: bold;
 }
 
@@ -175,12 +186,12 @@ column when there is at least one full row of apps. Note that this is similar,
 but different than its position during promo (html.apps-promo-visible), so we
 never set .loner while the promo is running.
 */
-.app[app-id=web-store-entry].loner {
+.app.web-store-entry.loner {
   position: absolute;
   left: 100%;
   top: 0;
 }
 
-html[dir=rtl] .app[app-id=web-store-entry].loner {
+html[dir=rtl] .app.web-store-entry.loner {
   right: 100%;
 }

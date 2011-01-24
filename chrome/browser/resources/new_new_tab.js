@@ -187,7 +187,7 @@ function createForeignSession(client, name) {
     // Sort tabs by MRU order
     win.tabs.sort(function(a, b) {
       return a.timestamp < b.timestamp;
-    })
+    });
 
     // Create individual tab information.
     win.tabs.forEach(function(data) {
@@ -205,7 +205,7 @@ function createForeignSession(client, name) {
                                handleIfEnterKey(maybeOpenForeignTab));
 
         winSpan.appendChild(tabEl);
-    })
+    });
 
     // Append the window.
     stack.appendChild(winSpan);
@@ -309,6 +309,7 @@ function handleWindowResize() {
   if (layoutMode != oldLayoutMode){
     mostVisited.useSmallGrid = b;
     mostVisited.layout();
+    apps.layout({force:true});
     renderRecentlyClosed();
     renderForeignSessions();
     updateAllMiniviewClippings();
@@ -626,6 +627,10 @@ function showSection(section) {
         mostVisited.visible = true;
         mostVisited.layout();
         break;
+      case Section.APPS:
+        apps.visible = true;
+        apps.layout({disableAnimations:true});
+        break;
     }
   }
 }
@@ -649,6 +654,10 @@ function hideSection(section) {
       case Section.THUMB:
         mostVisited.visible = false;
         mostVisited.layout();
+        break;
+      case Section.APPS:
+        apps.visible = false;
+        apps.layout();
         break;
     }
 

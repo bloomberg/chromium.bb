@@ -157,6 +157,8 @@ void AppLauncherHandler::RegisterMessages() {
       NewCallback(this, &AppLauncherHandler::HandleHideAppsPromo));
   dom_ui_->RegisterMessageCallback("createAppShortcut",
       NewCallback(this, &AppLauncherHandler::HandleCreateAppShortcut));
+  dom_ui_->RegisterMessageCallback("reorderApps",
+      NewCallback(this, &AppLauncherHandler::HandleReorderApps));
 }
 
 void AppLauncherHandler::Observe(NotificationType type,
@@ -168,6 +170,7 @@ void AppLauncherHandler::Observe(NotificationType type,
   switch (type.value) {
     case NotificationType::EXTENSION_LOADED:
     case NotificationType::EXTENSION_UNLOADED:
+    case NotificationType::EXTENSION_LAUNCHER_REORDERED:
       if (dom_ui_->tab_contents())
         HandleGetApps(NULL);
       break;
@@ -256,6 +259,8 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     registrar_.Add(this, NotificationType::EXTENSION_LOADED,
         NotificationService::AllSources());
     registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+        NotificationService::AllSources());
+    registrar_.Add(this, NotificationType::EXTENSION_LAUNCHER_REORDERED,
         NotificationService::AllSources());
   }
   if (pref_change_registrar_.IsEmpty()) {
@@ -385,6 +390,17 @@ void AppLauncherHandler::HandleCreateAppShortcut(const ListValue* args) {
     return;
   browser->window()->ShowCreateChromeAppShortcutsDialog(
       browser->profile(), extension);
+}
+
+void AppLauncherHandler::HandleReorderApps(const ListValue* args) {
+  std::vector<std::string> extension_ids;
+  for (size_t i = 0; i < args->GetSize(); ++i) {
+    std::string value;
+    if (args->GetString(i, &value))
+      extension_ids.push_back(value);
+  }
+
+  extensions_service_->extension_prefs()->SetAppLauncherOrder(extension_ids);
 }
 
 // static
