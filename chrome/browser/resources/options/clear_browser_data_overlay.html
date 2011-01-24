@@ -1,6 +1,6 @@
 <div id="clearBrowserDataOverlay" class="page hidden">
-  <span i18n-content="clearBrowserDataTitle" id="cbdTitle"></span>
-  <div id="cbdContentArea">
+  <h1 i18n-content="clearBrowserDataTitle"></h1>
+  <div class="content-area">
     <span i18n-content="clearBrowserDataLabel"></span>
     <select id="clearBrowserDataTimePeriod"
         i18n-options="clearBrowserDataTimeList"
@@ -38,15 +38,19 @@
       <span i18n-content="deleteFormDataCheckbox"></span>
     </label>
   </div>
-  <div id="cbdActionArea">
-    <a target="_blank" i18n-content="flash_storage_settings"
-        i18n-values="href:flash_storage_url"></a>
-    <div id="cbdThrobber" class="throbber"></div>
-    <div class="button-strip">
-      <button id="clearBrowserDataDismiss" i18n-content="cancel"></button>
-      <button id="clearBrowserDataCommit"
-          i18n-content="clearBrowserDataCommit">
-      </button>
+  <div class="action-area">
+    <div>
+      <a target="_blank" i18n-content="flash_storage_settings"
+          i18n-values="href:flash_storage_url"></a>
+    </div>
+    <div class="action-area-right">
+      <div id="cbdThrobber" class="throbber"></div>
+      <div class="button-strip">
+        <button id="clearBrowserDataDismiss" i18n-content="cancel"></button>
+        <button id="clearBrowserDataCommit"
+            i18n-content="clearBrowserDataCommit">
+        </button>
+      </div>
     </div>
   </div>
 </div>

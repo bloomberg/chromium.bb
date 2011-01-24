@@ -4,33 +4,11 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 */
 
-/* TODO(estade): these rules override some more general style rules. We
- * should unify these rules instead of overriding them, but first we need
- * to update existing overlays. Since a lot of the overlays are going away,
- * I'm making these rules specific to this overlay for now. */
-
 #clearBrowserDataOverlay {
-  -webkit-box-shadow: 0px 0px 40px -5px #888;
-  border: 1px solid rgb(188, 193, 208);
-  border-radius: 2px;
   min-width: 500px;
-  padding: 0;
 }
 
-#cbdTitle {
-  background: -webkit-linear-gradient(white, #F8F8F8);
-  border-bottom: 1px solid rgba(188, 193, 208, .5);
-  display: block;
-  font-size: 105%;
-  font-weight: bold;
-  padding: 10px 15px 8px 15px;
-}
-
-#cbdContentArea {
-  padding: 10px 15px 5px 15px;
-}
-
-#cbdContentArea label {
+#clearBrowserDataOverlay > .content-area label {
   margin: 5px 0;
 }
 
@@ -41,12 +19,4 @@ found in the LICENSE file.
   margin: -3px 10px;
   visibility: hidden;
   width: 16px;
-}
-
-#cbdActionArea {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  border-top: 1px solid rgba(188, 193, 208, .5);
-  display: -webkit-box;
-  padding: 12px;
 }

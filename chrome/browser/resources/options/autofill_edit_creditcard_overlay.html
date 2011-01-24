@@ -1,32 +1,32 @@
 <div class="page hidden" id="autoFillEditCreditCardOverlay">
   <h1 id="autoFillCreditCardTitle"></h1>
-
-  <div>
-    <label id="nameOnCardLabel">
-      <span i18n-content="nameOnCardLabel"></span><br>
-      <input type="text" id="nameOnCard">
-    </label>
+  <div class="content-area">
+    <div>
+      <label id="nameOnCardLabel">
+        <span i18n-content="nameOnCardLabel"></span><br>
+        <input type="text" id="nameOnCard">
+      </label>
+    </div>
+    <div>
+      <label id="creditCardNumberLabel">
+        <span i18n-content="creditCardNumberLabel"></span><br>
+        <input type="text" id="creditCardNumber">
+      </label>
+    </div>
+    <div>
+      <label id="creditCardExpirationDateLabel">
+        <span i18n-content="creditCardExpirationDateLabel"></span><br>
+        <select id="expirationMonth"></select>
+        <select id="expirationYear"></select>
+      </label>
+    </div>
   </div>
-
-  <div>
-    <label id="creditCardNumberLabel">
-      <span i18n-content="creditCardNumberLabel"></span><br>
-      <input type="text" id="creditCardNumber">
-    </label>
-  </div>
-
-  <div>
-    <label id="creditCardExpirationDateLabel">
-      <span i18n-content="creditCardExpirationDateLabel"></span><br>
-      <select id="expirationMonth"></select>
-      <select id="expirationYear"></select>
-    </label>
-  </div>
-
-  <div class="action-area button-strip">
-    <button type="reset" id="autoFillEditCreditCardCancelButton"
-        i18n-content="cancel"></button>
-    <button type="submit" id="autoFillEditCreditCardApplyButton" disabled
-        i18n-content="ok"></button>
+  <div class="action-area">
+    <div class="button-strip">
+      <button type="reset" id="autoFillEditCreditCardCancelButton"
+          i18n-content="cancel"></button>
+      <button type="submit" id="autoFillEditCreditCardApplyButton" disabled
+          i18n-content="ok"></button>
+    </div>
   </div>
 </div>

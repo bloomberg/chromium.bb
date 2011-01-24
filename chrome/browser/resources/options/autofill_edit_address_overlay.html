@@ -1,103 +1,101 @@
 <div class="page hidden" id="autoFillEditAddressOverlay">
   <h1 id="autoFillAddressTitle"></h1>
-
-  <div class="input">
-    <label id="fullNameLabel">
-      <div><span i18n-content="fullNameLabel"></span></div>
-      <input type="text" class="form" class="form" id="fullName">
-    </label>
-  </div>
-  <div class="input">
-    <label id="companyNameLabel">
-      <div><span i18n-content="companyNameLabel"></span></div>
-      <input type="text" class="form" class="form" id="companyName">
-    </label>
-  </div>
-  <div class="input">
-    <label id="addrLine1Label">
-      <div><span i18n-content="addrLine1Label"></span></div>
-      <input type="text" class="form" class="form" id="addrLine1">
-    </label>
-  </div>
-  <div class="input">
-    <label id="addrLine2Label">
-      <div><span i18n-content="addrLine2Label"></span></div>
-      <input type="text" class="form" class="form" id="addrLine2">
-    </label>
-  </div>
-
-  <div class="table">
-    <div class="row">
-      <div class="input cell">
-        <label id="cityLabel" for="city">
-          <span i18n-content="cityLabel"></span>
-        </label>
+  <div class="content-area">
+    <div class="input">
+      <label id="fullNameLabel">
+        <div><span i18n-content="fullNameLabel"></span></div>
+        <input type="text" class="form" class="form" id="fullName">
+      </label>
+    </div>
+    <div class="input">
+      <label id="companyNameLabel">
+        <div><span i18n-content="companyNameLabel"></span></div>
+        <input type="text" class="form" class="form" id="companyName">
+      </label>
+    </div>
+    <div class="input">
+      <label id="addrLine1Label">
+        <div><span i18n-content="addrLine1Label"></span></div>
+        <input type="text" class="form" class="form" id="addrLine1">
+      </label>
+    </div>
+    <div class="input">
+      <label id="addrLine2Label">
+        <div><span i18n-content="addrLine2Label"></span></div>
+        <input type="text" class="form" class="form" id="addrLine2">
+      </label>
+    </div>
+    <div class="table">
+      <div class="row">
+        <div class="input cell">
+          <label id="cityLabel" for="city">
+            <span i18n-content="cityLabel"></span>
+          </label>
+        </div>
+        <div class="input cell">
+          <label id="stateLabel" for="state">
+            <span i18n-content="stateLabel"></span>
+          </label>
+        </div>
+        <div class="input cell">
+          <label id="zipCodeLabel" for="zipCode">
+            <span i18n-content="zipCodeLabel"></span>
+          </label>
+        </div>
       </div>
-      <div class="input cell">
-        <label id="stateLabel" for="state">
-          <span i18n-content="stateLabel"></span>
-        </label>
-      </div>
-      <div class="input cell">
-        <label id="zipCodeLabel" for="zipCode">
-          <span i18n-content="zipCodeLabel"></span>
-        </label>
+      <div class="row">
+        <div class="input cell">
+          <input type="text" class="form" id="city">
+        </div>
+        <div class="input cell">
+          <input type="text" class="form" id="state">
+        </div>
+        <div class="input cell">
+          <input type="text" class="form" id="zipCode">
+        </div>
       </div>
     </div>
-    <div class="row">
-      <div class="input cell">
-        <input type="text" class="form" id="city">
+    <div class="input">
+      <label id="countryLabel">
+        <div><span i18n-content="countryLabel"></span></div>
+        <input type="text" class="form" class="form" id="country">
+      </label>
+    </div>
+    <div class="table">
+      <div class="row">
+        <div class="input cell">
+          <label id="phoneLabel" for="phone">
+            <span i18n-content="phoneLabel"></span>
+          </label>
+        </div>
+        <div class="input cell">
+          <label id="faxLabel" for="fax">
+            <span i18n-content="faxLabel"></span>
+          </label>
+        </div>
       </div>
-      <div class="input cell">
-        <input type="text" class="form" id="state">
-      </div>
-      <div class="input cell">
-        <input type="text" class="form" id="zipCode">
+      <div class="row">
+        <div class="input cell">
+          <input type="text" class="form" class="form" id="phone">
+        </div>
+        <div class="input cell">
+          <input type="text" class="form" class="form" id="fax">
+        </div>
       </div>
     </div>
-  </div>
-
-  <div class="input">
-    <label id="countryLabel">
-      <div><span i18n-content="countryLabel"></span></div>
-      <input type="text" class="form" class="form" id="country">
-    </label>
-  </div>
-
-  <div class="table">
-    <div class="row">
-      <div class="input cell">
-        <label id="phoneLabel" for="phone">
-          <span i18n-content="phoneLabel"></span>
-        </label>
-      </div>
-      <div class="input cell">
-        <label id="faxLabel" for="fax">
-          <span i18n-content="faxLabel"></span>
-        </label>
-      </div>
-    </div>
-    <div class="row">
-      <div class="input cell">
-        <input type="text" class="form" class="form" id="phone">
-      </div>
-      <div class="input cell">
-        <input type="text" class="form" class="form" id="fax">
-      </div>
+    <div class="input">
+      <label id="emailLabel">
+        <div><span i18n-content="emailLabel"></span></div>
+        <input type="text" class="form" class="form" id="email">
+      </label>
     </div>
   </div>
-
-  <div class="input">
-    <label id="emailLabel">
-      <div><span i18n-content="emailLabel"></span></div>
-      <input type="text" class="form" class="form" id="email">
-    </label>
-  </div>
-
-  <div class="action-area button-strip">
-    <button type="reset" id="autoFillEditAddressCancelButton"
-            i18n-content="cancel"></button>
-    <button type="submit" id="autoFillEditAddressApplyButton" disabled
-            i18n-content="ok"></button>
+  <div class="action-area">
+    <div class="button-strip">
+      <button type="reset" id="autoFillEditAddressCancelButton"
+          i18n-content="cancel"></button>
+      <button type="submit" id="autoFillEditAddressApplyButton" disabled
+          i18n-content="ok"></button>
+    </div>
   </div>
 </div>

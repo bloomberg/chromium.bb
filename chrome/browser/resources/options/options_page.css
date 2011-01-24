@@ -84,18 +84,25 @@ html[hide-menu=true] .close-subpage {
   display: none
 }
 
+.content-area {
+  padding: 10px 15px 5px 15px;
+}
+
 .action-area {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
-  bottom: 0;
+  -webkit-box-pack: end;
+  border-top: 1px solid rgba(188, 193, 208, .5);
   display: -webkit-box;
   padding: 12px;
-  position: absolute;
-  right: 0;
 }
 
 html[dir='rtl'] .action-area {
   left: 0;
+}
+
+.action-area-right {
+  display: -webkit-box;
 }
 
 .button-strip {
@@ -113,12 +120,12 @@ html[toolkit=views] .button-strip {
 }
 
 .overlay .page {
-  -webkit-box-shadow: 3px 3px 3px #666;
+  -webkit-box-shadow: 0px 0px 40px -5px #888;
   background: white;
-  border: 1px solid #666;
-  border-radius: 5px;
+  border: 1px solid rgb(188, 193, 208);
+  border-radius: 2px;
   min-width: 400px;
-  padding: 0 15px 50px 15px;
+  padding: 0;
   position: relative;
 }
 

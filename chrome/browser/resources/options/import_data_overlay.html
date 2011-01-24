@@ -1,35 +1,39 @@
 <div id="import-data-overlay" class="page hidden">
   <h1 i18n-content="importDataTitle"></h1>
-  <div id="import-from-div">
-    <span i18n-content="importFromLabel"></span>
-    <select id="import-browsers">
-      <option i18n-content="importLoading"></option>
-    </select>
-  </div>
-  <div id="import-checkboxes">
-    <div i18n-content="importDescription"></div>
-    <div>
-      <input id="import-history" type="checkbox">
-      <label for="import-history" i18n-content="importHistory"></label>
+  <div class="content-area">
+    <div id="import-from-div">
+      <span i18n-content="importFromLabel"></span>
+      <select id="import-browsers">
+        <option i18n-content="importLoading"></option>
+      </select>
     </div>
-    <div>
-      <input id="import-favorites" type="checkbox">
-      <label for="import-favorites" i18n-content="importFavorites"></label>
-    </div>
-    <div>
-      <input id="import-passwords" type="checkbox">
-      <label for="import-passwords" i18n-content="importPasswords"></label>
-    </div>
-    <div>
-      <input id="import-search" type="checkbox">
-      <label for="import-search" i18n-content="importSearch"></label>
+    <div id="import-checkboxes">
+      <div i18n-content="importDescription"></div>
+      <div>
+        <input id="import-history" type="checkbox">
+        <label for="import-history" i18n-content="importHistory"></label>
+      </div>
+      <div>
+        <input id="import-favorites" type="checkbox">
+        <label for="import-favorites" i18n-content="importFavorites"></label>
+      </div>
+      <div>
+        <input id="import-passwords" type="checkbox">
+        <label for="import-passwords" i18n-content="importPasswords"></label>
+      </div>
+      <div>
+        <input id="import-search" type="checkbox">
+        <label for="import-search" i18n-content="importSearch"></label>
+      </div>
     </div>
   </div>
   <div class="action-area">
-    <div id="import-throbber" class="throbber"></div>
-    <div class="button-strip">
-      <button id="import-data-cancel" i18n-content="cancel"></button>
-      <button id="import-data-commit" i18n-content="importCommit"></button>
+    <div class="action-area-right">
+      <div id="import-throbber" class="throbber"></div>
+      <div class="button-strip">
+        <button id="import-data-cancel" i18n-content="cancel"></button>
+        <button id="import-data-commit" i18n-content="importCommit"></button>
+      </div>
     </div>
   </div>
 </div>
