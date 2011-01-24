@@ -46,9 +46,8 @@ const int kDefaultMaxLength = 0x80000;
 
 }  // namespace
 
-// TODO(jknotten). Fix http://code.google.com/p/chromium/issues/detail?id=70408
 // Test that we get form state change notifications when input fields change.
-TEST_F(RenderViewTest, DISABLED_OnNavStateChanged) {
+TEST_F(RenderViewTest, OnNavStateChanged) {
   // Don't want any delay for form state sync changes. This will still post a
   // message so updates will get coalesced, but as soon as we spin the message
   // loop, it will generate an update.
