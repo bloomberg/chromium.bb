@@ -864,7 +864,12 @@ void RenderThread::EnsureWebKitInitialized() {
   // also be unable to script anything but themselves (to help limit the damage
   // that a corrupt chrome: page could cause).
   WebString chrome_ui_scheme(ASCIIToUTF16(chrome::kChromeUIScheme));
-  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_ui_scheme);
+  if (command_line.HasSwitch(switches::kNewChromeUISecurityModel)) {
+    WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_ui_scheme);
+  } else {
+    WebSecurityPolicy::registerURLSchemeAsLocal(chrome_ui_scheme);
+    WebSecurityPolicy::registerURLSchemeAsNoAccess(chrome_ui_scheme);
+  }
 
   // chrome-extension: resources shouldn't trigger insecure content warnings.
   WebString extension_scheme(ASCIIToUTF16(chrome::kExtensionScheme));

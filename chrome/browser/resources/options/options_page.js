@@ -499,8 +499,7 @@ cr.define('options', function() {
           OptionsPage.updateManagedBannerVisibility();
 
           // Recent webkit change no longer allows url change from "chrome://".
-          window.history.pushState({pageName: this.name}, this.title,
-                                   '/' + this.name);
+          window.history.pushState({pageName: this.name}, this.title);
         }
         if (this.tab) {
           this.tab.classList.add('navbar-item-selected');
