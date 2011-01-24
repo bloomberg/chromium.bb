@@ -93,9 +93,6 @@ class AutofillProfileModelAssociator
   // only for completeness.
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
 
-  // Returns sync service instance.
-  ProfileSyncService* sync_service() { return sync_service_; }
-
   static bool OverwriteProfileWithServerData(
       AutoFillProfile* merge_into,
       const sync_pb::AutofillProfileSpecifics& specifics);

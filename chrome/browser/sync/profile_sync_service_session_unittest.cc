@@ -123,8 +123,6 @@ class ProfileSyncServiceSessionTest
     return true;
   }
 
-  SyncBackendHost* backend() { return sync_service_->backend(); }
-
   // Path used in testing.
   ScopedTempDir temp_dir_;
   SessionServiceTestHelper helper_;
@@ -146,8 +144,10 @@ class CreateRootTask : public Task {
 
   virtual ~CreateRootTask() {}
   virtual void Run() {
-    success_ = ProfileSyncServiceTestHelper::CreateRoot(syncable::SESSIONS,
-        test_->sync_service(), test_->ids());
+    success_ = ProfileSyncServiceTestHelper::CreateRoot(
+        syncable::SESSIONS,
+        test_->sync_service()->GetUserShare(),
+        test_->ids());
   }
 
   bool success() { return success_; }
@@ -173,8 +173,7 @@ TEST_F(ProfileSyncServiceSessionTest, WriteSessionToNode) {
   ASSERT_NE(sync_api::kInvalidId, sync_id);
 
   // Check that we can get the correct session specifics back from the node.
-  sync_api::ReadTransaction trans(sync_service_->
-      backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
   sync_api::ReadNode node(&trans);
   ASSERT_TRUE(node.InitByClientTagLookup(syncable::SESSIONS,
       machine_tag));
@@ -320,7 +319,7 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionUpdate) {
   record->id = node_id;
   ASSERT_FALSE(notified_of_update_);
   {
-    sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
   ASSERT_TRUE(notified_of_update_);
@@ -339,7 +338,7 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionAdd) {
   record->id = node_id;
   ASSERT_FALSE(notified_of_update_);
   {
-    sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
   ASSERT_TRUE(notified_of_update_);
@@ -358,7 +357,7 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionDelete) {
   record->id = node_id;
   ASSERT_FALSE(notified_of_update_);
   {
-    sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
   ASSERT_TRUE(notified_of_update_);

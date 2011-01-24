@@ -124,10 +124,6 @@ class TypedUrlModelAssociator
                          std::vector<base::Time>* new_visits,
                          history::VisitVector* removed_visits);
 
- protected:
-  // Returns sync service instance.
-  ProfileSyncService* sync_service() { return sync_service_; }
-
  private:
   typedef std::map<std::string, int64> TypedUrlToSyncIdMap;
   typedef std::map<int64, std::string> SyncIdToTypedUrlMap;

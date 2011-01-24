@@ -237,8 +237,7 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
     return false;
   }
 
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
 
   sync_api::ReadNode bookmark_bar_node(&trans);
   if (!bookmark_bar_node.InitByIdLookup(bookmark_bar_sync_id)) {
@@ -288,8 +287,7 @@ bool BookmarkModelAssociator::AssociateTaggedPermanentNode(
 
 bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
                                                      int64* sync_id) {
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
   sync_api::ReadNode sync_node(&trans);
   if (!sync_node.InitByTagLookup(tag.c_str()))
     return false;
@@ -355,8 +353,7 @@ bool BookmarkModelAssociator::BuildAssociations() {
   dfs_stack.push(other_bookmarks_sync_id);
   dfs_stack.push(bookmark_bar_sync_id);
 
-  sync_api::WriteTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::WriteTransaction trans(sync_service_->GetUserShare());
 
   while (!dfs_stack.empty()) {
     int64 sync_parent_id = dfs_stack.top();
@@ -419,12 +416,12 @@ bool BookmarkModelAssociator::BuildAssociations() {
     }
   }
 
-  if (sync_service_->backend()->GetAutofillMigrationState() !=
+  if (sync_service_->GetAutofillMigrationState() !=
       syncable::MIGRATED) {
     syncable::AutofillMigrationDebugInfo debug_info;
     debug_info.bookmarks_added_during_migration =
         number_of_new_sync_nodes_created_at_association_;
-    sync_service_->backend()->SetAutofillMigrationDebugInfo(
+    sync_service_->SetAutofillMigrationDebugInfo(
         syncable::AutofillMigrationDebugInfo::BOOKMARK_ADDED,
         debug_info);
   }
@@ -451,8 +448,7 @@ void BookmarkModelAssociator::PersistAssociations() {
     return;
   }
 
-  sync_api::WriteTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::WriteTransaction trans(sync_service_->GetUserShare());
   DirtyAssociationsSyncIds::iterator iter;
   for (iter = dirty_associations_sync_ids_.begin();
        iter != dirty_associations_sync_ids_.end();
@@ -506,8 +502,7 @@ bool BookmarkModelAssociator::LoadAssociations() {
   dfs_stack.push(other_bookmarks_id);
   dfs_stack.push(bookmark_bar_id);
 
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
 
   // Count total number of nodes in sync model so that we can compare that
   // with the total number of nodes in the bookmark model.

@@ -10,6 +10,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/password_change_processor.h"
@@ -212,8 +213,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   }
 
   void AddPasswordSyncNode(const PasswordForm& entry) {
-    sync_api::WriteTransaction trans(
-        service_->backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(service_->GetUserShare());
     sync_api::ReadNode password_root(&trans);
     ASSERT_TRUE(password_root.InitByTagLookup(browser_sync::kPasswordTag));
 
@@ -226,7 +226,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   }
 
   void GetPasswordEntriesFromSyncDB(std::vector<PasswordForm>* entries) {
-    sync_api::ReadTransaction trans(service_->backend()->GetUserShareHandle());
+    sync_api::ReadTransaction trans(service_->GetUserShare());
     sync_api::ReadNode password_root(&trans);
     ASSERT_TRUE(password_root.InitByTagLookup(browser_sync::kPasswordTag));
 

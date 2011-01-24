@@ -109,10 +109,6 @@ class PreferenceModelAssociator
   // has been updated.
   void AfterUpdateOperations(const std::string& pref_name);
 
- protected:
-  // Returns sync service instance.
-  ProfileSyncService* sync_service() { return sync_service_; }
-
  private:
   typedef std::map<std::string, int64> PreferenceNameToSyncIdMap;
   typedef std::map<int64, std::string> SyncIdToPreferenceNameMap;

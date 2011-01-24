@@ -151,8 +151,7 @@ bool AutofillModelAssociator::AssociateModels() {
 
   DataBundle bundle;
   {
-    sync_api::WriteTransaction trans(
-        sync_service_->backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(sync_service_->GetUserShare());
 
     sync_api::ReadNode autofill_root(&trans);
     if (!autofill_root.InitByTagLookup(kAutofillTag)) {
@@ -185,12 +184,12 @@ bool AutofillModelAssociator::AssociateModels() {
     return false;
   }
 
-  if (sync_service_->backend()->GetAutofillMigrationState() !=
+  if (sync_service_->GetAutofillMigrationState() !=
       syncable::MIGRATED) {
     syncable::AutofillMigrationDebugInfo debug_info;
     debug_info.autofill_entries_added_during_migration =
         number_of_entries_created_;
-    sync_service_->backend()->SetAutofillMigrationDebugInfo(
+    sync_service_->SetAutofillMigrationDebugInfo(
         syncable::AutofillMigrationDebugInfo::ENTRIES_ADDED,
         debug_info);
   }
@@ -383,8 +382,7 @@ bool AutofillModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
                << "might be running against an out-of-date server.";
     return false;
   }
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
 
   sync_api::ReadNode autofill_node(&trans);
   if (!autofill_node.InitByIdLookup(autofill_sync_id)) {
@@ -444,8 +442,7 @@ void AutofillModelAssociator::Disassociate(int64 sync_id) {
 
 bool AutofillModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
                                                      int64* sync_id) {
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
   sync_api::ReadNode sync_node(&trans);
   if (!sync_node.InitByTagLookup(tag.c_str()))
     return false;
@@ -533,7 +530,7 @@ bool AutofillModelAssociator::HasNotMigratedYet(
 
   // Now read the current value from the directory.
   syncable::AutofillMigrationState autofill_migration_state =
-      sync_service()->backend()->GetAutofillMigrationState();
+      sync_service_->GetAutofillMigrationState();
 
   DCHECK_NE(autofill_migration_state, syncable::NOT_DETERMINED);
 
@@ -555,7 +552,7 @@ bool AutofillModelAssociator::HasNotMigratedYet(
           browser_sync::kAutofillProfileTag) ||
           autofill_profile_root_node.GetFirstChildId()==
             static_cast<int64>(0)) {
-        sync_service()->backend()->SetAutofillMigrationState(
+        sync_service_->SetAutofillMigrationState(
             syncable::NOT_MIGRATED);
 
         VLOG(1) << "[AUTOFILL MIGRATION]"
@@ -565,7 +562,7 @@ bool AutofillModelAssociator::HasNotMigratedYet(
         return true;
       }
 
-      sync_service()->backend()->SetAutofillMigrationState(syncable::MIGRATED);
+      sync_service_->SetAutofillMigrationState(syncable::MIGRATED);
 
       VLOG(1) << "[AUTOFILL MIGRATION]"
               << "Current autofill migration state is migrated.";

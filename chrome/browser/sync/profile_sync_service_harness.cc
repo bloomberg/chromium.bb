@@ -447,7 +447,7 @@ bool ProfileSyncServiceHarness::IsSynced() {
           snap->num_conflicting_updates == 0 &&  // We can decrypt everything.
           ServiceIsPushingChanges() &&
           GetStatus().notifications_enabled &&
-          !service()->backend()->HasUnsyncedItems() &&
+          !service()->HasUnsyncedItems() &&
           !snap->has_more_to_sync &&
           snap->unsynced_count == 0);
 }
@@ -480,8 +480,8 @@ bool ProfileSyncServiceHarness::MatchesOtherClient(
 const SyncSessionSnapshot*
     ProfileSyncServiceHarness::GetLastSessionSnapshot() const {
   DCHECK(service_ != NULL) << "Sync service has not yet been set up.";
-  if (service_->backend()) {
-    return service_->backend()->GetLastSessionSnapshot();
+  if (service_->sync_initialized()) {
+    return service_->GetLastSessionSnapshot();
   }
   return NULL;
 }
@@ -582,7 +582,7 @@ void ProfileSyncServiceHarness::LogClientInfo(std::string message) {
               << ", unsynced_count: " << snap->unsynced_count
               << ", num_conflicting_updates: " << snap->num_conflicting_updates
               << ", has_unsynced_items: "
-              << service()->backend()->HasUnsyncedItems()
+              << service()->HasUnsyncedItems()
               << ", observed_passphrase_required: "
               << service()->observed_passphrase_required()
               << ", notifications_enabled: "

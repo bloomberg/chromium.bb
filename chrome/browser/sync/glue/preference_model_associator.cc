@@ -116,8 +116,7 @@ bool PreferenceModelAssociator::AssociateModels() {
     return false;
   }
 
-  sync_api::WriteTransaction trans(
-      sync_service()->backend()->GetUserShareHandle());
+  sync_api::WriteTransaction trans(sync_service_->GetUserShare());
   sync_api::ReadNode root(&trans);
   if (!root.InitByIdLookup(root_id)) {
     LOG(ERROR) << "Server did not create the top-level preferences node. We "
@@ -149,8 +148,7 @@ bool PreferenceModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
                << "might be running against an out-of-date server.";
     return false;
   }
-  sync_api::ReadTransaction trans(
-      sync_service()->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
 
   sync_api::ReadNode preferences_node(&trans);
   if (!preferences_node.InitByIdLookup(preferences_sync_id)) {
@@ -204,8 +202,7 @@ void PreferenceModelAssociator::Disassociate(int64 sync_id) {
 
 bool PreferenceModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
                                                        int64* sync_id) {
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
   sync_api::ReadNode sync_node(&trans);
   if (!sync_node.InitByTagLookup(tag.c_str()))
     return false;

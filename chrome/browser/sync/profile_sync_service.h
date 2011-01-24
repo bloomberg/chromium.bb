@@ -323,7 +323,52 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       const tracked_objects::Location& from_here,
       const std::string& message);
 
-  browser_sync::SyncBackendHost* backend() { return backend_.get(); }
+  // The functions below (until ActivateDataType()) should only be
+  // called if sync_initialized() is true.
+
+  // TODO(akalin): This is called mostly by ModelAssociators and
+  // tests.  Figure out how to pass the handle to the ModelAssociators
+  // directly, figure out how to expose this to tests, and remove this
+  // function.
+  sync_api::UserShare* GetUserShare() const;
+
+  // TODO(akalin): These two functions are used only by
+  // ProfileSyncServiceHarness.  Figure out a different way to expose
+  // this info to that class, and remove these functions.
+
+  const browser_sync::sessions::SyncSessionSnapshot*
+      GetLastSessionSnapshot() const;
+
+  // Returns whether or not the underlying sync engine has made any
+  // local changes to items that have not yet been synced with the
+  // server.
+  bool HasUnsyncedItems() const;
+
+  // Get the current routing information for all enabled model types.
+  // If a model type is not enabled (that is, if the syncer should not
+  // be trying to sync it), it is not in this map.
+  //
+  // TODO(akalin): This function is used by
+  // sync_ui_util::ConstructAboutInformation() and by some test
+  // classes.  Figure out a different way to expose this info and
+  // remove this function.
+  void GetModelSafeRoutingInfo(browser_sync::ModelSafeRoutingInfo* out);
+
+  // TODO(akalin): Remove these four functions once we're done with
+  // autofill migration.
+
+  syncable::AutofillMigrationState
+      GetAutofillMigrationState();
+
+  void SetAutofillMigrationState(
+      syncable::AutofillMigrationState state);
+
+  syncable::AutofillMigrationDebugInfo
+      GetAutofillMigrationDebugInfo();
+
+  void SetAutofillMigrationDebugInfo(
+      syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
+      const syncable::AutofillMigrationDebugInfo& info);
 
   virtual void ActivateDataType(
       browser_sync::DataTypeController* data_type_controller,
@@ -395,6 +440,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // so we don't need this hack anymore.
   ProfileSyncService();
 
+  // Used by test classes that derive from ProfileSyncService.
+  virtual browser_sync::SyncBackendHost* GetBackendForTest();
+
   // Helper to install and configure a data type manager.
   void ConfigureDataTypeManager();
 
@@ -413,6 +461,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Test need to override this to create backends that allow setting up
   // initial conditions, such as populating sync nodes.
+  //
+  // TODO(akalin): Figure out a better way to do this.  Ideally, we'd
+  // construct the backend outside this class and pass it in to the
+  // contructor or Initialize().
   virtual void CreateBackend();
 
   const browser_sync::DataTypeController::TypeMap& data_type_controllers() {
@@ -450,13 +502,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   bool passphrase_migration_in_progress_;
 
  private:
-  friend class ProfileSyncServiceTest;
   friend class ProfileSyncServicePasswordTest;
-  friend class ProfileSyncServicePreferenceTest;
-  friend class ProfileSyncServiceSessionTest;
+  friend class TestProfileSyncService;
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest, InitialState);
-  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest,
-                           UnrecoverableErrorSuspendsService);
 
   // If |delete_sync_data_folder| is true, then this method will delete all
   // previous "Sync Data" folders. (useful if the folder is partial/corrupt).

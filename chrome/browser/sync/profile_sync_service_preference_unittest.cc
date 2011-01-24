@@ -95,8 +95,6 @@ class ProfileSyncServicePreferenceTest
     return true;
   }
 
-  SyncBackendHost* backend() { return service_->backend_.get(); }
-
   const Value& GetPreferenceValue(const std::string& name) {
     const PrefService::Preference* preference =
         prefs_->FindPreference(name.c_str());
@@ -105,7 +103,7 @@ class ProfileSyncServicePreferenceTest
 
   // Caller gets ownership of the returned value.
   const Value* GetSyncedValue(const std::string& name) {
-    sync_api::ReadTransaction trans(service_->backend()->GetUserShareHandle());
+    sync_api::ReadTransaction trans(service_->GetUserShare());
     sync_api::ReadNode node(&trans);
 
     int64 node_id = model_associator_->GetSyncIdFromChromeId(name);
@@ -130,7 +128,7 @@ class ProfileSyncServicePreferenceTest
   }
 
   int64 SetSyncedValue(const std::string& name, const Value& value) {
-    sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(service_->GetUserShare());
     sync_api::ReadNode root(&trans);
     if (!root.InitByTagLookup(browser_sync::kPreferencesTag))
       return sync_api::kInvalidId;
@@ -219,7 +217,7 @@ TEST_F(ProfileSyncServicePreferenceTest, WritePreferenceToNode) {
 
   const PrefService::Preference* pref =
       prefs_->FindPreference(prefs::kHomePage);
-  sync_api::WriteTransaction trans(service_->backend()->GetUserShareHandle());
+  sync_api::WriteTransaction trans(service_->GetUserShare());
   sync_api::WriteNode node(&trans);
   EXPECT_TRUE(node.InitByClientTagLookup(syncable::PREFERENCES,
                                          prefs::kHomePage));
@@ -362,7 +360,7 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeActionUpdate) {
   record->action = SyncManager::ChangeRecord::ACTION_UPDATE;
   record->id = node_id;
   {
-    sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
 
@@ -382,7 +380,7 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeActionAdd) {
   record->action = SyncManager::ChangeRecord::ACTION_ADD;
   record->id = node_id;
   {
-    sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
 
@@ -404,7 +402,7 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeUnknownPreference) {
   record->action = SyncManager::ChangeRecord::ACTION_ADD;
   record->id = node_id;
   {
-    sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
 
@@ -437,7 +435,7 @@ TEST_F(ProfileSyncServicePreferenceTest, ManagedPreferences) {
   record->action = SyncManager::ChangeRecord::ACTION_UPDATE;
   record->id = node_id;
   {
-    sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
   EXPECT_TRUE(managed_value->Equals(
@@ -476,7 +474,7 @@ TEST_F(ProfileSyncServicePreferenceTest, DynamicManagedPreferences) {
   record->action = SyncManager::ChangeRecord::ACTION_ADD;
   record->id = node_id;
   {
-    sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
 

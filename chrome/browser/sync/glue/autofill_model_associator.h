@@ -99,9 +99,6 @@ class AutofillModelAssociator
   // TODO(georgey) : add the same processing for CC info (already in protocol
   // buffers).
 
-  // Returns sync service instance.
-  ProfileSyncService* sync_service() { return sync_service_; }
-
   // Is called to determine if we need to upgrade to the new
   // autofillprofile2 data type. If so we need to sync up autofillprofile
   // first to the latest available changes on the server and then upgrade

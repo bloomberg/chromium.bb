@@ -51,12 +51,12 @@ namespace browser_sync {
 using sessions::SyncSessionSnapshot;
 using sync_api::SyncCredentials;
 
-SyncBackendHost::SyncBackendHost(SyncFrontend* frontend, Profile* profile)
+SyncBackendHost::SyncBackendHost(Profile* profile)
     : core_(new Core(ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       core_thread_("Chrome_SyncCoreThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(profile),
-      frontend_(frontend),
+      frontend_(NULL),
       sync_data_folder_path_(
           profile_->GetPath().Append(kSyncDataFolderName)),
       last_auth_error_(AuthError::None()),
@@ -78,6 +78,7 @@ SyncBackendHost::~SyncBackendHost() {
 }
 
 void SyncBackendHost::Initialize(
+    SyncFrontend* frontend,
     const GURL& sync_service_url,
     const syncable::ModelTypeSet& types,
     URLRequestContextGetter* baseline_context_getter,
@@ -86,6 +87,9 @@ void SyncBackendHost::Initialize(
     const notifier::NotifierOptions& notifier_options) {
   if (!core_thread_.Start())
     return;
+
+  frontend_ = frontend;
+  DCHECK(frontend);
 
   // Create a worker for the UI thread and route bookmark changes to it.
   // TODO(tim): Pull this into a method to reuse.  For now we don't even
@@ -172,7 +176,7 @@ bool SyncBackendHost::IsUsingExplicitPassphrase() {
 
 bool SyncBackendHost::IsCryptographerReady() const {
   return syncapi_initialized_ &&
-      GetUserShareHandle()->dir_manager->cryptographer()->is_ready();
+      GetUserShare()->dir_manager->cryptographer()->is_ready();
 }
 
 sync_api::HttpPostProviderFactory* SyncBackendHost::MakeHttpBridgeFactory(
@@ -284,7 +288,7 @@ void SyncBackendHost::SetAutofillMigrationDebugInfo(
 
 void SyncBackendHost::ConfigureAutofillMigration() {
   if (GetAutofillMigrationState() == syncable::NOT_DETERMINED) {
-    sync_api::ReadTransaction trans(GetUserShareHandle());
+    sync_api::ReadTransaction trans(GetUserShare());
     sync_api::ReadNode autofil_root_node(&trans);
 
     // Check for the presence of autofill node.
@@ -487,7 +491,7 @@ void SyncBackendHost::Core::NotifyUpdatedToken(const std::string& token) {
       Details<const TokenAvailableDetails>(&details));
 }
 
-SyncBackendHost::UserShareHandle SyncBackendHost::GetUserShareHandle() const {
+sync_api::UserShare* SyncBackendHost::GetUserShare() const {
   DCHECK(syncapi_initialized_);
   return core_->syncapi()->GetUserShare();
 }

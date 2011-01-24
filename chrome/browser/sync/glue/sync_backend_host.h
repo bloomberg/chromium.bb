@@ -98,7 +98,6 @@ class SyncFrontend {
 // that the SyncFrontend is only accessed on the UI loop.
 class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
  public:
-  typedef sync_api::UserShare* UserShareHandle;
   typedef sync_api::SyncManager::Status::Summary StatusSummary;
   typedef sync_api::SyncManager::Status Status;
   typedef std::map<ModelSafeGroup,
@@ -107,7 +106,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // Create a SyncBackendHost with a reference to the |frontend| that it serves
   // and communicates to via the SyncFrontend interface (on the same thread
   // it used to call the constructor).
-  SyncBackendHost(SyncFrontend* frontend, Profile* profile);
+  explicit SyncBackendHost(Profile* profile);
   // For testing.
   // TODO(skrul): Extract an interface so this is not needed.
   SyncBackendHost();
@@ -117,7 +116,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // As a fallback when no cached auth information is available, try to
   // bootstrap authentication using |lsid|, if it isn't empty.
   // Optionally delete the Sync Data folder (if it's corrupt).
-  void Initialize(const GURL& service_url,
+  void Initialize(SyncFrontend* frontend,
+                  const GURL& service_url,
                   const syncable::ModelTypeSet& types,
                   URLRequestContextGetter* baseline_context_getter,
                   const sync_api::SyncCredentials& credentials,
@@ -193,7 +193,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   // Called on |frontend_loop_| to obtain a handle to the UserShare needed
   // for creating transactions.
-  UserShareHandle GetUserShareHandle() const;
+  sync_api::UserShare* GetUserShare() const;
 
   // Called from any thread to obtain current status information in detailed or
   // summarized form.

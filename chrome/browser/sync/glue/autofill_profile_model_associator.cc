@@ -105,8 +105,7 @@ bool AutofillProfileModelAssociator::TraverseAndAssociateChromeAutoFillProfiles(
 bool AutofillProfileModelAssociator::GetSyncIdForTaggedNode(
     const std::string& tag,
     int64* sync_id) {
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
   sync_api::ReadNode sync_node(&trans);
   if (!sync_node.InitByTagLookup(tag.c_str()))
     return false;
@@ -147,8 +146,7 @@ bool AutofillProfileModelAssociator::AssociateModels() {
   {
     // The write transaction lock is held inside this block.
     // We do all the web db operations outside this block.
-    sync_api::WriteTransaction trans(
-        sync_service_->backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(sync_service_->GetUserShare());
 
     sync_api::ReadNode autofill_root(&trans);
     if (!autofill_root.InitByTagLookup(kAutofillProfileTag)) {
@@ -172,15 +170,15 @@ bool AutofillProfileModelAssociator::AssociateModels() {
     return false;
   }
 
-  if (sync_service_->backend()->GetAutofillMigrationState() !=
+  if (sync_service_->GetAutofillMigrationState() !=
      syncable::MIGRATED) {
     syncable::AutofillMigrationDebugInfo debug_info;
     debug_info.autofill_profile_added_during_migration =
         number_of_profiles_created_;
-    sync_service_->backend()->SetAutofillMigrationDebugInfo(
+    sync_service_->SetAutofillMigrationDebugInfo(
         syncable::AutofillMigrationDebugInfo::PROFILES_ADDED,
         debug_info);
-    sync_service()->backend()->SetAutofillMigrationState(
+    sync_service_->SetAutofillMigrationState(
         syncable::MIGRATED);
   }
 
@@ -208,8 +206,7 @@ bool AutofillProfileModelAssociator::MergeField(FormGroup* f,
 bool AutofillProfileModelAssociator::SyncModelHasUserCreatedNodes(
     bool *has_nodes) {
   CHECK_NE(has_nodes, reinterpret_cast<bool*>(NULL));
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
 
   sync_api::ReadNode node(&trans);
 

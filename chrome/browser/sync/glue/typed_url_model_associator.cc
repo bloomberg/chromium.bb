@@ -58,8 +58,7 @@ bool TypedUrlModelAssociator::AssociateModels() {
   TypedUrlUpdateVector updated_urls;
 
   {
-    sync_api::WriteTransaction trans(
-        sync_service_->backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(sync_service_->GetUserShare());
     sync_api::ReadNode typed_url_root(&trans);
     if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
       LOG(ERROR) << "Server did not create the top-level typed_url node. We "
@@ -216,8 +215,7 @@ bool TypedUrlModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
                << "might be running against an out-of-date server.";
     return false;
   }
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
 
   sync_api::ReadNode typed_url_node(&trans);
   if (!typed_url_node.InitByIdLookup(typed_url_sync_id)) {
@@ -274,8 +272,7 @@ void TypedUrlModelAssociator::Disassociate(int64 sync_id) {
 
 bool TypedUrlModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
                                                      int64* sync_id) {
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
   sync_api::ReadNode sync_node(&trans);
   if (!sync_node.InitByTagLookup(tag.c_str()))
     return false;

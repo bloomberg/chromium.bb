@@ -27,6 +27,7 @@
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
@@ -45,85 +46,6 @@ ACTION(QuitUIMessageLoop) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   MessageLoop::current()->Quit();
 }
-
-class TestModelAssociatorHelper {
- public:
-  explicit TestModelAssociatorHelper(browser_sync::TestIdFactory* id_factory)
-      : id_factory_(id_factory) {
-  }
-
-  template <class ModelAssociatorImpl>
-  bool GetSyncIdForTaggedNode(ModelAssociatorImpl* associator,
-                              const std::string& tag, int64* sync_id) {
-    std::wstring tag_wide;
-    if (!UTF8ToWide(tag.c_str(), tag.length(), &tag_wide)) {
-      NOTREACHED() << "Unable to convert UTF8 to wide for string: " << tag;
-      return false;
-    }
-
-    browser_sync::SyncBackendHost::UserShareHandle share(
-        associator->sync_service()->backend()->GetUserShareHandle());
-    bool root_exists = false;
-    ModelType type = ModelAssociatorImpl::model_type();
-    {
-      sync_api::WriteTransaction trans(share);
-      sync_api::ReadNode uber_root(&trans);
-      uber_root.InitByRootLookup();
-
-      sync_api::ReadNode root(&trans);
-      root_exists = root.InitByTagLookup(
-          ProfileSyncServiceTestHelper::GetTagForType(type));
-    }
-
-    if (!root_exists) {
-      bool created = ProfileSyncServiceTestHelper::CreateRoot(
-          type,
-          associator->sync_service(),
-          id_factory_);
-      if (!created)
-        return false;
-    }
-
-    sync_api::WriteTransaction trans(share);
-    sync_api::ReadNode root(&trans);
-    EXPECT_TRUE(root.InitByTagLookup(
-        ProfileSyncServiceTestHelper::GetTagForType(type)));
-
-    // First, try to find a node with the title among the root's children.
-    // This will be the case if we are testing model persistence, and
-    // are reloading a sync repository created earlier in the test.
-    int64 last_child_id = sync_api::kInvalidId;
-    for (int64 id = root.GetFirstChildId(); id != sync_api::kInvalidId; /***/) {
-      sync_api::ReadNode child(&trans);
-      child.InitByIdLookup(id);
-      last_child_id = id;
-      if (tag_wide == child.GetTitle()) {
-        *sync_id = id;
-        return true;
-      }
-      id = child.GetSuccessorId();
-    }
-
-    sync_api::ReadNode predecessor_node(&trans);
-    sync_api::ReadNode* predecessor = NULL;
-    if (last_child_id != sync_api::kInvalidId) {
-      predecessor_node.InitByIdLookup(last_child_id);
-      predecessor = &predecessor_node;
-    }
-    sync_api::WriteNode node(&trans);
-    // Create new fake tagged nodes at the end of the ordering.
-    node.InitByCreation(ModelAssociatorImpl::model_type(), root, predecessor);
-    node.SetIsFolder(true);
-    node.SetTitle(tag_wide);
-    node.SetExternalId(0);
-    *sync_id = node.GetId();
-    return true;
-  }
-
-  ~TestModelAssociatorHelper() {}
- private:
-  browser_sync::TestIdFactory* id_factory_;
-};
 
 class ProfileSyncServiceObserverMock : public ProfileSyncServiceObserver {
  public:

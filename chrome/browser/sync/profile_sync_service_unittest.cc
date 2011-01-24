@@ -52,18 +52,85 @@ using testing::Return;
 using testing::WithArg;
 using testing::Invoke;
 
+// TODO(akalin): Bookmark-specific tests should be moved into their
+// own file.
 class TestBookmarkModelAssociator : public BookmarkModelAssociator {
  public:
-  TestBookmarkModelAssociator(TestProfileSyncService* service,
+  TestBookmarkModelAssociator(
+      TestProfileSyncService* service,
       UnrecoverableErrorHandler* persist_ids_error_handler)
       : BookmarkModelAssociator(service, persist_ids_error_handler),
-        helper_(new TestModelAssociatorHelper(service->id_factory())) {
-  }
+        id_factory_(service->id_factory()) {}
+
+  // TODO(akalin): This logic lazily creates any tagged node that is
+  // requested.  A better way would be to have utility functions to
+  // create sync nodes from some bookmark structure and to use that.
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id) {
-    return helper_->GetSyncIdForTaggedNode(this, tag, sync_id);
+    std::wstring tag_wide;
+    if (!UTF8ToWide(tag.c_str(), tag.length(), &tag_wide)) {
+      NOTREACHED() << "Unable to convert UTF8 to wide for string: " << tag;
+      return false;
+    }
+
+    bool root_exists = false;
+    syncable::ModelType type = model_type();
+    {
+      sync_api::WriteTransaction trans(sync_service()->GetUserShare());
+      sync_api::ReadNode uber_root(&trans);
+      uber_root.InitByRootLookup();
+
+      sync_api::ReadNode root(&trans);
+      root_exists = root.InitByTagLookup(
+          ProfileSyncServiceTestHelper::GetTagForType(type));
+    }
+
+    if (!root_exists) {
+      bool created = ProfileSyncServiceTestHelper::CreateRoot(
+          type,
+          sync_service()->GetUserShare(),
+          id_factory_);
+      if (!created)
+        return false;
+    }
+
+    sync_api::WriteTransaction trans(sync_service()->GetUserShare());
+    sync_api::ReadNode root(&trans);
+    EXPECT_TRUE(root.InitByTagLookup(
+        ProfileSyncServiceTestHelper::GetTagForType(type)));
+
+    // First, try to find a node with the title among the root's children.
+    // This will be the case if we are testing model persistence, and
+    // are reloading a sync repository created earlier in the test.
+    int64 last_child_id = sync_api::kInvalidId;
+    for (int64 id = root.GetFirstChildId(); id != sync_api::kInvalidId; /***/) {
+      sync_api::ReadNode child(&trans);
+      child.InitByIdLookup(id);
+      last_child_id = id;
+      if (tag_wide == child.GetTitle()) {
+        *sync_id = id;
+        return true;
+      }
+      id = child.GetSuccessorId();
+    }
+
+    sync_api::ReadNode predecessor_node(&trans);
+    sync_api::ReadNode* predecessor = NULL;
+    if (last_child_id != sync_api::kInvalidId) {
+      predecessor_node.InitByIdLookup(last_child_id);
+      predecessor = &predecessor_node;
+    }
+    sync_api::WriteNode node(&trans);
+    // Create new fake tagged nodes at the end of the ordering.
+    node.InitByCreation(type, root, predecessor);
+    node.SetIsFolder(true);
+    node.SetTitle(tag_wide);
+    node.SetExternalId(0);
+    *sync_id = node.GetId();
+    return true;
   }
+
  private:
-  scoped_ptr<TestModelAssociatorHelper> helper_;
+  browser_sync::TestIdFactory* id_factory_;
 };
 
 // FakeServerChange constructs a list of sync_api::ChangeRecords while modifying
@@ -342,7 +409,7 @@ class ProfileSyncServiceTest : public testing::Test {
   }
 
   void ExpectSyncerNodeMatching(const BookmarkNode* bnode) {
-    sync_api::ReadTransaction trans(service_->backend_->GetUserShareHandle());
+    sync_api::ReadTransaction trans(service_->GetUserShare());
     ExpectSyncerNodeMatching(&trans, bnode);
   }
 
@@ -420,7 +487,7 @@ class ProfileSyncServiceTest : public testing::Test {
   }
 
   void ExpectModelMatch() {
-    sync_api::ReadTransaction trans(service_->backend_->GetUserShareHandle());
+    sync_api::ReadTransaction trans(service_->GetUserShare());
     ExpectModelMatch(&trans);
   }
 
@@ -432,8 +499,6 @@ class ProfileSyncServiceTest : public testing::Test {
     return associator()->GetSyncIdFromChromeId(
         model_->GetBookmarkBarNode()->id());
   }
-
-  SyncBackendHost* backend() { return service_->backend_.get(); }
 
   // This serves as the "UI loop" on which the ProfileSyncService lives and
   // operates. It is needed because the SyncBackend can post tasks back to
@@ -548,7 +613,7 @@ TEST_F(ProfileSyncServiceTest, ServerChangeProcessing) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSyncService();
 
-  sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
+  sync_api::WriteTransaction trans(service_->GetUserShare());
 
   FakeServerChange adds(&trans);
   int64 f1 = adds.AddFolder(L"Server Folder B", bookmark_bar_id(), 0);
@@ -637,7 +702,7 @@ TEST_F(ProfileSyncServiceTest, ServerChangeRequiringFosterParent) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSyncService();
 
-  sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
+  sync_api::WriteTransaction trans(service_->GetUserShare());
 
   // Stress the immediate children of other_node because that's where
   // ApplyModelChanges puts a temporary foster parent node.
@@ -686,7 +751,7 @@ TEST_F(ProfileSyncServiceTest, ServerChangeWithNonCanonicalURL) {
   StartSyncService();
 
   {
-    sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(service_->GetUserShare());
 
     FakeServerChange adds(&trans);
     std::string url("http://dev.chromium.org");
@@ -717,7 +782,7 @@ TEST_F(ProfileSyncServiceTest, DISABLED_ServerChangeWithInvalidURL) {
 
   int child_count = 0;
   {
-    sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(service_->GetUserShare());
 
     FakeServerChange adds(&trans);
     std::string url("x");
@@ -834,7 +899,7 @@ TEST_F(ProfileSyncServiceTest, UnrecoverableErrorSuspendsService) {
   // updating the ProfileSyncService state.  This should introduce
   // inconsistency between the two models.
   {
-    sync_api::WriteTransaction trans(service_->backend_->GetUserShareHandle());
+    sync_api::WriteTransaction trans(service_->GetUserShare());
     sync_api::WriteNode sync_node(&trans);
     EXPECT_TRUE(associator()->InitSyncNodeFromChromeId(node->id(),
                                                        &sync_node));
@@ -1323,7 +1388,8 @@ TEST_F(ProfileSyncServiceTestWithData, RecoverAfterDeletingSyncDataDirectory) {
   WriteTestDataToBookmarkModel();
 
   // While the service is running.
-  FilePath sync_data_directory = backend()->sync_data_folder_path();
+  FilePath sync_data_directory =
+      service_->GetBackendForTest()->sync_data_folder_path();
 
   // Simulate a normal shutdown for the sync service (don't disable it for
   // the user, which would reset the preferences and delete the sync data
@@ -1388,7 +1454,6 @@ TEST_F(ProfileSyncServiceTestWithData, TestStartupWithOldSyncData) {
                              // hasn't been completed.
   }
 
-  ASSERT_FALSE(service_->backend());
   ASSERT_FALSE(service_->HasSyncSetupCompleted());
 
   // Create some tokens in the token service; the service will startup when

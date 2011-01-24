@@ -1374,6 +1374,7 @@
         'browser/ssl/ssl_host_state_unittest.cc',
         'browser/status_icons/status_icon_unittest.cc',
         'browser/status_icons/status_tray_unittest.cc',
+        'browser/sync/abstract_profile_sync_service_test.cc',
         'browser/sync/abstract_profile_sync_service_test.h',
         'browser/sync/glue/autofill_data_type_controller_unittest.cc',
         'browser/sync/glue/autofill_model_associator_unittest.cc',

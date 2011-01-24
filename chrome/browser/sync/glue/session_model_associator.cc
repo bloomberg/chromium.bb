@@ -55,8 +55,7 @@ bool SessionModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   DCHECK(CalledOnValidThread());
   CHECK(has_nodes);
   *has_nodes = false;
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(kSessionsTag)) {
     LOG(ERROR) << kNoSessionsFolderError;
@@ -75,8 +74,7 @@ int64 SessionModelAssociator::GetSyncIdFromChromeId(const size_t& id) {
 
 int64 SessionModelAssociator::GetSyncIdFromSessionTag(const std::string& tag) {
   DCHECK(CalledOnValidThread());
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
   sync_api::ReadNode node(&trans);
   if (!node.InitByClientTagLookup(syncable::SESSIONS, tag))
     return sync_api::kInvalidId;
@@ -134,8 +132,7 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
     }
   }
 
-  sync_api::WriteTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::WriteTransaction trans(sync_service_->GetUserShare());
   sync_api::WriteNode header_node(&trans);
   if (!header_node.InitByIdLookup(local_session_syncid_)) {
     LOG(ERROR) << "Failed to load local session header node.";
@@ -210,8 +207,7 @@ void SessionModelAssociator::Associate(const TabContents* tab, int64 sync_id) {
   TabLinks t(sync_id, tab);
   tab_map_[session_id] = t;
 
-  sync_api::WriteTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::WriteTransaction trans(sync_service_->GetUserShare());
   WriteTabContentsToSyncModel(*tab, sync_id, &trans);
 }
 
@@ -363,8 +359,7 @@ bool SessionModelAssociator::AssociateModels() {
   // Read any available foreign sessions and load any session data we may have.
   // If we don't have any local session data in the db, create a header node.
   {
-    sync_api::WriteTransaction trans(
-        sync_service_->backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(sync_service_->GetUserShare());
 
     sync_api::ReadNode root(&trans);
     if (!root.InitByTagLookup(kSessionsTag)) {
@@ -706,8 +701,7 @@ int64 SessionModelAssociator::TabNodePool::GetFreeTabNode() {
   DCHECK_GT(machine_tag_.length(), 0U);
   if (tab_pool_fp_ == -1) {
     // Tab pool has no free nodes, allocate new one.
-    sync_api::WriteTransaction trans(
-        sync_service_->backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(sync_service_->GetUserShare());
     sync_api::ReadNode root(&trans);
     if (!root.InitByTagLookup(kSessionsTag)) {
       LOG(ERROR) << kNoSessionsFolderError;
@@ -838,8 +832,7 @@ void SessionModelAssociator::OnGotSession(
   sync_pb::SessionHeader* header_s = specifics.mutable_header();
   PopulateSessionSpecificsHeader(*windows, header_s);
 
-  sync_api::WriteTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::WriteTransaction trans(sync_service_->GetUserShare());
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(kSessionsTag)) {
     LOG(ERROR) << kNoSessionsFolderError;
@@ -913,8 +906,7 @@ bool SessionModelAssociator::SyncLocalWindowToSyncModel(
       return false;
     }
 
-    sync_api::WriteTransaction trans(
-        sync_service_->backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(sync_service_->GetUserShare());
     if (!WriteSessionTabToSyncModel(*tab, id, &trans)) {
       return false;
     }

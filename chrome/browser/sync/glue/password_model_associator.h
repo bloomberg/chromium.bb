@@ -117,10 +117,6 @@ class PasswordModelAssociator
   // user requested an abort.
   bool IsAbortPending();
 
- protected:
-  // Returns sync service instance.
-  ProfileSyncService* sync_service() { return sync_service_; }
-
  private:
   typedef std::map<std::string, int64> PasswordToSyncIdMap;
   typedef std::map<int64, std::string> SyncIdToPasswordMap;

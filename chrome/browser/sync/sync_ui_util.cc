@@ -406,13 +406,9 @@ void ConstructAboutInformation(ProfileSyncService* service,
       strings->SetString("unrecoverable_error_location", location_str);
     } else if (!service->sync_initialized()) {
       strings->SetString("summary", "Sync not yet initialized");
-    } else if (service->backend() == NULL) {
-      strings->SetString("summary",
-          "Unrecoverable error detected. Backend is null when it shouldnt be");
-      NOTREACHED();
     } else {
       browser_sync::ModelSafeRoutingInfo routes;
-      service->backend()->GetModelSafeRoutingInfo(&routes);
+      service->GetModelSafeRoutingInfo(&routes);
       ListValue* routing_info = new ListValue();
       strings->Set("routing_info", routing_info);
       browser_sync::ModelSafeRoutingInfo::const_iterator it = routes.begin();
@@ -425,10 +421,10 @@ void ConstructAboutInformation(ProfileSyncService* service,
 
       sync_ui_util::AddBoolSyncDetail(details,
           "Autofill Migrated",
-          service->backend()->GetAutofillMigrationState() ==
+          service->GetAutofillMigrationState() ==
           syncable::MIGRATED);
       syncable::AutofillMigrationDebugInfo info =
-          service->backend()->GetAutofillMigrationDebugInfo();
+          service->GetAutofillMigrationDebugInfo();
 
       sync_ui_util::AddIntSyncDetail(details,
                                      "Bookmarks created during migration",

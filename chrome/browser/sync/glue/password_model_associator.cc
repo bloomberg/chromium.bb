@@ -45,8 +45,7 @@ bool PasswordModelAssociator::AssociateModels() {
     abort_association_pending_ = false;
   }
 
-  sync_api::WriteTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::WriteTransaction trans(sync_service_->GetUserShare());
   sync_api::ReadNode password_root(&trans);
   if (!password_root.InitByTagLookup(kPasswordTag)) {
     LOG(ERROR) << "Server did not create the top-level password node. We "
@@ -176,8 +175,7 @@ bool PasswordModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
                << "might be running against an out-of-date server.";
     return false;
   }
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
 
   sync_api::ReadNode password_node(&trans);
   if (!password_node.InitByIdLookup(password_sync_id)) {
@@ -241,8 +239,7 @@ void PasswordModelAssociator::Disassociate(int64 sync_id) {
 
 bool PasswordModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
                                                      int64* sync_id) {
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
   sync_api::ReadNode sync_node(&trans);
   if (!sync_node.InitByTagLookup(tag.c_str()))
     return false;

@@ -192,8 +192,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
   void AddTypedUrlSyncNode(const history::URLRow& url,
                            const history::VisitVector& visits) {
-    sync_api::WriteTransaction trans(
-        service_->backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(service_->GetUserShare());
     sync_api::ReadNode typed_url_root(&trans);
     ASSERT_TRUE(typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag));
 
@@ -206,7 +205,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   }
 
   void GetTypedUrlsFromSyncDB(std::vector<history::URLRow>* urls) {
-    sync_api::ReadTransaction trans(service_->backend()->GetUserShareHandle());
+    sync_api::ReadTransaction trans(service_->GetUserShare());
     sync_api::ReadNode typed_url_root(&trans);
     if (!typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag))
       return;

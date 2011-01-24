@@ -83,14 +83,14 @@ class BookmarkModelAssociator
     // thread.
   }
 
-  // Returns sync service instance.
-  ProfileSyncService* sync_service() { return sync_service_; }
-
  protected:
   // Stores the id of the node with the given tag in |sync_id|.
   // Returns of that node was found successfully.
   // Tests override this.
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
+
+  // Used by TestBookmarkModelAssociator.
+  ProfileSyncService* sync_service() { return sync_service_; }
 
  private:
   typedef std::map<int64, int64> BookmarkIdToSyncIdMap;

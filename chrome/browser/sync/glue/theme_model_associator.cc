@@ -36,8 +36,7 @@ ThemeModelAssociator::ThemeModelAssociator(
 ThemeModelAssociator::~ThemeModelAssociator() {}
 
 bool ThemeModelAssociator::AssociateModels() {
-  sync_api::WriteTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::WriteTransaction trans(sync_service_->GetUserShare());
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(kThemesTag)) {
     LOG(ERROR) << kNoThemesFolderError;
@@ -83,8 +82,7 @@ bool ThemeModelAssociator::DisassociateModels() {
 bool ThemeModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   DCHECK(has_nodes);
   *has_nodes = false;
-  sync_api::ReadTransaction trans(
-      sync_service_->backend()->GetUserShareHandle());
+  sync_api::ReadTransaction trans(sync_service_->GetUserShare());
   sync_api::ReadNode root(&trans);
   if (!root.InitByTagLookup(kThemesTag)) {
     LOG(ERROR) << kNoThemesFolderError;

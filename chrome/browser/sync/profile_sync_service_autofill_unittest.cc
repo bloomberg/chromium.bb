@@ -35,6 +35,7 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/syncable/autofill_migration.h"
+#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
@@ -64,12 +65,17 @@ using browser_sync::SyncerUtil;
 using browser_sync::UnrecoverableErrorHandler;
 using syncable::CREATE_NEW_UPDATE_ITEM;
 using syncable::AUTOFILL;
+using syncable::BASE_VERSION;
+using syncable::CREATE;
 using syncable::DirectoryChangeEvent;
 using syncable::GET_BY_SERVER_TAG;
 using syncable::INVALID;
+using syncable::MutableEntry;
+using syncable::OriginalEntries;
 using syncable::SERVER_PARENT_ID;
 using syncable::SERVER_SPECIFICS;
-using syncable::OriginalEntries;
+using syncable::SPECIFICS;
+using syncable::UNITTEST;
 using syncable::WriterTag;
 using syncable::WriteTransaction;
 using testing::_;
@@ -314,8 +320,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   }
 
   bool AddAutofillSyncNode(const AutofillEntry& entry) {
-    sync_api::WriteTransaction trans(
-        service_->backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(service_->GetUserShare());
     sync_api::ReadNode autofill_root(&trans);
     if (!autofill_root.InitByTagLookup(browser_sync::kAutofillTag))
       return false;
@@ -331,8 +336,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   }
 
   bool AddAutofillSyncNode(const AutoFillProfile& profile) {
-    sync_api::WriteTransaction trans(
-        service_->backend()->GetUserShareHandle());
+    sync_api::WriteTransaction trans(service_->GetUserShare());
     sync_api::ReadNode autofill_root(&trans);
     if (!autofill_root.InitByTagLookup(browser_sync::kAutofillProfileTag))
       return false;
@@ -347,7 +351,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
 
   bool GetAutofillEntriesFromSyncDB(std::vector<AutofillEntry>* entries,
                                     std::vector<AutoFillProfile>* profiles) {
-    sync_api::ReadTransaction trans(service_->backend()->GetUserShareHandle());
+    sync_api::ReadTransaction trans(service_->GetUserShare());
     sync_api::ReadNode autofill_root(&trans);
     if (!autofill_root.InitByTagLookup(browser_sync::kAutofillTag))
       return false;
@@ -384,7 +388,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
 
   bool GetAutofillProfilesFromSyncDBUnderProfileNode(
       std::vector<AutoFillProfile>* profiles) {
-    sync_api::ReadTransaction trans(service_->backend()->GetUserShareHandle());
+    sync_api::ReadTransaction trans(service_->GetUserShare());
     sync_api::ReadNode autofill_root(&trans);
     if (!autofill_root.InitByTagLookup(browser_sync::kAutofillProfileTag))
       return false;
@@ -474,7 +478,7 @@ class AddAutofillTask : public Task {
 static const bool kLoggingInfo = true;
 class WriteTransactionTest: public WriteTransaction {
  public:
-  WriteTransactionTest(const ScopedDirLookup& directory,
+  WriteTransactionTest(const syncable::ScopedDirLookup& directory,
                        WriterTag writer, const char* source_file,
                        int line,
                        scoped_ptr<WaitableEvent> *wait_for_syncapi)
@@ -510,9 +514,9 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
     // This gets called in a modelsafeworker thread.
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
-    UserShare* user_share = service_->backend()->GetUserShareHandle();
-    DirectoryManager* dir_manager = user_share->dir_manager.get();
-    ScopedDirLookup dir(dir_manager, user_share->name);
+    sync_api::UserShare* user_share = service_->GetUserShare();
+    syncable::DirectoryManager* dir_manager = user_share->dir_manager.get();
+    syncable::ScopedDirLookup dir(dir_manager, user_share->name);
     ASSERT_TRUE(dir.good());
 
     // Create autofill protobuf
@@ -563,7 +567,7 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
     scoped_ptr<Callback0::Type> c(NewCallback((FakeServerUpdater *)this,
                                               &FakeServerUpdater::Update));
     std::vector<browser_sync::ModelSafeWorker*> workers;
-    service_->backend()->GetWorkers(&workers);
+    service_->GetBackendForTest()->GetWorkers(&workers);
 
     ASSERT_FALSE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     if (!BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
@@ -578,7 +582,7 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
     scoped_ptr<Callback0::Type> c(NewCallback((FakeServerUpdater *)this,
                                               &FakeServerUpdater::Update));
     std::vector<browser_sync::ModelSafeWorker*> workers;
-    service_->backend()->GetWorkers(&workers);
+    service_->GetBackendForTest()->GetWorkers(&workers);
 
     ASSERT_FALSE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     is_finished_.Reset();

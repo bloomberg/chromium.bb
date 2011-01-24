@@ -418,7 +418,8 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
 
   SyncCredentials credentials = GetCredentials();
 
-  backend_->Initialize(sync_service_url_,
+  backend_->Initialize(this,
+                       sync_service_url_,
                        types,
                        profile_->GetRequestContext(),
                        credentials,
@@ -427,7 +428,7 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
 }
 
 void ProfileSyncService::CreateBackend() {
-  backend_.reset(new SyncBackendHost(this, profile_));
+  backend_.reset(new SyncBackendHost(profile_));
 }
 
 void ProfileSyncService::StartUp() {
@@ -1008,6 +1009,12 @@ bool ProfileSyncService::IsCryptographerReady() const {
   return backend_.get() && backend_->IsCryptographerReady();
 }
 
+SyncBackendHost* ProfileSyncService::GetBackendForTest() {
+  // We don't check |backend_initialized_|; we assume the test class
+  // knows what it's doing.
+  return backend_.get();
+}
+
 void ProfileSyncService::ConfigureDataTypeManager() {
   if (!data_type_manager_.get()) {
     data_type_manager_.reset(
@@ -1026,6 +1033,78 @@ void ProfileSyncService::ConfigureDataTypeManager() {
   data_type_manager_->Configure(types);
 }
 
+sync_api::UserShare* ProfileSyncService::GetUserShare() const {
+  if (backend_.get() && backend_initialized_) {
+    return backend_->GetUserShare();
+  }
+  NOTREACHED();
+  return NULL;
+}
+
+const browser_sync::sessions::SyncSessionSnapshot*
+    ProfileSyncService::GetLastSessionSnapshot() const {
+  if (backend_.get() && backend_initialized_) {
+    return backend_->GetLastSessionSnapshot();
+  }
+  NOTREACHED();
+  return NULL;
+}
+
+bool ProfileSyncService::HasUnsyncedItems() const {
+  if (backend_.get() && backend_initialized_) {
+    return backend_->HasUnsyncedItems();
+  }
+  NOTREACHED();
+  return false;
+}
+
+void ProfileSyncService::GetModelSafeRoutingInfo(
+    browser_sync::ModelSafeRoutingInfo* out) {
+  if (backend_.get() && backend_initialized_) {
+    backend_->GetModelSafeRoutingInfo(out);
+  } else {
+    NOTREACHED();
+  }
+}
+
+syncable::AutofillMigrationState
+    ProfileSyncService::GetAutofillMigrationState() {
+  if (backend_.get() && backend_initialized_) {
+    return backend_->GetAutofillMigrationState();
+  }
+  NOTREACHED();
+  return syncable::NOT_DETERMINED;
+}
+
+void ProfileSyncService::SetAutofillMigrationState(
+    syncable::AutofillMigrationState state) {
+  if (backend_.get() && backend_initialized_) {
+    backend_->SetAutofillMigrationState(state);
+  } else {
+    NOTREACHED();
+  }
+}
+
+syncable::AutofillMigrationDebugInfo
+    ProfileSyncService::GetAutofillMigrationDebugInfo() {
+  if (backend_.get() && backend_initialized_) {
+    return backend_->GetAutofillMigrationDebugInfo();
+  }
+  NOTREACHED();
+  syncable::AutofillMigrationDebugInfo debug_info = { 0 };
+  return debug_info;
+}
+
+void ProfileSyncService::SetAutofillMigrationDebugInfo(
+    syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
+    const syncable::AutofillMigrationDebugInfo& info) {
+  if (backend_.get() && backend_initialized_) {
+    backend_->SetAutofillMigrationDebugInfo(property_to_set, info);
+  } else {
+    NOTREACHED();
+  }
+}
+
 void ProfileSyncService::ActivateDataType(
     DataTypeController* data_type_controller,
     ChangeProcessor* change_processor) {
@@ -1034,7 +1113,7 @@ void ProfileSyncService::ActivateDataType(
     return;
   }
   DCHECK(backend_initialized_);
-  change_processor->Start(profile(), backend_->GetUserShareHandle());
+  change_processor->Start(profile(), backend_->GetUserShare());
   backend_->ActivateDataType(data_type_controller, change_processor);
 }
 
