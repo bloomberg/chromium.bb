@@ -32,7 +32,7 @@
 namespace {
 
 string16 AutocompleteResultAsString(const AutocompleteResult& result) {
-  std::string output(base::StringPrintf("{%lu} ", result.size()));
+  std::string output(base::StringPrintf("{%z} ", result.size()));
   for (size_t i = 0; i < result.size(); ++i) {
     AutocompleteMatch match = result.match_at(i);
     std::string provider_name = match.provider->name();
