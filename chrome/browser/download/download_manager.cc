@@ -509,7 +509,11 @@ void DownloadManager::OnAllDataSaved(int32 download_id, int64 size) {
   VLOG(20) << __FUNCTION__ << "()" << " download_id = " << download_id
            << " size = " << size;
 
-  DCHECK_EQ(1U, active_downloads_.count(download_id));
+  // If it's not in active_downloads_, that means it was cancelled; just
+  // ignore the notification.
+  if (active_downloads_.count(download_id) == 0)
+    return;
+
   DownloadItem* download = active_downloads_[download_id];
   download->OnAllDataSaved(size);
 
