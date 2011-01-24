@@ -77,6 +77,7 @@ static void DrawPlugin(PluginObject *obj) {
 // Xt support functions
 
 void LinuxTimer(XtPointer data, XtIntervalId* id) {
+  HANDLE_CRASHES;
   PluginObject *obj = static_cast<PluginObject *>(data);
   DCHECK(obj->xt_interval_ == *id);
   obj->client()->Tick();
@@ -97,6 +98,7 @@ void LinuxExposeHandler(Widget w,
                         XtPointer user_data,
                         XEvent *event,
                         Boolean *cont) {
+  HANDLE_CRASHES;
   PluginObject *obj = static_cast<PluginObject *>(user_data);
   if (event->type != Expose) return;
   DrawPlugin(obj);
@@ -252,6 +254,7 @@ void LinuxKeyHandler(Widget w,
                      XtPointer user_data,
                      XEvent *xevent,
                      Boolean *cont) {
+  HANDLE_CRASHES;
   PluginObject *obj = static_cast<PluginObject *>(user_data);
   XKeyEvent *key_event = &xevent->xkey;
   Event::Type type;
@@ -291,6 +294,7 @@ void LinuxMouseButtonHandler(Widget w,
                              XtPointer user_data,
                              XEvent *xevent,
                              Boolean *cont) {
+  HANDLE_CRASHES;
   PluginObject *obj = static_cast<PluginObject *>(user_data);
   XButtonEvent *button_event = &xevent->xbutton;
   Event::Type type;
@@ -349,6 +353,7 @@ void LinuxMouseMoveHandler(Widget w,
                            XtPointer user_data,
                            XEvent *xevent,
                            Boolean *cont) {
+  HANDLE_CRASHES;
   PluginObject *obj = static_cast<PluginObject *>(user_data);
   if (xevent->type != MotionNotify)
     return;
@@ -366,6 +371,7 @@ void LinuxEnterLeaveHandler(Widget w,
                             XtPointer user_data,
                             XEvent *xevent,
                             Boolean *cont) {
+  HANDLE_CRASHES;
   PluginObject *obj = static_cast<PluginObject *>(user_data);
   switch (xevent->type) {
     case EnterNotify:
@@ -553,6 +559,7 @@ static gboolean GtkHandleScroll(GtkWidget *widget,
 static gboolean GtkEventCallback(GtkWidget *widget,
                                  GdkEvent *event,
                                  gpointer user_data) {
+  HANDLE_CRASHES;
   PluginObject *obj = static_cast<PluginObject *>(user_data);
   DLOG_ASSERT(widget == obj->gtk_event_source_);
   switch (event->type) {
@@ -587,6 +594,7 @@ static gboolean GtkEventCallback(GtkWidget *widget,
 static gboolean GtkConfigureEventCallback(GtkWidget *widget,
                                           GdkEventConfigure *configure_event,
                                           gpointer user_data) {
+  HANDLE_CRASHES;
   PluginObject *obj = static_cast<PluginObject *>(user_data);
   return obj->OnGtkConfigure(widget, configure_event);
 }
@@ -594,11 +602,13 @@ static gboolean GtkConfigureEventCallback(GtkWidget *widget,
 static gboolean GtkDeleteEventCallback(GtkWidget *widget,
                                         GdkEvent *event,
                                         gpointer user_data) {
+  HANDLE_CRASHES;
   PluginObject *obj = static_cast<PluginObject *>(user_data);
   return obj->OnGtkDelete(widget, event);
 }
 
 static gboolean GtkTimeoutCallback(gpointer user_data) {
+  HANDLE_CRASHES;
   PluginObject *obj = static_cast<PluginObject *>(user_data);
   obj->draw_ = true;
   obj->client()->Tick();
