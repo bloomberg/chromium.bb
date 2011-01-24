@@ -18,6 +18,14 @@ using ppapi_proxy::DebugPrintf;
 
 namespace {
 
+const int kInvalidDesc = -1;
+
+// In order to close the upcall socket descriptor when we shut down, we
+// need to remember it.
+// TODO(sehr,polina): This ugly state should be attached to the correct
+// data structure for the plugin module.
+int upcall_socket_fd = kInvalidDesc;
+
 // The plugin will make synchronous calls back to the browser on the main
 // thread.  The service exported from the browser is specified in
 // service_description.
@@ -50,7 +58,7 @@ void StopMainSrpcChannel() {
 // The service exported on this channel will be gotten by service discovery.
 bool StartUpcallSrpcChannel(NaClSrpcImcDescType upcall_channel_desc) {
   // Create the upcall srpc client.
-  if (upcall_channel_desc == -1) {
+  if (upcall_channel_desc == kInvalidDesc) {
     return false;
   }
   NaClSrpcChannel* upcall_channel = reinterpret_cast<NaClSrpcChannel*>(
@@ -63,6 +71,7 @@ bool StartUpcallSrpcChannel(NaClSrpcImcDescType upcall_channel_desc) {
     return false;
   }
   ppapi_proxy::SetUpcallSrpcChannel(upcall_channel);
+  upcall_socket_fd = upcall_channel_desc;
   return true;
 }
 
@@ -70,6 +79,8 @@ void StopUpcallSrpcChannel() {
   NaClSrpcChannel* upcall_channel = ppapi_proxy::GetUpcallSrpcChannel();
   NaClSrpcDtor(upcall_channel);
   ppapi_proxy::SetUpcallSrpcChannel(NULL);
+  close(upcall_socket_fd);
+  upcall_socket_fd = kInvalidDesc;
 }
 
 }  // namespace
