@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,40 +6,28 @@
 #define VIEWS_EXAMPLES_SLIDER_EXAMPLE_H_
 #pragma once
 
+#include <string>
+
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "views/controls/slider/slider.h"
 #include "views/examples/example_base.h"
-#include "views/fill_layout.h"
 
 namespace examples {
 
 // SliderExample demonstrates how to use the Slider class.
-class SliderExample : public ExampleBase, views::SliderListener {
+class SliderExample : public ExampleBase, public views::SliderListener {
  public:
-  explicit SliderExample(ExamplesMain* main) : ExampleBase(main) {
-  }
+  explicit SliderExample(ExamplesMain* main);
+  virtual ~SliderExample();
 
-  virtual ~SliderExample() {}
-
-  virtual std::wstring GetExampleTitle() {
-    return L"Slider";
-  }
-
-  virtual void CreateExampleView(views::View* container) {
-    const double min = 0.0;
-    const double max = 100.0;
-    const double step = 1.0;
-    const views::Slider::StyleFlags style =
-        views::Slider::STYLE_DRAW_VALUE;
-    slider_ = new views::Slider(min, max, step, style, this);
-
-    container->SetLayoutManager(new views::FillLayout);
-    container->AddChildView(slider_);
-  }
+  // Overridden from ExampleBase:
+  virtual std::wstring GetExampleTitle() OVERRIDE;
+  virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:
-  virtual void SliderValueChanged(views::Slider* sender) {
-    PrintStatus(L"Value: %.1f", sender->value());
-  }
+  // Overridden from views::SliderListener:
+  virtual void SliderValueChanged(views::Slider* sender) OVERRIDE;
 
   views::Slider* slider_;
 
@@ -49,4 +37,3 @@ class SliderExample : public ExampleBase, views::SliderListener {
 }  // namespace examples
 
 #endif  // VIEWS_EXAMPLES_SLIDER_EXAMPLE_H_
-

@@ -520,6 +520,7 @@
       ],
       'sources': [
         'examples/button_example.h',
+        'examples/combobox_example.cc',
         'examples/combobox_example.h',
         'examples/example_base.cc',
         'examples/example_base.h',
@@ -531,6 +532,7 @@
         'examples/scroll_view_example.h',
         'examples/single_split_view_example.cc',
         'examples/single_split_view_example.h',
+        'examples/slider_example.cc',
         'examples/slider_example.h',
         'examples/tabbed_pane_example.cc',
         'examples/tabbed_pane_example.h',
