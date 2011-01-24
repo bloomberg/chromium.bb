@@ -27,10 +27,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
+import os.path
 import sys
 
 TOP_DIR = 'native_client'
+MAIN_DEPS = os.path.join(TOP_DIR, 'DEPS')
 
 def NaclTopDir():
   cwd = os.getcwd()
@@ -41,7 +42,9 @@ def NaclTopDir():
 
 
 sys.path.append(os.path.join(NaclTopDir(), 'tools'))
+sys.path.append(os.path.join(NaclTopDir(), 'build'))
 import code_hygiene
+import validate_chrome_revision
 
 
 def CheckEolStyle(input_api, output_api, affected_files):
@@ -69,6 +72,15 @@ def CheckChangeOnUpload(input_api, output_api):
       report.append(output_api.PresubmitError(e, items=errors[e]))
     for w in warnings:
       report.append(output_api.PresubmitPromptWarning(w, items=warnings[w]))
+    if filename.endswith(MAIN_DEPS):
+      try:
+        e = validate_chrome_revision.ValidateChromeRevision(filename)
+        if e is not None:
+          report.append(output_api.PresubmitError(filename, items=[e]))
+      except Exception, e:
+        msg = "Could not validate Chrome revision: %s" % repr(e)
+        report.append(output_api.PresubmitError(filename, items=[msg]))
+
   report.extend(CheckEolStyle(input_api, output_api, affected_files))
   return report
 
