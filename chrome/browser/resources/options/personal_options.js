@@ -40,6 +40,9 @@ cr.define('options', function() {
         else
           chrome.send('showSyncLoginDialog');
       };
+      $('customize-sync').onclick = function(event) {
+        chrome.send('showCustomizeSyncDialog');
+      };
       $('privacy-dashboard-link').onclick = function(event) {
         chrome.send('openPrivacyDashboardTabAndActivate');
       };
@@ -57,20 +60,6 @@ cr.define('options', function() {
       $('themes-reset').onclick = function(event) {
         chrome.send('themesReset');
       };
-
-      // Initialize sync select control.
-      $('sync-select').onchange = function(event) {
-        self.updateSyncSelection_();
-      }
-
-      var syncCheckboxes = $('sync-table').getElementsByTagName('input');
-      for (var i = 0; i < syncCheckboxes.length; i++) {
-        if (syncCheckboxes[i].type == "checkbox") {
-          syncCheckboxes[i].onclick = function(event) {
-            chrome.send('updatePreferredDataTypes');
-          };
-        }
-      }
 
       if (!cr.isChromeOS) {
         $('import-data').onclick = function(event) {
@@ -90,35 +79,6 @@ cr.define('options', function() {
       // Disable the screen lock checkbox for the guest mode.
       if (cr.commandLine.options['--bwsi'])
         $('enable-screen-lock').disabled = true;
-    },
-
-    /**
-     * Updates the sync datatype checkboxes based on the selected sync option.
-     * @private
-     */
-    updateSyncSelection_: function() {
-      var idx = $('sync-select').selectedIndex;
-      var syncCheckboxes = $('sync-table').getElementsByTagName('input');
-      if (idx == 0) {
-        // 'Choose what to sync.'
-        for (var i = 0; i < syncCheckboxes.length; i++) {
-          syncCheckboxes[i].disabled = false;
-        }
-      } else if (idx == 1) {
-        // 'Everything' is synced.
-        for (var i = 0; i < syncCheckboxes.length; i++) {
-          if (!syncCheckboxes[i].checked) {
-            syncCheckboxes[i].checked = true;
-
-            // Merely setting checked = true is not enough to trigger the pref
-            // being set; thus, we dispatch a change event to notify
-            // PrefCheckbox |checked| has changed.
-            cr.dispatchSimpleEvent(syncCheckboxes[i], 'change');
-          }
-
-          syncCheckboxes[i].disabled = true;
-        }
-      }
     },
 
     showStopSyncingOverlay_: function(event) {
@@ -147,6 +107,7 @@ cr.define('options', function() {
 
     setSyncSetupCompleted_: function(completed) {
       this.syncSetupCompleted = completed;
+      this.setElementVisible_($('customize-sync'), completed);
     },
 
     setAccountPicture_: function(image) {

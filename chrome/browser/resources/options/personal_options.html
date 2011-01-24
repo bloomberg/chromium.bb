@@ -26,77 +26,11 @@
   <section id="sync-section">
     <h3 i18n-content="syncSection"></h3>
     <div>
-      <select id="sync-select" pref="sync.keep_everything_synced"
-          i18n-options="syncSelectList" dataType="boolean"></select>
-      <table id="sync-table">
-        <tr>
-          <td class="option-name">
-            <label class="checkbox">
-              <input id="settings-check" pref="sync.preferences"
-                  type="checkbox">
-              <span i18n-content="syncsettings"></span>
-            </label>
-          </td>
-          <td class="option-name">
-            <label class="checkbox">
-              <input id="bookmarks-check" pref="sync.bookmarks" type="checkbox">
-              <span i18n-content="syncbookmarks"></span>
-            </label>
-          </td>
-          <td class="option-name">
-            <label class="checkbox">
-              <input id="extensions-check" pref="sync.extensions"
-                  type="checkbox">
-              <span i18n-content="syncextensions"></span>
-            </label>
-          </td>
-        </tr>
-        <tr>
-          <td class="option-name">
-            <label class="checkbox">
-              <input id="autofill-check" pref="sync.autofill" type="checkbox">
-              <span i18n-content="syncautofill"></span>
-            </label>
-          </td>
-          <td class="option-name">
-            <label class="checkbox">
-              <input id="themes-check" pref="sync.themes" type="checkbox">
-              <span i18n-content="syncthemes"></span>
-            </label>
-          </td>
-          <td class="option-name">
-            <label class="checkbox">
-              <input id="apps-check" pref="sync.apps" type="checkbox">
-              <span i18n-content="syncapps"></span>
-            </label>
-          </td>
-        </tr>
-        <tr>
-          <td class="option-name">
-            <label class="checkbox">
-              <input id="typedurls-check" pref="sync.typed_urls"
-                  type="checkbox">
-              <span i18n-content="synctypedurls"></span>
-            </label>
-          </td>
-          <td class="option-name">
-            <label class="checkbox">
-              <input id="passwords-check" pref="sync.passwords" type="checkbox">
-              <span i18n-content="syncpasswords"></span>
-            </label>
-          </td>
-          <td class="option-name">
-            <label class="checkbox">
-              <input id="sessions-check" pref="sync.sessions" type="checkbox">
-              <span i18n-content="syncsessions"></span>
-            </label>
-          </td>
-        </tr>
-      </table>
       <div id="sync-status" class="section-text"></div>
       <button id="sync-action-link" class="link-button"></button>
-      <div>
+      <div id="sync-buttons">
         <button id="start-stop-sync"></button>
+        <button id="customize-sync" i18n-content="customizeSync"></button>
       </div>
       <a href="https://www.google.com/dashboard" id="privacy-dashboard-link"
           i18n-content="privacyDashboardLink" target="_blank"></a>

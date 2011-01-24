@@ -58,6 +58,8 @@ void PersonalOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("syncSection",
       dom_options_util::StripColon(
           l10n_util::GetStringUTF16(IDS_SYNC_OPTIONS_GROUP_NAME)));
+  localized_strings->SetString("customizeSync",
+      l10n_util::GetStringUTF16(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL));
   localized_strings->SetString("privacyDashboardLink",
       l10n_util::GetStringUTF16(IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL));
 
@@ -156,6 +158,9 @@ void PersonalOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(
       "showSyncLoginDialog",
       NewCallback(this, &PersonalOptionsHandler::ShowSyncLoginDialog));
+  dom_ui_->RegisterMessageCallback(
+      "showCustomizeSyncDialog",
+      NewCallback(this, &PersonalOptionsHandler::ShowCustomizeSyncDialog));
   dom_ui_->RegisterMessageCallback(
       "themesReset",
       NewCallback(this, &PersonalOptionsHandler::ThemesReset));
@@ -322,6 +327,12 @@ void PersonalOptionsHandler::ShowSyncLoginDialog(const ListValue* args) {
   service->ShowLoginDialog(NULL);
   ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
 #endif
+}
+
+void PersonalOptionsHandler::ShowCustomizeSyncDialog(const ListValue* args) {
+  ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
+  DCHECK(service);
+  service->ShowConfigure(NULL);
 }
 
 void PersonalOptionsHandler::ThemesReset(const ListValue* args) {
