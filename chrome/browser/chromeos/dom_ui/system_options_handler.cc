@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,11 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/dom_ui/system_settings_provider.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/pref_names.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -65,4 +68,27 @@ void SystemOptionsHandler::GetLocalizedValues(
   localized_strings->Set("timezoneList",
       reinterpret_cast<chromeos::SystemSettingsProvider*>(
           settings_provider_.get())->GetTimezoneList());
+}
+
+void SystemOptionsHandler::Initialize() {
+  DCHECK(dom_ui_);
+  PrefService* pref_service = g_browser_process->local_state();
+  bool acc_enabled = pref_service->GetBoolean(prefs::kAccessibilityEnabled);
+  FundamentalValue checked(acc_enabled);
+  dom_ui_->CallJavascriptFunction(
+      L"options.SystemOptions.SetAccessibilityCheckboxState", checked);
+}
+
+void SystemOptionsHandler::RegisterMessages() {
+  DCHECK(dom_ui_);
+  dom_ui_->RegisterMessageCallback("accessibilityChange",
+      NewCallback(this, &SystemOptionsHandler::AccessibilityChangeCallback));
+}
+
+void SystemOptionsHandler::AccessibilityChangeCallback(const ListValue* args) {
+  std::string checked_str;
+  args->GetString(0, &checked_str);
+  bool accessibility_enabled = (checked_str == "true");
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetBoolean(prefs::kAccessibilityEnabled, accessibility_enabled);
 }
