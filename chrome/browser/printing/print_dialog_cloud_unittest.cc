@@ -297,7 +297,7 @@ class CloudPrintHtmlDialogDelegateTest : public testing::Test {
     EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(_));
     EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(NULL));
     delegate_.reset(new CloudPrintHtmlDialogDelegate(
-        mock_flow_handler_.get(), 100, 100, std::string()));
+        mock_flow_handler_.get(), 100, 100, std::string(), true));
   }
 
   virtual void TearDown() {

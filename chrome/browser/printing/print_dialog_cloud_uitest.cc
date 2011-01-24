@@ -198,7 +198,10 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
         test_data_directory_.AppendASCII("printing/cloud_print_uitest.pdf");
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&PrintDialogCloud::CreateDialogImpl, path_to_pdf));
+        NewRunnableFunction(&PrintDialogCloud::CreateDialogImpl,
+                            path_to_pdf,
+                            string16(),
+                            true));
   }
 
   bool handler_added_;

@@ -6,6 +6,7 @@
 #include "chrome/browser/printing/print_dialog_cloud_internal.h"
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
@@ -17,9 +18,17 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/ui/gtk/html_dialog_gtk.h"
+#endif  // defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/views/browser_dialogs.h"
+#endif  // defined(TOOLKIT_VIEWS)
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
@@ -393,8 +402,10 @@ CloudPrintHtmlDialogDelegate::CloudPrintHtmlDialogDelegate(
     const FilePath& path_to_pdf,
     int width, int height,
     const std::string& json_arguments,
-    const string16& print_job_title)
+    const string16& print_job_title,
+    bool modal)
     : flow_handler_(new CloudPrintFlowHandler(path_to_pdf, print_job_title)),
+      modal_(modal),
       owns_flow_handler_(true) {
   Init(width, height, json_arguments);
 }
@@ -402,8 +413,10 @@ CloudPrintHtmlDialogDelegate::CloudPrintHtmlDialogDelegate(
 CloudPrintHtmlDialogDelegate::CloudPrintHtmlDialogDelegate(
     CloudPrintFlowHandler* flow_handler,
     int width, int height,
-    const std::string& json_arguments)
+    const std::string& json_arguments,
+    bool modal)
     : flow_handler_(flow_handler),
+      modal_(modal),
       owns_flow_handler_(true) {
   Init(width, height, json_arguments);
 }
@@ -419,6 +432,10 @@ void CloudPrintHtmlDialogDelegate::Init(
   params_.json_input = json_arguments;
 
   flow_handler_->SetDialogDelegate(this);
+  // If we're not modal we can show the dialog with no browser.
+  // We need this to keep Chrome alive while our dialog is up.
+  if (!modal_)
+    BrowserList::StartKeepAlive();
 }
 
 CloudPrintHtmlDialogDelegate::~CloudPrintHtmlDialogDelegate() {
@@ -432,7 +449,7 @@ CloudPrintHtmlDialogDelegate::~CloudPrintHtmlDialogDelegate() {
 }
 
 bool CloudPrintHtmlDialogDelegate::IsDialogModal() const {
-  return true;
+    return modal_;
 }
 
 std::wstring CloudPrintHtmlDialogDelegate::GetDialogTitle() const {
@@ -465,6 +482,10 @@ void CloudPrintHtmlDialogDelegate::OnDialogClosed(
     const std::string& json_retval) {
   // Get the final dialog size and store it.
   flow_handler_->StoreDialogClientSize();
+  // If we're modal we can show the dialog with no browser.
+  // End the keep-alive so that Chrome can exit.
+  if (!modal_)
+    BrowserList::EndKeepAlive();
   delete this;
 }
 
@@ -486,34 +507,52 @@ bool CloudPrintHtmlDialogDelegate::ShouldShowDialogTitle() const {
 // TODO(scottbyer): The signature here will need to change as the
 // workflow through the printing code changes to allow for dynamically
 // changing page setup parameters while the dialog is active.
-void PrintDialogCloud::CreatePrintDialogForPdf(const FilePath& path_to_pdf) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+void PrintDialogCloud::CreatePrintDialogForPdf(const FilePath& path_to_pdf,
+                                               const string16& print_job_title,
+                                               bool modal) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&PrintDialogCloud::CreateDialogImpl, path_to_pdf));
+      NewRunnableFunction(&PrintDialogCloud::CreateDialogImpl,
+                          path_to_pdf,
+                          print_job_title,
+                          modal));
 }
 
 // static, called from the UI thread.
-void PrintDialogCloud::CreateDialogImpl(const FilePath& path_to_pdf) {
+void PrintDialogCloud::CreateDialogImpl(const FilePath& path_to_pdf,
+                                        const string16& print_job_title,
+                                        bool modal) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  new PrintDialogCloud(path_to_pdf);
+  new PrintDialogCloud(path_to_pdf, print_job_title, modal);
 }
 
 // Initialize the print dialog.  Called on the UI thread.
-PrintDialogCloud::PrintDialogCloud(const FilePath& path_to_pdf)
-    : browser_(BrowserList::GetLastActive()) {
+PrintDialogCloud::PrintDialogCloud(const FilePath& path_to_pdf,
+                                   const string16& print_job_title,
+                                   bool modal)
+    : browser_(BrowserList::GetLastActive()),
+      print_job_title_(print_job_title),
+      modal_(modal) {
 
   // TODO(scottbyer): Verify GAIA login valid, execute GAIA login if not (should
   // be distilled out of bookmark sync.)
-  string16 print_job_title;
-  if (browser_ && browser_->GetSelectedTabContents())
-    print_job_title = browser_->GetSelectedTabContents()->GetTitle();
-
   const int kDefaultWidth = 497;
   const int kDefaultHeight = 332;
-
-  PrefService* pref_service = browser_->GetProfile()->GetPrefs();
+  Profile* profile = NULL;
+  PrefService* pref_service = NULL;
+  if (modal_) {
+    DCHECK(browser_);
+    if (print_job_title_.empty() && browser_->GetSelectedTabContents())
+      print_job_title_ = browser_->GetSelectedTabContents()->GetTitle();
+    profile = browser_->GetProfile();
+  } else {
+    profile = ProfileManager::GetDefaultProfile();
+  }
+  DCHECK(profile);
+  pref_service = profile->GetPrefs();
   DCHECK(pref_service);
   if (!pref_service->FindPreference(prefs::kCloudPrintDialogWidth)) {
     pref_service->RegisterIntegerPref(prefs::kCloudPrintDialogWidth,
@@ -526,10 +565,22 @@ PrintDialogCloud::PrintDialogCloud(const FilePath& path_to_pdf)
 
   int width = pref_service->GetInteger(prefs::kCloudPrintDialogWidth);
   int height = pref_service->GetInteger(prefs::kCloudPrintDialogHeight);
+
   HtmlDialogUIDelegate* dialog_delegate =
       new internal_cloud_print_helpers::CloudPrintHtmlDialogDelegate(
-          path_to_pdf, width, height, std::string(), print_job_title);
-  browser_->BrowserShowHtmlDialog(dialog_delegate, NULL);
+          path_to_pdf, width, height, std::string(), print_job_title_, modal_);
+  if (modal_) {
+    DCHECK(browser_);
+    browser_->BrowserShowHtmlDialog(dialog_delegate, NULL);
+  } else {
+#if defined(TOOLKIT_VIEWS)
+    browser::ShowHtmlDialogView(NULL, profile, dialog_delegate);
+#elif defined(TOOLKIT_GTK)
+    HtmlDialogGtk* html_dialog =
+        new HtmlDialogGtk(profile, dialog_delegate, NULL);
+    html_dialog->InitDialog();
+#endif  // defined(TOOLKIT_VIEWS)
+  }
 }
 
 PrintDialogCloud::~PrintDialogCloud() {

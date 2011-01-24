@@ -226,7 +226,7 @@ void RenderMessageFilter::DoOnTempFileForPrintingWritten(int sequence_number) {
   PrintDialogGtk::CreatePrintDialogForPdf(it->second);
 #else
   if (cloud_print_enabled_)
-    PrintDialogCloud::CreatePrintDialogForPdf(it->second);
+    PrintDialogCloud::CreatePrintDialogForPdf(it->second, string16(), true);
   else
     NOTIMPLEMENTED();
 #endif

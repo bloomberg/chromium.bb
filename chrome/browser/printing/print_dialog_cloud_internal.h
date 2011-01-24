@@ -138,7 +138,8 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
   CloudPrintHtmlDialogDelegate(const FilePath& path_to_pdf,
                                int width, int height,
                                const std::string& json_arguments,
-                               const string16& print_job_title);
+                               const string16& print_job_title,
+                               bool modal);
   virtual ~CloudPrintHtmlDialogDelegate();
 
   // HTMLDialogUIDelegate implementation:
@@ -158,10 +159,12 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
 
   CloudPrintHtmlDialogDelegate(CloudPrintFlowHandler* flow_handler,
                                int width, int height,
-                               const std::string& json_arguments);
+                               const std::string& json_arguments,
+                               bool modal);
   void Init(int width, int height, const std::string& json_arguments);
 
   CloudPrintFlowHandler* flow_handler_;
+  bool modal_;
   mutable bool owns_flow_handler_;
 
   // The parameters needed to display a modal HTML dialog.

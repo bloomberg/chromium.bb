@@ -1124,6 +1124,12 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
     silent_launch = true;
     profile->GetCloudPrintProxyService()->ShowTokenExpiredNotification();
   }
+  // If we are just displaying a print dialog we shouldn't open browser
+  // windows.
+  if (!command_line.GetSwitchValuePath(switches::kCloudPrintFile).empty()) {
+    silent_launch = true;
+  }
+
 
   if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {
     std::string allowed_ports =

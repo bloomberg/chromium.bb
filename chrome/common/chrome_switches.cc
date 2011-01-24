@@ -116,6 +116,14 @@ const char kChromeVersion[]                 = "chrome-version";
 // The unique id to be used for this cloud print proxy instance.
 const char kCloudPrintProxyId[]             = "cloud-print-proxy-id";
 
+// Tells chrome to display the cloud print dialog and upload the
+// specified file for printing.
+const char kCloudPrintFile[]                = "cloud-print-file";
+
+// Used with kCloudPrintFile to specify a title for the resulting print
+// job.
+const char kCloudPrintJobTitle[]            = "cloud-print-job-title";
+
 // The URL of the cloud print service to use, overrides any value
 // stored in preferences, and the default.  Only used if the cloud
 // print service has been enabled (see enable-cloud-print).

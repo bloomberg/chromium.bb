@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "ui/base/l10n/l10n_util.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -57,6 +56,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
+#include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -101,6 +101,7 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_throttler_manager.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/system_monitor/system_monitor.h"
 
@@ -1634,6 +1635,29 @@ int BrowserMain(const MainFunctionParams& parameters) {
           ServiceProcessControlManager::GetInstance()->GetProcessControl(
               profile);
        control->Launch(NULL, NULL);
+    }
+  }
+
+  if (parsed_command_line.HasSwitch(switches::kCloudPrintFile)) {
+    FilePath cloud_print_file;
+    cloud_print_file =
+        parsed_command_line.GetSwitchValuePath(switches::kCloudPrintFile);
+    if (!cloud_print_file.empty()) {
+      string16 print_job_title;
+    if (parsed_command_line.HasSwitch(switches::kCloudPrintJobTitle)) {
+#ifdef OS_WIN
+      CommandLine::StringType native_job_title;
+      native_job_title = CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+          switches::kCloudPrintJobTitle);
+      print_job_title = string16(native_job_title);
+#elif defined(OS_POSIX)
+      // TODO(abodenha@google.com) Implement this for OS_POSIX
+      // Command line string types are different
+#endif
+    }
+      PrintDialogCloud::CreatePrintDialogForPdf(cloud_print_file,
+                                                print_job_title,
+                                                false);
     }
   }
 
