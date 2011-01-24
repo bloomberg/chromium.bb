@@ -168,9 +168,9 @@ def AddClosedSourceActions(actions):
   actions.add('PDF_Unsupported_Movie')
   actions.add('PDF_Unsupported_Sound')
   actions.add('PDF_Unsupported_Screen')
-  actions.add('PDF_Unsupported_Portfolios')
-  actions.add('PDF_Unsupported_Attachments')
-  actions.add('PDF_Unsupported_Digital_Signatures')
+  actions.add('PDF_Unsupported_Portfolios_Packages')
+  actions.add('PDF_Unsupported_Attachment')
+  actions.add('PDF_Unsupported_Digital_Signature')
   actions.add('PDF_Unsupported_Shared_Review')
   actions.add('PDF_Unsupported_Shared_Form')
 
