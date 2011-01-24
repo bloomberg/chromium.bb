@@ -443,6 +443,9 @@ Chrome supports. -->
       <message name="IDS_INSTALL_CONFLICTING_CHANNEL_EXISTS" desc="Error during install if a version of Google Chrome on a different update channel exists when installing Google Chrome Frame.">
         A conflicting installation of Google Chrome was found on the system. Please uninstall it and try again.
       </message>
+      <message name="IDS_INSTALL_READY_MODE_REQUIRES_CHROME" desc="Chrome Frame in ready mode requires Chrome.">
+        Invalid arguments. Google Chrome Frame cannot be installed in ready mode without also installing Google Chrome.
+      </message>
       <!-- Options Dialog -->
       <!-- TODO(kmadhusu): Remove "IDS_OPTIONS_DISABLE_SERVICES" after platform-specific dialogs are removed.-->
       <message name="IDS_OPTIONS_DISABLE_SERVICES" desc="The text in the options panel that describes how we use web services to improve browsing experience.">
