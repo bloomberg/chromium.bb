@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/task.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_signin.h"
 #include "chrome/browser/history/history_types.h"
@@ -92,9 +93,11 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
   // Dev servers have more features than standard sync servers.
   // Chrome stable and beta builds will go to the standard sync servers.
 #if defined(GOOGLE_CHROME_BUILD)
+  // GetVersionStringModifier hits the registry. See http://crbug.com/70380.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   // For stable, this is "". For dev, this is "dev". For beta, this is "beta".
   // For daily, this is "canary build".
-  // For linux Chromium builds, this could be anything depending on the
+  // For Linux Chromium builds, this could be anything depending on the
   // distribution, so always direct those users to dev server urls.
   // If this is an official build, it will always be one of the above.
   std::string channel = platform_util::GetVersionStringModifier();
