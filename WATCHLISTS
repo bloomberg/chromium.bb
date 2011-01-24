@@ -173,6 +173,9 @@
     'pepper_api': {
       'filepath': 'ppapi/c/.*',
     },
+    'prerender': {
+      'filepath': 'chrome/browser/prerender/.*'
+    },
   },
 
   'WATCHLISTS': {
@@ -233,5 +236,6 @@
     'labs': ['thakis@chromium.org'],
     'file_system': ['kinuko@chromium.org'],
     'pepper_api': ['piman+watch@chromium.org'],
+    'prerender': ['cbentzel+watch@chromium.org'],
   },
 }
