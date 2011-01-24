@@ -23,6 +23,14 @@ bool CanShowPromo(Profile* profile);
 
 }  // namespace WebResourceService
 
+// A WebResourceService fetches data from a web resource server to be used to
+// dynamically change the appearance of the New Tab Page. For example, it has
+// been used to fetch "tips" to be displayed on the NTP, or to display
+// promotional messages to certain groups of Chrome users.
+//
+// TODO(mirandac): Arrange for a server to be set up specifically for promo
+// messages, which have until now been piggybacked onto the old tips server
+// structure. (see http://crbug.com/70634 for details.)
 class WebResourceService
     : public UtilityProcessHost::Client {
  public:
@@ -65,7 +73,7 @@ class WebResourceService
   //       {
   //         "answer_id": "1067976",
   //         "name": "promo_start",
-  //         "question": "",
+  //         "question": "1:24",
   //         "tooltip":
   //       "Click \u003ca href=http://www.google.com\u003ehere\u003c/a\u003e!",
   //         "inproduct": "10/8/09 12:00",
@@ -83,6 +91,18 @@ class WebResourceService
   //     ]
   //   }
   // }
+  //
+  // Because the promo signal data is piggybacked onto the tip server, the
+  // values don't exactly correspond with the field names:
+  //
+  // For "promo_start" or "promo_end", the date to start or stop showing the
+  // promotional line is given by the "inproduct" line.
+  // For "promo_start", the promotional line itself is given in the "tooltip"
+  // field. The "question" field gives the type of builds that should be shown
+  // this promo (see the BuildType enum in web_resource_service.cc) and the
+  // number of hours that each promo group should see it, separated by ":".
+  // For example, "7:24" would indicate that all builds should see the promo,
+  // and each group should see it for 24 hours.
   //
   // Public for unit testing.
   void UnpackPromoSignal(const DictionaryValue& parsed_json);

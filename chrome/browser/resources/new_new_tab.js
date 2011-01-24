@@ -807,7 +807,7 @@ function syncMessageChanged(newMessage) {
 }
 
 /**
- * Invoked when the link in the sync status section is clicked.
+ * Invoked when the link in the sync promo or sync status section is clicked.
  */
 function syncSectionLinkClicked(e) {
   chrome.send('SyncLinkClicked');
@@ -935,9 +935,11 @@ var notificationTimeout;
  * @param {function=} opt_f Function to call when the user clicks the action
  *                          link.
  * @param {number=} opt_delay The time in milliseconds before hiding the
- * i                          notification.
+ *                            notification.
+ * @param {boolean=} close If true, show a close link next to the notification.
  */
-function showNotification(message, actionText, opt_f, opt_delay) {
+function showNotification(message, actionText, opt_f, opt_delay, opt_close) {
+// TODO(arv): Create a notification component.
   var notificationElement = $('notification');
   var f = opt_f || function() {};
   var delay = opt_delay || 10000;
@@ -957,12 +959,26 @@ function showNotification(message, actionText, opt_f, opt_delay) {
     hideNotification();
   }
 
+  function closeNotification() {
+    chrome.send('closePromo');
+    hideNotification();
+  }
+
   // Remove classList entries from previous notifications.
   notification.classList.remove('first-run');
   notification.classList.remove('promo');
 
   var messageContainer = notificationElement.firstElementChild;
-  var actionLink = notificationElement.querySelector('.link-color');
+  var actionLink = notificationElement.querySelector('#action-link');
+
+  if (opt_close) {
+    var closeLink = notificationElement.querySelector('#close-link');
+    closeLink.textContent =
+        localStrings.getString('closefirstrunnotification');
+    closeLink.onclick = closeNotification;
+    closeLink.onkeydown = handleIfEnterKey(closeNotification);
+    closeLink.tabIndex = 1;
+  }
 
   if (typeof message == 'string') {
     messageContainer.textContent = message;
@@ -993,14 +1009,17 @@ function hideNotification() {
   var notificationElement = $('notification');
   notificationElement.classList.remove('show');
   document.body.classList.remove('notification-shown');
-  var actionLink = notificationElement.querySelector('.link-color');
+  var actionLink = notificationElement.querySelector('#actionlink');
+  var closeLink = notificationElement.querySelector('#closelink');
   // Prevent tabbing to the hidden link.
   actionLink.tabIndex = -1;
+  closeLink.tabIndex = -1;
   // Setting tabIndex to -1 only prevents future tabbing to it. If, however, the
   // user switches window or a tab and then moves back to this tab the element
   // may gain focus. We therefore make sure that we blur the element so that the
   // element focus is not restored when coming back to this window.
   actionLink.blur();
+  closeLink.blur();
 }
 
 function showFirstRunNotification() {
@@ -1013,9 +1032,10 @@ function showFirstRunNotification() {
 
 function showPromoNotification() {
   showNotification(parseHtmlSubset(localStrings.getString('serverpromo')),
-                   localStrings.getString('closefirstrunnotification'),
-                   function () { chrome.send('closePromo'); },
-                   60000);
+                   localStrings.getString('syncpromotext'),
+                   function () { chrome.send('SyncLinkClicked'); },
+                   60000,
+                   true);
   var notificationElement = $('notification');
   notification.classList.add('promo');
 }

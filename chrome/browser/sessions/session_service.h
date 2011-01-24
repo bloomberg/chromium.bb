@@ -444,7 +444,7 @@ class SessionService : public BaseSessionService,
   // current/previous session.
   bool move_on_new_browser_;
 
-  // Used for reporting frequency of session alteriing operations.
+  // Used for reporting frequency of session altering operations.
   base::TimeTicks last_updated_tab_closed_time_;
   base::TimeTicks last_updated_nav_list_pruned_time_;
   base::TimeTicks last_updated_nav_entry_commit_time_;

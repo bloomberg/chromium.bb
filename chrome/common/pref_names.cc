@@ -1022,16 +1022,27 @@ const char kNTPPrefVersion[] = "ntp.pref_version";
 const char kNTPCustomLogoStart[] = "ntp.alt_logo_start";
 const char kNTPCustomLogoEnd[] = "ntp.alt_logo_end";
 
-// Dates between which the NTP should show a promotional line downloaded
-// from the promo server.
-const char kNTPPromoStart[] = "ntp.promo_start";
-const char kNTPPromoEnd[] = "ntp.promo_end";
+// Whether promo should be shown to Dev builds, Beta and Dev, or all builds.
+const char kNTPPromoBuild[] = "ntp.promo_build";
+
+// True if user has explicitly closed the promo line.
+const char kNTPPromoClosed[] = "ntp.promo_closed";
+
+// Users are randomly divided into 16 groups in order to slowly roll out
+// special promos.
+const char kNTPPromoGroup[] = "ntp.promo_group";
+
+// Amount of time each promo group should be shown a promo that is being slowly
+// rolled out, in hours.
+const char kNTPPromoGroupTimeSlice[] = "ntp.promo_group_timeslice";
 
 // Promo line from server.
 const char kNTPPromoLine[] = "ntp.promo_line";
 
-// True if user has explicitly closed the promo line.
-const char kNTPPromoClosed[] = "ntp.promo_closed";
+// Dates between which the NTP should show a promotional line downloaded
+// from the promo server.
+const char kNTPPromoStart[] = "ntp.promo_start";
+const char kNTPPromoEnd[] = "ntp.promo_end";
 
 const char kDevToolsDisabled[] = "devtools.disabled";
 

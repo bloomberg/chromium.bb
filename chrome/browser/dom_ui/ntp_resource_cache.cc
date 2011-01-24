@@ -337,6 +337,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_APPS_PROMO_TEXT_1));
   localized_strings.SetString("appspromotext2",
       l10n_util::GetStringUTF16(IDS_APPS_PROMO_TEXT_2));
+  localized_strings.SetString("syncpromotext",
+      l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL));
 #if defined(OS_CHROMEOS)
   localized_strings.SetString("expandMenu",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_CLOSE_MENU_EXPAND));
