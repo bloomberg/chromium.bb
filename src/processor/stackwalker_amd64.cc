@@ -184,7 +184,7 @@ StackFrame* StackwalkerAMD64::GetCallerFrame(const CallStack *stack) {
 
   // If we have DWARF CFI information, use it.
   scoped_ptr<CFIFrameInfo> cfi_frame_info(
-      resolver_->FindCFIFrameInfo(last_frame));
+      resolver_ ? resolver_->FindCFIFrameInfo(last_frame) : NULL);
   if (cfi_frame_info.get())
     new_frame.reset(GetCallerByCFIFrameInfo(frames, cfi_frame_info.get()));
 

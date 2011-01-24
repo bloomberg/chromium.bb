@@ -120,7 +120,8 @@ bool Stackwalker::Walk(CallStack *stack) {
           if (resolver_->ShouldDeleteMemoryBufferAfterLoadModule())
             supplier_->FreeSymbolData(module);
         }
-        resolver_->FillSourceLineInfo(frame.get());
+        if (resolver_)
+          resolver_->FillSourceLineInfo(frame.get());
       }
     }
 

@@ -129,6 +129,26 @@ class StackwalkerX86Fixture {
   const vector<StackFrame *> *frames;
 };
 
+class SanityCheck: public StackwalkerX86Fixture, public Test { };
+
+TEST_F(SanityCheck, NoResolver) {
+  stack_section.start() = 0x80000000;
+  stack_section.D32(0).D32(0); // end-of-stack marker
+  RegionFromSection();
+  raw_context.eip = 0x40000200;
+  raw_context.ebp = 0x80000000;
+
+  StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
+                        NULL, NULL);
+  // This should succeed, even without a resolver or supplier.
+  ASSERT_TRUE(walker.Walk(&call_stack));
+  frames = call_stack.frames();
+  StackFrameX86 *frame = static_cast<StackFrameX86 *>(frames->at(0));
+  // Check that the values from the original raw context made it
+  // through to the context in the stack frame.
+  EXPECT_EQ(0, memcmp(&raw_context, &frame->context, sizeof(raw_context)));
+}
+
 class GetContextFrame: public StackwalkerX86Fixture, public Test { };
 
 TEST_F(GetContextFrame, Simple) {
@@ -145,7 +165,7 @@ TEST_F(GetContextFrame, Simple) {
   StackFrameX86 *frame = static_cast<StackFrameX86 *>(frames->at(0));
   // Check that the values from the original raw context made it
   // through to the context in the stack frame.
-  EXPECT_TRUE(memcmp(&raw_context, &frame->context, sizeof(raw_context)) == 0);
+  EXPECT_EQ(0, memcmp(&raw_context, &frame->context, sizeof(raw_context)));
 }
 
 class GetCallerFrame: public StackwalkerX86Fixture, public Test { };

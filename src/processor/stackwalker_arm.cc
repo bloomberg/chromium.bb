@@ -190,8 +190,8 @@ StackFrame* StackwalkerARM::GetCallerFrame(const CallStack *stack) {
   scoped_ptr<StackFrameARM> frame;
 
   // See if there is DWARF call frame information covering this address.
-  scoped_ptr<CFIFrameInfo> cfi_frame_info(resolver_
-                                          ->FindCFIFrameInfo(last_frame));
+  scoped_ptr<CFIFrameInfo> cfi_frame_info(
+      resolver_ ? resolver_->FindCFIFrameInfo(last_frame) : NULL);
   if (cfi_frame_info.get())
     frame.reset(GetCallerByCFIFrameInfo(frames, cfi_frame_info.get()));
 

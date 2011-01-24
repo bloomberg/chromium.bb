@@ -130,6 +130,28 @@ class StackwalkerAMD64Fixture {
 
 class GetContextFrame: public StackwalkerAMD64Fixture, public Test { };
 
+class SanityCheck: public StackwalkerAMD64Fixture, public Test { };
+
+TEST_F(SanityCheck, NoResolver) {
+  // There should be no references to the stack in this walk: we don't
+  // provide any call frame information, so trying to reconstruct the
+  // context frame's caller should fail. So there's no need for us to
+  // provide stack contents.
+  raw_context.rip = 0x40000000c0000200ULL;
+  raw_context.rbp = 0x8000000080000000ULL;
+
+  StackwalkerAMD64 walker(&system_info, &raw_context, &stack_region, &modules,
+                          NULL, NULL);
+  // This should succeed even without a resolver or supplier.
+  ASSERT_TRUE(walker.Walk(&call_stack));
+  frames = call_stack.frames();
+  ASSERT_GE(1U, frames->size());
+  StackFrameAMD64 *frame = static_cast<StackFrameAMD64 *>(frames->at(0));
+  // Check that the values from the original raw context made it
+  // through to the context in the stack frame.
+  EXPECT_EQ(0, memcmp(&raw_context, &frame->context, sizeof(raw_context)));
+}
+
 TEST_F(GetContextFrame, Simple) {
   // There should be no references to the stack in this walk: we don't
   // provide any call frame information, so trying to reconstruct the
@@ -139,14 +161,14 @@ TEST_F(GetContextFrame, Simple) {
   raw_context.rbp = 0x8000000080000000ULL;
 
   StackwalkerAMD64 walker(&system_info, &raw_context, &stack_region, &modules,
-                        &supplier, &resolver);
+                          &supplier, &resolver);
   ASSERT_TRUE(walker.Walk(&call_stack));
   frames = call_stack.frames();
   ASSERT_GE(1U, frames->size());
   StackFrameAMD64 *frame = static_cast<StackFrameAMD64 *>(frames->at(0));
   // Check that the values from the original raw context made it
   // through to the context in the stack frame.
-  EXPECT_TRUE(memcmp(&raw_context, &frame->context, sizeof(raw_context)) == 0);
+  EXPECT_EQ(0, memcmp(&raw_context, &frame->context, sizeof(raw_context)));
 }
 
 class GetCallerFrame: public StackwalkerAMD64Fixture, public Test { };
@@ -195,7 +217,7 @@ TEST_F(GetCallerFrame, ScanWithoutSymbols) {
   StackFrameAMD64 *frame0 = static_cast<StackFrameAMD64 *>(frames->at(0));
   EXPECT_EQ(StackFrame::FRAME_TRUST_CONTEXT, frame0->trust);
   ASSERT_EQ(StackFrameAMD64::CONTEXT_VALID_ALL, frame0->context_validity);
-  EXPECT_TRUE(memcmp(&raw_context, &frame0->context, sizeof(raw_context)) == 0);
+  EXPECT_EQ(0, memcmp(&raw_context, &frame0->context, sizeof(raw_context)));
 
   StackFrameAMD64 *frame1 = static_cast<StackFrameAMD64 *>(frames->at(1));
   EXPECT_EQ(StackFrame::FRAME_TRUST_SCAN, frame1->trust);

@@ -130,6 +130,24 @@ class StackwalkerARMFixture {
   const vector<StackFrame *> *frames;
 };
 
+class SanityCheck: public StackwalkerARMFixture, public Test { };
+
+TEST_F(SanityCheck, NoResolver) {
+  // Since we have no call frame information, and all unwinding
+  // requires call frame information, the stack walk will end after
+  // the first frame.
+  StackwalkerARM walker(&system_info, &raw_context, &stack_region, &modules,
+                        NULL, NULL);
+  // This should succeed even without a resolver or supplier.
+  ASSERT_TRUE(walker.Walk(&call_stack));
+  frames = call_stack.frames();
+  ASSERT_EQ(1U, frames->size());
+  StackFrameARM *frame = static_cast<StackFrameARM *>(frames->at(0));
+  // Check that the values from the original raw context made it
+  // through to the context in the stack frame.
+  EXPECT_EQ(0, memcmp(&raw_context, &frame->context, sizeof(raw_context)));
+}
+
 class GetContextFrame: public StackwalkerARMFixture, public Test { };
 
 TEST_F(GetContextFrame, Simple) {
@@ -144,7 +162,7 @@ TEST_F(GetContextFrame, Simple) {
   StackFrameARM *frame = static_cast<StackFrameARM *>(frames->at(0));
   // Check that the values from the original raw context made it
   // through to the context in the stack frame.
-  EXPECT_TRUE(memcmp(&raw_context, &frame->context, sizeof(raw_context)) == 0);
+  EXPECT_EQ(0, memcmp(&raw_context, &frame->context, sizeof(raw_context)));
 }
 
 class GetCallerFrame: public StackwalkerARMFixture, public Test { };
@@ -192,7 +210,7 @@ TEST_F(GetCallerFrame, ScanWithoutSymbols) {
   StackFrameARM *frame0 = static_cast<StackFrameARM *>(frames->at(0));
   EXPECT_EQ(StackFrame::FRAME_TRUST_CONTEXT, frame0->trust);
   ASSERT_EQ(StackFrameARM::CONTEXT_VALID_ALL, frame0->context_validity);
-  EXPECT_TRUE(memcmp(&raw_context, &frame0->context, sizeof(raw_context)) == 0);
+  EXPECT_EQ(0, memcmp(&raw_context, &frame0->context, sizeof(raw_context)));
 
   StackFrameARM *frame1 = static_cast<StackFrameARM *>(frames->at(1));
   EXPECT_EQ(StackFrame::FRAME_TRUST_SCAN, frame1->trust);
@@ -255,7 +273,7 @@ TEST_F(GetCallerFrame, ScanWithFunctionSymbols) {
   StackFrameARM *frame0 = static_cast<StackFrameARM *>(frames->at(0));
   EXPECT_EQ(StackFrame::FRAME_TRUST_CONTEXT, frame0->trust);
   ASSERT_EQ(StackFrameARM::CONTEXT_VALID_ALL, frame0->context_validity);
-  EXPECT_TRUE(memcmp(&raw_context, &frame0->context, sizeof(raw_context)) == 0);
+  EXPECT_EQ(0, memcmp(&raw_context, &frame0->context, sizeof(raw_context)));
   EXPECT_EQ("monotreme", frame0->function_name);
   EXPECT_EQ(0x40000100, frame0->function_base);
 

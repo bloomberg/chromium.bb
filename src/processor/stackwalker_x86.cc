@@ -531,13 +531,14 @@ StackFrame *StackwalkerX86::GetCallerFrame(const CallStack *stack) {
 
   // If the resolver has Windows stack walking information, use that.
   WindowsFrameInfo *windows_frame_info
-      = resolver_->FindWindowsFrameInfo(last_frame);
+      = resolver_ ? resolver_->FindWindowsFrameInfo(last_frame) : NULL;
   if (windows_frame_info)
     new_frame.reset(GetCallerByWindowsFrameInfo(frames, windows_frame_info));
 
   // If the resolver has DWARF CFI information, use that.
   if (!new_frame.get()) {
-    CFIFrameInfo *cfi_frame_info = resolver_->FindCFIFrameInfo(last_frame);
+    CFIFrameInfo *cfi_frame_info = 
+        resolver_ ? resolver_->FindCFIFrameInfo(last_frame) : NULL;
     if (cfi_frame_info)
       new_frame.reset(GetCallerByCFIFrameInfo(frames, cfi_frame_info));
   }
