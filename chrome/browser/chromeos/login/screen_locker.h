@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,6 +114,9 @@ class ScreenLocker : public LoginStatusConsumer,
   const UserManager::User& user() const {
     return user_;
   }
+
+  // Returns a view that has given view |id|, or null if it doesn't exist.
+  views::View* GetViewByID(int id);
 
   // Initialize ScreenLocker class. It will listen to
   // LOGIN_USER_CHANGED notification so that the screen locker accepts

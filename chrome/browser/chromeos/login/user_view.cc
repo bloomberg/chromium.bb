@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/rounded_view.h"
+#include "chrome/browser/chromeos/view_ids.h"
 #include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/gtk_util.h"
@@ -86,6 +87,10 @@ class SignoutView : public views::View {
     signout_link_->SetFont(font);
     signout_link_->SetColor(kTextColor);
     signout_link_->SetFocusable(true);
+    signout_link_->SetHighlightedColor(kTextColor);
+    signout_link_->SetDisabledColor(kTextColor);
+    signout_link_->SetNormalColor(kTextColor);
+    signout_link_->SetID(VIEW_ID_SCREEN_LOCKER_SIGNOUT_LINK);
 
     AddChildView(active_user_label_);
     AddChildView(signout_link_);

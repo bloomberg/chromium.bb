@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/screen_locker.h"
 
+#include <gdk/gdkkeysyms.h>
 #include <gdk/gdkx.h>
 #include <string>
 #include <vector>
@@ -36,6 +37,7 @@
 #include "chrome/browser/chromeos/login/shutdown_button.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -209,12 +211,7 @@ class LockWindow : public views::WidgetGtk {
 
   // GTK propagates key events from parents to children.
   // Make sure LockWindow will never handle key events.
-  virtual gboolean OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
-    // Don't handle key event in the lock window.
-    return false;
-  }
-
-  virtual gboolean OnKeyRelease(GtkWidget* widget, GdkEventKey* event) {
+  virtual gboolean OnKeyEvent(GtkWidget* widget, GdkEventKey* event) {
     // Don't handle key event in the lock window.
     return false;
   }
@@ -297,11 +294,17 @@ class GrabWidget : public views::WidgetGtk {
         ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
         grab_failure_count_(0),
         kbd_grab_status_(GDK_GRAB_INVALID_TIME),
-        mouse_grab_status_(GDK_GRAB_INVALID_TIME) {
+        mouse_grab_status_(GDK_GRAB_INVALID_TIME),
+        signout_link_(NULL),
+        shutdown_(NULL) {
   }
 
   virtual void Show() {
     views::WidgetGtk::Show();
+    signout_link_ =
+        screen_locker_->GetViewByID(VIEW_ID_SCREEN_LOCKER_SIGNOUT_LINK);
+    shutdown_ = screen_locker_->GetViewByID(VIEW_ID_SCREEN_LOCKER_SHUTDOWN);
+    // These can be null in guest mode.
   }
 
   void ClearGtkGrab() {
@@ -317,6 +320,30 @@ class GrabWidget : public views::WidgetGtk {
     // until it's empty.
     while ((current_grab_window = gtk_grab_get_current()) != NULL)
       gtk_grab_remove(current_grab_window);
+  }
+
+  virtual gboolean OnKeyEvent(GtkWidget* widget, GdkEventKey* event) {
+    views::KeyEvent key_event(event);
+    // This is a hack to workaround the issue crosbug.com/10655 due to
+    // the limitation that a focus manager cannot handle views in
+    // TYPE_CHILD WidgetGtk correctly.
+    if (signout_link_ &&
+        event->type == GDK_KEY_PRESS &&
+        (event->keyval == GDK_Tab ||
+         event->keyval == GDK_ISO_Left_Tab ||
+         event->keyval == GDK_KP_Tab)) {
+      DCHECK(shutdown_);
+      bool reverse = event->state & GDK_SHIFT_MASK;
+      if (reverse && signout_link_->HasFocus()) {
+        shutdown_->RequestFocus();
+        return true;
+      }
+      if (!reverse && shutdown_->HasFocus()) {
+        signout_link_->RequestFocus();
+        return true;
+      }
+    }
+    return views::WidgetGtk::OnKeyEvent(widget, event);
   }
 
   virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
@@ -353,6 +380,9 @@ class GrabWidget : public views::WidgetGtk {
   // Status of keyboard and mouse grab.
   GdkGrabStatus kbd_grab_status_;
   GdkGrabStatus mouse_grab_status_;
+
+  views::View* signout_link_;
+  views::View* shutdown_;
 
   DISALLOW_COPY_AND_ASSIGN(GrabWidget);
 };
@@ -922,6 +952,10 @@ void ScreenLocker::OnGrabInputs() {
   input_grabbed_ = true;
   if (drawn_)
     ScreenLockReady();
+}
+
+views::View* ScreenLocker::GetViewByID(int id) {
+  return lock_widget_->GetRootView()->GetViewByID(id);
 }
 
 // static
