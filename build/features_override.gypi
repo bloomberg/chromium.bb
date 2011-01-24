@@ -11,6 +11,7 @@
     # features.gypi. Therefore, if an enable is listed in features.gypi
     # but not listed below, it will revert to its hardcoded webkit value.
     'feature_defines': [
+      # TODO(kbr): remove ENABLE_3D_CANVAS after renaming to ENABLE_WEBGL lands.
       'ENABLE_3D_CANVAS=1',
       'ENABLE_3D_PLUGIN=1',
       'ENABLE_BLOB=1',
@@ -54,6 +55,7 @@
       'ENABLE_VIDEO=1',
       'ENABLE_WEB_SOCKETS=1',
       'ENABLE_WEB_TIMING=1',
+      'ENABLE_WEBGL=1',
       'ENABLE_WORKERS=1',
       'ENABLE_XHR_RESPONSE_BLOB=1',
       'ENABLE_XPATH=1',
