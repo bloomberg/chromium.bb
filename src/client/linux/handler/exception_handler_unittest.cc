@@ -107,7 +107,7 @@ TEST(ExceptionHandlerTest, ChildCrash) {
     close(fds[0]);
     ExceptionHandler handler(TEMPDIR, NULL, DoneCallback, (void*) fds[1],
                              true);
-    *reinterpret_cast<int*>(NULL) = 0;
+    *reinterpret_cast<volatile int*>(NULL) = 0;
   }
   close(fds[1]);
 
@@ -714,7 +714,7 @@ TEST(ExceptionHandlerTest, ExternalDumper) {
     close(fds[0]);
     ExceptionHandler handler("/tmp1", NULL, NULL, (void*) fds[1], true);
     handler.set_crash_handler(CrashHandler);
-    *reinterpret_cast<int*>(NULL) = 0;
+    *reinterpret_cast<volatile int*>(NULL) = 0;
   }
   close(fds[1]);
   struct msghdr msg = {0};
