@@ -35,10 +35,10 @@ To build the extension docs, run the build.py script in the ./build directory.
 This will regenerate the docs and report which, if any, files have changed
 and need to be included in the changelist that changed the dependent files.
 
-Note that the build.py script depends on test_shell to run, so you must be
-able to build test_shell to build extension_docs. The build.py script will
-look in typical locations for the test_shell executable, but you may set
-the path to test_shell explicitly with --test-shell-path.
+Note that the build.py script depends on DumpRenderTree to run, so you must be
+able to build DumpRenderTree to build extension_docs. The build.py script will
+look in typical locations for the DumpRenderTree executable, but you may set
+the path to DumpRenderTree explicitly with --dump-render-tree-path.
 
 --------------------------------------------------------------------------------
 Design
