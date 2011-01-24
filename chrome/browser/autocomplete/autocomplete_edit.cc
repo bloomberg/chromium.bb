@@ -479,12 +479,6 @@ void AutocompleteEditModel::OnKillFocus() {
   has_focus_ = false;
   control_key_state_ = UP;
   paste_state_ = NONE;
-
-  // Like typing, killing focus "accepts" the temporary text as the user
-  // text, because it makes little sense to have temporary text when the
-  // popup is closed.
-  InternalSetUserText(UserTextFromDisplayText(view_->GetText()));
-  has_temporary_text_ = false;
 }
 
 bool AutocompleteEditModel::OnEscapeKeyPressed() {
@@ -678,6 +672,14 @@ bool AutocompleteEditModel::OnAfterPossibleChange(
 
 void AutocompleteEditModel::PopupBoundsChangedTo(const gfx::Rect& bounds) {
   controller_->OnPopupBoundsChanged(bounds);
+}
+
+void AutocompleteEditModel::OnPopupClosed() {
+  // Accepts the temporary text as the user text, because it makes little
+  // sense to have temporary text when the popup is closed.
+  InternalSetUserText(UserTextFromDisplayText(view_->GetText()));
+  has_temporary_text_ = false;
+  PopupBoundsChangedTo(gfx::Rect());
 }
 
 // Return true if the suggestion type warrants a TCP/IP preconnection.

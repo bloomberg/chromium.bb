@@ -317,8 +317,12 @@ void AutocompletePopupModel::Observe(NotificationType type,
   if ((hovered_line_ != kNoMatch) && (result->size() <= hovered_line_))
     SetHoveredLine(kNoMatch);
 
+  const bool was_open = view_->IsOpen();
   view_->UpdatePopupAppearance();
-  edit_model_->PopupBoundsChangedTo(view_->GetTargetBounds());
+  if (view_->IsOpen())
+    edit_model_->PopupBoundsChangedTo(view_->GetTargetBounds());
+  else if (was_open)
+    edit_model_->OnPopupClosed();
 }
 
 const SkBitmap* AutocompletePopupModel::GetSpecialIconForMatch(
