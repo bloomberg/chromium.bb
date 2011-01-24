@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/ref_counted_memory.h"
 #include "base/singleton.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -176,7 +177,15 @@ bool ChromeURLDataManager::URLToFilePath(const GURL& url,
 
 ChromeURLDataManager::ChromeURLDataManager() : next_request_id_(0) { }
 
-ChromeURLDataManager::~ChromeURLDataManager() { }
+ChromeURLDataManager::~ChromeURLDataManager() {
+  // This is used as a Singleton, so it is only called at exit cleanup time.
+  // This means it is called on the main (UI) thread.
+  //
+  // It will break if it is called at shutdown time on a different thread, as
+  // it will attempt to call the destructors for its |data_source_|s on the
+  // UI thread, but the UI thread's message loop will be not be running
+  // -- so the destructor calls will be dropped and we will leak the objects.
+}
 
 // static
 ChromeURLDataManager* ChromeURLDataManager::GetInstance() {
@@ -184,6 +193,15 @@ ChromeURLDataManager* ChromeURLDataManager::GetInstance() {
 }
 
 void ChromeURLDataManager::AddDataSource(scoped_refptr<DataSource> source) {
+  // Some |DataSource|-derived classes, notably |FileIconSource| and
+  // |DOMUIFavIconSource|, have members that will DCHECK if they are not
+  // destructed in the same thread as they are constructed (the UI thread).
+  //
+  // If |AddDataSource| is called more than once, it will destruct the object
+  // that it had before, as it is the only thing still holding a reference to
+  // that object.  |DataSource| uses the |DeleteOnUIThread| trait to insure
+  // that the destructor is called on the UI thread.
+  //
   // TODO(jackson): A new data source with same name should not clobber the
   // existing one.
   data_sources_[source->source_name()] = source;

@@ -12,6 +12,7 @@
 #include "base/singleton.h"
 #include "base/task.h"
 #include "base/ref_counted.h"
+#include "chrome/browser/browser_thread.h"
 
 class DictionaryValue;
 class FilePath;
@@ -42,12 +43,13 @@ class ChromeURLDataManager {
   // asynchronously. DataSources are collectively owned with refcounting smart
   // pointers and should never be deleted on the IO thread, since their calls
   // are handled almost always on the UI thread and there's a possibility of a
-  // data race.
+  // data race.  The |DeleteOnUIThread| trait is used to enforce this.
   //
   // An implementation of DataSource should handle calls to
   // StartDataRequest() by starting its (implementation-specific) asynchronous
-  // request for the data, then call SendResponse() to notify
-  class DataSource : public base::RefCountedThreadSafe<DataSource> {
+  // request for the data, then call SendResponse() to notify.
+  class DataSource : public base::RefCountedThreadSafe<
+      DataSource, BrowserThread::DeleteOnUIThread> {
    public:
     // See source_name_ and message_loop_ below for docs on these parameters.
     DataSource(const std::string& source_name,
@@ -87,6 +89,8 @@ class ChromeURLDataManager {
 
    protected:
     friend class base::RefCountedThreadSafe<DataSource>;
+    friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+    friend class DeleteTask<DataSource>;
 
     virtual ~DataSource();
 
