@@ -170,13 +170,3 @@ void NaClCpuCheck(struct NaClValidatorState* state,
            NaClInstStateLength(inst_state));
   }
 }
-
-void NaClCpuCheckSummary(NaClValidatorState* state,
-                         NaClInstIter* iter,
-                         NaClCpuCheckState* checked_features) {
-  /* The name of the flag is misleading; f_386 requires not just    */
-  /* 386 instructions but also the CPUID instruction is supported.  */
-  if (!state->cpu_features.f_386) {
-    NaClValidatorMessage(LOG_ERROR, state, "CPU does not support CPUID");
-  }
-}

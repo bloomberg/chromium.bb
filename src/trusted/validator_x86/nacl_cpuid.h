@@ -15,8 +15,15 @@
 
 typedef unsigned char bool;
 
+/* Features needed to show that the architecture is supported. */
+typedef struct nacl_arch_features {
+  bool f_cpuid_supported;  /* CPUID is defined for the hardward. */
+  bool f_cpu_supported;    /* CPU is one we support. */
+} nacl_arch_features;
+
+/* Features we can get about the x86 hardware. */
 typedef struct cpu_feature_struct {
-  bool f_386;  /* a CPU that doesn't have f_386 shouldn't be trusted. */
+  nacl_arch_features arch_features;
   bool f_x87;
   bool f_MMX;
   bool f_SSE;
@@ -49,11 +56,20 @@ typedef struct cpu_feature_struct {
   bool f_SVM;
 } CPUFeatures;
 
+/* Define the maximum length of a CPUID string.
+ *
+ * Note: If you change this length, fix the static initialization of wlid
+ * in nacl_cpuid.c to be initialized with an appropriate string.
+ */
 #define /* static const int */ kCPUIDStringLength 21
 
 /* Fills in cpuf with feature vector for this CPU. */
 extern void GetCPUFeatures(CPUFeatures *cpuf);
+
 /* This returns a string of length kCPUIDStringLength */
 extern char *GetCPUIDString();
+
+/* Returns true if CPUID is defined, and the CPU is supported. */
+extern bool NaClArchSupported();
 
 #endif /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_CPUID_H_ */

@@ -11,6 +11,7 @@
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
 # include "native_client/src/trusted/validator_x86/nccopycode.h"
+# include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 
 # if NACL_TARGET_SUBARCH == 32
 
@@ -19,7 +20,9 @@
 int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                      uint8_t *data, size_t size) {
   struct NCValidatorState *vstate;
-  int validator_result;
+  int validator_result = 0;
+
+  if (!NaClArchSupported()) return LOAD_VALIDATION_FAILED;
 
   if (nap->validator_stub_out_mode) {
     /* In stub out mode, we do two passes.  The second pass acts as a
@@ -52,7 +55,9 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
                                 uint8_t *data_old, uint8_t *data_new,
                                 size_t size) {
   struct NCValidatorState *vstate;
-  int validator_result;
+  int validator_result = 0;
+
+  if (!NaClArchSupported()) return LOAD_VALIDATION_FAILED;
 
   if (nap->validator_stub_out_mode) {
     NaClLog(1, "NaClValidateCodeReplacement:  "
@@ -84,6 +89,9 @@ int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                  uint8_t *data_old, uint8_t *data_new,
                  size_t size) {
   int result;
+
+  if (!NaClArchSupported()) return LOAD_UNLOADABLE;
+
   result = NCCopyCode(data_old, data_new, guest_addr, size, nap->bundle_size);
   if (0 == result) {
     return LOAD_UNLOADABLE;
@@ -99,6 +107,8 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                      uint8_t *data, size_t size) {
   struct NaClValidatorState *vstate;
   int is_ok;
+
+  if (!NaClArchSupported()) return LOAD_VALIDATION_FAILED;
 
   vstate = NaClValidatorStateCreate(guest_addr, size, nap->bundle_size,
                                     RegR15);
@@ -136,6 +146,8 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
   struct NaClValidatorState *vstate;
   int is_ok;
 
+  if (!NaClArchSupported()) return LOAD_VALIDATION_FAILED;
+
   if (nap->validator_stub_out_mode) {
     NaClLog(1, "NaClValidateCodeReplacement:  "
                "stub_out_mode not supported for code replacement\n");
@@ -170,6 +182,8 @@ int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                  size_t size) {
   int result;
   UNREFERENCED_PARAMETER(nap);
+
+  if (!NaClArchSupported()) return LOAD_UNLOADABLE;
 
   result = NaClCopyCodeIter(data_old, data_new, guest_addr, size);
   if (0 == result) {

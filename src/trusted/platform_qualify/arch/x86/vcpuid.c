@@ -533,8 +533,12 @@ int CPUIDImplIsValid() {
   CPUFeatures cpuf;
   GetCPUFeatures(&cpuf);
 
-  if (!cpuf.f_386) {
+  if (!cpuf.arch_features.f_cpuid_supported) {
     PrintFail("CPUID not implemented");
+    return 0;
+  }
+  if (!cpuf.arch_features.f_cpu_supported) {
+    PrintFail("CPU not supported");
     return 0;
   }
   rcode = DoTest(asm_HasCPUID, "CPUID");  /* This test is redundant. */

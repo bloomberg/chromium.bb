@@ -26,9 +26,9 @@
  * TODO(bradchen): consolidate to use one debug print mechanism.
  */
 
+/*  The list of features we can get from the CPUID. */
 typedef enum {
-  CPUFeature_386=0,
-  CPUFeature_x87,
+  CPUFeature_x87 = 0,
   CPUFeature_MMX,
   CPUFeature_SSE,
   CPUFeature_SSE2,
@@ -157,8 +157,6 @@ typedef struct cpufeature {
 } CPUFeature;
 
 static const CPUFeature CPUFeatureDescriptions[(int)CPUFeature_Last] = {
-  /* Note: CPUID dates from DX2 486 */
-  {CFReg_EDX_I, CPUID_EDX_VME, "80386 ISA"},
   {CFReg_EDX_I, CPUID_EDX_x87, "x87 FPU"},
   {CFReg_EDX_I, CPUID_EDX_MMX, "MMX"},
   {CFReg_EDX_I, CPUID_EDX_SSE, "SSE"},
@@ -206,6 +204,9 @@ static const char NSC_CPUID0[kVendorIDLength]     = "Geode by NSC";
 static int asm_HasCPUID() {
   volatile int before, after, result;
 #if NACL_BUILD_SUBARCH == 64
+  /* Note: If we are running in x86-64, then cpuid must be defined,
+   * since CPUID dates from DX2 486, and x86-64 was added after this.
+   */
   return 1;
 /* TODO(bradchen): split into separate Windows, etc., files */
 #elif (NACL_LINUX || NACL_OSX)
@@ -260,10 +261,22 @@ static void asm_CPUID(uint32_t op, volatile uint32_t reg[4]) {
 #endif
 }
 
-static char *CPUVersionID() {
-  static int ready = 0;
-  static uint32_t vidwords[4];
+/* Define the set of version id words globally, so that it is initialized
+ * at compile time. This allows CPUVersionID to be called from multiple threads
+ * without breaking the result, other than some fields not getting set if
+ * if a race condition occurs. In such cases, such races will at worst,
+ * not allow some CPU features. */
+static uint32_t vidwords[4] = {0, 0, 0, 0 };
 
+
+static char *CPUVersionID() {
+  /* Note: There is a slight race condition here, in that ready, by another
+   * thread may be set to 1 before the global vidwords is set. However, the
+   * worst that will happen is that the initialized value may leak. In such
+   * cases, the validator will fail by assuming that features that are actually
+   * available, aren't.
+   */
+  static int ready = 0;
   if (!ready) {
     uint32_t reg[4];
     asm_CPUID(0, reg);
@@ -276,10 +289,19 @@ static char *CPUVersionID() {
   return (char *)vidwords;
 }
 
+/* Define the set of CPUID feature register values for the architecture.
+ * Note: We have two sets (of 4 registers) so that AMD specific flags can be
+ * picked up. These words are defined globally, so that it is initialized at
+ * compile time. This allows CPUFeatureVector to be called from multiple threads
+ * without breaking the result, other than some fields not getting set if
+ * if a race condition occurs. In such cases, such races will at worst,
+ * not allow some CPU features.
+ */
+static uint32_t featurev[kMaxCPUFeatureReg] = {0, 0, 0, 0, 0, 0, 0, 0};
+
 /* returns feature vector as array of uint32_t [ecx, edx] */
 static uint32_t *CPUFeatureVector() {
   static int ready = 0;
-  static uint32_t featurev[kMaxCPUFeatureReg] = {0, 0, 0, 0, 0, 0, 0, 0};
 
   if (!ready) {
     asm_CPUID(1, featurev);
@@ -297,13 +319,23 @@ static uint32_t *CPUFeatureVector() {
   return featurev;
 }
 
+/* Define a string to hold and cache the CPUID. In such cases, such races
+ * will at worst cause the CPUID to not be recognized
+ *
+ * Note: We have defined this globally, sso that it is initialized at
+ * compile time. This allows GetCPUIDString to be called from multiple
+ * threads without breaking the result, other than x'x may be inserted
+ * into the CPUID string if a race condition occurs. In such cases,
+ * such races will at worst cause the CPUID to not be recognized.
+ */
+static char wlid[kCPUIDStringLength] = "xxxxxxxxxxxxxxxxxxxx\0";
+
 /* GetCPUIDString creates an ASCII string that identfies this CPU's     */
 /* vendor ID, family, model, and stepping, as per the CPUID instruction */
 /* WARNING: This routine is not threadsafe.                             */
 char *GetCPUIDString() {
   char *cpuversionid = CPUVersionID();
   uint32_t *fv = CPUFeatureVector();
-  static char wlid[kCPUIDStringLength] = "xxx";
 
   /* Subtract 1 in this assert to avoid counting two null characters. */
   assert(9 + kVendorIDLength - 1 == kCPUIDStringLength);
@@ -312,6 +344,7 @@ char *GetCPUIDString() {
   return wlid;
 }
 
+/* Returns true if the given feature is defined by the CPUID. */
 static bool CheckCPUFeature(CPUFeatureID fid) {
   const CPUFeature *f = &CPUFeatureDescriptions[fid];
   static uint32_t *fv = NULL;
@@ -328,29 +361,39 @@ static bool CheckCPUFeature(CPUFeatureID fid) {
   }
 }
 
-static bool Check386CPU() {
+/* Check that we have a supported 386 architecture. NOTE:
+ * As as side effect, the given cpu features is cleared before
+ * setting the appropriate fields.
+ */
+static void CheckNaClArchFeatures(nacl_arch_features* features) {
   const size_t kCPUID0Length = 12;
   char *cpuversionid;
-  int hascpuid = asm_HasCPUID();
-
-  if (!hascpuid) return 0;
+  memset(features, 0, sizeof(*features));
+  if (asm_HasCPUID()) features->f_cpuid_supported = 1;
   cpuversionid = CPUVersionID();
   if (strncmp(cpuversionid, Intel_CPUID0, kCPUID0Length) == 0) {
-    return CheckCPUFeature(CPUFeature_386);
+    features->f_cpu_supported = 1;
   } else if (strncmp(cpuversionid, AMD_CPUID0, kCPUID0Length) == 0) {
-    return CheckCPUFeature(CPUFeature_386);
-  } else {
-    return 0;
+    features->f_cpu_supported = 1;
   }
 }
 
-/* WARNING: This routine and subroutines it uses are not threadsafe.   */
-/* Caller is responsible for calling this exactly once.                */
+bool NaClArchSupported() {
+  nacl_arch_features features;
+  CheckNaClArchFeatures(&features);
+  return features.f_cpuid_supported && features.f_cpu_supported;
+}
+
+/* WARNING: This routine and subroutines it uses are not threadsafe.
+ * However, if races occur, they are short lived, and at worst, will
+ * result in defining fewer features than are actually supported by
+ * the hardware. Hence, if a race occurs, the validator may reject
+ * some features that should not be rejected.
+ */
 void GetCPUFeatures(CPUFeatures *cpuf) {
   memset(cpuf, 0, sizeof(*cpuf));
-  cpuf->f_386 = Check386CPU();
-  if (cpuf->f_386 == 0) return;
-
+  CheckNaClArchFeatures(&cpuf->arch_features);
+  if (!cpuf->arch_features.f_cpuid_supported) return;
   cpuf->f_x87 = CheckCPUFeature(CPUFeature_x87);
   cpuf->f_MMX = CheckCPUFeature(CPUFeature_MMX);
   cpuf->f_SSE = CheckCPUFeature(CPUFeature_SSE);

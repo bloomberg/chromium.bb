@@ -42,9 +42,4 @@ void NaClCpuCheck(struct NaClValidatorState* state,
                   struct NaClInstIter* iter,
                   struct NaClCpuCheckState* checked_features);
 
-/* Apply (non-instuction) summary checks for cpu features. */
-void NaClCpuCheckSummary(struct NaClValidatorState* state,
-                         struct NaClInstIter* iter,
-                         struct NaClCpuCheckState* checked_features);
-
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_CPU_CHECKS_H__ */

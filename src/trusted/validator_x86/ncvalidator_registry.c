@@ -60,7 +60,7 @@ void NaClValidatorRulesInit(NaClValidatorState* state) {
   NaClRegisterValidator(
       state,
       (NaClValidator) NaClCpuCheck,
-      (NaClValidatorPostValidate) NaClCpuCheckSummary,
+      (NaClValidatorPostValidate) NULL,
       (NaClValidatorPrintStats) NULL,
       (NaClValidatorMemoryCreate) NaClCpuCheckMemoryCreate,
       (NaClValidatorMemoryDestroy) NaClCpuCheckMemoryDestroy);

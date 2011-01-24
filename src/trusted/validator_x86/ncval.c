@@ -25,6 +25,7 @@
 #include <time.h>
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/utils/flags.h"
+#include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
 #include "native_client/src/trusted/validator_x86/ncdis_util.h"
 #include "native_client/src/trusted/validator_x86/ncfileutil.h"
@@ -141,6 +142,7 @@ static int AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
 
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
   vstate = NCValidateInit(vbase, vlimit, ncf->ncalign);
+  if (vstate == NULL) return 0;
   if (AnalyzeSegmentSections(ncf, vstate) < 0) {
     SegmentInfo("%s: text validate failed\n", fname);
   }

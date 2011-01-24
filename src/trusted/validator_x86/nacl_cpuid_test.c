@@ -20,7 +20,17 @@ int main(int argc, char *argv[]) {
   CPUFeatures fv;
 
   GetCPUFeatures(&fv);
-  if (fv.f_386) printf("This is a 386 compatible computer\n");
+  if (NaClArchSupported()) {
+    printf("This is a native client %d-bit %s compatible computer\n",
+           NACL_TARGET_SUBARCH, GetCPUIDString());
+  } else {
+    if (!fv.arch_features.f_cpuid_supported) {
+      printf("Computer doesn't support CPUID\n");
+    }
+    if (!fv.arch_features.f_cpu_supported) {
+      printf("Computer id %s is not supported\n", GetCPUIDString());
+    }
+  }
 
   printf("This processor has:\n");
   if (fv.f_x87)    printf("        x87\n");
@@ -38,7 +48,7 @@ int main(int argc, char *argv[]) {
   if (fv.f_CMOV)   printf("        CMOV\n");
   if (fv.f_MON)    printf("        MON\n");
   if (fv.f_FXSR)   printf("        FXSR\n");
-  if (fv.f_CLFLUSH) printf("       CLFLUSH\n");
+  if (fv.f_CLFLUSH) printf("        CLFLUSH\n");
   if (fv.f_TSC)    printf("        TSC\n");
   /* These instructions are illegal but included for completeness */
   if (fv.f_MSR)    printf("        MSR\n");

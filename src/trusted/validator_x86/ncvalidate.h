@@ -14,13 +14,14 @@
  *
  * This is the library interface to the NaCl validator.
  * Basic usage:
- *   rc = NCValidateInit(base, limit, 16)
- *   if rc != 0 fail
+ *   if (!NaClArchSuppported()) fail
+ *   vstate = NCValidateInit(base, limit, 16)
+ *   if vstate == 0 fail
  *   for each section:
- *     NCValidateSegment(maddr, vaddr, size);
+ *     NCValidateSegment(maddr, vaddr, size, vstate);
  *   rc = NCValidateFinish();
  *   if rc != 0 fail
- * Optional reporting routines
+ *   Optional reporting routines
  *   Stats_Print()
  *
  * See the README file in this directory for more info on the general
@@ -29,7 +30,7 @@
 struct NCValidatorState;
 
 /*
- * NCValidateInit: Initialize NaCl validator internal state
+ * NCValidateInit: Initialize NaCl validator internal state.
  * Parameters:
  *    vbase: base virtual address for code segment
  *    vlimit: size in bytes of code segment

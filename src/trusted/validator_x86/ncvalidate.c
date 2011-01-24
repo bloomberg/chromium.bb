@@ -133,11 +133,6 @@ static void Stats_InternalError(struct NCValidatorState *vstate) {
   Stats_SawFailure(vstate);
 }
 
-static void Stats_BadCPU(struct NCValidatorState *vstate) {
-  vstate->stats.badcpu += 1;
-  Stats_SawFailure(vstate);
-}
-
 static void Stats_BadAlignment(struct NCValidatorState *vstate) {
   vstate->stats.badalignment += 1;
   Stats_SawFailure(vstate);
@@ -202,7 +197,6 @@ static void Stats_Init(struct NCValidatorState *vstate) {
   vstate->stats.illegalinst = 0;
   vstate->stats.badalignment = 0;
   vstate->stats.internalerrors = 0;
-  vstate->stats.badcpu = 0;
   vstate->stats.badinstlength = 0;
   vstate->stats.badprefix = 0;
   vstate->stats.sawfailure = 0;
@@ -239,8 +233,6 @@ void Stats_Print(FILE *f, struct NCValidatorState *vstate) {
           vstate->stats.badinstlength);
   fprintf(f, "%d internal errors\n",
           vstate->stats.internalerrors);
-  fprintf(f, "%d bad cpu\n",
-          vstate->stats.badcpu);
 }
 
 /***********************************************************************/
@@ -323,6 +315,7 @@ struct NCValidatorState *NCValidateInit(const uint32_t vbase,
     Stats_Init(vstate);
     NCDecodeRegisterCallbacks(ValidateInst, Stats_NewSegment,
                               Stats_SegFault, Stats_InternalError);
+    GetCPUFeatures(&(vstate->cpufeatures));
     return vstate;
   } while (0);
   /* Failure. Clean up memory before returning. */
@@ -812,22 +805,6 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, size_t sz,
     Stats_SegFault(vstate);
     return;
   }
-  GetCPUFeatures(&(vstate->cpufeatures));
-  /* The name of the flag is misleading; f_386 requires not just    */
-  /* 386 instructions but also the CPUID instruction is supported.  */
-  if (!vstate->cpufeatures.f_386) {
-    ValidatePrintError(0, "CPU does not support CPUID", vstate);
-    Stats_BadCPU(vstate);
-    return;
-  }
-#if (0)
-  /* TODO(bradchen): enable this check */
-  if (!vstate->cpufeatures.f_whitelisted) {
-    ValidatePrintError(0, "CPU does not support CPUID", vstate);
-    Stats_BadCPU(vstate);
-    return;
-  }
-#endif
   NCDecodeSegment(mbase, vbase, sz, vstate);
 }
 
@@ -843,15 +820,6 @@ void NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
     Stats_SegFault(vstate);
     return;
   }
-  GetCPUFeatures(&(vstate->cpufeatures));
-  /* The name of the flag is misleading; f_386 requires not just    */
-  /* 386 instructions but also the CPUID instruction is supported.  */
-  if (!vstate->cpufeatures.f_386) {
-    ValidatePrintError(0, "CPU does not support CPUID", vstate);
-    Stats_BadCPU(vstate);
-    return;
-  }
-
   NCDecodeSegmentPair(mbase_old, mbase_new, vbase, sz,
                       vstate, ValidateInstReplacement);
 }

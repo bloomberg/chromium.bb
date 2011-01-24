@@ -19,6 +19,7 @@
  *   -- vaddr is the starting virtual address associated with a section.
  *   -- size is the number of bytes in a section.
  *
+ *   if (!NaClArchSupported()) fail;
  *   NaClValidatorState* state =
  *     NaClValidatorStateCreate(base, limit - base, 32, RegR15);
  *   if (state == NULL) fail;
