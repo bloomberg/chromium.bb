@@ -244,7 +244,6 @@ extern const char kNaClDebugPorts[];
 extern const char kNaClBrokerProcess[];
 extern const char kNaClLoaderProcess[];
 extern const char kNaClStartupDialog[];
-extern const char kNewChromeUISecurityModel[];
 extern const char kNoDefaultBrowserCheck[];
 extern const char kNoEvents[];
 extern const char kNoExperiments[];
