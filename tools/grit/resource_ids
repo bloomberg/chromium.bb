@@ -106,9 +106,6 @@
   "webkit/glue/webkit_strings.grd": {
     "messages": [16500],
   },
-  "webkit/glue/devtools_strings.grd": {
-    "messages": [17000],
-  },
 
   "chrome_frame/resources/chrome_frame_resources.grd": {
     "includes": [17500],
