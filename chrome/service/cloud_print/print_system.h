@@ -158,7 +158,8 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
   virtual PrintSystemResult Init() = 0;
 
   // Enumerates the list of installed local and network printers.
-  virtual void EnumeratePrinters(printing::PrinterList* printer_list) = 0;
+  virtual PrintSystemResult EnumeratePrinters(
+      printing::PrinterList* printer_list) = 0;
 
   // Gets the capabilities and defaults for a specific printer asynchronously.
   virtual void GetPrinterCapsAndDefaults(

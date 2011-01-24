@@ -84,7 +84,7 @@ class PrintBackendCUPS : public PrintBackend {
   virtual ~PrintBackendCUPS() {}
 
   // PrintBackend implementation.
-  virtual void EnumeratePrinters(PrinterList* printer_list);
+  virtual bool EnumeratePrinters(PrinterList* printer_list);
 
   virtual bool GetPrinterCapsAndDefaults(const std::string& printer_name,
                                          PrinterCapsAndDefaults* printer_info);
@@ -107,12 +107,14 @@ PrintBackendCUPS::PrintBackendCUPS(const GURL& print_server_url, bool blocking)
     : print_server_url_(print_server_url), blocking_(blocking) {
 }
 
-void PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
+bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
   DCHECK(printer_list);
   printer_list->clear();
 
   cups_dest_t* destinations = NULL;
   int num_dests = GetDests(&destinations);
+  // TODO(gene): Figure out how to get an error code from cupsGetDests so we can
+  // differentiate between the enumeration failing and there being 0 printers.
 
   for (int printer_index = 0; printer_index < num_dests; printer_index++) {
     const cups_dest_t& printer = destinations[printer_index];
@@ -142,6 +144,7 @@ void PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
   cupsFreeDests(num_dests, destinations);
 
   VLOG(1) << "CUPS: Enumerated " << printer_list->size() << " printers.";
+  return true;
 }
 
 bool PrintBackendCUPS::GetPrinterCapsAndDefaults(

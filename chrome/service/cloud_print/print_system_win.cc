@@ -250,7 +250,8 @@ class PrintSystemWin : public PrintSystem {
   // PrintSystem implementation.
   virtual PrintSystemResult Init();
 
-  virtual void EnumeratePrinters(printing::PrinterList* printer_list);
+  virtual PrintSystem::PrintSystemResult EnumeratePrinters(
+      printing::PrinterList* printer_list);
 
   virtual void GetPrinterCapsAndDefaults(
       const std::string& printer_name,
@@ -605,8 +606,10 @@ PrintSystem::PrintSystemResult PrintSystemWin::Init() {
   return PrintSystemResult(true, std::string());
 }
 
-void PrintSystemWin::EnumeratePrinters(printing::PrinterList* printer_list) {
-  print_backend_->EnumeratePrinters(printer_list);
+PrintSystem::PrintSystemResult PrintSystemWin::EnumeratePrinters(
+    printing::PrinterList* printer_list) {
+  bool ret = print_backend_->EnumeratePrinters(printer_list);
+  return PrintSystemResult(ret, std::string());
 }
 
 void PrintSystemWin::GetPrinterCapsAndDefaults(

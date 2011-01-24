@@ -48,7 +48,7 @@ class PrintBackend : public base::RefCountedThreadSafe<PrintBackend> {
   virtual ~PrintBackend();
 
   // Enumerates the list of installed local and network printers.
-  virtual void EnumeratePrinters(PrinterList* printer_list) = 0;
+  virtual bool EnumeratePrinters(PrinterList* printer_list) = 0;
 
   // Gets the capabilities and defaults for a specific printer.
   virtual bool GetPrinterCapsAndDefaults(

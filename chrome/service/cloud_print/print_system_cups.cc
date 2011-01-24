@@ -28,9 +28,11 @@
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "googleurl/src/gurl.h"
+#include "grit/generated_resources.h"
 #include "printing/backend/cups_helper.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 static const char kCUPSPrinterInfoOpt[] = "printer-info";
@@ -73,7 +75,8 @@ class PrintSystemCUPS : public PrintSystem {
   // PrintSystem implementation.
   virtual PrintSystemResult Init();
 
-  virtual void EnumeratePrinters(printing::PrinterList* printer_list);
+  virtual PrintSystem::PrintSystemResult EnumeratePrinters(
+      printing::PrinterList* printer_list);
 
   virtual void GetPrinterCapsAndDefaults(
       const std::string& printer_name,
@@ -151,6 +154,7 @@ class PrintSystemCUPS : public PrintSystem {
 
   int update_timeout_;
   bool initialized_;
+  bool printer_enum_succeeded_;
 };
 
 class PrintServerWatcherCUPS
@@ -358,7 +362,9 @@ class JobSpoolerCUPS : public PrintSystem::JobSpooler {
 };
 
 PrintSystemCUPS::PrintSystemCUPS(const DictionaryValue* print_system_settings)
-    : update_timeout_(kCheckForPrinterUpdatesMs), initialized_(false) {
+    : update_timeout_(kCheckForPrinterUpdatesMs),
+      initialized_(false),
+      printer_enum_succeeded_(false) {
   if (print_system_settings) {
     int timeout;
     if (print_system_settings->GetInteger(kCUPSUpdateTimeoutMs, &timeout))
@@ -412,8 +418,10 @@ PrintSystem::PrintSystemResult PrintSystemCUPS::Init() {
 
 void PrintSystemCUPS::UpdatePrinters() {
   PrintServerList::iterator it;
+  printer_enum_succeeded_ = true;
   for (it = print_servers_.begin(); it != print_servers_.end(); ++it) {
-    it->backend->EnumeratePrinters(&it->printers);
+    if (!it->backend->EnumeratePrinters(&it->printers))
+      printer_enum_succeeded_ = false;
     it->caps_cache.clear();
     printing::PrinterList::iterator printer_it;
     for (printer_it = it->printers.begin();
@@ -431,7 +439,8 @@ void PrintSystemCUPS::UpdatePrinters() {
       GetUpdateTimeoutMs());
 }
 
-void PrintSystemCUPS::EnumeratePrinters(printing::PrinterList* printer_list) {
+PrintSystem::PrintSystemResult PrintSystemCUPS::EnumeratePrinters(
+    printing::PrinterList* printer_list) {
   DCHECK(initialized_);
   printer_list->clear();
   PrintServerList::iterator it;
@@ -440,6 +449,9 @@ void PrintSystemCUPS::EnumeratePrinters(printing::PrinterList* printer_list) {
         it->printers.begin(), it->printers.end());
   }
   VLOG(1) << "CUPS: Total " << printer_list->size() << " printers enumerated.";
+  // TODO(sanjeevr): Maybe some day we want to report the actual server names
+  // for which the enumeration failed.
+  return PrintSystemResult(printer_enum_succeeded_, std::string());
 }
 
 void PrintSystemCUPS::GetPrinterCapsAndDefaults(

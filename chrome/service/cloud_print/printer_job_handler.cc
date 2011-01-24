@@ -65,8 +65,13 @@ bool PrinterJobHandler::Initialize() {
     printer_watcher_->StartWatching(this);
     CheckForJobs(kJobFetchReasonStartup);
   } else {
-    // This printer does not exist any more. Delete it from the server.
-    OnPrinterDeleted();
+    // This printer does not exist any more. Check if we should delete it from
+    // the server.
+    bool delete_from_server = false;
+    delegate_->OnPrinterNotFound(printer_info_.printer_name,
+                                 &delete_from_server);
+    if (delete_from_server)
+      OnPrinterDeleted();
   }
   return true;
 }

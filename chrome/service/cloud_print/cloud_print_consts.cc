@@ -57,4 +57,4 @@ const char kJobFetchReasonQueryMore[] = "querymore";
 // Short message ids for diagnostic messages sent to the server.
 const char kPrintSystemFailedMessageId[] = "printsystemfail";
 const char kGetPrinterCapsFailedMessageId[] = "getprncapsfail";
-
+const char kEnumPrintersFailedMessageId[] = "enumfail";

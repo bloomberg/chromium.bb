@@ -91,6 +91,11 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
      virtual void OnPrinterJobHandlerShutdown(
         PrinterJobHandler* job_handler, const std::string& printer_id) = 0;
      virtual void OnAuthError() = 0;
+     // Called when the PrinterJobHandler cannot find the printer locally. The
+     // delegate returns |delete_from_server| to true if the printer should be
+     // deleted from the server,false otherwise.
+     virtual void OnPrinterNotFound(const std::string& printer_name,
+                                    bool* delete_from_server) = 0;
 
    protected:
      virtual ~Delegate() {}

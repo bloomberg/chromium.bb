@@ -43,7 +43,7 @@ class PrintBackendWin : public PrintBackend {
   PrintBackendWin() {}
   virtual ~PrintBackendWin() {}
 
-  virtual void EnumeratePrinters(PrinterList* printer_list);
+  virtual bool EnumeratePrinters(PrinterList* printer_list);
 
   virtual bool GetPrinterCapsAndDefaults(const std::string& printer_name,
                                          PrinterCapsAndDefaults* printer_info);
@@ -51,35 +51,39 @@ class PrintBackendWin : public PrintBackend {
   virtual bool IsValidPrinter(const std::string& printer_name);
 };
 
-void PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
+bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
   DCHECK(printer_list);
   DWORD bytes_needed = 0;
   DWORD count_returned = 0;
   BOOL ret = EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS, NULL, 2,
                           NULL, 0, &bytes_needed, &count_returned);
-  if (0 != bytes_needed) {
-    scoped_ptr<BYTE> printer_info_buffer(new BYTE[bytes_needed]);
-    ret = EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS, NULL, 2,
-                       printer_info_buffer.get(), bytes_needed, &bytes_needed,
-                       &count_returned);
-    DCHECK(ret);
-    PRINTER_INFO_2* printer_info =
-        reinterpret_cast<PRINTER_INFO_2*>(printer_info_buffer.get());
-    for (DWORD index = 0; index < count_returned; index++) {
-      PrinterBasicInfo info;
-      info.printer_name = WideToUTF8(printer_info[index].pPrinterName);
-      if (printer_info[index].pComment)
-        info.printer_description = WideToUTF8(printer_info[index].pComment);
-      info.printer_status = printer_info[index].Status;
-      if (printer_info[index].pLocation)
-        info.options[kLocationTagName] =
-            WideToUTF8(printer_info[index].pLocation);
-      if (printer_info[index].pDriverName)
-        info.options[kDriverNameTagName] =
-            WideToUTF8(printer_info[index].pDriverName);
-      printer_list->push_back(info);
-    }
+  if (!bytes_needed)
+    return false;
+  scoped_ptr<BYTE> printer_info_buffer(new BYTE[bytes_needed]);
+  ret = EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS, NULL, 2,
+                     printer_info_buffer.get(), bytes_needed, &bytes_needed,
+                     &count_returned);
+  DCHECK(ret);
+  if (!ret)
+    return false;
+
+  PRINTER_INFO_2* printer_info =
+      reinterpret_cast<PRINTER_INFO_2*>(printer_info_buffer.get());
+  for (DWORD index = 0; index < count_returned; index++) {
+    PrinterBasicInfo info;
+    info.printer_name = WideToUTF8(printer_info[index].pPrinterName);
+    if (printer_info[index].pComment)
+      info.printer_description = WideToUTF8(printer_info[index].pComment);
+    info.printer_status = printer_info[index].Status;
+    if (printer_info[index].pLocation)
+      info.options[kLocationTagName] =
+          WideToUTF8(printer_info[index].pLocation);
+    if (printer_info[index].pDriverName)
+      info.options[kDriverNameTagName] =
+          WideToUTF8(printer_info[index].pDriverName);
+    printer_list->push_back(info);
   }
+  return true;
 }
 
 bool PrintBackendWin::GetPrinterCapsAndDefaults(
