@@ -17,6 +17,7 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/url_constants.h"
 #include "webkit/glue/webpreferences.h"
@@ -139,8 +140,7 @@ void BalloonHost::ProcessDOMUIMessage(
 // open pages in new tabs.
 void BalloonHost::CreateNewWindow(
     int route_id,
-    WindowContainerType window_container_type,
-    const string16& frame_name) {
+    const ViewHostMsg_CreateWindow_Params& params) {
   delegate_view_helper_.CreateNewWindow(
       route_id,
       balloon_->profile(),
@@ -148,8 +148,8 @@ void BalloonHost::CreateNewWindow(
       DOMUIFactory::GetDOMUIType(balloon_->profile(),
           balloon_->notification().content_url()),
       this,
-      window_container_type,
-      frame_name);
+      params.window_container_type,
+      params.frame_name);
 }
 
 void BalloonHost::ShowCreatedWindow(int route_id,

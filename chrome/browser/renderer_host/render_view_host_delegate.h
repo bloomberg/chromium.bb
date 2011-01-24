@@ -46,6 +46,7 @@ class SSLClientAuthHandler;
 class SSLAddCertHandler;
 class TabContents;
 struct ThumbnailScore;
+struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
@@ -101,15 +102,15 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
 
   class View {
    public:
-    // The page is trying to open a new page (e.g. a popup window). The
-    // window should be created associated with the given route, but it should
-    // not be shown yet. That should happen in response to ShowCreatedWindow.
-    // |window_container_type| describes the type of RenderViewHost container
-    // that is requested -- in particular, the window.open call may have
-    // specified 'background' and 'persistent' in the feature string.
+    // The page is trying to open a new page (e.g. a popup window). The window
+    // should be created associated with the given route, but it should not be
+    // shown yet. That should happen in response to ShowCreatedWindow.
+    // |params.window_container_type| describes the type of RenderViewHost
+    // container that is requested -- in particular, the window.open call may
+    // have specified 'background' and 'persistent' in the feature string.
     //
-    // The passed |frame_name| parameter is the name parameter that was passed
-    // to window.open(), and will be empty if none was passed.
+    // The passed |params.frame_name| parameter is the name parameter that was
+    // passed to window.open(), and will be empty if none was passed.
     //
     // Note: this is not called "CreateWindow" because that will clash with
     // the Windows function which is actually a #define.
@@ -117,8 +118,7 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
     // NOTE: this takes ownership of @modal_dialog_event
     virtual void CreateNewWindow(
         int route_id,
-        WindowContainerType window_container_type,
-        const string16& frame_name) = 0;
+        const ViewHostMsg_CreateWindow_Params& params) = 0;
 
     // The page is trying to open a new widget (e.g. a select popup). The
     // widget should be created associated with the given route, but it should
@@ -487,7 +487,8 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual const GURL& GetURL() const;
 
   // Return this object cast to a TabContents, if it is one. If the object is
-  // not a TabContents, returns NULL.
+  // not a TabContents, returns NULL. DEPRECATED: Be sure to include brettw and
+  // jam as reviewers before you use this method.
   virtual TabContents* GetAsTabContents();
 
   // Return this object cast to a BackgroundContents, if it is one. If the

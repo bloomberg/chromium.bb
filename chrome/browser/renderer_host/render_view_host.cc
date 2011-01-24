@@ -871,13 +871,12 @@ bool RenderViewHost::IsRenderView() const {
 
 void RenderViewHost::CreateNewWindow(
     int route_id,
-    WindowContainerType window_container_type,
-    const string16& frame_name) {
+    const ViewHostMsg_CreateWindow_Params& params) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (!view)
     return;
 
-  view->CreateNewWindow(route_id, window_container_type, frame_name);
+  view->CreateNewWindow(route_id, params);
 }
 
 void RenderViewHost::CreateNewWidget(int route_id,

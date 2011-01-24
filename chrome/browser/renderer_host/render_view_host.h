@@ -40,6 +40,7 @@ struct ContextMenuParams;
 struct MediaPlayerAction;
 struct ThumbnailScore;
 struct ViewHostMsg_AccessibilityNotification_Params;
+struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_DidPreviewDocument_Params;
 struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_DomMessage_Params;
@@ -449,8 +450,7 @@ class RenderViewHost : public RenderWidgetHost {
 
   // Creates a new RenderView with the given route id.
   void CreateNewWindow(int route_id,
-                       WindowContainerType window_container_type,
-                       const string16& frame_name);
+                       const ViewHostMsg_CreateWindow_Params& params);
 
   // Creates a new RenderWidget with the given route id.  |popup_type| indicates
   // if this widget is a popup and what kind of popup it is (select, autofill).

@@ -9,9 +9,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages_params.h"
 
 // A Task used with InvokeLater that we hold a pointer to in pending_paints_.
@@ -222,18 +220,8 @@ void RenderWidgetHelper::OnCreateWindowOnUI(
     int route_id) {
   RenderViewHost* host =
       RenderViewHost::FromID(render_process_id_, params.opener_id);
-  if (host) {
-    host->CreateNewWindow(route_id,
-                          params.window_container_type,
-                          params.frame_name);
-    TabContents* tab_contents = host->delegate()->GetAsTabContents();
-    if (tab_contents) {
-      NotificationService::current()->Notify(
-          NotificationType::CREATING_NEW_WINDOW,
-          Source<TabContents>(tab_contents),
-          Details<const ViewHostMsg_CreateWindow_Params>(&params));
-    }
-  }
+  if (host)
+    host->CreateNewWindow(route_id, params);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

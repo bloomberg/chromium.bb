@@ -197,8 +197,7 @@ void PrerenderContents::ProcessDOMUIMessage(
 
 void PrerenderContents::CreateNewWindow(
     int route_id,
-    WindowContainerType window_container_type,
-    const string16& frame_name) {
+    const ViewHostMsg_CreateWindow_Params& params) {
   // Since we don't want to permit child windows that would have a
   // window.opener property, terminate prerendering.
   prerender_manager_->RemoveEntry(this);

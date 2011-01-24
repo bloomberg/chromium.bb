@@ -533,8 +533,7 @@ RenderViewHostDelegate::View* ExtensionHost::GetViewDelegate() {
 
 void ExtensionHost::CreateNewWindow(
     int route_id,
-    WindowContainerType window_container_type,
-    const string16& frame_name) {
+    const ViewHostMsg_CreateWindow_Params& params) {
   // TODO(aa): Use the browser's profile if the extension is split mode
   // incognito.
   TabContents* new_contents = delegate_view_helper_.CreateNewWindow(
@@ -544,8 +543,8 @@ void ExtensionHost::CreateNewWindow(
       DOMUIFactory::GetDOMUIType(render_view_host()->process()->profile(),
           url_),
       this,
-      window_container_type,
-      frame_name);
+      params.window_container_type,
+      params.frame_name);
 
   TabContents* associated_contents = associated_tab_contents();
   if (associated_contents && associated_contents->delegate())
