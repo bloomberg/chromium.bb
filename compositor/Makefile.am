@@ -1,8 +1,8 @@
 noinst_PROGRAMS = compositor
 
 INCLUDES =					\
-	-I$(top_srcdir)/wayland			\
 	-I$(top_builddir)/wayland		\
+	-I$(top_srcdir)/wayland			\
 	$(COMPOSITOR_CFLAGS)
 
 AM_CFLAGS = $(GCC_CFLAGS)
