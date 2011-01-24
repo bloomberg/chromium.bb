@@ -271,7 +271,7 @@
    bug_21326
    Memcheck:Leak
    ...
-   fun:_ZN5NPAPI9PluginLib17ReadWebPluginInfoERK8FilePathP13WebPluginInfo
+   fun:_ZN56webkit5npapi9PluginLib17ReadWebPluginInfoERK8FilePathP13WebPluginInfo
 }
 {
    # NSS bug https://bugzilla.mozilla.org/show_bug.cgi?id=518443
@@ -3355,7 +3355,8 @@
    fun:_Znw*
    ...
    fun:_ZNSt*
-   fun:_ZN5NPAPI10PluginList*
+   ...
+   fun:_ZN6webkit5npapi10PluginList*
    ...
    fun:_ZN13PluginService*
 }

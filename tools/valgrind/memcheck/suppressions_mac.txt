@@ -939,9 +939,9 @@
    ...
    fun:FSFindFolder
    fun:_ZN12_GLOBAL__N_124GetPluginCommonDirectoryEPSt6vectorI8FilePathSaIS1_EEb
-   fun:_ZN5NPAPI10PluginList20GetPluginDirectoriesEPSt6vectorI8FilePathSaIS2_EE
-   fun:_ZN5NPAPI10PluginList11LoadPluginsEb
-   fun:_ZN5NPAPI10PluginList10GetPluginsEbPSt6vectorI13WebPluginInfoSaIS2_EE
+   fun:_ZN6webkit5npapi10PluginList20GetPluginDirectoriesEPSt6vectorI8FilePathSaIS2_EE
+   fun:_ZN6webkit5npapi10PluginList11LoadPluginsEb
+   fun:_ZN6webkit5npapi10PluginList10GetPluginsEbPSt6vectorI13WebPluginInfoSaIS2_EE
    fun:_ZN13PluginUpdater30GetPreferencesDataOnFileThreadEPv
 }
 {
@@ -950,9 +950,9 @@
    ...
    fun:FSFindFolder
    fun:_ZN12_GLOBAL__N_124GetPluginCommonDirectoryEPSt6vectorI8FilePathSaIS1_EEb
-   fun:_ZN5NPAPI10PluginList20GetPluginDirectoriesEPSt6vectorI8FilePathSaIS2_EE
-   fun:_ZN5NPAPI10PluginList11LoadPluginsEb
-   fun:_ZN5NPAPI10PluginList10GetPluginsEbPSt6vectorI13WebPluginInfoSaIS2_EE
+   fun:_ZN6webkit5npapi10PluginList20GetPluginDirectoriesEPSt6vectorI8FilePathSaIS2_EE
+   fun:_ZN6webkit5npapi10PluginList11LoadPluginsEb
+   fun:_ZN6webkit5npapi10PluginList10GetPluginsEbPSt6vectorI13WebPluginInfoSaIS2_EE
    fun:_ZN13PluginUpdater30GetPreferencesDataOnFileThreadEPv
 }
 {
