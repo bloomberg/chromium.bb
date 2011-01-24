@@ -1,0 +1,26 @@
+{
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDltVl1k15pjRzuZfMc3B69inxwm2bZeZ2O8/zFO+NluHnBm3GJ3fzdOoFGJd+M16I8p7zxxQyHeDMfWYASyCeB8XnUEDKjqNLQfCnncsANzHsYoEbYj2nEUML2P13b9q+AAvpCBpAJ4cZp81e9n1y/vbSXHE4385cgkKueItzikQIDAQAB",
+  "name": "ChromeVox",
+  "version": "1.0",
+  "description": "ChromeVox - Giving Voice to Chrome.",
+  "background_page": "chromevox/background/background.html",
+  "permissions": [
+    "bookmarks",
+    "tabs",
+    "experimental",
+    "http://*/",
+    "https://*/"
+  ],
+  "content_scripts": [
+    {
+      "matches": [ "<all_urls>" ],
+      "all_frames": true,
+      "js": [
+        "build/build_defs.js",
+        "build/build_config_chrome.js",
+        "chromevox/injected/main.js",
+        "common/extension_bridge.js"
+      ]
+    }
+  ]
+}

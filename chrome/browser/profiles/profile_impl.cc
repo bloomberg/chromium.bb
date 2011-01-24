@@ -406,6 +406,20 @@ void ProfileImpl::RegisterComponentExtensions() {
     extensions_service_->register_component_extension(
         ExtensionService::ComponentExtensionInfo(manifest, path));
   }
+
+#if defined(OS_CHROMEOS)
+  // Register access extensions only if accessibility is enabled.
+  if (g_browser_process->local_state()->
+      GetBoolean(prefs::kAccessibilityEnabled)) {
+    FilePath path = FilePath(extension_misc::kAccessExtensionPath)
+        .AppendASCII("access_chromevox");
+    std::string manifest =
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_CHROMEVOX_MANIFEST).as_string();
+    extensions_service_->register_component_extension(
+        ExtensionService::ComponentExtensionInfo(manifest, path));
+  }
+#endif
 }
 
 void ProfileImpl::InstallDefaultApps() {

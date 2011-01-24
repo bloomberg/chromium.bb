@@ -332,4 +332,8 @@ namespace extension_misc {
 const char* kBookmarkManagerId = "eemcgdkfndhakfknompkggombfjjjeno";
 const char* kWebStoreAppId = "ahfgeienlihckogmohjhadlkjgocpleb";
 const char* kAppsPromoHistogram = "Extensions.AppsPromo";
+#if defined(OS_CHROMEOS)
+const char* kAccessExtensionPath =
+    "/usr/share/chromeos-assets/accessibility/extensions";
+#endif
 }
