@@ -145,3 +145,6 @@ PREFIX : webcore::renderstyle::create___webcore::cssstyleselector::styleforeleme
 
 # 70031
 SUBSTRING : webcore::shadowdata::`scalar deleting destructor___webcore::shadowdata::`scalar deleting destructor'___webcore::shadowdata::`scalar deleting destructor'___webcore::shadowdata::`scalar deleting destructor'
+
+# 70631
+SUBSTRING : chrome_2590000!v8::internal::Invoke+0xf9
