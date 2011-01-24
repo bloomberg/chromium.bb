@@ -143,8 +143,10 @@ void WebPreferences::Apply(WebView* web_view) const {
   // but also because it cause a possible crash in Editor::hasBidiSelection().
   settings->setTextDirectionSubmenuInclusionBehaviorNeverIncluded();
 
+#ifdef HAS_WEBAUDIO_FEATURE_ENABLE
   // Enable the web audio API if requested on the command line.
   settings->setWebAudioEnabled(webaudio_enabled);
+#endif
 
   // Enable experimental WebGL support if requested on command line
   // and support is compiled in.
