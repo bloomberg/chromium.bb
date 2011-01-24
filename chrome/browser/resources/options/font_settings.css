@@ -1,5 +1,5 @@
 #font-settings > section > .font-input-div {
-  -webkit-margin-end: 5em;
+  -webkit-margin-end: 4em;
 }
 
 .font-input-div > div > select {
@@ -11,6 +11,8 @@
 }
 
 #font-settings > section > .font-sample-div {
+  height: 90px;
+  overflow: hidden;
   position: absolute;
 }
 
