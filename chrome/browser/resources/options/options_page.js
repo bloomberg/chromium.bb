@@ -363,10 +363,11 @@ cr.define('options', function() {
       // Clicks on the narrow strip between the left of the subpage sheet and
       // that shows part of the parent page should close the overlay, but
       // not fall through to the parent page.
-      if (!$('subpage-sheet-' + level).contains(event.target))
+      if (!$('subpage-sheet-' + level).contains(event.target)) {
         self.closeSubPagesToLevel(level - 1);
-      event.stopPropagation();
-      event.preventDefault();
+        event.stopPropagation();
+        event.preventDefault();
+      }
     };
   };
 
