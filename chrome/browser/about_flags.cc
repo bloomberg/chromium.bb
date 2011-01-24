@@ -314,25 +314,6 @@ class FlagsState {
   DISALLOW_COPY_AND_ASSIGN(FlagsState);
 };
 
-#if defined(OS_CHROMEOS)
-// Migrates Chrome OS Labs settings to experiments adding flags to enabled
-// experiment list if the corresponding pref is on.
-void MigrateChromeOSLabsPrefs(PrefService* prefs,
-                              std::set<std::string>* result) {
-  DCHECK(prefs);
-  DCHECK(result);
-  if (prefs->GetBoolean(prefs::kLabsMediaplayerEnabled))
-    result->insert(kMediaPlayerExperimentName);
-  if (prefs->GetBoolean(prefs::kLabsAdvancedFilesystemEnabled))
-    result->insert(kAdvancedFileSystemExperimentName);
-  if (prefs->GetBoolean(prefs::kUseVerticalTabs))
-    result->insert(kVerticalTabsExperimentName);
-  prefs->SetBoolean(prefs::kLabsMediaplayerEnabled, false);
-  prefs->SetBoolean(prefs::kLabsAdvancedFilesystemEnabled, false);
-  prefs->SetBoolean(prefs::kUseVerticalTabs, false);
-}
-#endif
-
 // Extracts the list of enabled lab experiments from preferences and stores them
 // in a set.
 void GetEnabledFlags(const PrefService* prefs, std::set<std::string>* result) {
@@ -556,12 +537,6 @@ void FlagsState::ConvertFlagsToSwitches(
     return;
 
   std::set<std::string> enabled_experiments;
-
-#if defined(OS_CHROMEOS)
-  // Some experiments were implemented via prefs on Chrome OS and we want to
-  // seamlessly migrate these prefs to about:flags for updated users.
-  MigrateChromeOSLabsPrefs(prefs, &enabled_experiments);
-#endif
 
   GetSanitizedEnabledFlagsForCurrentPlatform(prefs, &enabled_experiments);
 
