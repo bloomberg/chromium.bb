@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,8 +53,7 @@
 // bubble's window's contentView. Drawing is flipped so that layout of the
 // sections is easier. Apple recommends flipping the coordinate origin when
 // doing a lot of text layout because it's more natural.
-@interface PageInfoContentView : NSView {
-}
+@interface PageInfoContentView : NSView
 @end
 @implementation PageInfoContentView
 - (BOOL)isFlipped {
@@ -66,19 +65,19 @@ namespace {
 
 // The width of the window, in view coordinates. The height will be determined
 // by the content.
-const NSInteger kWindowWidth = 380;
+const CGFloat kWindowWidth = 380;
 
 // Spacing in between sections.
-const NSInteger kVerticalSpacing = 10;
+const CGFloat kVerticalSpacing = 10;
 
 // Padding along on the X-axis between the window frame and content.
-const NSInteger kFramePadding = 10;
+const CGFloat kFramePadding = 10;
 
 // Spacing between the optional headline and description text views.
-const NSInteger kHeadlineSpacing = 2;
+const CGFloat kHeadlineSpacing = 2;
 
 // Spacing between the image and the text.
-const NSInteger kImageSpacing = 10;
+const CGFloat kImageSpacing = 10;
 
 // Square size of the image.
 const CGFloat kImageSize = 30;
@@ -135,6 +134,8 @@ class PageInfoModelBubbleBridge : public PageInfoModel::PageInfoModelObserver {
 
   // Factory that vends RunnableMethod tasks for scheduling layout.
   ScopedRunnableMethodFactory<PageInfoModelBubbleBridge> task_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(PageInfoModelBubbleBridge);
 };
 
 }  // namespace
@@ -167,6 +168,8 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 - (id)initWithPageInfoModel:(PageInfoModel*)model
               modelObserver:(PageInfoModel::PageInfoModelObserver*)bridge
                parentWindow:(NSWindow*)parentWindow {
+  DCHECK(parentWindow);
+
   // Use an arbitrary height because it will be changed by the bridge.
   NSRect contentRect = NSMakeRect(0, 0, kWindowWidth, 0);
   // Create an empty window into which content is placed.
@@ -394,8 +397,8 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 - (void)addImageViewForInfo:(const PageInfoModel::SectionInfo&)info
                  toSubviews:(NSMutableArray*)subviews
                    atOffset:(CGFloat)offset {
-  NSRect frame = NSMakeRect(kFramePadding, offset, kImageSize,
-      kImageSize);
+  NSRect frame =
+      NSMakeRect(kFramePadding, offset, kImageSize, kImageSize);
   scoped_nsobject<NSImageView> imageView(
       [[NSImageView alloc] initWithFrame:frame]);
   [imageView setImageFrameStyle:NSImageFrameNone];
