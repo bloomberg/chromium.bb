@@ -501,7 +501,7 @@ TEST_F(URLFetcherTest, SameThreadsTest) {
   MessageLoop::current()->Run();
 }
 
-TEST_F(URLFetcherTest, DifferentThreadsTest) {
+TEST_F(URLFetcherTest, FLAKY_DifferentThreadsTest) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
@@ -518,7 +518,7 @@ TEST_F(URLFetcherTest, DifferentThreadsTest) {
   MessageLoop::current()->Run();
 }
 
-TEST_F(URLFetcherPostTest, Basic) {
+TEST_F(URLFetcherPostTest, FLAKY_Basic) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
@@ -602,7 +602,7 @@ TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
   net::URLRequestThrottlerManager::GetInstance()->EraseEntryForTests(url);
 }
 
-TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
+TEST_F(URLFetcherBadHTTPSTest, FLAKY_BadHTTPSTest) {
   net::TestServer::HTTPSOptions https_options(
       net::TestServer::HTTPSOptions::CERT_EXPIRED);
   net::TestServer test_server(https_options, FilePath(kDocRoot));
@@ -612,7 +612,7 @@ TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
   MessageLoop::current()->Run();
 }
 
-TEST_F(URLFetcherCancelTest, ReleasesContext) {
+TEST_F(URLFetcherCancelTest, FLAKY_ReleasesContext) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
