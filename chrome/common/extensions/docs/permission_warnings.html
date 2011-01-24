@@ -423,7 +423,7 @@ brings up the following warning:
 <p>
 It can be surprising when adding a permission such as "tabs"
 results in the seemingly unrelated warning
-that the extension can access your browsing history.
+that the extension can access your browsing activity.
 The reason for the warning is that
 although the <code>chrome.tabs</code> API
 might be used only to open new tabs,
@@ -488,22 +488,30 @@ that trigger them.
   </td>
   <td>
     <!-- HasEffectiveBrowsingHistoryPermission -->
-     "history" or "tabs" permission
+     "history" permission
+  </td>
+  <td>
+    <p>
+      The "history" permission is required by
+      <a href="history.html"><code>chrome.history</code></a>.
+    </p>
+  </td>
+</tr>
+
+<tr>
+  <td style="font-weight:bold">
+    <!-- IDS_EXTENSION_PROMPT_WARNING_TABS -->
+    Your tabs and browsing activity
+  </td>
+  <td>
+    <!-- HasEffectiveBrowsingHistoryPermission -->
+     "tabs" permission
   </td>
   <td>
     <p>
       The "tabs" permission is required by the
       <a href="tabs.html"><code>chrome.tabs</code></a> and 
       <a href="windows.html"><code>chrome.windows</code></a> modules.
-    </p>
-    <p>
-      The "history" permission is required by
-      <a href="history.html"><code>chrome.history</code></a>.
-    </p>
-    <p>
-      Adding "tabs" to an existing extension
-      that already has "history", or vice versa,
-      doesn't cause a warning when the extension is autoupdated.
     </p>
   </td>
 </tr>

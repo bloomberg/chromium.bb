@@ -230,7 +230,7 @@ const Extension::Permission Extension::kPermissions[] = {
   { kManagementPermission, IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT },
   { kNotificationPermission, 0 },
   { kProxyPermission, 0 },
-  { kTabPermission, IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY },
+  { kTabPermission, IDS_EXTENSION_PROMPT_WARNING_TABS },
   { kUnlimitedStoragePermission, 0 },
   { kWebstorePrivatePermission, 0 },
 };
