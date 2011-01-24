@@ -1019,7 +1019,7 @@ void TestingAutomationProvider::GetFullscreenBubbleVisibility(int handle,
 void TestingAutomationProvider::GetAutocompleteEditText(
     int autocomplete_edit_handle,
     bool* success,
-    std::wstring* text) {
+    string16* text) {
   *success = false;
   if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
     *text = autocomplete_edit_tracker_->GetResource(autocomplete_edit_handle)->
@@ -1030,7 +1030,7 @@ void TestingAutomationProvider::GetAutocompleteEditText(
 
 void TestingAutomationProvider::SetAutocompleteEditText(
     int autocomplete_edit_handle,
-    const std::wstring& text,
+    const string16& text,
     bool* success) {
   *success = false;
   if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
@@ -1125,16 +1125,16 @@ void TestingAutomationProvider::ExecuteJavascript(
   // This routing id needs to be remembered for the reverse
   // communication while sending back the response of
   // this javascript execution.
-  std::wstring set_automation_id;
+  std::string set_automation_id;
   base::SStringPrintf(&set_automation_id,
-                      L"window.domAutomationController.setAutomationId(%d);",
+                      "window.domAutomationController.setAutomationId(%d);",
                       reply_message->routing_id());
 
   DCHECK(reply_message_ == NULL);
   reply_message_ = reply_message;
 
   tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
-      frame_xpath, set_automation_id);
+      frame_xpath, UTF8ToWide(set_automation_id));
   tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
       frame_xpath, script);
 }
@@ -2852,8 +2852,8 @@ void TestingAutomationProvider::GetOmniboxInfo(Browser* browser,
     item->SetString("type", AutocompleteMatch::TypeToString(match.type));
     item->SetBoolean("starred", match.starred);
     item->SetString("destination_url", match.destination_url.spec());
-    item->SetString("contents", WideToUTF16Hack(match.contents));
-    item->SetString("description", WideToUTF16Hack(match.description));
+    item->SetString("contents", match.contents);
+    item->SetString("description", match.description);
     matches->Append(item);
   }
   return_value->Set("matches", matches);
@@ -2862,8 +2862,8 @@ void TestingAutomationProvider::GetOmniboxInfo(Browser* browser,
   DictionaryValue* properties = new DictionaryValue;  // owned by return_value
   properties->SetBoolean("has_focus", model->has_focus());
   properties->SetBoolean("query_in_progress", model->query_in_progress());
-  properties->SetString("keyword", WideToUTF16Hack(model->keyword()));
-  properties->SetString("text", WideToUTF16Hack(edit_view->GetText()));
+  properties->SetString("keyword", model->keyword());
+  properties->SetString("text", edit_view->GetText());
   return_value->Set("properties", properties);
 
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
@@ -2884,7 +2884,7 @@ void TestingAutomationProvider::SetOmniboxText(Browser* browser,
   LocationBar* loc_bar = browser->window()->GetLocationBar();
   AutocompleteEditView* edit_view = loc_bar->location_entry();
   edit_view->model()->OnSetFocus(false);
-  edit_view->SetUserText(UTF16ToWideHack(text));
+  edit_view->SetUserText(text);
   reply.SendSuccess(NULL);
 }
 
@@ -4045,7 +4045,7 @@ ListValue* TestingAutomationProvider::GetListFromAutoFillProfiles(
     const std::vector<AutoFillProfile*>& autofill_profiles) {
   ListValue* profiles = new ListValue;
 
-  std::map<AutoFillFieldType, std::wstring> autofill_type_to_string
+  std::map<AutoFillFieldType, std::string> autofill_type_to_string
       = GetAutoFillFieldToStringMap();
 
   // For each AutoFillProfile, transform it to a dictionary object to return.
@@ -4055,12 +4055,12 @@ ListValue* TestingAutomationProvider::GetListFromAutoFillProfiles(
     AutoFillProfile* profile = *it;
     DictionaryValue* profile_info = new DictionaryValue;
     // For each of the types, if it has a value, add it to the dictionary.
-    for (std::map<AutoFillFieldType, std::wstring>::iterator
+    for (std::map<AutoFillFieldType, std::string>::iterator
          type_it = autofill_type_to_string.begin();
          type_it != autofill_type_to_string.end(); ++type_it) {
       string16 value = profile->GetFieldText(AutoFillType(type_it->first));
       if (value.length()) {  // If there was something stored for that value.
-        profile_info->SetString(WideToUTF8(type_it->second), value);
+        profile_info->SetString(type_it->second, value);
       }
     }
     profiles->Append(profile_info);
@@ -4073,7 +4073,7 @@ ListValue* TestingAutomationProvider::GetListFromCreditCards(
     const std::vector<CreditCard*>& credit_cards) {
   ListValue* cards = new ListValue;
 
-  std::map<AutoFillFieldType, std::wstring> credit_card_type_to_string =
+  std::map<AutoFillFieldType, std::string> credit_card_type_to_string =
       GetCreditCardFieldToStringMap();
 
   // For each AutoFillProfile, transform it to a dictionary object to return.
@@ -4083,13 +4083,13 @@ ListValue* TestingAutomationProvider::GetListFromCreditCards(
     CreditCard* card = *it;
     DictionaryValue* card_info = new DictionaryValue;
     // For each of the types, if it has a value, add it to the dictionary.
-    for (std::map<AutoFillFieldType, std::wstring>::iterator type_it =
+    for (std::map<AutoFillFieldType, std::string>::iterator type_it =
         credit_card_type_to_string.begin();
         type_it != credit_card_type_to_string.end(); ++type_it) {
       string16 value = card->GetFieldText(AutoFillType(type_it->first));
       // If there was something stored for that value.
       if (value.length()) {
-        card_info->SetString(WideToUTF8(type_it->second), value);
+        card_info->SetString(type_it->second, value);
       }
     }
     cards->Append(card_info);
@@ -4105,7 +4105,7 @@ TestingAutomationProvider::GetAutoFillProfilesFromList(
   DictionaryValue* profile_info = NULL;
   string16 current_value;
 
-  std::map<AutoFillFieldType, std::wstring> autofill_type_to_string =
+  std::map<AutoFillFieldType, std::string> autofill_type_to_string =
       GetAutoFillFieldToStringMap();
 
   int num_profiles = profiles.GetSize();
@@ -4113,11 +4113,11 @@ TestingAutomationProvider::GetAutoFillProfilesFromList(
     profiles.GetDictionary(i, &profile_info);
     AutoFillProfile profile;
     // Loop through the possible profile types and add those provided.
-    for (std::map<AutoFillFieldType, std::wstring>::iterator type_it =
+    for (std::map<AutoFillFieldType, std::string>::iterator type_it =
          autofill_type_to_string.begin();
          type_it != autofill_type_to_string.end(); ++type_it) {
-      if (profile_info->HasKey(WideToUTF8(type_it->second))) {
-        if (profile_info->GetString(WideToUTF8(type_it->second),
+      if (profile_info->HasKey(type_it->second)) {
+        if (profile_info->GetString(type_it->second,
                                     &current_value)) {
           profile.SetInfo(AutoFillType(type_it->first), current_value);
         } else {
@@ -4138,7 +4138,7 @@ std::vector<CreditCard> TestingAutomationProvider::GetCreditCardsFromList(
   DictionaryValue* card_info = NULL;
   string16 current_value;
 
-  std::map<AutoFillFieldType, std::wstring> credit_card_type_to_string =
+  std::map<AutoFillFieldType, std::string> credit_card_type_to_string =
       GetCreditCardFieldToStringMap();
 
   int num_credit_cards = cards.GetSize();
@@ -4146,11 +4146,11 @@ std::vector<CreditCard> TestingAutomationProvider::GetCreditCardsFromList(
     cards.GetDictionary(i, &card_info);
     CreditCard card;
     // Loop through the possible credit card fields and add those provided.
-    for (std::map<AutoFillFieldType, std::wstring>::iterator type_it =
+    for (std::map<AutoFillFieldType, std::string>::iterator type_it =
         credit_card_type_to_string.begin();
         type_it != credit_card_type_to_string.end(); ++type_it) {
-      if (card_info->HasKey(WideToUTF8(type_it->second))) {
-        if (card_info->GetString(WideToUTF8(type_it->second), &current_value)) {
+      if (card_info->HasKey(type_it->second)) {
+        if (card_info->GetString(type_it->second, &current_value)) {
           card.SetInfo(AutoFillType(type_it->first), current_value);
         } else {
           *error_message= "All values must be strings";
@@ -4164,36 +4164,36 @@ std::vector<CreditCard> TestingAutomationProvider::GetCreditCardsFromList(
 }
 
 /* static */
-std::map<AutoFillFieldType, std::wstring>
+std::map<AutoFillFieldType, std::string>
     TestingAutomationProvider::GetAutoFillFieldToStringMap() {
-  std::map<AutoFillFieldType, std::wstring> autofill_type_to_string;
-  autofill_type_to_string[NAME_FIRST] = L"NAME_FIRST";
-  autofill_type_to_string[NAME_MIDDLE] = L"NAME_MIDDLE";
-  autofill_type_to_string[NAME_LAST] = L"NAME_LAST";
-  autofill_type_to_string[COMPANY_NAME] = L"COMPANY_NAME";
-  autofill_type_to_string[EMAIL_ADDRESS] = L"EMAIL_ADDRESS";
-  autofill_type_to_string[ADDRESS_HOME_LINE1] = L"ADDRESS_HOME_LINE1";
-  autofill_type_to_string[ADDRESS_HOME_LINE2] = L"ADDRESS_HOME_LINE2";
-  autofill_type_to_string[ADDRESS_HOME_CITY] = L"ADDRESS_HOME_CITY";
-  autofill_type_to_string[ADDRESS_HOME_STATE] = L"ADDRESS_HOME_STATE";
-  autofill_type_to_string[ADDRESS_HOME_ZIP] = L"ADDRESS_HOME_ZIP";
-  autofill_type_to_string[ADDRESS_HOME_COUNTRY] = L"ADDRESS_HOME_COUNTRY";
+  std::map<AutoFillFieldType, std::string> autofill_type_to_string;
+  autofill_type_to_string[NAME_FIRST] = "NAME_FIRST";
+  autofill_type_to_string[NAME_MIDDLE] = "NAME_MIDDLE";
+  autofill_type_to_string[NAME_LAST] = "NAME_LAST";
+  autofill_type_to_string[COMPANY_NAME] = "COMPANY_NAME";
+  autofill_type_to_string[EMAIL_ADDRESS] = "EMAIL_ADDRESS";
+  autofill_type_to_string[ADDRESS_HOME_LINE1] = "ADDRESS_HOME_LINE1";
+  autofill_type_to_string[ADDRESS_HOME_LINE2] = "ADDRESS_HOME_LINE2";
+  autofill_type_to_string[ADDRESS_HOME_CITY] = "ADDRESS_HOME_CITY";
+  autofill_type_to_string[ADDRESS_HOME_STATE] = "ADDRESS_HOME_STATE";
+  autofill_type_to_string[ADDRESS_HOME_ZIP] = "ADDRESS_HOME_ZIP";
+  autofill_type_to_string[ADDRESS_HOME_COUNTRY] = "ADDRESS_HOME_COUNTRY";
   autofill_type_to_string[PHONE_HOME_WHOLE_NUMBER] =
-      L"PHONE_HOME_WHOLE_NUMBER";
-  autofill_type_to_string[PHONE_FAX_WHOLE_NUMBER] = L"PHONE_FAX_WHOLE_NUMBER";
-  autofill_type_to_string[NAME_FIRST] = L"NAME_FIRST";
+      "PHONE_HOME_WHOLE_NUMBER";
+  autofill_type_to_string[PHONE_FAX_WHOLE_NUMBER] = "PHONE_FAX_WHOLE_NUMBER";
+  autofill_type_to_string[NAME_FIRST] = "NAME_FIRST";
   return autofill_type_to_string;
 }
 
 /* static */
-std::map<AutoFillFieldType, std::wstring>
+std::map<AutoFillFieldType, std::string>
     TestingAutomationProvider::GetCreditCardFieldToStringMap() {
-  std::map<AutoFillFieldType, std::wstring> credit_card_type_to_string;
-  credit_card_type_to_string[CREDIT_CARD_NAME] = L"CREDIT_CARD_NAME";
-  credit_card_type_to_string[CREDIT_CARD_NUMBER] = L"CREDIT_CARD_NUMBER";
-  credit_card_type_to_string[CREDIT_CARD_EXP_MONTH] = L"CREDIT_CARD_EXP_MONTH";
+  std::map<AutoFillFieldType, std::string> credit_card_type_to_string;
+  credit_card_type_to_string[CREDIT_CARD_NAME] = "CREDIT_CARD_NAME";
+  credit_card_type_to_string[CREDIT_CARD_NUMBER] = "CREDIT_CARD_NUMBER";
+  credit_card_type_to_string[CREDIT_CARD_EXP_MONTH] = "CREDIT_CARD_EXP_MONTH";
   credit_card_type_to_string[CREDIT_CARD_EXP_4_DIGIT_YEAR] =
-      L"CREDIT_CARD_EXP_4_DIGIT_YEAR";
+      "CREDIT_CARD_EXP_4_DIGIT_YEAR";
   return credit_card_type_to_string;
 }
 

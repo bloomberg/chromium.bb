@@ -50,7 +50,7 @@ class AutocompleteEditController {
 
   // Commits the suggested text. |typed_text| is the current text showing in the
   // autocomplete. Returns true if the text was committed.
-  virtual bool OnCommitSuggestedText(const std::wstring& typed_text) = 0;
+  virtual bool OnCommitSuggestedText(const string16& typed_text) = 0;
 
   // Accepts the currently showing instant preview, if any, and returns true.
   // Returns false if there is no instant preview showing.
@@ -94,7 +94,7 @@ class AutocompleteEditController {
   virtual SkBitmap GetFavIcon() const = 0;
 
   // Returns the title of the current page.
-  virtual std::wstring GetTitle() const = 0;
+  virtual string16 GetTitle() const = 0;
 
  protected:
   virtual ~AutocompleteEditController();
@@ -104,14 +104,14 @@ class AutocompleteEditModel : public NotificationObserver {
  public:
   struct State {
     State(bool user_input_in_progress,
-          const std::wstring& user_text,
-          const std::wstring& keyword,
+          const string16& user_text,
+          const string16& keyword,
           bool is_keyword_hint);
     ~State();
 
     bool user_input_in_progress;
-    const std::wstring user_text;
-    const std::wstring keyword;
+    const string16 user_text;
+    const string16 keyword;
     const bool is_keyword_hint;
   };
 
@@ -144,7 +144,7 @@ class AutocompleteEditModel : public NotificationObserver {
 
   // Called when the user wants to export the entire current text as a URL.
   // Sets the url, and if known, the title and favicon.
-  void GetDataForURLExport(GURL* url, std::wstring* title, SkBitmap* favicon);
+  void GetDataForURLExport(GURL* url, string16* title, SkBitmap* favicon);
 
   // Returns true if a verbatim query should be used for instant. A verbatim
   // query is forced in certain situations, such as pressing delete at the end
@@ -155,7 +155,7 @@ class AutocompleteEditModel : public NotificationObserver {
   // desired TLD is the TLD the user desires to add to the end of the current
   // input, if any, based on their control key state and any other actions
   // they've taken.
-  std::wstring GetDesiredTLD() const;
+  string16 GetDesiredTLD() const;
 
   // Returns true if the current edit contents will be treated as a
   // URL/navigation, as opposed to a search.
@@ -172,7 +172,7 @@ class AutocompleteEditModel : public NotificationObserver {
   // is set to true and |url| set to the url to write.
   void AdjustTextForCopy(int sel_min,
                          bool is_all_selected,
-                         std::wstring* text,
+                         string16* text,
                          GURL* url,
                          bool* write_url);
 
@@ -185,14 +185,14 @@ class AutocompleteEditModel : public NotificationObserver {
   // Updates permanent_text_ to |new_permanent_text|.  Returns true if this
   // change should be immediately user-visible, because either the user is not
   // editing or the edit does not have focus.
-  bool UpdatePermanentText(const std::wstring& new_permanent_text);
+  bool UpdatePermanentText(const string16& new_permanent_text);
 
   // Sets the user_text_ to |text|.  Only the View should call this.
-  void SetUserText(const std::wstring& text);
+  void SetUserText(const string16& text);
 
   // Calls through to SearchProvider::FinalizeInstantQuery.
-  void FinalizeInstantQuery(const std::wstring& input_text,
-                            const std::wstring& suggest_text);
+  void FinalizeInstantQuery(const string16& input_text,
+                            const string16& suggest_text);
 
   // Reverts the edit model back to its unedited state (permanent text showing,
   // no user input in progress).
@@ -206,7 +206,7 @@ class AutocompleteEditModel : public NotificationObserver {
   // This also updates the internal paste-and-go-related state variables as
   // appropriate so that the controller doesn't need to be repeatedly queried
   // for the same text in every clipboard-related function.
-  bool CanPasteAndGo(const std::wstring& text) const;
+  bool CanPasteAndGo(const string16& text) const;
 
   // Navigates to the destination last supplied to CanPasteAndGo.
   void PasteAndGo();
@@ -234,13 +234,13 @@ class AutocompleteEditModel : public NotificationObserver {
                PageTransition::Type transition,
                const GURL& alternate_nav_url,
                size_t index,
-               const std::wstring& keyword);
+               const string16& keyword);
 
   bool has_focus() const { return has_focus_; }
 
   // Accessors for keyword-related state (see comments on keyword_ and
   // is_keyword_hint_).
-  const std::wstring& keyword() const { return keyword_; }
+  const string16& keyword() const { return keyword_; }
   bool is_keyword_hint() const { return is_keyword_hint_; }
 
   // Accepts the current keyword hint as a keyword. It always returns true for
@@ -249,7 +249,7 @@ class AutocompleteEditModel : public NotificationObserver {
 
   // Clears the current keyword.  |visible_text| is the (non-keyword) text
   // currently visible in the edit.
-  void ClearKeyword(const std::wstring& visible_text);
+  void ClearKeyword(const string16& visible_text);
 
   // Returns true if a query to an autocomplete provider is currently
   // in progress.  This logic should in the future live in
@@ -297,9 +297,9 @@ class AutocompleteEditModel : public NotificationObserver {
   //     or the currently selected keyword if |is_keyword_hint| is false (see
   //     comments on keyword_ and is_keyword_hint_).
   void OnPopupDataChanged(
-      const std::wstring& text,
+      const string16& text,
       GURL* destination_for_temporary_text_change,
-      const std::wstring& keyword,
+      const string16& keyword,
       bool is_keyword_hint);
 
   // Called by the AutocompleteEditView after something changes, with details
@@ -310,7 +310,7 @@ class AutocompleteEditModel : public NotificationObserver {
   // may be false when:
   // 1) The insert caret is not at the end of the edit box
   // 2) The user is composing a text with an IME
-  bool OnAfterPossibleChange(const std::wstring& new_text,
+  bool OnAfterPossibleChange(const string16& new_text,
                              bool selection_differs,
                              bool text_differs,
                              bool just_deleted_text,
@@ -351,7 +351,7 @@ class AutocompleteEditModel : public NotificationObserver {
                        const NotificationDetails& details);
 
   // Called whenever user_text_ should change.
-  void InternalSetUserText(const std::wstring& text);
+  void InternalSetUserText(const string16& text);
 
   // Returns true if a keyword is selected.
   bool KeywordIsSelected() const;
@@ -359,8 +359,8 @@ class AutocompleteEditModel : public NotificationObserver {
   // Conversion between user text and display text. User text is the text the
   // user has input. Display text is the text being shown in the edit. The
   // two are different if a keyword is selected.
-  std::wstring DisplayTextFromUserText(const std::wstring& text) const;
-  std::wstring UserTextFromDisplayText(const std::wstring& text) const;
+  string16 DisplayTextFromUserText(const string16& text) const;
+  string16 UserTextFromDisplayText(const string16& text) const;
 
   // Returns the default match for the current text, as well as the alternate
   // nav URL, if |alternate_nav_url| is non-NULL and there is such a URL.
@@ -373,11 +373,11 @@ class AutocompleteEditModel : public NotificationObserver {
   // and CurrentTextIsURL()).  The view needs this because it calls this
   // function during copy handling, when the control key is down to trigger the
   // copy.
-  bool GetURLForText(const std::wstring& text, GURL* url) const;
+  bool GetURLForText(const string16& text, GURL* url) const;
 
   // Accepts current keyword if the user only typed a space at the end of
   // |new_user_text|. Returns true if the current keyword is accepted.
-  bool MaybeAcceptKeywordBySpace(const std::wstring& new_user_text);
+  bool MaybeAcceptKeywordBySpace(const string16& new_user_text);
 
   // Checks if a given character is a valid space character for accepting
   // keyword.
@@ -395,7 +395,7 @@ class AutocompleteEditModel : public NotificationObserver {
   bool has_focus_;
 
   // The URL of the currently displayed page.
-  std::wstring permanent_text_;
+  string16 permanent_text_;
 
   // This flag is true when the user has modified the contents of the edit, but
   // not yet accepted them.  We use this to determine when we need to save
@@ -406,7 +406,7 @@ class AutocompleteEditModel : public NotificationObserver {
 
   // The text that the user has entered.  This does not include inline
   // autocomplete text that has not yet been accepted.
-  std::wstring user_text_;
+  string16 user_text_;
 
   // When the user closes the popup, we need to remember the URL for their
   // desired choice, so that if they hit enter without reopening the popup we
@@ -423,7 +423,7 @@ class AutocompleteEditModel : public NotificationObserver {
   // simply ask the popup for the desired URL directly.  As a result, the
   // contents of this variable only need to be updated when the popup is closed
   // but user_input_in_progress_ is not being cleared.
-  std::wstring url_for_remembered_user_selection_;
+  string16 url_for_remembered_user_selection_;
 
   // Inline autocomplete is allowed if the user has not just deleted text, and
   // no temporary text is showing.  In this case, inline_autocomplete_text_ is
@@ -433,7 +433,7 @@ class AutocompleteEditModel : public NotificationObserver {
   // text (actions that close the popup should either accept the text, convert
   // it to a normal selection, or change the edit entirely).
   bool just_deleted_text_;
-  std::wstring inline_autocomplete_text_;
+  string16 inline_autocomplete_text_;
 
   // Used by OnPopupDataChanged to keep track of whether there is currently a
   // temporary text.
@@ -466,7 +466,7 @@ class AutocompleteEditModel : public NotificationObserver {
   // selected keyword, or just some input text that looks like a keyword (so we
   // can show a hint to press <tab>).  This is the keyword in either case;
   // is_keyword_hint_ (below) distinguishes the two cases.
-  std::wstring keyword_;
+  string16 keyword_;
 
   // True if the keyword associated with this match is merely a hint, i.e. the
   // user hasn't actually selected a keyword yet.  When this is true, we can use

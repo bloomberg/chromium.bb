@@ -459,7 +459,7 @@ void LocationBarViewGtk::OnAutocompleteWillAccept() {
 }
 
 bool LocationBarViewGtk::OnCommitSuggestedText(
-    const std::wstring& typed_text) {
+    const string16& typed_text) {
   return browser_->instant() && location_entry_->CommitInstantSuggestion();
 }
 
@@ -513,7 +513,7 @@ void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
 void LocationBarViewGtk::OnChanged() {
   UpdateSiteTypeArea();
 
-  const std::wstring keyword(location_entry_->model()->keyword());
+  const string16 keyword(location_entry_->model()->keyword());
   const bool is_keyword_hint = location_entry_->model()->is_keyword_hint();
   show_selected_keyword_ = !keyword.empty() && !is_keyword_hint;
   show_keyword_hint_ = !keyword.empty() && is_keyword_hint;
@@ -534,17 +534,17 @@ void LocationBarViewGtk::OnChanged() {
       instant->Update(
           browser_->GetSelectedTabContentsWrapper(),
           location_entry_->model()->CurrentMatch(),
-          WideToUTF16(location_entry_->GetText()),
+          location_entry_->GetText(),
           location_entry_->model()->UseVerbatimInstant(),
           &suggested_text);
       if (!instant->MightSupportInstant()) {
-        location_entry_->model()->FinalizeInstantQuery(std::wstring(),
-                                                       std::wstring());
+        location_entry_->model()->FinalizeInstantQuery(string16(),
+                                                       string16());
       }
     } else {
       instant->DestroyPreviewContents();
-      location_entry_->model()->FinalizeInstantQuery(std::wstring(),
-                                                     std::wstring());
+      location_entry_->model()->FinalizeInstantQuery(string16(),
+                                                     string16());
     }
   }
 
@@ -606,8 +606,8 @@ SkBitmap LocationBarViewGtk::GetFavIcon() const {
   return GetTabContents()->GetFavIcon();
 }
 
-std::wstring LocationBarViewGtk::GetTitle() const {
-  return UTF16ToWideHack(GetTabContents()->GetTitle());
+string16 LocationBarViewGtk::GetTitle() const {
+  return GetTabContents()->GetTitle();
 }
 
 void LocationBarViewGtk::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
@@ -627,8 +627,7 @@ void LocationBarViewGtk::SetSuggestedText(const string16& text) {
     // text.
     if (!text.empty()) {
       location_entry_->model()->FinalizeInstantQuery(
-          location_entry_->GetText(),
-          UTF16ToWide(text));
+          location_entry_->GetText(), text);
     }
   } else {
     location_entry_->SetInstantSuggestion(text);
@@ -971,7 +970,7 @@ void LocationBarViewGtk::UpdateEVCertificateLabelSize() {
   pango_font_metrics_unref(metrics);
 }
 
-void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {
+void LocationBarViewGtk::SetKeywordLabel(const string16& keyword) {
   if (keyword.empty())
     return;
 
@@ -981,7 +980,7 @@ void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {
 
   bool is_extension_keyword;
   const string16 short_name = profile_->GetTemplateURLModel()->
-      GetKeywordShortName(WideToUTF16Hack(keyword), &is_extension_keyword);
+      GetKeywordShortName(keyword, &is_extension_keyword);
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;
   string16 full_name = l10n_util::GetStringFUTF16(message_id,
@@ -1000,8 +999,7 @@ void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {
 
     if (is_extension_keyword) {
       const TemplateURL* template_url =
-          profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(
-              WideToUTF16Hack(keyword));
+          profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
       const SkBitmap& bitmap = profile_->GetExtensionService()->
           GetOmniboxIcon(template_url->GetExtensionId());
       GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
@@ -1015,7 +1013,7 @@ void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {
   }
 }
 
-void LocationBarViewGtk::SetKeywordHintLabel(const std::wstring& keyword) {
+void LocationBarViewGtk::SetKeywordHintLabel(const string16& keyword) {
   if (keyword.empty())
     return;
 
@@ -1025,7 +1023,7 @@ void LocationBarViewGtk::SetKeywordHintLabel(const std::wstring& keyword) {
 
   bool is_extension_keyword;
   const string16 short_name = profile_->GetTemplateURLModel()->
-      GetKeywordShortName(WideToUTF16Hack(keyword), &is_extension_keyword);
+      GetKeywordShortName(keyword, &is_extension_keyword);
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
   std::vector<size_t> content_param_offsets;
@@ -1129,7 +1127,7 @@ void LocationBarViewGtk::OnIconDragBegin(GtkWidget* sender,
   if (!pixbuf)
     return;
   drag_icon_ = bookmark_utils::GetDragRepresentation(pixbuf,
-      WideToUTF16(GetTitle()), theme_provider_);
+      GetTitle(), theme_provider_);
   g_object_unref(pixbuf);
   gtk_drag_set_icon_widget(context, drag_icon_, 0, 0);
 }

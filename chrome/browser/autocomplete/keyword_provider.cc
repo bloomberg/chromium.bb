@@ -41,15 +41,15 @@ class KeywordProvider::ScopedEndExtensionKeywordMode {
 };
 
 // static
-std::wstring KeywordProvider::SplitReplacementStringFromInput(
-    const std::wstring& input,
+string16 KeywordProvider::SplitReplacementStringFromInput(
+    const string16& input,
     bool trim_leading_whitespace) {
   // The input may contain leading whitespace, strip it.
-  std::wstring trimmed_input;
+  string16 trimmed_input;
   TrimWhitespace(input, TRIM_LEADING, &trimmed_input);
 
   // And extract the replacement string.
-  std::wstring remaining_input;
+  string16 remaining_input;
   SplitKeywordFromInput(trimmed_input, trim_leading_whitespace,
                         &remaining_input);
   return remaining_input;
@@ -107,11 +107,11 @@ static int global_input_uid_;
 const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
     Profile* profile,
     const AutocompleteInput& input,
-    std::wstring* remaining_input) {
+    string16* remaining_input) {
   if (!input.allow_exact_keyword_match())
     return NULL;
 
-  std::wstring keyword;
+  string16 keyword;
   if (!ExtractKeywordFromInput(input, &keyword, remaining_input))
     return NULL;
 
@@ -121,8 +121,7 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
   DCHECK(model);
   model->Load();
 
-  const TemplateURL* template_url =
-      model->GetTemplateURLForKeyword(WideToUTF16Hack(keyword));
+  const TemplateURL* template_url = model->GetTemplateURLForKeyword(keyword);
   return TemplateURL::SupportsReplacement(template_url) ? template_url : NULL;
 }
 
@@ -155,7 +154,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   // keywords, we might suggest keywords that haven't even been partially typed,
   // if the user uses them enough and isn't obviously typing something else.  In
   // this case we'd consider all input here to be query input.
-  std::wstring keyword, remaining_input;
+  string16 keyword, remaining_input;
   if (!ExtractKeywordFromInput(input, &keyword, &remaining_input))
     return;
 
@@ -176,7 +175,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   // search query both from the autocomplete popup and from web pages
   // themselves.
   std::vector<string16> keyword_matches;
-  model->FindMatchingKeywords(WideToUTF16Hack(keyword),
+  model->FindMatchingKeywords(keyword,
                               !remaining_input.empty(),
                               &keyword_matches);
 
@@ -207,9 +206,8 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   // in the autocomplete popup.
   // Any exact match is going to be the highest quality match, and thus at the
   // front of our vector.
-  if (keyword_matches.front() == WideToUTF16Hack(keyword)) {
-    const TemplateURL* template_url(
-        model->GetTemplateURLForKeyword(WideToUTF16Hack(keyword)));
+  if (keyword_matches.front() == keyword) {
+    const TemplateURL* template_url(model->GetTemplateURLForKeyword(keyword));
     // TODO(pkasting): We should probably check that if the user explicitly
     // typed a scheme, that scheme matches the one in |template_url|.
     matches_.push_back(CreateAutocompleteMatch(model, keyword, input,
@@ -225,7 +223,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
       keyword_mode_toggle.StayInKeywordMode();
 
       ApplyDefaultSuggestionForExtensionKeyword(profile_, template_url,
-                                                WideToUTF16(remaining_input),
+                                                remaining_input,
                                                 &matches_[0]);
 
       if (minimal_changes) {
@@ -242,7 +240,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
 
         bool have_listeners = ExtensionOmniboxEventRouter::OnInputChanged(
             profile_, template_url->GetExtensionId(),
-            WideToUTF8(remaining_input), current_input_id_);
+            UTF16ToUTF8(remaining_input), current_input_id_);
 
         // We only have to wait for suggest results if there are actually
         // extensions listening for input changes.
@@ -257,7 +255,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
     }
     for (std::vector<string16>::const_iterator i(keyword_matches.begin());
          i != keyword_matches.end(); ++i) {
-      matches_.push_back(CreateAutocompleteMatch(model, UTF16ToWideHack(*i),
+      matches_.push_back(CreateAutocompleteMatch(model, *i,
                                                  input, keyword.length(),
                                                  remaining_input, -1));
     }
@@ -273,34 +271,33 @@ KeywordProvider::~KeywordProvider() {}
 
 // static
 bool KeywordProvider::ExtractKeywordFromInput(const AutocompleteInput& input,
-                                              std::wstring* keyword,
-                                              std::wstring* remaining_input) {
+                                              string16* keyword,
+                                              string16* remaining_input) {
   if ((input.type() == AutocompleteInput::INVALID) ||
       (input.type() == AutocompleteInput::FORCED_QUERY))
     return false;
 
-  *keyword =
-      UTF16ToWideHack(TemplateURLModel::CleanUserInputKeyword(WideToUTF16Hack(
-          SplitKeywordFromInput(input.text(), true, remaining_input))));
+  *keyword = TemplateURLModel::CleanUserInputKeyword(
+      SplitKeywordFromInput(input.text(), true, remaining_input));
   return !keyword->empty();
 }
 
 // static
-std::wstring KeywordProvider::SplitKeywordFromInput(
-    const std::wstring& input,
+string16 KeywordProvider::SplitKeywordFromInput(
+    const string16& input,
     bool trim_leading_whitespace,
-    std::wstring* remaining_input) {
+    string16* remaining_input) {
   // Find end of first token.  The AutocompleteController has trimmed leading
   // whitespace, so we need not skip over that.
-  const size_t first_white(input.find_first_of(kWhitespaceWide));
+  const size_t first_white(input.find_first_of(kWhitespaceUTF16));
   DCHECK_NE(0U, first_white);
-  if (first_white == std::wstring::npos)
+  if (first_white == string16::npos)
     return input;  // Only one token provided.
 
   // Set |remaining_input| to everything after the first token.
   DCHECK(remaining_input != NULL);
   const size_t remaining_start = trim_leading_whitespace ?
-    input.find_first_not_of(kWhitespaceWide, first_white) : first_white + 1;
+    input.find_first_not_of(kWhitespaceUTF16, first_white) : first_white + 1;
 
   if (remaining_start < input.length())
     remaining_input->assign(input.begin() + remaining_start, input.end());
@@ -311,7 +308,7 @@ std::wstring KeywordProvider::SplitKeywordFromInput(
 
 // static
 void KeywordProvider::FillInURLAndContents(
-    const std::wstring& remaining_input,
+    const string16& remaining_input,
     const TemplateURL* element,
     AutocompleteMatch* match) {
   DCHECK(!element->short_name().empty());
@@ -326,16 +323,16 @@ void KeywordProvider::FillInURLAndContents(
     if (element->url()->SupportsReplacement() &&
         !element->IsExtensionKeyword()) {
       // No query input; return a generic, no-destination placeholder.
-      match->contents.assign(UTF16ToWideHack(
+      match->contents.assign(
           l10n_util::GetStringFUTF16(message_id,
               element->AdjustedShortNameForLocaleDirection(),
-              l10n_util::GetStringUTF16(IDS_EMPTY_KEYWORD_VALUE))));
+              l10n_util::GetStringUTF16(IDS_EMPTY_KEYWORD_VALUE)));
       match->contents_class.push_back(
           ACMatchClassification(0, ACMatchClassification::DIM));
     } else {
       // Keyword that has no replacement text (aka a shorthand for a URL).
       match->destination_url = GURL(element->url()->url());
-      match->contents.assign(UTF16ToWideHack(element->short_name()));
+      match->contents.assign(element->short_name());
       AutocompleteMatch::ClassifyLocationInString(0, match->contents.length(),
           match->contents.length(), ACMatchClassification::NONE,
           &match->contents_class);
@@ -347,14 +344,13 @@ void KeywordProvider::FillInURLAndContents(
     // fixup to make the URL valid if necessary.
     DCHECK(element->url()->SupportsReplacement());
     match->destination_url = GURL(element->url()->ReplaceSearchTerms(
-      *element, WideToUTF16Hack(remaining_input),
-      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+        *element, remaining_input,
+        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
     std::vector<size_t> content_param_offsets;
-    match->contents.assign(UTF16ToWideHack(
-        l10n_util::GetStringFUTF16(message_id,
-                                   element->short_name(),
-                                   WideToUTF16Hack(remaining_input),
-                                   &content_param_offsets)));
+    match->contents.assign(l10n_util::GetStringFUTF16(message_id,
+                                                      element->short_name(),
+                                                      remaining_input,
+                                                      &content_param_offsets));
     if (content_param_offsets.size() == 2) {
       AutocompleteMatch::ClassifyLocationInString(content_param_offsets[1],
           remaining_input.length(), match->contents.length(),
@@ -382,15 +378,15 @@ int KeywordProvider::CalculateRelevance(AutocompleteInput::Type type,
 
 AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
     TemplateURLModel* model,
-    const std::wstring& keyword,
+    const string16& keyword,
     const AutocompleteInput& input,
     size_t prefix_length,
-    const std::wstring& remaining_input,
+    const string16& remaining_input,
     int relevance) {
   DCHECK(model);
   // Get keyword data from data store.
   const TemplateURL* element(
-      model->GetTemplateURLForKeyword(WideToUTF16Hack(keyword)));
+      model->GetTemplateURLForKeyword(keyword));
   DCHECK(element && element->url());
   const bool supports_replacement = element->url()->SupportsReplacement();
 
@@ -419,7 +415,7 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
   // to the user's input.  Because right now inexact keyword matches can't score
   // more highly than a "what you typed" match from one of the other providers,
   // we just don't bother to do this, and leave inline autocompletion off.
-  result.inline_autocomplete_offset = std::wstring::npos;
+  result.inline_autocomplete_offset = string16::npos;
 
   // Create destination URL and popup entry content by substituting user input
   // into keyword templates.
@@ -431,8 +427,8 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
 
   // Create popup entry description based on the keyword name.
   if (!element->IsExtensionKeyword()) {
-    result.description.assign(UTF16ToWideHack(l10n_util::GetStringFUTF16(
-        IDS_AUTOCOMPLETE_KEYWORD_DESCRIPTION, WideToUTF16Hack(keyword))));
+    result.description.assign(l10n_util::GetStringFUTF16(
+        IDS_AUTOCOMPLETE_KEYWORD_DESCRIPTION, keyword));
     string16 keyword_desc(
         l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_KEYWORD_DESCRIPTION));
     AutocompleteMatch::ClassifyLocationInString(
@@ -462,15 +458,15 @@ void KeywordProvider::Observe(NotificationType type,
     case NotificationType::EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED: {
       // It's possible to change the default suggestion while not in an editing
       // session.
-      std::wstring keyword, remaining_input;
+      string16 keyword, remaining_input;
       if (matches_.empty() || current_keyword_extension_id_.empty() ||
           !ExtractKeywordFromInput(input, &keyword, &remaining_input))
         return;
 
       const TemplateURL* template_url(
-          model->GetTemplateURLForKeyword(WideToUTF16Hack(keyword)));
+          model->GetTemplateURLForKeyword(keyword));
       ApplyDefaultSuggestionForExtensionKeyword(profile_, template_url,
-                                                WideToUTF16(remaining_input),
+                                                remaining_input,
                                                 &matches_[0]);
       listener_->OnProviderUpdate(true);
       return;
@@ -482,7 +478,7 @@ void KeywordProvider::Observe(NotificationType type,
       if (suggestions.request_id != current_input_id_)
         return;  // This is an old result. Just ignore.
 
-      std::wstring keyword, remaining_input;
+      string16 keyword, remaining_input;
       if (!ExtractKeywordFromInput(input, &keyword, &remaining_input)) {
         NOTREACHED();
         return;
@@ -502,10 +498,10 @@ void KeywordProvider::Observe(NotificationType type,
             input.prefer_keyword(), input.allow_exact_keyword_match());
         extension_suggest_matches_.push_back(CreateAutocompleteMatch(
             model, keyword, input, keyword.length(),
-            UTF16ToWide(suggestion.content), first_relevance - (i + 1)));
+            suggestion.content, first_relevance - (i + 1)));
 
         AutocompleteMatch* match = &extension_suggest_matches_.back();
-        match->contents.assign(UTF16ToWide(suggestion.description));
+        match->contents.assign(suggestion.description);
         match->contents_class = suggestion.description_styles;
         match->description.clear();
         match->description_class.clear();

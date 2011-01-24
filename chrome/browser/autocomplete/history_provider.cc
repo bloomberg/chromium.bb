@@ -60,10 +60,10 @@ void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
 }
 
 // static
-std::wstring HistoryProvider::FixupUserInput(const AutocompleteInput& input) {
-  const std::wstring& input_text = input.text();
+string16 HistoryProvider::FixupUserInput(const AutocompleteInput& input) {
+  const string16& input_text = input.text();
   // Fixup and canonicalize user input.
-  const GURL canonical_gurl(URLFixerUpper::FixupURL(WideToUTF8(input_text),
+  const GURL canonical_gurl(URLFixerUpper::FixupURL(UTF16ToUTF8(input_text),
                                                     std::string()));
   std::string canonical_gurl_str(canonical_gurl.possibly_invalid_spec());
   if (canonical_gurl_str.empty()) {
@@ -80,8 +80,8 @@ std::wstring HistoryProvider::FixupUserInput(const AutocompleteInput& input) {
   if ((input.type() != AutocompleteInput::URL) &&
       canonical_gurl.HostIsIPAddress()) {
     std::string original_hostname =
-        WideToUTF8(input_text.substr(input.parts().host.begin,
-                                     input.parts().host.len));
+        UTF16ToUTF8(input_text.substr(input.parts().host.begin,
+                                      input.parts().host.len));
     const url_parse::Parsed& parts =
         canonical_gurl.parsed_for_possibly_invalid_spec();
     // parts.host must not be empty when HostIsIPAddress() is true.
@@ -89,11 +89,11 @@ std::wstring HistoryProvider::FixupUserInput(const AutocompleteInput& input) {
     canonical_gurl_str.replace(parts.host.begin, parts.host.len,
                                original_hostname);
   }
-  std::wstring output = UTF8ToWide(canonical_gurl_str);
+  string16 output = UTF8ToUTF16(canonical_gurl_str);
   // Don't prepend a scheme when the user didn't have one.  Since the fixer
   // upper only prepends the "http" scheme, that's all we need to check for.
   if (canonical_gurl.SchemeIs(chrome::kHttpScheme) &&
-      !url_util::FindAndCompareScheme(WideToUTF8(input_text),
+      !url_util::FindAndCompareScheme(UTF16ToUTF8(input_text),
                                       chrome::kHttpScheme, NULL))
     TrimHttpPrefix(&output);
 
@@ -111,12 +111,14 @@ std::wstring HistoryProvider::FixupUserInput(const AutocompleteInput& input) {
   // trailing slashes (if the scheme is the only thing in the input).  It's not
   // clear that the result of fixup really matters in this case, but there's no
   // harm in making sure.
-  const size_t last_input_nonslash = input_text.find_last_not_of(L"/\\");
-  const size_t num_input_slashes = (last_input_nonslash == std::wstring::npos) ?
+  const size_t last_input_nonslash =
+      input_text.find_last_not_of(ASCIIToUTF16("/\\"));
+  const size_t num_input_slashes = (last_input_nonslash == string16::npos) ?
       input_text.length() : (input_text.length() - 1 - last_input_nonslash);
-  const size_t last_output_nonslash = output.find_last_not_of(L"/\\");
+  const size_t last_output_nonslash =
+      output.find_last_not_of(ASCIIToUTF16("/\\"));
   const size_t num_output_slashes =
-      (last_output_nonslash == std::wstring::npos) ?
+      (last_output_nonslash == string16::npos) ?
       output.length() : (output.length() - 1 - last_output_nonslash);
   if (num_output_slashes < num_input_slashes)
     output.append(num_input_slashes - num_output_slashes, '/');
@@ -127,17 +129,18 @@ std::wstring HistoryProvider::FixupUserInput(const AutocompleteInput& input) {
 }
 
 // static
-size_t HistoryProvider::TrimHttpPrefix(std::wstring* url) {
+size_t HistoryProvider::TrimHttpPrefix(string16* url) {
   // Find any "http:".
   if (!HasHTTPScheme(*url))
     return 0;
-  size_t scheme_pos = url->find(ASCIIToWide(chrome::kHttpScheme) + L":");
-  DCHECK(scheme_pos != std::wstring::npos);
+  size_t scheme_pos =
+      url->find(ASCIIToUTF16(chrome::kHttpScheme) + char16(':'));
+  DCHECK(scheme_pos != string16::npos);
 
   // Erase scheme plus up to two slashes.
   size_t prefix_end = scheme_pos + strlen(chrome::kHttpScheme) + 1;
   const size_t after_slashes = std::min(url->length(), prefix_end + 2);
-  while ((prefix_end < after_slashes) && ((*url)[prefix_end] == L'/'))
+  while ((prefix_end < after_slashes) && ((*url)[prefix_end] == '/'))
     ++prefix_end;
   url->erase(scheme_pos, prefix_end - scheme_pos);
   return (scheme_pos == 0) ? prefix_end : 0;

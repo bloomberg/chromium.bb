@@ -33,8 +33,8 @@ class SelectedKeywordView : public IconLabelBubbleView {
   virtual void Layout();
 
   // The current keyword, or an empty string if no keyword is displayed.
-  void SetKeyword(const std::wstring& keyword);
-  std::wstring keyword() const { return keyword_; }
+  void SetKeyword(const string16& keyword);
+  string16 keyword() const { return keyword_; }
 
   void set_profile(Profile* profile) { profile_ = profile; }
 
@@ -42,7 +42,7 @@ class SelectedKeywordView : public IconLabelBubbleView {
   // The keyword we're showing. If empty, no keyword is selected.
   // NOTE: we don't cache the TemplateURL as it is possible for it to get
   // deleted out from under us.
-  std::wstring keyword_;
+  string16 keyword_;
 
   // These labels are never visible.  They are used to size the view.  One
   // label contains the complete description of the keyword, the second

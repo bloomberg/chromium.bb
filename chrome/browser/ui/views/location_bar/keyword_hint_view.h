@@ -36,8 +36,8 @@ class KeywordHintView : public views::View {
 
   void SetColor(const SkColor& color);
 
-  void SetKeyword(const std::wstring& keyword);
-  std::wstring keyword() const { return keyword_; }
+  void SetKeyword(const string16& keyword);
+  string16 keyword() const { return keyword_; }
 
   virtual void Paint(gfx::Canvas* canvas);
   virtual gfx::Size GetPreferredSize();
@@ -52,7 +52,7 @@ class KeywordHintView : public views::View {
   views::Label* trailing_label_;
 
   // The keyword.
-  std::wstring keyword_;
+  string16 keyword_;
 
   Profile* profile_;
 

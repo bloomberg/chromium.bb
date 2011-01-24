@@ -592,8 +592,7 @@ void RenderViewContextMenu::AppendSearchProvider() {
 
   AutocompleteMatch match;
   profile_->GetAutocompleteClassifier()->Classify(
-      UTF16ToWideHack(params_.selection_text),
-      std::wstring(), false, &match, NULL);
+      params_.selection_text, string16(), false, &match, NULL);
   selection_navigation_url_ = match.destination_url;
   if (!selection_navigation_url_.is_valid())
     return;

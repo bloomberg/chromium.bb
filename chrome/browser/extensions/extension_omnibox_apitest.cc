@@ -31,16 +31,16 @@
 
 namespace {
 
-std::wstring AutocompleteResultAsString(const AutocompleteResult& result) {
-  std::wstring output(base::StringPrintf(L"{%d} ", result.size()));
+string16 AutocompleteResultAsString(const AutocompleteResult& result) {
+  std::string output(base::StringPrintf("{%lu} ", result.size()));
   for (size_t i = 0; i < result.size(); ++i) {
     AutocompleteMatch match = result.match_at(i);
-    std::wstring provider_name(ASCIIToWide(match.provider->name()));
-    output.append(base::StringPrintf(L"[\"%ls\" by \"%ls\"] ",
-                                     match.contents.c_str(),
+    std::string provider_name = match.provider->name();
+    output.append(base::StringPrintf("[\"%s\" by \"%s\"] ",
+                                     UTF16ToUTF8(match.contents).c_str(),
                                      provider_name.c_str()));
   }
-  return output;
+  return UTF8ToUTF16(output);
 }
 
 }  // namespace
@@ -88,13 +88,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
   // Test that our extension's keyword is suggested to us when we partially type
   // it.
   {
-    autocomplete_controller->Start(L"keywor", std::wstring(),
+    autocomplete_controller->Start(ASCIIToUTF16("keywor"), string16(),
                                    true, false, true, false);
 
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
     EXPECT_EQ(std::wstring(), location_bar->GetInputString());
-    EXPECT_EQ(std::wstring(), location_bar->location_entry()->GetText());
+    EXPECT_EQ(string16(), location_bar->location_entry()->GetText());
     EXPECT_TRUE(location_bar->location_entry()->IsSelectAll());
 
     // First result should be to search for what was typed, second should be to
@@ -113,8 +113,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
 
   // Test that our extension can send suggestions back to us.
   {
-    autocomplete_controller->Start(L"keyword suggestio", std::wstring(),
-                                   true, false, true, false);
+    autocomplete_controller->Start(ASCIIToUTF16("keyword suggestio"),
+                                   string16(), true, false, true, false);
 
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
@@ -126,13 +126,17 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
     ASSERT_EQ(5U, result.size()) << AutocompleteResultAsString(result);
 
     ASSERT_TRUE(result.match_at(0).template_url);
-    EXPECT_EQ(L"keyword suggestio", result.match_at(0).fill_into_edit);
-    EXPECT_EQ(L"keyword suggestion1", result.match_at(1).fill_into_edit);
-    EXPECT_EQ(L"keyword suggestion2", result.match_at(2).fill_into_edit);
-    EXPECT_EQ(L"keyword suggestion3", result.match_at(3).fill_into_edit);
+    EXPECT_EQ(ASCIIToUTF16("keyword suggestio"),
+              result.match_at(0).fill_into_edit);
+    EXPECT_EQ(ASCIIToUTF16("keyword suggestion1"),
+              result.match_at(1).fill_into_edit);
+    EXPECT_EQ(ASCIIToUTF16("keyword suggestion2"),
+              result.match_at(2).fill_into_edit);
+    EXPECT_EQ(ASCIIToUTF16("keyword suggestion3"),
+              result.match_at(3).fill_into_edit);
 
-    std::wstring description =
-        L"Description with style: <match>, [dim], (url till end)";
+    string16 description =
+        ASCIIToUTF16("Description with style: <match>, [dim], (url till end)");
     EXPECT_EQ(description, result.match_at(1).contents);
     ASSERT_EQ(6u, result.match_at(1).contents_class.size());
 
@@ -173,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
 
   {
     ResultCatcher catcher;
-    autocomplete_controller->Start(L"keyword command", std::wstring(),
+    autocomplete_controller->Start(ASCIIToUTF16("keyword command"), string16(),
                                    true, false, true, false);
     location_bar->AcceptInput();
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();

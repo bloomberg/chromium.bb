@@ -61,8 +61,8 @@ const char kSecurityErrorSchemeColor[] = "#a20000";
 const double kStrikethroughStrokeRed = 162.0 / 256.0;
 const double kStrikethroughStrokeWidth = 2.0;
 
-size_t GetUTF8Offset(const std::wstring& wide_text, size_t wide_text_offset) {
-  return WideToUTF8(wide_text.substr(0, wide_text_offset)).size();
+size_t GetUTF8Offset(const string16& text, size_t text_offset) {
+  return UTF16ToUTF8(text.substr(0, text_offset)).size();
 }
 
 // Stores GTK+-specific state so it can be restored after switching tabs.
@@ -456,7 +456,7 @@ void AutocompleteEditViewGtk::SaveStateToTab(TabContents* tab) {
 void AutocompleteEditViewGtk::Update(const TabContents* contents) {
   // NOTE: We're getting the URL text here from the ToolbarModel.
   bool visibly_changed_permanent_text =
-      model_->UpdatePermanentText(toolbar_model_->GetText());
+      model_->UpdatePermanentText(WideToUTF16Hack(toolbar_model_->GetText()));
 
   ToolbarModel::SecurityLevel security_level =
         toolbar_model_->GetSecurityLevel();
@@ -490,7 +490,7 @@ void AutocompleteEditViewGtk::OpenURL(const GURL& url,
                                       PageTransition::Type transition,
                                       const GURL& alternate_nav_url,
                                       size_t selected_line,
-                                      const std::wstring& keyword) {
+                                      const string16& keyword) {
   if (!url.is_valid())
     return;
 
@@ -498,11 +498,11 @@ void AutocompleteEditViewGtk::OpenURL(const GURL& url,
                   selected_line, keyword);
 }
 
-std::wstring AutocompleteEditViewGtk::GetText() const {
+string16 AutocompleteEditViewGtk::GetText() const {
   GtkTextIter start, end;
   GetTextBufferBounds(&start, &end);
   gchar* utf8 = gtk_text_buffer_get_text(text_buffer_, &start, &end, false);
-  std::wstring out(UTF8ToWide(utf8));
+  string16 out(UTF8ToUTF16(utf8));
   g_free(utf8);
 
 #if GTK_CHECK_VERSION(2, 20, 0)
@@ -528,12 +528,12 @@ int AutocompleteEditViewGtk::GetIcon() const {
       toolbar_model_->GetIcon();
 }
 
-void AutocompleteEditViewGtk::SetUserText(const std::wstring& text) {
+void AutocompleteEditViewGtk::SetUserText(const string16& text) {
   SetUserText(text, text, true);
 }
 
-void AutocompleteEditViewGtk::SetUserText(const std::wstring& text,
-                                          const std::wstring& display_text,
+void AutocompleteEditViewGtk::SetUserText(const string16& text,
+                                          const string16& display_text,
                                           bool update_popup) {
   model_->SetUserText(text);
   // TODO(deanm): something about selection / focus change here.
@@ -543,17 +543,17 @@ void AutocompleteEditViewGtk::SetUserText(const std::wstring& text,
   TextChanged();
 }
 
-void AutocompleteEditViewGtk::SetWindowTextAndCaretPos(const std::wstring& text,
+void AutocompleteEditViewGtk::SetWindowTextAndCaretPos(const string16& text,
                                                        size_t caret_pos) {
   CharRange range(static_cast<int>(caret_pos), static_cast<int>(caret_pos));
   SetTextAndSelectedRange(text, range);
 }
 
 void AutocompleteEditViewGtk::SetForcedQuery() {
-  const std::wstring current_text(GetText());
-  const size_t start = current_text.find_first_not_of(kWhitespaceWide);
-  if (start == std::wstring::npos || (current_text[start] != '?')) {
-    SetUserText(L"?");
+  const string16 current_text(GetText());
+  const size_t start = current_text.find_first_not_of(kWhitespaceUTF16);
+  if (start == string16::npos || (current_text[start] != '?')) {
+    SetUserText(ASCIIToUTF16("?"));
   } else {
     StartUpdatingHighlightedText();
     SetSelectedRange(CharRange(current_text.size(), start + 1));
@@ -577,8 +577,8 @@ bool AutocompleteEditViewGtk::DeleteAtEndPressed() {
   return delete_at_end_pressed_;
 }
 
-void AutocompleteEditViewGtk::GetSelectionBounds(std::wstring::size_type* start,
-                                                 std::wstring::size_type* end) {
+void AutocompleteEditViewGtk::GetSelectionBounds(string16::size_type* start,
+                                                 string16::size_type* end) {
   CharRange selection = GetSelection();
   *start = static_cast<size_t>(selection.cp_min);
   *end = static_cast<size_t>(selection.cp_max);
@@ -618,7 +618,7 @@ void AutocompleteEditViewGtk::ClosePopup() {
 }
 
 void AutocompleteEditViewGtk::OnTemporaryTextMaybeChanged(
-    const std::wstring& display_text,
+    const string16& display_text,
     bool save_original_selection) {
   if (save_original_selection)
     saved_temporary_selection_ = GetSelection();
@@ -630,7 +630,7 @@ void AutocompleteEditViewGtk::OnTemporaryTextMaybeChanged(
 }
 
 bool AutocompleteEditViewGtk::OnInlineAutocompleteTextMaybeChanged(
-    const std::wstring& display_text,
+    const string16& display_text,
     size_t user_text_length) {
   if (display_text == GetText())
     return false;
@@ -702,7 +702,7 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
   bool at_end_of_edit = (new_sel.cp_min == length && new_sel.cp_max == length);
 
   // See if the text or selection have changed since OnBeforePossibleChange().
-  std::wstring new_text(GetText());
+  string16 new_text(GetText());
   text_changed_ = (new_text != text_before_change_);
 #if GTK_CHECK_VERSION(2, 20, 0)
   text_changed_ =
@@ -836,8 +836,8 @@ views::View* AutocompleteEditViewGtk::AddToView(views::View* parent) {
 }
 
 bool AutocompleteEditViewGtk::CommitInstantSuggestion(
-    const std::wstring& typed_text,
-    const std::wstring& suggestion) {
+    const string16& typed_text,
+    const string16& suggestion) {
   return CommitInstantSuggestion();
 }
 
@@ -1433,7 +1433,7 @@ void AutocompleteEditViewGtk::HandlePopulatePopup(GtkWidget* sender,
   // back after shutdown, and similar issues.
   GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
   gchar* text = gtk_clipboard_wait_for_text(x_clipboard);
-  std::wstring text_wstr = UTF8ToWide(text);
+  string16 text_wstr = UTF8ToUTF16(text);
   g_free(text);
 
   // Paste and Go menu item.
@@ -1528,7 +1528,7 @@ void AutocompleteEditViewGtk::HandleDragDataReceived(
   if (!text)
     return;
 
-  std::wstring possible_url = UTF8ToWide(reinterpret_cast<char*>(text));
+  string16 possible_url = UTF8ToUTF16(reinterpret_cast<char*>(text));
   g_free(text);
   if (model_->CanPasteAndGo(CollapseWhitespace(possible_url, true))) {
     model_->PasteAndGo();
@@ -1677,15 +1677,14 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(bool copy) {
 
   CharRange selection = GetSelection();
   GURL url;
-  std::wstring text(UTF8ToWide(GetSelectedText()));
+  string16 text(UTF8ToUTF16(GetSelectedText()));
   bool write_url;
   model_->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
                             &url, &write_url);
 
   if (write_url) {
-    string16 text16(WideToUTF16(text));
     BookmarkNodeData data;
-    data.ReadFromTuple(url, text16);
+    data.ReadFromTuple(url, text);
     data.WriteToClipboard(NULL);
 
     // Stop propagating the signal.
@@ -1701,7 +1700,7 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(bool copy) {
       gtk_text_buffer_delete_selection(text_buffer_, true, true);
   }
 
-  OwnPrimarySelection(WideToUTF8(text));
+  OwnPrimarySelection(UTF16ToUTF8(text));
 }
 
 void AutocompleteEditViewGtk::OwnPrimarySelection(const std::string& text) {
@@ -1892,7 +1891,7 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
   // be treated as a search or a navigation, and is the same method the Paste
   // And Go system uses.
   url_parse::Component scheme, host;
-  std::wstring text(GetText());
+  string16 text(GetText());
   AutocompleteInput::ParseForEmphasizeComponents(
       text, model_->GetDesiredTLD(), &scheme, &host);
   const bool emphasize = model_->CurrentTextIsURL() && (host.len > 0);
@@ -1954,7 +1953,7 @@ bool AutocompleteEditViewGtk::CommitInstantSuggestion() {
     return false;
 
   model()->FinalizeInstantQuery(GetText(),
-                                UTF8ToWide(suggestion));
+                                UTF8ToUTF16(suggestion));
   return true;
 }
 
@@ -1975,10 +1974,10 @@ void AutocompleteEditViewGtk::SavePrimarySelection(
       clipboard, selected_text.data(), selected_text.size());
 }
 
-void AutocompleteEditViewGtk::SetTextAndSelectedRange(const std::wstring& text,
+void AutocompleteEditViewGtk::SetTextAndSelectedRange(const string16& text,
                                                       const CharRange& range) {
   if (text != GetText()) {
-    std::string utf8 = WideToUTF8(text);
+    std::string utf8 = UTF16ToUTF8(text);
     gtk_text_buffer_set_text(text_buffer_, utf8.data(), utf8.length());
   }
   SetSelectedRange(range);
@@ -2144,7 +2143,7 @@ std::string AutocompleteEditViewGtk::GetSelectedText() const {
 }
 
 void AutocompleteEditViewGtk::UpdatePrimarySelectionIfValidURL() {
-  std::wstring text = UTF8ToWide(GetSelectedText());
+  string16 text = UTF8ToUTF16(GetSelectedText());
 
   if (text.empty())
     return;
@@ -2156,7 +2155,7 @@ void AutocompleteEditViewGtk::UpdatePrimarySelectionIfValidURL() {
   model_->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
                             &url, &write_url);
   if (write_url) {
-    selected_text_ = WideToUTF8(text);
+    selected_text_ = UTF16ToUTF8(text);
     OwnPrimarySelection(selected_text_);
   }
 }
@@ -2174,7 +2173,7 @@ void AutocompleteEditViewGtk::HandlePreeditChanged(GtkWidget* sender,
     // delete the selection range here explicitly. See http://crbug.com/18808.
     if (preedit_.empty())
       gtk_text_buffer_delete_selection(text_buffer_, false, true);
-    preedit_ = UTF8ToWide(preedit);
+    preedit_ = UTF8ToUTF16(preedit);
   } else {
     preedit_.clear();
   }

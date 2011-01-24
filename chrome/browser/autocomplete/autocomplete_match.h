@@ -108,8 +108,8 @@ struct AutocompleteMatch {
   // Fills in the classifications for |text|, using |style| as the base style
   // and marking the first instance of |find_text| as a match.  (This match
   // will also not be dimmed, if |style| has DIM set.)
-  static void ClassifyMatchInString(const std::wstring& find_text,
-                                    const std::wstring& text,
+  static void ClassifyMatchInString(const string16& find_text,
+                                    const string16& text,
                                     int style,
                                     ACMatchClassifications* classifications);
 
@@ -143,10 +143,10 @@ struct AutocompleteMatch {
   // This string is loaded into the location bar when the item is selected
   // by pressing the arrow keys. This may be different than a URL, for example,
   // for search suggestions, this would just be the search terms.
-  std::wstring fill_into_edit;
+  string16 fill_into_edit;
 
   // The position within fill_into_edit from which we'll display the inline
-  // autocomplete string.  This will be std::wstring::npos if this match should
+  // autocomplete string.  This will be string16::npos if this match should
   // not be inline autocompleted.
   size_t inline_autocomplete_offset;
 
@@ -156,11 +156,11 @@ struct AutocompleteMatch {
   GURL destination_url;
 
   // The main text displayed in the address bar dropdown.
-  std::wstring contents;
+  string16 contents;
   ACMatchClassifications contents_class;
 
   // Additional helper text for each entry, such as a title or description.
-  std::wstring description;
+  string16 description;
   ACMatchClassifications description_class;
 
   // The transition type to use when the user opens this match.  By default
@@ -188,7 +188,7 @@ struct AutocompleteMatch {
 
   // Checks one text/classifications pair for valid values.
   void ValidateClassifications(
-      const std::wstring& text,
+      const string16& text,
       const ACMatchClassifications& classifications) const;
 #endif
 };

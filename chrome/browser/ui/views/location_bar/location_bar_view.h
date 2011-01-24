@@ -195,7 +195,7 @@ class LocationBarView : public LocationBar,
   virtual void OnAutocompleteWillClosePopup();
   virtual void OnAutocompleteLosingFocus(gfx::NativeView view_gaining_focus);
   virtual void OnAutocompleteWillAccept();
-  virtual bool OnCommitSuggestedText(const std::wstring& typed_text);
+  virtual bool OnCommitSuggestedText(const string16& typed_text);
   virtual bool AcceptCurrentInstantPreview();
   virtual void OnPopupBoundsChanged(const gfx::Rect& bounds);
   virtual void OnAutocompleteAccept(const GURL& url,
@@ -208,7 +208,7 @@ class LocationBarView : public LocationBar,
   virtual void OnKillFocus();
   virtual void OnSetFocus();
   virtual SkBitmap GetFavIcon() const;
-  virtual std::wstring GetTitle() const;
+  virtual string16 GetTitle() const;
 
   // Overridden from views::View:
   virtual std::string GetClassName() const;

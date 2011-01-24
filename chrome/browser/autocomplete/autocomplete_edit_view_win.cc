@@ -183,7 +183,7 @@ DWORD EditDropTarget::OnDrop(IDataObject* data_object,
 
   if (drag_has_url_) {
     GURL url;
-    std::wstring title;
+    string16 title;
     if (os_data.GetURLAndTitle(&url, &title)) {
       edit_->SetUserText(UTF8ToWide(url.spec()));
       edit_->model()->AcceptInput(CURRENT_TAB, true);
@@ -191,7 +191,7 @@ DWORD EditDropTarget::OnDrop(IDataObject* data_object,
     }
   } else if (drag_has_string_) {
     int string_drop_position = edit_->drop_highlight_position();
-    std::wstring text;
+    string16 text;
     if ((string_drop_position != -1 || !edit_->in_drag()) &&
         os_data.GetString(&text)) {
       DCHECK(string_drop_position == -1 ||
@@ -597,7 +597,7 @@ void AutocompleteEditViewWin::OpenURL(const GURL& url,
                                       PageTransition::Type transition,
                                       const GURL& alternate_nav_url,
                                       size_t selected_line,
-                                      const std::wstring& keyword) {
+                                      const string16& keyword) {
   if (!url.is_valid())
     return;
 
@@ -610,9 +610,9 @@ void AutocompleteEditViewWin::OpenURL(const GURL& url,
                   selected_line, keyword);
 }
 
-std::wstring AutocompleteEditViewWin::GetText() const {
+string16 AutocompleteEditViewWin::GetText() const {
   const int len = GetTextLength() + 1;
-  std::wstring str;
+  string16 str;
   GetWindowText(WriteInto(&str, len), len);
   return str;
 }
@@ -627,12 +627,12 @@ int AutocompleteEditViewWin::GetIcon() const {
       toolbar_model_->GetIcon();
 }
 
-void AutocompleteEditViewWin::SetUserText(const std::wstring& text) {
+void AutocompleteEditViewWin::SetUserText(const string16& text) {
   SetUserText(text, text, true);
 }
 
-void AutocompleteEditViewWin::SetUserText(const std::wstring& text,
-                                          const std::wstring& display_text,
+void AutocompleteEditViewWin::SetUserText(const string16& text,
+                                          const string16& display_text,
                                           bool update_popup) {
   ScopedFreeze freeze(this, GetTextObjectModel());
   model_->SetUserText(text);
@@ -643,16 +643,16 @@ void AutocompleteEditViewWin::SetUserText(const std::wstring& text,
   TextChanged();
 }
 
-void AutocompleteEditViewWin::SetWindowTextAndCaretPos(const std::wstring& text,
+void AutocompleteEditViewWin::SetWindowTextAndCaretPos(const string16& text,
                                                        size_t caret_pos) {
   SetWindowText(text.c_str());
   PlaceCaretAt(caret_pos);
 }
 
 void AutocompleteEditViewWin::SetForcedQuery() {
-  const std::wstring current_text(GetText());
+  const string16 current_text(GetText());
   const size_t start = current_text.find_first_not_of(kWhitespaceWide);
-  if (start == std::wstring::npos || (current_text[start] != '?'))
+  if (start == string16::npos || (current_text[start] != '?'))
     SetUserText(L"?");
   else
     SetSelection(current_text.length(), start + 1);
@@ -668,8 +668,8 @@ bool AutocompleteEditViewWin::DeleteAtEndPressed() {
   return delete_at_end_pressed_;
 }
 
-void AutocompleteEditViewWin::GetSelectionBounds(std::wstring::size_type* start,
-                                                 std::wstring::size_type* end) {
+void AutocompleteEditViewWin::GetSelectionBounds(string16::size_type* start,
+                                                 string16::size_type* end) {
   CHARRANGE selection;
   GetSel(selection);
   *start = static_cast<size_t>(selection.cpMin);
@@ -761,7 +761,7 @@ void AutocompleteEditViewWin::SetDropHighlightPosition(int position) {
 }
 
 void AutocompleteEditViewWin::MoveSelectedText(int new_position) {
-  const std::wstring selected_text(GetSelectedText());
+  const string16 selected_text(GetSelectedText());
   CHARRANGE sel;
   GetSel(sel);
   DCHECK((sel.cpMax != sel.cpMin) && (new_position >= 0) &&
@@ -783,7 +783,7 @@ void AutocompleteEditViewWin::MoveSelectedText(int new_position) {
 }
 
 void AutocompleteEditViewWin::InsertText(int position,
-                                         const std::wstring& text) {
+                                         const string16& text) {
   DCHECK((position >= 0) && (position <= GetTextLength()));
   ScopedFreeze freeze(this, GetTextObjectModel());
   OnBeforePossibleChange();
@@ -793,7 +793,7 @@ void AutocompleteEditViewWin::InsertText(int position,
 }
 
 void AutocompleteEditViewWin::OnTemporaryTextMaybeChanged(
-    const std::wstring& display_text,
+    const string16& display_text,
     bool save_original_selection) {
   if (save_original_selection)
     GetSelection(original_selection_);
@@ -811,7 +811,7 @@ void AutocompleteEditViewWin::OnTemporaryTextMaybeChanged(
 }
 
 bool AutocompleteEditViewWin::OnInlineAutocompleteTextMaybeChanged(
-    const std::wstring& display_text,
+    const string16& display_text,
     size_t user_text_length) {
   // Update the text and selection.  Because this can be called repeatedly while
   // typing, we've careful not to freeze the edit unless we really need to.
@@ -870,7 +870,7 @@ bool AutocompleteEditViewWin::OnAfterPossibleChangeInternal(
       (new_sel.cpMin == length) && (new_sel.cpMax == length);
 
   // See if the text or selection have changed since OnBeforePossibleChange().
-  const std::wstring new_text(GetText());
+  const string16 new_text(GetText());
   const bool text_differs = (new_text != text_before_change_) ||
       force_text_changed;
 
@@ -947,13 +947,13 @@ views::View* AutocompleteEditViewWin::AddToView(views::View* parent) {
 }
 
 bool AutocompleteEditViewWin::CommitInstantSuggestion(
-    const std::wstring& typed_text,
-    const std::wstring& suggested_text) {
+    const string16& typed_text,
+    const string16& suggested_text) {
   model_->FinalizeInstantQuery(typed_text, suggested_text);
   return true;
 }
 
-void AutocompleteEditViewWin::PasteAndGo(const std::wstring& text) {
+void AutocompleteEditViewWin::PasteAndGo(const string16& text) {
   if (CanPasteAndGo(text))
     model_->PasteAndGo();
 }
@@ -1049,7 +1049,7 @@ bool AutocompleteEditViewWin::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == IDS_PASTE_AND_GO;
 }
 
-std::wstring AutocompleteEditViewWin::GetLabelForCommandId(
+string16 AutocompleteEditViewWin::GetLabelForCommandId(
     int command_id) const {
   DCHECK(command_id == IDS_PASTE_AND_GO);
   return l10n_util::GetStringUTF16(model_->is_paste_and_search() ?
@@ -1261,7 +1261,7 @@ void AutocompleteEditViewWin::OnContextMenu(HWND window, const CPoint& point) {
 }
 
 void AutocompleteEditViewWin::OnCopy() {
-  std::wstring text(GetSelectedText());
+  string16 text(GetSelectedText());
   if (text.empty())
     return;
 
@@ -1369,7 +1369,7 @@ void AutocompleteEditViewWin::OnKeyUp(TCHAR key,
        ((key == VK_SHIFT) && (GetKeyState(VK_CONTROL) < 0)))) {
     ScopedFreeze freeze(this, GetTextObjectModel());
 
-    std::wstring saved_text(GetText());
+    string16 saved_text(GetText());
     CHARRANGE saved_sel;
     GetSelection(saved_sel);
 
@@ -1691,7 +1691,7 @@ void AutocompleteEditViewWin::OnPaint(HDC bogus_hdc) {
 
 void AutocompleteEditViewWin::OnPaste() {
   // Replace the selection if we have something to paste.
-  const std::wstring text(GetClipboardText());
+  const string16 text(GetClipboardText());
   if (!text.empty()) {
     // Record this paste, so we can do different behavior.
     model_->on_paste();
@@ -2033,13 +2033,13 @@ void AutocompleteEditViewWin::GetSelection(CHARRANGE& sel) const {
     std::swap(sel.cpMin, sel.cpMax);
 }
 
-std::wstring AutocompleteEditViewWin::GetSelectedText() const {
+string16 AutocompleteEditViewWin::GetSelectedText() const {
   // Figure out the length of the selection.
   CHARRANGE sel;
   GetSel(sel);
 
   // Grab the selected text.
-  std::wstring str;
+  string16 str;
   GetSelText(WriteInto(&str, sel.cpMax - sel.cpMin + 1));
   return str;
 }
@@ -2060,7 +2060,7 @@ void AutocompleteEditViewWin::SetSelection(LONG start, LONG end) {
   selection->SetFlags(tomSelStartActive);
 }
 
-void AutocompleteEditViewWin::PlaceCaretAt(std::wstring::size_type pos) {
+void AutocompleteEditViewWin::PlaceCaretAt(string16::size_type pos) {
   SetSelection(static_cast<LONG>(pos), static_cast<LONG>(pos));
 }
 
@@ -2319,12 +2319,12 @@ void AutocompleteEditViewWin::TextChanged() {
   controller_->OnChanged();
 }
 
-std::wstring AutocompleteEditViewWin::GetClipboardText() const {
+string16 AutocompleteEditViewWin::GetClipboardText() const {
   // Try text format.
   ui::Clipboard* clipboard = g_browser_process->clipboard();
   if (clipboard->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
                                    ui::Clipboard::BUFFER_STANDARD)) {
-    std::wstring text;
+    string16 text;
     clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &text);
 
     // Note: Unlike in the find popup and textfield view, here we completely
@@ -2353,10 +2353,10 @@ std::wstring AutocompleteEditViewWin::GetClipboardText() const {
       return UTF8ToWide(url.spec());
   }
 
-  return std::wstring();
+  return string16();
 }
 
-bool AutocompleteEditViewWin::CanPasteAndGo(const std::wstring& text) const {
+bool AutocompleteEditViewWin::CanPasteAndGo(const string16& text) const {
   return !popup_window_mode_ && model_->CanPasteAndGo(text);
 }
 
@@ -2400,8 +2400,8 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
     SetSelectionRange(sel);
   }
 
-  const std::wstring start_text(GetText());
-  std::wstring text_to_write(GetSelectedText());
+  const string16 start_text(GetText());
+  string16 text_to_write(GetSelectedText());
   GURL url;
   bool write_url;
   const bool is_all_selected = IsSelectAllForRange(sel);
@@ -2412,7 +2412,7 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
                              &text_to_write, &url, &write_url);
 
   if (write_url) {
-    std::wstring title;
+    string16 title;
     SkBitmap favicon;
     if (is_all_selected)
       model_->GetDataForURLExport(&url, &title, &favicon);
@@ -2561,7 +2561,7 @@ int AutocompleteEditViewWin::GetHorizontalMargin() const {
 }
 
 int AutocompleteEditViewWin::WidthNeededToDisplay(
-    const std::wstring& text) const {
+    const string16& text) const {
   // Use font_.GetStringWidth() instead of
   // PosFromChar(location_entry_->GetTextLength()) because PosFromChar() is
   // apparently buggy. In both LTR UI and RTL UI with left-to-right layout,

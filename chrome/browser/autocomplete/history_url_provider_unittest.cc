@@ -115,13 +115,13 @@ class HistoryURLProviderTest : public testing::Test,
 
   // Runs an autocomplete query on |text| and checks to see that the returned
   // results' destination URLs match those provided.
-  void RunTest(const std::wstring text,
-               const std::wstring& desired_tld,
+  void RunTest(const string16 text,
+               const string16& desired_tld,
                bool prevent_inline_autocomplete,
                const std::string* expected_urls,
                size_t num_results);
 
-  void RunAdjustOffsetTest(const std::wstring text, size_t expected_offset);
+  void RunAdjustOffsetTest(const string16 text, size_t expected_offset);
 
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
@@ -180,8 +180,8 @@ void HistoryURLProviderTest::FillData() {
   }
 }
 
-void HistoryURLProviderTest::RunTest(const std::wstring text,
-                                     const std::wstring& desired_tld,
+void HistoryURLProviderTest::RunTest(const string16 text,
+                                     const string16& desired_tld,
                                      bool prevent_inline_autocomplete,
                                      const std::string* expected_urls,
                                      size_t num_results) {
@@ -198,9 +198,9 @@ void HistoryURLProviderTest::RunTest(const std::wstring text,
     EXPECT_EQ(expected_urls[i], matches_[i].destination_url.spec());
 }
 
-void HistoryURLProviderTest::RunAdjustOffsetTest(const std::wstring text,
+void HistoryURLProviderTest::RunAdjustOffsetTest(const string16 text,
                                                  size_t expected_offset) {
-  AutocompleteInput input(text, std::wstring(), false, false, true, false);
+  AutocompleteInput input(text, string16(), false, false, true, false);
   autocomplete_->Start(input, false);
   if (!autocomplete_->done())
     MessageLoop::current()->Run();
@@ -216,7 +216,7 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     "http://slashdot.org/favorite_page.html",
     "http://slashdot.org/",
   };
-  RunTest(L"slash", std::wstring(), true, expected_nonsynth,
+  RunTest(ASCIIToUTF16("slash"), string16(), true, expected_nonsynth,
           arraysize(expected_nonsynth));
 
   // Test that hosts get synthesized above less popular pages.
@@ -224,11 +224,11 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     "http://kerneltrap.org/",
     "http://kerneltrap.org/not_very_popular.html",
   };
-  RunTest(L"kernel", std::wstring(), true, expected_synth,
+  RunTest(ASCIIToUTF16("kernel"), string16(), true, expected_synth,
           arraysize(expected_synth));
 
   // Test that unpopular pages are ignored completely.
-  RunTest(L"fresh", std::wstring(), true, NULL, 0);
+  RunTest(ASCIIToUTF16("fresh"), string16(), true, NULL, 0);
 
   // Test that if we have a synthesized host that matches a suggestion, they
   // get combined into one.
@@ -236,11 +236,11 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     "http://news.google.com/",
     "http://news.google.com/?ned=us&topic=n",
   };
-  ASSERT_NO_FATAL_FAILURE(RunTest(L"news", std::wstring(), true,
+  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("news"), string16(), true,
       expected_combine, arraysize(expected_combine)));
   // The title should also have gotten set properly on the host for the
   // synthesized one, since it was also in the results.
-  EXPECT_EQ(std::wstring(L"Google News"), matches_.front().description);
+  EXPECT_EQ(ASCIIToUTF16("Google News"), matches_.front().description);
 
   // Test that short URL matching works correctly as the user types more
   // (several tests):
@@ -250,7 +250,7 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     "http://foo.com/dir/another/again/myfile.html",
     "http://foo.com/dir/",
   };
-  RunTest(L"foo", std::wstring(), true, short_1, arraysize(short_1));
+  RunTest(ASCIIToUTF16("foo"), string16(), true, short_1, arraysize(short_1));
 
   // When the user types the whole host, make sure we don't get two results for
   // it.
@@ -260,8 +260,10 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     "http://foo.com/dir/",
     "http://foo.com/dir/another/",
   };
-  RunTest(L"foo.com", std::wstring(), true, short_2, arraysize(short_2));
-  RunTest(L"foo.com/", std::wstring(), true, short_2, arraysize(short_2));
+  RunTest(ASCIIToUTF16("foo.com"), string16(), true, short_2,
+          arraysize(short_2));
+  RunTest(ASCIIToUTF16("foo.com/"), string16(), true, short_2,
+          arraysize(short_2));
 
   // The filename is the second best of the foo.com* entries, but there is a
   // shorter URL that's "good enough".  The host doesn't match the user input
@@ -272,7 +274,8 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     "http://foo.com/dir/another/again/myfile.html",
     "http://foo.com/dir/",
   };
-  RunTest(L"foo.com/d", std::wstring(), true, short_3, arraysize(short_3));
+  RunTest(ASCIIToUTF16("foo.com/d"), string16(), true, short_3,
+          arraysize(short_3));
 
   // We shouldn't promote shorter URLs than the best if they're not good
   // enough.
@@ -281,7 +284,7 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     "http://foo.com/dir/another/again/myfile.html",
     "http://foo.com/dir/another/again/",
   };
-  RunTest(L"foo.com/dir/another/a", std::wstring(), true, short_4,
+  RunTest(ASCIIToUTF16("foo.com/dir/another/a"), string16(), true, short_4,
           arraysize(short_4));
 
   // Exact matches should always be best no matter how much more another match
@@ -295,8 +298,8 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     "http://gooey/",
     "http://www.google.com/",
   };
-  RunTest(L"g", std::wstring(), false, short_5a, arraysize(short_5a));
-  RunTest(L"go", std::wstring(), false, short_5b, arraysize(short_5b));
+  RunTest(ASCIIToUTF16("g"), string16(), false, short_5a, arraysize(short_5a));
+  RunTest(ASCIIToUTF16("go"), string16(), false, short_5b, arraysize(short_5b));
 }
 
 TEST_F(HistoryURLProviderTest, CullRedirects) {
@@ -336,31 +339,32 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
   // Because all the results are part of a redirect chain with other results,
   // all but the first one (A) should be culled. We should get the default
   // "what you typed" result, plus this one.
-  const std::wstring typing(L"http://redirects/");
+  const string16 typing(ASCIIToUTF16("http://redirects/"));
   const std::string expected_results[] = {
-    WideToUTF8(typing),
+    UTF16ToUTF8(typing),
     redirect[0].url};
-  RunTest(typing, std::wstring(), true, expected_results,
+  RunTest(typing, string16(), true, expected_results,
           arraysize(expected_results));
 }
 
 TEST_F(HistoryURLProviderTest, WhatYouTyped) {
   // Make sure we suggest a What You Typed match at the right times.
-  RunTest(L"wytmatch", std::wstring(), false, NULL, 0);
-  RunTest(L"wytmatch foo bar", std::wstring(), false, NULL, 0);
-  RunTest(L"wytmatch+foo+bar", std::wstring(), false, NULL, 0);
-  RunTest(L"wytmatch+foo+bar.com", std::wstring(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("wytmatch"), string16(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("wytmatch foo bar"), string16(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("wytmatch+foo+bar"), string16(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("wytmatch+foo+bar.com"), string16(), false, NULL, 0);
 
   const std::string results_1[] = {"http://www.wytmatch.com/"};
-  RunTest(L"wytmatch", L"com", false, results_1, arraysize(results_1));
+  RunTest(ASCIIToUTF16("wytmatch"), ASCIIToUTF16("com"), false, results_1,
+          arraysize(results_1));
 
   const std::string results_2[] = {"http://wytmatch%20foo%20bar/"};
-  RunTest(L"http://wytmatch foo bar", std::wstring(), false, results_2,
+  RunTest(ASCIIToUTF16("http://wytmatch foo bar"), string16(), false, results_2,
           arraysize(results_2));
 
   const std::string results_3[] = {"https://wytmatch%20foo%20bar/"};
-  RunTest(L"https://wytmatch foo bar", std::wstring(), false, results_3,
-          arraysize(results_3));
+  RunTest(ASCIIToUTF16("https://wytmatch foo bar"), string16(), false,
+          results_3, arraysize(results_3));
 
   // Test the corner case where a user has fully typed a previously visited
   // intranet address and is now hitting ctrl-enter, which completes to a
@@ -370,9 +374,9 @@ TEST_F(HistoryURLProviderTest, WhatYouTyped) {
     "http://www.binky.com/",
     "http://binky/",
   };
-  RunTest(L"binky", std::wstring(), false, binky_results,
+  RunTest(ASCIIToUTF16("binky"), string16(), false, binky_results,
           arraysize(binky_results));
-  RunTest(L"binky", L"com", false, binky_com_results,
+  RunTest(ASCIIToUTF16("binky"), ASCIIToUTF16("com"), false, binky_com_results,
           arraysize(binky_com_results));
 
   // Test the related case where a user has fully typed a previously visited
@@ -386,71 +390,74 @@ TEST_F(HistoryURLProviderTest, WhatYouTyped) {
     "http://www.winky.com/",
     "http://winky/",
   };
-  RunTest(L"winky", std::wstring(), false, winky_results,
+  RunTest(ASCIIToUTF16("winky"), string16(), false, winky_results,
           arraysize(winky_results));
-  RunTest(L"winky", L"com", false, winky_com_results,
+  RunTest(ASCIIToUTF16("winky"), ASCIIToUTF16("com"), false, winky_com_results,
           arraysize(winky_com_results));
 }
 
 TEST_F(HistoryURLProviderTest, Fixup) {
   // Test for various past crashes we've had.
-  RunTest(L"\\", std::wstring(), false, NULL, 0);
-  RunTest(L"#", std::wstring(), false, NULL, 0);
-  RunTest(L"%20", std::wstring(), false, NULL, 0);
-  RunTest(L"\uff65@s", std::wstring(), false, NULL, 0);
-  RunTest(L"\u2015\u2015@ \uff7c", std::wstring(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("\\"), string16(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("#"), string16(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("%20"), string16(), false, NULL, 0);
+  RunTest(WideToUTF16(L"\uff65@s"), string16(), false, NULL, 0);
+  RunTest(WideToUTF16(L"\u2015\u2015@ \uff7c"), string16(), false, NULL, 0);
 
   // Fixing up "file:" should result in an inline autocomplete offset of just
   // after "file:", not just after "file://".
-  const std::wstring input_1(L"file:");
+  const string16 input_1(ASCIIToUTF16("file:"));
   const std::string fixup_1[] = {"file:///C:/foo.txt"};
-  ASSERT_NO_FATAL_FAILURE(RunTest(input_1, std::wstring(), false, fixup_1,
+  ASSERT_NO_FATAL_FAILURE(RunTest(input_1, string16(), false, fixup_1,
                                   arraysize(fixup_1)));
   EXPECT_EQ(input_1.length(), matches_.front().inline_autocomplete_offset);
 
   // Fixing up "http:/" should result in an inline autocomplete offset of just
   // after "http:/", not just after "http:".
-  const std::wstring input_2(L"http:/");
+  const string16 input_2(ASCIIToUTF16("http:/"));
   const std::string fixup_2[] = {
     "http://bogussite.com/a",
     "http://bogussite.com/b",
     "http://bogussite.com/c",
   };
-  ASSERT_NO_FATAL_FAILURE(RunTest(input_2, std::wstring(), false, fixup_2,
+  ASSERT_NO_FATAL_FAILURE(RunTest(input_2, string16(), false, fixup_2,
                                   arraysize(fixup_2)));
   EXPECT_EQ(input_2.length(), matches_.front().inline_autocomplete_offset);
 
   // Adding a TLD to a small number like "56" should result in "www.56.com"
   // rather than "0.0.0.56.com".
   const std::string fixup_3[] = {"http://www.56.com/"};
-  RunTest(L"56", L"com", true, fixup_3, arraysize(fixup_3));
+  RunTest(ASCIIToUTF16("56"), ASCIIToUTF16("com"), true, fixup_3,
+          arraysize(fixup_3));
 
   // An input looks like a IP address like "127.0.0.1" should result in
   // "http://127.0.0.1/".
   const std::string fixup_4[] = {"http://127.0.0.1/"};
-  RunTest(L"127.0.0.1", std::wstring(), false, fixup_4, arraysize(fixup_4));
+  RunTest(ASCIIToUTF16("127.0.0.1"), string16(), false, fixup_4,
+          arraysize(fixup_4));
 
   // An number "17173" should result in "http://www.17173.com/" in db.
   const std::string fixup_5[] = {"http://www.17173.com/"};
-  RunTest(L"17173", std::wstring(), false, fixup_5, arraysize(fixup_5));
+  RunTest(ASCIIToUTF16("17173"), string16(), false, fixup_5,
+          arraysize(fixup_5));
 }
 
 TEST_F(HistoryURLProviderTest, AdjustOffset) {
-  RunAdjustOffsetTest(L"http://www.\uAD50\uC721", 13);
-  RunAdjustOffsetTest(L"http://spaces.com/path%20with%20spa", 31);
-  RunAdjustOffsetTest(L"http://ms/c++ s", 15);
+  RunAdjustOffsetTest(WideToUTF16(L"http://www.\uAD50\uC721"), 13);
+  RunAdjustOffsetTest(ASCIIToUTF16("http://spaces.com/path%20with%20spa"), 31);
+  RunAdjustOffsetTest(ASCIIToUTF16("http://ms/c++ s"), 15);
 }
 
 TEST_F(HistoryURLProviderTestNoDB, NavigateWithoutDB) {
   // Ensure that we will still produce matches for navigation when there is no
   // database.
   std::string navigation_1[] = {"http://test.com/"};
-  RunTest(L"test.com", std::wstring(), false, navigation_1,
+  RunTest(ASCIIToUTF16("test.com"), string16(), false, navigation_1,
           arraysize(navigation_1));
 
   std::string navigation_2[] = {"http://slash/"};
-  RunTest(L"slash", std::wstring(), false, navigation_2,
+  RunTest(ASCIIToUTF16("slash"), string16(), false, navigation_2,
           arraysize(navigation_2));
 
-  RunTest(L"this is a query", std::wstring(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("this is a query"), string16(), false, NULL, 0);
 }
