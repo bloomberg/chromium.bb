@@ -52,6 +52,7 @@ static const int kMiniTabRendererAsNormalTabWidth =
 
 // How opaque to make the hover state (out of 1).
 static const double kHoverOpacity = 0.33;
+static const double kHoverSlideOpacity = 0.5;
 
 Tab::TabImage Tab::tab_alpha_ = {0};
 Tab::TabImage Tab::tab_active_ = {0};
@@ -503,7 +504,8 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(background_canvas.ExtractBitmap(), 0, 0);
 
   if (!GetThemeProvider()->HasCustomImage(tab_id) &&
-      hover_animation() && hover_animation()->IsShowing()) {
+      hover_animation() &&
+      (hover_animation()->IsShowing() || hover_animation()->is_animating())) {
     SkBitmap hover_glow = DrawHoverGlowBitmap(width(), height());
     // Draw the hover glow clipped to the background into hover_image.
     SkBitmap hover_image = SkBitmapOperations::CreateMaskedBitmap(
@@ -580,8 +582,8 @@ SkBitmap Tab::DrawHoverGlowBitmap(int width_input, int height_input) {
   const ui::SlideAnimation* hover_slide = hover_animation();
   int hover_alpha = 0;
   if (hover_slide) {
-    hover_alpha =
-        static_cast<int>(255 * kHoverOpacity * hover_slide->GetCurrentValue());
+    hover_alpha = static_cast<int>(255 * kHoverSlideOpacity *
+                                   hover_slide->GetCurrentValue());
   }
   colors[0] = SkColorSetARGB(hover_alpha, 255, 255, 255);
   colors[1] = SkColorSetARGB(0, 255, 255, 255);
