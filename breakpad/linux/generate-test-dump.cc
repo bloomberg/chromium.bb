@@ -57,7 +57,7 @@ static bool DumpCallback(const char* dump_path, const char* minidump_id,
 
 static void DoSomethingWhichCrashes() {
   int local_var = 1;
-  *reinterpret_cast<char*>(NULL) = 1;
+  *reinterpret_cast<volatile char*>(NULL) = 1;
 }
 
 int main() {
