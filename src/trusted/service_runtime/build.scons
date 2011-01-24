@@ -596,9 +596,6 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
 # ./scons platform=x86-32
 # cp scons-out/nacl-x86-32/staging/{mandel.nexe,fib_*} \
 #     src/trusted/service_runtime/testdata/x86_32/
-# NOTE: sel_universal launches sel_ldr internally and we do not have a
-# good hook to sneak in an emulator yet
-is_broken = env.Bit('target_arm') and env.UsingEmulator()
 
 # TODO: Create integration test nexes for arm.
 INTEGRATION_TESTS_X86 = [ 'mandel',
@@ -612,17 +609,15 @@ def AddIntegrationTest(test, location):
   if not test or not location:
     return;
 
-  node = env.CommandSelLdrTestNacl(
+  node = env.SelUniversalTest(
       test + '_canned.out',
-      loader='sel_universal',
       command = [env.File(arch_testdata_dir + '/' + test + '.nexe')],
       stdin = location + '.stdin',
       stdout_golden = location + '.stdout',
       )
   env.AddNodeToTestSuite(node,
                          ['medium_tests'],
-                         'run_%s_integration_test' % test,
-                         is_broken=is_broken)
+                         'run_%s_integration_test' % test)
 
 if env.Bit('target_x86'):
   RE_HELLO = '^(Hello, World!)$'

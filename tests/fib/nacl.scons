@@ -5,37 +5,30 @@
 
 Import('env')
 
-# http://code.google.com/p/nativeclient/issues/detail?id=1300
-is_broken = env.Bit('target_arm') and env.UsingEmulator()
-
 env.ComponentProgram('fib_array.nexe',
                      'fib_array.c',
                      EXTRA_LIBS=['srpc', 'google_nacl_imc_c', 'pthread'])
-node = env.CommandSelLdrTestNacl(
+node = env.SelUniversalTest(
     'fib_array_test.out',
-    loader='sel_universal',
     command=[env.File('fib_array.nexe')],
     stdin=env.File('fib_array_test.stdin'),
     stdout_golden=env.File('fib_array_test.stdout')
     )
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
-                       'run_fib_array_test',
-                       is_broken=is_broken)
+                       'run_fib_array_test')
 
 
 
 env.ComponentProgram('fib_scalar.nexe',
                      'fib_scalar.c',
                      EXTRA_LIBS=['srpc', 'google_nacl_imc_c', 'pthread'])
-node = env.CommandSelLdrTestNacl(
+node = env.SelUniversalTest(
     'fib_scalar_test.out',
-    loader='sel_universal',
     command=[env.File('fib_scalar.nexe')],
     stdin=env.File('fib_scalar_test.stdin'),
     stdout_golden=env.File('fib_scalar_test.stdout')
     )
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
-                       'run_fib_scalar_test',
-                       is_broken=is_broken)
+                       'run_fib_scalar_test')

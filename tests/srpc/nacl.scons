@@ -98,38 +98,27 @@ env.ComponentProgram('srpc_bad_service.nexe', 'srpc_bad_service.c',
 env.Publish('srpc_bad_service.nexe', 'run', [])
 
 
-# NOTE: sel_universal launches sel_ldr internally and we do not have a
-# good hook to sneak in an emulator yet
-# TODO(robertm): research why srpc_basic and sysv_shm do not work on pnacl arm
-# "execv failed, args were: ... execv: Exec format error Open failed"
-is_broken = env.Bit('target_arm') and env.UsingEmulator()
-
-node = env.CommandSelLdrTestNacl(
+node = env.SelUniversalTest(
     'srpc_basic_test.out',
-    loader='sel_universal',
     command=[env.File('srpc_test.nexe')],
     stdin=env.File('srpc_basic_test.stdin'),
     stdout_golden=env.File('srpc_basic_test.stdout'),
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_basic_test',
-                       is_broken=is_broken)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_basic_test')
 
 trusted_env = env.get('TRUSTED_ENV')
 # NOTE: sel_universal only supports shmem under linux
 if trusted_env and trusted_env.Bit('linux'):
-  node = env.CommandSelLdrTestNacl(
+  node = env.SelUniversalTest(
       'srpc_sysv_shm_test.out',
-      loader='sel_universal',
       command=[env.File('srpc_shm.nexe')],
       stdin=env.File('srpc_sysv_shm_test.stdin'),
       stdout_golden=env.File('srpc_sysv_shm_test.stdout'),
       )
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_sysv_shm_test',
-                         is_broken=is_broken)
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_sysv_shm_test')
 
-node = env.CommandSelLdrTestNacl(
+node = env.SelUniversalTest(
     'srpc_bad_service.out',
-    loader='sel_universal',
     command=[env.File('srpc_bad_service.nexe')],
     exit_status='1'
     )

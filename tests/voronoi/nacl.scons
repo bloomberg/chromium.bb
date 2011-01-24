@@ -12,20 +12,13 @@ nexe = env.ComponentProgram('voronoi.nexe',
                             ['voronoi.cc'],
                             EXTRA_LIBS=['av', 'srpc', 'm', 'pthread'])
 
-# http://code.google.com/p/nativeclient/issues/detail?id=1300
-is_broken = env.Bit('target_arm') and env.UsingEmulator()
-
-node = env.CommandSelLdrTestNacl(
+node = env.SelUniversalTest(
     'voronoi_test.out',
-    loader='sel_universal',
     command=[env.File('voronoi.nexe'), '-t', '-d'],
     stdout_golden=env.File('voronoi.stdout'),
     stdin=env.File('voronoi.stdin'),
     )
-env.AddNodeToTestSuite(node,
-                       ['small_tests'],
-                       'run_voronoi',
-                       is_broken=is_broken)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_voronoi')
 
 env.Publish('voronoi.nexe', 'run', ['voronoi.html',])
 

@@ -10,18 +10,10 @@ env.Replace(EXTRA_LIBS=['srpc'])
 env.ComponentProgram('basic_srpc.nexe', 'basic_srpc.c')
 
 
-node = env.CommandSelLdrTestNacl(
+node = env.SelUniversalTest(
     'basic_srpc_test.out',
-    loader='sel_universal',
     command=[env.File('basic_srpc.nexe')],
     stdin=env.File('basic_srpc_test.stdin'),
     stdout_golden=env.File('basic_srpc_test.stdout'),
     )
-
-# http://code.google.com/p/nativeclient/issues/detail?id=1300
-is_broken = env.Bit('target_arm') and env.UsingEmulator()
-
-env.AddNodeToTestSuite(node,
-                       ['small_tests'],
-                       'run_basic_srpc_test',
-                       is_broken=is_broken)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_basic_srpc_test')

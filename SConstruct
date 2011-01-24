@@ -1081,6 +1081,21 @@ def CommandGdbTestNacl(env, name, command,
 pre_base_env.AddMethod(CommandGdbTestNacl)
 
 
+def SelUniversalTest(env, name, command, **kwargs):
+  # sel_universal does not know how to invoke sel_ldr via QEMU, so it
+  # does not work when testing the ARM build on another architecture.
+  # See http://code.google.com/p/nativeclient/issues/detail?id=1300
+  if env.Bit('target_arm') and env.UsingEmulator():
+    return []
+  node = CommandSelLdrTestNacl(env, name, command, loader='sel_universal',
+                               **kwargs)
+  # sel_universal locates sel_ldr via /proc/self/exe on Linux.
+  env.Depends(node, GetSelLdr(env))
+  return node
+
+pre_base_env.AddMethod(SelUniversalTest)
+
+
 # ----------------------------------------------------------
 def AddToStringifiedList(lst, additions):
   if not lst:
