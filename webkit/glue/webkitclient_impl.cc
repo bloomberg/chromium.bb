@@ -377,24 +377,6 @@ WebData WebKitClientImpl::loadResource(const char* name) {
     { "masterCardCC", IDR_AUTOFILL_CC_MASTERCARD },
     { "soloCC", IDR_AUTOFILL_CC_SOLO },
     { "visaCC", IDR_AUTOFILL_CC_VISA },
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-    // TODO(port): rename these to "skia" instead of "Linux".
-    { "linuxCheckboxDisabledIndeterminate",
-        IDR_LINUX_CHECKBOX_DISABLED_INDETERMINATE },
-    { "linuxCheckboxDisabledOff", IDR_LINUX_CHECKBOX_DISABLED_OFF },
-    { "linuxCheckboxDisabledOn", IDR_LINUX_CHECKBOX_DISABLED_ON },
-    { "linuxCheckboxIndeterminate", IDR_LINUX_CHECKBOX_INDETERMINATE },
-    { "linuxCheckboxOff", IDR_LINUX_CHECKBOX_OFF },
-    { "linuxCheckboxOn", IDR_LINUX_CHECKBOX_ON },
-    { "linuxRadioDisabledOff", IDR_LINUX_RADIO_DISABLED_OFF },
-    { "linuxRadioDisabledOn", IDR_LINUX_RADIO_DISABLED_ON },
-    { "linuxRadioOff", IDR_LINUX_RADIO_OFF },
-    { "linuxRadioOn", IDR_LINUX_RADIO_ON },
-    { "linuxProgressBar", IDR_PROGRESS_BAR },
-    { "linuxProgressBorderLeft", IDR_PROGRESS_BORDER_LEFT },
-    { "linuxProgressBorderRight", IDR_PROGRESS_BORDER_RIGHT },
-    { "linuxProgressValue", IDR_PROGRESS_VALUE },
-#endif
   };
 
   // Check the name prefix to see if it's an audio resource.

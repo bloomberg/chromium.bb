@@ -64,7 +64,7 @@
       <include name="IDR_PDF_BUTTON_ZOOMIN_PRESSED" file="resources\pdf_button_zoomin_pressed.png" type="BINDATA" />
       <include name="IDR_PDF_BUTTON_ZOOMOUT" file="resources\pdf_button_zoomout.png" type="BINDATA" />
       <include name="IDR_PDF_BUTTON_ZOOMOUT_HOVER" file="resources\pdf_button_zoomout_hover.png" type="BINDATA" />
-      <include name="IDR_PDF_BUTTON_ZOOMOUT_PRESSED" file="resources\pdf_button_zoomout_pressed.png" type="BINDATA" />      
+      <include name="IDR_PDF_BUTTON_ZOOMOUT_PRESSED" file="resources\pdf_button_zoomout_pressed.png" type="BINDATA" />
       <include name="IDR_PDF_THUMBNAIL_0" file="resources\pdf_thumbnail_0.png" type="BINDATA" />
       <include name="IDR_PDF_THUMBNAIL_1" file="resources\pdf_thumbnail_1.png" type="BINDATA" />
       <include name="IDR_PDF_THUMBNAIL_2" file="resources\pdf_thumbnail_2.png" type="BINDATA" />
@@ -76,23 +76,6 @@
       <include name="IDR_PDF_THUMBNAIL_8" file="resources\pdf_thumbnail_8.png" type="BINDATA" />
       <include name="IDR_PDF_THUMBNAIL_9" file="resources\pdf_thumbnail_9.png" type="BINDATA" />
       <include name="IDR_PDF_THUMBNAIL_NUM_BACKGROUND" file="resources\pdf_thumbnail_num_background.png" type="BINDATA" />
-
-      <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">
-        <include name="IDR_LINUX_CHECKBOX_DISABLED_INDETERMINATE" file="resources\linux-checkbox-disabled-indeterminate.png" type="BINDATA" />
-        <include name="IDR_LINUX_CHECKBOX_DISABLED_OFF" file="resources\linux-checkbox-disabled-off.png" type="BINDATA" />
-        <include name="IDR_LINUX_CHECKBOX_DISABLED_ON" file="resources\linux-checkbox-disabled-on.png" type="BINDATA" />
-        <include name="IDR_LINUX_CHECKBOX_INDETERMINATE" file="resources\linux-checkbox-indeterminate.png" type="BINDATA" />
-        <include name="IDR_LINUX_CHECKBOX_OFF" file="resources\linux-checkbox-off.png" type="BINDATA" />
-        <include name="IDR_LINUX_CHECKBOX_ON" file="resources\linux-checkbox-on.png" type="BINDATA" />
-        <include name="IDR_LINUX_RADIO_DISABLED_OFF" file="resources\linux-radio-disabled-off.png" type="BINDATA" />
-        <include name="IDR_LINUX_RADIO_DISABLED_ON" file="resources\linux-radio-disabled-on.png" type="BINDATA" />
-        <include name="IDR_LINUX_RADIO_OFF" file="resources\linux-radio-off.png" type="BINDATA" />
-        <include name="IDR_LINUX_RADIO_ON" file="resources\linux-radio-on.png" type="BINDATA" />
-        <include name="IDR_PROGRESS_BAR" file="resources\linux-progress-bar.png" type="BINDATA" />
-        <include name="IDR_PROGRESS_BORDER_LEFT" file="resources\linux-progress-border-left.png" type="BINDATA" />
-        <include name="IDR_PROGRESS_BORDER_RIGHT" file="resources\linux-progress-border-right.png" type="BINDATA" />
-        <include name="IDR_PROGRESS_VALUE" file="resources\linux-progress-value.png" type="BINDATA" />
-      </if>
     </includes>
   </release>
 </grit>
