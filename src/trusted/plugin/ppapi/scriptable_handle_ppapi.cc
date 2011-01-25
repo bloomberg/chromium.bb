@@ -281,10 +281,15 @@ pp::Var ScriptableHandlePpapi::Call(const pp::Var& name,
   if (scriptable_proxy_.is_undefined()) {
     return_var = Invoke(METHOD_CALL, name.AsString(), "Call", args, exception);
   } else {
-    // STL vectors are guaranteed to use continguous memory, so we can use
-    // some pointer magic to convert the vector into an array.
-    pp::Var* args_array = const_cast<pp::Var*>(&args[0]);
     uint32_t argc = static_cast<uint32_t>(args.size());
+    pp::Var* args_array = NULL;
+    // Check that array has at least 1 element. Visual Studio's STL will
+    // throw an exception if we access args[0] in DEBUG configurations.
+    if (argc > 0) {
+      // STL vectors are guaranteed to use continguous memory, so we can use
+      // some pointer magic to convert the vector into an array.
+      args_array = const_cast<pp::Var*>(&args[0]);
+    }
     return_var = scriptable_proxy_.Call(name, argc, args_array, exception);
   }
   PLUGIN_PRINTF(("ScriptableHandlePpapi::Call (return=%s)\n",
