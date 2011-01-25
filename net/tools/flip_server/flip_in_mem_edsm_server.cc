@@ -151,7 +151,8 @@ void PrintSslError() {
   char buf[128];  // this buffer must be at least 120 chars long.
   int error_num = ERR_get_error();
   while (error_num != 0) {
-    LOG(ERROR) << ERR_error_string(error_num, buf);
+    ERR_error_string_n(error_num, buf, sizeof(buf));
+    //LOG(ERROR) << buf;
     error_num = ERR_get_error();
   }
 }
@@ -1043,12 +1044,10 @@ class SMConnection:  public SMConnectionInterface,
       return;
     }
     Reset();
-    if (connection_pool_) {
+    if (connection_pool_)
       connection_pool_->SMConnectionDone(this);
-    }
-    if (sm_interface_) {
+    if (sm_interface_)
       sm_interface_->ResetForNewConnection();
-    }
     last_read_time_ = 0;
   }
 
@@ -1101,6 +1100,96 @@ class SMConnection:  public SMConnectionInterface,
     Cleanup("HandleEvents");
   }
 
+  // Decide if SPDY was negotiated.
+  bool WasSpdyNegotiated() {
+    if (FLAGS_force_spdy)
+      return true;
+
+    // If this is an SSL connection, check if NPN specifies SPDY.
+    if (ssl_) {
+      const unsigned char *npn_proto;
+      unsigned int npn_proto_len;
+      SSL_get0_next_proto_negotiated(ssl_, &npn_proto, &npn_proto_len);
+      if (npn_proto_len > 0) {
+        string npn_proto_str((const char *)npn_proto, npn_proto_len);
+        VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
+                << "NPN protocol detected: " << npn_proto_str;
+        if (!strncmp(reinterpret_cast<const char*>(npn_proto),
+                     "spdy/2", npn_proto_len))
+          return true;
+      }
+    }
+
+    return false;
+  }
+
+  // Initialize the protocol interfaces we'll need for this connection.
+  // Returns true if successful, false otherwise.
+  bool SetupProtocolInterfaces() {
+    DCHECK(!protocol_detected_);
+    protocol_detected_ = true;
+
+    bool spdy_negotiated = WasSpdyNegotiated();
+    bool using_ssl = ssl_ != NULL;
+
+    if (using_ssl)
+      VLOG(1) << (SSL_session_reused(ssl_) ? "Resumed" : "Renegotiated")
+              << " SSL Session.";
+
+    if (acceptor_->spdy_only_ && !spdy_negotiated) {
+      VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
+              << "SPDY proxy only, closing HTTPS connection.";
+      return false;
+    }
+
+    switch (acceptor_->flip_handler_type_) {
+      case FLIP_HANDLER_HTTP_SERVER:
+        {
+          DCHECK(!spdy_negotiated);
+          VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
+                  << (sm_http_interface_ ? "Creating" : "Reusing")
+                  << " HTTP interface.";
+          if (!sm_http_interface_)
+            sm_http_interface_ = NewHttpSM(this, NULL, epoll_server_,
+                                           memory_cache_, acceptor_);
+          sm_interface_ = sm_http_interface_;
+        }
+        break;
+      case FLIP_HANDLER_PROXY:
+        {
+          VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
+                  << (sm_streamer_interface_ ? "Creating" : "Reusing")
+                  << " PROXY Streamer interface.";
+          if (!sm_streamer_interface_)
+            sm_streamer_interface_ = NewStreamerSM(this, NULL,
+                                                   epoll_server_,
+                                                   acceptor_);
+          sm_interface_ = sm_streamer_interface_;
+          // If spdy is not negotiated, the streamer interface will proxy all
+          // data to the origin server.
+          if (!spdy_negotiated)
+            break;
+        }
+        // Otherwise fall through into the case below.
+      case FLIP_HANDLER_SPDY_SERVER:
+        {
+          DCHECK(spdy_negotiated);
+          VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
+                  << (sm_spdy_interface_ ? "Creating" : "Reusing")
+                  << " SPDY interface.";
+          if (!sm_spdy_interface_)
+            sm_spdy_interface_ = NewSpdySM(this, NULL, epoll_server_,
+                                           memory_cache_, acceptor_);
+          sm_interface_ = sm_spdy_interface_;
+        }
+        break;
+    }
+    if (!sm_interface_->PostAcceptHook())
+      return false;
+
+    return true;
+  }
+
   bool DoRead() {
     VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT << "DoRead()";
     while (!read_buffer_.Full()) {
@@ -1116,12 +1205,15 @@ class SMConnection:  public SMConnectionInterface,
       if (ssl_) {
         bytes_read = SSL_read(ssl_, bytes, size);
         if (bytes_read < 0) {
-          switch(SSL_get_error(ssl_, bytes_read)) {
+          int err = SSL_get_error(ssl_, bytes_read);
+          switch(err) {
             case SSL_ERROR_WANT_READ:
             case SSL_ERROR_WANT_WRITE:
             case SSL_ERROR_WANT_ACCEPT:
             case SSL_ERROR_WANT_CONNECT:
               events_ &= ~EPOLLIN;
+              VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
+                      << "DoRead: SSL WANT_XXX: " << err;
               goto done;
             default:
               PrintSslError();
@@ -1153,88 +1245,17 @@ class SMConnection:  public SMConnectionInterface,
         VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT << "read " << bytes_read
                  << " bytes";
         last_read_time_ = time(NULL);
+        // If the protocol hasn't been detected yet, set up the handlers
+        // we'll need.
         if (!protocol_detected_) {
-          if (acceptor_->flip_handler_type_ == FLIP_HANDLER_HTTP_SERVER) {
-            // Http Server
-            protocol_detected_ = true;
-            if (!sm_http_interface_) {
-              VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                      << "Created HTTP interface.";
-              sm_http_interface_ = NewHttpSM(this, NULL, epoll_server_,
-                                             memory_cache_, acceptor_);
-            } else {
-              VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                      << "Reusing HTTP interface.";
-            }
-            sm_interface_ = sm_http_interface_;
-          } else if (ssl_) {
-            protocol_detected_ = true;
-            if (SSL_session_reused(ssl_) == 0) {
-              VLOG(1) << "Session status: renegotiated";
-            } else {
-              VLOG(1) << "Session status: resumed";
-            }
-            bool spdy_negotiated = FLAGS_force_spdy;
-            if (!spdy_negotiated) {
-              const unsigned char *npn_proto;
-              unsigned int npn_proto_len;
-              SSL_get0_next_proto_negotiated(ssl_, &npn_proto, &npn_proto_len);
-              if (npn_proto_len > 0) {
-                string npn_proto_str((const char *)npn_proto, npn_proto_len);
-                VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                        << "NPN protocol detected: " << npn_proto_str;
-              } else {
-                VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                        << "NPN protocol detected: none";
-                if (acceptor_->flip_handler_type_ == FLIP_HANDLER_SPDY_SERVER) {
-                  VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                          << "NPN protocol: Could not negotiate SPDY protocol.";
-                  goto error_or_close;
-                }
-              }
-              if (npn_proto_len > 0 &&
-                  !strncmp(reinterpret_cast<const char*>(npn_proto),
-                           "spdy/2", npn_proto_len)) {
-                  spdy_negotiated = true;
-              }
-            }
-            if (spdy_negotiated) {
-              if (!sm_spdy_interface_) {
-                sm_spdy_interface_ = NewSpdySM(this, NULL, epoll_server_,
-                                               memory_cache_, acceptor_);
-                VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                        << "Created SPDY interface.";
-              } else {
-                VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                        << "Reusing SPDY interface.";
-              }
-              sm_interface_ = sm_spdy_interface_;
-            } else if (acceptor_->spdy_only_) {
-              VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                      << "SPDY proxy only, closing HTTPS connection.";
-              goto error_or_close;
-            } else {
-              if (!sm_streamer_interface_) {
-                sm_streamer_interface_ = NewStreamerSM(this, NULL,
-                                                       epoll_server_,
-                                                       acceptor_);
-                VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                        << "Created Streamer interface.";
-              } else {
-                VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                        << "Reusing Streamer interface: ";
-              }
-              sm_interface_ = sm_streamer_interface_;
-            }
-          }
-          if (sm_interface_->PostAcceptHook() == 0) {
+          if (!SetupProtocolInterfaces()) {
+            LOG(ERROR) << "Error setting up protocol interfaces.";
             goto error_or_close;
           }
         }
         read_buffer_.AdvanceWritablePtr(bytes_read);
-        if (!DoConsumeReadData()) {
+        if (!DoConsumeReadData())
           goto error_or_close;
-        }
         continue;
       } else {  // bytes_read == 0
         VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
@@ -1243,6 +1264,7 @@ class SMConnection:  public SMConnectionInterface,
       goto error_or_close;
     }
    done:
+    VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT << "DoRead done!";
     return true;
 
     error_or_close:
@@ -1317,7 +1339,8 @@ class SMConnection:  public SMConnectionInterface,
               << output_list_.size();
       if (bytes_sent >= max_bytes_sent_per_dowrite_) {
         VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                << " byte sent >= max bytes sent per write: Setting EPOLLOUT";
+                << " byte sent >= max bytes sent per write: Setting EPOLLOUT: "
+                << bytes_sent;
         events_ |= EPOLLOUT;
         break;
       }
@@ -1428,7 +1451,6 @@ class SMConnection:  public SMConnectionInterface,
     }
     output_list_.clear();
   }
-
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1624,6 +1646,9 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
  private:
   uint64 seq_num_;
   SpdyFramer* spdy_framer_;
+  bool valid_spdy_session_;  // True if we have seen valid data on this session.
+                             // Use this to fail fast when junk is sent to our
+                             // port.
 
   SMConnection* connection_;
   OutputList* client_output_list_;
@@ -1644,6 +1669,7 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
          FlipAcceptor* acceptor)
          : seq_num_(0),
            spdy_framer_(new SpdyFramer),
+           valid_spdy_session_(false),
            connection_(connection),
            client_output_list_(connection->output_list()),
            client_output_ordering_(connection),
@@ -1809,6 +1835,9 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
             LOG(ERROR) << "SpdySM: Could not convert spdy into http.";
             break;
           }
+          // We've seen a valid looking SYN_STREAM, consider this to have
+          // been a real spdy session.
+          valid_spdy_session_ = true;
 
           if (acceptor_->flip_handler_type_ == FLIP_HANDLER_PROXY) {
             string server_ip;
@@ -1854,9 +1883,17 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
                                  const char* data, size_t len) {
     VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: StreamData(" << stream_id
             << ", [" << len << "])";
-    if (acceptor_->flip_handler_type_ == FLIP_HANDLER_PROXY) {
-          stream_to_smif_[stream_id]->ProcessWriteInput(data, len);
+    StreamToSmif::iterator it = stream_to_smif_.find(stream_id);
+    if (it == stream_to_smif_.end()) {
+      VLOG(2) << "Dropping frame from unknown stream " << stream_id;
+      if (!valid_spdy_session_)
+        connection_->Cleanup("invalid");
+      return;
     }
+
+    SMInterface* interface = it->second;
+    if (acceptor_->flip_handler_type_ == FLIP_HANDLER_PROXY)
+      interface->ProcessWriteInput(data, len);
   }
 
  public:
@@ -1897,6 +1934,7 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
     delete spdy_framer_;
     spdy_framer_ = new SpdyFramer;
     spdy_framer_->set_visitor(this);
+    valid_spdy_session_ = false;
     client_output_ordering_.Reset();
     next_outgoing_stream_id_ = 2;
   }
@@ -2422,8 +2460,8 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
 
   void Cleanup() {
     if (!(acceptor_->flip_handler_type_ == FLIP_HANDLER_HTTP_SERVER)) {
-      connection_->Cleanup("HttpSM Request Fully Read: stream_id " +
-                           stream_id_);
+      VLOG(2) << "HttpSM Request Fully Read; stream_id: " << stream_id_;
+      connection_->Cleanup("request complete");
     }
   }
 
@@ -2820,7 +2858,7 @@ class SMAcceptorThread : public SimpleThread,
       memory_cache_(memory_cache)
   {
     if (!acceptor->ssl_cert_filename_.empty() &&
-        !acceptor->ssl_cert_filename_.empty()) {
+        !acceptor->ssl_key_filename_.empty()) {
       ssl_state_ = new SSLState;
       bool use_npn = true;
       if (acceptor_->flip_handler_type_ == FLIP_HANDLER_HTTP_SERVER) {
