@@ -206,7 +206,7 @@ var tests = [
   function navigateSidebar() {
     showSidebarForCurrentTab(function() {
       expandSidebarForCurrentTab(function() {
-        chrome.sidebar.navigate({url: 'simple_page.html'});
+        chrome.sidebar.navigate({path: 'simple_page.html'});
         hideSidebarForCurrentTab(pass());
       });
     });

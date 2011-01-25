@@ -26,7 +26,7 @@ SidebarContainer::SidebarContainer(TabContents* tab,
       content_id_(content_id),
       delegate_(delegate),
       icon_(new SkBitmap),
-      navigate_to_default_url_on_expand_(true),
+      navigate_to_default_page_on_expand_(true),
       use_default_icon_(true) {
   // Create TabContents for sidebar.
   sidebar_contents_.reset(
@@ -69,13 +69,13 @@ void SidebarContainer::Show() {
 }
 
 void SidebarContainer::Expand() {
-  if (navigate_to_default_url_on_expand_) {
-    navigate_to_default_url_on_expand_ = false;
-    // Check whether a default URL is specified for this sidebar.
+  if (navigate_to_default_page_on_expand_) {
+    navigate_to_default_page_on_expand_ = false;
+    // Check whether a default page is specified for this sidebar.
     const Extension* extension = GetExtension();
     if (extension) {  // Can be NULL in tests.
-      if (extension->sidebar_defaults()->default_url().is_valid())
-        Navigate(extension->sidebar_defaults()->default_url());
+      if (extension->sidebar_defaults()->default_page().is_valid())
+        Navigate(extension->sidebar_defaults()->default_page());
     }
   }
 
@@ -89,7 +89,7 @@ void SidebarContainer::Collapse() {
 
 void SidebarContainer::Navigate(const GURL& url) {
   // TODO(alekseys): add a progress UI.
-  navigate_to_default_url_on_expand_ = false;
+  navigate_to_default_page_on_expand_ = false;
   sidebar_contents_->controller().LoadURL(
       url, GURL(), PageTransition::START_PAGE);
 }

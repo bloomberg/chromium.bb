@@ -3908,7 +3908,7 @@
       {
         "name": "navigate",
         "type": "function",
-        "description": "Navigates sidebar for the specified tab to the specified URL.",
+        "description": "Loads the the specified html file into the sidebar for the specified tab.",
         "parameters": [
           {
             "type": "object",
@@ -3920,7 +3920,10 @@
                 "optional": true,
                 "description": "Defaults to the selected tab of the <a href='windows.html#current-window'>current window</a>."
               },
-              "url": { "type": "string" }
+              "path": {
+                "type": "string",
+                "description": "Relative path to the html file in the extension to show in the sidebar."
+              }
             }
           }
         ]

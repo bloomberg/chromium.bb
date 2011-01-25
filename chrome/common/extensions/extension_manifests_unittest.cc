@@ -288,14 +288,12 @@ TEST_F(ExtensionManifestTest, Sidebar) {
       errors::kInvalidSidebarDefaultIconPath);
   LoadAndExpectError("sidebar_icon_invalid_type.json",
       errors::kInvalidSidebarDefaultIconPath);
+  LoadAndExpectError("sidebar_page_empty.json",
+      errors::kInvalidSidebarDefaultPage);
+  LoadAndExpectError("sidebar_page_invalid_type.json",
+      errors::kInvalidSidebarDefaultPage);
   LoadAndExpectError("sidebar_title_invalid_type.json",
       errors::kInvalidSidebarDefaultTitle);
-  LoadAndExpectError("sidebar_url_invalid.json",
-      errors::kInvalidSidebarDefaultUrl);
-  LoadAndExpectError("sidebar_url_invalid_type.json",
-      errors::kInvalidSidebarDefaultUrl);
-  LoadAndExpectError("sidebar_url_no_permissions.json",
-      extension_manifest_errors::kCannotAccessPage);
 
   scoped_refptr<Extension> extension(LoadAndExpectSuccess("sidebar.json"));
   ASSERT_TRUE(extension->sidebar_defaults() != NULL);
@@ -304,12 +302,7 @@ TEST_F(ExtensionManifestTest, Sidebar) {
   EXPECT_EQ(extension->sidebar_defaults()->default_icon_path(),
             "icon.png");
   EXPECT_EQ(extension->url().spec() + "sidebar.html",
-            extension->sidebar_defaults()->default_url().spec());
-
-  scoped_refptr<Extension> extension_external_url(
-      LoadAndExpectSuccess("sidebar_external_url.json"));
-  EXPECT_EQ("http://sidebar.url/sidebar.html",
-            extension_external_url->sidebar_defaults()->default_url().spec());
+            extension->sidebar_defaults()->default_page().spec());
 
   *CommandLine::ForCurrentProcess() = old_command_line;
 }

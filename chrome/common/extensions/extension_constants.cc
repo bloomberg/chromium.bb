@@ -54,8 +54,8 @@ const char* kPublicKey = "key";
 const char* kRunAt = "run_at";
 const char* kSidebar = "sidebar";
 const char* kSidebarDefaultIcon = "default_icon";
+const char* kSidebarDefaultPage = "default_page";
 const char* kSidebarDefaultTitle = "default_title";
-const char* kSidebarDefaultUrl = "default_url";
 const char* kSignature = "signature";
 const char* kTheme = "theme";
 const char* kThemeColors = "colors";
@@ -233,10 +233,10 @@ const char* kInvalidSidebar =
     "Invalid value for 'sidebar'.";
 const char* kInvalidSidebarDefaultIconPath =
     "Invalid value for 'sidebar.default_icon'.";
+const char* kInvalidSidebarDefaultPage =
+    "Invalid value for 'sidebar.default_page'.";
 const char* kInvalidSidebarDefaultTitle =
     "Invalid value for 'sidebar.default_title'.";
-const char* kInvalidSidebarDefaultUrl =
-    "Invalid value for 'sidebar.default_url'.";
 const char* kInvalidSignature =
     "Value 'signature' is missing or invalid.";
 const char* kInvalidTheme =

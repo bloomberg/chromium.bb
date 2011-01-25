@@ -835,19 +835,20 @@ ExtensionSidebarDefaults* Extension::LoadExtensionSidebarDefaults(
   }
   result->set_default_title(default_title);
 
-  // Read sidebar's |default_url| (optional).
-  std::string default_url;
-  if (extension_sidebar->HasKey(keys::kSidebarDefaultUrl)) {
-    if (!extension_sidebar->GetString(keys::kSidebarDefaultUrl, &default_url) ||
-        default_url.empty()) {
-      *error = errors::kInvalidSidebarDefaultUrl;
+  // Read sidebar's |default_page| (optional).
+  std::string default_page;
+  if (extension_sidebar->HasKey(keys::kSidebarDefaultPage)) {
+    if (!extension_sidebar->GetString(keys::kSidebarDefaultPage,
+                                      &default_page) ||
+        default_page.empty()) {
+      *error = errors::kInvalidSidebarDefaultPage;
       return NULL;
     }
-    GURL resolved_url = extension_sidebar_utils::ResolveAndVerifyUrl(
-        default_url, this, error);
-    if (!resolved_url.is_valid())
+    GURL url = extension_sidebar_utils::ResolveRelativePath(
+        default_page, this, error);
+    if (!url.is_valid())
       return NULL;
-    result->set_default_url(resolved_url);
+    result->set_default_page(url);
   }
 
   return result.release();
@@ -1897,6 +1898,22 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     devtools_url_ = GetResourceURL(devtools_str);
   }
 
+  // Initialize sidebar action (optional).
+  if (source.HasKey(keys::kSidebar)) {
+    DictionaryValue* sidebar_value;
+    if (!source.GetDictionary(keys::kSidebar, &sidebar_value)) {
+      *error = errors::kInvalidSidebar;
+      return false;
+    }
+    if (!HasApiPermission(Extension::kExperimentalPermission)) {
+      *error = errors::kSidebarExperimental;
+      return false;
+    }
+    sidebar_defaults_.reset(LoadExtensionSidebarDefaults(sidebar_value, error));
+    if (!sidebar_defaults_.get())
+      return false;  // Failed to parse sidebar definition.
+  }
+
   // Initialize text-to-speech voices (optional).
   if (source.HasKey(keys::kTts)) {
     DictionaryValue* tts_dict;
@@ -1975,23 +1992,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   }
 
   InitEffectiveHostPermissions();
-
-  // Initialize sidebar action (optional). It has to be done after host
-  // permissions are initialized to verify default sidebar url.
-  if (source.HasKey(keys::kSidebar)) {
-    DictionaryValue* sidebar_value;
-    if (!source.GetDictionary(keys::kSidebar, &sidebar_value)) {
-      *error = errors::kInvalidSidebar;
-      return false;
-    }
-    if (!HasApiPermission(Extension::kExperimentalPermission)) {
-      *error = errors::kSidebarExperimental;
-      return false;
-    }
-    sidebar_defaults_.reset(LoadExtensionSidebarDefaults(sidebar_value, error));
-    if (!sidebar_defaults_.get())
-      return false;  // Failed to parse sidebar definition.
-  }
 
   // Although |source| is passed in as a const, it's still possible to modify
   // it.  This is dangerous since the utility process re-uses |source| after

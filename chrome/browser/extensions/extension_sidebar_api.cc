@@ -37,10 +37,10 @@ const char kInvalidExpandContextError[] =
 // Keys.
 const char kBadgeTextKey[] = "text";
 const char kImageDataKey[] = "imageData";
+const char kPathKey[] = "path";
 const char kStateKey[] = "state";
 const char kTabIdKey[] = "tabId";
 const char kTitleKey[] = "title";
-const char kUrlKey[] = "url";
 // Events.
 const char kOnStateChanged[] = "experimental.sidebar.onStateChanged";
 }  // namespace
@@ -204,11 +204,11 @@ bool HideSidebarFunction::RunImpl(TabContents* tab,
 bool NavigateSidebarFunction::RunImpl(TabContents* tab,
                                       const std::string& content_id,
                                       const DictionaryValue& details) {
-  std::string url_string;
-  EXTENSION_FUNCTION_VALIDATE(details.GetString(kUrlKey, &url_string));
+  std::string path_string;
+  EXTENSION_FUNCTION_VALIDATE(details.GetString(kPathKey, &path_string));
 
-  GURL url = extension_sidebar_utils::ResolveAndVerifyUrl(
-      url_string, GetExtension(), &error_);
+  GURL url = extension_sidebar_utils::ResolveRelativePath(
+      path_string, GetExtension(), &error_);
   if (!url.is_valid())
     return false;
 

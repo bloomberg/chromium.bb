@@ -6,24 +6,12 @@
 
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
 
 // Errors.
-const char kInvalidUrlError[] = "Invalid url: \"*\".";
-
-bool CanUseHost(const Extension* extension,
-                const GURL& url,
-                std::string* error) {
-  if (extension->HasHostPermission(url))
-    return true;
-
-  *error = ExtensionErrorUtils::FormatErrorMessage(
-      extension_manifest_errors::kCannotAccessPage, url.spec());
-  return false;
-}
+const char kInvalidPathError[] = "Invalid path: \"*\".";
 
 }  // namespace
 
@@ -34,30 +22,15 @@ std::string GetExtensionIdByContentId(const std::string& content_id) {
   return content_id;
 }
 
-GURL ResolveAndVerifyUrl(const std::string& url_string,
+GURL ResolveRelativePath(const std::string& relative_path,
                          const Extension* extension,
                          std::string* error) {
-  // Resolve possibly relative URL.
-  GURL url(url_string);
-  if (!url.is_valid())
-    url = extension->GetResourceURL(url_string);
-
+  GURL url(extension->GetResourceURL(relative_path));
   if (!url.is_valid()) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidUrlError,
-                                                     url_string);
+    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidPathError,
+                                                     relative_path);
     return GURL();
   }
-  if (!url.SchemeIs(chrome::kExtensionScheme) &&
-      !CanUseHost(extension, url, error)) {
-    return GURL();
-  }
-  // Disallow requests outside of the requesting extension view's extension.
-  if (url.SchemeIs(chrome::kExtensionScheme)) {
-    std::string extension_id(url.host());
-    if (extension_id != extension->id())
-      return GURL();
-  }
-
   return url;
 }
 

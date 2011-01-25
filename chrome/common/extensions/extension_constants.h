@@ -59,8 +59,8 @@ namespace extension_manifest_keys {
   extern const char* kRunAt;
   extern const char* kSidebar;
   extern const char* kSidebarDefaultIcon;
+  extern const char* kSidebarDefaultPage;
   extern const char* kSidebarDefaultTitle;
-  extern const char* kSidebarDefaultUrl;
   extern const char* kSignature;
   extern const char* kTheme;
   extern const char* kThemeColors;
@@ -166,8 +166,8 @@ namespace extension_manifest_errors {
   extern const char* kInvalidRunAt;
   extern const char* kInvalidSidebar;
   extern const char* kInvalidSidebarDefaultIconPath;
+  extern const char* kInvalidSidebarDefaultPage;
   extern const char* kInvalidSidebarDefaultTitle;
-  extern const char* kInvalidSidebarDefaultUrl;
   extern const char* kInvalidSignature;
   extern const char* kInvalidTheme;
   extern const char* kInvalidThemeColors;

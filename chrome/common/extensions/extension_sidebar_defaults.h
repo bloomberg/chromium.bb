@@ -11,8 +11,6 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 
-class SkBitmap;
-
 // ExtensionSidebarDefaults encapsulates the default parameters of a sidebar,
 // as defined in the extension manifest.
 class ExtensionSidebarDefaults {
@@ -31,18 +29,19 @@ class ExtensionSidebarDefaults {
     return default_icon_path_;
   }
 
-  // Default sidebar url, resolved and verified against extension permissions.
-  void set_default_url(const GURL& url) {
-    default_url_ = url;
+  // A resolved |url| to extension resource (manifest default_page key value)
+  // to navigate sidebar to by default.
+  void set_default_page(const GURL& url) {
+    default_page_ = url;
   }
-  const GURL& default_url() const {
-    return default_url_;
+  const GURL& default_page() const {
+    return default_page_;
   }
 
  private:
   string16 default_title_;
   std::string default_icon_path_;
-  GURL default_url_;
+  GURL default_page_;
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_SIDEBAR_DEFAULTS_H_

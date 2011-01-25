@@ -16,11 +16,10 @@ namespace extension_sidebar_utils {
 // Returns id of an extension owning a sidebar identified by |content_id|.
 std::string GetExtensionIdByContentId(const std::string& content_id);
 
-// Resolves |url_string| relative to |extension|'s url and verifies it
-// against |extension|'s host permissions.
+// Resolves |relative_path| relative to |extension|'s url.
 // In case of any problem, returns an empty invalid GURL and |error| receives
 // the corresponding error message.
-GURL ResolveAndVerifyUrl(const std::string& url_string,
+GURL ResolveRelativePath(const std::string& relative_path,
                          const Extension* extension,
                          std::string* error);
 

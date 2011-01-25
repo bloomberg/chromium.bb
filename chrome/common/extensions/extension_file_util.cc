@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/extension_sidebar_defaults.h"
 #include "chrome/common/json_value_serializer.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -265,6 +266,21 @@ bool ValidateExtension(Extension* extension, std::string* error) {
           l10n_util::GetStringFUTF8(
               IDS_EXTENSION_LOAD_OPTIONS_PAGE_FAILED,
               WideToUTF16(options_path.ToWStringHack()));
+      return false;
+    }
+  }
+
+  // Validate sidebar default page location.
+  ExtensionSidebarDefaults* sidebar_defaults = extension->sidebar_defaults();
+  if (sidebar_defaults && sidebar_defaults->default_page().is_valid()) {
+    FilePath page_path = ExtensionURLToRelativeFilePath(
+        sidebar_defaults->default_page());
+    const FilePath path = extension->GetResource(page_path).GetFilePath();
+    if (path.empty() || !file_util::PathExists(path)) {
+      *error =
+          l10n_util::GetStringFUTF8(
+              IDS_EXTENSION_LOAD_SIDEBAR_PAGE_FAILED,
+              WideToUTF16(page_path.ToWStringHack()));
       return false;
     }
   }

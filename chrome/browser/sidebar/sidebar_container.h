@@ -147,10 +147,10 @@ class SidebarContainer
   string16 title_;
 
   // On the first expand sidebar will be automatically navigated to the default
-  // url (specified in the extension manifest), but only if the extension has
+  // page (specified in the extension manifest), but only if the extension has
   // not explicitly navigated it yet. This variable is set to false on the first
   // sidebar navigation.
-  bool navigate_to_default_url_on_expand_;
+  bool navigate_to_default_page_on_expand_;
   // Since the default icon (specified in the extension manifest) is loaded
   // asynchronously, sidebar icon can already be set by the extension
   // by the time it's loaded. This variable tracks whether the loaded default
