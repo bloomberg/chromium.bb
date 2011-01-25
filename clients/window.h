@@ -211,10 +211,6 @@ window_set_keyboard_focus_handler(struct window *window,
 				  window_keyboard_focus_handler_t handler);
 
 void
-window_set_frame_handler(struct window *window,
-			 window_frame_handler_t handler);
-
-void
 window_set_title(struct window *window, const char *title);
 
 const char *
