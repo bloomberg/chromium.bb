@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,9 +10,9 @@
 
 #include "chrome/common/content_settings.h"
 
-class ContentSettingsProviderInterface {
+class DefaultContentSettingsProvider {
  public:
-  virtual ~ContentSettingsProviderInterface() {}
+  virtual ~DefaultContentSettingsProvider() {}
 
   // True if this provider can provide a default setting for the |content_type|.
   virtual bool CanProvideDefaultSetting(

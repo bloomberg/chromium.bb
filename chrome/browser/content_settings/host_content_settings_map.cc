@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
+#include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/policy_content_settings_provider.h"
 #include "chrome/browser/content_settings/pref_content_settings_provider.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -87,11 +88,12 @@ ContentSetting ClickToPlayFixup(ContentSettingsType content_type,
   return setting;
 }
 
-typedef std::vector<linked_ptr<ContentSettingsProviderInterface> >::iterator
+typedef linked_ptr<DefaultContentSettingsProvider>
+    DefaultContentSettingsProviderPtr;
+typedef std::vector<DefaultContentSettingsProviderPtr>::iterator
     provider_iterator;
-typedef
-    std::vector<linked_ptr<ContentSettingsProviderInterface> >::const_iterator
-        const_provider_iterator;
+typedef std::vector<DefaultContentSettingsProviderPtr>::const_iterator
+    const_provider_iterator;
 
 }  // namespace
 
@@ -110,11 +112,11 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   // The order in which the content settings providers are created is critical,
   // as providers that are further down in the list (i.e. added later) override
   // providers further up.
-  content_settings_providers_.push_back(
-      linked_ptr<ContentSettingsProviderInterface>(
+  default_content_settings_providers_.push_back(
+      DefaultContentSettingsProviderPtr(
           new PrefContentSettingsProvider(profile)));
-  content_settings_providers_.push_back(
-      linked_ptr<ContentSettingsProviderInterface>(
+  default_content_settings_providers_.push_back(
+      DefaultContentSettingsProviderPtr(
           new PolicyContentSettingsProvider(profile)));
 
   PrefService* prefs = profile_->GetPrefs();
@@ -174,8 +176,9 @@ void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
 ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
     ContentSettingsType content_type) const {
   ContentSetting setting = CONTENT_SETTING_DEFAULT;
-  for (const_provider_iterator provider = content_settings_providers_.begin();
-       provider != content_settings_providers_.end(); ++provider) {
+  for (const_provider_iterator provider =
+           default_content_settings_providers_.begin();
+       provider != default_content_settings_providers_.end(); ++provider) {
     if (!(*provider)->CanProvideDefaultSetting(content_type))
       continue;
     ContentSetting provided_setting =
@@ -411,8 +414,9 @@ void HostContentSettingsMap::SetDefaultContentSetting(
     return;
   }
 
-  for (provider_iterator provider = content_settings_providers_.begin();
-       provider != content_settings_providers_.end(); ++provider) {
+  for (provider_iterator provider =
+           default_content_settings_providers_.begin();
+       provider != default_content_settings_providers_.end(); ++provider) {
     (*provider)->UpdateDefaultSetting(content_type, setting);
   }
 }
@@ -669,8 +673,9 @@ void HostContentSettingsMap::ResetToDefaults() {
 
   {
     base::AutoLock auto_lock(lock_);
-    for (provider_iterator provider = content_settings_providers_.begin();
-         provider != content_settings_providers_.end(); ++provider) {
+    for (provider_iterator provider =
+             default_content_settings_providers_.begin();
+         provider != default_content_settings_providers_.end(); ++provider) {
       (*provider)->ResetToDefaults();
     }
     host_content_settings_.clear();
@@ -813,8 +818,9 @@ bool HostContentSettingsMap::AllDefault(
 
 bool HostContentSettingsMap::IsDefaultContentSettingManaged(
     ContentSettingsType content_type) const {
-  for (const_provider_iterator provider = content_settings_providers_.begin();
-       provider != content_settings_providers_.end(); ++provider) {
+  for (const_provider_iterator provider =
+           default_content_settings_providers_.begin();
+       provider != default_content_settings_providers_.end(); ++provider) {
     if ((*provider)->DefaultSettingIsManaged(content_type))
       return true;
   }

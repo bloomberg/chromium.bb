@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@
 #include "chrome/common/notification_registrar.h"
 
 class ContentSettingsDetails;
-class ContentSettingsProviderInterface;
+class DefaultContentSettingsProvider;
 class DictionaryValue;
 class GURL;
 class PrefService;
@@ -229,8 +229,8 @@ class HostContentSettingsMap
   bool updating_preferences_;
 
   // Content setting providers.
-  std::vector<linked_ptr<ContentSettingsProviderInterface> >
-      content_settings_providers_;
+  std::vector<linked_ptr<DefaultContentSettingsProvider> >
+      default_content_settings_providers_;
 
   // Used around accesses to the following objects to guarantee thread safety.
   mutable base::Lock lock_;

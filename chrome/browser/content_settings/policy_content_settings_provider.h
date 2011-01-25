@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,13 +20,13 @@ class DictionaryValue;
 class PrefService;
 class Profile;
 
-class PolicyContentSettingsProvider : public ContentSettingsProviderInterface,
+class PolicyContentSettingsProvider : public DefaultContentSettingsProvider,
                                       public NotificationObserver {
  public:
   explicit PolicyContentSettingsProvider(Profile* profile);
   virtual ~PolicyContentSettingsProvider();
 
-  // ContentSettingsProviderInterface implementation.
+  // DefaultContentSettingsProvider implementation.
   virtual bool CanProvideDefaultSetting(ContentSettingsType content_type) const;
   virtual ContentSetting ProvideDefaultSetting(
       ContentSettingsType content_type) const;
