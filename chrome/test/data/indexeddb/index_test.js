@@ -33,7 +33,7 @@ function onKeyCursor()
       return;
     }
 
-    var result = index.openCursor({range: IDBKeyRange.only(55)});
+    var result = index.openCursor(IDBKeyRange.only(55));
     result.onsuccess = onCursor;
     result.onerror = unexpectedErrorCallback;
     gotObjectThroughCursor = false;
@@ -55,7 +55,7 @@ function getSuccess()
   shouldBe('event.result.aKey', '55');
   shouldBe('event.result.aValue', '"foo"');
 
-  var result = index.openKeyCursor({range: IDBKeyRange.only(55)});
+  var result = index.openKeyCursor(IDBKeyRange.only(55));
   result.onsuccess = onKeyCursor;
   result.onerror = unexpectedErrorCallback;
   gotKeyThroughCursor = false;

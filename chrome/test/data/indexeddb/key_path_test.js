@@ -21,7 +21,7 @@ function openCursor()
 {
     debug("Opening cursor #" + count);
     keyRange = webkitIDBKeyRange.lowerBound("myKey" + count);
-    result = objectStore.openCursor({range: keyRange});
+    result = objectStore.openCursor(keyRange);
     result.onsuccess = cursorSuccess;
     result.onerror = unexpectedErrorCallback;
 }

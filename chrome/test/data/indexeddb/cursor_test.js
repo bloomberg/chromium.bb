@@ -12,7 +12,7 @@ function openEmptyCursor()
 {
   debug('Opening an empty cursor.');
   keyRange = webkitIDBKeyRange.lowerBound('InexistentKey');
-  result = objectStore.openCursor({range: keyRange});
+  result = objectStore.openCursor(keyRange);
   result.onsuccess = emptyCursorSuccess;
   result.onerror = unexpectedErrorCallback;
 }
@@ -38,7 +38,7 @@ function openCursor(objectStore)
 {
   debug('Opening cursor');
   var keyRange = webkitIDBKeyRange.lowerBound(3.12);
-  var result = objectStore.openCursor({range: keyRange});
+  var result = objectStore.openCursor(keyRange);
   result.onsuccess = cursorSuccess;
   result.onerror = unexpectedErrorCallback;
 }

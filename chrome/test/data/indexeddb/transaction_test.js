@@ -23,7 +23,7 @@ function newTransactionAborted()
 {
   debug('The transaction was aborted.');
 
-  var finalTransaction = db.transaction({objectStoreNames: [], mode: IDBTransaction.READ_ONLY});
+  var finalTransaction = db.transaction([], IDBTransaction.READ_ONLY);
   finalTransaction.oncomplete = finalTransactionCompleted;
   finalTransaction.onabort = finalTransactionAborted;
 
@@ -45,7 +45,7 @@ function employeeAdded()
 function onSetVersionComplete()
 {
   debug('Creating new transaction.');
-  var newTransaction = db.transaction({objectStoreNames: [], mode: IDBTransaction.READ_WRITE});
+  var newTransaction = db.transaction([], IDBTransaction.READ_WRITE);
   newTransaction.oncomplete = newTransactionCompleted;
   newTransaction.onabort = newTransactionAborted;
 
