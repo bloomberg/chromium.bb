@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,9 +91,6 @@ class AppLauncherHandler
   // Returns the ExtensionInstallUI object for this class, creating it if
   // needed.
   ExtensionInstallUI* GetExtensionInstallUI();
-
-  // Starts the animation of the app icon.
-  void AnimateAppIcon(const Extension* extension, const gfx::Rect& rect);
 
   // Helper that uninstalls all the default apps.
   void UninstallDefaultApps();

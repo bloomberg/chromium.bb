@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/app_launched_animation.h"
 #include "chrome/browser/dom_ui/shown_sections_handler.h"
 #include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -305,8 +304,6 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   if (browser)
     old_contents = browser->GetSelectedTabContents();
 
-  AnimateAppIcon(extension, rect);
-
   // Look at preference to find the right launch container.  If no preference
   // is set, launch as a regular tab.
   extension_misc::LaunchContainer launch_container =
@@ -447,19 +444,6 @@ ExtensionInstallUI* AppLauncherHandler::GetExtensionInstallUI() {
   if (!install_ui_.get())
     install_ui_.reset(new ExtensionInstallUI(dom_ui_->GetProfile()));
   return install_ui_.get();
-}
-
-void AppLauncherHandler::AnimateAppIcon(const Extension* extension,
-                                        const gfx::Rect& rect) {
-  // We make this check for the case of minimized windows, unit tests, etc.
-  if (platform_util::IsVisible(dom_ui_->tab_contents()->GetNativeView()) &&
-      ui::Animation::ShouldRenderRichAnimation()) {
-#if defined(OS_WIN)
-    AppLaunchedAnimation::Show(extension, rect);
-#else
-    NOTIMPLEMENTED();
-#endif
-  }
 }
 
 void AppLauncherHandler::UninstallDefaultApps() {
