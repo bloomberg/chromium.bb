@@ -3631,8 +3631,11 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN15SyncSetupWizardC1EP18ProfileSyncService
-   fun:_ZN18ProfileSyncServiceC2Ev
-   fun:_ZN22ProfileSyncServiceMockC2Ev
-   fun:_ZN7testing8NiceMockI22ProfileSyncServiceMockEC1Ev
-   fun:_ZN71SyncUIUtilTest_ConstructAboutInformationWithUnrecoverableErrorTest_Test8TestBodyEv
+}
+{
+   bug_70782_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15SyncSetupWizardC2EP18ProfileSyncService
+   fun:_ZN15SyncSetupWizardC1EP18ProfileSyncService
 }
