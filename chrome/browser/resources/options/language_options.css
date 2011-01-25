@@ -87,28 +87,29 @@
   margin-top: 12px;
 }
 
-#add-language-overlay-language-list[os=chromeos] {
+html[os=chromeos] #add-language-overlay-language-list {
   -webkit-column-count: 2;
   -webkit-column-gap: 20px;
 }
 
-#add-language-overlay-cancel-button[os=chromeos] {
+html[os=chromeos] #add-language-overlay-cancel-button {
   /* Place the button in the center. */
   display: block;
   margin: auto;
   margin-top: 15px;
 }
 
-#add-language-overlay-page[os=chromeos] {
+html[os=chromeos] #add-language-overlay-page {
   width: 800px;
+  padding: 20px;
 }
 
-#add-language-overlay-page[os=chromeos] button {
+html[os=chromeos] #add-language-overlay-page button.link-button {
   padding: 0;
   text-align: left;
 }
 
-#add-language-overlay-page[os=chromeos] ul {
+html[os=chromeos] #add-language-overlay-page ul {
   padding: 0;
   margin: 0;
 }

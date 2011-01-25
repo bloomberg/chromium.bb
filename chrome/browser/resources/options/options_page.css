@@ -362,8 +362,12 @@ label.radio {
   -webkit-appearance: slider-horizontal;
 }
 
-.link-button {
-  background-color: transparent;
+.link-button,
+.link-button:active,
+.link-button:focus,
+.link-button:hover {
+  -webkit-box-shadow: none;
+  background: transparent none;
   border: none;
   color: blue;
   cursor: pointer;
