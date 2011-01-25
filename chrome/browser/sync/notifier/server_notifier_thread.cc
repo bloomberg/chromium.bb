@@ -9,9 +9,11 @@
 
 #include "base/logging.h"
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
+#include "googleurl/src/gurl.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/notification_defines.h"
 #include "talk/xmpp/xmppclient.h"
+#include "webkit/glue/webkit_glue.h"
 
 namespace sync_notifier {
 
@@ -113,8 +115,11 @@ void ServerNotifierThread::DoListenForUpdates() {
     // make it so that we won't receive any notifications that were
     // generated from our own changes.
     const std::string kClientId = "server_notifier_thread";
+    // Use user agent as |client_info| so we can use it for debugging
+    // server-side.
+    const std::string& client_info = webkit_glue::GetUserAgent(GURL());
     chrome_invalidation_client_->Start(
-        kClientId, state_, this, this, base_task_);
+        kClientId, client_info, state_, this, this, base_task_);
     state_.clear();
   }
 }

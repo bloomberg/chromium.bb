@@ -37,13 +37,15 @@ class MockInvalidationClient : public invalidation::InvalidationClient {
 
 namespace {
 const char kClientId[] = "client_id";
+const char kClientInfo[] = "client_info";
 const char kState[] = "state";
 }  // namespace
 
 class ChromeInvalidationClientTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    client_.Start(kClientId, kState, &mock_listener_, &mock_state_writer_,
+    client_.Start(kClientId, kClientInfo, kState,
+                  &mock_listener_, &mock_state_writer_,
                   fake_base_task_.AsWeakPtr());
   }
 

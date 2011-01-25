@@ -185,7 +185,9 @@ class ServerNotifierDelegate
 
     // TODO(akalin): app_name should be per-client unique.
     const std::string kAppName = "cc_sync_listen_notifications";
-    chrome_invalidation_client_.Start(kAppName, server_notifier_state_,
+    const std::string kAppInfo = kAppName;
+    chrome_invalidation_client_.Start(kAppName, kAppInfo,
+                                      server_notifier_state_,
                                       &chrome_invalidation_listener_,
                                       this, base_task);
     chrome_invalidation_client_.RegisterTypes();

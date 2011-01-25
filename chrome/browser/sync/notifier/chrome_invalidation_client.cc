@@ -38,9 +38,9 @@ ChromeInvalidationClient::~ChromeInvalidationClient() {
 }
 
 void ChromeInvalidationClient::Start(
-    const std::string& client_id, const std::string& state,
-    Listener* listener, StateWriter* state_writer,
-    base::WeakPtr<talk_base::Task> base_task) {
+    const std::string& client_id, const std::string& client_info,
+    const std::string& state, Listener* listener,
+    StateWriter* state_writer, base::WeakPtr<talk_base::Task> base_task) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   Stop();
 
@@ -64,8 +64,8 @@ void ChromeInvalidationClient::Start(
   client_config.max_ops_per_message = 40;
   invalidation_client_.reset(
       new invalidation::InvalidationClientImpl(
-          &chrome_system_resources_, client_type, client_id, client_config,
-          this));
+          &chrome_system_resources_, client_type, client_id, client_info,
+          client_config, this));
   invalidation_client_->Start(state);
   invalidation::NetworkEndpoint* network_endpoint =
       invalidation_client_->network_endpoint();
