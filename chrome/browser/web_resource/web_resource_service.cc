@@ -399,8 +399,8 @@ void WebResourceService::UnpackPromoSignal(const DictionaryValue& parsed_json) {
       std::string promo_end_string = "";
       std::string promo_string = "";
       std::string promo_build = "";
-      int promo_build_type;
-      int time_slice_hrs;
+      int promo_build_type = 0;
+      int time_slice_hrs = 0;
       for (ListValue::const_iterator tip_iter = answer_list->begin();
            tip_iter != answer_list->end(); ++tip_iter) {
         if (!(*tip_iter)->IsType(Value::TYPE_DICTIONARY))
