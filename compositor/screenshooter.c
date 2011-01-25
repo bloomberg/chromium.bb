@@ -34,7 +34,7 @@ screenshooter_shoot(struct wl_client *client, struct wl_screenshooter *shooter)
 	struct wlsc_compositor *ec = shooter->ec;
 	struct wlsc_output *output;
 	char buffer[256];
-	GdkPixbuf *pixbuf, *normal;
+	GdkPixbuf *pixbuf;
 	GError *error = NULL;
 	unsigned char *data;
 	int i, j;
@@ -59,9 +59,7 @@ screenshooter_shoot(struct wl_client *client, struct wl_screenshooter *shooter)
 		pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE,
 						  8, output->width, output->height, output->width * 4,
 						  NULL, NULL);
-		normal = gdk_pixbuf_flip(pixbuf, FALSE);
-		gdk_pixbuf_save(normal, buffer, "png", &error, NULL);
-		g_object_unref(normal);
+		gdk_pixbuf_save(pixbuf, buffer, "png", &error, NULL);
 		g_object_unref(pixbuf);
 		free(data);
 	}
