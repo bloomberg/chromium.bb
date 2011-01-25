@@ -3645,3 +3645,27 @@
    fun:_Znw*
    fun:_ZN25SharedResourcesDataSource8RegisterEv
 }
+{
+   bug_70782_d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14PrintPreviewUIC1EP11TabContents
+}
+{
+   bug_70782_e
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8NewTabUIC1EP11TabContents
+}
+{
+   bug_70782_f
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8NewTabUI19InitializeCSSCachesEv
+}
+{
+   bug_70782_g
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN18MostVisitedHandler6AttachEP5DOMUI
+}
