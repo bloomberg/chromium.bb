@@ -58,6 +58,11 @@ class AppCacheService {
       storage_->PurgeMemory();
   }
 
+  // Determines if a request for 'url' can be satisfied while offline.
+  // This method always completes asynchronously.
+  void CanHandleMainResourceOffline(const GURL& url,
+                                    net::CompletionCallback* callback);
+
   // Populates 'collection' with info about all of the appcaches stored
   // within the service, 'callback' is invoked upon completion. The service
   // acquires a reference to the 'collection' until until completion.
@@ -103,6 +108,7 @@ class AppCacheService {
 
  protected:
   class AsyncHelper;
+  class CanHandleOfflineHelper;
   class DeleteHelper;
   class GetInfoHelper;
 
