@@ -36,6 +36,7 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_zoom.h"
+#include "chrome/common/pepper_messages.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
@@ -1088,15 +1089,17 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityNotifications_ACK,
                         OnAccessibilityNotificationsAck)
     IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenFile_ACK, OnAsyncFileOpened)
-#if defined(ENABLE_FLAPPER_HACKS)
-    IPC_MESSAGE_HANDLER(ViewMsg_PepperConnectTcpACK, OnConnectTcpACK)
-#endif
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_JavaScriptStressTestControl,
                         OnJavaScriptStressTestControl)
     IPC_MESSAGE_HANDLER(ViewMsg_ContextMenuClosed, OnContextMenuClosed)
+
+    // TODO(viettrungluu): Move to a separate message filter.
+#if defined(ENABLE_FLAPPER_HACKS)
+    IPC_MESSAGE_HANDLER(PepperMsg_ConnectTcpACK, OnConnectTcpACK)
+#endif
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))

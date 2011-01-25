@@ -135,6 +135,8 @@
           'common/notification_type.h',
           'common/pepper_file_messages.cc',
           'common/pepper_file_messages.h',
+          'common/pepper_messages.cc',
+          'common/pepper_messages.h',
           'common/process_watcher.h',
           'common/process_watcher_mac.cc',
           'common/process_watcher_posix.cc',

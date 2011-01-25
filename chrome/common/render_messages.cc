@@ -16,7 +16,6 @@
 #include "media/audio/audio_buffers_state.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
-#include "ppapi/c/private/ppb_flash.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/appcache/appcache_interfaces.h"
@@ -1219,35 +1218,6 @@ void ParamTraits<AudioBuffersState>::Log(const param_type& p, std::string* l) {
   l->append(", ");
   LogParam(p.timestamp, l);
   l->append(")");
-}
-
-void ParamTraits<PP_Flash_NetAddress>::Write(Message* m, const param_type& p) {
-  WriteParam(m, p.size);
-  m->WriteBytes(p.data, p.size);
-}
-
-bool ParamTraits<PP_Flash_NetAddress>::Read(const Message* m,
-                                            void** iter,
-                                            param_type* p) {
-  uint16 size;
-  if (!ReadParam(m, iter, &size))
-    return false;
-  if (size > sizeof(p->data))
-    return false;
-  p->size = size;
-
-  const char* data;
-  if (!m->ReadBytes(iter, &data, size))
-    return false;
-  memcpy(p->data, data, size);
-  return true;
-}
-
-void ParamTraits<PP_Flash_NetAddress>::Log(const param_type& p,
-                                           std::string* l) {
-  l->append("<PP_Flash_NetAddress (");
-  LogParam(p.size, l);
-  l->append(" bytes)>");
 }
 
 }  // namespace IPC

@@ -552,14 +552,6 @@ struct ParamTraits<AudioBuffersState> {
   static void Log(const param_type& p, std::string* l);
 };
 
-template <>
-struct ParamTraits<PP_Flash_NetAddress> {
-  typedef PP_Flash_NetAddress param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
 }  // namespace IPC
 
 #include "chrome/common/render_messages_internal.h"

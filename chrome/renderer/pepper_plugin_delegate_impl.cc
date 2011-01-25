@@ -18,6 +18,7 @@
 #include "chrome/common/child_thread.h"
 #include "chrome/common/file_system/file_system_dispatcher.h"
 #include "chrome/common/pepper_file_messages.h"
+#include "chrome/common/pepper_messages.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -49,7 +50,6 @@
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
 
 #if defined(OS_MACOSX)
-#include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
 #endif
 
@@ -814,10 +814,10 @@ int32_t PepperPluginDelegateImpl::ConnectTcp(
   int request_id = pending_connect_tcps_.Add(
       new scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl>(connector));
   IPC::Message* msg =
-      new ViewHostMsg_PepperConnectTcp(render_view_->routing_id(),
-                                       request_id,
-                                       std::string(host),
-                                       port);
+      new PepperMsg_ConnectTcp(render_view_->routing_id(),
+                               request_id,
+                               std::string(host),
+                               port);
   if (!render_view_->Send(msg))
     return PP_ERROR_FAILED;
 
@@ -830,9 +830,9 @@ int32_t PepperPluginDelegateImpl::ConnectTcpAddress(
   int request_id = pending_connect_tcps_.Add(
       new scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl>(connector));
   IPC::Message* msg =
-      new ViewHostMsg_PepperConnectTcpAddress(render_view_->routing_id(),
-                                              request_id,
-                                              *addr);
+      new PepperMsg_ConnectTcpAddress(render_view_->routing_id(),
+                                      request_id,
+                                      *addr);
   if (!render_view_->Send(msg))
     return PP_ERROR_FAILED;
 

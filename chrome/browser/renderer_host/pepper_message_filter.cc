@@ -11,7 +11,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/pepper_messages.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
@@ -42,9 +42,8 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
 #if defined(ENABLE_FLAPPER_HACKS)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(PepperMessageFilter, msg, *message_was_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PepperConnectTcp, OnPepperConnectTcp)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PepperConnectTcpAddress,
-                        OnPepperConnectTcpAddress)
+    IPC_MESSAGE_HANDLER(PepperMsg_ConnectTcp, OnPepperConnectTcp)
+    IPC_MESSAGE_HANDLER(PepperMsg_ConnectTcpAddress, OnPepperConnectTcpAddress)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -203,10 +202,10 @@ void PepperMessageFilter::OnPepperConnectTcpAddress(
 
 bool PepperMessageFilter::SendPepperConnectTcpACKError(int routing_id,
                                                        int request_id) {
-  return Send(new ViewMsg_PepperConnectTcpACK(
-              routing_id, request_id,
-              IPC::InvalidPlatformFileForTransit(),
-              kInvalidNetAddress, kInvalidNetAddress));
+  return Send(
+      new PepperMsg_ConnectTcpACK(routing_id, request_id,
+                                  IPC::InvalidPlatformFileForTransit(),
+                                  kInvalidNetAddress, kInvalidNetAddress));
 }
 
 void PepperMessageFilter::PepperConnectTcpLookupFinished(
@@ -252,7 +251,7 @@ void PepperMessageFilter::PepperConnectTcpOnWorkerThread(
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this, &PepperMessageFilter::Send,
-          new ViewMsg_PepperConnectTcpACK(
+          new PepperMsg_ConnectTcpACK(
               routing_id, request_id,
               socket_for_transit, local_addr, remote_addr)));
 }
@@ -277,7 +276,7 @@ void PepperMessageFilter::PepperConnectTcpAddressOnWorkerThread(
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this, &PepperMessageFilter::Send,
-          new ViewMsg_PepperConnectTcpACK(
+          new PepperMsg_ConnectTcpACK(
               routing_id, request_id,
               socket_for_transit, local_addr, remote_addr)));
 }
