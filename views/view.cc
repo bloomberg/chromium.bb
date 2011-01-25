@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "views/background.h"
-#include "views/layout_manager.h"
+#include "views/layout/layout_manager.h"
 #include "views/views_delegate.h"
 #include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager.h"

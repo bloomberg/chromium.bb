@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,6 @@ class Size;
 
 namespace views {
 
-class View;
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // LayoutManager interface
@@ -26,15 +24,15 @@ class View;
 /////////////////////////////////////////////////////////////////////////////
 class LayoutManager {
  public:
-  virtual ~LayoutManager() {}
+  virtual ~LayoutManager();
 
   // Notification that this LayoutManager has been installed on a particular
   // host.
-  virtual void Installed(View* host) {}
+  virtual void Installed(View* host);
 
   // Notification that this LayoutManager has been uninstalled on a particular
   // host.
-  virtual void Uninstalled(View* host) {}
+  virtual void Uninstalled(View* host);
 
   // Lay out the children of |host| according to implementation-specific
   // heuristics. The graphics used during painting is provided to allow for
@@ -50,10 +48,10 @@ class LayoutManager {
   virtual int GetPreferredHeightForWidth(View* host, int width);
 
   // Notification that a view has been added.
-  virtual void ViewAdded(View* host, View* view) {}
+  virtual void ViewAdded(View* host, View* view);
 
   // Notification that a view has been removed.
-  virtual void ViewRemoved(View* host, View* view) {}
+  virtual void ViewRemoved(View* host, View* view);
 };
 
 }  // namespace views

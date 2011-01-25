@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "views/layout_manager.h"
+#include "views/layout/layout_manager.h"
 #include "views/view.h"
 
 namespace gfx {

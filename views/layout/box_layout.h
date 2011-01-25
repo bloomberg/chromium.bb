@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "views/layout_manager.h"
+#include "views/layout/layout_manager.h"
 
 namespace views {
 

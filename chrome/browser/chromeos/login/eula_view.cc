@@ -40,7 +40,7 @@
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
 #include "views/grid_layout.h"
-#include "views/layout_manager.h"
+#include "views/layout/layout_manager.h"
 #include "views/standard_layout.h"
 #include "views/widget/widget_gtk.h"
 #include "views/window/dialog_delegate.h"

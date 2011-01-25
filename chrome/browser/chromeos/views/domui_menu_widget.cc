@@ -22,7 +22,7 @@
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/border.h"
-#include "views/layout_manager.h"
+#include "views/layout/layout_manager.h"
 #include "views/widget/root_view.h"
 
 namespace {
