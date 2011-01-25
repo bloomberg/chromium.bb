@@ -142,7 +142,7 @@ int main(int argc, char* argv[])
     // size of segment payload
     printf("\t\tSize(Segment)\t\t: %lld\n", pSegment->m_size);
 
-    mkvparser::Tracks* const pTracks = pSegment->GetTracks();
+    const mkvparser::Tracks* pTracks = pSegment->GetTracks();
 
     unsigned long i = 0;
     const unsigned long j = pTracks->GetTracksCount();
