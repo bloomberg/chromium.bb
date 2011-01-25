@@ -3625,4 +3625,14 @@
    fun:_ZN8remoting12JingleThread17JingleMessagePump9OnMessageEPN9talk_base7MessageE
    fun:_ZN9talk_base12MessageQueue8DispatchEPNS_7MessageE
    fun:_ZN9talk_base6Thread15ProcessMessagesEi
- }
+}
+{
+   bug_70782
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15SyncSetupWizardC1EP18ProfileSyncService
+   fun:_ZN18ProfileSyncServiceC2Ev
+   fun:_ZN22ProfileSyncServiceMockC2Ev
+   fun:_ZN7testing8NiceMockI22ProfileSyncServiceMockEC1Ev
+   fun:_ZN71SyncUIUtilTest_ConstructAboutInformationWithUnrecoverableErrorTest_Test8TestBodyEv
+}
