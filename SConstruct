@@ -1098,7 +1098,8 @@ def SelUniversalTest(env, name, command, **kwargs):
   node = CommandSelLdrTestNacl(env, name, command, loader='sel_universal',
                                **kwargs)
   # sel_universal locates sel_ldr via /proc/self/exe on Linux.
-  env.Depends(node, GetSelLdr(env))
+  if not env.Bit('built_elsewhere'):
+    env.Depends(node, GetSelLdr(env))
   return node
 
 pre_base_env.AddMethod(SelUniversalTest)
