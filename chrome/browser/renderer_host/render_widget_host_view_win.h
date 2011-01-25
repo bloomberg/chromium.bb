@@ -352,6 +352,8 @@ class RenderWidgetHostViewWin
 
   ScopedVector<ui::ViewProp> props_;
 
+  scoped_ptr<ui::ViewProp> accessibility_prop_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };
 

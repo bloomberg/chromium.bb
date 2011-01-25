@@ -565,6 +565,12 @@ void RenderWidgetHostViewWin::Show() {
   SetParent(parent_hwnd_);
   ShowWindow(SW_SHOW);
 
+  // Save away our HWND in the parent window as a property so that the
+  // accessibility code can find it.
+  accessibility_prop_.reset(new ViewProp(GetParent(),
+                                         kViewsNativeHostPropForAccessibility,
+                                         m_hWnd));
+
   DidBecomeSelected();
 }
 
@@ -574,6 +580,8 @@ void RenderWidgetHostViewWin::Hide() {
         parent_hwnd_ << ":" << GetParent();
     return;
   }
+
+  accessibility_prop_.reset();
 
   if (::GetFocus() == m_hWnd)
     ::SetFocus(NULL);
@@ -832,11 +840,6 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   // Marks that window as supporting mouse-wheel messages rerouting so it is
   // scrolled when under the mouse pointer even if inactive.
   props_.push_back(views::SetWindowSupportsRerouteMouseWheel(m_hWnd));
-  // Save away our HWND in the parent window as a property so that the
-  // accessibility code can find it.
-  props_.push_back(new ViewProp(GetParent(),
-                                kViewsNativeHostPropForAccessibility,
-                                m_hWnd));
   props_.push_back(new ViewProp(m_hWnd, kRenderWidgetHostViewKey,
                                 static_cast<RenderWidgetHostView*>(this)));
   return 0;
