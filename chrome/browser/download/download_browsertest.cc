@@ -362,12 +362,6 @@ class DownloadTest : public InProcessBrowserTest {
     EXPECT_EQ(origin_file_size, downloaded_file_size);
     EXPECT_TRUE(file_util::ContentsEqual(downloaded_file, origin_file));
 
-#if defined(OS_WIN)
-    // Check if the Zone Identifier is correctly set.
-    if (file_util::VolumeSupportsADS(downloaded_file))
-      EXPECT_TRUE(file_util::HasInternetZoneIdentifier(downloaded_file));
-#endif
-
     // Delete the downloaded copy of the file.
     bool downloaded_file_deleted =
         file_util::DieFileDie(downloaded_file, false);
@@ -468,6 +462,30 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DownloadMimeType) {
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 }
 
+#if defined(OS_WIN)
+// Download a file and confirm that the zone identifier (on windows)
+// is set to internet.
+// This is flaky due to http://crbug.com/20809.  It's marked as
+// DISABLED because when the test fails it fails via a timeout.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CheckInternetZone) {
+  ASSERT_TRUE(InitialSetup(false));
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
+
+  // Download the file and wait.  We do not expect the Select File dialog.
+  DownloadAndWait(browser(), url, EXPECT_NO_SELECT_DIALOG);
+
+  // Check state.
+  EXPECT_EQ(1, browser()->tab_count());
+  CheckDownload(browser(), file, file);
+  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+
+  FilePath downloaded_file = GetDownloadDirectory(browser()).Append(file);
+  if (file_util::VolumeSupportsADS(downloaded_file))
+    EXPECT_TRUE(file_util::HasInternetZoneIdentifier(downloaded_file));
+}
+#endif
+
 // Put up a Select File dialog when the file is downloaded, due to its MIME
 // type.
 //
@@ -475,7 +493,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DownloadMimeType) {
 // download directory because of http://crbug.com/62099.  No big loss; it
 // was primarily confirming DownloadsObserver wait on select file dialog
 // functionality anyway.
-// Additionally, there is Windows-specific flake, http://crbug.com/20809.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DownloadMimeTypeSelect) {
   ASSERT_TRUE(InitialSetup(true));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
@@ -521,7 +538,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NoDownload) {
 // subsystem in in http://crbug.com/63237.  Until that bug is
 // fixed, this test should be considered flaky.  It's entered as
 // DISABLED since if 63237 does cause a failure, it'll be a timeout.
-// Additionally, there is Windows-specific flake, http://crbug.com/20809.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_ContentDisposition) {
   ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test3.gif"));
@@ -545,7 +561,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_ContentDisposition) {
 // The test sometimes trips over underlying flakiness in the downloads
 // subsystem in in http://crbug.com/63237.  It's entered as
 // DISABLED since if 63237 does cause a failure, it'll be a timeout.
-// Additionally, there is Windows-specific flake, http://crbug.com/20809.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_PerWindowShelf) {
   ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test3.gif"));
@@ -593,7 +608,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_PerWindowShelf) {
 // subsystem in in http://crbug.com/63237.  Until that bug is
 // fixed, this test should be considered flaky.  It's entered as
 // DISABLED since if 63237 does cause a failure, it'll be a timeout.
-// Additionally, there is Windows-specific flake, http://crbug.com/20809.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_UnknownSize) {
   GURL url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
   FilePath filename;
@@ -610,7 +624,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_UnknownSize) {
 // subsystem in in http://crbug.com/63237.  Until that bug is
 // fixed, this test should be considered flaky.  It's entered as
 // DISABLED since if 63237 does cause a failure, it'll be a timeout.
-// Additionally, there is Windows-specific flake, http://crbug.com/20809.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_KnownSize) {
   GURL url(URLRequestSlowDownloadJob::kKnownSizeUrl);
   FilePath filename;
@@ -632,7 +645,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_KnownSize) {
 // subsystem in in http://crbug.com/63237.  Until that bug is
 // fixed, this test should be considered flaky.  It's entered as
 // DISABLED since if 63237 does cause a failure, it'll be a timeout.
-// Additionally, there is Windows-specific flake, http://crbug.com/20809.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_IncognitoDownload) {
   ASSERT_TRUE(InitialSetup(false));
 
@@ -701,7 +713,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab1) {
 // The test sometimes trips over underlying flakiness in the downloads
 // subsystem in http://crbug.com/63237.  It's entered as
 // DISABLED since if 63237 does cause a failure, it'll be a timeout.
-// Additionally, there is Windows-specific flake, http://crbug.com/20809.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CloseNewTab1) {
   ASSERT_TRUE(InitialSetup(false));
 
@@ -734,7 +745,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CloseNewTab1) {
 // The test sometimes trips over underlying flakiness in the downloads
 // subsystem in in http://crbug.com/63237.  It's entered as
 // DISABLED since if 63237 does cause a failure, it'll be a timeout.
-// Additionally, there is Windows-specific flake, http://crbug.com/20809.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DontCloseNewTab2) {
   ASSERT_TRUE(InitialSetup(false));
   // Because it's an HTML link, it should open a web page rather than
@@ -771,7 +781,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DontCloseNewTab2) {
 // The test sometimes trips over underlying flakiness in the downloads
 // subsystem in in http://crbug.com/63237.  It's entered as
 // DISABLED since if 63237 does cause a failure, it'll be a timeout.
-// Additionally, there is Windows-specific flake, http://crbug.com/20809.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DontCloseNewTab3) {
   ASSERT_TRUE(InitialSetup(false));
   // Because it's an HTML link, it should open a web page rather than
@@ -818,7 +827,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DontCloseNewTab3) {
 // The test sometimes trips over underlying flakiness in the downloads
 // subsystem in in http://crbug.com/63237.  It's entered as
 // DISABLED since if 63237 does cause a failure, it'll be a timeout.
-// Additionally, there is Windows-specific flake, http://crbug.com/20809.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CloseNewTab2) {
   ASSERT_TRUE(InitialSetup(false));
   // Because it's an HTML link, it should open a web page rather than
@@ -856,7 +864,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CloseNewTab2) {
 // The test sometimes trips over underlying flakiness in the downloads
 // subsystem in in http://crbug.com/63237.  It's entered as
 // DISABLED since if 63237 does cause a failure, it'll be a timeout.
-// Additionally, there is Windows-specific flake, http://crbug.com/20809.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CloseNewTab3) {
   ASSERT_TRUE(InitialSetup(false));
   // Because it's an HTML link, it should open a web page rather than
@@ -898,7 +905,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CloseNewTab3) {
 // subsystem in in http://crbug.com/63237.  Until that bug is
 // fixed, this test should be considered flaky.  It's entered as
 // DISABLED since if 63237 does cause a failure, it'll be a timeout.
-// Additionally, there is Windows-specific flake, http://crbug.com/20809.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_NewWindow) {
   ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
