@@ -1889,9 +1889,11 @@ SeekHead::SeekHead(
 
     assert(pos == stop);
 
-    m_count = ptrdiff_t(pEntry - m_entries);
-    assert(m_count >= 0);
-    assert(m_count <= count);
+    const ptrdiff_t count_ = ptrdiff_t(pEntry - m_entries);
+    assert(count_ >= 0);
+    assert(count_ <= count);
+
+    m_count = static_cast<int>(count_);
 }
 
 SeekHead::~SeekHead()
