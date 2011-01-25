@@ -7,7 +7,6 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/combobox_model.h"
-#include "views/fill_layout.h"
 
 namespace {
 
