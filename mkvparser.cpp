@@ -1824,6 +1824,8 @@ SeekHead::SeekHead(
 
     //first count the seek head entries
 
+    int count = 0;
+
     while (pos < stop)
     {
         long len;
@@ -1842,7 +1844,7 @@ SeekHead::SeekHead(
         assert((pos + size) <= stop);
 
         if (id == 0x0DBB)  //SeekEntry ID
-            ++m_count;
+            ++count;
 
         pos += size;  //consume payload
         assert(pos <= stop);
@@ -1850,10 +1852,10 @@ SeekHead::SeekHead(
 
     assert(pos == stop);
 
-    if (m_count <= 0)
+    if (count <= 0)
         return;  //nothing else for us to do
 
-    m_entries = new (std::nothrow) Entry[m_count];
+    m_entries = new (std::nothrow) Entry[count];
     assert(m_entries);  //TODO
 
     //now parse the entries
@@ -1879,14 +1881,17 @@ SeekHead::SeekHead(
         assert((pos + size) <= stop);
 
         if (id == 0x0DBB)  //SeekEntry ID
-            ParseEntry(pReader, pos, size, pEntry++);
+            ParseEntry(pReader, pos, size, pEntry);
 
         pos += size;  //consume payload
         assert(pos <= stop);
     }
 
     assert(pos == stop);
-    assert(ptrdiff_t(pEntry - m_entries) == m_count);
+
+    m_count = ptrdiff_t(pEntry - m_entries);
+    assert(m_count >= 0);
+    assert(m_count <= count);
 }
 
 SeekHead::~SeekHead()
@@ -2153,7 +2158,7 @@ void SeekHead::ParseEntry(
     IMkvReader* pReader,
     long long start,
     long long size_,
-    Entry* pEntry)
+    Entry*& pEntry)
 {
     long long pos = start;
     const long long stop = start + size_;
@@ -2164,16 +2169,27 @@ void SeekHead::ParseEntry(
 
     const long long seekIdId = ReadUInt(pReader, pos, len);
     //seekIdId;
-    assert(seekIdId == 0x13AB);  //SeekID ID
-    assert((pos + len) <= stop);
 
-    pos += len;  //consume id
+    if (seekIdId != 0x13AB)  //SeekID ID
+        return;
+
+    if ((pos + len) > stop)
+        return;
+
+    pos += len;  //consume SeekID id
 
     const long long seekIdSize = ReadUInt(pReader, pos, len);
-    assert(seekIdSize >= 0);
-    assert((pos + len) <= stop);
 
-    pos += len;  //consume size
+    if (seekIdSize <= 0)
+        return;
+
+    if ((pos + len) > stop)
+        return;
+
+    pos += len;  //consume size of field
+
+    if ((pos + seekIdSize) > stop)
+        return;
 
     //TODO: it's not clear whether this is correct
     //It seems as if the payload here is "binary" which
@@ -2181,31 +2197,49 @@ void SeekHead::ParseEntry(
     //not parsed as an uint.
     //
     pEntry->id = ReadUInt(pReader, pos, len);  //payload
-    assert(pEntry->id >= 0);
-    assert(len == seekIdSize);
-    assert((pos + len) <= stop);
 
-    pos += seekIdSize;  //consume payload
+    if (pEntry->id <= 0)
+        return;
+
+    if (len != seekIdSize)
+        return;
+
+    pos += seekIdSize;  //consume SeekID payload
 
     const long long seekPosId = ReadUInt(pReader, pos, len);
-    //seekPosId;
-    assert(seekPosId == 0x13AC);  //SeekPos ID
-    assert((pos + len) <= stop);
+
+    if (seekPosId != 0x13AC)  //SeekPos ID
+        return;
+
+    if ((pos + len) > stop)
+        return;
 
     pos += len;  //consume id
 
     const long long seekPosSize = ReadUInt(pReader, pos, len);
-    assert(seekPosSize >= 0);
-    assert((pos + len) <= stop);
+
+    if (seekPosSize <= 0)
+        return;
+
+    if ((pos + len) > stop)
+        return;
 
     pos += len;  //consume size
-    assert((pos + seekPosSize) <= stop);
+
+    if ((pos + seekPosSize) > stop)
+        return;
 
     pEntry->pos = UnserializeUInt(pReader, pos, seekPosSize);
-    assert(pEntry->pos >= 0);
+
+    if (pEntry->pos < 0)
+        return;
 
     pos += seekPosSize;  //consume payload
-    assert(pos == stop);
+
+    if (pos != stop)
+        return;
+
+    ++pEntry;  //success
 }
 #endif
 

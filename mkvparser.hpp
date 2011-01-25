@@ -427,7 +427,7 @@ private:
         IMkvReader*,
         long long pos,
         long long size,
-        Entry*);
+        Entry*&);
 
 };
 
