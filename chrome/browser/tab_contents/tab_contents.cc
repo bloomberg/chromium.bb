@@ -472,6 +472,8 @@ TabContents::TabContents(Profile* profile,
   AddNavigationObserver(autofill_manager_.get());
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(this));
   AddNavigationObserver(autocomplete_history_manager_.get());
+  AddNavigationObserver(&fav_icon_helper_);
+  AddNavigationObserver(printing_.get());
 }
 
 TabContents::~TabContents() {
@@ -635,6 +637,7 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetSuggestions, OnSetSuggestions)
     IPC_MESSAGE_HANDLER(ViewHostMsg_InstantSupportDetermined,
                         OnInstantSupportDetermined)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -1456,7 +1459,7 @@ void TabContents::OnSavePage() {
   // Create the save package and possibly prompt the user for the name to save
   // the page as. The user prompt is an asynchronous operation that runs on
   // another thread.
-  save_package_ = new SavePackage(this);
+  SetSavePackage(new SavePackage(this));
   save_package_->GetSaveInfo();
 }
 
@@ -1468,8 +1471,15 @@ bool TabContents::SavePage(const FilePath& main_file, const FilePath& dir_path,
   // Stop the page from navigating.
   Stop();
 
-  save_package_ = new SavePackage(this, save_type, main_file, dir_path);
+  SetSavePackage(new SavePackage(this, save_type, main_file, dir_path));
   return save_package_->Init();
+}
+
+void TabContents::SetSavePackage(SavePackage* save_package) {
+  if (save_package_.get())
+    RemoveNavigationObserver(save_package_.get());
+  save_package_ = save_package;
+  AddNavigationObserver(save_package);
 }
 
 void TabContents::EmailPageLocation() {
@@ -2423,6 +2433,14 @@ void TabContents::OnInstantSupportDetermined(int32 page_id, bool result) {
     delegate()->OnInstantSupportDetermined(page_id, result);
 }
 
+void TabContents::OnRunFileChooser(
+    const ViewHostMsg_RunFileChooser_Params& params) {
+  if (file_select_helper_.get() == NULL)
+    file_select_helper_.reset(new FileSelectHelper(profile()));
+  file_select_helper_->RunFileChooser(render_view_host(), params);
+}
+
+
 void TabContents::OnContentSettingsAccessed(bool content_was_blocked) {
   if (delegate_)
     delegate_->OnContentSettingsChange(this);
@@ -2442,26 +2460,8 @@ TabContents::GetContentSettingsDelegate() {
   return content_settings_delegate_.get();
 }
 
-RenderViewHostDelegate::Save* TabContents::GetSaveDelegate() {
-  return save_package_.get();  // May be NULL, but we can return NULL.
-}
-
-RenderViewHostDelegate::Printing* TabContents::GetPrintingDelegate() {
-  return printing_.get();
-}
-
-RenderViewHostDelegate::FavIcon* TabContents::GetFavIconDelegate() {
-  return &fav_icon_helper_;
-}
-
 RenderViewHostDelegate::SSL* TabContents::GetSSLDelegate() {
   return GetSSLHelper();
-}
-
-RenderViewHostDelegate::FileSelect* TabContents::GetFileSelectDelegate() {
-  if (file_select_helper_.get() == NULL)
-    file_select_helper_.reset(new FileSelectHelper(profile()));
-  return file_select_helper_.get();
 }
 
 AutomationResourceRoutingDelegate*

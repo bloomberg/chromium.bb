@@ -591,7 +591,6 @@ class RenderViewHost : public RenderWidgetHost {
                            WebKit::WebTextDirection text_direction_hint);
   void OnMsgSelectionChanged(const std::string& text);
   void OnMsgPasteFromSelectionClipboard();
-  void OnMsgRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
   void OnMsgRunJavaScriptMessage(const std::wstring& message,
                                  const std::wstring& default_prompt,
                                  const GURL& frame_url,
@@ -612,8 +611,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgPageHasOSDD(int32 page_id,
                         const GURL& doc_url,
                         const ViewHostMsg_PageHasOSDD_Type& provider_type);
-  void OnDidGetPrintedPagesCount(int cookie, int number_pages);
-  void DidPrintPage(const ViewHostMsg_DidPrintPage_Params& params);
   void OnAddMessageToConsole(const std::wstring& message,
                              int32 line_no,
                              const std::wstring& source_id);
@@ -627,14 +624,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnRequestUndockDevToolsWindow();
   void OnDevToolsRuntimePropertyChanged(const std::string& name,
                                         const std::string& value);
-  void OnReceivedSavableResourceLinksForCurrentPage(
-      const std::vector<GURL>& resources_list,
-      const std::vector<GURL>& referrers_list,
-      const std::vector<GURL>& frames_list);
-  void OnReceivedSerializedHtmlData(const GURL& frame_url,
-                                    const std::string& data,
-                                    int32 status);
-
   void OnMsgShouldCloseACK(bool proceed);
   void OnShowDesktopNotification(
       const ViewHostMsg_ShowNotification_Params& params);

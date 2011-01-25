@@ -757,6 +757,15 @@ ViewType::Type ExtensionHost::GetRenderViewType() const {
   return extension_host_type_;
 }
 
+bool ExtensionHost::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(ExtensionHost, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
 const GURL& ExtensionHost::GetURL() const {
   return url_;
 }
@@ -779,12 +788,6 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   }
 }
 
-RenderViewHostDelegate::FileSelect* ExtensionHost::GetFileSelectDelegate() {
-  if (file_select_helper_.get() == NULL)
-    file_select_helper_.reset(new FileSelectHelper(profile()));
-  return file_select_helper_.get();
-}
-
 int ExtensionHost::GetBrowserWindowID() const {
   // Hosts not attached to any browser window have an id of -1.  This includes
   // those mentioned below, and background pages.
@@ -801,4 +804,11 @@ int ExtensionHost::GetBrowserWindowID() const {
     NOTREACHED();
   }
   return window_id;
+}
+
+void ExtensionHost::OnRunFileChooser(
+    const ViewHostMsg_RunFileChooser_Params& params) {
+  if (file_select_helper_.get() == NULL)
+    file_select_helper_.reset(new FileSelectHelper(profile()));
+  file_select_helper_->RunFileChooser(render_view_host_, params);
 }

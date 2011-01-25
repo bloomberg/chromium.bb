@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "chrome/browser/shell_dialogs.h"
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "net/base/directory_lister.h"
@@ -21,7 +20,6 @@ struct ViewHostMsg_RunFileChooser_Params;
 class FileSelectHelper
     : public SelectFileDialog::Listener,
       public net::DirectoryLister::DirectoryListerDelegate,
-      public RenderViewHostDelegate::FileSelect,
       public NotificationObserver {
  public:
   explicit FileSelectHelper(Profile* profile);
@@ -38,9 +36,9 @@ class FileSelectHelper
       const net::DirectoryLister::DirectoryListerData& data);
   virtual void OnListDone(int error);
 
-  // RenderViewHostDelegate::FileSelect
-  virtual void RunFileChooser(RenderViewHost* render_view_host,
-                              const ViewHostMsg_RunFileChooser_Params& params);
+  // Show the file chooser dialog.
+  void RunFileChooser(RenderViewHost* render_view_host,
+                      const ViewHostMsg_RunFileChooser_Params& params);
 
  private:
   // NotificationObserver implementation.

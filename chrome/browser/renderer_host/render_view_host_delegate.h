@@ -318,78 +318,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
     virtual ~ContentSettings() {}
   };
 
-  // Save ----------------------------------------------------------------------
-  // Interface for saving web pages.
-
-  class Save {
-   public:
-    // Notification that we get when we receive all savable links of
-    // sub-resources for the current page, their referrers and list of frames
-    // (include main frame and sub frames).
-    virtual void OnReceivedSavableResourceLinksForCurrentPage(
-        const std::vector<GURL>& resources_list,
-        const std::vector<GURL>& referrers_list,
-        const std::vector<GURL>& frames_list) = 0;
-
-    // Notification that we get when we receive serialized html content data of
-    // a specified web page from render process. The parameter frame_url
-    // specifies what frame the data belongs. The parameter data contains the
-    // available data for sending. The parameter status indicates the
-    // serialization status, See
-    // webkit_glue::DomSerializerDelegate::PageSavingSerializationStatus for
-    // the detail meaning of status.
-    virtual void OnReceivedSerializedHtmlData(const GURL& frame_url,
-                                              const std::string& data,
-                                              int32 status) = 0;
-
-   protected:
-    virtual ~Save() {}
-  };
-
-  // Printing ------------------------------------------------------------------
-
-  class Printing {
-   public:
-    // Notification that the render view has calculated the number of printed
-    // pages.
-    virtual void DidGetPrintedPagesCount(int cookie, int number_pages) = 0;
-
-    // Notification that the render view is done rendering one printed page.
-    // This call is synchronous, the renderer is waiting on us because of the
-    // EMF memory mapped data.
-    virtual void DidPrintPage(
-        const ViewHostMsg_DidPrintPage_Params& params) = 0;
-
-   protected:
-    virtual ~Printing() {}
-  };
-
-  // FavIcon -------------------------------------------------------------------
-  // Interface for the renderer to supply favicon information.
-
-  class FavIcon {
-   public:
-    // An image that was requested to be downloaded by DownloadImage has
-    // completed.
-    //
-    // TODO(brettw) this should be renamed DidDownloadFavIcon, and the RVH
-    // function, IPC message, and the RenderView function DownloadImage should
-    // all be named DownloadFavIcon.
-    virtual void DidDownloadFavIcon(RenderViewHost* render_view_host,
-                                    int id,
-                                    const GURL& image_url,
-                                    bool errored,
-                                    const SkBitmap& image) = 0;
-
-    // The URL for the FavIcon of a page has changed.
-    virtual void UpdateFavIconURL(RenderViewHost* render_view_host,
-                                  int32 page_id,
-                                  const GURL& icon_url) = 0;
-
-   protected:
-    virtual ~FavIcon() {}
-  };
-
   // BookmarkDrag --------------------------------------------------------------
   // Interface for forwarding bookmark drag and drop to extenstions.
 
@@ -445,20 +373,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
     virtual ~SSL() {}
   };
 
-  // FileSelect ----------------------------------------------------------------
-  // Interface for handling file selection.
-
-  class FileSelect {
-   public:
-    // A file chooser should be shown.
-    virtual void RunFileChooser(
-        RenderViewHost* render_view_host,
-        const ViewHostMsg_RunFileChooser_Params& params) = 0;
-
-   protected:
-    virtual ~FileSelect() {}
-  };
-
   // ---------------------------------------------------------------------------
 
   // Returns the current delegate associated with a feature. May return NULL if
@@ -466,13 +380,9 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual View* GetViewDelegate();
   virtual RendererManagement* GetRendererManagementDelegate();
   virtual ContentSettings* GetContentSettingsDelegate();
-  virtual Save* GetSaveDelegate();
-  virtual Printing* GetPrintingDelegate();
-  virtual FavIcon* GetFavIconDelegate();
 
   virtual BookmarkDrag* GetBookmarkDragDelegate();
   virtual SSL* GetSSLDelegate();
-  virtual FileSelect* GetFileSelectDelegate();
 
   // Return the delegate for registering RenderViewHosts for automation resource
   // routing.

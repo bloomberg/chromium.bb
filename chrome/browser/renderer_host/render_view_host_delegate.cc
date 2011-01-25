@@ -30,20 +30,6 @@ RenderViewHostDelegate::GetContentSettingsDelegate() {
   return NULL;
 }
 
-RenderViewHostDelegate::Save* RenderViewHostDelegate::GetSaveDelegate() {
-  return NULL;
-}
-
-RenderViewHostDelegate::Printing*
-RenderViewHostDelegate::GetPrintingDelegate() {
-  return NULL;
-}
-
-RenderViewHostDelegate::FavIcon*
-RenderViewHostDelegate::GetFavIconDelegate() {
-  return NULL;
-}
-
 RenderViewHostDelegate::BookmarkDrag*
 RenderViewHostDelegate::GetBookmarkDragDelegate() {
   return NULL;
@@ -51,11 +37,6 @@ RenderViewHostDelegate::GetBookmarkDragDelegate() {
 
 RenderViewHostDelegate::SSL*
 RenderViewHostDelegate::GetSSLDelegate() {
-  return NULL;
-}
-
-RenderViewHostDelegate::FileSelect*
-RenderViewHostDelegate::GetFileSelectDelegate() {
   return NULL;
 }
 

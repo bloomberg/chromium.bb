@@ -600,6 +600,9 @@ class TabContents : public PageNavigator,
   bool SavePage(const FilePath& main_file, const FilePath& dir_path,
                 SavePackage::SavePackageType save_type);
 
+  // Sets save_package_, taking care to register and unregister the observers.
+  void SetSavePackage(SavePackage* save_package);
+
   // Tells the user's email client to open a compose window containing the
   // current page's URL.
   void EmailPageLocation();
@@ -835,6 +838,7 @@ class TabContents : public PageNavigator,
   void OnSetSuggestions(int32 page_id,
                         const std::vector<std::string>& suggestions);
   void OnInstantSupportDetermined(int32 page_id, bool result);
+  void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
@@ -946,11 +950,7 @@ class TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::RendererManagement*
       GetRendererManagementDelegate();
   virtual RenderViewHostDelegate::ContentSettings* GetContentSettingsDelegate();
-  virtual RenderViewHostDelegate::Save* GetSaveDelegate();
-  virtual RenderViewHostDelegate::Printing* GetPrintingDelegate();
-  virtual RenderViewHostDelegate::FavIcon* GetFavIconDelegate();
   virtual RenderViewHostDelegate::SSL* GetSSLDelegate();
-  virtual RenderViewHostDelegate::FileSelect* GetFileSelectDelegate();
   virtual AutomationResourceRoutingDelegate*
       GetAutomationResourceRoutingDelegate();
   virtual TabContents* GetAsTabContents();

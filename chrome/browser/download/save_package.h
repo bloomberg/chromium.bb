@@ -16,8 +16,8 @@
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/tab_contents/web_navigation_observer.h"
 #include "googleurl/src/gurl.h"
 
 class SaveFileManager;
@@ -54,7 +54,7 @@ struct SavePackageParam;
 // by the SavePackage. SaveItems are created when a user initiates a page
 // saving job, and exist for the duration of one tab's life time.
 class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
-                    public RenderViewHostDelegate::Save,
+                    public WebNavigationObserver,
                     public SelectFileDialog::Listener {
  public:
   enum SavePackageType {
@@ -128,22 +128,6 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
 
   void GetSaveInfo();
 
-  // RenderViewHostDelegate::Save ----------------------------------------------
-
-  // Process all of the current page's savable links of subresources, resources
-  // referrers and frames (including the main frame and subframes) from the
-  // render view host.
-  virtual void OnReceivedSavableResourceLinksForCurrentPage(
-      const std::vector<GURL>& resources_list,
-      const std::vector<GURL>& referrers_list,
-      const std::vector<GURL>& frames_list);
-
-  // Process the serialized html content data of a specified web page
-  // gotten from render process.
-  virtual void OnReceivedSerializedHtmlData(const GURL& frame_url,
-                                            const std::string& data,
-                                            int32 status);
-
   // Statics -------------------------------------------------------------------
 
   // Used to disable prompting the user for a directory/filename of the saved
@@ -179,6 +163,9 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   void SaveNextFile(bool process_all_remainder_items);
   void DoSavingProcess();
 
+  // WebNavigationObserver implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
   // Create a file name based on the response from the server.
   bool GenerateFileName(const std::string& disposition,
                         const GURL& url,
@@ -204,6 +191,15 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   void ContinueGetSaveInfo(const FilePath& suggested_path,
                            bool can_save_as_complete);
   void ContinueSave(const FilePath& final_name, int index);
+
+  void OnReceivedSavableResourceLinksForCurrentPage(
+      const std::vector<GURL>& resources_list,
+      const std::vector<GURL>& referrers_list,
+      const std::vector<GURL>& frames_list);
+
+  void OnReceivedSerializedHtmlData(const GURL& frame_url,
+                                    const std::string& data,
+                                    int32 status);
 
 
   typedef base::hash_map<std::string, SaveItem*> SaveUrlItemMap;

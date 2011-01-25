@@ -13,7 +13,7 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon_service.h"
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
+#include "chrome/browser/tab_contents/web_navigation_observer.h"
 #include "chrome/common/ref_counted_util.h"
 #include "googleurl/src/gurl.h"
 
@@ -65,7 +65,7 @@ class TabContents;
 // at which point we update the favicon of the NavigationEntry and notify
 // the database to save the favicon.
 
-class FavIconHelper : public RenderViewHostDelegate::FavIcon {
+class FavIconHelper : public WebNavigationObserver {
  public:
   explicit FavIconHelper(TabContents* tab_contents);
   virtual ~FavIconHelper();
@@ -99,15 +99,14 @@ class FavIconHelper : public RenderViewHostDelegate::FavIcon {
     ImageDownloadCallback* callback;
   };
 
-  // RenderViewHostDelegate::Favicon implementation.
-  virtual void DidDownloadFavIcon(RenderViewHost* render_view_host,
-                                  int id,
-                                  const GURL& image_url,
-                                  bool errored,
-                                  const SkBitmap& image);
-  virtual void UpdateFavIconURL(RenderViewHost* render_view_host,
-                                int32 page_id,
-                                const GURL& icon_url);
+  // WebNavigationObserver implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
+  void OnDidDownloadFavIcon(int id,
+                            const GURL& image_url,
+                            bool errored,
+                            const SkBitmap& image);
+  void OnUpdateFavIconURL(int32 page_id, const GURL& icon_url);
 
   // Return the NavigationEntry for the active entry, or NULL if the active
   // entries URL does not match that of the URL last passed to FetchFavIcon.

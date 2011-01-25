@@ -17,6 +17,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/render_messages.h"
 #include "gfx/codec/png_codec.h"
 #include "gfx/favicon_size.h"
 #include "skia/ext/image_operations.h"
@@ -111,9 +112,7 @@ void FavIconHelper::UpdateFavIcon(NavigationEntry* entry,
   tab_contents_->NotifyNavigationStateChanged(TabContents::INVALIDATE_TAB);
 }
 
-void FavIconHelper::UpdateFavIconURL(RenderViewHost* render_view_host,
-                                     int32 page_id,
-                                     const GURL& icon_url) {
+void FavIconHelper::OnUpdateFavIconURL(int32 page_id, const GURL& icon_url) {
   // TODO(davemoore) Should clear on empty url. Currently we ignore it.
   // This appears to be what FF does as well.
   if (icon_url.is_empty())
@@ -140,11 +139,20 @@ void FavIconHelper::UpdateFavIconURL(RenderViewHost* render_view_host,
     DownloadFavIconOrAskHistory(entry);
 }
 
-void FavIconHelper::DidDownloadFavIcon(RenderViewHost* render_view_host,
-                                       int id,
-                                       const GURL& image_url,
-                                       bool errored,
-                                       const SkBitmap& image) {
+bool FavIconHelper::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(FavIconHelper, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFavIconURL, OnUpdateFavIconURL)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidDownloadFavIcon, OnDidDownloadFavIcon)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void FavIconHelper::OnDidDownloadFavIcon(int id,
+                                         const GURL& image_url,
+                                         bool errored,
+                                         const SkBitmap& image) {
   DownloadRequests::iterator i = download_requests_.find(id);
   if (i == download_requests_.end()) {
     // Currently TabContents notifies us of ANY downloads so that it is

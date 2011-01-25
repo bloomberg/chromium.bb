@@ -24,6 +24,7 @@
 #include "chrome/test/automation/automation_handle_tracker.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
+#include "webkit/glue/window_open_disposition.h"
 
 class GURL;
 class Value;

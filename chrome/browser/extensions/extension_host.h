@@ -106,11 +106,11 @@ class ExtensionHost : public RenderViewHostDelegate,
   // |size_limit| in both width and height.
   void DisableScrollbarsForSmallWindows(const gfx::Size& size_limit);
 
-  // RenderViewHostDelegate::View implementation.
+  // RenderViewHostDelegate implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
   virtual const GURL& GetURL() const;
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual ViewType::Type GetRenderViewType() const;
-  virtual FileSelect* GetFileSelectDelegate();
   virtual int GetBrowserWindowID() const;
   virtual void RenderViewGone(RenderViewHost* render_view_host,
                               base::TerminationStatus status,
@@ -225,6 +225,9 @@ class ExtensionHost : public RenderViewHostDelegate,
   // ExtensionFunctionDispatcher::Delegate
   virtual Browser* GetBrowser();
   virtual gfx::NativeView GetNativeViewOfHost();
+
+  // Message handlers.
+  void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
 
   // Handles keyboard events that were not handled by HandleKeyboardEvent().
   // Platform specific implementation may override this method to handle the

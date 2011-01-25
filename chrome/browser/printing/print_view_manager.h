@@ -8,7 +8,7 @@
 
 #include "base/ref_counted.h"
 #include "base/string16.h"
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
+#include "chrome/browser/tab_contents/web_navigation_observer.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "printing/printed_pages_source.h"
@@ -27,7 +27,7 @@ class PrintJobWorkerOwner;
 // delegates a few printing related commands to this instance.
 class PrintViewManager : public NotificationObserver,
                          public PrintedPagesSource,
-                         public RenderViewHostDelegate::Printing {
+                         public WebNavigationObserver {
  public:
   explicit PrintViewManager(TabContents& owner);
   virtual ~PrintViewManager();
@@ -43,16 +43,18 @@ class PrintViewManager : public NotificationObserver,
   virtual string16 RenderSourceName();
   virtual GURL RenderSourceUrl();
 
-  // RenderViewHostDelegate::Printing implementation.
-  virtual void DidGetPrintedPagesCount(int cookie, int number_pages);
-  virtual void DidPrintPage(const ViewHostMsg_DidPrintPage_Params& params);
-
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // WebNavigationObserver implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
  private:
+  void OnDidGetPrintedPagesCount(int cookie, int number_pages);
+  void OnDidPrintPage(const ViewHostMsg_DidPrintPage_Params& params);
+
   // Processes a NOTIFY_PRINT_JOB_EVENT notification.
   void OnNotifyPrintJobEvent(const JobEventDetails& event_details);
 

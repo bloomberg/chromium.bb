@@ -44,6 +44,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/io_buffer.h"
@@ -897,6 +898,18 @@ void SavePackage::DoSavingProcess() {
       SaveNextFile(false);
     }
   }
+}
+
+bool SavePackage::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(SavePackage, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SendCurrentPageAllSavableResourceLinks,
+                        OnReceivedSavableResourceLinksForCurrentPage)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SendSerializedHtmlData,
+                        OnReceivedSerializedHtmlData)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 // After finishing all SaveItems which need to get data from net.

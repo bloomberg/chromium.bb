@@ -763,8 +763,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgDocumentOnLoadCompletedInMainFrame)
     IPC_MESSAGE_HANDLER(ViewMsg_ExecuteCodeFinished,
                         OnExecuteCodeFinished)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFavIconURL, OnMsgUpdateFavIconURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidDownloadFavIcon, OnMsgDidDownloadFavIcon)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ContextMenu, OnMsgContextMenu)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenURL, OnMsgOpenURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
@@ -775,7 +773,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardMessageToExternalHost,
                         OnMsgForwardMessageToExternalHost)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnMsgSetTooltipText)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnMsgRunFileChooser)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunJavaScriptMessage,
                                     OnMsgRunJavaScriptMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunBeforeUnloadConfirm,
@@ -786,9 +783,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageHasOSDD, OnMsgPageHasOSDD)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidGetPrintedPagesCount,
-                        OnDidGetPrintedPagesCount)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidPrintPage, DidPrintPage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToDevToolsAgent,
                         OnForwardToDevToolsAgent)
@@ -804,10 +798,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnRequestUndockDevToolsWindow)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DevToolsRuntimePropertyChanged,
                         OnDevToolsRuntimePropertyChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SendCurrentPageAllSavableResourceLinks,
-                        OnReceivedSavableResourceLinksForCurrentPage)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SendSerializedHtmlData,
-                        OnReceivedSerializedHtmlData)
     IPC_MESSAGE_FORWARD(ViewHostMsg_JSOutOfMemory, delegate_,
                         RenderViewHostDelegate::OnJSOutOfMemory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK)
@@ -1102,24 +1092,6 @@ void RenderViewHost::OnExecuteCodeFinished(int request_id, bool success) {
       Details<std::pair<int, bool> >(&result_details));
 }
 
-void RenderViewHost::OnMsgUpdateFavIconURL(int32 page_id,
-                                           const GURL& icon_url) {
-  RenderViewHostDelegate::FavIcon* favicon_delegate =
-      delegate_->GetFavIconDelegate();
-  if (favicon_delegate)
-    favicon_delegate->UpdateFavIconURL(this, page_id, icon_url);
-}
-
-void RenderViewHost::OnMsgDidDownloadFavIcon(int id,
-                                             const GURL& image_url,
-                                             bool errored,
-                                             const SkBitmap& image) {
-  RenderViewHostDelegate::FavIcon* favicon_delegate =
-      delegate_->GetFavIconDelegate();
-  if (favicon_delegate)
-    favicon_delegate->DidDownloadFavIcon(this, id, image_url, errored, image);
-}
-
 void RenderViewHost::OnMsgContextMenu(const ContextMenuParams& params) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (!view)
@@ -1257,14 +1229,6 @@ void RenderViewHost::OnMsgSelectionChanged(const std::string& text) {
     view()->SelectionChanged(text);
 }
 
-void RenderViewHost::OnMsgRunFileChooser(
-    const ViewHostMsg_RunFileChooser_Params& params) {
-  RenderViewHostDelegate::FileSelect* file_select_delegate =
-      delegate()->GetFileSelectDelegate();
-  if (file_select_delegate)
-    file_select_delegate->RunFileChooser(this, params);
-}
-
 void RenderViewHost::OnMsgRunJavaScriptMessage(
     const std::wstring& message,
     const std::wstring& default_prompt,
@@ -1340,21 +1304,6 @@ void RenderViewHost::OnMsgPageHasOSDD(
   delegate_->PageHasOSDD(this, page_id, doc_url, provider_type);
 }
 
-void RenderViewHost::OnDidGetPrintedPagesCount(int cookie, int number_pages) {
-  RenderViewHostDelegate::Printing* printing_delegate =
-      delegate_->GetPrintingDelegate();
-  if (printing_delegate)
-    printing_delegate->DidGetPrintedPagesCount(cookie, number_pages);
-}
-
-void RenderViewHost::DidPrintPage(
-    const ViewHostMsg_DidPrintPage_Params& params) {
-  RenderViewHostDelegate::Printing* printing_delegate =
-      delegate_->GetPrintingDelegate();
-  if (printing_delegate)
-    printing_delegate->DidPrintPage(params);
-}
-
 void RenderViewHost::OnAddMessageToConsole(const std::wstring& message,
                                            int32 line_no,
                                            const std::wstring& source_id) {
@@ -1417,31 +1366,12 @@ void RenderViewHost::GetAllSavableResourceLinksForCurrentPage(
                                                             page_url));
 }
 
-void RenderViewHost::OnReceivedSavableResourceLinksForCurrentPage(
-    const std::vector<GURL>& resources_list,
-    const std::vector<GURL>& referrers_list,
-    const std::vector<GURL>& frames_list) {
-  RenderViewHostDelegate::Save* save_delegate = delegate_->GetSaveDelegate();
-  if (save_delegate) {
-    save_delegate->OnReceivedSavableResourceLinksForCurrentPage(
-        resources_list, referrers_list, frames_list);
-  }
-}
-
 void RenderViewHost::GetSerializedHtmlDataForCurrentPageWithLocalLinks(
     const std::vector<GURL>& links,
     const std::vector<FilePath>& local_paths,
     const FilePath& local_directory_name) {
   Send(new ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks(
       routing_id(), links, local_paths, local_directory_name));
-}
-
-void RenderViewHost::OnReceivedSerializedHtmlData(const GURL& frame_url,
-                                                  const std::string& data,
-                                                  int32 status) {
-  RenderViewHostDelegate::Save* save_delegate = delegate_->GetSaveDelegate();
-  if (save_delegate)
-    save_delegate->OnReceivedSerializedHtmlData(frame_url, data, status);
 }
 
 void RenderViewHost::OnMsgShouldCloseACK(bool proceed) {
