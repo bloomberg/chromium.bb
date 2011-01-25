@@ -102,16 +102,24 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       html_container_(NULL),
       method_factory_(this),
       close_button_(NULL),
-      animation_(NULL) {
+      animation_(NULL),
+      menu_showing_(false),
+      pending_close_(false) {
 }
 
 BalloonViewImpl::~BalloonViewImpl() {
 }
 
 void BalloonViewImpl::Close(bool by_user) {
-  MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &BalloonViewImpl::DelayedClose, by_user));
+  // Delay a system-initiated close if the menu is showing.
+  if (!by_user && menu_showing_) {
+    pending_close_ = true;
+  } else {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        method_factory_.NewRunnableMethod(
+            &BalloonViewImpl::DelayedClose, by_user));
+  }
 }
 
 gfx::Size BalloonViewImpl::GetSize() const {
@@ -417,7 +425,15 @@ gboolean BalloonViewImpl::OnExpose(GtkWidget* sender, GdkEventExpose* event) {
 }
 
 void BalloonViewImpl::OnOptionsMenuButton(GtkWidget* widget) {
+  menu_showing_ = true;
   options_menu_->PopupAsContext(gtk_get_current_event_time());
+}
+
+// Called when the menu stops showing.
+void BalloonViewImpl::StoppedShowing() {
+  if (pending_close_)
+    DelayedClose(false);
+  menu_showing_ = false;
 }
 
 gboolean BalloonViewImpl::OnDestroy(GtkWidget* widget) {

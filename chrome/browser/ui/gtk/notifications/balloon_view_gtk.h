@@ -51,6 +51,9 @@ class BalloonViewImpl : public BalloonView,
   virtual gfx::Size GetSize() const;
   virtual BalloonHost* GetHost() const;
 
+  // MenuGtk::Delegate interface.
+  virtual void StoppedShowing();
+
  private:
   // NotificationObserver interface.
   virtual void Observe(NotificationType type,
@@ -123,6 +126,12 @@ class BalloonViewImpl : public BalloonView,
   scoped_ptr<CustomDrawButton> options_menu_button_;
 
   NotificationRegistrar notification_registrar_;
+
+  // Is the menu currently showing?
+  bool menu_showing_;
+
+  // Is there a pending system-initiated close?
+  bool pending_close_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewImpl);
 };
