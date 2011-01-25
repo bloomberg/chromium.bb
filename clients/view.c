@@ -101,6 +101,7 @@ view_draw(struct view *view)
 	cairo_fill(cr);
 	poppler_page_render(page, cr);
 	cairo_destroy(cr);
+	cairo_surface_destroy(surface);
 	g_object_unref(G_OBJECT(page));
 	window_flush(view->window);
 }
