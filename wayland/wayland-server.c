@@ -649,7 +649,7 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	const char *runtime_dir;
 
 	s = malloc(sizeof *s);
-	if (socket == NULL)
+	if (s == NULL)
 		return -1;
 
 	s->fd = socket(PF_LOCAL, SOCK_STREAM, 0);
