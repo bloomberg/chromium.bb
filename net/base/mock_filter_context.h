@@ -1,10 +1,9 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
 
-#ifndef NET_BASE_FILTER_UNITTEST_H_
-#define NET_BASE_FILTER_UNITTEST_H_
+#ifndef NET_BASE_MOCK_FILTER_CONTEXT_H_
+#define NET_BASE_MOCK_FILTER_CONTEXT_H_
 #pragma once
 
 #include <string>
@@ -12,16 +11,12 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/filter.h"
 
-//------------------------------------------------------------------------------
+namespace net {
+
 class MockFilterContext : public FilterContext {
  public:
-  explicit MockFilterContext(int buffer_size)
-    : buffer_size_(buffer_size),
-      is_cached_content_(false),
-      is_download_(false),
-      is_sdch_response_(false),
-      response_code_(-1) {
-  }
+  explicit MockFilterContext(int buffer_size);
+  virtual ~MockFilterContext();
 
   void SetBufferSize(int buffer_size) { buffer_size_ = buffer_size; }
   void SetMimeType(const std::string& mime_type) { mime_type_ = mime_type; }
@@ -34,39 +29,31 @@ class MockFilterContext : public FilterContext {
     is_sdch_response_ = is_sdch_response;
   }
 
-  virtual bool GetMimeType(std::string* mime_type) const {
-    *mime_type = mime_type_;
-    return true;
-  }
+  virtual bool GetMimeType(std::string* mime_type) const;
 
   // What URL was used to access this data?
   // Return false if gurl is not present.
-  virtual bool GetURL(GURL* gurl) const {
-    *gurl = gurl_;
-    return true;
-  }
+  virtual bool GetURL(GURL* gurl) const;
 
   // What was this data requested from a server?
-  virtual base::Time GetRequestTime() const {
-    return request_time_;
-  }
+  virtual base::Time GetRequestTime() const;
 
   // Is data supplied from cache, or fresh across the net?
-  virtual bool IsCachedContent() const { return is_cached_content_; }
+  virtual bool IsCachedContent() const;
 
   // Is this a download?
-  virtual bool IsDownload() const { return is_download_; }
+  virtual bool IsDownload() const;
 
   // Was this data flagged as a response to a request with an SDCH dictionary?
-  virtual bool IsSdchResponse() const { return is_sdch_response_; }
+  virtual bool IsSdchResponse() const;
 
   // How many bytes were fed to filter(s) so far?
-  virtual int64 GetByteReadCount() const { return 0; }
+  virtual int64 GetByteReadCount() const;
 
-  virtual int GetResponseCode() const { return response_code_; }
+  virtual int GetResponseCode() const;
 
   // What is the desirable input buffer size for these filters?
-  virtual int GetInputStreamBufferSize() const { return buffer_size_; }
+  virtual int GetInputStreamBufferSize() const;
 
   virtual void RecordPacketStats(StatisticSelector statistic) const {}
 
@@ -83,4 +70,6 @@ class MockFilterContext : public FilterContext {
   DISALLOW_COPY_AND_ASSIGN(MockFilterContext);
 };
 
-#endif  // NET_BASE_FILTER_UNITTEST_H_
+}  // namespace net
+
+#endif  // NET_BASE_MOCK_FILTER_CONTEXT_H_

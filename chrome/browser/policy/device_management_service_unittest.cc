@@ -15,7 +15,7 @@
 #include "chrome/test/test_url_request_context_getter.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
