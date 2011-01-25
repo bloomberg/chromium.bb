@@ -50,6 +50,11 @@ ssize_t syscall_close(int desc) {
   return retval;
 }
 
+// round size up to next 64k
+size_t ceil64k(size_t n) {
+  return (n + 0xFFFF) & (~0xFFFF);
+}
+
 }  // namespace
 
 PluginAudio::PluginAudio()
@@ -71,7 +76,7 @@ PluginAudio::~PluginAudio() {
   GetInterface()->StopPlayback(GetReference());
   // Unmap the shared memory buffer, if present.
   if (shm_buffer_) {
-    munmap(shm_buffer_, shm_size_);
+    munmap(shm_buffer_, ceil64k(shm_size_));
     shm_buffer_ = NULL;
     shm_size_ = 0;
   }
@@ -119,7 +124,7 @@ void PluginAudio::StreamCreated(NaClSrpcImcDescType socket,
   shm_ = shm;
   shm_size_ = shm_size;
   shm_buffer_ = mmap(NULL,
-                     shm_size,
+                     ceil64k(shm_size),
                      PROT_READ | PROT_WRITE,
                      MAP_SHARED,
                      shm,
