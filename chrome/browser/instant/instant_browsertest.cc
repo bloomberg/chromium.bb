@@ -499,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SearchServerDoesntSupportInstant) {
 // Showing as flaky on Mac and linux (chrome os)
 // http://crbug.com/70810
 #define MAYBE_NonSearchToSearchDoesntSupportInstant \
-    FLAKY_NonSearchToSearchDoesntSupportInstant
+    DISABLED_NonSearchToSearchDoesntSupportInstant
 #else
 #define MAYBE_NonSearchToSearchDoesntSupportInstant \
     NonSearchToSearchDoesntSupportInstant
