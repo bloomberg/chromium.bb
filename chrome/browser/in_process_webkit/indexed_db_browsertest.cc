@@ -83,24 +83,12 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DatabaseTest) {
 }
 
 // Flaky. See http://crbug.com/70643 and http://crbug.com/70665.
-#if defined(OS_LINUX)
-#define MAYBE_TransactionTest DISABLED_TransactionTest
-#else
-#define MAYBE_TransactionTest FLAKY_TransactionTest
-#endif
-
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_TransactionTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_TransactionTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
 }
 
 // Flaky. See http://crbug.com/70643 and http://crbug.com/70665.
-#if defined(OS_LINUX)
-#define MAYBE_DoesntHangTest DISABLED_DoesntHangTest
-#else
-#define MAYBE_DoesntHangTest FLAKY_DoesntHangTest
-#endif
-
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_DoesntHangTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_DoesntHangTest) {
   SimpleTest(testUrl(FilePath(
       FILE_PATH_LITERAL("transaction_run_forever.html"))));
   ui_test_utils::CrashTab(browser()->GetSelectedTabContents());
