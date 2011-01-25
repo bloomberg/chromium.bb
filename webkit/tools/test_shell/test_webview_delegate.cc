@@ -66,7 +66,6 @@
 #include "webkit/plugins/npapi/webplugin_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
-#include "webkit/tools/test_shell/accessibility_controller.h"
 #include "webkit/tools/test_shell/mock_spellcheck.h"
 #include "webkit/tools/test_shell/notification_presenter.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
@@ -602,30 +601,17 @@ void TestWebViewDelegate::startDragging(
     WebDragOperationsMask mask,
     const WebImage& image,
     const WebPoint& image_offset) {
-  if (WebKit::layoutTestMode()) {
-    WebDragData mutable_drag_data = data;
-    if (shell_->layout_test_controller()->ShouldAddFileToPasteboard()) {
-      // Add a file called DRTFakeFile to the drag&drop clipboard.
-      AddDRTFakeFileToDataObject(&mutable_drag_data);
-    }
-
-    // When running a test, we need to fake a drag drop operation otherwise
-    // Windows waits for real mouse events to know when the drag is over.
-    shell_->event_sending_controller()->DoDragDrop(
-        mutable_drag_data, mask);
-  } else {
-    // TODO(tc): Drag and drop is disabled in the test shell because we need
-    // to be able to convert from WebDragData to an IDataObject.
-    //if (!drag_delegate_)
-    //  drag_delegate_ = new TestDragDelegate(shell_->webViewWnd(),
-    //                                        shell_->webView());
-    //const DWORD ok_effect = DROPEFFECT_COPY | DROPEFFECT_LINK |
-    //                        DROPEFFECT_MOVE;
-    //DWORD effect;
-    //HRESULT res = DoDragDrop(drop_data.data_object, drag_delegate_.get(),
-    //                         ok_effect, &effect);
-    //DCHECK(DRAGDROP_S_DROP == res || DRAGDROP_S_CANCEL == res);
-  }
+  // TODO(tc): Drag and drop is disabled in the test shell because we need
+  // to be able to convert from WebDragData to an IDataObject.
+  //if (!drag_delegate_)
+  //  drag_delegate_ = new TestDragDelegate(shell_->webViewWnd(),
+  //                                        shell_->webView());
+  //const DWORD ok_effect = DROPEFFECT_COPY | DROPEFFECT_LINK |
+  //                        DROPEFFECT_MOVE;
+  //DWORD effect;
+  //HRESULT res = DoDragDrop(drop_data.data_object, drag_delegate_.get(),
+  //                         ok_effect, &effect);
+  //DCHECK(DRAGDROP_S_DROP == res || DRAGDROP_S_CANCEL == res);
 }
 
 void TestWebViewDelegate::navigateBackForwardSoon(int offset) {
@@ -642,11 +628,6 @@ int TestWebViewDelegate::historyForwardListCount() {
   int current_index =
       shell_->navigation_controller()->GetLastCommittedEntryIndex();
   return shell_->navigation_controller()->GetEntryCount() - current_index - 1;
-}
-
-void TestWebViewDelegate::focusAccessibilityObject(
-    const WebAccessibilityObject& object) {
-  shell_->accessibility_controller()->SetFocusedElement(object);
 }
 
 WebNotificationPresenter* TestWebViewDelegate::notificationPresenter() {

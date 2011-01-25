@@ -138,8 +138,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual void navigateBackForwardSoon(int offset);
   virtual int historyBackListCount();
   virtual int historyForwardListCount();
-  virtual void focusAccessibilityObject(
-      const WebKit::WebAccessibilityObject& object);
   virtual WebKit::WebNotificationPresenter* notificationPresenter();
   virtual WebKit::WebGeolocationClient* geolocationClient();
   virtual WebKit::WebDeviceOrientationClient* deviceOrientationClient();

@@ -48,7 +48,6 @@
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
-#include "webkit/tools/test_shell/accessibility_controller.h"
 #include "webkit/tools/test_shell/notification_presenter.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
@@ -137,13 +136,9 @@ TestShell::TestShell()
       allow_plugins_(true),
       allow_scripts_(true),
       dump_stats_table_on_exit_(false) {
-    accessibility_controller_.reset(new AccessibilityController(this));
     delegate_.reset(new TestWebViewDelegate(this));
     popup_delegate_.reset(new TestWebViewDelegate(this));
     layout_test_controller_.reset(new LayoutTestController(this));
-    event_sending_controller_.reset(new EventSendingController(this));
-    plain_text_controller_.reset(new PlainTextController(this));
-    text_input_controller_.reset(new TextInputController(this));
     navigation_controller_.reset(new TestNavigationController(this));
     notification_presenter_.reset(new TestNotificationPresenter(this));
 
@@ -554,12 +549,7 @@ void TestShell::Show(WebNavigationPolicy policy) {
 void TestShell::BindJSObjectsToWindow(WebFrame* frame) {
   // Only bind the test classes if we're running tests.
   if (layout_test_mode_) {
-    accessibility_controller_->BindToJavascript(
-        frame, "accessibilityController");
     layout_test_controller_->BindToJavascript(frame, "layoutTestController");
-    event_sending_controller_->BindToJavascript(frame, "eventSender");
-    plain_text_controller_->BindToJavascript(frame, "plainText");
-    text_input_controller_->BindToJavascript(frame, "textInputController");
   }
 }
 
@@ -644,9 +634,7 @@ void TestShell::SizeToDefault() {
 }
 
 void TestShell::ResetTestController() {
-  accessibility_controller_->Reset();
   layout_test_controller_->Reset();
-  event_sending_controller_->Reset();
   notification_presenter_->Reset();
   delegate_->Reset();
   if (geolocation_client_mock_.get())

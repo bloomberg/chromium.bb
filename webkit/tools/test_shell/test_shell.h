@@ -42,17 +42,13 @@
 #include "base/weak_ptr.h"
 #include "gfx/native_widget_types.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
-#include "webkit/tools/test_shell/event_sending_controller.h"
 #include "webkit/tools/test_shell/layout_test_controller.h"
-#include "webkit/tools/test_shell/plain_text_controller.h"
-#include "webkit/tools/test_shell/text_input_controller.h"
 #include "webkit/tools/test_shell/webview_host.h"
 #include "webkit/tools/test_shell/webwidget_host.h"
 
 typedef std::list<gfx::NativeWindow> WindowList;
 
 struct WebPreferences;
-class AccessibilityController;
 class GURL;
 class TestNavigationEntry;
 class TestNavigationController;
@@ -157,9 +153,6 @@ public:
     // We use this to avoid relying on Windows focus during layout test mode.
     void SetFocus(WebWidgetHost* host, bool enable);
 
-    AccessibilityController* accessibility_controller() const {
-      return accessibility_controller_.get();
-    }
     LayoutTestController* layout_test_controller() {
       return layout_test_controller_.get();
     }
@@ -167,9 +160,6 @@ public:
     TestWebViewDelegate* popup_delegate() { return popup_delegate_.get(); }
     TestNavigationController* navigation_controller() {
       return navigation_controller_.get();
-    }
-    EventSendingController* event_sending_controller() {
-      return event_sending_controller_.get();
     }
     TestNotificationPresenter* notification_presenter() {
       return notification_presenter_.get();
@@ -440,11 +430,7 @@ private:
     // Default timeout in ms for file page loads when in layout test mode.
     static int file_test_timeout_ms_;
 
-    scoped_ptr<AccessibilityController> accessibility_controller_;
     scoped_ptr<LayoutTestController> layout_test_controller_;
-    scoped_ptr<EventSendingController> event_sending_controller_;
-    scoped_ptr<PlainTextController> plain_text_controller_;
-    scoped_ptr<TextInputController> text_input_controller_;
     scoped_ptr<TestNavigationController> navigation_controller_;
     scoped_ptr<TestNotificationPresenter> notification_presenter_;
 
