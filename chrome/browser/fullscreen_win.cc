@@ -8,15 +8,15 @@
 #include <shellapi.h>
 
 static bool IsPlatformFullScreenMode() {
+#if 0
+  return false;
+#else
   // SHQueryUserNotificationState is only available for Vista and above.
-#if defined(NTDDI_VERSION) && (NTDDI_VERSION >= NTDDI_VISTA)
   QUERY_USER_NOTIFICATION_STATE state;
   if (FAILED(::SHQueryUserNotificationState(&state)))
     return false;
   return state == QUNS_RUNNING_D3D_FULL_SCREEN ||
          state == QUNS_PRESENTATION_MODE;
-#else
-  return false;
 #endif
 }
 
