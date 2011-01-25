@@ -127,7 +127,7 @@ HRESULT BrowserHelperObject::FinalConstruct() {
                reinterpret_cast<wchar_t*>(&bho_list), 0);
   if (bho_list == NULL) {
     LOG(ERROR) << "Failed to load string: " << GetLastError();
-  } else {
+  } else if (wcslen(bho_list) > 0) {
     std::vector<std::wstring> guids;
     base::SplitString(bho_list, ',', &guids);
     for (size_t i = 0; i < guids.size(); ++i) {
