@@ -32,7 +32,6 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/html_page_screen.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
-#include "chrome/browser/chromeos/login/login_screen.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
 #include "chrome/browser/chromeos/login/registration_screen.h"
@@ -263,7 +262,6 @@ WizardController::WizardController()
       is_official_build_(false),
 #endif
       is_out_of_box_(false),
-      is_test_mode_(false),
       observer_(NULL) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
@@ -351,12 +349,6 @@ chromeos::NetworkScreen* WizardController::GetNetworkScreen() {
   return network_screen_.get();
 }
 
-chromeos::LoginScreen* WizardController::GetLoginScreen() {
-  if (!login_screen_.get())
-    login_screen_.reset(new chromeos::LoginScreen(this));
-  return login_screen_.get();
-}
-
 chromeos::AccountScreen* WizardController::GetAccountScreen() {
   if (!account_screen_.get())
     account_screen_.reset(new chromeos::AccountScreen(this));
@@ -419,30 +411,23 @@ chromeos::ExistingUserController* WizardController::ShowLoginScreen() {
   // Initiate services customization.
   chromeos::ApplyServicesCustomization::StartIfNeeded();
 
-  // When run under automation test show plain login screen.
-  if (!is_test_mode_ &&
-      chromeos::CrosLibrary::Get()->EnsureLoaded() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLoginImages)) {
-    std::vector<chromeos::UserManager::User> users =
-        chromeos::UserManager::Get()->GetUsers();
-    // ExistingUserController deletes itself.
-    gfx::Rect screen_bounds;
-    background_widget_->GetBounds(&screen_bounds, true);
-    chromeos::ExistingUserController* controller =
-        new chromeos::ExistingUserController(users, screen_bounds);
-    controller->OwnBackground(background_widget_, background_view_);
-    controller->Init();
-    background_widget_ = NULL;
-    background_view_ = NULL;
+  std::vector<chromeos::UserManager::User> users;
+  if (chromeos::CrosLibrary::Get()->EnsureLoaded())
+    users = chromeos::UserManager::Get()->GetUsers();
 
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  // ExistingUserController deletes itself.
+  gfx::Rect screen_bounds;
+  background_widget_->GetBounds(&screen_bounds, true);
+  chromeos::ExistingUserController* controller =
+      new chromeos::ExistingUserController(users, screen_bounds);
+  controller->OwnBackground(background_widget_, background_view_);
+  controller->Init();
+  background_widget_ = NULL;
+  background_view_ = NULL;
 
-    return controller;
-  }
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 
-  SetCurrentScreen(GetLoginScreen());
-  return NULL;
+  return controller;
 }
 
 void WizardController::ShowAccountScreen() {
@@ -544,26 +529,6 @@ void WizardController::RegisterPrefs(PrefService* local_state) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, ExitHandlers:
-void WizardController::OnLoginSignInSelected() {
-  // Don't show user image screen in case of automated testing.
-  if (is_test_mode_) {
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-    return;
-  }
-  // Don't launch browser until we pass image screen.
-  chromeos::LoginUtils::Get()->EnableBrowserLaunch(false);
-  ShowUserImageScreen();
-}
-
-void WizardController::OnLoginGuestUser() {
-  // We're on the stack, so don't try and delete us now.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-}
-
-void WizardController::OnLoginCreateAccount() {
-  ShowAccountScreen();
-}
-
 void WizardController::OnNetworkConnected() {
   if (is_official_build_) {
     if (!IsEulaAccepted()) {
@@ -588,16 +553,14 @@ void WizardController::OnNetworkOffline() {
 
 void WizardController::OnAccountCreateBack() {
   chromeos::ExistingUserController* controller = ShowLoginScreen();
-  if (controller)
-    controller->SelectNewUser();
+  DCHECK(controller);
+  controller->SelectNewUser();
 }
 
 void WizardController::OnAccountCreated() {
   chromeos::ExistingUserController* controller = ShowLoginScreen();
-  if (controller)
-    controller->LoginNewUser(username_, password_);
-  else
-    Login(username_, password_);
+  DCHECK(controller);
+  controller->LoginNewUser(username_, password_);
   // TODO(dpolukhin): clear password memory for real. Now it is not
   // a problem because we can't extract password from the form.
   password_.clear();
@@ -767,8 +730,6 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
   if (first_screen_name == kNetworkScreenName) {
     ShowNetworkScreen();
   } else if (first_screen_name == kLoginScreenName) {
-    // This flag is passed if we're running under automation test.
-    is_test_mode_ = true;
     ShowLoginScreen();
   } else if (first_screen_name == kAccountScreenName) {
     ShowAccountScreen();
@@ -794,19 +755,6 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
       ShowLoginScreen();
     }
   }
-}
-
-void WizardController::Login(const std::string& username,
-                             const std::string& password) {
-  chromeos::LoginScreen* login = GetLoginScreen();
-  if (username.empty())
-    return;
-  login->view()->SetUsername(username);
-
-  if (password.empty())
-    return;
-  login->view()->SetPassword(password);
-  login->view()->Login();
 }
 
 // static
@@ -858,8 +806,9 @@ void WizardController::MarkDeviceRegistered() {
   // Create flag file for boot-time init scripts.
   FilePath oobe_complete_path(kOobeCompleteFlagFilePath);
   FILE* oobe_flag_file = file_util::OpenFile(oobe_complete_path, "w+b");
-  DCHECK(oobe_flag_file != NULL) << kOobeCompleteFlagFilePath;
-  if (oobe_flag_file != NULL)
+  if (oobe_flag_file == NULL)
+    DLOG(WARNING) << kOobeCompleteFlagFilePath << " doesn't exist.";
+  else
     file_util::CloseFile(oobe_flag_file);
 }
 
@@ -868,15 +817,6 @@ void WizardController::MarkDeviceRegistered() {
 void WizardController::OnExit(ExitCodes exit_code) {
   LOG(INFO) << "Wizard screen exit code: " << exit_code;
   switch (exit_code) {
-    case LOGIN_SIGN_IN_SELECTED:
-      OnLoginSignInSelected();
-      break;
-    case LOGIN_GUEST_SELECTED:
-      OnLoginGuestUser();
-      break;
-    case LOGIN_CREATE_ACCOUNT:
-      OnLoginCreateAccount();
-      break;
     case NETWORK_CONNECTED:
       OnNetworkConnected();
       break;
@@ -971,18 +911,17 @@ void ShowLoginWizard(const std::string& first_screen_name,
 
   // Check whether we need to execute OOBE process.
   bool oobe_complete = WizardController::IsOobeCompleted();
+  bool show_login_screen =
+      (first_screen_name.empty() && oobe_complete) ||
+      first_screen_name == WizardController::kLoginScreenName;
 
-  if (first_screen_name.empty() &&
-      oobe_complete &&
-      chromeos::CrosLibrary::Get()->EnsureLoaded() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLoginImages)) {
+  if (show_login_screen && chromeos::CrosLibrary::Get()->EnsureLoaded()) {
     std::vector<chromeos::UserManager::User> users =
         chromeos::UserManager::Get()->GetUsers();
 
     // Fix for users who updated device and thus never passed register screen.
-    // If we already have user we assume that it is not a second part of OOBE.
-    // See http://crosbug.com/6289
+    // If we already have users, we assume that it is not a second part of
+    // OOBE. See http://crosbug.com/6289
     if (!WizardController::IsDeviceRegistered() && !users.empty()) {
       VLOG(1) << "Mark device registered because there are remembered users: "
               << users.size();

@@ -593,8 +593,6 @@
         'browser/chromeos/login/login_html_dialog.h',
         'browser/chromeos/login/login_performer.cc',
         'browser/chromeos/login/login_performer.h',
-        'browser/chromeos/login/login_screen.cc',
-        'browser/chromeos/login/login_screen.h',
         'browser/chromeos/login/login_status_consumer.h',
         'browser/chromeos/login/login_utils.cc',
         'browser/chromeos/login/login_utils.h',

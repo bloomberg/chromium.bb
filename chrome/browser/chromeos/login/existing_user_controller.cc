@@ -543,9 +543,13 @@ void ExistingUserController::OnLoginSuccess(
   LoginPerformer* performer = login_performer_.release();
   performer = NULL;
   bool known_user = UserManager::Get()->IsKnownUser(username);
+  bool login_only =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kLoginScreen) == WizardController::kLoginScreenName;
   AppendStartUrlToCmdline();
   controllers_[selected_view_index_]->StopThrobber();
-  if (selected_view_index_ + 1 == controllers_.size() && !known_user) {
+  if (selected_view_index_ + 1 == controllers_.size() &&
+      !known_user && !login_only) {
 #if defined(OFFICIAL_BUILD)
     CommandLine::ForCurrentProcess()->AppendSwitchPath(
         switches::kLoadExtension,
