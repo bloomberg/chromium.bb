@@ -874,7 +874,7 @@ each locale. -->
           View s&amp;ource
         </message>
         <message name="IDS_FEEDBACK" desc="The text label of the Report Bug menu item">
-          &amp;Report an Issue...
+          &amp;Report an issue...
         </message>
         <message name="IDS_DEV_TOOLS" desc="The text label of the Developer Tools menu item">
           &amp;Developer tools
@@ -4746,7 +4746,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         whether explicitly in your comments or incidentally in the
         system logs and the screenshot, will be protected in
         accordance with our <ph name="BEGIN_LINK">&lt;a target="_blank"
-        href="http://www.google.com/chromeos/intl/en/privacy.html"&gt;</ph>
+        href="http://www.google.com/intl/en/chromeos/privacy.html"&gt;</ph>
         privacy policies.<ph name="END_LINK">&lt;/a&gt;</ph>
         To not send any system logs at all, please uncheck the
         "Include System Information" box.
@@ -4764,7 +4764,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         accordance with our privacy policies.  To not send the URL, please
         uncheck the “Include this URL:” box.  To not send the screenshot, leave the box
         “Include this screenshot:” unchecked.  You agree that Google may use any feedback that you
-        provide to improve any Google products or services
+        provide to improve any Google products or services.
       </message>
       </if>
       <message name="IDS_BUGREPORT_INCLUDE_PAGE_SOURCE_CHKBOX" desc="Checkbox for including page source">
