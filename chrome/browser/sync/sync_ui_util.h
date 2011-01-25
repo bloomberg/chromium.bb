@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 
+class Browser;
 class Profile;
 class ListValue;
 class DictionaryValue;
@@ -53,9 +54,11 @@ bool ShouldShowSyncErrorButton(ProfileSyncService* service);
 string16 GetSyncMenuLabel(ProfileSyncService* service);
 
 // Open the appropriate sync dialog for the given profile (which can be
-// incognito).  |code| should be one of the START_FROM_* codes.
-void OpenSyncMyBookmarksDialog(
-    Profile* profile, ProfileSyncService::SyncEventCodes code);
+// incognito). |browser| is the browser window that should be used if the UI
+// is in-window (i.e., DOMUI). |code| should be one of the START_FROM_* codes.
+void OpenSyncMyBookmarksDialog(Profile* profile,
+                               Browser* browser,
+                               ProfileSyncService::SyncEventCodes code);
 
 void AddBoolSyncDetail(ListValue* details,
                        const std::string& stat_name,

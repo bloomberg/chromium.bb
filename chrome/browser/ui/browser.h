@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -277,6 +277,8 @@ class Browser : public TabHandlerDelegate,
   static void OpenDownloadsWindow(Profile* profile);
   static void OpenHelpWindow(Profile* profile);
   static void OpenOptionsWindow(Profile* profile);
+  static void OpenClearBrowingDataDialogWindow(Profile* profile);
+  static void OpenImportSettingsDialogWindow(Profile* profile);
 #endif
 
   // Opens a window with the extensions tab in it - needed by long-lived

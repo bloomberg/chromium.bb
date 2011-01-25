@@ -1,17 +1,21 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/sync_ui_util.h"
 
+#include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/options/options_window.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -266,16 +270,30 @@ string16 GetSyncMenuLabel(ProfileSyncService* service) {
     return l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL);
 }
 
-void OpenSyncMyBookmarksDialog(
-    Profile* profile, ProfileSyncService::SyncEventCodes code) {
+void OpenSyncMyBookmarksDialog(Profile* profile,
+                               Browser* browser,
+                               ProfileSyncService::SyncEventCodes code) {
   ProfileSyncService* service =
     profile->GetOriginalProfile()->GetProfileSyncService();
   if (!service || !service->IsSyncEnabled()) {
     LOG(DFATAL) << "OpenSyncMyBookmarksDialog called with sync disabled";
     return;
   }
+
+  bool use_tabbed_options = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTabbedOptions);
+
   if (service->HasSyncSetupCompleted()) {
-    ShowOptionsWindow(OPTIONS_PAGE_CONTENT, OPTIONS_GROUP_NONE, profile);
+    if (use_tabbed_options) {
+      bool create_window = browser == NULL;
+      if (create_window)
+        browser = Browser::Create(profile);
+      browser->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
+      if (create_window)
+        browser->window()->Show();
+    } else {
+      ShowOptionsWindow(OPTIONS_PAGE_CONTENT, OPTIONS_GROUP_NONE, profile);
+    }
   } else {
     service->ShowLoginDialog(NULL);
     ProfileSyncService::SyncEvent(code);  // UMA stats

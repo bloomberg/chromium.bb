@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -848,15 +848,33 @@ void RecordLastRunAppBundlePath() {
       break;
     case IDC_CLEAR_BROWSING_DATA: {
       // There may not be a browser open, so use the default profile.
-      [ClearBrowsingDataController
-          showClearBrowsingDialogForProfile:defaultProfile];
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableTabbedOptions)) {
+        [ClearBrowsingDataController
+            showClearBrowsingDialogForProfile:defaultProfile];
+      } else {
+        if (Browser* browser = ActivateBrowser(defaultProfile)) {
+          browser->OpenClearBrowsingDataDialog();
+        } else {
+          Browser::OpenClearBrowingDataDialogWindow(defaultProfile);
+        }
+      }
       break;
     }
     case IDC_IMPORT_SETTINGS: {
-      UserMetrics::RecordAction(UserMetricsAction("Import_ShowDlg"),
-                                defaultProfile);
-      [ImportSettingsDialogController
-          showImportSettingsDialogForProfile:defaultProfile];
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableTabbedOptions)) {
+        UserMetrics::RecordAction(UserMetricsAction("Import_ShowDlg"),
+                                  defaultProfile);
+        [ImportSettingsDialogController
+            showImportSettingsDialogForProfile:defaultProfile];
+      } else {
+        if (Browser* browser = ActivateBrowser(defaultProfile)) {
+          browser->OpenImportSettingsDialog();
+        } else {
+          Browser::OpenImportSettingsDialogWindow(defaultProfile);
+        }
+      }
       break;
     }
     case IDC_SHOW_BOOKMARK_MANAGER:
@@ -918,7 +936,8 @@ void RecordLastRunAppBundlePath() {
       // TODO(akalin): Add a constant to denote starting sync from the
       // main menu and use that instead of START_FROM_WRENCH.
       sync_ui_util::OpenSyncMyBookmarksDialog(
-          defaultProfile, ProfileSyncService::START_FROM_WRENCH);
+          defaultProfile, ActivateBrowser(defaultProfile),
+          ProfileSyncService::START_FROM_WRENCH);
       break;
     case IDC_TASK_MANAGER:
       UserMetrics::RecordAction(UserMetricsAction("TaskManager"),
