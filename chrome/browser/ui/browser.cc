@@ -142,8 +142,6 @@ namespace {
 #if defined(OS_CHROMEOS)
 const char kHelpContentUrl[] =
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
-const char kHelpContentOnlineUrl[] =
-    "http://www.google.com/support/chromeos/";
 #else
 const char kHelpContentUrl[] =
     "http://www.google.com/support/chrome/";
@@ -1868,11 +1866,6 @@ void Browser::OpenUpdateChromeDialog() {
 
 void Browser::OpenHelpTab() {
   GURL help_url(kHelpContentUrl);
-#if defined(OS_CHROMEOS)
-  // TODO(nkostylev): Always redirect to HelpApp http://crosbug.com/6923
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession))
-    help_url = GURL(kHelpContentOnlineUrl);
-#endif
   GURL localized_help_url = google_util::AppendGoogleLocaleParam(help_url);
   AddSelectedTabWithURL(localized_help_url, PageTransition::AUTO_BOOKMARK);
 }
