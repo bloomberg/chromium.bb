@@ -1087,6 +1087,14 @@ def SelUniversalTest(env, name, command, **kwargs):
   # See http://code.google.com/p/nativeclient/issues/detail?id=1300
   if env.Bit('target_arm') and env.UsingEmulator():
     return []
+  # The dynamic linker's ability to receive arguments over IPC at
+  # startup currently requires it to reject the plugin's first
+  # connection, but this interferes with the sel_universal-based
+  # testing because sel_universal does not retry the connection.
+  # TODO(mseaborn): Fix by retrying the connection or by adding an
+  # option to ld.so to disable its argv-over-IPC feature.
+  if env.Bit('nacl_glibc') and not env.Bit('nacl_static_link'):
+    return []
   node = CommandSelLdrTestNacl(env, name, command, loader='sel_universal',
                                **kwargs)
   # sel_universal locates sel_ldr via /proc/self/exe on Linux.
