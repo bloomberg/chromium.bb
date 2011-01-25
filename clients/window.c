@@ -86,7 +86,7 @@ struct window {
 	struct display *display;
 	struct window *parent;
 	struct wl_surface *surface;
-	const char *title;
+	char *title;
 	struct rectangle allocation, saved_allocation, server_allocation;
 	int x, y;
 	int resize_edges;
@@ -1236,7 +1236,7 @@ window_set_keyboard_focus_handler(struct window *window,
 void
 window_set_title(struct window *window, const char *title)
 {
-	free((void*) window->title);
+	free(window->title);
 	window->title = strdup(title);
 }
 
