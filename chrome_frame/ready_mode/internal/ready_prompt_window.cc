@@ -5,16 +5,7 @@
 #include "chrome_frame/ready_mode/internal/ready_prompt_window.h"
 
 #include <atlctrls.h>
-#include <Shellapi.h>  // Must appear before atlctrlx.h
-
-// These seem to be required by atlctrlx?
-template<class A>
-A min(A const& a, A const& b) { return a < b ? a : b; }
-
-template<class A>
-A max(A const& a, A const& b) { return a > b ? a : b; }
-
-#include <atlctrlx.h>
+#include <Shellapi.h>
 
 #include "base/compiler_specific.h"
 #include "base/win/scoped_bstr.h"
@@ -23,6 +14,13 @@ A max(A const& a, A const& b) { return a > b ? a : b; }
 #include "chrome_frame/ready_mode/internal/url_launcher.h"
 #include "chrome_frame/simple_resource_loader.h"
 #include "grit/chromium_strings.h"
+
+// atlctrlx.h requires 'min' and 'max' macros, the definition of which conflicts
+// with STL headers. Hence we include them out of the order defined by style
+// guidelines. As a result you may not refer to std::min or std::max in this
+// file.
+#include <minmax.h>  // NOLINT
+#include <atlctrlx.h>  // NOLINT
 
 ReadyPromptWindow::ReadyPromptWindow(
     InfobarContent::Frame* frame, ReadyModeState* ready_mode_state,
