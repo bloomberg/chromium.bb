@@ -52,6 +52,10 @@ class NotificationOptionsMenuModel;
 
   // The host for the renderer of the HTML contents.
   scoped_ptr<BalloonViewHost> htmlContents_;
+
+  // Variables to delay close requested by script while showing modal menu.
+  BOOL optionMenuIsActive_;
+  BOOL delayedClose_;
 }
 
 // Initialize with a balloon object containing the notification data.

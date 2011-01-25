@@ -121,10 +121,25 @@ const int kRightMargin = 2;
   [[closeButton_ cell] setHighlighted:NO];
 }
 
+- (void)closeBalloonNow:(bool)byUser {
+  if (!balloon_)
+    return;
+  [self close];
+  if (htmlContents_.get())
+    htmlContents_->Shutdown();
+  if (balloon_)
+    balloon_->OnClose(byUser);
+  balloon_ = NULL;
+}
+
 - (IBAction)optionsButtonPressed:(id)sender {
+  optionMenuIsActive_ = YES;
   [NSMenu popUpContextMenu:[menuController_ menu]
                  withEvent:[NSApp currentEvent]
                    forView:optionsButton_];
+  optionMenuIsActive_ = NO;
+  if (delayedClose_)
+    [self closeBalloonNow: false]; // always by script.
 }
 
 - (IBAction)permissionRevoked:(id)sender {
@@ -146,14 +161,14 @@ const int kRightMargin = 2;
 }
 
 - (void)closeBalloon:(bool)byUser {
-  if (!balloon_)
+  // Keep alive while user is interacting with popup menu.
+  // Otherwise the script can close the notification and underlying balloon
+  // will be destroyed while user select a menu command.
+  if (!byUser && optionMenuIsActive_) {
+    delayedClose_ = YES;
     return;
-  [self close];
-  if (htmlContents_.get())
-    htmlContents_->Shutdown();
-  if (balloon_)
-    balloon_->OnClose(byUser);
-  balloon_ = NULL;
+  }
+  [self closeBalloonNow: byUser];
 }
 
 - (void)updateContents {
