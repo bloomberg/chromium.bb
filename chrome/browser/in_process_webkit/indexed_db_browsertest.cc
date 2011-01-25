@@ -57,7 +57,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISALBED_IndexTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("index_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyPathTest) {
+// http://code.google.com/p/chromium/issues/detail?id=70773
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_KeyPathTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("key_path_test.html"))));
 }
 
