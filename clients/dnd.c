@@ -678,7 +678,6 @@ int
 main(int argc, char *argv[])
 {
 	struct display *d;
-	struct dnd *dnd;
 
 	d = display_create(&argc, &argv, option_entries);
 	if (d == NULL) {
@@ -688,7 +687,7 @@ main(int argc, char *argv[])
 
 	display_set_global_handler(d, global_handler);
 
-	dnd = dnd_create (d);
+	dnd_create(d);
 
 	display_run(d);
 

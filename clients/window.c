@@ -865,14 +865,12 @@ window_handle_motion(void *data, struct wl_input_device *input_device,
 {
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
-	int location, pointer = POINTER_LEFT_PTR;
+	int pointer = POINTER_LEFT_PTR;
 
 	input->x = x;
 	input->y = y;
 	input->sx = sx;
 	input->sy = sy;
-
-	location = get_pointer_location(window, input->sx, input->sy);
 
 	if (window->motion_handler)
 		pointer = (*window->motion_handler)(window, input, time,

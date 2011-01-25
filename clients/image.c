@@ -250,11 +250,8 @@ main(int argc, char *argv[])
 		return -1;
 	}
 
-	for (i = 1; i < argc; i++) {
-		struct image *image;
-
-		image = image_create (d, i, argv[i]);
-	}
+	for (i = 1; i < argc; i++)
+		image_create (d, i, argv[i]);
 
 	display_run(d);
 

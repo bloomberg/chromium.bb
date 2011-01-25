@@ -666,7 +666,7 @@ static void
 terminal_shift_line(struct terminal *terminal, int d)
 {
 	union utf8_char *row;
-	struct attr *attr_row, attr;
+	struct attr *attr_row;
 	
 	row = terminal_get_row(terminal, terminal->row);
 	attr_row = terminal_get_attr_row(terminal, terminal->row);
@@ -681,7 +681,6 @@ terminal_shift_line(struct terminal *terminal, int d)
 		memmove(&row[terminal->column],
 		        &row[terminal->column + d],
 			(terminal->width - terminal->column - d) * sizeof(union utf8_char));
-		attr = attr_row[terminal->width - 1];
 		memmove(&attr_row[terminal->column], &attr_row[terminal->column + d],
 		        (terminal->width - terminal->column - d) * sizeof(struct attr));
 		memset(&row[terminal->width - d], 0, d * sizeof(union utf8_char));
@@ -704,7 +703,7 @@ terminal_resize(struct terminal *terminal, int width, int height)
 	struct attr *data_attr;
 	char *tab_ruler;
 	int data_pitch, attr_pitch;
-	int i, l, total_rows, start;
+	int i, l, total_rows;
 	struct rectangle allocation;
 	struct winsize ws;
 	int32_t pixel_width, pixel_height;
@@ -744,10 +743,8 @@ terminal_resize(struct terminal *terminal, int width, int height)
 
 		if (terminal->height > height) {
 			total_rows = height;
-			start = terminal->height - height;
 		} else {
 			total_rows = terminal->height;
-			start = 0;
 		}
 
 		for (i = 0; i < total_rows; i++) {

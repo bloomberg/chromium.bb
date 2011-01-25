@@ -153,7 +153,6 @@ create_shader(struct window *window, const char *source, GLenum shader_type)
 static void
 init_gl(struct window *window)
 {
-	GLfloat ar;
 	GLuint frag, vert;
 	GLint status;
 
@@ -163,7 +162,6 @@ init_gl(struct window *window)
 	glGenRenderbuffers(1, &window->gl.color_rbo);
 
 	glViewport(0, 0, window->geometry.width, window->geometry.height);
-	ar = (GLfloat)window->geometry.width / (GLfloat)window->geometry.height;
 
 	frag = create_shader(window, frag_shader_text, GL_FRAGMENT_SHADER);
 	vert = create_shader(window, vert_shader_text, GL_VERTEX_SHADER);

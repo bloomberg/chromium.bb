@@ -421,14 +421,13 @@ gears_create(struct display *display)
 int main(int argc, char *argv[])
 {
 	struct display *d;
-	struct gears *gears;
 
 	d = display_create(&argc, &argv, NULL);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
 	}
-	gears = gears_create(d);
+	gears_create(d);
 	display_run(d);
 
 	return 0;

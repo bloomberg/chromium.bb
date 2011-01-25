@@ -209,11 +209,8 @@ main(int argc, char *argv[])
 		return -1;
 	}
 
-	for (i = 1; i < argc; i++) {
-		struct view *view;
-
-		view = view_create (d, i, argv[i]);
-	}
+	for (i = 1; i < argc; i++)
+		view_create (d, i, argv[i]);
 
 	display_run(d);
 
