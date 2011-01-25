@@ -203,6 +203,11 @@ TEST_F(AutoFillMetricsTest, QualityMetrics) {
       "Select", "select", "USA", "select-one", &field);
   form.fields.push_back(field);
 
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  TestFormStructure* form_structure = new TestFormStructure(form);
+  autofill_manager_->AddSeenForm(form_structure);
+
   // Establish our expectations.
   ::testing::InSequence dummy;
   EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -319,8 +324,7 @@ TEST_F(AutoFillMetricsTest, QualityMetricsForFailure) {
   form_structure->SetFieldTypes(heuristic_types, server_types);
   autofill_manager_->AddSeenForm(form_structure);
 
-  // Establish our expectations. Only print gmock errors, as the warnings are
-  // too verbose.
+  // Establish our expectations.
   ::testing::InSequence dummy;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(failure_cases); ++i) {
     EXPECT_CALL(*autofill_manager_->metric_logger(),
@@ -332,6 +336,96 @@ TEST_F(AutoFillMetricsTest, QualityMetricsForFailure) {
     EXPECT_CALL(*autofill_manager_->metric_logger(),
                 Log(failure_cases[i].server_metric));
   }
+
+  // Simulate form submission.
+  EXPECT_NO_FATAL_FAILURE(autofill_manager_->OnFormSubmitted(form));
+}
+
+// Test that we behave sanely when the cached form differs from the submitted
+// one.
+TEST_F(AutoFillMetricsTest, SaneMetricsWithCacheMismatch) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.user_submitted = true;
+
+  std::vector<AutoFillFieldType> heuristic_types, server_types;
+
+  FormField field;
+  autofill_test::CreateTestFormField(
+      "Both match", "match", "Elvis Presley", "text", &field);
+  field.set_autofilled(true);
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FULL);
+  server_types.push_back(NAME_FULL);
+  autofill_test::CreateTestFormField(
+      "Both mismatch", "mismatch", "buddy@gmail.com", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_NUMBER);
+  server_types.push_back(PHONE_HOME_NUMBER);
+  autofill_test::CreateTestFormField(
+      "Only heuristics match", "mixed", "Memphis", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_CITY);
+  server_types.push_back(PHONE_HOME_NUMBER);
+  autofill_test::CreateTestFormField(
+      "Unknown", "unknown", "garbage", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(UNKNOWN_TYPE);
+  server_types.push_back(UNKNOWN_TYPE);
+
+  // Simulate having seen this form with the desired heuristic and server types.
+  // |form_structure| will be owned by |autofill_manager_|.
+  TestFormStructure* form_structure = new TestFormStructure(form);
+  form_structure->SetFieldTypes(heuristic_types, server_types);
+  autofill_manager_->AddSeenForm(form_structure);
+
+  // Add a field and re-arrange the remaining form fields before submitting.
+  std::vector<FormField> cached_fields = form.fields;
+  form.fields.clear();
+  autofill_test::CreateTestFormField(
+      "New field", "new field", "Tennessee", "text", &field);
+  form.fields.push_back(field);
+  form.fields.push_back(cached_fields[2]);
+  form.fields.push_back(cached_fields[1]);
+  form.fields.push_back(cached_fields[3]);
+  form.fields.push_back(cached_fields[0]);
+
+  // Establish our expectations.
+  ::testing::InSequence dummy;
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutoFillMetrics::FIELD_SUBMITTED));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutoFillMetrics::FIELD_AUTOFILL_FAILED));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_UNKNOWN));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutoFillMetrics::FIELD_SERVER_TYPE_UNKNOWN));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutoFillMetrics::FIELD_SUBMITTED));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutoFillMetrics::FIELD_AUTOFILL_FAILED));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_MATCH));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutoFillMetrics::FIELD_SERVER_TYPE_MISMATCH));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutoFillMetrics::FIELD_SUBMITTED));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutoFillMetrics::FIELD_AUTOFILL_FAILED));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_MISMATCH));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutoFillMetrics::FIELD_SERVER_TYPE_MISMATCH));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutoFillMetrics::FIELD_SUBMITTED));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutoFillMetrics::FIELD_SUBMITTED));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              Log(AutoFillMetrics::FIELD_AUTOFILLED));
 
   // Simulate form submission.
   EXPECT_NO_FATAL_FAILURE(autofill_manager_->OnFormSubmitted(form));

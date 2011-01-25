@@ -125,6 +125,11 @@ class AutoFillManager : public WebNavigationObserver,
                const std::vector<CreditCard*>& credit_cards,
                RenderViewHost** host) WARN_UNUSED_RESULT;
 
+  // Fills |form_structure| cached element corresponding to |form|.
+  // Returns false if the cached element was not found.
+  bool FindCachedForm(const webkit_glue::FormData& form,
+                      FormStructure** form_structure) WARN_UNUSED_RESULT;
+
   // Fills |form_structure| and |autofill_field| with the cached elements
   // corresponding to |form| and |field|. Returns false if the cached elements
   // were not found.
@@ -228,6 +233,7 @@ class AutoFillManager : public WebNavigationObserver,
   FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest, QualityMetrics);
   FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest,
                            NoQualityMetricsForNonAutoFillableForms);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest, SaneMetricsWithCacheMismatch);
   FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest, QualityMetricsForFailure);
 
   DISALLOW_COPY_AND_ASSIGN(AutoFillManager);

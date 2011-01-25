@@ -498,14 +498,20 @@ void AutoFillManager::DeterminePossibleFieldTypesForUpload(
 void AutoFillManager::LogMetricsAboutSubmittedForm(
     const FormData& form,
     const FormStructure* submitted_form) {
-  FormStructure* cached_submitted_form = NULL;
-  AutoFillField* ignored;
-  if (!FindCachedFormAndField(form, form.fields.front(),
-                              &cached_submitted_form, &ignored)) {
-    cached_submitted_form = NULL;
+  FormStructure* cached_submitted_form;
+  if (!FindCachedForm(form, &cached_submitted_form)) {
+    NOTREACHED();
+    return;
   }
 
-  for (size_t i = 0; i < submitted_form->field_count(); i++) {
+  // Map from field signatures to cached fields.
+  std::map<std::string, const AutoFillField*> cached_fields;
+  for (size_t i = 0; i < cached_submitted_form->field_count(); ++i) {
+    const AutoFillField* field = cached_submitted_form->field(i);
+    cached_fields[field->FieldSignature()] = field;
+  }
+
+  for (size_t i = 0; i < submitted_form->field_count(); ++i) {
     const AutoFillField* field = submitted_form->field(i);
     FieldTypeSet field_types;
     personal_data_->GetPossibleFieldTypes(field->value(), &field_types);
@@ -527,9 +533,15 @@ void AutoFillManager::LogMetricsAboutSubmittedForm(
       } else {
         metric_logger_->Log(AutoFillMetrics::FIELD_AUTOFILL_FAILED);
 
-        AutoFillFieldType heuristic_type = cached_submitted_form?
-            cached_submitted_form->field(i)->heuristic_type() :
-            UNKNOWN_TYPE;
+        AutoFillFieldType heuristic_type = UNKNOWN_TYPE;
+        AutoFillFieldType server_type = NO_SERVER_DATA;
+        std::map<std::string, const AutoFillField*>::const_iterator
+            cached_field = cached_fields.find(field->FieldSignature());
+        if (cached_field != cached_fields.end()) {
+          heuristic_type = cached_field->second->heuristic_type();
+          server_type = cached_field->second->server_type();
+        }
+
         if (heuristic_type == UNKNOWN_TYPE)
           metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_UNKNOWN);
         else if (field_types.count(heuristic_type))
@@ -537,9 +549,6 @@ void AutoFillManager::LogMetricsAboutSubmittedForm(
         else
           metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_MISMATCH);
 
-        AutoFillFieldType server_type = cached_submitted_form?
-            cached_submitted_form->field(i)->server_type() :
-            NO_SERVER_DATA;
         if (server_type == NO_SERVER_DATA)
           metric_logger_->Log(AutoFillMetrics::FIELD_SERVER_TYPE_UNKNOWN);
         else if (field_types.count(server_type))
@@ -650,14 +659,12 @@ bool AutoFillManager::GetHost(const std::vector<AutoFillProfile*>& profiles,
   return true;
 }
 
-bool AutoFillManager::FindCachedFormAndField(const FormData& form,
-                                             const FormField& field,
-                                             FormStructure** form_structure,
-                                             AutoFillField** autofill_field) {
+bool AutoFillManager::FindCachedForm(const FormData& form,
+                                     FormStructure** form_structure) {
   // Find the FormStructure that corresponds to |form|.
   *form_structure = NULL;
   for (std::vector<FormStructure*>::const_iterator iter =
-           form_structures_.begin();
+       form_structures_.begin();
        iter != form_structures_.end(); ++iter) {
     if (**iter == form) {
       *form_structure = *iter;
@@ -666,6 +673,17 @@ bool AutoFillManager::FindCachedFormAndField(const FormData& form,
   }
 
   if (!(*form_structure))
+    return false;
+
+  return true;
+}
+
+bool AutoFillManager::FindCachedFormAndField(const FormData& form,
+                                             const FormField& field,
+                                             FormStructure** form_structure,
+                                             AutoFillField** autofill_field) {
+  // Find the FormStructure that corresponds to |form|.
+  if (!FindCachedForm(form, form_structure))
     return false;
 
   // No data to return if there are no auto-fillable fields.
