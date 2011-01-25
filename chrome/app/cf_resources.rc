@@ -40,7 +40,7 @@ IDD_CHROME_FRAME_READY_PROMPT DIALOGEX 0, 0, 446, 22
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_BORDER
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    LTEXT           "This site performs better with Google Chrome Frame.",IDC_PROMPT_MESSAGE,34,3,198,16
+    LTEXT           "This site recommends Google Chrome Frame (already installed).",IDC_PROMPT_MESSAGE,34,3,207,16
     LTEXT           "Learn more.",IDC_PROMPT_LINK,300,3,42,16
     ICON            10750,IDC_PROMPT_ICON,7,1,20,20
     DEFPUSHBUTTON   "Enable",IDACTIVATE,349,4,50,14
