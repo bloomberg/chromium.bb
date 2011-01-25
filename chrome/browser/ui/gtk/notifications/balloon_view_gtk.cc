@@ -222,6 +222,8 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   html_contents_.reset(new BalloonViewHost(balloon));
   html_contents_->Init();
   gfx::NativeView contents = html_contents_->native_view();
+  g_signal_connect_after(contents, "expose-event",
+                         G_CALLBACK(OnContentsExposeThunk), this);
 
   // Divide the frame vertically into the shelf and the content area.
   GtkWidget* vbox = gtk_vbox_new(0, 0);
@@ -394,6 +396,31 @@ void BalloonViewImpl::Observe(NotificationType type,
 
 void BalloonViewImpl::OnCloseButton(GtkWidget* widget) {
   Close(true);
+}
+
+// We draw black dots on the bottom left and right corners to fill in the
+// border. Otherwise, the border has a gap because the sharp corners of the
+// HTML view cut off the roundedness of the notification window.
+gboolean BalloonViewImpl::OnContentsExpose(GtkWidget* sender,
+                                           GdkEventExpose* event) {
+  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(sender->window));
+  gdk_cairo_rectangle(cr, &event->area);
+  cairo_clip(cr);
+
+  // According to a discussion on a mailing list I found, these degenerate
+  // paths are the officially supported way to draw points in Cairo.
+  cairo_set_source_rgb(cr, 0, 0, 0);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  cairo_set_line_width(cr, 1.0);
+  cairo_move_to(cr, 0.5, sender->allocation.height - 0.5);
+  cairo_close_path(cr);
+  cairo_move_to(cr, sender->allocation.width - 0.5,
+                    sender->allocation.height - 0.5);
+  cairo_close_path(cr);
+  cairo_stroke(cr);
+  cairo_destroy(cr);
+
+  return FALSE;
 }
 
 gboolean BalloonViewImpl::OnExpose(GtkWidget* sender, GdkEventExpose* event) {
