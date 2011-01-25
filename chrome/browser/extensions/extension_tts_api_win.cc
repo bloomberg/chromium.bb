@@ -94,7 +94,7 @@ bool ExtensionTtsPlatformImplWin::Speak(
 }
 
 bool ExtensionTtsPlatformImplWin::StopSpeaking() {
-  if (!speech_synthesizer_ && !paused_) {
+  if (speech_synthesizer_ && !paused_) {
     speech_synthesizer_->Pause();
     paused_ = true;
   }
@@ -102,6 +102,12 @@ bool ExtensionTtsPlatformImplWin::StopSpeaking() {
 }
 
 bool ExtensionTtsPlatformImplWin::IsSpeaking() {
+  if (speech_synthesizer_ && !paused_) {
+    SPVOICESTATUS status;
+    HRESULT result = speech_synthesizer_->GetStatus(&status, NULL);
+    if (result == S_OK && status.dwRunningState == SPRS_IS_SPEAKING)
+      return true;
+  }
   return false;
 }
 
