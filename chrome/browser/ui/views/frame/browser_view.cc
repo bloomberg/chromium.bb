@@ -608,6 +608,17 @@ bool BrowserView::ShouldShowOffTheRecordAvatar() const {
 }
 
 bool BrowserView::AcceleratorPressed(const views::Accelerator& accelerator) {
+#if defined(OS_CHROMEOS)
+  // If accessibility is enabled, ignore accelerators involving the Search
+  // key so that key combinations involving Search can be used for extra
+  // accessibility functionality.
+  if (accelerator.GetKeyCode() == ui::VKEY_LWIN &&
+      g_browser_process->local_state()->GetBoolean(
+          prefs::kAccessibilityEnabled)) {
+    return false;
+  }
+#endif
+
   std::map<views::Accelerator, int>::const_iterator iter =
       accelerator_table_.find(accelerator);
   DCHECK(iter != accelerator_table_.end());
