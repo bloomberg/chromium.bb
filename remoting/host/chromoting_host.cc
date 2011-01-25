@@ -24,30 +24,35 @@
 #include "remoting/protocol/session_config.h"
 
 using remoting::protocol::ConnectionToClient;
+using remoting::protocol::InputStub;
 
 namespace remoting {
 
 // static
 ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
                                        MutableHostConfig* config) {
-  return Create(context, config,
-                Capturer::Create(context->main_message_loop()));
+  Capturer* capturer = Capturer::Create(context->main_message_loop());
+  InputStub* input_stub = CreateEventExecutor(context->main_message_loop(),
+                                              capturer);
+  return Create(context, config, capturer, input_stub);
 }
 
 // static
 ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
                                        MutableHostConfig* config,
-                                       Capturer* capturer) {
-  return new ChromotingHost(context, config, capturer);
+                                       Capturer* capturer,
+                                       InputStub* input_stub) {
+  return new ChromotingHost(context, config, capturer, input_stub);
 }
 
 ChromotingHost::ChromotingHost(ChromotingHostContext* context,
-                               MutableHostConfig* config, Capturer* capturer)
+                               MutableHostConfig* config,
+                               Capturer* capturer,
+                               InputStub* input_stub)
     : context_(context),
       config_(config),
       capturer_(capturer),
-      input_stub_(CreateEventExecutor(
-          context->main_message_loop(), capturer)),
+      input_stub_(input_stub),
       host_stub_(new HostStubFake()),
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()) {
@@ -121,12 +126,6 @@ void ChromotingHost::Shutdown() {
     state_ = kStopped;
   }
 
-  // Tell the session to stop and then disconnect all clients.
-  if (recorder_.get()) {
-    recorder_->Stop(NULL);
-    recorder_->RemoveAllConnections();
-  }
-
   // Disconnect the client.
   if (connection_) {
     connection_->Disconnect();
@@ -148,9 +147,13 @@ void ChromotingHost::Shutdown() {
     jingle_client_->Close();
   }
 
-  // Lastly call the shutdown task.
-  if (shutdown_task_.get()) {
+  // Tell the recorder to stop and then disconnect all clients.
+  if (recorder_.get()) {
+    recorder_->RemoveAllConnections();
+    recorder_->Stop(shutdown_task_.release());
+  } else {
     shutdown_task_->Run();
+    shutdown_task_.reset();
   }
 }
 
@@ -169,7 +172,7 @@ void ChromotingHost::OnClientConnected(ConnectionToClient* connection) {
     recorder_ = new ScreenRecorder(context_->main_message_loop(),
                                    context_->encode_message_loop(),
                                    context_->network_message_loop(),
-                                   capturer_.release(),
+                                   capturer_.get(),
                                    encoder);
   }
 
@@ -187,6 +190,7 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
   if (recorder_.get()) {
     recorder_->RemoveConnection(connection);
     recorder_->Stop(NULL);
+    recorder_ = NULL;
   }
 
   // Close the connection to connection just to be safe.
@@ -206,7 +210,7 @@ void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
   context_->main_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &ChromotingHost::OnClientConnected,
-                        connection_));
+                        make_scoped_refptr(connection)));
 }
 
 void ChromotingHost::OnConnectionClosed(ConnectionToClient* connection) {
@@ -216,7 +220,7 @@ void ChromotingHost::OnConnectionClosed(ConnectionToClient* connection) {
   context_->main_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &ChromotingHost::OnClientDisconnected,
-                        connection_));
+                        make_scoped_refptr(connection)));
 }
 
 void ChromotingHost::OnConnectionFailed(ConnectionToClient* connection) {
@@ -226,7 +230,7 @@ void ChromotingHost::OnConnectionFailed(ConnectionToClient* connection) {
   context_->main_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &ChromotingHost::OnClientDisconnected,
-                        connection_));
+                        make_scoped_refptr(connection)));
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -299,8 +303,7 @@ void ChromotingHost::OnNewClientSession(
 
   VLOG(1) << "Client connected: " << session->jid();
 
-  // If we accept the connected then create a client object and set the
-  // callback.
+  // If we accept the connected then create a connection object.
   connection_ = new ConnectionToClient(context_->network_message_loop(),
                                        this, host_stub_.get(),
                                        input_stub_.get());

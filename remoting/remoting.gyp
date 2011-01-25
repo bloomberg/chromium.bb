@@ -467,6 +467,7 @@
         'client/mock_objects.h',
         'host/access_verifier_unittest.cc',
         'host/chromoting_host_context_unittest.cc',
+        'host/chromoting_host_unittest.cc',
         'host/differ_unittest.cc',
         'host/differ_block_unittest.cc',
         'host/heartbeat_sender_unittest.cc',

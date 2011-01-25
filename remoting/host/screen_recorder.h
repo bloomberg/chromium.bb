@@ -70,7 +70,7 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
  public:
 
   // Construct a ScreenRecorder. Message loops and threads are provided.
-  // This object does not own capturer and encoder.
+  // This object does not own capturer but owns encoder.
   ScreenRecorder(MessageLoop* capture_loop,
                  MessageLoop* encode_loop,
                  MessageLoop* network_loop,
@@ -160,7 +160,7 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
 
   // Reference to the capturer. This member is always accessed on the capture
   // thread.
-  scoped_ptr<Capturer> capturer_;
+  Capturer* capturer_;
 
   // Reference to the encoder. This member is always accessed on the encode
   // thread.
