@@ -85,7 +85,11 @@ namespace {
 
 // Adding value1 and value2 would overflow a uint32_t.
 bool AddWouldOverflow(size_t value1, size_t value2) {
-  return value1 > std::numeric_limits<uint32_t>::max() - value2;
+  if (value1 > std::numeric_limits<size_t>::max() - value2) {
+    return true;
+  }
+  size_t sum = value1 + value2;
+  return sum > std::numeric_limits<uint32_t>::max();
 }
 
 uint32_t RoundedStringBytes(uint32_t string_length) {
@@ -148,13 +152,13 @@ bool SerializePpVar(const PP_Var* vars,
   size_t offset = 0;
 
   for (uint32_t i = 0; i < argc; ++i) {
-    if (offset >= length) {
-      // Not enough bytes to put the requested number of PP_Vars.
-      return false;
-    }
     size_t element_size = PpVarSize(vars[i]);
     if (0 == element_size || AddWouldOverflow(offset, element_size)) {
       // Overflow.
+      return false;
+    }
+    if (offset + element_size > length) {
+      // Not enough bytes to put the requested number of PP_Vars.
       return false;
     }
 
