@@ -137,9 +137,6 @@ void
 window_destroy(struct window *window);
 
 void
-window_set_title(struct window *window, const char *title);
-
-void
 window_move(struct window *window, struct input *input, uint32_t time);
 
 void
@@ -147,6 +144,7 @@ window_draw(struct window *window);
 void
 window_get_child_allocation(struct window *window,
 			    struct rectangle *allocation);
+
 void
 window_set_child_size(struct window *window, int32_t width, int32_t height);
 void
@@ -211,6 +209,16 @@ window_set_motion_handler(struct window *window,
 void
 window_set_keyboard_focus_handler(struct window *window,
 				  window_keyboard_focus_handler_t handler);
+
+void
+window_set_frame_handler(struct window *window,
+			 window_frame_handler_t handler);
+
+void
+window_set_title(struct window *window, const char *title);
+
+const char *
+window_get_title(struct window *window);
 
 void
 display_set_global_handler(struct display *display,

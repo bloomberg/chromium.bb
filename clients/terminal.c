@@ -54,8 +54,8 @@ static int option_fullscreen;
 #define ATTRMASK_CONCEALED	0x10
 
 /* Buffer sizes */
-#define MAX_RESPONSE		11
-#define MAX_ESCAPE		64
+#define MAX_RESPONSE		256
+#define MAX_ESCAPE		255
 
 /* Terminal modes */
 #define MODE_SHOW_CURSOR	0x00000001
@@ -377,7 +377,7 @@ struct terminal {
 	int fd, master;
 	GIOChannel *channel;
 	uint32_t modifiers;
-	char escape[MAX_ESCAPE];
+	char escape[MAX_ESCAPE+1];
 	int escape_length;
 	enum escape_state state;
 	enum escape_state outer_state;
@@ -1141,6 +1141,24 @@ handle_dcs(struct terminal *terminal)
 static void
 handle_osc(struct terminal *terminal)
 {
+	char *p;
+	int code;
+
+	terminal->escape[terminal->escape_length++] = '\0';
+	p = &terminal->escape[2];
+	code = strtol(p, &p, 10);
+	if (*p == ';') p++;
+
+	switch (code) {
+	case 0: /* Icon name and window title */
+	case 1: /* Icon label */
+	case 2: /* Window title*/
+		window_set_title(terminal->window, p);
+		break;
+	default:
+		fprintf(stderr, "Unknown OSC escape code %d\n", code);
+		break;
+	}
 }
 
 static void
@@ -1152,6 +1170,7 @@ handle_escape(struct terminal *terminal)
 	int i, count, x, y, top, bottom;
 	int args[10], set[10] = { 0, };
 	char response[MAX_RESPONSE] = {0, };
+	struct rectangle allocation;
 
 	terminal->escape[terminal->escape_length++] = '\0';
 	i = 0;
@@ -1474,6 +1493,51 @@ handle_escape(struct terminal *terminal)
 		terminal->saved_row = terminal->row;
 		terminal->saved_column = terminal->column;
 		break;
+	case 't':    /* windowOps */
+		if (!set[0]) break;
+		switch (args[0]) {
+		case 4:  /* resize px */
+			if (set[1] && set[2]) {
+				window_set_child_size(terminal->window,
+						      args[2], args[1]);
+				resize_handler(terminal->window,
+					       args[2], args[1], terminal);
+			}
+			break;
+		case 8:  /* resize ch */
+			if (set[1] && set[2]) {
+				terminal_resize(terminal, args[2], args[1]);
+			}
+			break;
+		case 13: /* report position */
+			window_get_child_allocation(terminal->window, &allocation);
+			snprintf(response, MAX_RESPONSE, "\e[3;%d;%dt",
+				 allocation.x, allocation.y);
+			write(terminal->master, response, strlen(response));
+			break;
+		case 14: /* report px */
+			window_get_child_allocation(terminal->window, &allocation);
+			snprintf(response, MAX_RESPONSE, "\e[4;%d;%dt",
+				 allocation.height, allocation.width);
+			write(terminal->master, response, strlen(response));
+			break;
+		case 18: /* report ch */
+			snprintf(response, MAX_RESPONSE, "\e[9;%d;%dt",
+				 terminal->height, terminal->width);
+			write(terminal->master, response, strlen(response));
+			break;
+		case 21: /* report title */
+			snprintf(response, MAX_RESPONSE, "\e]l%s\e\\",
+				 window_get_title(terminal->window));
+			write(terminal->master, response, strlen(response));
+			break;
+		default:
+			if (args[0] >= 24)
+				terminal_resize(terminal, terminal->width, args[0]);
+			else
+				fprintf(stderr, "Unimplemented windowOp %d\n", args[0]);
+			break;
+		}
 	case 'u':
 		terminal->row = terminal->saved_row;
 		terminal->column = terminal->saved_column;
