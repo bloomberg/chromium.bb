@@ -254,7 +254,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     model->SetDefaultSearchProvider(template_url);
   }
 
-  void SetupHistory() {
+  void AddHistoryEntry(const TestHistoryEntry& entry, const Time& time) {
     Profile* profile = browser()->profile();
     HistoryService* history_service =
         profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
@@ -277,22 +277,26 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
       ui_test_utils::RunMessageLoop();
     }
 
+    GURL url(entry.url);
+    // Add everything in order of time. We don't want to have a time that
+    // is "right now" or it will nondeterministically appear in the results.
+    history_service->AddPageWithDetails(url, UTF8ToUTF16(entry.title),
+                                        entry.visit_count,
+                                        entry.typed_count, time, false,
+                                        history::SOURCE_BROWSED);
+    history_service->SetPageContents(url, UTF8ToUTF16(entry.body));
+    if (entry.starred)
+      bookmark_model->SetURLStarred(url, string16(), true);
+  }
+
+  void SetupHistory() {
     // Add enough history pages containing |kSearchText| to trigger
     // open history page url in autocomplete result.
     for (size_t i = 0; i < arraysize(kHistoryEntries); i++) {
-      const TestHistoryEntry& cur = kHistoryEntries[i];
-      GURL url(cur.url);
       // Add everything in order of time. We don't want to have a time that
       // is "right now" or it will nondeterministically appear in the results.
       Time t = Time::Now() - TimeDelta::FromHours(i + 1);
-      history_service->AddPageWithDetails(url, UTF8ToUTF16(cur.title),
-                                          cur.visit_count,
-                                          cur.typed_count, t, false,
-                                          history::SOURCE_BROWSED);
-      history_service->SetPageContents(url, UTF8ToUTF16(cur.body));
-      if (cur.starred) {
-        bookmark_model->SetURLStarred(url, string16(), true);
-      }
+      ASSERT_NO_FATAL_FAILURE(AddHistoryEntry(kHistoryEntries[i], t));
     }
   }
 
@@ -738,7 +742,8 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(edit_view->model()->keyword().empty());
     ASSERT_EQ(text + L" bar", edit_view->GetText());
 
-    // Keyword shouldn't be accepted by pressing space with a selected range.
+    // Keyword could be accepted by pressing space with a selected range at the
+    // end of text.
     edit_view->OnBeforePossibleChange();
     edit_view->OnInlineAutocompleteTextMaybeChanged(
         text + L"  ", text.length());
@@ -751,12 +756,36 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     edit_view->GetSelectionBounds(&start, &end);
     ASSERT_NE(start, end);
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, false, false, false));
-    ASSERT_TRUE(edit_view->model()->is_keyword_hint());
+    ASSERT_FALSE(edit_view->model()->is_keyword_hint());
     ASSERT_EQ(text, edit_view->model()->keyword());
-    ASSERT_EQ(text + L" ", edit_view->GetText());
+    ASSERT_EQ(std::wstring(), edit_view->GetText());
 
-    edit_view->GetSelectionBounds(&start, &end);
-    ASSERT_EQ(start, end);
+    edit_view->SetUserText(std::wstring());
+
+    // Space should accept keyword even when inline autocomplete is available.
+    const TestHistoryEntry kHistoryFoobar = {
+      "http://www.foobar.com", "Page foobar", kSearchText, 10000, 10000, true
+    };
+
+    // Add a history entry to trigger inline autocomplete when typing "foo".
+    ASSERT_NO_FATAL_FAILURE(
+        AddHistoryEntry(kHistoryFoobar, Time::Now() - TimeDelta::FromHours(1)));
+
+    // Type "foo" to trigger inline autocomplete.
+    ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchKeywordKeys));
+    ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+    ASSERT_TRUE(edit_view->model()->popup_model()->IsOpen());
+    ASSERT_NE(text, edit_view->GetText());
+
+    // Keyword hint shouldn't be visible.
+    ASSERT_FALSE(edit_view->model()->is_keyword_hint());
+    ASSERT_TRUE(edit_view->model()->keyword().empty());
+
+    // Trigger keyword mode by space.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, false, false, false));
+    ASSERT_FALSE(edit_view->model()->is_keyword_hint());
+    ASSERT_EQ(text, edit_view->model()->keyword());
+    ASSERT_TRUE(edit_view->GetText().empty());
   }
 
 };

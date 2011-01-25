@@ -645,20 +645,12 @@ bool AutocompleteEditModel::OnAfterPossibleChange(
     return false;
   }
 
+  const std::wstring old_user_text = user_text_;
   // If the user text has not changed, we do not want to change the model's
   // state associated with the text.  Otherwise, we can get surprising behavior
   // where the autocompleted text unexpectedly reappears, e.g. crbug.com/55983
   if (user_text_changed) {
-    const std::wstring new_user_text = UserTextFromDisplayText(new_text);
-
-    // Try to accept the current keyword if the user only typed a space at the
-    // end of content. Model's state and popup will be updated when the keyword
-    // is accepted. So we just need to return false here.
-    if (allow_keyword_ui_change && !selection_differs &&
-        MaybeAcceptKeywordBySpace(new_user_text))
-      return false;
-
-    InternalSetUserText(new_user_text);
+    InternalSetUserText(UserTextFromDisplayText(new_text));
     has_temporary_text_ = false;
 
     // Track when the user has deleted text so we won't allow inline
@@ -667,6 +659,14 @@ bool AutocompleteEditModel::OnAfterPossibleChange(
   }
 
   view_->UpdatePopup();
+
+  // Change to keyword mode if the user has typed a keyword name and is now
+  // pressing space after the name. Accepting the keyword will update our
+  // state, so in that case there's no need to also return true here.
+  if (text_differs && allow_keyword_ui_change && !just_deleted_text &&
+      MaybeAcceptKeywordBySpace(old_user_text, user_text_))
+    return false;
+
   return true;
 }
 
@@ -782,13 +782,15 @@ bool AutocompleteEditModel::GetURLForText(const std::wstring& text,
 }
 
 bool AutocompleteEditModel::MaybeAcceptKeywordBySpace(
+    const std::wstring& old_user_text,
     const std::wstring& new_user_text) {
   return (paste_state_ == NONE) && is_keyword_hint_ && !keyword_.empty() &&
-      inline_autocomplete_text_.empty() && !user_text_.empty() &&
-      (new_user_text.length() == user_text_.length() + 1) &&
-      !new_user_text.compare(0, user_text_.length(), user_text_) &&
-      IsSpaceCharForAcceptingKeyword(new_user_text[user_text_.length()]) &&
-      !IsWhitespace(user_text_[user_text_.length() - 1]) &&
+      inline_autocomplete_text_.empty() && new_user_text.length() >= 2 &&
+      IsSpaceCharForAcceptingKeyword(*new_user_text.rbegin()) &&
+      !IsWhitespace(*(new_user_text.rbegin() + 1)) &&
+      (old_user_text.length() + 1 >= new_user_text.length()) &&
+      !new_user_text.compare(0, new_user_text.length() - 1, old_user_text,
+                             0, new_user_text.length() - 1) &&
       AcceptKeyword();
 }
 

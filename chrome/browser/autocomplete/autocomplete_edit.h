@@ -379,8 +379,10 @@ class AutocompleteEditModel : public NotificationObserver {
   bool GetURLForText(const std::wstring& text, GURL* url) const;
 
   // Accepts current keyword if the user only typed a space at the end of
-  // |new_user_text|. Returns true if the current keyword is accepted.
-  bool MaybeAcceptKeywordBySpace(const std::wstring& new_user_text);
+  // |new_user_text| comparing to the |old_user_text|.
+  // Returns true if the current keyword is accepted.
+  bool MaybeAcceptKeywordBySpace(const std::wstring& old_user_text,
+                                 const std::wstring& new_user_text);
 
   // Checks if a given character is a valid space character for accepting
   // keyword.
