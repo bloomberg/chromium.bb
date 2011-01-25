@@ -107,38 +107,72 @@ redraw_handler(struct window *window, void *data)
 }
 
 static void
+view_page_up(struct view *view)
+{
+        if(view->page <= 0)
+                return;
+
+        view->page--;
+        window_schedule_redraw(view->window);
+}
+
+static void
+view_page_down(struct view *view)
+{
+        if(view->page >= poppler_document_get_n_pages(view->document) - 1)
+                return;
+
+        view->page++;
+        window_schedule_redraw(view->window);
+}
+
+static void
+button_handler(struct window *window, struct input *input, uint32_t time,
+               int button, int state, void *data)
+{
+        struct view *view = data;
+
+        if(!state)
+                return;
+
+        switch(button) {
+        case 275:
+                view_page_up(view);
+                break;
+        case 276:
+                view_page_down(view);
+                break;
+        default:
+                break;
+        }
+}
+
+static void
 key_handler(struct window *window, struct input *input, uint32_t time,
 	    uint32_t key, uint32_t unicode, uint32_t state, void *data)
 {
 	struct view *view = data;
 
+	if(!state)
+	        return;
+
 	switch (key) {
 	case KEY_F11:
-		if (!state)
-			break;
 		view->fullscreen ^= 1;
 		window_set_fullscreen(window, view->fullscreen);
 		window_schedule_redraw(view->window);
 		break;
 	case KEY_SPACE:
 	case KEY_PAGEDOWN:
-		if (!state)
-			break;
-
-		if (view->page + 1 < poppler_document_get_n_pages(view->document))
-                        view->page++;
-
-		window_schedule_redraw(view->window);
+	case KEY_RIGHT:
+	case KEY_DOWN:
+                view_page_down(view);
 		break;
 	case KEY_BACKSPACE:
 	case KEY_PAGEUP:
-		if (!state)
-			break;
-
-		if(view->page > 0)
-                        view->page--;
-
-		window_schedule_redraw(view->window);
+	case KEY_LEFT:
+	case KEY_UP:
+                view_page_up(view);
 		break;
 	default:
 		break;
@@ -179,7 +213,7 @@ view_create(struct display *display, uint32_t key, const char *filename)
 	window_set_key_handler(view->window, key_handler);
 	window_set_keyboard_focus_handler(view->window,
 					  keyboard_focus_handler);
-
+	window_set_button_handler(view->window, button_handler);
 	view->document = poppler_document_new_from_file(filename,
 							NULL, &error);
 	view->page = 0;
