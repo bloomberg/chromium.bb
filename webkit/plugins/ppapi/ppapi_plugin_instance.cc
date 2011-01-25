@@ -458,6 +458,10 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
     if (bound_graphics_2d()) {
       // Start the new image with the content of the old image until the plugin
       // repaints.
+      // Use ImageDataAutoMapper to ensure the image data is valid.
+      ImageDataAutoMapper mapper(bound_graphics_2d()->image_data());
+      if (!mapper.is_valid())
+        return false;
       const SkBitmap* old_backing_bitmap =
           bound_graphics_2d()->image_data()->GetMappedBitmap();
       SkRect old_size = SkRect::MakeWH(
