@@ -3677,6 +3677,18 @@
    fun:_ZN18MostVisitedHandler6AttachEP5DOMUI
 }
 {
+   bug_70782_h
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12FileBrowseUIC1EP11TabContents
+}
+{
+   bug_70782_i
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9OptionsUIC1EP11TabContents
+}
+{
    bug_70826
    Memcheck:Leak
    fun:_Znw*
