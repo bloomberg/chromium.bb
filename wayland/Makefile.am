@@ -29,7 +29,7 @@ libwayland_client_la_SOURCES =			\
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = wayland-client.pc wayland-server.pc
 
-INCLUDES = $(FFI_CFLAGS)
+AM_CPPFLAGS = $(FFI_CFLAGS)
 AM_CFLAGS = $(GCC_CFLAGS)
 
 include $(top_srcdir)/wayland/scanner.mk
