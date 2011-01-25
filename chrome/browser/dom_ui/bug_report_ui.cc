@@ -226,7 +226,6 @@ class BugReportHandler : public DOMMessageHandler,
   DOMUIScreenshotSource* screenshot_source_;
 
   BugReportData* bug_report_;
-  string16 target_tab_title_;
   std::string target_tab_url_;
 #if defined(OS_CHROMEOS)
   // Variables to track SyslogsLibrary::RequestSyslogs callback.
@@ -405,7 +404,6 @@ void BugReportData::SendReport() {
   char* image_data = image_data_size ?
       reinterpret_cast<char*>(&(image_.front())) : NULL;
   BugReportUtil::SendReport(profile_
-                            , UTF16ToUTF8(target_tab_title_)
                             , problem_type_
                             , page_url_
                             , description_
@@ -527,7 +525,6 @@ base::StringPiece BugReportHandler::Init() {
 
   TabContents* target_tab = browser->GetTabContentsAt(index);
   if (target_tab) {
-    target_tab_title_ = target_tab->GetTitle();
     target_tab_url_ = target_tab->GetURL().spec();
   }
 
@@ -685,7 +682,6 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
   // Update the data in bug_report_ so it can be sent
   bug_report_->UpdateData(dom_ui_->GetProfile()
                           , target_tab_url_
-                          , target_tab_title_
                           , problem_type
                           , page_url
                           , description

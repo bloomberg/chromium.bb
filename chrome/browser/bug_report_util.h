@@ -64,7 +64,6 @@ class BugReportUtil {
 
   // Generates bug report data.
   static void SendReport(Profile* profile,
-      const std::string& page_title_text,
       int problem_type,
       const std::string& page_url_text,
       const std::string& description,

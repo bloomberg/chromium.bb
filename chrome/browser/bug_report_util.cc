@@ -258,7 +258,6 @@ bool BugReportUtil::ValidFeedbackSize(const std::string& content) {
 
 // static
 void BugReportUtil::SendReport(Profile* profile,
-    const std::string& page_title_text,
     int problem_type,
     const std::string& page_url_text,
     const std::string& description,
@@ -287,10 +286,6 @@ void BugReportUtil::SendReport(Profile* profile,
   // submit feedback from incognito mode and specify any mail id
   // they wish
   common_data->set_gaia_id(0);
-
-  // Add the page title.
-  AddFeedbackData(&feedback_data, std::string(kPageTitleTag),
-                  page_title_text);
 
 #if defined(OS_CHROMEOS)
   // Add the user e-mail to the feedback object

@@ -110,7 +110,6 @@
   } else {
     BugReportUtil::SendReport(
         profile_,
-        base::SysNSStringToUTF8(pageTitle_),
         [self bugTypeFromIndex],
         base::SysNSStringToUTF8(pageURL_),
         base::SysNSStringToUTF8(bugDescription_),

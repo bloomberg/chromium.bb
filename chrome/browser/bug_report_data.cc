@@ -21,7 +21,6 @@ BugReportData::~BugReportData() {}
 
 void BugReportData::UpdateData(Profile* profile,
                                const std::string& target_tab_url,
-                               const string16& target_tab_title,
                                const int problem_type,
                                const std::string& page_url,
                                const std::string& description,
@@ -34,7 +33,6 @@ void BugReportData::UpdateData(Profile* profile,
                                ) {
   profile_ = profile;
   target_tab_url_ = target_tab_url;
-  target_tab_title_ = target_tab_title;
   problem_type_ = problem_type;
   page_url_ = page_url;
   description_ = description;
