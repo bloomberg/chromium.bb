@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
+#include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
@@ -28,9 +29,9 @@ namespace {
 class MockExtensionPrefs : public ExtensionPrefs {
  public:
   MockExtensionPrefs(PrefService* prefs,
-                     const FilePath& root_dir_,
-                     ExtensionPrefStore* pref_store)
-    : ExtensionPrefs(prefs, root_dir_, pref_store),
+                     const FilePath& root_dir,
+                     ExtensionPrefValueMap* extension_pref_value_map)
+    : ExtensionPrefs(prefs, root_dir, extension_pref_value_map),
       currentTime(base::Time::Now()) {}
   ~MockExtensionPrefs() {}
 
@@ -70,14 +71,17 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
     file_loop.RunAllPending();
   }
 
-  ExtensionPrefStore* pref_store = new ExtensionPrefStore;
+  extension_pref_value_map_.reset(new ExtensionPrefValueMap);
   PrefServiceMockBuilder builder;
   builder.WithUserFilePrefs(preferences_file_);
-  builder.WithExtensionPrefs(pref_store);
+  builder.WithExtensionPrefs(
+      new ExtensionPrefStore(extension_pref_value_map_.get(), false));
   pref_service_.reset(builder.Create());
   ExtensionPrefs::RegisterUserPrefs(pref_service_.get());
-  prefs_.reset(new MockExtensionPrefs(pref_service_.get(), temp_dir_.path(),
-                                      pref_store));
+
+  prefs_.reset(new MockExtensionPrefs(pref_service_.get(),
+                                      temp_dir_.path(),
+                                      extension_pref_value_map_.get()));
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtension(std::string name) {
@@ -109,4 +113,9 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifest(
 std::string TestExtensionPrefs::AddExtensionAndReturnId(std::string name) {
   scoped_refptr<Extension> extension(AddExtension(name));
   return extension->id();
+}
+
+PrefService* TestExtensionPrefs::CreateIncognitoPrefService() const {
+  return pref_service_->CreateIncognitoPrefService(
+      new ExtensionPrefStore(extension_pref_value_map_.get(), true));
 }

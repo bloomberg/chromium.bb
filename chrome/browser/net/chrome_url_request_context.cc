@@ -380,6 +380,7 @@ class FactoryForOffTheRecord : public ChromeURLRequestContextFactory {
  public:
   explicit FactoryForOffTheRecord(Profile* profile)
       : ChromeURLRequestContextFactory(profile),
+        proxy_config_service_(CreateProxyConfigService(profile)),
         original_context_getter_(
             static_cast<ChromeURLRequestContextGetter*>(
                 profile->GetOriginalProfile()->GetRequestContext())) {
@@ -388,6 +389,7 @@ class FactoryForOffTheRecord : public ChromeURLRequestContextFactory {
   virtual ChromeURLRequestContext* Create();
 
  private:
+  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_refptr<ChromeURLRequestContextGetter> original_context_getter_;
 };
 
@@ -404,7 +406,12 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
   // and http_auth_handler_factory as the original profile.
   context->set_host_resolver(original_context->host_resolver());
   context->set_cert_verifier(original_context->cert_verifier());
-  context->set_proxy_service(original_context->proxy_service());
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  context->set_proxy_service(
+      CreateProxyService(io_thread()->net_log(),
+                         io_thread_globals->proxy_script_fetcher_context.get(),
+                         proxy_config_service_.release(),
+                         command_line));
   context->set_http_auth_handler_factory(
       original_context->http_auth_handler_factory());
 

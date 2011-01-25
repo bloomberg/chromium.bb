@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "googleurl/src/gurl.h"
 
-class ExtensionPrefStore;
+class ExtensionPrefValueMap;
 
 // Class for managing global and per-extension preferences.
 //
@@ -59,9 +59,10 @@ class ExtensionPrefs {
     LAUNCH_WINDOW
   };
 
+  // Does not assume ownership of |prefs| and |incognito_prefs|.
   explicit ExtensionPrefs(PrefService* prefs,
                           const FilePath& root_dir,
-                          ExtensionPrefStore* extension_pref_store);
+                          ExtensionPrefValueMap* extension_pref_value_map);
   ~ExtensionPrefs();
 
   // Returns a copy of the Extensions prefs.
@@ -102,8 +103,8 @@ class ExtensionPrefs {
   // Called to change the extension's state when it is enabled/disabled.
   void SetExtensionState(const Extension* extension, Extension::State);
 
-  // Returns all installed and enabled extensions
-  void GetEnabledExtensions(ExtensionIdSet* out) const;
+  // Returns all installed extensions
+  void GetExtensions(ExtensionIdSet* out) const;
 
   // Getter and setter for browser action visibility.
   bool GetBrowserActionVisibility(const Extension* extension);
@@ -266,6 +267,7 @@ class ExtensionPrefs {
   // global the extension wants to override.
   void SetExtensionControlledPref(const std::string& extension_id,
                                   const std::string& pref_key,
+                                  bool incognito,
                                   Value* value);
 
   static void RegisterUserPrefs(PrefService* prefs);
@@ -338,7 +340,7 @@ class ExtensionPrefs {
   DictionaryValue* GetExtensionPref(const std::string& id) const;
 
   // Returns the dictionary of preferences controlled by the specified extension
-  // or NULL if unknown. All entries in the dictionary contain non-expanded
+  // or creates a new one. All entries in the dictionary contain non-expanded
   // paths.
   DictionaryValue* GetExtensionControlledPrefs(const std::string& id) const;
 
@@ -372,32 +374,14 @@ class ExtensionPrefs {
   // pref store.
   void InitPrefStore();
 
-  // Returns the extension controlled preference value of the extension that was
-  // installed most recently.
-  const Value* GetWinningExtensionControlledPrefValue(
-      const std::string& key) const;
-
-  // Executes UpdatePrefStore for all |pref_keys|.
-  void UpdatePrefStore(const PrefKeySet& pref_keys);
-
-  // Finds the most recently installed extension that defines a preference
-  // for |pref_key|, then stores its value in the PrefValueStore's extension
-  // pref store and sends notifications to observers in case the value changed.
-  void UpdatePrefStore(const std::string& pref_key);
-
-  // Retrieves a list of preference keys that the specified extension
-  // intends to manage. Keys are always appended, |out| is not cleared.
-  void GetExtensionControlledPrefKeys(const std::string& extension_id,
-                                      PrefKeySet *out) const;
-
-  // The pref service specific to this set of extension prefs.
+  // The pref service specific to this set of extension prefs. Owned by profile.
   PrefService* prefs_;
 
   // Base extensions install directory.
   FilePath install_directory_;
 
-  // Used to manipulate extension preferences.
-  ExtensionPrefStore* pref_store_;
+  // Weak pointer, owned by Profile.
+  ExtensionPrefValueMap* extension_pref_value_map_;
 
   // The URLs of all of the toolstrips.
   URLList shelf_order_;

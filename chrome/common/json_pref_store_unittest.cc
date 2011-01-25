@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/path_service.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -53,10 +54,11 @@ class JsonPrefStoreTest : public testing::Test {
 TEST_F(JsonPrefStoreTest, NonExistentFile) {
   FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
   ASSERT_FALSE(file_util::PathExists(bogus_input_file));
-  JsonPrefStore pref_store(bogus_input_file, message_loop_proxy_.get());
+  scoped_refptr<JsonPrefStore> pref_store =
+      new JsonPrefStore(bogus_input_file, message_loop_proxy_.get());
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
-            pref_store.ReadPrefs());
-  EXPECT_FALSE(pref_store.ReadOnly());
+            pref_store->ReadPrefs());
+  EXPECT_FALSE(pref_store->ReadOnly());
 }
 
 // Test fallback behavior for an invalid file.
@@ -64,10 +66,11 @@ TEST_F(JsonPrefStoreTest, InvalidFile) {
   FilePath invalid_file_original = data_dir_.AppendASCII("invalid.json");
   FilePath invalid_file = test_dir_.AppendASCII("invalid.json");
   ASSERT_TRUE(file_util::CopyFile(invalid_file_original, invalid_file));
-  JsonPrefStore pref_store(invalid_file, message_loop_proxy_.get());
+  scoped_refptr<JsonPrefStore> pref_store =
+      new JsonPrefStore(invalid_file, message_loop_proxy_.get());
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE,
-            pref_store.ReadPrefs());
-  EXPECT_FALSE(pref_store.ReadOnly());
+            pref_store->ReadPrefs());
+  EXPECT_FALSE(pref_store->ReadOnly());
 
   // The file should have been moved aside.
   EXPECT_FALSE(file_util::PathExists(invalid_file));
@@ -84,9 +87,10 @@ TEST_F(JsonPrefStoreTest, Basic) {
   // Test that the persistent value can be loaded.
   FilePath input_file = test_dir_.AppendASCII("write.json");
   ASSERT_TRUE(file_util::PathExists(input_file));
-  JsonPrefStore pref_store(input_file, message_loop_proxy_.get());
-  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE, pref_store.ReadPrefs());
-  ASSERT_FALSE(pref_store.ReadOnly());
+  scoped_refptr<JsonPrefStore> pref_store =
+      new JsonPrefStore(input_file, message_loop_proxy_.get());
+  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE, pref_store->ReadPrefs());
+  ASSERT_FALSE(pref_store->ReadOnly());
 
   // The JSON file looks like this:
   // {
@@ -106,52 +110,52 @@ TEST_F(JsonPrefStoreTest, Basic) {
 
   Value* actual;
   EXPECT_EQ(PrefStore::READ_OK,
-            pref_store.GetValue(prefs::kHomePage, &actual));
+            pref_store->GetValue(prefs::kHomePage, &actual));
   std::string string_value;
   EXPECT_TRUE(actual->GetAsString(&string_value));
   EXPECT_EQ(cnn, string_value);
 
   const char kSomeDirectory[] = "some_directory";
 
-  EXPECT_EQ(PrefStore::READ_OK, pref_store.GetValue(kSomeDirectory, &actual));
+  EXPECT_EQ(PrefStore::READ_OK, pref_store->GetValue(kSomeDirectory, &actual));
   FilePath::StringType path;
   EXPECT_TRUE(actual->GetAsString(&path));
   EXPECT_EQ(FilePath::StringType(FILE_PATH_LITERAL("/usr/local/")), path);
   FilePath some_path(FILE_PATH_LITERAL("/usr/sbin/"));
 
-  pref_store.SetValue(kSomeDirectory,
-                      Value::CreateStringValue(some_path.value()));
-  EXPECT_EQ(PrefStore::READ_OK, pref_store.GetValue(kSomeDirectory, &actual));
+  pref_store->SetValue(kSomeDirectory,
+                       Value::CreateStringValue(some_path.value()));
+  EXPECT_EQ(PrefStore::READ_OK, pref_store->GetValue(kSomeDirectory, &actual));
   EXPECT_TRUE(actual->GetAsString(&path));
   EXPECT_EQ(some_path.value(), path);
 
   // Test reading some other data types from sub-dictionaries.
   EXPECT_EQ(PrefStore::READ_OK,
-            pref_store.GetValue(kNewWindowsInTabs, &actual));
+            pref_store->GetValue(kNewWindowsInTabs, &actual));
   bool boolean = false;
   EXPECT_TRUE(actual->GetAsBoolean(&boolean));
   EXPECT_TRUE(boolean);
 
-  pref_store.SetValue(kNewWindowsInTabs,
+  pref_store->SetValue(kNewWindowsInTabs,
                       Value::CreateBooleanValue(false));
   EXPECT_EQ(PrefStore::READ_OK,
-            pref_store.GetValue(kNewWindowsInTabs, &actual));
+            pref_store->GetValue(kNewWindowsInTabs, &actual));
   EXPECT_TRUE(actual->GetAsBoolean(&boolean));
   EXPECT_FALSE(boolean);
 
-  EXPECT_EQ(PrefStore::READ_OK, pref_store.GetValue(kMaxTabs, &actual));
+  EXPECT_EQ(PrefStore::READ_OK, pref_store->GetValue(kMaxTabs, &actual));
   int integer = 0;
   EXPECT_TRUE(actual->GetAsInteger(&integer));
   EXPECT_EQ(20, integer);
-  pref_store.SetValue(kMaxTabs, Value::CreateIntegerValue(10));
-  EXPECT_EQ(PrefStore::READ_OK, pref_store.GetValue(kMaxTabs, &actual));
+  pref_store->SetValue(kMaxTabs, Value::CreateIntegerValue(10));
+  EXPECT_EQ(PrefStore::READ_OK, pref_store->GetValue(kMaxTabs, &actual));
   EXPECT_TRUE(actual->GetAsInteger(&integer));
   EXPECT_EQ(10, integer);
 
-  pref_store.SetValue(kLongIntPref,
+  pref_store->SetValue(kLongIntPref,
                       Value::CreateStringValue(
                           base::Int64ToString(214748364842LL)));
-  EXPECT_EQ(PrefStore::READ_OK, pref_store.GetValue(kLongIntPref, &actual));
+  EXPECT_EQ(PrefStore::READ_OK, pref_store->GetValue(kLongIntPref, &actual));
   EXPECT_TRUE(actual->GetAsString(&string_value));
   int64 value;
   base::StringToInt64(string_value, &value);
@@ -161,7 +165,7 @@ TEST_F(JsonPrefStoreTest, Basic) {
   FilePath output_file = input_file;
   FilePath golden_output_file = data_dir_.AppendASCII("write.golden.json");
   ASSERT_TRUE(file_util::PathExists(golden_output_file));
-  ASSERT_TRUE(pref_store.WritePrefs());
+  ASSERT_TRUE(pref_store->WritePrefs());
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(file_util::TextContentsEqual(golden_output_file, output_file));
   ASSERT_TRUE(file_util::Delete(output_file, false));

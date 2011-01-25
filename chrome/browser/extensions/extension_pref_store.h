@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,31 +6,33 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_PREF_STORE_H_
 #pragma once
 
+#include <string>
+
+#include "base/time.h"
+#include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/prefs/value_map_pref_store.h"
 
-// A PrefStore implementation that holds preferences set by extensions.
-class ExtensionPrefStore : public ValueMapPrefStore {
+// A (non-persistent) PrefStore implementation that holds effective preferences
+// set by extensions. These preferences are managed by and fetched from an
+// ExtensionPrefValueMap.
+class ExtensionPrefStore : public ValueMapPrefStore,
+                           public ExtensionPrefValueMap::Observer {
  public:
-  ExtensionPrefStore();
-  virtual ~ExtensionPrefStore() {}
-
-  // Set an extension preference |value| for |key|. Takes ownership of |value|.
-  void SetExtensionPref(const std::string& key, Value* value);
-
-  // Remove the extension preference value for |key|.
-  void RemoveExtensionPref(const std::string& key);
-
-  // Tell the store it's now fully initialized.
-  void OnInitializationCompleted();
+  // Constructs an ExtensionPrefStore for a regular or an incognito profile.
+  explicit ExtensionPrefStore(ExtensionPrefValueMap* extension_pref_value_map,
+                              bool incognito_pref_store);
+  virtual ~ExtensionPrefStore();
 
  private:
-  // PrefStore overrides:
-  virtual bool IsInitializationComplete() const;
+  // Overrides for ExtensionPrefValueMap::Observer:
+  virtual void OnInitializationCompleted();
+  virtual void OnPrefValueChanged(const std::string& key);
+  virtual void OnExtensionPrefValueMapDestruction();
 
-  bool initialization_complete_;
+  ExtensionPrefValueMap* extension_pref_value_map_;  // Weak pointer.
+  bool incognito_pref_store_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrefStore);
 };
-
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREF_STORE_H_

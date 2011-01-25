@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/ref_counted.h"
 
 class Value;
 
@@ -19,7 +20,7 @@ class Value;
 // CommandLinePrefStore, which bridges command line options to preferences and
 // ConfigurationPolicyPrefStore, which is used for hooking up configuration
 // policy with the preference subsystem.
-class PrefStore {
+class PrefStore : public base::RefCounted<PrefStore> {
  public:
   // Observer interface for monitoring PrefStore.
   class Observer {
@@ -43,7 +44,6 @@ class PrefStore {
   };
 
   PrefStore() {}
-  virtual ~PrefStore() {}
 
   // Add and remove observers.
   virtual void AddObserver(Observer* observer) {}
@@ -57,6 +57,11 @@ class PrefStore {
   // |result| value remains with the PrefStore.
   virtual ReadResult GetValue(const std::string& key, Value** result) const = 0;
 
+ protected:
+  friend class base::RefCounted<PrefStore>;
+  virtual ~PrefStore() {}
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(PrefStore);
 };
 

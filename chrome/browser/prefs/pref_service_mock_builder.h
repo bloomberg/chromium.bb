@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/ref_counted.h"
 #include "chrome/common/persistent_pref_store.h"
 #include "chrome/common/pref_store.h"
 
@@ -56,12 +56,12 @@ class PrefServiceMockBuilder {
   PrefService* Create();
 
  private:
-  scoped_ptr<PrefStore> managed_platform_prefs_;
-  scoped_ptr<PrefStore> device_management_prefs_;
-  scoped_ptr<PrefStore> extension_prefs_;
-  scoped_ptr<PrefStore> command_line_prefs_;
-  scoped_ptr<PersistentPrefStore> user_prefs_;
-  scoped_ptr<PrefStore> recommended_prefs_;
+  scoped_refptr<PrefStore> managed_platform_prefs_;
+  scoped_refptr<PrefStore> device_management_prefs_;
+  scoped_refptr<PrefStore> extension_prefs_;
+  scoped_refptr<PrefStore> command_line_prefs_;
+  scoped_refptr<PersistentPrefStore> user_prefs_;
+  scoped_refptr<PrefStore> recommended_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefServiceMockBuilder);
 };

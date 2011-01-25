@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,31 +109,6 @@ class PrefValueStoreTest : public testing::Test {
         recommended_pref_store_,
         default_pref_store_,
         &pref_notifier_);
-
-    // Register prefs with the PrefValueStore.
-    pref_value_store_->RegisterPreferenceType(prefs::kApplicationLocale,
-                                              Value::TYPE_STRING);
-    pref_value_store_->RegisterPreferenceType(prefs::kCurrentThemeID,
-                                              Value::TYPE_STRING);
-    pref_value_store_->RegisterPreferenceType(
-        prefs::kDefaultSearchProviderName,
-        Value::TYPE_STRING);
-    pref_value_store_->RegisterPreferenceType(prefs::kDeleteCache,
-                                              Value::TYPE_BOOLEAN);
-    pref_value_store_->RegisterPreferenceType(prefs::kHomePage,
-                                              Value::TYPE_STRING);
-    pref_value_store_->RegisterPreferenceType(prefs::kStabilityLaunchCount,
-                                              Value::TYPE_INTEGER);
-    pref_value_store_->RegisterPreferenceType(prefs::kRecommendedPref,
-                                              Value::TYPE_BOOLEAN);
-    pref_value_store_->RegisterPreferenceType(prefs::kSampleDict,
-                                              Value::TYPE_DICTIONARY);
-    pref_value_store_->RegisterPreferenceType(prefs::kSampleList,
-                                              Value::TYPE_LIST);
-    pref_value_store_->RegisterPreferenceType(prefs::kDefaultPref,
-                                              Value::TYPE_INTEGER);
-    pref_value_store_->RegisterPreferenceType(prefs::kProxyMode,
-                                              Value::TYPE_INTEGER);
   }
 
   // Creates a new dictionary and stores some sample user preferences
@@ -224,14 +199,13 @@ class PrefValueStoreTest : public testing::Test {
   MockPrefNotifier pref_notifier_;
   scoped_refptr<PrefValueStore> pref_value_store_;
 
-  // |PrefStore|s are owned by the |PrefValueStore|.
-  TestingPrefStore* managed_platform_pref_store_;
-  TestingPrefStore* device_management_pref_store_;
-  TestingPrefStore* extension_pref_store_;
-  TestingPrefStore* command_line_pref_store_;
-  TestingPrefStore* user_pref_store_;
-  TestingPrefStore* recommended_pref_store_;
-  TestingPrefStore* default_pref_store_;
+  scoped_refptr<TestingPrefStore> managed_platform_pref_store_;
+  scoped_refptr<TestingPrefStore> device_management_pref_store_;
+  scoped_refptr<TestingPrefStore> extension_pref_store_;
+  scoped_refptr<TestingPrefStore> command_line_pref_store_;
+  scoped_refptr<TestingPrefStore> user_pref_store_;
+  scoped_refptr<TestingPrefStore> recommended_pref_store_;
+  scoped_refptr<TestingPrefStore> default_pref_store_;
 };
 
 TEST_F(PrefValueStoreTest, GetValue) {
@@ -240,7 +214,8 @@ TEST_F(PrefValueStoreTest, GetValue) {
   // Test getting a managed platform value overwriting a user-defined and
   // extension-defined value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomePage, &value));
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomePage, Value::TYPE_STRING,
+                                          &value));
   std::string actual_str_value;
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(managed_platform_pref::kHomepageValue, actual_str_value);
@@ -248,7 +223,7 @@ TEST_F(PrefValueStoreTest, GetValue) {
   // Test getting a managed platform value overwriting a user-defined value.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kDefaultSearchProviderName,
-                                          &value));
+                                          Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(device_management_pref::kSearchProviderNameValue,
             actual_str_value);
@@ -256,19 +231,22 @@ TEST_F(PrefValueStoreTest, GetValue) {
   // Test getting an extension value overwriting a user-defined and
   // command-line-defined value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kCurrentThemeID, &value));
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kCurrentThemeID,
+                                          Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(extension_pref::kCurrentThemeIDValue, actual_str_value);
 
   // Test getting a command-line value overwriting a user-defined value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kApplicationLocale, &value));
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kApplicationLocale,
+                                          Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(command_line_pref::kApplicationLocaleValue, actual_str_value);
 
   // Test getting a user-set value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kDeleteCache, &value));
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kDeleteCache,
+                                          Value::TYPE_BOOLEAN, &value));
   bool actual_bool_value = false;
   EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
   EXPECT_EQ(user_pref::kDeleteCacheValue, actual_bool_value);
@@ -276,21 +254,23 @@ TEST_F(PrefValueStoreTest, GetValue) {
   // Test getting a user set value overwriting a recommended value.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kStabilityLaunchCount,
-                                          &value));
+                                          Value::TYPE_INTEGER, &value));
   int actual_int_value = -1;
   EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
   EXPECT_EQ(user_pref::kStabilityLaunchCountValue, actual_int_value);
 
   // Test getting a recommended value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kRecommendedPref, &value));
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kRecommendedPref,
+                                          Value::TYPE_BOOLEAN, &value));
   actual_bool_value = false;
   EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
   EXPECT_EQ(recommended_pref::kRecommendedPrefValue, actual_bool_value);
 
   // Test getting a default value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kDefaultPref, &value));
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kDefaultPref,
+                                          Value::TYPE_INTEGER, &value));
   actual_int_value = -1;
   EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
   EXPECT_EQ(default_pref::kDefaultValue, actual_int_value);
@@ -299,78 +279,20 @@ TEST_F(PrefValueStoreTest, GetValue) {
   // does not contain.
   FundamentalValue tmp_dummy_value(true);
   Value* v_null = &tmp_dummy_value;
-  ASSERT_FALSE(pref_value_store_->GetValue(prefs::kMissingPref, &v_null));
+  ASSERT_FALSE(pref_value_store_->GetValue(prefs::kMissingPref,
+                                           Value::TYPE_STRING, &v_null));
   ASSERT_TRUE(v_null == NULL);
-}
-
-// Make sure that if a preference changes type, so the wrong type is stored in
-// the user pref file, it uses the correct fallback value instead.
-TEST_F(PrefValueStoreTest, GetValueChangedType) {
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(_)).Times(AnyNumber());
-
-  // Check falling back to a recommended value.
-  user_pref_store_->SetString(prefs::kStabilityLaunchCount,
-                                       "not an integer");
-  Value* value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kStabilityLaunchCount,
-                                          &value));
-  ASSERT_TRUE(value != NULL);
-  ASSERT_EQ(Value::TYPE_INTEGER, value->GetType());
-  int actual_int_value = -1;
-  EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
-  EXPECT_EQ(recommended_pref::kStabilityLaunchCountValue, actual_int_value);
-
-  // Check falling back multiple times, to a default string.
-  default_pref_store_->SetString(prefs::kHomePage,
-                                 default_pref::kHomepageValue);
-  managed_platform_pref_store_->SetInteger(prefs::kHomePage, 1);
-  device_management_pref_store_->SetInteger(prefs::kHomePage, 1);
-  extension_pref_store_->SetInteger(prefs::kHomePage, 1);
-  command_line_pref_store_->SetInteger(prefs::kHomePage, 1);
-  user_pref_store_->SetInteger(prefs::kHomePage, 1);
-  recommended_pref_store_->SetInteger(prefs::kHomePage, 1);
-
-  value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomePage, &value));
-  ASSERT_TRUE(value != NULL);
-  ASSERT_EQ(Value::TYPE_STRING, value->GetType());
-  std::string actual_str_value;
-  EXPECT_TRUE(value->GetAsString(&actual_str_value));
-  EXPECT_EQ(default_pref::kHomepageValue, actual_str_value);
-}
-
-TEST_F(PrefValueStoreTest, HasPrefPath) {
-  // Managed Platform preference
-  EXPECT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomePage));
-  // Device management preference
-  EXPECT_TRUE(pref_value_store_->HasPrefPath(
-      prefs::kDefaultSearchProviderName));
-  // Extension preference
-  EXPECT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
-  // User preference
-  EXPECT_TRUE(pref_value_store_->HasPrefPath(prefs::kDeleteCache));
-  // Recommended preference
-  EXPECT_TRUE(pref_value_store_->HasPrefPath(prefs::kRecommendedPref));
-  // Default preference
-  EXPECT_FALSE(pref_value_store_->HasPrefPath(prefs::kDefaultPref));
-  // Unknown preference
-  EXPECT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
 }
 
 TEST_F(PrefValueStoreTest, PrefChanges) {
   // Setup.
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(_)).Times(AnyNumber());
   const char managed_platform_pref_path[] = "managed_platform_pref";
-  pref_value_store_->RegisterPreferenceType(managed_platform_pref_path,
-                                            Value::TYPE_STRING);
   managed_platform_pref_store_->SetString(managed_platform_pref_path,
                                                    "managed value");
   const char user_pref_path[] = "user_pref";
-  pref_value_store_->RegisterPreferenceType(user_pref_path, Value::TYPE_STRING);
   user_pref_store_->SetString(user_pref_path, "user value");
   const char default_pref_path[] = "default_pref";
-  pref_value_store_->RegisterPreferenceType(default_pref_path,
-                                            Value::TYPE_STRING);
   default_pref_store_->SetString(default_pref_path, "default value");
   Mock::VerifyAndClearExpectations(&pref_notifier_);
 
@@ -425,99 +347,81 @@ TEST_F(PrefValueStoreTest, OnInitializationCompleted) {
 
 TEST_F(PrefValueStoreTest, PrefValueInManagedPlatformStore) {
   // Test a managed platform preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomePage));
   EXPECT_TRUE(pref_value_store_->PrefValueInManagedPlatformStore(
       prefs::kHomePage));
 
   // Test a device management preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(
-      prefs::kDefaultSearchProviderName));
   EXPECT_TRUE(pref_value_store_->PrefValueInDeviceManagementStore(
       prefs::kDefaultSearchProviderName));
 
   // Test an extension preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
   EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
       prefs::kCurrentThemeID));
 
   // Test a command-line preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kApplicationLocale));
   EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
       prefs::kApplicationLocale));
 
   // Test a user preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kStabilityLaunchCount));
   EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
       prefs::kStabilityLaunchCount));
 
   // Test a preference from the recommended pref store.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kRecommendedPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
       prefs::kRecommendedPref));
 
   // Test a preference from the default pref store.
-  ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kDefaultPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
       prefs::kDefaultPref));
 
   // Test a preference for which the PrefValueStore does not contain a value.
-  ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
       prefs::kMissingPref));
 }
 
 TEST_F(PrefValueStoreTest, PrefValueInExtensionStore) {
   // Test a managed platform preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomePage));
   EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(prefs::kHomePage));
   EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
       prefs::kHomePage));
 
   // Test a device management preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(
-      prefs::kDefaultSearchProviderName));
   EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(
       prefs::kDefaultSearchProviderName));
   EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
       prefs::kDefaultSearchProviderName));
 
   // Test an extension preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
   EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(
       prefs::kCurrentThemeID));
   EXPECT_TRUE(pref_value_store_->PrefValueFromExtensionStore(
       prefs::kCurrentThemeID));
 
   // Test a command-line preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kApplicationLocale));
   EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
       prefs::kApplicationLocale));
   EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
       prefs::kApplicationLocale));
 
   // Test a user preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kStabilityLaunchCount));
   EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
       prefs::kStabilityLaunchCount));
   EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
       prefs::kStabilityLaunchCount));
 
   // Test a preference from the recommended pref store.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kRecommendedPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
       prefs::kRecommendedPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
       prefs::kRecommendedPref));
 
   // Test a preference from the default pref store.
-  ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kDefaultPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
       prefs::kDefaultPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
       prefs::kDefaultPref));
 
   // Test a preference for which the PrefValueStore does not contain a value.
-  ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
       prefs::kMissingPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
@@ -526,95 +430,77 @@ TEST_F(PrefValueStoreTest, PrefValueInExtensionStore) {
 
 TEST_F(PrefValueStoreTest, PrefValueInUserStore) {
   // Test a managed platform preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomePage));
   EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(prefs::kHomePage));
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(prefs::kHomePage));
 
   // Test a device management preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(
-      prefs::kDefaultSearchProviderName));
   EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
       prefs::kDefaultSearchProviderName));
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
       prefs::kDefaultSearchProviderName));
 
   // Test an extension preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
   EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
       prefs::kCurrentThemeID));
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
       prefs::kCurrentThemeID));
 
   // Test a command-line preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kApplicationLocale));
   EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
       prefs::kApplicationLocale));
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
       prefs::kApplicationLocale));
 
   // Test a user preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kStabilityLaunchCount));
   EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
       prefs::kStabilityLaunchCount));
   EXPECT_TRUE(pref_value_store_->PrefValueFromUserStore(
       prefs::kStabilityLaunchCount));
 
   // Test a preference from the recommended pref store.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kRecommendedPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInUserStore(
       prefs::kRecommendedPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
       prefs::kRecommendedPref));
 
   // Test a preference from the default pref store.
-  ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kDefaultPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInUserStore(prefs::kDefaultPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(prefs::kDefaultPref));
 
   // Test a preference for which the PrefValueStore does not contain a value.
-  ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInUserStore(prefs::kMissingPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(prefs::kMissingPref));
 }
 
 TEST_F(PrefValueStoreTest, PrefValueFromDefaultStore) {
   // Test a managed platform preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomePage));
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(prefs::kHomePage));
 
   // Test a device management preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(
-      prefs::kDefaultSearchProviderName));
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
       prefs::kDefaultSearchProviderName));
 
   // Test an extension preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
       prefs::kCurrentThemeID));
 
   // Test a command-line preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kApplicationLocale));
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
       prefs::kApplicationLocale));
 
   // Test a user preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kStabilityLaunchCount));
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
       prefs::kStabilityLaunchCount));
 
   // Test a preference from the recommended pref store.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kRecommendedPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
       prefs::kRecommendedPref));
 
   // Test a preference from the default pref store.
-  ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kDefaultPref));
   EXPECT_TRUE(
       pref_value_store_->PrefValueFromDefaultStore(prefs::kDefaultPref));
 
   // Test a preference for which the PrefValueStore does not contain a value.
-  ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
   EXPECT_FALSE(
       pref_value_store_->PrefValueFromDefaultStore(prefs::kMissingPref));
 }

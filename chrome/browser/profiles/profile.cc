@@ -19,10 +19,12 @@
 #include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/file_system/browser_file_system_helper.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/ssl/ssl_host_state.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -139,6 +141,9 @@ class OffTheRecordProfileImpl : public Profile,
   explicit OffTheRecordProfileImpl(Profile* real_profile)
       : profile_(real_profile),
         start_time_(Time::Now()) {
+    prefs_.reset(profile_->GetPrefs()->CreateIncognitoPrefService(
+        new ExtensionPrefStore(profile_->GetExtensionPrefValueMap(), true)));
+
     request_context_ = ChromeURLRequestContextGetter::CreateOffTheRecord(this);
     extension_process_manager_.reset(ExtensionProcessManager::Create(this));
 
@@ -163,6 +168,9 @@ class OffTheRecordProfileImpl : public Profile,
             &webkit_database::DatabaseTracker::DeleteIncognitoDBDirectory));
 
     BrowserList::RemoveObserver(this);
+
+    if (pref_proxy_config_tracker_)
+      pref_proxy_config_tracker_->DetachFromPrefService();
   }
 
   virtual ProfileId GetRuntimeId() {
@@ -314,7 +322,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual PrefService* GetPrefs() {
-    return profile_->GetPrefs();
+    return prefs_.get();
   }
 
   virtual TemplateURLModel* GetTemplateURLModel() {
@@ -612,7 +620,10 @@ class OffTheRecordProfileImpl : public Profile,
 #endif  // defined(OS_CHROMEOS)
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() {
-    return profile_->GetProxyConfigTracker();
+    if (!pref_proxy_config_tracker_)
+      pref_proxy_config_tracker_ = new PrefProxyConfigTracker(GetPrefs());
+
+    return pref_proxy_config_tracker_;
   }
 
   virtual PrerenderManager* GetPrerenderManager() {
@@ -622,11 +633,18 @@ class OffTheRecordProfileImpl : public Profile,
     return NULL;
   }
 
+ protected:
+  virtual ExtensionPrefValueMap* GetExtensionPrefValueMap() {
+    return profile_->GetExtensionPrefValueMap();
+  }
+
  private:
   NotificationRegistrar registrar_;
 
   // The real underlying profile.
   Profile* profile_;
+
+  scoped_ptr<PrefService> prefs_;
 
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
 
@@ -682,6 +700,8 @@ class OffTheRecordProfileImpl : public Profile,
 
   // The file_system context for this profile.
   scoped_refptr<fileapi::SandboxedFileSystemContext> file_system_context_;
+
+  scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };

@@ -10,6 +10,10 @@
 PrefChangeRegistrar::PrefChangeRegistrar() : service_(NULL) {}
 
 PrefChangeRegistrar::~PrefChangeRegistrar() {
+  // If you see an invalid memory access in this destructor, this
+  // PrefChangeRegistrar might be subscribed to an OffTheRecordProfileImpl that
+  // has been destroyed. This should not happen any more but be warned.
+  // Feel free to contact battre@chromium.org in case this happens.
   RemoveAll();
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,6 +146,27 @@ TEST(PrefServiceTest, Observers) {
   prefs.SetString(pref_name, new_pref_value);
   Mock::VerifyAndClearExpectations(&obs);
   Mock::VerifyAndClearExpectations(&obs2);
+}
+
+// Make sure that if a preference changes type, so the wrong type is stored in
+// the user pref file, it uses the correct fallback value instead.
+TEST(PrefServiceTest, GetValueChangedType) {
+  const int kTestValue = 10;
+  TestingPrefService prefs;
+  prefs.RegisterIntegerPref(prefs::kStabilityLaunchCount, kTestValue);
+
+  // Check falling back to a recommended value.
+  prefs.SetUserPref(prefs::kStabilityLaunchCount,
+                    Value::CreateStringValue("not an integer"));
+  const PrefService::Preference* pref =
+      prefs.FindPreference(prefs::kStabilityLaunchCount);
+  ASSERT_TRUE(pref);
+  const Value* value = pref->GetValue();
+  ASSERT_TRUE(value);
+  EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
+  int actual_int_value = -1;
+  EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
+  EXPECT_EQ(kTestValue, actual_int_value);
 }
 
 TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineOptions) {
@@ -296,11 +317,7 @@ class PrefServiceSetValueTest : public testing::Test {
   static const char kName[];
   static const char kValue[];
 
-  PrefServiceSetValueTest()
-      : null_value_(Value::CreateNullValue()) {}
-
   TestingPrefService prefs_;
-  scoped_ptr<Value> null_value_;
   PrefObserverMock observer_;
 };
 
@@ -337,10 +354,8 @@ TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
   registrar.Init(&prefs_);
   registrar.Add(kName, &observer_);
 
-  // Dictionary values are special: setting one to NULL is the same as clearing
-  // the user value, allowing the NULL default to take (or keep) control.
   EXPECT_CALL(observer_, Observe(_, _, _)).Times(0);
-  prefs_.Set(kName, *null_value_);
+  prefs_.RemoveUserPref(kName);
   Mock::VerifyAndClearExpectations(&observer_);
 
   DictionaryValue new_value;
@@ -353,8 +368,9 @@ TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  observer_.Expect(&prefs_, kName, null_value_.get());
-  prefs_.Set(kName, *null_value_);
+  DictionaryValue empty;
+  observer_.Expect(&prefs_, kName, &empty);
+  prefs_.Set(kName, empty);
   Mock::VerifyAndClearExpectations(&observer_);
 }
 
@@ -364,10 +380,8 @@ TEST_F(PrefServiceSetValueTest, SetListValue) {
   registrar.Init(&prefs_);
   registrar.Add(kName, &observer_);
 
-  // List values are special: setting one to NULL is the same as clearing the
-  // user value, allowing the NULL default to take (or keep) control.
   EXPECT_CALL(observer_, Observe(_, _, _)).Times(0);
-  prefs_.Set(kName, *null_value_);
+  prefs_.RemoveUserPref(kName);
   Mock::VerifyAndClearExpectations(&observer_);
 
   ListValue new_value;
@@ -380,7 +394,8 @@ TEST_F(PrefServiceSetValueTest, SetListValue) {
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  observer_.Expect(&prefs_, kName, null_value_.get());
-  prefs_.Set(kName, *null_value_);
+  ListValue empty;
+  observer_.Expect(&prefs_, kName, &empty);
+  prefs_.Set(kName, empty);
   Mock::VerifyAndClearExpectations(&observer_);
 }

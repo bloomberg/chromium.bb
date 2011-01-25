@@ -59,6 +59,7 @@ class ExtensionDevToolsManager;
 class ExtensionEventRouter;
 class ExtensionInfoMap;
 class ExtensionMessageService;
+class ExtensionPrefValueMap;
 class ExtensionProcessManager;
 class ExtensionService;
 class FaviconService;
@@ -546,7 +547,11 @@ class Profile {
   Profile* CreateOffTheRecordProfile();
 
  protected:
+  friend class OffTheRecordProfileImpl;
+
   static URLRequestContextGetter* default_request_context_;
+
+  virtual ExtensionPrefValueMap* GetExtensionPrefValueMap() = 0;
 
  private:
   bool restored_last_session_;

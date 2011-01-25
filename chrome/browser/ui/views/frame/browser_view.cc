@@ -480,6 +480,9 @@ BrowserView::~BrowserView() {
   delete tabstrip_;
   tabstrip_ = NULL;
 
+  // Child views maintain PrefMember attributes that point to
+  // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
+  RemoveAllChildViews(true);
   // Explicitly set browser_ to NULL.
   browser_.reset();
 }

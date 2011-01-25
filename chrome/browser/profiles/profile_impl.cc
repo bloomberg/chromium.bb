@@ -683,10 +683,10 @@ net::TransportSecurityState*
 
 PrefService* ProfileImpl::GetPrefs() {
   if (!prefs_.get()) {
-    ExtensionPrefStore* extension_pref_store = new ExtensionPrefStore;
-    prefs_.reset(PrefService::CreatePrefService(GetPrefFilePath(),
-                                                extension_pref_store,
-                                                GetOriginalProfile()));
+    prefs_.reset(PrefService::CreatePrefService(
+        GetPrefFilePath(),
+        new ExtensionPrefStore(GetExtensionPrefValueMap(), false),
+        GetOriginalProfile()));
 
     // The Profile class and ProfileManager class may read some prefs so
     // register known prefs as soon as possible.
@@ -707,7 +707,7 @@ PrefService* ProfileImpl::GetPrefs() {
     extension_prefs_.reset(new ExtensionPrefs(
         prefs_.get(),
         GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
-        extension_pref_store));
+        GetExtensionPrefValueMap()));
 
     DCHECK(!net_pref_observer_.get());
     net_pref_observer_.reset(new NetPrefObserver(prefs_.get()));
@@ -1194,6 +1194,12 @@ void ProfileImpl::SpellCheckHostInitialized() {
   NotificationService::current()->Notify(
       NotificationType::SPELLCHECK_HOST_REINITIALIZED,
           Source<Profile>(this), NotificationService::NoDetails());
+}
+
+ExtensionPrefValueMap* ProfileImpl::GetExtensionPrefValueMap() {
+  if (!extension_pref_value_map_.get())
+    extension_pref_value_map_.reset(new ExtensionPrefValueMap);
+  return extension_pref_value_map_.get();
 }
 
 WebKitContext* ProfileImpl::GetWebKitContext() {

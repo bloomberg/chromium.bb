@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,8 @@ class PrefService : public base::NonThreadSafe {
     // dictionary (a branch), or list.  You shouldn't need to construct this on
     // your own; use the PrefService::Register*Pref methods instead.
     Preference(const PrefService* service,
-               const char* name);
+               const char* name,
+               Value::ValueType type);
     ~Preference() {}
 
     // Returns the name of the Preference (i.e., the key, e.g.,
@@ -92,6 +93,8 @@ class PrefService : public base::NonThreadSafe {
 
     std::string name_;
 
+    Value::ValueType type_;
+
     // Reference to the PrefService in which this pref was created.
     const PrefService* pref_service_;
 
@@ -108,6 +111,12 @@ class PrefService : public base::NonThreadSafe {
   static PrefService* CreatePrefService(const FilePath& pref_filename,
                                         PrefStore* extension_pref_store,
                                         Profile* profile);
+
+  // Creates an incognito copy of the pref service that shares most pref stores
+  // but uses a fresh non-persistent overlay for the user pref store and an
+  // individual extension pref store (to cache the effective extension prefs for
+  // incognito windows).
+  PrefService* CreateIncognitoPrefService(PrefStore* incognito_extension_prefs);
 
   virtual ~PrefService();
 
@@ -230,7 +239,8 @@ class PrefService : public base::NonThreadSafe {
               PrefStore* extension_prefs,
               PrefStore* command_line_prefs,
               PersistentPrefStore* user_prefs,
-              PrefStore* recommended_prefs);
+              PrefStore* recommended_prefs,
+              DefaultPrefStore* default_store);
 
   // The PrefNotifier handles registering and notifying preference observers.
   // It is created and owned by this PrefService. Subclasses may access it for
@@ -248,6 +258,11 @@ class PrefService : public base::NonThreadSafe {
   // declared as a friend, too.
   friend class PrefChangeRegistrar;
   friend class subtle::PrefMemberBase;
+
+  // Construct an incognito version of the pref service. Use
+  // CreateIncognitoPrefService() instead of calling this constructor directly.
+  PrefService(const PrefService& original,
+              PrefStore* incognito_extension_prefs);
 
   // If the pref at the given path changes, we call the observer's Observe
   // method with PREF_CHANGED. Note that observers should not call these methods
@@ -272,14 +287,14 @@ class PrefService : public base::NonThreadSafe {
   // and owned by this PrefService. Subclasses may access it for unit testing.
   scoped_refptr<PrefValueStore> pref_value_store_;
 
-  // The persistent pref store used for actual user data.
-  PersistentPrefStore* user_pref_store_;
+  // Pref Stores and profile that we passed to the PrefValueStore.
+  scoped_refptr<PersistentPrefStore> user_pref_store_;
+  scoped_refptr<DefaultPrefStore> default_store_;
 
-  // Points to the default pref store we passed to the PrefValueStore.
-  DefaultPrefStore* default_store_;
-
-  // A set of all the registered Preference objects.
-  PreferenceSet prefs_;
+  // Local cache of registered Preference objects. The default_store_
+  // is authoritative with respect to what the types and default values
+  // of registered preferences are.
+  mutable PreferenceSet prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };

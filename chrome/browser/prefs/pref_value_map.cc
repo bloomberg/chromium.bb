@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,6 +56,22 @@ bool PrefValueMap::RemoveValue(const std::string& key) {
 void PrefValueMap::Clear() {
   STLDeleteValues(&prefs_);
   prefs_.clear();
+}
+
+PrefValueMap::iterator PrefValueMap::begin() {
+  return prefs_.begin();
+}
+
+PrefValueMap::iterator PrefValueMap::end() {
+  return prefs_.end();
+}
+
+PrefValueMap::const_iterator PrefValueMap::begin() const {
+  return prefs_.begin();
+}
+
+PrefValueMap::const_iterator PrefValueMap::end() const {
+  return prefs_.end();
 }
 
 bool PrefValueMap::GetBoolean(const std::string& key,

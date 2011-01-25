@@ -285,6 +285,12 @@ Browser::~Browser() {
   if (tab_restore_service)
     tab_restore_service->BrowserClosed(this);
 
+  encoding_auto_detect_.Destroy();
+  printing_enabled_.Destroy();
+  dev_tools_disabled_.Destroy();
+  instant_enabled_.Destroy();
+  use_vertical_tabs_.Destroy();
+
   if (profile_->IsOffTheRecord() &&
       !BrowserList::IsOffTheRecordSessionActive()) {
     // An off-the-record profile is no longer needed, this indirectly

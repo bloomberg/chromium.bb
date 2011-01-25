@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,9 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesPos) {
   ASSERT_TRUE(pref != NULL);
 
   // Check to make sure there is no existing pref for window placement.
-  ASSERT_TRUE(pref->GetDictionary(path_) == NULL);
+  const DictionaryValue* placement = pref->GetDictionary(path_);
+  ASSERT_TRUE(placement);
+  EXPECT_TRUE(placement->empty());
 
   // Replace the window with one that doesn't have resize controls.
   [window_ close];
@@ -109,7 +111,9 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesRect) {
   ASSERT_TRUE(pref != NULL);
 
   // Check to make sure there is no existing pref for window placement.
-  ASSERT_TRUE(pref->GetDictionary(path_) == NULL);
+  const DictionaryValue* placement = pref->GetDictionary(path_);
+  ASSERT_TRUE(placement);
+  EXPECT_TRUE(placement->empty());
 
   // Ask the window to save its position, then check that a preference
   // exists.  We're technically passing in a pointer to the user prefs

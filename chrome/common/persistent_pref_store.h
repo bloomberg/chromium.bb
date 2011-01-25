@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include <chrome/common/pref_store.h>
 
 // This interface is complementary to the PrefStore interface, declaring
-// additional functionatliy that adds support for setting values and persisting
+// additional functionality that adds support for setting values and persisting
 // the data to some backing store.
 class PersistentPrefStore : public PrefStore {
  public:

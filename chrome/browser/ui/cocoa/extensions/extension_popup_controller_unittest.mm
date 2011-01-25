@@ -1,10 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/extensions/extension_pref_store.h"
+#include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -28,10 +28,10 @@ class ExtensionTestingProfile : public TestingProfile {
     DCHECK(!GetExtensionService());
 
     manager_.reset(ExtensionProcessManager::Create(this));
-    ExtensionPrefStore* pref_store = new ExtensionPrefStore;
+    extension_pref_value_map_.reset(new ExtensionPrefValueMap);
     extension_prefs_.reset(new ExtensionPrefs(GetPrefs(),
                                               GetExtensionsInstallDir(),
-                                              pref_store));
+                                              extension_pref_value_map_.get()));
     service_ = new ExtensionService(this,
                                      CommandLine::ForCurrentProcess(),
                                      GetExtensionsInstallDir(),
@@ -61,6 +61,7 @@ class ExtensionTestingProfile : public TestingProfile {
   scoped_ptr<ExtensionProcessManager> manager_;
   scoped_ptr<ExtensionPrefs> extension_prefs_;
   scoped_refptr<ExtensionService> service_;
+  scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTestingProfile);
 };

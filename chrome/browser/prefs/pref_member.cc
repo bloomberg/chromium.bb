@@ -18,7 +18,7 @@ PrefMemberBase::PrefMemberBase()
 }
 
 PrefMemberBase::~PrefMemberBase() {
-  if (!pref_name_.empty())
+  if (prefs_ && !pref_name_.empty())
     prefs_->RemovePrefObserver(pref_name_.c_str(), this);
 }
 
@@ -35,6 +35,13 @@ void PrefMemberBase::Init(const char* pref_name, PrefService* prefs,
 
   // Add ourself as a pref observer so we can keep our local value in sync.
   prefs_->AddPrefObserver(pref_name, this);
+}
+
+void PrefMemberBase::Destroy() {
+  if (prefs_) {
+    prefs_->RemovePrefObserver(pref_name_.c_str(), this);
+    prefs_ = NULL;
+  }
 }
 
 bool PrefMemberBase::IsManaged() const {

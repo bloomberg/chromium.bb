@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,7 +100,9 @@ TEST_F(HostZoomMapTest, ResetToDefaults) {
   SetPrefObserverExpectation();
   map->ResetToDefaults();
   EXPECT_EQ(0, map->GetZoomLevel(url_));
-  EXPECT_EQ(NULL, prefs_->GetDictionary(prefs::kPerHostZoomLevels));
+  DictionaryValue empty;
+  EXPECT_TRUE(
+      Value::Equals(&empty, prefs_->GetDictionary(prefs::kPerHostZoomLevels)));
 }
 
 TEST_F(HostZoomMapTest, ReloadOnPrefChange) {

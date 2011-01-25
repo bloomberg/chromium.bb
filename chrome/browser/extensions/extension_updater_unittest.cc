@@ -91,7 +91,9 @@ class MockService : public ExtensionUpdateService {
   // Creates test extensions and inserts them into list. The name and
   // version are all based on their index. If |update_url| is non-null, it
   // will be used as the update_url for each extension.
-  void CreateTestExtensions(int count, ExtensionList *list,
+  // The |id| is used to distinguish extension names and make sure that
+  // no two extensions share the same name.
+  void CreateTestExtensions(int id, int count, ExtensionList *list,
                             const std::string* update_url,
                             Extension::Location location) {
     for (int i = 1; i <= count; i++) {
@@ -99,7 +101,7 @@ class MockService : public ExtensionUpdateService {
       manifest.SetString(extension_manifest_keys::kVersion,
                          base::StringPrintf("%d.0.0.0", i));
       manifest.SetString(extension_manifest_keys::kName,
-                         base::StringPrintf("Extension %d", i));
+                         base::StringPrintf("Extension %d.%d", id, i));
       if (update_url)
         manifest.SetString(extension_manifest_keys::kUpdateURL, *update_url);
       scoped_refptr<Extension> e =
@@ -316,7 +318,7 @@ class ExtensionUpdaterTest : public testing::Test {
       CreateTestPendingExtensions(1, GURL(update_url), &pending_extensions);
       service.set_pending_extensions(pending_extensions);
     } else {
-      service.CreateTestExtensions(1, &extensions, &update_url,
+      service.CreateTestExtensions(1, 1, &extensions, &update_url,
                                    Extension::INTERNAL);
       service.set_extensions(extensions);
     }
@@ -468,7 +470,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionList extensions;
     std::string url(gallery_url);
 
-    service.CreateTestExtensions(1, &extensions, &url, Extension::INTERNAL);
+    service.CreateTestExtensions(1, 1, &extensions, &url, Extension::INTERNAL);
     builder.AddExtension(*extensions[0]);
     std::vector<ManifestFetchData*> fetches = builder.GetFetches();
     EXPECT_EQ(1u, fetches.size());
@@ -488,7 +490,7 @@ class ExtensionUpdaterTest : public testing::Test {
     // Create a set of test extensions
     ServiceForManifestTests service;
     ExtensionList tmp;
-    service.CreateTestExtensions(3, &tmp, NULL, Extension::INTERNAL);
+    service.CreateTestExtensions(1, 3, &tmp, NULL, Extension::INTERNAL);
     service.set_extensions(tmp);
 
     MessageLoop message_loop;
@@ -812,9 +814,9 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionList tmp;
     GURL url1("http://clients2.google.com/service/update2/crx");
     GURL url2("http://www.somewebsite.com");
-    service.CreateTestExtensions(1, &tmp, &url1.possibly_invalid_spec(),
+    service.CreateTestExtensions(1, 1, &tmp, &url1.possibly_invalid_spec(),
                                  Extension::INTERNAL);
-    service.CreateTestExtensions(1, &tmp, &url2.possibly_invalid_spec(),
+    service.CreateTestExtensions(2, 1, &tmp, &url2.possibly_invalid_spec(),
                                  Extension::INTERNAL);
     EXPECT_EQ(2u, tmp.size());
     service.set_extensions(tmp);
@@ -892,7 +894,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     GURL update_url("http://www.google.com/manifest");
     ExtensionList tmp;
-    service.CreateTestExtensions(1, &tmp, &update_url.spec(),
+    service.CreateTestExtensions(1, 1, &tmp, &update_url.spec(),
                                  Extension::INTERNAL);
     service.set_extensions(tmp);
 
@@ -987,7 +989,7 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   // Non-internal non-external extensions should be rejected.
   {
     ExtensionList extensions;
-    service.CreateTestExtensions(1, &extensions, NULL, Extension::INVALID);
+    service.CreateTestExtensions(1, 1, &extensions, NULL, Extension::INVALID);
     ASSERT_FALSE(extensions.empty());
     builder.AddExtension(*extensions[0]);
     EXPECT_TRUE(builder.GetFetches().empty());

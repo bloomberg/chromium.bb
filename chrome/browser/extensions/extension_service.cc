@@ -554,8 +554,8 @@ namespace {
 }  // namespace
 
 void ExtensionService::UpdateExtension(const std::string& id,
-                                        const FilePath& extension_path,
-                                        const GURL& download_url) {
+                                       const FilePath& extension_path,
+                                       const GURL& download_url) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   PendingExtensionMap::const_iterator it = pending_extensions_.find(id);

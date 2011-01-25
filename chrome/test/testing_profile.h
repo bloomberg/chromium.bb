@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,9 @@ class BookmarkModel;
 class BrowserThemeProvider;
 class CommandLine;
 class DesktopNotificationService;
-class ExtensionPrefStore;
 class ExtensionPrefs;
+class ExtensionPrefStore;
+class ExtensionPrefValueMap;
 class FaviconService;
 class FindBarState;
 class GeolocationContentSettingsMap;
@@ -115,9 +116,8 @@ class TestingProfile : public Profile {
   // returns it. The profile keeps its own copy of a scoped_refptr to the
   // ExtensionService to make sure that is still alive to be notified when the
   // profile is destroyed.
-  scoped_refptr<ExtensionService> CreateExtensionService(
-      const CommandLine* command_line,
-      const FilePath& install_directory);
+  ExtensionService* CreateExtensionService(const CommandLine* command_line,
+                                           const FilePath& install_directory);
 
   TestingPrefService* GetTestingPrefService();
 
@@ -322,6 +322,10 @@ class TestingProfile : public Profile {
   virtual PrerenderManager* GetPrerenderManager() { return NULL; }
 
  protected:
+  virtual ExtensionPrefValueMap* GetExtensionPrefValueMap() {
+    return extension_pref_value_map_.get();
+  }
+
   base::Time start_time_;
   scoped_ptr<PrefService> prefs_;
   // ref only for right type, lifecycle is managed by prefs_
@@ -411,9 +415,6 @@ class TestingProfile : public Profile {
   FilePath last_selected_directory_;
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
 
-  // Extension pref store, created for use by |extension_prefs_|.
-  scoped_ptr<ExtensionPrefStore> extension_pref_store_;
-
   // The Extension Preferences. Only created if CreateExtensionService is
   // invoked.
   scoped_ptr<ExtensionPrefs> extension_prefs_;
@@ -421,6 +422,8 @@ class TestingProfile : public Profile {
   // For properly notifying the ExtensionService when the profile
   // is disposed.
   scoped_refptr<ExtensionService> extensions_service_;
+
+  scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
 
   // The proxy prefs tracker.
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;

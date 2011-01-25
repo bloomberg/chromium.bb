@@ -14,6 +14,7 @@
 
 class DictionaryValue;
 class ExtensionPrefs;
+class ExtensionPrefValueMap;
 class PrefService;
 
 // This is a test class intended to make it easier to work with ExtensionPrefs
@@ -44,12 +45,15 @@ class TestExtensionPrefs {
   // assigned.
   std::string AddExtensionAndReturnId(std::string name);
 
+  PrefService* CreateIncognitoPrefService() const;
+
  protected:
   ScopedTempDir temp_dir_;
   FilePath preferences_file_;
   FilePath extensions_dir_;
   scoped_ptr<PrefService> pref_service_;
   scoped_ptr<ExtensionPrefs> prefs_;
+  scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestExtensionPrefs);

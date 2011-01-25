@@ -17,8 +17,8 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
-#include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
@@ -30,6 +30,7 @@
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/testing_pref_store.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -48,7 +49,6 @@
 #include "net/url_request/url_request_unittest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/database/database_tracker.h"
-
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #endif
@@ -326,18 +326,25 @@ void TestingProfile::UseThemeProvider(BrowserThemeProvider* theme_provider) {
   theme_provider_.reset(theme_provider);
 }
 
-scoped_refptr<ExtensionService> TestingProfile::CreateExtensionService(
+ExtensionService* TestingProfile::CreateExtensionService(
     const CommandLine* command_line,
     const FilePath& install_directory) {
-  extension_pref_store_.reset(new ExtensionPrefStore);
-  extension_prefs_.reset(new ExtensionPrefs(GetPrefs(),
-                                            install_directory,
-                                            extension_pref_store_.get()));
+  // Extension pref store, created for use by |extension_prefs_|.
+
+  extension_pref_value_map_.reset(new ExtensionPrefValueMap);
+  // Note that the GetPrefs() creates a TestingPrefService, therefore
+  // the extension controlled pref values set in extension_prefs_
+  // are not reflected in the pref service. One would need to
+  // inject a new ExtensionPrefStore(extension_pref_value_map_.get(), false).
+  extension_prefs_.reset(
+      new ExtensionPrefs(GetPrefs(),
+                         install_directory,
+                         extension_pref_value_map_.get()));
   extensions_service_ = new ExtensionService(this,
-                                              command_line,
-                                              install_directory,
-                                              extension_prefs_.get(),
-                                              false);
+                                             command_line,
+                                             install_directory,
+                                             extension_prefs_.get(),
+                                             false);
   return extensions_service_;
 }
 

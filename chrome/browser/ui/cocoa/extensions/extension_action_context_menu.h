@@ -21,6 +21,7 @@ class Profile;
 namespace extension_action_context_menu {
 
 class DevmodeObserver;
+class ProfileObserverBridge;
 
 }  // namespace extension_action_context_menu
 
@@ -42,6 +43,10 @@ class DevmodeObserver;
   // The observer used to listen for pref changed notifications.
   scoped_ptr<extension_action_context_menu::DevmodeObserver> observer_;
 
+  // The observer used to reset |observer_| when the profile is destroyed.
+  scoped_ptr<extension_action_context_menu::ProfileObserverBridge>
+      profile_observer_;
+
   // Used to load the extension icon asynchronously on the I/O thread then show
   // the uninstall confirmation dialog.
   scoped_ptr<AsyncUninstaller> uninstaller_;
@@ -54,6 +59,10 @@ class DevmodeObserver;
 
 // Show or hide the inspector menu item.
 - (void)updateInspectorItem;
+
+// Notifies the ExtensionActionContextMenu that the profile is is being
+// destroyed.
+- (void)invalidateProfile;
 
 @end
 

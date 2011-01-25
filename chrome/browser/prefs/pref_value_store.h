@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/pref_store.h"
@@ -63,26 +62,25 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
                  PrefNotifier* pref_notifier);
   virtual ~PrefValueStore();
 
-  // Gets the value for the given preference name that has a valid value type;
-  // that is, the same type the preference was registered with, or NULL for
-  // default values of Dictionaries and Lists. Returns true if a valid value
+  // Creates a clone of this PrefValueStore with PrefStores overwritten
+  // by the parameters passed, if unequal NULL.
+  PrefValueStore* CloneAndSpecialize(PrefStore* managed_platform_prefs,
+                                     PrefStore* device_management_prefs,
+                                     PrefStore* extension_prefs,
+                                     PrefStore* command_line_prefs,
+                                     PrefStore* user_prefs,
+                                     PrefStore* recommended_prefs,
+                                     PrefStore* default_prefs,
+                                     PrefNotifier* pref_notifier);
+
+  // Gets the value for the given preference name that has the specified value
+  // type. Values stored in a PrefStore that have the matching |name| but
+  // a non-matching |type| are silently skipped. Returns true if a valid value
   // was found in any of the available PrefStores. Most callers should use
   // Preference::GetValue() instead of calling this method directly.
-  bool GetValue(const std::string& name, Value** out_value) const;
-
-  // Adds a preference to the mapping of names to types.
-  void RegisterPreferenceType(const std::string& name, Value::ValueType type);
-
-  // Gets the registered value type for the given preference name. Returns
-  // Value::TYPE_NULL if the preference has never been registered.
-  Value::ValueType GetRegisteredType(const std::string& name) const;
-
-  // Returns true if the PrefValueStore contains the given preference (i.e.,
-  // it's been registered), and a value with the correct type has been actively
-  // set in some pref store. The application default specified when the pref was
-  // registered does not count as an "actively set" value, but another pref
-  // store setting a value that happens to be equal to the default does.
-  bool HasPrefPath(const char* name) const;
+  bool GetValue(const std::string& name,
+                Value::ValueType type,
+                Value** out_value) const;
 
   // These methods return true if a preference with the given name is in the
   // indicated pref store, even if that value is currently being overridden by
@@ -155,7 +153,7 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
     PrefValueStore* pref_value_store_;
 
     // The PrefStore managed by this keeper.
-    scoped_ptr<PrefStore> pref_store_;
+    scoped_refptr<PrefStore> pref_store_;
 
     // Type of the pref store.
     PrefStoreType type_;
@@ -171,12 +169,6 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
                            TestRefreshPolicyPrefsCompletion);
   FRIEND_TEST_ALL_PREFIXES(PrefValueStorePolicyRefreshTest,
                            TestConcurrentPolicyRefresh);
-
-  // Returns true if the actual type is a valid type for the expected type when
-  // found in the given store.
-  static bool IsValidType(Value::ValueType expected,
-                          Value::ValueType actual,
-                          PrefStoreType store);
 
   // Returns true if the preference with the given name has a value in the
   // given PrefStoreType, of the same value type as the preference was

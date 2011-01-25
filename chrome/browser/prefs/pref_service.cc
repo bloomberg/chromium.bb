@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,9 +20,11 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/default_pref_store.h"
+#include "chrome/browser/prefs/overlay_persistent_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/json_pref_store.h"
@@ -114,9 +116,15 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   ConfigurationPolicyPrefStore* recommended =
       ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore();
+  DefaultPrefStore* default_pref_store = new DefaultPrefStore();
 
   return new PrefService(managed, device_management, extension_prefs,
-                         command_line, user, recommended);
+                         command_line, user, recommended, default_pref_store);
+}
+
+PrefService* PrefService::CreateIncognitoPrefService(
+    PrefStore* incognito_extension_prefs) {
+  return new PrefService(*this, incognito_extension_prefs);
 }
 
 PrefService::PrefService(PrefStore* managed_platform_prefs,
@@ -124,10 +132,11 @@ PrefService::PrefService(PrefStore* managed_platform_prefs,
                          PrefStore* extension_prefs,
                          PrefStore* command_line_prefs,
                          PersistentPrefStore* user_prefs,
-                         PrefStore* recommended_prefs)
-    : user_pref_store_(user_prefs) {
+                         PrefStore* recommended_prefs,
+                         DefaultPrefStore* default_store)
+    : user_pref_store_(user_prefs),
+      default_store_(default_store) {
   pref_notifier_.reset(new PrefNotifierImpl(this));
-  default_store_ = new DefaultPrefStore();
   pref_value_store_ =
       new PrefValueStore(managed_platform_prefs,
                          device_management_prefs,
@@ -135,8 +144,26 @@ PrefService::PrefService(PrefStore* managed_platform_prefs,
                          command_line_prefs,
                          user_pref_store_,
                          recommended_prefs,
-                         default_store_,
+                         default_store,
                          pref_notifier_.get());
+  InitFromStorage();
+}
+
+PrefService::PrefService(const PrefService& original,
+                         PrefStore* incognito_extension_prefs)
+      : user_pref_store_(
+            new OverlayPersistentPrefStore(original.user_pref_store_.get())),
+        default_store_(original.default_store_.get()){
+  pref_notifier_.reset(new PrefNotifierImpl(this));
+  pref_value_store_ = original.pref_value_store_->CloneAndSpecialize(
+      NULL, // managed_platform_prefs
+      NULL, // device_management_prefs
+      incognito_extension_prefs,
+      NULL, // command_line_prefs
+      user_pref_store_.get(),
+      NULL, // recommended_prefs
+      default_store_.get(),
+      pref_notifier_.get() );
   InitFromStorage();
 }
 
@@ -325,15 +352,23 @@ FilePath PrefService::GetFilePath(const char* path) const {
 }
 
 bool PrefService::HasPrefPath(const char* path) const {
-  return pref_value_store_->HasPrefPath(path);
+  const Preference* pref = FindPreference(path);
+  return pref && !pref->IsDefaultValue();
 }
 
 const PrefService::Preference* PrefService::FindPreference(
     const char* pref_name) const {
   DCHECK(CalledOnValidThread());
-  Preference p(this, pref_name);
+  Preference p(this, pref_name, Value::TYPE_NULL);
   PreferenceSet::const_iterator it = prefs_.find(&p);
-  return it == prefs_.end() ? NULL : *it;
+  if (it != prefs_.end())
+    return *it;
+  const Value::ValueType type = default_store_->GetType(pref_name);
+  if (type == Value::TYPE_NULL)
+    return NULL;
+  Preference* new_pref = new Preference(this, pref_name, type);
+  prefs_.insert(new_pref);
+  return new_pref;
 }
 
 bool PrefService::ReadOnly() const {
@@ -346,10 +381,7 @@ PrefNotifier* PrefService::pref_notifier() const {
 
 bool PrefService::IsManagedPreference(const char* pref_name) const {
   const Preference* pref = FindPreference(pref_name);
-  if (pref && pref->IsManaged()) {
-    return true;
-  }
-  return false;
+  return pref && pref->IsManaged();
 }
 
 const DictionaryValue* PrefService::GetDictionary(const char* path) const {
@@ -405,18 +437,8 @@ void PrefService::RegisterPreference(const char* path, Value* default_value) {
   DCHECK(orig_type != Value::TYPE_NULL && orig_type != Value::TYPE_BINARY) <<
          "invalid preference type: " << orig_type;
 
-  // We set the default value of dictionaries and lists to be null so it's
-  // easier for callers to check for empty dict/list prefs. The PrefValueStore
-  // accepts ownership of the value (null or default_value).
-  if (Value::TYPE_LIST == orig_type || Value::TYPE_DICTIONARY == orig_type) {
-    default_store_->SetDefaultValue(path, Value::CreateNullValue());
-  } else {
-    // Hand off ownership.
-    default_store_->SetDefaultValue(path, scoped_value.release());
-  }
-
-  pref_value_store_->RegisterPreferenceType(path, orig_type);
-  prefs_.insert(new Preference(this, path));
+  // Hand off ownership.
+  default_store_->SetDefaultValue(path, scoped_value.release());
 }
 
 void PrefService::ClearPref(const char* path) {
@@ -439,13 +461,7 @@ void PrefService::Set(const char* path, const Value& value) {
     return;
   }
 
-  // Allow dictionary and list types to be set to null, which removes their
-  // user values.
-  if (value.GetType() == Value::TYPE_NULL &&
-      (pref->GetType() == Value::TYPE_DICTIONARY ||
-       pref->GetType() == Value::TYPE_LIST)) {
-    user_pref_store_->RemoveValue(path);
-  } else if (pref->GetType() != value.GetType()) {
+  if (pref->GetType() != value.GetType()) {
     NOTREACHED() << "Trying to set pref " << path
                  << " of type " << pref->GetType()
                  << " to value of type " << value.GetType();
@@ -587,15 +603,17 @@ void PrefService::SetUserPrefValue(const char* path, Value* new_value) {
 // PrefService::Preference
 
 PrefService::Preference::Preference(const PrefService* service,
-                                    const char* name)
+                                    const char* name,
+                                    Value::ValueType type)
       : name_(name),
+        type_(type),
         pref_service_(service) {
   DCHECK(name);
   DCHECK(service);
 }
 
 Value::ValueType PrefService::Preference::GetType() const {
-  return pref_service_->pref_value_store_->GetRegisteredType(name_);
+  return type_;
 }
 
 const Value* PrefService::Preference::GetValue() const {
@@ -603,8 +621,10 @@ const Value* PrefService::Preference::GetValue() const {
       "Must register pref before getting its value";
 
   Value* found_value = NULL;
-  if (pref_service_->pref_value_store_->GetValue(name_, &found_value))
+  if (pref_service_->pref_value_store_->GetValue(name_, type_, &found_value)) {
+    DCHECK(found_value->IsType(type_));
     return found_value;
+  }
 
   // Every registered preference has at least a default value.
   NOTREACHED() << "no valid value found for registered pref " << name_;

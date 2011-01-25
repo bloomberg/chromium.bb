@@ -25,6 +25,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -90,6 +91,34 @@ class DevmodeObserver : public NotificationObserver {
   ExtensionActionContextMenu* menu_;
   PrefService* pref_service_;
   PrefChangeRegistrar registrar_;
+};
+
+class ProfileObserverBridge : public NotificationObserver {
+ public:
+  ProfileObserverBridge(ExtensionActionContextMenu* owner,
+                        const Profile* profile)
+      : owner_(owner),
+        profile_(profile) {
+    registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+                   Source<Profile>(profile));
+  }
+
+  ~ProfileObserverBridge() {}
+
+  // Overridden from NotificationObserver
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details) {
+    if (type == NotificationType::PROFILE_DESTROYED &&
+        source == Source<Profile>(profile_)) {
+      [owner_ invalidateProfile];
+    }
+  }
+
+ private:
+  ExtensionActionContextMenu* owner_;
+  const Profile* profile_;
+  NotificationRegistrar registrar_;
 };
 
 }  // namespace extension_action_context_menu
@@ -177,6 +206,9 @@ int CurrentTabId() {
     PrefService* service = profile_->GetPrefs();
     observer_.reset(
         new extension_action_context_menu::DevmodeObserver(self, service));
+    profile_observer_.reset(
+        new extension_action_context_menu::ProfileObserverBridge(self,
+                                                                 profile));
 
     [self updateInspectorItem];
     return self;
@@ -273,6 +305,11 @@ int CurrentTabId() {
     return action_ && action_->HasPopup(CurrentTabId());
   }
   return YES;
+}
+
+- (void)invalidateProfile {
+  observer_.reset();
+  profile_ = NULL;
 }
 
 @end

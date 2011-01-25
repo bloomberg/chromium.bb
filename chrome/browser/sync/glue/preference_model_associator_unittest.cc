@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,11 +32,6 @@ class AbstractPreferenceMergeTest : public testing::Test {
     expression_dict->SetWithoutPathExpansion(
         content_type,
         Value::CreateIntegerValue(setting));
-  }
-
-  void SetPrefToNull(const std::string& pref_name) {
-    scoped_ptr<Value> null_value(Value::CreateNullValue());
-    pref_service_->Set(pref_name.c_str(), *null_value);
   }
 
   void SetPrefToEmpty(const std::string& pref_name) {
@@ -89,15 +84,6 @@ TEST_F(ListPreferenceMergeTest, NotListOrDictionary) {
   EXPECT_TRUE(merged_value->Equals(server_value.get()));
 }
 
-TEST_F(ListPreferenceMergeTest, LocalNull) {
-  SetPrefToNull(prefs::kURLsToRestoreOnStartup);
-  const PrefService::Preference* pref =
-      pref_service_->FindPreference(prefs::kURLsToRestoreOnStartup);
-  scoped_ptr<Value> merged_value(
-      PreferenceModelAssociator::MergePreference(*pref, server_url_list_));
-  EXPECT_TRUE(merged_value->Equals(&server_url_list_));
-}
-
 TEST_F(ListPreferenceMergeTest, LocalEmpty) {
   SetPrefToEmpty(prefs::kURLsToRestoreOnStartup);
   const PrefService::Preference* pref =
@@ -131,16 +117,6 @@ TEST_F(ListPreferenceMergeTest, ServerEmpty) {
   scoped_ptr<Value> merged_value(
       PreferenceModelAssociator::MergePreference(*pref, *empty_value));
   EXPECT_TRUE(merged_value->Equals(local_list_value));
-}
-
-TEST_F(ListPreferenceMergeTest, BothNull) {
-  SetPrefToNull(prefs::kURLsToRestoreOnStartup);
-  scoped_ptr<Value> null_value(Value::CreateNullValue());
-  const PrefService::Preference* pref =
-      pref_service_->FindPreference(prefs::kURLsToRestoreOnStartup);
-  scoped_ptr<Value> merged_value(
-      PreferenceModelAssociator::MergePreference(*pref, *null_value));
-  EXPECT_TRUE(merged_value->Equals(null_value.get()));
 }
 
 TEST_F(ListPreferenceMergeTest, Merge) {
@@ -219,15 +195,6 @@ class DictionaryPreferenceMergeTest : public AbstractPreferenceMergeTest {
   DictionaryValue server_patterns_;
 };
 
-TEST_F(DictionaryPreferenceMergeTest, LocalNull) {
-  SetPrefToNull(prefs::kContentSettingsPatterns);
-  const PrefService::Preference* pref =
-      pref_service_->FindPreference(prefs::kURLsToRestoreOnStartup);
-  scoped_ptr<Value> merged_value(
-      PreferenceModelAssociator::MergePreference(*pref, server_patterns_));
-  EXPECT_TRUE(merged_value->Equals(&server_patterns_));
-}
-
 TEST_F(DictionaryPreferenceMergeTest, LocalEmpty) {
   SetPrefToEmpty(prefs::kContentSettingsPatterns);
   const PrefService::Preference* pref =
@@ -261,16 +228,6 @@ TEST_F(DictionaryPreferenceMergeTest, ServerEmpty) {
   scoped_ptr<Value> merged_value(
       PreferenceModelAssociator::MergePreference(*pref, *empty_value));
   EXPECT_TRUE(merged_value->Equals(local_dict_value));
-}
-
-TEST_F(DictionaryPreferenceMergeTest, BothNull) {
-  scoped_ptr<Value> null_value(Value::CreateNullValue());
-  SetPrefToNull(prefs::kContentSettingsPatterns);
-  const PrefService::Preference* pref =
-      pref_service_->FindPreference(prefs::kContentSettingsPatterns);
-  scoped_ptr<Value> merged_value(
-      PreferenceModelAssociator::MergePreference(*pref, *null_value));
-  EXPECT_TRUE(merged_value->Equals(null_value.get()));
 }
 
 TEST_F(DictionaryPreferenceMergeTest, MergeNoConflicts) {
