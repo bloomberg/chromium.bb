@@ -250,6 +250,7 @@ gboolean TabGtk::OnDragButtonReleased(GtkWidget* widget,
 
 void TabGtk::OnDragBegin(GtkWidget* widget, GdkDragContext* context) {
   GdkPixbuf* pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, 1, 1);
+  gdk_pixbuf_fill(pixbuf, 0);
   gtk_drag_set_icon_pixbuf(context, pixbuf, 0, 0);
   g_object_unref(pixbuf);
 }
