@@ -20,6 +20,11 @@ namespace ppapi_proxy {
 
 namespace {
 
+// round size up to next 64k
+size_t ceil64k(size_t n) {
+  return (n + 0xFFFF) & (~0xFFFF);
+}
+
 PP_ImageDataFormat GetNativeImageDataFormat() {
   DebugPrintf("PPB_ImageData::GetNativeImageDataFormat\n");
   int32_t format;
@@ -161,13 +166,14 @@ void* PluginImageData::Map() {
     return NULL;
   }
 
-  addr_ = mmap(0, shm_size_, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd_, 0);
+  addr_ = mmap(0, ceil64k(shm_size_), PROT_READ | PROT_WRITE,
+      MAP_SHARED, shm_fd_, 0);
   return addr_;
 }
 
 void PluginImageData::Unmap() {
   if (addr_) {
-    munmap(addr_, shm_size_);
+    munmap(addr_, ceil64k(shm_size_));
     addr_ = NULL;
   }
 }
