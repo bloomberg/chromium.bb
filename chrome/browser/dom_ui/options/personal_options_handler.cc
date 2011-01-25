@@ -202,7 +202,7 @@ void PersonalOptionsHandler::OnStateChanged() {
     is_start_stop_button_visible = false;
 #else
     is_start_stop_button_visible = true;
-#endif
+#endif  // defined(OS_CHROMEOS)
     is_start_stop_button_enabled = !managed;
   } else if (service->SetupInProgress()) {
     start_stop_button_label =
@@ -246,15 +246,21 @@ void PersonalOptionsHandler::OnStateChanged() {
   enabled.reset(Value::CreateBooleanValue(!managed));
   dom_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncActionLinkEnabled",
                                   *enabled);
-#endif
+#else
+  label.reset(Value::CreateStringValue(string16()));
+  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncActionLinkLabel",
+                                  *label);
+#endif  // !defined(OS_CHROMEOS)
 
   visible.reset(Value::CreateBooleanValue(status_has_error));
   dom_ui_->CallJavascriptFunction(
     L"PersonalOptions.setSyncStatusErrorVisible", *visible);
-#if !defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS)
+  visible.reset(Value::CreateBooleanValue(false));
+#endif  // defined(OS_CHROMEOS)
   dom_ui_->CallJavascriptFunction(
     L"PersonalOptions.setSyncActionLinkErrorVisible", *visible);
-#endif
 }
 
 void PersonalOptionsHandler::OnLoginSuccess() {
