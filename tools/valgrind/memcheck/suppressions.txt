@@ -3652,6 +3652,13 @@
    fun:_ZN14PrintPreviewUIC1EP11TabContents
 }
 {
+   bug_70782_d_2
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14PrintPreviewUIC2EP11TabContents
+   fun:_ZN14PrintPreviewUIC1EP11TabContents
+}
+{
    bug_70782_e
    Memcheck:Leak
    fun:_Znw*
