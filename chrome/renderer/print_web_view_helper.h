@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #include "base/shared_memory.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 
 namespace gfx {
 class Size;
@@ -181,6 +181,14 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
   void RenderPage(const gfx::Size& page_size, const gfx::Point& content_origin,
                   const float& scale_factor, int page_number,
                   WebKit::WebFrame* frame, printing::NativeMetafile* metafile);
+#elif defined(OS_WIN)
+  void RenderPage(const gfx::Size& page_size, float* scale_factor,
+                  int page_number, WebKit::WebFrame* frame,
+                  scoped_ptr<printing::NativeMetafile>* metafile,
+                  bool supports_alpha_blend);
+#endif
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
   bool CopyMetafileDataToSharedMem(printing::NativeMetafile* metafile,
       base::SharedMemoryHandle* shared_mem_handle);
 #endif
