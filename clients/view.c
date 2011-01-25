@@ -64,8 +64,6 @@ view_draw(struct view *view)
 
 	window_get_child_allocation(view->window, &allocation);
 
-	page = poppler_document_get_page(view->document, view->page);
-
 	surface = window_get_surface(view->window);
 
 	cr = cairo_create(surface);
@@ -73,9 +71,18 @@ view_draw(struct view *view)
 			 allocation.width, allocation.height);
 	cairo_clip(cr);
 
-	cairo_set_source_rgba(cr, 0, 0, 0, 0.8); 
+	cairo_set_source_rgba(cr, 0, 0, 0, 0.8);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_paint(cr);
+
+        if(!view->document) {
+                cairo_destroy(cr);
+                cairo_surface_destroy(surface);
+                window_flush(view->window);
+                return;
+        }
+
+	page = poppler_document_get_page(view->document, view->page);
 	poppler_page_get_size(page, &width, &height);
 	doc_aspect = width / height;
 	window_aspect = (double) allocation.width / allocation.height;
@@ -119,8 +126,10 @@ view_page_up(struct view *view)
 static void
 view_page_down(struct view *view)
 {
-        if(view->page >= poppler_document_get_n_pages(view->document) - 1)
+        if(!view->document ||
+           view->page >= poppler_document_get_n_pages(view->document) - 1) {
                 return;
+        }
 
         view->page++;
         window_schedule_redraw(view->window);
@@ -215,7 +224,6 @@ view_create(struct display *display, uint32_t key, const char *filename)
 
         if(error) {
                 title = "File not found";
-                view->document = NULL;
         }
 
 	view->window = window_create(display, 500, 400);
