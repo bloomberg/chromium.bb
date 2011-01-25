@@ -711,13 +711,6 @@ PluginGroup* PluginList::AddToPluginGroups(
   }
   if (!group) {
     group = PluginGroup::FromWebPluginInfo(web_plugin_info);
-    // If group is scheduled for disabling do that now and remove it from the
-    // list.
-    if (groups_to_disable_.find(group->GetGroupName()) !=
-        groups_to_disable_.end()) {
-        group->EnableGroup(false);
-        groups_to_disable_.erase(group->GetGroupName());
-    }
     std::string identifier = group->identifier();
     // If the identifier is not unique, use the full path. This means that we
     // probably won't be able to search for this group by identifier, but at
@@ -734,6 +727,13 @@ PluginGroup* PluginList::AddToPluginGroups(
     plugin_groups->push_back(group);
   }
   group->AddPlugin(web_plugin_info);
+  // If group is scheduled for disabling do that now and remove it from the
+  // list.
+  if (groups_to_disable_.find(group->GetGroupName()) !=
+      groups_to_disable_.end()) {
+      group->EnableGroup(false);
+      groups_to_disable_.erase(group->GetGroupName());
+  }
   return group;
 }
 

@@ -68,7 +68,6 @@ class GViewRequestInterceptorTest : public testing::Test {
   void RegisterPDFPlugin() {
     webkit::npapi::WebPluginInfo info;
     info.path = pdf_path_;
-    info.name = ASCIIToUTF16("Internal PDF Plugin");
     info.enabled = webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
     webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
     webkit::npapi::PluginList::Singleton()->RefreshPlugins();

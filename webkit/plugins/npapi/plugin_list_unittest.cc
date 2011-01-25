@@ -182,6 +182,20 @@ TEST_F(PluginListTest, DisableOutdated) {
   EXPECT_FALSE(group_3043->IsVulnerable());
 }
 
+TEST_F(PluginListTest, BadPluginDescription) {
+  WebPluginInfo plugin_3043(ASCIIToUTF16(""),
+                            FilePath(FILE_PATH_LITERAL("/myplugin.3.0.43")),
+                            ASCIIToUTF16(""),
+                            ASCIIToUTF16(""));
+  // Simulate loading of the plugins.
+  plugin_list_.plugins_to_load_.clear();
+  plugin_list_.plugins_to_load_.push_back(plugin_3043);
+  // Now we should have them in the state we specified above.
+  std::vector<WebPluginInfo> plugins;
+  plugin_list_.GetPlugins(true, &plugins);
+  ASSERT_TRUE(Contains(plugins, plugin_3043, true));
+}
+
 TEST_F(PluginListTest, DisableAndEnableBeforeLoad) {
   WebPluginInfo plugin_3043(ASCIIToUTF16("MyPlugin"),
                             FilePath(FILE_PATH_LITERAL("/myplugin.3.0.43")),
