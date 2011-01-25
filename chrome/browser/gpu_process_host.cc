@@ -28,12 +28,6 @@
 
 namespace {
 
-enum GPUBlacklistTestResult {
-  BLOCKED,
-  ALLOWED,
-  BLACKLIST_TEST_RESULT_MAX
-};
-
 enum GPUProcessLifetimeEvent {
   LAUNCED,
   CRASHED,
@@ -106,7 +100,7 @@ GpuProcessHost::GpuProcessHost()
     : BrowserChildProcessHost(GPU_PROCESS, NULL),
       initialized_(false),
       initialized_successfully_(false),
-      blacklist_result_recorded_(false) {
+      gpu_feature_flags_set_(false) {
   DCHECK_EQ(sole_instance_, static_cast<GpuProcessHost*>(NULL));
 }
 
@@ -226,27 +220,35 @@ bool GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
 void GpuProcessHost::OnChannelEstablished(
     const IPC::ChannelHandle& channel_handle,
     const GPUInfo& gpu_info) {
-  GpuFeatureFlags gpu_feature_flags;
-  if (channel_handle.name.size() != 0) {
-    gpu_feature_flags = gpu_blacklist_->DetermineGpuFeatureFlags(
+  if (channel_handle.name.size() != 0 && !gpu_feature_flags_set_) {
+    gpu_feature_flags_ = gpu_blacklist_->DetermineGpuFeatureFlags(
         GpuBlacklist::kOsAny, NULL, gpu_info);
+    gpu_feature_flags_set_ = true;
+    uint32 max_entry_id = gpu_blacklist_->max_entry_id();
+    if (gpu_feature_flags_.flags() != 0) {
+      std::vector<uint32> flag_entries;
+      gpu_blacklist_->GetGpuFeatureFlagEntries(GpuFeatureFlags::kGpuFeatureAll,
+                                               flag_entries);
+      DCHECK_GT(flag_entries.size(), 0u);
+      for (size_t i = 0; i < flag_entries.size(); ++i) {
+        UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
+                                  flag_entries[i], max_entry_id + 1);
+      }
+    } else {
+      // id 0 is never used by any entry, so we use it here to indicate that
+      // gpu is allowed.
+      UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
+                                0, max_entry_id + 1);
+    }
   }
   const ChannelRequest& request = sent_requests_.front();
   // Currently if any of the GPU features are blacklised, we don't establish a
   // GPU channel.
-  GPUBlacklistTestResult test_result;
-  if (gpu_feature_flags.flags() != 0) {
+  if (gpu_feature_flags_.flags() != 0) {
     Send(new GpuMsg_CloseChannel(channel_handle));
     SendEstablishChannelReply(IPC::ChannelHandle(), gpu_info, request.filter);
-    test_result = BLOCKED;
   } else {
     SendEstablishChannelReply(channel_handle, gpu_info, request.filter);
-    test_result = ALLOWED;
-  }
-  if (!blacklist_result_recorded_) {
-    UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResults",
-                              test_result, BLACKLIST_TEST_RESULT_MAX);
-    blacklist_result_recorded_ = true;
   }
   sent_requests_.pop();
 }

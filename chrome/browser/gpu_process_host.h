@@ -12,6 +12,7 @@
 #include "base/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/browser_child_process_host.h"
+#include "chrome/common/gpu_feature_flags.h"
 #include "gfx/native_widget_types.h"
 
 class GpuBlacklist;
@@ -104,9 +105,9 @@ class GpuProcessHost : public BrowserChildProcessHost,
   bool initialized_;
   bool initialized_successfully_;
 
-  bool blacklist_result_recorded_;
-
+  bool gpu_feature_flags_set_;
   scoped_ptr<GpuBlacklist> gpu_blacklist_;
+  GpuFeatureFlags gpu_feature_flags_;
 
   // These are the channel requests that we have already sent to
   // the GPU process, but haven't heard back about yet.

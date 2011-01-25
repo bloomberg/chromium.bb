@@ -6,36 +6,6 @@
 #define CHROME_BROWSER_GPU_BLACKLIST_H_
 #pragma once
 
-// Determines whether certain gpu-related features are blacklisted or not.
-// A valid gpu_blacklist.json file are in the format of
-// {
-//   "entries": [
-//     { // entry 1
-//     },
-//     ...
-//     { // entry n
-//     }
-//   ]
-// }
-// Each entry contains the following fields:
-// "os", "vendor_id", "device_id", "driver_version", and "blacklist".
-// Only "blacklist" is mandatory.
-// 1. "os" contains "type" and an optional "version". "type" could be "macosx",
-//    "linux", "win", or "any".  "any" is the same as not specifying "os".
-//    "version" is a VERSION structure (defined later).
-// 2. "vendor_id" has the value of a string.
-// 3. "device_id" has the value of a string.
-// 4. "driver_version" is a VERSION structure (defined later).
-// 5. "blacklist" is a list of gpu feature strings, valid values include
-//    "accelerated_2d_canvas", "accelerated_compositing", "webgl", and "all".
-//    Currently whatever feature is selected, the effect is the same as "all",
-//    i.e., it's not supported to turn off one GPU feature and not the others.
-// VERSION includes "op" "number", and "number2".  "op" can be any of the
-// following value: "=", "<", "<=", ">", ">=", "any", "between".  "number2" is
-// only used if "op" is "between".  "number" is used for all "op" values except
-// "any". "number" and "number2" are in the format of x, x.x, x.x.x, ect.
-// Check out "gpu_blacklist_unittest.cc" for examples.
-
 #include <string>
 #include <vector>
 
@@ -74,7 +44,24 @@ class GpuBlacklist {
   // current OS version.
   GpuFeatureFlags DetermineGpuFeatureFlags(OsType os,
                                            Version* os_version,
-                                           const GPUInfo& gpu_info) const;
+                                           const GPUInfo& gpu_info);
+
+  // Collects the entries that set the "feature" flag from the last
+  // DetermineGpuFeatureFlags() call.  This tells which entries are responsible
+  // for raising a certain flag, i.e, for blacklisting a certain feature.
+  // Examples of "feature":
+  //   kGpuFeatureAll - any of the supported features;
+  //   kGpuFeatureWebgl - a single feature;
+  //   kGpuFeatureWebgl | kGpuFeatureAcceleratedCompositing - two features.
+  void GetGpuFeatureFlagEntries(GpuFeatureFlags::GpuFeatureType feature,
+                                std::vector<uint32>& entry_ids) const;
+
+  // Return the largest entry id.  This is used for histogramming.
+  uint32 max_entry_id() const;
+
+  // Collects the version of the current blacklist.  Returns false and sets
+  // major and minor to 0 on failure.
+  bool GetVersion(uint16* major, uint16* monir) const;
 
  private:
   class VersionInfo {
@@ -134,6 +121,32 @@ class GpuBlacklist {
     scoped_ptr<VersionInfo> version_info_;
   };
 
+  class StringInfo {
+   public:
+    StringInfo(const std::string& string_op, const std::string& string_value);
+
+    // Determines if a given string is included in the StringInfo.
+    bool Contains(const std::string& value) const;
+
+    // Determines if the StringInfo contains valid information.
+    bool IsValid() const;
+
+   private:
+    enum Op {
+      kContains,
+      kBeginWith,
+      kEndWith,
+      kEQ,  // =
+      kUnknown  // Indicates StringInfo data is invalid.
+    };
+
+    // Maps string to Op; returns kUnknown if it's not a valid Op.
+    static Op StringToOp(const std::string& string_op);
+
+    Op op_;
+    std::string value_;
+  };
+
   class GpuBlacklistEntry {
    public:
     // Constructs GpuBlacklistEntry from DictionaryValue loaded from json.
@@ -143,10 +156,15 @@ class GpuBlacklist {
     // Determines if a given os/gc/driver is included in the Entry set.
     bool Contains(OsType os_type, const Version& os_version,
                   uint32 vendor_id, uint32 device_id,
-                  const Version& driver_version) const;
+                  const std::string& driver_vendor,
+                  const Version& driver_version,
+                  const std::string& gl_renderer) const;
 
     // Returns the OsType.
     OsType GetOsType() const;
+
+    // Returns the entry's unique id.  0 is reserved.
+    uint32 id() const;
 
     // Returns the GpuFeatureFlags.
     GpuFeatureFlags GetGpuFeatureFlags() const;
@@ -155,6 +173,8 @@ class GpuBlacklist {
 
    private:
     GpuBlacklistEntry();
+
+    bool SetId(const std::string& id_string);
 
     bool SetOsInfo(const std::string& os,
                    const std::string& version_op,
@@ -165,17 +185,26 @@ class GpuBlacklist {
 
     bool SetDeviceId(const std::string& device_id_string);
 
+    bool SetDriverVendorInfo(const std::string& vendor_op,
+                             const std::string& vendor_value);
+
     bool SetDriverVersionInfo(const std::string& version_op,
                               const std::string& version_string,
                               const std::string& version_string2);
 
+    bool SetGLRendererInfo(const std::string& renderer_op,
+                           const std::string& renderer_value);
+
     bool SetBlacklistedFeatures(
         const std::vector<std::string>& blacklisted_features);
 
+    uint32 id_;
     scoped_ptr<OsInfo> os_info_;
     uint32 vendor_id_;
     uint32 device_id_;
+    scoped_ptr<StringInfo> driver_vendor_info_;
     scoped_ptr<VersionInfo> driver_version_info_;
+    scoped_ptr<StringInfo> gl_renderer_info_;
     scoped_ptr<GpuFeatureFlags> feature_flags_;
   };
 
@@ -184,7 +213,15 @@ class GpuBlacklist {
 
   void Clear();
 
+  scoped_ptr<Version> version_;
   std::vector<GpuBlacklistEntry*> blacklist_;
+
+  // This records all the blacklist entries that are appliable to the current
+  // user machine.  It is updated everytime DetermineGpuFeatureFlags() is
+  // called and is used later by GetGpuFeatureFlagEntries().
+  std::vector<GpuBlacklistEntry*> active_entries_;
+
+  uint32 max_entry_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuBlacklist);
 };
