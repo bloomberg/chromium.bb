@@ -17,6 +17,7 @@
 
 #include "base/basictypes.h"
 
+typedef unsigned long Atom;
 typedef struct _GdkDrawable GdkWindow;
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
@@ -76,11 +77,15 @@ int BitsPerPixelForPixmapDepth(Display* display, int depth);
 bool IsWindowVisible(XID window);
 // Returns the bounds of |window|.
 bool GetWindowRect(XID window, gfx::Rect* rect);
-// Get the value of an int, int array, or string property.  On
+// Return true if |window| has any property with |property_name|.
+bool PropertyExists(XID window, const std::string& property_name);
+// Get the value of an int, int array, atom array or string property.  On
 // success, true is returned and the value is stored in |value|.
 bool GetIntProperty(XID window, const std::string& property_name, int* value);
 bool GetIntArrayProperty(XID window, const std::string& property_name,
                          std::vector<int>* value);
+bool GetAtomArrayProperty(XID window, const std::string& property_name,
+                          std::vector<Atom>* value);
 bool GetStringProperty(
     XID window, const std::string& property_name, std::string* value);
 
@@ -111,8 +116,9 @@ class EnumerateWindowsDelegate {
 // windows up to a depth of |max_depth|.
 bool EnumerateAllWindows(EnumerateWindowsDelegate* delegate, int max_depth);
 
-// Returns a list of top-level windows in top-to-bottom stacking order.
-bool GetXWindowStack(std::vector<XID>* windows);
+// Returns all children windows of a given window in top-to-bottom stacking
+// order.
+bool GetXWindowStack(XID window, std::vector<XID>* windows);
 
 // Restack a window in relation to one of its siblings.  If |above| is true,
 // |window| will be stacked directly above |sibling|; otherwise it will stacked
@@ -177,6 +183,9 @@ bool ChangeWindowDesktop(XID window, XID destination);
 // the process if called. Use SetX11ErrorHandlers() from x11_util_internal.h
 // to set your own error handlers.
 void SetDefaultX11ErrorHandlers();
+
+// Return true if a given window is in full-screen mode.
+bool IsX11WindowFullScreen(XID window);
 
 }  // namespace ui
 

@@ -8,6 +8,8 @@
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/fullscreen.h"
+#include "chrome/browser/idle.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -15,6 +17,10 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
+
+namespace {
+const int kUserStatePollingIntervalSeconds = 1;
+}
 
 // A class which represents a notification waiting to be shown.
 class QueuedNotification {
@@ -42,14 +48,21 @@ class QueuedNotification {
 };
 
 NotificationUIManager::NotificationUIManager(PrefService* local_state)
-    : balloon_collection_(NULL) {
+    : balloon_collection_(NULL),
+      is_user_active_(true) {
   registrar_.Add(this, NotificationType::APP_TERMINATING,
                  NotificationService::AllSources());
   position_pref_.Init(prefs::kDesktopNotificationPosition, local_state, this);
+#if defined(OS_MACOSX)
+  InitFullScreenMonitor();
+#endif
 }
 
 NotificationUIManager::~NotificationUIManager() {
   STLDeleteElements(&show_queue_);
+#if defined(OS_MACOSX)
+  StopFullScreenMonitor();
+#endif
 }
 
 // static
@@ -126,8 +139,29 @@ void NotificationUIManager::CancelAll() {
 }
 
 void NotificationUIManager::CheckAndShowNotifications() {
-  // TODO(johnnyg): http://crbug.com/25061 - Check for user idle/presentation.
-  ShowNotifications();
+  CheckUserState();
+  if (is_user_active_)
+    ShowNotifications();
+}
+
+void NotificationUIManager::CheckUserState() {
+  bool is_user_active_previously = is_user_active_;
+  is_user_active_ = CalculateIdleState(0) != IDLE_STATE_LOCKED &&
+                    !IsFullScreenMode();
+  if (is_user_active_ == is_user_active_previously)
+    return;
+
+  if (is_user_active_) {
+    user_state_check_timer_.Stop();
+    // We need to show any postponed nofications when the user becomes active
+    // again.
+    ShowNotifications();
+  } else if (!user_state_check_timer_.IsRunning()) {
+    // Start a timer to detect the moment at which the user becomes active.
+    user_state_check_timer_.Start(
+        base::TimeDelta::FromSeconds(kUserStatePollingIntervalSeconds), this,
+        &NotificationUIManager::CheckUserState);
+  }
 }
 
 void NotificationUIManager::ShowNotifications() {

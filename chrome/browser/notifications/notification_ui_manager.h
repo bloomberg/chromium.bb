@@ -11,6 +11,7 @@
 
 #include "base/id_map.h"
 #include "base/scoped_ptr.h"
+#include "base/timer.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -93,6 +94,9 @@ class NotificationUIManager
   // returns true if the replacement happened.
   bool TryReplacement(const Notification& notification);
 
+  // Checks the user state to decide if we want to show the notification.
+  void CheckUserState();
+
   // An owned pointer to the collection of active balloons.
   scoped_ptr<BalloonCollection> balloon_collection_;
 
@@ -105,6 +109,10 @@ class NotificationUIManager
 
   // Prefs listener for the position preference.
   IntegerPrefMember position_pref_;
+
+  // Used by screen-saver and full-screen handling support.
+  bool is_user_active_;
+  base::RepeatingTimer<NotificationUIManager> user_state_check_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationUIManager);
 };

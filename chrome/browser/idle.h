@@ -12,6 +12,13 @@ enum IdleState {
   IDLE_STATE_LOCKED = 2  // Only available on supported systems.
 };
 
+// For MacOSX, InitIdleMonitor needs to be called first to setup the monitor.
+// StopIdleMonitor should be called if it is not needed any more.
+#if defined(OS_MACOSX)
+void InitIdleMonitor();
+void StopIdleMonitor();
+#endif
+
 IdleState CalculateIdleState(unsigned int idle_threshold);
 
 #endif  // CHROME_BROWSER_IDLE_H_

@@ -548,7 +548,7 @@ bool IsScreenComposited() {
 
 void EnumerateTopLevelWindows(ui::EnumerateWindowsDelegate* delegate) {
   std::vector<XID> stack;
-  if (!ui::GetXWindowStack(&stack)) {
+  if (!ui::GetXWindowStack(ui::GetX11RootWindow(), &stack)) {
     // Window Manager doesn't support _NET_CLIENT_LIST_STACKING, so fall back
     // to old school enumeration of all X windows.  Some WMs parent 'top-level'
     // windows in unnamed actual top-level windows (ion WM), so extend the
