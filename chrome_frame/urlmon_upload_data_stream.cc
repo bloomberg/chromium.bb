@@ -51,7 +51,7 @@ STDMETHODIMP UrlmonUploadDataStream::Read(void* pv, ULONG cb, ULONG* read) {
     write_pointer += bytes_to_copy_now;
 
     // Advance the UploadDataStream read pointer:
-    request_body_stream_->DidConsume(bytes_to_copy_now);
+    request_body_stream_->MarkConsumedAndFillBuffer(bytes_to_copy_now);
   }
 
   DCHECK(bytes_copied == total_bytes_to_copy);

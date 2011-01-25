@@ -101,6 +101,12 @@ class URLFetcher::Core
   // |original_url_| and |url_|.
   base::TimeTicks GetBackoffReleaseTime();
 
+  void CompleteAddingUploadDataChunk(const std::string& data);
+
+  // Adds a block of data to be uploaded in a POST body. This can only be called
+  // after Start().
+  void AppendChunkToUpload(const std::string& data);
+
   URLFetcher* fetcher_;              // Corresponding fetcher object
   GURL original_url_;                // The URL we were asked to fetch
   GURL url_;                         // The URL we eventually wound up at
@@ -127,6 +133,7 @@ class URLFetcher::Core
   std::string upload_content_;       // HTTP POST payload
   std::string upload_content_type_;  // MIME type of POST payload
   std::string referrer_;             // HTTP Referer header value
+  bool is_chunked_upload_;           // True if using chunked transfer encoding
 
   // Used to determine how long to wait before making a request or doing a
   // retry.
@@ -221,6 +228,7 @@ URLFetcher::Core::Core(URLFetcher* fetcher,
       load_flags_(net::LOAD_NORMAL),
       response_code_(-1),
       buffer_(new net::IOBuffer(kBufferSize)),
+      is_chunked_upload_(false),
       num_retries_(0),
       was_cancelled_(false) {
 }
@@ -282,6 +290,26 @@ void URLFetcher::Core::OnResponseStarted(net::URLRequest* request) {
   OnReadCompleted(request_.get(), bytes_read);
 }
 
+void URLFetcher::Core::CompleteAddingUploadDataChunk(
+    const std::string& content) {
+  DCHECK(is_chunked_upload_);
+  DCHECK(request_.get());
+  if (content.length()) {
+    request_->AppendChunkToUpload(content.data(),
+                                  static_cast<int>(content.length()));
+  } else {
+    request_->MarkEndOfChunks();
+  }
+}
+
+void URLFetcher::Core::AppendChunkToUpload(const std::string& content) {
+  DCHECK(delegate_loop_proxy_);
+  CHECK(io_message_loop_proxy_.get());
+  io_message_loop_proxy_->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &Core::CompleteAddingUploadDataChunk, content));
+}
+
 void URLFetcher::Core::OnReadCompleted(net::URLRequest* request,
                                        int bytes_read) {
   DCHECK(request == request_);
@@ -334,6 +362,8 @@ void URLFetcher::Core::StartURLRequest() {
   if (!g_interception_enabled) {
     flags = flags | net::LOAD_DISABLE_INTERCEPT;
   }
+  if (is_chunked_upload_)
+    request_->EnableChunkedUpload();
   request_->set_load_flags(flags);
   request_->set_context(request_context_getter_->GetURLRequestContext());
   request_->set_referrer(referrer_);
@@ -343,14 +373,16 @@ void URLFetcher::Core::StartURLRequest() {
       break;
 
     case POST:
-      DCHECK(!upload_content_.empty());
+      DCHECK(!upload_content_.empty() || is_chunked_upload_);
       DCHECK(!upload_content_type_.empty());
 
       request_->set_method("POST");
       extra_request_headers_.SetHeader(net::HttpRequestHeaders::kContentType,
                                        upload_content_type_);
-      request_->AppendBytesToUpload(upload_content_.data(),
-                                    static_cast<int>(upload_content_.size()));
+      if (!upload_content_.empty()) {
+        request_->AppendBytesToUpload(
+            upload_content_.data(), static_cast<int>(upload_content_.length()));
+      }
       break;
 
     case HEAD:
@@ -474,8 +506,27 @@ base::TimeTicks URLFetcher::Core::GetBackoffReleaseTime() {
 
 void URLFetcher::set_upload_data(const std::string& upload_content_type,
                                  const std::string& upload_content) {
+  DCHECK(!core_->is_chunked_upload_);
   core_->upload_content_type_ = upload_content_type;
   core_->upload_content_ = upload_content;
+}
+
+void URLFetcher::set_chunked_upload(const std::string& content_type) {
+  DCHECK(core_->is_chunked_upload_ ||
+         (core_->upload_content_type_.empty() &&
+          core_->upload_content_.empty()));
+  core_->upload_content_type_ = content_type;
+  core_->upload_content_.clear();
+  core_->is_chunked_upload_ = true;
+}
+
+void URLFetcher::AppendChunkToUpload(const std::string& data) {
+  DCHECK(data.length());
+  core_->AppendChunkToUpload(data);
+}
+
+void URLFetcher::MarkEndOfChunks() {
+  core_->AppendChunkToUpload(std::string());
 }
 
 const std::string& URLFetcher::upload_data() const {
