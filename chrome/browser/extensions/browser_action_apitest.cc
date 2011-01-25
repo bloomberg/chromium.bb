@@ -143,7 +143,14 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
   EXPECT_EQ("hi!", GetBrowserActionsBar().GetTooltip(0));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopup) {
+// http://code.google.com/p/chromium/issues/detail?id=70829
+// Only mac is okay.
+#if !defined(OS_MACOSX)
+#define MAYBE_BrowserActionPopup FLAKY_BrowserActionPopup
+#else
+#define MAYBE_BrowserActionPopup BrowserActionPopup
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, MAYBE_BrowserActionPopup) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "browser_action/popup")));
   BrowserActionTestUtil actions_bar = GetBrowserActionsBar();
