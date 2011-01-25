@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_DEBUGGER_DEVTOOLS_CLIENT_HOST_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 
 namespace IPC {
@@ -33,6 +35,10 @@ class DevToolsClientHost {
   // This method is called when tab inspected by this devtools client is
   // closing.
   virtual void InspectedTabClosing() = 0;
+
+  // This method is called when tab inspected by this devtools client is
+  // navigating to |url|.
+  virtual void FrameNavigating(const std::string& url) = 0;
 
   // Sends the message to the devtools client hosted by this object.
   virtual void SendMessageToClient(const IPC::Message& msg) = 0;

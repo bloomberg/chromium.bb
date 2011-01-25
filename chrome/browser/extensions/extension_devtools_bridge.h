@@ -34,6 +34,8 @@ class ExtensionDevToolsBridge : public DevToolsClientHost {
  private:
   void OnDispatchOnInspectorFrontend(const std::string& data);
 
+  virtual void FrameNavigating(const std::string& url) {}
+
   // ID of the tab we are monitoring.
   int tab_id_;
 

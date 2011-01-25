@@ -95,6 +95,8 @@ class DevToolsWindow
                                       bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
+  virtual void FrameNavigating(const std::string& url) {}
+
   Profile* profile_;
   TabContents* inspected_tab_;
   TabContentsWrapper* tab_contents_;

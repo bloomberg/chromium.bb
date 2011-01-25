@@ -65,6 +65,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
   void OnDispatchOnInspectorFrontend(const std::string& data) {
     socket_->SendOverWebSocket(data);
   }
+  virtual void FrameNavigating(const std::string& url) {}
   HttpListenSocket* socket_;
 };
 

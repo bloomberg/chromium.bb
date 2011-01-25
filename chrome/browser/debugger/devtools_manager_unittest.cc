@@ -51,6 +51,8 @@ class TestDevToolsClientHost : public DevToolsClientHost {
  private:
   bool closed_;
 
+  virtual void FrameNavigating(const std::string& url) {}
+
   DISALLOW_COPY_AND_ASSIGN(TestDevToolsClientHost);
 };
 

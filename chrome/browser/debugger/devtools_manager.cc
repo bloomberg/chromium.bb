@@ -221,6 +221,10 @@ void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
   if (cookie != -1) {
     // Navigating to URL in the inspected window.
     AttachClientHost(cookie, dest_rvh);
+
+    DevToolsClientHost* client_host = GetDevToolsClientHostFor(dest_rvh);
+    client_host->FrameNavigating(gurl.spec());
+
     return;
   }
 

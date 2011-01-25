@@ -53,7 +53,7 @@ void DevToolsClientHostImpl::OnDebuggerOutput(const std::string& data) {
   service_->DebuggerOutput(id_, data);
 }
 
-void DevToolsClientHostImpl::FrameNavigate(const std::string& url) {
+void DevToolsClientHostImpl::FrameNavigating(const std::string& url) {
   service_->FrameNavigate(id_, url);
 }
 
