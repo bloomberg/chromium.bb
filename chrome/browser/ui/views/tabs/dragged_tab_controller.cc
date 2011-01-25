@@ -532,7 +532,7 @@ void DraggedTabController::UpdateWindowCreatePoint() {
 
 gfx::Point DraggedTabController::GetWindowCreatePoint() const {
   gfx::Point cursor_point = GetCursorScreenPoint();
-  if (dock_info_.type() != DockInfo::NONE) {
+  if (dock_info_.type() != DockInfo::NONE && dock_info_.in_enable_area()) {
     // If we're going to dock, we need to return the exact coordinate,
     // otherwise we may attempt to maximize on the wrong monitor.
     return cursor_point;
