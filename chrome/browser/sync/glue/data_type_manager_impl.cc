@@ -358,7 +358,8 @@ void DataTypeManagerImpl::FinishStop() {
   for (DataTypeController::TypeMap::const_iterator it = controllers_.begin();
        it != controllers_.end(); ++it) {
     DataTypeController* dtc = (*it).second;
-    if (dtc->state() == DataTypeController::RUNNING) {
+    if (dtc->state() != DataTypeController::NOT_RUNNING &&
+        dtc->state() != DataTypeController::STOPPING) {
       dtc->Stop();
       VLOG(1) << "Stopped " << dtc->name();
     }
