@@ -3202,7 +3202,6 @@
             'renderer',
             'syncapi',
             '../base/base.gyp:base',
-            '../net/net.gyp:net_test_support',
             '../skia/skia.gyp:skia',
           ],
           'include_dirs': [

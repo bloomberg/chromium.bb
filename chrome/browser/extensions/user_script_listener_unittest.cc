@@ -16,7 +16,7 @@
 #include "chrome/common/notification_type.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_job.h"
-#include "net/url_request/url_request_test_util.h"
+#include "net/url_request/url_request_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class Profile;

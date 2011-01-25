@@ -68,11 +68,24 @@ class ListenSocketTester :
     public ListenSocket::ListenSocketDelegate,
     public base::RefCountedThreadSafe<ListenSocketTester> {
 
- public:
-  ListenSocketTester();
+ protected:
+  friend class base::RefCountedThreadSafe<ListenSocketTester>;
 
-  void SetUp();
-  void TearDown();
+  virtual ~ListenSocketTester() {}
+
+  virtual ListenSocket* DoListen();
+
+ public:
+  ListenSocketTester()
+      : thread_(NULL),
+        loop_(NULL),
+        server_(NULL),
+        connection_(NULL),
+        cv_(&lock_) {
+  }
+
+  virtual void SetUp();
+  virtual void TearDown();
 
   void ReportAction(const ListenSocketTestAction& action);
   void NextAction();
@@ -83,19 +96,16 @@ class ListenSocketTester :
   void Shutdown();
   void Listen();
   void SendFromTester();
+  virtual void DidAccept(ListenSocket *server, ListenSocket *connection);
+  virtual void DidRead(ListenSocket *connection, const char* data, int len);
+  virtual void DidClose(ListenSocket *sock);
+  virtual bool Send(SOCKET sock, const std::string& str);
   // verify the send/read from client to server
   void TestClientSend();
   // verify send/read of a longer string
   void TestClientSendLong();
   // verify a send/read from server to client
   void TestServerSend();
-
-  virtual bool Send(SOCKET sock, const std::string& str);
-
-  // ListenSocket::ListenSocketDelegate:
-  virtual void DidAccept(ListenSocket *server, ListenSocket *connection);
-  virtual void DidRead(ListenSocket *connection, const char* data, int len);
-  virtual void DidClose(ListenSocket *sock);
 
   scoped_ptr<base::Thread> thread_;
   MessageLoopForIO* loop_;
@@ -109,13 +119,6 @@ class ListenSocketTester :
   base::Lock lock_;  // protects |queue_| and wraps |cv_|
   base::ConditionVariable cv_;
   std::deque<ListenSocketTestAction> queue_;
-
- protected:
-  friend class base::RefCountedThreadSafe<ListenSocketTester>;
-
-  virtual ~ListenSocketTester();
-
-  virtual ListenSocket* DoListen();
 };
 
 #endif  // NET_BASE_LISTEN_SOCKET_UNITTEST_H_

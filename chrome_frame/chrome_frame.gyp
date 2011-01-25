@@ -484,6 +484,8 @@
         'npchrome_frame',
       ],
       'sources': [
+        '../net/url_request/url_request_unittest.cc',
+        '../net/url_request/url_request_unittest.h',
         'test/chrome_frame_test_utils.cc',
         'test/chrome_frame_test_utils.h',
         'test/simulate_input.cc',

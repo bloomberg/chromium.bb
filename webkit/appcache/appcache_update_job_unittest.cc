@@ -11,7 +11,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_test_job.h"
-#include "net/url_request/url_request_test_util.h"
+#include "net/url_request/url_request_unittest.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/appcache_policy.h"

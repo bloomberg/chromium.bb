@@ -19,12 +19,8 @@ static const int kMaxQueueSize = 20;
 static const char kLoopback[] = "127.0.0.1";
 static const int kDefaultTimeoutMs = 5000;
 
-ListenSocketTester::ListenSocketTester()
-    : thread_(NULL),
-      loop_(NULL),
-      server_(NULL),
-      connection_(NULL),
-      cv_(&lock_) {
+ListenSocket* ListenSocketTester::DoListen() {
+  return ListenSocket::Listen(kLoopback, kTestPort, this);
 }
 
 void ListenSocketTester::SetUp() {
@@ -125,6 +121,36 @@ void ListenSocketTester::SendFromTester() {
   ReportAction(ListenSocketTestAction(ACTION_SEND));
 }
 
+void ListenSocketTester::DidAccept(ListenSocket *server,
+                                   ListenSocket *connection) {
+  connection_ = connection;
+  connection_->AddRef();
+  ReportAction(ListenSocketTestAction(ACTION_ACCEPT));
+}
+
+void ListenSocketTester::DidRead(ListenSocket *connection,
+                                 const char* data,
+                                 int len) {
+  std::string str(data, len);
+  ReportAction(ListenSocketTestAction(ACTION_READ, str));
+}
+
+void ListenSocketTester::DidClose(ListenSocket *sock) {
+  ReportAction(ListenSocketTestAction(ACTION_CLOSE));
+}
+
+bool ListenSocketTester::Send(SOCKET sock, const std::string& str) {
+  int len = static_cast<int>(str.length());
+  int send_len = HANDLE_EINTR(send(sock, str.data(), len, 0));
+  if (send_len == SOCKET_ERROR) {
+    LOG(ERROR) << "send failed: " << errno;
+    return false;
+  } else if (send_len != len) {
+    return false;
+  }
+  return true;
+}
+
 void ListenSocketTester::TestClientSend() {
   ASSERT_TRUE(Send(test_socket_, kHelloWorld));
   NextAction();
@@ -172,42 +198,6 @@ void ListenSocketTester::TestServerSend() {
   }
   buf[recv_len] = 0;
   ASSERT_STREQ(buf, kHelloWorld);
-}
-
-bool ListenSocketTester::Send(SOCKET sock, const std::string& str) {
-  int len = static_cast<int>(str.length());
-  int send_len = HANDLE_EINTR(send(sock, str.data(), len, 0));
-  if (send_len == SOCKET_ERROR) {
-    LOG(ERROR) << "send failed: " << errno;
-    return false;
-  } else if (send_len != len) {
-    return false;
-  }
-  return true;
-}
-
-void ListenSocketTester::DidAccept(ListenSocket *server,
-                                   ListenSocket *connection) {
-  connection_ = connection;
-  connection_->AddRef();
-  ReportAction(ListenSocketTestAction(ACTION_ACCEPT));
-}
-
-void ListenSocketTester::DidRead(ListenSocket *connection,
-                                 const char* data,
-                                 int len) {
-  std::string str(data, len);
-  ReportAction(ListenSocketTestAction(ACTION_READ, str));
-}
-
-void ListenSocketTester::DidClose(ListenSocket *sock) {
-  ReportAction(ListenSocketTestAction(ACTION_CLOSE));
-}
-
-ListenSocketTester::~ListenSocketTester() {}
-
-ListenSocket* ListenSocketTester::DoListen() {
-  return ListenSocket::Listen(kLoopback, kTestPort, this);
 }
 
 

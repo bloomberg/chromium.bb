@@ -11,7 +11,7 @@
 #include "net/base/mock_host_resolver.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/socket_test_util.h"
-#include "net/url_request/url_request_test_util.h"
+#include "net/url_request/url_request_unittest.h"
 #include "net/websockets/websocket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"

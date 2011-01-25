@@ -11,7 +11,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "net/url_request/url_request_test_util.h"
+#include "net/url_request/url_request_unittest.h"
 #include "ui/base/message_box_flags.h"
 #include "views/event.h"
 

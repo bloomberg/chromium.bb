@@ -23,7 +23,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "net/base/net_util.h"
-#include "net/url_request/url_request_test_util.h"
+#include "net/url_request/url_request_unittest.h"
 
 #if defined(OS_WIN)
 #include <shlwapi.h>
