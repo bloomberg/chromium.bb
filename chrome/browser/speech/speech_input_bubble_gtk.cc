@@ -196,7 +196,7 @@ void SpeechInputBubbleGtk::UpdateLayout() {
 }
 
 void SpeechInputBubbleGtk::SetImage(const SkBitmap& image) {
-  if (image.isNull())
+  if (image.isNull() || !info_bubble_)
     return;
 
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&image);
