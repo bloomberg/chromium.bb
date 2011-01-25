@@ -148,12 +148,12 @@ tty_create(struct wlsc_compositor *compositor)
 void
 tty_destroy(struct tty *tty)
 {
-	int ret;
+        if(!tty)
+                return;
 
-	ret = ioctl(tty->fd, KDSETMODE, KD_TEXT);
-	if (ret)
+	if (ioctl(tty->fd, KDSETMODE, KD_TEXT))
 		fprintf(stderr,
-			"failed to set KD_GRAPHICS mode on tty: %m\n");
+			"failed to set KD_TEXT mode on tty: %m\n");
 
 	if (tcsetattr(tty->fd, TCSANOW, &tty->terminal_attributes) < 0)
 		fprintf(stderr,
