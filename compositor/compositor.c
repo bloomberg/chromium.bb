@@ -211,7 +211,7 @@ create_buffer_from_png(struct wlsc_compositor *ec,
 
 	argb_pixels = malloc (height * width * 4);
 	if (argb_pixels == NULL) {
-		gdk_pixbuf_unref(pixbuf);
+		g_object_unref(pixbuf);
 		return NULL;
 	}
 
@@ -250,7 +250,7 @@ create_buffer_from_png(struct wlsc_compositor *ec,
 		}
 	}
 
-	gdk_pixbuf_unref(pixbuf);
+	g_object_unref(pixbuf);
 
 	buffer = ec->create_buffer(ec, width, height,
 				   &ec->compositor.premultiplied_argb_visual,

@@ -61,8 +61,8 @@ screenshooter_shoot(struct wl_client *client, struct wl_screenshooter *shooter)
 						  NULL, NULL);
 		normal = gdk_pixbuf_flip(pixbuf, FALSE);
 		gdk_pixbuf_save(normal, buffer, "png", &error, NULL);
-		gdk_pixbuf_unref(normal);
-		gdk_pixbuf_unref(pixbuf);
+		g_object_unref(normal);
+		g_object_unref(pixbuf);
 		free(data);
 	}
 }

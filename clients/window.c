@@ -291,7 +291,7 @@ display_create_drm_surface_from_file(struct display *display,
 
 	if (!gdk_pixbuf_get_has_alpha(pixbuf) ||
 	    gdk_pixbuf_get_n_channels(pixbuf) != 4) {
-		gdk_pixbuf_unref(pixbuf);
+		g_object_unref(pixbuf);
 		return NULL;
 	}
 
@@ -322,7 +322,7 @@ display_create_drm_surface_from_file(struct display *display,
 			GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 	cairo_device_release(display->device);
 
-	gdk_pixbuf_unref(pixbuf);
+	g_object_unref(pixbuf);
 
 	return surface;
 }
@@ -435,7 +435,7 @@ display_create_shm_surface_from_file(struct display *display,
 
 	if (!gdk_pixbuf_get_has_alpha(pixbuf) ||
 	    gdk_pixbuf_get_n_channels(pixbuf) != 4) {
-		gdk_pixbuf_unref(pixbuf);
+		g_object_unref(pixbuf);
 		return NULL;
 	}
 
@@ -463,7 +463,7 @@ display_create_shm_surface_from_file(struct display *display,
 		}
 	}
 
-	gdk_pixbuf_unref(pixbuf);
+	g_object_unref(pixbuf);
 
 	return surface;
 }
