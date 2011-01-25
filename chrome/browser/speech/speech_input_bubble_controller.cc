@@ -201,7 +201,6 @@ void SpeechInputBubbleController::InfoBubbleFocusChanged() {
 
   int old_bubble_caller_id = current_bubble_caller_id_;
   current_bubble_caller_id_ = 0;
-  bubbles_[old_bubble_caller_id]->Hide();
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
