@@ -1072,10 +1072,12 @@ class GClientSmokeFromCheckout(GClientSmokeBase):
     self.enabled = self.FAKE_REPOS.setUpSVN()
     os.rmdir(self.root_dir)
     if self.enabled:
-      check_call(['svn', 'checkout', 'svn://127.0.0.1/svn/trunk/webkit',
-          self.root_dir, '-q',
-          '--non-interactive', '--no-auth-cache',
-          '--username', 'user1', '--password', 'foo'])
+      usr, pwd = self.FAKE_REPOS.USERS[0]
+      check_call(
+          ['svn', 'checkout', 'svn://127.0.0.1/svn/trunk/webkit',
+           self.root_dir, '-q',
+           '--non-interactive', '--no-auth-cache',
+           '--username', usr, '--password', pwd])
 
   def testSync(self):
     if not self.enabled:

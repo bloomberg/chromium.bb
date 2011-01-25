@@ -156,7 +156,7 @@ def dict_diff(dict1, dict2):
   return diff
 
 
-def commit_svn(repo):
+def commit_svn(repo, usr, pwd):
   """Commits the changes and returns the new revision number."""
   to_add = []
   to_remove = []
@@ -169,9 +169,11 @@ def commit_svn(repo):
     check_call(['svn', 'add', '--no-auto-props', '-q'] + to_add, cwd=repo)
   if to_remove:
     check_call(['svn', 'remove', '-q'] + to_remove, cwd=repo)
-  proc = Popen(['svn', 'commit', repo, '-m', 'foo', '--non-interactive',
-                '--no-auth-cache', '--username', 'user1', '--password', 'foo'],
-               cwd=repo)
+  proc = Popen(
+      ['svn', 'commit', repo, '-m', 'foo', '--non-interactive',
+        '--no-auth-cache',
+        '--username', usr, '--password', pwd],
+      cwd=repo)
   out, err = proc.communicate()
   match = re.search(r'(\d+)', out)
   if not match:
@@ -213,6 +215,10 @@ class FakeReposBase(object):
   # Hostname
   HOST = '127.0.0.1'
   NB_GIT_REPOS = 1
+  USERS = [
+      ('user1@example.com', 'foo'),
+      ('user2@example.com', 'bar'),
+  ]
 
   def __init__(self, trial_dir=None, leak=None, host=None):
     global _FAKE_LOADED
@@ -306,10 +312,9 @@ class FakeReposBase(object):
         'anon-access = read\n'
         'auth-access = write\n'
         'password-db = passwd\n')
-    write(join(root, 'conf', 'passwd'),
-        '[users]\n'
-        'user1 = foo\n'
-        'user2 = bar\n')
+    text = '[users]\n'
+    text += ''.join('%s = %s\n' % (usr, pwd) for usr, pwd in self.USERS)
+    write(join(root, 'conf', 'passwd'), text)
 
     # Start the daemon.
     cmd = ['svnserve', '-d', '--foreground', '-r', self.repos_dir]
@@ -340,7 +345,7 @@ class FakeReposBase(object):
 
   def _commit_svn(self, tree):
     self._genTree(self.svn_root, tree)
-    commit_svn(self.svn_root)
+    commit_svn(self.svn_root, self.USERS[0][0], self.USERS[0][1])
     if self.svn_revs and self.svn_revs[-1]:
       new_tree = self.svn_revs[-1].copy()
       new_tree.update(tree)
@@ -375,7 +380,7 @@ class FakeRepos(FakeReposBase):
     # Repos
     check_call(['svn', 'checkout', 'svn://127.0.0.1/svn', self.svn_root, '-q',
                 '--non-interactive', '--no-auth-cache',
-                '--username', 'user1', '--password', 'foo'])
+                '--username', self.USERS[0][0], '--password', self.USERS[0][1]])
     assert os.path.isdir(join(self.svn_root, '.svn'))
     def file_system(rev, DEPS):
       fs = {
