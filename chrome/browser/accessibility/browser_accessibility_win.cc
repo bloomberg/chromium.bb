@@ -1324,6 +1324,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       break;
+    case WebAccessibility::ROLE_BUSY_INDICATOR:
+      ia_role_ = ROLE_SYSTEM_ANIMATION;
+      break;
     case WebAccessibility::ROLE_BUTTON:
       ia_role_ = ROLE_SYSTEM_PUSHBUTTON;
       break;
@@ -1356,6 +1359,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case WebAccessibility::ROLE_DIALOG:
       ia_role_ = ROLE_SYSTEM_DIALOG;
       break;
+    case WebAccessibility::ROLE_DISCLOSURE_TRIANGLE:
+      ia_role_ = ROLE_SYSTEM_OUTLINEBUTTON;
+      break;
     case WebAccessibility::ROLE_DOCUMENT:
     case WebAccessibility::ROLE_WEB_AREA:
       ia_role_ = ROLE_SYSTEM_DOCUMENT;
@@ -1375,6 +1381,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       if (role_name_.empty())
         role_name_ = L"div";
       ia2_role_ = IA2_ROLE_SECTION;
+      break;
+    case WebAccessibility::ROLE_GROW_AREA:
+      ia_role_ = ROLE_SYSTEM_GRIP;
       break;
     case WebAccessibility::ROLE_HEADING:
       GetAttribute(WebAccessibility::ATTR_HTML_TAG, &role_name_);
@@ -1416,6 +1425,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case WebAccessibility::ROLE_LIST_ITEM:
     case WebAccessibility::ROLE_LIST_MARKER:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
+      break;
+    case WebAccessibility::ROLE_MATH:
+      ia_role_ = ROLE_SYSTEM_EQUATION;
       break;
     case WebAccessibility::ROLE_MENU:
     case WebAccessibility::ROLE_MENU_BUTTON:
@@ -1486,6 +1498,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case WebAccessibility::ROLE_STATUS:
       ia_role_ = ROLE_SYSTEM_STATUSBAR;
       break;
+    case WebAccessibility::ROLE_SPLITTER:
+      ia_role_ = ROLE_SYSTEM_SEPARATOR;
+      break;
     case WebAccessibility::ROLE_TAB:
       ia_role_ = ROLE_SYSTEM_PAGETAB;
       break;
@@ -1511,6 +1526,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia2_state_ |= IA2_STATE_SINGLE_LINE;
       ia2_state_ |= IA2_STATE_EDITABLE;
       break;
+    case WebAccessibility::ROLE_TIMER:
+      ia_role_ = ROLE_SYSTEM_CLOCK;
+      break;
     case WebAccessibility::ROLE_TOOLBAR:
       ia_role_ = ROLE_SYSTEM_TOOLBAR;
       break;
@@ -1532,24 +1550,18 @@ void BrowserAccessibilityWin::InitRoleAndState() {
 
     // TODO(dmazzoni): figure out the proper MSAA role for all of these.
     case WebAccessibility::ROLE_BROWSER:
-    case WebAccessibility::ROLE_BUSY_INDICATOR:
     case WebAccessibility::ROLE_DIRECTORY:
-    case WebAccessibility::ROLE_DISCLOSURE_TRIANGLE:
     case WebAccessibility::ROLE_DRAWER:
-    case WebAccessibility::ROLE_GROW_AREA:
     case WebAccessibility::ROLE_HELP_TAG:
     case WebAccessibility::ROLE_IGNORED:
     case WebAccessibility::ROLE_INCREMENTOR:
     case WebAccessibility::ROLE_LOG:
     case WebAccessibility::ROLE_MARQUEE:
-    case WebAccessibility::ROLE_MATH:
     case WebAccessibility::ROLE_MATTE:
     case WebAccessibility::ROLE_RULER_MARKER:
     case WebAccessibility::ROLE_SHEET:
     case WebAccessibility::ROLE_SLIDER_THUMB:
-    case WebAccessibility::ROLE_SPLITTER:
     case WebAccessibility::ROLE_SYSTEM_WIDE:
-    case WebAccessibility::ROLE_TIMER:
     case WebAccessibility::ROLE_VALUE_INDICATOR:
     default:
       ia_role_ = ROLE_SYSTEM_CLIENT;
