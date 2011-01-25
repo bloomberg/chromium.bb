@@ -3676,3 +3676,11 @@
    fun:_Znw*
    fun:_ZN18MostVisitedHandler6AttachEP5DOMUI
 }
+{
+   bug_70826
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z17NewRunnableMethodIN8remoting8protocol13MessageReaderEMS2_FvPNS0_14CompoundBufferEES4_EP14CancelableTaskPT_T0_RKT1_
+   fun:_ZN8remoting8protocol13MessageReader14OnDataReceivedEPN3net8IOBufferEi
+   fun:_ZN8remoting8protocol13MessageReader16HandleReadResultEi
+}
