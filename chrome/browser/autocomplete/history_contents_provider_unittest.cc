@@ -100,51 +100,51 @@ class HistoryContentsProviderTest : public testing::Test,
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
 
-  std::wstring history_dir_;
-
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<HistoryContentsProvider> provider_;
 };
 
 TEST_F(HistoryContentsProviderTest, Body) {
-  AutocompleteInput input(L"FOO", std::wstring(), true, false, true, false);
+  AutocompleteInput input(ASCIIToUTF16("FOO"), string16(), true, false, true,
+                          false);
   RunQuery(input, false);
 
   // The results should be the first two pages, in decreasing order.
   const ACMatches& m = matches();
   ASSERT_EQ(2U, m.size());
   EXPECT_EQ(test_entries[0].url, m[0].destination_url.spec());
-  EXPECT_STREQ(test_entries[0].title, WideToUTF8(m[0].description).c_str());
+  EXPECT_STREQ(test_entries[0].title, UTF16ToUTF8(m[0].description).c_str());
   EXPECT_EQ(test_entries[1].url, m[1].destination_url.spec());
-  EXPECT_STREQ(test_entries[1].title, WideToUTF8(m[1].description).c_str());
+  EXPECT_STREQ(test_entries[1].title, UTF16ToUTF8(m[1].description).c_str());
 }
 
 TEST_F(HistoryContentsProviderTest, Title) {
-  AutocompleteInput input(L"PAGEONE", std::wstring(), true, false, true, false);
+  AutocompleteInput input(ASCIIToUTF16("PAGEONE"), string16(), true, false,
+                          true, false);
   RunQuery(input, false);
 
   // The results should be the first two pages.
   const ACMatches& m = matches();
   ASSERT_EQ(2U, m.size());
   EXPECT_EQ(test_entries[0].url, m[0].destination_url.spec());
-  EXPECT_STREQ(test_entries[0].title, WideToUTF8(m[0].description).c_str());
+  EXPECT_STREQ(test_entries[0].title, UTF16ToUTF8(m[0].description).c_str());
   EXPECT_EQ(test_entries[1].url, m[1].destination_url.spec());
-  EXPECT_STREQ(test_entries[1].title, WideToUTF8(m[1].description).c_str());
+  EXPECT_STREQ(test_entries[1].title, UTF16ToUTF8(m[1].description).c_str());
 }
 
 // The "minimal changes" flag should mean that we don't re-query the DB.
 TEST_F(HistoryContentsProviderTest, MinimalChanges) {
   // A minimal changes request when there have been no real queries should
   // give us no results.
-  AutocompleteInput sync_input(L"PAGEONE", std::wstring(), true, false, true,
-                               true);
+  AutocompleteInput sync_input(ASCIIToUTF16("PAGEONE"), string16(), true, false,
+                               true, true);
   RunQuery(sync_input, true);
   const ACMatches& m1 = matches();
   EXPECT_EQ(0U, m1.size());
 
   // Now do a "regular" query to get the results.
-  AutocompleteInput async_input(L"PAGEONE", std::wstring(), true, false, true,
-                                false);
+  AutocompleteInput async_input(ASCIIToUTF16("PAGEONE"), string16(), true,
+                                false, true, false);
   RunQuery(async_input, false);
   const ACMatches& m2 = matches();
   EXPECT_EQ(2U, m2.size());
@@ -167,17 +167,18 @@ TEST_F(HistoryContentsProviderTest, Bookmarks) {
                                                ASCIIToUTF16("bar"), true);
 
   // Ask for synchronous. This should only get the bookmark.
-  AutocompleteInput sync_input(L"bar", std::wstring(), true, false, true, true);
+  AutocompleteInput sync_input(ASCIIToUTF16("bar"), string16(), true, false,
+                               true, true);
   RunQuery(sync_input, false);
   const ACMatches& m1 = matches();
   ASSERT_EQ(1U, m1.size());
   EXPECT_EQ(bookmark_url, m1[0].destination_url);
-  EXPECT_EQ(L"bar", m1[0].description);
+  EXPECT_EQ(ASCIIToUTF16("bar"), m1[0].description);
   EXPECT_TRUE(m1[0].starred);
 
   // Ask for async. We should get the bookmark immediately.
-  AutocompleteInput async_input(L"bar", std::wstring(), true, false, true,
-                                false);
+  AutocompleteInput async_input(ASCIIToUTF16("bar"), string16(), true, false,
+                                true, false);
   provider()->Start(async_input, false);
   const ACMatches& m2 = matches();
   ASSERT_EQ(1U, m2.size());
@@ -199,7 +200,8 @@ TEST_F(HistoryContentsProviderTest, Bookmarks) {
 
 // Tests that history is deleted properly.
 TEST_F(HistoryContentsProviderTest, DeleteMatch) {
-  AutocompleteInput input(L"bar", std::wstring(), true, false, true, false);
+  AutocompleteInput input(ASCIIToUTF16("bar"), string16(), true, false, true,
+                          false);
   RunQuery(input, false);
 
   // Query; the result should be the third page.
@@ -223,7 +225,8 @@ TEST_F(HistoryContentsProviderTest, DeleteStarredMatch) {
                                                ASCIIToUTF16("bar"), true);
 
   // Get the match to delete its history
-  AutocompleteInput input(L"bar", std::wstring(), true, false, true, false);
+  AutocompleteInput input(ASCIIToUTF16("bar"), string16(), true, false, true,
+                          false);
   RunQuery(input, false);
   const ACMatches& m = matches();
   ASSERT_EQ(1U, m.size());
@@ -233,7 +236,8 @@ TEST_F(HistoryContentsProviderTest, DeleteStarredMatch) {
   EXPECT_EQ(1U, matches().size());
 
   // Run a query that would only match history (but the history is deleted)
-  AutocompleteInput you_input(L"you", std::wstring(), true, false, true, false);
+  AutocompleteInput you_input(ASCIIToUTF16("you"), string16(), true, false,
+                              true, false);
   RunQuery(you_input, false);
   EXPECT_EQ(0U, matches().size());
 

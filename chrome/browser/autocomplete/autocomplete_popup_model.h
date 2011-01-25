@@ -30,8 +30,8 @@ class AutocompletePopupModel : public NotificationObserver {
 
   // Starts a new query running.  These parameters are passed through to the
   // autocomplete controller; see comments there.
-  void StartAutocomplete(const std::wstring& text,
-                         const std::wstring& desired_tld,
+  void StartAutocomplete(const string16& text,
+                         const string16& desired_tld,
                          bool prevent_inline_autocomplete,
                          bool prefer_keyword,
                          bool allow_exact_keyword_match);
@@ -98,11 +98,11 @@ class AutocompletePopupModel : public NotificationObserver {
   // possibly to the empty string], and you cannot have both a selected keyword
   // and a keyword hint simultaneously.)
   bool GetKeywordForMatch(const AutocompleteMatch& match,
-                          std::wstring* keyword) const;
+                          string16* keyword) const;
 
   // Calls through to SearchProvider::FinalizeInstantQuery.
-  void FinalizeInstantQuery(const std::wstring& input_text,
-                            const std::wstring& suggest_text);
+  void FinalizeInstantQuery(const string16& input_text,
+                            const string16& suggest_text);
 
   // Returns a pointer to a heap-allocated AutocompleteLog containing the
   // current input text, selected match, and result set.  The caller is

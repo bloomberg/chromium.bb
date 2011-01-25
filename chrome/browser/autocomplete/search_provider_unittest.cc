@@ -173,8 +173,8 @@ void SearchProviderTest::RunTillProviderDone() {
 void SearchProviderTest::QueryForInput(const string16& text,
                                        bool prevent_inline_autocomplete) {
   // Start a query.
-  AutocompleteInput input(UTF16ToWide(text), std::wstring(),
-                          prevent_inline_autocomplete, false, true, false);
+  AutocompleteInput input(text, string16(), prevent_inline_autocomplete,
+                          false, true, false);
   provider_->Start(input, false);
 
   // RunAllPending so that the task scheduled by SearchProvider to create the
@@ -312,8 +312,7 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
   EXPECT_TRUE(match.template_url);
 
   // The fill into edit should contain the keyword.
-  EXPECT_EQ(UTF16ToWideHack(keyword_t_url_->keyword()) +
-                L" " + UTF16ToWide(keyword_term_),
+  EXPECT_EQ(keyword_t_url_->keyword() + char16(' ') + keyword_term_,
             match.fill_into_edit);
 }
 
@@ -360,7 +359,7 @@ TEST_F(SearchProviderTest, FinalizeInstantQuery) {
   EXPECT_FALSE(provider_->done());
 
   // Tell the provider instant is done.
-  provider_->FinalizeInstantQuery(L"foo", L"bar");
+  provider_->FinalizeInstantQuery(ASCIIToUTF16("foo"), ASCIIToUTF16("bar"));
 
   // The provider should now be done.
   EXPECT_TRUE(provider_->done());
@@ -397,7 +396,7 @@ TEST_F(SearchProviderTest, RememberInstantQuery) {
   QueryForInput(ASCIIToUTF16("foo"), false);
 
   // Finalize the instant query immediately.
-  provider_->FinalizeInstantQuery(L"foo", L"bar");
+  provider_->FinalizeInstantQuery(ASCIIToUTF16("foo"), ASCIIToUTF16("bar"));
 
   // There should be two matches, one for what you typed, the other for
   // 'foobar'.

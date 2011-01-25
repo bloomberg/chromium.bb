@@ -106,8 +106,8 @@ void DrawFullPixbuf(GdkDrawable* drawable, GdkGC* gc, GdkPixbuf* pixbuf,
 }
 
 // TODO(deanm): Find some better home for this, and make it more efficient.
-size_t GetUTF8Offset(const std::wstring& wide_text, size_t wide_text_offset) {
-  return WideToUTF8(wide_text.substr(0, wide_text_offset)).size();
+size_t GetUTF8Offset(const string16& text, size_t text_offset) {
+  return UTF16ToUTF8(text.substr(0, text_offset)).size();
 }
 
 // Generates the normal URL color, a green color used in unhighlighted URL
@@ -170,7 +170,7 @@ GdkColor SelectedURLColor(GdkColor foreground, GdkColor background) {
 
 void AutocompletePopupViewGtk::SetupLayoutForMatch(
     PangoLayout* layout,
-    const std::wstring& text,
+    const string16& text,
     const AutocompleteMatch::ACMatchClassifications& classifications,
     const GdkColor* base_color,
     const GdkColor* dim_color,
@@ -180,21 +180,21 @@ void AutocompletePopupViewGtk::SetupLayoutForMatch(
   // RTL characters inside it, so the ending punctuation displays correctly
   // and the eliding ellipsis displays correctly. We only mark the text with
   // LRE. Wrapping it with LRE and PDF by calling AdjustStringForLocaleDirection
-  // will render the elllipsis at the left of the elided pure LTR text.
+  // or WrapStringWithLTRFormatting will render the elllipsis at the left of the
+  // elided pure LTR text.
   bool marked_with_lre = false;
-  std::wstring localized_text = text;
+  string16 localized_text = text;
   bool is_rtl = base::i18n::IsRTL();
   if (is_rtl && !base::i18n::StringContainsStrongRTLChars(localized_text)) {
-    localized_text.insert(0, 1,
-        static_cast<wchar_t>(base::i18n::kLeftToRightEmbeddingMark));
+    localized_text.insert(0, 1, base::i18n::kLeftToRightEmbeddingMark);
     marked_with_lre = true;
   }
 
   // We can have a prefix, or insert additional characters while processing the
   // classifications.  We need to take this in to account when we translate the
-  // wide offsets in the classification into text_utf8 byte offsets.
+  // UTF-16 offsets in the classification into text_utf8 byte offsets.
   size_t additional_offset = prefix_text.size();  // Length in utf-8 bytes.
-  std::string text_utf8 = prefix_text + WideToUTF8(localized_text);
+  std::string text_utf8 = prefix_text + UTF16ToUTF8(localized_text);
 
   PangoAttrList* attrs = pango_attr_list_new();
 
@@ -473,10 +473,10 @@ void AutocompletePopupViewGtk::AcceptLine(size_t line,
   // extension, |match| and its contents.  So copy the relevant strings out to
   // make sure they stay alive until the call completes.
   const GURL url(match.destination_url);
-  std::wstring keyword;
+  string16 keyword;
   const bool is_keyword_hint = model_->GetKeywordForMatch(match, &keyword);
   edit_view_->OpenURL(url, disposition, match.transition, GURL(), line,
-                      is_keyword_hint ? std::wstring() : keyword);
+                      is_keyword_hint ? string16() : keyword);
 }
 
 GdkPixbuf* AutocompletePopupViewGtk::IconForMatch(

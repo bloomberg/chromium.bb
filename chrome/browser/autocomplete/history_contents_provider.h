@@ -84,7 +84,7 @@ class HistoryContentsProvider : public HistoryProvider {
   bool have_results_;
 
   // Current query string.
-  std::wstring query_;
+  string16 query_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryContentsProvider);
 };

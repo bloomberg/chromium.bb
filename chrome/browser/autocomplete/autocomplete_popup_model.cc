@@ -49,8 +49,8 @@ void AutocompletePopupModel::SetProfile(Profile* profile) {
 }
 
 void AutocompletePopupModel::StartAutocomplete(
-    const std::wstring& text,
-    const std::wstring& desired_tld,
+    const string16& text,
+    const string16& desired_tld,
     bool prevent_inline_autocomplete,
     bool prefer_keyword,
     bool allow_exact_keyword_match) {
@@ -134,11 +134,11 @@ void AutocompletePopupModel::SetSelectedLine(size_t line,
   // Update the edit with the new data for this match.
   // TODO(pkasting): If |selected_line_| moves to the controller, this can be
   // eliminated and just become a call to the observer on the edit.
-  std::wstring keyword;
+  string16 keyword;
   const bool is_keyword_hint = GetKeywordForMatch(match, &keyword);
   if (reset_to_default) {
-    std::wstring inline_autocomplete_text;
-    if ((match.inline_autocomplete_offset != std::wstring::npos) &&
+    string16 inline_autocomplete_text;
+    if ((match.inline_autocomplete_offset != string16::npos) &&
         (match.inline_autocomplete_offset < match.fill_into_edit.length())) {
       inline_autocomplete_text =
           match.fill_into_edit.substr(match.inline_autocomplete_offset);
@@ -202,13 +202,13 @@ void AutocompletePopupModel::InfoForCurrentSelection(
 }
 
 bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
-                                                std::wstring* keyword) const {
+                                                string16* keyword) const {
   // Assume we have no keyword until we find otherwise.
   keyword->clear();
 
   // If the current match is a keyword, return that as the selected keyword.
   if (TemplateURL::SupportsReplacement(match.template_url)) {
-    keyword->assign(UTF16ToWideHack(match.template_url->keyword()));
+    keyword->assign(match.template_url->keyword());
     return false;
   }
 
@@ -217,7 +217,7 @@ bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
     return false;
   profile_->GetTemplateURLModel()->Load();
   const string16 keyword_hint(TemplateURLModel::CleanUserInputKeyword(
-      WideToUTF16Hack(match.fill_into_edit)));
+      match.fill_into_edit));
   if (keyword_hint.empty())
     return false;
 
@@ -237,13 +237,13 @@ bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
       return false;
   }
 
-  keyword->assign(UTF16ToWideHack(keyword_hint));
+  keyword->assign(keyword_hint);
   return true;
 }
 
 void AutocompletePopupModel::FinalizeInstantQuery(
-    const std::wstring& input_text,
-    const std::wstring& suggest_text) {
+    const string16& input_text,
+    const string16& suggest_text) {
   if (IsOpen()) {
     SearchProvider* search_provider = controller_->search_provider();
     search_provider->FinalizeInstantQuery(input_text, suggest_text);

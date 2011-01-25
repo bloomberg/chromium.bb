@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/ref_counted.h"
+#include "base/string16.h"
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_parse.h"
@@ -180,8 +181,8 @@ class AutocompleteInput {
   };
 
   AutocompleteInput();
-  AutocompleteInput(const std::wstring& text,
-                    const std::wstring& desired_tld,
+  AutocompleteInput(const string16& text,
+                    const string16& desired_tld,
                     bool prevent_inline_autocomplete,
                     bool prefer_keyword,
                     bool allow_exact_keyword_match,
@@ -189,7 +190,7 @@ class AutocompleteInput {
   ~AutocompleteInput();
 
   // If type is |FORCED_QUERY| and |text| starts with '?', it is removed.
-  static void RemoveForcedQueryStringIfNecessary(Type type, std::wstring* text);
+  static void RemoveForcedQueryStringIfNecessary(Type type, string16* text);
 
   // Converts |type| to a string representation.  Used in logging.
   static std::string TypeToString(Type type);
@@ -199,18 +200,18 @@ class AutocompleteInput {
   // it is non-NULL. The scheme is stored in |scheme| if it is non-NULL. The
   // canonicalized URL is stored in |canonicalized_url|; however, this URL is
   // not guaranteed to be valid, especially if the parsed type is, e.g., QUERY.
-  static Type Parse(const std::wstring& text,
-                    const std::wstring& desired_tld,
+  static Type Parse(const string16& text,
+                    const string16& desired_tld,
                     url_parse::Parsed* parts,
-                    std::wstring* scheme,
+                    string16* scheme,
                     GURL* canonicalized_url);
 
   // Parses |text| and fill |scheme| and |host| by the positions of them.
   // The results are almost as same as the result of Parse(), but if the scheme
   // is view-source, this function returns the positions of scheme and host
   // in the URL qualified by "view-source:" prefix.
-  static void ParseForEmphasizeComponents(const std::wstring& text,
-                                          const std::wstring& desired_tld,
+  static void ParseForEmphasizeComponents(const string16& text,
+                                          const string16& desired_tld,
                                           url_parse::Component* scheme,
                                           url_parse::Component* host);
 
@@ -220,23 +221,23 @@ class AutocompleteInput {
   // function with the URL and its formatted string, and it will return a
   // formatted string with the same meaning as the original URL (i.e. it will
   // re-append a slash if necessary).
-  static std::wstring FormattedStringWithEquivalentMeaning(
+  static string16 FormattedStringWithEquivalentMeaning(
       const GURL& url,
-      const std::wstring& formatted_url);
+      const string16& formatted_url);
 
   // User-provided text to be completed.
-  const std::wstring& text() const { return text_; }
+  const string16& text() const { return text_; }
 
   // Use of this setter is risky, since no other internal state is updated
   // besides |text_|.  Only callers who know that they're not changing the
   // type/scheme/etc. should use this.
-  void set_text(const std::wstring& text) { text_ = text; }
+  void set_text(const string16& text) { text_ = text; }
 
   // User's desired TLD, if one is not already present in the text to
   // autocomplete.  When this is non-empty, it also implies that "www." should
   // be prepended to the domain where possible.  This should not have a leading
   // '.' (use "com" instead of ".com").
-  const std::wstring& desired_tld() const { return desired_tld_; }
+  const string16& desired_tld() const { return desired_tld_; }
 
   // The type of input supplied.
   Type type() const { return type_; }
@@ -246,7 +247,7 @@ class AutocompleteInput {
 
   // The scheme parsed from the provided text; only meaningful when type_ is
   // URL.
-  const std::wstring& scheme() const { return scheme_; }
+  const string16& scheme() const { return scheme_; }
 
   // The input as an URL to navigate to, if possible.
   const GURL& canonicalized_url() const { return canonicalized_url_; }
@@ -285,11 +286,11 @@ class AutocompleteInput {
   void Clear();
 
  private:
-  std::wstring text_;
-  std::wstring desired_tld_;
+  string16 text_;
+  string16 desired_tld_;
   Type type_;
   url_parse::Parsed parts_;
-  std::wstring scheme_;
+  string16 scheme_;
   GURL canonicalized_url_;
   bool initial_prevent_inline_autocomplete_;
   bool prevent_inline_autocomplete_;
@@ -389,7 +390,7 @@ class AutocompleteProvider
   virtual ~AutocompleteProvider();
 
   // Returns whether |input| begins "http:" or "view-source:http:".
-  static bool HasHTTPScheme(const std::wstring& input);
+  static bool HasHTTPScheme(const string16& input);
 
   // Updates the starred state of each of the matches in matches_ from the
   // profile's bookmark bar model.
@@ -398,9 +399,9 @@ class AutocompleteProvider
   // A convenience function to call net::FormatUrl() with the current set of
   // "Accept Languages" when check_accept_lang is true.  Otherwise, it's called
   // with an empty list.
-  std::wstring StringForURLDisplay(const GURL& url,
-                                   bool check_accept_lang,
-                                   bool trim_http) const;
+  string16 StringForURLDisplay(const GURL& url,
+                               bool check_accept_lang,
+                               bool trim_http) const;
 
   // The profile associated with the AutocompleteProvider.  Reference is not
   // owned by us.
@@ -585,8 +586,8 @@ class AutocompleteController : public ACProviderListener {
   // (even if the query completes synchronously).  Listeners should use the
   // result set provided in the accompanying Details object to update
   // themselves.
-  void Start(const std::wstring& text,
-             const std::wstring& desired_tld,
+  void Start(const string16& text,
+             const string16& desired_tld,
              bool prevent_inline_autocomplete,
              bool prefer_keyword,
              bool allow_exact_keyword_match,
@@ -699,7 +700,7 @@ class AutocompleteController : public ACProviderListener {
 // The data to log (via the metrics service) when the user selects an item
 // from the omnibox popup.
 struct AutocompleteLog {
-  AutocompleteLog(std::wstring text,
+  AutocompleteLog(string16 text,
                   AutocompleteInput::Type input_type,
                   size_t selected_index,
                   size_t inline_autocompleted_length,
@@ -711,7 +712,7 @@ struct AutocompleteLog {
         result(result) {
   }
   // The user's input text in the omnibox.
-  std::wstring text;
+  string16 text;
   // The detected type of the user's input.
   AutocompleteInput::Type input_type;
   // Selected index (if selected) or -1 (AutocompletePopupModel::kNoMatch).

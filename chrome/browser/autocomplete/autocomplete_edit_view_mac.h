@@ -46,37 +46,37 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
                        PageTransition::Type transition,
                        const GURL& alternate_nav_url,
                        size_t selected_line,
-                       const std::wstring& keyword);
+                       const string16& keyword);
 
-  virtual std::wstring GetText() const;
+  virtual string16 GetText() const;
 
   virtual bool IsEditingOrEmpty() const;
   virtual int GetIcon() const;
 
-  virtual void SetUserText(const std::wstring& text);
-  virtual void SetUserText(const std::wstring& text,
-                           const std::wstring& display_text,
+  virtual void SetUserText(const string16& text);
+  virtual void SetUserText(const string16& text,
+                           const string16& display_text,
                            bool update_popup);
 
-  virtual void SetWindowTextAndCaretPos(const std::wstring& text,
+  virtual void SetWindowTextAndCaretPos(const string16& text,
                                         size_t caret_pos);
 
   virtual void SetForcedQuery();
 
   virtual bool IsSelectAll();
   virtual bool DeleteAtEndPressed();
-  virtual void GetSelectionBounds(std::wstring::size_type* start,
-                                  std::wstring::size_type* end);
+  virtual void GetSelectionBounds(string16::size_type* start,
+                                  string16::size_type* end);
 
   virtual void SelectAll(bool reversed);
   virtual void RevertAll();
   virtual void UpdatePopup();
   virtual void ClosePopup();
   virtual void SetFocus();
-  virtual void OnTemporaryTextMaybeChanged(const std::wstring& display_text,
+  virtual void OnTemporaryTextMaybeChanged(const string16& display_text,
                                            bool save_original_selection);
   virtual bool OnInlineAutocompleteTextMaybeChanged(
-      const std::wstring& display_text, size_t user_text_length);
+      const string16& display_text, size_t user_text_length);
   virtual void OnStartingIME();
   virtual void OnRevertTemporaryText();
   virtual void OnBeforePossibleChange();
@@ -111,7 +111,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
 
   // Helper to get appropriate contents from |clipboard|.  Returns
   // empty string if no appropriate data is found on |clipboard|.
-  static std::wstring GetClipboardText(ui::Clipboard* clipboard);
+  static string16 GetClipboardText(ui::Clipboard* clipboard);
 
   // Helper to get the font to use in the field, exposed for the
   // popup.
@@ -147,14 +147,14 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
 
   // Update the field with |display_text| and highlight the host and scheme (if
   // it's an URL or URL-fragment).  Resets any suggest text that may be present.
-  void SetText(const std::wstring& display_text);
+  void SetText(const string16& display_text);
 
   // Internal implementation of SetText.  Does not reset the suggest text before
   // setting the display text.  Most callers should use |SetText()| instead.
-  void SetTextInternal(const std::wstring& display_text);
+  void SetTextInternal(const string16& display_text);
 
   // Update the field with |display_text| and set the selection.
-  void SetTextAndSelectedRange(const std::wstring& display_text,
+  void SetTextAndSelectedRange(const string16& display_text,
                                const NSRange range);
 
   // Returns the non-suggest portion of |field_|'s string value.
@@ -167,7 +167,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
 
   // Calculates text attributes according to |display_text| and applies them
   // to the given |as| object.
-  void ApplyTextAttributes(const std::wstring& display_text,
+  void ApplyTextAttributes(const string16& display_text,
                            NSMutableAttributedString* as);
 
   scoped_ptr<AutocompleteEditModel> model_;
@@ -189,7 +189,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   // Tracking state before and after a possible change for reporting
   // to model_.
   NSRange selection_before_change_;
-  std::wstring text_before_change_;
+  string16 text_before_change_;
   NSRange marked_range_before_change_;
 
   // Length of the suggest text.  The suggest text always appears at the end of

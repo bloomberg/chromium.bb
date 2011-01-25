@@ -19,10 +19,6 @@
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// identifiers for known autocomplete providers
-#define HISTORY_IDENTIFIER L"Chrome:History"
-#define SEARCH_IDENTIFIER L"google.com/websearch/en"
-
 static std::ostream& operator<<(std::ostream& os,
                                 const AutocompleteResult::const_iterator& it) {
   return os << static_cast<const AutocompleteMatch*>(&(*it));
@@ -36,7 +32,7 @@ const size_t num_results_per_provider = 3;
 // refcounted so that it can also be a task on the message loop.
 class TestProvider : public AutocompleteProvider {
  public:
-  TestProvider(int relevance, const std::wstring& prefix)
+  TestProvider(int relevance, const string16& prefix)
       : AutocompleteProvider(NULL, NULL, ""),
         relevance_(relevance),
         prefix_(prefix) {
@@ -57,7 +53,7 @@ class TestProvider : public AutocompleteProvider {
   void AddResults(int start_at, int num);
 
   int relevance_;
-  const std::wstring prefix_;
+  const string16 prefix_;
 };
 
 void TestProvider::Start(const AutocompleteInput& input,
@@ -90,8 +86,8 @@ void TestProvider::AddResults(int start_at, int num) {
     AutocompleteMatch match(this, relevance_ - i, false,
                             AutocompleteMatch::URL_WHAT_YOU_TYPED);
 
-    match.fill_into_edit = prefix_ + UTF8ToWide(base::IntToString(i));
-    match.destination_url = GURL(WideToUTF8(match.fill_into_edit));
+    match.fill_into_edit = prefix_ + UTF8ToUTF16(base::IntToString(i));
+    match.destination_url = GURL(UTF16ToUTF8(match.fill_into_edit));
 
     match.contents = match.fill_into_edit;
     match.contents_class.push_back(
@@ -141,12 +137,12 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
 
   // Construct two new providers, with either the same or different prefixes.
   TestProvider* providerA = new TestProvider(num_results_per_provider,
-                                             L"http://a");
+                                             ASCIIToUTF16("http://a"));
   providerA->AddRef();
   providers_.push_back(providerA);
 
   TestProvider* providerB = new TestProvider(num_results_per_provider * 2,
-      same_destinations ? L"http://a" : L"http://b");
+      same_destinations ? ASCIIToUTF16("http://a") : ASCIIToUTF16("http://b"));
   providerB->AddRef();
   providers_.push_back(providerB);
 
@@ -203,7 +199,7 @@ void AutocompleteProviderTest::
 
 void AutocompleteProviderTest::RunTest() {
   result_.Reset();
-  controller_->Start(L"a", std::wstring(), true, false, true, false);
+  controller_->Start(ASCIIToUTF16("a"), string16(), true, false, true, false);
 
   // The message loop will terminate when all autocomplete input has been
   // collected.
@@ -216,7 +212,7 @@ void AutocompleteProviderTest::RunExactKeymatchTest(
   // created in ResetControllerWithKeywordAndSearchProviders().  The default
   // match should thus be a keyword match iff |allow_exact_keyword_match| is
   // true.
-  controller_->Start(L"k test", std::wstring(), true, false,
+  controller_->Start(ASCIIToUTF16("k test"), string16(), true, false,
                      allow_exact_keyword_match, true);
   EXPECT_TRUE(controller_->done());
   // ResetControllerWithKeywordAndSearchProviders() adds the keyword provider
@@ -267,92 +263,96 @@ TEST_F(AutocompleteProviderTest, AllowExactKeywordMatch) {
 
 TEST(AutocompleteTest, InputType) {
   struct test_data {
-    const wchar_t* input;
+    const string16 input;
     const AutocompleteInput::Type type;
   } input_cases[] = {
-    { L"", AutocompleteInput::INVALID },
-    { L"?", AutocompleteInput::FORCED_QUERY },
-    { L"?foo", AutocompleteInput::FORCED_QUERY },
-    { L"?foo bar", AutocompleteInput::FORCED_QUERY },
-    { L"?http://foo.com/bar", AutocompleteInput::FORCED_QUERY },
-    { L"foo", AutocompleteInput::UNKNOWN },
-    { L"foo.c", AutocompleteInput::UNKNOWN },
-    { L"foo.com", AutocompleteInput::URL },
-    { L"-.com", AutocompleteInput::UNKNOWN },
-    { L"foo/bar", AutocompleteInput::URL },
-    { L"foo;bar", AutocompleteInput::QUERY },
-    { L"foo/bar baz", AutocompleteInput::UNKNOWN },
-    { L"foo bar.com", AutocompleteInput::QUERY },
-    { L"foo bar", AutocompleteInput::QUERY },
-    { L"foo+bar", AutocompleteInput::QUERY },
-    { L"foo+bar.com", AutocompleteInput::UNKNOWN },
-    { L"\"foo:bar\"", AutocompleteInput::QUERY },
-    { L"link:foo.com", AutocompleteInput::UNKNOWN },
-    { L"foo:81", AutocompleteInput::URL },
-    { L"www.foo.com:81", AutocompleteInput::URL },
-    { L"localhost:8080", AutocompleteInput::URL },
-    { L"foo.com:123456", AutocompleteInput::QUERY },
-    { L"foo.com:abc", AutocompleteInput::QUERY },
-    { L"1.2.3.4:abc", AutocompleteInput::QUERY },
-    { L"user@foo.com", AutocompleteInput::UNKNOWN },
-    { L"user:pass@", AutocompleteInput::UNKNOWN },
-    { L"user:pass@!foo.com", AutocompleteInput::UNKNOWN },
-    { L"user:pass@foo", AutocompleteInput::URL },
-    { L"user:pass@foo.c", AutocompleteInput::URL },
-    { L"user:pass@foo.com", AutocompleteInput::URL },
-    { L"user:pass@foo.com:81", AutocompleteInput::URL },
-    { L"user:pass@foo:81", AutocompleteInput::URL },
-    { L"1.2", AutocompleteInput::UNKNOWN },
-    { L"1.2/45", AutocompleteInput::UNKNOWN },
-    { L"1.2:45", AutocompleteInput::UNKNOWN },
-    { L"user@1.2:45", AutocompleteInput::UNKNOWN },
-    { L"user:pass@1.2:45", AutocompleteInput::URL },
-    { L"ps/2 games", AutocompleteInput::UNKNOWN },
-    { L"en.wikipedia.org/wiki/James Bond", AutocompleteInput::URL },
+    { ASCIIToUTF16(""), AutocompleteInput::INVALID },
+    { ASCIIToUTF16("?"), AutocompleteInput::FORCED_QUERY },
+    { ASCIIToUTF16("?foo"), AutocompleteInput::FORCED_QUERY },
+    { ASCIIToUTF16("?foo bar"), AutocompleteInput::FORCED_QUERY },
+    { ASCIIToUTF16("?http://foo.com/bar"), AutocompleteInput::FORCED_QUERY },
+    { ASCIIToUTF16("foo"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("foo.c"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("foo.com"), AutocompleteInput::URL },
+    { ASCIIToUTF16("-.com"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("foo/bar"), AutocompleteInput::URL },
+    { ASCIIToUTF16("foo;bar"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("foo/bar baz"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("foo bar.com"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("foo bar"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("foo+bar"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("foo+bar.com"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("\"foo:bar\""), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("link:foo.com"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("foo:81"), AutocompleteInput::URL },
+    { ASCIIToUTF16("www.foo.com:81"), AutocompleteInput::URL },
+    { ASCIIToUTF16("localhost:8080"), AutocompleteInput::URL },
+    { ASCIIToUTF16("foo.com:123456"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("foo.com:abc"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("1.2.3.4:abc"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("user@foo.com"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("user:pass@"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("user:pass@!foo.com"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("user:pass@foo"), AutocompleteInput::URL },
+    { ASCIIToUTF16("user:pass@foo.c"), AutocompleteInput::URL },
+    { ASCIIToUTF16("user:pass@foo.com"), AutocompleteInput::URL },
+    { ASCIIToUTF16("user:pass@foo.com:81"), AutocompleteInput::URL },
+    { ASCIIToUTF16("user:pass@foo:81"), AutocompleteInput::URL },
+    { ASCIIToUTF16("1.2"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("1.2/45"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("1.2:45"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("user@1.2:45"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("user:pass@1.2:45"), AutocompleteInput::URL },
+    { ASCIIToUTF16("ps/2 games"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("en.wikipedia.org/wiki/James Bond"),
+        AutocompleteInput::URL },
     // In Chrome itself, mailto: will get handled by ShellExecute, but in
     // unittest mode, we don't have the data loaded in the external protocol
     // handler to know this.
-    // { L"mailto:abuse@foo.com", AutocompleteInput::URL },
-    { L"view-source:http://www.foo.com/", AutocompleteInput::URL },
-    { L"javascript:alert(\"Hey there!\");", AutocompleteInput::URL },
+    // { ASCIIToUTF16("mailto:abuse@foo.com"), AutocompleteInput::URL },
+    { ASCIIToUTF16("view-source:http://www.foo.com/"), AutocompleteInput::URL },
+    { ASCIIToUTF16("javascript:alert(\"Hey there!\");"),
+        AutocompleteInput::URL },
 #if defined(OS_WIN)
-    { L"C:\\Program Files", AutocompleteInput::URL },
-    { L"\\\\Server\\Folder\\File", AutocompleteInput::URL },
+    { ASCIIToUTF16("C:\\Program Files"), AutocompleteInput::URL },
+    { ASCIIToUTF16("\\\\Server\\Folder\\File"), AutocompleteInput::URL },
 #endif  // defined(OS_WIN)
-    { L"http:foo", AutocompleteInput::URL },
-    { L"http://foo", AutocompleteInput::URL },
-    { L"http://foo.c", AutocompleteInput::URL },
-    { L"http://foo.com", AutocompleteInput::URL },
-    { L"http://foo_bar.com", AutocompleteInput::URL },
-    { L"http://foo/bar baz", AutocompleteInput::URL },
-    { L"http://-.com", AutocompleteInput::UNKNOWN },
-    { L"http://_foo_.com", AutocompleteInput::UNKNOWN },
-    { L"http://foo.com:abc", AutocompleteInput::QUERY },
-    { L"http://foo.com:123456", AutocompleteInput::QUERY },
-    { L"http://1.2.3.4:abc", AutocompleteInput::QUERY },
-    { L"http:user@foo.com", AutocompleteInput::URL },
-    { L"http://user@foo.com", AutocompleteInput::URL },
-    { L"http:user:pass@foo.com", AutocompleteInput::URL },
-    { L"http://user:pass@foo.com", AutocompleteInput::URL },
-    { L"http://1.2", AutocompleteInput::URL },
-    { L"http://1.2/45", AutocompleteInput::URL },
-    { L"http:ps/2 games", AutocompleteInput::URL },
-    { L"http://ps/2 games", AutocompleteInput::URL },
-    { L"https://foo.com", AutocompleteInput::URL },
-    { L"127.0.0.1", AutocompleteInput::URL },
-    { L"127.0.1", AutocompleteInput::UNKNOWN },
-    { L"127.0.1/", AutocompleteInput::UNKNOWN },
-    { L"browser.tabs.closeButtons", AutocompleteInput::UNKNOWN },
-    { L"\u6d4b\u8bd5", AutocompleteInput::UNKNOWN },
-    { L"[2001:]", AutocompleteInput::QUERY },  // Not a valid IP
-    { L"[2001:dB8::1]", AutocompleteInput::URL },
-    { L"192.168.0.256", AutocompleteInput::QUERY },  // Invalid IPv4 literal.
-    { L"[foo.com]", AutocompleteInput::QUERY },  // Invalid IPv6 literal.
+    { ASCIIToUTF16("http:foo"), AutocompleteInput::URL },
+    { ASCIIToUTF16("http://foo"), AutocompleteInput::URL },
+    { ASCIIToUTF16("http://foo.c"), AutocompleteInput::URL },
+    { ASCIIToUTF16("http://foo.com"), AutocompleteInput::URL },
+    { ASCIIToUTF16("http://foo_bar.com"), AutocompleteInput::URL },
+    { ASCIIToUTF16("http://foo/bar baz"), AutocompleteInput::URL },
+    { ASCIIToUTF16("http://-.com"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("http://_foo_.com"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("http://foo.com:abc"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("http://foo.com:123456"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("http://1.2.3.4:abc"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("http:user@foo.com"), AutocompleteInput::URL },
+    { ASCIIToUTF16("http://user@foo.com"), AutocompleteInput::URL },
+    { ASCIIToUTF16("http:user:pass@foo.com"), AutocompleteInput::URL },
+    { ASCIIToUTF16("http://user:pass@foo.com"), AutocompleteInput::URL },
+    { ASCIIToUTF16("http://1.2"), AutocompleteInput::URL },
+    { ASCIIToUTF16("http://1.2/45"), AutocompleteInput::URL },
+    { ASCIIToUTF16("http:ps/2 games"), AutocompleteInput::URL },
+    { ASCIIToUTF16("http://ps/2 games"), AutocompleteInput::URL },
+    { ASCIIToUTF16("https://foo.com"), AutocompleteInput::URL },
+    { ASCIIToUTF16("127.0.0.1"), AutocompleteInput::URL },
+    { ASCIIToUTF16("127.0.1"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("127.0.1/"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("browser.tabs.closeButtons"), AutocompleteInput::UNKNOWN },
+    { WideToUTF16(L"\u6d4b\u8bd5"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("[2001:]"), AutocompleteInput::QUERY },  // Not a valid IP
+    { ASCIIToUTF16("[2001:dB8::1]"), AutocompleteInput::URL },
+    { ASCIIToUTF16("192.168.0.256"),
+        AutocompleteInput::QUERY },  // Invalid IPv4 literal.
+    { ASCIIToUTF16("[foo.com]"),
+        AutocompleteInput::QUERY },  // Invalid IPv6 literal.
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
-    AutocompleteInput input(input_cases[i].input, std::wstring(), true, false,
+    AutocompleteInput input(input_cases[i].input, string16(), true, false,
                             true, false);
     EXPECT_EQ(input_cases[i].type, input.type());
   }
@@ -360,16 +360,16 @@ TEST(AutocompleteTest, InputType) {
 
 TEST(AutocompleteTest, InputTypeWithDesiredTLD) {
   struct test_data {
-    const wchar_t* input;
+    const string16 input;
     const AutocompleteInput::Type type;
   } input_cases[] = {
-    { L"401k", AutocompleteInput::REQUESTED_URL },
-    { L"999999999999999", AutocompleteInput::REQUESTED_URL },
+    { ASCIIToUTF16("401k"), AutocompleteInput::REQUESTED_URL },
+    { ASCIIToUTF16("999999999999999"), AutocompleteInput::REQUESTED_URL },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
-    AutocompleteInput input(input_cases[i].input, L"com", true, false, true,
-                            false);
+    AutocompleteInput input(input_cases[i].input, ASCIIToUTF16("com"), true,
+                            false, true, false);
     EXPECT_EQ(input_cases[i].type, input.type()) << "Input: " <<
         input_cases[i].input;
   }
@@ -378,8 +378,8 @@ TEST(AutocompleteTest, InputTypeWithDesiredTLD) {
 // This tests for a regression where certain input in the omnibox caused us to
 // crash. As long as the test completes without crashing, we're fine.
 TEST(AutocompleteTest, InputCrash) {
-  AutocompleteInput input(L"\uff65@s", std::wstring(), true, false, true,
-                          false);
+  AutocompleteInput input(WideToUTF16(L"\uff65@s"), string16(), true, false,
+                          true, false);
 }
 
 // Test comparing matches relevance.
@@ -412,36 +412,41 @@ TEST(AutocompleteInput, ParseForEmphasizeComponent) {
   using url_parse::Component;
   Component kInvalidComponent(0, -1);
   struct test_data {
-    const wchar_t* input;
+    const string16 input;
     const Component scheme;
     const Component host;
   } input_cases[] = {
-    { L"", kInvalidComponent, kInvalidComponent },
-    { L"?", kInvalidComponent, kInvalidComponent },
-    { L"?http://foo.com/bar", kInvalidComponent, kInvalidComponent },
-    { L"foo/bar baz", kInvalidComponent, Component(0, 3) },
-    { L"http://foo/bar baz", Component(0, 4), Component(7, 3) },
-    { L"link:foo.com", Component(0, 4), kInvalidComponent },
-    { L"www.foo.com:81", kInvalidComponent, Component(0, 11) },
-    { L"\u6d4b\u8bd5", kInvalidComponent, Component(0, 2) },
-    { L"view-source:http://www.foo.com/", Component(12, 4), Component(19, 11) },
-    { L"view-source:https://example.com/",
+    { ASCIIToUTF16(""), kInvalidComponent, kInvalidComponent },
+    { ASCIIToUTF16("?"), kInvalidComponent, kInvalidComponent },
+    { ASCIIToUTF16("?http://foo.com/bar"), kInvalidComponent,
+        kInvalidComponent },
+    { ASCIIToUTF16("foo/bar baz"), kInvalidComponent, Component(0, 3) },
+    { ASCIIToUTF16("http://foo/bar baz"), Component(0, 4), Component(7, 3) },
+    { ASCIIToUTF16("link:foo.com"), Component(0, 4), kInvalidComponent },
+    { ASCIIToUTF16("www.foo.com:81"), kInvalidComponent, Component(0, 11) },
+    { WideToUTF16(L"\u6d4b\u8bd5"), kInvalidComponent, Component(0, 2) },
+    { ASCIIToUTF16("view-source:http://www.foo.com/"), Component(12, 4),
+        Component(19, 11) },
+    { ASCIIToUTF16("view-source:https://example.com/"),
       Component(12, 5), Component(20, 11) },
-    { L"view-source:www.foo.com", kInvalidComponent, Component(12, 11) },
-    { L"view-source:", Component(0, 11), kInvalidComponent },
-    { L"view-source:garbage", kInvalidComponent, Component(12, 7) },
-    { L"view-source:http://http://foo", Component(12, 4), Component(19, 4) },
-    { L"view-source:view-source:http://example.com/",
-      Component(12, 11), kInvalidComponent }
+    { ASCIIToUTF16("view-source:www.foo.com"), kInvalidComponent,
+        Component(12, 11) },
+    { ASCIIToUTF16("view-source:"), Component(0, 11), kInvalidComponent },
+    { ASCIIToUTF16("view-source:garbage"), kInvalidComponent,
+        Component(12, 7) },
+    { ASCIIToUTF16("view-source:http://http://foo"), Component(12, 4),
+        Component(19, 4) },
+    { ASCIIToUTF16("view-source:view-source:http://example.com/"),
+        Component(12, 11), kInvalidComponent }
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
     Component scheme, host;
     AutocompleteInput::ParseForEmphasizeComponents(input_cases[i].input,
-                                                   std::wstring(),
+                                                   string16(),
                                                    &scheme,
                                                    &host);
-    AutocompleteInput input(input_cases[i].input, std::wstring(), true, false,
+    AutocompleteInput input(input_cases[i].input, string16(), true, false,
                             true, false);
     EXPECT_EQ(input_cases[i].scheme.begin, scheme.begin) << "Input: " <<
         input_cases[i].input;

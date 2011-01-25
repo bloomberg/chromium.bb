@@ -53,7 +53,7 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
   friend class AutocompletePopupViewGtkTest;
   static void SetupLayoutForMatch(
       PangoLayout* layout,
-      const std::wstring& text,
+      const string16& text,
       const AutocompleteMatch::ACMatchClassifications& classifications,
       const GdkColor* base_color,
       const GdkColor* dim_color,

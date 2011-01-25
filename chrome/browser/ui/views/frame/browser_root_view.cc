@@ -147,7 +147,7 @@ bool BrowserRootView::GetPasteAndGoURL(const ui::OSExchangeData& data,
 
   AutocompleteMatch match;
   browser_view_->browser()->profile()->GetAutocompleteClassifier()->Classify(
-      text, std::wstring(), false, &match, NULL);
+      WideToUTF16Hack(text), string16(), false, &match, NULL);
   if (!match.destination_url.is_valid())
     return false;
 

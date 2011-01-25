@@ -14,7 +14,7 @@
 using base::TimeDelta;
 using base::TimeTicks;
 
-bool AutocompleteEditProxy::GetText(std::wstring* text) const {
+bool AutocompleteEditProxy::GetText(string16* text) const {
   if (!is_valid())
     return false;
   if (!text) {
@@ -36,7 +36,7 @@ bool AutocompleteEditProxy::WaitForFocus() const {
   return edit_exists;
 }
 
-bool AutocompleteEditProxy::SetText(const std::wstring& text) {
+bool AutocompleteEditProxy::SetText(const string16& text) {
   if (!is_valid())
     return false;
   bool result = false;

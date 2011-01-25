@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/format_macros.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
@@ -32,16 +33,16 @@
 
 namespace {
 
-std::wstring AutocompleteResultAsString(const AutocompleteResult& result) {
-  std::wstring output(StringPrintf(L"{%d} ", result.size()));
+string16 AutocompleteResultAsString(const AutocompleteResult& result) {
+  std::string output(base::StringPrintf("{%" PRIuS "} ", result.size()));
   for (size_t i = 0; i < result.size(); ++i) {
     AutocompleteMatch match = result.match_at(i);
-    std::wstring provider_name(ASCIIToWide(match.provider->name()));
-    output.append(StringPrintf(L"[\"%ls\" by \"%ls\"] ",
-                               match.contents.c_str(),
-                               provider_name.c_str()));
+    std::string provider_name = match.provider->name();
+    output.append(base::StringPrintf("[\"%s\" by \"%s\"] ",
+                                     UTF16ToUTF8(match.contents).c_str(),
+                                     provider_name.c_str()));
   }
-  return output;
+  return UTF8ToUTF16(output);
 }
 
 }  // namespace
@@ -62,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
   LocationBar* location_bar = GetLocationBar();
 
   EXPECT_TRUE(location_bar->GetInputString().empty());
-  EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),
+  EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL),
             location_bar->location_entry()->GetText());
   // TODO(phajdan.jr): check state of IsSelectAll when it's consistent across
   // platforms.
@@ -70,28 +71,28 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
   location_bar->FocusLocation(true);
 
   EXPECT_TRUE(location_bar->GetInputString().empty());
-  EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),
+  EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL),
             location_bar->location_entry()->GetText());
   EXPECT_TRUE(location_bar->location_entry()->IsSelectAll());
 
-  location_bar->location_entry()->SetUserText(L"chrome");
+  location_bar->location_entry()->SetUserText(ASCIIToUTF16("chrome"));
 
   EXPECT_TRUE(location_bar->GetInputString().empty());
-  EXPECT_EQ(L"chrome", location_bar->location_entry()->GetText());
+  EXPECT_EQ(ASCIIToUTF16("chrome"), location_bar->location_entry()->GetText());
   EXPECT_FALSE(location_bar->location_entry()->IsSelectAll());
 
   location_bar->location_entry()->RevertAll();
 
   EXPECT_TRUE(location_bar->GetInputString().empty());
-  EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),
+  EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL),
             location_bar->location_entry()->GetText());
   EXPECT_FALSE(location_bar->location_entry()->IsSelectAll());
 
-  location_bar->location_entry()->SetUserText(L"chrome");
+  location_bar->location_entry()->SetUserText(ASCIIToUTF16("chrome"));
   location_bar->Revert();
 
   EXPECT_TRUE(location_bar->GetInputString().empty());
-  EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),
+  EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL),
             location_bar->location_entry()->GetText());
   EXPECT_FALSE(location_bar->location_entry()->IsSelectAll());
 }
@@ -105,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
   AutocompleteController* autocomplete_controller = GetAutocompleteController();
 
   {
-    autocomplete_controller->Start(L"chrome", std::wstring(),
+    autocomplete_controller->Start(ASCIIToUTF16("chrome"), string16(),
                                    true, false, true, true);
 
     EXPECT_TRUE(autocomplete_controller->done());
@@ -123,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
     location_bar->Revert();
 
     EXPECT_TRUE(location_bar->GetInputString().empty());
-    EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),
+    EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL),
               location_bar->location_entry()->GetText());
     EXPECT_FALSE(location_bar->location_entry()->IsSelectAll());
     const AutocompleteResult& result = autocomplete_controller->result();
@@ -136,17 +137,17 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
   // Make sure that tabbing away from an empty omnibar causes a revert
   // and select all.
   LocationBar* location_bar = GetLocationBar();
-  EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),
+  EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL),
             location_bar->location_entry()->GetText());
-  location_bar->location_entry()->SetUserText(L"");
+  location_bar->location_entry()->SetUserText(string16());
   browser()->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
                                    PageTransition::START_PAGE);
   ui_test_utils::WaitForNavigation(
       &browser()->GetSelectedTabContents()->controller());
-  EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),
+  EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL),
             location_bar->location_entry()->GetText());
   browser()->CloseTab();
-  EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),
+  EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL),
             location_bar->location_entry()->GetText());
   EXPECT_TRUE(location_bar->location_entry()->IsSelectAll());
 }
@@ -157,12 +158,12 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
   // Focus search when omnibox is blank
   {
     EXPECT_TRUE(location_bar->GetInputString().empty());
-    EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),
+    EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL),
               location_bar->location_entry()->GetText());
 
     location_bar->FocusSearch();
     EXPECT_TRUE(location_bar->GetInputString().empty());
-    EXPECT_EQ(L"?", location_bar->location_entry()->GetText());
+    EXPECT_EQ(ASCIIToUTF16("?"), location_bar->location_entry()->GetText());
 
     size_t selection_start, selection_end;
     location_bar->location_entry()->GetSelectionBounds(&selection_start,
@@ -173,13 +174,13 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
 
   // Focus search when omnibox is _not_ alread in forced query mode.
   {
-    location_bar->location_entry()->SetUserText(L"foo");
+    location_bar->location_entry()->SetUserText(ASCIIToUTF16("foo"));
     EXPECT_TRUE(location_bar->GetInputString().empty());
-    EXPECT_EQ(L"foo", location_bar->location_entry()->GetText());
+    EXPECT_EQ(ASCIIToUTF16("foo"), location_bar->location_entry()->GetText());
 
     location_bar->FocusSearch();
     EXPECT_TRUE(location_bar->GetInputString().empty());
-    EXPECT_EQ(L"?", location_bar->location_entry()->GetText());
+    EXPECT_EQ(ASCIIToUTF16("?"), location_bar->location_entry()->GetText());
 
     size_t selection_start, selection_end;
     location_bar->location_entry()->GetSelectionBounds(&selection_start,
@@ -191,13 +192,13 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
   // Focus search when omnibox _is_ already in forced query mode, but no query
   // has been typed.
   {
-    location_bar->location_entry()->SetUserText(L"?");
+    location_bar->location_entry()->SetUserText(ASCIIToUTF16("?"));
     EXPECT_TRUE(location_bar->GetInputString().empty());
-    EXPECT_EQ(L"?", location_bar->location_entry()->GetText());
+    EXPECT_EQ(ASCIIToUTF16("?"), location_bar->location_entry()->GetText());
 
     location_bar->FocusSearch();
     EXPECT_TRUE(location_bar->GetInputString().empty());
-    EXPECT_EQ(L"?", location_bar->location_entry()->GetText());
+    EXPECT_EQ(ASCIIToUTF16("?"), location_bar->location_entry()->GetText());
 
     size_t selection_start, selection_end;
     location_bar->location_entry()->GetSelectionBounds(&selection_start,
@@ -209,13 +210,13 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
   // Focus search when omnibox _is_ already in forced query mode, and some query
   // has been typed.
   {
-    location_bar->location_entry()->SetUserText(L"?foo");
+    location_bar->location_entry()->SetUserText(ASCIIToUTF16("?foo"));
     EXPECT_TRUE(location_bar->GetInputString().empty());
-    EXPECT_EQ(L"?foo", location_bar->location_entry()->GetText());
+    EXPECT_EQ(ASCIIToUTF16("?foo"), location_bar->location_entry()->GetText());
 
     location_bar->FocusSearch();
     EXPECT_TRUE(location_bar->GetInputString().empty());
-    EXPECT_EQ(L"?foo", location_bar->location_entry()->GetText());
+    EXPECT_EQ(ASCIIToUTF16("?foo"), location_bar->location_entry()->GetText());
 
     size_t selection_start, selection_end;
     location_bar->location_entry()->GetSelectionBounds(&selection_start,
@@ -226,13 +227,15 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
 
   // Focus search when omnibox is in forced query mode with leading whitespace.
   {
-    location_bar->location_entry()->SetUserText(L"   ?foo");
+    location_bar->location_entry()->SetUserText(ASCIIToUTF16("   ?foo"));
     EXPECT_TRUE(location_bar->GetInputString().empty());
-    EXPECT_EQ(L"   ?foo", location_bar->location_entry()->GetText());
+    EXPECT_EQ(ASCIIToUTF16("   ?foo"),
+              location_bar->location_entry()->GetText());
 
     location_bar->FocusSearch();
     EXPECT_TRUE(location_bar->GetInputString().empty());
-    EXPECT_EQ(L"   ?foo", location_bar->location_entry()->GetText());
+    EXPECT_EQ(ASCIIToUTF16("   ?foo"),
+              location_bar->location_entry()->GetText());
 
     size_t selection_start, selection_end;
     location_bar->location_entry()->GetSelectionBounds(&selection_start,

@@ -288,7 +288,7 @@ void AutocompleteEditViewViews::SaveStateToTab(TabContents* tab) {
 void AutocompleteEditViewViews::Update(const TabContents* contents) {
   // NOTE: We're getting the URL text here from the ToolbarModel.
   bool visibly_changed_permanent_text =
-      model_->UpdatePermanentText(toolbar_model_->GetText());
+      model_->UpdatePermanentText(WideToUTF16Hack(toolbar_model_->GetText()));
 
   ToolbarModel::SecurityLevel security_level =
         toolbar_model_->GetSecurityLevel();
@@ -321,7 +321,7 @@ void AutocompleteEditViewViews::OpenURL(const GURL& url,
                                         PageTransition::Type transition,
                                         const GURL& alternate_nav_url,
                                         size_t selected_line,
-                                        const std::wstring& keyword) {
+                                        const string16& keyword) {
   if (!url.is_valid())
     return;
 
@@ -329,9 +329,9 @@ void AutocompleteEditViewViews::OpenURL(const GURL& url,
                   selected_line, keyword);
 }
 
-std::wstring AutocompleteEditViewViews::GetText() const {
+string16 AutocompleteEditViewViews::GetText() const {
   // TODO(oshima): IME support
-  return UTF16ToWide(textfield_->text());
+  return textfield_->text();
 }
 
 bool AutocompleteEditViewViews::IsEditingOrEmpty() const {
@@ -344,12 +344,12 @@ int AutocompleteEditViewViews::GetIcon() const {
       toolbar_model_->GetIcon();
 }
 
-void AutocompleteEditViewViews::SetUserText(const std::wstring& text) {
+void AutocompleteEditViewViews::SetUserText(const string16& text) {
   SetUserText(text, text, true);
 }
 
-void AutocompleteEditViewViews::SetUserText(const std::wstring& text,
-                                            const std::wstring& display_text,
+void AutocompleteEditViewViews::SetUserText(const string16& text,
+                                            const string16& display_text,
                                             bool update_popup) {
   model_->SetUserText(text);
   SetWindowTextAndCaretPos(display_text, display_text.length());
@@ -359,17 +359,17 @@ void AutocompleteEditViewViews::SetUserText(const std::wstring& text,
 }
 
 void AutocompleteEditViewViews::SetWindowTextAndCaretPos(
-    const std::wstring& text,
+    const string16& text,
     size_t caret_pos) {
   const views::TextRange range(caret_pos, caret_pos);
   SetTextAndSelectedRange(text, range);
 }
 
 void AutocompleteEditViewViews::SetForcedQuery() {
-  const std::wstring current_text(GetText());
-  const size_t start = current_text.find_first_not_of(kWhitespaceWide);
-  if (start == std::wstring::npos || (current_text[start] != '?')) {
-    SetUserText(L"?");
+  const string16 current_text(GetText());
+  const size_t start = current_text.find_first_not_of(kWhitespaceUTF16);
+  if (start == string16::npos || (current_text[start] != '?')) {
+    SetUserText(ASCIIToUTF16("?"));
   } else {
     SelectRange(current_text.size(), start + 1);
   }
@@ -385,8 +385,8 @@ bool AutocompleteEditViewViews::DeleteAtEndPressed() {
 }
 
 void AutocompleteEditViewViews::GetSelectionBounds(
-    std::wstring::size_type* start,
-    std::wstring::size_type* end) {
+    string16::size_type* start,
+    string16::size_type* end) {
   views::TextRange range;
   textfield_->GetSelectedRange(&range);
   *start = static_cast<size_t>(range.end());
@@ -435,7 +435,7 @@ void AutocompleteEditViewViews::SetFocus() {
 }
 
 void AutocompleteEditViewViews::OnTemporaryTextMaybeChanged(
-    const std::wstring& display_text,
+    const string16& display_text,
     bool save_original_selection) {
   if (save_original_selection)
     textfield_->GetSelectedRange(&saved_temporary_selection_);
@@ -445,7 +445,7 @@ void AutocompleteEditViewViews::OnTemporaryTextMaybeChanged(
 }
 
 bool AutocompleteEditViewViews::OnInlineAutocompleteTextMaybeChanged(
-    const std::wstring& display_text,
+    const string16& display_text,
     size_t user_text_length) {
   if (display_text == GetText())
     return false;
@@ -482,7 +482,7 @@ bool AutocompleteEditViewViews::OnAfterPossibleChange() {
   bool at_end_of_edit = (new_sel.start() == length && new_sel.end() == length);
 
   // See if the text or selection have changed since OnBeforePossibleChange().
-  std::wstring new_text = GetText();
+  string16 new_text = GetText();
   text_changed_ = (new_text != text_before_change_);
   bool selection_differs =
       !((sel_before_change_.is_empty() && new_sel.is_empty()) ||
@@ -543,8 +543,8 @@ bool AutocompleteEditViewViews::IsImeComposing() const {
 }
 
 bool AutocompleteEditViewViews::CommitInstantSuggestion(
-    const std::wstring& typed_text,
-    const std::wstring& suggested_text) {
+    const string16& typed_text,
+    const string16& suggested_text) {
   model_->FinalizeInstantQuery(typed_text, suggested_text);
   return true;
 }
@@ -619,10 +619,10 @@ void AutocompleteEditViewViews::TextChanged() {
 }
 
 void AutocompleteEditViewViews::SetTextAndSelectedRange(
-    const std::wstring& text,
+    const string16& text,
     const views::TextRange& range) {
   if (text != GetText())
-    textfield_->SetText(WideToUTF16(text));
+    textfield_->SetText(text);
   textfield_->SelectRange(range);
 }
 

@@ -86,8 +86,8 @@ class AutocompletePopupViewMacTest : public PlatformTest {
 
   // AutocompleteMatch doesn't really have the right constructor for our
   // needs.  Fake one for us to use.
-  static AutocompleteMatch MakeMatch(const std::wstring &contents,
-                                     const std::wstring &description) {
+  static AutocompleteMatch MakeMatch(const string16 &contents,
+                                     const string16 &description) {
     AutocompleteMatch m(NULL, 1, true, AutocompleteMatch::URL_WHAT_YOU_TYPED);
     m.contents = contents;
     m.description = description;
@@ -108,7 +108,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringNoMatch) {
 
   NSAttributedString* decorated =
       AutocompletePopupViewMac::DecorateMatchedString(
-          base::SysNSStringToWide(string), classifications,
+          base::SysNSStringToUTF16(string), classifications,
           color_, dimColor_, font_);
 
   // Result has same characters as the input.
@@ -138,7 +138,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringURLNoMatch) {
 
   NSAttributedString* decorated =
       AutocompletePopupViewMac::DecorateMatchedString(
-          base::SysNSStringToWide(string), classifications,
+          base::SysNSStringToUTF16(string), classifications,
           color_, dimColor_, font_);
 
   // Result has same characters as the input.
@@ -177,7 +177,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringDimNoMatch) {
 
   NSAttributedString* decorated =
       AutocompletePopupViewMac::DecorateMatchedString(
-          base::SysNSStringToWide(string), classifications,
+          base::SysNSStringToUTF16(string), classifications,
           color_, dimColor_, font_);
 
   // Result has same characters as the input.
@@ -227,7 +227,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringMatch) {
 
   NSAttributedString* decorated =
       AutocompletePopupViewMac::DecorateMatchedString(
-          base::SysNSStringToWide(string), classifications,
+          base::SysNSStringToUTF16(string), classifications,
           color_, dimColor_, font_);
 
   // Result has same characters as the input.
@@ -275,7 +275,7 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringURLMatch) {
 
   NSAttributedString* decorated =
       AutocompletePopupViewMac::DecorateMatchedString(
-          base::SysNSStringToWide(string), classifications,
+          base::SysNSStringToUTF16(string), classifications,
           color_, dimColor_, font_);
 
   // Result has same characters as the input.
@@ -310,8 +310,8 @@ TEST_F(AutocompletePopupViewMacTest, DecorateMatchedStringURLMatch) {
 TEST_F(AutocompletePopupViewMacTest, MatchText) {
   NSString* const contents = @"contents";
   NSString* const description = @"description";
-  AutocompleteMatch m = MakeMatch(base::SysNSStringToWide(contents),
-                                  base::SysNSStringToWide(description));
+  AutocompleteMatch m = MakeMatch(base::SysNSStringToUTF16(contents),
+                                  base::SysNSStringToUTF16(description));
 
   NSAttributedString* decorated =
       AutocompletePopupViewMac::MatchText(m, font_, kLargeWidth);
@@ -346,8 +346,8 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextContentsMatch) {
   // Make sure nobody messed up the inputs.
   EXPECT_EQ(runLength1 + runLength2 + runLength3, [contents length]);
 
-  AutocompleteMatch m = MakeMatch(base::SysNSStringToWide(contents),
-                                  std::wstring());
+  AutocompleteMatch m = MakeMatch(base::SysNSStringToUTF16(contents),
+                                  string16());
 
   // Push each run onto contents classifications.
   m.contents_class.push_back(
@@ -394,8 +394,8 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextDescriptionMatch) {
   // Make sure nobody messed up the inputs.
   EXPECT_EQ(runLength1 + runLength2, [description length]);
 
-  AutocompleteMatch m = MakeMatch(base::SysNSStringToWide(contents),
-                                  base::SysNSStringToWide(description));
+  AutocompleteMatch m = MakeMatch(base::SysNSStringToUTF16(contents),
+                                  base::SysNSStringToUTF16(description));
 
   // Push each run onto contents classifications.
   m.description_class.push_back(
@@ -441,7 +441,7 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextDescriptionMatch) {
 
 TEST_F(AutocompletePopupViewMacTest, ElideString) {
   NSString* const contents = @"This is a test with long contents";
-  const std::wstring wideContents(base::SysNSStringToWide(contents));
+  const string16 contents16(base::SysNSStringToUTF16(contents));
 
   const float kWide = 1000.0;
   const float kNarrow = 20.0;
@@ -455,25 +455,23 @@ TEST_F(AutocompletePopupViewMacTest, ElideString) {
 
   // Nothing happens if the space is really wide.
   NSMutableAttributedString* ret =
-      AutocompletePopupViewMac::ElideString(as, wideContents, font_, kWide);
+      AutocompletePopupViewMac::ElideString(as, contents16, font_, kWide);
   EXPECT_TRUE(ret == as);
   EXPECT_TRUE([[as string] isEqualToString:contents]);
 
   // When elided, result is the same as ElideText().
-  ret = AutocompletePopupViewMac::ElideString(as, wideContents, font_, kNarrow);
-  std::wstring elided(UTF16ToWideHack(ui::ElideText(WideToUTF16Hack(
-      wideContents), font_, kNarrow, false)));
+  ret = AutocompletePopupViewMac::ElideString(as, contents16, font_, kNarrow);
+  string16 elided = ui::ElideText(contents16, font_, kNarrow, false);
   EXPECT_TRUE(ret == as);
   EXPECT_FALSE([[as string] isEqualToString:contents]);
-  EXPECT_TRUE([[as string] isEqualToString:base::SysWideToNSString(elided)]);
+  EXPECT_TRUE([[as string] isEqualToString:base::SysUTF16ToNSString(elided)]);
 
   // When elided, result is the same as ElideText().
-  ret = AutocompletePopupViewMac::ElideString(as, wideContents, font_, 0.0);
-  elided = UTF16ToWideHack(ui::ElideText(WideToUTF16Hack(wideContents), font_,
-                                     0.0, false));
+  ret = AutocompletePopupViewMac::ElideString(as, contents16, font_, 0.0);
+  elided = ui::ElideText(contents16, font_, 0.0, false);
   EXPECT_TRUE(ret == as);
   EXPECT_FALSE([[as string] isEqualToString:contents]);
-  EXPECT_TRUE([[as string] isEqualToString:base::SysWideToNSString(elided)]);
+  EXPECT_TRUE([[as string] isEqualToString:base::SysUTF16ToNSString(elided)]);
 }
 
 TEST_F(AutocompletePopupViewMacTest, MatchTextElide) {
@@ -484,8 +482,8 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextElide) {
   // Make sure nobody messed up the inputs.
   EXPECT_EQ(runLength1 + runLength2 + runLength3, [contents length]);
 
-  AutocompleteMatch m = MakeMatch(base::SysNSStringToWide(contents),
-                                  base::SysNSStringToWide(description));
+  AutocompleteMatch m = MakeMatch(base::SysNSStringToUTF16(contents),
+                                  base::SysNSStringToUTF16(description));
 
   // Push each run onto contents classifications.
   m.contents_class.push_back(

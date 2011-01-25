@@ -95,7 +95,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual void OnAutocompleteLosingFocus(gfx::NativeView view_gaining_focus);
   virtual void OnAutocompleteWillAccept();
   // For this implementation, the parameter is ignored.
-  virtual bool OnCommitSuggestedText(const std::wstring& typed_text);
+  virtual bool OnCommitSuggestedText(const string16& typed_text);
   virtual bool AcceptCurrentInstantPreview();
   virtual void OnPopupBoundsChanged(const gfx::Rect& bounds);
   virtual void OnAutocompleteAccept(const GURL& url,
@@ -108,7 +108,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual void OnSetFocus();
   virtual void OnInputInProgress(bool in_progress);
   virtual SkBitmap GetFavIcon() const;
-  virtual std::wstring GetTitle() const;
+  virtual string16 GetTitle() const;
 
   // Implement the LocationBar interface.
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type);
@@ -313,10 +313,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
   void SetInfoText();
 
   // Set the keyword text for the Search BLAH: keyword box.
-  void SetKeywordLabel(const std::wstring& keyword);
+  void SetKeywordLabel(const string16& keyword);
 
   // Set the keyword text for the "Press tab to search BLAH" hint box.
-  void SetKeywordHintLabel(const std::wstring& keyword);
+  void SetKeywordHintLabel(const string16& keyword);
 
   void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
 
@@ -423,7 +423,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   bool show_keyword_hint_;
 
   // The last search keyword that was shown via the |tab_to_search_box_|.
-  std::wstring last_keyword_;
+  string16 last_keyword_;
 
   // True if we should update the instant controller when the edit text changes.
   bool update_instant_;

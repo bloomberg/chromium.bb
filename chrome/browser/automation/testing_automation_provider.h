@@ -138,11 +138,11 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Retrieves the visible text from the autocomplete edit.
   void GetAutocompleteEditText(int autocomplete_edit_handle,
-                               bool* success, std::wstring* text);
+                               bool* success, string16* text);
 
   // Sets the visible text from the autocomplete edit.
   void SetAutocompleteEditText(int autocomplete_edit_handle,
-                               const std::wstring& text,
+                               const string16& text,
                                bool* success);
 
   // Retrieves if a query to an autocomplete provider is in progress.
@@ -689,9 +689,9 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Return the map from the internal data representation to the string value
   // of auto fill fields and credit card fields.
-  static std::map<AutoFillFieldType, std::wstring>
+  static std::map<AutoFillFieldType, std::string>
       GetAutoFillFieldToStringMap();
-  static std::map<AutoFillFieldType, std::wstring>
+  static std::map<AutoFillFieldType, std::string>
       GetCreditCardFieldToStringMap();
 
   // Get a list of active HTML5 notifications.

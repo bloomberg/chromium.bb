@@ -60,8 +60,8 @@ class KeywordProvider : public AutocompleteProvider,
   // For example, the replacement string for "b blah" is blah.
   // If |trim_leading_whitespace| is true then leading whitespace in
   // replacement string will be trimmed.
-  static std::wstring SplitReplacementStringFromInput(
-      const std::wstring& input,
+  static string16 SplitReplacementStringFromInput(
+      const string16& input,
       bool trim_leading_whitespace);
 
   // Returns the matching substituting keyword for |input|, or NULL if there
@@ -69,7 +69,7 @@ class KeywordProvider : public AutocompleteProvider,
   static const TemplateURL* GetSubstitutingTemplateURLForInput(
       Profile* profile,
       const AutocompleteInput& input,
-      std::wstring* remaining_input);
+      string16* remaining_input);
 
   // AutocompleteProvider
   virtual void Start(const AutocompleteInput& input, bool minimal_changes);
@@ -89,22 +89,22 @@ class KeywordProvider : public AutocompleteProvider,
   // In general use this instead of SplitKeywordFromInput.
   // Leading whitespace in |*remaining_input| will be trimmed.
   static bool ExtractKeywordFromInput(const AutocompleteInput& input,
-                                      std::wstring* keyword,
-                                      std::wstring* remaining_input);
+                                      string16* keyword,
+                                      string16* remaining_input);
 
   // Extracts the next whitespace-delimited token from input and returns it.
   // Sets |remaining_input| to everything after the first token (skipping over
   // the first intervening whitespace).
   // If |trim_leading_whitespace| is true then leading whitespace in
   // |*remaining_input| will be trimmed.
-  static std::wstring SplitKeywordFromInput(const std::wstring& input,
-                                            bool trim_leading_whitespace,
-                                            std::wstring* remaining_input);
+  static string16 SplitKeywordFromInput(const string16& input,
+                                        bool trim_leading_whitespace,
+                                        string16* remaining_input);
 
   // Fills in the "destination_url" and "contents" fields of |match| with the
   // provided user input and keyword data.
   static void FillInURLAndContents(
-      const std::wstring& remaining_input,
+      const string16& remaining_input,
       const TemplateURL* element,
       AutocompleteMatch* match);
 
@@ -123,10 +123,10 @@ class KeywordProvider : public AutocompleteProvider,
   // If |relevance| is negative, calculate a relevance based on heuristics.
   AutocompleteMatch CreateAutocompleteMatch(
       TemplateURLModel* model,
-      const std::wstring& keyword,
+      const string16& keyword,
       const AutocompleteInput& input,
       size_t prefix_length,
-      const std::wstring& remaining_input,
+      const string16& remaining_input,
       int relevance);
 
   void EnterExtensionKeywordMode(const std::string& extension_id);
