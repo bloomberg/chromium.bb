@@ -682,20 +682,21 @@ int ChromeMain(int argc, char** argv) {
 
   base::ProcessId browser_pid = base::GetCurrentProcId();
   if (SubprocessIsBrowserChild(process_type)) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
     std::string channel_name =
         command_line.GetSwitchValueASCII(switches::kProcessChannelID);
 
     int browser_pid_int;
     base::StringToInt(channel_name, &browser_pid_int);
     browser_pid = static_cast<base::ProcessId>(browser_pid_int);
-    DCHECK_NE(browser_pid, 0u);
-#elif defined(OS_MACOSX)
-    browser_pid = base::GetCurrentProcId();
-    SendTaskPortToParentProcess();
+    DCHECK_NE(browser_pid_int, 0);
 #elif defined(OS_POSIX)
     // On linux, we're in the zygote here; so we need the parent process' id.
     browser_pid = base::GetParentProcessId(base::GetCurrentProcId());
+#endif
+
+#if defined(OS_MACOSX)
+    SendTaskPortToParentProcess();
 #endif
 
 #if defined(OS_POSIX)
@@ -765,7 +766,6 @@ int ChromeMain(int argc, char** argv) {
     }
   }
 
-#if defined(OS_MACOSX)
   // Mac Chrome is packaged with a main app bundle and a helper app bundle.
   // The main app bundle should only be used for the browser process, so it
   // should never see a --type switch (switches::kProcessType).  Likewise,
@@ -783,11 +783,10 @@ int ChromeMain(int argc, char** argv) {
     CHECK(!command_line.HasSwitch(switches::kProcessType))
         << "Main application forbids --type, saw \"" << process_type << "\".";
   }
-#endif  // defined(OS_MACOSX)
 
   if (IsCrashReporterEnabled())
     InitCrashProcessInfo();
-#endif  // OS_MACOSX
+#endif  // defined(OS_MACOSX)
 
   InitializeStatsTable(browser_pid, command_line);
 
