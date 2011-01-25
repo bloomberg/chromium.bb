@@ -533,13 +533,9 @@ void HandleTestParameters(const CommandLine& command_line) {
 void RunUIMessageLoop(BrowserProcess* browser_process) {
   TRACE_EVENT_BEGIN("BrowserMain:MESSAGE_LOOP", 0, "");
 
-#if !defined(OS_CHROMEOS)
   // If the UI thread blocks, the whole UI is unresponsive.
   // Do not allow disk IO from the UI thread.
-  // TODO(evanm): turn this on for all platforms.
-  //   http://code.google.com/p/chromium/issues/detail?id=60211
   base::ThreadRestrictions::SetIOAllowed(false);
-#endif
 
 #if defined(TOOLKIT_VIEWS)
   views::AcceleratorHandler accelerator_handler;
