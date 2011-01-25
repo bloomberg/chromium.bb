@@ -7,6 +7,7 @@
 #pragma once
 
 #include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
@@ -82,7 +83,7 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
       syncable::MutableEntry* local_entry);
 
   // Helper to extract the final name from the protobufs.
-  const string& GetResultingPostCommitName(
+  const std::string& GetResultingPostCommitName(
       const sync_pb::SyncEntity& committed_entry,
       const CommitResponse_EntryResponse& entry_response);
 

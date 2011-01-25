@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/syncable/blob.h"
@@ -33,11 +35,11 @@ TEST(SyncerProtoUtil, TestBlobToProtocolBufferBytesUtilityFunctions) {
   for (size_t i = 0; i < arraysize(test_data3); ++i)
     test_blob3.push_back(test_data3[i]);
 
-  string test_message1(reinterpret_cast<char*>(test_data1),
+  std::string test_message1(reinterpret_cast<char*>(test_data1),
       arraysize(test_data1));
-  string test_message2(reinterpret_cast<char*>(test_data2),
+  std::string test_message2(reinterpret_cast<char*>(test_data2),
       arraysize(test_data2));
-  string test_message3(reinterpret_cast<char*>(test_data3),
+  std::string test_message3(reinterpret_cast<char*>(test_data3),
       arraysize(test_data3));
 
   EXPECT_TRUE(SyncerProtoUtil::ProtoBytesEqualsBlob(test_message1,

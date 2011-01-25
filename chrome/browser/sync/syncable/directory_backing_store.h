@@ -150,12 +150,12 @@ class DirectoryBackingStore {
   // a model.  We persist a default instance of the specifics protobuf as the
   // ID, rather than the enum value.
   static ModelType ModelIdToModelTypeEnum(const void* data, int length);
-  static string ModelTypeEnumToModelId(ModelType model_type);
+  static std::string ModelTypeEnumToModelId(ModelType model_type);
 
   // Runs an integrity check on the current database.  If the
   // integrity check fails, false is returned and error is populated
   // with an error message.
-  bool CheckIntegrity(sqlite3* handle, string* error) const;
+  bool CheckIntegrity(sqlite3* handle, std::string* error) const;
 
   // Migration utilities.
   bool AddColumn(const ColumnSpec* column);

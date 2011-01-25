@@ -19,12 +19,6 @@ ostream& operator<<(ostream& out, const Id& id) {
   return out;
 }
 
-using browser_sync::FastDump;
-FastDump& operator<<(FastDump& dump, const Id& id) {
-  dump.out_->sputn(id.s_.data(), id.s_.size());
-  return dump;
-}
-
 string Id::GetServerId() const {
   // Currently root is the string "0". We need to decide on a true value.
   // "" would be convenient here, as the IsRoot call would not be needed.

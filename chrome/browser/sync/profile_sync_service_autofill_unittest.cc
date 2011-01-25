@@ -112,7 +112,7 @@ class WebDatabaseMock : public WebDatabase {
   MOCK_METHOD1(AddAutoFillProfile,
                bool(const AutoFillProfile&));  // NOLINT
   MOCK_METHOD1(RemoveAutoFillProfile,
-               bool(const string&));  // NOLINT
+               bool(const std::string&));  // NOLINT
 };
 
 class ProfileSyncServiceAutofillTest;
@@ -809,7 +809,7 @@ TEST_F(ProfileSyncServiceAutofillTest, MergeProfileWithDifferentGuid) {
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
 
-  string native_guid = "{EDC609ED-7EEE-4f27-B00C-423242A9C44B}";
+  std::string native_guid = "{EDC609ED-7EEE-4f27-B00C-423242A9C44B}";
   AutoFillProfile* native_profile = new AutoFillProfile;
   autofill_test::SetProfileInfoWithGuid(native_profile,
       native_guid.c_str(), "Billing",

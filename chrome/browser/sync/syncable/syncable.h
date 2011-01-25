@@ -1136,7 +1136,4 @@ void ZeroFields(EntryKernel* entry, int first_field);
 
 std::ostream& operator <<(std::ostream&, const syncable::Blob&);
 
-browser_sync::FastDump& operator <<
-  (browser_sync::FastDump&, const syncable::Blob&);
-
 #endif  // CHROME_BROWSER_SYNC_SYNCABLE_SYNCABLE_H_

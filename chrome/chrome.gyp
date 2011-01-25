@@ -986,7 +986,6 @@
         'browser/sync/util/dbgq.h',
         'browser/sync/util/extensions_activity_monitor.cc',
         'browser/sync/util/extensions_activity_monitor.h',
-        'browser/sync/util/fast_dump.h',
         'browser/sync/util/nigori.cc',
         'browser/sync/util/nigori.h',
         'browser/sync/util/user_settings.cc',

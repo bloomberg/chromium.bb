@@ -225,13 +225,13 @@ TEST_F(UserSettingsTest, MigrateFromV11ToV12) {
 }
 
 TEST_F(UserSettingsTest, APEncode) {
-  string test;
+  std::string test;
   char i;
   for (i = numeric_limits<char>::min(); i < numeric_limits<char>::max(); ++i)
     test.push_back(i);
   test.push_back(i);
-  const string encoded = APEncode(test);
-  const string decoded = APDecode(encoded);
+  const std::string encoded = APEncode(test);
+  const std::string decoded = APDecode(encoded);
   ASSERT_EQ(test, decoded);
 }
 

@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/hash_tables.h"
-#include "chrome/browser/sync/util/fast_dump.h"
 
 extern "C" {
 struct sqlite3;
@@ -31,7 +30,6 @@ class SQLStatement;
 namespace syncable {
 
 std::ostream& operator<<(std::ostream& out, const Id& id);
-browser_sync::FastDump& operator<<(browser_sync::FastDump& out, const Id& id);
 
 // For historical reasons, 3 concepts got everloaded into the Id:
 // 1. A unique, opaque identifier for the object.
@@ -49,8 +47,6 @@ class Id {
   friend struct syncable::IdRowTraits;
   friend int BindFields(const EntryKernel& entry, SQLStatement* statement);
   friend std::ostream& operator<<(std::ostream& out, const Id& id);
-  friend browser_sync::FastDump& operator<<
-    (browser_sync::FastDump& out, const Id& id);
   friend class MockConnectionManager;
   friend class SyncableIdTest;
  public:

@@ -51,7 +51,6 @@
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
 #include "chrome/browser/sync/syncable/syncable_columns.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
-#include "chrome/browser/sync/util/fast_dump.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
 #include "net/base/escape.h"
 
@@ -68,7 +67,6 @@ static const InvariantCheckLevel kInvariantCheckLevel = VERIFY_IN_MEMORY;
 static const int kInvariantCheckMaxMs = 50;
 }  // namespace
 
-using browser_sync::FastDump;
 using browser_sync::SyncerUtil;
 using std::string;
 
@@ -1674,63 +1672,38 @@ void MarkForSyncing(syncable::MutableEntry* e) {
   e->Put(SYNCING, false);
 }
 
-}  // namespace syncable
-
-namespace {
-  class DumpSeparator {
-  } separator;
-  class DumpColon {
-  } colon;
-
-inline FastDump& operator<<(FastDump& dump, const DumpSeparator&) {
-  dump.out_->sputn(", ", 2);
-  return dump;
-}
-
-inline FastDump& operator<<(FastDump& dump, const DumpColon&) {
-  dump.out_->sputn(": ", 2);
-  return dump;
-}
-}  // namespace
-
-namespace syncable {
-
-std::ostream& operator<<(std::ostream& stream, const Entry& entry) {
-  // Using ostreams directly here is dreadfully slow, because a mutex is
-  // acquired for every <<.  Users noticed it spiking CPU.
-
+std::ostream& operator<<(std::ostream& os, const Entry& entry) {
   int i;
-  FastDump s(&stream);
   EntryKernel* const kernel = entry.kernel_;
   for (i = BEGIN_FIELDS; i < INT64_FIELDS_END; ++i) {
-    s << g_metas_columns[i].name << colon
-      << kernel->ref(static_cast<Int64Field>(i)) << separator;
+    os << g_metas_columns[i].name << ": "
+       << kernel->ref(static_cast<Int64Field>(i)) << ", ";
   }
   for ( ; i < ID_FIELDS_END; ++i) {
-    s << g_metas_columns[i].name << colon
-      << kernel->ref(static_cast<IdField>(i)) << separator;
+    os << g_metas_columns[i].name << ": "
+       << kernel->ref(static_cast<IdField>(i)) << ", ";
   }
-  s << "Flags: ";
+  os << "Flags: ";
   for ( ; i < BIT_FIELDS_END; ++i) {
     if (kernel->ref(static_cast<BitField>(i)))
-      s << g_metas_columns[i].name << separator;
+      os << g_metas_columns[i].name << ", ";
   }
   for ( ; i < STRING_FIELDS_END; ++i) {
     const string& field = kernel->ref(static_cast<StringField>(i));
-    s << g_metas_columns[i].name << colon << field << separator;
+    os << g_metas_columns[i].name << ": " << field << ", ";
   }
   for ( ; i < PROTO_FIELDS_END; ++i) {
-    s << g_metas_columns[i].name << colon
-      << EscapePath(
-          kernel->ref(static_cast<ProtoField>(i)).SerializeAsString())
-      << separator;
+    os << g_metas_columns[i].name << ": "
+       << EscapePath(
+           kernel->ref(static_cast<ProtoField>(i)).SerializeAsString())
+       << ", ";
   }
-  s << "TempFlags: ";
+  os << "TempFlags: ";
   for ( ; i < BIT_TEMPS_END; ++i) {
     if (kernel->ref(static_cast<BitTemp>(i)))
-      s << "#" << i - BIT_TEMPS_BEGIN << separator;
+      os << "#" << i - BIT_TEMPS_BEGIN << ", ";
   }
-  return stream;
+  return os;
 }
 
 std::ostream& operator<<(std::ostream& s, const Blob& blob) {
@@ -1738,14 +1711,6 @@ std::ostream& operator<<(std::ostream& s, const Blob& blob) {
     s << std::hex << std::setw(2)
       << std::setfill('0') << static_cast<unsigned int>(*i);
   return s << std::dec;
-}
-
-FastDump& operator<<(FastDump& dump, const Blob& blob) {
-  if (blob.empty())
-    return dump;
-  string buffer(base::HexEncode(&blob[0], blob.size()));
-  dump.out_->sputn(buffer.c_str(), buffer.size());
-  return dump;
 }
 
 }  // namespace syncable
