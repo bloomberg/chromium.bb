@@ -45,13 +45,10 @@
 struct view {
 	struct window *window;
 	struct display *display;
-	uint32_t key;
 
-	gchar *filename;
 	PopplerDocument *document;
 	int page;
 	int fullscreen;
-	int focused;
 };
 
 static void
@@ -153,8 +150,6 @@ keyboard_focus_handler(struct window *window,
 		       struct input *device, void *data)
 {
 	struct view *view = data;
-
-	view->focused = (device != NULL);
 	window_schedule_redraw(view->window);
 }
 
@@ -175,15 +170,9 @@ view_create(struct display *display, uint32_t key, const char *filename)
 	title = g_strdup_printf("Wayland View - %s", basename);
 	g_free(basename);
 
-	view->filename = g_strdup(filename);
-
 	view->window = window_create(display, 500, 400);
 	window_set_title(view->window, title);
 	view->display = display;
-
-	/* FIXME: Window uses key 1 for moves, need some kind of
-	 * allocation scheme here.  Or maybe just a real toolkit. */
-	view->key = key + 100;
 
 	window_set_user_data(view->window, view);
 	window_set_redraw_handler(view->window, redraw_handler);
@@ -191,7 +180,7 @@ view_create(struct display *display, uint32_t key, const char *filename)
 	window_set_keyboard_focus_handler(view->window,
 					  keyboard_focus_handler);
 
-	view->document = poppler_document_new_from_file(view->filename,
+	view->document = poppler_document_new_from_file(filename,
 							NULL, &error);
 	view->page = 0;
 	view_draw(view);
