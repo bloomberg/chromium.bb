@@ -14,7 +14,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "views/fill_layout.h"
+#include "views/layout/fill_layout.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/window/client_view.h"

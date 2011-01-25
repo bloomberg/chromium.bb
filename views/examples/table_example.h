@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 #include "views/controls/table/table_view.h"
 #include "views/controls/table/table_view_observer.h"
 #include "views/examples/example_base.h"
-#include "views/fill_layout.h"
+#include "views/layout/fill_layout.h"
 
 using ui::TableModel;
 using ui::TableModelObserver; // TODO(beng): remove these

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
-#include "views/fill_layout.h"
+#include "views/layout/fill_layout.h"
 
 // Some of this class is implemented in tab_contents_container.cc, where
 // the implementation doesn't vary between a pure views approach and a

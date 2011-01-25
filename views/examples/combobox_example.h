@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/examples/example_base.h"
-#include "views/fill_layout.h"
+#include "views/layout/fill_layout.h"
 
 namespace examples {
 
