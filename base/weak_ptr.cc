@@ -61,10 +61,10 @@ void WeakReferenceOwner::Invalidate() {
 WeakPtrBase::WeakPtrBase() {
 }
 
-WeakPtrBase::WeakPtrBase(const WeakReference& ref) : ref_(ref) {
+WeakPtrBase::~WeakPtrBase() {
 }
 
-WeakPtrBase::~WeakPtrBase() {
+WeakPtrBase::WeakPtrBase(const WeakReference& ref) : ref_(ref) {
 }
 
 }  // namespace internal
