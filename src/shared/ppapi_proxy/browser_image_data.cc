@@ -134,15 +134,32 @@ void PpbImageDataRpcServer::PPB_ImageData_Describe(
 
 #if NACL_LINUX
       desc_wrapper.reset(factory.ImportSysvShm(native_handle, native_size));
-#else
-      // Has to be a C-style cast because it's a reinterpret_cast on Windows
-      // and a static_cast on Mac.
-      desc_wrapper.reset(factory.ImportShmHandle((NaClHandle)native_handle,
-                                                 native_size));
-#endif
       *shm = desc_wrapper->desc();
       *shm_size = native_size;
       *success = PP_TRUE;
+#elif NACL_WINDOWS
+      HANDLE dup_handle;
+      if (DuplicateHandle(GetCurrentProcess(),
+                          reinterpret_cast<NaClHandle>(native_handle),
+                          GetCurrentProcess(),
+                          &dup_handle,
+                          0,
+                          FALSE,
+                          DUPLICATE_SAME_ACCESS)) {
+        desc_wrapper.reset(factory.ImportShmHandle(dup_handle, native_size));
+        *shm = desc_wrapper->desc();
+        *shm_size = native_size;
+        *success = PP_TRUE;
+      }
+#else
+      int dup_handle = dup(static_cast<int>(native_handle));
+      if (dup_handle >= 0) {
+        desc_wrapper.reset(factory.ImportShmHandle(dup_handle, native_size));
+        *shm = desc_wrapper->desc();
+        *shm_size = native_size;
+        *success = PP_TRUE;
+      }
+#endif
     }
   }
   DebugPrintf("PPB_ImageData::Describe: resource=%"NACL_PRIx32", "
