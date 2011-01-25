@@ -251,6 +251,11 @@ void BrowserActionButton::OnMouseExited(const views::MouseEvent& e) {
 
 void BrowserActionButton::ShowContextMenu(const gfx::Point& p,
                                           bool is_mouse_gesture) {
+  // There is nothing in context menu that has sense to show for
+  // component extensions so just ignore the request.
+  if (extension()->location() == Extension::COMPONENT)
+    return;
+
   showing_context_menu_ = true;
   SetButtonPushed();
 

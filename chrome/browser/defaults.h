@@ -84,6 +84,10 @@ extern bool bookmarks_enabled;
 // Should we skip the user's preference for restore. False by default.
 extern bool skip_restore;
 
+// Whether HelpApp is enabled. True by default. This is only used by Chrome OS
+// today.
+extern bool enable_help_app;
+
 }  // namespace browser_defaults
 
 #endif  // CHROME_BROWSER_DEFAULTS_H_

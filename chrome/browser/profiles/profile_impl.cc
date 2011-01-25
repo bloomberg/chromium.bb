@@ -25,6 +25,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/default_apps.h"
@@ -371,29 +372,43 @@ void ProfileImpl::InitExtensions() {
 
 void ProfileImpl::RegisterComponentExtensions() {
   // Register the component extensions.
-  typedef std::list<std::pair<std::string, int> > ComponentExtensionList;
+  typedef std::list<std::pair<FilePath::StringType, int> >
+      ComponentExtensionList;
   ComponentExtensionList component_extensions;
 
   // Bookmark manager.
-  component_extensions.push_back(
-      std::make_pair("bookmark_manager", IDR_BOOKMARKS_MANIFEST));
+  component_extensions.push_back(std::make_pair(
+      FILE_PATH_LITERAL("bookmark_manager"),
+      IDR_BOOKMARKS_MANIFEST));
 
 #if defined(TOUCH_UI)
-  component_extensions.push_back(
-      std::make_pair("keyboard", IDR_KEYBOARD_MANIFEST));
+  component_extensions.push_back(std::make_pair(
+      FILE_PATH_LITERAL("keyboard"),
+      IDR_KEYBOARD_MANIFEST));
+#endif
+
+#if defined(OS_CHROMEOS)
+  if (browser_defaults::enable_help_app) {
+    component_extensions.push_back(std::make_pair(
+        FILE_PATH_LITERAL("/usr/share/chromeos-assets/helpapp"),
+        IDR_HELP_MANIFEST));
+  }
 #endif
 
   // Web Store.
-  component_extensions.push_back(
-      std::make_pair("web_store", IDR_WEBSTORE_MANIFEST));
+  component_extensions.push_back(std::make_pair(
+      FILE_PATH_LITERAL("web_store"),
+      IDR_WEBSTORE_MANIFEST));
 
   for (ComponentExtensionList::iterator iter = component_extensions.begin();
     iter != component_extensions.end(); ++iter) {
-    FilePath path;
-    if (PathService::Get(chrome::DIR_RESOURCES, &path)) {
-      path = path.AppendASCII(iter->first);
-    } else {
-      NOTREACHED();
+    FilePath path(iter->first);
+    if (!path.IsAbsolute()) {
+      if (PathService::Get(chrome::DIR_RESOURCES, &path)) {
+        path = path.Append(iter->first);
+      } else {
+        NOTREACHED();
+      }
     }
 
     std::string manifest =

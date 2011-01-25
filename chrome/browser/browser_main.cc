@@ -31,6 +31,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_main_win.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -1061,6 +1062,11 @@ bool IsMetricsReportingEnabled(const PrefService* local_state) {
 // Main routine for running as the Browser process.
 int BrowserMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN("BrowserMain", 0, "");
+
+  // If we're running tests (ui_task is non-null).
+  if (parameters.ui_task)
+    browser_defaults::enable_help_app = false;
+
   scoped_ptr<BrowserMainParts>
       parts(BrowserMainParts::CreateBrowserMainParts(parameters));
 

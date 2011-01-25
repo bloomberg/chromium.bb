@@ -86,4 +86,6 @@ bool bookmarks_enabled = true;
 
 bool skip_restore = false;
 
+bool enable_help_app = true;
+
 }  // namespace browser_defaults
