@@ -974,6 +974,8 @@ void BookmarkBarView::Loaded(BookmarkModel* model) {
   for (int i = 0, child_count = node->GetChildCount(); i < child_count; ++i)
     AddChildView(i, CreateBookmarkButton(node->GetChild(i)));
   UpdateColors();
+  other_bookmarked_button_->SetVisible(
+      model->other_node()->GetChildCount() > 0);
   other_bookmarked_button_->SetEnabled(true);
 
   Layout();
@@ -1011,6 +1013,8 @@ void BookmarkBarView::BookmarkNodeAdded(BookmarkModel* model,
 void BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
                                             const BookmarkNode* parent,
                                             int index) {
+  other_bookmarked_button_->SetVisible(
+      model->other_node()->GetChildCount() > 0);
   NotifyModelChanged();
   if (parent != model_->GetBookmarkBarNode()) {
     // We only care about nodes on the bookmark bar.
@@ -1037,6 +1041,9 @@ void BookmarkBarView::BookmarkNodeRemoved(BookmarkModel* model,
 void BookmarkBarView::BookmarkNodeRemovedImpl(BookmarkModel* model,
                                               const BookmarkNode* parent,
                                               int index) {
+  other_bookmarked_button_->SetVisible(
+      model->other_node()->GetChildCount() > 0);
+
   StopThrobbing(true);
   // No need to start throbbing again as the bookmark bubble can't be up at
   // the same time as the user reorders.
@@ -1560,9 +1567,9 @@ void BookmarkBarView::StartThrobbing(const BookmarkNode* node,
 }
 
 int BookmarkBarView::GetBookmarkButtonCount() {
-  // We contain at least four non-bookmark button views: other bookmarks,
-  // bookmarks separator, chevrons (for overflow), the instruction label and
-  // the sync error button.
+  // We contain five non-bookmark button views: other bookmarks, bookmarks
+  // separator, chevrons (for overflow), the instruction label and the sync
+  // error button.
   return GetChildViewCount() - 5;
 }
 
@@ -1614,7 +1621,8 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   }
 
   gfx::Size other_bookmarked_pref =
-      other_bookmarked_button_->GetPreferredSize();
+      other_bookmarked_button_->IsVisible() ?
+      other_bookmarked_button_->GetPreferredSize() : gfx::Size();
   gfx::Size overflow_pref = overflow_button_->GetPreferredSize();
   gfx::Size bookmarks_separator_pref =
       bookmarks_separator_view_->GetPreferredSize();
@@ -1624,9 +1632,10 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   if (sync_ui_util::ShouldShowSyncErrorButton(sync_service_)) {
     sync_error_total_width += kButtonPadding + sync_error_button_pref.width();
   }
-  const int max_x = width - other_bookmarked_pref.width() - kButtonPadding -
-      overflow_pref.width() - kButtonPadding -
+  int max_x = width - overflow_pref.width() - kButtonPadding -
       bookmarks_separator_pref.width() - sync_error_total_width;
+  if (other_bookmarked_button_->IsVisible())
+    max_x -= other_bookmarked_pref.width() + kButtonPadding;
 
   // Next, layout out the buttons. Any buttons that are placed beyond the
   // visible region and made invisible.
@@ -1686,11 +1695,13 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   x += bookmarks_separator_pref.width();
 
   // The other bookmarks button.
-  if (!compute_bounds_only) {
-    other_bookmarked_button_->SetBounds(x, y, other_bookmarked_pref.width(),
-                                        height);
+  if (other_bookmarked_button_->IsVisible()) {
+    if (!compute_bounds_only) {
+      other_bookmarked_button_->SetBounds(x, y, other_bookmarked_pref.width(),
+                                          height);
+    }
+    x += other_bookmarked_pref.width() + kButtonPadding;
   }
-  x += other_bookmarked_pref.width() + kButtonPadding;
 
   // Set the real bounds of the sync error button only if it needs to appear on
   // the bookmarks bar.
