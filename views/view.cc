@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/path.h"
@@ -631,6 +632,7 @@ void View::DoRemoveChildView(View* a_view,
   const ViewList::iterator i =  find(child_views_.begin(),
                                      child_views_.end(),
                                      a_view);
+  scoped_ptr<View> view_to_be_deleted;
   if (i != child_views_.end()) {
     if (update_focus_cycle) {
       // Let's remove the view from the focus traversal.
@@ -649,7 +651,7 @@ void View::DoRemoveChildView(View* a_view,
     a_view->SetParent(NULL);
 
     if (delete_removed_view && a_view->IsParentOwned())
-      delete a_view;
+      view_to_be_deleted.reset(a_view);
 
     child_views_.erase(i);
   }
