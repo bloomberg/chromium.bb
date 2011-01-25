@@ -1,9 +1,9 @@
-<div class="page hidden" id="advancedPage">
+<div id="advancedPage" class="page hidden">
   <h1 i18n-content="advancedPage"></h1>
   <section>
     <h3 i18n-content="advancedSectionTitlePrivacy"></h3>
     <div>
-      <div>
+      <div class="section-group">
         <button id="privacyContentSettingsButton"
             i18n-content="privacyContentSettingsButton"></button>
         <button id="privacyClearDataButton"
@@ -56,15 +56,8 @@
   <section>
     <h3 i18n-content="advancedSectionTitleContent"></h3>
     <div>
-<if expr="os == 'darwin'">
-      <label class="checkbox">
-        <input id="tabsToLinksPref" pref="webkit.webprefs.tabs_to_links"
-            metric="Options_TabsToLinks" type="checkbox">
-        <span i18n-content="tabsToLinksPref"></span>
-      </label>
-</if>
-      <div>
-        <label>
+      <div class="section-group">
+        <label class="web-content-select-label">
           <span i18n-content="defaultFontSizeLabel"></span>
           <select id="defaultFontSize">
             <option value="9" i18n-content="fontSizeLabelVerySmall"></option>
@@ -77,8 +70,8 @@
         <button id="fontSettingsCustomizeFontsButton"
             i18n-content="fontSettingsCustomizeFontsButton"></button>
       </div>
-      <div>
-        <label>
+      <div class="section-group">
+        <label class="web-content-select-label">
           <span i18n-content="defaultZoomLevelLabel"></span>
           <select id="defaultZoomLevel" pref="profile.default_zoom_level"
                   dataType="real" metric="Options_ChangeDefaultZoomLevel">
@@ -95,20 +88,26 @@
           </select>
         </label>
       </div>
+<if expr="not pp_ifdef('chromeos') or os == 'win32'">
+      <div class="section-group">
+</if>
 <if expr="not pp_ifdef('chromeos')">
-      <div>
         <button id="language-button"
             i18n-content="languageAndSpellCheckSettingsButton"></button>
-      </div>
 </if>
 <if expr="os == 'win32'">
-      <div>
-        <label style="display:inline;">
-          <span i18n-content="gearSettingsGroupName"></span>
-          <button id="gearSettingsConfigureGearsButton"
-              i18n-content="gearSettingsConfigureGearsButton"></button>
-        </label>
+        <button id="gearSettingsConfigureGearsButton"
+            i18n-content="gearSettingsConfigureGearsButton"></button>
+</if>
+<if expr="not pp_ifdef('chromeos') or os == 'win32'">
       </div>
+</if>
+<if expr="os == 'darwin'">
+      <label class="checkbox">
+        <input id="tabsToLinksPref" pref="webkit.webprefs.tabs_to_links"
+            metric="Options_TabsToLinks" type="checkbox">
+        <span i18n-content="tabsToLinksPref"></span>
+      </label>
 </if>
     </div>
   </section>
@@ -116,8 +115,10 @@
     <h3 i18n-content="advancedSectionTitleNetwork"></h3>
     <div>
       <div id="proxiesLabel"></div>
-      <button id="proxiesConfigureButton"
-          i18n-content="proxiesConfigureButton"></button>
+      <div class="section-group">
+        <button id="proxiesConfigureButton"
+            i18n-content="proxiesConfigureButton"></button>
+      </div>
     </div>
   </section>
   <section>
@@ -134,7 +135,7 @@
   <section>
     <h3 i18n-content="downloadLocationGroupName"></h3>
     <div>
-      <div>
+      <div id="download-location-group">
         <label>
           <span i18n-content="downloadLocationBrowseTitle"></span>
           <input id="downloadLocationPath" type="text" size="60" disabled>
@@ -148,8 +149,10 @@
         <span i18n-content="downloadLocationAskForSaveLocation"></span>
       </label>
       <div i18n-content="autoOpenFileTypesInfo"></div>
-      <div><button id="autoOpenFileTypesResetToDefault"
-          i18n-content="autoOpenFileTypesResetToDefault"></button></div>
+      <div class="section-group">
+        <button id="autoOpenFileTypesResetToDefault"
+            i18n-content="autoOpenFileTypesResetToDefault"></button>
+      </div>
     </div>
   </section>
 </if>
@@ -199,7 +202,7 @@
     <div>
       <div id="cloudPrintProxyLabel"
            i18n-content="cloudPrintProxyDisabledLabel"></div>
-      <div>
+      <div class="section-group">
         <button id="cloudPrintProxySetupButton"
                 i18n-content="cloudPrintProxyDisabledButton"></button>
         <button id="cloudPrintProxyManageButton"
@@ -213,7 +216,7 @@
     <h3 i18n-content="advancedSectionTitleRemoting"></h3>
     <div>
       <div id="remotingStatus" class="section-text"></div>
-      <div>
+      <div class="section-group">
         <button id="remotingSetupButton"
                 i18n-content="remotingSetupButton"
                 style="display:none;"></button>

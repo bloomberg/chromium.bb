@@ -1,9 +1,42 @@
 /*
- * Copyright (c) 2010 The Chromium Authors. All rights reserved.
+ * Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-.informational-text {
+#advancedPage .informational-text {
   color: grey;
+}
+
+#advancedPage > section > div:only-of-type > label.checkbox {
+  margin: 10px 0;
+}
+
+#advancedPage .section-group {
+  margin: 10px 0;
+}
+
+#advancedPage select,
+#advancedPage .web-content-select-label {
+  min-width: 145px;
+}
+
+#advancedPage .web-content-select-label > span:only-of-type {
+  display: inline-block;
+  min-width: 100px;
+}
+
+#download-location-group {
+  margin: 10px 0 5px;
+  min-width: 700px;
+}
+
+#promptForDownload {
+  margin-bottom: 10px;
+}
+
+#fontSettingsCustomizeFontsButton,
+#gearSettingsConfigureGearsButton,
+#privacyClearDataButton {
+  margin-left: 10px;
 }

@@ -83,9 +83,6 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_OPEN_FILE_TYPES_AUTOMATICALLY));
   localized_strings->SetString("autoOpenFileTypesResetToDefault",
       l10n_util::GetStringUTF16(IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT));
-  localized_strings->SetString("gearSettingsGroupName",
-      dom_options_util::StripColon(
-          l10n_util::GetStringUTF16(IDS_OPTIONS_GEARSSETTINGS_GROUP_NAME)));
   localized_strings->SetString("gearSettingsConfigureGearsButton",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_GEARSSETTINGS_CONFIGUREGEARS_BUTTON));
