@@ -223,7 +223,7 @@ class TestDelegate : public net::URLRequest::Delegate {
     received_redirect_count_++;
     if (quit_on_redirect_) {
       *defer_redirect = true;
-      MessageLoop::current()->Quit();
+      MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
     } else if (cancel_in_rr_) {
       request->Cancel();
     }
@@ -290,7 +290,7 @@ class TestDelegate : public net::URLRequest::Delegate {
 
   virtual void OnResponseCompleted(net::URLRequest* request) {
     if (quit_on_complete_)
-      MessageLoop::current()->Quit();
+      MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   }
 
   void OnAuthRequired(net::URLRequest* request,
