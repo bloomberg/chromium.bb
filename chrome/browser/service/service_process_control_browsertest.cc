@@ -186,7 +186,9 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, DieOnDisconnect) {
   WaitForShutdown();
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, ForceShutdown) {
+//http://code.google.com/p/chromium/issues/detail?id=70793
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
+                       DISABLED_ForceShutdown) {
   // Launch the service process.
   LaunchServiceProcessControl();
   // Make sure we are connected to the service process.
