@@ -303,7 +303,7 @@ bool GetCollectStatsConsent() {
   if (key.ReadValueDW(google_update::kRegUsageStatsField, &value) !=
       ERROR_SUCCESS) {
     base::win::RegKey hklm_key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ);
-    key.ReadValueDW(google_update::kRegUsageStatsField, &value);
+    hklm_key.ReadValueDW(google_update::kRegUsageStatsField, &value);
   }
 
   return (1 == value);
