@@ -18,6 +18,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "skia/ext/platform_canvas.h"
@@ -25,6 +26,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
+#include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -181,6 +183,16 @@ std::wstring GetKeyPath(HKEY key) {
   return std::wstring(info->Name, info->NameLength / sizeof(wchar_t));
 }
 
+int GetPluginMajorVersion(const WebPluginInfo& plugin_info) {
+  scoped_ptr<Version> plugin_version(PluginGroup::CreateVersionFromString(
+      plugin_info.version));
+  int major_version = 0;
+  if (plugin_version.get()) {
+    major_version = plugin_version->components()[0];
+  }
+  return major_version;
+}
+
 }  // namespace
 
 bool WebPluginDelegateImpl::IsPluginDelegateWindow(HWND window) {
@@ -290,17 +302,11 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     quirks_ |= PLUGIN_QUIRK_HANDLE_MOUSE_CAPTURE;
   } else if (filename == kAcrobatReaderPlugin) {
     // Check for the version number above or equal 9.
-    std::vector<std::wstring> version;
-    base::SplitString(plugin_info.version, L'.', &version);
-    if (version.size() > 0) {
-      int major;
-      base::StringToInt(version[0], &major);
-      if (major >= 9) {
-        quirks_ |= PLUGIN_QUIRK_DIE_AFTER_UNLOAD;
-
-        // 9.2 needs this.
-        quirks_ |= PLUGIN_QUIRK_SETWINDOW_TWICE;
-      }
+    int major_version = GetPluginMajorVersion(plugin_info);
+    if (major_version >= 9) {
+      quirks_ |= PLUGIN_QUIRK_DIE_AFTER_UNLOAD;
+      // 9.2 needs this.
+      quirks_ |= PLUGIN_QUIRK_SETWINDOW_TWICE;
     }
     quirks_ |= PLUGIN_QUIRK_BLOCK_NONSTANDARD_GETURL_REQUESTS;
   } else if (plugin_info.name.find(L"Windows Media Player") !=
@@ -330,8 +336,11 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     // VLC hangs on NPP_Destroy if we call NPP_SetWindow with a null window
     // handle
     quirks_ |= PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY;
-    // VLC 0.8.6d and 0.8.6e crash if multiple instances are created.
-    quirks_ |= PLUGIN_QUIRK_DONT_ALLOW_MULTIPLE_INSTANCES;
+    int major_version = GetPluginMajorVersion(plugin_info);
+    if (major_version == 0) {
+      // VLC 0.8.6d and 0.8.6e crash if multiple instances are created.
+      quirks_ |= PLUGIN_QUIRK_DONT_ALLOW_MULTIPLE_INSTANCES;
+    }
   } else if (filename == kSilverlightPlugin) {
     // Explanation for this quirk can be found in
     // WebPluginDelegateImpl::Initialize.
