@@ -55,10 +55,7 @@ elif env.Bit('mac'):
 
 nonnacl_util_inputs = env.DualObject(nonnacl_util_inputs)
 
-nonnacl_util_c_inputs = nonnacl_util_inputs + [ 'sel_ldr_launcher_c.cc' ]
-
 env.DualLibrary('nonnacl_util', nonnacl_util_inputs)
-env.DualLibrary('nonnacl_util_c', nonnacl_util_c_inputs)
 
 # Testing:
 #

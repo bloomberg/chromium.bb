@@ -61,21 +61,6 @@
           ]
         },
       }],
-      ['target_base=="nonnacl_util_c"', {
-        'sources': [
-          'sel_ldr_launcher_c.cc',
-          'sel_ldr_launcher_c.h',
-        ],
-        'cflags!': [
-          '-Wextra',
-        ],
-        'xcode_settings': {
-          'WARNING_CFLAGS!': [
-            '-pedantic',  # import is a gcc extension
-            '-Wextra',
-          ]
-        },
-      }],
     ]
   },
   'targets': [
@@ -100,17 +85,6 @@
       'type': 'static_library',
       'variables': {
         'target_base': 'nonnacl_util',
-      },
-      'dependencies': [
-        'sel_ldr_launcher',
-      ],
-    },
-    # ----------------------------------------------------------------------
-    {
-      'target_name': 'nonnacl_util_c',
-      'type': 'static_library',
-      'variables': {
-        'target_base': 'nonnacl_util_c',
       },
       'dependencies': [
         'sel_ldr_launcher',
@@ -143,22 +117,6 @@
           'type': 'static_library',
           'variables': {
             'target_base': 'nonnacl_util',
-          },
-          'dependencies': [
-            'sel_ldr_launcher64',
-          ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-          },
-        },
-        # ----------------------------------------------------------------
-        {
-          'target_name': 'nonnacl_util_c64',
-          'type': 'static_library',
-          'variables': {
-            'target_base': 'nonnacl_util_c',
           },
           'dependencies': [
             'sel_ldr_launcher64',
