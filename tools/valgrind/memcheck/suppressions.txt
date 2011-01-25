@@ -3639,3 +3639,9 @@
    fun:_ZN15SyncSetupWizardC2EP18ProfileSyncService
    fun:_ZN15SyncSetupWizardC1EP18ProfileSyncService
 }
+{
+   bug_70782_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN25SharedResourcesDataSource8RegisterEv
+}
