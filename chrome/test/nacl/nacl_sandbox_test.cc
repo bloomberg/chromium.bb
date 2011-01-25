@@ -12,8 +12,9 @@
 namespace {
 
 // Base url is specified in nacl_test.
-const FilePath::CharType kSrpcHwHtmlFileName[] =
-    FILE_PATH_LITERAL("srpc_hw.html");
+// We just need to visit a page that will trigger the NaCl loader.
+const FilePath::CharType kANaClHtmlFile[] =
+    FILE_PATH_LITERAL("srpc_hw_ppapi.html");
 
 }  // namespace
 
@@ -37,8 +38,8 @@ NaClSandboxTest::NaClSandboxTest() {
 NaClSandboxTest::~NaClSandboxTest() {
 }
 
-TEST_F(NaClSandboxTest, DISABLED_NaClOuterSBTest) {
+TEST_F(NaClSandboxTest, NaClOuterSBTest) {
   // Load a helloworld .nexe to trigger the nacl loader test.
-  FilePath test_file(kSrpcHwHtmlFileName);
+  FilePath test_file(kANaClHtmlFile);
   RunTest(test_file, TestTimeouts::action_max_timeout_ms());
 }
