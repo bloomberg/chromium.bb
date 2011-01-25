@@ -135,7 +135,8 @@ void OptionsPageUIHandler::UserMetricsRecordAction(
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
+OptionsUI::OptionsUI(TabContents* contents)
+    : DOMUI(contents), initialized_handlers_(false) {
   DictionaryValue* localized_strings = new DictionaryValue();
 
 #if defined(OS_CHROMEOS)
@@ -257,6 +258,14 @@ RefCountedMemory* OptionsUI::GetFaviconResourceBytes() {
 
 void OptionsUI::InitializeHandlers() {
   DCHECK(!GetProfile()->IsOffTheRecord());
+
+  // The reinitialize call from DidBecomeActiveForReusedRenderView end up being
+  // delivered after a new web page DOM has been brought up in an existing
+  // renderer (due to IPC delays), causing this method to be called twice. If
+  // that happens, ignore the second call.
+  if (initialized_handlers_)
+    return;
+  initialized_handlers_ = true;
 
   std::vector<DOMMessageHandler*>::iterator iter;
   // Skip over the generic handler.
