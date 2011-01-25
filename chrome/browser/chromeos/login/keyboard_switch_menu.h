@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/chromeos/status/input_method_menu_button.h"
+#include "chrome/browser/chromeos/status/input_method_menu.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 
 namespace chromeos {

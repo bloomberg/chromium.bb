@@ -97,10 +97,6 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   static std::wstring GetTextForMenu(const InputMethodDescriptor& input_method);
 
  protected:
-  // Parses |input_method| and then calls UpdateUI().
-  void UpdateUIFromInputMethod(const InputMethodDescriptor& input_method,
-                               size_t num_active_input_methods);
-
   // Rebuilds model and menu2 objects in preparetion to open the menu.
   void PrepareForMenuOpen();
 
@@ -125,6 +121,10 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   // Sub classes have to implement the interface which opens an UI for
   // customizing languages and input.
   virtual void OpenConfigUI() = 0;
+
+  // Parses |input_method| and then calls UpdateUI().
+  void UpdateUIFromInputMethod(const InputMethodDescriptor& input_method,
+                               size_t num_active_input_methods);
 
   // Rebuilds |model_|. This function should be called whenever
   // |input_method_descriptors_| is updated, or ImePropertiesChanged() is

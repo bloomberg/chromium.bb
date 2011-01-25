@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "views/controls/button/menu_button.h"
 #include "views/widget/widget_gtk.h"
 
 namespace chromeos {
