@@ -1,5 +1,5 @@
 <div class="page hidden" id="languageCustomizeModifierKeysOverlay">
-  <section>
+  <div class="content-area">
     <table class="option-control-table">
        <tr>
          <td class="option-name" i18n-content="xkbRemapSearchKeyToContent"></td>
@@ -30,8 +30,12 @@
          </td>
        </tr>
     </table>
-  </section>
-  <button id="languageCustomizeModifierKeysOverleyDismissButton"
-      i18n-content="close"
-      onclick="OptionsPage.clearOverlays();"></button>
+  </div>
+  <div class="action-area">
+    <div class="button-strip">
+      <button id="languageCustomizeModifierKeysOverleyDismissButton"
+          i18n-content="close"
+          onclick="OptionsPage.clearOverlays();"></button>
+    </div>
+  </div>
 </div>

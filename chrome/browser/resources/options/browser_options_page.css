@@ -72,13 +72,11 @@
   font-family: inherit;
   white-space: pre-wrap;
   width: 500px;
-  padding: 0px 16px 0px 16px;
 }
 
 #instantConfirmLearnMore {
   position: absolute;
   bottom: 18px;
-  -webkit-margin-start: 16px;
 }
 
 #startupAddButton {
