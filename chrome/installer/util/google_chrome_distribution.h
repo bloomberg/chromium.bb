@@ -79,18 +79,16 @@ class GoogleChromeDistribution : public BrowserDistribution {
   // toast experiment. It will use chrome to show the UI and it will record the
   // outcome in the registry.
   virtual void InactiveUserToastExperiment(int flavor,
-      const installer::Product& installation);
+      const installer::Product& installation,
+      const FilePath& application_path);
 
   const std::wstring& product_guid() { return product_guid_; }
-
-  virtual bool SetChannelFlags(bool set, installer::ChannelInfo* channel_info);
 
  protected:
   void set_product_guid(const std::wstring& guid) { product_guid_ = guid; }
 
   // Disallow construction from others.
-  explicit GoogleChromeDistribution(
-      const installer::MasterPreferences& prefs);
+  GoogleChromeDistribution();
 
  private:
   friend class BrowserDistribution;

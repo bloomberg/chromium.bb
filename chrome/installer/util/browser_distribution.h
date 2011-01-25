@@ -35,12 +35,12 @@ class BrowserDistribution {
   enum Type {
     CHROME_BROWSER,
     CHROME_FRAME,
+    CHROME_BINARIES,
   };
 
   static BrowserDistribution* GetDistribution();
 
-  static BrowserDistribution* GetSpecificDistribution(
-      Type type, const installer::MasterPreferences& prefs);
+  static BrowserDistribution* GetSpecificDistribution(Type type);
 
   Type GetType() const { return type_; }
 
@@ -104,45 +104,21 @@ class BrowserDistribution {
   // The user has qualified for the inactive user toast experiment and this
   // function just performs it.
   virtual void InactiveUserToastExperiment(int flavor,
-      const installer::Product& installation);
-
-  // A key-file is a file such as a DLL on Windows that is expected to be
-  // in use when the product is being used.  For example "chrome.dll" for
-  // Chrome.  Before attempting to delete an installation directory during
-  // an uninstallation, the uninstaller will check if any one of a potential
-  // set of key files is in use and if they are, abort the delete operation.
-  // Only if none of the key files are in use, can the folder be deleted.
-  // Note that this function does not return a full path to the key file(s),
-  // only (a) file name(s).
-  virtual std::vector<FilePath> GetKeyFiles();
-
-  // Returns the list of Com Dlls that this product cares about having
-  // registered and unregistered. The list may be empty.
-  virtual std::vector<FilePath> GetComDllList();
-
-  // Given a command line, appends the set of uninstall flags the uninstaller
-  // for this distribution will require.
-  virtual void AppendUninstallCommandLineFlags(CommandLine* cmd_line);
-
-  // Returns true if install should create an uninstallation entry in the
-  // Add/Remove Programs dialog for this distribution.
-  virtual bool ShouldCreateUninstallEntry();
-
-  // Adds or removes product-specific flags in |channel_info|.  Returns true if
-  // |channel_info| is modified.
-  virtual bool SetChannelFlags(bool set, installer::ChannelInfo* channel_info);
+      const installer::Product& installation,
+      const FilePath& application_path);
 
  protected:
-  explicit BrowserDistribution(const installer::MasterPreferences& prefs);
+  explicit BrowserDistribution(Type type);
 
   template<class DistributionClass>
   static BrowserDistribution* GetOrCreateBrowserDistribution(
-      const installer::MasterPreferences& prefs,
       BrowserDistribution** dist);
 
-  Type type_;
+  const Type type_;
 
  private:
+  BrowserDistribution();
+
   DISALLOW_COPY_AND_ASSIGN(BrowserDistribution);
 };
 

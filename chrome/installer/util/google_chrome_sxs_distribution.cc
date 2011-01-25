@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 
-#include "installer_util_strings.h"
+#include "installer_util_strings.h"  // NOLINT
 
 namespace {
 
@@ -20,9 +20,8 @@ const int kSxSIconIndex = 4;
 
 }  // namespace
 
-GoogleChromeSxSDistribution::GoogleChromeSxSDistribution(
-    const installer::MasterPreferences& prefs)
-        : GoogleChromeDistribution(prefs) {
+GoogleChromeSxSDistribution::GoogleChromeSxSDistribution()
+    : GoogleChromeDistribution() {
   GoogleChromeDistribution::set_product_guid(kChromeSxSGuid);
 }
 
@@ -61,10 +60,4 @@ bool GoogleChromeSxSDistribution::GetChromeChannel(std::wstring* channel) {
 
 std::wstring GoogleChromeSxSDistribution::ChannelName() {
   return kChannelName;
-}
-
-void GoogleChromeSxSDistribution::AppendUninstallCommandLineFlags(
-    CommandLine* cmd_line) {
-  DCHECK(cmd_line);
-  cmd_line->AppendSwitch(installer::switches::kChromeSxS);
 }

@@ -1,31 +1,28 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This file extends the browser distribution with a specific implementation
-// for Chrome Frame.
+// This file declares a class that contains various method related to branding.
 
-#ifndef CHROME_INSTALLER_UTIL_CHROME_FRAME_DISTRIBUTION_H_
-#define CHROME_INSTALLER_UTIL_CHROME_FRAME_DISTRIBUTION_H_
+#ifndef CHROME_INSTALLER_UTIL_CHROMIUM_BINARIES_DISTRIBUTION_H_
+#define CHROME_INSTALLER_UTIL_CHROMIUM_BINARIES_DISTRIBUTION_H_
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/util_constants.h"
 
-namespace installer {
-class MasterPreferences;
-}
-
-class ChromeFrameDistribution : public BrowserDistribution {
+class ChromiumBinariesDistribution : public BrowserDistribution {
  public:
   virtual std::wstring GetAppGuid();
 
   virtual std::wstring GetApplicationName();
 
+  virtual std::wstring GetAppShortCutName();
+
   virtual std::wstring GetAlternateApplicationName();
+
+  virtual std::wstring GetBrowserAppId();
 
   virtual std::wstring GetInstallSubDir();
 
@@ -41,8 +38,6 @@ class ChromeFrameDistribution : public BrowserDistribution {
 
   virtual std::wstring GetStateMediumKey();
 
-  virtual std::wstring GetStatsServerURL();
-
   virtual std::wstring GetUninstallLinkName();
 
   virtual std::wstring GetUninstallRegPath();
@@ -51,15 +46,19 @@ class ChromeFrameDistribution : public BrowserDistribution {
 
   virtual bool CanSetAsDefault();
 
-  virtual void UpdateInstallStatus(bool system_install,
-      bool incremental_install, bool multi_install,
-      installer::InstallStatus install_status);
+  virtual int GetIconIndex();
+
+  virtual bool GetChromeChannel(std::wstring* channel);
 
  protected:
   friend class BrowserDistribution;
 
-  // Disallow construction from non-friends.
-  ChromeFrameDistribution();
+  ChromiumBinariesDistribution();
+
+  BrowserDistribution* browser_distribution_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromiumBinariesDistribution);
 };
 
-#endif  // CHROME_INSTALLER_UTIL_CHROME_FRAME_DISTRIBUTION_H_
+#endif  // CHROME_INSTALLER_UTIL_CHROMIUM_BINARIES_DISTRIBUTION_H_

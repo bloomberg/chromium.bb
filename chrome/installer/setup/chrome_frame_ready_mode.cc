@@ -22,8 +22,6 @@
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
-#include "chrome/installer/util/package.h"
-#include "chrome/installer/util/package_properties.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
@@ -31,76 +29,100 @@
 
 namespace installer {
 
-InstallStatus ChromeFrameReadyModeOptIn(const InstallerState& installer_state,
-                                        const CommandLine& cmd_line) {
+// If Chrome is not multi-installed at the appropriate level, error.
+// If Chrome Frame is already multi-installed at the appropriate level, noop.
+// If Chrome Frame is single-installed at the appropriate level, error.
+// Add uninstall for Chrome Frame.
+// Update uninstall for Chrome.
+// Update ChannelInfo for all multi-installed products.
+// Remove ready-mode.
+InstallStatus ChromeFrameReadyModeOptIn(
+    const InstallationState& machine_state,
+    const InstallerState& installer_state) {
   VLOG(1) << "Opting into Chrome Frame";
   InstallStatus status = INSTALL_REPAIRED;
 
-  const MasterPreferences& prefs = MasterPreferences::ForCurrentProcess();
-  bool system_install = false;
-  prefs.GetBool(master_preferences::kSystemLevel, &system_install);
-  BrowserDistribution* cf = BrowserDistribution::GetSpecificDistribution(
-      BrowserDistribution::CHROME_FRAME, prefs);
-  DCHECK(cf->ShouldCreateUninstallEntry())
-      << "Opting into CF should create an uninstall entry";
-  BrowserDistribution* chrome = BrowserDistribution::GetSpecificDistribution(
-      BrowserDistribution::CHROME_BROWSER, prefs);
+  // Make sure Chrome and Chrome Frame are both multi-installed.
+  const ProductState* chrome_state =
+      machine_state.GetProductState(installer_state.system_install(),
+                                    BrowserDistribution::CHROME_BROWSER);
+  const ProductState* cf_state =
+      machine_state.GetProductState(installer_state.system_install(),
+                                    BrowserDistribution::CHROME_FRAME);
+  if (chrome_state == NULL) {
+    LOG(ERROR) << "Chrome Frame opt-in requires multi-install of Chrome.";
+    return CHROME_NOT_INSTALLED;
+  }
+  if (!chrome_state->is_multi_install()) {
+    LOG(ERROR) << "Chrome Frame opt-in requires multi-install of Chrome.";
+    return NON_MULTI_INSTALLATION_EXISTS;
+  }
+  if (cf_state == NULL) {
+    LOG(ERROR) << "Chrome Frame opt-in requires multi-install of Chrome Frame.";
+    return CHROME_NOT_INSTALLED;
+  }
+  if (!cf_state->is_multi_install()) {
+    LOG(ERROR) << "Chrome Frame opt-in requires multi-install of Chrome Frame.";
+    return NON_MULTI_INSTALLATION_EXISTS;
+  }
 
-  ActivePackageProperties package_properties;
+  // Create a new InstallerState to be used for this operation.
+  InstallerState opt_in_state(installer_state.level());
 
-  // Remove ChromeFrameReadyMode, update Chrome's uninstallation commands to
-  // only uninstall Chrome, and add an entry to the Add/Remove Programs
-  // dialog for GCF.
+  // Add the two products we're going to operate on.
+  const Product* chrome =
+      opt_in_state.AddProductFromState(BrowserDistribution::CHROME_BROWSER,
+                                       *chrome_state);
+  Product* cf =
+      opt_in_state.AddProductFromState(BrowserDistribution::CHROME_FRAME,
+                                       *cf_state);
+  // DCHECKs will fire in this case if it ever happens (it won't).
+  if (chrome == NULL || cf == NULL)
+    return READY_MODE_OPT_IN_FAILED;
 
-  FilePath path(GetChromeFrameInstallPath(true, system_install, cf));
-  if (path.empty()) {
-    LOG(ERROR) << "Conflicting installations";
-    status = NON_MULTI_INSTALLATION_EXISTS;
-  } else {
-    InstallationState original_state;
-    original_state.Initialize(prefs);
+  // Turn off ready-mode on Chrome Frame, thereby making it fully installed.
+  if (!cf->SetOption(kOptionReadyMode, false)) {
+    LOG(WARNING)
+        << "Chrome Frame is already fully installed; opting-in nonetheless.";
+  }
 
-    scoped_refptr<Package> package(new Package(prefs.is_multi_install(),
-        system_install, path, &package_properties));
-    scoped_refptr<Product> cf_product(new Product(cf, package));
-    DCHECK(cf_product->ShouldCreateUninstallEntry() || cf_product->IsMsi());
-    scoped_refptr<Product> chrome_product(new Product(chrome, package));
-    const ProductState* product_state =
-        original_state.GetProductState(system_install, cf->GetType());
-    if (product_state == NULL) {
-      LOG(ERROR) << "No Chrome Frame installation found for opt-in.";
-      return CHROME_NOT_INSTALLED;
-    }
-    scoped_ptr<WorkItemList> item_list(WorkItem::CreateWorkItemList());
+  // Update Chrome's uninstallation commands to only uninstall Chrome, and add
+  // an entry to the Add/Remove Programs dialog for GCF.
+  DCHECK(cf->ShouldCreateUninstallEntry() || opt_in_state.is_msi());
 
-    // This creates the uninstallation entry for GCF.
-    AddUninstallShortcutWorkItems(cmd_line.GetProgram(),
-        product_state->version(), item_list.get(), *cf_product.get());
-    // This updates the Chrome uninstallation entries.
-    AddUninstallShortcutWorkItems(cmd_line.GetProgram(),
-        product_state->version(), item_list.get(), *chrome_product.get());
+  scoped_ptr<WorkItemList> item_list(WorkItem::CreateWorkItemList());
 
-    // Add a work item to delete the ChromeFrameReadyMode registry value.
-    HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-    item_list->AddDeleteRegValueWorkItem(root, package_properties.GetStateKey(),
-        kChromeFrameReadyModeField);
+  // This creates the uninstallation entry for GCF.
+  AddUninstallShortcutWorkItems(opt_in_state, cf_state->GetSetupPath(),
+      cf_state->version(), item_list.get(), *cf);
+  // This updates the Chrome uninstallation entries.
+  AddUninstallShortcutWorkItems(opt_in_state, chrome_state->GetSetupPath(),
+      chrome_state->version(), item_list.get(), *chrome);
 
-    // Delete the command elevation registry keys
-    std::wstring version_key(cf->GetVersionKey());
-    item_list->AddDeleteRegValueWorkItem(
-        root, version_key, google_update::kRegCFTempOptOutCmdField);
-    item_list->AddDeleteRegValueWorkItem(
-        root, version_key, google_update::kRegCFEndTempOptOutCmdField);
-    item_list->AddDeleteRegValueWorkItem(root, version_key,
-                                         google_update::kRegCFOptOutCmdField);
-    item_list->AddDeleteRegValueWorkItem(root, version_key,
-                                         google_update::kRegCFOptInCmdField);
+  // Add a work item to delete the ChromeFrameReadyMode registry value.
+  HKEY root = opt_in_state.root_key();
+  item_list->AddDeleteRegValueWorkItem(root,
+      opt_in_state.multi_package_binaries_distribution()->GetStateKey(),
+      kChromeFrameReadyModeField);
 
-    if (!item_list->Do()) {
-      LOG(ERROR) << "Failed to opt into GCF";
-      item_list->Rollback();
-      status = READY_MODE_OPT_IN_FAILED;
-    }
+  // Update the Google Update channel ("ap") value.
+  AddGoogleUpdateWorkItems(opt_in_state, item_list.get());
+
+  // Delete the command elevation registry keys
+  std::wstring version_key(cf->distribution()->GetVersionKey());
+  item_list->AddDeleteRegValueWorkItem(
+      root, version_key, google_update::kRegCFTempOptOutCmdField);
+  item_list->AddDeleteRegValueWorkItem(
+      root, version_key, google_update::kRegCFEndTempOptOutCmdField);
+  item_list->AddDeleteRegValueWorkItem(root, version_key,
+                                       google_update::kRegCFOptOutCmdField);
+  item_list->AddDeleteRegValueWorkItem(root, version_key,
+                                       google_update::kRegCFOptInCmdField);
+
+  if (!item_list->Do()) {
+    LOG(ERROR) << "Failed to opt into GCF";
+    item_list->Rollback();
+    status = READY_MODE_OPT_IN_FAILED;
   }
 
   return status;
@@ -111,100 +133,104 @@ const wchar_t kPostPlatformUAKey[] =
     L"User Agent\\Post Platform";
 const wchar_t kChromeFramePrefix[] = L"chromeframe/";
 
-InstallStatus ChromeFrameReadyModeTempOptOut(const CommandLine& cmd_line) {
+InstallStatus ChromeFrameReadyModeTempOptOut(
+    const InstallationState& machine_state,
+    const InstallerState& installer_state) {
   VLOG(1) << "Temporarily opting out of Chrome Frame";
   InstallStatus status = INSTALL_REPAIRED;
 
-  const MasterPreferences& prefs = MasterPreferences::ForCurrentProcess();
-  bool system_install = false;
-  prefs.GetBool(master_preferences::kSystemLevel, &system_install);
-  BrowserDistribution* cf = BrowserDistribution::GetSpecificDistribution(
-      BrowserDistribution::CHROME_FRAME, prefs);
+  // Make sure Chrome Frame is multi-installed.
+  const ProductState* cf_state =
+      machine_state.GetProductState(installer_state.system_install(),
+                                    BrowserDistribution::CHROME_FRAME);
+  if (cf_state == NULL) {
+    LOG(ERROR)
+        << "Chrome Frame temp opt-out requires multi-install of Chrome Frame.";
+    return CHROME_NOT_INSTALLED;
+  }
+  if (!cf_state->is_multi_install()) {
+    LOG(ERROR)
+        << "Chrome Frame temp opt-out requires multi-install of Chrome Frame.";
+    return NON_MULTI_INSTALLATION_EXISTS;
+  }
 
-  installer::ActivePackageProperties package_properties;
+  scoped_ptr<WorkItemList> item_list(WorkItem::CreateWorkItemList());
 
-  // Remove the ChromeFrame user agent string from the registry, modify the
-  // ReadyMode state flag.
-  FilePath path(GetChromeFrameInstallPath(true, system_install, cf));
-  if (path.empty()) {
-    LOG(ERROR) << "Conflicting installations";
-    status = NON_MULTI_INSTALLATION_EXISTS;
-  } else {
-    scoped_ptr<WorkItemList> item_list(WorkItem::CreateWorkItemList());
+  HKEY root = installer_state.root_key();
 
-    HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-
-    // Add a work item to delete the ChromeFrame user agent registry value.
-    base::win::RegistryValueIterator values(root, kPostPlatformUAKey);
-    while (values.Valid()) {
-      const wchar_t* name = values.Name();
-      if (StartsWith(name, kChromeFramePrefix, true)) {
-        item_list->AddDeleteRegValueWorkItem(root, kPostPlatformUAKey, name);
-      }
-      ++values;
+  // Add a work item to delete the ChromeFrame user agent registry value.
+  base::win::RegistryValueIterator values(root, kPostPlatformUAKey);
+  while (values.Valid()) {
+    const wchar_t* name = values.Name();
+    if (StartsWith(name, kChromeFramePrefix, true)) {
+      item_list->AddDeleteRegValueWorkItem(root, kPostPlatformUAKey, name);
     }
+    ++values;
+  }
 
-    // Add a work item to update the Ready Mode state flag
-    int64 timestamp = base::Time::Now().ToInternalValue();
-    item_list->AddSetRegValueWorkItem(root, package_properties.GetStateKey(),
-                                      kChromeFrameReadyModeField, timestamp,
-                                      true);
+  // Add a work item to update the Ready Mode state flag
+  int64 timestamp = base::Time::Now().ToInternalValue();
+  BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
+      BrowserDistribution::CHROME_BINARIES);
+  item_list->AddSetRegValueWorkItem(root, dist->GetStateKey(),
+                                    kChromeFrameReadyModeField, timestamp,
+                                    true);
 
-    if (!item_list->Do()) {
-      LOG(ERROR) << "Failed to temporarily opt out of GCF";
-      item_list->Rollback();
-      status = READY_MODE_TEMP_OPT_OUT_FAILED;
-    }
+  if (!item_list->Do()) {
+    LOG(ERROR) << "Failed to temporarily opt out of GCF";
+    item_list->Rollback();
+    status = READY_MODE_TEMP_OPT_OUT_FAILED;
   }
 
   return status;
 }
 
-InstallStatus ChromeFrameReadyModeEndTempOptOut(const CommandLine& cmd_line) {
+InstallStatus ChromeFrameReadyModeEndTempOptOut(
+    const InstallationState& machine_state,
+    const InstallerState& installer_state) {
   VLOG(1) << "Ending temporary opt-out of Chrome Frame";
   InstallStatus status = INSTALL_REPAIRED;
 
-  const MasterPreferences& prefs = MasterPreferences::ForCurrentProcess();
-  bool system_install = false;
-  prefs.GetBool(master_preferences::kSystemLevel, &system_install);
-  BrowserDistribution* cf = BrowserDistribution::GetSpecificDistribution(
-      BrowserDistribution::CHROME_FRAME, prefs);
-
-  installer::ActivePackageProperties package_properties;
+  // Make sure Chrome Frame is multi-installed.
+  const ProductState* cf_state =
+      machine_state.GetProductState(installer_state.system_install(),
+                                    BrowserDistribution::CHROME_FRAME);
+  if (cf_state == NULL) {
+    LOG(ERROR)
+        << "Chrome Frame temp opt-out requires multi-install of Chrome Frame.";
+    return CHROME_NOT_INSTALLED;
+  }
+  if (!cf_state->is_multi_install()) {
+    LOG(ERROR)
+        << "Chrome Frame temp opt-out requires multi-install of Chrome Frame.";
+    return NON_MULTI_INSTALLATION_EXISTS;
+  }
 
   // Replace the ChromeFrame user agent string in the registry, modify the
   // ReadyMode state flag.
-  FilePath path(GetChromeFrameInstallPath(true, system_install, cf));
-  scoped_ptr<Version> installed_version(
-      InstallUtil::GetChromeVersion(cf, system_install));
+  const Version& installed_version = cf_state->version();
 
-  if (path.empty()) {
-    LOG(ERROR) << "Conflicting installations";
-    status = NON_MULTI_INSTALLATION_EXISTS;
-  } else if (installed_version == NULL) {
-    LOG(ERROR) << "Failed to query installed version of Chrome Frame";
+  scoped_ptr<WorkItemList> item_list(WorkItem::CreateWorkItemList());
+
+  HKEY root = installer_state.root_key();
+
+  std::wstring chrome_frame_ua_value_name(kChromeFramePrefix);
+  chrome_frame_ua_value_name += ASCIIToWide(installed_version.GetString());
+
+  // Store the Chrome Frame user agent string
+  item_list->AddSetRegValueWorkItem(root, kPostPlatformUAKey,
+                                    chrome_frame_ua_value_name, L"", true);
+  // Add a work item to update the Ready Mode state flag
+  BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
+      BrowserDistribution::CHROME_BINARIES);
+  item_list->AddSetRegValueWorkItem(root, dist->GetStateKey(),
+                                    kChromeFrameReadyModeField,
+                                    static_cast<int64>(1), true);
+
+  if (!item_list->Do()) {
+    LOG(ERROR) << "Failed to end temporary opt out of GCF";
+    item_list->Rollback();
     status = READY_MODE_END_TEMP_OPT_OUT_FAILED;
-  } else {
-    scoped_ptr<WorkItemList> item_list(WorkItem::CreateWorkItemList());
-
-    HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-
-    std::wstring chrome_frame_ua_value_name = kChromeFramePrefix;
-    chrome_frame_ua_value_name += ASCIIToWide(installed_version->GetString());
-
-    // Store the Chrome Frame user agent string
-    item_list->AddSetRegValueWorkItem(root, kPostPlatformUAKey,
-                                      chrome_frame_ua_value_name, L"", true);
-    // Add a work item to update the Ready Mode state flag
-    item_list->AddSetRegValueWorkItem(root, package_properties.GetStateKey(),
-                                      kChromeFrameReadyModeField,
-                                      static_cast<int64>(1), true);
-
-    if (!item_list->Do()) {
-      LOG(ERROR) << "Failed to end temporary opt out of GCF";
-      item_list->Rollback();
-      status = READY_MODE_END_TEMP_OPT_OUT_FAILED;
-    }
   }
 
   return status;

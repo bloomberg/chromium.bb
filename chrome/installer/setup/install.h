@@ -13,7 +13,6 @@
 
 #include "base/version.h"
 #include "chrome/installer/util/product.h"
-#include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/util_constants.h"
 
 class DictionaryValue;
@@ -24,7 +23,7 @@ namespace installer {
 
 class InstallationState;
 class InstallerState;
-class Package;
+class MasterPreferences;
 
 // This function installs or updates a new version of Chrome. It returns
 // install status (failed, new_install, updated etc).
@@ -46,12 +45,12 @@ class Package;
 InstallStatus InstallOrUpdateProduct(
     const InstallationState& original_state,
     const InstallerState& installer_state,
-    const FilePath& setup_path, const FilePath& archive_path,
-    const FilePath& install_temp_path, const FilePath& prefs_path,
-    const installer::MasterPreferences& prefs, const Version& new_version,
-    const Package& package);
-
-
+    const FilePath& setup_path,
+    const FilePath& archive_path,
+    const FilePath& install_temp_path,
+    const FilePath& prefs_path,
+    const installer::MasterPreferences& prefs,
+    const Version& new_version);
 
 }  // namespace installer
 

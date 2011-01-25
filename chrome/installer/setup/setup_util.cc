@@ -9,7 +9,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/util_constants.h"
 #include "courgette/courgette.h"
 #include "third_party/bspatch/mbspatch.h"

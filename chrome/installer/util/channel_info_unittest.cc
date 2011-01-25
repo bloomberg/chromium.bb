@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
+#include "base/basictypes.h"
 #include "chrome/installer/util/channel_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -157,4 +160,37 @@ TEST(ChannelInfoTest, Combinations) {
   EXPECT_FALSE(ci.IsChrome());
   ci.set_value(L"2.0-beta-chromeframe-chrome");
   EXPECT_TRUE(ci.IsChrome());
+}
+
+TEST(ChannelInfoTest, EqualsBaseOf) {
+  installer::ChannelInfo ci1;
+  installer::ChannelInfo ci2;
+
+  std::pair<std::wstring, std::wstring> trues[] = {
+    std::make_pair(std::wstring(L""), std::wstring(L"")),
+    std::make_pair(std::wstring(L"2.0-beta"), std::wstring(L"2.0-beta")),
+    std::make_pair(std::wstring(L"-full"), std::wstring(L"-full")),
+    std::make_pair(std::wstring(L""), std::wstring(L"-multi"))
+  };
+  for (int i = 0; i < arraysize(trues); ++i) {
+    std::pair<std::wstring, std::wstring>& the_pair = trues[i];
+    ci1.set_value(the_pair.first);
+    ci2.set_value(the_pair.second);
+    EXPECT_TRUE(ci1.EqualsBaseOf(ci2)) << the_pair.first << " "
+                                       << the_pair.second;
+  }
+
+  std::pair<std::wstring, std::wstring> falses[] = {
+    std::make_pair(std::wstring(L""), std::wstring(L"2.0-beta")),
+    std::make_pair(std::wstring(L"2.0-gamma"), std::wstring(L"2.0-beta")),
+    std::make_pair(std::wstring(L"spam-full"), std::wstring(L"-full")),
+    std::make_pair(std::wstring(L"multi"), std::wstring(L"-multi"))
+  };
+  for (int i = 0; i < arraysize(falses); ++i) {
+    std::pair<std::wstring, std::wstring>& the_pair = falses[i];
+    ci1.set_value(the_pair.first);
+    ci2.set_value(the_pair.second);
+    EXPECT_FALSE(ci1.EqualsBaseOf(ci2)) << the_pair.first << " "
+                                        << the_pair.second;
+  }
 }

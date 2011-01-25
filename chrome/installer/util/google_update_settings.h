@@ -12,7 +12,7 @@
 
 namespace installer {
 class ChannelInfo;
-class Package;
+class InstallerState;
 }
 
 // This class provides accessors to the Google Update 'ClientState' information
@@ -38,7 +38,7 @@ class GoogleUpdateSettings {
 
   // Sets the machine-wide EULA consented flag required on OEM installs.
   // Returns false if the setting could not be recorded.
-  static bool SetEULAConsent(const installer::Package& package,
+  static bool SetEULAConsent(const installer::InstallerState& installer_state,
                              bool consented);
 
   // Returns the last time chrome was run in days. It uses a recorded value

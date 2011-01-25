@@ -17,7 +17,9 @@
 #include "base/win/registry.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
+#include "chrome/installer/util/chromium_binaries_distribution.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
+#include "chrome/installer/util/google_chrome_binaries_distribution.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
@@ -31,6 +33,7 @@ namespace {
 // The BrowserDistribution objects are never freed.
 BrowserDistribution* g_browser_distribution = NULL;
 BrowserDistribution* g_chrome_frame_distribution = NULL;
+BrowserDistribution* g_binaries_distribution = NULL;
 
 // Returns true if currently running in npchrome_frame.dll
 bool IsChromeFrameModule() {
@@ -59,17 +62,19 @@ BrowserDistribution::Type GetCurrentDistributionType() {
 
 }  // end namespace
 
-BrowserDistribution::BrowserDistribution(
-    const installer::MasterPreferences& prefs)
-    : type_(BrowserDistribution::CHROME_BROWSER) {
+BrowserDistribution::BrowserDistribution()
+    : type_(CHROME_BROWSER) {
+}
+
+BrowserDistribution::BrowserDistribution(Type type)
+    : type_(type) {
 }
 
 template<class DistributionClass>
 BrowserDistribution* BrowserDistribution::GetOrCreateBrowserDistribution(
-    const installer::MasterPreferences& prefs,
     BrowserDistribution** dist) {
   if (!*dist) {
-    DistributionClass* temp = new DistributionClass(prefs);
+    DistributionClass* temp = new DistributionClass();
     if (base::subtle::NoBarrier_CompareAndSwap(
             reinterpret_cast<base::subtle::AtomicWord*>(dist), NULL,
             reinterpret_cast<base::subtle::AtomicWord>(temp)) != NULL)
@@ -80,33 +85,43 @@ BrowserDistribution* BrowserDistribution::GetOrCreateBrowserDistribution(
 }
 
 BrowserDistribution* BrowserDistribution::GetDistribution() {
-  const installer::MasterPreferences& prefs =
-      installer::MasterPreferences::ForCurrentProcess();
-  return GetSpecificDistribution(GetCurrentDistributionType(), prefs);
+  return GetSpecificDistribution(GetCurrentDistributionType());
 }
 
 // static
 BrowserDistribution* BrowserDistribution::GetSpecificDistribution(
-    BrowserDistribution::Type type,
-    const installer::MasterPreferences& prefs) {
+    BrowserDistribution::Type type) {
   BrowserDistribution* dist = NULL;
 
-  if (type == CHROME_FRAME) {
-    dist = GetOrCreateBrowserDistribution<ChromeFrameDistribution>(
-        prefs, &g_chrome_frame_distribution);
-  } else {
-    DCHECK_EQ(CHROME_BROWSER, type);
+  switch (type) {
+    case CHROME_BROWSER:
 #if defined(GOOGLE_CHROME_BUILD)
-    if (InstallUtil::IsChromeSxSProcess()) {
-      dist = GetOrCreateBrowserDistribution<GoogleChromeSxSDistribution>(
-          prefs, &g_browser_distribution);
-    } else {
-      dist = GetOrCreateBrowserDistribution<GoogleChromeDistribution>(
-          prefs, &g_browser_distribution);
-    }
+      if (InstallUtil::IsChromeSxSProcess()) {
+        dist = GetOrCreateBrowserDistribution<GoogleChromeSxSDistribution>(
+            &g_browser_distribution);
+      } else {
+        dist = GetOrCreateBrowserDistribution<GoogleChromeDistribution>(
+            &g_browser_distribution);
+      }
 #else
-    dist = GetOrCreateBrowserDistribution<BrowserDistribution>(
-        prefs, &g_browser_distribution);
+      dist = GetOrCreateBrowserDistribution<BrowserDistribution>(
+          &g_browser_distribution);
+#endif
+      break;
+
+    case CHROME_FRAME:
+      dist = GetOrCreateBrowserDistribution<ChromeFrameDistribution>(
+          &g_chrome_frame_distribution);
+      break;
+
+    default:
+      DCHECK_EQ(CHROME_BINARIES, type);
+#if defined(GOOGLE_CHROME_BUILD)
+      dist = GetOrCreateBrowserDistribution<GoogleChromeBinariesDistribution>(
+          &g_binaries_distribution);
+#else
+      dist = GetOrCreateBrowserDistribution<ChromiumBinariesDistribution>(
+          &g_binaries_distribution);
 #endif
   }
 
@@ -212,31 +227,6 @@ void BrowserDistribution::LaunchUserExperiment(
 
 
 void BrowserDistribution::InactiveUserToastExperiment(int flavor,
-    const installer::Product& installation) {
-}
-
-std::vector<FilePath> BrowserDistribution::GetKeyFiles() {
-  std::vector<FilePath> key_files;
-  key_files.push_back(FilePath(installer::kChromeDll));
-  return key_files;
-}
-
-std::vector<FilePath> BrowserDistribution::GetComDllList() {
-  return std::vector<FilePath>();
-}
-
-void BrowserDistribution::AppendUninstallCommandLineFlags(
-    CommandLine* cmd_line) {
-  DCHECK(cmd_line);
-  cmd_line->AppendSwitch(installer::switches::kChrome);
-}
-
-bool BrowserDistribution::ShouldCreateUninstallEntry() {
-  return true;
-}
-
-bool BrowserDistribution::SetChannelFlags(
-    bool set,
-    installer::ChannelInfo* channel_info) {
-  return false;
+    const installer::Product& installation,
+    const FilePath& application_path) {
 }

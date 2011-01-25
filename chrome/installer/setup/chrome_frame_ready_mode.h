@@ -13,21 +13,26 @@ class CommandLine;
 namespace installer {
 
 enum InstallStatus;
+class InstallationState;
 class InstallerState;
 
 // Removes the ChromeFrameReadyMode flag from the registry, updates Chrome's
 // uninstallation commands to only uninstall Chrome, and adds an entry to the
 // Add/Remove Programs list for GCF.
-InstallStatus ChromeFrameReadyModeOptIn(const InstallerState& installer_state,
-                                        const CommandLine& cmd_line);
+InstallStatus ChromeFrameReadyModeOptIn(const InstallationState& machine_state,
+                                        const InstallerState& installer_state);
 
 // Unregisters the ChromeFrame user agent modification, sets a timestamp for
 // restoring it.
-InstallStatus ChromeFrameReadyModeTempOptOut(const CommandLine& cmd_line);
+InstallStatus ChromeFrameReadyModeTempOptOut(
+    const InstallationState& machine_state,
+    const InstallerState& installer_state);
 
 // Re-registers the ChromeFrame user agent modification, restores Ready Mode
 // active state flag.
-InstallStatus ChromeFrameReadyModeEndTempOptOut(const CommandLine& cmd_line);
+InstallStatus ChromeFrameReadyModeEndTempOptOut(
+    const InstallationState& machine_state,
+    const InstallerState& installer_state);
 
 }  // namespace installer
 

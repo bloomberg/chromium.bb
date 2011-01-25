@@ -153,6 +153,18 @@ bool ChannelInfo::GetChannelName(std::wstring* channel_name) const {
   return false;
 }
 
+bool ChannelInfo::EqualsBaseOf(const ChannelInfo& other) const {
+  std::wstring::size_type this_base_end;
+  std::wstring::size_type other_base_end;
+
+  if (!FindModifier(MOD_MULTI_INSTALL, value_, &this_base_end))
+    this_base_end = FindInsertionPoint(MOD_MULTI_INSTALL, value_);
+  if (!FindModifier(MOD_MULTI_INSTALL, other.value_, &other_base_end))
+    other_base_end = FindInsertionPoint(MOD_MULTI_INSTALL, other.value_);
+  return value_.compare(0, this_base_end,
+                        other.value_.c_str(), other_base_end) == 0;
+}
+
 bool ChannelInfo::IsCeee() const {
   return HasModifier(MOD_CEEE, value_);
 }

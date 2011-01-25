@@ -5,7 +5,6 @@
 // Unit tests for BrowserDistribution class.
 
 #include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/shell_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,21 +24,14 @@ class BrowserDistributionTest : public testing::Test {
 // The distribution strings should not be empty. The unit tests are not linking
 // with the chrome resources so we cannot test official build.
 TEST(BrowserDistributionTest, StringsTest) {
-  struct browser_test_type {
-    BrowserDistribution::Type type;
-    bool has_com_dlls;
-  } browser_tests[] = {
-    { BrowserDistribution::CHROME_BROWSER, false },
-    { BrowserDistribution::CHROME_FRAME, true },
+  BrowserDistribution::Type browser_tests[] = {
+    BrowserDistribution::CHROME_BROWSER,
+    BrowserDistribution::CHROME_FRAME,
   };
-
-  const installer::MasterPreferences& prefs =
-      installer::MasterPreferences::ForCurrentProcess();
 
   for (int i = 0; i < arraysize(browser_tests); ++i) {
     BrowserDistribution* dist =
-        BrowserDistribution::GetSpecificDistribution(browser_tests[i].type,
-                                                     prefs);
+        BrowserDistribution::GetSpecificDistribution(browser_tests[i]);
     ASSERT_TRUE(dist != NULL);
     std::wstring name = dist->GetApplicationName();
     EXPECT_FALSE(name.empty());
@@ -47,12 +39,6 @@ TEST(BrowserDistributionTest, StringsTest) {
     EXPECT_FALSE(desc.empty());
     std::wstring alt_name = dist->GetAlternateApplicationName();
     EXPECT_FALSE(alt_name.empty());
-    std::vector<FilePath> com_dlls(dist->GetComDllList());
-    if (browser_tests[i].has_com_dlls) {
-      EXPECT_FALSE(com_dlls.empty());
-    } else {
-      EXPECT_TRUE(com_dlls.empty());
-    }
   }
 }
 

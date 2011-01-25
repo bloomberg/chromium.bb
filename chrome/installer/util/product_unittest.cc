@@ -9,17 +9,12 @@
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
-#include "chrome/installer/util/package.h"
-#include "chrome/installer/util/package_properties.h"
+#include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/product.h"
 
 using base::win::RegKey;
-using installer::ChromePackageProperties;
-using installer::ChromiumPackageProperties;
-using installer::Package;
 using installer::Product;
-using installer::ProductPackageMapping;
 using installer::MasterPreferences;
 
 void TestWithTempDir::SetUp() {
@@ -82,15 +77,19 @@ TEST_F(ProductTest, ProductInstallBasic) {
   // TODO(tommi): We should mock this and use our mocked distribution.
   const bool multi_install = false;
   const bool system_level = true;
-  const installer::MasterPreferences& prefs =
-      installer::MasterPreferences::ForCurrentProcess();
-  BrowserDistribution* distribution =
-      BrowserDistribution::GetSpecificDistribution(
-          BrowserDistribution::CHROME_BROWSER, prefs);
-  ChromePackageProperties properties;
-  scoped_refptr<Package> package(new Package(multi_install, system_level,
-                                             test_dir_.path(), &properties));
-  scoped_refptr<Product> product(new Product(distribution, package.get()));
+  CommandLine cmd_line = CommandLine::FromString(
+      std::wstring(L"setup.exe") +
+      (multi_install ? L" --multi-install --chrome" : L"") +
+      (system_level ? L" --system-level" : L""));
+  installer::MasterPreferences prefs(cmd_line);
+  installer::InstallationState machine_state;
+  machine_state.Initialize();
+  installer::InstallerState installer_state;
+  installer_state.Initialize(cmd_line, prefs, machine_state);
+
+  const Product* product = installer_state.products()[0];
+  BrowserDistribution* distribution = product->distribution();
+  EXPECT_EQ(BrowserDistribution::CHROME_BROWSER, distribution->GetType());
 
   FilePath user_data(product->GetUserDataPath());
   EXPECT_FALSE(user_data.empty());
@@ -104,34 +103,14 @@ TEST_F(ProductTest, ProductInstallBasic) {
   EXPECT_EQ(std::wstring::npos,
             user_data.value().find(program_files.value()));
 
-  // We started out with a non-msi product.
-  EXPECT_FALSE(product->IsMsi());
+  // There should be no installed version in the registry.
+  machine_state.Initialize();
+  EXPECT_TRUE(machine_state.GetProductState(
+      system_level, distribution->GetType()) == NULL);
 
-  HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  HKEY root = installer_state.root_key();
   {
     TempRegKeyOverride override(root, L"root_pit");
-
-    // Create a make-believe client state key.
-    RegKey key;
-    std::wstring state_key_path(distribution->GetStateKey());
-    ASSERT_EQ(ERROR_SUCCESS,
-        key.Create(root, state_key_path.c_str(), KEY_ALL_ACCESS));
-
-    // Set the MSI marker, delete the objects, create new ones and verify
-    // that we now see the MSI marker.
-    EXPECT_TRUE(product->SetMsiMarker(true));
-    package = new Package(multi_install, system_level, test_dir_.path(),
-                          &properties);
-    product = new Product(distribution, package.get());
-    EXPECT_TRUE(product->IsMsi());
-
-    // There should be no installed version in the registry.
-    {
-      installer::InstallationState state;
-      state.Initialize(prefs);
-      EXPECT_TRUE(state.GetProductState(system_level,
-                                        distribution->GetType()) == NULL);
-    }
 
     // Let's pretend chrome is installed.
     RegKey version_key(root, distribution->GetVersionKey().c_str(),
@@ -144,16 +123,30 @@ TEST_F(ProductTest, ProductInstallBasic) {
     version_key.WriteValue(google_update::kRegVersionField,
                            UTF8ToWide(current_version->GetString()).c_str());
 
-    {
-      installer::InstallationState state;
-      state.Initialize(prefs);
-      const installer::ProductState* prod_state =
-          state.GetProductState(system_level, distribution->GetType());
-      EXPECT_TRUE(prod_state != NULL);
-      if (prod_state != NULL) {
-        EXPECT_TRUE(prod_state->version().Equals(*current_version.get()));
-      }
+    // We started out with a non-msi product.
+    machine_state.Initialize();
+    const installer::ProductState* chrome_state =
+        machine_state.GetProductState(system_level, distribution->GetType());
+    EXPECT_TRUE(chrome_state != NULL);
+    if (chrome_state != NULL) {
+      EXPECT_TRUE(chrome_state->version().Equals(*current_version.get()));
+      EXPECT_FALSE(chrome_state->is_msi());
     }
+
+    // Create a make-believe client state key.
+    RegKey key;
+    std::wstring state_key_path(distribution->GetStateKey());
+    ASSERT_EQ(ERROR_SUCCESS,
+        key.Create(root, state_key_path.c_str(), KEY_ALL_ACCESS));
+
+    // Set the MSI marker, refresh, and verify that we now see the MSI marker.
+    EXPECT_TRUE(product->SetMsiMarker(system_level, true));
+    machine_state.Initialize();
+    chrome_state =
+        machine_state.GetProductState(system_level, distribution->GetType());
+    EXPECT_TRUE(chrome_state != NULL);
+    if (chrome_state != NULL)
+      EXPECT_TRUE(chrome_state->is_msi());
   }
 }
 
@@ -161,42 +154,4 @@ TEST_F(ProductTest, LaunchChrome) {
   // TODO(tommi): Test Product::LaunchChrome and
   // Product::LaunchChromeAndWait.
   LOG(ERROR) << "Test not implemented.";
-}
-
-// Overrides ChromeFrameDistribution for the sole purpose of returning
-// the Chrome (not Chrome Frame) installation path.
-class FakeChromeFrameDistribution : public ChromeFrameDistribution {
- public:
-  explicit FakeChromeFrameDistribution(
-      const installer::MasterPreferences& prefs)
-          : ChromeFrameDistribution(prefs) {}
-  virtual std::wstring GetInstallSubDir() {
-    const MasterPreferences& prefs =
-        installer::MasterPreferences::ForCurrentProcess();
-    return BrowserDistribution::GetSpecificDistribution(
-        BrowserDistribution::CHROME_BROWSER, prefs)->GetInstallSubDir();
-  }
-};
-
-TEST_F(ProductTest, ProductInstallsBasic) {
-  const bool multi_install = true;
-  const bool system_level = true;
-  ProductPackageMapping installs(multi_install, system_level);
-  EXPECT_EQ(multi_install, installs.multi_install());
-  EXPECT_EQ(system_level, installs.system_level());
-  EXPECT_EQ(0U, installs.packages().size());
-  EXPECT_EQ(0U, installs.products().size());
-
-  // TODO(robertshield): Include test that use mock master preferences.
-  const MasterPreferences& prefs =
-      installer::MasterPreferences::ForCurrentProcess();
-
-  installs.AddDistribution(BrowserDistribution::CHROME_BROWSER, prefs);
-  FakeChromeFrameDistribution fake_chrome_frame(prefs);
-  installs.AddDistribution(&fake_chrome_frame);
-  EXPECT_EQ(2U, installs.products().size());
-  // Since our fake Chrome Frame distribution class is reporting the same
-  // installation directory as Chrome, we should have only one package object.
-  EXPECT_EQ(1U, installs.packages().size());
-  EXPECT_EQ(multi_install, installs.packages()[0]->multi_install());
 }

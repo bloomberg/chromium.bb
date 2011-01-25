@@ -15,9 +15,8 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 
-GoogleChromeDistribution::GoogleChromeDistribution(
-    const installer::MasterPreferences& prefs)
-        : BrowserDistribution(prefs) {
+GoogleChromeDistribution::GoogleChromeDistribution()
+    : BrowserDistribution(CHROME_BROWSER) {
 }
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
@@ -114,7 +113,8 @@ void GoogleChromeDistribution::LaunchUserExperiment(
 }
 
 void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
-    const installer::Product& installation) {
+    const installer::Product& installation,
+    const FilePath& application_path) {
   NOTREACHED();
 }
 
@@ -132,13 +132,6 @@ bool GoogleChromeDistribution::ExtractUninstallMetrics(
 
 bool GoogleChromeDistribution::BuildUninstallMetricsString(
     DictionaryValue* uninstall_metrics_dict, std::wstring* metrics) {
-  NOTREACHED();
-  return false;
-}
-
-bool GoogleChromeDistribution::SetChannelFlags(
-    bool set,
-    installer::ChannelInfo* channel_info) {
   NOTREACHED();
   return false;
 }

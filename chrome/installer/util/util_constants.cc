@@ -177,4 +177,8 @@ const wchar_t kInstallerResultUIString[] = L"InstallerResultUIString";
 const wchar_t kInstallerSuccessLaunchCmdLine[] =
     L"InstallerSuccessLaunchCmdLine";
 
+const wchar_t kOptionCeee[] = L"ceee";
+const wchar_t kOptionMultiInstall[] = L"multi-install";
+const wchar_t kOptionReadyMode[] = L"ready-mode";
+
 }  // namespace installer

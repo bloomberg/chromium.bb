@@ -15,8 +15,8 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "net/base/registry_controlled_domain.h"
-#include "chrome/installer/util/package_properties.h"
 #include "chrome_frame/infobars/infobar_manager.h"
 #include "chrome_frame/ready_mode/internal/ready_mode_web_browser_adapter.h"
 #include "chrome_frame/ready_mode/internal/ready_prompt_content.h"
@@ -220,11 +220,13 @@ void BrowserObserver::ShowPrompt() {
     scoped_ptr<RegistryReadyModeState::Observer> ready_mode_state_observer(
         new StateObserver(weak_ptr_factory_.GetWeakPtr()));
 
-    installer::ActivePackageProperties package_properties;
+    BrowserDistribution* dist =
+        BrowserDistribution::GetSpecificDistribution(
+            BrowserDistribution::CHROME_BINARIES);
 
     // Owned by infobar_content
     scoped_ptr<ReadyModeState> ready_mode_state(new RegistryReadyModeState(
-        package_properties.GetStateKey(),
+        dist->GetStateKey(),
         base::TimeDelta::FromMinutes(kTemporaryDeclineDurationMinutes),
         ready_mode_state_observer.release()));
 
@@ -360,9 +362,12 @@ void Configure(Delegate* chrome_frame, IWebBrowser2* web_browser) {
   // Take ownership of the delegate
   linked_ptr<Delegate> delegate(chrome_frame);
   chrome_frame = NULL;
+    BrowserDistribution* dist =
+        BrowserDistribution::GetSpecificDistribution(
+            BrowserDistribution::CHROME_BINARIES);
 
   RegistryReadyModeState ready_mode_state(
-      installer::ActivePackageProperties().GetStateKey(),
+      dist->GetStateKey(),
       base::TimeDelta::FromMinutes(kTemporaryDeclineDurationMinutes),
       NULL);  // NULL => no observer required
 

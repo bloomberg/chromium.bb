@@ -41,6 +41,10 @@ class ChannelInfo {
   // determined.
   bool GetChannelName(std::wstring* channel_name) const;
 
+  // Returns true if this object and |other| have a common base (that which
+  // remains when all modifiers and suffixes are omitted).
+  bool EqualsBaseOf(const ChannelInfo& other) const;
+
   // Returns true if the -CEEE modifier is present in the value.
   bool IsCeee() const;
 

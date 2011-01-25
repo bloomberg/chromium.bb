@@ -66,6 +66,9 @@ enum InstallStatus {
                                     // Chrome Frame.
   READY_MODE_END_TEMP_OPT_OUT_FAILED,   // 38. Failed to end temporary opt-out
                                         // of Chrome Frame.
+  CONFLICTING_CHANNEL_EXISTS,  // 39. A multi-install product on a different
+                               // update channel exists.
+  READY_MODE_REQUIRES_CHROME,  // 40. Chrome Frame in ready-mode requires Chrome
 };
 
 namespace switches {
@@ -140,6 +143,11 @@ extern const wchar_t kInstallerResult[];
 extern const wchar_t kInstallerError[];
 extern const wchar_t kInstallerResultUIString[];
 extern const wchar_t kInstallerSuccessLaunchCmdLine[];
+
+// Product options.
+extern const wchar_t kOptionCeee[];
+extern const wchar_t kOptionMultiInstall[];
+extern const wchar_t kOptionReadyMode[];
 
 }  // namespace installer
 

@@ -253,9 +253,9 @@ bool RelaunchSetupAsConsoleUser(const std::string& flag) {
 
 }  // namespace
 
-GoogleChromeDistribution::GoogleChromeDistribution(
-    const installer::MasterPreferences& prefs)
-        : BrowserDistribution(prefs), product_guid_(kChromeGuid) {
+GoogleChromeDistribution::GoogleChromeDistribution()
+    : BrowserDistribution(CHROME_BROWSER),
+      product_guid_(kChromeGuid) {
 }
 
 // The functions below are not used by the 64-bit Windows binary -
@@ -633,7 +633,8 @@ void GoogleChromeDistribution::LaunchUserExperiment(
 
 // User qualifies for the experiment. Launch chrome with --try-chrome=flavor.
 void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
-    const installer::Product& installation) {
+    const installer::Product& installation,
+    const FilePath& application_path) {
   bool has_welcome_url = (flavor == 0);
   // Possibly add a url to launch depending on the experiment flavor.
   CommandLine options(CommandLine::NO_PROGRAM);
@@ -651,7 +652,7 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
   }
   // Launch chrome now. It will show the toast UI.
   int32 exit_code = 0;
-  if (!installation.LaunchChromeAndWait(options, &exit_code))
+  if (!installation.LaunchChromeAndWait(application_path, options, &exit_code))
     return;
 
   // The chrome process has exited, figure out what happened.
@@ -688,10 +689,3 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
   base::LaunchApp(cmd, false, false, NULL);
 }
 #endif
-
-bool GoogleChromeDistribution::SetChannelFlags(
-    bool set,
-    installer::ChannelInfo* channel_info) {
-  DCHECK(channel_info);
-  return channel_info->SetChrome(set);
-}

@@ -15,7 +15,6 @@
 #include "base/path_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/master_preferences.h"
 
 namespace chrome {
 
@@ -32,8 +31,7 @@ bool GetChromeFrameUserDataDirectory(FilePath* result) {
   if (!PathService::Get(base::DIR_LOCAL_APP_DATA, result))
     return false;
   BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
-      BrowserDistribution::CHROME_FRAME,
-      installer::MasterPreferences::ForCurrentProcess());
+      BrowserDistribution::CHROME_FRAME);
   *result = result->Append(dist->GetInstallSubDir());
   *result = result->Append(chrome::kUserDataDirname);
   return true;

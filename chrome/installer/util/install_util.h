@@ -15,13 +15,12 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
-#include "base/version.h"
-#include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/util_constants.h"
 
-class WorkItemList;
 class BrowserDistribution;
+class CommandLine;
+class Version;
+class WorkItemList;
 
 namespace base {
 namespace win {
@@ -106,6 +105,11 @@ class InstallUtil {
 
   // Returns zero on install success, or an InstallStatus value otherwise.
   static int GetInstallReturnCode(installer::InstallStatus install_status);
+
+  // Composes |exe_path| and |arguments| into |command_line|.
+  static void MakeUninstallCommand(const std::wstring& exe_path,
+                                   const std::wstring& arguments,
+                                   CommandLine* command_line);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallUtil);

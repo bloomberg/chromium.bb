@@ -15,9 +15,9 @@
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/installation_state.h"
+#include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/master_preferences.h"
-#include "chrome/installer/util/package.h"
-#include "chrome/installer/util/package_properties.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/work_item_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -404,28 +404,32 @@ TEST_F(GoogleUpdateSettingsTest, UpdateInstallStatusTest) {
 }
 
 TEST_F(GoogleUpdateSettingsTest, SetEULAConsent) {
-  const bool multi_install = false;
+  const bool multi_install = true;
   const bool system_level = true;
-  HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  CommandLine cmd_line = CommandLine::FromString(
+      std::wstring(L"setup.exe") +
+      (multi_install ? L" --multi-install --chrome" : L"") +
+      (system_level ? L" --system-level" : L""));
+  installer::MasterPreferences prefs(cmd_line);
+  installer::InstallationState machine_state;
+  machine_state.Initialize();
+  installer::InstallerState installer_state;
+  installer_state.Initialize(cmd_line, prefs, machine_state);
+  HKEY root = installer_state.root_key();
 
-  const installer::MasterPreferences& prefs =
-      installer::MasterPreferences::ForCurrentProcess();
-  installer::ChromePackageProperties properties;
-  BrowserDistribution* distribution =
-      BrowserDistribution::GetSpecificDistribution(
-          BrowserDistribution::CHROME_BROWSER, prefs);
-  scoped_refptr<installer::Package> package(
-      new installer::Package(multi_install, system_level, FilePath(),
-                             &properties));
-  scoped_refptr<installer::Product> product(
-      new installer::Product(distribution, package.get()));
   RegKey key;
   DWORD value;
+  BrowserDistribution* binaries =
+      installer_state.multi_package_binaries_distribution();
+  EXPECT_EQ(BrowserDistribution::CHROME_BINARIES, binaries->GetType());
+  BrowserDistribution* chrome =
+      installer_state.products()[0]->distribution();
+  EXPECT_EQ(BrowserDistribution::CHROME_BROWSER, chrome->GetType());
 
   // By default, eulaconsent ends up on the package.
-  EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(*package.get(), true));
+  EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(installer_state, true));
   EXPECT_EQ(ERROR_SUCCESS,
-      key.Open(HKEY_LOCAL_MACHINE, properties.GetStateMediumKey().c_str(),
+      key.Open(HKEY_LOCAL_MACHINE, binaries->GetStateMediumKey().c_str(),
                KEY_QUERY_VALUE | KEY_SET_VALUE));
   EXPECT_EQ(ERROR_SUCCESS,
       key.ReadValueDW(google_update::kRegEULAAceptedField, &value));
@@ -435,14 +439,14 @@ TEST_F(GoogleUpdateSettingsTest, SetEULAConsent) {
 
   // But it will end up on the product if needed
   EXPECT_EQ(ERROR_SUCCESS,
-      key.Create(HKEY_LOCAL_MACHINE, distribution->GetStateKey().c_str(),
+      key.Create(HKEY_LOCAL_MACHINE, chrome->GetStateKey().c_str(),
                  KEY_SET_VALUE));
   EXPECT_EQ(ERROR_SUCCESS,
       key.WriteValue(google_update::kRegEULAAceptedField,
                      static_cast<DWORD>(0)));
-  EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(*package.get(), true));
+  EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(installer_state, true));
   EXPECT_EQ(ERROR_SUCCESS,
-      key.Open(HKEY_LOCAL_MACHINE, distribution->GetStateMediumKey().c_str(),
+      key.Open(HKEY_LOCAL_MACHINE, chrome->GetStateMediumKey().c_str(),
                KEY_QUERY_VALUE | KEY_SET_VALUE));
   EXPECT_EQ(ERROR_SUCCESS,
       key.ReadValueDW(google_update::kRegEULAAceptedField, &value));

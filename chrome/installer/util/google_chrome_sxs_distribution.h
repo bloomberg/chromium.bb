@@ -32,13 +32,11 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
   virtual bool GetChromeChannel(std::wstring* channel);
   // returns the channel name for GoogleChromeSxSDistribution
   static std::wstring ChannelName();
-  virtual void AppendUninstallCommandLineFlags(CommandLine* cmd_line);
  private:
   friend class BrowserDistribution;
 
   // Disallow construction from non-friends.
-  explicit GoogleChromeSxSDistribution(
-      const installer::MasterPreferences& prefs);
+  GoogleChromeSxSDistribution();
 };
 
 #endif  // CHROME_INSTALLER_UTIL_GOOGLE_CHROME_SXS_DISTRIBUTION_H_

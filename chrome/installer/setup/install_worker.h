@@ -13,6 +13,7 @@
 
 #include "base/scoped_ptr.h"
 
+class BrowserDistribution;
 class CommandLine;
 class FilePath;
 class Version;
@@ -24,6 +25,15 @@ class InstallationState;
 class InstallerState;
 class Package;
 class Product;
+
+// Adds work items that make registry adjustments for Google Update.  When a
+// product is installed (including overinstall), Google Update will write the
+// channel ("ap") value into either Chrome or Chrome Frame's ClientState key.
+// In the multi-install case, this value is used as the basis upon which the
+// package's channel value is built (by adding the ordered list of installed
+// products and their options).
+void AddGoogleUpdateWorkItems(const InstallerState& installer_state,
+                              WorkItemList* install_list);
 
 // Builds the complete WorkItemList used to build the set of installation steps
 // needed to lay down one or more installed products.
@@ -38,14 +48,12 @@ class Product;
 //           does not need to exist.
 void AddInstallWorkItems(const InstallationState& original_state,
                          const InstallerState& installer_state,
-                         bool multi_install,
                          const FilePath& setup_path,
                          const FilePath& archive_path,
                          const FilePath& src_path,
                          const FilePath& temp_dir,
                          const Version& new_version,
                          scoped_ptr<Version>* current_version,
-                         const Package& package,
                          WorkItemList* install_list);
 
 // Appends registration or unregistration work items to |work_item_list| for the
@@ -64,34 +72,34 @@ void AddRegisterComDllWorkItems(const FilePath& dll_folder,
                                 bool ignore_failures,
                                 WorkItemList* work_item_list);
 
-void AddSetMsiMarkerWorkItem(const Product& product,
+void AddSetMsiMarkerWorkItem(const InstallerState& installer_state,
+                             BrowserDistribution* dist,
                              bool set,
                              WorkItemList* work_item_list);
 
 // Called for either installation or uninstallation. This method updates the
 // registry according to Chrome Frame specific options for the current
 // installation.  This includes handling of the ready-mode option.
-void AddChromeFrameWorkItems(bool install, const FilePath& setup_path,
-                             const Version& new_version, const Product& product,
+void AddChromeFrameWorkItems(const InstallationState& original_state,
+                             const InstallerState& installer_state,
+                             const FilePath& setup_path,
+                             const Version& new_version,
+                             const Product& product,
                              WorkItemList* list);
-
 
 // This method adds work items to create (or update) Chrome uninstall entry in
 // either the Control Panel->Add/Remove Programs list or in the Omaha client
 // state key if running under an MSI installer.
-void AddUninstallShortcutWorkItems(const FilePath& setup_path,
-                                   const Version& new_version,
-                                   WorkItemList* install_list,
-                                   const Product& product);
-
-void AddUninstallShortcutWorkItems(const FilePath& setup_path,
+void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
+                                   const FilePath& setup_path,
                                    const Version& new_version,
                                    WorkItemList* install_list,
                                    const Product& product);
 
 // Utility method currently shared between install.cc and install_worker.cc
-void AppendUninstallCommandLineFlags(CommandLine* uninstall_cmd,
-                                     const Product& product);
+void AppendUninstallCommandLineFlags(const InstallerState& installer_state,
+                                     const Product& product,
+                                     CommandLine* uninstall_cmd);
 
 }  // namespace installer
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/win/registry.h"
@@ -34,17 +35,17 @@ TEST_F(InstallUtilTest, InstallerResult) {
   // check results for a fresh install of single Chrome
   {
     TempRegKeyOverride override(root, L"root_inst_res");
-    const MasterPreferences prefs(
-        CommandLine::FromString(L"setup.exe --system-level"));
+    CommandLine cmd_line = CommandLine::FromString(L"setup.exe --system-level");
+    const MasterPreferences prefs(cmd_line);
     InstallationState machine_state;
-    machine_state.Initialize(prefs);
+    machine_state.Initialize();
     InstallerState state;
-    state.Initialize(prefs, machine_state);
+    state.Initialize(cmd_line, prefs, machine_state);
     InstallUtil::WriteInstallerResult(system_level, state.state_key(),
         installer::FIRST_INSTALL_SUCCESS, 0, &launch_cmd);
     BrowserDistribution* distribution =
         BrowserDistribution::GetSpecificDistribution(
-            BrowserDistribution::CHROME_BROWSER, prefs);
+            BrowserDistribution::CHROME_BROWSER);
     EXPECT_EQ(ERROR_SUCCESS,
         key.Open(root, distribution->GetStateKey().c_str(), KEY_READ));
     EXPECT_EQ(ERROR_SUCCESS,
@@ -56,18 +57,18 @@ TEST_F(InstallUtilTest, InstallerResult) {
   // check results for a fresh install of multi Chrome
   {
     TempRegKeyOverride override(root, L"root_inst_res");
-    const MasterPreferences prefs(
-        CommandLine::FromString(
-            L"setup.exe --system-level --multi-install --chrome"));
+    CommandLine cmd_line = CommandLine::FromString(
+        L"setup.exe --system-level --multi-install --chrome");
+    const MasterPreferences prefs(cmd_line);
     InstallationState machine_state;
-    machine_state.Initialize(prefs);
+    machine_state.Initialize();
     InstallerState state;
-    state.Initialize(prefs, machine_state);
+    state.Initialize(cmd_line, prefs, machine_state);
     InstallUtil::WriteInstallerResult(system_level, state.state_key(),
         installer::FIRST_INSTALL_SUCCESS, 0, &launch_cmd);
     BrowserDistribution* distribution =
         BrowserDistribution::GetSpecificDistribution(
-            BrowserDistribution::CHROME_BROWSER, prefs);
+            BrowserDistribution::CHROME_BROWSER);
     EXPECT_EQ(ERROR_SUCCESS,
         key.Open(root, distribution->GetStateKey().c_str(), KEY_READ));
     EXPECT_EQ(ERROR_SUCCESS,
@@ -76,4 +77,28 @@ TEST_F(InstallUtilTest, InstallerResult) {
     key.Close();
   }
   TempRegKeyOverride::DeleteAllTempKeys();
+}
+
+TEST_F(InstallUtilTest, MakeUninstallCommand) {
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+
+  std::pair<std::wstring, std::wstring> params[] = {
+    std::make_pair(std::wstring(L""), std::wstring(L"")),
+    std::make_pair(std::wstring(L""), std::wstring(L"--do-something --silly")),
+    std::make_pair(std::wstring(L"spam.exe"), std::wstring(L"")),
+    std::make_pair(std::wstring(L"spam.exe"),
+                   std::wstring(L"--do-something --silly")),
+  };
+  for (int i = 0; i < arraysize(params); ++i) {
+    std::pair<std::wstring, std::wstring>& param = params[i];
+    InstallUtil::MakeUninstallCommand(param.first, param.second, &command_line);
+    EXPECT_EQ(param.first, command_line.GetProgram().value());
+    if (param.second.empty()) {
+      EXPECT_EQ(0U, command_line.GetSwitchCount());
+    } else {
+      EXPECT_EQ(2U, command_line.GetSwitchCount());
+      EXPECT_TRUE(command_line.HasSwitch("do-something"));
+      EXPECT_TRUE(command_line.HasSwitch("silly"));
+    }
+  }
 }

@@ -17,11 +17,11 @@
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/package.h"
-#include "chrome/installer/util/package_properties.h"
+#include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/product.h"
 
 using base::win::RegKey;
+using installer::InstallerState;
 
 namespace {
 
@@ -126,33 +126,43 @@ bool GoogleUpdateSettings::SetMetricsId(const std::wstring& metrics_id) {
 }
 
 bool GoogleUpdateSettings::SetEULAConsent(
-    const installer::Package& package,
+    const InstallerState& installer_state,
     bool consented) {
   // If this is a multi install, Google Update will have put eulaaccepted=0 into
   // the ClientState key of the multi-installer.  Conduct a brief search for
   // this value and store the consent in the corresponding location.
-  HKEY root = package.system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  HKEY root = installer_state.root_key();
+  EulaSearchResult status = NO_SETTING;
+  std::wstring reg_path;
+  std::wstring fallback_reg_path;
 
-  std::wstring reg_path = package.properties()->GetStateMediumKey();
-  EulaSearchResult status = HasEULASetting(
-      root, package.properties()->GetStateKey(), !consented);
+  if (installer_state.package_type() == InstallerState::MULTI_PACKAGE) {
+    BrowserDistribution* binaries_dist =
+        installer_state.multi_package_binaries_distribution();
+    fallback_reg_path = reg_path = binaries_dist->GetStateMediumKey();
+    status = HasEULASetting(root, binaries_dist->GetStateKey(), !consented);
+  }
   if (status != FOUND_SAME_SETTING) {
     EulaSearchResult new_status = NO_SETTING;
-    installer::Products::const_iterator scan = package.products().begin();
-    installer::Products::const_iterator end = package.products().end();
+    installer::Products::const_iterator scan =
+        installer_state.products().begin();
+    installer::Products::const_iterator end =
+        installer_state.products().end();
     for (; status != FOUND_SAME_SETTING && scan != end; ++scan) {
-      const installer::Product& product = *(scan->get());
-      new_status = HasEULASetting(root, product.distribution()->GetStateKey(),
+      if (fallback_reg_path.empty())
+        fallback_reg_path = (*scan)->distribution()->GetStateMediumKey();
+      new_status = HasEULASetting(root, (*scan)->distribution()->GetStateKey(),
                                   !consented);
       if (new_status > status) {
         status = new_status;
-        reg_path = product.distribution()->GetStateMediumKey();
+        reg_path = (*scan)->distribution()->GetStateMediumKey();
       }
     }
     if (status == NO_SETTING) {
       LOG(WARNING)
-          << "eulaaccepted value not found; setting consent on package";
-      reg_path = package.properties()->GetStateMediumKey();
+          << "eulaaccepted value not found; setting consent in key "
+          << fallback_reg_path;
+      reg_path = fallback_reg_path;
     }
   }
   RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_SET_VALUE);

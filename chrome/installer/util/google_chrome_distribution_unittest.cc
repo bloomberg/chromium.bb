@@ -11,7 +11,6 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
-#include "chrome/installer/util/master_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -52,12 +51,9 @@ TEST(GoogleChromeDistTest, TestExtractUninstallMetrics) {
   ASSERT_TRUE(root.get());
   std::wstring uninstall_metrics_string;
 
-  const installer::MasterPreferences& prefs =
-      installer::MasterPreferences::ForCurrentProcess();
-
   GoogleChromeDistribution* dist = static_cast<GoogleChromeDistribution*>(
       BrowserDistribution::GetSpecificDistribution(
-          BrowserDistribution::CHROME_BROWSER, prefs));
+          BrowserDistribution::CHROME_BROWSER));
 
   EXPECT_TRUE(
       dist->ExtractUninstallMetrics(*static_cast<DictionaryValue*>(root.get()),
