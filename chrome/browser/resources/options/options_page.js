@@ -43,6 +43,14 @@ cr.define('options', function() {
   OptionsPage.initialized_ = false;
 
   /**
+   * Shows the default page.
+   */
+  OptionsPage.showDefaultPage = function() {
+    // TODO(csilv): Persist the current page.
+    this.showPageByName(BrowserOptions.getInstance().name);
+  };
+
+  /**
    * Shows a registered page. This handles both top-level pages and sub-pages.
    * @param {string} pageName Page name.
    */
@@ -339,15 +347,8 @@ cr.define('options', function() {
       };
     };
 
-    // Close the top overlay or sub-page on esc.
-    document.addEventListener('keydown', function(e) {
-      if (e.keyCode == 27) { // Esc
-        if (self.isOverlayVisible_())
-          self.clearOverlays();
-        else
-          self.closeTopSubPage();
-      }
-    });
+    // Install handler for key presses.
+    document.addEventListener('keydown', this.keyDownEventHandler_.bind(this));
   };
 
   /**
@@ -402,6 +403,21 @@ cr.define('options', function() {
     if ($('mainview-content').contains(event.target)) {
       event.stopPropagation();
       event.preventDefault();
+    }
+  };
+
+  /**
+   * A function to handle key press events.
+   * @return {Event} a keydown event.
+   * @private
+   */
+  OptionsPage.keyDownEventHandler_ = function(event) {
+    // Close the top overlay or sub-page on esc.
+    if (event.keyCode == 27) {  // Esc
+      if (this.isOverlayVisible_())
+        this.clearOverlays();
+      else
+        this.closeTopSubPage();
     }
   };
 

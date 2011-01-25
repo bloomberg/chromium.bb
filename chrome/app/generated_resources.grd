@@ -7191,9 +7191,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SEARCH_PAGE_TITLE" desc="">
         Search
       </message>
-      <message name="IDS_OPTIONS_SEARCH_PAGE_INFO" desc="">
-        Type to search <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> settings.
-      </message>
       <message name="IDS_OPTIONS_SEARCH_PAGE_NO_MATCHES" desc="">
         No matches were found.
       </message>

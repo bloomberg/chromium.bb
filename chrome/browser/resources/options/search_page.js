@@ -111,12 +111,20 @@ cr.define('options', function() {
       // Replace the contents of the navigation tab with the search field.
       self.tab.textContent = '';
       self.tab.appendChild(searchField);
+      self.tab.onclick = self.tab.onkeypress = undefined;
 
       // Handle search events. (No need to throttle, WebKit's search field
       // will do that automatically.)
       searchField.onsearch = function(e) {
         self.setSearchText_(this.value);
       };
+
+      // Install handler for key presses.
+      document.addEventListener('keydown',
+                                this.keyDownEventHandler_.bind(this));
+
+      // Focus the search field by default.
+      searchField.focus();
     },
 
     /**
@@ -160,10 +168,7 @@ cr.define('options', function() {
 
       if (this.searchActive_ != active) {
         this.searchActive_ = active;
-        if (active) {
-          // Reset the search criteria, effectively hiding all the sections.
-          this.setSearchText_('');
-        } else {
+        if (!active) {
           // Just wipe out any active search text since it's no longer relevant.
           $('search-field').value = '';
         }
@@ -208,6 +213,20 @@ cr.define('options', function() {
      * @private
      */
     setSearchText_: function(text) {
+      // Consider whitespace-only strings as empty.
+      if (!text.replace(/^\s+/, '').length)
+        text = '';
+
+      // Toggle the search page if necessary.
+      if (text.length) {
+        if (!this.searchActive_)
+          OptionsPage.showPageByName(this.name);
+      } else {
+        if (this.searchActive_)
+          OptionsPage.showDefaultPage();
+        return;
+      }
+
       var foundMatches = false;
       var bubbleControls = [];
 
@@ -287,16 +306,10 @@ cr.define('options', function() {
       }
 
       // Configure elements on the search results page based on search results.
-      if (searchText.length == 0) {
-        $('searchPageInfo').classList.remove('search-hidden');
+      if (foundMatches)
         $('searchPageNoMatches').classList.add('search-hidden');
-      } else if (foundMatches) {
-        $('searchPageInfo').classList.add('search-hidden');
-        $('searchPageNoMatches').classList.add('search-hidden');
-      } else {
-        $('searchPageInfo').classList.add('search-hidden');
+      else
         $('searchPageNoMatches').classList.remove('search-hidden');
-      }
 
       // Create search balloons for sub-page results.
       length = bubbleControls.length;
@@ -444,6 +457,21 @@ cr.define('options', function() {
           pages.push(page);
       }
       return pages;
+    },
+
+    /**
+     * A function to handle key press events.
+     * @return {Event} a keydown event.
+     * @private
+     */
+    keyDownEventHandler_: function(event) {
+      // Focus the search field on an unused forward-slash.
+      if (event.keyCode == 191 &&
+          !/INPUT|SELECT|BUTTON|TEXTAREA/.test(event.target.tagName)) {
+        $('search-field').focus();
+        event.stopPropagation();
+        event.preventDefault();
+      }
     }
   };
 

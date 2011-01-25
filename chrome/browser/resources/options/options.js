@@ -158,8 +158,7 @@ function load() {
     if (hash.length > 1)
       OptionsPage.handleHashForPage(pageName, hash.slice(1));
   } else {
-    // TODO(csilv): Save/restore last selected page.
-    OptionsPage.showPageByName(BrowserOptions.getInstance().name);
+    OptionsPage.showDefaultPage();
   }
 
   var subpagesNavTabs = document.querySelectorAll('.subpages-nav-tabs');
