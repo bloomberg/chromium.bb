@@ -127,14 +127,20 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	case KEY_PAGEDOWN:
 		if (!state)
 			break;
-		view->page++;
+
+		if (view->page + 1 < poppler_document_get_n_pages(view->document))
+                        view->page++;
+
 		window_schedule_redraw(view->window);
 		break;
 	case KEY_BACKSPACE:
 	case KEY_PAGEUP:
 		if (!state)
 			break;
-		view->page--;
+
+		if(view->page > 0)
+                        view->page--;
+
 		window_schedule_redraw(view->window);
 		break;
 	default:
