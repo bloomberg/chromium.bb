@@ -501,7 +501,12 @@ TEST_F(URLFetcherTest, SameThreadsTest) {
   MessageLoop::current()->Run();
 }
 
-TEST_F(URLFetcherTest, FLAKY_DifferentThreadsTest) {
+#if defined(OS_MACOSX)
+// SIGSEGV on Mac: http://crbug.com/60426
+TEST_F(URLFetcherTest, DISABLED_DifferentThreadsTest) {
+#else
+TEST_F(URLFetcherTest, DifferentThreadsTest) {
+#endif
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
@@ -518,7 +523,12 @@ TEST_F(URLFetcherTest, FLAKY_DifferentThreadsTest) {
   MessageLoop::current()->Run();
 }
 
-TEST_F(URLFetcherPostTest, FLAKY_Basic) {
+#if defined(OS_MACOSX)
+// SIGSEGV on Mac: http://crbug.com/60426
+TEST_F(URLFetcherPostTest, DISABLED_Basic) {
+#else
+TEST_F(URLFetcherPostTest, Basic) {
+#endif
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
@@ -602,7 +612,12 @@ TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
   net::URLRequestThrottlerManager::GetInstance()->EraseEntryForTests(url);
 }
 
-TEST_F(URLFetcherBadHTTPSTest, FLAKY_BadHTTPSTest) {
+#if defined(OS_MACOSX)
+// SIGSEGV on Mac: http://crbug.com/60426
+TEST_F(URLFetcherBadHTTPSTest, DISABLED_BadHTTPSTest) {
+#else
+TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
+#endif
   net::TestServer::HTTPSOptions https_options(
       net::TestServer::HTTPSOptions::CERT_EXPIRED);
   net::TestServer test_server(https_options, FilePath(kDocRoot));
@@ -612,7 +627,12 @@ TEST_F(URLFetcherBadHTTPSTest, FLAKY_BadHTTPSTest) {
   MessageLoop::current()->Run();
 }
 
-TEST_F(URLFetcherCancelTest, FLAKY_ReleasesContext) {
+#if defined(OS_MACOSX)
+// SIGSEGV on Mac: http://crbug.com/60426
+TEST_F(URLFetcherCancelTest, DISABLED_ReleasesContext) {
+#else
+TEST_F(URLFetcherCancelTest, ReleasesContext) {
+#endif
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
