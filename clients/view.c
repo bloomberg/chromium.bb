@@ -193,6 +193,7 @@ view_create(struct display *display, uint32_t key, const char *filename)
 	struct view *view;
 	gchar *basename;
 	gchar *title;
+	GFile *file = NULL;
 	GError *error = NULL;
 
 	view = malloc(sizeof *view);
@@ -200,9 +201,22 @@ view_create(struct display *display, uint32_t key, const char *filename)
 		return view;
 	memset(view, 0, sizeof *view);
 
-	basename = g_path_get_basename(filename);
-	title = g_strdup_printf("Wayland View - %s", basename);
-	g_free(basename);
+	file = g_file_new_for_commandline_arg(filename);
+	basename = g_file_get_basename(file);
+	if(!basename) {
+	        title = "Wayland View";
+	} else {
+	        title = g_strdup_printf("Wayland View - %s", basename);
+	        g_free(basename);
+	}
+
+        view->document = poppler_document_new_from_file(g_file_get_uri(file),
+                                                        NULL, &error);
+
+        if(error) {
+                title = "File not found";
+                view->document = NULL;
+        }
 
 	view->window = window_create(display, 500, 400);
 	window_set_title(view->window, title);
@@ -214,8 +228,6 @@ view_create(struct display *display, uint32_t key, const char *filename)
 	window_set_keyboard_focus_handler(view->window,
 					  keyboard_focus_handler);
 	window_set_button_handler(view->window, button_handler);
-	view->document = poppler_document_new_from_file(filename,
-							NULL, &error);
 	view->page = 0;
 	view_draw(view);
 
