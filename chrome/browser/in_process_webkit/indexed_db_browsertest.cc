@@ -53,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=70773
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISALBED_IndexTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_IndexTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("index_test.html"))));
 }
 
