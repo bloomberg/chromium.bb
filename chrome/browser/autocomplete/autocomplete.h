@@ -573,7 +573,8 @@ class AutocompleteController : public ACProviderListener {
   //
   // |allow_exact_keyword_match| should be false when triggering keyword mode on
   // the input string would be surprising or wrong, e.g. when highlighting text
-  // in a page and telling the browser to search for it or navigate to it.
+  // in a page and telling the browser to search for it or navigate to it. This
+  // parameter only applies to substituting keywords.
 
   // If |synchronous_only| is true, the controller asks the providers to only
   // return matches which are synchronously available, which should mean that

@@ -791,6 +791,56 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(edit_view->GetText().empty());
   }
 
+  void NonSubstitutingKeywordTest() {
+    AutocompleteEditView* edit_view = NULL;
+    ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
+    AutocompletePopupModel* popup_model = edit_view->model()->popup_model();
+    ASSERT_TRUE(popup_model);
+
+    TemplateURLModel* template_url_model =
+        browser()->profile()->GetTemplateURLModel();
+
+    // Add a non-default substituting keyword.
+    TemplateURL* template_url = new TemplateURL();
+    template_url->SetURL("http://abc.com/{searchTerms}", 0, 0);
+    template_url->set_keyword(UTF8ToUTF16(kSearchText));
+    template_url->set_short_name(UTF8ToUTF16("Search abc"));
+    template_url_model->Add(template_url);
+
+    edit_view->SetUserText(string16());
+
+    // Non-default substituting keyword shouldn't be matched by default.
+    ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));
+    ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+    ASSERT_TRUE(popup_model->IsOpen());
+
+    // Check if the default match result is Search Primary Provider.
+    ASSERT_EQ(AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+              popup_model->result().default_match()->type);
+    ASSERT_EQ(kSearchTextURL,
+              popup_model->result().default_match()->destination_url.spec());
+
+    edit_view->SetUserText(string16());
+    ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+    ASSERT_FALSE(popup_model->IsOpen());
+
+    // Try a non-substituting keyword.
+    template_url_model->Remove(template_url);
+    template_url = new TemplateURL();
+    template_url->SetURL("http://abc.com/", 0, 0);
+    template_url->set_keyword(UTF8ToUTF16(kSearchText));
+    template_url->set_short_name(UTF8ToUTF16("abc"));
+    template_url_model->Add(template_url);
+
+    // We always allow exact matches for non-substituting keywords.
+    ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));
+    ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+    ASSERT_TRUE(popup_model->IsOpen());
+    ASSERT_EQ(AutocompleteMatch::HISTORY_KEYWORD,
+              popup_model->result().default_match()->type);
+    ASSERT_EQ("http://abc.com/",
+              popup_model->result().default_match()->destination_url.spec());
+  }
 };
 
 // Test if ctrl-* accelerators are workable in omnibox.
@@ -842,6 +892,10 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BasicTextOperations) {
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, AcceptKeywordBySpace) {
   AcceptKeywordBySpaceTest();
+}
+
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, NonSubstitutingKeywordTest) {
+  NonSubstitutingKeywordTest();
 }
 
 #if defined(OS_LINUX)
@@ -1018,6 +1072,11 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest, BasicTextOperations) {
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest, AcceptKeywordBySpace) {
   AcceptKeywordBySpaceTest();
+}
+
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest,
+                       NonSubstitutingKeywordTest) {
+  NonSubstitutingKeywordTest();
 }
 
 #endif
