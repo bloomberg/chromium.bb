@@ -411,12 +411,14 @@ TEST_F(SpellCheckTest, SpellCheckText) {
     }, {
       // English (Australia)
       "en-AU",
-      L"Google's mission is to organise the world's information and make it "
+      // L"Google's " - to be added.
+      L"mission is to organise the world's information and make it "
       L"universally accessible and useful."
     }, {
       // English (United Kingdom)
       "en-GB",
-      L"Google's mission is to organise the world's information and make it "
+      // L"Google's " - to be added.
+      L"mission is to organise the world's information and make it "
       L"universally accessible and useful."
     }, {
       // English (United States)
