@@ -1,5 +1,5 @@
 /*
- * Copyright 2010, Google Inc.
+ * Copyright 2011, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,9 @@
 // Texture Class for handling Cairo Rendering Mode.
 
 #include "core/cross/cairo/texture_cairo.h"
+
+#include <string.h>
+
 #include "core/cross/cairo/renderer_cairo.h"
 
 namespace o3d {
@@ -62,7 +65,6 @@ static int CairoFormatFromO3DFormat(
 
 TextureCairo::TextureCairo(ServiceLocator* service_locator,
                            cairo_surface_t* image_surface,
-                           cairo_t* image_surface_context,
                            Texture::Format format,
                            int levels,
                            int width,
@@ -76,8 +78,7 @@ TextureCairo::TextureCairo(ServiceLocator* service_locator,
                 enable_render_surfaces),
       renderer_(static_cast<RendererCairo*>(
           service_locator->GetService<Renderer>())),
-      image_surface_(image_surface),
-      image_surface_context_(image_surface_context) {
+      image_surface_(image_surface) {
   DLOG(INFO) << "Texture2D Construct";
   DCHECK_NE(format, Texture::UNKNOWN_FORMAT);
 }
@@ -91,7 +92,6 @@ TextureCairo* TextureCairo::Create(ServiceLocator* service_locator,
                                    bool enable_render_surfaces) {
   int cairo_format = CairoFormatFromO3DFormat(format);
   cairo_surface_t* image_surface;
-  cairo_t* image_surface_context;
   cairo_status_t status;
   if (-1 == cairo_format) {
     DLOG(ERROR) << "Texture format " << format << " not supported by Cairo";
@@ -106,27 +106,15 @@ TextureCairo* TextureCairo::Create(ServiceLocator* service_locator,
     DLOG(ERROR) << "Error creating Cairo image surface: " << status;
     goto fail1;
   }
-  image_surface_context = cairo_create(image_surface);
-  status = cairo_status(image_surface_context);
-  if (CAIRO_STATUS_SUCCESS != status) {
-    DLOG(ERROR) << "Error creating Cairo image surface draw context: "
-                << status;
-    goto fail2;
-  }
-
-  cairo_set_operator(image_surface_context, CAIRO_OPERATOR_SOURCE);
 
   return new TextureCairo(service_locator,
                           image_surface,
-                          image_surface_context,
                           format,
                           levels,
                           width,
                           height,
                           enable_render_surfaces);
 
- fail2:
-  cairo_destroy(image_surface_context);
  fail1:
   cairo_surface_destroy(image_surface);
  fail0:
@@ -140,7 +128,6 @@ const Texture::RGBASwizzleIndices& TextureCairo::GetABGR32FSwizzleIndices() {
 }
 
 TextureCairo::~TextureCairo() {
-  cairo_destroy(image_surface_context_);
   cairo_surface_destroy(image_surface_);
   renderer_ = NULL;
   DLOG(INFO) << "Texture2DCairo Destruct";
@@ -152,7 +139,7 @@ void TextureCairo::SetRect(int level,
                            unsigned dst_top,
                            unsigned src_width,
                            unsigned src_height,
-                           const void* src_data,
+                           const void* src_data_void,
                            int src_pitch) {
   DLOG(INFO) << "Texture2DCairo SetRect";
 
@@ -161,26 +148,48 @@ void TextureCairo::SetRect(int level,
     return;
   }
 
-  // Create image surface to represent the source.
-  cairo_surface_t* source_image_surface = cairo_image_surface_create_for_data(
-      const_cast<unsigned char*>(
-          static_cast<const unsigned char*>(src_data)),
-      cairo_image_surface_get_format(image_surface_),
-      src_width,
-      src_height,
-      src_pitch);
+  cairo_surface_flush(image_surface_);
 
-  // Set that surface as the source for paint operations to our texture.
-  cairo_set_source_surface(image_surface_context_,
-                           source_image_surface,
-                           dst_left,
-                           dst_top);
+  const unsigned char* src_data = reinterpret_cast<const unsigned char*>(
+      src_data_void);
 
-  // Paint to the texture. This copies the data.
-  cairo_paint(image_surface_context_);
+  unsigned char* dst_data = cairo_image_surface_get_data(image_surface_);
 
-  // Discard our reference to the source surface.
-  cairo_surface_destroy(source_image_surface);
+  int dst_pitch = cairo_image_surface_get_stride(image_surface_);
+
+  dst_data += dst_top * dst_pitch + dst_left * 4;
+  
+  if (ARGB8 == format()) {
+    // Cairo supports only premultiplied alpha, but we get the images as
+    // non-premultiplied alpha, so we have to convert.
+    for (unsigned i = 0; i < src_height; ++i) {
+      for (unsigned j = 0; j < src_width; ++j) {
+        // NOTE: This assumes a little-endian architecture (e.g., x86). It works
+        // for RGBA or BGRA where alpha is in byte 3.
+        // Get alpha.
+        uint8 alpha = src_data[3];
+        // Convert each colour.
+        for (int i = 0; i < 3; i++) {
+          dst_data[i] = (src_data[i] * alpha + 128U) / 255U;
+        }
+        // Copy alpha.
+        dst_data[3] = alpha;
+        src_data += 4;
+        dst_data += 4;
+      }
+      src_data += src_pitch - src_width * 4;
+      dst_data += dst_pitch - src_width * 4;
+    }
+  } else {
+    // Just copy the data.
+    for (unsigned i = 0; i < src_height; ++i) {
+      memcpy(dst_data, src_data, src_width * 4);
+      src_data += src_pitch;
+      dst_data += dst_pitch;
+    }
+  }
+
+  cairo_surface_mark_dirty(image_surface_);
 
   TextureUpdated();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010, Google Inc.
+ * Copyright 2011, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -99,7 +99,6 @@ class TextureCairo : public Texture2D {
   // Initializes the Texture2D.
   TextureCairo(ServiceLocator* service_locator,
                cairo_surface_t* image_surface,
-               cairo_t* image_surface_context,
                Texture::Format format,
                int levels,
                int width,
@@ -110,8 +109,6 @@ class TextureCairo : public Texture2D {
   RendererCairo* renderer_;
   // The Cairo image for this texture.
   cairo_surface_t* image_surface_;
-  // A Cairo drawing context for updating this image.
-  cairo_t* image_surface_context_;
 };
 
 }  // namespace o2d
