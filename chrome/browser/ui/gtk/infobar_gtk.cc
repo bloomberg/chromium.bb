@@ -187,9 +187,9 @@ void InfoBar::AddLabelWithInlineLink(const string16& display_text,
   gtk_util::ForceFontSizePixels(initial_label, 13.4);
   gtk_util::ForceFontSizePixels(trailing_label, 13.4);
 
-  // TODO(joth): Unlike the AddLabelAndLink below, none of the label widgets
-  // are set as shrinkable here, meaning the text will run under the close
-  // button etc. when the width is restricted, rather than eliding.
+  // TODO(joth): None of the label widgets are set as shrinkable here, meaning
+  // the text will run under the close button etc. when the width is restricted,
+  // rather than eliding.
   gtk_widget_modify_fg(initial_label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
   gtk_widget_modify_fg(trailing_label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
 
@@ -198,42 +198,6 @@ void InfoBar::AddLabelWithInlineLink(const string16& display_text,
   gtk_box_pack_start(GTK_BOX(hbox), initial_label, FALSE, FALSE, 0);
   gtk_util::CenterWidgetInHBox(hbox, link_button, false, 0);
   gtk_box_pack_start(GTK_BOX(hbox), trailing_label, FALSE, FALSE, 0);
-}
-
-// TODO(joth): This method factors out some common functionality between the
-// various derived infobar classes, however the class hierarchy itself could
-// use refactoring to reduce this duplication. http://crbug.com/38924
-void InfoBar::AddLabelAndLink(const string16& display_text,
-                              const string16& link_text,
-                              GCallback callback) {
-  GtkWidget* link_button = NULL;
-  if (!link_text.empty()) {
-    // If we have some link text, create the link button.
-    link_button = gtk_chrome_link_button_new(UTF16ToUTF8(link_text).c_str());
-    gtk_chrome_link_button_set_use_gtk_theme(
-        GTK_CHROME_LINK_BUTTON(link_button), FALSE);
-    DCHECK(callback);
-    g_signal_connect(link_button, "clicked", callback, this);
-    gtk_util::SetButtonTriggersNavigation(link_button);
-  }
-
-  GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
-  // We want the link to be horizontally shrinkable, so that the Chrome
-  // window can be resized freely even with a very long link.
-  gtk_widget_set_size_request(hbox, 0, -1);
-  gtk_box_pack_start(GTK_BOX(hbox_), hbox, TRUE, TRUE, 0);
-
-  if (link_button)
-    gtk_box_pack_end(GTK_BOX(hbox), link_button, FALSE, FALSE, 0);
-  GtkWidget* label = gtk_label_new(UTF16ToUTF8(display_text).c_str());
-  gtk_util::ForceFontSizePixels(label, 13.4);
-  // In order to avoid the link_button and the label overlapping with each
-  // other, we make the label shrinkable.
-  gtk_widget_set_size_request(label, 0, -1);
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
-  gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
 }
 
 void InfoBar::GetTopColor(InfoBarDelegate::Type type,
@@ -329,16 +293,6 @@ gboolean InfoBar::OnBackgroundExpose(GtkWidget* sender,
 
   return FALSE;
 }
-
-// AlertInfoBar ----------------------------------------------------------------
-
-class AlertInfoBar : public InfoBar {
- public:
-  explicit AlertInfoBar(AlertInfoBarDelegate* delegate)
-      : InfoBar(delegate) {
-    AddLabelAndLink(delegate->GetMessageText(), string16(), NULL);
-  }
-};
 
 // LinkInfoBar -----------------------------------------------------------------
 
@@ -450,12 +404,10 @@ void ConfirmInfoBar::OnLinkClicked(GtkWidget* widget) {
   }
 }
 
-InfoBar* AlertInfoBarDelegate::CreateInfoBar() {
-  return new AlertInfoBar(this);
-}
 InfoBar* LinkInfoBarDelegate::CreateInfoBar() {
   return new LinkInfoBar(this);
 }
+
 InfoBar* ConfirmInfoBarDelegate::CreateInfoBar() {
   return new ConfirmInfoBar(this);
 }

@@ -42,16 +42,12 @@ InfoBarDelegate::Type InfoBarDelegate::GetInfoBarType() const {
   return WARNING_TYPE;
 }
 
-AlertInfoBarDelegate* InfoBarDelegate::AsAlertInfoBarDelegate() {
-  return NULL;
-}
-
 ConfirmInfoBarDelegate* InfoBarDelegate::AsConfirmInfoBarDelegate() {
   return NULL;
 }
 
 CrashedExtensionInfoBarDelegate*
-InfoBarDelegate::AsCrashedExtensionInfoBarDelegate() {
+    InfoBarDelegate::AsCrashedExtensionInfoBarDelegate() {
   return NULL;
 }
 
@@ -84,26 +80,6 @@ void InfoBarDelegate::StoreActiveEntryUniqueID(TabContents* contents) {
 }
 
 
-// AlertInfoBarDelegate -------------------------------------------------------
-
-bool AlertInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
-  AlertInfoBarDelegate* alert_delegate = delegate->AsAlertInfoBarDelegate();
-  return alert_delegate &&
-      (alert_delegate->GetMessageText() == GetMessageText());
-}
-
-AlertInfoBarDelegate::AlertInfoBarDelegate(TabContents* contents)
-    : InfoBarDelegate(contents) {
-}
-
-AlertInfoBarDelegate::~AlertInfoBarDelegate() {
-}
-
-AlertInfoBarDelegate* AlertInfoBarDelegate::AsAlertInfoBarDelegate() {
-  return this;
-}
-
-
 // LinkInfoBarDelegate --------------------------------------------------------
 
 string16 LinkInfoBarDelegate::GetMessageTextWithOffset(
@@ -131,7 +107,7 @@ LinkInfoBarDelegate* LinkInfoBarDelegate::AsLinkInfoBarDelegate() {
 // ConfirmInfoBarDelegate -----------------------------------------------------
 
 int ConfirmInfoBarDelegate::GetButtons() const {
-  return BUTTON_NONE;
+  return BUTTON_OK | BUTTON_CANCEL;
 }
 
 string16 ConfirmInfoBarDelegate::GetButtonLabel(InfoBarButton button) const {
@@ -159,10 +135,17 @@ bool ConfirmInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
 }
 
 ConfirmInfoBarDelegate::ConfirmInfoBarDelegate(TabContents* contents)
-    : AlertInfoBarDelegate(contents) {
+    : InfoBarDelegate(contents) {
 }
 
 ConfirmInfoBarDelegate::~ConfirmInfoBarDelegate() {
+}
+
+bool ConfirmInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
+  ConfirmInfoBarDelegate* confirm_delegate =
+      delegate->AsConfirmInfoBarDelegate();
+  return confirm_delegate &&
+      (confirm_delegate->GetMessageText() == GetMessageText());
 }
 
 ConfirmInfoBarDelegate* ConfirmInfoBarDelegate::AsConfirmInfoBarDelegate() {
@@ -177,7 +160,7 @@ SimpleAlertInfoBarDelegate::SimpleAlertInfoBarDelegate(
     SkBitmap* icon,
     const string16& message,
     bool auto_expire)
-    : AlertInfoBarDelegate(contents),
+    : ConfirmInfoBarDelegate(contents),
       icon_(icon),
       message_(message),
       auto_expire_(auto_expire) {
@@ -188,7 +171,7 @@ SimpleAlertInfoBarDelegate::~SimpleAlertInfoBarDelegate() {
 
 bool SimpleAlertInfoBarDelegate::ShouldExpire(
       const NavigationController::LoadCommittedDetails& details) const {
-  return auto_expire_ && AlertInfoBarDelegate::ShouldExpire(details);
+  return auto_expire_ && ConfirmInfoBarDelegate::ShouldExpire(details);
 }
 
 void SimpleAlertInfoBarDelegate::InfoBarClosed() {
@@ -201,4 +184,8 @@ SkBitmap* SimpleAlertInfoBarDelegate::GetIcon() const {
 
 string16 SimpleAlertInfoBarDelegate::GetMessageText() const {
   return message_;
+}
+
+int SimpleAlertInfoBarDelegate::GetButtons() const {
+  return BUTTON_NONE;
 }

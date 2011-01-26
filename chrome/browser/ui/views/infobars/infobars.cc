@@ -316,7 +316,7 @@ void InfoBar::DeleteSelf() {
 
 // AlertInfoBar, public: -------------------------------------------------------
 
-AlertInfoBar::AlertInfoBar(AlertInfoBarDelegate* delegate)
+AlertInfoBar::AlertInfoBar(ConfirmInfoBarDelegate* delegate)
     : InfoBar(delegate) {
   label_ = new views::Label(
       UTF16ToWideHack(delegate->GetMessageText()),
@@ -351,12 +351,6 @@ void AlertInfoBar::Layout() {
       GetAvailableWidth() - icon_->bounds().right() - kIconLabelSpacing);
   label_->SetBounds(icon_->bounds().right() + kIconLabelSpacing,
                     OffsetY(this, text_ps), text_width, text_ps.height());
-}
-
-// AlertInfoBar, private: ------------------------------------------------------
-
-AlertInfoBarDelegate* AlertInfoBar::GetDelegate() {
-  return delegate()->AsAlertInfoBarDelegate();
 }
 
 // LinkInfoBar, public: --------------------------------------------------------
@@ -596,12 +590,6 @@ void ConfirmInfoBar::Init() {
   AddChildView(ok_button_);
   AddChildView(cancel_button_);
   AddChildView(link_);
-}
-
-// AlertInfoBarDelegate, InfoBarDelegate overrides: ----------------------------
-
-InfoBar* AlertInfoBarDelegate::CreateInfoBar() {
-  return new AlertInfoBar(this);
 }
 
 // LinkInfoBarDelegate, InfoBarDelegate overrides: -----------------------------

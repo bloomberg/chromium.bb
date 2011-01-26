@@ -132,6 +132,7 @@ int HintInfoBar::GetButtons() const {
 }
 
 string16 HintInfoBar::GetButtonLabel(InfoBarButton button) const {
+  DCHECK_EQ(BUTTON_OK, button);
   return l10n_util::GetStringUTF16(
       IDS_OMNIBOX_SEARCH_HINT_INFOBAR_BUTTON_LABEL);
 }

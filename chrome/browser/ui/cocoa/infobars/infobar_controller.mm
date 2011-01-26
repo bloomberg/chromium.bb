@@ -338,25 +338,6 @@ const float kAnimateCloseDuration = 0.12;
 
 
 /////////////////////////////////////////////////////////////////////////
-// AlertInfoBarController implementation
-
-@implementation AlertInfoBarController
-
-// Alert infobars have a text message.
-- (void)addAdditionalControls {
-  // No buttons.
-  [self removeButtons];
-
-  // Insert the text.
-  AlertInfoBarDelegate* delegate = delegate_->AsAlertInfoBarDelegate();
-  DCHECK(delegate);
-  [self setLabelToMessage:base::SysUTF16ToNSString(delegate->GetMessageText())];
-}
-
-@end
-
-
-/////////////////////////////////////////////////////////////////////////
 // LinkInfoBarController implementation
 
 @implementation LinkInfoBarController
@@ -517,12 +498,6 @@ const float kAnimateCloseDuration = 0.12;
 
 //////////////////////////////////////////////////////////////////////////
 // CreateInfoBar() implementations
-
-InfoBar* AlertInfoBarDelegate::CreateInfoBar() {
-  AlertInfoBarController* controller =
-      [[AlertInfoBarController alloc] initWithDelegate:this];
-  return new InfoBar(controller);
-}
 
 InfoBar* LinkInfoBarDelegate::CreateInfoBar() {
   LinkInfoBarController* controller =

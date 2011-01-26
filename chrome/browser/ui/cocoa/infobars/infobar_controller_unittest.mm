@@ -65,25 +65,6 @@ namespace {
 ///////////////////////////////////////////////////////////////////////////
 // Test fixtures
 
-class AlertInfoBarControllerTest : public CocoaTest {
- public:
-  virtual void SetUp() {
-    CocoaTest::SetUp();
-
-    controller_.reset(
-        [[AlertInfoBarController alloc] initWithDelegate:&delegate_]);
-    container_.reset(
-        [[InfoBarContainerTest alloc] initWithController:controller_]);
-    [controller_ setContainerController:container_];
-    [[test_window() contentView] addSubview:[controller_ view]];
-  }
-
- protected:
-  MockAlertInfoBarDelegate delegate_;
-  scoped_nsobject<id> container_;
-  scoped_nsobject<AlertInfoBarController> controller_;
-};
-
 class LinkInfoBarControllerTest : public CocoaTest {
  public:
   virtual void SetUp() {
@@ -126,43 +107,6 @@ class ConfirmInfoBarControllerTest : public CocoaTest {
 ////////////////////////////////////////////////////////////////////////////
 // Tests
 
-TEST_VIEW(AlertInfoBarControllerTest, [controller_ view]);
-
-TEST_F(AlertInfoBarControllerTest, ShowAndDismiss) {
-  // Make sure someone looked at the message and icon.
-  EXPECT_TRUE(delegate_.message_text_accessed());
-  EXPECT_TRUE(delegate_.icon_accessed());
-
-  // Check to make sure the infobar message was set properly.
-  EXPECT_EQ(MockAlertInfoBarDelegate::kMessage,
-            base::SysNSStringToUTF8([controller_.get() labelString]));
-
-  // Check that dismissing the infobar calls InfoBarClosed() on the delegate.
-  [controller_ dismiss:nil];
-  EXPECT_TRUE(delegate_.closed());
-}
-
-TEST_F(AlertInfoBarControllerTest, DeallocController) {
-  // Test that dealloc'ing the controller does not send an
-  // InfoBarClosed() message to the delegate.
-  controller_.reset(nil);
-  EXPECT_FALSE(delegate_.closed());
-}
-
-TEST_F(AlertInfoBarControllerTest, ResizeView) {
-  NSRect originalLabelFrame = [controller_ labelFrame];
-
-  // Expand the view by 20 pixels and make sure the label frame changes
-  // accordingly.
-  const CGFloat width = 20;
-  NSRect newViewFrame = [[controller_ view] frame];
-  newViewFrame.size.width += width;
-  [[controller_ view] setFrame:newViewFrame];
-
-  NSRect newLabelFrame = [controller_ labelFrame];
-  EXPECT_EQ(NSWidth(newLabelFrame), NSWidth(originalLabelFrame) + width);
-}
-
 TEST_VIEW(LinkInfoBarControllerTest, [controller_ view]);
 
 TEST_F(LinkInfoBarControllerTest, ShowAndDismiss) {
@@ -192,6 +136,13 @@ TEST_F(LinkInfoBarControllerTest, ShowAndClickLinkWithoutClosing) {
   // delegate.  It should not close the infobar.
   [controller_ linkClicked];
   EXPECT_TRUE(delegate_.link_clicked());
+  EXPECT_FALSE(delegate_.closed());
+}
+
+TEST_F(LinkInfoBarControllerTest, DeallocController) {
+  // Test that dealloc'ing the controller does not send an
+  // InfoBarClosed() message to the delegate.
+  controller_.reset(nil);
   EXPECT_FALSE(delegate_.closed());
 }
 
@@ -279,6 +230,20 @@ TEST_F(ConfirmInfoBarControllerTest, ShowAndClickLinkWithoutClosing) {
   EXPECT_FALSE(delegate_.cancel_clicked());
   EXPECT_TRUE(delegate_.link_clicked());
   EXPECT_FALSE(delegate_.closed());
+}
+
+TEST_F(ConfirmInfoBarControllerTest, ResizeView) {
+  NSRect originalLabelFrame = [controller_ labelFrame];
+
+  // Expand the view by 20 pixels and make sure the label frame changes
+  // accordingly.
+  const CGFloat width = 20;
+  NSRect newViewFrame = [[controller_ view] frame];
+  newViewFrame.size.width += width;
+  [[controller_ view] setFrame:newViewFrame];
+
+  NSRect newLabelFrame = [controller_ labelFrame];
+  EXPECT_EQ(NSWidth(newLabelFrame), NSWidth(originalLabelFrame) + width);
 }
 
 }  // namespace

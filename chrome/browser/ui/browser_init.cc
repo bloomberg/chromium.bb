@@ -143,7 +143,6 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual void InfoBarClosed();
   virtual SkBitmap* GetIcon() const;
   virtual string16 GetMessageText() const;
-  virtual int GetButtons() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool NeedElevation(InfoBarButton button) const;
   virtual bool Accept();
@@ -202,15 +201,11 @@ string16 DefaultBrowserInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_DEFAULT_BROWSER_INFOBAR_SHORT_TEXT);
 }
 
-int DefaultBrowserInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK | BUTTON_CANCEL;
-}
-
 string16 DefaultBrowserInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return button == BUTTON_OK ?
-      l10n_util::GetStringUTF16(IDS_SET_AS_DEFAULT_INFOBAR_BUTTON_LABEL) :
-      l10n_util::GetStringUTF16(IDS_DONT_ASK_AGAIN_INFOBAR_BUTTON_LABEL);
+  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
+      IDS_SET_AS_DEFAULT_INFOBAR_BUTTON_LABEL :
+      IDS_DONT_ASK_AGAIN_INFOBAR_BUTTON_LABEL);
 }
 
 bool DefaultBrowserInfoBarDelegate::NeedElevation(InfoBarButton button) const {

@@ -135,7 +135,6 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual SkBitmap* GetIcon() const;
   virtual Type GetInfoBarType() const;
   virtual string16 GetMessageText() const;
-  virtual int GetButtons() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();
   virtual bool Cancel();
@@ -193,10 +192,6 @@ InfoBarDelegate::Type
 string16 GeolocationConfirmInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_GEOLOCATION_INFOBAR_QUESTION,
       net::FormatUrl(requesting_frame_url_.GetOrigin(), display_languages_));
-}
-
-int GeolocationConfirmInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK | BUTTON_CANCEL;
 }
 
 string16 GeolocationConfirmInfoBarDelegate::GetButtonLabel(

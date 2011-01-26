@@ -45,7 +45,6 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual SkBitmap* GetIcon() const;
   virtual Type GetInfoBarType() const;
   virtual string16 GetMessageText() const;
-  virtual int GetButtons() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();
   virtual bool Cancel();
@@ -88,10 +87,6 @@ InfoBarDelegate::Type SavePasswordInfoBarDelegate::GetInfoBarType() const {
 
 string16 SavePasswordInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT);
-}
-
-int SavePasswordInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK | BUTTON_CANCEL;
 }
 
 string16 SavePasswordInfoBarDelegate::GetButtonLabel(

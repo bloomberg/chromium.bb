@@ -9,33 +9,6 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 
 
-// MockAlertInfoBarDelegate ---------------------------------------------------
-
-class MockAlertInfoBarDelegate : public AlertInfoBarDelegate {
- public:
-  MockAlertInfoBarDelegate();
-  virtual ~MockAlertInfoBarDelegate();
-
-  bool icon_accessed() const { return icon_accessed_; }
-  bool message_text_accessed() const { return message_text_accessed_; }
-  bool closed() const { return closed_; }
-
-  static const char kMessage[];
-
- private:
-  // AlertInfoBarDelegate
-  virtual void InfoBarClosed();
-  virtual SkBitmap* GetIcon() const;
-  virtual string16 GetMessageText() const;
-
-  mutable bool icon_accessed_;
-  mutable bool message_text_accessed_;
-  bool closed_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockAlertInfoBarDelegate);
-};
-
-
 // MockLinkInfoBarDelegate ----------------------------------------------------
 
 class MockLinkInfoBarDelegate : public LinkInfoBarDelegate {
@@ -99,7 +72,6 @@ class MockConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual void InfoBarClosed();
   virtual SkBitmap* GetIcon() const;
   virtual string16 GetMessageText() const;
-  virtual int GetButtons() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();
   virtual bool Cancel();

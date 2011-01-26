@@ -103,7 +103,6 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual SkBitmap* GetIcon() const;
   virtual Type GetInfoBarType() const;
   virtual string16 GetMessageText() const;
-  virtual int GetButtons() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();
   virtual bool Cancel();
@@ -175,10 +174,6 @@ InfoBarDelegate::Type
 string16 NotificationPermissionInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_NOTIFICATION_PERMISSIONS,
                                     display_name_);
-}
-
-int NotificationPermissionInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK | BUTTON_CANCEL;
 }
 
 string16 NotificationPermissionInfoBarDelegate::GetButtonLabel(

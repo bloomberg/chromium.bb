@@ -265,7 +265,6 @@ class OutdatedPluginInfoBar : public ConfirmInfoBarDelegate {
   virtual void InfoBarClosed();
   virtual SkBitmap* GetIcon() const;
   virtual string16 GetMessageText() const;
-  virtual int GetButtons() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();
   virtual bool Cancel();
@@ -303,10 +302,6 @@ SkBitmap* OutdatedPluginInfoBar::GetIcon() const {
 
 string16 OutdatedPluginInfoBar::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED_PROMPT, name_);
-}
-
-int OutdatedPluginInfoBar::GetButtons() const {
-  return BUTTON_OK | BUTTON_CANCEL;
 }
 
 string16 OutdatedPluginInfoBar::GetButtonLabel(InfoBarButton button) const {

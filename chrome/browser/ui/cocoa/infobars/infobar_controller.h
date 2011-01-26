@@ -91,10 +91,6 @@ class InfoBarDelegate;
 // subclass.  Each of these subclasses overrides addAdditionalControls to
 // configure its view as necessary.
 
-@interface AlertInfoBarController : InfoBarController
-@end
-
-
 @interface LinkInfoBarController : InfoBarController
 // Called when there is a click on the link in the infobar.
 - (void)linkClicked;

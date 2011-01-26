@@ -11,7 +11,6 @@
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class AlertInfoBarDelegate;
 class ConfirmInfoBarDelegate;
 class CrashedExtensionInfoBarDelegate;
 class ExtensionInfoBarDelegate;
@@ -24,7 +23,7 @@ class TranslateInfoBarDelegate;
 // An interface implemented by objects wishing to control an InfoBar.
 // Implementing this interface is not sufficient to use an InfoBar, since it
 // does not map to a specific InfoBar type. Instead, you must implement either
-// AlertInfoBarDelegate or ConfirmInfoBarDelegate, or override with your own
+// LinkInfoBarDelegate or ConfirmInfoBarDelegate, or override with your own
 // delegate for your own InfoBar variety.
 //
 // --- WARNING ---
@@ -88,7 +87,6 @@ class InfoBarDelegate {
   virtual Type GetInfoBarType() const;
 
   // Type-checking downcast routines:
-  virtual AlertInfoBarDelegate* AsAlertInfoBarDelegate();
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate();
   virtual CrashedExtensionInfoBarDelegate* AsCrashedExtensionInfoBarDelegate();
   virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate();
@@ -113,27 +111,6 @@ class InfoBarDelegate {
   int contents_unique_id_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarDelegate);
-};
-
-// An interface derived from InfoBarDelegate implemented by objects wishing to
-// control an AlertInfoBar.
-class AlertInfoBarDelegate : public InfoBarDelegate {
- public:
-  // Returns the message string to be displayed for the InfoBar.
-  virtual string16 GetMessageText() const = 0;
-
-  // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar();
-  virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
-
- protected:
-  explicit AlertInfoBarDelegate(TabContents* contents);
-  virtual ~AlertInfoBarDelegate();
-
- private:
-  virtual AlertInfoBarDelegate* AsAlertInfoBarDelegate();
-
-  DISALLOW_COPY_AND_ASSIGN(AlertInfoBarDelegate);
 };
 
 // An interface derived from InfoBarDelegate implemented by objects wishing to
@@ -170,13 +147,16 @@ class LinkInfoBarDelegate : public InfoBarDelegate {
 
 // An interface derived from InfoBarDelegate implemented by objects wishing to
 // control a ConfirmInfoBar.
-class ConfirmInfoBarDelegate : public AlertInfoBarDelegate {
+class ConfirmInfoBarDelegate : public InfoBarDelegate {
  public:
   enum InfoBarButton {
-    BUTTON_NONE       = 0,
-    BUTTON_OK         = 1 << 0,
-    BUTTON_CANCEL     = 1 << 1,
+    BUTTON_NONE   = 0,
+    BUTTON_OK     = 1 << 0,
+    BUTTON_CANCEL = 1 << 1,
   };
+
+  // Returns the message string to be displayed for the InfoBar.
+  virtual string16 GetMessageText() const = 0;
 
   // Return the buttons to be shown for this InfoBar.
   virtual int GetButtons() const;
@@ -215,6 +195,7 @@ class ConfirmInfoBarDelegate : public AlertInfoBarDelegate {
  private:
   // InfoBarDelegate:
   virtual InfoBar* CreateInfoBar();
+  virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate();
 
   DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBarDelegate);
@@ -222,7 +203,7 @@ class ConfirmInfoBarDelegate : public AlertInfoBarDelegate {
 
 // Simple implementations for common use cases ---------------------------------
 
-class SimpleAlertInfoBarDelegate : public AlertInfoBarDelegate {
+class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   SimpleAlertInfoBarDelegate(TabContents* contents,
                              SkBitmap* icon,  // May be NULL.
@@ -232,12 +213,13 @@ class SimpleAlertInfoBarDelegate : public AlertInfoBarDelegate {
  private:
   virtual ~SimpleAlertInfoBarDelegate();
 
-  // AlertInfoBarDelegate:
+  // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(
       const NavigationController::LoadCommittedDetails& details) const;
   virtual void InfoBarClosed();
   virtual SkBitmap* GetIcon() const;
   virtual string16 GetMessageText() const;
+  virtual int GetButtons() const;
 
   SkBitmap* icon_;
   string16 message_;

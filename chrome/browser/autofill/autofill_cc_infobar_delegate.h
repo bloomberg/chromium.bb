@@ -27,7 +27,6 @@ class AutoFillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual SkBitmap* GetIcon() const;
   virtual Type GetInfoBarType() const;
   virtual string16 GetMessageText() const;
-  virtual int GetButtons() const;
   virtual string16 GetButtonLabel(
      ConfirmInfoBarDelegate::InfoBarButton button) const;
   virtual bool Accept();

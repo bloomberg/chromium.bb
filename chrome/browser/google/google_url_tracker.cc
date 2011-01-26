@@ -73,15 +73,11 @@ string16 GoogleURLTrackerInfoBarDelegate::GetMessageText() const {
                                     UTF8ToUTF16(new_google_url_.spec()));
 }
 
-int GoogleURLTrackerInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK | BUTTON_CANCEL;
-}
-
 string16 GoogleURLTrackerInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-                                   IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL :
-                                   IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
+      IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL :
+      IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
 }
 
 

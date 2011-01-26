@@ -7,35 +7,6 @@
 #include "base/utf_string_conversions.h"
 
 
-// MockAlertInfoBarDelegate ---------------------------------------------------
-
-const char MockAlertInfoBarDelegate::kMessage[] = "MockAlertInfoBarMessage";
-
-MockAlertInfoBarDelegate::MockAlertInfoBarDelegate()
-    : AlertInfoBarDelegate(NULL),
-      icon_accessed_(false),
-      message_text_accessed_(false),
-      closed_(false) {
-}
-
-MockAlertInfoBarDelegate::~MockAlertInfoBarDelegate() {
-}
-
-void MockAlertInfoBarDelegate::InfoBarClosed() {
-  closed_ = true;
-}
-
-SkBitmap* MockAlertInfoBarDelegate::GetIcon() const {
-  icon_accessed_ = true;
-  return NULL;
-}
-
-string16 MockAlertInfoBarDelegate::GetMessageText() const {
-  message_text_accessed_ = true;
-  return ASCIIToUTF16(kMessage);
-}
-
-
 // MockLinkInfoBarDelegate ----------------------------------------------------
 
 const char MockLinkInfoBarDelegate::kMessage[] = "MockLinkInfoBarMessage";
@@ -111,10 +82,6 @@ SkBitmap* MockConfirmInfoBarDelegate::GetIcon() const {
 string16 MockConfirmInfoBarDelegate::GetMessageText() const {
   message_text_accessed_ = true;
   return ASCIIToUTF16(kMessage);
-}
-
-int MockConfirmInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK | BUTTON_CANCEL;
 }
 
 string16 MockConfirmInfoBarDelegate::GetButtonLabel(

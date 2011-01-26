@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -171,7 +171,7 @@ class InfoBar : public views::View,
 
 class AlertInfoBar : public InfoBar {
  public:
-  explicit AlertInfoBar(AlertInfoBarDelegate* delegate);
+  explicit AlertInfoBar(ConfirmInfoBarDelegate* delegate);
   virtual ~AlertInfoBar();
 
   // Overridden from views::View:
@@ -182,8 +182,6 @@ class AlertInfoBar : public InfoBar {
   views::ImageView* icon() const { return icon_; }
 
  private:
-  AlertInfoBarDelegate* GetDelegate();
-
   views::Label* label_;
   views::ImageView* icon_;
 

@@ -2153,11 +2153,6 @@ ListValue* TestingAutomationProvider::GetInfobarsInfo(TabContents* tc) {
         buttons_list->Append(button_label);
       }
       infobar_item->Set("buttons", buttons_list);
-    } else if (infobar->AsAlertInfoBarDelegate()) {
-      infobar_item->SetString("type", "alert_infobar");
-      AlertInfoBarDelegate* alert_infobar =
-        infobar->AsAlertInfoBarDelegate();
-      infobar_item->SetString("text", alert_infobar->GetMessageText());
     } else if (infobar->AsLinkInfoBarDelegate()) {
       infobar_item->SetString("type", "link_infobar");
       LinkInfoBarDelegate* link_infobar = infobar->AsLinkInfoBarDelegate();

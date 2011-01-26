@@ -100,11 +100,6 @@ class InfoBar : public SlideAnimatorGtk::Delegate,
                               size_t link_offset,
                               GCallback callback);
 
-  // Adds |display_text| to the infobar. If |link_text| is not empty, it is
-  // right aligned in the infobar.
-  void AddLabelAndLink(const string16& display_text,
-                       const string16& link_text,
-                       GCallback callback);
   // The top level widget of the infobar.
   scoped_ptr<SlideAnimatorGtk> slide_widget_;
 
