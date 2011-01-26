@@ -51,7 +51,7 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
 
   // Sends a message to the browser process to collect the information from the
   // graphics card.
-  void CollectGraphicsInfoAsynchronously();
+  void CollectGraphicsInfoAsynchronously(GPUInfo::Level level);
 
   // Tells the GPU process to crash. Useful for testing.
   void SendAboutGpuCrash();

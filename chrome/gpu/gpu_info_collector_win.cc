@@ -24,7 +24,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-    gpu_info->SetProgress(GPUInfo::kComplete);
+    gpu_info->SetLevel(GPUInfo::kComplete);
     return CollectGraphicsInfoGL(gpu_info);
   }
 
@@ -49,7 +49,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
 
   // DirectX diagnostics are collected asynchronously because it takes a
   // couple of seconds. Do not mark as complete until that is done.
-  gpu_info->SetProgress(GPUInfo::kPartial);
+  gpu_info->SetLevel(GPUInfo::kPartial);
   return true;
 }
 

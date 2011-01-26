@@ -13,7 +13,7 @@
 TEST(GPUIPCMessageTest, GPUInfo) {
   GPUInfo input;
   // Test variables taken from HP Z600 Workstation
-  input.SetProgress(GPUInfo::kPartial);
+  input.SetLevel(GPUInfo::kPartial);
   input.SetInitializationTime(base::TimeDelta::FromMilliseconds(100));
   input.SetVideoCardInfo(0x10de, 0x0658);
   input.SetDriverInfo("NVIDIA", "195.36.24");
@@ -31,7 +31,7 @@ TEST(GPUIPCMessageTest, GPUInfo) {
   GPUInfo output;
   void* iter = NULL;
   EXPECT_TRUE(IPC::ReadParam(&msg, &iter, &output));
-  EXPECT_EQ(input.progress(), output.progress());
+  EXPECT_EQ(input.level(), output.level());
   EXPECT_EQ(input.initialization_time().InMilliseconds(),
             output.initialization_time().InMilliseconds());
   EXPECT_EQ(input.vendor_id(), output.vendor_id());

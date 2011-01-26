@@ -72,6 +72,14 @@ struct ParamTraits<GPUInfo> {
 };
 
 template <>
+struct ParamTraits<GPUInfo::Level> {
+  typedef GPUInfo::Level param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
 struct ParamTraits<DxDiagNode> {
   typedef DxDiagNode param_type;
   static void Write(Message* m, const param_type& p);
