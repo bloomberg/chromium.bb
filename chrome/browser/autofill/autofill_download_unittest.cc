@@ -53,6 +53,10 @@ class AutoFillDownloadTestHelper : public AutoFillDownloadManager::Observer {
     download_manager.SetObserver(NULL);
   }
 
+  void LimitCache(size_t cache_size) {
+    download_manager.set_max_form_cache_size(cache_size);
+  }
+
   // AutoFillDownloadManager::Observer overridables:
   virtual void OnLoadedAutoFillHeuristics(
       const std::string& heuristic_xml) {
@@ -61,7 +65,6 @@ class AutoFillDownloadTestHelper : public AutoFillDownloadManager::Observer {
     response.type_of_response = QUERY_SUCCESSFULL;
     responses_.push_back(response);
   };
-
   virtual void OnUploadedAutoFillHeuristics(const std::string& form_signature) {
     ResponseData response;
     response.type_of_response = UPLOAD_SUCCESSFULL;
@@ -276,6 +279,16 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   fetcher = factory.GetFetcherByID(3);
   EXPECT_EQ(NULL, fetcher);
 
+  // Modify form structures to miss the cache.
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Address line 2"),
+                                               ASCIIToUTF16("address2"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false));
+  form_structure = new FormStructure(form);
+  form_structures.push_back(form_structure);
+
   // Request with id 3.
   EXPECT_CALL(mock_metric_logger, Log(AutoFillMetrics::QUERY_SENT)).Times(1);
   EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures,
@@ -329,3 +342,178 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   // Make sure consumer of URLFetcher does the right thing.
   URLFetcher::set_factory(NULL);
 }
+
+TEST(AutoFillDownloadTest, CacheQueryTest) {
+  MessageLoopForUI message_loop;
+  AutoFillDownloadTestHelper helper;
+  // Create and register factory.
+  TestURLFetcherFactory factory;
+  URLFetcher::set_factory(&factory);
+
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("username"),
+                                               ASCIIToUTF16("username"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
+                                               ASCIIToUTF16("firstname"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
+                                               ASCIIToUTF16("lastname"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false));
+  FormStructure *form_structure = new FormStructure(form);
+  ScopedVector<FormStructure> form_structures0;
+  form_structures0.push_back(form_structure);
+
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("email"),
+                                               ASCIIToUTF16("email"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false));
+  // Slightly different form - so different request.
+  form_structure = new FormStructure(form);
+  ScopedVector<FormStructure> form_structures1;
+  form_structures1.push_back(form_structure);
+
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("email2"),
+                                               ASCIIToUTF16("email2"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false));
+  // Slightly different form - so different request.
+  form_structure = new FormStructure(form);
+  ScopedVector<FormStructure> form_structures2;
+  form_structures2.push_back(form_structure);
+
+  // Limit cache to two forms.
+  helper.LimitCache(2);
+
+  const char *responses[] = {
+    "<autofillqueryresponse>"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"3\" />"
+      "<field autofilltype=\"5\" />"
+    "</autofillqueryresponse>",
+    "<autofillqueryresponse>"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"3\" />"
+      "<field autofilltype=\"5\" />"
+      "<field autofilltype=\"9\" />"
+    "</autofillqueryresponse>",
+    "<autofillqueryresponse>"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"3\" />"
+      "<field autofilltype=\"5\" />"
+      "<field autofilltype=\"9\" />"
+      "<field autofilltype=\"0\" />"
+    "</autofillqueryresponse>",
+  };
+
+  // Request with id 0.
+  MockAutoFillMetrics mock_metric_logger;
+  EXPECT_CALL(mock_metric_logger, Log(AutoFillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures0,
+                                                        mock_metric_logger));
+  // No responses yet
+  EXPECT_EQ(static_cast<size_t>(0), helper.responses_.size());
+
+  TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
+                                          net::URLRequestStatus(),
+                                          200, ResponseCookies(),
+                                          std::string(responses[0]));
+  ASSERT_EQ(static_cast<size_t>(1), helper.responses_.size());
+  EXPECT_EQ(responses[0], helper.responses_.front().response);
+
+  helper.responses_.clear();
+
+  // No actual request - should be a cache hit.
+  EXPECT_CALL(mock_metric_logger, Log(AutoFillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures0,
+                                                        mock_metric_logger));
+  // Data is available immediately from cache - no over-the-wire trip.
+  ASSERT_EQ(static_cast<size_t>(1), helper.responses_.size());
+  EXPECT_EQ(responses[0], helper.responses_.front().response);
+  helper.responses_.clear();
+
+  // Request with id 1.
+  EXPECT_CALL(mock_metric_logger, Log(AutoFillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures1,
+                                                        mock_metric_logger));
+  // No responses yet
+  EXPECT_EQ(static_cast<size_t>(0), helper.responses_.size());
+
+  fetcher = factory.GetFetcherByID(1);
+  ASSERT_TRUE(fetcher);
+  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
+                                          net::URLRequestStatus(),
+                                          200, ResponseCookies(),
+                                          std::string(responses[1]));
+  ASSERT_EQ(static_cast<size_t>(1), helper.responses_.size());
+  EXPECT_EQ(responses[1], helper.responses_.front().response);
+
+  helper.responses_.clear();
+
+  // Request with id 2.
+  EXPECT_CALL(mock_metric_logger, Log(AutoFillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures2,
+                                                        mock_metric_logger));
+
+  fetcher = factory.GetFetcherByID(2);
+  ASSERT_TRUE(fetcher);
+  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
+                                          net::URLRequestStatus(),
+                                          200, ResponseCookies(),
+                                          std::string(responses[2]));
+  ASSERT_EQ(static_cast<size_t>(1), helper.responses_.size());
+  EXPECT_EQ(responses[2], helper.responses_.front().response);
+
+  helper.responses_.clear();
+
+  // No actual requests - should be a cache hit.
+  EXPECT_CALL(mock_metric_logger, Log(AutoFillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures1,
+                                                        mock_metric_logger));
+
+  EXPECT_CALL(mock_metric_logger, Log(AutoFillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures2,
+                                                        mock_metric_logger));
+
+  ASSERT_EQ(static_cast<size_t>(2), helper.responses_.size());
+  EXPECT_EQ(responses[1], helper.responses_.front().response);
+  EXPECT_EQ(responses[2], helper.responses_.back().response);
+  helper.responses_.clear();
+
+  // The first structure should've expired.
+  // Request with id 3.
+  EXPECT_CALL(mock_metric_logger, Log(AutoFillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures0,
+                                                        mock_metric_logger));
+  // No responses yet
+  EXPECT_EQ(static_cast<size_t>(0), helper.responses_.size());
+
+  fetcher = factory.GetFetcherByID(3);
+  ASSERT_TRUE(fetcher);
+  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
+                                          net::URLRequestStatus(),
+                                          200, ResponseCookies(),
+                                          std::string(responses[0]));
+  ASSERT_EQ(static_cast<size_t>(1), helper.responses_.size());
+  EXPECT_EQ(responses[0], helper.responses_.front().response);
+
+  // Make sure consumer of URLFetcher does the right thing.
+  URLFetcher::set_factory(NULL);
+}
+

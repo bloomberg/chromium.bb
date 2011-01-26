@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_DOWNLOAD_H_
 #pragma once
 
+#include <list>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/scoped_vector.h"
 #include "base/time.h"
@@ -96,6 +98,7 @@ class AutoFillDownloadManager : public URLFetcher::Delegate {
   friend class AutoFillDownloadTestHelper;  // unit-test.
 
   struct FormRequestData;
+  typedef std::list<std::pair<std::string, std::string> > QueryRequestCache;
 
   // Initiates request to AutoFill servers to download/upload heuristics.
   // |form_xml| - form structure XML to upload/download.
@@ -105,6 +108,25 @@ class AutoFillDownloadManager : public URLFetcher::Delegate {
   //   servers.
   bool StartRequest(const std::string& form_xml,
                     const FormRequestData& request_data);
+
+  // Each request is page visited. We store last |max_form_cache_size|
+  // request, to avoid going over the wire. Set to 16 in constructor. Warning:
+  // the search is linear (newest first), so do not make the constant very big.
+  void set_max_form_cache_size(size_t max_form_cache_size) {
+    max_form_cache_size_ = max_form_cache_size;
+  }
+
+  // Caches query request. |forms_in_query| is a vector of form signatures in
+  // the query. |query_data| is the successful data returned over the wire.
+  void CacheQueryRequest(const std::vector<std::string>& forms_in_query,
+                         const std::string& query_data);
+  // Returns true if query is in the cache, while filling |query_data|, false
+  // otherwise. |forms_in_query| is a vector of form signatures in the query.
+  bool CheckCacheForQueryRequest(const std::vector<std::string>& forms_in_query,
+                                 std::string* query_data) const;
+  // Concatenates |forms_in_query| into one signature.
+  std::string GetCombinedSignature(
+      const std::vector<std::string>& forms_in_query) const;
 
   // URLFetcher::Delegate implementation:
   virtual void OnURLFetchComplete(const URLFetcher* source,
@@ -122,6 +144,10 @@ class AutoFillDownloadManager : public URLFetcher::Delegate {
   // we use a map between fetchers and info.
   std::map<URLFetcher*, FormRequestData> url_fetchers_;
   AutoFillDownloadManager::Observer *observer_;
+
+  // Cached QUERY requests.
+  QueryRequestCache cached_forms_;
+  size_t max_form_cache_size_;
 
   // Time when next query/upload requests are allowed. If 50x HTTP received,
   // exponential back off is initiated, so this times will be in the future

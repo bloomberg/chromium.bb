@@ -27,6 +27,10 @@
 #define AUTO_FILL_QUERY_SERVER_NAME_START_IN_HEADER "SOMESERVER/"
 #endif
 
+namespace {
+const size_t kMaxFormCacheSize = 16;
+};
+
 struct AutoFillDownloadManager::FormRequestData {
   std::vector<std::string> form_signatures;
   AutoFillRequestType request_type;
@@ -35,6 +39,7 @@ struct AutoFillDownloadManager::FormRequestData {
 AutoFillDownloadManager::AutoFillDownloadManager(Profile* profile)
     : profile_(profile),
       observer_(NULL),
+      max_form_cache_size_(kMaxFormCacheSize),
       next_query_request_(base::Time::Now()),
       next_upload_request_(base::Time::Now()),
       positive_upload_rate_(0),
@@ -76,11 +81,21 @@ bool AutoFillDownloadManager::StartQueryRequest(
   std::string form_xml;
   FormRequestData request_data;
   if (!FormStructure::EncodeQueryRequest(forms, &request_data.form_signatures,
-                                         &form_xml))
+                                         &form_xml)) {
     return false;
+  }
 
   request_data.request_type = AutoFillDownloadManager::REQUEST_QUERY;
   metric_logger.Log(AutoFillMetrics::QUERY_SENT);
+
+  std::string query_data;
+  if (CheckCacheForQueryRequest(request_data.form_signatures, &query_data)) {
+    VLOG(1) << "AutoFillDownloadManager: query request has been retrieved from"
+            << "the cache";
+    if (observer_)
+      observer_->OnLoadedAutoFillHeuristics(query_data);
+    return true;
+  }
 
   return StartRequest(form_xml, request_data);
 }
@@ -188,6 +203,60 @@ bool AutoFillDownloadManager::StartRequest(
   return true;
 }
 
+void AutoFillDownloadManager::CacheQueryRequest(
+    const std::vector<std::string>& forms_in_query,
+    const std::string& query_data) {
+  std::string signature = GetCombinedSignature(forms_in_query);
+  for (QueryRequestCache::iterator it = cached_forms_.begin();
+       it != cached_forms_.end(); ++it) {
+    if (it->first == signature) {
+      // We hit the cache, move to the first position and return.
+      std::pair<std::string, std::string> data = *it;
+      cached_forms_.erase(it);
+      cached_forms_.push_front(data);
+      return;
+    }
+  }
+  std::pair<std::string, std::string> data;
+  data.first = signature;
+  data.second = query_data;
+  cached_forms_.push_front(data);
+  while (cached_forms_.size() > max_form_cache_size_)
+    cached_forms_.pop_back();
+}
+
+bool AutoFillDownloadManager::CheckCacheForQueryRequest(
+    const std::vector<std::string>& forms_in_query,
+    std::string* query_data) const {
+  std::string signature = GetCombinedSignature(forms_in_query);
+  for (QueryRequestCache::const_iterator it = cached_forms_.begin();
+       it != cached_forms_.end(); ++it) {
+    if (it->first == signature) {
+      // We hit the cache, fill the data and return.
+      *query_data = it->second;
+      return true;
+    }
+  }
+  return false;
+}
+
+std::string AutoFillDownloadManager::GetCombinedSignature(
+    const std::vector<std::string>& forms_in_query) const {
+  size_t total_size = forms_in_query.size();
+  for (size_t i = 0; i < forms_in_query.size(); ++i)
+    total_size += forms_in_query[i].length();
+  std::string signature;
+
+  signature.reserve(total_size);
+
+  for (size_t i = 0; i < forms_in_query.size(); ++i) {
+    if (i)
+      signature.append(",");
+    signature.append(forms_in_query[i]);
+  }
+  return signature;
+}
+
 void AutoFillDownloadManager::OnURLFetchComplete(
     const URLFetcher* source,
     const GURL& url,
@@ -250,6 +319,7 @@ void AutoFillDownloadManager::OnURLFetchComplete(
     VLOG(1) << "AutoFillDownloadManager: " << type_of_request
             << " request has succeeded";
     if (it->second.request_type == AutoFillDownloadManager::REQUEST_QUERY) {
+      CacheQueryRequest(it->second.form_signatures, data);
       if (observer_)
         observer_->OnLoadedAutoFillHeuristics(data);
     } else {
