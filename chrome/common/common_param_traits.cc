@@ -350,47 +350,83 @@ struct ParamTraits<net::UploadData::Element> {
   typedef net::UploadData::Element param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, static_cast<int>(p.type()));
-    if (p.type() == net::UploadData::TYPE_BYTES) {
-      m->WriteData(&p.bytes()[0], static_cast<int>(p.bytes().size()));
-    } else if (p.type() == net::UploadData::TYPE_FILE) {
-      WriteParam(m, p.file_path());
-      WriteParam(m, p.file_range_offset());
-      WriteParam(m, p.file_range_length());
-      WriteParam(m, p.expected_file_modification_time());
-    } else {
-      WriteParam(m, p.blob_url());
+    switch (p.type()) {
+      case net::UploadData::TYPE_BYTES: {
+        m->WriteData(&p.bytes()[0], static_cast<int>(p.bytes().size()));
+        break;
+      }
+      case net::UploadData::TYPE_CHUNK: {
+        m->WriteData(&p.bytes()[0], static_cast<int>(p.bytes().size()));
+        // If this element is part of a chunk upload then send over information
+        // indicating if this is the last chunk.
+        WriteParam(m, p.is_last_chunk());
+        break;
+      }
+      case net::UploadData::TYPE_FILE: {
+        WriteParam(m, p.file_path());
+        WriteParam(m, p.file_range_offset());
+        WriteParam(m, p.file_range_length());
+        WriteParam(m, p.expected_file_modification_time());
+        break;
+      }
+      default: {
+        WriteParam(m, p.blob_url());
+        break;
+      }
     }
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
     int type;
     if (!ReadParam(m, iter, &type))
       return false;
-    if (type == net::UploadData::TYPE_BYTES) {
-      const char* data;
-      int len;
-      if (!m->ReadData(iter, &data, &len))
-        return false;
-      r->SetToBytes(data, len);
-    } else if (type == net::UploadData::TYPE_FILE) {
-      FilePath file_path;
-      uint64 offset, length;
-      base::Time expected_modification_time;
-      if (!ReadParam(m, iter, &file_path))
-        return false;
-      if (!ReadParam(m, iter, &offset))
-        return false;
-      if (!ReadParam(m, iter, &length))
-        return false;
-      if (!ReadParam(m, iter, &expected_modification_time))
-        return false;
-      r->SetToFilePathRange(file_path, offset, length,
-                            expected_modification_time);
-    } else {
-      DCHECK(type == net::UploadData::TYPE_BLOB);
-      GURL blob_url;
-      if (!ReadParam(m, iter, &blob_url))
-        return false;
-      r->SetToBlobUrl(blob_url);
+    switch (type) {
+      case net::UploadData::TYPE_BYTES: {
+        const char* data;
+        int len;
+        if (!m->ReadData(iter, &data, &len))
+          return false;
+        r->SetToBytes(data, len);
+        break;
+      }
+      case net::UploadData::TYPE_CHUNK: {
+        const char* data;
+        int len;
+        if (!m->ReadData(iter, &data, &len))
+          return false;
+        r->SetToBytes(data, len);
+        // If this element is part of a chunk upload then we need to explicitly
+        // set the type of the element and whether it is the last chunk.
+        bool is_last_chunk = false;
+        if (!ReadParam(m, iter, &is_last_chunk))
+          return false;
+        r->set_type(net::UploadData::TYPE_CHUNK);
+        r->set_is_last_chunk(is_last_chunk);
+        break;
+      }
+      case net::UploadData::TYPE_FILE: {
+        FilePath file_path;
+        uint64 offset, length;
+        base::Time expected_modification_time;
+        if (!ReadParam(m, iter, &file_path))
+          return false;
+        if (!ReadParam(m, iter, &offset))
+          return false;
+        if (!ReadParam(m, iter, &length))
+          return false;
+        if (!ReadParam(m, iter, &expected_modification_time))
+          return false;
+        r->SetToFilePathRange(file_path, offset, length,
+                              expected_modification_time);
+        break;
+      }
+      default: {
+        DCHECK(type == net::UploadData::TYPE_BLOB);
+        GURL blob_url;
+        if (!ReadParam(m, iter, &blob_url))
+          return false;
+        r->SetToBlobUrl(blob_url);
+        break;
+      }
     }
     return true;
   }
@@ -405,6 +441,7 @@ void ParamTraits<scoped_refptr<net::UploadData> >::Write(Message* m,
   if (p) {
     WriteParam(m, *p->elements());
     WriteParam(m, p->identifier());
+    WriteParam(m, p->is_chunked());
   }
 }
 
@@ -422,9 +459,13 @@ bool ParamTraits<scoped_refptr<net::UploadData> >::Read(const Message* m,
   int64 identifier;
   if (!ReadParam(m, iter, &identifier))
     return false;
+  bool is_chunked = false;
+  if (!ReadParam(m, iter, &is_chunked))
+    return false;
   *r = new net::UploadData;
   (*r)->swap_elements(&elements);
   (*r)->set_identifier(identifier);
+  (*r)->set_is_chunked(is_chunked);
   return true;
 }
 

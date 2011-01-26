@@ -13,7 +13,8 @@ PluginUrlRequest::PluginUrlRequest()
       post_data_len_(0),
       enable_frame_busting_(false),
       resource_type_(ResourceType::MAIN_FRAME),
-      load_flags_(0) {
+      load_flags_(0),
+      is_chunked_upload_(false) {
 }
 
 PluginUrlRequest::~PluginUrlRequest() {
@@ -47,6 +48,7 @@ bool PluginUrlRequest::Initialize(PluginUrlRequestDelegate* delegate,
       upload_stream->AddRef();
       upload_stream->Initialize(upload_data);
       upload_data_.Attach(upload_stream);
+      is_chunked_upload_ = upload_data->is_chunked();
     }
   }
 

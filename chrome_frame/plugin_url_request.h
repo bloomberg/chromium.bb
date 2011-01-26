@@ -149,6 +149,10 @@ class PluginUrlRequest {
     return post_data_len_;
   }
 
+  bool is_chunked_upload() const {
+    return is_chunked_upload_;
+  }
+
  protected:
   HRESULT get_upload_data(IStream** ret) {
     DCHECK(ret);
@@ -181,6 +185,7 @@ class PluginUrlRequest {
   ResourceType::Type resource_type_;
   int load_flags_;
   ScopedComPtr<IStream> upload_data_;
+  bool is_chunked_upload_;
 };
 
 #endif  // CHROME_FRAME_PLUGIN_URL_REQUEST_H_

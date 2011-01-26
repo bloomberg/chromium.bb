@@ -20,7 +20,7 @@ STDMETHODIMP UrlmonUploadDataStream::Read(void* pv, ULONG cb, ULONG* read) {
   }
 
   // Have we already read past the end of the stream?
-  if (request_body_stream_->position() >= request_body_stream_->size()) {
+  if (request_body_stream_->eof()) {
     if (read) {
       *read = 0;
     }
@@ -28,8 +28,7 @@ STDMETHODIMP UrlmonUploadDataStream::Read(void* pv, ULONG cb, ULONG* read) {
   }
 
   uint64 total_bytes_to_copy = std::min(static_cast<uint64>(cb),
-      request_body_stream_->size() - request_body_stream_->position());
-  uint64 initial_position = request_body_stream_->position();
+      static_cast<uint64>(request_body_stream_->buf_len()));
 
   uint64 bytes_copied = 0;
 
@@ -55,8 +54,6 @@ STDMETHODIMP UrlmonUploadDataStream::Read(void* pv, ULONG cb, ULONG* read) {
   }
 
   DCHECK(bytes_copied == total_bytes_to_copy);
-  DCHECK(request_body_stream_->position() ==
-         initial_position + total_bytes_to_copy);
 
   if (read) {
     *read = static_cast<ULONG>(total_bytes_to_copy);

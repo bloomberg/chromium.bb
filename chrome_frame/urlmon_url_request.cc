@@ -22,8 +22,8 @@
 #include "chrome_frame/urlmon_upload_data_stream.h"
 #include "chrome_frame/utils.h"
 #include "net/base/load_flags.h"
-#include "net/http/http_util.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 
 UrlmonUrlRequest::UrlmonUrlRequest()
     : pending_read_size_(0),
@@ -567,11 +567,15 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
 
   std::string new_headers;
   if (post_data_len() > 0) {
-    // Tack on the Content-Length header since when using an IStream type
-    // STGMEDIUM, it looks like it doesn't get set for us :(
-    new_headers = base::StringPrintf(
-        "Content-Length: %s\r\n",
-        base::Int64ToString(post_data_len()).c_str());
+    if (is_chunked_upload()) {
+      new_headers = base::StringPrintf("Transfer-Encoding: chunked\r\n");
+    } else {
+      // Tack on the Content-Length header since when using an IStream type
+      // STGMEDIUM, it looks like it doesn't get set for us :(
+      new_headers = base::StringPrintf(
+          "Content-Length: %s\r\n",
+          base::Int64ToString(post_data_len()).c_str());
+    }
   }
 
   if (!extra_headers().empty()) {

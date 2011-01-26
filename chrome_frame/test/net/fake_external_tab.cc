@@ -461,6 +461,9 @@ void FilterDisabledTests() {
     // This test is disabled as it expects an empty UA to be echoed back from
     // the server which is not the case in ChromeFrame.
     "URLRequestTestHTTP.DefaultUserAgent",
+    // This test modifies the UploadData object after it has been marshaled to
+    // ChromeFrame. We don't support this.
+    "URLRequestTestHTTP.TestPostChunkedDataAfterStart",
   };
 
   std::string filter("-");  // All following filters will be negative.
