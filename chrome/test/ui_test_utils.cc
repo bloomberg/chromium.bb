@@ -612,10 +612,10 @@ void CrashTab(TabContents* tab) {
                   Source<RenderProcessHost>(rph));
 }
 
-void WaitForFocusChange(RenderViewHost* rvh) {
+void WaitForFocusChange(TabContents* tab_contents) {
   TestNotificationObserver observer;
   RegisterAndWait(&observer, NotificationType::FOCUS_CHANGED_IN_PAGE,
-                  Source<RenderViewHost>(rvh));
+                  Source<TabContents>(tab_contents));
 }
 
 void WaitForFocusInBrowser(Browser* browser) {

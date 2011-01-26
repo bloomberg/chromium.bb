@@ -8,7 +8,9 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/touch/frame/keyboard_container_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/notification_service.h"
@@ -18,6 +20,11 @@
 namespace {
 
 const int kKeyboardHeight = 300;
+
+PropertyAccessor<bool>* GetFocusedStateAccessor() {
+  static PropertyAccessor<bool> state;
+  return &state;
+}
 
 }  // namespace
 
@@ -35,9 +42,15 @@ TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
   registrar_.Add(this,
                  NotificationType::FOCUS_CHANGED_IN_PAGE,
                  NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::TAB_CONTENTS_DESTROYED,
+                 NotificationService::AllSources());
+
+  browser_view->browser()->tabstrip_model()->AddObserver(this);
 }
 
 TouchBrowserFrameView::~TouchBrowserFrameView() {
+  browser_view()->browser()->tabstrip_model()->RemoveObserver(this);
 }
 
 void TouchBrowserFrameView::Layout() {
@@ -98,6 +111,17 @@ void TouchBrowserFrameView::UpdateKeyboardAndLayout(bool should_show_keyboard) {
   }
 }
 
+void TouchBrowserFrameView::TabSelectedAt(TabContentsWrapper* old_contents,
+                                          TabContentsWrapper* new_contents,
+                                          int index,
+                                          bool user_gesture) {
+  TabContents* contents = new_contents->tab_contents();
+  bool* editable = GetFocusedStateAccessor()->GetProperty(
+      contents->property_bag());
+  UpdateKeyboardAndLayout(editable ? *editable : false);
+}
+
+
 void TouchBrowserFrameView::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
@@ -105,16 +129,26 @@ void TouchBrowserFrameView::Observe(NotificationType type,
   if (type == NotificationType::FOCUS_CHANGED_IN_PAGE) {
     // Only modify the keyboard state if the currently active tab sent the
     // notification.
-    const TabContents* tab_contents = browser->GetSelectedTabContents();
-    if (tab_contents &&
-        tab_contents->render_view_host() ==
-            Source<RenderViewHost>(source).ptr())
-      UpdateKeyboardAndLayout(*Details<const bool>(details).ptr());
+    const TabContents* current_tab = browser->GetSelectedTabContents();
+    TabContents* source_tab = Source<TabContents>(source).ptr();
+    const bool editable = *Details<const bool>(details).ptr();
+
+    if (current_tab == source_tab) {
+      UpdateKeyboardAndLayout(editable);
+    }
+
+    // Save the state of the focused field so that the keyboard visibility
+    // can be determined after tab switching.
+    GetFocusedStateAccessor()->SetProperty(
+        source_tab->property_bag(), editable);
   } else if (type == NotificationType::NAV_ENTRY_COMMITTED) {
     Browser* source_browser = Browser::GetBrowserForController(
         Source<NavigationController>(source).ptr(), NULL);
     // If the Browser for the keyboard has navigated, hide the keyboard.
     if (source_browser == browser)
       UpdateKeyboardAndLayout(false);
+  } else if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
+    GetFocusedStateAccessor()->DeleteProperty(
+        Source<TabContents>(source).ptr()->property_bag());
   }
 }

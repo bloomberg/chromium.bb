@@ -3141,7 +3141,7 @@ void TabContents::DidInsertCSS() {
 void TabContents::FocusedNodeChanged(bool is_editable_node) {
   NotificationService::current()->Notify(
       NotificationType::FOCUS_CHANGED_IN_PAGE,
-      Source<RenderViewHost>(render_view_host()),
+      Source<TabContents>(this),
       Details<const bool>(&is_editable_node));
 }
 

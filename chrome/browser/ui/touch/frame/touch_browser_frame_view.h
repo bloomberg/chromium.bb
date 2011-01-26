@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
+#include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -17,6 +18,7 @@ class NotificationDetails;
 class NotificationSource;
 
 class TouchBrowserFrameView : public OpaqueBrowserFrameView,
+                              public TabStripModelObserver,
                               public NotificationObserver {
  public:
   // Constructs a non-client view for an BrowserFrame.
@@ -33,6 +35,12 @@ class TouchBrowserFrameView : public OpaqueBrowserFrameView,
  private:
   virtual void InitVirtualKeyboard();
   virtual void UpdateKeyboardAndLayout(bool should_show_keyboard);
+
+  // Overrridden from TabStripModelObserver.
+  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
+                             int index,
+                             bool user_gesture);
 
   // Overridden from NotificationObserver.
   virtual void Observe(NotificationType type,

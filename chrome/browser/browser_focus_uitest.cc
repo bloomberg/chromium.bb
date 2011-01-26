@@ -154,10 +154,14 @@ class TestInterstitialPage : public InterstitialPage {
     return html_contents_;
   }
 
-  // Exposing render_view_host() to be public; it is declared as protected in
-  // the superclass.
+  // Exposing render_view_host() and tab() to be public; they are declared as
+  // protected in the superclass.
   virtual RenderViewHost* render_view_host() {
     return InterstitialPage::render_view_host();
+  }
+
+  virtual TabContents* tab() {
+    return InterstitialPage::tab();
   }
 
   bool HasFocus() {
@@ -168,7 +172,7 @@ class TestInterstitialPage : public InterstitialPage {
   virtual void FocusedNodeChanged(bool is_editable_node) {
     NotificationService::current()->Notify(
         NotificationType::FOCUS_CHANGED_IN_PAGE,
-        Source<RenderViewHost>(render_view_host()),
+        Source<TabContents>(tab()),
         Details<const bool>(&is_editable_node));
   }
 
@@ -487,8 +491,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
         ASSERT_TRUE(ui_test_utils::SendKeyPressAndWaitWithDetails(
             browser(), ui::VKEY_TAB, false, false, false, false,
             NotificationType::FOCUS_CHANGED_IN_PAGE,
-            NotificationSource(Source<RenderViewHost>(
-                browser()->GetSelectedTabContents()->render_view_host())),
+            NotificationSource(Source<TabContents>(
+                browser()->GetSelectedTabContents())),
             details));
       } else {
         // On the last tab key press, the focus returns to the browser.
@@ -526,8 +530,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
         ASSERT_TRUE(ui_test_utils::SendKeyPressAndWaitWithDetails(
             browser(), ui::VKEY_TAB, false, true, false, false,
             NotificationType::FOCUS_CHANGED_IN_PAGE,
-            NotificationSource(Source<RenderViewHost>(
-                browser()->GetSelectedTabContents()->render_view_host())),
+            NotificationSource(Source<TabContents>(
+                browser()->GetSelectedTabContents())),
             details));
       } else {
         // On the last tab key press, the focus returns to the browser.
@@ -606,8 +610,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
           NotificationService::AllSources();
       if (j < arraysize(kExpElementIDs) - 1) {
         notification_type = NotificationType::FOCUS_CHANGED_IN_PAGE;
-        notification_source = Source<RenderViewHost>(
-            interstitial_page->render_view_host());
+        notification_source = Source<TabContents>(
+            interstitial_page->tab());
       } else {
         // On the last tab key press, the focus returns to the browser.
         notification_type = NotificationType::FOCUS_RETURNED_TO_BROWSER;
@@ -637,8 +641,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
           NotificationService::AllSources();
       if (j < arraysize(kExpElementIDs) - 1) {
         notification_type = NotificationType::FOCUS_CHANGED_IN_PAGE;
-        notification_source = Source<RenderViewHost>(
-            interstitial_page->render_view_host());
+        notification_source = Source<TabContents>(
+            interstitial_page->tab());
       } else {
         // On the last tab key press, the focus returns to the browser.
         notification_type = NotificationType::FOCUS_RETURNED_TO_BROWSER;

@@ -519,9 +519,10 @@ class NotificationType {
     // guaranteed to be valid after the notification.
     WEB_CACHE_STATS_OBSERVED,
 
-    // The focused element inside a page has changed.  The source is the render
-    // view host for the page.  The details are a Details<const bool> that
-    // indicates whether or not an editable node was focused.
+    // The focused element inside a page has changed.  The source is the
+    // TabContents containing the render view host for the page. The details is
+    // a Details<const bool> that indicates whether or not an editable node was
+    // focused.
     FOCUS_CHANGED_IN_PAGE,
 
     // Notification posted from ExecuteJavascriptInWebFrameNotifyResult. The
