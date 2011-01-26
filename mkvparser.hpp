@@ -568,9 +568,11 @@ public:
     const BlockEntry* GetMaxKey(const VideoTrack*) const;
 
     static bool HasBlockEntries(const Segment*, long long);
+    long GetEntryCount() const;
 
     void Load() const;
-    long Load(long long& pos, long& size) const;
+    void LoadBlockEntries() const;
+    long LoadBlockEntries(long long& pos, long& size) const;
 
 protected:
     Cluster(
@@ -593,7 +595,6 @@ private:
     mutable BlockEntry** m_entries;
     mutable long m_entries_count;
 
-    void LoadBlockEntries() const;
     void ParseBlockGroup(long long, long long, size_t) const;
     void ParseSimpleBlock(long long, long long, size_t) const;
 

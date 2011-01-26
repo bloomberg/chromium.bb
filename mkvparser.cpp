@@ -1308,7 +1308,7 @@ long Segment::LoadCluster(
 {
     long long total, avail;
 
-    const int status = m_pReader->Length(&total, &avail);
+    long status = m_pReader->Length(&total, &avail);
 
     if (status < 0)  //error
         return status;
@@ -1450,10 +1450,11 @@ long Segment::LoadCluster(
                 ++m_clusterCount;
                 --m_clusterPreloadCount;
 
-                pCluster->Load();  //establish invariant
-
                 m_pos = pos + size;  //consume payload
                 assert(m_pos <= stop);
+
+                status = pCluster->LoadBlockEntries(pos, len);
+                assert(status == 0);  //TODO
 
                 return 0;  //we have a new cluster
             }
@@ -1476,7 +1477,8 @@ long Segment::LoadCluster(
             assert(idx < m_clusterSize);
             assert(m_clusters[idx] == pCluster);
 
-            pCluster->Load();  //establish invariant
+            status = pCluster->LoadBlockEntries(pos, len);
+            assert(status == 0);  //TODO
 
             return 0;  //we have a new cluster
         }
@@ -3261,7 +3263,7 @@ long Segment::ParseNext(
 
     long long total, avail;
 
-    const int status = m_pReader->Length(&total, &avail);
+    long status = m_pReader->Length(&total, &avail);
 
     if (status < 0)  //error
         return status;
@@ -3473,10 +3475,8 @@ long Segment::ParseNext(
 
         len = static_cast<long>(size);
 
-#if 1  //TODO: get rid of this
         if (element_stop > avail)
             return E_BUFFER_NOT_FULL;
-#endif
 
         if (Cluster::HasBlockEntries(this, idoff))  //relative
         {
@@ -3527,6 +3527,9 @@ long Segment::ParseNext(
             j = k;
         else
         {
+            status = pNext->LoadBlockEntries(pos, len);
+            assert(status == 0);
+
             pResult = pNext;
             return 0;  //success
         }
@@ -3548,7 +3551,8 @@ long Segment::ParseNext(
     assert(idx_next < m_clusterSize);
     assert(m_clusters[idx_next] == pNext);
 
-    pNext->Load();  //because we need this now
+    status = pNext->LoadBlockEntries(pos, len);
+    assert(status == 0);  //TODO
 
     pResult = pNext;
     return 0;  //success
@@ -4966,23 +4970,24 @@ void Cluster::Load() const
 }
 
 
-long Cluster::Load(long long& pos, long& len) const
+long Cluster::LoadBlockEntries(long long& pos, long& len) const
 {
     assert(m_pSegment);
     assert(m_pos);
     assert(m_size);
 
-    if (m_pos > 0)  //loaded
-    {
-        assert(m_size > 0);
-        assert(m_timecode >= 0);
-
-        return 0;
-    }
-
-    assert(m_pos < 0);  //not loaded yet
-    assert(m_size < 0);
-    assert(m_timecode < 0);
+    //if (m_pos > 0)  //loaded
+    //{
+    //    assert(m_size > 0);
+    //    assert(m_timecode >= 0);
+    //    assert(m_entries_count >= 0);
+    //
+    //    return 0;
+    //}
+    //
+    //assert(m_pos < 0);  //not loaded yet
+    //assert(m_size < 0);
+    //assert(m_timecode < 0);
 
     IMkvReader* const pReader = m_pSegment->m_pReader;
 
@@ -4997,6 +5002,28 @@ long Cluster::Load(long long& pos, long& len) const
     assert(avail <= total);
 
     const long long segment_stop = m_pSegment->m_start + m_pSegment->m_size;
+
+    if (m_pos > 0)  //at least partially loaded
+    {
+        assert(m_size > 0);
+
+        if (m_entries_count >= 0)
+            return 0;
+
+        pos = m_pSegment->m_start + m_pos;  //absolute pos of payload
+
+        const long long cluster_stop = pos + m_size;
+
+        len = static_cast<long>(m_size);
+
+        if (cluster_stop > avail)
+            return E_BUFFER_NOT_FULL;
+
+        LoadBlockEntries();  //TODO
+        assert(m_entries_count >= 0);
+
+        return 0;
+    }
 
     //m_pos *= -1;                      //relative to segment
     pos = m_pSegment->m_start - m_pos;  //absolute
@@ -5150,6 +5177,8 @@ long Cluster::Load(long long& pos, long& len) const
     m_pos *= -1;            // m_pos > 0 means we're partially loaded
     m_size = size_;         // m_size > 0 means we're partially loaded
     m_timecode = timecode;  // m_timecode >= 0 means we're partially loaded
+
+    LoadBlockEntries();  //TODO
 
     return 0;
 }
@@ -5561,6 +5590,12 @@ const BlockEntry* Cluster::GetNext(const BlockEntry* pEntry) const
       return NULL;
 
     return m_entries[idx];
+}
+
+
+long Cluster::GetEntryCount() const
+{
+    return m_entries_count;
 }
 
 
