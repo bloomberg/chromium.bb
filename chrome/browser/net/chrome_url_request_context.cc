@@ -397,23 +397,18 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
   ChromeURLRequestContext* context = new ChromeURLRequestContext;
   ApplyProfileParametersToContext(context);
 
-  ChromeURLRequestContext* original_context =
-      original_context_getter_->GetIOContext();
-
   IOThread::Globals* io_thread_globals = io_thread()->globals();
+  context->set_host_resolver(io_thread_globals->host_resolver.get());
+  context->set_cert_verifier(io_thread_globals->cert_verifier.get());
+  context->set_http_auth_handler_factory(
+      io_thread_globals->http_auth_handler_factory.get());
 
-  // Share the same proxy service, host resolver, cert verifier,
-  // and http_auth_handler_factory as the original profile.
-  context->set_host_resolver(original_context->host_resolver());
-  context->set_cert_verifier(original_context->cert_verifier());
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   context->set_proxy_service(
       CreateProxyService(io_thread()->net_log(),
                          io_thread_globals->proxy_script_fetcher_context.get(),
                          proxy_config_service_.release(),
                          command_line));
-  context->set_http_auth_handler_factory(
-      original_context->http_auth_handler_factory());
 
   net::HttpCache::BackendFactory* backend =
       net::HttpCache::DefaultBackend::InMemory(0);
@@ -477,11 +472,11 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
       main_context_getter_->GetIOContext();
 
   IOThread::Globals* io_thread_globals = io_thread()->globals();
-
-  // Share the same proxy service of the common profile.
-  context->set_proxy_service(main_context->proxy_service());
   context->set_http_auth_handler_factory(
-      main_context->http_auth_handler_factory());
+      io_thread_globals->http_auth_handler_factory.get());
+
+  // TODO(willchan): Make a global ProxyService available in IOThread::Globals.
+  context->set_proxy_service(main_context->proxy_service());
 
   // Also share the cookie store of the common profile.
   context->set_cookie_store(main_context->cookie_store());
@@ -512,16 +507,17 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
   } else {
     // If original HttpCache doesn't exist, simply construct one with a whole
     // new set of network stack.
-    cache = new net::HttpCache(main_context->host_resolver(),
-                               main_context->cert_verifier(),
-                               main_context->dnsrr_resolver(),
-                               NULL /* dns_cert_checker */,
-                               main_context->proxy_service(),
-                               main_context->ssl_config_service(),
-                               main_context->http_auth_handler_factory(),
-                               &io_thread_globals->network_delegate,
-                               io_thread()->net_log(),
-                               backend);
+    cache = new net::HttpCache(
+        io_thread_globals->host_resolver.get(),
+        io_thread_globals->cert_verifier.get(),
+        io_thread_globals->dnsrr_resolver.get(),
+        NULL /* dns_cert_checker */,
+        main_context->proxy_service(),
+        main_context->ssl_config_service(),
+        io_thread_globals->http_auth_handler_factory.get(),
+        &io_thread_globals->network_delegate,
+        io_thread()->net_log(),
+        backend);
   }
 
   context->set_http_transaction_factory(cache);
