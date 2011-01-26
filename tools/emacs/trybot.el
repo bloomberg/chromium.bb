@@ -45,7 +45,15 @@
 
   ; Fix Windows paths ("d:\...\src\").
   (save-excursion
-    (while (re-search-forward "\\(^.:\\\\.*\\\\src\\\\\\)\\(.*?\\)[(:]" nil t)
+    ; This regexp is subtle and rather hard to read. :~(
+    ; Use regexp-builder when making changes to it.
+    (while (re-search-forward
+            (concat
+             ; First part: path leader, either of the form
+             ;   e:\...src\  or  ..\
+             "\\(^.:\\\\.*\\\\src\\\\\\|\\.\\.\\\\\\)"
+             ; Second part: path, followed by error message marker.
+             "\\(.*?\\)[(:]") nil t)
       (replace-match "" nil t nil 1)
       ; Line now looks like:
       ;  foo\bar\baz.cc error message here

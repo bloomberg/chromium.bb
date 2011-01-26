@@ -55,3 +55,18 @@ browser - 6 error(s), 0 warning(s)
 ---------------------- Done ----------------------
  
     Build: 244 succeeded, 1 failed, 233 up-to-date, 42 skipped
+
+
+We also see weird paths with mixed slashes like this:
+
+--------------------Configuration: inspector_protocol_sources - Debug|Win32----
+--------------------Configuration: installer_util_nacl_win64 - Debug|x64-------
+Compiling...
+google_chrome_distribution_dummy.cc
+helper.cc
+installation_state.cc
+self_reg_work_item.cc
+..\chrome/installer/util/work_item.h(67) : error C2514: 'FilePath' : class has no constructors
+        ..\chrome/installer/util/work_item.h(26) : see declaration of 'FilePath'
+delete_tree_work_item.cc
+delete_reg_key_work_item.cc
