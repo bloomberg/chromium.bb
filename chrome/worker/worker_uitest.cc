@@ -612,7 +612,8 @@ TEST_F(WorkerTest, FLAKY_WorkerClose) {
   ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
 }
 
-TEST_F(WorkerTest, QueuedSharedWorkerShutdown) {
+// Flaky, http://crbug.com/70861.
+TEST_F(WorkerTest, FLAKY_QueuedSharedWorkerShutdown) {
   // Tests to make sure that queued shared workers are started up when
   // shared workers shut down.
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
