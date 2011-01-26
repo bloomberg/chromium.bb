@@ -393,7 +393,6 @@
       'conditions': [
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
-            '../build/linux/system.gyp:dbus-glib',
             '../build/linux/system.gyp:gtk',
           ],
           'export_dependent_settings': [
