@@ -50,6 +50,7 @@
         'c/dev/ppb_buffer_dev.h',
         'c/dev/ppb_char_set_dev.h',
         'c/dev/ppb_context_3d_dev.h',
+        'c/dev/ppb_context_3d_trusted_dev.h',
         'c/dev/ppb_cursor_control_dev.h',
         'c/dev/ppb_directory_reader_dev.h',
         'c/dev/ppb_file_chooser_dev.h',
