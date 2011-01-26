@@ -3,15 +3,16 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">10F569</string>
-		<string key="IBDocument.InterfaceBuilderVersion">788</string>
+		<string key="IBDocument.InterfaceBuilderVersion">804</string>
 		<string key="IBDocument.AppKitVersion">1038.29</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">788</string>
+			<string key="NS.object.0">804</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="56"/>
 			<integer value="1"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
@@ -69,7 +70,7 @@
 				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 			</object>
 			<object class="NSCustomView" id="1029219716">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">266</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -98,7 +99,8 @@
 						</object>
 					</object>
 				</object>
-				<string key="NSFrameSize">{483, 36}</string>
+				<string key="NSFrameSize">{483, 37}</string>
+				<reference key="NSSuperview"/>
 				<string key="NSClassName">TabStripView</string>
 			</object>
 			<object class="NSCustomView" id="529166964">
@@ -295,7 +297,7 @@
 					</object>
 					<real value="0.0"/>
 					<real value="0.0"/>
-					<string>{{138, 199}, {483, 36}}</string>
+					<string>{{138, 198}, {483, 37}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>NewTabButton</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -417,7 +419,7 @@
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/ui/cocoa/tab_strip_model_observer_bridge.h</string>
+						<string key="minorKey">browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -451,7 +453,7 @@
 					<string key="superclassName">TabStripView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/ui/cocoa/side_tab_strip_view.h</string>
+						<string key="minorKey">browser/ui/cocoa/tabs/side_tab_strip_view.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -470,7 +472,7 @@
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/ui/cocoa/tab_strip_view.h</string>
+						<string key="minorKey">browser/ui/cocoa/tabs/tab_strip_view.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -480,16 +482,12 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>contentsContainer_</string>
-							<string>devToolsContainer_</string>
 							<string>sideTabStripView_</string>
 							<string>tabContentArea_</string>
 							<string>topTabStripView_</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>NSSplitView</string>
-							<string>NSSplitView</string>
 							<string>TabStripView</string>
 							<string>FastResizeView</string>
 							<string>TabStripView</string>
@@ -499,22 +497,12 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>contentsContainer_</string>
-							<string>devToolsContainer_</string>
 							<string>sideTabStripView_</string>
 							<string>tabContentArea_</string>
 							<string>topTabStripView_</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<object class="IBToOneOutletInfo">
-								<string key="name">contentsContainer_</string>
-								<string key="candidateClassName">NSSplitView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">devToolsContainer_</string>
-								<string key="candidateClassName">NSSplitView</string>
-							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">sideTabStripView_</string>
 								<string key="candidateClassName">TabStripView</string>
@@ -531,7 +519,7 @@
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/ui/cocoa/tab_window_controller.h</string>
+						<string key="minorKey">browser/ui/cocoa/tabs/tab_window_controller.h</string>
 					</object>
 				</object>
 			</object>
@@ -812,7 +800,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="996113394">
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSSplitView.h</string>
 					</object>
@@ -1139,11 +1127,6 @@
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSResponder.h</string>
 					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSSplitView</string>
-					<string key="superclassName">NSView</string>
-					<reference key="sourceIdentifier" ref="996113394"/>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSView</string>

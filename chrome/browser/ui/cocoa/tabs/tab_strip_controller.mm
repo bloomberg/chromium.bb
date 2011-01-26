@@ -430,7 +430,7 @@ private:
 + (CGFloat)defaultIndentForControls {
   // Default indentation leaves enough room so tabs don't overlap with the
   // window controls.
-  return 68.0;
+  return 70.0;
 }
 
 // Finds the TabContentsController associated with the given index into the tab
