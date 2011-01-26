@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/string_util.h"
 #include "base/string_number_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -558,6 +559,8 @@ bool CanShowPromo(Profile* profile) {
           sync_ui_util::GetStatus(
               profile->GetProfileSyncService()) == sync_ui_util::SYNCED);
 
+  // GetVersionStringModifier hits the registry. See http://crbug.com/70898.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   const std::string channel = platform_util::GetVersionStringModifier();
   bool is_promo_build = false;
   if (prefs->HasPrefPath(prefs::kNTPPromoBuild)) {
