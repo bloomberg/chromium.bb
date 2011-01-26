@@ -468,7 +468,16 @@ IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearch) {
 
 // Makes sure that if the server doesn't support the instant API we don't show
 // anything.
-IN_PROC_BROWSER_TEST_F(InstantTest, SearchServerDoesntSupportInstant) {
+#if defined(OS_MACOSX)
+// Showing as flaky on Mac
+// http://crbug.com/70860
+#define MAYBE_SearchServerDoesntSupportInstant \
+    DISABLED_SearchServerDoesntSupportInstant
+#else
+#define MAYBE_SearchServerDoesntSupportInstant \
+    SearchServerDoesntSupportInstant
+#endif
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SearchServerDoesntSupportInstant) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("empty.html"));
   ASSERT_NO_FATAL_FAILURE(FindLocationBar());
