@@ -434,6 +434,7 @@ class RenderView : public RenderWidget,
   virtual bool isShowingSpellingUI();
   virtual void updateSpellingUIWithMisspelledWord(
       const WebKit::WebString& word);
+  virtual void continuousSpellCheckingEnabledStateChanged();
   virtual bool runFileChooser(
       const WebKit::WebFileChooserParams& params,
       WebKit::WebFileChooserCompletion* chooser_completion);
@@ -1059,6 +1060,9 @@ class RenderView : public RenderWidget,
   // Locates a sub frame with given xpath
   WebKit::WebFrame* GetChildFrame(const std::wstring& frame_xpath) const;
 
+  // Gets the focused node. If no such node exists then the node will be isNull.
+  WebKit::WebNode GetFocusedNode() const;
+
   DOMUIBindings* GetDOMUIBindings();
 
   ExternalHostBindings* GetExternalHostBindings();
@@ -1121,6 +1125,9 @@ class RenderView : public RenderWidget,
   // Update the target url and tell the browser that the target URL has changed.
   // If |url| is empty, show |fallback_url|.
   void UpdateTargetURL(const GURL& url, const GURL& fallback_url);
+
+  // Updates the state of the toggle spell check command in the browser process.
+  void UpdateToggleSpellCheckCommandState();
 
   // Helper to add an error message to the root frame's console.
   void AddErrorToRootConsole(const string16& message);

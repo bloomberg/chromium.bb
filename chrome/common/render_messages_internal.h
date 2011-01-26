@@ -2147,6 +2147,14 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_PluginFocusChanged,
 // Instructs the browser to start plugin IME.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_StartPluginIme)
 
+// Message sent from renderer to the browser to update the state of a command.
+// The |command| parameter is a RenderViewCommand. The |checked_state| parameter
+// is a CommandCheckedState.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_CommandStateChanged,
+                    int /* command */,
+                    bool /* is_enabled */,
+                    int /* checked_state */)
+
 //---------------------------------------------------------------------------
 // Messages related to accelerated plugins
 
