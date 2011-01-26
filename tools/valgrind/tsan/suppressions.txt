@@ -213,6 +213,13 @@
   fun:exit
 }
 
+{
+  bug_70938
+  ThreadSanitizer:Race
+  ...
+  obj:*libdbus*
+}
+
 ############################
 # Data races in tests
 

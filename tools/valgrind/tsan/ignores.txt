@@ -6,6 +6,7 @@
 obj:*/ld-2*
 obj:*/libpthread-*
 obj:*/libfreetype*
+obj:*/libdbus*
 
 # we ignore the whole NSS library for now since
 # its instrumentation is very slow.
