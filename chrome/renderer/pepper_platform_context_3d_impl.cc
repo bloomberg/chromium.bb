@@ -69,11 +69,6 @@ unsigned PlatformContext3DImpl::GetError() {
   return ggl::GetError(context_);
 }
 
-void PlatformContext3DImpl::ResizeBackingTexture(const gfx::Size& size) {
-  DCHECK(context_);
-  ggl::ResizeOffscreenContext(context_, size);
-}
-
 void PlatformContext3DImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
   DCHECK(context_);
   ggl::SetSwapBuffersCallback(context_, callback);

@@ -257,15 +257,12 @@ void GpuCommandBufferStub::OnInitialize(
               NewCallback(this,
                           &GpuCommandBufferStub::SwapBuffersCallback));
         }
-#elif defined(OS_LINUX) || defined(OS_WIN)
-        if (handle_) {
-          // Set up a pathway for resizing the output window at the right time
-          // relative to other GL commands.
-          processor_->SetResizeCallback(
-              NewCallback(this,
-                          &GpuCommandBufferStub::ResizeCallback));
-        }
 #endif  // defined(OS_MACOSX)
+
+        // Set up a pathway for resizing the output window or framebuffer at the
+        // right time relative to other GL commands.
+        processor_->SetResizeCallback(
+            NewCallback(this, &GpuCommandBufferStub::ResizeCallback));
       } else {
         processor_.reset();
         command_buffer_.reset();
@@ -375,20 +372,22 @@ void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
 #endif  // defined(OS_MACOSX)
 
 void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
-  if (handle_ == gfx::kNullPluginWindow)
-    return;
-
+  if (handle_ == gfx::kNullPluginWindow) {
+    processor_->decoder()->ResizeOffscreenFrameBuffer(size);
+    processor_->decoder()->UpdateOffscreenFrameBufferSize();
+  } else {
 #if defined(OS_LINUX)
-  GpuThread* gpu_thread = channel_->gpu_thread();
-  bool result = false;
-  gpu_thread->Send(
-      new GpuHostMsg_ResizeXID(handle_, size, &result));
+    GpuThread* gpu_thread = channel_->gpu_thread();
+    bool result = false;
+    gpu_thread->Send(
+        new GpuHostMsg_ResizeXID(handle_, size, &result));
 #elif defined(OS_WIN)
-  HWND hwnd = static_cast<HWND>(compositor_window_);
-  UINT swp_flags = SWP_NOSENDCHANGING | SWP_NOOWNERZORDER | SWP_NOCOPYBITS |
-    SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE;
-  SetWindowPos(hwnd, NULL, 0, 0, size.width(), size.height(), swp_flags);
+    HWND hwnd = static_cast<HWND>(compositor_window_);
+    UINT swp_flags = SWP_NOSENDCHANGING | SWP_NOOWNERZORDER | SWP_NOCOPYBITS |
+      SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE;
+    SetWindowPos(hwnd, NULL, 0, 0, size.width(), size.height(), swp_flags);
 #endif  // defined(OS_LINUX)
+  }
 }
 
 #endif  // defined(ENABLE_GPU)

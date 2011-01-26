@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
 
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "webkit/plugins/ppapi/common.h"
@@ -105,15 +106,9 @@ bool PPB_Surface3D_Impl::BindToContext(
   if (context) {
     // Resize the backing texture to the size of the instance when it is bound.
     // TODO(alokp): This should be the responsibility of plugins.
-    context->ResizeBackingTexture(instance()->position().size());
-
-    // This is a temporary hack. The SwapBuffers is issued to force the resize
-    // to take place before any subsequent rendering. This might lead to a
-    // partially rendered frame being displayed. It is also not thread safe
-    // since the SwapBuffers is written to the command buffer and that command
-    // buffer might be written to by another thread.
-    // TODO(apatrick): Figure out the semantics of binding and resizing.
-    context->SwapBuffers();
+    const gfx::Size& size = instance()->position().size();
+    context->GetGLES2Implementation()->ResizeCHROMIUM(
+        size.width(), size.height());
 
     context->SetSwapBuffersCallback(
         NewCallback(this, &PPB_Surface3D_Impl::OnSwapBuffers));

@@ -151,9 +151,6 @@ class PluginDelegate {
     // Get the last EGL error.
     virtual unsigned GetError() = 0;
 
-    // Resize the backing texture used as a back buffer by OpenGL.
-    virtual void ResizeBackingTexture(const gfx::Size& size) = 0;
-
     // Set an optional callback that will be invoked when the side effects of
     // a SwapBuffers call become visible to the compositor. Takes ownership
     // of the callback.
