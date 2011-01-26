@@ -78,7 +78,8 @@ void Syncer::SyncShare(sessions::SyncSession* session) {
   CHECK(dir.good());
 
   const sessions::SyncSourceInfo& source(session->source());
-  if (sync_pb::GetUpdatesCallerInfo::CLEAR_PRIVATE_DATA == source.first) {
+  if (sync_pb::GetUpdatesCallerInfo::CLEAR_PRIVATE_DATA ==
+      source.updates_source) {
     SyncShare(session, CLEAR_PRIVATE_DATA, SYNCER_END);
     return;
   } else {

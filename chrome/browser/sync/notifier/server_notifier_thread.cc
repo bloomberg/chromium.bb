@@ -66,7 +66,9 @@ void ServerNotifierThread::SendNotification(
                   "used";
 }
 
-void ServerNotifierThread::OnInvalidate(syncable::ModelType model_type) {
+void ServerNotifierThread::OnInvalidate(
+    syncable::ModelType model_type,
+    const std::string& payload) {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   DCHECK_GE(model_type, syncable::FIRST_REAL_MODEL_TYPE);
   DCHECK_LT(model_type, syncable::MODEL_TYPE_COUNT);
@@ -75,7 +77,8 @@ void ServerNotifierThread::OnInvalidate(syncable::ModelType model_type) {
   syncable::ModelTypeBitSet model_types;
   model_types[model_type] = true;
   IncomingNotificationData notification_data;
-  notification_data.service_specific_data = model_types.to_string();
+  notification_data.service_url = model_types.to_string();
+  notification_data.service_specific_data = payload;
   observers_->Notify(&Observer::OnIncomingNotification, notification_data);
 }
 

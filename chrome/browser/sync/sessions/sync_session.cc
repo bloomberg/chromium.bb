@@ -9,6 +9,53 @@
 namespace browser_sync {
 namespace sessions {
 
+TypePayloadMap ModelTypeBitSetToTypePayloadMap(
+    const syncable::ModelTypeBitSet& types,
+    const std::string& payload) {
+  TypePayloadMap types_with_payloads;
+  for (size_t i = syncable::FIRST_REAL_MODEL_TYPE;
+       i < types.size(); ++i) {
+    if (types[i]) {
+      types_with_payloads[syncable::ModelTypeFromInt(i)] = payload;
+    }
+  }
+  return types_with_payloads;
+}
+
+TypePayloadMap RoutingInfoToTypePayloadMap(const ModelSafeRoutingInfo& routes,
+                                           const std::string& payload) {
+  TypePayloadMap types_with_payloads;
+  for (ModelSafeRoutingInfo::const_iterator i = routes.begin();
+       i != routes.end(); ++i) {
+    types_with_payloads[i->first] = payload;
+  }
+  return types_with_payloads;
+}
+
+void CoalescePayloads(TypePayloadMap* original,
+                      const TypePayloadMap& update) {
+  for (TypePayloadMap::const_iterator i = update.begin();
+       i != update.end(); ++i) {
+    if (original->count(i->first) == 0) {
+      // If this datatype isn't already in our map, add it with whatever payload
+      // it has.
+      (*original)[i->first] = i->second;
+    } else if (i->second.length() > 0) {
+      // If this datatype is already in our map, we only overwrite the payload
+      // if the new one is non-empty.
+      (*original)[i->first] = i->second;
+    }
+  }
+}
+
+SyncSourceInfo::SyncSourceInfo()
+    : updates_source(sync_pb::GetUpdatesCallerInfo::UNKNOWN) {}
+
+SyncSourceInfo::SyncSourceInfo(
+    const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& u,
+    const TypePayloadMap& t)
+    : updates_source(u), types(t) {}
+
 SyncSession::SyncSession(SyncSessionContext* context, Delegate* delegate,
     SyncSourceInfo source,
     const ModelSafeRoutingInfo& routing_info,
@@ -89,7 +136,7 @@ SyncSourceInfo SyncSession::TestAndSetSource() {
   SyncSourceInfo old_source = source_;
   source_ = SyncSourceInfo(
       sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION,
-      source_.second);
+      source_.types);
   return old_source;
 }
 

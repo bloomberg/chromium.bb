@@ -15,16 +15,20 @@
 #define CHROME_BROWSER_SYNC_SESSIONS_SYNC_SESSION_H_
 #pragma once
 
+#include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/sessions/ordered_commit_set.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/sessions/status_controller.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 
 namespace syncable {
@@ -35,6 +39,35 @@ namespace browser_sync {
 class ModelSafeWorker;
 
 namespace sessions {
+
+// A container that contains a set of datatypes with possible string payloads.
+typedef std::map<syncable::ModelType, std::string> TypePayloadMap;
+
+// Helper utils for building TypePayloadMaps.
+// Convert a ModelTypeBitset into a TypePayloadMap using a default payload.
+TypePayloadMap ModelTypeBitSetToTypePayloadMap(
+    const syncable::ModelTypeBitSet& types,
+    const std::string& payload);
+// Convert a ModelSafeRoutingInfo into a TypePayloadMap using a default payload.
+TypePayloadMap RoutingInfoToTypePayloadMap(
+    const ModelSafeRoutingInfo& routes,
+    const std::string& payload);
+// Coalesce |update| into |original|, overwriting only when |update| has
+// a non-empty payload.
+void CoalescePayloads(TypePayloadMap* original, const TypePayloadMap& update);
+
+// A container for the source of a sync session. This includes the update
+// source, the datatypes triggering the sync session, and possible session
+// specific payloads which should be sent to the server.
+struct SyncSourceInfo {
+  SyncSourceInfo();
+  SyncSourceInfo(
+      const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& u,
+      const TypePayloadMap& t);
+
+  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source;
+  TypePayloadMap types;
+};
 
 class SyncSession {
  public:

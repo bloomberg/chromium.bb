@@ -60,8 +60,10 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   get_updates->set_fetch_folders(true);
 
   // Set GetUpdatesMessage.GetUpdatesCallerInfo information.
+  // TODO(zea): send SyncSourceInfo's payloads to server once we know it's all
+  // working properly.
   get_updates->mutable_caller_info()->set_source(
-      session->TestAndSetSource().first);
+      session->TestAndSetSource().updates_source);
   get_updates->mutable_caller_info()->set_notifications_enabled(
       session->context()->notifications_enabled());
 

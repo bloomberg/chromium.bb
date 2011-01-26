@@ -5,8 +5,9 @@
 #include "chrome/browser/sync/engine/syncer_thread.h"
 
 #include <algorithm>
-#include <map>
 #include <queue>
+#include <string>
+#include <vector>
 
 #include "base/rand_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
@@ -34,6 +35,7 @@ namespace browser_sync {
 using sessions::SyncSession;
 using sessions::SyncSessionSnapshot;
 using sessions::SyncSourceInfo;
+using sessions::TypePayloadMap;
 
 // We use high values here to ensure that failure to receive poll updates from
 // the server doesn't result in rapid-fire polling from the client due to low
@@ -54,6 +56,18 @@ static const int kBackoffRandomizationFactor = 2;
 
 const int SyncerThread::kMaxBackoffSeconds = 60 * 60 * 4;  // 4 hours.
 
+void SyncerThread::NudgeSyncerWithPayloads(
+    int milliseconds_from_now,
+    NudgeSource source,
+    const TypePayloadMap& model_types_with_payloads) {
+  base::AutoLock lock(lock_);
+  if (vault_.syncer_ == NULL) {
+    return;
+  }
+
+  NudgeSyncImpl(milliseconds_from_now, source, model_types_with_payloads);
+}
+
 void SyncerThread::NudgeSyncerWithDataTypes(
     int milliseconds_from_now,
     NudgeSource source,
@@ -63,7 +77,9 @@ void SyncerThread::NudgeSyncerWithDataTypes(
     return;
   }
 
-  NudgeSyncImpl(milliseconds_from_now, source, model_types);
+  TypePayloadMap model_types_with_payloads =
+      sessions::ModelTypeBitSetToTypePayloadMap(model_types, std::string());
+  NudgeSyncImpl(milliseconds_from_now, source, model_types_with_payloads);
 }
 
 void SyncerThread::NudgeSyncer(
@@ -74,8 +90,12 @@ void SyncerThread::NudgeSyncer(
     return;
   }
 
-  syncable::ModelTypeBitSet model_types;  // All false by default.
-  NudgeSyncImpl(milliseconds_from_now, source, model_types);
+  // Set all enabled datatypes.
+  ModelSafeRoutingInfo routes;
+  session_context_->registrar()->GetModelSafeRoutingInfo(&routes);
+  TypePayloadMap model_types_with_payloads =
+      sessions::RoutingInfoToTypePayloadMap(routes, std::string());
+  NudgeSyncImpl(milliseconds_from_now, source, model_types_with_payloads);
 }
 
 SyncerThread::SyncerThread(sessions::SyncSessionContext* context)
@@ -342,11 +362,12 @@ void SyncerThread::ThreadMainLoop() {
     // Update timing information for how often these datatypes are triggering
     // nudges.
     base::TimeTicks now = TimeTicks::Now();
-    for (size_t i = syncable::FIRST_REAL_MODEL_TYPE;
-         i < session->source().second.size();
-         ++i) {
-      if (session->source().second[i]) {
-        syncable::PostTimeToTypeHistogram(syncable::ModelType(i),
+    if (!last_sync_time.is_null()) {
+      TypePayloadMap::const_iterator iter;
+      for (iter = session->source().types.begin();
+           iter != session->source().types.end();
+           ++iter) {
+        syncable::PostTimeToTypeHistogram(iter->first,
                                           now - last_sync_time);
       }
     }
@@ -574,7 +595,7 @@ SyncSourceInfo SyncerThread::GetAndResetNudgeSource(bool was_throttled,
                                                     bool* was_nudged) {
   bool nudged = false;
   NudgeSource nudge_source = kUnknown;
-  syncable::ModelTypeBitSet model_types;
+  TypePayloadMap model_types_with_payloads;
   // Has the previous sync cycle completed?
   if (continue_sync_cycle)
     nudge_source = kContinuation;
@@ -583,13 +604,13 @@ SyncSourceInfo SyncerThread::GetAndResetNudgeSource(bool was_throttled,
   if (!vault_.pending_nudge_time_.is_null()) {
     if (!was_throttled) {
       nudge_source = vault_.pending_nudge_source_;
-      model_types = vault_.pending_nudge_types_;
+      model_types_with_payloads = vault_.pending_nudge_types_;
       nudged = true;
     }
     VLOG(1) << "Clearing pending nudge from " << vault_.pending_nudge_source_
             << " at tick " << vault_.pending_nudge_time_.ToInternalValue();
     vault_.pending_nudge_source_ = kUnknown;
-    vault_.pending_nudge_types_.reset();
+    vault_.pending_nudge_types_.clear();
     vault_.pending_nudge_time_ = base::TimeTicks();
   }
 
@@ -599,11 +620,12 @@ SyncSourceInfo SyncerThread::GetAndResetNudgeSource(bool was_throttled,
   // from syncer having more work to do.  This will be handled properly with
   // the message loop based syncer thread, bug 26339.
   return MakeSyncSourceInfo(nudged || nudge_source == kContinuation,
-      nudge_source, model_types, initial_sync);
+      nudge_source, model_types_with_payloads, initial_sync);
 }
 
 SyncSourceInfo SyncerThread::MakeSyncSourceInfo(bool nudged,
-    NudgeSource nudge_source, const syncable::ModelTypeBitSet& nudge_types,
+    NudgeSource nudge_source,
+    const TypePayloadMap& model_types_with_payloads,
     bool* initial_sync) {
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source =
       sync_pb::GetUpdatesCallerInfo::UNKNOWN;
@@ -632,7 +654,19 @@ SyncSourceInfo SyncerThread::MakeSyncSourceInfo(bool nudged,
         break;
     }
   }
-  return SyncSourceInfo(updates_source, nudge_types);
+
+  TypePayloadMap sync_source_types;
+  if (model_types_with_payloads.empty()) {
+    // No datatypes requested. This must be a poll so set all enabled datatypes.
+    ModelSafeRoutingInfo routes;
+    session_context_->registrar()->GetModelSafeRoutingInfo(&routes);
+    sync_source_types = sessions::RoutingInfoToTypePayloadMap(routes,
+                                                              std::string());
+  } else {
+    sync_source_types = model_types_with_payloads;
+  }
+
+  return SyncSourceInfo(updates_source, sync_source_types);
 }
 
 void SyncerThread::CreateSyncer(const std::string& dirname) {
@@ -734,9 +768,10 @@ int SyncerThread::CalculateSyncWaitTime(int last_interval, int user_idle_ms) {
 }
 
 // Called with mutex_ already locked.
-void SyncerThread::NudgeSyncImpl(int milliseconds_from_now,
-                                 NudgeSource source,
-                                 const syncable::ModelTypeBitSet& model_types) {
+void SyncerThread::NudgeSyncImpl(
+    int milliseconds_from_now,
+    NudgeSource source,
+    const TypePayloadMap& model_types_with_payloads) {
   // TODO(sync): Add the option to reset the backoff state machine.
   // This is needed so nudges that are a result of the user's desire
   // to download updates for a new data type can be satisfied quickly.
@@ -747,11 +782,12 @@ void SyncerThread::NudgeSyncImpl(int milliseconds_from_now,
     return;
   }
 
-  // Union the current bitset with any from nudges that may have already
+  // Union the current TypePayloadMap with any from nudges that may have already
   // posted (coalesce the nudge datatype information).
   // TODO(tim): It seems weird to do this if the sources don't match up (e.g.
   // if pending_source is kLocal and |source| is kClearPrivateData).
-  vault_.pending_nudge_types_ |= model_types;
+  sessions::CoalescePayloads(&vault_.pending_nudge_types_,
+                             model_types_with_payloads);
 
   const TimeTicks nudge_time = TimeTicks::Now() +
       TimeDelta::FromMilliseconds(milliseconds_from_now);

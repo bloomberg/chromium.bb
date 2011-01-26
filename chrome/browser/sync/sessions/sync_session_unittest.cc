@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -250,6 +251,64 @@ TEST_F(SyncSessionTest, MoreToSyncIfConflictsResolved) {
   // that we have made forward progress.
   status()->update_conflicts_resolved(true);
   EXPECT_TRUE(session_->HasMoreToSync());
+}
+
+TEST_F(SyncSessionTest, ModelTypeBitSetToTypePayloadMap) {
+  syncable::ModelTypeBitSet types;
+  std::string payload = "test";
+  TypePayloadMap types_with_payloads =
+      ModelTypeBitSetToTypePayloadMap(types, payload);
+  EXPECT_TRUE(types_with_payloads.empty());
+
+  types[syncable::BOOKMARKS] = true;
+  types[syncable::PASSWORDS] = true;
+  types[syncable::AUTOFILL] = true;
+  payload = "test2";
+  types_with_payloads = ModelTypeBitSetToTypePayloadMap(types, payload);
+
+  ASSERT_EQ(3U, types_with_payloads.size());
+  EXPECT_EQ(types_with_payloads[syncable::BOOKMARKS], payload);
+  EXPECT_EQ(types_with_payloads[syncable::PASSWORDS], payload);
+  EXPECT_EQ(types_with_payloads[syncable::AUTOFILL], payload);
+}
+
+TEST_F(SyncSessionTest, RoutingInfoToTypePayloadMap) {
+  std::string payload = "test";
+  TypePayloadMap types_with_payloads
+      = RoutingInfoToTypePayloadMap(routes_, payload);
+  ASSERT_EQ(routes_.size(), types_with_payloads.size());
+  for (ModelSafeRoutingInfo::iterator iter = routes_.begin();
+       iter != routes_.end();
+       ++iter) {
+    EXPECT_EQ(payload, types_with_payloads[iter->first]);
+  }
+}
+
+TEST_F(SyncSessionTest, CoalescePayloads) {
+  TypePayloadMap original;
+  std::string empty_payload;
+  std::string payload1 = "payload1";
+  std::string payload2 = "payload2";
+  std::string payload3 = "payload3";
+  original[syncable::BOOKMARKS] = empty_payload;
+  original[syncable::PASSWORDS] = payload1;
+  original[syncable::AUTOFILL] = payload2;
+  original[syncable::THEMES] = payload3;
+
+  TypePayloadMap update;
+  update[syncable::BOOKMARKS] = empty_payload;  // Same.
+  update[syncable::PASSWORDS] = empty_payload;  // Overwrite with empty.
+  update[syncable::AUTOFILL] = payload1;        // Overwrite with non-empty.
+  update[syncable::SESSIONS] = payload2;        // New.
+  // Themes untouched.
+
+  CoalescePayloads(&original, update);
+  ASSERT_EQ(5U, original.size());
+  EXPECT_EQ(empty_payload, original[syncable::BOOKMARKS]);
+  EXPECT_EQ(payload1, original[syncable::PASSWORDS]);
+  EXPECT_EQ(payload1, original[syncable::AUTOFILL]);
+  EXPECT_EQ(payload2, original[syncable::SESSIONS]);
+  EXPECT_EQ(payload3, original[syncable::THEMES]);
 }
 
 TEST_F(SyncSessionTest, ResetTransientState) {

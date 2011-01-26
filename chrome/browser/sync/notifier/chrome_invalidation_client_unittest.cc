@@ -18,7 +18,8 @@ using ::testing::Return;
 
 class MockListener : public ChromeInvalidationClient::Listener {
  public:
-  MOCK_METHOD1(OnInvalidate, void(syncable::ModelType));
+  MOCK_METHOD2(OnInvalidate, void(syncable::ModelType,
+                                  const std::string& payload));
   MOCK_METHOD0(OnInvalidateAll, void());
 };
 

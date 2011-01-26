@@ -153,9 +153,10 @@ class ChromeInvalidationListener
  public:
   ChromeInvalidationListener() {}
 
-  virtual void OnInvalidate(syncable::ModelType model_type) {
+  virtual void OnInvalidate(syncable::ModelType model_type,
+                            const std::string& payload) {
     LOG(INFO) << "OnInvalidate: "
-              << syncable::ModelTypeToString(model_type);
+              << syncable::ModelTypeToString(model_type) << " - " << payload;
     // A real implementation would respond to the invalidation.
   }
 

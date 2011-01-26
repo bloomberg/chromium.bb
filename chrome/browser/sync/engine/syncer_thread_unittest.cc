@@ -169,6 +169,24 @@ class SyncerThreadWithSyncerTest : public testing::Test,
     syncer_thread()->SetSyncerShortPollInterval(poll_interval);
   }
 
+  // Compare a provided SyncSouceInfo::TypePayloadMap to the pending nudge info
+  // stored in the SyncerThread vault.
+  bool CompareNudgeTypesToVault(const sessions::TypePayloadMap& lhs) {
+    const sessions::TypePayloadMap& vault_nudge_types =
+        syncer_thread()->vault_.pending_nudge_types_;
+    return lhs == vault_nudge_types;
+  }
+
+  // Compare a provided ModelTypeBitset to the pending nudge info stored in the
+  // SyncerThread vault. Nudge info in vault must not have any non-empty
+  // payloads.
+  bool CompareNudgeTypesBitSetToVault(const syncable::ModelTypeBitSet& lhs) {
+    sessions::TypePayloadMap model_types_with_payloads =
+        sessions::ModelTypeBitSetToTypePayloadMap(lhs, std::string());
+    return CompareNudgeTypesToVault(model_types_with_payloads);
+  }
+
+
  private:
 
   virtual void OnSyncEngineEvent(const SyncEngineEvent& event) {
@@ -468,7 +486,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   }
 
   {
-
     // Now try with unsynced local items.
     context->set_last_snapshot(SessionSnapshotForTest(0, 1));
     bool continue_sync_cycle_param = false;
@@ -512,7 +529,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
 
   // Regression for exponential backoff reset when the syncer is nudged.
   {
-
     context->set_last_snapshot(SessionSnapshotForTest(0, 1));
     bool continue_sync_cycle_param = false;
 
@@ -732,7 +748,7 @@ TEST_F(SyncerThreadWithSyncerTest, NudgeWithDataTypes) {
   syncer_thread()->NudgeSyncerWithDataTypes(5,
       SyncerThread::kUnknown,
       model_types);
-  EXPECT_EQ(model_types, syncer_thread()->vault_.pending_nudge_types_);
+  EXPECT_TRUE(CompareNudgeTypesBitSetToVault(model_types));
   syncer_thread()->RequestResume();
 
   interceptor.WaitForSyncShare(1, TimeDelta::FromSeconds(1));
@@ -741,7 +757,7 @@ TEST_F(SyncerThreadWithSyncerTest, NudgeWithDataTypes) {
 
   // SyncerThread should be waiting again.  Signal it to stop.
   EXPECT_TRUE(syncer_thread()->Stop(2000));
-  EXPECT_TRUE(syncer_thread()->vault_.pending_nudge_types_.none());
+  EXPECT_TRUE(syncer_thread()->vault_.pending_nudge_types_.empty());
 }
 
 TEST_F(SyncerThreadWithSyncerTest, NudgeWithDataTypesCoalesced) {
@@ -767,7 +783,7 @@ TEST_F(SyncerThreadWithSyncerTest, NudgeWithDataTypesCoalesced) {
   syncer_thread()->NudgeSyncerWithDataTypes(100,
       SyncerThread::kUnknown,
       model_types);
-  EXPECT_EQ(model_types, syncer_thread()->vault_.pending_nudge_types_);
+  EXPECT_TRUE(CompareNudgeTypesBitSetToVault(model_types));
 
   model_types[syncable::BOOKMARKS] = false;
   model_types[syncable::AUTOFILL] = true;
@@ -777,7 +793,7 @@ TEST_F(SyncerThreadWithSyncerTest, NudgeWithDataTypesCoalesced) {
 
   // Reset BOOKMARKS for expectations.
   model_types[syncable::BOOKMARKS] = true;
-  EXPECT_EQ(model_types, syncer_thread()->vault_.pending_nudge_types_);
+  EXPECT_TRUE(CompareNudgeTypesBitSetToVault(model_types));
 
   syncer_thread()->RequestResume();
 
@@ -787,7 +803,88 @@ TEST_F(SyncerThreadWithSyncerTest, NudgeWithDataTypesCoalesced) {
 
   // SyncerThread should be waiting again.  Signal it to stop.
   EXPECT_TRUE(syncer_thread()->Stop(2000));
-  EXPECT_TRUE(syncer_thread()->vault_.pending_nudge_types_.none());
+  EXPECT_TRUE(syncer_thread()->vault_.pending_nudge_types_.empty());
+}
+
+TEST_F(SyncerThreadWithSyncerTest, NudgeWithPayloads) {
+  SyncShareIntercept interceptor;
+  connection()->SetMidCommitObserver(&interceptor);
+  // We don't want a poll to happen during this test (except the first one).
+  PreventThreadFromPolling();
+  EXPECT_TRUE(syncer_thread()->Start());
+  metadb()->Open();
+  syncer_thread()->CreateSyncer(metadb()->name());
+  const TimeDelta poll_interval = TimeDelta::FromMinutes(5);
+  interceptor.WaitForSyncShare(1, poll_interval + poll_interval);
+  EXPECT_EQ(static_cast<unsigned int>(1),
+            interceptor.times_sync_occured().size());
+
+  // The SyncerThread should be waiting for the poll now.  Nudge it to sync
+  // immediately (5ms).
+  sessions::TypePayloadMap nudge_types;
+  nudge_types[syncable::BOOKMARKS] = "test";
+
+  // Paused so we can verify the nudge types safely.
+  syncer_thread()->RequestPause();
+  syncer_thread()->NudgeSyncerWithPayloads(5,
+      SyncerThread::kUnknown,
+      nudge_types);
+  EXPECT_TRUE(CompareNudgeTypesToVault(nudge_types));
+  syncer_thread()->RequestResume();
+
+  interceptor.WaitForSyncShare(1, TimeDelta::FromSeconds(1));
+  EXPECT_EQ(static_cast<unsigned int>(2),
+      interceptor.times_sync_occured().size());
+
+  // SyncerThread should be waiting again.  Signal it to stop.
+  EXPECT_TRUE(syncer_thread()->Stop(2000));
+  EXPECT_TRUE(syncer_thread()->vault_.pending_nudge_types_.empty());
+}
+
+TEST_F(SyncerThreadWithSyncerTest, NudgeWithPayloadsCoalesced) {
+  SyncShareIntercept interceptor;
+  connection()->SetMidCommitObserver(&interceptor);
+  // We don't want a poll to happen during this test (except the first one).
+  PreventThreadFromPolling();
+  EXPECT_TRUE(syncer_thread()->Start());
+  metadb()->Open();
+  syncer_thread()->CreateSyncer(metadb()->name());
+  const TimeDelta poll_interval = TimeDelta::FromMinutes(5);
+  interceptor.WaitForSyncShare(1, poll_interval + poll_interval);
+  EXPECT_EQ(static_cast<unsigned int>(1),
+    interceptor.times_sync_occured().size());
+
+  // The SyncerThread should be waiting for the poll now.  Nudge it to sync
+  // immediately (5ms).
+  sessions::TypePayloadMap nudge_types;
+  nudge_types[syncable::BOOKMARKS] = "books";
+
+  // Paused so we can verify the nudge types safely.
+  syncer_thread()->RequestPause();
+  syncer_thread()->NudgeSyncerWithPayloads(100,
+      SyncerThread::kUnknown,
+      nudge_types);
+  EXPECT_TRUE(CompareNudgeTypesToVault(nudge_types));
+
+  nudge_types.erase(syncable::BOOKMARKS);
+  nudge_types[syncable::AUTOFILL] = "auto";
+  syncer_thread()->NudgeSyncerWithPayloads(0,
+      SyncerThread::kUnknown,
+      nudge_types);
+
+  // Reset BOOKMARKS for expectations.
+  nudge_types[syncable::BOOKMARKS] = "books";
+  EXPECT_TRUE(CompareNudgeTypesToVault(nudge_types));
+
+  syncer_thread()->RequestResume();
+
+  interceptor.WaitForSyncShare(1, TimeDelta::FromSeconds(1));
+  EXPECT_EQ(static_cast<unsigned int>(2),
+      interceptor.times_sync_occured().size());
+
+  // SyncerThread should be waiting again.  Signal it to stop.
+  EXPECT_TRUE(syncer_thread()->Stop(2000));
+  EXPECT_TRUE(syncer_thread()->vault_.pending_nudge_types_.empty());
 }
 
 TEST_F(SyncerThreadWithSyncerTest, Throttling) {

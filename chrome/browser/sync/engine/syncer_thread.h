@@ -49,6 +49,9 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, NudgeWithDataTypes);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest,
                            NudgeWithDataTypesCoalesced);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, NudgeWithPayloads);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest,
+                           NudgeWithPayloadsCoalesced);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Throttling);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, AuthInvalid);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Pause);
@@ -138,7 +141,15 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   virtual void NudgeSyncerWithDataTypes(
       int milliseconds_from_now,
       NudgeSource source,
-      const syncable::ModelTypeBitSet& model_type);
+      const syncable::ModelTypeBitSet& model_types);
+
+  // Same as |NudgeSyncer|, but supports including a payload for passing on to
+  // the download updates command. Datatypes with payloads are also considered
+  // to have caused a nudged to occur and treated accordingly.
+  virtual void NudgeSyncerWithPayloads(
+      int milliseconds_from_now,
+      NudgeSource source,
+      const sessions::TypePayloadMap& model_types_with_payloads);
 
   void SetNotificationsEnabled(bool notifications_enabled);
 
@@ -189,9 +200,13 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
     // check pending_nudge_time_.)
     NudgeSource pending_nudge_source_;
 
-    // BitSet of the datatypes that have triggered the current nudge
-    // (can be union of various bitsets when multiple nudges are coalesced)
-    syncable::ModelTypeBitSet pending_nudge_types_;
+    // Map of all datatypes that are requesting a nudge. Can be union
+    // from multiple nudges that are coalesced. In addition, we
+    // optionally track a payload associated with each datatype (most recent
+    // payload overwrites old ones). These payloads are used by the download
+    // updates command and can contain datatype specific information the server
+    // might use.
+    sessions::TypePayloadMap pending_nudge_types_;
 
     // null iff there is no pending nudge.
     base::TimeTicks pending_nudge_time_;
@@ -280,7 +295,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   sessions::SyncSourceInfo MakeSyncSourceInfo(
       bool nudged,
       NudgeSource nudge_source,
-      const syncable::ModelTypeBitSet& nudge_types,
+      const sessions::TypePayloadMap& model_types_with_payloads,
       bool* initial_sync);
 
   int UserIdleTime();
@@ -327,7 +342,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   void NudgeSyncImpl(
       int milliseconds_from_now,
       NudgeSource source,
-      const syncable::ModelTypeBitSet& model_types);
+      const sessions::TypePayloadMap& model_types_with_payloads);
 
 #if defined(OS_LINUX)
   // On Linux, we need this information in order to query idle time.

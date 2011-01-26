@@ -41,6 +41,7 @@
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -83,6 +84,7 @@ typedef GoogleServiceAuthError AuthError;
 
 static const int kThreadExitTimeoutMsec = 60000;
 static const int kSSLPort = 443;
+static const int kSyncerThreadDelayMsec = 250;
 
 #if defined(OS_CHROMEOS)
 static const int kChromeOSNetworkChangeReactionDelayHackMsec = 5000;
@@ -2193,22 +2195,29 @@ void SyncManager::SyncInternal::TalkMediatorLogin(
 
 void SyncManager::SyncInternal::OnIncomingNotification(
     const IncomingNotificationData& notification_data) {
-  syncable::ModelTypeBitSet model_types;
+  browser_sync::sessions::TypePayloadMap model_types_with_payloads;
 
   // Check if the service url is a sync URL.  An empty service URL is
   // treated as a legacy sync notification.  If we're listening to
   // server-issued notifications, no need to check the service_url.
   if (notifier_options_.notification_method ==
       notifier::NOTIFICATION_SERVER) {
-    VLOG(1) << "Sync received server notification: " <<
+    VLOG(1) << "Sync received server notification from " <<
+        notification_data.service_url << ": " <<
+        notification_data.service_specific_data;
+    syncable::ModelTypeBitSet model_types;
+    const std::string& model_type_list = notification_data.service_url;
+    const std::string& notification_payload =
         notification_data.service_specific_data;
 
-    if (!syncable::ModelTypeBitSetFromString(
-            notification_data.service_specific_data,
-            &model_types)) {
+    if (!syncable::ModelTypeBitSetFromString(model_type_list, &model_types)) {
       LOG(DFATAL) << "Could not extract model types from server data.";
       model_types.set();
     }
+
+    model_types_with_payloads =
+        browser_sync::sessions::ModelTypeBitSetToTypePayloadMap(
+            model_types, notification_payload);
   } else if (notification_data.service_url.empty() ||
              (notification_data.service_url ==
               browser_sync::kSyncLegacyServiceUrl) ||
@@ -2216,20 +2225,24 @@ void SyncManager::SyncInternal::OnIncomingNotification(
               browser_sync::kSyncServiceUrl)) {
     VLOG(1) << "Sync received P2P notification.";
 
-    // Catch for sync integration tests (uses p2p). Just set all datatypes.
-    model_types.set();
+    // Catch for sync integration tests (uses p2p). Just set all enabled
+    // datatypes.
+    ModelSafeRoutingInfo routes;
+    registrar_->GetModelSafeRoutingInfo(&routes);
+    model_types_with_payloads =
+        browser_sync::sessions::RoutingInfoToTypePayloadMap(routes,
+                                                            std::string());
   } else {
     LOG(WARNING) << "Notification fron unexpected source: "
                  << notification_data.service_url;
   }
 
-  if (model_types.any()) {
+  if (!model_types_with_payloads.empty()) {
     if (syncer_thread()) {
-     // Introduce a delay to help coalesce initial notifications.
-     syncer_thread()->NudgeSyncerWithDataTypes(
-         250,
-         SyncerThread::kNotification,
-         model_types);
+      syncer_thread()->NudgeSyncerWithPayloads(
+          kSyncerThreadDelayMsec,
+          SyncerThread::kNotification,
+          model_types_with_payloads);
     }
     allstatus_.IncrementNotificationsReceived();
   } else {
