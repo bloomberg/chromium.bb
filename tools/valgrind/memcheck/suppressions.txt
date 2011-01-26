@@ -3689,6 +3689,12 @@
    fun:_ZN9OptionsUIC1EP11TabContents
 }
 {
+   bug_70782_j
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN27ExtensionFunctionDispatcherC1EP14RenderViewHostPNS_8DelegateEPK9ExtensionRK4GURL
+}
+{
    bug_70826
    Memcheck:Leak
    fun:_Znw*
