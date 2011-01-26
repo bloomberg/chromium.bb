@@ -148,22 +148,25 @@ html[os='mac'] input[type='submit'] {
   <div class="sync-instructions" id="instructions"
        i18n-content="instructions"></div>
   <div>
-    <input name="option" type="radio" value="google" onchange="onRadioChange();">
-      <span i18n-content="googleOption"></span>
+    <input name="option" type="radio" value="google"
+           id="google-option" onchange="onRadioChange();">
+      <label for="google-option" i18n-content="googleOption"></label>
     </input>
   </div>
   <div>
-    <input name="option" type="radio" value="explicit" onchange="onRadioChange();">
+    <input name="option" type="radio" value="explicit"
+           id="explicit-option" onchange="onRadioChange();">
     <div id="learn-more-link">
       <a i18n-values="href:encryptionhelpurl" target="_blank"
          i18n-content="learnmore"></a>
     </div>
-    <span i18n-content="explicitOption"></span>
+    <label for="explicit-option" i18n-content="explicitOption"></label>
     </input>
   </div>
   <div>
-    <input name="option" type="radio" value="nothanks" onchange="onRadioChange();">
-    <span i18n-content="nothanksOption"></span>
+    <input name="option" type="radio" value="nothanks"
+           id="nothanks-option" onchange="onRadioChange();">
+    <label for="nothanks-option" i18n-content="nothanksOption"></label>
     </input>
   </div>
 
