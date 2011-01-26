@@ -473,6 +473,7 @@ list .close-button {
 }
 
 list > *:not(:hover):not([lead]) .close-button,
+list > *:not(:hover):not([selected]) .close-button,
 list[disabled] .close-button,
 list .close-button[disabled] {
   opacity: 0;
