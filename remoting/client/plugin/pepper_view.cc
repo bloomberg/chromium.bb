@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,8 @@ PepperView::PepperView(ChromotingInstance* instance, ClientContext* context)
     viewport_width_(0),
     viewport_height_(0),
     is_static_fill_(false),
-    static_fill_color_(0) {
+    static_fill_color_(0),
+    ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
 }
 
 PepperView::~PepperView() {
@@ -35,13 +36,13 @@ bool PepperView::Initialize() {
 }
 
 void PepperView::TearDown() {
+  DCHECK(instance_->CurrentlyOnPluginThread());
+
+  task_factory_.RevokeAll();
 }
 
 void PepperView::Paint() {
-  if (!instance_->CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(NewTracedMethod(this, &PepperView::Paint));
-    return;
-  }
+  DCHECK(instance_->CurrentlyOnPluginThread());
 
   TraceContext::tracer()->PrintString("Start Paint.");
   // TODO(ajwong): We're assuming the native format is BGRA_PREMUL below. This
@@ -67,7 +68,7 @@ void PepperView::Paint() {
     // size!  Otherwise, this will just silently do nothing.
     graphics2d_.ReplaceContents(&image);
     graphics2d_.Flush(TaskToCompletionCallback(
-        NewTracedMethod(this, &PepperView::OnPaintDone)));
+        task_factory_.NewRunnableMethod(&PepperView::OnPaintDone)));
   } else {
     // TODO(ajwong): We need to keep a backing store image of the viewport that
     // has the data here which can be redrawn.
@@ -109,38 +110,26 @@ void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
   // size!  Otherwise, this will just silently do nothing.
   graphics2d_.ReplaceContents(&image);
   graphics2d_.Flush(TaskToCompletionCallback(
-      NewTracedMethod(this, &PepperView::OnPaintDone)));
+      task_factory_.NewRunnableMethod(&PepperView::OnPaintDone)));
 
   TraceContext::tracer()->PrintString("End Paint Frame.");
 }
 
 void PepperView::SetSolidFill(uint32 color) {
-  if (!instance_->CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(
-        NewTracedMethod(this, &PepperView::SetSolidFill, color));
-    return;
-  }
+  DCHECK(instance_->CurrentlyOnPluginThread());
 
   is_static_fill_ = true;
   static_fill_color_ = color;
 }
 
 void PepperView::UnsetSolidFill() {
-  if (!instance_->CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(
-        NewTracedMethod(this, &PepperView::UnsetSolidFill));
-    return;
-  }
+  DCHECK(instance_->CurrentlyOnPluginThread());
 
   is_static_fill_ = false;
 }
 
 void PepperView::SetConnectionState(ConnectionState state) {
-  if (!instance_->CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(
-        NewRunnableMethod(this, &PepperView::SetConnectionState, state));
-    return;
-  }
+  DCHECK(instance_->CurrentlyOnPluginThread());
 
   ChromotingScriptableObject* scriptable_obj = instance_->GetScriptableObject();
   switch (state) {
@@ -167,11 +156,7 @@ void PepperView::SetConnectionState(ConnectionState state) {
 }
 
 void PepperView::SetViewport(int x, int y, int width, int height) {
-  if (!instance_->CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(NewTracedMethod(this, &PepperView::SetViewport,
-                                          x, y, width, height));
-    return;
-  }
+  DCHECK(instance_->CurrentlyOnPluginThread());
 
   // TODO(ajwong): Should we ignore x & y updates?  What do those even mean?
 
@@ -197,6 +182,8 @@ void PepperView::AllocateFrame(media::VideoFrame::Format format,
                                base::TimeDelta duration,
                                scoped_refptr<media::VideoFrame>* frame_out,
                                Task* done) {
+  DCHECK(instance_->CurrentlyOnPluginThread());
+
   // TODO(ajwong): Implement this to be backed by an pp::ImageData rather than
   // generic memory.
   media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
@@ -211,6 +198,8 @@ void PepperView::AllocateFrame(media::VideoFrame::Format format,
 }
 
 void PepperView::ReleaseFrame(media::VideoFrame* frame) {
+  DCHECK(instance_->CurrentlyOnPluginThread());
+
   if (frame) {
     LOG(WARNING) << "Frame released.";
     frame->Release();
@@ -220,12 +209,7 @@ void PepperView::ReleaseFrame(media::VideoFrame* frame) {
 void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
                                       UpdatedRects* rects,
                                       Task* done) {
-  if (!instance_->CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(
-        NewTracedMethod(this, &PepperView::OnPartialFrameOutput,
-                        make_scoped_refptr(frame), rects, done));
-    return;
-  }
+  DCHECK(instance_->CurrentlyOnPluginThread());
 
   TraceContext::tracer()->PrintString("Calling PaintFrame");
   // TODO(ajwong): Clean up this API to be async so we don't need to use a
@@ -236,6 +220,8 @@ void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
 }
 
 void PepperView::OnPaintDone() {
+  DCHECK(instance_->CurrentlyOnPluginThread());
+
   // TODO(ajwong):Probably should set some variable to allow repaints to
   // actually paint.
   TraceContext::tracer()->PrintString("Paint flushed");

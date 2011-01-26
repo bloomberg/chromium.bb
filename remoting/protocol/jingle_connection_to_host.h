@@ -91,7 +91,6 @@ class JingleConnectionToHost : public ConnectionToHost,
   scoped_refptr<SessionManager> session_manager_;
   scoped_refptr<Session> session_;
 
-  MessageReader control_reader_;
   scoped_ptr<VideoReader> video_reader_;
 
   HostEventCallback* event_callback_;

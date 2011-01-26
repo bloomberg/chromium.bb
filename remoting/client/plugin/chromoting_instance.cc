@@ -20,6 +20,7 @@
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_view.h"
+#include "remoting/client/plugin/pepper_view_proxy.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/jingle_connection_to_host.h"
@@ -38,11 +39,11 @@ ChromotingInstance::~ChromotingInstance() {
     client_->Stop();
   }
 
-  // TODO(ajwong): We need to ensure all objects have actually stopped posting
-  // to the message loop before this point.  Right now, we don't have a well
-  // defined stop for the plugin process, and the thread shutdown is likely a
-  // race condition.
+  // Stopping the context shutdown all chromoting threads. This is a requirement
+  // before we can call Detach() on |view_proxy_|.
   context_.Stop();
+
+  view_proxy_->Detach();
 }
 
 bool ChromotingInstance::Init(uint32_t argc,
@@ -70,11 +71,13 @@ bool ChromotingInstance::Init(uint32_t argc,
   host_connection_.reset(new protocol::JingleConnectionToHost(
       context_.jingle_thread()));
   view_.reset(new PepperView(this, &context_));
+  view_proxy_ = new PepperViewProxy(this, view_.get());
   rectangle_decoder_.reset(
-      new RectangleUpdateDecoder(context_.decode_message_loop(), view_.get()));
+      new RectangleUpdateDecoder(context_.decode_message_loop(),
+                                 view_proxy_));
   input_handler_.reset(new PepperInputHandler(&context_,
                                               host_connection_.get(),
-                                              view_.get()));
+                                              view_proxy_));
 
   // Default to a medium grey.
   view_->SetSolidFill(0xFFCDCDCD);
@@ -88,7 +91,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   client_.reset(new ChromotingClient(config,
                                      &context_,
                                      host_connection_.get(),
-                                     view_.get(),
+                                     view_proxy_,
                                      rectangle_decoder_.get(),
                                      input_handler_.get(),
                                      NULL));

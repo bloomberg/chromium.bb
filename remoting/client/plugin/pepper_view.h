@@ -1,15 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This class is an implementation of the ChromotingView using Pepper devices
-// as the backing stores.  The public APIs to this class are thread-safe.
-// Calls will dispatch any interaction with the pepper API onto the pepper
-// main thread.
-//
-// TODO(ajwong): We need to better understand the threading semantics of this
-// class.  Currently, we're just going to always run everything on the pepper
-// main thread.  Is this smart?
+// as the backing stores.  This class is used only on pepper thread.
+// Chromoting objects access this object through PepperViewProxy which
+// delegates method calls on the pepper thread.
 
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_VIEW_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_VIEW_H_
@@ -79,11 +75,11 @@ class PepperView : public ChromotingView,
   bool is_static_fill_;
   uint32 static_fill_color_;
 
+  ScopedRunnableMethodFactory<PepperView> task_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(PepperView);
 };
 
 }  // namespace remoting
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::PepperView);
 
 #endif  // REMOTING_CLIENT_PLUGIN_PEPPER_VIEW_H_

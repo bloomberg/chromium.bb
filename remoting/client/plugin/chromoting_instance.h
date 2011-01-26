@@ -43,6 +43,7 @@ class ClientContext;
 class InputHandler;
 class JingleThread;
 class PepperView;
+class PepperViewProxy;
 class RectangleUpdateDecoder;
 
 struct ClientConfig;
@@ -85,6 +86,15 @@ class ChromotingInstance : public pp::Instance {
   ClientContext context_;
   scoped_ptr<protocol::ConnectionToHost> host_connection_;
   scoped_ptr<PepperView> view_;
+
+  // PepperViewProxy is refcounted and used to interface between shromoting
+  // objects and PepperView and perform thread switching. It wraps around
+  // |view_| and receives method calls on chromoting threads. These method
+  // calls are then delegates on the pepper thread. During destruction of
+  // ChromotingInstance we need to detach PepperViewProxy from PepperView since
+  // both ChromotingInstance and PepperView are destroyed and there will be
+  // outstanding tasks on the pepper message loo.
+  scoped_refptr<PepperViewProxy> view_proxy_;
   scoped_ptr<RectangleUpdateDecoder> rectangle_decoder_;
   scoped_ptr<InputHandler> input_handler_;
   scoped_ptr<ChromotingClient> client_;

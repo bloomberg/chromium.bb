@@ -86,6 +86,8 @@
         'client/plugin/pepper_input_handler.h',
         'client/plugin/pepper_view.cc',
         'client/plugin/pepper_view.h',
+        'client/plugin/pepper_view_proxy.cc',
+        'client/plugin/pepper_view_proxy.h',
         'client/plugin/pepper_util.cc',
         'client/plugin/pepper_util.h',
         '../media/base/yuv_convert.cc',
