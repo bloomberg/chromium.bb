@@ -708,7 +708,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kLoggingLevel,
     switches::kMemoryProfiling,
     switches::kMessageLoopHistogrammer,
-    switches::kNewChromeUISecurityModel,
     switches::kNoJsRandomness,
     switches::kNoReferrers,
     switches::kNoSandbox,
