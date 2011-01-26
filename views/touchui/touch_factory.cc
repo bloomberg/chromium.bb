@@ -103,7 +103,7 @@ void TouchFactory::SetCursorVisible(bool show, bool start_timer) {
   if (show && start_timer) {
     cursor_timer_.Stop();
     cursor_timer_.Start(base::TimeDelta::FromSeconds(kCursorIdleSeconds),
-        this, &TouchFactory::HideCursorForInactivity),
+        this, &TouchFactory::HideCursorForInactivity);
   } else {
     cursor_timer_.Stop();
   }
