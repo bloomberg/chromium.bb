@@ -59,7 +59,9 @@ struct x11_compositor {
 		xcb_atom_t		 wm_normal_hints;
 		xcb_atom_t		 wm_size_hints;
 		xcb_atom_t		 wm_delete_window;
+		xcb_atom_t		 wm_class;
 		xcb_atom_t		 net_wm_name;
+		xcb_atom_t		 string;
 		xcb_atom_t		 utf8_string;
 	} atom;
 };
@@ -332,6 +334,7 @@ static int
 x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 {
 	static const char name[] = "Wayland Compositor";
+	static const char class[] = "wayland-1\0Wayland Compositor";
 	struct x11_output *output;
 	xcb_dri2_dri2_buffer_t *buffers;
 	xcb_dri2_get_buffers_reply_t *reply;
@@ -398,12 +401,15 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 			     sizeof normal_hints / 4,
 			     (uint8_t *) &normal_hints);
 
-        xcb_map_window(c->conn, output->window);
-
 	/* Set window name.  Don't bother with non-EWMH WMs. */
 	xcb_change_property(c->conn, XCB_PROP_MODE_REPLACE, output->window,
 			    c->atom.net_wm_name, c->atom.utf8_string, 8,
 			    strlen(name), name);
+	xcb_change_property(c->conn, XCB_PROP_MODE_REPLACE, output->window,
+			    c->atom.wm_class, c->atom.string, 8,
+			    sizeof class, class);
+
+	xcb_map_window(c->conn, output->window);
 
 	rectangle.x = 0;
 	rectangle.y = 0;
@@ -603,7 +609,9 @@ x11_compositor_get_resources(struct x11_compositor *c)
 		{ "WM_NORMAL_HINTS",	F(atom.wm_normal_hints) },
 		{ "WM_SIZE_HINTS",	F(atom.wm_size_hints) },
 		{ "WM_DELETE_WINDOW",	F(atom.wm_delete_window) },
+		{ "WM_CLASS",		F(atom.wm_class) },
 		{ "_NET_WM_NAME",	F(atom.net_wm_name) },
+		{ "STRING",		F(atom.string) },
 		{ "UTF8_STRING",	F(atom.utf8_string) },
 	};
 
