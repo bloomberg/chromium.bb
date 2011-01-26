@@ -441,13 +441,13 @@ bool GetXWindowStack(Window window, std::vector<XID>* windows) {
   int format;
   unsigned long count;
   unsigned char *data = NULL;
-  if (!GetProperty(window,
-                   "_NET_CLIENT_LIST_STACKING",
-                   ~0L,
-                   &type,
-                   &format,
-                   &count,
-                   &data)) {
+  if (GetProperty(window,
+                  "_NET_CLIENT_LIST_STACKING",
+                  ~0L,
+                  &type,
+                  &format,
+                  &count,
+                  &data) != Success) {
     return false;
   }
 
