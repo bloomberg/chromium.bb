@@ -17,7 +17,7 @@
 #include "views/controls/label.h"
 #include "views/controls/table/table_view.h"
 #include "views/grid_layout.h"
-#include "views/standard_layout.h"
+#include "views/layout/layout_constants.h"
 #include "views/window/window.h"
 
 static const int kExceptionsViewInsetSize = 5;

@@ -21,6 +21,7 @@
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/image_view.h"
 #include "views/controls/scroll_view.h"
+#include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 

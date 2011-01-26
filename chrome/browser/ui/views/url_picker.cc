@@ -26,7 +26,7 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
 #include "views/grid_layout.h"
-#include "views/standard_layout.h"
+#include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
 
 using views::ColumnSet;

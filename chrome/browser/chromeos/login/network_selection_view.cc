@@ -27,7 +27,7 @@
 #include "views/controls/throbber.h"
 #include "views/grid_layout.h"
 #include "views/layout/fill_layout.h"
-#include "views/standard_layout.h"
+#include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_gtk.h"
 #include "views/window/non_client_view.h"

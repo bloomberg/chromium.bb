@@ -10,7 +10,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/grid_layout.h"
-#include "views/standard_layout.h"
+#include "views/layout/layout_constants.h"
 
 PluginFilterPageView::PluginFilterPageView(Profile* profile)
     : ContentFilterPageView(profile, CONTENT_SETTINGS_TYPE_PLUGINS) {

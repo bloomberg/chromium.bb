@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_STANDARD_LAYOUT_H_
-#define VIEWS_STANDARD_LAYOUT_H_
+#ifndef VIEWS_LAYOUT_LAYOUT_CONSTANTS_H_
+#define VIEWS_LAYOUT_LAYOUT_CONSTANTS_H_
 #pragma once
 
-#include "views/grid_layout.h"
-
-//
 // This file contains some constants we use to implement our standard panel
 // layout.
 // see: spec 21/4
@@ -67,4 +64,4 @@ const int kButtonHEdgeMargin = 7;
 // Horizontal spacing between buttons that are logically related.
 const int kRelatedButtonHSpacing = 6;
 
-#endif  // VIEWS_STANDARD_LAYOUT_H_
+#endif  // VIEWS_LAYOUT_LAYOUT_CONSTANTS_H_

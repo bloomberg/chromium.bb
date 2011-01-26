@@ -16,10 +16,10 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "views/grid_layout.h"
 #include "views/controls/label.h"
 #include "views/controls/separator.h"
-#include "views/standard_layout.h"
+#include "views/grid_layout.h"
+#include "views/layout/layout_constants.h"
 
 static const int kLeftColumnWidthChars = 20;
 static const int kOptionsGroupViewColumnSpacing = 30;

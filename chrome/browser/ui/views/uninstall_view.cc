@@ -12,12 +12,12 @@
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
+#include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/label.h"
-#include "views/standard_layout.h"
-
-#include "grit/chromium_strings.h"
+#include "views/grid_layout.h"
+#include "views/layout/layout_constants.h"
 
 UninstallView::UninstallView(int& user_selection)
     : confirm_label_(NULL),

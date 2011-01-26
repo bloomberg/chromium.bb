@@ -38,7 +38,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/throbber.h"
-#include "views/standard_layout.h"
+#include "views/layout/layout_constants.h"
 #include "views/view_text_utils.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"

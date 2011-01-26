@@ -283,6 +283,7 @@
         'layout/box_layout.h',
         'layout/fill_layout.cc',
         'layout/fill_layout.h',
+        'layout/layout_constants.h',
         'layout/layout_manager.cc',
         'layout/layout_manager.h',
         'mouse_watcher.cc',

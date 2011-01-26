@@ -28,6 +28,7 @@
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/slider/slider.h"
+#include "views/layout/layout_constants.h"
 #include "views/window/window.h"
 
 namespace chromeos {

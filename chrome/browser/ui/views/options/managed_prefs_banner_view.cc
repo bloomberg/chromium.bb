@@ -11,7 +11,7 @@
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/layout/box_layout.h"
-#include "views/standard_layout.h"
+#include "views/layout/layout_constants.h"
 
 // Spacing between the banner frame and its contents.
 static const int kPrefsBannerPadding = 3;

@@ -23,11 +23,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "views/background.h"
 #include "views/focus/focus_manager.h"
-#include "views/grid_layout.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_2.h"
-#include "views/standard_layout.h"
+#include "views/grid_layout.h"
+#include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 

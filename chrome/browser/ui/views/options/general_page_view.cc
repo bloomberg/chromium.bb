@@ -41,7 +41,7 @@
 #include "views/controls/table/table_view.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/grid_layout.h"
-#include "views/standard_layout.h"
+#include "views/layout/layout_constants.h"
 
 namespace {
 

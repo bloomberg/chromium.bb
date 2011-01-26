@@ -31,7 +31,7 @@
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/separator.h"
-#include "views/standard_layout.h"
+#include "views/layout/layout_constants.h"
 #include "views/view_text_utils.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"

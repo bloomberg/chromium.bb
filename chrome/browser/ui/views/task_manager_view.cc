@@ -29,7 +29,7 @@
 #include "views/controls/menu/menu.h"
 #include "views/controls/table/group_table_view.h"
 #include "views/controls/table/table_view_observer.h"
-#include "views/standard_layout.h"
+#include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"

@@ -32,8 +32,8 @@
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/grid_layout.h"
+#include "views/layout/layout_constants.h"
 #include "views/painter.h"
-#include "views/standard_layout.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 

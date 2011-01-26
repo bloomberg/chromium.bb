@@ -18,7 +18,7 @@
 #include "views/controls/button/native_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/standard_layout.h"
+#include "views/layout/layout_constants.h"
 #include "views/view.h"
 
 namespace {

@@ -7,13 +7,13 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/task.h"
-#include "views/grid_layout.h"
+#include "grit/generated_resources.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
-#include "views/standard_layout.h"
+#include "views/grid_layout.h"
+#include "views/layout/layout_constants.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
-#include "grit/generated_resources.h"
 
 // Width to make the text field, in pixels.
 static const int kTextfieldWidth = 200;

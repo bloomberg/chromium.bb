@@ -19,12 +19,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/hwnd_util.h"
-#include "views/event.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/label.h"
+#include "views/event.h"
 #include "views/focus/focus_manager.h"
-#include "views/standard_layout.h"
+#include "views/layout/layout_constants.h"
 #include "views/window/window.h"
 
 namespace {

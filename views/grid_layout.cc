@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "gfx/insets.h"
-#include "views/standard_layout.h"
+#include "views/layout/layout_constants.h"
 #include "views/view.h"
 
 namespace views {

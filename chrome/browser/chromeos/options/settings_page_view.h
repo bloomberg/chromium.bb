@@ -8,10 +8,9 @@
 
 #include <gtk/gtk.h>
 
+#include "base/basictypes.h"
 #include "chrome/browser/ui/views/options/options_page_view.h"
-
 #include "views/grid_layout.h"
-#include "views/standard_layout.h"
 
 using views::ColumnSet;
 using views::GridLayout;

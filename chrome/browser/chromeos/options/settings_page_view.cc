@@ -11,6 +11,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/label.h"
 #include "views/layout/fill_layout.h"
+#include "views/layout/layout_constants.h"
 #include "views/widget/widget_gtk.h"
 
 namespace chromeos {
