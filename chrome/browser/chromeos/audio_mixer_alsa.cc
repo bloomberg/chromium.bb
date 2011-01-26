@@ -254,7 +254,8 @@ bool AudioMixerAlsa::InitializeAlsaMixer() {
 
   elem_master_ = FindElementWithName_Locked(handle, kMasterVolume);
   if (elem_master_) {
-    alsa_long_t long_lo, long_hi;
+    alsa_long_t long_lo = static_cast<alsa_long_t>(kDefaultMinVolume * 100);
+    alsa_long_t long_hi = static_cast<alsa_long_t>(kDefaultMaxVolume * 100);
     snd_mixer_selem_get_playback_dB_range(elem_master_, &long_lo, &long_hi);
     min_volume_ = static_cast<double>(long_lo) / 100.0;
     max_volume_ = static_cast<double>(long_hi) / 100.0;
@@ -266,7 +267,8 @@ bool AudioMixerAlsa::InitializeAlsaMixer() {
 
   elem_pcm_ = FindElementWithName_Locked(handle, kPCMVolume);
   if (elem_pcm_) {
-    alsa_long_t long_lo, long_hi;
+    alsa_long_t long_lo = static_cast<alsa_long_t>(kDefaultMinVolume * 100);
+    alsa_long_t long_hi = static_cast<alsa_long_t>(kDefaultMaxVolume * 100);
     snd_mixer_selem_get_playback_dB_range(elem_pcm_, &long_lo, &long_hi);
     min_volume_ += static_cast<double>(long_lo) / 100.0;
     max_volume_ += static_cast<double>(long_hi) / 100.0;
@@ -415,7 +417,7 @@ bool AudioMixerAlsa::SetElementVolume_Locked(snd_mixer_elem_t* elem,
           << " dB";
 
   if (actual_vol) {
-    alsa_long_t volume;
+    alsa_long_t volume = vol_lo;
     snd_mixer_selem_get_playback_volume(
         elem,
         static_cast<snd_mixer_selem_channel_id_t>(0),
@@ -429,7 +431,7 @@ bool AudioMixerAlsa::SetElementVolume_Locked(snd_mixer_elem_t* elem,
 }
 
 bool AudioMixerAlsa::GetElementMuted_Locked(snd_mixer_elem_t* elem) const {
-  int enabled;
+  int enabled = 0;
   snd_mixer_selem_get_playback_switch(
       elem,
       static_cast<snd_mixer_selem_channel_id_t>(0),
