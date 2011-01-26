@@ -92,8 +92,9 @@ bool PushNotificationsListenTask::IsValidNotification(
   //    <data>{base-64 data}</data>
   //  </push>
   // </message>
-  return ((stanza->Name() == buzz::QN_MESSAGE) &&
-          (stanza->Attr(buzz::QN_TO) == GetClient()->jid().Str()));
+  // We don't do much validation here, just check if the stanza is a message
+  // stanza.
+  return (stanza->Name() == buzz::QN_MESSAGE);
 }
 
 }  // namespace notifier
