@@ -23,10 +23,11 @@ namespace {
 class CSSMInitSingleton {
  public:
   static CSSMInitSingleton* GetInstance() {
-    return Singleton<CSSMInitSingleton>::get();
+    return Singleton<CSSMInitSingleton,
+                     LeakySingletonTraits<CSSMInitSingleton> >::get();
   }
 
-  CSSM_CSP_HANDLE csp_handle() const  {return csp_handle_;}
+  CSSM_CSP_HANDLE csp_handle() const  { return csp_handle_; }
 
  private:
   CSSMInitSingleton() : inited_(false), loaded_(false), csp_handle_(NULL) {
@@ -87,18 +88,17 @@ class CSSMInitSingleton {
 class SecurityServicesSingleton {
  public:
   static SecurityServicesSingleton* GetInstance() {
-    return Singleton<SecurityServicesSingleton>::get();
+    return Singleton<SecurityServicesSingleton,
+                     LeakySingletonTraits<SecurityServicesSingleton> >::get();
   }
-
-  ~SecurityServicesSingleton() {}
 
   base::Lock& lock() { return lock_; }
 
  private:
-  friend class Singleton<SecurityServicesSingleton>;
   friend struct DefaultSingletonTraits<SecurityServicesSingleton>;
 
   SecurityServicesSingleton() {}
+  ~SecurityServicesSingleton() {}
 
   base::Lock lock_;
 
