@@ -22,7 +22,7 @@ enum LogLevel {
   INFO,
   WARNING,
   ERROR,
-  FATAL,
+  FATAL
 };
 
 // This is a very simple logger for use in command buffer code. Common and

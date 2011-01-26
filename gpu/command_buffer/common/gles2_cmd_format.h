@@ -52,7 +52,7 @@ enum IdNamespaces {
   kFramebuffers,
   kProgramsAndShaders,
   kRenderbuffers,
-  kTextures,
+  kTextures
 };
 
 // These numbers must not change

@@ -16,7 +16,7 @@ namespace gpu {
 namespace cmd {
   enum ArgFlags {
     kFixed = 0x0,
-    kAtLeastN = 0x1,
+    kAtLeastN = 0x1
   };
 }  // namespace cmd
 
@@ -167,7 +167,7 @@ enum CommandId {
   #undef COMMON_COMMAND_BUFFER_CMD_OP
 
   kNumCommands,
-  kLastCommonId = 255,  // reserve 256 spaces for common commands.
+  kLastCommonId = 255  // reserve 256 spaces for common commands.
 };
 
 COMPILE_ASSERT(kNumCommands - 1 <= kLastCommonId, Too_many_common_commands);
