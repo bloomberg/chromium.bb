@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,6 +53,7 @@ extern const char kExtensionInstallForceList[];
 extern const char kShowHomeButton[];
 extern const char kPrintingEnabled[];
 extern const char kJavascriptEnabled[];
+extern const char kIncognitoEnabled[];
 extern const char kSavingBrowserHistoryDisabled[];
 extern const char kDeveloperToolsDisabled[];
 extern const char kBlockThirdPartyCookies[];

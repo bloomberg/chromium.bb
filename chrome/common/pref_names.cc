@@ -134,6 +134,9 @@ const char kFormAutofillEnabled[] = "profile.form_autofill_enabled";
 // Boolean that is true when SafeBrowsing is enabled.
 const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
 
+// Boolean that is true when Incognito support is enabled.
+const char kIncognitoEnabled[] = "incognito.enabled";
+
 // Boolean that is true when SafeBrowsing Malware Report is enabled.
 const char kSafeBrowsingReportingEnabled[] =
     "safebrowsing.reporting_enabled";

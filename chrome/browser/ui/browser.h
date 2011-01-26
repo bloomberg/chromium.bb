@@ -1112,6 +1112,9 @@ class Browser : public TabHandlerDelegate,
   // Keep track of when instant enabled changes.
   BooleanPrefMember instant_enabled_;
 
+  // Tracks the preference that controls whether incognito mode is allowed.
+  BooleanPrefMember incognito_mode_allowed_;
+
   // Indicates if command execution is blocked.
   bool block_command_execution_;
 
