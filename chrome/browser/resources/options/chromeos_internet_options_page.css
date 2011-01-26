@@ -6,10 +6,6 @@
   border: none;
 }
 
-#internetPage > section {
-  display: block;
-}
-
 #internetPage > section > h3 {
   font-size: 100%;
   width: auto;
