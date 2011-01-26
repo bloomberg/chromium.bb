@@ -32,7 +32,10 @@ pp::Var Error(nacl::string call_name, const char* caller,
   if (!exception->is_undefined()) {
     error_stream << " - " + exception->AsString();
   }
-  const char* e = error_stream.str().c_str();
+  // Get the error string in 2 steps; otherwise, the temporary string returned
+  // by the stream is destructed, causing a dangling pointer.
+  std::string str = error_stream.str();
+  const char* e = str.c_str();
   PLUGIN_PRINTF(("ScriptableHandlePpapi::%s (%s)\n", caller, e));
   *exception = pp::Var(e);
   return pp::Var();
