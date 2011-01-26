@@ -2023,6 +2023,7 @@ nacl_env.Append(
     'tests/srpc_message/nacl.scons',
     'tests/srpc_without_pthread/nacl.scons',
     'tests/stack_alignment/nacl.scons',
+    'tests/startup_message/nacl.scons',
     'tests/stubout_mode/nacl.scons',
     'tests/sysbasic/nacl.scons',
     'tests/syscalls/nacl.scons',
