@@ -41,8 +41,7 @@ class ChromeInvalidationClient
    public:
     virtual ~Listener();
 
-    virtual void OnInvalidate(syncable::ModelType model_type,
-                              const std::string& payload) = 0;
+    virtual void OnInvalidate(syncable::ModelType model_type) = 0;
 
     virtual void OnInvalidateAll() = 0;
   };

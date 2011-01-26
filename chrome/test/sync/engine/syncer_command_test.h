@@ -6,8 +6,6 @@
 #define CHROME_TEST_SYNC_ENGINE_SYNCER_COMMAND_TEST_H_
 #pragma once
 
-#include <algorithm>
-#include <string>
 #include <vector>
 
 #include "chrome/browser/sync/engine/model_safe_worker.h"
@@ -84,18 +82,13 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
   sessions::SyncSessionContext* context() const { return context_.get(); }
   sessions::SyncSession::Delegate* delegate() { return this; }
   ModelSafeWorkerRegistrar* registrar() { return this; }
-  // Lazily create a session requesting all datatypes.
+  // Lazily create a session.
   sessions::SyncSession* session() {
     if (!session_.get()) {
       std::vector<ModelSafeWorker*> workers;
       GetWorkers(&workers);
-      ModelSafeRoutingInfo routes = routing_info();
-      sessions::TypePayloadMap types =
-          sessions::RoutingInfoToTypePayloadMap(routes, std::string());
       session_.reset(new sessions::SyncSession(context(), delegate(),
-          sessions::SyncSourceInfo(sync_pb::GetUpdatesCallerInfo::UNKNOWN,
-                                   types),
-          routing_info_, workers));
+          sessions::SyncSourceInfo(), routing_info_, workers));
     }
     return session_.get();
   }
