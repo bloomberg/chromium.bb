@@ -11171,14 +11171,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
     <!-- PDF with unsupported feature Info Bar -->
     <message name="IDS_PDF_INFOBAR_QUESTION_READER_INSTALLED" desc="Question asked on the info bar when a user views a PDF with an unsupported feature and they have Adobe Reader installed.">
-      Parts of this PDF document could not be displayed.  View with Adobe Reader?
+      Parts of this PDF document could not be displayed.  Open in Adobe Reader?
     </message>
 
     <message name="IDS_PDF_INFOBAR_QUESTION_READER_NOT_INSTALLED" desc="Question asked on the info bar when a user views a PDF with an unsupported feature and they don't have Adobe Reader installed.">
       Parts of this PDF document could not be displayed.  Install Adobe Reader?
     </message>
 
-    <!-- Adobe Reader is out of date Blocking Page -->
+    <message name="IDS_PDF_INFOBAR_QUESTION_ALWAYS_USE_READER" desc="Question asked on the info bar when a user opens a PDF with Reader and we want to ask them if they always want to use it for viewing PDF files.">
+      Always use Adobe Reader to open PDF files?
+    </message>
+
+      <!-- Adobe Reader is out of date Blocking Page -->
     <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_TITLE" desc="The title of the Adobe Reader out of date blocking page.">
       Adobe Reader Out Of Date
     </message>
