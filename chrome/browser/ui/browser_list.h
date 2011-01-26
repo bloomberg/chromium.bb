@@ -167,6 +167,7 @@ class BrowserList {
  private:
   // Helper method to remove a browser instance from a list of browsers
   static void RemoveBrowserFrom(Browser* browser, BrowserVector* browser_list);
+  static void MarkAsCleanShutdown();
   static void NotifyAndTerminate();
 #if defined(OS_CHROMEOS)
   static bool NeedBeforeUnloadFired();

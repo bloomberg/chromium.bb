@@ -187,6 +187,12 @@ void BrowserList::AddBrowser(Browser* browser) {
       << "observer list modified during notification";
 }
 
+// static
+void BrowserList::MarkAsCleanShutdown() {
+  for (const_iterator i = begin(); i != end(); ++i) {
+    (*i)->profile()->MarkAsCleanShutdown();
+  }
+}
 
 // static
 void BrowserList::NotifyAndTerminate() {
@@ -281,8 +287,7 @@ void BrowserList::RemoveObserver(BrowserList::Observer* observer) {
 // static
 bool BrowserList::NeedBeforeUnloadFired() {
   bool need_before_unload_fired = false;
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
+  for (const_iterator i = begin(); i != end(); ++i) {
     need_before_unload_fired = need_before_unload_fired ||
       (*i)->TabsNeedBeforeUnloadFired();
   }
@@ -291,8 +296,7 @@ bool BrowserList::NeedBeforeUnloadFired() {
 
 // static
 bool BrowserList::PendingDownloads() {
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
+  for (const_iterator i = begin(); i != end(); ++i) {
     bool normal_downloads_are_present = false;
     bool incognito_downloads_are_present = false;
     (*i)->CheckDownloadsInProgress(&normal_downloads_are_present,
@@ -373,6 +377,7 @@ void BrowserList::Exit() {
 
 // static
 void BrowserList::CloseAllBrowsersAndExit() {
+  MarkAsCleanShutdown();  // Don't notify users of crashes beyond this point.
   NotificationService::current()->Notify(
       NotificationType::APP_EXITING,
       NotificationService::AllSources(),
