@@ -15,9 +15,9 @@
 #include "base/time.h"
 #include "testing/multiprocess_func_list.h"
 
-#if defined(OS_MACOSX)
-// TODO(dmaclach): Remove defined(OS_MACOSX) once
-//                 MultiProcessNotification is implemented on Win/Linux.
+#if defined(OS_POSIX)
+// TODO(ajwong): Remove defined(OS_POSIX) restriction once
+//               MultiProcessNotification is implemented on Win.
 
 namespace {
 
@@ -244,33 +244,46 @@ void MultiProcessNotificationTest::CrossPostNotificationTest(
 
 TEST_F(MultiProcessNotificationTest, BasicCreationTest) {
   QuitterDelegate quitter;
+  MessageLoop* message_loop = IOMessageLoop();
+
+  multi_process_notification::Listener profile_listener(
+      "BasicCreationTest", multi_process_notification::ProfileDomain, &quitter);
+  ASSERT_TRUE(profile_listener.Start(message_loop));
+  SpinRunLoop(TestTimeouts::action_max_timeout_ms());
+  ASSERT_TRUE(quitter.WasStartedReceived());
+
   multi_process_notification::Listener local_listener(
       "BasicCreationTest", multi_process_notification::UserDomain, &quitter);
-  MessageLoop* message_loop = IOMessageLoop();
   ASSERT_TRUE(local_listener.Start(message_loop));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   ASSERT_TRUE(quitter.WasStartedReceived());
+
   multi_process_notification::Listener system_listener(
       "BasicCreationTest", multi_process_notification::SystemDomain, &quitter);
   ASSERT_TRUE(system_listener.Start(message_loop));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   ASSERT_TRUE(quitter.WasStartedReceived());
+}
 
-  multi_process_notification::Listener local_listener2(
-      "BasicCreationTest", multi_process_notification::UserDomain, &quitter);
+TEST_F(MultiProcessNotificationTest, ListenOnNonIoThread) {
+  QuitterDelegate quitter;
+  multi_process_notification::Listener local_listener(
+      "ListenOnNonIoThread", multi_process_notification::UserDomain, &quitter);
   // Should fail because current message loop should not be an IOMessageLoop.
-  ASSERT_FALSE(local_listener2.Start(MessageLoop::current()));
+  ASSERT_FALSE(local_listener.Start(MessageLoop::current()));
 }
 
 TEST_F(MultiProcessNotificationTest, PostInProcessNotification) {
   std::string local_notification("QuitLocalNotification");
   QuitterDelegate quitter;
+  MessageLoop* message_loop = IOMessageLoop();
+
   multi_process_notification::Listener listener(
       local_notification, multi_process_notification::UserDomain, &quitter);
-  MessageLoop* message_loop = IOMessageLoop();
   ASSERT_TRUE(listener.Start(message_loop));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   ASSERT_TRUE(quitter.WasStartedReceived());
+
   ASSERT_TRUE(multi_process_notification::Post(
       local_notification, multi_process_notification::UserDomain));
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
@@ -351,4 +364,4 @@ MULTIPROCESS_TEST_MAIN(MultiProcessSystemNotificationMain) {
   return MultiProcessNotificationMain(multi_process_notification::SystemDomain);
 }
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_POSIX)
