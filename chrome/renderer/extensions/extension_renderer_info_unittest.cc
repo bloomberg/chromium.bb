@@ -2,69 +2,117 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension_extent.h"
-#include "chrome/common/render_messages_params.h"
+#include "base/file_path.h"
+#include "base/logging.h"
+#include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
+#include "base/values.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-static void AddPattern(ExtensionExtent* extent, const std::string& pattern) {
-  int schemes = URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS;
-  extent->AddPattern(URLPattern(schemes, pattern));
+namespace {
+
+scoped_refptr<Extension> CreateTestExtension(const std::string& name,
+                                             const std::string& launch_url,
+                                             const std::string& extent) {
+#if defined(OS_WIN)
+  FilePath path(FILE_PATH_LITERAL("c:\\"));
+#else
+  FilePath path(FILE_PATH_LITERAL("/"));
+#endif
+  path = path.AppendASCII(name);
+
+  DictionaryValue manifest;
+  manifest.SetString("name", name);
+  manifest.SetString("version", "1");
+
+  if (!launch_url.empty())
+    manifest.SetString("app.launch.web_url", launch_url);
+
+  if (!extent.empty()) {
+    ListValue* urls = new ListValue();
+    manifest.Set("app.urls", urls);
+    urls->Append(Value::CreateStringValue(extent));
+  }
+
+  const bool kRequireKey = false;
+  std::string error;
+  scoped_refptr<Extension> extension(
+      Extension::Create(path, Extension::INTERNAL, manifest, kRequireKey,
+                        &error));
+  EXPECT_TRUE(extension.get()) << error;
+  return extension;
 }
 
+} // namespace
+
 TEST(ExtensionRendererInfoTest, ExtensionRendererInfo) {
-  std::string one("1"), two("2"), three("3");
+  scoped_refptr<Extension> ext1(CreateTestExtension(
+      "a", "https://chrome.google.com/launch", "https://chrome.google.com/"));
 
-  ViewMsg_ExtensionsUpdated_Params msg;
-  msg.extensions.resize(3);
+  scoped_refptr<Extension> ext2(CreateTestExtension(
+      "a", "http://code.google.com/p/chromium",
+      "http://code.google.com/p/chromium/"));
 
-  msg.extensions[0].id = one;
-  ExtensionExtent web1;
-  AddPattern(&web1, "https://chrome.google.com/*");
-  msg.extensions[0].web_extent = web1;
+  scoped_refptr<Extension> ext3(CreateTestExtension(
+      "b", "http://dev.chromium.org/", "http://dev.chromium.org/"));
 
-  msg.extensions[1].id = two;
-  ExtensionExtent web2;
-  AddPattern(&web2, "http://code.google.com/p/chromium/*");
-  msg.extensions[1].web_extent = web2;
+  scoped_refptr<Extension> ext4(CreateTestExtension("c", "", ""));
 
-  msg.extensions[2].id = three;
-  ExtensionExtent web3;
-  AddPattern(&web3, "http://dev.chromium.org/*");
-  msg.extensions[2].web_extent = web3;
+  ASSERT_TRUE(ext1 && ext2 && ext3 && ext4);
 
-  ExtensionRendererInfo::UpdateExtensions(msg);
-  EXPECT_EQ(ExtensionRendererInfo::extensions_->size(), 3u);
+  ExtensionRendererInfo extensions;
 
-  ExtensionRendererInfo* ext1 = &ExtensionRendererInfo::extensions_->at(0);
-  ExtensionRendererInfo* ext2 = &ExtensionRendererInfo::extensions_->at(1);
-  ExtensionRendererInfo* ext3 = &ExtensionRendererInfo::extensions_->at(2);
-  EXPECT_EQ(ext1->id(), one);
-  EXPECT_EQ(ext2->id(), two);
-  EXPECT_EQ(ext3->id(), three);
+  // Add an extension.
+  extensions.Update(ext1);
+  EXPECT_EQ(1u, extensions.size());
+  EXPECT_EQ(ext1, extensions.GetByID(ext1->id()));
 
-  EXPECT_EQ(ext1, ExtensionRendererInfo::GetByID(one));
-  EXPECT_EQ(ext1, ExtensionRendererInfo::GetByURL(
-      GURL("https://chrome.google.com/extensions/")));
-  EXPECT_EQ(ext2, ExtensionRendererInfo::GetByURL(
-    GURL("http://code.google.com/p/chromium/issues/")));
-  EXPECT_EQ(ext3, ExtensionRendererInfo::GetByURL(
+  // Since extension2 has same ID, it should overwrite extension1.
+  extensions.Update(ext2);
+  EXPECT_EQ(1u, extensions.size());
+  EXPECT_EQ(ext2, extensions.GetByID(ext1->id()));
+
+  // Add the other extensions.
+  extensions.Update(ext3);
+  extensions.Update(ext4);
+  EXPECT_EQ(3u, extensions.size());
+
+  // Get extension by its chrome-extension:// URL
+  EXPECT_EQ(ext2, extensions.GetByURL(
+      ext2->GetResourceURL("test.html")));
+  EXPECT_EQ(ext3, extensions.GetByURL(
+      ext3->GetResourceURL("test.html")));
+  EXPECT_EQ(ext4, extensions.GetByURL(
+      ext4->GetResourceURL("test.html")));
+
+  // Get extension by web extent.
+  EXPECT_EQ(ext2, extensions.GetByURL(
+      GURL("http://code.google.com/p/chromium/monkey")));
+  EXPECT_EQ(ext3, extensions.GetByURL(
     GURL("http://dev.chromium.org/design-docs/")));
-  EXPECT_EQ(NULL, ExtensionRendererInfo::GetByURL(
-    GURL("http://blog.chromium.org/")));
+  EXPECT_FALSE(extensions.GetByURL(
+      GURL("http://blog.chromium.org/")));
 
-  EXPECT_TRUE(ExtensionRendererInfo::InSameExtent(
-      GURL("https://chrome.google.com/extensions/"),
-      GURL("https://chrome.google.com/")));
-  EXPECT_FALSE(ExtensionRendererInfo::InSameExtent(
-      GURL("https://chrome.google.com/extensions/"),
-      GURL("http://chrome.google.com/")));
-  EXPECT_FALSE(ExtensionRendererInfo::InSameExtent(
-      GURL("https://chrome.google.com/extensions/"),
+  // Test InSameExtent().
+  EXPECT_TRUE(extensions.InSameExtent(
+      GURL("http://code.google.com/p/chromium/monkey/"),
+      GURL("http://code.google.com/p/chromium/")));
+  EXPECT_FALSE(extensions.InSameExtent(
+      GURL("http://code.google.com/p/chromium/"),
+      GURL("https://code.google.com/p/chromium/")));
+  EXPECT_FALSE(extensions.InSameExtent(
+      GURL("http://code.google.com/p/chromium/"),
       GURL("http://dev.chromium.org/design-docs/")));
 
   // Both of these should be NULL, which mean true for InSameExtent.
-  EXPECT_TRUE(ExtensionRendererInfo::InSameExtent(
+  EXPECT_TRUE(extensions.InSameExtent(
       GURL("http://www.google.com/"),
       GURL("http://blog.chromium.org/")));
+
+  // Remove one of the extensions.
+  extensions.Remove(ext2->id());
+  EXPECT_EQ(2u, extensions.size());
+  EXPECT_FALSE(extensions.GetByID(ext2->id()));
 }

@@ -6,6 +6,7 @@
 
 #include "chrome/common/navigation_gesture.h"
 #include "chrome/common/common_param_traits.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/render_messages.h"
 #include "net/base/upload_data.h"
 
@@ -248,20 +249,6 @@ ViewHostMsg_RunFileChooser_Params::ViewHostMsg_RunFileChooser_Params()
 ViewHostMsg_RunFileChooser_Params::~ViewHostMsg_RunFileChooser_Params() {
 }
 
-ViewMsg_ExtensionRendererInfo::ViewMsg_ExtensionRendererInfo()
-    : location(Extension::INVALID),
-      allowed_to_execute_script_everywhere(false) {
-}
-
-ViewMsg_ExtensionRendererInfo::~ViewMsg_ExtensionRendererInfo() {
-}
-
-ViewMsg_ExtensionsUpdated_Params::ViewMsg_ExtensionsUpdated_Params() {
-}
-
-ViewMsg_ExtensionsUpdated_Params::~ViewMsg_ExtensionsUpdated_Params() {
-}
-
 ViewMsg_DeviceOrientationUpdated_Params::
     ViewMsg_DeviceOrientationUpdated_Params()
     : can_provide_alpha(false),
@@ -283,6 +270,59 @@ ViewHostMsg_DomMessage_Params::ViewHostMsg_DomMessage_Params()
 }
 
 ViewHostMsg_DomMessage_Params::~ViewHostMsg_DomMessage_Params() {
+}
+
+ViewMsg_ExtensionLoaded_Params::ViewMsg_ExtensionLoaded_Params() {
+}
+
+ViewMsg_ExtensionLoaded_Params::~ViewMsg_ExtensionLoaded_Params() {
+}
+
+ViewMsg_ExtensionLoaded_Params::ViewMsg_ExtensionLoaded_Params(
+    const ViewMsg_ExtensionLoaded_Params& other)
+    : manifest(other.manifest->DeepCopy()),
+      location(other.location),
+      path(other.path),
+      id(other.id) {
+}
+
+ViewMsg_ExtensionLoaded_Params::ViewMsg_ExtensionLoaded_Params(
+    const Extension* extension)
+    : manifest(new DictionaryValue()),
+      location(extension->location()),
+      path(extension->path()),
+      id(extension->id()) {
+  // As we need more bits of extension data in the renderer, add more keys to
+  // this list.
+  const char* kRendererExtensionKeys[] = {
+    extension_manifest_keys::kPublicKey,
+    extension_manifest_keys::kName,
+    extension_manifest_keys::kVersion,
+    extension_manifest_keys::kIcons,
+    extension_manifest_keys::kPermissions,
+    extension_manifest_keys::kApp
+  };
+
+  // Copy only the data we need.
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRendererExtensionKeys); ++i) {
+    Value* temp = NULL;
+    if (extension->manifest_value()->Get(kRendererExtensionKeys[i], &temp))
+      manifest->Set(kRendererExtensionKeys[i], temp->DeepCopy());
+  }
+}
+
+scoped_refptr<Extension>
+    ViewMsg_ExtensionLoaded_Params::ConvertToExtension() const {
+  // Extensions that are loaded unpacked won't have a key.
+  const bool kRequireKey = false;
+  std::string error;
+
+  scoped_refptr<Extension> extension(
+      Extension::Create(path, location, *manifest, kRequireKey, &error));
+  if (!extension.get())
+    LOG(ERROR) << "Error deserializing extension: " << error;
+
+  return extension;
 }
 
 namespace IPC {
@@ -1455,51 +1495,25 @@ void ParamTraits<ViewHostMsg_RunFileChooser_Params>::Log(
   LogParam(p.accept_types, l);
 }
 
-void ParamTraits<ViewMsg_ExtensionRendererInfo>::Write(Message* m,
-                                                       const param_type& p) {
-  WriteParam(m, p.id);
-  WriteParam(m, p.web_extent);
-  WriteParam(m, p.name);
-  WriteParam(m, p.icon_url);
+void ParamTraits<ViewMsg_ExtensionLoaded_Params>::Write(Message* m,
+                                                        const param_type& p) {
   WriteParam(m, p.location);
-  WriteParam(m, p.allowed_to_execute_script_everywhere);
-  WriteParam(m, p.host_permissions);
+  WriteParam(m, p.path);
+  WriteParam(m, *(p.manifest));
 }
 
-bool ParamTraits<ViewMsg_ExtensionRendererInfo>::Read(const Message* m,
-                                                      void** iter,
-                                                      param_type* p) {
-  return ReadParam(m, iter, &p->id) &&
-      ReadParam(m, iter, &p->web_extent) &&
-      ReadParam(m, iter, &p->name) &&
-      ReadParam(m, iter, &p->icon_url) &&
-      ReadParam(m, iter, &p->location) &&
-      ReadParam(m, iter, &p->allowed_to_execute_script_everywhere) &&
-      ReadParam(m, iter, &p->host_permissions);
+bool ParamTraits<ViewMsg_ExtensionLoaded_Params>::Read(const Message* m,
+                                                       void** iter,
+                                                       param_type* p) {
+  p->manifest.reset(new DictionaryValue());
+  return ReadParam(m, iter, &p->location) &&
+         ReadParam(m, iter, &p->path) &&
+         ReadParam(m, iter, p->manifest.get());
 }
 
-void ParamTraits<ViewMsg_ExtensionRendererInfo>::Log(const param_type& p,
-                                                     std::string* l) {
-  LogParam(p.id, l);
-}
-
-void ParamTraits<ViewMsg_ExtensionsUpdated_Params>::Write(
-    Message* m,
-    const param_type& p) {
-  WriteParam(m, p.extensions);
-}
-
-bool ParamTraits<ViewMsg_ExtensionsUpdated_Params>::Read(
-    const Message* m,
-    void** iter,
-    param_type* p) {
-  return ReadParam(m, iter, &p->extensions);
-}
-
-void ParamTraits<ViewMsg_ExtensionsUpdated_Params>::Log(
-    const param_type& p,
-    std::string* l) {
-  LogParam(p.extensions, l);
+void ParamTraits<ViewMsg_ExtensionLoaded_Params>::Log(const param_type& p,
+                                                      std::string* l) {
+  l->append(p.id);
 }
 
 void ParamTraits<ViewMsg_DeviceOrientationUpdated_Params>::Write(

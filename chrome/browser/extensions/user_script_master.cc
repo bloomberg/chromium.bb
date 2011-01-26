@@ -236,6 +236,9 @@ static base::SharedMemory* Serialize(const UserScriptList& scripts) {
   pickle.WriteSize(scripts.size());
   for (size_t i = 0; i < scripts.size(); i++) {
     const UserScript& script = scripts[i];
+    // TODO(aa): This can be replaced by sending content script metadata to
+    // renderers along with other extension data in ViewMsg_ExtensionLoaded.
+    // See crbug.com/70516.
     script.Pickle(&pickle);
     // Write scripts as 'data' so that we can read it out in the slave without
     // allocating a new string.

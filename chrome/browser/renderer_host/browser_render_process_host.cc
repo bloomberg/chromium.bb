@@ -635,104 +635,106 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
   // Propagate the following switches to the renderer command line (along
   // with any associated values) if present in the browser command line.
   static const char* const kSwitchNames[] = {
+    switches::kAllowOutdatedPlugins,
+    switches::kAllowScriptingGallery,
+    switches::kAppsGalleryURL,
+    // We propagate the Chrome Frame command line here as well in case the
+    // renderer is not run in the sandbox.
+    switches::kChromeFrame,
+    switches::kDebugPrint,
+    switches::kDisable3DAPIs,
+    switches::kDisableAcceleratedCompositing,
+    switches::kDisableApplicationCache,
+    switches::kDisableAudio,
+    switches::kDisableBreakpad,
+    switches::kDisableDatabases,
+    switches::kDisableDesktopNotifications,
+    switches::kDisableDeviceOrientation,
+    // We need to propagate this flag to determine whether to make the
+    // WebGLArray constructors on the DOMWindow visible. This
+    // information is needed very early during bringup. We prefer to
+    // use the WebPreferences to set this flag on a page-by-page basis.
+    switches::kDisableExperimentalWebGL,
+    switches::kDisableFileSystem,
+    switches::kDisableGeolocation,
+    switches::kDisableGLSLTranslator,
+    switches::kDisableIndexedDatabase,
+    switches::kDisableLocalStorage,
+    switches::kDisableLogging,
+    switches::kDisableSeccompSandbox,
+    switches::kDisableSessionStorage,
+    switches::kDisableSharedWorkers,
+    switches::kDisableSpeechInput,
+    switches::kDisableWebSockets,
+    switches::kDomAutomationController,
+    switches::kDumpHistogramsOnExit,
+    switches::kEnableAcceleratedDecoding,
+    switches::kEnableBenchmarking,
+    switches::kEnableClickToPlay,
+    switches::kEnableCrxlessWebApps,
+    switches::kEnableDCHECK,
+    switches::kEnableExperimentalExtensionApis,
+    switches::kEnableInBrowserThumbnailing,
+    switches::kEnableLogging,
+    switches::kEnableNaCl,
+    switches::kEnableOpenMax,
+    switches::kEnablePepperTesting,
+    switches::kEnablePrintPreview,
+    switches::kEnableRemoting,
+    switches::kEnableResourceContentSettings,
+#if defined(OS_MACOSX)
+    // Allow this to be set when invoking the browser and relayed along.
+    switches::kEnableSandboxLogging,
+#endif
+    switches::kEnableSearchProviderApiV2,
+    switches::kEnableSeccompSandbox,
+    switches::kEnableStatsTable,
+    switches::kEnableTouch,
+    switches::kEnableVideoFullscreen,
+    switches::kEnableVideoLogging,
+    switches::kEnableWatchdog,
+    switches::kEnableWebAudio,
+    switches::kExperimentalSpellcheckerFeatures,
+    switches::kFullMemoryCrashReport,
+#if !defined (GOOGLE_CHROME_BUILD)
+    // These are unsupported and not fully tested modes, so don't enable them
+    // for official Google Chrome builds.
+    switches::kInProcessPlugins,
+#endif  // GOOGLE_CHROME_BUILD
+    switches::kInProcessWebGL,
+    switches::kInternalNaCl,
+    switches::kInternalPepper,
+    switches::kJavaScriptFlags,
+    switches::kLoggingLevel,
+    switches::kMemoryProfiling,
+    switches::kMessageLoopHistogrammer,
+    switches::kNewChromeUISecurityModel,
+    switches::kNoJsRandomness,
+    switches::kNoReferrers,
+    switches::kNoSandbox,
+    switches::kPlaybackMode,
+    switches::kPpapiOutOfProcess,
+    switches::kRecordMode,
+    switches::kRegisterPepperPlugins,
+    switches::kRemoteShellPort,
     switches::kRendererAssertTest,
 #if !defined(OFFICIAL_BUILD)
     switches::kRendererCheckFalseTest,
 #endif  // !defined(OFFICIAL_BUILD)
     switches::kRendererCrashTest,
     switches::kRendererStartupDialog,
-    switches::kNoSandbox,
-    switches::kTestSandbox,
-    switches::kDisableSeccompSandbox,
-    switches::kEnableSeccompSandbox,
-#if !defined (GOOGLE_CHROME_BUILD)
-    // These are unsupported and not fully tested modes, so don't enable them
-    // for official Google Chrome builds.
-    switches::kInProcessPlugins,
-#endif  // GOOGLE_CHROME_BUILD
-    switches::kAllowScriptingGallery,
-    switches::kDomAutomationController,
-    switches::kUserAgent,
-    switches::kNoReferrers,
-    switches::kJavaScriptFlags,
-    switches::kRecordMode,
-    switches::kPlaybackMode,
-    switches::kNoJsRandomness,
-    switches::kDisableBreakpad,
-    switches::kFullMemoryCrashReport,
-    switches::kV,
-    switches::kVModule,
-    switches::kEnableLogging,
-    switches::kDumpHistogramsOnExit,
-    switches::kDisableLogging,
-    switches::kLoggingLevel,
-    switches::kDebugPrint,
-    switches::kMemoryProfiling,
-    switches::kEnableWatchdog,
-    switches::kMessageLoopHistogrammer,
-    switches::kEnableDCHECK,
-    switches::kSilentDumpOnDCHECK,
-    switches::kUseLowFragHeapCrt,
-    switches::kEnableSearchProviderApiV2,
-    switches::kEnableStatsTable,
-    switches::kExperimentalSpellcheckerFeatures,
-    switches::kDisableAudio,
-    switches::kSimpleDataSource,
-    switches::kEnableBenchmarking,
-    switches::kEnableNaCl,
-    switches::kInternalNaCl,
-    switches::kInternalPepper,
-    switches::kRegisterPepperPlugins,
-    switches::kDisableDatabases,
-    switches::kDisableDesktopNotifications,
-    switches::kDisableWebSockets,
-    switches::kDisableLocalStorage,
-    switches::kDisableSessionStorage,
-    switches::kDisableSharedWorkers,
-    switches::kDisableApplicationCache,
-    switches::kDisableDeviceOrientation,
-    switches::kDisableIndexedDatabase,
-    switches::kDisableSpeechInput,
-    switches::kDisableGeolocation,
     switches::kShowPaintRects,
-    switches::kEnableOpenMax,
-    switches::kVideoThreads,
-    switches::kEnableVideoFullscreen,
-    switches::kEnableVideoLogging,
-    switches::kEnableTouch,
-    // We propagate the Chrome Frame command line here as well in case the
-    // renderer is not run in the sandbox.
-    switches::kChromeFrame,
-    // We need to propagate this flag to determine whether to make the
-    // WebGLArray constructors on the DOMWindow visible. This
-    // information is needed very early during bringup. We prefer to
-    // use the WebPreferences to set this flag on a page-by-page basis.
-    switches::kDisableExperimentalWebGL,
-    switches::kDisableGLSLTranslator,
-    switches::kInProcessWebGL,
+    switches::kSilentDumpOnDCHECK,
+    switches::kSimpleDataSource,
+    switches::kTestSandbox,
     // This flag needs to be propagated to the renderer process for
     // --in-process-webgl.
     switches::kUseGL,
-    switches::kDisableAcceleratedCompositing,
-#if defined(OS_MACOSX)
-    // Allow this to be set when invoking the browser and relayed along.
-    switches::kEnableSandboxLogging,
-#endif
-    switches::kRemoteShellPort,
-    switches::kEnablePepperTesting,
-    switches::kAllowOutdatedPlugins,
-    switches::kNewChromeUISecurityModel,
-    switches::kEnableRemoting,
-    switches::kEnableClickToPlay,
-    switches::kEnableResourceContentSettings,
-    switches::kEnableAcceleratedDecoding,
-    switches::kDisableFileSystem,
-    switches::kPpapiOutOfProcess,
-    switches::kEnablePrintPreview,
-    switches::kEnableCrxlessWebApps,
-    switches::kDisable3DAPIs,
-    switches::kEnableInBrowserThumbnailing,
-    switches::kEnableWebAudio,
+    switches::kUseLowFragHeapCrt,
+    switches::kUserAgent,
+    switches::kV,
+    switches::kVideoThreads,
+    switches::kVModule,
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
@@ -787,11 +789,24 @@ void BrowserRenderProcessHost::InitUserScripts() {
 }
 
 void BrowserRenderProcessHost::InitExtensions() {
-  // TODO(aa): Should only bother sending these function names if this is an
-  // extension process.
+  // Valid extension function names, used to setup bindings in renderer.
   std::vector<std::string> function_names;
   ExtensionFunctionDispatcher::GetAllFunctionNames(&function_names);
   Send(new ViewMsg_Extension_SetFunctionNames(function_names));
+
+  // Scripting whitelist. This is modified by tests and must be communicated to
+  // renderers.
+  Send(new ViewMsg_Extension_SetScriptingWhitelist(
+      *Extension::GetScriptingWhitelist()));
+
+  // Loaded extensions.
+  ExtensionService* service = profile()->GetExtensionService();
+  if (service) {
+    for (size_t i = 0; i < service->extensions()->size(); ++i) {
+      Send(new ViewMsg_ExtensionLoaded(
+          ViewMsg_ExtensionLoaded_Params(service->extensions()->at(i))));
+    }
+  }
 }
 
 void BrowserRenderProcessHost::InitSpeechInput() {
@@ -815,40 +830,6 @@ void BrowserRenderProcessHost::SendUserScriptsUpdate(
   if (base::SharedMemory::IsHandleValid(handle_for_process)) {
     Send(new ViewMsg_UserScripts_UpdatedScripts(handle_for_process));
   }
-}
-
-void BrowserRenderProcessHost::SendExtensionInfo() {
-  // Check if the process is still starting and we don't have a handle for it
-  // yet, in which case this will happen later when InitVisitedLinks is called.
-  if (!run_renderer_in_process() &&
-      (!child_process_.get() || child_process_->IsStarting())) {
-    return;
-  }
-
-  ExtensionService* service = profile()->GetExtensionService();
-  if (!service)
-    return;
-  ViewMsg_ExtensionsUpdated_Params params;
-  for (size_t i = 0; i < service->extensions()->size(); ++i) {
-    const Extension* extension = service->extensions()->at(i);
-    ViewMsg_ExtensionRendererInfo info;
-    info.id = extension->id();
-    info.web_extent = extension->web_extent();
-    info.name = extension->name();
-    info.location = extension->location();
-    info.allowed_to_execute_script_everywhere =
-        extension->CanExecuteScriptEverywhere();
-    info.host_permissions = extension->host_permissions();
-
-    // The icon in the page is 96px.  We'd rather not scale up, so use 128.
-    info.icon_url = extension->GetIconURL(Extension::EXTENSION_ICON_LARGE,
-                                          ExtensionIconSet::MATCH_EXACTLY);
-    if (info.icon_url.is_empty())
-      info.icon_url = GURL("chrome://theme/IDR_APP_DEFAULT_ICON");
-    params.extensions.push_back(info);
-  }
-
-  Send(new ViewMsg_ExtensionsUpdated(params));
 }
 
 bool BrowserRenderProcessHost::FastShutdownIfPossible() {
@@ -1126,9 +1107,15 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
       }
       break;
     }
-    case NotificationType::EXTENSION_LOADED:
+    case NotificationType::EXTENSION_LOADED: {
+      Send(new ViewMsg_ExtensionLoaded(
+          ViewMsg_ExtensionLoaded_Params(
+              Details<const Extension>(details).ptr())));
+      break;
+    }
     case NotificationType::EXTENSION_UNLOADED: {
-      SendExtensionInfo();
+      Send(new ViewMsg_ExtensionUnloaded(
+          Details<UnloadedExtensionInfo>(details).ptr()->extension->id()));
       break;
     }
     case NotificationType::SPELLCHECK_HOST_REINITIALIZED: {
@@ -1171,7 +1158,6 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
   InitVisitedLinks();
   InitUserScripts();
   InitExtensions();
-  SendExtensionInfo();
 
   // We don't want to initialize the spellchecker unless SpellCheckHost has been
   // created. In InitSpellChecker(), we know if GetSpellCheckHost() is NULL

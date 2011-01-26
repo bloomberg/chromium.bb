@@ -17,6 +17,7 @@
 #include "chrome/common/child_thread.h"
 #include "chrome/common/css_colors.h"
 #include "chrome/common/gpu_info.h"
+#include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "gfx/native_widget_types.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -26,6 +27,7 @@ class AppCacheDispatcher;
 class CookieMessageFilter;
 class DBMessageFilter;
 class DevToolsAgentFilter;
+class ExtensionRendererInfo;
 class FilePath;
 class GpuChannelHost;
 class IndexedDBDispatcher;
@@ -43,7 +45,7 @@ class WebDatabaseObserverImpl;
 struct ContentSettings;
 struct RendererPreferences;
 struct DOMStorageMsg_Event_Params;
-struct ViewMsg_ExtensionsUpdated_Params;
+struct ViewMsg_ExtensionLoaded_Params;
 struct ViewMsg_New_Params;
 struct WebPreferences;
 
@@ -103,6 +105,11 @@ class RenderThreadBase {
  public:
   virtual ~RenderThreadBase() {}
 
+  // Information about currently loaded extensions. This is essentially the
+  // renderer counterpart to ExtensionService in the browser. It contains
+  // information about all extensions currently loaded by the browser.
+  virtual const ExtensionRendererInfo* GetExtensions() const = 0;
+
   virtual bool Send(IPC::Message* msg) = 0;
 
   // Called to add or remove a listener for a particular message routing ID.
@@ -155,6 +162,7 @@ class RenderThread : public RenderThreadBase,
   static int32 RoutingIDForCurrentContext();
 
   // Overridden from RenderThreadBase.
+  virtual const ExtensionRendererInfo* GetExtensions() const;
   virtual bool Send(IPC::Message* msg);
   virtual void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
   virtual void RemoveRoute(int32 routing_id);
@@ -266,8 +274,10 @@ class RenderThread : public RenderThreadBase,
       const GURL& url, const ContentSettings& content_settings);
   void OnUpdateUserScripts(base::SharedMemoryHandle table);
   void OnSetExtensionFunctionNames(const std::vector<std::string>& names);
-  void OnExtensionsUpdated(
-      const ViewMsg_ExtensionsUpdated_Params& params);
+  void OnExtensionLoaded(const ViewMsg_ExtensionLoaded_Params& params);
+  void OnExtensionUnloaded(const std::string& id);
+  void OnSetExtensionScriptingWhitelist(
+      const Extension::ScriptingWhitelist& extension_ids);
   void OnPageActionsUpdated(const std::string& extension_id,
       const std::vector<std::string>& page_actions);
   void OnDOMStorageEvent(const DOMStorageMsg_Event_Params& params);
@@ -409,6 +419,9 @@ class RenderThread : public RenderThreadBase,
   // is true if the extension should be restricted to extension-related
   // contexts.
   std::map<std::string, bool> v8_extensions_;
+
+  // Contains all loaded extensions.
+  ExtensionRendererInfo extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThread);
 };

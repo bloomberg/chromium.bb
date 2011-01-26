@@ -278,7 +278,7 @@ void RenderThread::Init() {
   callback_factory_.reset(new base::ScopedCallbackFactory<RenderThread>(this));
 
   visited_link_slave_.reset(new VisitedLinkSlave());
-  user_script_slave_.reset(new UserScriptSlave());
+  user_script_slave_.reset(new UserScriptSlave(&extensions_));
   renderer_net_predictor_.reset(new RendererNetPredictor());
   histogram_snapshots_.reset(new RendererHistogramSnapshots());
   appcache_dispatcher_.reset(new AppCacheDispatcher(this));
@@ -348,6 +348,10 @@ int32 RenderThread::RoutingIDForCurrentContext() {
     DLOG(WARNING) << "Not called within a script context!";
   }
   return routing_id;
+}
+
+const ExtensionRendererInfo* RenderThread::GetExtensions() const {
+  return &extensions_;
 }
 
 bool RenderThread::Send(IPC::Message* msg) {
@@ -536,9 +540,27 @@ void RenderThread::OnSetExtensionFunctionNames(
   ExtensionProcessBindings::SetFunctionNames(names);
 }
 
-void RenderThread::OnExtensionsUpdated(
-    const ViewMsg_ExtensionsUpdated_Params& params) {
-  ExtensionRendererInfo::UpdateExtensions(params);
+void RenderThread::OnExtensionLoaded(
+    const ViewMsg_ExtensionLoaded_Params& params) {
+  scoped_refptr<const Extension> extension(params.ConvertToExtension());
+  if (!extension) {
+    // This can happen if extension parsing fails for any reason. One reason
+    // this can legitimately happen is if the
+    // --enable-experimental-extension-apis changes at runtime, which happens
+    // during browser tests. Existing renderers won't know about the change.
+    return;
+  }
+
+  extensions_.Update(extension);
+}
+
+void RenderThread::OnSetExtensionScriptingWhitelist(
+    const Extension::ScriptingWhitelist& extension_ids) {
+  Extension::SetScriptingWhitelist(extension_ids);
+}
+
+void RenderThread::OnExtensionUnloaded(const std::string& id) {
+  extensions_.Remove(id);
 }
 
 void RenderThread::OnPageActionsUpdated(
@@ -614,8 +636,12 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetFunctionNames,
                         OnSetExtensionFunctionNames)
-    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionsUpdated,
-                        OnExtensionsUpdated)
+    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionLoaded,
+                        OnExtensionLoaded)
+    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionUnloaded,
+                        OnExtensionUnloaded)
+    IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetScriptingWhitelist,
+                        OnSetExtensionScriptingWhitelist)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgeMemory, OnPurgeMemory)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache,
                         OnPurgePluginListCache)
@@ -1132,7 +1158,7 @@ bool RenderThread::AllowScriptExtension(const std::string& v8_extension_name,
   // Extension-only bindings should be restricted to content scripts and
   // extension-blessed URLs.
   if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS ||
-      ExtensionRendererInfo::ExtensionBindingsAllowed(url)) {
+      extensions_.ExtensionBindingsAllowed(url)) {
     return true;
   }
 

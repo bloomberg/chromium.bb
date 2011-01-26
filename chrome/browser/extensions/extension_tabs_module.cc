@@ -775,15 +775,8 @@ bool UpdateTabFunction::RunImpl() {
     // JavaScript URLs can do the same kinds of things as cross-origin XHR, so
     // we need to check host permissions before allowing them.
     if (url.SchemeIs(chrome::kJavaScriptScheme)) {
-      const Extension* extension = GetExtension();
-      const std::vector<URLPattern> host_permissions =
-          extension->host_permissions();
-      if (!Extension::CanExecuteScriptOnPage(
-              contents->tab_contents()->GetURL(),
-              extension->CanExecuteScriptEverywhere(),
-              &host_permissions,
-              NULL,
-              &error_)) {
+      if (!GetExtension()->CanExecuteScriptOnPage(
+              contents->tab_contents()->GetURL(), NULL, &error_)) {
         return false;
       }
 

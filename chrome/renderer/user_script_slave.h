@@ -17,6 +17,8 @@
 #include "chrome/common/extensions/user_script.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 
+class ExtensionRendererInfo;
+
 namespace WebKit {
 class WebFrame;
 }
@@ -26,7 +28,7 @@ using WebKit::WebScriptSource;
 // Manages installed UserScripts for a render process.
 class UserScriptSlave {
  public:
-  UserScriptSlave();
+  UserScriptSlave(const ExtensionRendererInfo* extensions);
   ~UserScriptSlave();
 
   // Returns the unique set of extension IDs this UserScriptSlave knows about.
@@ -54,6 +56,9 @@ class UserScriptSlave {
 
   // Greasemonkey API source that is injected with the scripts.
   base::StringPiece api_js_;
+
+  // Extension metadata.
+  const ExtensionRendererInfo* extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(UserScriptSlave);
 };

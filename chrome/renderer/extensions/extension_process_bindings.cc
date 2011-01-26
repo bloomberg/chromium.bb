@@ -212,10 +212,12 @@ class ExtensionImpl : public ExtensionBase {
       return std::string();  // this can happen as a tab is closing.
 
     GURL url = renderview->webview()->mainFrame()->url();
-    if (!ExtensionRendererInfo::ExtensionBindingsAllowed(url))
+    const ExtensionRendererInfo* extensions =
+        EventBindings::GetRenderThread()->GetExtensions();
+    if (!extensions->ExtensionBindingsAllowed(url))
       return std::string();
 
-    return ExtensionRendererInfo::GetIdByURL(url);
+    return extensions->GetIdByURL(url);
   }
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(

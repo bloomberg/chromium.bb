@@ -2085,7 +2085,7 @@ static std::string SizeToString(const gfx::Size& max_size) {
 
 // static
 void Extension::SetScriptingWhitelist(
-    const std::vector<std::string>& whitelist) {
+    const Extension::ScriptingWhitelist& whitelist) {
   ScriptingWhitelist* current_whitelist =
       ExtensionConfig::GetInstance()->whitelist();
   current_whitelist->clear();
@@ -2093,6 +2093,11 @@ void Extension::SetScriptingWhitelist(
        it != whitelist.end(); ++it) {
     current_whitelist->push_back(*it);
   }
+}
+
+// static
+const Extension::ScriptingWhitelist* Extension::GetScriptingWhitelist() {
+  return ExtensionConfig::GetInstance()->whitelist();
 }
 
 void Extension::SetCachedImage(const ExtensionResource& source,
@@ -2250,21 +2255,16 @@ bool Extension::HasMultipleUISurfaces() const {
   return num_surfaces > 1;
 }
 
-// static
-bool Extension::CanExecuteScriptOnPage(
-    const GURL& page_url, bool can_execute_script_everywhere,
-    const std::vector<URLPattern>* host_permissions,
-    UserScript* script,
-    std::string* error) {
-  DCHECK(!(host_permissions && script)) << "Shouldn't specify both";
-
+bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
+                                       UserScript* script,
+                                       std::string* error) const {
   // The gallery is special-cased as a restricted URL for scripting to prevent
   // access to special JS bindings we expose to the gallery (and avoid things
   // like extensions removing the "report abuse" link).
   // TODO(erikkay): This seems like the wrong test.  Shouldn't we we testing
   // against the store app extent?
   if ((page_url.host() == GURL(Extension::ChromeStoreLaunchURL()).host()) &&
-      !can_execute_script_everywhere &&
+      !CanExecuteScriptEverywhere() &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowScriptingGallery)) {
     if (error)
@@ -2272,14 +2272,16 @@ bool Extension::CanExecuteScriptOnPage(
     return false;
   }
 
-  if (host_permissions) {
-    for (size_t i = 0; i < host_permissions->size(); ++i) {
-      if ((*host_permissions)[i].MatchesUrl(page_url))
-        return true;
-    }
-  }
+  // If a script is specified, use its matches.
   if (script) {
     if (script->MatchesUrl(page_url))
+      return true;
+  }
+
+  // Otherwise, see if this extension has permission to execute script
+  // programmatically on pages.
+  for (size_t i = 0; i < host_permissions_.size(); ++i) {
+    if (host_permissions_[i].MatchesUrl(page_url))
       return true;
   }
 

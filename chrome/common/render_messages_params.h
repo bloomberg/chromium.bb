@@ -835,25 +835,31 @@ struct ViewHostMsg_RunFileChooser_Params {
   string16 accept_types;
 };
 
-struct ViewMsg_ExtensionRendererInfo {
-  ViewMsg_ExtensionRendererInfo();
-  ~ViewMsg_ExtensionRendererInfo();
+struct ViewMsg_ExtensionLoaded_Params {
+  ViewMsg_ExtensionLoaded_Params();
+  ~ViewMsg_ExtensionLoaded_Params();
+  explicit ViewMsg_ExtensionLoaded_Params(const Extension* extension);
 
-  std::string id;
-  ExtensionExtent web_extent;
-  std::string name;
-  GURL icon_url;
+  // A copy constructor is needed because this structure can end up getting
+  // copied inside the IPC machinery on gcc <= 4.2.
+  ViewMsg_ExtensionLoaded_Params(
+      const ViewMsg_ExtensionLoaded_Params& other);
+
+  // Creates a new extension from the data in this object.
+  scoped_refptr<Extension> ConvertToExtension() const;
+
+  // The subset of the extension manifest data we send to renderers.
+  scoped_ptr<DictionaryValue> manifest;
+
+  // The location the extension was installed from.
   Extension::Location location;
-  bool allowed_to_execute_script_everywhere;
-  std::vector<URLPattern> host_permissions;
-};
 
-struct ViewMsg_ExtensionsUpdated_Params {
-  ViewMsg_ExtensionsUpdated_Params();
-  ~ViewMsg_ExtensionsUpdated_Params();
+  // The path the extension was loaded from. This is used in the renderer only
+  // to generate the extension ID for extensions that are loaded unpacked.
+  FilePath path;
 
-  // Describes the installed extension apps and the URLs they cover.
-  std::vector<ViewMsg_ExtensionRendererInfo> extensions;
+  // We keep this separate so that it can be used in logging.
+  std::string id;
 };
 
 struct ViewMsg_DeviceOrientationUpdated_Params {
@@ -1111,16 +1117,8 @@ struct ParamTraits<ViewHostMsg_RunFileChooser_Params> {
 };
 
 template <>
-struct ParamTraits<ViewMsg_ExtensionRendererInfo> {
-  typedef ViewMsg_ExtensionRendererInfo param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewMsg_ExtensionsUpdated_Params> {
-  typedef ViewMsg_ExtensionsUpdated_Params param_type;
+struct ParamTraits<ViewMsg_ExtensionLoaded_Params> {
+  typedef ViewMsg_ExtensionLoaded_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

@@ -60,9 +60,10 @@ int UserScriptSlave::GetIsolatedWorldId(const std::string& extension_id) {
   return new_id;
 }
 
-UserScriptSlave::UserScriptSlave()
+UserScriptSlave::UserScriptSlave(const ExtensionRendererInfo* extensions)
     : shared_memory_(NULL),
-      script_deleter_(&scripts_) {
+      script_deleter_(&scripts_),
+      extensions_(extensions) {
   api_js_ = ResourceBundle::GetSharedInstance().GetRawDataResource(
                 IDR_GREASEMONKEY_API_JS);
 }
@@ -203,22 +204,15 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     if (frame->parent() && !script->match_all_frames())
       continue;  // Only match subframes if the script declared it wanted to.
 
-    ExtensionRendererInfo* extension =
-        ExtensionRendererInfo::GetByID(script->extension_id());
+    const Extension* extension = extensions_->GetByID(script->extension_id());
 
     // Since extension info is sent separately from user script info, they can
     // be out of sync. We just ignore this situation.
     if (!extension)
       continue;
 
-    if (!Extension::CanExecuteScriptOnPage(
-            frame_url,
-            extension->allowed_to_execute_script_everywhere(),
-            NULL,
-            script,
-            NULL)) {
+    if (!extension->CanExecuteScriptOnPage(frame_url, script, NULL))
       continue;
-    }
 
     if (frame_url.SchemeIsFile() && !script->allow_file_access())
       continue;  // This script isn't allowed to run on file URLs.

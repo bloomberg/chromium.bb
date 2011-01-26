@@ -27,6 +27,10 @@ MockRenderThread::MockRenderThread()
 MockRenderThread::~MockRenderThread() {
 }
 
+const ExtensionRendererInfo* MockRenderThread::GetExtensions() const {
+  return &extensions_;
+}
+
 // Called by the Widget. The routing_id must match the routing id assigned
 // to the Widget in reply to ViewHostMsg_CreateWidget message.
 void MockRenderThread::AddRoute(int32 routing_id,

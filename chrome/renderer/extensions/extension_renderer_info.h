@@ -10,79 +10,57 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/ref_counted.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_extent.h"
 #include "googleurl/src/gurl.h"
 
-struct ViewMsg_ExtensionsUpdated_Params;
-struct ViewMsg_ExtensionRendererInfo;
-
-// Extension information needed in the renderer process along with static
-// methods to look up information about the currently loaded extensions.
+// ExtensionRendererInfo is a convenience wrapper around a map of extension
+// objects. It is used by renderers to maintain information about currently
+// loaded extensions.
 class ExtensionRendererInfo {
  public:
   ExtensionRendererInfo();
-  ExtensionRendererInfo(const ExtensionRendererInfo& that);
-  ~ExtensionRendererInfo();
 
-  const std::string& id() const { return id_; }
-  const ExtensionExtent& web_extent() const { return web_extent_; }
-  const std::string& name() const { return name_; }
-  const GURL& icon_url() const { return icon_url_; }
-  bool allowed_to_execute_script_everywhere() const {
-    return allowed_to_execute_script_everywhere_;
-  }
-  const std::vector<URLPattern>& host_permissions() const {
-    return host_permissions_;
-  }
+  // Gets the number of extensions contained.
+  size_t size() const;
 
-  // Replace the list of extensions with those provided in |params|.
-  static void UpdateExtensions(const ViewMsg_ExtensionsUpdated_Params& params);
+  // Updates the specified extension.
+  void Update(const scoped_refptr<const Extension>& extension);
+
+  // Removes the specified extension.
+  void Remove(const std::string& id);
 
   // Returns the extension ID that the given URL is a part of, or empty if
   // none. This includes web URLs that are part of an extension's web extent.
-  static std::string GetIdByURL(const GURL& url);
+  std::string GetIdByURL(const GURL& url) const;
 
-  // Returns the ExtensionRendererInfo that the given URL is a part of, or NULL
-  // if none. This includes web URLs that are part of an extension's web extent.
+  // Returns the Extension that the given URL is a part of, or NULL if none.
+  // This includes web URLs that are part of an extension's web extent.
   // NOTE: This can return NULL if called before UpdateExtensions receives
   // bulk extension data (e.g. if called from
   // EventBindings::HandleContextCreated)
-  static ExtensionRendererInfo* GetByURL(const GURL& url);
+  const Extension* GetByURL(const GURL& url) const;
 
   // Returns true if |new_url| is in the extent of the same extension as
   // |old_url|.  Also returns true if neither URL is in an app.
-  static bool InSameExtent(const GURL& old_url, const GURL& new_url);
+  bool InSameExtent(const GURL& old_url, const GURL& new_url) const;
 
-  // Look up an ExtensionInfo object by id.
-  static ExtensionRendererInfo* GetByID(const std::string& id);
+  // Look up an Extension object by id.
+  const Extension* GetByID(const std::string& id) const;
 
   // Returns true if |url| should get extension api bindings and be permitted
   // to make api calls. Note that this is independent of what extension
   // permissions the given extension has been granted.
-  static bool ExtensionBindingsAllowed(const GURL& url);
+  bool ExtensionBindingsAllowed(const GURL& url) const;
 
  private:
-  void Update(const ViewMsg_ExtensionRendererInfo& info);
-
   FRIEND_TEST_ALL_PREFIXES(ExtensionRendererInfoTest, ExtensionRendererInfo);
 
-  std::string id_;
-  ExtensionExtent web_extent_;
-  std::string name_;
-  Extension::Location location_;
-  GURL icon_url_;
-
-  // Some internal extensions, such as accessibility extensions, should be able
-  // to execute scripts everywhere.
-  bool allowed_to_execute_script_everywhere_;
-
-  // The list of host permissions, that the extension is allowed to run scripts
-  // on.
-  std::vector<URLPattern> host_permissions_;
-
   // static
-  static std::vector<ExtensionRendererInfo>* extensions_;
+  typedef std::map<std::string, scoped_refptr<const Extension> > ExtensionMap;
+  ExtensionMap extensions_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionRendererInfo);
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_RENDERER_INFO_H_

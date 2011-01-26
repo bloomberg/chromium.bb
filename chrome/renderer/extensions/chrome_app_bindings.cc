@@ -57,7 +57,8 @@ class ChromeAppExtensionWrapper : public v8::Extension {
         !(url.SchemeIs("http") || url.SchemeIs("https")))
       return v8::Boolean::New(false);
 
-    bool has_web_extent = (ExtensionRendererInfo::GetByURL(url) != NULL);
+    bool has_web_extent =
+        RenderThread::current()->GetExtensions()->GetByURL(url) != NULL;
     return v8::Boolean::New(has_web_extent);
   }
 

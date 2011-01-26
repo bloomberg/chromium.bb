@@ -79,15 +79,8 @@ bool ExecuteCodeInTabFunction::RunImpl() {
 
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
-  const Extension* extension = GetExtension();
-  const std::vector<URLPattern> host_permissions =
-      extension->host_permissions();
-  if (!Extension::CanExecuteScriptOnPage(
-        contents->tab_contents()->GetURL(),
-        extension->CanExecuteScriptEverywhere(),
-        &host_permissions,
-        NULL,
-        &error_)) {
+  if (!GetExtension()->CanExecuteScriptOnPage(
+          contents->tab_contents()->GetURL(), NULL, &error_)) {
     return false;
   }
 

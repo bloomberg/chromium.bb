@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 
 class DictionaryValue;
-class ExtensionRendererInfo;
+class Extension;
 class GURL;
 
 namespace WebKit {
@@ -41,7 +41,7 @@ class LocalizedError {
   // part of the app.
   static void GetAppErrorStrings(const WebKit::WebURLError& error,
                                  const GURL& display_url,
-                                 const ExtensionRendererInfo* app,
+                                 const Extension* app,
                                  DictionaryValue* error_strings);
 
   static const char kHttpErrorDomain[];

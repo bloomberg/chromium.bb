@@ -389,15 +389,17 @@ static bool IsWhitelistedForContentSettings(WebFrame* frame) {
 // we would enter an extension app's extent from a non-app.  We avoid swapping
 // processes to exit an app for now, since we do not yet restore context (such
 // as window.opener) if the window navigates back.
-static bool CrossesIntoExtensionExtent(WebFrame* frame, const GURL& new_url) {
+static bool CrossesIntoExtensionExtent(const ExtensionRendererInfo* extensions,
+                                       WebFrame* frame,
+                                       const GURL& new_url) {
   // If the URL is still empty, this is a window.open navigation. Check the
   // opener's URL.
   GURL old_url(frame->url());
   if (old_url.is_empty() && frame->opener())
     old_url = frame->opener()->url();
 
-  return !ExtensionRendererInfo::InSameExtent(old_url, new_url) &&
-         !ExtensionRendererInfo::GetByURL(old_url);
+  return !extensions->InSameExtent(old_url, new_url) &&
+         !extensions->GetByURL(old_url);
 }
 
 // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
@@ -1891,14 +1893,14 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
                                          bool replace) {
   GURL failed_url = error.unreachableURL;
   std::string alt_html;
-  ExtensionRendererInfo* extension = NULL;
+  const Extension* extension = NULL;
   if (html.empty()) {
     // Use a local error page.
     int resource_id;
     DictionaryValue error_strings;
 
     if (failed_url.is_valid() && !failed_url.SchemeIs(chrome::kExtensionScheme))
-      extension = ExtensionRendererInfo::GetByURL(failed_url);
+      extension = render_thread_->GetExtensions()->GetByURL(failed_url);
     if (extension) {
       LocalizedError::GetAppErrorStrings(error, failed_url, extension,
                                          &error_strings);
@@ -2629,7 +2631,7 @@ void RenderView::show(WebNavigationPolicy policy) {
 
   // Extensions and apps always allowed to create unrequested popups. The second
   // check is necessary to include content scripts.
-  if (ExtensionRendererInfo::GetByURL(creator_url_) ||
+  if (render_thread_->GetExtensions()->GetByURL(creator_url_) ||
       bindings_utils::GetInfoForCurrentContext()) {
     opened_by_user_gesture_ = true;
   }
@@ -2967,7 +2969,11 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
     // TODO(creis): For now, we only swap processes to enter an app and not
     // exit it, since we currently lose context (e.g., window.opener) if the
     // window navigates back.  See crbug.com/65953.
-    if (!should_fork && CrossesIntoExtensionExtent(frame, url)) {
+    if (!should_fork &&
+        CrossesIntoExtensionExtent(
+            render_thread_->GetExtensions(),
+            frame,
+            url)) {
       // Include the referrer in this case since we're going from a hosted web
       // page. (the packaged case is handled previously by the extension
       // navigation test)
@@ -3930,8 +3936,8 @@ webkit::npapi::WebPluginDelegate* RenderView::CreatePluginDelegate(
     // appropriate permission, or when explicitly enabled on the command line.
 
     GURL main_frame_url(webview()->mainFrame()->url());
-    ExtensionRendererInfo* extension =
-        ExtensionRendererInfo::GetByURL(main_frame_url);
+    const Extension* extension =
+        render_thread_->GetExtensions()->GetByURL(main_frame_url);
     bool in_ext = extension != NULL;
     bool explicit_enable =
         CommandLine::ForCurrentProcess()->HasSwitch(switches::kInternalNaCl);
@@ -5399,24 +5405,16 @@ void RenderView::ExecuteCodeImpl(WebFrame* frame,
        frame_it != frame_vector.end(); ++frame_it) {
     WebFrame* frame = *frame_it;
     if (params.is_javascript) {
-      ExtensionRendererInfo* extension =
-          ExtensionRendererInfo::GetByID(params.extension_id);
+      const Extension* extension =
+          render_thread_->GetExtensions()->GetByID(params.extension_id);
 
     // Since extension info is sent separately from user script info, they can
     // be out of sync. We just ignore this situation.
     if (!extension)
       continue;
 
-      const std::vector<URLPattern> host_permissions =
-          extension->host_permissions();
-      if (!Extension::CanExecuteScriptOnPage(
-              frame->url(),
-              extension->allowed_to_execute_script_everywhere(),
-              &host_permissions,
-              NULL,
-              NULL)) {
+      if (!extension->CanExecuteScriptOnPage(frame->url(), NULL, NULL))
         continue;
-      }
 
       std::vector<WebScriptSource> sources;
       sources.push_back(

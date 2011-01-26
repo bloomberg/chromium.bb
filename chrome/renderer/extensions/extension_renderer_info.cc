@@ -5,120 +5,71 @@
 #include "chrome/renderer/extensions/extension_renderer_info.h"
 
 #include "base/logging.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
 
-// static
-std::vector<ExtensionRendererInfo>* ExtensionRendererInfo::extensions_ = NULL;
-
-ExtensionRendererInfo::ExtensionRendererInfo()
-    : location_(Extension::INVALID),
-      allowed_to_execute_script_everywhere_(false) {
+ExtensionRendererInfo::ExtensionRendererInfo() {
 }
 
-ExtensionRendererInfo::ExtensionRendererInfo(
-    const ExtensionRendererInfo& that) {
-  id_ = that.id_;
-  web_extent_ = that.web_extent_;
-  name_ = that.name_;
-  icon_url_ = that.icon_url_;
-  allowed_to_execute_script_everywhere_ =
-      that.allowed_to_execute_script_everywhere_;
-  host_permissions_ = that.host_permissions_;
-  location_ = that.location_;
+size_t ExtensionRendererInfo::size() const {
+  return extensions_.size();
 }
 
-ExtensionRendererInfo::~ExtensionRendererInfo() {
+void ExtensionRendererInfo::Update(
+    const scoped_refptr<const Extension>& extension) {
+  extensions_[extension->id()] = extension;
 }
 
-void ExtensionRendererInfo::Update(const ViewMsg_ExtensionRendererInfo& info) {
-  id_ = info.id;
-  web_extent_ = info.web_extent;
-  name_ = info.name;
-  location_ = info.location;
-  icon_url_ = info.icon_url;
-  allowed_to_execute_script_everywhere_ =
-      info.allowed_to_execute_script_everywhere;
-  host_permissions_ = info.host_permissions;
+void ExtensionRendererInfo::Remove(const std::string& id) {
+  extensions_.erase(id);
 }
 
-// static
-void ExtensionRendererInfo::UpdateExtensions(
-    const ViewMsg_ExtensionsUpdated_Params& params) {
-  size_t count = params.extensions.size();
-  if (!extensions_)
-    extensions_ = new std::vector<ExtensionRendererInfo>(count);
-  else
-    extensions_->resize(count);
-
-  for (size_t i = 0; i < count; ++i)
-    extensions_->at(i).Update(params.extensions[i]);
-}
-
-// static
-std::string ExtensionRendererInfo::GetIdByURL(const GURL& url) {
+std::string ExtensionRendererInfo::GetIdByURL(const GURL& url) const {
   if (url.SchemeIs(chrome::kExtensionScheme))
     return url.host();
 
-  ExtensionRendererInfo* info = GetByURL(url);
-  if (!info)
+  const Extension* extension = GetByURL(url);
+  if (!extension)
     return "";
 
-  return info->id();
+  return extension->id();
 }
 
-// static
-ExtensionRendererInfo* ExtensionRendererInfo::GetByURL(const GURL& url) {
+const Extension* ExtensionRendererInfo::GetByURL(
+    const GURL& url) const {
   if (url.SchemeIs(chrome::kExtensionScheme))
     return GetByID(url.host());
 
-  if (!extensions_)
-    return NULL;
-
-  std::vector<ExtensionRendererInfo>::iterator i = extensions_->begin();
-  for (; i != extensions_->end(); ++i) {
-    if (i->web_extent_.ContainsURL(url))
-      return &(*i);
+  ExtensionMap::const_iterator i = extensions_.begin();
+  for (; i != extensions_.end(); ++i) {
+    if (i->second->web_extent().ContainsURL(url))
+      return i->second.get();
   }
 
   return NULL;
 }
 
-// static
 bool ExtensionRendererInfo::InSameExtent(const GURL& old_url,
-                                         const GURL& new_url) {
+                                         const GURL& new_url) const {
   return GetByURL(old_url) == GetByURL(new_url);
 }
 
-// static
-ExtensionRendererInfo* ExtensionRendererInfo::GetByID(
-    const std::string& id) {
-
-  if (!extensions_) {
-    NOTREACHED();
+const Extension* ExtensionRendererInfo::GetByID(
+    const std::string& id) const {
+  ExtensionMap::const_iterator i = extensions_.find(id);
+  if (i != extensions_.end())
+    return i->second.get();
+  else
     return NULL;
-  }
-
-  std::vector<ExtensionRendererInfo>::iterator i = extensions_->begin();
-  for (; i != extensions_->end(); ++i) {
-    if (i->id() == id)
-      return &(*i);
-  }
-  return NULL;
 }
 
-// static
-bool ExtensionRendererInfo::ExtensionBindingsAllowed(const GURL& url) {
+bool ExtensionRendererInfo::ExtensionBindingsAllowed(const GURL& url) const {
   if (url.SchemeIs(chrome::kExtensionScheme))
     return true;
 
-  if (!extensions_)
-    return false;
-
-  std::vector<ExtensionRendererInfo>::iterator i = extensions_->begin();
-  for (; i != extensions_->end(); ++i) {
-    if (i->location_ == Extension::COMPONENT &&
-        i->web_extent_.ContainsURL(url))
+  ExtensionMap::const_iterator i = extensions_.begin();
+  for (; i != extensions_.end(); ++i) {
+    if (i->second->location() == Extension::COMPONENT &&
+        i->second->web_extent().ContainsURL(url))
       return true;
   }
 

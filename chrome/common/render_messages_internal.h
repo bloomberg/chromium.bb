@@ -15,6 +15,7 @@
 #include "base/platform_file.h"
 #include "base/sync_socket.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/geoposition.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_type.h"
@@ -762,6 +763,10 @@ IPC_MESSAGE_ROUTED4(ViewMsg_ExtensionMessageInvoke,
 IPC_MESSAGE_CONTROL1(ViewMsg_Extension_SetFunctionNames,
                      std::vector<std::string>)
 
+// TODO(aa): SetAPIPermissions, SetHostPermissions, and possibly
+// UpdatePageActions should be replaced with just sending additional data in
+// ExtensionLoaded. See: crbug.com/70516.
+
 // Tell the renderer process which permissions the given extension has. See
 // Extension::Permissions for which elements correspond to which permissions.
 IPC_MESSAGE_CONTROL2(ViewMsg_Extension_SetAPIPermissions,
@@ -779,6 +784,17 @@ IPC_MESSAGE_CONTROL2(
 IPC_MESSAGE_CONTROL2(ViewMsg_Extension_UpdatePageActions,
                      std::string /* extension_id */,
                      std::vector<std::string> /* page_action_ids */)
+
+// Notifies the renderer that an extension was loaded in the browser.
+IPC_MESSAGE_CONTROL1(ViewMsg_ExtensionLoaded, ViewMsg_ExtensionLoaded_Params);
+
+// Notifies the renderer that an extension was unloaded in the browser.
+IPC_MESSAGE_CONTROL1(ViewMsg_ExtensionUnloaded, std::string);
+
+// Updates the scripting whitelist for extensions in the render process. This is
+// only used for testing.
+IPC_MESSAGE_CONTROL1(ViewMsg_Extension_SetScriptingWhitelist,
+                     Extension::ScriptingWhitelist /* extenison ids */);
 
 // Changes the text direction of the currently selected input field (if any).
 IPC_MESSAGE_ROUTED1(ViewMsg_SetTextDirection,
@@ -972,10 +988,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_Geolocation_PositionUpdated,
 // incognito mode.
 IPC_MESSAGE_CONTROL1(ViewMsg_SetIsIncognitoProcess,
                      bool /* is_incognito_processs */)
-
-// Notification that the list of extensions has been updated.
-IPC_MESSAGE_CONTROL1(ViewMsg_ExtensionsUpdated,
-                     ViewMsg_ExtensionsUpdated_Params)
 
 // Enable accessibility in the renderer process.
 IPC_MESSAGE_ROUTED0(ViewMsg_EnableAccessibility)

@@ -516,10 +516,11 @@ void LocalizedError::GetFormRepostStrings(const GURL& display_url,
   error_strings->Set("summary", summary);
 }
 
-void LocalizedError::GetAppErrorStrings(const WebURLError& error,
-                                        const GURL& display_url,
-                                        const ExtensionRendererInfo* app,
-                                        DictionaryValue* error_strings) {
+void LocalizedError::GetAppErrorStrings(
+    const WebURLError& error,
+    const GURL& display_url,
+    const Extension* app,
+    DictionaryValue* error_strings) {
   DCHECK(app);
 
   bool rtl = LocaleIsRTL();
@@ -534,7 +535,9 @@ void LocalizedError::GetAppErrorStrings(const WebURLError& error,
                                        failed_url.c_str()));
 
   error_strings->SetString("title", app->name());
-  error_strings->SetString("icon", app->icon_url().spec());
+  error_strings->SetString("icon",
+      app->GetIconURL(Extension::EXTENSION_ICON_LARGE,
+                      ExtensionIconSet::MATCH_SMALLER).spec());
   error_strings->SetString("name", app->name());
   error_strings->SetString("msg",
       l10n_util::GetStringUTF16(IDS_ERRORPAGES_APP_WARNING));

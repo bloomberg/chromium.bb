@@ -265,9 +265,10 @@ void EventBindings::HandleContextCreated(WebFrame* frame, bool content_script) {
   if (!ds)
     ds = frame->dataSource();
   GURL url = ds->request().url();
-  std::string extension_id = ExtensionRendererInfo::GetIdByURL(url);
+  const ExtensionRendererInfo* extensions = GetRenderThread()->GetExtensions();
+  std::string extension_id = extensions->GetIdByURL(url);
 
-  if (!ExtensionRendererInfo::ExtensionBindingsAllowed(url) &&
+  if (!extensions->ExtensionBindingsAllowed(url) &&
       !content_script) {
     // This context is a regular non-extension web page or an unprivileged
     // chrome app. Ignore it. We only care about content scripts and extension
