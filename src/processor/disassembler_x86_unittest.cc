@@ -96,8 +96,12 @@ TEST(DisassemblerX86Test, SimpleReturnInstruction) {
   EXPECT_EQ(0, dis.flags());
   EXPECT_EQ(true, dis.endOfBlock());
   EXPECT_EQ(libdis::insn_controlflow, dis.currentInstructionGroup());
+  const libdis::x86_insn_t* instruction = dis.currentInstruction();
+  EXPECT_EQ(libdis::insn_controlflow, instruction->group);
+  EXPECT_EQ(libdis::insn_return, instruction->type);
   EXPECT_EQ(0, dis.NextInstruction());
   EXPECT_EQ(false, dis.currentInstructionValid());
+  EXPECT_EQ(NULL, dis.currentInstruction());
 }
 
 TEST(DisassemblerX86Test, SimpleInvalidInstruction) {
