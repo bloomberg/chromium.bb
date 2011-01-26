@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Wapper for the chromite shell.
+"""Wrapper for the chromite shell.
 
 This script is intended to run in several ways:
 - Outside the chroot, it should be _copied_ to someplace that is in the
@@ -47,9 +47,9 @@ if __name__ == '__main__':
     if os.path.isfile(chromite_path):
       # Add the directory above chromite to PYTHONPATH before executing, so
       # that "import chromite.abc.xyz" works...
-      env = dict(os.environ)
+      env = os.environ.copy()
       if 'PYTHONPATH' in env:
-        env['PYTHONPATH'] = "%s:%s" % (env['PYTHONPATH'], dir)
+        env['PYTHONPATH'] += ':%s' % dir
       else:
         env['PYTHONPATH'] = dir
 
