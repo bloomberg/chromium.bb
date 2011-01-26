@@ -588,6 +588,7 @@ button,
 input[type='submit'] {
   -webkit-border-radius: 2px;
   -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+  -webkit-user-select: none;
   background: -webkit-linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5);
   border: 1px solid #aaa;
   color: #444;
@@ -627,6 +628,7 @@ select {
   -webkit-appearance: button;
   -webkit-border-radius: 2px;
   -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+  -webkit-user-select: none;
   background-image: url("select.png"), -webkit-linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5);
   background-position: center right;
   background-repeat: no-repeat;

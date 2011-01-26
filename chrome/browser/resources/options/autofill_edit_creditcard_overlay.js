@@ -46,9 +46,6 @@ cr.define('options', function() {
         self.saveCreditCard_();
         self.dismissOverlay_();
       }
-      $('creditCardNumber').onkeydown = this.onTextInput_.bind(this);
-      $('creditCardNumber').addEventListener('textInput',
-                                             this.onTextInput_.bind(this));
 
       self.guid_ = '';
       self.storedCCNumber_ = '';
@@ -56,27 +53,6 @@ cr.define('options', function() {
       self.clearInputFields_();
       self.connectInputEvents_();
       self.setDefaultSelectOptions_();
-    },
-
-    /**
-     * Handles the textInput and keydown events.
-     * @private
-     */
-    onTextInput_: function(event) {
-      // For some reason, the textInput event doesn't consider
-      // backspace/deletion an input event, so we have to handle those here.
-      // 8 - backspace
-      // 46 - delete
-      if (event.type == 'keydown' && event.keyCode != '8' &&
-          event.keyCode != '46')
-        return;
-
-      // If the user hasn't edited the text yet, delete it all on edit.
-      if (!this.hasEditedNumber_ &&
-          $('creditCardNumber').value != this.storedCCNumber_) {
-        this.hasEditedNumber_ = true;
-        $('creditCardNumber').value = '';
-      }
     },
 
     /**
@@ -118,22 +94,31 @@ cr.define('options', function() {
      * @private
      */
     connectInputEvents_: function() {
-      var self = this;
       $('nameOnCard').oninput = $('creditCardNumber').oninput =
           $('expirationMonth').onchange = $('expirationYear').onchange =
-              function(event) {
-                self.inputFieldChanged_();
-              }
+              this.inputFieldChanged_.bind(this);
     },
 
     /**
      * Checks the values of each of the input fields and disables the 'Ok'
      * button if all of the fields are empty.
+     * @param {Event} opt_event Optional data for the 'input' event.
      * @private
      */
-    inputFieldChanged_: function() {
-      var disabled = !$('nameOnCard').value && !$('creditCardNumber').value;
+    inputFieldChanged_: function(opt_event) {
+      var ccNumber = $('creditCardNumber');
+      var disabled = !$('nameOnCard').value && !ccNumber.value;
       $('autoFillEditCreditCardApplyButton').disabled = disabled;
+
+      if (opt_event && opt_event.target == ccNumber) {
+        // If the user hasn't edited the text yet, delete it all on edit.
+        if (!this.hasEditedNumber_ && this.storedCCNumber_.length &&
+            ccNumber.value != this.storedCCNumber_) {
+          ccNumber.value = '';
+        }
+
+        this.hasEditedNumber_ = true;
+      }
     },
 
     /**
