@@ -69,7 +69,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
 void PrintWebViewHelper::CreatePreviewDocument(
     const ViewMsg_PrintPages_Params& params,
     WebFrame* frame,
-    ViewHostMsg_DidPreviewDocument_Params* print_params) {
+    ViewHostMsg_DidPreviewDocument_Params* preview_params) {
   ViewMsg_Print_Params printParams = params.params;
   UpdatePrintableSizeInPrintParameters(frame, NULL, &printParams);
 
@@ -106,12 +106,12 @@ void PrintWebViewHelper::CreatePreviewDocument(
   metafile.Close();
   // Ask the browser to create the shared memory for us.
   if (!CopyMetafileDataToSharedMem(&metafile,
-          &(print_params->metafile_data_handle))) {
+          &(preview_params->metafile_data_handle))) {
     NOTREACHED();
     return;
   }
-  print_params->document_cookie = params.params.document_cookie;
-  print_params->data_size = metafile.GetDataSize();
+  preview_params->document_cookie = params.params.document_cookie;
+  preview_params->data_size = metafile.GetDataSize();
 }
 
 void PrintWebViewHelper::RenderPage(

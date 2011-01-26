@@ -176,7 +176,7 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
   void RenderPagesForPreview(WebKit::WebFrame* frame);
   void CreatePreviewDocument(const ViewMsg_PrintPages_Params& params,
       WebKit::WebFrame* frame,
-      ViewHostMsg_DidPreviewDocument_Params* print_params);
+      ViewHostMsg_DidPreviewDocument_Params* preview_params);
 #if defined(OS_MACOSX)
   void RenderPage(const gfx::Size& page_size, const gfx::Point& content_origin,
                   const float& scale_factor, int page_number,
