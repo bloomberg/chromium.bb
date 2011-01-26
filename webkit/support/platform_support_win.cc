@@ -35,7 +35,7 @@ base::StringPiece GetRawDataResource(HMODULE module, int resource_id) {
       : base::StringPiece();
 }
 
-base::StringPiece NetResourceProvider(int key) {
+base::StringPiece ResourceProvider(int key) {
   return GetRawDataResource(::GetModuleHandle(NULL), key);
 }
 
@@ -99,27 +99,9 @@ base::StringPiece GetDataResource(int resource_id) {
     }
     return resize_corner_data;
   }
-
-  case IDR_SEARCH_CANCEL:
-  case IDR_SEARCH_CANCEL_PRESSED:
-  case IDR_SEARCH_MAGNIFIER:
-  case IDR_SEARCH_MAGNIFIER_RESULTS:
-  case IDR_MEDIA_PAUSE_BUTTON:
-  case IDR_MEDIA_PLAY_BUTTON:
-  case IDR_MEDIA_PLAY_BUTTON_DISABLED:
-  case IDR_MEDIA_SOUND_FULL_BUTTON:
-  case IDR_MEDIA_SOUND_NONE_BUTTON:
-  case IDR_MEDIA_SOUND_DISABLED:
-  case IDR_MEDIA_SLIDER_THUMB:
-  case IDR_MEDIA_VOLUME_SLIDER_THUMB:
-  case IDR_DEVTOOLS_DEBUGGER_SCRIPT_JS:
-    return NetResourceProvider(resource_id);
-
-  default:
-    break;
   }
 
-  return base::StringPiece();
+  return ResourceProvider(resource_id);
 }
 
 }  // namespace webkit_glue

@@ -216,28 +216,10 @@ base::StringPiece GetDataResource(int resource_id) {
     }
     return resize_corner_data;
   }
-
-  case IDR_SEARCH_CANCEL:
-  case IDR_SEARCH_CANCEL_PRESSED:
-  case IDR_SEARCH_MAGNIFIER:
-  case IDR_SEARCH_MAGNIFIER_RESULTS:
-  case IDR_MEDIA_PAUSE_BUTTON:
-  case IDR_MEDIA_PLAY_BUTTON:
-  case IDR_MEDIA_PLAY_BUTTON_DISABLED:
-  case IDR_MEDIA_SOUND_FULL_BUTTON:
-  case IDR_MEDIA_SOUND_NONE_BUTTON:
-  case IDR_MEDIA_SOUND_DISABLED:
-  case IDR_MEDIA_SLIDER_THUMB:
-  case IDR_MEDIA_VOLUME_SLIDER_THUMB: {
-    base::StringPiece res;
-    g_resource_data_pack->GetStringPiece(resource_id, &res);
-    return res;
   }
-
-  default:
-    break;
-  }
-  return base::StringPiece();
+  base::StringPiece res;
+  g_resource_data_pack->GetStringPiece(resource_id, &res);
+  return res;
 }
 
 }  // namespace webkit_glue
