@@ -32,6 +32,9 @@ namespace sessions {
 
 class UpdateProgress;
 
+typedef std::pair<sync_pb::GetUpdatesCallerInfo::GetUpdatesSource,
+    syncable::ModelTypeBitSet> SyncSourceInfo;
+
 // Data pertaining to the status of an active Syncer object.
 struct SyncerStatus {
   SyncerStatus();
@@ -79,7 +82,8 @@ struct SyncSessionSnapshot {
       bool is_silenced,
       int64 unsynced_count,
       int num_conflicting_updates,
-      bool did_commit_items);
+      bool did_commit_items,
+      const SyncSourceInfo& source);
   ~SyncSessionSnapshot();
 
   const SyncerStatus syncer_status;
@@ -93,6 +97,7 @@ struct SyncSessionSnapshot {
   const int64 unsynced_count;
   const int num_conflicting_updates;
   const bool did_commit_items;
+  const SyncSourceInfo source;
 };
 
 // Tracks progress of conflicts and their resolution using conflict sets.

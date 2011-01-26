@@ -35,8 +35,6 @@ namespace browser_sync {
 class ModelSafeWorker;
 
 namespace sessions {
-typedef std::pair<sync_pb::GetUpdatesCallerInfo::GetUpdatesSource,
-    syncable::ModelTypeBitSet> SyncSourceInfo;
 
 class SyncSession {
  public:
@@ -92,8 +90,19 @@ class SyncSession {
   // engine again.
   bool HasMoreToSync() const;
 
-  SyncSessionContext* context() { return context_; }
-  Delegate* delegate() { return delegate_; }
+  // Collects all state pertaining to how and why |s| originated and unions it
+  // with corresponding state in |this|, leaving |s| unchanged.  Allows |this|
+  // to take on the responsibilities |s| had (e.g. certain data types) in the
+  // next SyncShare operation using |this|, rather than needed two separate
+  // sessions.
+  void Coalesce(const SyncSession& session);
+
+  // Should be called any time |this| is being re-used in a new call to
+  // SyncShare (e.g., HasMoreToSync returned true).
+  void ResetTransientState();
+
+  SyncSessionContext* context() const { return context_; }
+  Delegate* delegate() const { return delegate_; }
   syncable::WriteTransaction* write_transaction() { return write_transaction_; }
   StatusController* status_controller() { return status_controller_.get(); }
 
@@ -138,12 +147,13 @@ class SyncSession {
   scoped_ptr<StatusController> status_controller_;
 
   // The set of active ModelSafeWorkers for the duration of this session.
-  const std::vector<ModelSafeWorker*> workers_;
+  // This can change if this session is Coalesce()'d with another.
+  std::vector<ModelSafeWorker*> workers_;
 
   // The routing info for the duration of this session, dictating which
   // datatypes should be synced and which workers should be used when working
   // on those datatypes.
-  const ModelSafeRoutingInfo routing_info_;
+  ModelSafeRoutingInfo routing_info_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSession);
 };

@@ -58,7 +58,7 @@ SyncSessionSnapshot SessionSnapshotForTest(
   return SyncSessionSnapshot(SyncerStatus(), ErrorCounters(),
       num_server_changes_remaining, false,
       syncable::ModelTypeBitSet(), download_progress_markers,
-      false, false, unsynced_count, 0, false);
+      false, false, unsynced_count, 0, false, sessions::SyncSourceInfo());
 }
 
 class ListenerMock : public SyncEngineEventListener {

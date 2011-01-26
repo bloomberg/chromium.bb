@@ -4,7 +4,9 @@
 
 #include "chrome/browser/sync/sessions/sync_session.h"
 
+#include "base/ref_counted.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
+#include "chrome/browser/sync/engine/mock_model_safe_workers.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -108,7 +110,7 @@ TEST_F(SyncSessionTest, ScopedContextHelpers) {
 TEST_F(SyncSessionTest, SetWriteTransaction) {
   TestDirectorySetterUpper db;
   db.SetUp();
-  session_.reset(NULL);
+  session_.reset();
   context_.reset(new SyncSessionContext(NULL, db.manager(), this,
       std::vector<SyncEngineEventListener*>()));
   session_.reset(MakeSession());
@@ -248,6 +250,47 @@ TEST_F(SyncSessionTest, MoreToSyncIfConflictsResolved) {
   // that we have made forward progress.
   status()->update_conflicts_resolved(true);
   EXPECT_TRUE(session_->HasMoreToSync());
+}
+
+TEST_F(SyncSessionTest, ResetTransientState) {
+  status()->update_conflicts_resolved(true);
+  status()->increment_num_successful_commits();
+  EXPECT_TRUE(session_->HasMoreToSync());
+  session_->ResetTransientState();
+  EXPECT_FALSE(status()->conflicts_resolved());
+  EXPECT_FALSE(session_->HasMoreToSync());
+  EXPECT_FALSE(status()->TestAndClearIsDirty());
+}
+
+TEST_F(SyncSessionTest, Coalesce) {
+  std::vector<ModelSafeWorker*> workers_one, workers_two;
+  ModelSafeRoutingInfo routes_one, routes_two;
+  SyncSourceInfo source_one(sync_pb::GetUpdatesCallerInfo::PERIODIC,
+                            ParamsMeaningJustOneEnabledType());
+  SyncSourceInfo source_two(sync_pb::GetUpdatesCallerInfo::LOCAL,
+                            ParamsMeaningAllEnabledTypes());
+  scoped_refptr<MockDBModelWorker> db_worker(new MockDBModelWorker());
+  scoped_refptr<MockUIModelWorker> ui_worker(new MockUIModelWorker());
+  workers_one.push_back(db_worker);
+  workers_two.push_back(db_worker);
+  workers_two.push_back(ui_worker);
+  routes_one[syncable::AUTOFILL] = GROUP_DB;
+  routes_two[syncable::AUTOFILL] = GROUP_DB;
+  routes_two[syncable::BOOKMARKS] = GROUP_UI;
+  SyncSession one(context_.get(), this, source_one, routes_one, workers_one);
+  SyncSession two(context_.get(), this, source_two, routes_two, workers_two);
+
+  one.Coalesce(two);
+
+  EXPECT_EQ(two.source().first, one.source().first);
+  EXPECT_EQ(ParamsMeaningAllEnabledTypes(), one.source().second);
+  std::vector<ModelSafeWorker*>::const_iterator it_db =
+      std::find(one.workers().begin(), one.workers().end(), db_worker);
+  std::vector<ModelSafeWorker*>::const_iterator it_ui =
+      std::find(one.workers().begin(), one.workers().end(), ui_worker);
+  EXPECT_NE(it_db, one.workers().end());
+  EXPECT_NE(it_ui, one.workers().end());
+  EXPECT_EQ(routes_two, one.routing_info());
 }
 
 }  // namespace

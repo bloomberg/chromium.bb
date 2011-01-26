@@ -40,7 +40,8 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     bool is_silenced,
     int64 unsynced_count,
     int num_conflicting_updates,
-    bool did_commit_items)
+    bool did_commit_items,
+    const SyncSourceInfo& source)
     : syncer_status(syncer_status),
       errors(errors),
       num_server_changes_remaining(num_server_changes_remaining),
@@ -51,7 +52,8 @@ SyncSessionSnapshot::SyncSessionSnapshot(
       is_silenced(is_silenced),
       unsynced_count(unsynced_count),
       num_conflicting_updates(num_conflicting_updates),
-      did_commit_items(did_commit_items) {
+      did_commit_items(did_commit_items),
+      source(source) {
   for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
     const_cast<std::string&>(this->download_progress_markers[i]).assign(
         download_progress_markers[i]);

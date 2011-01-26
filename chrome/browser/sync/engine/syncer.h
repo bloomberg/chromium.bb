@@ -79,7 +79,7 @@ class Syncer {
   // The constructor may be called from a thread that is not the Syncer's
   // dedicated thread, to allow some flexibility in the setup.
   Syncer();
-  ~Syncer();
+  virtual ~Syncer();
 
   // Called by other threads to tell the syncer to stop what it's doing
   // and return early from SyncShare, if possible.
@@ -89,7 +89,7 @@ class Syncer {
   // Cause one sync cycle to occur.  Like a good parent, it is the caller's
   // responsibility to clean up after the syncer when it finishes a sync share
   // operation and honor server mandated throttles.
-  void SyncShare(sessions::SyncSession* session);
+  virtual void SyncShare(sessions::SyncSession* session);
 
   // Limit the batch size of commit operations to a specified number of items.
   void set_max_commit_batch_size(int x) { max_commit_batch_size_ = x; }
@@ -174,3 +174,4 @@ void ClearServerData(syncable::MutableEntry* entry);
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_ENGINE_SYNCER_H_
+

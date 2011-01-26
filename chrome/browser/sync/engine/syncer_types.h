@@ -87,10 +87,12 @@ struct SyncEngineEvent {
 
     // This event is sent when the thread is paused in response to a
     // pause request.
+    // TODO(tim): Deprecated.
     SYNCER_THREAD_PAUSED,
 
     // This event is sent when the thread is resumed in response to a
     // resume request.
+    // TODO(tim): Deprecated.
     SYNCER_THREAD_RESUMED,
 
     // This event is sent when the thread is waiting for a connection
