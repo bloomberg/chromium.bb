@@ -6,7 +6,15 @@ cr.define('options', function() {
   const OptionsPage = options.OptionsPage;
 
   // The GUID of the loaded credit card.
-  var guid;
+  var guid_;
+
+  // The CC number of the profile, used to check for changes to the input field.
+  var storedCCNumber_;
+
+  // Set to true if the user has edited the CC number field. When saving the
+  // CC profile after editing, the stored CC number is saved if the input field
+  // has not been modified.
+  var hasEditedNumber_;
 
   /**
    * AutoFillEditCreditCardOverlay class
@@ -38,11 +46,27 @@ cr.define('options', function() {
         self.saveCreditCard_();
         self.dismissOverlay_();
       }
+      $('creditCardNumber').onkeydown = this.onKeyDown_.bind(this);
 
-      self.guid = '';
+      self.guid_ = '';
+      self.storedCCNumber_ = '';
+      self.hasEditedNumber_ = false;
       self.clearInputFields_();
       self.connectInputEvents_();
       self.setDefaultSelectOptions_();
+    },
+
+    /**
+     * Handles the keydown event.
+     * @private
+     */
+    onKeyDown_: function(event) {
+      // If the user hasn't edited the text yet, delete it all on edit.
+      if (!this.hasEditedNumber_ &&
+          $('creditCardNumber').value != this.storedCCNumber_) {
+        this.hasEditedNumber_ = true;
+        $('creditCardNumber').value = '';
+      }
     },
 
     /**
@@ -51,7 +75,9 @@ cr.define('options', function() {
      */
     dismissOverlay_: function() {
       this.clearInputFields_();
-      this.guid = '';
+      this.guid_ = '';
+      this.storedCCNumber_ = '';
+      this.hasEditedNumber_ = false;
       OptionsPage.clearOverlays();
     },
 
@@ -62,11 +88,15 @@ cr.define('options', function() {
      */
     saveCreditCard_: function() {
       var creditCard = new Array(5);
-      creditCard[0] = this.guid;
+      creditCard[0] = this.guid_;
       creditCard[1] = $('nameOnCard').value;
-      creditCard[2] = $('creditCardNumber').value;
       creditCard[3] = $('expirationMonth').value;
       creditCard[4] = $('expirationYear').value;
+
+      if (this.hasEditedNumber_)
+        creditCard[2] = $('creditCardNumber').value;
+      else
+        creditCard[2] = this.storedCCNumber_;
 
       chrome.send('setCreditCard', creditCard);
     },
@@ -80,11 +110,10 @@ cr.define('options', function() {
     connectInputEvents_: function() {
       var self = this;
       $('nameOnCard').oninput = $('creditCardNumber').oninput =
-      $('expirationMonth').onchange = $('expirationYear').onchange =
-      // TODO(isherman): What should the indentation of this line be?
-      function(event) {
-        self.inputFieldChanged_();
-      }
+          $('expirationMonth').onchange = $('expirationYear').onchange =
+              function(event) {
+                self.inputFieldChanged_();
+              }
     },
 
     /**
@@ -151,7 +180,7 @@ cr.define('options', function() {
      */
     setInputFields_: function(creditCard) {
       $('nameOnCard').value = creditCard['nameOnCard'];
-      $('creditCardNumber').value = creditCard['creditCardNumber'];
+      $('creditCardNumber').value = creditCard['obfuscatedCardNumber'];
 
       // The options for the year select control may be out-dated at this point,
       // e.g. the user opened the options page before midnight on New Year's Eve
@@ -180,7 +209,8 @@ cr.define('options', function() {
     loadCreditCard_: function(creditCard) {
       this.setInputFields_(creditCard);
       this.inputFieldChanged_();
-      this.guid = creditCard['guid'];
+      this.guid_ = creditCard['guid'];
+      this.storedCCNumber_ = creditCard['creditCardNumber'];
     },
   };
 
