@@ -7,6 +7,7 @@
 #include <alsa/asoundlib.h>
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/task.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
@@ -28,8 +29,8 @@ typedef long alsa_long_t;  // 'long' is required for ALSA API calls.
 
 namespace {
 
-const char* kMasterVolume = "Master";
-const char* kPCMVolume = "PCM";
+const char kMasterVolume[] = "Master";
+const char kPCMVolume[] = "PCM";
 const double kDefaultMinVolume = -90.0;
 const double kDefaultMaxVolume = 0.0;
 const double kPrefVolumeInvalid = -999.0;
@@ -56,6 +57,7 @@ AudioMixerAlsa::~AudioMixerAlsa() {
     // The worker thread should be idle at this time.
     // See http://crosbug.com/11110 for discussion.
     base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
+    thread_->message_loop()->AssertIdle();
 
     thread_->Stop();
     thread_.reset();
@@ -444,4 +446,3 @@ void AudioMixerAlsa::SetElementMuted_Locked(snd_mixer_elem_t* elem, bool mute) {
 }
 
 }  // namespace chromeos
-
