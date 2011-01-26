@@ -1030,7 +1030,7 @@ bool AutocompletePopupContentsView::OnMousePressed(
     size_t index = GetIndexForPoint(event.location());
     model_->SetHoveredLine(index);
     if (HasMatchAt(index) && event.IsLeftMouseButton())
-      model_->SetSelectedLine(index, false);
+      model_->SetSelectedLine(index, false, false);
   }
   return true;
 }
@@ -1056,7 +1056,7 @@ bool AutocompletePopupContentsView::OnMouseDragged(
     size_t index = GetIndexForPoint(event.location());
     model_->SetHoveredLine(index);
     if (!ignore_mouse_drag_ && HasMatchAt(index) && event.IsLeftMouseButton())
-      model_->SetSelectedLine(index, false);
+      model_->SetSelectedLine(index, false, false);
   }
   return true;
 }

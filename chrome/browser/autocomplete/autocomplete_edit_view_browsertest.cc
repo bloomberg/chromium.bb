@@ -96,15 +96,15 @@ const struct TestHistoryEntry {
   int typed_count;
   bool starred;
 } kHistoryEntries[] = {
-  {"http://www.bar.com/1", "Page 1", kSearchText, 1, 1, false },
-  {"http://www.bar.com/2", "Page 2", kSearchText, 1, 1, false },
-  {"http://www.bar.com/3", "Page 3", kSearchText, 1, 1, false },
-  {"http://www.bar.com/4", "Page 4", kSearchText, 1, 1, false },
-  {"http://www.bar.com/5", "Page 5", kSearchText, 1, 1, false },
-  {"http://www.bar.com/6", "Page 6", kSearchText, 1, 1, false },
-  {"http://www.bar.com/7", "Page 7", kSearchText, 1, 1, false },
-  {"http://www.bar.com/8", "Page 8", kSearchText, 1, 1, false },
-  {"http://www.bar.com/9", "Page 9", kSearchText, 1, 1, false },
+  {"http://www.bar.com/1", "Page 1", kSearchText, 10, 10, false },
+  {"http://www.bar.com/2", "Page 2", kSearchText, 9, 9, false },
+  {"http://www.bar.com/3", "Page 3", kSearchText, 8, 8, false },
+  {"http://www.bar.com/4", "Page 4", kSearchText, 7, 7, false },
+  {"http://www.bar.com/5", "Page 5", kSearchText, 6, 6, false },
+  {"http://www.bar.com/6", "Page 6", kSearchText, 5, 5, false },
+  {"http://www.bar.com/7", "Page 7", kSearchText, 4, 4, false },
+  {"http://www.bar.com/8", "Page 8", kSearchText, 3, 3, false },
+  {"http://www.bar.com/9", "Page 9", kSearchText, 2, 2, false },
 
   // To trigger inline autocomplete.
   {"http://www.def.com", "Page def", kSearchText, 10000, 10000, true },
@@ -244,6 +244,13 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     }
 
     ASSERT_TRUE(model->loaded());
+    // Remove built-in template urls, like google.com, bing.com etc., as they
+    // may appear as autocomplete suggests and interfere with our tests.
+    model->SetDefaultSearchProvider(NULL);
+    TemplateURLModel::TemplateURLVector builtins = model->GetTemplateURLs();
+    for (TemplateURLModel::TemplateURLVector::const_iterator
+         i = builtins.begin(); i != builtins.end(); ++i)
+      model->Remove(*i);
 
     TemplateURL* template_url = new TemplateURL();
     template_url->SetURL(kSearchURL, 0, 0);
@@ -841,6 +848,102 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_EQ("http://abc.com/",
               popup_model->result().default_match()->destination_url.spec());
   }
+
+  void DeleteItemTest() {
+    // Disable the search provider, to make sure the popup contains only history
+    // items.
+    TemplateURLModel* model = browser()->profile()->GetTemplateURLModel();
+    model->SetDefaultSearchProvider(NULL);
+
+    ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
+    browser()->FocusLocationBar();
+
+    AutocompleteEditView* edit_view = NULL;
+    ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
+
+    AutocompletePopupModel* popup_model = edit_view->model()->popup_model();
+    ASSERT_TRUE(popup_model);
+
+    string16 old_text = edit_view->GetText();
+
+    // Input something that can match history items.
+    edit_view->SetUserText(ASCIIToUTF16("bar"));
+    ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+    ASSERT_TRUE(popup_model->IsOpen());
+
+    // Delete the inline autocomplete part.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_DELETE, false, false, false));
+    string16 user_text = edit_view->GetText();
+    ASSERT_EQ(ASCIIToUTF16("bar"), user_text);
+    edit_view->SelectAll(true);
+    ASSERT_TRUE(edit_view->IsSelectAll());
+
+    // The first item should be the default match.
+    size_t default_line = popup_model->selected_line();
+    std::string default_url =
+        popup_model->result().match_at(default_line).destination_url.spec();
+
+    // Move down.
+    edit_view->model()->OnUpOrDownKeyPressed(1);
+    ASSERT_EQ(default_line + 1, popup_model->selected_line());
+    string16 selected_text =
+        popup_model->result().match_at(default_line + 1).fill_into_edit;
+    // Temporary text is shown.
+    ASSERT_EQ(selected_text, edit_view->GetText());
+    ASSERT_FALSE(edit_view->IsSelectAll());
+
+    // Delete the item.
+    popup_model->TryDeletingCurrentItem();
+    ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+    // The selected line shouldn't be changed, because we have more than two
+    // items.
+    ASSERT_EQ(default_line + 1, popup_model->selected_line());
+    // Make sure the item is really deleted.
+    ASSERT_NE(selected_text,
+              popup_model->result().match_at(default_line + 1).fill_into_edit);
+    selected_text =
+        popup_model->result().match_at(default_line + 1).fill_into_edit;
+    // New temporary text is shown.
+    ASSERT_EQ(selected_text, edit_view->GetText());
+
+    // Revert to the default match.
+    ASSERT_TRUE(edit_view->model()->OnEscapeKeyPressed());
+    ASSERT_EQ(default_line, popup_model->selected_line());
+    ASSERT_EQ(user_text, edit_view->GetText());
+    ASSERT_TRUE(edit_view->IsSelectAll());
+
+    // Move down and up to select the default match as temporary text.
+    edit_view->model()->OnUpOrDownKeyPressed(1);
+    ASSERT_EQ(default_line + 1, popup_model->selected_line());
+    edit_view->model()->OnUpOrDownKeyPressed(-1);
+    ASSERT_EQ(default_line, popup_model->selected_line());
+
+    selected_text = popup_model->result().match_at(default_line).fill_into_edit;
+    // New temporary text is shown.
+    ASSERT_EQ(selected_text, edit_view->GetText());
+    ASSERT_FALSE(edit_view->IsSelectAll());
+
+    // Delete the default item.
+    popup_model->TryDeletingCurrentItem();
+    ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+    // The selected line shouldn't be changed, but the default item should have
+    // been changed.
+    ASSERT_EQ(default_line, popup_model->selected_line());
+    // Make sure the item is really deleted.
+    ASSERT_NE(selected_text,
+              popup_model->result().match_at(default_line).fill_into_edit);
+    selected_text =
+        popup_model->result().match_at(default_line).fill_into_edit;
+    // New temporary text is shown.
+    ASSERT_EQ(selected_text, edit_view->GetText());
+
+    // As the current selected item is the new default item, pressing Escape key
+    // should revert all directly.
+    ASSERT_TRUE(edit_view->model()->OnEscapeKeyPressed());
+    ASSERT_EQ(old_text, edit_view->GetText());
+    ASSERT_TRUE(edit_view->IsSelectAll());
+  }
+
 };
 
 // Test if ctrl-* accelerators are workable in omnibox.
@@ -896,6 +999,10 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, AcceptKeywordBySpace) {
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, NonSubstitutingKeywordTest) {
   NonSubstitutingKeywordTest();
+}
+
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DeleteItem) {
+  DeleteItemTest();
 }
 
 #if defined(OS_LINUX)
@@ -1077,6 +1184,10 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest, AcceptKeywordBySpace) {
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest,
                        NonSubstitutingKeywordTest) {
   NonSubstitutingKeywordTest();
+}
+
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest, DeleteItem) {
+  DeleteItemTest();
 }
 
 #endif

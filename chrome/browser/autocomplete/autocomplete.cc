@@ -802,9 +802,11 @@ void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(match.deletable);
   match.provider->DeleteMatch(match);  // This may synchronously call back to
                                        // OnProviderUpdate().
+  DCHECK(updated_latest_result_);
   CommitResult(true);  // Ensure any new result gets committed immediately.  If
                        // it was committed already or hasn't been modified, this
-                       // is harmless.
+                       // is harmless. We need to notify the edit box, because
+                       // the default match may have been changed.
 }
 
 void AutocompleteController::CommitIfQueryHasNeverBeenCommitted() {

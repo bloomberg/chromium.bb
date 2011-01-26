@@ -513,7 +513,7 @@ gboolean AutocompletePopupViewGtk::HandleMotion(GtkWidget* widget,
   model_->SetHoveredLine(line);
   // Select the line if the user has the left mouse button down.
   if (!ignore_mouse_drag_ && (event->state & GDK_BUTTON1_MASK))
-    model_->SetSelectedLine(line, false);
+    model_->SetSelectedLine(line, false, false);
   return TRUE;
 }
 
@@ -524,7 +524,7 @@ gboolean AutocompletePopupViewGtk::HandleButtonPress(GtkWidget* widget,
   size_t line = LineFromY(static_cast<int>(event->y));
   model_->SetHoveredLine(line);
   if (event->button == 1)
-    model_->SetSelectedLine(line, false);
+    model_->SetSelectedLine(line, false, false);
   return TRUE;
 }
 

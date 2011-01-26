@@ -90,7 +90,8 @@ void AutocompletePopupModel::SetHoveredLine(size_t line) {
 }
 
 void AutocompletePopupModel::SetSelectedLine(size_t line,
-                                             bool reset_to_default) {
+                                             bool reset_to_default,
+                                             bool force) {
   // We should at least be dealing with the results of the current query.  Note
   // that even if |line| was valid on entry, this may make it invalid.  We clamp
   // it below.
@@ -115,7 +116,7 @@ void AutocompletePopupModel::SetSelectedLine(size_t line,
         match.is_history_what_you_typed_match;
   }
 
-  if (line == selected_line_)
+  if (line == selected_line_ && !force)
     return;  // Nothing else to do.
 
   // We need to update |selected_line_| before calling OnPopupDataChanged(), so
@@ -158,7 +159,7 @@ void AutocompletePopupModel::SetSelectedLine(size_t line,
 void AutocompletePopupModel::ResetToDefaultMatch() {
   const AutocompleteResult& result = controller_->result();
   CHECK(!result.empty());
-  SetSelectedLine(result.default_match() - result.begin(), true);
+  SetSelectedLine(result.default_match() - result.begin(), true, false);
   view_->OnDragCanceled();
 }
 
@@ -267,7 +268,7 @@ void AutocompletePopupModel::Move(int count) {
   // Clamp the new line to [0, result_.count() - 1].
   const size_t new_line = selected_line_ + count;
   SetSelectedLine(((count < 0) && (new_line >= selected_line_)) ? 0 : new_line,
-                  false);
+                  false, false);
 }
 
 void AutocompletePopupModel::TryDeletingCurrentItem() {
@@ -284,17 +285,21 @@ void AutocompletePopupModel::TryDeletingCurrentItem() {
       controller_->result().match_at(selected_line_);
   if (match.deletable) {
     const size_t selected_line = selected_line_;
-    controller_->DeleteMatch(match);  // This may synchronously notify us that
-                                      // the results have changed.
+    const bool was_temporary_text = !manually_selected_match_.empty();
+
+    // This will synchronously notify both the edit and us that the results
+    // have changed, causing both to revert to the default match.
+    controller_->DeleteMatch(match);
     const AutocompleteResult& result = controller_->result();
-    if (!result.empty()) {
+    if (!result.empty() &&
+        (was_temporary_text || selected_line != selected_line_)) {
       // Move the selection to the next choice after the deleted one.
       // SetSelectedLine() will clamp to take care of the case where we deleted
       // the last item.
       // TODO(pkasting): Eventually the controller should take care of this
       // before notifying us, reducing flicker.  At that point the check for
       // deletability can move there too.
-      SetSelectedLine(selected_line, false);
+      SetSelectedLine(selected_line, false, true);
     }
   }
 }
@@ -311,6 +316,7 @@ void AutocompletePopupModel::Observe(NotificationType type,
       kNoMatch : static_cast<size_t>(result->default_match() - result->begin());
   // There had better not be a nonempty result set with no default match.
   CHECK((selected_line_ != kNoMatch) || result->empty());
+  manually_selected_match_.Clear();
   // If we're going to trim the window size to no longer include the hovered
   // line, turn hover off.  Practically, this shouldn't happen, but it
   // doesn't hurt to be defensive.

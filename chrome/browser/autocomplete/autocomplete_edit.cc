@@ -486,13 +486,7 @@ bool AutocompleteEditModel::OnEscapeKeyPressed() {
     AutocompleteMatch match;
     popup_->InfoForCurrentSelection(&match, NULL);
     if (match.destination_url != original_url_) {
-      // The user typed something, then selected a different item.  Restore the
-      // text they typed and change back to the default item.
-      // NOTE: This purposefully does not reset paste_state_.
-      just_deleted_text_ = false;
-      has_temporary_text_ = false;
-      popup_->ResetToDefaultMatch();
-      view_->OnRevertTemporaryText();
+      RevertTemporaryText(true);
       return true;
     }
   }
@@ -599,20 +593,27 @@ void AutocompleteEditModel::OnPopupDataChanged(
     return;
   }
 
-  // All cases that can result in |has_temporary_text_| being set should have
-  // been handled by the conditional above.
-  DCHECK(!has_temporary_text_);
-
+  bool call_controller_onchanged = true;
   inline_autocomplete_text_ = text;
   if (view_->OnInlineAutocompleteTextMaybeChanged(
       DisplayTextFromUserText(user_text_ + inline_autocomplete_text_),
       DisplayTextFromUserText(user_text_).length()))
-    return;
+    call_controller_onchanged = false;
 
-  // All other code paths that return invoke OnChanged. We need to invoke
-  // OnChanged in case the destination url changed (as could happen when control
-  // is toggled).
-  controller_->OnChanged();
+  // If |has_temporary_text_| is true, then we previously had a manual selection
+  // but now don't (or |destination_for_temporary_text_change| would have been
+  // non-NULL). This can happen when deleting the selected item in the popup.
+  // In this case, we've already reverted the popup to the default match, so we
+  // need to revert ourselves as well.
+  if (has_temporary_text_) {
+    RevertTemporaryText(false);
+    call_controller_onchanged = false;
+  }
+
+  // We need to invoke OnChanged in case the destination url changed (as could
+  // happen when control is toggled).
+  if (call_controller_onchanged)
+    controller_->OnChanged();
 }
 
 bool AutocompleteEditModel::OnAfterPossibleChange(
@@ -663,11 +664,8 @@ bool AutocompleteEditModel::OnAfterPossibleChange(
   // Change to keyword mode if the user has typed a keyword name and is now
   // pressing space after the name. Accepting the keyword will update our
   // state, so in that case there's no need to also return true here.
-  if (text_differs && allow_keyword_ui_change && !just_deleted_text &&
-      MaybeAcceptKeywordBySpace(old_user_text, user_text_))
-    return false;
-
-  return true;
+  return !(text_differs && allow_keyword_ui_change && !just_deleted_text &&
+           MaybeAcceptKeywordBySpace(old_user_text, user_text_));
 }
 
 void AutocompleteEditModel::PopupBoundsChangedTo(const gfx::Rect& bounds) {
@@ -779,6 +777,17 @@ bool AutocompleteEditModel::GetURLForText(const string16& text,
 
   *url = parsed_url;
   return true;
+}
+
+void AutocompleteEditModel::RevertTemporaryText(bool revert_popup) {
+  // The user typed something, then selected a different item.  Restore the
+  // text they typed and change back to the default item.
+  // NOTE: This purposefully does not reset paste_state_.
+  just_deleted_text_ = false;
+  has_temporary_text_ = false;
+  if (revert_popup)
+    popup_->ResetToDefaultMatch();
+  view_->OnRevertTemporaryText();
 }
 
 bool AutocompleteEditModel::MaybeAcceptKeywordBySpace(

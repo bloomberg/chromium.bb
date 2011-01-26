@@ -378,6 +378,10 @@ class AutocompleteEditModel : public NotificationObserver {
   // copy.
   bool GetURLForText(const string16& text, GURL* url) const;
 
+  // Reverts the edit box from a temporary text back to the original user text.
+  // If |revert_popup| is true then the popup will be reverted as well.
+  void RevertTemporaryText(bool revert_popup);
+
   // Accepts current keyword if the user only typed a space at the end of
   // |new_user_text| comparing to the |old_user_text|.
   // Returns true if the current keyword is accepted.

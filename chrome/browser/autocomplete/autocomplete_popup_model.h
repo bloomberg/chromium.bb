@@ -70,10 +70,12 @@ class AutocompletePopupModel : public NotificationObserver {
   // new temporary text.  |line| will be clamped to the range of valid lines.
   // |reset_to_default| is true when the selection is being reset back to the
   // default match, and thus there is no temporary text (and no
-  // |manually_selected_match_|).
+  // |manually_selected_match_|). If |force| is true then the selected line will
+  // be updated forcibly even if the |line| is same as the current selected
+  // line.
   // NOTE: This assumes the popup is open, and thus both old and new values for
   // the selected line should not be kNoMatch.
-  void SetSelectedLine(size_t line, bool reset_to_default);
+  void SetSelectedLine(size_t line, bool reset_to_default, bool force);
 
   // Called when the user hits escape after arrowing around the popup.  This
   // will change the selected line back to the default match and redraw.

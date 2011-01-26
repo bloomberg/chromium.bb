@@ -518,7 +518,7 @@ gfx::Rect AutocompletePopupViewMac::GetTargetBounds() {
 }
 
 void AutocompletePopupViewMac::SetSelectedLine(size_t line) {
-  model_->SetSelectedLine(line, false);
+  model_->SetSelectedLine(line, false, false);
 }
 
 // This is only called by model in SetSelectedLine() after updating
