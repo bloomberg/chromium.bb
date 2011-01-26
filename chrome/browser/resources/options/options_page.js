@@ -129,11 +129,20 @@ cr.define('options', function() {
    * @private
    */
   OptionsPage.isOverlayVisible_ = function() {
+    return this.getVisibleOverlay_() != null;
+  };
+
+  /**
+   * Returns the currently visible overlay, or null if no page is visible.
+   * @return {OptionPage} The visible overlay.
+   */
+  OptionsPage.getVisibleOverlay_ = function() {
     for (var name in this.registeredOverlayPages) {
-      if (this.registeredOverlayPages[name].visible)
-        return true;
+      var page = this.registeredOverlayPages[name];
+      if (page.visible)
+        return page;
     }
-    return false;
+    return null;
   };
 
   /**
@@ -159,7 +168,7 @@ cr.define('options', function() {
         topPage = page;
     }
     return topPage;
-  }
+  };
 
   /**
    * Closes the topmost open subpage, if any.
@@ -349,6 +358,9 @@ cr.define('options', function() {
 
     // Install handler for key presses.
     document.addEventListener('keydown', this.keyDownEventHandler_.bind(this));
+
+    document.addEventListener('focus', this.manageFocusChange_.bind(this),
+                              true);
   };
 
   /**
@@ -370,6 +382,30 @@ cr.define('options', function() {
         event.preventDefault();
       }
     };
+  };
+
+  /**
+   * Called when focus changes; ensures that focus doesn't move outside
+   * the topmost subpage/overlay.
+   * @param {Event} e The focus change event.
+   * @private
+   */
+  OptionsPage.manageFocusChange_ = function(e) {
+    var focusableItemsRoot;
+    // If an overlay is visible, that defines the tab loop.
+    var topPage = this.getVisibleOverlay_();
+    if (topPage)
+      focusableItemsRoot = topPage.pageDiv;
+    // If a subpage is visible, use its parent as the tab loop constraint.
+    // (The parent is used because it contains the close button.)
+    if (!topPage) {
+      var topPage = this.getTopmostVisiblePage();
+      if (topPage && topPage.nestingLevel > 0)
+        focusableItemsRoot = topPage.pageDiv.parentNode;
+    }
+
+    if (focusableItemsRoot && !focusableItemsRoot.contains(e.target))
+      topPage.focusFirstElement();
   };
 
   /**
@@ -539,6 +575,17 @@ cr.define('options', function() {
       }
 
       cr.dispatchPropertyChange(this, 'visible', visible, !visible);
+    },
+
+    /**
+     * Focuses the first control on the page.
+     */
+    focusFirstElement: function() {
+      // Sets focus on the first interactive element in the page.
+      var focusElement =
+          this.pageDiv.querySelector('button, input, list, select');
+      if (focusElement)
+        focusElement.focus();
     },
 
     /**
