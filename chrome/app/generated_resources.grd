@@ -3949,21 +3949,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_INSTANT_AUTOCOMPLETE_IMMEDIATELY_DESCRIPTION" desc="Description of the 'Instant Autocomplete Immediately' lab.">
         Whether the search provider suggestion should be autocompleted immediately when instant is enabled.
       </message>
-      <message name="IDS_FLAGS_INSTANT_TYPE_NAME" desc="Description of the 'Instant Type' lab.">
-        Instant Type
-      </message>
-      <message name="IDS_FLAGS_INSTANT_TYPE_DESCRIPTION" desc="Description of the 'Instant Type' lab.">
-        Configures the behavior of instant.
-      </message>
-      <message name="IDS_FLAGS_INSTANT_TYPE_PREDICTIVE" desc="Name for 'predictive' instant results">
-        Predictive
-      </message>
-      <message name="IDS_FLAGS_INSTANT_TYPE_PREDICTIVE_NO_AUTO_COMPLETE" desc="Name for 'predictive no auto-complete' instant results">
-        Predictive no auto-complete
-      </message>
-      <message name="IDS_FLAGS_INSTANT_TYPE_VERBATIM" desc="Name for 'verbatim' instant results">
-        Verbatim
-      </message>
       <message name="IDS_FLAGS_REMOTING_NAME" desc="Description of the 'Remoting' lab.">
         Remoting
       </message>

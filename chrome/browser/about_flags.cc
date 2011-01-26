@@ -38,15 +38,6 @@ const char kMediaPlayerExperimentName[] = "media-player";
 const char kAdvancedFileSystemExperimentName[] = "advanced-file-system";
 const char kVerticalTabsExperimentName[] = "vertical-tabs";
 
-// If adding a new choice, add it to the end of the list.
-const Experiment::Choice kInstantChoices[] = {
-  { IDS_FLAGS_INSTANT_TYPE_VERBATIM, switches::kEnableVerbatimInstant },
-  { IDS_FLAGS_INSTANT_TYPE_PREDICTIVE, switches::kEnablePredictiveInstant },
-  { IDS_FLAGS_INSTANT_TYPE_PREDICTIVE_NO_AUTO_COMPLETE,
-    switches::kEnablePredictiveNoAutoCompleteInstant
-  },
-};
-
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -249,13 +240,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_DESCRIPTION,
     kOsMac | kOsWin | kOsLinux,  // Currently does nothing on CrOS.
     SINGLE_VALUE_TYPE(switches::kExperimentalLocationFeatures)
-  },
-  {
-    "instant-type",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_INSTANT_TYPE_NAME,
-    IDS_FLAGS_INSTANT_TYPE_DESCRIPTION,
-    kOsWin,
-    MULTI_VALUE_TYPE(kInstantChoices)
   },
   {
     "instant-autocomplete-immediately",  // FLAGS:RECORD_UMA

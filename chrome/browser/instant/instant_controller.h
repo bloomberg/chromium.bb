@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,27 +44,6 @@ class TemplateURL;
 // being invoked on the delegate.
 class InstantController : public InstantLoaderDelegate {
  public:
-  // Variations of instant support.
-  // TODO(sky): nuke these when we decide the default behavior.
-  enum Type {
-    // NOTE: these values are persisted to prefs. Don't change them!
-
-    FIRST_TYPE = 0,
-
-    // Search results are shown for the best guess of what we think the user was
-    // planning on typing.
-    PREDICTIVE_TYPE = 0,
-
-    // Search results are shown for exactly what was typed.
-    VERBATIM_TYPE,
-
-    // Variant of predictive that does not auto-complete after a delay.
-    PREDICTIVE_NO_AUTO_COMPLETE_TYPE,
-
-    LAST_TYPE = PREDICTIVE_NO_AUTO_COMPLETE_TYPE
-  };
-
-
   // Amount of time to wait before starting the instant animation.
   static const int kAutoCommitPauseTimeMS = 1000;
   // Duration of the instant animation in which the colors change.
@@ -79,11 +58,8 @@ class InstantController : public InstantLoaderDelegate {
   // Records instant metrics.
   static void RecordMetrics(Profile* profile);
 
-  // Returns true if either type of instant is enabled.
+  // Returns true if instant is enabled.
   static bool IsEnabled(Profile* profile);
-
-  // Returns true if the specified type of instant is enabled.
-  static bool IsEnabled(Profile* profile, Type type);
 
   // Enables instant.
   static void Enable(Profile* profile);
@@ -257,14 +233,6 @@ class InstantController : public InstantLoaderDelegate {
   // NULL if there is no TemplateURL for |match|.
   const TemplateURL* GetTemplateURL(const AutocompleteMatch& match);
 
-  // If instant is enabled for the specified profile the type of instant is set
-  // in |type| and true is returned. Otherwise returns false.
-  static bool GetType(Profile* profile, Type* type);
-
-  // Returns a string description for the currently enabled type. This is used
-  // for histograms.
-  static std::string GetTypeString(Profile* profile);
-
   InstantDelegate* delegate_;
 
   // The TabContents last passed to |Update|.
@@ -301,8 +269,6 @@ class InstantController : public InstantLoaderDelegate {
 
   // URL last pased to ScheduleUpdate.
   GURL scheduled_url_;
-
-  Type type_;
 
   // List of InstantLoaders to destroy. See ScheduleForDestroy for details.
   ScopedVector<InstantLoader> loaders_to_destroy_;

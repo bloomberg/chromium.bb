@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,10 +41,7 @@ InstantController::InstantController(Profile* profile,
       is_displayable_(false),
       commit_on_mouse_up_(false),
       last_transition_type_(PageTransition::LINK),
-      ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)),
-      type_(FIRST_TYPE) {
-  bool enabled = GetType(profile, &type_);
-  DCHECK(enabled);
+      ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)) {
   PrefService* service = profile->GetPrefs();
   if (service) {
     // kInstantWasEnabledOnce was added after instant, set it now to make sure
@@ -79,27 +76,17 @@ void InstantController::RecordMetrics(Profile* profile) {
     } else {
       base::TimeDelta delta =
           base::Time::Now() - base::Time::FromInternalValue(enable_time);
-      std::string name = "Instant.EnabledTime. " + GetTypeString(profile);
-      // Can't use histogram macros as name isn't constant.
       // Histogram from 1 hour to 30 days.
-      scoped_refptr<base::Histogram> counter =
-          base::Histogram::FactoryGet(name, 1, 30 * 24, 50,
-              base::Histogram::kUmaTargetedHistogramFlag);
-      counter->Add(delta.InHours());
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Instant.EnabledTime.Predictive",
+                                  delta.InHours(), 1, 30 * 24, 50);
     }
   }
 }
 
 // static
 bool InstantController::IsEnabled(Profile* profile) {
-  Type type;
-  return GetType(profile, &type);
-}
-
-// static
-bool InstantController::IsEnabled(Profile* profile, Type type) {
-  Type enabled_type;
-  return GetType(profile, &enabled_type) && type == enabled_type;
+  PrefService* prefs = profile->GetPrefs();
+  return prefs->GetBoolean(prefs::kInstantEnabled);
 }
 
 // static
@@ -129,13 +116,9 @@ void InstantController::Disable(Profile* profile) {
   if (enable_time) {
     base::TimeDelta delta =
         base::Time::Now() - base::Time::FromInternalValue(enable_time);
-    std::string name = "Instant.TimeToDisable." + GetTypeString(profile);
-    // Can't use histogram macros as name isn't constant.
     // Histogram from 1 minute to 10 days.
-    scoped_refptr<base::Histogram> counter =
-       base::Histogram::FactoryGet(name, 1, 60 * 24 * 10, 50,
-                                   base::Histogram::kUmaTargetedHistogramFlag);
-    counter->Add(delta.InMinutes());
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Instant.TimeToDisable.Predictive",
+                                delta.InMinutes(), 1, 60 * 24 * 10, 50);
   }
 
   service->SetBoolean(prefs::kInstantEnabled, false);
@@ -586,16 +569,6 @@ void InstantController::DestroyLoaders() {
 
 const TemplateURL* InstantController::GetTemplateURL(
     const AutocompleteMatch& match) {
-  if (type_ == VERBATIM_TYPE) {
-    // When using VERBATIM_TYPE we don't want to attempt to use the instant
-    // JavaScript API, otherwise the page would show predictive results. By
-    // returning NULL here we ensure we don't attempt to use the instant API.
-    //
-    // TODO: when the full search box API is in place we can lift this
-    // restriction and force the page to show verbatim results always.
-    return NULL;
-  }
-
   const TemplateURL* template_url = match.template_url;
   if (match.type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
       match.type == AutocompleteMatch::SEARCH_HISTORY ||
@@ -604,52 +577,4 @@ const TemplateURL* InstantController::GetTemplateURL(
     template_url = model ? model->GetDefaultSearchProvider() : NULL;
   }
   return template_url;
-}
-
-// static
-bool InstantController::GetType(Profile* profile, Type* type) {
-  *type = FIRST_TYPE;
-  // CommandLine takes precedence.
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kEnablePredictiveInstant)) {
-    *type = PREDICTIVE_TYPE;
-    return true;
-  }
-  if (cl->HasSwitch(switches::kEnableVerbatimInstant)) {
-    *type = VERBATIM_TYPE;
-    return true;
-  }
-  if (cl->HasSwitch(switches::kEnablePredictiveNoAutoCompleteInstant)) {
-    *type = PREDICTIVE_NO_AUTO_COMPLETE_TYPE;
-    return true;
-  }
-
-  // Then prefs.
-  PrefService* prefs = profile->GetPrefs();
-  if (!prefs->GetBoolean(prefs::kInstantEnabled))
-    return false;
-
-  // PREDICTIVE_TYPE is the default if enabled via preferences.
-  *type = PREDICTIVE_TYPE;
-  return true;
-}
-
-// static
-std::string InstantController::GetTypeString(Profile* profile) {
-  Type type;
-  if (!GetType(profile, &type)) {
-    NOTREACHED();
-    return std::string();
-  }
-  switch (type) {
-    case PREDICTIVE_TYPE:
-      return "Predictive";
-    case VERBATIM_TYPE:
-      return "Verbatim";
-    case PREDICTIVE_NO_AUTO_COMPLETE_TYPE:
-      return "PredictiveNoAutoComplete";
-    default:
-      NOTREACHED();
-      return std::string();
-  }
 }

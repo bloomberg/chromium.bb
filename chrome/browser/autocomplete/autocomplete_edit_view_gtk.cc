@@ -765,8 +765,7 @@ void AutocompleteEditViewGtk::SetInstantSuggestion(const string16& suggestion) {
     gtk_widget_hide(instant_view_);
     return;
   }
-  if (InstantController::IsEnabled(model_->profile(),
-                                   InstantController::PREDICTIVE_TYPE)
+  if (InstantController::IsEnabled(model_->profile())
 #if GTK_CHECK_VERSION(2, 20, 0)
       && preedit_.empty()
 #endif

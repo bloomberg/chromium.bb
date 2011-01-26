@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,10 +19,6 @@ SuggestedTextView::~SuggestedTextView() {
 }
 
 void SuggestedTextView::StartAnimation() {
-  if (!InstantController::IsEnabled(location_bar_->profile(),
-                                    InstantController::PREDICTIVE_TYPE)) {
-    return;
-  }
   StopAnimation();
 
   animation_.reset(CreateAnimation());

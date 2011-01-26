@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 
@@ -34,6 +33,10 @@ class InstantTest : public InProcessBrowserTest {
         preview_(NULL) {
     set_show_window(true);
     EnableDOMAutomation();
+  }
+
+  void EnableInstant() {
+    InstantController::Enable(browser()->profile());
   }
 
   void SetupInstantProvider(const std::string& page) {
@@ -270,10 +273,6 @@ class InstantTest : public InProcessBrowserTest {
   }
 
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kEnablePredictiveInstant);
-  }
-
   LocationBar* location_bar_;
   TabContents* preview_;
 };
@@ -286,6 +285,7 @@ class InstantTest : public InProcessBrowserTest {
 // Verify that the onchange event is dispatched upon typing in the box.
 IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
@@ -299,6 +299,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
 
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsArrayOfStrings) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
@@ -310,6 +311,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsArrayOfStrings) {
 
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyArray) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
@@ -321,6 +323,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyArray) {
 
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsValidJson) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
@@ -334,6 +337,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsValidJson) {
 
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsInvalidSuggestions) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
@@ -347,6 +351,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsInvalidSuggestions) {
 
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyJson) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
@@ -358,6 +363,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyJson) {
 
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestions) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
@@ -369,6 +375,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestions) {
 
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestion) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
@@ -381,6 +388,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestion) {
 // Verify instant preview is shown correctly for a non-search query.
 IN_PROC_BROWSER_TEST_F(InstantTest, ShowPreviewNonSearch) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   GURL url(test_server()->GetURL("files/instant/empty.html"));
   ASSERT_NO_FATAL_FAILURE(SetLocationBarText(UTF8ToWide(url.spec())));
   // The preview should be active and showing.
@@ -399,6 +407,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ShowPreviewNonSearch) {
 // correctly.
 IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearch) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   GURL url(test_server()->GetURL("files/instant/empty.html"));
   ASSERT_NO_FATAL_FAILURE(SetLocationBarText(UTF8ToWide(url.spec())));
   // The preview should be active and showing.
@@ -479,6 +488,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearch) {
 #endif
 IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SearchServerDoesntSupportInstant) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("empty.html"));
   ASSERT_NO_FATAL_FAILURE(FindLocationBar());
   location_bar_->location_entry()->SetUserText(ASCIIToUTF16("a"));
@@ -516,6 +526,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SearchServerDoesntSupportInstant) {
 IN_PROC_BROWSER_TEST_F(InstantTest,
                        MAYBE_NonSearchToSearchDoesntSupportInstant) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("empty.html"));
   GURL url(test_server()->GetURL("files/instant/empty.html"));
   ASSERT_NO_FATAL_FAILURE(SetLocationBarText(UTF8ToWide(url.spec())));
@@ -553,6 +564,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
 // Verifies the page was told a non-zero height.
 IN_PROC_BROWSER_TEST_F(InstantTest, ValidHeight) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
@@ -578,6 +590,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ValidHeight) {
 // query the host again.
 IN_PROC_BROWSER_TEST_F(InstantTest, HideOn403) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   GURL url(test_server()->GetURL("files/instant/403.html"));
   ASSERT_NO_FATAL_FAILURE(FindLocationBar());
   location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
@@ -604,6 +617,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, HideOn403) {
 // Verify that the onsubmit event is dispatched upon pressing enter.
 IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -627,6 +641,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
 // Verify that the oncancel event is dispatched upon losing focus.
 IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -656,6 +671,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
 #endif
 IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_TabKey) {
   ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
