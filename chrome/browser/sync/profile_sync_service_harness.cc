@@ -130,7 +130,7 @@ bool ProfileSyncServiceHarness::SetupSync() {
 bool ProfileSyncServiceHarness::SetupSync(
     const syncable::ModelTypeSet& synced_datatypes) {
   // Initialize the sync client's profile sync service object.
-  service_ = profile_->GetProfileSyncService();
+  service_ = profile_->GetProfileSyncService("");
   if (service_ == NULL) {
     LOG(ERROR) << "SetupSync(): service_ is null.";
     return false;
