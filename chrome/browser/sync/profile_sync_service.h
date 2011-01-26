@@ -471,6 +471,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return data_type_controllers_;
   }
 
+  // Helper method for managing encryption UI.
+  bool IsEncryptedDatatypeEnabled() const;
+
   // The wizard will try to read the auth state out of the profile sync
   // service using this member. Captcha and error state are reflected.
   GoogleServiceAuthError last_auth_error_;

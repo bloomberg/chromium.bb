@@ -8366,6 +8366,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
         If you've forgotten your passphrase, stop and reset Sync via the Google Dashboard.
       </message>
 
+      <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING_HEADER" desc="Header for the passphrase cancel warning.  Should be phrased as a yes-or-no question.">
+        Skip password sync?
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING" desc="Warning message when the passphrase entry is canceled.">
+        Without a passphrase, your passwords will not be synced on this computer.  You can enable password sync by changing your sync settings and entering your passphrase.
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_CANCEL_YES" desc="String for 'yes' button on passphrase cancel warning dialog.">
+        Skip password sync
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_CANCEL_NO" desc="String for 'no' button on passphrase cancel warning dialog.">
+        Enter passphrase
+      </message>
+
       <!-- Login dialog strings -->
       <message name="IDS_SYNC_MY_BOOKMARKS_LABEL" desc="Title of the sync login dialog.">
         Set up sync

@@ -186,6 +186,12 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     AddString(dict, "passphraseWarning", IDS_SYNC_PASSPHRASE_WARNING);
     AddString(dict, "cleardatalink", IDS_SYNC_CLEAR_DATA_LINK);
 
+    AddString(dict, "cancelWarningHeader",
+              IDS_SYNC_PASSPHRASE_CANCEL_WARNING_HEADER);
+    AddString(dict, "cancelWarning", IDS_SYNC_PASSPHRASE_CANCEL_WARNING);
+    AddString(dict, "yes", IDS_SYNC_PASSPHRASE_CANCEL_YES);
+    AddString(dict, "no", IDS_SYNC_PASSPHRASE_CANCEL_NO);
+
     AddString(dict, "ok", IDS_OK);
     AddString(dict, "cancel", IDS_CANCEL);
   } else if (path_raw == kSyncFirstPassphrasePath) {

@@ -431,6 +431,14 @@ void ProfileSyncService::CreateBackend() {
   backend_.reset(new SyncBackendHost(profile_));
 }
 
+bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
+  // Currently on passwords are an encrypted datatype, so
+  // we check to see if it is enabled.
+  syncable::ModelTypeSet types;
+  GetPreferredDataTypes(&types);
+  return types.count(syncable::PASSWORDS) != 0;
+}
+
 void ProfileSyncService::StartUp() {
   // Don't start up multiple times.
   if (backend_.get()) {
@@ -700,6 +708,15 @@ void ProfileSyncService::OnPassphraseRequired(bool for_decryption) {
                   cached_passphrase_.is_explicit,
                   cached_passphrase_.is_creation);
     cached_passphrase_ = CachedPassphrase();
+    return;
+  }
+
+  // We will skip the passphrase prompt and suppress the warning
+  // if the passphrase is needed for decryption but the user is
+  // not syncing an encrypted data type on this machine.
+  // Otherwise we prompt.
+  if (!IsEncryptedDatatypeEnabled() && for_decryption) {
+    OnPassphraseAccepted();
     return;
   }
 

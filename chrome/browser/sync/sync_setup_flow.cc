@@ -45,6 +45,8 @@ void FlowHandler::RegisterMessages() {
       NewCallback(this, &FlowHandler::HandleConfigure));
   dom_ui_->RegisterMessageCallback("Passphrase",
       NewCallback(this, &FlowHandler::HandlePassphraseEntry));
+  dom_ui_->RegisterMessageCallback("PassphraseCancel",
+      NewCallback(this, &FlowHandler::HandlePassphraseCancel));
   dom_ui_->RegisterMessageCallback("FirstPassphrase",
       NewCallback(this, &FlowHandler::HandleFirstPassphrase));
   dom_ui_->RegisterMessageCallback("GoToDashboard",
@@ -167,6 +169,13 @@ static bool GetConfiguration(const std::string& json,
   return true;
 }
 
+static void DisablePasswordSync(ProfileSyncService* service) {
+  syncable::ModelTypeSet types;
+  service->GetPreferredDataTypes(&types);
+  types.erase(syncable::PASSWORDS);
+  service->OnUserChoseDatatypes(false, types);
+}
+
 void FlowHandler::HandleSubmitAuth(const ListValue* args) {
   std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
   std::string username, password, captcha, access_code;
@@ -219,6 +228,11 @@ void FlowHandler::HandlePassphraseEntry(const ListValue* args) {
 
   DCHECK(flow_);
   flow_->OnPassphraseEntry(passphrase);
+}
+
+void FlowHandler::HandlePassphraseCancel(const ListValue* args) {
+  DCHECK(flow_);
+  flow_->OnPassphraseCancel();
 }
 
 void FlowHandler::HandleFirstPassphrase(const ListValue* args) {
@@ -738,6 +752,15 @@ void SyncSetupFlow::OnPassphraseEntry(const std::string& passphrase) {
   service_->SetPassphrase(passphrase, true, false);
 }
 
+void SyncSetupFlow::OnPassphraseCancel() {
+  // If the user cancels when being asked for the passphrase,
+  // just disable encrypted sync and continue setting up.
+  if (current_state_ == SyncSetupWizard::ENTER_PASSPHRASE)
+    DisablePasswordSync(service_);
+
+  Advance(SyncSetupWizard::SETTING_UP);
+}
+
 void SyncSetupFlow::OnFirstPassphraseEntry(const std::string& option,
                                            const std::string& passphrase) {
   Advance(SyncSetupWizard::SETTING_UP);
@@ -747,10 +770,7 @@ void SyncSetupFlow::OnFirstPassphraseEntry(const std::string& option,
   } else if (option == "nothanks") {
     // User opted out of encrypted sync, need to turn off encrypted
     // data types.
-    syncable::ModelTypeSet registered_types;
-    service_->GetRegisteredDataTypes(&registered_types);
-    registered_types.erase(syncable::PASSWORDS);
-    service_->OnUserChoseDatatypes(false, registered_types);
+    DisablePasswordSync(service_);
   } else if (option == "google") {
     // Implicit passphrase already set up.
     Advance(SyncSetupWizard::DONE);

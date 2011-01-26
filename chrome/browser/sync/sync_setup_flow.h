@@ -111,6 +111,9 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   // an existing passphrase.
   void OnPassphraseEntry(const std::string& passphrase);
 
+  // The user canceled the passphrase entry without supplying a passphrase.
+  void OnPassphraseCancel();
+
   // The 'first passphrase' screen is for users migrating from a build
   // without passwords, who are prompted to make a passphrase choice.
   void OnFirstPassphraseEntry(const std::string& option,
@@ -156,7 +159,7 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   FlowHandler* flow_handler_;
   mutable bool owns_flow_handler_;
 
-  // We need this to write the sentinel "setup completed" pref.
+  // We need this to propagate back all user settings changes.
   ProfileSyncService* service_;
 
   // Currently used only on OS X
@@ -200,6 +203,7 @@ class FlowHandler : public DOMMessageHandler {
   void HandleSubmitAuth(const ListValue* args);
   void HandleConfigure(const ListValue* args);
   void HandlePassphraseEntry(const ListValue* args);
+  void HandlePassphraseCancel(const ListValue* args);
   void HandleFirstPassphrase(const ListValue* args);
   void HandleGoToDashboard(const ListValue* args);
 

@@ -55,6 +55,27 @@ html[os='mac'] input[type='submit'] {
 .error {
   color: red;
 }
+.overlay-warning {
+  position: absolute;
+  display: none;
+  left: 25px;
+  right: 25px;
+  top: 100px;
+  background: white;
+  border: 2px solid #888;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0.2em 0.2em 0.5em #888;
+}
+#cancel-warning-header {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+.overlay-warning INPUT {
+  margin-top: 12px;
+  float: right;
+  margin-left: 5px;
+}
 </style>
 <script src="chrome://resources/js/cr.js"></script>
 <script>
@@ -88,6 +109,18 @@ html[os='mac'] input[type='submit'] {
     chrome.send("Passphrase", [result]);
   }
 
+  function showCancelWarning() {
+    document.getElementById("cancel-warning-box").style.display = "block";
+    document.getElementById("okButton").disabled = true;
+    document.getElementById("cancelButton").disabled = true;
+  }
+
+  function hideCancelWarning() {
+    document.getElementById("cancel-warning-box").style.display = "none";
+    document.getElementById("okButton").disabled = false;
+    document.getElementById("cancelButton").disabled = false;
+  }
+
   function goToDashboard() {
     chrome.send("GoToDashboard", [""]);
     chrome.send("DialogClose", [""]);
@@ -119,12 +152,21 @@ html[os='mac'] input[type='submit'] {
 
   <span id="sync-passphrase-warning" i18n-content="passphraseRecover">
   </span> <a id="clear-data-link" i18n-content="cleardatalink" href="#"
-     onclick='goToDashboard(); return false;'></a>
+     onclick="goToDashboard(); return false;"></a>
+
+  <div class="overlay-warning" id="cancel-warning-box">
+    <div id="cancel-warning-header" i18n-content="cancelWarningHeader"></div>
+    <div id="cancel-warning" i18n-content="cancelWarning"></div>
+    <input id="cancel-no-button" type="submit" i18n-values="value:no"
+           onclick="hideCancelWarning(); return false;" />
+    <input id="cancel-yes-button" type="submit" i18n-values="value:yes"
+           onclick="chrome.send('PassphraseCancel', ['']);" />
+  </div>
 
   <div class="sync-footer">
     <input id="okButton" type="submit" i18n-values="value:ok" />
     <input id="cancelButton" type="button" i18n-values="value:cancel"
-           onclick='chrome.send("DialogClose", [""])' />
+           onclick="showCancelWarning(); return false;" />
   </div>
 </form>
 </body>
