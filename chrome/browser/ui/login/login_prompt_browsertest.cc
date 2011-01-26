@@ -271,7 +271,14 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmCancellation) {
 
 // Similar to the MultipleRealmCancellation test above, but tests
 // whether supplying credentials work as exepcted.
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmConfirmation) {
+#if defined(OS_WIN)
+// See http://crbug.com/70960
+#define MAYBE_MultipleRealmConfirmation DISABLED_MultipleRealmConfirmation
+#else
+#define MAYBE_MultipleRealmConfirmation MultipleRealmConfirmation
+#endif
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
+                       MAYBE_MultipleRealmConfirmation) {
   ASSERT_TRUE(test_server()->Start());
   GURL test_page = test_server()->GetURL(kMultiRealmTestPage);
 
