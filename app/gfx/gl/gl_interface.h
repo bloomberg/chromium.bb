@@ -409,6 +409,20 @@ class GLInterface {
   virtual GLuint GetMaxValueInBufferCHROMIUM(
       GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) = 0;
 
+  virtual void GenFencesNV(GLsizei n, GLuint *fences) = 0;
+
+  virtual void DeleteFencesNV(GLsizei n, const GLuint *fences) = 0;
+
+  virtual void SetFenceNV(GLuint fence, GLenum condition) = 0;
+
+  virtual GLboolean TestFenceNV(GLuint fence) = 0;
+
+  virtual void FinishFenceNV(GLuint fence) = 0;
+
+  virtual GLboolean IsFenceNV(GLuint fence) = 0;
+
+  virtual void GetFenceivNV(GLuint fence, GLenum pname, GLint *params) = 0;
+
  private:
   static GLInterface* interface_;
 };

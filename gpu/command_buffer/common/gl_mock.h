@@ -408,6 +408,20 @@ class MockGLInterface : public GLInterface {
 
   MOCK_METHOD4(GetMaxValueInBufferCHROMIUM, GLuint(
       GLuint buffer_id, GLsizei count, GLenum type, GLuint offset));
+
+  MOCK_METHOD2(GenFencesNV, void(GLsizei n, GLuint *fences));
+
+  MOCK_METHOD2(DeleteFencesNV, void(GLsizei n, const GLuint *fences));
+
+  MOCK_METHOD2(SetFenceNV, void(GLuint fence, GLenum condition));
+
+  MOCK_METHOD1(TestFenceNV, GLboolean(GLuint fence));
+
+  MOCK_METHOD1(FinishFenceNV, void(GLuint fence));
+
+  MOCK_METHOD1(IsFenceNV, GLboolean(GLuint fence));
+
+  MOCK_METHOD3(GetFenceivNV, void(GLuint fence, GLenum pname, GLint *params));
 };
 
 }  // namespace gfx

@@ -242,6 +242,13 @@ GL_FUNCTIONS = [
     'GLuint indx, GLint size, GLenum type, GLboolean normalized, '
     'GLsizei stride, const void* ptr'],
 ['void', ['glViewport'], 'GLint x, GLint y, GLsizei width, GLsizei height'],
+['void', ['glGenFencesNV'], 'GLsizei n, GLuint* fences'],
+['void', ['glDeleteFencesNV'], 'GLsizei n, const GLuint* fences'],
+['void', ['glSetFenceNV'], 'GLuint fence, GLenum condition'],
+['GLboolean', ['glTestFenceNV'], 'GLuint fence'],
+['void', ['glFinishFenceNV'], 'GLuint fence'],
+['GLboolean', ['glIsFenceNV'], 'GLuint fence'],
+['void', ['glGetFenceivNV'], 'GLuint fence, GLenum pname, GLint* params'],
 ]
 
 OSMESA_FUNCTIONS = [
