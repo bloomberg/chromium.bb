@@ -76,11 +76,12 @@ class ScreenRecorderTest : public testing::Test {
 
   virtual void SetUp() {
     // Capturer and Encoder are owned by ScreenRecorder.
+    capturer_ = new MockCapturer();
     encoder_ = new MockEncoder();
     connection_ = new MockConnectionToClient();
     record_ = new ScreenRecorder(
         &message_loop_, &message_loop_, &message_loop_,
-        &capturer_, encoder_);
+        capturer_, encoder_);
   }
 
  protected:
@@ -88,7 +89,7 @@ class ScreenRecorderTest : public testing::Test {
   scoped_refptr<MockConnectionToClient> connection_;
 
   // The following mock objects are owned by ScreenRecorder.
-  MockCapturer capturer_;
+  MockCapturer* capturer_;
   MockEncoder* encoder_;
   MessageLoop message_loop_;
  private:
@@ -107,11 +108,11 @@ TEST_F(ScreenRecorderTest, OneRecordCycle) {
   }
   scoped_refptr<CaptureData> data(new CaptureData(planes, kWidth,
                                                   kHeight, kFormat));
-  EXPECT_CALL(capturer_, width()).WillRepeatedly(Return(kWidth));
-  EXPECT_CALL(capturer_, height()).WillRepeatedly(Return(kHeight));
+  EXPECT_CALL(*capturer_, width()).WillRepeatedly(Return(kWidth));
+  EXPECT_CALL(*capturer_, height()).WillRepeatedly(Return(kHeight));
 
   // First the capturer is called.
-  EXPECT_CALL(capturer_, CaptureInvalidRects(NotNull()))
+  EXPECT_CALL(*capturer_, CaptureInvalidRects(NotNull()))
       .WillOnce(RunCallback(update_rects, data));
 
   // Expect the encoder be called.
@@ -157,11 +158,11 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
   }
   scoped_refptr<CaptureData> data(new CaptureData(planes, kWidth,
                                                   kHeight, kFormat));
-  EXPECT_CALL(capturer_, width()).WillRepeatedly(Return(kWidth));
-  EXPECT_CALL(capturer_, height()).WillRepeatedly(Return(kHeight));
+  EXPECT_CALL(*capturer_, width()).WillRepeatedly(Return(kWidth));
+  EXPECT_CALL(*capturer_, height()).WillRepeatedly(Return(kHeight));
 
   // First the capturer is called.
-  EXPECT_CALL(capturer_, CaptureInvalidRects(NotNull()))
+  EXPECT_CALL(*capturer_, CaptureInvalidRects(NotNull()))
       .WillRepeatedly(RunCallback(update_rects, data));
 
   // Expect the encoder be called.

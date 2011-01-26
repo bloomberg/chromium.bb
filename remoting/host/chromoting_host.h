@@ -64,14 +64,13 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public protocol::ConnectionToClient::EventHandler,
                        public JingleClient::Callback {
  public:
-  // Factory methods that must be used to create ChromotingHost instances.
-  // Default capturer and input stub are used if it is not specified.
+  // Factory methods that must be used to create ChromotingHost
+  // instances.  Default capturer is used if it is not specified.
   static ChromotingHost* Create(ChromotingHostContext* context,
                                 MutableHostConfig* config);
   static ChromotingHost* Create(ChromotingHostContext* context,
                                 MutableHostConfig* config,
-                                Capturer* capturer,
-                                protocol::InputStub* input_stub);
+                                Capturer* capturer);
 
   // Asynchronously start the host process.
   //
@@ -115,7 +114,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
  private:
   friend class base::RefCountedThreadSafe<ChromotingHost>;
   ChromotingHost(ChromotingHostContext* context, MutableHostConfig* config,
-                 Capturer* capturer, protocol::InputStub* input_stub);
+                 Capturer* capturer);
   virtual ~ChromotingHost();
 
   enum State {

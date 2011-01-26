@@ -102,8 +102,8 @@ void ScreenRecorder::RemoveAllConnections() {
 
 Capturer* ScreenRecorder::capturer() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
-  DCHECK(capturer_);
-  return capturer_;
+  DCHECK(capturer_.get());
+  return capturer_.get();
 }
 
 Encoder* ScreenRecorder::encoder() {

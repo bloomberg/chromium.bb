@@ -32,7 +32,6 @@
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/event_executor.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/proto/video.pb.h"
 
@@ -117,12 +116,9 @@ int main(int argc, char** argv) {
 
   bool fake = cmd_line->HasSwitch(kFakeSwitchName);
   if (fake) {
-    remoting::Capturer* capturer =
-        new remoting::CapturerFake(context.main_message_loop());
-    remoting::protocol::InputStub* input_stub =
-        CreateEventExecutor(context.main_message_loop(), capturer);
     host = ChromotingHost::Create(
-        &context, config, capturer, input_stub);
+        &context, config,
+        new remoting::CapturerFake(context.main_message_loop()));
   } else {
     host = ChromotingHost::Create(&context, config);
   }

@@ -6,11 +6,9 @@
 #define REMOTING_PROTOCOL_MOCK_OBJECTS_H_
 
 #include "remoting/proto/internal.pb.h"
-#include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
-#include "remoting/protocol/session.h"
 #include "remoting/protocol/video_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -23,10 +21,8 @@ class MockConnectionToClient : public ConnectionToClient {
  public:
   MockConnectionToClient() {}
 
-  MOCK_METHOD1(Init, void(Session* session));
+  MOCK_METHOD1(Init, void(ChromotocolConnection* connection));
   MOCK_METHOD0(video_stub, VideoStub*());
-  MOCK_METHOD0(client_stub, ClientStub*());
-  MOCK_METHOD0(session, Session*());
   MOCK_METHOD0(Disconnect, void());
 
  private:
@@ -80,31 +76,6 @@ class MockVideoStub : public VideoStub {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoStub);
-};
-
-class MockSession : public Session {
- public:
-  MockSession() {}
-
-  MOCK_METHOD1(SetStateChangeCallback, void(StateChangeCallback* callback));
-  MOCK_METHOD0(control_channel, net::Socket*());
-  MOCK_METHOD0(event_channel, net::Socket*());
-  MOCK_METHOD0(video_channel, net::Socket*());
-  MOCK_METHOD0(video_rtp_channel, net::Socket*());
-  MOCK_METHOD0(video_rtcp_channel, net::Socket*());
-  MOCK_METHOD0(jid, const std::string&());
-  MOCK_METHOD0(message_loop, MessageLoop*());
-  MOCK_METHOD0(candidate_config, const CandidateSessionConfig*());
-  MOCK_METHOD0(config, const SessionConfig*());
-  MOCK_METHOD1(set_config, void(const SessionConfig* config));
-  MOCK_METHOD0(initiator_token, const std::string&());
-  MOCK_METHOD1(set_initiator_token, void(const std::string& initiator_token));
-  MOCK_METHOD0(receiver_token, const std::string&());
-  MOCK_METHOD1(set_receiver_token, void(const std::string& receiver_token));
-  MOCK_METHOD1(Close, void(Task* closed_task));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSession);
 };
 
 }  // namespace protocol

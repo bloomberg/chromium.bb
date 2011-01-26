@@ -55,10 +55,10 @@ class ConnectionToClient :
 
   virtual ~ConnectionToClient();
 
-  virtual void Init(Session* session);
+  virtual void Init(protocol::Session* session);
 
   // Returns the connection in use.
-  virtual Session* session();
+  virtual protocol::Session* session();
 
   // Disconnect the client connection. This method is allowed to be called
   // more than once and calls after the first one will be ignored.
@@ -78,15 +78,15 @@ class ConnectionToClient :
 
  private:
   // Callback for protocol Session.
-  void OnSessionStateChange(Session::State state);
+  void OnSessionStateChange(protocol::Session::State state);
 
   // Process a libjingle state change event on the |loop_|.
-  void StateChangeTask(Session::State state);
+  void StateChangeTask(protocol::Session::State state);
 
   void OnClosed();
 
   // The libjingle channel used to send and receive data from the remote client.
-  scoped_refptr<Session> session_;
+  scoped_refptr<protocol::Session> session_;
 
   scoped_ptr<VideoWriter> video_writer_;
 
