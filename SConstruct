@@ -2008,6 +2008,7 @@ nacl_env.Append(
     'tests/nullptr/nacl.scons',
     'tests/pepper_plugin/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
+    'tests/ppapi_bad/nacl.scons',
     'tests/ppapi_example_2d/nacl.scons',
     'tests/ppapi_example_audio/nacl.scons',
     'tests/ppapi_geturl/nacl.scons',

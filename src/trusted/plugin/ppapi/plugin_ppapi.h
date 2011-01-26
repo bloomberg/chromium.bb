@@ -134,6 +134,10 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // Shuts down the proxy for PPAPI nexes.
   void ShutdownProxy();
 
+  // Logs the error to JS console, shuts down the proxy and returns false,
+  // so this function can be used as a return value.
+  bool Failure(const nacl::string& error);
+
   // A pointer to the browser end of a proxy pattern connecting the
   // NaCl plugin to the PPAPI .nexe's PPP interface
   // (InitializeModule, Shutdown, and GetInterface).

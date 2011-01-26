@@ -530,7 +530,7 @@ bool Plugin::IsValidNexeOrigin(nacl::string full_url, nacl::string local_path) {
   // TODO(adonovan): JavaScript permits cross-origin loading, and so
   // does Chrome; why don't we?
   if (!origin_valid_ || !module_origin_valid) {
-    nacl::string message = nacl::string("Load failed: NaCl module ") +
+    nacl::string message = nacl::string("NaCl module load failed: module ") +
         nacl_module_url_ + " does not come from a whitelisted source. "
         "See native_client/src/trusted/plugin/origin.cc for the list.";
     browser_interface_->AddToConsole(instance_id(), message.c_str());
@@ -611,7 +611,7 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime=%p)\n",
                  static_cast<void*>(service_runtime_)));
   if (NULL == service_runtime_) {
-    const char* message = "Load: Failed to instantiate service runtime";
+    const char* message = "NaCl module load failed: sel_ldr init failure.";
     browser_interface_->AddToConsole(instance_id(), message);
     return false;
   }
@@ -632,7 +632,7 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   // start-up might fail after default_socket_address() was already created.
   socket_address_ = service_runtime_->default_socket_address();
   if (!service_runtime_started) {
-    const char* message = "Load: Failed to start service runtime";
+    const char* message = "NaCl module load failed: sel_ldr start-up failure.";
     browser_interface_->AddToConsole(instance_id(), message);
     return false;
   }
@@ -651,13 +651,13 @@ bool Plugin::StartSrpcServices(nacl::string* error) {
   UnrefScriptableHandle(&socket_);
   socket_ = socket_address_->handle()->Connect();
   if (socket_ == NULL) {
-    *error = "Load: Failed to connect using SRPC";
+    *error = "NaCl module load failed: SRPC connection failure.";
     return false;
   }
   socket_->handle()->StartJSObjectProxy(this);
   // Create the listener thread and initialize the nacl module.
   if (!InitializeModuleMultimedia(socket_, service_runtime_)) {
-    *error = "Load: Failed to initialise multimedia";
+    *error = "NaCl module load failed: multimedia init failure.";
     return false;
   }
   PLUGIN_PRINTF(("Plugin::Load (established socket %p)\n",

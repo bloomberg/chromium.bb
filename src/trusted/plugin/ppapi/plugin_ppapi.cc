@@ -27,11 +27,10 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 
-// TODO(sehr,polina): we should have a Failure helper class that can log errors
-// to the JavaScript console, and it should be used in addition to
-// PLUGIN_PRINTF in the event of a failure.
+namespace plugin {
 
 namespace {
+
 const char* const kSrcAttribute = "src";  // The "src" attr of the <embed> tag.
 // The "nacl" attribute of the <embed> tag.  The value is expected to be either
 // a URL or URI pointing to the manifest file (which is expeceted to contain
@@ -46,9 +45,8 @@ const ssize_t kNaclManifestMaxFileBytesNoNull =
 // The "nexes" attr of the <embed> tag, and the key used to find the dicitonary
 // of nexe URLs in the manifest file.
 const char* const kNexesAttribute = "nexes";
-}  // namespace
 
-namespace plugin {
+}  // namespace
 
 PluginPpapi* PluginPpapi::New(PP_Instance pp_instance) {
   PLUGIN_PRINTF(("PluginPpapi::New (pp_instance=%"NACL_PRId32")\n",
@@ -59,15 +57,16 @@ PluginPpapi* PluginPpapi::New(PP_Instance pp_instance) {
   }
 #endif
   PluginPpapi* plugin = new(std::nothrow) PluginPpapi(pp_instance);
+  PLUGIN_PRINTF(("PluginPpapi::New (plugin=%p)\n", static_cast<void*>(plugin)));
   if (plugin == NULL) {
     return NULL;
   }
-  PLUGIN_PRINTF(("PluginPpapi::New (return %p)\n",
-                 static_cast<void*>(plugin)));
   return plugin;
 }
 
-
+// All failures of this function will show up as "Missing Plugin-in", so
+// there is no need to log to JS console that there was an initialization
+// failure. Note that module loading functions will log their own errors.
 bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   PLUGIN_PRINTF(("PluginPpapi::Init (argc=%"NACL_PRIu32")\n", argc));
   BrowserInterface* browser_interface =
@@ -124,7 +123,7 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     }
   }
 
-  PLUGIN_PRINTF(("PluginPpapi::Init (return %d)\n", status));
+  PLUGIN_PRINTF(("PluginPpapi::Init (status=%d)\n", status));
   return status;
 }
 
@@ -162,10 +161,10 @@ void PluginPpapi::DidChangeView(const pp::Rect& position,
   PLUGIN_PRINTF(("PluginPpapi::DidChangeView (this=%p)\n",
                  static_cast<void*>(this)));
   if (ppapi_proxy_ == NULL) {
-    // Store this event and replay it whhen the proxy becomes available.
-    replayDidChangeView         = true;
+    // Store this event and replay it when the proxy becomes available.
+    replayDidChangeView = true;
     replayDidChangeViewPosition = position;
-    replayDidChangeViewClip     = clip;
+    replayDidChangeViewClip = clip;
     return;
   } else {
     ppapi_proxy_->ppp_instance_interface()->DidChangeView(
@@ -228,13 +227,12 @@ pp::Var PluginPpapi::GetInstanceObject() {
 void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginPpapi::NexeFileDidOpen (pp_error=%"NACL_PRId32")\n",
                  pp_error));
-  if (pp_error != PP_OK) {
-    return;
-  }
   int32_t file_desc = url_downloader_.GetPOSIXFileDescriptor();
   PLUGIN_PRINTF(("PluginPpapi::NexeFileDidOpen (file_desc=%"NACL_PRId32")\n",
                  file_desc));
-  if (file_desc > NACL_NO_FILE_DESC) {
+  if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
+    Failure("NaCl module load failed: could not load url.");
+  } else {
     LoadNaClModule(url_downloader_.url(), file_desc);
   }
 }
@@ -259,8 +257,8 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
   if (NaClSrpcServiceMethodIndex(client_service,
                                  "PPP_InitializeModule:iihs:ii") ==
       kNaClSrpcInvalidMethodIndex) {
-    PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution failed - "
-                   "cannot find PPP_InitializeModule method.\n"));
+    Failure("NaCl module proxy failed: could not find PPP_InitializeModule()"
+            " - toolchain version mismatch?");
     return;
   }
   ppapi_proxy_ =
@@ -268,21 +266,17 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (ppapi_proxy=%p)\n",
                  reinterpret_cast<void*>(ppapi_proxy_)));
   if (ppapi_proxy_ == NULL) {
+    Failure("NaCl module proxy failed: could not allocate proxy memory.");
     return;
   }
   pp::Module* module = pp::Module::Get();
-  PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (module=%p)\n",
-                 reinterpret_cast<void*>(module)));
-  if (module == NULL) {
-    return;
-  }
+  CHECK(module != NULL);  // We could not have gotten past init stage otherwise.
   int32_t pp_error =
       ppapi_proxy_->InitializeModule(module->pp_module(),
                                      module->get_browser_interface(),
                                      pp_instance());
   if (pp_error != PP_OK) {
-    PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution failed\n"));
-    ShutdownProxy();
+    Failure("NaCl module proxy failed: could not initialize module.");
     return;
   }
   const PPP_Instance* instance_interface =
@@ -294,8 +288,7 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
       const_cast<const char**>(argn()),
       const_cast<const char**>(argv()));
   if (did_create == PP_FALSE) {
-    PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution failed\n"));
-    ShutdownProxy();
+    Failure("NaCl module proxy failed: could not create instance.");
     return;
   }
 
@@ -325,16 +318,15 @@ void PluginPpapi::ShutdownProxy() {
 
 
 void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(
-      ("PluginPpapi::NaClManifestFileDidOpen (pp_error=%"NACL_PRId32")\n",
-       pp_error));
-  if (pp_error != PP_OK) {
+  PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (pp_error=%"
+                 NACL_PRId32")\n", pp_error));
+  int32_t file_desc = url_downloader_.GetPOSIXFileDescriptor();
+  PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (file_desc=%"
+                 NACL_PRId32")\n", file_desc));
+  if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
+    Failure("NaCl module load failed: could not load manifest url.");
     return;
   }
-  int32_t file_desc = url_downloader_.GetPOSIXFileDescriptor();
-  PLUGIN_PRINTF(
-      ("PluginPpapi::NaClManifestFileDidOpen (file_desc=%"NACL_PRId32")\n",
-       file_desc));
   // Duplicate the file descriptor in order to create a FILE stream with it
   // that can later be closed without closing the original descriptor.  The
   // browser will take care of the original descriptor.
@@ -345,15 +337,14 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
                  dup_file_desc, reinterpret_cast<void*>(json_file)));
   if (json_file == NULL) {
     CLOSE(dup_file_desc);
-    PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen failed\n"));
+    Failure("NaCl module load failed: could not open manifest file.");
     return;
   }
   nacl::scoped_array<char> json_buffer(
       new char[kNaclManifestMaxFileBytesPlusNull]);
   if (json_buffer == NULL) {
     fclose(json_file);
-    PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen failed: "
-                   "can\'t allocate memory\n"));
+    Failure("NaCl module load failed: could not allocate manifest memory.");
     return;
   }
   size_t read_byte_count = fread(json_buffer.get(),
@@ -372,6 +363,7 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
                    "read_byte_count=%"NACL_PRIuS"\n",
                    read_error, file_too_large,
                    read_byte_count));
+    Failure("NaCl module load failed: could not read manifest file.");
     return;
   }
   json_buffer[read_byte_count] = '\0';  // Force null termination.
@@ -383,7 +375,7 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
     SetSrcPropertyImpl(nexe_url);
     return;
   }
-  PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen failed\n"));
+  Failure("NaCl module load failed: could not select from manifest file.");
 }
 
 
@@ -434,4 +426,13 @@ bool PluginPpapi::SelectNexeURLFromManifest(
   *result = nexe_url.AsString();
   return true;
 }
+
+
+bool PluginPpapi::Failure(const nacl::string& error) {
+  PLUGIN_PRINTF(("PluginPpapi::Failure (error='%s')\n", error.c_str()));
+  browser_interface()->AddToConsole(instance_id(), error);
+  ShutdownProxy();
+  return false;
+}
+
 }  // namespace plugin
