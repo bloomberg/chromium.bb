@@ -3692,5 +3692,27 @@
    fun:_ZN22ProfileSyncServiceMockC2Ev
    fun:_ZN7testing8NiceMockI22ProfileSyncServiceMockEC1Ev
    fun:_ZN71SyncUIUtilTest_ConstructAboutInformationWithUnrecoverableErrorTest_Test8TestBodyEv
-   fun:_ZN7testing35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
+{
+   bug_70782_l
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15SyncSetupWizardC2EP18ProfileSyncService
+   fun:_ZN15SyncSetupWizardC1EP18ProfileSyncService
+   fun:_ZN18ProfileSyncServiceC2Ev
+   fun:_ZN22ProfileSyncServiceMockC2Ev
+   fun:_ZN7testing8NiceMockI22ProfileSyncServiceMockEC2Ev
+   fun:_ZN7testing8NiceMockI22ProfileSyncServiceMockEC1Ev
+   fun:_ZN14TestingProfile21GetProfileSyncServiceERKSs
+   fun:_ZN14TestingProfile21GetProfileSyncServiceEv
+   fun:_ZN7Profile16IsSyncAccessibleEv
+   fun:_ZN7Browser31UpdateCommandsForFullscreenModeEb
+   fun:_ZN7Browser16InitCommandStateEv
+   fun:_ZN7BrowserC2ENS_4TypeEP7Profile
+   fun:_ZN7BrowserC1ENS_4TypeEP7Profile
+   fun:_ZN17BrowserTestHelperC2Ev
+   fun:_ZN17BrowserTestHelperC1Ev
+   fun:_ZN12_GLOBAL__N_124WrenchMenuControllerTestC2Ev
+   fun:_ZN12_GLOBAL__N_141WrenchMenuControllerTest_Initialized_TestC2Ev
+   fun:_ZN12_GLOBAL__N_141WrenchMenuControllerTest_Initialized_TestC1Ev
 }
