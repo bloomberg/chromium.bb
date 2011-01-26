@@ -22,6 +22,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/plugin_messages.h"
@@ -67,7 +68,7 @@ RegisterLoggerFuncs g_register_logger_funcs;
 
 // The singleton dialog box. This is non-NULL when a dialog is active so we
 // know not to create a new one.
-AboutIPCDialog* active_dialog = NULL;
+AboutIPCDialog* g_active_dialog = NULL;
 
 std::set<int> disabled_messages;
 
@@ -207,15 +208,16 @@ AboutIPCDialog::AboutIPCDialog()
 }
 
 AboutIPCDialog::~AboutIPCDialog() {
-  active_dialog = NULL;
+  g_active_dialog = NULL;
   IPC::Logging::GetInstance()->SetConsumer(NULL);
 }
 
 // static
 void AboutIPCDialog::RunDialog() {
-  if (!active_dialog) {
-    active_dialog = new AboutIPCDialog;
-    views::Window::CreateChromeWindow(NULL, gfx::Rect(), active_dialog)->Show();
+  if (!g_active_dialog) {
+    g_active_dialog = new AboutIPCDialog;
+    views::Window::CreateChromeWindow(NULL, gfx::Rect(),
+                                      g_active_dialog)->Show();
   } else {
     // TOOD(brettw) it would be nice to focus the existing window.
   }
@@ -366,5 +368,13 @@ void AboutIPCDialog::ButtonPressed(
     RunSettingsDialog(GetRootView()->GetWidget()->GetNativeView());
   }
 }
+
+namespace browser {
+
+void ShowAboutIPCDialog() {
+  AboutIPCDialog::RunDialog();
+}
+
+} // namespace browser
 
 #endif  // IPC_MESSAGE_LOG_ENABLED

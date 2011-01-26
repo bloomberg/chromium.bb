@@ -15,6 +15,8 @@
 // popups. The dialogs here are the ones that the caller does not need to
 // access the class of the popup. It allows us to break dependencies by
 // allowing the callers to not depend on the classes implementing the dialogs.
+// TODO: Make as many of these methods as possible cross platform, and move them
+// into chrome/browser/ui/browser_dialogs.h.
 
 class Browser;
 class BrowserView;

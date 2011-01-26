@@ -38,6 +38,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/about_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
@@ -61,15 +62,12 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
-#include "chrome/browser/ui/views/about_ipc_dialog.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/syslogs_library.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/zygote_host_linux.h"
-#elif defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/about_ipc_dialog.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/zygote_host_linux.h"
 #endif
@@ -1093,7 +1091,7 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
 #if (defined(OS_MACOSX) || defined(OS_WIN)) && defined(IPC_MESSAGE_LOG_ENABLED)
   if (LowerCaseEqualsASCII(url.spec(), chrome::kChromeUIIPCURL)) {
     // Run the dialog. This will re-use the existing one if it's already up.
-    AboutIPCDialog::RunDialog();
+    browser::ShowAboutIPCDialog();
     return true;
   }
 #endif

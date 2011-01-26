@@ -17,13 +17,6 @@
 class AboutIPCController;
 #endif
 
-namespace AboutIPCDialog {
-// The dialog is a singleton. If the dialog is already opened, it won't do
-// anything, so you can just blindly call this function all you want.
-// RunDialog() is Called from chrome/browser/browser_about_handler.cc
-// in response to an about:ipc URL.
-void RunDialog();
-}
 
 // On Windows, the AboutIPCDialog is a views::View.  On Mac we have a
 // Cocoa dialog.  This class bridges from C++ to ObjC.

@@ -2626,6 +2626,7 @@
         'browser/ui/app_modal_dialogs/native_app_modal_dialog.h',
         'browser/ui/browser.cc',
         'browser/ui/browser.h',
+        'browser/ui/browser_dialogs.h',
         'browser/ui/browser_init.cc',
         'browser/ui/browser_init.h',
         'browser/ui/browser_list_gtk.cc',

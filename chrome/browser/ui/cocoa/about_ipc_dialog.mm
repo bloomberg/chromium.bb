@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/cocoa/about_ipc_dialog.h"
 #include "chrome/browser/ui/cocoa/about_ipc_controller.h"
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 
-namespace AboutIPCDialog {
+namespace browser {
 
-void RunDialog() {
+void ShowAboutIPCDialog() {
   // The controller gets deallocated when then window is closed,
   // so it is safe to "fire and forget".
   AboutIPCController* controller = [AboutIPCController sharedController];
   [[controller window] makeKeyAndOrderFront:controller];
 }
 
-}  // namespace AboutIPCDialog
+}  // namespace browser
 
 void AboutIPCBridge::Log(const IPC::LogData& data) {
   CocoaLogData* cocoa_data = [[CocoaLogData alloc] initWithLogData:data];
