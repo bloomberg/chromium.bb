@@ -81,6 +81,19 @@ ASSERT_TYPE_SIZE(SerializedDouble, 16);
 ASSERT_TYPE_SIZE(SerializedString, 16);
 ASSERT_TYPE_SIZE(SerializedObject, 24);
 
+//
+// We currently use offsetof to find the start of string storage.
+// This avoids the (never seen) case where the compiler inserts in
+// padding between the struct SerializedFixed fixed header and the
+// actual payload value in the double, string, and object
+// serialization variants.
+//
+// Untrusted arm toolchain defines an offsetof in stddef.h, so we have
+// to prefix.
+//
+#define NACL_OFFSETOF(pod_t, member) \
+  (static_cast<size_t>(reinterpret_cast<uintptr_t>(&((pod_t *) NULL)->member)))
+
 namespace {
 
 // Adding value1 and value2 would overflow a uint32_t.
@@ -94,7 +107,7 @@ bool AddWouldOverflow(size_t value1, size_t value2) {
 
 uint32_t RoundedStringBytes(uint32_t string_length) {
   // Compute the string length, padded to the nearest multiple of 8.
-  if (string_length > std::numeric_limits<uint32_t>::max() - kStringRoundBase) {
+  if (AddWouldOverflow(string_length, kStringRoundBase - 1)) {
     return std::numeric_limits<uint32_t>::max();
   }
   return (string_length + (kStringRoundBase - 1)) & ~(kStringRoundBase - 1);
@@ -114,11 +127,13 @@ uint32_t PpVarSize(const PP_Var& var) {
       (void) PPBVarInterface()->VarToUtf8(var, &string_length);
       string_length = RoundedStringBytes(string_length);
       if (std::numeric_limits<uint32_t>::max() == string_length ||
-          AddWouldOverflow(string_length, sizeof(SerializedFixed))) {
+          AddWouldOverflow(string_length,
+                           NACL_OFFSETOF(SerializedString, string_bytes))) {
         // Adding the length to the fixed portion would overflow.
         return 0;
       }
-      return static_cast<uint32_t>(sizeof(SerializedFixed) + string_length);
+      return static_cast<uint32_t>(NACL_OFFSETOF(SerializedString, string_bytes)
+                                   + string_length);
       break;
     }
     case PP_VARTYPE_OBJECT:
@@ -142,8 +157,6 @@ uint32_t PpVarVectorSize(const PP_Var* vars, uint32_t argc) {
   }
   return static_cast<uint32_t>(size);
 }
-
-}  // namespace
 
 bool SerializePpVar(const PP_Var* vars,
                     uint32_t argc,
@@ -200,8 +213,8 @@ bool SerializePpVar(const PP_Var* vars,
         // Fill padding bytes with zeros.
         memset(reinterpret_cast<void*>(ss->string_bytes + string_length), 0,
             RoundedStringBytes(string_length) - string_length);
-        element_size =
-              sizeof(SerializedFixed) + RoundedStringBytes(string_length);
+        element_size = NACL_OFFSETOF(SerializedString, string_bytes)
+            + RoundedStringBytes(string_length);
         break;
       }
       case PP_VARTYPE_OBJECT: {
@@ -222,17 +235,109 @@ bool SerializePpVar(const PP_Var* vars,
   return true;
 }
 
+
+//
+// Compute how many bytes does the string object to be deserialzed use
+// in the serialized format.  On error, return
+// std::numeric_limits<uint32_t>::max().  This means we cannot handle
+// 2**32-1 byte strings.
+//
+uint32_t DeserializeStringSize(char* p, uint32_t length) {
+  // zero length strings are okay... but not shorter
+  if (length < NACL_OFFSETOF(SerializedString, string_bytes)) {
+    return std::numeric_limits<uint32_t>::max();
+  }
+  SerializedString* ss = reinterpret_cast<SerializedString*>(p);
+  if (PP_VARTYPE_STRING != ss->fixed.type) {
+    return std::numeric_limits<uint32_t>::max();
+  }
+  uint32_t string_length = ss->fixed.u.string_length;
+  string_length = RoundedStringBytes(string_length);
+  if (std::numeric_limits<uint32_t>::max() == string_length) {
+    return std::numeric_limits<uint32_t>::max();
+  }
+  if (AddWouldOverflow(NACL_OFFSETOF(SerializedString, string_bytes),
+                       string_length)) {
+    return std::numeric_limits<uint32_t>::max();
+  }
+  uint32_t total_bytes = NACL_OFFSETOF(SerializedString, string_bytes)
+      + string_length;
+  if (total_bytes > length) {
+    return std::numeric_limits<uint32_t>::max();
+  }
+  return total_bytes;
+}
+
+
+//
+// Compute the number of bytes that will be consumed by the next
+// object, based on its type.  If there aren't enough bytes,
+// std::numeric_limits<uint32_t>::max() will be returned.
+//
+// If element_type_ptr is non-NULL, then the next element's
+// (purported) type will be filled in.  Whether this occurs when there
+// is an error (e.g., not enough data) is not defined, i.e., only rely
+// on it when there's no error.
+//
+uint32_t DeserializePpVarSize(char* p,
+                              uint32_t length,
+                              PP_VarType* element_type_ptr) {
+  SerializedFixed* sfp;
+  if (length < sizeof *sfp) {
+    return std::numeric_limits<uint32_t>::max();
+  }
+  sfp = reinterpret_cast<SerializedFixed*>(p);
+  uint32_t expected_element_size = 0;
+  //
+  // Setting this to zero handles the "default" case.  That can occur
+  // because sfp->type can originate from untrusted code, and so the
+  // value could actually be outside of the PP_VarType enumeration
+  // range.  If we hit one of the cases below, then
+  // expected_element_size will be bounded away from zero.
+  //
+  switch (static_cast<PP_VarType>(sfp->type)) {
+    case PP_VARTYPE_UNDEFINED:
+    case PP_VARTYPE_NULL:
+    case PP_VARTYPE_BOOL:
+    case PP_VARTYPE_INT32:
+      expected_element_size = sizeof(SerializedFixed);
+      break;
+    case PP_VARTYPE_DOUBLE:
+      expected_element_size = sizeof(SerializedDouble);
+      break;
+    case PP_VARTYPE_STRING:
+      expected_element_size = DeserializeStringSize(p, length);
+      if (std::numeric_limits<uint32_t>::max() == expected_element_size) {
+        return std::numeric_limits<uint32_t>::max();
+      }
+      break;
+    case PP_VARTYPE_OBJECT:
+      expected_element_size = sizeof(SerializedObject);
+      //
+      // NB: No default case to trigger -Wswitch-enum, so changes to
+      // PP_VarType w/o corresponding changes here will cause a
+      // compile-time error.
+      //
+  }
+  if (length < expected_element_size) {
+    return std::numeric_limits<uint32_t>::max();
+  }
+  if (NULL != element_type_ptr) {
+    *element_type_ptr = static_cast<PP_VarType>(sfp->type);
+  }
+  return expected_element_size;
+}
+
+
+//
+// This should be invoked only if DeserializePpVarSize succeeds, i.e.,
+// there are enough bytes at p.
+//
 bool DeserializeString(char* p,
                        PP_Var* var,
-                       uint32_t* element_size,
                        NaClSrpcChannel* channel) {
   SerializedString* ss = reinterpret_cast<SerializedString*>(p);
   uint32_t string_length = ss->fixed.u.string_length;
-  if (AddWouldOverflow(string_length, kStringRoundBase - 1)) {
-    // Rounding to the next 8 would overflow.
-    return false;
-  }
-  uint32_t rounded_length = RoundedStringBytes(string_length);
   if (0 == string_length) {
     // Zero-length string.  Rely on what the PPB_Var_Deprecated does.
     *var = PPBVarInterface()->VarFromUtf8(LookupModuleIdForSrpcChannel(channel),
@@ -252,12 +357,6 @@ bool DeserializeString(char* p,
                                           reinterpret_cast<const char*>(copy),
                                           string_length);
   }
-  // Compute the "element_size", or offset in the serialized form from
-  // the serialized string that we just read.
-  if (AddWouldOverflow(rounded_length, sizeof(SerializedFixed))) {
-    return false;
-  }
-  *element_size = sizeof(SerializedFixed) + rounded_length;
   return true;
 }
 
@@ -267,56 +366,54 @@ bool DeserializePpVar(NaClSrpcChannel* channel,
                       PP_Var* vars,
                       uint32_t argc) {
   char* p = bytes;
-  uint32_t element_size;
 
   for (uint32_t i = 0; i < argc; ++i) {
-    if (p >= bytes + length) {
-      // Not enough bytes to get the requested number of PP_Vars.
+    PP_VarType element_type;
+    uint32_t element_size = DeserializePpVarSize(p, length, &element_type);
+    if (std::numeric_limits<uint32_t>::max() == element_size) {
       return false;
     }
     SerializedFixed* s = reinterpret_cast<SerializedFixed*>(p);
 
-    vars[i].type = static_cast<PP_VarType>(s->type);
-    switch (vars[i].type) {
+    vars[i].type = element_type;
+    switch (element_type) {
       case PP_VARTYPE_UNDEFINED:
       case PP_VARTYPE_NULL:
-        element_size = sizeof(SerializedFixed);
         break;
       case PP_VARTYPE_BOOL:
         vars[i].value.as_bool = static_cast<PP_Bool>(s->u.boolean_value);
-        element_size = sizeof(SerializedFixed);
         break;
       case PP_VARTYPE_INT32:
         vars[i].value.as_int = s->u.int32_value;
-        element_size = sizeof(SerializedFixed);
         break;
       case PP_VARTYPE_DOUBLE: {
         SerializedDouble* sd = reinterpret_cast<SerializedDouble*>(p);
         vars[i].value.as_double = sd->double_value;
-        element_size = sizeof(SerializedDouble);
         break;
       }
       case PP_VARTYPE_STRING:
-        if (!DeserializeString(p, &vars[i], &element_size, channel)) {
+        if (!DeserializeString(p, &vars[i], channel)) {
           return false;
         }
         break;
       case PP_VARTYPE_OBJECT: {
-      DebugPrintf("Deserializing object.\n");
+        DebugPrintf("Deserializing object.\n");
         SerializedObject* so = reinterpret_cast<SerializedObject*>(p);
         ObjectCapability capability = so->capability;
         vars[i] = ObjectProxy::New(capability, channel);
-        element_size = sizeof(SerializedObject);
-      DebugPrintf("DONE deserializing object.\n");
+        DebugPrintf("DONE deserializing object.\n");
         break;
       }
       default:
         return false;
     }
     p += element_size;
+    length -= element_size;
   }
   return true;
 }
+
+}  // namespace
 
 bool SerializeTo(const PP_Var* var, char* bytes, uint32_t* length) {
   if (bytes == NULL || length == NULL) {
