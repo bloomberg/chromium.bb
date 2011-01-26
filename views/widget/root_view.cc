@@ -6,6 +6,10 @@
 
 #include <algorithm>
 
+#if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
+#include <gdk/gdkx.h>
+#endif
+
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "gfx/canvas_skia.h"
@@ -18,6 +22,10 @@
 
 #if defined(TOUCH_UI)
 #include "views/touchui/gesture_manager.h"
+#if defined(HAVE_XINPUT2)
+#include "gfx/gtk_util.h"
+#include "views/touchui/touch_factory.h"
+#endif
 #endif
 
 #if defined(OS_LINUX)
@@ -794,6 +802,13 @@ void RootView::SetActiveCursor(gfx::NativeCursor cursor) {
       static_cast<WidgetGtk*>(GetWidget())->window_contents();
   if (!native_view)
     return;
+
+#if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
+  if (!TouchFactory::GetInstance()->is_cursor_visible()) {
+    cursor = gfx::GetCursor(GDK_BLANK_CURSOR);
+  }
+#endif
+
   gdk_window_set_cursor(native_view->window, cursor);
 #endif
 }

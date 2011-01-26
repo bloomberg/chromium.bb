@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "base/singleton.h"
+#include "base/timer.h"
 
+typedef unsigned long Cursor;
 typedef unsigned long Window;
 typedef struct _XDisplay Display;
 
@@ -38,11 +40,39 @@ class TouchFactory {
   // devices.
   bool UngrabTouchDevices(Display* display);
 
+  // Update the root window to show (or hide) the cursor. Also indicate whether
+  // the timer should be started to automatically hide the cursor after a
+  // certain duration of inactivity (i.e. it is ignored if |show| is false).
+  void SetCursorVisible(bool show, bool start_timer);
+
+  // Whether the cursor is currently visible or not.
+  bool is_cursor_visible() {
+    return is_cursor_visible_;
+  }
+
  private:
   TouchFactory();
 
+  ~TouchFactory();
+
+  void HideCursorForInactivity() {
+    SetCursorVisible(false, false);
+  }
+
   // Requirement for Signleton
   friend struct DefaultSingletonTraits<TouchFactory>;
+
+  // The default cursor is hidden after startup, and when the mouse pointer is
+  // idle for a while. Once there is some event from a mouse device, the cursor
+  // is immediately displayed.
+  bool is_cursor_visible_;
+
+  // The cursor is hidden if it is idle for a certain amount time. This timer
+  // is used to keep track of the idleness.
+  base::OneShotTimer<TouchFactory> cursor_timer_;
+
+  // The invisible cursor.
+  Cursor invisible_cursor_;
 
   // NOTE: To keep track of touch devices, we currently maintain a lookup table
   // to quickly decide if a device is a touch device or not. We also maintain a

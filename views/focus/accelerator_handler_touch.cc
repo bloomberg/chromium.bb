@@ -62,17 +62,21 @@ bool X2EventIsTouchEvent(XEvent* xev) {
 
 #if defined(HAVE_XINPUT2)
 bool DispatchX2Event(RootView* root, XEvent* xev) {
+  XGenericEventCookie* cookie = &xev->xcookie;
+  bool touch_event = false;
+
   if (X2EventIsTouchEvent(xev)) {
+    // Hide the cursor when a touch event comes in.
+    TouchFactory::GetInstance()->SetCursorVisible(false, false);
+    touch_event = true;
+
     // Create a TouchEvent, and send it off to |root|. If the event
     // is processed by |root|, then return. Otherwise let it fall through so it
     // can be used (if desired) as a mouse event.
-
     TouchEvent touch(xev);
     if (root->OnTouchEvent(touch) != views::View::TOUCH_STATUS_UNKNOWN)
       return true;
   }
-
-  XGenericEventCookie* cookie = &xev->xcookie;
 
   switch (cookie->evtype) {
     case XI_KeyPress:
@@ -81,25 +85,51 @@ bool DispatchX2Event(RootView* root, XEvent* xev) {
       break;
     }
     case XI_ButtonPress:
-    case XI_ButtonRelease: {
-      MouseEvent mouseev(xev);
-      if (cookie->evtype == XI_ButtonPress) {
-        return root->OnMousePressed(mouseev);
-      } else {
-        root->OnMouseReleased(mouseev, false);
-        return true;
-      }
-    }
-
+    case XI_ButtonRelease:
     case XI_Motion: {
       MouseEvent mouseev(xev);
-      if (mouseev.GetType() == Event::ET_MOUSE_DRAGGED) {
-        return root->OnMouseDragged(mouseev);
-      } else {
-        root->OnMouseMoved(mouseev);
-        return true;
+      if (!touch_event) {
+        // Show the cursor, and decide whether or not the cursor should be
+        // automatically hidden after a certain time of inactivity.
+        int button_flags = mouseev.GetFlags() & (Event::EF_RIGHT_BUTTON_DOWN |
+            Event::EF_MIDDLE_BUTTON_DOWN | Event::EF_LEFT_BUTTON_DOWN);
+        bool start_timer = false;
+
+        switch (cookie->evtype) {
+          case XI_ButtonPress:
+            start_timer = false;
+            break;
+          case XI_ButtonRelease:
+            // For a release, start the timer if this was only button pressed
+            // that is being released.
+            if (button_flags == Event::EF_RIGHT_BUTTON_DOWN ||
+                button_flags == Event::EF_LEFT_BUTTON_DOWN ||
+                button_flags == Event::EF_MIDDLE_BUTTON_DOWN)
+              start_timer = true;
+            break;
+          case XI_Motion:
+            start_timer = !button_flags;
+            break;
+        }
+        TouchFactory::GetInstance()->SetCursorVisible(true, start_timer);
       }
-      break;
+
+      // Dispatch the event.
+      switch (cookie->evtype) {
+        case XI_ButtonPress:
+          return root->OnMousePressed(mouseev);
+        case XI_ButtonRelease:
+          root->OnMouseReleased(mouseev, false);
+          return true;
+        case XI_Motion: {
+          if (mouseev.GetType() == Event::ET_MOUSE_DRAGGED) {
+            return root->OnMouseDragged(mouseev);
+          } else {
+            root->OnMouseMoved(mouseev);
+            return true;
+          }
+        }
+      }
     }
   }
 
