@@ -672,6 +672,17 @@ WebString WebGraphicsContext3DInProcessImpl::
 void WebGraphicsContext3DInProcessImpl::requestExtensionCHROMIUM(const char*) {
 }
 
+void WebGraphicsContext3DInProcessImpl::blitFramebufferCHROMIUM(
+    int srcX0, int srcY0, int srcX1, int srcY1,
+    int dstX0, int dstY0, int dstX1, int dstY1,
+    unsigned mask, unsigned filter) {
+}
+
+void WebGraphicsContext3DInProcessImpl::renderbufferStorageMultisampleCHROMIUM(
+    unsigned long target, int samples, unsigned internalformat,
+    unsigned width, unsigned height) {
+}
+
 // Helper macros to reduce the amount of code.
 
 #define DELEGATE_TO_GL(name, glname)                                           \

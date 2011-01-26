@@ -387,6 +387,23 @@ void WebGraphicsContext3DCommandBufferImpl::requestExtensionCHROMIUM(
   glRequestExtensionCHROMIUM(extension);
 }
 
+void WebGraphicsContext3DCommandBufferImpl::blitFramebufferCHROMIUM(
+    int srcX0, int srcY0, int srcX1, int srcY1,
+    int dstX0, int dstY0, int dstX1, int dstY1,
+    unsigned mask, unsigned filter) {
+  glBlitFramebufferEXT(srcX0, srcY0, srcX1, srcY1,
+                       dstX0, dstY0, dstX1, dstY1,
+                       mask, filter);
+}
+
+void WebGraphicsContext3DCommandBufferImpl::
+    renderbufferStorageMultisampleCHROMIUM(
+        unsigned long target, int samples, unsigned internalformat,
+        unsigned width, unsigned height) {
+  glRenderbufferStorageMultisampleEXT(target, samples, internalformat,
+                                      width, height);
+}
+
 // Helper macros to reduce the amount of code.
 
 #define DELEGATE_TO_GL(name, glname)                                    \

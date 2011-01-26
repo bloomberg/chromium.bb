@@ -75,6 +75,14 @@ class WebGraphicsContext3DInProcessImpl : public WebKit::WebGraphicsContext3D {
   virtual WebKit::WebString getRequestableExtensionsCHROMIUM();
   virtual void requestExtensionCHROMIUM(const char*);
 
+  virtual void blitFramebufferCHROMIUM(
+      int srcX0, int srcY0, int srcX1, int srcY1,
+      int dstX0, int dstY0, int dstX1, int dstY1,
+      unsigned mask, unsigned filter);
+  virtual void renderbufferStorageMultisampleCHROMIUM(
+      unsigned long target, int samples, unsigned internalformat,
+      unsigned width, unsigned height);
+
   virtual void activeTexture(unsigned long texture);
   virtual void attachShader(WebKit::WebGLId program, WebKit::WebGLId shader);
   virtual void bindAttribLocation(
