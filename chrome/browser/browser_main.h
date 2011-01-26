@@ -80,6 +80,8 @@ class BrowserMainParts {
   void EarlyInitialization();
   void MainMessageLoopStart();
 
+  void SetupFieldTrials();
+
  protected:
   explicit BrowserMainParts(const MainFunctionParams& parameters);
 

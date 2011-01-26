@@ -195,14 +195,6 @@ void BrowserMainParts::EarlyInitialization() {
   if (parsed_command_line().HasSwitch(switches::kEnableBenchmarking))
     base::FieldTrial::EnableBenchmarking();
 
-  // Note: make sure to call ConnectionFieldTrial() before
-  // ProxyConnectionsFieldTrial().
-  ConnectionFieldTrial();
-  SocketTimeoutFieldTrial();
-  ProxyConnectionsFieldTrial();
-  SpdyFieldTrial();
-  PrefetchFieldTrial();
-  ConnectBackupJobsFieldTrial();
   InitializeSSL();
 
   if (parsed_command_line().HasSwitch(switches::kEnableDNSSECCerts))
@@ -223,6 +215,18 @@ void BrowserMainParts::EarlyInitialization() {
     net::set_tcp_fastopen_enabled(true);
 
   PostEarlyInitialization();
+}
+
+// This will be called after the command-line has been mutated by about:flags
+void BrowserMainParts::SetupFieldTrials() {
+  // Note: make sure to call ConnectionFieldTrial() before
+  // ProxyConnectionsFieldTrial().
+  ConnectionFieldTrial();
+  SocketTimeoutFieldTrial();
+  ProxyConnectionsFieldTrial();
+  PrefetchFieldTrial();
+  SpdyFieldTrial();
+  ConnectBackupJobsFieldTrial();
 }
 
 // This is an A/B test for the maximum number of persistent connections per
@@ -1251,6 +1255,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   about_flags::ConvertFlagsToSwitches(local_state,
                                       CommandLine::ForCurrentProcess());
 
+  // Now the command line has been mutated based on about:flags, we can run some
+  // field trials
+  parts->SetupFieldTrials();
+
   // Now that all preferences have been registered, set the install date
   // for the uninstall metrics if this is our first run. This only actually
   // gets used if the user has metrics reporting enabled at uninstall time.
@@ -1398,8 +1406,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-  // Modifies the current command line based on active experiments on
-  // about:flags.
   Profile* profile = CreateProfile(parameters, user_data_dir);
   if (!profile)
     return ResultCodes::NORMAL_EXIT;
