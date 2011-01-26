@@ -49,9 +49,6 @@ class BlobData;
 }
 
 namespace webkit_glue {
-struct FormData;
-class FormField;
-struct PasswordFormFillData;
 struct ResourceDevToolsInfo;
 struct ResourceLoadTimingInfo;
 struct ResourceResponseInfo;
@@ -136,15 +133,6 @@ enum ViewHostMsg_JavaScriptStressTestControl_Commands {
 
 namespace IPC {
 
-// Traits for FormField_Params structure to pack/unpack.
-template <>
-struct ParamTraits<webkit_glue::FormField> {
-  typedef webkit_glue::FormField param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
 #if defined(OS_MACOSX)
 // Traits for FontDescriptor structure to pack/unpack.
 template <>
@@ -184,15 +172,6 @@ struct ParamTraits<webkit::npapi::WebPluginMimeType> {
 template <>
 struct ParamTraits<webkit::npapi::WebPluginInfo> {
   typedef webkit::npapi::WebPluginInfo param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-// Traits for webkit_glue::PasswordFormDomManager::FillData.
-template <>
-struct ParamTraits<webkit_glue::PasswordFormFillData> {
-  typedef webkit_glue::PasswordFormFillData param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
@@ -245,15 +224,6 @@ struct ParamTraits<SyncLoadResult> {
   typedef SyncLoadResult param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-// Traits for FormData structure to pack/unpack.
-template <>
-struct ParamTraits<webkit_glue::FormData> {
-  typedef webkit_glue::FormData param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 

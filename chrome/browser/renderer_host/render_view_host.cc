@@ -57,18 +57,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 #include "webkit/glue/context_menu.h"
-#include "webkit/glue/form_data.h"
-#include "webkit/glue/form_field.h"
-#include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webdropdata.h"
 
 using base::TimeDelta;
-using webkit_glue::FormData;
-using webkit_glue::FormField;
-using webkit_glue::PasswordForm;
-using webkit_glue::PasswordFormDomManager;
-using webkit_glue::PasswordFormFillData;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
@@ -427,11 +419,6 @@ void RenderViewHost::ResetPageEncodingToDefault() {
 
 void RenderViewHost::SetAlternateErrorPageURL(const GURL& url) {
   Send(new ViewMsg_SetAltErrorPageURL(routing_id(), url));
-}
-
-void RenderViewHost::FillPasswordForm(
-    const webkit_glue::PasswordFormFillData& form_data) {
-  Send(new ViewMsg_FillPasswordForm(routing_id(), form_data));
 }
 
 void RenderViewHost::DragTargetDragEnter(

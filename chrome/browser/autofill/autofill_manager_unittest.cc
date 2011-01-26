@@ -24,7 +24,7 @@
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/autofill_messages.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -479,14 +479,14 @@ class AutoFillManagerTest : public RenderViewHostTestHarness {
                                      std::vector<string16>* labels,
                                      std::vector<string16>* icons,
                                      std::vector<int>* unique_ids) {
-    const uint32 kMsgID = ViewMsg_AutoFillSuggestionsReturned::ID;
+    const uint32 kMsgID = AutoFillMsg_SuggestionsReturned::ID;
     const IPC::Message* message =
         process()->sink().GetFirstMessageMatching(kMsgID);
     if (!message)
       return false;
 
     AutoFillParam autofill_param;
-    ViewMsg_AutoFillSuggestionsReturned::Read(message, &autofill_param);
+    AutoFillMsg_SuggestionsReturned::Read(message, &autofill_param);
     if (page_id)
       *page_id = autofill_param.a;
     if (values)
@@ -505,13 +505,13 @@ class AutoFillManagerTest : public RenderViewHostTestHarness {
   }
 
   bool GetAutoFillFormDataFilledMessage(int *page_id, FormData* results) {
-    const uint32 kMsgID = ViewMsg_AutoFillFormDataFilled::ID;
+    const uint32 kMsgID = AutoFillMsg_FormDataFilled::ID;
     const IPC::Message* message =
         process()->sink().GetFirstMessageMatching(kMsgID);
     if (!message)
       return false;
     Tuple2<int, FormData> autofill_param;
-    ViewMsg_AutoFillFormDataFilled::Read(message, &autofill_param);
+    AutoFillMsg_FormDataFilled::Read(message, &autofill_param);
     if (page_id)
       *page_id = autofill_param.a;
     if (results)

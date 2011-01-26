@@ -27,8 +27,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "webkit/glue/context_menu.h"
-#include "webkit/glue/form_data.h"
-#include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
 
@@ -465,15 +463,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_ResetPageEncodingToDefault)
 IPC_MESSAGE_ROUTED1(ViewMsg_ReservePageIDRange,
                     int  /* size_of_range */)
 
-// Fill a form with data and optionally submit it
-IPC_MESSAGE_ROUTED1(ViewMsg_FormFill,
-                    webkit_glue::FormData /* form */)
-
-// Fill a password form and prepare field autocomplete for multiple
-// matching logins.
-IPC_MESSAGE_ROUTED1(ViewMsg_FillPasswordForm,
-                    webkit_glue::PasswordFormFillData)
-
 // D&d drop target messages.
 IPC_MESSAGE_ROUTED4(ViewMsg_DragTargetDragEnter,
                     WebDropData /* drop_data */,
@@ -698,21 +687,6 @@ IPC_MESSAGE_CONTROL3(AppCacheMsg_LogMessage,
 IPC_MESSAGE_CONTROL2(AppCacheMsg_ContentBlocked,
                      int /* host_id */,
                      GURL /* manifest_url */)
-
-// Reply to the ViewHostMsg_QueryFormFieldAutoFill message with the
-// AutoFill suggestions.
-IPC_MESSAGE_ROUTED5(ViewMsg_AutoFillSuggestionsReturned,
-                    int /* id of the request message */,
-                    std::vector<string16> /* names */,
-                    std::vector<string16> /* labels */,
-                    std::vector<string16> /* icons */,
-                    std::vector<int> /* unique_ids */)
-
-// Reply to the ViewHostMsg_FillAutoFillFormData message with the
-// AutoFill form data.
-IPC_MESSAGE_ROUTED2(ViewMsg_AutoFillFormDataFilled,
-                    int /* id of the request message */,
-                    webkit_glue::FormData /* form data */)
 
 // Sent by the Browser process to alert a window about whether a it should
 // allow a scripted window.close(). The renderer assumes every new window is a
@@ -1664,25 +1638,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_SelectionChanged,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_RunFileChooser,
                     ViewHostMsg_RunFileChooser_Params)
 
-// Notification that forms have been seen that are candidates for
-// filling/submitting by the AutoFillManager.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_FormsSeen,
-                    std::vector<webkit_glue::FormData> /* forms */)
-
-// Notification that password forms have been seen that are candidates for
-// filling/submitting by the password manager.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_PasswordFormsFound,
-                    std::vector<webkit_glue::PasswordForm> /* forms */)
-
-// Notification that initial layout has occurred and the following password
-// forms are visible on the page (e.g. not set to display:none.)
-IPC_MESSAGE_ROUTED1(ViewHostMsg_PasswordFormsVisible,
-                    std::vector<webkit_glue::PasswordForm> /* forms */)
-
-// Notification that a form has been submitted.  The user hit the button.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_FormSubmitted,
-                    webkit_glue::FormData /* form */)
-
 // Used to tell the parent the user started dragging in the content area. The
 // WebDropData struct contains contextual information about the pieces of the
 // page the user dragged. The parent uses this notification to initiate a
@@ -2026,35 +1981,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AppCacheMsg_GetResourceList,
                             int /* host_id in*/,
                             std::vector<appcache::AppCacheResourceInfo>
                             /* resources out */)
-
-// Queries the browser for AutoFill suggestions for a form input field.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_QueryFormFieldAutoFill,
-                    int /* id of this message */,
-                    webkit_glue::FormData /* the form */,
-                    webkit_glue::FormField /* the form field */)
-
-// Sent when the popup with AutoFill suggestions for a form is shown.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidShowAutoFillSuggestions)
-
-// Instructs the browser to fill in the values for a form using AutoFill
-// profile data.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_FillAutoFillFormData,
-                    int /* id of this message */,
-                    webkit_glue::FormData /* the form  */,
-                    webkit_glue::FormField /* the form field  */,
-                    int /* profile unique ID */)
-
-// Sent when a form is previewed or filled with AutoFill suggestions.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFillAutoFillFormData)
-
-// Instructs the browser to remove the specified Autocomplete entry from the
-// database.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_RemoveAutocompleteEntry,
-                    string16 /* field name */,
-                    string16 /* value */)
-
-// Instructs the browser to show the AutoFill dialog.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_ShowAutoFillDialog)
 
 // Get the list of proxies to use for |url|, as a semicolon delimited list
 // of "<TYPE> <HOST>:<PORT>" | "DIRECT". See also

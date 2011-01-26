@@ -14,8 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/autofill_messages.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
 #include "webkit/glue/form_data.h"
 
 using webkit_glue::FormData;
@@ -91,7 +91,7 @@ bool AutocompleteHistoryManager::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutocompleteHistoryManager, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RemoveAutocompleteEntry,
+    IPC_MESSAGE_HANDLER(AutoFillHostMsg_RemoveAutocompleteEntry,
                         OnRemoveAutocompleteEntry)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -234,12 +234,12 @@ void AutocompleteHistoryManager::SendSuggestions(
 
   RenderViewHost* host = tab_contents_->render_view_host();
   if (host) {
-    host->Send(new ViewMsg_AutoFillSuggestionsReturned(host->routing_id(),
-                                                       query_id_,
-                                                       autofill_values_,
-                                                       autofill_labels_,
-                                                       autofill_icons_,
-                                                       autofill_unique_ids_));
+    host->Send(new AutoFillMsg_SuggestionsReturned(host->routing_id(),
+                                                   query_id_,
+                                                   autofill_values_,
+                                                   autofill_labels_,
+                                                   autofill_icons_,
+                                                   autofill_unique_ids_));
   }
 
   query_id_ = 0;

@@ -67,6 +67,7 @@ enum IPCMessageStart {
   PepperFileMsgStart,
   SpeechInputMsgStart,
   PepperMsgStart,
+  AutoFillMsgStart,
 };
 
 class DictionaryValue;

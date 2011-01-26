@@ -5,8 +5,8 @@
 #include "chrome/renderer/autofill_helper.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/renderer/form_manager.h"
 #include "chrome/renderer/password_autocomplete_manager.h"
 #include "chrome/renderer/render_view.h"
@@ -55,9 +55,8 @@ AutoFillHelper::AutoFillHelper(
 bool AutoFillHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutoFillHelper, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_AutoFillSuggestionsReturned,
-                        OnSuggestionsReturned)
-    IPC_MESSAGE_HANDLER(ViewMsg_AutoFillFormDataFilled, OnFormDataFilled)
+    IPC_MESSAGE_HANDLER(AutoFillMsg_SuggestionsReturned, OnSuggestionsReturned)
+    IPC_MESSAGE_HANDLER(AutoFillMsg_FormDataFilled, OnFormDataFilled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -99,7 +98,7 @@ void AutoFillHelper::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
   if (suggestions_options_index_ != -1 &&
       index == static_cast<unsigned>(suggestions_options_index_)) {
     // User selected 'AutoFill Options'.
-    Send(new ViewHostMsg_ShowAutoFillDialog(routing_id()));
+    Send(new AutoFillHostMsg_ShowAutoFillDialog(routing_id()));
   } else if (suggestions_clear_index_ != -1 &&
              index == static_cast<unsigned>(suggestions_clear_index_)) {
     // User selected 'Clear form'.
@@ -149,7 +148,7 @@ void AutoFillHelper::removeAutocompleteSuggestion(
   if (suggestions_options_index_ != -1)
     suggestions_options_index_--;
 
-  Send(new ViewHostMsg_RemoveAutocompleteEntry(routing_id(), name, value));
+  Send(new AutoFillHostMsg_RemoveAutocompleteEntry(routing_id(), name, value));
 }
 
 void AutoFillHelper::textFieldDidEndEditing(
@@ -262,7 +261,7 @@ void AutoFillHelper::OnSuggestionsReturned(
         autofill_query_node_, v, l, i, ids, separator_index);
   }
 
-  Send(new ViewHostMsg_DidShowAutoFillSuggestions(routing_id()));
+  Send(new AutoFillHostMsg_DidShowAutoFillSuggestions(routing_id()));
 }
 
 void AutoFillHelper::OnFormDataFilled(
@@ -281,7 +280,7 @@ void AutoFillHelper::OnFormDataFilled(
       NOTREACHED();
   }
   autofill_action_ = AUTOFILL_NONE;
-  Send(new ViewHostMsg_DidFillAutoFillFormData(routing_id()));
+  Send(new AutoFillHostMsg_DidFillAutoFillFormData(routing_id()));
 }
 
 void AutoFillHelper::ShowSuggestions(const WebInputElement& element,
@@ -330,7 +329,7 @@ void AutoFillHelper::QueryAutoFillSuggestions(
         &field);
   }
 
-  Send(new ViewHostMsg_QueryFormFieldAutoFill(
+  Send(new AutoFillHostMsg_QueryFormFieldAutoFill(
       routing_id(), autofill_query_id_, form, field));
 }
 
@@ -347,7 +346,7 @@ void AutoFillHelper::FillAutoFillFormData(const WebNode& node,
 
   autofill_action_ = action;
   was_query_node_autofilled_ = field.is_autofilled();
-  Send(new ViewHostMsg_FillAutoFillFormData(
+  Send(new AutoFillHostMsg_FillAutoFillFormData(
       routing_id(), autofill_query_id_, form, field, unique_id));
 }
 
@@ -370,7 +369,7 @@ void AutoFillHelper::SendForms(WebFrame* frame) {
   }
 
   if (!forms.empty())
-    Send(new ViewHostMsg_FormsSeen(routing_id(), forms));
+    Send(new AutoFillHostMsg_FormsSeen(routing_id(), forms));
 }
 
 bool AutoFillHelper::FindFormAndFieldForNode(const WebNode& node,

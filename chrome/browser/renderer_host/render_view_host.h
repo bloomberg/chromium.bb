@@ -59,10 +59,6 @@ class Point;
 }  // namespace gfx
 
 namespace webkit_glue {
-struct FormData;
-class FormField;
-struct PasswordForm;
-struct PasswordFormFillData;
 struct WebAccessibility;
 }  // namespace webkit_glue
 
@@ -244,11 +240,6 @@ class RenderViewHost : public RenderWidgetHost {
   // Change the alternate error page URL.  An empty GURL disables the use of
   // alternate error pages.
   void SetAlternateErrorPageURL(const GURL& url);
-
-  // Fill out a password form and trigger DOM autocomplete in the case
-  // of multiple matching logins.
-  void FillPasswordForm(
-      const webkit_glue::PasswordFormFillData& form_data);
 
   // D&d drop target messages that get sent to WebKit.
   void DragTargetDragEnter(const WebDropData& drop_data,

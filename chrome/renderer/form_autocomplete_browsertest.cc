@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/render_messages.h"
+#include "chrome/common/autofill_messages.h"
 #include "chrome/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -32,11 +32,11 @@ TEST_F(FormAutocompleteTest, NormalFormSubmit) {
   ProcessPendingMessages();
 
   const IPC::Message* message = render_thread_.sink().GetFirstMessageMatching(
-      ViewHostMsg_FormSubmitted::ID);
+      AutoFillHostMsg_FormSubmitted::ID);
   ASSERT_TRUE(message != NULL);
 
   Tuple1<FormData> forms;
-  ViewHostMsg_FormSubmitted::Read(message, &forms);
+  AutoFillHostMsg_FormSubmitted::Read(message, &forms);
   ASSERT_EQ(2U, forms.a.fields.size());
 
   webkit_glue::FormField& form_field = forms.a.fields[0];
@@ -63,7 +63,7 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffFormSubmit) {
 
   // No FormSubmitted message should have been sent.
   EXPECT_FALSE(render_thread_.sink().GetFirstMessageMatching(
-      ViewHostMsg_FormSubmitted::ID));
+      AutoFillHostMsg_FormSubmitted::ID));
 }
 
 // Tests that fields with autocomplete off are not submitted.
@@ -80,11 +80,11 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
 
   // No FormSubmitted message should have been sent.
   const IPC::Message* message = render_thread_.sink().GetFirstMessageMatching(
-      ViewHostMsg_FormSubmitted::ID);
+      AutoFillHostMsg_FormSubmitted::ID);
   ASSERT_TRUE(message != NULL);
 
   Tuple1<FormData> forms;
-  ViewHostMsg_FormSubmitted::Read(message, &forms);
+  AutoFillHostMsg_FormSubmitted::Read(message, &forms);
   ASSERT_EQ(1U, forms.a.fields.size());
 
   webkit_glue::FormField& form_field = forms.a.fields[0];
@@ -117,5 +117,5 @@ TEST_F(FormAutocompleteTest, FAILS_DynamicAutoCompleteOffFormSubmit) {
 
   // No FormSubmitted message should have been sent.
   EXPECT_FALSE(render_thread_.sink().GetFirstMessageMatching(
-      ViewHostMsg_FormSubmitted::ID));
+      AutoFillHostMsg_FormSubmitted::ID));
 }

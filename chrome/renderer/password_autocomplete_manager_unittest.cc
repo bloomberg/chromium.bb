@@ -4,6 +4,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/autofill_messages.h"
 #include "chrome/renderer/autofill_helper.h"
 #include "chrome/renderer/password_autocomplete_manager.h"
 #include "chrome/test/render_view_test.h"
@@ -62,7 +63,7 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
   // protected.
   void SimulateOnFillPasswordForm(
       const PasswordFormFillData& fill_data) {
-    ViewMsg_FillPasswordForm msg(0, fill_data);
+    AutoFillMsg_FillPasswordForm msg(0, fill_data);
     password_autocomplete_->OnMessageReceived(msg);
   }
 
@@ -176,11 +177,11 @@ TEST_F(PasswordAutocompleteManagerTest, InitialAutocomplete) {
   // The form has been loaded, we should have sent the browser a message about
   // the form.
   const IPC::Message* msg = render_thread_.sink().GetFirstMessageMatching(
-      ViewHostMsg_PasswordFormsFound::ID);
+      AutoFillHostMsg_PasswordFormsFound::ID);
   ASSERT_TRUE(msg != NULL);
 
   Tuple1<std::vector<PasswordForm> > forms;
-  ViewHostMsg_PasswordFormsFound::Read(msg, &forms);
+  AutoFillHostMsg_PasswordFormsFound::Read(msg, &forms);
   ASSERT_EQ(1U, forms.a.size());
   PasswordForm password_form = forms.a[0];
   EXPECT_EQ(PasswordForm::SCHEME_HTML, password_form.scheme);

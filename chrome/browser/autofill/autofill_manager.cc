@@ -25,13 +25,13 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -180,16 +180,17 @@ void AutoFillManager::DidNavigateMainFramePostCommit(
 bool AutoFillManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutoFillManager, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FormsSeen, OnFormsSeen)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FormSubmitted, OnFormSubmitted)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_QueryFormFieldAutoFill,
+    IPC_MESSAGE_HANDLER(AutoFillHostMsg_FormsSeen, OnFormsSeen)
+    IPC_MESSAGE_HANDLER(AutoFillHostMsg_FormSubmitted, OnFormSubmitted)
+    IPC_MESSAGE_HANDLER(AutoFillHostMsg_QueryFormFieldAutoFill,
                         OnQueryFormFieldAutoFill)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowAutoFillDialog, OnShowAutoFillDialog)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FillAutoFillFormData,
+    IPC_MESSAGE_HANDLER(AutoFillHostMsg_ShowAutoFillDialog,
+                        OnShowAutoFillDialog)
+    IPC_MESSAGE_HANDLER(AutoFillHostMsg_FillAutoFillFormData,
                         OnFillAutoFillFormData)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFillAutoFillFormData,
+    IPC_MESSAGE_HANDLER(AutoFillHostMsg_DidFillAutoFillFormData,
                         OnDidFillAutoFillFormData)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidShowAutoFillSuggestions,
+    IPC_MESSAGE_HANDLER(AutoFillHostMsg_DidShowAutoFillSuggestions,
                         OnDidShowAutoFillSuggestions)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -375,7 +376,7 @@ void AutoFillManager::OnFillAutoFillFormData(int query_id,
       }
     }
 
-    host->Send(new ViewMsg_AutoFillFormDataFilled(
+    host->Send(new AutoFillMsg_FormDataFilled(
         host->routing_id(), query_id, result));
     return;
   }
@@ -418,8 +419,8 @@ void AutoFillManager::OnFillAutoFillFormData(int query_id,
   }
   autofilled_forms_signatures_.push_front(form_structure->FormSignature());
 
-  host->Send(new ViewMsg_AutoFillFormDataFilled(
-        host->routing_id(), query_id, result));
+  host->Send(new AutoFillMsg_FormDataFilled(
+      host->routing_id(), query_id, result));
 }
 
 void AutoFillManager::OnShowAutoFillDialog() {

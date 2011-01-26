@@ -27,6 +27,8 @@
           'common/about_handler.h',
           'common/app_mode_common_mac.h',
           'common/app_mode_common_mac.mm',
+          'common/autofill_messages.cc',
+          'common/autofill_messages.h',
           'common/bindings_policy.h',
           'common/child_process.cc',
           'common/child_process.h',

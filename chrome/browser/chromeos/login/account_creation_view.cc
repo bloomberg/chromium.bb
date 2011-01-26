@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/account_creation_view.h"
 
 #include "base/string_util.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/autofill_messages.h"
 #include "webkit/glue/form_data.h"
 
 using webkit_glue::FormData;
@@ -30,13 +30,13 @@ class AccountCreationTabContents : public WizardWebPageViewTabContents {
   virtual bool OnMessageReceived(const IPC::Message& message) {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(AccountCreationTabContents, message)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_FormSubmitted, OnFormSubmitted)
-      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_FormsSeen, )
-      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_QueryFormFieldAutoFill, )
-      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_ShowAutoFillDialog, )
-      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_FillAutoFillFormData, )
-      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_DidFillAutoFillFormData, )
-      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_DidShowAutoFillSuggestions, )
+      IPC_MESSAGE_HANDLER(AutoFillHostMsg_FormSubmitted, OnFormSubmitted)
+      IPC_MESSAGE_HANDLER_GENERIC(AutoFillHostMsg_FormsSeen, )
+      IPC_MESSAGE_HANDLER_GENERIC(AutoFillHostMsg_QueryFormFieldAutoFill, )
+      IPC_MESSAGE_HANDLER_GENERIC(AutoFillHostMsg_ShowAutoFillDialog, )
+      IPC_MESSAGE_HANDLER_GENERIC(AutoFillHostMsg_FillAutoFillFormData, )
+      IPC_MESSAGE_HANDLER_GENERIC(AutoFillHostMsg_DidFillAutoFillFormData, )
+      IPC_MESSAGE_HANDLER_GENERIC(AutoFillHostMsg_DidShowAutoFillSuggestions, )
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
 

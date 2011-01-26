@@ -8,6 +8,7 @@
 #include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/autofill_messages.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
@@ -1027,10 +1028,10 @@ TEST_F(RenderViewTest, SendForms) {
   // Verify that "FormsSeen" sends the expected number of fields.
   ProcessPendingMessages();
   const IPC::Message* message = render_thread_.sink().GetFirstMessageMatching(
-      ViewHostMsg_FormsSeen::ID);
+      AutoFillHostMsg_FormsSeen::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ViewHostMsg_FormsSeen::Param params;
-  ViewHostMsg_FormsSeen::Read(message, &params);
+  AutoFillHostMsg_FormsSeen::Param params;
+  AutoFillHostMsg_FormsSeen::Read(message, &params);
   const std::vector<FormData>& forms = params.a;
   ASSERT_EQ(1UL, forms.size());
   ASSERT_EQ(3UL, forms[0].fields.size());
@@ -1065,7 +1066,7 @@ TEST_F(RenderViewTest, SendForms) {
 
   // Accept suggestion that contains a label.  Labeled items indicate AutoFill
   // as opposed to Autocomplete.  We're testing this distinction below with
-  // the |ViewHostMsg_FillAutoFillFormData::ID| message.
+  // the |AutoFillHostMsg_FillAutoFillFormData::ID| message.
   autofill_helper_->didAcceptAutoFillSuggestion(
       firstname,
       WebKit::WebString::fromUTF8("Johnny"),
@@ -1075,10 +1076,10 @@ TEST_F(RenderViewTest, SendForms) {
 
   ProcessPendingMessages();
   const IPC::Message* message2 = render_thread_.sink().GetUniqueMessageMatching(
-      ViewHostMsg_FillAutoFillFormData::ID);
+      AutoFillHostMsg_FillAutoFillFormData::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message2);
-  ViewHostMsg_FillAutoFillFormData::Param params2;
-  ViewHostMsg_FillAutoFillFormData::Read(message2, &params2);
+  AutoFillHostMsg_FillAutoFillFormData::Param params2;
+  AutoFillHostMsg_FillAutoFillFormData::Read(message2, &params2);
   const FormData& form2 = params2.b;
   ASSERT_EQ(3UL, form2.fields.size());
   EXPECT_TRUE(form2.fields[0].StrictlyEqualsHack(
@@ -1118,10 +1119,10 @@ TEST_F(RenderViewTest, FillFormElement) {
   // Verify that "FormsSeen" sends the expected number of fields.
   ProcessPendingMessages();
   const IPC::Message* message = render_thread_.sink().GetFirstMessageMatching(
-      ViewHostMsg_FormsSeen::ID);
+      AutoFillHostMsg_FormsSeen::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ViewHostMsg_FormsSeen::Param params;
-  ViewHostMsg_FormsSeen::Read(message, &params);
+  AutoFillHostMsg_FormsSeen::Param params;
+  AutoFillHostMsg_FormsSeen::Read(message, &params);
   const std::vector<FormData>& forms = params.a;
   ASSERT_EQ(1UL, forms.size());
   ASSERT_EQ(2UL, forms[0].fields.size());
@@ -1161,7 +1162,7 @@ TEST_F(RenderViewTest, FillFormElement) {
 
   ProcessPendingMessages();
   const IPC::Message* message2 = render_thread_.sink().GetUniqueMessageMatching(
-      ViewHostMsg_FillAutoFillFormData::ID);
+      AutoFillHostMsg_FillAutoFillFormData::ID);
 
   // No message should be sent in this case.  |firstname| is filled directly.
   ASSERT_EQ(static_cast<IPC::Message*>(NULL), message2);

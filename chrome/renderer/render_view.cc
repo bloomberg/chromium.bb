@@ -22,6 +22,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/common/autofill_messages.h"
 #include "chrome/common/appcache/appcache_dispatcher.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/child_process_logging.h"
@@ -3124,7 +3125,7 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
           static_cast<FormManager::ExtractMask>(FormManager::EXTRACT_VALUE |
               FormManager::EXTRACT_OPTION_TEXT),
           &form_data)) {
-    Send(new ViewHostMsg_FormSubmitted(routing_id_, form_data));
+    Send(new AutoFillHostMsg_FormSubmitted(routing_id_, form_data));
   }
 }
 

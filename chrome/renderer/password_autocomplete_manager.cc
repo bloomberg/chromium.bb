@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/autofill_messages.h"
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
@@ -341,9 +341,10 @@ void PasswordAutocompleteManager::SendPasswordForms(WebKit::WebFrame* frame,
     return;
 
   if (only_visible) {
-    Send(new ViewHostMsg_PasswordFormsVisible(routing_id(), password_forms));
+    Send(new AutoFillHostMsg_PasswordFormsVisible(
+        routing_id(), password_forms));
   } else {
-    Send(new ViewHostMsg_PasswordFormsFound(routing_id(), password_forms));
+    Send(new AutoFillHostMsg_PasswordFormsFound(routing_id(), password_forms));
   }
 }
 
@@ -351,7 +352,7 @@ bool PasswordAutocompleteManager::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PasswordAutocompleteManager, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_FillPasswordForm, OnFillPasswordForm)
+    IPC_MESSAGE_HANDLER(AutoFillMsg_FillPasswordForm, OnFillPasswordForm)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
