@@ -559,11 +559,19 @@ html[enable-cloud-print-proxy=true] #cloudPrintProxyManageButton {
 
 /* UI Controls */
 
-button:focus,
-input:focus,
-input[type='submit']:focus,
-select:focus {
+/* Currently we can't make custom focus outlines look right on the Mac, so
+ * we stick to native focus rings. Once outlines follow border radius, we
+ * can revisit.
+ */
+html:not([os=mac]) button:focus,
+html:not([os=mac]) input:focus,
+html:not([os=mac]) input[type='submit']:focus,
+html:not([os=mac]) select:focus {
   outline-color: rgba(0, 128, 256, 0.5);
+}
+html[os=mac] button:focus,
+html[os=mac] input[type='submit']:focus {
+  outline-offset: -2px;
 }
 
 /* TEXT */
