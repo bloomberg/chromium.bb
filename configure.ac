@@ -30,6 +30,8 @@ PKG_CHECK_MODULES(POPPLER, [poppler-glib gdk-2.0 gio-2.0],
 			   [have_poppler=yes], [have_poppler=no])
 AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")
 
+AC_CHECK_PROG(RSVG_CONVERT, rsvg-convert, rsvg-convert)
+AM_CONDITIONAL(HAVE_RSVG_CONVERT, test -n "$RSVG_CONVERT")
 
 AC_ARG_ENABLE(x11-compositor, [  --enable-x11-compositor],,
 	      enable_x11_compositor=yes)

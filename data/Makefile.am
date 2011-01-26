@@ -20,7 +20,11 @@ dist_waylanddata_DATA =				\
 	top_side.png				\
 	xterm.png				\
 	wayland.svg				\
-	wayland.png
+	$(wayland_icon_png)
+
+if HAVE_RSVG_CONVERT
+wayland_icon_png = wayland.png
 
 wayland.png : wayland.svg
-	rsvg-convert -w 128 -h 128 wayland.svg -o wayland.png
+	$(RSVG_CONVERT) -w 128 -h 128 wayland.svg -o wayland.png
+endif
