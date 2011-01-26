@@ -516,7 +516,7 @@
 
           If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
 
-          If you enable this setting, the canonical name of the server will be determined via CNAME lookup.''',
+          If you disable this setting, the canonical name of the server will be determined via CNAME lookup.''',
         },
         {
           'name': 'EnableAuthNegotiatePort',
