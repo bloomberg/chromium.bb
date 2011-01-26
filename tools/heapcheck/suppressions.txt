@@ -1196,3 +1196,9 @@
    fun:ui::::RunTest
    fun:ui::TextEliderTest_TestGeneralEliding_Test::TestBody
 }
+{
+   bug_70782
+   Heapcheck:Leak
+   fun:SyncSetupWizard
+   fun:ProfileSyncService
+}
