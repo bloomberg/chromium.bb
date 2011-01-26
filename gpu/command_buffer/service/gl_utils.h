@@ -29,6 +29,8 @@
 #define GL_SHADER_COMPILER                0x8DFA
 #define GL_RGB565                         0x8D62
 #define GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES 0x8B8B
+#define GL_RGB8_OES                            0x8051
+#define GL_RGBA8_OES                           0x8058
 
 #define GL_GLEXT_PROTOTYPES 1
 

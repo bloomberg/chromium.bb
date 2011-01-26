@@ -286,8 +286,10 @@ TEST_F(FeatureInfoTest, InitializeEXT_framebuffer_multisample) {
       GL_DRAW_FRAMEBUFFER_EXT));
   EXPECT_TRUE(info_.validators()->g_l_state.IsValid(
       GL_READ_FRAMEBUFFER_BINDING_EXT));
-  EXPECT_TRUE(info_.validators()->render_buffer_parameter.IsValid(
+  EXPECT_TRUE(info_.validators()->g_l_state.IsValid(
       GL_MAX_SAMPLES_EXT));
+  EXPECT_TRUE(info_.validators()->render_buffer_parameter.IsValid(
+      GL_RENDERBUFFER_SAMPLES_EXT));
 }
 
 TEST_F(FeatureInfoTest, InitializeEXT_texture_filter_anisotropic) {
@@ -393,6 +395,17 @@ TEST_F(FeatureInfoTest, InitializeCHROMIUM_webglsl) {
   info_.Initialize("GL_CHROMIUM_webglsl");
   EXPECT_THAT(info_.extensions(), HasSubstr("GL_CHROMIUM_webglsl"));
   EXPECT_TRUE(info_.feature_flags().chromium_webglsl);
+}
+
+TEST_F(FeatureInfoTest, InitializeOES_rgb8_rgba8) {
+  SetupInitExpectations("GL_OES_rgb8_rgba8");
+  info_.Initialize(NULL);
+  EXPECT_THAT(info_.extensions(),
+              HasSubstr("GL_OES_rgb8_rgba8"));
+  EXPECT_TRUE(info_.validators()->render_buffer_format.IsValid(
+      GL_RGB8_OES));
+  EXPECT_TRUE(info_.validators()->render_buffer_format.IsValid(
+      GL_RGBA8_OES));
 }
 
 }  // namespace gles2

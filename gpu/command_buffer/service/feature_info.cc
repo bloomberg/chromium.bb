@@ -204,6 +204,15 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     validators_.read_pixel_format.AddValue(GL_BGRA_EXT);
   }
 
+  if (ext.Desire("GL_OES_rgb8_rgba8")) {
+    if (ext.Have("GL_OES_rgb8_rgba8") ||
+        gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
+      AddExtensionString("GL_OES_rgb8_rgba8");
+      validators_.render_buffer_format.AddValue(GL_RGB8_OES);
+      validators_.render_buffer_format.AddValue(GL_RGBA8_OES);
+    }
+  }
+
   // Check if we should allow GL_OES_texture_npot
   if (ext.Desire("GL_OES_texture_npot") &&
       (ext.Have("GL_ARB_texture_non_power_of_two") ||
@@ -273,7 +282,8 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     validators_.frame_buffer_target.AddValue(GL_READ_FRAMEBUFFER_EXT);
     validators_.frame_buffer_target.AddValue(GL_DRAW_FRAMEBUFFER_EXT);
     validators_.g_l_state.AddValue(GL_READ_FRAMEBUFFER_BINDING_EXT);
-    validators_.render_buffer_parameter.AddValue(GL_MAX_SAMPLES_EXT);
+    validators_.g_l_state.AddValue(GL_MAX_SAMPLES_EXT);
+    validators_.render_buffer_parameter.AddValue(GL_RENDERBUFFER_SAMPLES_EXT);
     AddExtensionString("GL_CHROMIUM_framebuffer_multisample");
   }
 

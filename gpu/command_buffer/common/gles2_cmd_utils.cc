@@ -193,6 +193,10 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 1;
     case GL_VIEWPORT:
       return 4;
+    // -- glGetBooleanv, glGetFloatv, glGetIntergerv with
+    //    GL_CHROMIUM_framebuffer_multisample
+    case GL_MAX_SAMPLES_EXT:
+      return 1;
 
     // -- glGetBufferParameteriv
     case GL_BUFFER_SIZE:
