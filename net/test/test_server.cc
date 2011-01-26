@@ -105,25 +105,6 @@ TestServer::~TestServer() {
   Stop();
 }
 
-void TestServer::Init(const FilePath& document_root) {
-  // At this point, the port that the testserver will listen on is unknown.
-  // The testserver will listen on an ephemeral port, and write the port
-  // number out over a pipe that this TestServer object will read from. Once
-  // that is complete, the host_port_pair_ will contain the actual port.
-  host_port_pair_ = HostPortPair(GetHostname(type_, https_options_), 0);
-  process_handle_ = base::kNullProcessHandle;
-
-  FilePath src_dir;
-  PathService::Get(base::DIR_SOURCE_ROOT, &src_dir);
-
-  document_root_ = src_dir.Append(document_root);
-
-  certificates_dir_ = src_dir.Append(FILE_PATH_LITERAL("net"))
-                       .Append(FILE_PATH_LITERAL("data"))
-                       .Append(FILE_PATH_LITERAL("ssl"))
-                       .Append(FILE_PATH_LITERAL("certificates"));
-}
-
 bool TestServer::Start() {
   if (type_ == TYPE_HTTPS) {
     if (!LoadTestRootCert())
@@ -276,6 +257,25 @@ bool TestServer::GetFilePathWithReplacements(
   return true;
 }
 
+void TestServer::Init(const FilePath& document_root) {
+  // At this point, the port that the testserver will listen on is unknown.
+  // The testserver will listen on an ephemeral port, and write the port
+  // number out over a pipe that this TestServer object will read from. Once
+  // that is complete, the host_port_pair_ will contain the actual port.
+  host_port_pair_ = HostPortPair(GetHostname(type_, https_options_), 0);
+  process_handle_ = base::kNullProcessHandle;
+
+  FilePath src_dir;
+  PathService::Get(base::DIR_SOURCE_ROOT, &src_dir);
+
+  document_root_ = src_dir.Append(document_root);
+
+  certificates_dir_ = src_dir.Append(FILE_PATH_LITERAL("net"))
+                       .Append(FILE_PATH_LITERAL("data"))
+                       .Append(FILE_PATH_LITERAL("ssl"))
+                       .Append(FILE_PATH_LITERAL("certificates"));
+}
+
 bool TestServer::SetPythonPath() {
   FilePath third_party_dir;
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &third_party_dir)) {
@@ -304,6 +304,30 @@ bool TestServer::SetPythonPath() {
   AppendToPythonPath(pyproto_code_dir.Append(
       FILE_PATH_LITERAL("device_management_pb")));
 
+  return true;
+}
+
+bool TestServer::ParseServerData(const std::string& server_data) {
+  VLOG(1) << "Server data: " << server_data;
+  base::JSONReader json_reader;
+  scoped_ptr<Value> value(json_reader.JsonToValue(server_data, true, false));
+  if (!value.get() ||
+      !value->IsType(Value::TYPE_DICTIONARY)) {
+    LOG(ERROR) << "Could not parse server data: "
+               << json_reader.GetErrorMessage();
+    return false;
+  }
+  server_data_.reset(static_cast<DictionaryValue*>(value.release()));
+  int port = 0;
+  if (!server_data_->GetInteger("port", &port)) {
+    LOG(ERROR) << "Could not find port value";
+    return false;
+  }
+  if ((port <= 0) || (port > kuint16max)) {
+    LOG(ERROR) << "Invalid port value: " << port;
+    return false;
+  }
+  host_port_pair_.set_port(port);
   return true;
 }
 
@@ -362,30 +386,6 @@ bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
       command_line->AppendSwitchASCII(kBulkCipherSwitch, "3des");
   }
 
-  return true;
-}
-
-bool TestServer::ParseServerData(const std::string& server_data) {
-  VLOG(1) << "Server data: " << server_data;
-  base::JSONReader json_reader;
-  scoped_ptr<Value> value(json_reader.JsonToValue(server_data, true, false));
-  if (!value.get() ||
-      !value->IsType(Value::TYPE_DICTIONARY)) {
-    LOG(ERROR) << "Could not parse server data: "
-               << json_reader.GetErrorMessage();
-    return false;
-  }
-  server_data_.reset(static_cast<DictionaryValue*>(value.release()));
-  int port = 0;
-  if (!server_data_->GetInteger("port", &port)) {
-    LOG(ERROR) << "Could not find port value";
-    return false;
-  }
-  if ((port <= 0) || (port > kuint16max)) {
-    LOG(ERROR) << "Invalid port value: " << port;
-    return false;
-  }
-  host_port_pair_.set_port(port);
   return true;
 }
 

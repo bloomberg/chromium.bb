@@ -218,6 +218,22 @@ SECKEYPublicKey* GetServerPubKey() {
 
 }  // namespace
 
+DnsCertProvenanceChecker::Delegate::~Delegate() {
+}
+
+DnsCertProvenanceChecker::~DnsCertProvenanceChecker() {
+}
+
+void DnsCertProvenanceChecker::DoAsyncLookup(
+    const std::string& hostname,
+    const std::vector<base::StringPiece>& der_certs,
+    DnsRRResolver* dnsrr_resolver,
+    Delegate* delegate) {
+  DnsCertProvenanceCheck* check = new DnsCertProvenanceCheck(
+      hostname, dnsrr_resolver, delegate, der_certs);
+  check->Start();
+}
+
 // static
 std::string DnsCertProvenanceChecker::BuildEncryptedReport(
     const std::string& hostname,
@@ -318,32 +334,16 @@ std::string DnsCertProvenanceChecker::BuildEncryptedReport(
                      outer.size());
 }
 
-void DnsCertProvenanceChecker::DoAsyncLookup(
-    const std::string& hostname,
-    const std::vector<base::StringPiece>& der_certs,
-    DnsRRResolver* dnsrr_resolver,
-    Delegate* delegate) {
-  DnsCertProvenanceCheck* check = new DnsCertProvenanceCheck(
-      hostname, dnsrr_resolver, delegate, der_certs);
-  check->Start();
-}
-
-DnsCertProvenanceChecker::Delegate::~Delegate() {
-}
-
-DnsCertProvenanceChecker::~DnsCertProvenanceChecker() {
-}
-
 }  // namespace net
 
 #else  // USE_OPENSSL
 
 namespace net {
 
-std::string DnsCertProvenanceChecker::BuildEncryptedReport(
-    const std::string& hostname,
-    const std::vector<std::string>& der_certs) {
-  return "";
+DnsCertProvenanceChecker::Delegate::~Delegate() {
+}
+
+DnsCertProvenanceChecker::~DnsCertProvenanceChecker() {
 }
 
 void DnsCertProvenanceChecker::DoAsyncLookup(
@@ -353,10 +353,10 @@ void DnsCertProvenanceChecker::DoAsyncLookup(
     Delegate* delegate) {
 }
 
-DnsCertProvenanceChecker::Delegate::~Delegate() {
-}
-
-DnsCertProvenanceChecker::~DnsCertProvenanceChecker() {
+std::string DnsCertProvenanceChecker::BuildEncryptedReport(
+    const std::string& hostname,
+    const std::vector<std::string>& der_certs) {
+  return "";
 }
 
 }  // namespace net

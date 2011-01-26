@@ -13,6 +13,24 @@
 
 namespace net {
 
+DiskCacheBasedSSLHostInfo::CallbackImpl::CallbackImpl(
+    const base::WeakPtr<DiskCacheBasedSSLHostInfo>& obj,
+    void (DiskCacheBasedSSLHostInfo::*meth) (int))
+    : obj_(obj),
+      meth_(meth) {
+}
+
+DiskCacheBasedSSLHostInfo::CallbackImpl::~CallbackImpl() {}
+
+void DiskCacheBasedSSLHostInfo::CallbackImpl::RunWithParams(
+    const Tuple1<int>& params) {
+  if (!obj_) {
+    delete this;
+  } else {
+    DispatchToMethod(obj_.get(), meth_, params);
+  }
+}
+
 DiskCacheBasedSSLHostInfo::DiskCacheBasedSSLHostInfo(
     const std::string& hostname,
     const SSLConfig& ssl_config,
@@ -34,6 +52,35 @@ DiskCacheBasedSSLHostInfo::DiskCacheBasedSSLHostInfo(
 void DiskCacheBasedSSLHostInfo::Start() {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(GET_BACKEND, state_);
+  DoLoop(OK);
+}
+
+int DiskCacheBasedSSLHostInfo::WaitForDataReady(CompletionCallback* callback) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(state_ != GET_BACKEND);
+
+  if (ready_)
+    return OK;
+  if (callback) {
+    DCHECK(!user_callback_);
+    user_callback_ = callback;
+  }
+  return ERR_IO_PENDING;
+}
+
+void DiskCacheBasedSSLHostInfo::Persist() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(state_ != GET_BACKEND);
+
+  DCHECK(new_data_.empty());
+  CHECK(ready_);
+  DCHECK(user_callback_ == NULL);
+  new_data_ = Serialize();
+
+  if (!backend_)
+    return;
+
+  state_ = CREATE;
   DoLoop(OK);
 }
 
@@ -95,24 +142,6 @@ void DiskCacheBasedSSLHostInfo::DoLoop(int rv) {
   } while (rv != ERR_IO_PENDING && state_ != NONE);
 }
 
-bool DiskCacheBasedSSLHostInfo::IsCallbackPending() const {
-  switch (state_) {
-    case GET_BACKEND_COMPLETE:
-    case OPEN_COMPLETE:
-    case READ_COMPLETE:
-    case CREATE_COMPLETE:
-    case WRITE_COMPLETE:
-      return true;
-    default:
-      return false;
-  }
-}
-
-int DiskCacheBasedSSLHostInfo::DoGetBackend() {
-  state_ = GET_BACKEND_COMPLETE;
-  return http_cache_->GetBackend(callback_->backend_pointer(), callback_);
-}
-
 int DiskCacheBasedSSLHostInfo::DoGetBackendComplete(int rv) {
   if (rv == OK) {
     backend_ = callback_->backend();
@@ -121,11 +150,6 @@ int DiskCacheBasedSSLHostInfo::DoGetBackendComplete(int rv) {
     state_ = WAIT_FOR_DATA_READY_DONE;
   }
   return OK;
-}
-
-int DiskCacheBasedSSLHostInfo::DoOpen() {
-  state_ = OPEN_COMPLETE;
-  return backend_->OpenEntry(key(), callback_->entry_pointer(), callback_);
 }
 
 int DiskCacheBasedSSLHostInfo::DoOpenComplete(int rv) {
@@ -137,6 +161,39 @@ int DiskCacheBasedSSLHostInfo::DoOpenComplete(int rv) {
   }
 
   return OK;
+}
+
+int DiskCacheBasedSSLHostInfo::DoReadComplete(int rv) {
+  if (rv > 0)
+    data_ = std::string(read_buffer_->data(), rv);
+
+  state_ = WAIT_FOR_DATA_READY_DONE;
+  return OK;
+}
+
+int DiskCacheBasedSSLHostInfo::DoWriteComplete(int rv) {
+  state_ = SET_DONE;
+  return OK;
+}
+
+int DiskCacheBasedSSLHostInfo::DoCreateComplete(int rv) {
+  if (rv != OK) {
+    state_ = SET_DONE;
+  } else {
+    entry_ = callback_->entry();
+    state_ = WRITE;
+  }
+  return OK;
+}
+
+int DiskCacheBasedSSLHostInfo::DoGetBackend() {
+  state_ = GET_BACKEND_COMPLETE;
+  return http_cache_->GetBackend(callback_->backend_pointer(), callback_);
+}
+
+int DiskCacheBasedSSLHostInfo::DoOpen() {
+  state_ = OPEN_COMPLETE;
+  return backend_->OpenEntry(key(), callback_->entry_pointer(), callback_);
 }
 
 int DiskCacheBasedSSLHostInfo::DoRead() {
@@ -152,12 +209,19 @@ int DiskCacheBasedSSLHostInfo::DoRead() {
                           size, callback_);
 }
 
-int DiskCacheBasedSSLHostInfo::DoReadComplete(int rv) {
-  if (rv > 0)
-    data_ = std::string(read_buffer_->data(), rv);
+int DiskCacheBasedSSLHostInfo::DoWrite() {
+  write_buffer_ = new IOBuffer(new_data_.size());
+  memcpy(write_buffer_->data(), new_data_.data(), new_data_.size());
+  state_ = WRITE_COMPLETE;
 
-  state_ = WAIT_FOR_DATA_READY_DONE;
-  return OK;
+  return entry_->WriteData(0 /* index */, 0 /* offset */, write_buffer_,
+                           new_data_.size(), callback_, true /* truncate */);
+}
+
+int DiskCacheBasedSSLHostInfo::DoCreate() {
+  DCHECK(entry_ == NULL);
+  state_ = CREATE_COMPLETE;
+  return backend_->CreateEntry(key(), callback_->entry_pointer(), callback_);
 }
 
 int DiskCacheBasedSSLHostInfo::WaitForDataReadyDone() {
@@ -181,71 +245,25 @@ int DiskCacheBasedSSLHostInfo::WaitForDataReadyDone() {
   return OK;
 }
 
-int DiskCacheBasedSSLHostInfo::WaitForDataReady(CompletionCallback* callback) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(state_ != GET_BACKEND);
-
-  if (ready_)
-    return OK;
-  if (callback) {
-    DCHECK(!user_callback_);
-    user_callback_ = callback;
-  }
-  return ERR_IO_PENDING;
-}
-
-void DiskCacheBasedSSLHostInfo::Persist() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(state_ != GET_BACKEND);
-
-  DCHECK(new_data_.empty());
-  CHECK(ready_);
-  DCHECK(user_callback_ == NULL);
-  new_data_ = Serialize();
-
-  if (!backend_)
-    return;
-
-  state_ = CREATE;
-  DoLoop(OK);
-}
-
-int DiskCacheBasedSSLHostInfo::DoCreate() {
-  DCHECK(entry_ == NULL);
-  state_ = CREATE_COMPLETE;
-  return backend_->CreateEntry(key(), callback_->entry_pointer(), callback_);
-}
-
-int DiskCacheBasedSSLHostInfo::DoCreateComplete(int rv) {
-  if (rv != OK) {
-    state_ = SET_DONE;
-  } else {
-    entry_ = callback_->entry();
-    state_ = WRITE;
-  }
-  return OK;
-}
-
-int DiskCacheBasedSSLHostInfo::DoWrite() {
-  write_buffer_ = new IOBuffer(new_data_.size());
-  memcpy(write_buffer_->data(), new_data_.data(), new_data_.size());
-  state_ = WRITE_COMPLETE;
-
-  return entry_->WriteData(0 /* index */, 0 /* offset */, write_buffer_,
-                           new_data_.size(), callback_, true /* truncate */);
-}
-
-int DiskCacheBasedSSLHostInfo::DoWriteComplete(int rv) {
-  state_ = SET_DONE;
-  return OK;
-}
-
 int DiskCacheBasedSSLHostInfo::SetDone() {
   if (entry_)
     entry_->Close();
   entry_ = NULL;
   state_ = NONE;
   return OK;
+}
+
+bool DiskCacheBasedSSLHostInfo::IsCallbackPending() const {
+  switch (state_) {
+    case GET_BACKEND_COMPLETE:
+    case OPEN_COMPLETE:
+    case READ_COMPLETE:
+    case CREATE_COMPLETE:
+    case WRITE_COMPLETE:
+      return true;
+    default:
+      return false;
+  }
 }
 
 } // namespace net

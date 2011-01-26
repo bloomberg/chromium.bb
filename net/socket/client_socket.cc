@@ -66,42 +66,6 @@ void ClientSocket::UseHistory::Reset() {
   // are intentionally preserved.
 }
 
-void ClientSocket::UseHistory::EmitPreconnectionHistograms() const {
-  DCHECK(!subresource_speculation_ || !omnibox_speculation_);
-  // 0 ==> non-speculative, never connected.
-  // 1 ==> non-speculative never used (but connected).
-  // 2 ==> non-speculative and used.
-  // 3 ==> omnibox_speculative never connected.
-  // 4 ==> omnibox_speculative never used (but connected).
-  // 5 ==> omnibox_speculative and used.
-  // 6 ==> subresource_speculative never connected.
-  // 7 ==> subresource_speculative never used (but connected).
-  // 8 ==> subresource_speculative and used.
-  int result;
-  if (was_used_to_convey_data_)
-    result = 2;
-  else if (was_ever_connected_)
-    result = 1;
-  else
-    result = 0;  // Never used, and not really connected.
-
-  if (omnibox_speculation_)
-    result += 3;
-  else if (subresource_speculation_)
-    result += 6;
-  UMA_HISTOGRAM_ENUMERATION("Net.PreconnectUtilization2", result, 9);
-
-  static const bool connect_backup_jobs_fieldtrial =
-      base::FieldTrialList::Find("ConnnectBackupJobs") &&
-      !base::FieldTrialList::Find("ConnnectBackupJobs")->group_name().empty();
-  if (connect_backup_jobs_fieldtrial) {
-    UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName("Net.PreconnectUtilization2",
-                                   "ConnnectBackupJobs"),
-        result, 9);
-  }
-}
-
 void ClientSocket::UseHistory::set_was_ever_connected() {
   DCHECK(!was_used_to_convey_data_);
   was_ever_connected_ = true;
@@ -142,6 +106,42 @@ void ClientSocket::UseHistory::set_omnibox_speculation() {
 bool ClientSocket::UseHistory::was_used_to_convey_data() const {
   DCHECK(!was_used_to_convey_data_ || was_ever_connected_);
   return was_used_to_convey_data_;
+}
+
+void ClientSocket::UseHistory::EmitPreconnectionHistograms() const {
+  DCHECK(!subresource_speculation_ || !omnibox_speculation_);
+  // 0 ==> non-speculative, never connected.
+  // 1 ==> non-speculative never used (but connected).
+  // 2 ==> non-speculative and used.
+  // 3 ==> omnibox_speculative never connected.
+  // 4 ==> omnibox_speculative never used (but connected).
+  // 5 ==> omnibox_speculative and used.
+  // 6 ==> subresource_speculative never connected.
+  // 7 ==> subresource_speculative never used (but connected).
+  // 8 ==> subresource_speculative and used.
+  int result;
+  if (was_used_to_convey_data_)
+    result = 2;
+  else if (was_ever_connected_)
+    result = 1;
+  else
+    result = 0;  // Never used, and not really connected.
+
+  if (omnibox_speculation_)
+    result += 3;
+  else if (subresource_speculation_)
+    result += 6;
+  UMA_HISTOGRAM_ENUMERATION("Net.PreconnectUtilization2", result, 9);
+
+  static const bool connect_backup_jobs_fieldtrial =
+      base::FieldTrialList::Find("ConnnectBackupJobs") &&
+      !base::FieldTrialList::Find("ConnnectBackupJobs")->group_name().empty();
+  if (connect_backup_jobs_fieldtrial) {
+    UMA_HISTOGRAM_ENUMERATION(
+        base::FieldTrial::MakeName("Net.PreconnectUtilization2",
+                                   "ConnnectBackupJobs"),
+        result, 9);
+  }
 }
 
 void ClientSocket::LogByteTransfer(const BoundNetLog& net_log,
