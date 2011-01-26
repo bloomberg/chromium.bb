@@ -6,7 +6,6 @@
 #include <string>
 
 #include "base/shared_memory.h"
-#include "chrome/common/gpu_info.h"
 #include "chrome/common/gpu_video_common.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -56,8 +55,7 @@ IPC_MESSAGE_CONTROL0(GpuMsg_Synchronize)
 
 // Tells the GPU process to create a context for collecting graphics card
 // information.
-IPC_MESSAGE_CONTROL1(GpuMsg_CollectGraphicsInfo,
-                     GPUInfo::Level /* level */)
+IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
 
 #if defined(OS_MACOSX)
 // Tells the GPU process that the browser process handled the swap

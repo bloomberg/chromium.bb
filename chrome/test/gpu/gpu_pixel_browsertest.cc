@@ -116,9 +116,9 @@ bool CollectGPUInfo(GPUInfo* client_info) {
   if (!gpu_host_shim)
     return false;
   GPUInfo info = gpu_host_shim->gpu_info();
-  if (info.level() == GPUInfo::kUninitialized) {
+  if (info.progress() == GPUInfo::kUninitialized) {
     GPUInfoCollectedObserver observer(gpu_host_shim);
-    gpu_host_shim->CollectGraphicsInfoAsynchronously(GPUInfo::kPartial);
+    gpu_host_shim->CollectGraphicsInfoAsynchronously();
     ui_test_utils::RunMessageLoop();
     if (!observer.gpu_info_collected())
       return false;

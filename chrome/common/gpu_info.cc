@@ -5,7 +5,7 @@
 #include "chrome/common/gpu_info.h"
 
 GPUInfo::GPUInfo()
-    : level_(kUninitialized),
+    : progress_(kUninitialized),
       vendor_id_(0),
       device_id_(0),
       driver_vendor_(""),
@@ -20,8 +20,8 @@ GPUInfo::GPUInfo()
       can_lose_context_(false) {
 }
 
-GPUInfo::Level GPUInfo::level() const {
-  return level_;
+GPUInfo::Progress GPUInfo::progress() const {
+  return progress_;
 }
 
 base::TimeDelta GPUInfo::initialization_time() const {
@@ -76,8 +76,8 @@ bool GPUInfo::can_lose_context() const {
   return can_lose_context_;
 }
 
-void GPUInfo::SetLevel(Level level) {
-  level_ = level;
+void GPUInfo::SetProgress(Progress progress) {
+  progress_ = progress;
 }
 
 void GPUInfo::SetInitializationTime(

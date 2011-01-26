@@ -301,13 +301,13 @@ DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
   DictionaryValue* info = new DictionaryValue();
   info->Set("basic_info", basic_info);
 
-  if (gpu_info.level() == GPUInfo::kPartial) {
-    info->SetString("level", "partial");
+  if (gpu_info.progress() == GPUInfo::kPartial) {
+    info->SetString("progress", "partial");
   } else {
-    info->SetString("level", "complete");
+    info->SetString("progress", "complete");
   }
 #if defined(OS_WIN)
-  if (gpu_info.level() == GPUInfo::kComplete) {
+  if (gpu_info.progress() == GPUInfo::kComplete) {
     ListValue* dx_info = DxDiagNodeToList(gpu_info.dx_diagnostics());
     info->Set("diagnostics", dx_info);
   }
@@ -323,12 +323,11 @@ Value* GpuMessageHandler::OnRequestGpuInfo(const ListValue* list) {
   GPUInfo gpu_info = GpuProcessHostUIShim::GetInstance()->gpu_info();
 
   std::string html;
-  if (gpu_info.level() != GPUInfo::kComplete) {
-    GpuProcessHostUIShim::GetInstance()->CollectGraphicsInfoAsynchronously(
-        GPUInfo::kComplete);
+  if (gpu_info.progress() != GPUInfo::kComplete) {
+    GpuProcessHostUIShim::GetInstance()->CollectGraphicsInfoAsynchronously();
   }
 
-  if (gpu_info.level() != GPUInfo::kUninitialized) {
+  if (gpu_info.progress() != GPUInfo::kUninitialized) {
     return GpuInfoToDict(gpu_info);
   } else {
     return NULL;

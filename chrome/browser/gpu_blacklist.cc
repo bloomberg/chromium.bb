@@ -489,7 +489,7 @@ GpuFeatureFlags GpuBlacklist::DetermineGpuFeatureFlags(
   active_entries_.clear();
   GpuFeatureFlags flags;
   // No need to go through blacklist entries if GPUInfo isn't available.
-  if (gpu_info.level() == GPUInfo::kUninitialized)
+  if (gpu_info.progress() == GPUInfo::kUninitialized)
     return flags;
   scoped_ptr<Version> driver_version(
       Version::GetVersionFromString(gpu_info.driver_version()));
