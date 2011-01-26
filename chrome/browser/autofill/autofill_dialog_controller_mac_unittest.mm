@@ -74,7 +74,7 @@ class PersonalDataManagerMock : public PersonalDataManager {
 class ProfileMock : public TestingProfile {
  public:
   ProfileMock() {
-    test_manager_ =new PersonalDataManagerMock;
+    test_manager_ = new PersonalDataManagerMock;
   }
   virtual ~ProfileMock() {}
 

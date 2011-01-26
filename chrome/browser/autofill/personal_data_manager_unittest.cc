@@ -543,8 +543,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
   EXPECT_EQ(0, expected.Compare(*results[0]));
 }
 
-// Crashy, http://crbug.com/67423.
-TEST_F(PersonalDataManagerTest, DISABLED_ImportFormDataNotEnoughFilledFields) {
+TEST_F(PersonalDataManagerTest, ImportFormDataNotEnoughFilledFields) {
   FormData form;
   webkit_glue::FormField field;
   autofill_test::CreateTestFormField(
@@ -564,6 +563,8 @@ TEST_F(PersonalDataManagerTest, DISABLED_ImportFormDataNotEnoughFilledFields) {
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
       OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
 
   const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
   ASSERT_EQ(0U, profiles.size());
