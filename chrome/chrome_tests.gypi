@@ -2138,6 +2138,7 @@
         'browser/policy/device_management_backend_mock.h',
         'browser/policy/device_management_service_browsertest.cc',
         'browser/popup_blocker_browsertest.cc',
+        'browser/prerender/prerender_browsertest.cc',
         'browser/printing/print_dialog_cloud_uitest.cc',
         'browser/renderer_host/test/render_process_host_browsertest.cc',
         'browser/renderer_host/test/render_view_host_browsertest.cc',

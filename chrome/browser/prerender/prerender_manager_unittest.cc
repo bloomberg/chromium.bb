@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/time.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "googleurl/src/gurl.h"
@@ -80,11 +81,17 @@ class TestPrerenderManager : public PrerenderManager {
 
 class PrerenderManagerTest : public testing::Test {
  public:
-  PrerenderManagerTest() : prerender_manager_(new TestPrerenderManager()) {
+  PrerenderManagerTest() : prerender_manager_(new TestPrerenderManager()),
+                           ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
  protected:
   scoped_refptr<TestPrerenderManager> prerender_manager_;
+
+ private:
+  // Needed to pass PrerenderManager's DCHECKs.
+  MessageLoop message_loop_;
+  BrowserThread ui_thread_;
 };
 
 TEST_F(PrerenderManagerTest, EmptyTest) {

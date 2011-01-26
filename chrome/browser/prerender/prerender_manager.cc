@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -30,7 +31,8 @@ PrerenderManager::PrerenderManager(Profile* profile)
     : profile_(profile),
       max_prerender_age_(base::TimeDelta::FromSeconds(
           kDefaultMaxPrerenderAgeSeconds)),
-      max_elements_(kDefaultMaxPrerenderElements) {
+      max_elements_(kDefaultMaxPrerenderElements),
+      prerender_contents_factory_(PrerenderContents::CreateFactory()) {
 }
 
 PrerenderManager::~PrerenderManager() {
@@ -41,9 +43,14 @@ PrerenderManager::~PrerenderManager() {
   }
 }
 
+void PrerenderManager::SetPrerenderContentsFactory(
+    PrerenderContents::Factory* prerender_contents_factory) {
+  prerender_contents_factory_.reset(prerender_contents_factory);
+}
+
 void PrerenderManager::AddPreload(const GURL& url,
                                   const std::vector<GURL>& alias_urls) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DeleteOldEntries();
   // If the URL already exists in the set of preloaded URLs, don't do anything.
   for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
@@ -90,7 +97,7 @@ PrerenderContents* PrerenderManager::GetEntry(const GURL& url) {
 }
 
 bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<PrerenderContents> pc(GetEntry(url));
   if (pc.get() == NULL)
     return false;
@@ -112,7 +119,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
 }
 
 void PrerenderManager::RemoveEntry(PrerenderContents* entry) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
        it != prerender_list_.end();
        ++it) {
@@ -137,5 +144,17 @@ bool PrerenderManager::IsPrerenderElementFresh(const base::Time start) const {
 PrerenderContents* PrerenderManager::CreatePrerenderContents(
     const GURL& url,
     const std::vector<GURL>& alias_urls) {
-  return new PrerenderContents(this, profile_, url, alias_urls);
+  return prerender_contents_factory_->CreatePrerenderContents(
+      this, profile_, url, alias_urls);
+}
+
+PrerenderContents* PrerenderManager::FindEntry(const GURL& url) {
+  for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
+       it != prerender_list_.end();
+       ++it) {
+    if (it->contents_->MatchesURL(url))
+      return it->contents_;
+  }
+  // Entry not found.
+  return NULL;
 }

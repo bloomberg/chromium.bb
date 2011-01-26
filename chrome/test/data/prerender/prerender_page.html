@@ -1,0 +1,24 @@
+<html>
+<!-- 
+This test checks to make sure that a prerendered page is loaded.
+-->
+<head>
+<title>Prerender Plugin Delay Loading</title>
+
+<script>
+// Make sure plugin was not loaded while prerendering.
+function DidPrerenderPass() {
+  pageWasPrerendered = true;
+  return true;
+}
+
+// Make sure DidPrerenderPass() was called first.  Otherwise, the page was
+// most likely reloaded instead of using the prerendered page.
+function DidDisplayPass() {
+  return (pageWasPrerendered == true);
+}
+</script>
+
+</head>
+<body></body>
+</html>

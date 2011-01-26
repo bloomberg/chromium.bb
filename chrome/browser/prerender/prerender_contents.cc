@@ -20,6 +20,15 @@
 #include "chrome/common/render_messages_params.h"
 #include "gfx/rect.h"
 
+class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
+ public:
+  virtual PrerenderContents* CreatePrerenderContents(
+      PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
+      const std::vector<GURL>& alias_urls) {
+    return new PrerenderContents(prerender_manager, profile, url, alias_urls);
+  }
+};
+
 PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
                                      Profile* profile,
                                      const GURL& url,
@@ -36,6 +45,11 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
        ++it) {
     AddAliasURL(*it);
   }
+}
+
+// static
+PrerenderContents::Factory* PrerenderContents::CreateFactory() {
+  return new PrerenderContentsFactoryImpl();
 }
 
 void PrerenderContents::StartPrerendering() {

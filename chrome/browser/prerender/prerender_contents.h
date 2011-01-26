@@ -36,9 +36,25 @@ class PrerenderContents : public RenderViewHostDelegate,
                           public NotificationObserver,
                           public JavaScriptAppModalDialogDelegate {
  public:
-  PrerenderContents(PrerenderManager* prerender_manager, Profile* profile,
-                    const GURL& url, const std::vector<GURL>& alias_urls);
+  // PrerenderContents::Create uses the currently registered Factory to create
+  // the PrerenderContents. Factory is intended for testing.
+  class Factory {
+   public:
+    Factory() {}
+    virtual ~Factory() {}
+
+    virtual PrerenderContents* CreatePrerenderContents(
+        PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
+        const std::vector<GURL>& alias_urls) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Factory);
+  };
+
   virtual ~PrerenderContents();
+
+  static Factory* CreateFactory();
+
   virtual void StartPrerendering();
 
   RenderViewHost* render_view_host() { return render_view_host_; }
@@ -137,10 +153,16 @@ class PrerenderContents : public RenderViewHostDelegate,
   virtual void ClearInspectorSettings();
 
  protected:
+  PrerenderContents(PrerenderManager* prerender_manager, Profile* profile,
+                    const GURL& url, const std::vector<GURL>& alias_urls);
+
   // from RenderViewHostDelegate.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
+  // Needs to be able to call the constructor.
+  friend class PrerenderContentsFactoryImpl;
+
   // Message handlers.
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                          bool main_frame,
