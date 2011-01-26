@@ -116,8 +116,10 @@ void PepperPluginRegistry::GetPluginInfoFromSwitch(
 #endif
     if (name_parts.size() > 1)
       plugin.name = name_parts[1];
-    if (name_parts.size() > 2)
+    if (name_parts.size() > 2) {
+      plugin.description = name_parts[2];
       plugin.type_descriptions = name_parts[2];
+    }
     for (size_t j = 1; j < parts.size(); ++j)
       plugin.mime_types.push_back(parts[j]);
 
