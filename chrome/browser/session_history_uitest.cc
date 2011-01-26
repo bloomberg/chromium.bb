@@ -144,9 +144,15 @@ TEST_F(SessionHistoryTest, MAYBE_BasicBackForward) {
   EXPECT_EQ(L"bot3", GetTabTitle());
 }
 
+#if defined(OS_WIN)
+// See http://crbug.com/61619
+#define MAYBE_FrameBackForward FLAKY_FrameBackForward
+#else
+#define MAYBE_FrameBackForward FrameBackForward
+#endif
+
 // Test that back/forward works when navigating in subframes.
-// Flaky, http://crbug.com/61619 and http://crbug.com/70883.
-TEST_F(SessionHistoryTest, FLAKY_FrameBackForward) {
+TEST_F(SessionHistoryTest, MAYBE_FrameBackForward) {
   ASSERT_TRUE(test_server_.Start());
 
   // about:blank should be loaded first.

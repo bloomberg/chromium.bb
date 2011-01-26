@@ -108,7 +108,7 @@ bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
                                         std::string* encoded_xml) const {
   DCHECK(encoded_xml);
   encoded_xml->clear();
-  bool auto_fillable = IsAutoFillable(false);
+  bool auto_fillable = ShouldBeParsed(true);
   DCHECK(auto_fillable);  // Caller should've checked for search pages.
   if (!auto_fillable)
     return false;
