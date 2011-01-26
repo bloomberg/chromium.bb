@@ -139,11 +139,14 @@ using base::TimeDelta;
 namespace {
 
 // The URL to be loaded to display Help.
+const char kHelpContentUrl[] =
 #if defined(OS_CHROMEOS)
-const char kHelpContentUrl[] =
-    "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
+  #if defined(OFFICIAL_BUILD)
+      "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
+  #else
+      "http://www.google.com/support/chromeos/";
+  #endif
 #else
-const char kHelpContentUrl[] =
     "http://www.google.com/support/chrome/";
 #endif
 
