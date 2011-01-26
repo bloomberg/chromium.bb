@@ -114,3 +114,7 @@ ProxyView.prototype.onLogEntriesDeleted = function(sourceIds) {
 ProxyView.prototype.onAllLogEntriesDeleted = function() {
   this.clearLog_();
 };
+
+ProxyView.prototype.onSetIsViewingLogFile = function(isViewingLogFile) {
+};
+

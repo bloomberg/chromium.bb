@@ -75,10 +75,12 @@ function onLoaded() {
   // captured data.
   var dataView = new DataView('dataTabContent', 'exportedDataText',
                               'exportToText', 'securityStrippingCheckbox',
-                              'byteLoggingCheckbox',
-                              'passivelyCapturedCount',
-                              'activelyCapturedCount',
-                              'dataViewDeleteAll');
+                              'byteLoggingCheckbox', 'passivelyCapturedCount',
+                              'activelyCapturedCount', 'dataViewDeleteAll',
+                              'dataViewDumpDataDiv', 'dataViewLoadDataDiv',
+                              'dataViewLoadLogFile',
+                              'dataViewCapturingTextSpan',
+                              'dataViewLoggingTextSpan');
 
   // Create a view which will display the results and controls for connection
   // tests.
@@ -108,6 +110,7 @@ function onLoaded() {
 
   // Create a view which lets you tab between the different sub-views.
   var categoryTabSwitcher = new TabSwitcherView('categoryTabHandles');
+  g_browser.setTabSwitcher(categoryTabSwitcher);
 
   // Populate the main tabs.
   categoryTabSwitcher.addTab('eventsTab', eventsView, false);
@@ -143,6 +146,9 @@ function onLoaded() {
 
   // Select the initial view based on the current URL.
   window.onhashchange();
+
+  // Inform observers a log file is not currently being displayed.
+  g_browser.setIsViewingLogFile_(false);
 
   // Tell the browser that we are ready to start receiving log events.
   g_browser.sendReady();
@@ -191,6 +197,11 @@ function BrowserBridge() {
   // Next unique id to be assigned to a log entry without a source.
   // Needed to simplify deletion, identify associated GUI elements, etc.
   this.nextSourcelessEventId_ = -1;
+
+  // True when viewing a log file rather than actively logged events.
+  // When viewing a log file, all tabs are hidden except the event view,
+  // and all received events are ignored.
+  this.isViewingLogFile_ = false;
 }
 
 /*
@@ -302,23 +313,19 @@ BrowserBridge.prototype.setLogLevel = function(logLevel) {
   chrome.send('setLogLevel', ['' + logLevel]);
 }
 
+BrowserBridge.prototype.loadLogFile = function() {
+  chrome.send('loadLogFile');
+}
+
 //------------------------------------------------------------------------------
 // Messages received from the browser
 //------------------------------------------------------------------------------
 
 BrowserBridge.prototype.receivedLogEntries = function(logEntries) {
-  for (var e = 0; e < logEntries.length; ++e) {
-    var logEntry = logEntries[e];
-
-    // Assign unique ID, if needed.
-    if (logEntry.source.id == 0) {
-      logEntry.source.id = this.nextSourcelessEventId_;
-      --this.nextSourcelessEventId_;
-    }
-    this.capturedEvents_.push(logEntry);
-    for (var i = 0; i < this.logObservers_.length; ++i)
-      this.logObservers_[i].onLogEntryAdded(logEntry);
-  }
+  // Does nothing if viewing a log file.
+  if (this.isViewingLogFile_)
+    return;
+  this.addLogEntries(logEntries);
 };
 
 BrowserBridge.prototype.receivedLogEventTypeConstants = function(constantsMap) {
@@ -439,7 +446,89 @@ BrowserBridge.prototype.receivedHttpCacheInfo = function(info) {
   this.pollableDataHelpers_.httpCacheInfo.update(info);
 };
 
+BrowserBridge.prototype.loadedLogFile = function(logFileContents) {
+  var match;
+  // Replace carriage returns with linebreaks and then split around linebreaks.
+  var lines = logFileContents.replace(/\r/g, '\n').split('\n');
+  var entries = [];
+  var numInvalidLines = 0;
+
+  for (var i = 0; i < lines.length; ++i) {
+    if (lines[i].trim().length == 0)
+      continue;
+    // Parse all valid lines, skipping any others.
+    try {
+      var entry = JSON.parse(lines[i]);
+      if (entry &&
+          typeof(entry) == 'object' &&
+          entry.phase != undefined &&
+          entry.source != undefined &&
+          entry.time != undefined &&
+          entry.type != undefined) {
+        entries.push(entry);
+        continue;
+      }
+    } catch (err) {
+    }
+    ++numInvalidLines;
+    console.log('Unable to parse log line: ' + lines[i]);
+  }
+
+  if (entries.length == 0) {
+    window.alert('Loading log file failed.');
+    return;
+  }
+
+  this.deleteAllEvents();
+
+  this.setIsViewingLogFile_(true);
+
+  var validEntries = [];
+  for (var i = 0; i < entries.length; ++i) {
+    entries[i].wasPassivelyCaptured = true;
+    if (LogEventType[entries[i].type] != undefined &&
+        LogSourceType[entries[i].source.type] != undefined &&
+        LogEventPhase[entries[i].phase] != undefined) {
+      entries[i].type = LogEventType[entries[i].type];
+      entries[i].source.type = LogSourceType[entries[i].source.type];
+      entries[i].phase = LogEventPhase[entries[i].phase];
+      validEntries.push(entries[i]);
+    } else {
+      // TODO(mmenke):  Do something reasonable when the event type isn't
+      //                found, which could happen when event types are
+      //                removed or added between versions.  Could also happen
+      //                with source types, but less likely.
+      console.log(
+        'Unrecognized values in log entry: ' + JSON.stringify(entry));
+    }
+  }
+
+  this.numPassivelyCapturedEvents_ = validEntries.length;
+  this.addLogEntries(validEntries);
+
+  var numInvalidEntries = entries.length - validEntries.length;
+  if (numInvalidEntries > 0 || numInvalidLines > 0) {
+    window.alert(
+      numInvalidLines.toString() +
+      ' could not be parsed as JSON strings, and ' +
+      numInvalidEntries.toString() +
+      ' entries don\'t have valid data.\n\n' +
+      'Unparseable lines may indicate log file corruption.\n' +
+      'Entries with invalid data may be caused by version differences.\n\n' +
+      'See console for more information.');
+  }
+}
+
 //------------------------------------------------------------------------------
+
+/**
+ * Sets the |categoryTabSwitcher_| of BrowserBridge.  Since views depend on
+ * g_browser being initialized, have to have a BrowserBridge prior to tab
+ * construction.
+ */
+BrowserBridge.prototype.setTabSwitcher = function(categoryTabSwitcher) {
+  this.categoryTabSwitcher_ = categoryTabSwitcher;
+};
 
 /**
  * Adds a listener of log entries. |observer| will be called back when new log
@@ -592,6 +681,25 @@ BrowserBridge.prototype.getNumPassivelyCapturedEvents = function() {
 };
 
 /**
+ * Sends each entry to all log observers, and updates |capturedEvents_|.
+ * Also assigns unique ids to log entries without a source.
+ */
+BrowserBridge.prototype.addLogEntries = function(logEntries) {
+  for (var e = 0; e < logEntries.length; ++e) {
+    var logEntry = logEntries[e];
+
+    // Assign unique ID, if needed.
+    if (logEntry.source.id == 0) {
+      logEntry.source.id = this.nextSourcelessEventId_;
+      --this.nextSourcelessEventId_;
+    }
+    this.capturedEvents_.push(logEntry);
+    for (var i = 0; i < this.logObservers_.length; ++i)
+      this.logObservers_[i].onLogEntryAdded(logEntry);
+  }
+};
+
+/**
  * Deletes captured events with source IDs in |sourceIds|.
  */
 BrowserBridge.prototype.deleteEventsBySourceId = function(sourceIds) {
@@ -623,6 +731,39 @@ BrowserBridge.prototype.deleteAllEvents = function() {
   this.numPassivelyCapturedEvents_ = 0;
   for (var i = 0; i < this.logObservers_.length; ++i)
     this.logObservers_[i].onAllLogEntriesDeleted();
+};
+
+/**
+ * Informs log observers whether or not future events will be from a log file.
+ * Hides all tabs except the events and data tabs when viewing a log file, shows
+ * them all otherwise.
+ */
+BrowserBridge.prototype.setIsViewingLogFile_ = function(isViewingLogFile) {
+  this.isViewingLogFile_ = isViewingLogFile;
+  var tabIds = this.categoryTabSwitcher_.getAllTabIds();
+
+  for (var i = 0; i < this.logObservers_.length; ++i)
+    this.logObservers_[i].onSetIsViewingLogFile(isViewingLogFile);
+
+  // Shows/hides tabs not used when viewing a log file.
+  for (var i = 0; i < tabIds.length; ++i) {
+    if (tabIds[i] == 'eventsTab' || tabIds[i] == 'dataTab')
+      continue;
+    this.categoryTabSwitcher_.showTabHandleNode(tabIds[i], !isViewingLogFile);
+  }
+
+  if (isViewingLogFile) {
+    var activeTab = this.categoryTabSwitcher_.findActiveTab();
+    if (activeTab.id != 'eventsTab')
+      this.categoryTabSwitcher_.switchToTab('dataTab', null);
+  }
+};
+
+/**
+ * Returns true if a log file is currently being viewed.
+ */
+BrowserBridge.prototype.isViewingLogFile = function() {
+  return this.isViewingLogFile_;
 };
 
 /**

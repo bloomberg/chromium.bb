@@ -136,6 +136,13 @@ TabSwitcherView.prototype.getAllTabIds = function() {
   return ids;
 };
 
+// Shows/hides the DOM node that is used to select the tab.  Will not change
+// the active tab.
+TabSwitcherView.prototype.showTabHandleNode = function(id, isVisible) {
+  var tab = this.findTabById(id);
+  setNodeDisplay(tab.getTabHandleNode(), isVisible);
+};
+
 //-----------------------------------------------------------------------------
 
 /**

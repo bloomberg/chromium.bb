@@ -67,7 +67,8 @@ ChromeNetLog::ChromeNetLog()
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kLogNetLog)) {
-    net_log_logger_.reset(new NetLogLogger());
+    net_log_logger_.reset(new NetLogLogger(
+            command_line.GetSwitchValuePath(switches::kLogNetLog)));
     AddObserver(net_log_logger_.get());
   }
 }

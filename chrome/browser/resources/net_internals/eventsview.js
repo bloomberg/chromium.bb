@@ -475,8 +475,18 @@ EventsView.prototype.onLogEntriesDeleted = function(sourceIds) {
 /**
  * Called whenever all log events are deleted.
  */
-EventsView.prototype.onAllLogEntriesDeleted = function(offset) {
+EventsView.prototype.onAllLogEntriesDeleted = function() {
   this.initializeSourceList_();
+};
+
+/**
+ * Called when either a log file is loaded or when going back to actively
+ * logging events.  In either case, called after clearing the old entries,
+ * but before getting any new ones.
+ */
+EventsView.prototype.onSetIsViewingLogFile = function(isViewingLogFile) {
+  // Needed to sort new sourceless entries correctly.
+  this.maxReceivedSourceId_ = 0;
 };
 
 EventsView.prototype.incrementPrefilterCount = function(offset) {

@@ -28,6 +28,9 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -136,6 +139,7 @@ class NetInternalsHTMLSource : public ChromeURLDataManager::DataSource {
 // TODO(eroman): Can we start on the IO thread to begin with?
 class NetInternalsMessageHandler
     : public DOMMessageHandler,
+      public SelectFileDialog::Listener,
       public base::SupportsWeakPtr<NetInternalsMessageHandler> {
  public:
   NetInternalsMessageHandler();
@@ -150,11 +154,42 @@ class NetInternalsMessageHandler
   void CallJavascriptFunction(const std::wstring& function_name,
                               const Value* value);
 
+  // SelectFileDialog::Listener implementation
+  virtual void FileSelected(const FilePath& path, int index, void* params);
+  virtual void FileSelectionCanceled(void* params);
+
+  // The only callback handled on the UI thread.  As it needs to access fields
+  // from |dom_ui_|, it can't be called on the IO thread.
+  void OnLoadLogFile(const ListValue* list);
+
  private:
   class IOThreadImpl;
 
+  // Task run on the FILE thread to read the contents of a log file.  The result
+  // is then passed to IOThreadImpl's CallJavascriptFunction, which sends it
+  // back to the web page.  IOThreadImpl is used instead of the
+  // NetInternalsMessageHandler directly because it checks if the message
+  // handler has been destroyed in the meantime.
+  class ReadLogFileTask : public Task {
+   public:
+    ReadLogFileTask(IOThreadImpl* proxy, const FilePath& path);
+
+    virtual void Run();
+
+   private:
+    // IOThreadImpl implements existence checks already.  Simpler to reused them
+    // then to reimplement them.
+    scoped_refptr<IOThreadImpl> proxy_;
+
+    // Path of the file to open.
+    const FilePath path_;
+  };
+
   // This is the "real" message handler, which lives on the IO thread.
   scoped_refptr<IOThreadImpl> proxy_;
+
+  // Used for loading log files.
+  scoped_refptr<SelectFileDialog> select_log_file_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(NetInternalsMessageHandler);
 };
@@ -243,16 +278,16 @@ class NetInternalsMessageHandler::IOThreadImpl
       int result);
   virtual void OnCompletedConnectionTestSuite();
 
+  // Helper that executes |function_name| in the attached renderer.
+  // The function takes ownership of |arg|.  Note that this can be called from
+  // any thread.
+  void CallJavascriptFunction(const std::wstring& function_name, Value* arg);
+
  private:
   class CallbackHelper;
 
   // Helper that runs |method| with |arg|, and deletes |arg| on completion.
   void DispatchToMessageHandler(ListValue* arg, MessageHandler method);
-
-  // Helper that executes |function_name| in the attached renderer.
-  // The function takes ownership of |arg|.  Note that this can be called from
-  // any thread.
-  void CallJavascriptFunction(const std::wstring& function_name, Value* arg);
 
   // Adds |entry| to the queue of pending log entries to be sent to the page via
   // Javascript.  Must be called on the IO Thread.  Also creates a delayed task
@@ -398,6 +433,8 @@ NetInternalsMessageHandler::~NetInternalsMessageHandler() {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(proxy_.get(), &IOThreadImpl::Detach));
   }
+  if (select_log_file_dialog_)
+    select_log_file_dialog_->ListenerDestroyed();
 }
 
 DOMMessageHandler* NetInternalsMessageHandler::Attach(DOMUI* dom_ui) {
@@ -408,8 +445,35 @@ DOMMessageHandler* NetInternalsMessageHandler::Attach(DOMUI* dom_ui) {
   return result;
 }
 
+void NetInternalsMessageHandler::FileSelected(
+    const FilePath& path, int index, void* params) {
+  select_log_file_dialog_.release();
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      new ReadLogFileTask(proxy_.get(), path));
+}
+
+void NetInternalsMessageHandler::FileSelectionCanceled(void* params) {
+  select_log_file_dialog_.release();
+}
+
+void NetInternalsMessageHandler::OnLoadLogFile(const ListValue* list) {
+  // Only allow a single dialog at a time.
+  if (select_log_file_dialog_.get())
+    return;
+  select_log_file_dialog_ = SelectFileDialog::Create(this);
+  select_log_file_dialog_->SelectFile(
+      SelectFileDialog::SELECT_OPEN_FILE, string16(), FilePath(), NULL, 0,
+      FILE_PATH_LITERAL(""),
+      dom_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
+}
+
 void NetInternalsMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Only callback handled on UI thread.
+  dom_ui_->RegisterMessageCallback(
+      "loadLogFile",
+      NewCallback(this, &NetInternalsMessageHandler::OnLoadLogFile));
 
   dom_ui_->RegisterMessageCallback(
       "notifyReady",
@@ -467,6 +531,25 @@ void NetInternalsMessageHandler::CallJavascriptFunction(
   } else {
     dom_ui_->CallJavascriptFunction(function_name);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// NetInternalsMessageHandler::ReadLogFileTask
+//
+////////////////////////////////////////////////////////////////////////////////
+
+NetInternalsMessageHandler::ReadLogFileTask::ReadLogFileTask(
+    IOThreadImpl* proxy, const FilePath& path)
+    : proxy_(proxy), path_(path) {
+}
+
+void NetInternalsMessageHandler::ReadLogFileTask::Run() {
+  std::string file_contents;
+  if (!file_util::ReadFileToString(path_, &file_contents))
+    return;
+  proxy_->CallJavascriptFunction(L"g_browser.loadedLogFile",
+                                 new StringValue(file_contents));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

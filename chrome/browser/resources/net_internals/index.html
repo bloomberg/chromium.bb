@@ -202,23 +202,41 @@ found in the LICENSE file.
     <table width=100%>
     <tr>
     <td valign=top>
-      <h2>Dump data</h2>
-      <div style="margin: 8px">
-        <p><input id=securityStrippingCheckbox type=checkbox checked=yes>
-           Strip private information (cookies and credentials).
-        </p>
-        <p>
-          <a href="javascript:displayHelpForBugDump()">
-            Help: How to get data for bug reports?
-          </a>
-        </p>
-        <button id=exportToText class=bigButton>Dump to text</button>
+      <div id=dataViewDumpDataDiv>
+        <h2>Dump data</h2>
+        <div style="margin: 8px">
+          <p><input id=securityStrippingCheckbox type=checkbox checked=yes>
+             Strip private information (cookies and credentials).
+          </p>
+          <p>
+            <a href="javascript:displayHelpForBugDump()">
+              Help: How to get data for bug reports?
+            </a>
+          </p>
+          <button id=exportToText class=bigButton>Dump to text</button>
+        </div>
+      </div>
+      <div id=dataViewLoadDataDiv>
+        <h2>Load data</h2>
+        <div style="margin: 8px">
+          <p><input type=button value="Load log from file" id=dataViewLoadLogFile /></p>
+          <p>Only works with log files created with "--log-net-log=file_name".</p>
+          <p>Once a log is loaded, this page will stop collecting data, and will
+             only start gathering data again when the page is
+             <a href="javascript:history.go(0);">reloaded</a>.<BR>
+          </p>
+        </div>
       </div>
     </td>
 
     <td align=right valign=top>
-      <div class="capturingBox">
-        <b>Capturing all events...</b>
+      <div class="capturingBox" id=dataViewCapturingBox>
+        <span id=dataViewCapturingTextSpan>
+          <b>Capturing all events...</b>
+        </span>
+        <span id=dataViewLoggingTextSpan style="display: none;">
+          <b>Viewing loaded log file.</b>
+        </span>
         <table style="margin: 8px">
           <tr>
             <td>Passively captured:</td>
