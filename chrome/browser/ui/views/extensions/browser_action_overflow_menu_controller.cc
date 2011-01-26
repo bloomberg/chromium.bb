@@ -93,8 +93,13 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
     int id,
     const gfx::Point& p,
     bool is_mouse_gesture) {
+  const Extension* extension =
+      (*views_)[start_index_ + id - 1]->button()->extension();
+  if (!extension->ShowConfigureContextMenus())
+    return false;
+
   context_menu_contents_ = new ExtensionContextMenuModel(
-      (*views_)[start_index_ + id - 1]->button()->extension(),
+      extension,
       owner_->browser(),
       owner_);
   context_menu_menu_.reset(new views::Menu2(context_menu_contents_.get()));

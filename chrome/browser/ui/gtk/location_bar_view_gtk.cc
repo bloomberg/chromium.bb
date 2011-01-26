@@ -1519,11 +1519,13 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     const Extension* extension = profile_->GetExtensionService()->
         GetExtensionById(page_action()->extension_id(), false);
 
-    context_menu_model_ =
-        new ExtensionContextMenuModel(extension, owner_->browser_, this);
-    context_menu_.reset(
-        new MenuGtk(NULL, context_menu_model_.get()));
-    context_menu_->Popup(sender, event);
+    if (extension->ShowConfigureContextMenus()) {
+      context_menu_model_ =
+          new ExtensionContextMenuModel(extension, owner_->browser_, this);
+      context_menu_.reset(
+          new MenuGtk(NULL, context_menu_model_.get()));
+      context_menu_->Popup(sender, event);
+    }
   }
 
   return TRUE;

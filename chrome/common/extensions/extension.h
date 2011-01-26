@@ -364,6 +364,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // having an NPAPI plugin).
   bool HasFullPermissions() const;
 
+  // Whether context menu should be shown for page and browser actions.
+  bool ShowConfigureContextMenus() const;
+
   // Returns the Homepage URL for this extension. If homepage_url was not
   // specified in the manifest, this returns the Google Gallery URL. For
   // third-party extensions, this returns a blank GURL.

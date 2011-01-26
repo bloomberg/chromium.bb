@@ -152,6 +152,9 @@ void PageActionImageView::ShowContextMenu(const gfx::Point& p,
                                           bool is_mouse_gesture) {
   const Extension* extension = profile_->GetExtensionService()->
       GetExtensionById(page_action()->extension_id(), false);
+  if (!extension->ShowConfigureContextMenus())
+    return;
+
   Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
       platform_util::GetTopLevel(GetWidget()->GetNativeView()))->browser();
   context_menu_contents_ =

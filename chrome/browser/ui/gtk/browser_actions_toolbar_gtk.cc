@@ -202,6 +202,9 @@ class BrowserActionButton : public NotificationObserver,
   }
 
   MenuGtk* GetContextMenu() {
+    if (!extension_->ShowConfigureContextMenus())
+      return NULL;
+
     context_menu_model_ =
         new ExtensionContextMenuModel(extension_, toolbar_->browser(), this);
     context_menu_.reset(
@@ -268,8 +271,12 @@ class BrowserActionButton : public NotificationObserver,
     if (event->button.button != 3)
       return FALSE;
 
+    MenuGtk* menu = action->GetContextMenu();
+    if (!menu)
+      return FALSE;
+
     action->button_->SetPaintOverride(GTK_STATE_ACTIVE);
-    action->GetContextMenu()->Popup(widget, event);
+    menu->Popup(widget, event);
 
     return TRUE;
   }
@@ -939,7 +946,11 @@ gboolean BrowserActionsToolbarGtk::OnOverflowMenuButtonPress(
     return FALSE;
   }
 
-  it->second.get()->GetContextMenu()->PopupAsContext(event->time);
+  MenuGtk* menu = it->second.get()->GetContextMenu();
+  if (!menu)
+    return FALSE;
+
+  menu->PopupAsContext(event->time);
   return TRUE;
 }
 

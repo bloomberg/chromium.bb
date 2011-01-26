@@ -2319,6 +2319,14 @@ bool Extension::HasFullPermissions() const {
   return plugins().size() > 0;
 }
 
+bool Extension::ShowConfigureContextMenus() const {
+  // Don't show context menu for component extensions. We might want to show
+  // options for component extension button but now there is no component
+  // extension with options. All other menu items like uninstall have
+  // no sense for component extensions.
+  return location() != Extension::COMPONENT;
+}
+
 bool Extension::IsAPIPermission(const std::string& str) const {
   for (size_t i = 0; i < Extension::kNumPermissions; ++i) {
     if (str == Extension::kPermissions[i].name) {
