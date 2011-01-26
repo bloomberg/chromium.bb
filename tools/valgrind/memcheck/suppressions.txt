@@ -3382,9 +3382,6 @@
    fun:_Z16DispatchToMethodIN8remoting14ScreenRecorderEMS1_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN8remoting14ScreenRecorderEMS1_FvvE6Tuple0E3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
-   ...
-   fun:_ZN8remoting38ScreenRecorderTest_OneRecordCycle_Test8TestBodyEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_65680b
@@ -3396,6 +3393,26 @@
    fun:_ZN11MessageLoop7RunTaskEP4Task
    ...
    fun:_ZN8remoting38ScreenRecorderTest_OneRecordCycle_Test8TestBodyEv
+}
+{
+   bug_65680c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8remoting12TraceContext3GetEv
+   fun:_ZN8remoting12TraceContext6tracerEv
+   fun:_ZN8remoting14ScreenRecorder17DoSendVideoPacketEPNS_11VideoPacketE
+   fun:_Z16DispatchToMethodIN8remoting14ScreenRecorderEMS1_FvPNS0_11VideoPacketEES3_EvPT_T0_RK6Tuple1IT1_E
+}
+{
+   bug_65680d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8remoting12TraceContext3GetEv
+   fun:_ZN8remoting12TraceContext6tracerEv
+   fun:_ZN8remoting14ScreenRecorder8DoEncodeE13scoped_refptrINS_11CaptureDataEE
+   fun:_Z16DispatchToMethodIN8remoting14ScreenRecorderEMS1_Fv13scoped_refptrINS0_11CaptureDataEEES4_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN8remoting14ScreenRecorderEMS1_Fv13scoped_refptrINS0_11CaptureDataEEE6Tuple1IS4_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
 }
 {
    bug_65932
@@ -3694,3 +3711,4 @@
    fun:_Znw*
    fun:_ZN27ExtensionFunctionDispatcherC1EP14RenderViewHostPNS_8DelegateEPK9ExtensionRK4GURL
 }
+
