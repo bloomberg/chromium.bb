@@ -689,6 +689,19 @@ void GLES2Implementation::SwapBuffers() {
   Flush();
 }
 
+void GLES2Implementation::CopyTextureToParentTextureCHROMIUM(
+    GLuint client_child_id, GLuint client_parent_id) {
+  // Wait if this would add too many CopyTextureToParentTexture's
+  if (swap_buffers_tokens_.size() == kMaxSwapBuffers) {
+    helper_->WaitForToken(swap_buffers_tokens_.front());
+    swap_buffers_tokens_.pop();
+  }
+  helper_->CopyTextureToParentTextureCHROMIUM(client_child_id,
+      client_parent_id);
+  swap_buffers_tokens_.push(helper_->InsertToken());
+  Flush();
+}
+
 void GLES2Implementation::GenSharedIdsCHROMIUM(
   GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids) {
   GLint* id_buffer = transfer_buffer_.AllocTyped<GLint>(n);

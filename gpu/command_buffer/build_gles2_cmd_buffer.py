@@ -1582,6 +1582,7 @@ _FUNCTION_INFO = {
                   'GLsizei stride, GLuint offset',
   },
   'CopyTextureToParentTextureCHROMIUM': {
+      'impl_func': False,
       'decoder_func': 'DoCopyTextureToParentTextureCHROMIUM',
       'unit_test': False,
       'extension': True,
@@ -5324,7 +5325,7 @@ class GLGenerator(object):
       else:
         arg = context_arg
       file.Write("%s %s(%s) {\n" % (func.return_type, func.name, arg))
-      
+
       file.Write("""  scoped_refptr<PPB_Context3D_Impl> context =
       Resource::GetAs<PPB_Context3D_Impl>(context_id);
 """)
