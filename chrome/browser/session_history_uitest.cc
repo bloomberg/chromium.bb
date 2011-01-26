@@ -215,15 +215,9 @@ TEST_F(SessionHistoryTest, MAYBE_FrameBackForward) {
   EXPECT_EQ(frames, GetTabURL());
 }
 
-#if defined(OS_WIN)
 // See http://crbug.com/61619
-#define MAYBE_FrameFormBackForward FLAKY_FrameFormBackForward
-#else
-#define MAYBE_FrameFormBackForward FrameFormBackForward
-#endif
-
 // Test that back/forward preserves POST data and document state in subframes.
-TEST_F(SessionHistoryTest, MAYBE_FrameFormBackForward) {
+TEST_F(SessionHistoryTest, FLAKY_FrameFormBackForward) {
   ASSERT_TRUE(test_server_.Start());
 
   // about:blank should be loaded first.
