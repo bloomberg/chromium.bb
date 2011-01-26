@@ -97,13 +97,23 @@ shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
 			     struct wlsc_compositor, shm);
 	struct wlsc_shm_buffer *buffer;
 
+	/* FIXME: Define a real exception event instead of abusing the
+	 * display.invalid_object error */
 	if (visual->object.interface != &wl_visual_interface) {
-		/* FIXME: Define a real exception event instead of
-		 * abusing this one */
 		wl_client_post_event(client,
 				     (struct wl_object *) compositor->wl_display,
 				     WL_DISPLAY_INVALID_OBJECT, 0);
 		fprintf(stderr, "invalid visual in create_buffer\n");
+		close(fd);
+		return;
+	}
+
+	if (width < 0 || height < 0 || stride < width) {
+		wl_client_post_event(client,
+				     (struct wl_object *) compositor->wl_display,
+				     WL_DISPLAY_INVALID_OBJECT, 0);
+		fprintf(stderr,
+			"invalid width, height or stride in create_buffer\n");
 		close(fd);
 		return;
 	}
