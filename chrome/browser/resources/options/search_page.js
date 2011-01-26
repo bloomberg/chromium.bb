@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -241,7 +241,7 @@ cr.define('options', function() {
 
       // Generate a regular expression and replace string for hilighting
       // search terms.
-      var regEx = new RegExp('(\\b' + searchText + ')', 'ig');
+      var regEx = new RegExp('(' + searchText + ')', 'ig');
       var replaceString = '<span class="search-highlighted">$1</span>';
 
       // Initialize all sections.  If the search string matches a title page,
