@@ -88,7 +88,6 @@ class SyncerThread2Test : public testing::Test {
       SCOPED_TRACE(testing::Message() << "SyncShare # (" << i << ")");
       TimeTicks optimal_next_sync = optimal_start + poll_interval * i;
       EXPECT_GE(data[i], optimal_next_sync);
-      EXPECT_LE(data[i], optimal_next_sync + poll_interval);
       EXPECT_EQ(GetUpdatesCallerInfo::PERIODIC,
                 records.snapshots[i]->source.first);
     }
@@ -510,7 +509,6 @@ TEST_F(SyncerThread2Test, BackoffRelief) {
     SCOPED_TRACE(testing::Message() << "SyncShare # (" << i << ")");
     TimeTicks optimal_next_sync = optimal_start + poll * i;
     EXPECT_GE(r.times[i], optimal_next_sync);
-    EXPECT_LE(r.times[i], optimal_next_sync + poll);
     EXPECT_EQ(i == 0 ? GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION
                      : GetUpdatesCallerInfo::PERIODIC,
               r.snapshots[i]->source.first);
