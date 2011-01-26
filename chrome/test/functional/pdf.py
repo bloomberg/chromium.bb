@@ -43,10 +43,11 @@ class PDFTest(pyauto.PyUITest):
     pdf_files = glob.glob(os.path.join(pdf_files_path, '*.pdf'))
     # Add a pdf file over http:// to the list of pdf files.
     # crbug.com/70454
-    pdf_files += ['http://www.irs.gov/pub/irs-pdf/fw4.pdf']
+    pdf_files += ['http://www.irs.gov/pub/irs-pdf/fw9.pdf']
     for pdf_file in pdf_files:
       # Some pdfs cause known crashes. Exclude them. crbug.com/63549
-      if os.path.basename(pdf_file) in ('nullip.pdf', 'sample.pdf'):
+      # crbug.com/70811
+      if os.path.basename(pdf_file) in ('nullip.pdf', 'sample.pdf', 'fw4.pdf'):
         continue
       url = self.GetFileURLForPath(pdf_file)
       self.AppendTab(pyauto.GURL(url))
