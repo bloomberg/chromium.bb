@@ -60,7 +60,8 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
     : RenderViewObserver(render_view),
       frame_(frame),
       plugin_params_(params),
-      is_blocked_for_prerendering_(is_blocked_for_prerendering) {
+      is_blocked_for_prerendering_(is_blocked_for_prerendering),
+      hidden_(false) {
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(template_id));
 
@@ -156,6 +157,10 @@ void BlockedPlugin::OnMenuItemSelected(unsigned id) {
 
 void BlockedPlugin::LoadPlugin() {
   CHECK(plugin_);
+  // This is not strictly necessary but is an important defense in case the
+  // event propagation changes between "close" vs. "click-to-play".
+  if (hidden_)
+    return;
   WebPluginContainer* container = plugin_->container();
   WebPlugin* new_plugin =
       render_view()->CreatePluginNoCheck(frame_, plugin_params_);
@@ -178,6 +183,7 @@ void BlockedPlugin::Hide(const CppArgumentList& args, CppVariant* result) {
 
 void BlockedPlugin::HidePlugin() {
   CHECK(plugin_);
+  hidden_ = true;
   WebPluginContainer* container = plugin_->container();
   WebElement element = container->element();
   element.setAttribute("style", "display: none;");

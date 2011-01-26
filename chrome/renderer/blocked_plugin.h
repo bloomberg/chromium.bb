@@ -70,6 +70,7 @@ class BlockedPlugin : public RenderViewObserver,
   // True iff the plugin was blocked because the page was being prerendered.
   // Plugin will automatically be loaded when the page is displayed.
   bool is_blocked_for_prerendering_;
+  bool hidden_;
 };
 
 #endif  // CHROME_RENDERER_BLOCKED_PLUGIN_H_
