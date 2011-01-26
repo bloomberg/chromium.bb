@@ -20,6 +20,14 @@
 using ppapi_proxy::DebugPrintf;
 using ppapi_proxy::PPBGraphics2DInterface;
 
+namespace {
+
+// Two functions below use a NULL PP_Rect pointer to indicate that the
+// entire image should be updated.
+const struct PP_Rect* kEntireImage = NULL;
+
+}  // namespace
+
 void PpbGraphics2DRpcServer::PPB_Graphics2D_Create(NaClSrpcRpc* rpc,
                                                    NaClSrpcClosure* done,
                                                    PP_Instance instance,
@@ -89,8 +97,15 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_PaintImageData(
     char* src_rect) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  if (top_left_bytes != sizeof(struct PP_Point) ||
-      src_rect_bytes != sizeof(struct PP_Rect)) {
+  if (top_left_bytes != sizeof(struct PP_Point)) {
+    return;
+  }
+  const struct PP_Rect* rect = kEntireImage;
+  if (src_rect_bytes == sizeof(struct PP_Rect)) {
+      rect = const_cast<const struct PP_Rect*>(
+                 reinterpret_cast<struct PP_Rect*>(src_rect));
+
+  } else if (src_rect_bytes != 0) {
     return;
   }
   PPBGraphics2DInterface()->PaintImageData(
@@ -98,8 +113,7 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_PaintImageData(
       image,
       const_cast<const struct PP_Point*>(
           reinterpret_cast<struct PP_Point*>(top_left)),
-      const_cast<const struct PP_Rect*>(
-          reinterpret_cast<struct PP_Rect*>(src_rect)));
+      rect);
   DebugPrintf("PPB_Graphics2D::PaintImageData\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -118,10 +132,17 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Scroll(
       amount_bytes != sizeof(struct PP_Point)) {
     return;
   }
+  const struct PP_Rect* rect = kEntireImage;
+  if (clip_rect_bytes == sizeof(struct PP_Rect)) {
+    rect = const_cast<const struct PP_Rect*>(
+               reinterpret_cast<struct PP_Rect*>(clip_rect));
+
+  } else if (clip_rect_bytes != 0) {
+    return;
+  }
   PPBGraphics2DInterface()->Scroll(
       graphics_2d,
-      const_cast<const struct PP_Rect*>(
-          reinterpret_cast<struct PP_Rect*>(clip_rect)),
+      rect,
       const_cast<const struct PP_Point*>(
           reinterpret_cast<struct PP_Point*>(amount)));
   DebugPrintf("PPB_Graphics2D::Scroll\n");

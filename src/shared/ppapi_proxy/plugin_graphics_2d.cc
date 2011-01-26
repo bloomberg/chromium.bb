@@ -95,13 +95,17 @@ void PaintImageData(PP_Resource graphics_2d,
                 graphics_2d);
   // TODO(sehr,polina): there is no way to report a failure through this
   // interface design other than crash.  Let's find one.
+  nacl_abi_size_t rect_size = kPpRectBytes;
+  if (src_rect == NULL) {
+    rect_size = 0;
+  }
   (void) PpbGraphics2DRpcClient::PPB_Graphics2D_PaintImageData(
       GetMainSrpcChannel(),
       graphics_2d,
       image,
       kPpPointBytes,
       reinterpret_cast<char*>(const_cast<struct PP_Point*>(top_left)),
-      kPpRectBytes,
+      rect_size,
       reinterpret_cast<char*>(const_cast<struct PP_Rect*>(src_rect)));
 }
 
@@ -112,10 +116,14 @@ void Scroll(PP_Resource graphics_2d,
               graphics_2d);
   // TODO(sehr,polina): there is no way to report a failure through this
   // interface design other than crash.  Let's find one.
+  nacl_abi_size_t rect_size = kPpRectBytes;
+  if (clip_rect == NULL) {
+    rect_size = 0;
+  }
   (void) PpbGraphics2DRpcClient::PPB_Graphics2D_Scroll(
       GetMainSrpcChannel(),
       graphics_2d,
-      kPpRectBytes,
+      rect_size,
       reinterpret_cast<char*>(const_cast<struct PP_Rect*>(clip_rect)),
       kPpPointBytes,
       reinterpret_cast<char*>(const_cast<struct PP_Point*>(amount)));
