@@ -23,12 +23,7 @@ TEST_F(IFrameTest, Crash) {
   NavigateAndVerifyTitle("iframe.html", L"iframe test");
 }
 
-#if defined(OS_CHROMEOS)
-// Flakily crashes on ChromeOS: http://crbug.com/70192
-#define MAYBE_InEmptyFrame DISABLED_InEmptyFrame
-#else
-#define MAYBE_InEmptyFrame InEmptyFrame
-#endif
-TEST_F(IFrameTest, MAYBE_InEmptyFrame) {
+// Flakily crashes on all oses: http://crbug.com/70192
+TEST_F(IFrameTest, DISABLED_InEmptyFrame) {
   NavigateAndVerifyTitle("iframe_in_empty_frame.html", L"iframe test");
 }

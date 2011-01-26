@@ -81,9 +81,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoYesScript) {
   EXPECT_TRUE(result);
 }
 
+// http://crbug.com/70913 flaky hangs on linux so disabling.
+#if defined(OS_LINUX)
+#define MAYBE_DontCreateIncognitoProfile DISABLED_DontCreateIncognitoProfile
+#else
+#define MAYBE_DontCreateIncognitoProfile DontCreateIncognitoProfile
+#endif
 // Tests that an extension which is enabled for incognito mode doesn't
 // accidentially create and incognito profile.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DontCreateIncognitoProfile) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_DontCreateIncognitoProfile) {
   ASSERT_FALSE(browser()->profile()->HasOffTheRecordProfile());
   ASSERT_TRUE(RunExtensionTestIncognito(
       "incognito/dont_create_profile")) << message_;
@@ -108,16 +114,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// Hangs flakily on mac and linux: http://crbug.com/53991
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_IncognitoSplitMode DISABLED_IncognitoSplitMode
-#else
-#define MAYBE_IncognitoSplitMode IncognitoSplitMode
-#endif
-
 // Tests that the APIs in an incognito-enabled split-mode extension work
 // properly.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_IncognitoSplitMode) {
+// Hangs flakily on mac, linux, win: http://crbug.com/53991
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoSplitMode) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
