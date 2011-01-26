@@ -228,13 +228,16 @@ float mkvparser::Unserialize4Float(
     assert(pReader);
     assert(pos >= 0);
 
+#ifdef _DEBUG
     long long total, available;
 
     long hr = pReader->Length(&total, &available);
     assert(hr >= 0);
     assert(available <= total);
     assert((pos + 4) <= available);
+#endif
 
+#if 0
     float result;
 
     unsigned char* const p = (unsigned char*)&result;
@@ -250,6 +253,32 @@ float mkvparser::Unserialize4Float(
 
         ++pos;
     }
+#else
+    union
+    {
+        float result;
+        unsigned long buf;
+    };
+
+    buf = 0;
+
+    for (int i = 0;;)
+    {
+        unsigned char b;
+
+        const int status = pReader->Read(pos++, 1, &b);
+
+        if (status < 0)  //error
+            return static_cast<float>(status);
+
+        buf |= b;
+
+        if (++i >= 4)
+            break;
+
+        buf <<= 8;
+    }
+#endif
 
     return result;
 }
@@ -262,6 +291,7 @@ double mkvparser::Unserialize8Double(
     assert(pReader);
     assert(pos >= 0);
 
+#if 0
     double result;
 
     unsigned char* const p = (unsigned char*)&result;
@@ -277,6 +307,32 @@ double mkvparser::Unserialize8Double(
 
         ++pos;
     }
+#else
+    union
+    {
+        double result;
+        long long buf;
+    };
+
+    buf = 0;
+
+    for (int i = 0;;)
+    {
+        unsigned char b;
+
+        const int status = pReader->Read(pos++, 1, &b);
+
+        if (status < 0)  //error
+            return static_cast<double>(status);
+
+        buf |= b;
+
+        if (++i >= 8)
+            break;
+
+        buf <<= 8;
+    }
+#endif
 
     return result;
 }
@@ -288,17 +344,20 @@ signed char mkvparser::Unserialize1SInt(
     assert(pReader);
     assert(pos >= 0);
 
+#ifdef _DEBUG
     long long total, available;
 
     long hr = pReader->Length(&total, &available);
     assert(hr == 0);
     assert(available <= total);
     assert(pos < available);
+#endif
 
     signed char result;
+    unsigned char& b = reinterpret_cast<unsigned char&>(result);
 
-    hr = pReader->Read(pos, 1, (unsigned char*)&result);
-    assert(hr == 0);
+    const int status = pReader->Read(pos, 1, &b);
+    assert(status == 0);  //TODO: must be handled somehow
 
     return result;
 }
@@ -310,13 +369,16 @@ short mkvparser::Unserialize2SInt(
     assert(pReader);
     assert(pos >= 0);
 
+#ifdef _DEBUG
     long long total, available;
 
     long hr = pReader->Length(&total, &available);
     assert(hr >= 0);
     assert(available <= total);
     assert((pos + 2) <= available);
+#endif
 
+#if 0
     short result;
 
     unsigned char* const p = (unsigned char*)&result;
@@ -332,6 +394,24 @@ short mkvparser::Unserialize2SInt(
 
         ++pos;
     }
+#else
+    short result = 0;
+
+    for (int i = 0;;)
+    {
+        unsigned char b;
+
+        const int status = pReader->Read(pos++, 1, &b);
+        assert(status == 0);  //TODO: must be handled somehow
+
+        result |= b;
+
+        if (++i >= 2)
+            break;
+
+        result <<= 8;
+    }
+#endif
 
     return result;
 }
