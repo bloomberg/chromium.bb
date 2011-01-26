@@ -88,7 +88,6 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_FollowRedirect(
     int32_t callback_id,
     // outputs
     int32_t* pp_error) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
@@ -115,7 +114,6 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_GetUploadProgress(
     int64_t* bytes_sent,
     int64_t* total_bytes_to_be_sent,
     int32_t* success) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
@@ -136,7 +134,6 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_GetDownloadProgress(
     int64_t* bytes_received,
     int64_t* total_bytes_to_be_received,
     int32_t* success) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
@@ -240,7 +237,6 @@ void PpbURLLoaderRpcServer::PPB_URLLoader_Close(
     NaClSrpcClosure* done,
     // inputs
     PP_Resource loader) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   PPBURLLoaderInterface()->Close(loader);

@@ -34,7 +34,6 @@ void PpbInstanceRpcServer::PPB_Instance_GetOwnerElementObject(
     PP_Instance instance,
     // outputs
     nacl_abi_size_t* owner_size, char* owner_bytes) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
@@ -73,7 +72,6 @@ void PpbInstanceRpcServer::PPB_Instance_IsFullFrame(
     PP_Instance instance,
     // outputs
     int32_t* is_full_frame) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
@@ -94,7 +92,6 @@ void PpbInstanceRpcServer::PPB_Instance_ExecuteScript(
     // outputs
     nacl_abi_size_t* result_size, char* result_bytes,
     nacl_abi_size_t* exception_size, char* exception_bytes) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 

@@ -68,7 +68,6 @@ void PpbCoreRpcServer::PPB_Core_CallOnMainThread(
     int32_t delay_in_milliseconds,
     int32_t callback_id,
     int32_t result) {
-  NACL_UNTESTED();
   CHECK(PPBCoreInterface()->IsMainThread());
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
@@ -92,7 +91,6 @@ void PppUpcallRpcServer::PPB_Core_CallOnMainThread(
     int32_t delay_in_milliseconds,
     int32_t callback_id,
     int32_t result) {
-  NACL_UNTESTED();
   CHECK(!PPBCoreInterface()->IsMainThread());
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;

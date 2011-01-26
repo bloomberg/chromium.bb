@@ -82,7 +82,6 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_AppendDataToBody(
       nacl_abi_size_t data_size, char* data_bytes,
       // outputs
       int32_t* success) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
@@ -108,7 +107,6 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_AppendFileToBody(
       double expected_last_modified_time,
       // outputs
       int32_t* success) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
