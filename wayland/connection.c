@@ -647,6 +647,7 @@ wl_connection_demarshal(struct wl_connection *connection,
  err:
 	closure->count = i;
 	wl_closure_destroy(closure);
+	wl_connection_consume(connection, size);
 
 	return NULL;
 }
