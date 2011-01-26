@@ -230,4 +230,7 @@ tty_destroy(struct tty *tty);
 void
 screenshooter_create(struct wlsc_compositor *ec);
 
+uint32_t *
+wlsc_load_image(const char *filename, int width, int height);
+
 #endif

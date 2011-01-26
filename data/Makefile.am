@@ -19,4 +19,8 @@ dist_waylanddata_DATA =				\
 	top_right_corner.png			\
 	top_side.png				\
 	xterm.png				\
-	wayland.svg
+	wayland.svg				\
+	wayland.png
+
+wayland.png : wayland.svg
+	rsvg-convert -w 128 -h 128 wayland.svg -o wayland.png

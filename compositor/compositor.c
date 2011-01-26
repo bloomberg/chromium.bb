@@ -189,21 +189,22 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 	wlsc_compositor_schedule_repaint(compositor);
 }
 
-static struct wl_buffer *
-create_buffer_from_png(struct wlsc_compositor *ec,
-		       const char *filename, int width, int height)
+uint32_t *
+wlsc_load_image(const char *filename, int width, int height)
 {
 	GdkPixbuf *pixbuf;
 	GError *error = NULL;
 	int stride, i, n_channels;
 	unsigned char *pixels, *end, *argb_pixels, *s, *d;
-	struct wl_buffer *buffer;
 
 	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
 						   width, height,
 						   FALSE, &error);
-	if (error != NULL)
+	if (error != NULL) {
+		fprintf(stderr, "failed to load image: %s\n", error->message);
+		g_error_free(error);
 		return NULL;
+	}
 
 	stride = gdk_pixbuf_get_rowstride(pixbuf);
 	pixels = gdk_pixbuf_get_pixels(pixbuf);
@@ -252,11 +253,23 @@ create_buffer_from_png(struct wlsc_compositor *ec,
 
 	g_object_unref(pixbuf);
 
+	return (uint32_t *) argb_pixels;
+}
+
+static struct wl_buffer *
+create_buffer_from_png(struct wlsc_compositor *ec,
+		       const char *filename, int width, int height)
+{
+	uint32_t *pixels;
+	struct wl_buffer *buffer;
+
+	pixels = wlsc_load_image(filename, width, height);
+
 	buffer = ec->create_buffer(ec, width, height,
 				   &ec->compositor.premultiplied_argb_visual,
-				   argb_pixels);
+				   pixels);
 
-	free(argb_pixels);
+	free(pixels);
 
 	return buffer;
 }

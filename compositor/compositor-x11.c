@@ -61,8 +61,10 @@ struct x11_compositor {
 		xcb_atom_t		 wm_delete_window;
 		xcb_atom_t		 wm_class;
 		xcb_atom_t		 net_wm_name;
+		xcb_atom_t		 net_wm_icon;
 		xcb_atom_t		 string;
 		xcb_atom_t		 utf8_string;
+		xcb_atom_t		 cardinal;
 	} atom;
 };
 
@@ -330,6 +332,31 @@ struct wm_normal_hints {
 #define WM_NORMAL_HINTS_MIN_SIZE	16
 #define WM_NORMAL_HINTS_MAX_SIZE	32
 
+static void
+x11_output_set_icon(struct x11_compositor *c, struct x11_output *output,
+		    const char *filename, int width, int height)
+{
+	uint32_t *icon, *pixels;
+
+	pixels = wlsc_load_image(filename, width, height);
+	if (!pixels)
+		return;
+	icon = malloc(width * height * 4 + 8);
+	if (!icon) {
+		free(pixels);
+		return;
+	}
+
+	icon[0] = width;
+	icon[1] = height;
+	memcpy(icon + 2, pixels, width * height * 4);
+	xcb_change_property(c->conn, XCB_PROP_MODE_REPLACE, output->window,
+			    c->atom.net_wm_icon, c->atom.cardinal, 32,
+			    width * height + 2, icon);
+	free(icon);
+	free(pixels);
+}
+
 static int
 x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 {
@@ -408,6 +435,9 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 	xcb_change_property(c->conn, XCB_PROP_MODE_REPLACE, output->window,
 			    c->atom.wm_class, c->atom.string, 8,
 			    sizeof class, class);
+
+	x11_output_set_icon(c, output,
+			    DATADIR "/wayland/wayland.png", 128, 128);
 
 	xcb_map_window(c->conn, output->window);
 
@@ -611,8 +641,10 @@ x11_compositor_get_resources(struct x11_compositor *c)
 		{ "WM_DELETE_WINDOW",	F(atom.wm_delete_window) },
 		{ "WM_CLASS",		F(atom.wm_class) },
 		{ "_NET_WM_NAME",	F(atom.net_wm_name) },
+		{ "_NET_WM_ICON",	F(atom.net_wm_icon) },
 		{ "STRING",		F(atom.string) },
 		{ "UTF8_STRING",	F(atom.utf8_string) },
+		{ "CARDINAL",		F(atom.cardinal) },
 	};
 
 	xcb_intern_atom_cookie_t cookies[ARRAY_SIZE(atoms)];
