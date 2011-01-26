@@ -393,7 +393,9 @@ void BrowserList::CloseAllBrowsersAndExit() {
 void BrowserList::SessionEnding() {
   // EndSession is invoked once per frame. Only do something the first time.
   static bool already_ended = false;
-  if (already_ended)
+  // We may get called in the middle of shutdown, e.g. http://crbug.com/70852
+  // In this case, do nothing.
+  if (already_ended || !NotificationService::current())
     return;
   already_ended = true;
 

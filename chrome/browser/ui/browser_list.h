@@ -110,7 +110,7 @@ class BrowserList {
   // message.
   static void CloseAllBrowsers();
 
-  // Begins shutdown of the application when the session is ending.
+  // Begins shutdown of the application when the desktop session is ending.
   static void SessionEnding();
 
   // Returns true if there is at least one Browser with the specified profile.
