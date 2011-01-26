@@ -624,9 +624,17 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
   if (launch_type == ExtensionPrefs::LAUNCH_PINNED)
     add_type |= TabStripModel::ADD_PINNED;
 
+  // For extensions lacking launch urls, determine a reasonable fallback.
+  GURL extension_url = extension->GetFullLaunchURL();
+  if (!extension_url.is_valid()) {
+    extension_url = extension->options_url();
+    if (!extension_url.is_valid())
+      extension_url = GURL(chrome::kChromeUIExtensionsURL);
+  }
+
   // TODO(erikkay): START_PAGE doesn't seem like the right transition in all
   // cases.
-  browser::NavigateParams params(browser, extension->GetFullLaunchURL(),
+  browser::NavigateParams params(browser, extension_url,
                                  PageTransition::START_PAGE);
   params.tabstrip_add_types = add_type;
 
