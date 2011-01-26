@@ -62,8 +62,7 @@ class BufferedDataSource : public WebDataSource {
   void InitializeTask();
 
   // Task posted to perform actual reading on the render thread.
-  void ReadTask(int64 position, int read_size, uint8* read_buffer,
-                media::DataSource::ReadCallback* read_callback);
+  void ReadTask(int64 position, int read_size, uint8* read_buffer);
 
   // Task posted when Stop() is called. Stops |watch_dog_timer_| and
   // |loader_|, reset Read() variables, and set |stopped_on_render_loop_|
