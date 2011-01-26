@@ -3711,4 +3711,19 @@
    fun:_Znw*
    fun:_ZN27ExtensionFunctionDispatcherC1EP14RenderViewHostPNS_8DelegateEPK9ExtensionRK4GURL
 }
-
+{
+   bug_70825
+   Memcheck:Addr1
+   fun:_ZNK3net10UploadData10is_chunkedEv
+   fun:_ZNK3net16UploadDataStream10is_chunkedEv
+   fun:_ZN3net16HttpStreamParserD0Ev
+   ...
+   fun:_ZN10scoped_ptrIN3net16HttpStreamParserEED1Ev
+   fun:_ZN3net15HttpBasicStreamD0Ev
+   ...
+   fun:_ZN10scoped_ptrIN3net10HttpStreamEED1Ev
+   fun:_ZN3net22HttpNetworkTransactionD0Ev
+   ...
+   fun:_ZN10scoped_ptrIN3net15HttpTransactionEED1Ev
+   fun:_ZN3net42HttpNetworkTransactionTest_Ignores100_Test8TestBodyEv
+}
