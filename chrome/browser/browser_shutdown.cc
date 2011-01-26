@@ -255,6 +255,11 @@ void Shutdown() {
     chromeos::CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
   }
 #endif
+
+  // Clean up data sources before the UI thread is removed.
+  ChromeURLDataManager* data_manager = ChromeURLDataManager::GetInstance();
+  if (data_manager)
+    data_manager->RemoveAllDataSources();
 }
 
 void ReadLastShutdownFile(

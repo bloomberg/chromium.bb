@@ -207,6 +207,15 @@ void ChromeURLDataManager::AddDataSource(scoped_refptr<DataSource> source) {
   data_sources_[source->source_name()] = source;
 }
 
+void ChromeURLDataManager::RemoveAllDataSources() {
+  for (DataSourceMap::iterator i = data_sources_.begin();
+       i != data_sources_.end();
+       i = data_sources_.begin()) {
+    (*i).second = NULL;  // Calls Release().
+    data_sources_.erase(i);
+  }
+}
+
 void ChromeURLDataManager::AddFileSource(const std::string& source_name,
                                          const FilePath& file_path) {
   DCHECK(file_sources_.count(source_name) == 0);
