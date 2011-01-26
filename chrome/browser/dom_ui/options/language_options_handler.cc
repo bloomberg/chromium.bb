@@ -383,7 +383,8 @@ void LanguageOptionsHandler::UiLanguageChangeCallback(
       "LanguageOptions_UiLanguageChange_%s", language_code.c_str());
   UserMetrics::RecordComputedAction(action);
 #if defined(OS_CHROMEOS)
-  dom_ui_->GetProfile()->ChangeApplicationLocale(language_code, false);
+  dom_ui_->GetProfile()->ChangeAppLocale(
+      language_code, Profile::APP_LOCALE_CHANGED_VIA_SETTINGS);
 #else
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetString(prefs::kApplicationLocale, language_code);

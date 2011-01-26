@@ -486,10 +486,20 @@ class Profile {
   virtual policy::ProfilePolicyContext* GetPolicyContext() = 0;
 
 #if defined(OS_CHROMEOS)
-  // Changes application locale.
-  // "Keep local" means that changes should not be propagated to other devices.
-  virtual void ChangeApplicationLocale(
-      const std::string& locale, bool keep_local) = 0;
+  enum AppLocaleChangedVia {
+    // Caused by chrome://settings change.
+    APP_LOCALE_CHANGED_VIA_SETTINGS,
+    // Locale has been reverted via LocaleChangeGuard.
+    APP_LOCALE_CHANGED_VIA_REVERT,
+    // From login screen.
+    APP_LOCALE_CHANGED_VIA_LOGIN,
+    // Source unknown.
+    APP_LOCALE_CHANGED_VIA_UNKNOWN
+  };
+
+  // Changes application locale for a profile.
+  virtual void ChangeAppLocale(
+      const std::string& locale, AppLocaleChangedVia via) = 0;
 
   // Returns ChromeOS's ProxyConfigServiceImpl, creating if not yet created.
   virtual chromeos::ProxyConfigServiceImpl*

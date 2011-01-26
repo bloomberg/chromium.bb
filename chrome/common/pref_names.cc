@@ -46,16 +46,36 @@ const char kURLsToRestoreOnStartup[] = "session.urls_to_restore_on_startup";
 // while user's profile determines his personal locale preference.
 const char kApplicationLocale[] = "intl.app_locale";
 #if defined(OS_CHROMEOS)
-// Non-syncable item.  Used to detect locale change.
-// Used for two-step initialization of locale in ChromeOS
-// because synchronization of kApplicationLocale is not instant.
-const char kApplicationLocaleBackup[] = "intl.app_locale_backup";
-// Non-syncable item.
-// Used to locally override synchronized kApplicationLocale preference.
-const char kApplicationLocaleOverride[] = "intl.app_locale_override";
 // Locale accepted by user.  Non-syncable.
 // Used to determine whether we need to show Locale Change notification.
 const char kApplicationLocaleAccepted[] = "intl.app_locale_accepted";
+// Non-syncable item.
+// It is used in two distinct ways.
+// (1) Used for two-step initialization of locale in ChromeOS
+//     because synchronization of kApplicationLocale is not instant.
+// (2) Used to detect locale change.  Locale change is detected by
+//     LocaleChangeGuard in case values of kApplicationLocaleBackup and
+//     kApplicationLocale are both non-empty and differ.
+// Following is a table showing how state of those prefs may change upon
+// common real-life use cases:
+//                                  AppLocale Backup Accepted
+// Initial login                       -        A       -
+// Sync                                B        A       -
+// Accept (B)                          B        B       B
+// -----------------------------------------------------------
+// Initial login                       -        A       -
+// No sync and second login            A        A       -
+// Change options                      B        B       -
+// -----------------------------------------------------------
+// Initial login                       -        A       -
+// Sync                                A        A       -
+// Locale changed on login screen      A        C       -
+// Accept (A)                          A        A       A
+// -----------------------------------------------------------
+// Initial login                       -        A       -
+// Sync                                B        A       -
+// Revert                              A        A       -
+const char kApplicationLocaleBackup[] = "intl.app_locale_backup";
 #endif
 
 // The default character encoding to assume for a web page in the

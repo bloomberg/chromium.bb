@@ -32,8 +32,7 @@ PreferenceModelAssociator::PreferenceModelAssociator(
   // synced_preferences set, taking care to filter out any preferences
   // that are not registered.
   PrefService* pref_service = sync_service_->profile()->GetPrefs();
-  for (size_t i = 0;
-       i < static_cast<size_t>(arraysize(kSynchronizedPreferences)); ++i) {
+  for (size_t i = 0; i < arraysize(kSynchronizedPreferences); ++i) {
     if (pref_service->FindPreference(kSynchronizedPreferences[i]))
       synced_preferences_.insert(kSynchronizedPreferences[i]);
   }

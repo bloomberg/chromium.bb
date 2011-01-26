@@ -27,7 +27,6 @@ extern const char kURLsToRestoreOnStartup[];
 extern const char kApplicationLocale[];
 #if defined(OS_CHROMEOS)
 extern const char kApplicationLocaleBackup[];
-extern const char kApplicationLocaleOverride[];
 extern const char kApplicationLocaleAccepted[];
 #endif
 

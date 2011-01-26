@@ -114,7 +114,6 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   // in user's profile for other platforms as well.
   prefs->RegisterStringPref(prefs::kApplicationLocale, "");
   prefs->RegisterStringPref(prefs::kApplicationLocaleBackup, "");
-  prefs->RegisterStringPref(prefs::kApplicationLocaleOverride, "");
   prefs->RegisterStringPref(prefs::kApplicationLocaleAccepted, "");
 #endif
 }
@@ -614,8 +613,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
 #if defined(OS_CHROMEOS)
-  virtual void ChangeApplicationLocale(
-      const std::string& locale, bool keep_local) {
+  virtual void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia) {
   }
 #endif  // defined(OS_CHROMEOS)
 

@@ -1372,28 +1372,75 @@ PromoCounter* ProfileImpl::GetInstantPromoCounter() {
 }
 
 #if defined(OS_CHROMEOS)
-void ProfileImpl::ChangeApplicationLocale(
-    const std::string& locale, bool keep_local) {
-  if (locale.empty()) {
+void ProfileImpl::ChangeAppLocale(
+    const std::string& new_locale, AppLocaleChangedVia via) {
+  if (new_locale.empty()) {
     NOTREACHED();
     return;
   }
-  if (keep_local) {
-    GetPrefs()->SetString(prefs::kApplicationLocaleOverride, locale);
-  } else {
-    GetPrefs()->SetString(prefs::kApplicationLocale, locale);
-    GetPrefs()->ClearPref(prefs::kApplicationLocaleOverride);
+  std::string pref_locale = GetPrefs()->GetString(prefs::kApplicationLocale);
+  bool do_update_pref = true;
+  switch (via) {
+    case APP_LOCALE_CHANGED_VIA_SETTINGS:
+    case APP_LOCALE_CHANGED_VIA_REVERT: {
+      // We keep kApplicationLocaleBackup value as a reference.  In case value
+      // of kApplicationLocale preference would change due to sync from other
+      // device then kApplicationLocaleBackup value will trigger and allow us to
+      // show notification about automatic locale change in LocaleChangeGuard.
+      GetPrefs()->SetString(prefs::kApplicationLocaleBackup, new_locale);
+      GetPrefs()->ClearPref(prefs::kApplicationLocaleAccepted);
+      // We maintain kApplicationLocale property in both a global storage
+      // and user's profile.  Global property determines locale of login screen,
+      // while user's profile determines his personal locale preference.
+      // In case of APP_LOCALE_CHANGED_VIA_LOGIN we won't touch local state
+      // because login screen code is active and takes care of it.
+      g_browser_process->local_state()->SetString(
+          prefs::kApplicationLocale, new_locale);
+      break;
+    }
+    case APP_LOCALE_CHANGED_VIA_LOGIN: {
+      if (!pref_locale.empty()) {
+        DCHECK(pref_locale == new_locale);
+        std::string accepted_locale =
+            GetPrefs()->GetString(prefs::kApplicationLocaleAccepted);
+        if (accepted_locale == new_locale) {
+          // If locale is accepted then we do not want to show LocaleChange
+          // notification.  This notification is triggered by different values
+          // of kApplicationLocaleBackup and kApplicationLocale preferences,
+          // so make them identical.
+          GetPrefs()->SetString(prefs::kApplicationLocaleBackup, new_locale);
+        } else {
+          // Back up locale of login screen.
+          GetPrefs()->SetString(prefs::kApplicationLocaleBackup,
+                                g_browser_process->GetApplicationLocale());
+        }
+      } else {
+        std::string cur_locale = g_browser_process->GetApplicationLocale();
+        std::string backup_locale =
+            GetPrefs()->GetString(prefs::kApplicationLocaleBackup);
+        // Profile synchronization takes time and is not completed at that
+        // moment at first login.  So we initialize locale preference in steps:
+        // (1) first save it to temporary backup;
+        // (2) on next login we assume that synchronization is already completed
+        //     and we may finalize initialization.
+        GetPrefs()->SetString(prefs::kApplicationLocaleBackup, cur_locale);
+        if (!backup_locale.empty())
+          GetPrefs()->SetString(prefs::kApplicationLocale, backup_locale);
+        do_update_pref = false;
+      }
+      break;
+    }
+    case APP_LOCALE_CHANGED_VIA_UNKNOWN:
+    default: {
+      NOTREACHED();
+      break;
+    }
   }
-  GetPrefs()->SetString(prefs::kApplicationLocaleBackup, locale);
-  GetPrefs()->ClearPref(prefs::kApplicationLocaleAccepted);
-  // We maintain kApplicationLocale property in both a global storage
-  // and user's profile.  Global property determines locale of login screen,
-  // while user's profile determines his personal locale preference.
-  g_browser_process->local_state()->SetString(
-      prefs::kApplicationLocale, locale);
+  if (do_update_pref)
+    GetPrefs()->SetString(prefs::kApplicationLocale, new_locale);
 
-  GetPrefs()->SavePersistentPrefs();
-  g_browser_process->local_state()->SavePersistentPrefs();
+  GetPrefs()->ScheduleSavePersistentPrefs();
+  g_browser_process->local_state()->ScheduleSavePersistentPrefs();
 }
 
 chromeos::ProxyConfigServiceImpl*

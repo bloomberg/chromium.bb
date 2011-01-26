@@ -155,7 +155,7 @@ class LoginUtilsImpl : public LoginUtils {
 
  private:
   // Check user's profile for kApplicationLocale setting.
-  void RespectLocalePreference(PrefService* pref);
+  void RespectLocalePreference(Profile* pref);
 
   // Indicates if DoBrowserLaunch will actually launch the browser or not.
   bool browser_launch_enabled_;
@@ -309,7 +309,7 @@ void LoginUtilsImpl::CompleteLogin(
   }
   btl->AddLoginTimeMarker("TPMOwned", false);
 
-  RespectLocalePreference(profile->GetPrefs());
+  RespectLocalePreference(profile);
 
   if (first_login) {
     SetFirstLoginPrefs(profile->GetPrefs());
@@ -354,53 +354,21 @@ void LoginUtilsImpl::FetchTokens(
   }
 }
 
-void LoginUtilsImpl::RespectLocalePreference(PrefService* prefs) {
+void LoginUtilsImpl::RespectLocalePreference(Profile* profile) {
+  DCHECK(profile != NULL);
+  PrefService* prefs = profile->GetPrefs();
   DCHECK(prefs != NULL);
-  std::string pref_locale_override =
-      prefs->GetString(prefs::kApplicationLocaleOverride);
-  if (!pref_locale_override.empty()) {
-    LanguageSwitchMenu::SwitchLanguage(pref_locale_override);
-    return;
-  }
-
   if (g_browser_process == NULL)
     return;
-  std::string cur_locale = g_browser_process->GetApplicationLocale();
 
   std::string pref_locale = prefs->GetString(prefs::kApplicationLocale);
-  if (!pref_locale.empty()) {
-    if (prefs->GetString(prefs::kApplicationLocaleAccepted) == pref_locale) {
-      // If locale is accepted then we do not want to show LocaleChange
-      // notification.  This notification is triggered by different values of
-      // kApplicationLocaleBackup and kApplicationLocale preferences,
-      // so make them identical.
-      prefs->SetString(prefs::kApplicationLocaleBackup, pref_locale);
-    } else {
-      std::string pref_locale_backup =
-          prefs->GetString(prefs::kApplicationLocaleBackup);
-      if (pref_locale_backup != cur_locale) {
-        if (pref_locale_backup == pref_locale || pref_locale_backup.empty()) {
-          prefs->SetString(prefs::kApplicationLocaleBackup, cur_locale);
-        }
-      }
-    }
-    LanguageSwitchMenu::SwitchLanguage(pref_locale);
-    return;
-  }
-  // Profile synchronization takes time and is not completed at that moment
-  // at first login.  So we initialize locale preference in steps:
-  // (1) first save it to temporary backup;
-  // (2) on next login we assume that synchronization is already completed
-  //     and we may finalize initialization.
-  std::string pref_locale_backup =
-      prefs->GetString(prefs::kApplicationLocaleBackup);
-  prefs->SetString(prefs::kApplicationLocaleBackup, cur_locale);
-  prefs->ScheduleSavePersistentPrefs();
-  if (!pref_locale_backup.empty()) {
-    prefs->SetString(prefs::kApplicationLocale, pref_locale_backup);
-    prefs->ScheduleSavePersistentPrefs();
-    LanguageSwitchMenu::SwitchLanguage(pref_locale_backup);
-  }
+  if (pref_locale.empty())
+    pref_locale = prefs->GetString(prefs::kApplicationLocaleBackup);
+  if (pref_locale.empty())
+    pref_locale = g_browser_process->GetApplicationLocale();
+  DCHECK(!pref_locale.empty());
+  profile->ChangeAppLocale(pref_locale, Profile::APP_LOCALE_CHANGED_VIA_LOGIN);
+  LanguageSwitchMenu::SwitchLanguage(pref_locale);
 }
 
 void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {

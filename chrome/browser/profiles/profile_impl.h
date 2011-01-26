@@ -130,8 +130,7 @@ class ProfileImpl : public Profile,
   virtual policy::ProfilePolicyContext* GetPolicyContext();
 
 #if defined(OS_CHROMEOS)
-  virtual void ChangeApplicationLocale(
-      const std::string& locale, bool keep_local);
+  virtual void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia);
   virtual chromeos::ProxyConfigServiceImpl* GetChromeOSProxyConfigServiceImpl();
   virtual void SetupChromeOSEnterpriseExtensionObserver();
 #endif  // defined(OS_CHROMEOS)

@@ -298,7 +298,7 @@ class TestingProfile : public Profile {
   }
   virtual void SetupChromeOSEnterpriseExtensionObserver() {
   }
-  virtual void ChangeApplicationLocale(const std::string&, bool) {
+  virtual void ChangeAppLocale(const std::string&, AppLocaleChangedVia) {
   }
 #endif  // defined(OS_CHROMEOS)
 

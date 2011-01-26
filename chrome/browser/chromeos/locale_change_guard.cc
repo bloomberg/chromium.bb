@@ -66,10 +66,8 @@ void LocaleChangeGuard::RevertLocaleChange(const ListValue* list) {
 
   reverted_ = true;
   UserMetrics::RecordAction(UserMetricsAction("LanguageChange_Revert"));
-  tab_contents_->profile()->ChangeApplicationLocale(from_locale_, true);
-  prefs->SetString(prefs::kApplicationLocaleBackup, from_locale_);
-  prefs->ClearPref(prefs::kApplicationLocaleAccepted);
-  prefs->ScheduleSavePersistentPrefs();
+  tab_contents_->profile()->ChangeAppLocale(
+      from_locale_, Profile::APP_LOCALE_CHANGED_VIA_REVERT);
 
   Browser* browser = Browser::GetBrowserForController(
       &tab_contents_->controller(), NULL);
@@ -88,10 +86,8 @@ void LocaleChangeGuard::CheckLocaleChange(TabContents* tab_contents) {
   // (1) we want to exit fast in common case when nothing should be done.
   // (2) on ChromeOS this guard may be invoked for a dummy profile first time.
   ProfileId cur_profile_id = tab_contents->profile()->GetRuntimeId();
-  if (cur_profile_id == profile_id_) {
-    // We have already checked this profile, exiting fast.
-    return;
-  }
+  if (cur_profile_id == profile_id_)
+    return;  // We have already checked this profile, exiting fast.
   profile_id_ = cur_profile_id;
 
   std::string cur_locale = g_browser_process->GetApplicationLocale();
@@ -104,13 +100,7 @@ void LocaleChangeGuard::CheckLocaleChange(TabContents* tab_contents) {
   if (prefs == NULL)
     return;
 
-  std::string to_locale = prefs->GetString(prefs::kApplicationLocaleOverride);
-  if (!to_locale.empty()) {
-    DCHECK(to_locale == cur_locale);
-    return;
-  }
-
-  to_locale = prefs->GetString(prefs::kApplicationLocale);
+  std::string to_locale = prefs->GetString(prefs::kApplicationLocale);
   if (to_locale != cur_locale) {
     // This conditional branch can occur in case kApplicationLocale
     // preference was modified by synchronization.
@@ -118,10 +108,11 @@ void LocaleChangeGuard::CheckLocaleChange(TabContents* tab_contents) {
   }
 
   std::string from_locale = prefs->GetString(prefs::kApplicationLocaleBackup);
-  if (from_locale.empty() || from_locale == to_locale) {
-    // No locale change was detected, just exit.
-    return;
-  }
+  if (from_locale.empty() || from_locale == to_locale)
+    return;  // No locale change was detected, just exit.
+
+  if (prefs->GetString(prefs::kApplicationLocaleAccepted) == to_locale)
+    return;  // Already accepted.
 
   // Locale change detected, showing notification.
   from_locale_ = from_locale;
@@ -159,10 +150,6 @@ void LocaleChangeGuard::AcceptLocaleChange() {
     return;
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
   if (prefs == NULL)
-    return;
-  std::string override_locale =
-      prefs->GetString(prefs::kApplicationLocaleOverride);
-  if (!override_locale.empty())
     return;
   if (prefs->GetString(prefs::kApplicationLocale) != to_locale_)
     return;
