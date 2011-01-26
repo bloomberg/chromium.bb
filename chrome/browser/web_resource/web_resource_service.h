@@ -138,6 +138,8 @@ class WebResourceService
 
   int cache_update_delay() const { return cache_update_delay_; }
 
+  Profile* profile() const { return profile_; }
+
   static const char* kCurrentTipPrefName;
   static const char* kTipCachePrefName;
 

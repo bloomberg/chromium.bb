@@ -96,7 +96,9 @@ class WebResourceService::WebResourceFetcher
     // cookies, for example.
     url_fetcher_->set_load_flags(net::LOAD_DISABLE_CACHE |
       net::LOAD_DO_NOT_SAVE_COOKIES);
-    url_fetcher_->set_request_context(Profile::GetDefaultRequestContext());
+    URLRequestContextGetter* url_request_context_getter =
+        web_resource_service_->profile()->GetRequestContext();
+    url_fetcher_->set_request_context(url_request_context_getter);
     url_fetcher_->Start();
   }
 
