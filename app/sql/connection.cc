@@ -130,7 +130,11 @@ void Connection::Preload() {
   if (!dummy || !dummy.Step())
     return;
 
+#if !defined(USE_SYSTEM_SQLITE)
+  // This function is only defined in Chromium's version of sqlite.
+  // Do not call it when using system sqlite.
   sqlite3Preload(db_);
+#endif
 }
 
 bool Connection::BeginTransaction() {
