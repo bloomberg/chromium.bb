@@ -84,13 +84,6 @@ PersistentPrefStore::PrefReadError JsonPrefStore::ReadPrefs() {
   std::string error_msg;
   scoped_ptr<Value> value(serializer.Deserialize(&error_code, &error_msg));
   if (!value.get()) {
-#if defined(GOOGLE_CHROME_BUILD)
-    // This log could be used for more detailed client-side error diagnosis,
-    // but since this triggers often with unit tests, we need to disable it
-    // in non-official builds.
-    PLOG(ERROR) << "Error reading Preferences: " << error_msg << " " <<
-        path_.value();
-#endif
     PrefReadError error;
     switch (error_code) {
       case JSONFileValueSerializer::JSON_ACCESS_DENIED:
