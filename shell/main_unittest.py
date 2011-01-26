@@ -1,18 +1,18 @@
 #!/usr/bin/python
 #
-# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unit tests for chromite.py."""
+"""Unit tests for main.py."""
 
 import doctest
 import os
 import re
 import unittest
 
-import chromite
-from lib import text_menu
+from chromite.lib import text_menu
+from chromite.shell import main
 import mox
 
 
@@ -22,16 +22,16 @@ class _DeathException(Exception):
 
 
 class TestFindCommand(unittest.TestCase):
-  """Test chromite._FindCommand."""
-  # TODO(dianders): Add a test where I override chromite._COMMAND_HANDLERS and
-  # chromite._COMMAND_STRS so that I can test more of _FindCommand().
+  """Test main._FindCommand."""
+  # TODO(dianders): Add a test where I override main._COMMAND_HANDLERS
+  # and main._COMMAND_STRS so that I can test more of _FindCommand().
 
   def setUp(self):
     """Test initialization."""
     # Create our mox and stub out function calls used by _FindCommand()...
     self.mox = mox.Mox()
-    self.mox.StubOutWithMock(chromite, 'Die')
-    self.mox.StubOutWithMock(chromite, 'Info')
+    self.mox.StubOutWithMock(main, 'Die')
+    self.mox.StubOutWithMock(main, 'Info')
     self.mox.StubOutWithMock(text_menu, 'TextMenu')
 
   def tearDown(self):
@@ -42,11 +42,11 @@ class TestFindCommand(unittest.TestCase):
   def testInvalidCommand(self):
     """Test that _FindCommand('implode') causes Die()."""
     # Should be a call to Die.  We'll have it fake a _DeathException...
-    chromite.Die(mox.IsA(basestring)).AndRaise(_DeathException)
+    main.Die(mox.IsA(basestring)).AndRaise(_DeathException)
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
-    self.assertRaises(_DeathException, chromite._FindCommand, 'implode')
+    self.assertRaises(_DeathException, main._FindCommand, 'implode')
     self.mox.VerifyAll()
 
   def testBlankCommandWithQuit(self):
@@ -61,11 +61,11 @@ class TestFindCommand(unittest.TestCase):
                        menu_width=0).AndReturn(None)
 
     # Should die in response to the quit.
-    chromite.Die(mox.IsA(basestring)).AndRaise(_DeathException)
+    main.Die(mox.IsA(basestring)).AndRaise(_DeathException)
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
-    self.assertRaises(_DeathException, chromite._FindCommand, '')
+    self.assertRaises(_DeathException, main._FindCommand, '')
     self.mox.VerifyAll()
 
   def testBlankCommandWithChoice0(self):
@@ -80,7 +80,7 @@ class TestFindCommand(unittest.TestCase):
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
-    cmd_str = chromite._FindCommand('')
+    cmd_str = main._FindCommand('')
     self.mox.VerifyAll()
 
     self.assertTrue(isinstance(cmd_str, basestring),
@@ -98,7 +98,7 @@ class TestFindCommand(unittest.TestCase):
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
-    cmd_str = chromite._FindCommand(cmd_to_find)
+    cmd_str = main._FindCommand(cmd_to_find)
     self.mox.VerifyAll()
 
     self.assertEqual(cmd_str, cmd_to_find.lower(),
@@ -129,11 +129,11 @@ class TestFindCommand(unittest.TestCase):
        shell.
     """
     # _FindCommand should give us a message that it has interpreted sh as shell.
-    chromite.Info(mox.IsA(basestring))
+    main.Info(mox.IsA(basestring))
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
-    cmd_str = chromite._FindCommand('sh')
+    cmd_str = main._FindCommand('sh')
     self.mox.VerifyAll()
 
     self.assertEqual(cmd_str, 'shell',
@@ -141,7 +141,7 @@ class TestFindCommand(unittest.TestCase):
 
 
 class TestFindSpec(unittest.TestCase):
-  """Test chromite._FindSpec."""
+  """Test main._FindSpec."""
 
   def setUp(self):
     """Test initialization."""
@@ -149,8 +149,8 @@ class TestFindSpec(unittest.TestCase):
     self.mox = mox.Mox()
     self.mox.StubOutWithMock(os, 'listdir')
     self.mox.StubOutWithMock(os.path, 'isfile')
-    self.mox.StubOutWithMock(chromite, 'Die')
-    self.mox.StubOutWithMock(chromite, 'Info')
+    self.mox.StubOutWithMock(main, 'Die')
+    self.mox.StubOutWithMock(main, 'Info')
     self.mox.StubOutWithMock(text_menu, 'TextMenu')
 
   def tearDown(self):
@@ -178,11 +178,11 @@ class TestFindSpec(unittest.TestCase):
     os.listdir(mox.IsA(basestring)).MultipleTimes().AndReturn(dir_list)
 
     # Should be a call to Die.  We'll have it fake a _DeathException...
-    chromite.Die(mox.IsA(basestring)).AndRaise(_DeathException)
+    main.Die(mox.IsA(basestring)).AndRaise(_DeathException)
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
-    self.assertRaises(_DeathException, chromite._FindSpec, 'bogusSpec')
+    self.assertRaises(_DeathException, main._FindSpec, 'bogusSpec')
     self.mox.VerifyAll()
 
   def testFullPath(self):
@@ -200,7 +200,7 @@ class TestFindSpec(unittest.TestCase):
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
-    path = chromite._FindSpec(spec_name)
+    path = main._FindSpec(spec_name)
     self.mox.VerifyAll()
 
     self.assertEqual(path, spec_name,
@@ -221,7 +221,7 @@ class TestFindSpec(unittest.TestCase):
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
-    spec_path = chromite._FindSpec(spec_name)
+    spec_path = main._FindSpec(spec_name)
     self.mox.VerifyAll()
 
     self.assertTrue(re.search('^/.*%s.spec$' % spec_name, spec_path),
@@ -259,7 +259,7 @@ class TestFindSpec(unittest.TestCase):
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
-    spec_path = chromite._FindSpec(spec_name)
+    spec_path = main._FindSpec(spec_name)
     self.mox.VerifyAll()
 
     self.assertTrue(re.search('^/.*%s$' % expected_result, spec_path),
@@ -312,14 +312,14 @@ class TestFindSpec(unittest.TestCase):
 
     # Should die in response to the quit if directed to quit.
     if menu_return is None:
-      chromite.Die(mox.IsA(basestring)).AndRaise(_DeathException)
+      main.Die(mox.IsA(basestring)).AndRaise(_DeathException)
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
     if menu_return is None:
-      self.assertRaises(_DeathException, chromite._FindSpec, spec_name)
+      self.assertRaises(_DeathException, main._FindSpec, spec_name)
     else:
-      spec_path = chromite._FindSpec(spec_name)
+      spec_path = main._FindSpec(spec_name)
     self.mox.VerifyAll()
 
     if menu_return is not None:
@@ -375,7 +375,7 @@ class TestFindSpec(unittest.TestCase):
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
-    spec_path = chromite._FindSpec(spec_name)
+    spec_path = main._FindSpec(spec_name)
     self.mox.VerifyAll()
 
     self.assertTrue(re.search('^/.*%s$' % expected_result, spec_path),
@@ -384,6 +384,5 @@ class TestFindSpec(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  doctest.testmod(chromite)
+  doctest.testmod(main)
   unittest.main()
-

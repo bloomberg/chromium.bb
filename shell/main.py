@@ -1,9 +1,10 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+#
+# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Chromite."""
+"""Main file for the chromite shell."""
 
 # Python imports
 import ConfigParser
@@ -15,19 +16,19 @@ import tempfile
 
 
 # Local imports
-import chromite_cmd
-from lib import text_menu
-from lib.cros_build_lib import Die
-from lib.cros_build_lib import Info
-from lib.cros_build_lib import IsInsideChroot
-from lib.cros_build_lib import RunCommand
-from lib.cros_build_lib import Warning as Warn
+from chromite.lib import text_menu
+from chromite.lib.cros_build_lib import Die
+from chromite.lib.cros_build_lib import Info
+from chromite.lib.cros_build_lib import IsInsideChroot
+from chromite.lib.cros_build_lib import RunCommand
+from chromite.lib.cros_build_lib import Warning as Warn
+from chromite.shell import subcmd
 
 
 # Find the Chromite root and Chromium OS root...  Note: in the chroot we may
 # choose to install Chromite somewhere (/usr/lib/chromite?), so we use the
 # environment variable to get the right place if it exists.
-_CHROMITE_PATH = os.path.dirname(os.path.realpath(__file__))
+_CHROMITE_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
 _SRCROOT_PATH = os.environ.get('CROS_WORKON_SRCROOT',
                                os.path.realpath(os.path.join(_CHROMITE_PATH,
                                                              '..')))
@@ -51,8 +52,6 @@ _HOST_TARGET = 'HOST'
 # so that someone searching for what calls _CmdXyz can find it easy with a grep.
 #
 # ORDER MATTERS here when we show the menu.
-#
-# TODO(dianders): Make a command superclass, then make these subclasses.
 _COMMAND_HANDLERS = [
     'BuildCmd',
     'CleanCmd',
@@ -211,6 +210,8 @@ def _FindSpec(spec_name, spec_type=_BUILD_SPEC_TYPE, can_show_ui=True):
   # Figure out what our search path should be.
   # ...make these lists in anticipation of the need to support specs that live
   # in private overlays.
+  # TODO(dianders): Should specs be part of the shell, or part of the main
+  # chromite?
   search_path = [
       os.path.join(_CHROMITE_PATH, 'specs', spec_type),
   ]
@@ -490,12 +491,13 @@ def _DoEnterChroot(chroot_config, fn, *args, **kwargs):
     # Put together command.  We're going to force the shell to do all of the
     # splitting of arguments, since we're throwing all of the flags from the
     # config file in there.
-    # TODO(dianders): Once chromite is in the path inside the chroot, we should
-    #                 change it from '../../chromite/chromite.py' to just
-    #                 'chromite'.
+    # TODO(dianders): It might be nice to run chromite as:
+    #     python -m chromite.chromite_main
+    #   ...but, at the moment, that fails if you're in src/scripts
+    #   which already has a chromite folder.
     cmd = (
         './enter_chroot.sh --chroot="%s" %s --'
-        ' python ../../chromite/chromite.py --resume-state %s') % (
+        ' python ../../chromite/shell/main.py --resume-state %s') % (
             chroot_dir,
             chroot_config.get('CHROOT', 'enter_chroot_flags'),
             chroot_state_path)
@@ -692,7 +694,7 @@ def _DoDistClean(chroot_config, want_force_yes):
   RunCommand(argv, cwd=cwd)
 
 
-class WrappedChrootCmd(chromite_cmd.ChromiteCmd):
+class WrappedChrootCmd(subcmd.ChromiteCmd):
   """Superclass for any command that is simply wrapped by chromite.
 
   These are commands where:
@@ -783,7 +785,7 @@ class WrappedChrootCmd(chromite_cmd.ChromiteCmd):
       RunCommand(argv, cwd=cwd, ignore_sigint=True, error_ok=True)
 
 
-class BuildCmd(chromite_cmd.ChromiteCmd):
+class BuildCmd(subcmd.ChromiteCmd):
   """Build the chroot (if needed), the packages for a target, and the image."""
 
   def Run(self, raw_argv, chroot_config=None,
@@ -918,7 +920,7 @@ class PortageqCmd(WrappedChrootCmd):
     )
 
 
-class ShellCmd(chromite_cmd.ChromiteCmd):
+class ShellCmd(subcmd.ChromiteCmd):
   """Start a shell in the chroot.
 
   This can either just start a simple interactive shell, it can be used to
@@ -975,7 +977,7 @@ class ShellCmd(chromite_cmd.ChromiteCmd):
 
 
 #def _CmdClean(raw_argv, chroot_config=None):
-class CleanCmd(chromite_cmd.ChromiteCmd):
+class CleanCmd(subcmd.ChromiteCmd):
   """Clean out built packages for a target; if target=host, deletes chroot."""
 
   def Run(self, raw_argv, chroot_config=None):
@@ -1090,7 +1092,7 @@ def main():
     else:
       cmd_str = ''
 
-    # Validate the chromite_cmd, popping a menu if needed.
+    # Validate the subcmd, popping a menu if needed.
     cmd_str = _FindCommand(cmd_str)
 
     # Finally, call the function w/ standard argv.
