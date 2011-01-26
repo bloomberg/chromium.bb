@@ -34,8 +34,11 @@ This module supports username and password with basic authentication.
 """
 
 import base64
-import os
+import os.path
+import sys
 import urllib2
+
+import download_utils
 
 
 def _CreateDirectory(path):
@@ -73,14 +76,15 @@ def HttpDownload(url, target, username=None, password=None):
   for i in range(retries):
     try:
       src = urllib2.urlopen(url)
-      dst = open(target, 'wb')
-      dst.write(src.read())
-      src.close()
-      dst.close()
+      try:
+        download_utils.WriteDataFromStream(target, src, chunk_size=2**20,
+                                           verbose=True)
+      finally:
+        src.close()
       break
     except urllib2.HTTPError:
       if i < retries - 1:
-        print 'Download failed on %s, retrying... (%d)' % (url, i)
+        sys.stdout.write('Download failed on %s, retrying... (%d)\n' % (url, i))
         continue
-      print 'Download failed on %s, giving up.' % url
+      sys.stdout.write('Download failed on %s, giving up.\n' % url)
       raise

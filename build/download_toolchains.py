@@ -9,25 +9,14 @@ This module downloads multiple tgz's and expands them.
 """
 
 import optparse
-import os
-import shutil
-import sys
-import time
+import os.path
 
+import download_utils
 import sync_tgz
 
 
-PLATFORM_COLLAPSE = {
-    'win32': 'win32',
-    'cygwin': 'win32',
-    'linux': 'linux',
-    'linux2': 'linux',
-    'darwin': 'darwin',
-}
-
-
 PLATFORM_MAPPING = {
-    'win32': [
+    'windows': [
         ['win_x86', 'win_x86'],  # Multilib toolchain
     ],
     'linux': [
@@ -35,26 +24,13 @@ PLATFORM_MAPPING = {
         ['linux_arm-trusted', 'linux_arm-trusted'],
         ['linux_arm-untrusted_hardy64', 'linux_arm-untrusted'],
     ],
-    'darwin': [
+    'mac': [
         ['mac_x86', 'mac_x86'], # Multilib toolchain
     ],
 }
 
 
-def Retry(op, *args):
-  if sys.platform == 'win32':
-    for i in range(0, 5):
-      try:
-        op(*args)
-        break
-      except:
-        print "RETRY: ", op.__name__, args
-        time.sleep(pow(2, i))
-  else:
-    op(*args)
-
-
-def main(argv):
+def main():
   parser = optparse.OptionParser()
   parser.add_option(
       '-b', '--base-url', dest='base_url',
@@ -69,54 +45,38 @@ def main(argv):
       '--arm-version', dest='arm_version',
       default='latest',
       help='which version of the toolchain to download for arm')
-  options, args = parser.parse_args(argv)
+  options, args = parser.parse_args()
   if args:
-    parser.print_help()
-    print 'ERROR: invalid argument'
-    sys.exit(1)
+    parser.error('ERROR: invalid argument')
 
-  platform_fixed = PLATFORM_COLLAPSE.get(sys.platform)
+  platform_fixed = download_utils.PlatformName()
   for flavor in PLATFORM_MAPPING[platform_fixed]:
     if 'arm' in flavor[0]:
       version = options.arm_version
     else:
       version = options.x86_version
-    url = '%s/%s/naclsdk_%s.tgz' % (
-        options.base_url, version, flavor[0])
+    url = '%s/%s/naclsdk_%s.tgz' % (options.base_url, version, flavor[0])
     parent_dir = os.path.dirname(os.path.dirname(__file__))
     dst = os.path.join(parent_dir, 'toolchain', flavor[1])
-    source_url_file = os.path.join(dst, 'SOURCE_URL')
-    if version != 'latest':
-      try:
-        fh = open(source_url_file, 'r')
-        old_url = fh.read()
-        fh.close()
-        if old_url == url:
-          continue
-      except IOError:
-        pass
-    try:
-      # TODO(cbiffle): we really shouldn't do this until the unpack succeeds!
-      # See: http://code.google.com/p/nativeclient/issues/detail?id=834
-      shutil.rmtree(dst)
-    except OSError:
-      pass
+    if version != 'latest' and download_utils.SourceIsCurrent(dst, url):
+      continue
 
     # TODO(bradnelson_): get rid of this when toolchain tarballs flattened.
     if 'arm' in flavor[0]:
+      # TODO(cbiffle): we really shouldn't do this until the unpack succeeds!
+      # See: http://code.google.com/p/nativeclient/issues/detail?id=834
+      download_utils.RemoveDir(dst)
       sync_tgz.SyncTgz(url, dst)
     else:
       dst_tmp = os.path.join(parent_dir, 'toolchain', '.tmp')
       sync_tgz.SyncTgz(url, dst_tmp)
-      Retry(os.rename, os.path.join(dst_tmp, 'sdk', 'nacl-sdk'), dst)
-      Retry(os.rmdir, os.path.join(dst_tmp, 'sdk'))
-      Retry(os.rmdir, dst_tmp)
+      subdir = os.path.join(dst_tmp, 'sdk', 'nacl-sdk')
+      download_utils.MoveDirCleanly(subdir, dst)
+      download_utils.RemoveDir(dst_tmp)
 
     # Write out source url stamp.
-    fh = open(os.path.join(dst, 'SOURCE_URL'), 'w')
-    fh.write(url)
-    fh.close()
+    download_utils.WriteSourceStamp(dst, url)
 
 
 if __name__ == '__main__':
-  main(sys.argv[1:])
+  main()
