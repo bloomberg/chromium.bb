@@ -3683,3 +3683,14 @@
    fun:_ZN3WTF12AtomicString4initEv
    fun:_ZN6WebKit10initializeEPNS_12WebKitClientE
 }
+{
+   bug_70782_k
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15SyncSetupWizardC1EP18ProfileSyncService
+   fun:_ZN18ProfileSyncServiceC2Ev
+   fun:_ZN22ProfileSyncServiceMockC2Ev
+   fun:_ZN7testing8NiceMockI22ProfileSyncServiceMockEC1Ev
+   fun:_ZN71SyncUIUtilTest_ConstructAboutInformationWithUnrecoverableErrorTest_Test8TestBodyEv
+   fun:_ZN7testing35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
