@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_VIEW_LAYOUT_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "gfx/rect.h"
 #include "views/layout/layout_manager.h"
 
 class BaseTabStrip;
@@ -17,6 +19,11 @@ class DownloadShelfView;
 class TabContentsContainer;
 class ToolbarView;
 
+namespace gfx {
+class Point;
+class Size;
+}
+
 namespace views {
 class SingleSplitView;
 }
@@ -25,7 +32,7 @@ class SingleSplitView;
 class BrowserViewLayout : public views::LayoutManager {
  public:
   BrowserViewLayout();
-  virtual ~BrowserViewLayout() {}
+  virtual ~BrowserViewLayout();
 
   // Returns the minimum size of the browser view.
   virtual gfx::Size GetMinimumSize();
@@ -123,4 +130,3 @@ class BrowserViewLayout : public views::LayoutManager {
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_VIEW_LAYOUT_H_
-

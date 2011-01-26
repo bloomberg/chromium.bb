@@ -7,9 +7,16 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "views/layout/layout_manager.h"
 
+namespace gfx {
+class Size;
+}
+
 namespace views {
+
+class View;
 
 // A Layout manager that arranges child views vertically or horizontally in a
 // side-by-side fashion with spacing around and between the child views. The
@@ -31,11 +38,11 @@ class BoxLayout : public LayoutManager {
             int inside_border_horizontal_spacing,
             int inside_border_vertical_spacing,
             int between_child_spacing);
-  virtual ~BoxLayout() {}
+  virtual ~BoxLayout();
 
   // Overridden from views::LayoutManager:
-  virtual void Layout(View* host);
-  virtual gfx::Size GetPreferredSize(View* host);
+  virtual void Layout(View* host) OVERRIDE;
+  virtual gfx::Size GetPreferredSize(View* host) OVERRIDE;
 
  private:
   const Orientation orientation_;

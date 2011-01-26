@@ -4,6 +4,8 @@
 
 #include "views/layout/layout_manager.h"
 
+#include "views/view.h"
+
 namespace views {
 
 LayoutManager::~LayoutManager() {

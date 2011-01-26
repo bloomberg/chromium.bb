@@ -4,6 +4,10 @@
 
 #include "views/layout/box_layout.h"
 
+#include "gfx/insets.h"
+#include "gfx/rect.h"
+#include "views/view.h"
+
 namespace views {
 
 BoxLayout::BoxLayout(BoxLayout::Orientation orientation,
@@ -14,6 +18,9 @@ BoxLayout::BoxLayout(BoxLayout::Orientation orientation,
       inside_border_horizontal_spacing_(inside_border_horizontal_spacing),
       inside_border_vertical_spacing_(inside_border_vertical_spacing),
       between_child_spacing_(between_child_spacing) {
+}
+
+BoxLayout::~BoxLayout() {
 }
 
 void BoxLayout::Layout(View* host) {

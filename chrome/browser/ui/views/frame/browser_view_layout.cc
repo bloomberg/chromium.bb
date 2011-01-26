@@ -18,6 +18,8 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "gfx/scrollbar_size.h"
+#include "gfx/point.h"
+#include "gfx/size.h"
 #include "views/controls/single_split_view.h"
 #include "views/window/window.h"
 
@@ -51,6 +53,9 @@ BrowserViewLayout::BrowserViewLayout()
       active_bookmark_bar_(NULL),
       browser_view_(NULL),
       find_bar_y_(0) {
+}
+
+BrowserViewLayout::~BrowserViewLayout() {
 }
 
 gfx::Size BrowserViewLayout::GetMinimumSize() {

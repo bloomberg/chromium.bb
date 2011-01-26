@@ -6,13 +6,13 @@
 #define VIEWS_LAYOUT_MANAGER_H_
 #pragma once
 
-#include "views/view.h"
-
 namespace gfx {
 class Size;
 }
 
 namespace views {
+
+class View;
 
 /////////////////////////////////////////////////////////////////////////////
 //
