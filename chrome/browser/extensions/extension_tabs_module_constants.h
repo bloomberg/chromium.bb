@@ -46,6 +46,7 @@ extern const char kWindowTypeKey[];
 
 // Value consts.
 extern const char kCanOnlyMoveTabsWithinNormalWindowsError[];
+extern const char kCanOnlyMoveTabsWithinSameProfileError[];
 extern const char kFormatValueJpeg[];
 extern const char kFormatValuePng[];
 extern const char kMimeTypeJpeg[];

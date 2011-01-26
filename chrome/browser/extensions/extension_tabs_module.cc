@@ -880,6 +880,11 @@ bool MoveTabFunction::RunImpl() {
       return false;
     }
 
+    if (target_browser->profile() != source_browser->profile()) {
+      error_ = keys::kCanOnlyMoveTabsWithinSameProfileError;
+      return false;
+    }
+
     // If windowId is different from the current window, move between windows.
     if (ExtensionTabUtil::GetWindowId(target_browser) !=
         ExtensionTabUtil::GetWindowId(source_browser)) {

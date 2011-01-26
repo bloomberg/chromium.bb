@@ -3,6 +3,7 @@ var normalWindow, normalTab;
 var incognitoWindow, incognitoTab;
 
 var pass = chrome.test.callbackPass;
+var fail = chrome.test.callbackFail;
 var assertEq = chrome.test.assertEq;
 var assertTrue = chrome.test.assertTrue;
 
@@ -106,6 +107,21 @@ chrome.test.getConfig(function(config) {
                   assertEq("false", tab.title);
                 }));
             }));
+        }));
+    },
+
+    // Tests that extensions can't move tabs between incognito and
+    // non-incognito windows.
+    function moveTabBetweenProfiles() {
+      var errorMsg = "Tabs can only be moved between " +
+                       "windows in the same profile.";
+
+      // Create a tab in the non-incognito window...
+      chrome.tabs.create({windowId: normalWindow.id, url: 'about:blank'},
+        pass(function(tab) {
+          // ... and then try to move it to the incognito window.
+          chrome.tabs.move(tab.id,
+            {windowId: incognitoWindow.id, index: 0}, fail(errorMsg));
         }));
     }
   ]);
