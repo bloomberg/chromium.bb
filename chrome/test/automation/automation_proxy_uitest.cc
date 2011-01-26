@@ -638,7 +638,8 @@ TEST_F(AutomationProxyTest3, FrameDocumentCanBeAccessed) {
   ASSERT_EQ(L"DIV", actual);
 }
 
-TEST_F(AutomationProxyTest, BlockedPopupTest) {
+// Flaky, http://crbug.com/70937
+TEST_F(AutomationProxyTest, FLAKY_BlockedPopupTest) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
 
