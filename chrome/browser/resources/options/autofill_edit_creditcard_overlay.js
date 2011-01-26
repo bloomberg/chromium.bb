@@ -46,7 +46,9 @@ cr.define('options', function() {
         self.saveCreditCard_();
         self.dismissOverlay_();
       }
-      $('creditCardNumber').onkeydown = this.onKeyDown_.bind(this);
+      $('creditCardNumber').onkeydown = this.onTextInput_.bind(this);
+      $('creditCardNumber').addEventListener('textInput',
+                                             this.onTextInput_.bind(this));
 
       self.guid_ = '';
       self.storedCCNumber_ = '';
@@ -57,10 +59,18 @@ cr.define('options', function() {
     },
 
     /**
-     * Handles the keydown event.
+     * Handles the textInput and keydown events.
      * @private
      */
-    onKeyDown_: function(event) {
+    onTextInput_: function(event) {
+      // For some reason, the textInput event doesn't consider
+      // backspace/deletion an input event, so we have to handle those here.
+      // 8 - backspace
+      // 46 - delete
+      if (event.type == 'keydown' && event.keyCode != '8' &&
+          event.keyCode != '46')
+        return;
+
       // If the user hasn't edited the text yet, delete it all on edit.
       if (!this.hasEditedNumber_ &&
           $('creditCardNumber').value != this.storedCCNumber_) {
