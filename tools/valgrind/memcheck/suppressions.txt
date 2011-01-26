@@ -3659,3 +3659,27 @@
    fun:_ZN10scoped_ptrIN3net15HttpTransactionEED1Ev
    fun:_ZN3net42HttpNetworkTransactionTest_Ignores100_Test8TestBodyEv
 }
+{
+   bug_70924_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3WTF20ThreadIdentifierData10initializeEj
+   fun:_ZN3WTF13currentThreadEv
+   fun:_ZN3WTF20initializeMainThreadEv
+   fun:_ZN6WebKit10initializeEPNS_12WebKitClientE
+}
+{
+   bug_70924_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEE3setEPS1_
+   fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEEcvPS1_Ev
+   fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEEdeEv
+   fun:_ZN3WTF13wtfThreadDataEv
+   fun:_ZN3WTF11stringTableEv
+   fun:_ZN3WTF16addToStringTableIPKcNS_17CStringTranslatorEEENS_10PassRefPtrINS_10StringImplEEERKT_
+   fun:_ZN3WTF12AtomicString3addEPKc
+   fun:_ZN3WTF12AtomicStringC1EPKc
+   fun:_ZN3WTF12AtomicString4initEv
+   fun:_ZN6WebKit10initializeEPNS_12WebKitClientE
+}
