@@ -34,6 +34,8 @@
         'theme_resources',
         '../base/base.gyp:test_support_base',
         '../ipc/ipc.gyp:test_support_ipc',
+        # 'test/test_url_request_context_getter.h' brings in this requirement.
+        '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -3207,6 +3209,7 @@
             'renderer',
             'syncapi',
             '../base/base.gyp:base',
+            '../net/net.gyp:net_test_support',
             '../skia/skia.gyp:skia',
           ],
           'include_dirs': [

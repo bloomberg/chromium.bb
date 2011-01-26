@@ -25,7 +25,7 @@
 #include "chrome/test/ui_test_utils.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_job.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/url_request/url_request_test_util.h"
 
 namespace {
 

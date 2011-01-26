@@ -14,7 +14,7 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_tracker.h"
 #include "net/url_request/url_request_status.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

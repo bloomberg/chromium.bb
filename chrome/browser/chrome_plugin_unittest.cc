@@ -13,10 +13,11 @@
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/test/chrome_plugin/test_chrome_plugin.h"
+#include "chrome/test/test_url_request_context_getter.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_test_job.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/url_request/url_request_test_util.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,22 +26,6 @@ namespace {
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 const char kPluginFilename[] = "test_chrome_plugin.dll";
 const int kResponseBufferSize = 4096;
-
-class TestURLRequestContextGetter : public URLRequestContextGetter {
- public:
-  virtual net::URLRequestContext* GetURLRequestContext() {
-    if (!context_)
-      context_ = new TestURLRequestContext();
-    return context_;
-  }
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
-    return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
-  }
-
- private:
-  ~TestURLRequestContextGetter() {}
-  scoped_refptr<net::URLRequestContext> context_;
-};
 
 class ChromePluginTest : public testing::Test,
                          public net::URLRequest::Delegate {

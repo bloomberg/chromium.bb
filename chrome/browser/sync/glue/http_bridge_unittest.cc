@@ -7,7 +7,8 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_unittest.h"
+#include "chrome/test/test_url_request_context_getter.h"
+#include "net/url_request/url_request_test_util.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,24 +18,6 @@ namespace {
 // TODO(timsteele): Should use PathService here. See Chromium Issue 3113.
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 }
-
-// Lazy getter for TestURLRequestContext instances.
-class TestURLRequestContextGetter : public URLRequestContextGetter {
- public:
-  virtual net::URLRequestContext* GetURLRequestContext() {
-    if (!context_)
-      context_ = new TestURLRequestContext;
-    return context_;
-  }
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
-    return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
-  }
-
- private:
-  ~TestURLRequestContextGetter() {}
-
-  scoped_refptr<net::URLRequestContext> context_;
-};
 
 class HttpBridgeTest : public testing::Test {
  public:

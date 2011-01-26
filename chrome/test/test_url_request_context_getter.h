@@ -9,7 +9,7 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/net/url_request_context_getter.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/url_request/url_request_test_util.h"
 
 // Used to return a dummy context (normally the context is on the IO thread).
 // The one here can be run on the main test thread. Note that this can lead to
