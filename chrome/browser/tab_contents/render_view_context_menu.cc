@@ -943,8 +943,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return !!(params_.edit_flags & WebContextMenuData::CanSelectAll);
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
-      return !profile_->IsOffTheRecord() && params_.link_url.is_valid() &&
-             profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled);
+      return !profile_->IsOffTheRecord() && params_.link_url.is_valid();
 
     case IDC_SPELLCHECK_ADD_TO_DICTIONARY:
       return !params_.misspelled_word.empty();
