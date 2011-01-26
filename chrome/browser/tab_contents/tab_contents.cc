@@ -52,6 +52,7 @@
 #include "chrome/browser/plugin_installer_infobar_delegate.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_plt_recorder.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -367,6 +368,7 @@ TabContents::TabContents(Profile* profile,
       autocomplete_history_manager_(),
       autofill_manager_(),
       plugin_installer_(),
+      prerender_plt_recorder_(),
       bookmark_drag_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(fav_icon_helper_(this)),
       is_loading_(false),
@@ -472,6 +474,8 @@ TabContents::TabContents(Profile* profile,
   AddNavigationObserver(autofill_manager_.get());
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(this));
   AddNavigationObserver(autocomplete_history_manager_.get());
+  prerender_plt_recorder_.reset(new PrerenderPLTRecorder(this));
+  AddNavigationObserver(prerender_plt_recorder_.get());
   AddNavigationObserver(&fav_icon_helper_);
   AddNavigationObserver(printing_.get());
 }
@@ -3393,12 +3397,8 @@ void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
 bool TabContents::MaybeUsePreloadedPage(const GURL& url) {
   PrerenderManager* pm = profile()->GetPrerenderManager();
   if (pm != NULL) {
-    if (pm->MaybeUsePreloadedPage(this, url)) {
-      // TODO(tburkard): If the preloaded page has not finished preloading
-      // yet, we should not do this.
-      DidStopLoading();
+    if (pm->MaybeUsePreloadedPage(this, url))
       return true;
-    }
   }
   return false;
 }

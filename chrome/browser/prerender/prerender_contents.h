@@ -67,6 +67,7 @@ class PrerenderContents : public RenderViewHostDelegate,
   }
   string16 title() const { return title_; }
   int32 page_id() const { return page_id_; }
+  bool has_stopped_loading() const { return has_stopped_loading_; }
 
   // Indicates whether this prerendered page can be used for the provided
   // URL, i.e. whether there is a match.
@@ -91,6 +92,7 @@ class PrerenderContents : public RenderViewHostDelegate,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message);
   virtual void Close(RenderViewHost* render_view_host);
+  virtual void DidStopLoading();
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
 
   // RenderViewHostDelegate::View
@@ -205,6 +207,8 @@ class PrerenderContents : public RenderViewHostDelegate,
   // This array can contain more than element as a result of redirects,
   // such as HTTP redirects or javascript redirects.
   std::vector<GURL> alias_urls_;
+
+  bool has_stopped_loading_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };

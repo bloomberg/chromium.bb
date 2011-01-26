@@ -22,6 +22,13 @@ class TabContents;
 // views of webpages.
 class PrerenderManager : public base::RefCounted<PrerenderManager> {
  public:
+  enum PrerenderManagerMode {
+    PRERENDER_MODE_DISABLED,
+    PRERENDER_MODE_ENABLED,
+    PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP,
+    PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP
+  };
+
   // Owned by a Profile object for the lifetime of the profile.
   explicit PrerenderManager(Profile* profile);
 
@@ -44,6 +51,8 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // PrerenderContents object and is responsible for freeing it.
   // Returns NULL if the specified URL has not been prerendered.
   PrerenderContents* GetEntry(const GURL& url);
+
+  void RecordPerceivedPageLoadTime(base::TimeDelta pplt);
 
   base::TimeDelta max_prerender_age() const { return max_prerender_age_; }
   void set_max_prerender_age(base::TimeDelta td) { max_prerender_age_ = td; }
@@ -90,6 +99,8 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   static const int kDefaultMaxPrerenderAgeSeconds = 20;
 
   scoped_ptr<PrerenderContents::Factory> prerender_contents_factory_;
+
+  PrerenderManagerMode mode_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

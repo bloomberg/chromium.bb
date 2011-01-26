@@ -68,6 +68,7 @@ class OmniboxSearchHint;
 class PluginInstallerInfoBarDelegate;
 class Profile;
 class PrerenderManager;
+class PrerenderPLTRecorder;
 struct RendererPreferences;
 class RenderViewHost;
 class SessionStorageNamespace;
@@ -1123,6 +1124,9 @@ class TabContents : public PageNavigator,
 
   // PluginInstallerInfoBarDelegate, lazily created.
   scoped_ptr<PluginInstallerInfoBarDelegate> plugin_installer_;
+
+  // Prerender PageLoadTime Recorder.
+  scoped_ptr<PrerenderPLTRecorder> prerender_plt_recorder_;
 
   // TabContentsSSLHelper, lazily created.
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;

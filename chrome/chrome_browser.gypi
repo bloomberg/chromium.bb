@@ -2082,6 +2082,8 @@
         'browser/prerender/prerender_contents.h',
         'browser/prerender/prerender_manager.cc',
         'browser/prerender/prerender_manager.h',
+        'browser/prerender/prerender_plt_recorder.cc',
+        'browser/prerender/prerender_plt_recorder.h',
         'browser/prerender/prerender_resource_handler.h',
         'browser/prerender/prerender_resource_handler.cc',
         'browser/printing/print_dialog_gtk.cc',

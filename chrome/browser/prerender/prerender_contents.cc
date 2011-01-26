@@ -37,7 +37,8 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       render_view_host_(NULL),
       prerender_url_(url),
       profile_(profile),
-      page_id_(0) {
+      page_id_(0),
+      has_stopped_loading_(false) {
   DCHECK(prerender_manager != NULL);
   AddAliasURL(prerender_url_);
   for (std::vector<GURL>::const_iterator it = alias_urls.begin();
@@ -278,4 +279,8 @@ void PrerenderContents::AddAliasURL(const GURL& url) {
 bool PrerenderContents::MatchesURL(const GURL& url) const {
   return std::find(alias_urls_.begin(), alias_urls_.end(), url)
       != alias_urls_.end();
+}
+
+void PrerenderContents::DidStopLoading() {
+  has_stopped_loading_ = true;
 }

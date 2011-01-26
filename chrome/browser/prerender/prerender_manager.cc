@@ -5,6 +5,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
@@ -32,7 +33,8 @@ PrerenderManager::PrerenderManager(Profile* profile)
       max_prerender_age_(base::TimeDelta::FromSeconds(
           kDefaultMaxPrerenderAgeSeconds)),
       max_elements_(kDefaultMaxPrerenderElements),
-      prerender_contents_factory_(PrerenderContents::CreateFactory()) {
+      prerender_contents_factory_(PrerenderContents::CreateFactory()),
+      mode_(PRERENDER_MODE_ENABLED) {
 }
 
 PrerenderManager::~PrerenderManager() {
@@ -115,6 +117,9 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
   if (!title.empty())
     tc->UpdateTitle(rvh, pc->page_id(), UTF16ToWideHack(title));
 
+  if (pc->has_stopped_loading())
+    tc->DidStopLoading();
+
   return true;
 }
 
@@ -146,6 +151,19 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
     const std::vector<GURL>& alias_urls) {
   return prerender_contents_factory_->CreatePrerenderContents(
       this, profile_, url, alias_urls);
+}
+
+void PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta pplt) {
+  switch(mode_) {
+    case PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP:
+      UMA_HISTOGRAM_TIMES("PLT.PerceivedPageLoadTime_PrerenderControl", pplt);
+      break;
+    case PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP:
+      UMA_HISTOGRAM_TIMES("PLT.PerceivedPageLoadTime_PrerenderTreatment", pplt);
+      break;
+    default:
+      break;
+  }
 }
 
 PrerenderContents* PrerenderManager::FindEntry(const GURL& url) {
