@@ -59,6 +59,11 @@ class MessageReaderTest : public testing::Test {
     return result == expected;
   }
 
+  void RunAndDeleteTask(Task* task) {
+    task->Run();
+    delete task;
+  }
+
   // MessageLoop must be first here, so that is is destroyed the last.
   MessageLoop message_loop_;
 
@@ -90,7 +95,7 @@ TEST_F(MessageReaderTest, OneMessage_Delay) {
   // finished processing the previous message.
   EXPECT_FALSE(socket_.read_pending());
 
-  done_task->Run();
+  RunAndDeleteTask(done_task);
 
   EXPECT_TRUE(socket_.read_pending());
 }
@@ -137,11 +142,11 @@ TEST_F(MessageReaderTest, TwoMessages_Together) {
   // finished processing the previous message.
   EXPECT_FALSE(socket_.read_pending());
 
-  done_task1->Run();
+  RunAndDeleteTask(done_task1);
 
   EXPECT_FALSE(socket_.read_pending());
 
-  done_task2->Run();
+  RunAndDeleteTask(done_task2);
 
   EXPECT_TRUE(socket_.read_pending());
 }
@@ -172,7 +177,7 @@ TEST_F(MessageReaderTest, TwoMessages_Instant) {
   // finished processing the second message.
   EXPECT_FALSE(socket_.read_pending());
 
-  done_task2->Run();
+  RunAndDeleteTask(done_task2);
 
   EXPECT_TRUE(socket_.read_pending());
 }
@@ -216,7 +221,7 @@ TEST_F(MessageReaderTest, TwoMessages_Separately) {
   // finished processing the previous message.
   EXPECT_FALSE(socket_.read_pending());
 
-  done_task->Run();
+  RunAndDeleteTask(done_task);
 
   EXPECT_TRUE(socket_.read_pending());
 
@@ -233,7 +238,7 @@ TEST_F(MessageReaderTest, TwoMessages_Separately) {
   // finished processing the previous message.
   EXPECT_FALSE(socket_.read_pending());
 
-  done_task->Run();
+  RunAndDeleteTask(done_task);
 
   EXPECT_TRUE(socket_.read_pending());
 }
