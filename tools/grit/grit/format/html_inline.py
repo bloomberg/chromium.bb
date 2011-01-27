@@ -222,7 +222,11 @@ def InlineToString(input_filename, grd_node):
   Returns:
     the inlined data as a string
   """
-  return DoInline(input_filename, grd_node).inlined_data
+  try:
+    return DoInline(input_filename, grd_node).inlined_data
+  except IOError, e:
+    raise Exception("Failed to open %s while trying to flatten %s. (%s)" %
+                    (e.filename, input_filename, e.strerror))
 
 
 def InlineToFile(input_filename, output_filename, grd_node):
@@ -247,7 +251,11 @@ def InlineToFile(input_filename, output_filename, grd_node):
 
 def GetResourceFilenames(filename):
   """For a grd file, returns a set of all the files that would be inline."""
-  return DoInline(filename, None).inlined_files
+  try:
+    return DoInline(filename, None).inlined_files
+  except IOError, e:
+    raise Exception("Failed to open %s while trying to flatten %s. (%s)" %
+                    (e.filename, filename, e.strerror))
 
 
 def main():
