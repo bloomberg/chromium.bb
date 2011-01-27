@@ -95,8 +95,11 @@ if [ "${USE_SVN}" = "1" ] ; then
 fi
 
 # Pull in the Chrome version number.
-. "${TOP}/chrome/VERSION"
-FULL_VERSION="${MAJOR}.${MINOR}.${BUILD}.${PATCH}"
+VERSION_TOOL="${TOP}/chrome/tools/build/version.py"
+VERSION_FILE="${TOP}/chrome/VERSION"
+FULL_VERSION=$("${VERSION_TOOL}" -f "${VERSION_FILE}" \
+    -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")
+BUNDLE_VERSION=$("${VERSION_TOOL}" -f "${VERSION_FILE}" -t "@BUILD@.@PATCH@")
 
 # I really hate how "defaults" doesn't take a real pathname but instead insists
 # on appending ".plist" to everything.
@@ -129,7 +132,7 @@ defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
 # BUILD will always be an increasing value, so BUILD_PATH gives us something
 # unique that meetings what LS wants.
 defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
-    CFBundleVersion -string "${BUILD}.${PATCH}"
+    CFBundleVersion -string "${BUNDLE_VERSION}"
 
 # Add or remove the Breakpad keys.
 if [ "${USE_BREAKPAD}" = "1" ] ; then
