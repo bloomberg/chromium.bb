@@ -66,6 +66,14 @@ hg-update() {
   spopd
 }
 
+#+ hg-push <dir>
+hg-push() {
+  local dir="$1"
+  spushd "${dir}"
+  hg push
+  spopd
+}
+
 hg-info() {
   local dir="$1"
   local rev="$2"
@@ -99,6 +107,39 @@ hg-at-revision() {
   return $?
 }
 
+#+ hg-assert-is-merge <dir> - Assert an working directory contains a merge
+hg-assert-is-merge() {
+  local dir=$1
+  spushd "${dir}"
+
+  # When the working directory is a merge, hg identify -i
+  # emits "changesetid1+changesetid2+"
+  if hg identify -i | egrep -q '^[0-9a-f]+\+[0-9a-f]+\+$'; then
+    spopd
+    return
+  fi
+  local REPONAME=$(basename $(pwd))
+  spopd
+  Banner "ERROR: Working directory of '${REPONAME}' does not have a merge."
+  exit -1
+}
+
+#+ hg-assert-branch <dir> <branch> - Assert hg repo in <dir> is on <branch>
+hg-assert-branch() {
+  local dir=$1
+  local branch=$2
+  spushd "${dir}"
+  if hg branch | grep -q "^${branch}\$"; then
+    spopd
+    return
+  fi
+  local CURBRANCH=$(hg branch)
+  local REPONAME=$(basename $(pwd))
+  spopd
+  Banner "ERROR: ${REPONAME} is on branch ${CURBRANCH} instead of ${branch}."
+  exit -1
+}
+
 #+ hg-assert-no-changes <dir> - Assert an hg repo has no local changes
 hg-assert-no-changes() {
   local dir=$1
@@ -110,8 +151,21 @@ hg-assert-no-changes() {
   if [ "${PLUS}" != "" ]; then
     Banner "ERROR: Repository ${REPONAME} has local changes"
     exit -1
-    Err
   fi
+}
+
+hg-assert-no-outgoing() {
+  local dir=$1
+  spushd "${dir}"
+  if hg outgoing | grep -q "^no changes found$" ; then
+    spopd
+    return
+  fi
+  local REPONAME=$(basename $(pwd))
+  spopd
+  msg="ERROR: Repository ${REPONAME} has outgoing commits. Clean first."
+  Banner "${msg}"
+  exit -1
 }
 
 #+ hg-commit <dir> <msg>
@@ -126,6 +180,19 @@ hg-commit() {
 ######################################################################
 # Subversion repository tools
 ######################################################################
+
+#+ svn-get-revision <dir>
+svn-get-revision() {
+  local dir="$1"
+  spushd "${dir}"
+  local rev=$(svn info | grep 'Revision: ' | cut -b 11-)
+  if ! [[ "${rev}" =~ ^[0-9]+$ ]]; then
+    echo "Invalid revision number '${rev}' or invalid repository '${dir}'" 1>&2
+    exit -1
+  fi
+  spopd
+  echo "${rev}"
+}
 
 #+ svn-checkout <url> <repodir> - Checkout an SVN repository
 svn-checkout() {
@@ -168,7 +235,6 @@ svn-assert-no-changes() {
   if [ "${STATUS}" != "" ]; then
     Banner "ERROR: Repository ${REPONAME} has local changes"
     exit -1
-    Err
   fi
 }
 
