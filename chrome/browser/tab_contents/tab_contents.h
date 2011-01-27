@@ -84,6 +84,7 @@ struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
 class WebNavigationObserver;
 struct WebPreferences;
+class DesktopNotificationHandler;
 
 // Describes what goes in the main content area of a tab. TabContents is
 // the only type of TabContents, and these should be merged together.
@@ -1148,6 +1149,10 @@ class TabContents : public PageNavigator,
 
   // RenderViewHost::ContentSettingsDelegate.
   scoped_ptr<TabSpecificContentSettings> content_settings_delegate_;
+
+  // Handles desktop notification IPCs.
+  scoped_ptr<DesktopNotificationHandler> desktop_notification_handler_;
+
 
   // Data for loading state ----------------------------------------------------
 

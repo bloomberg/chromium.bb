@@ -1311,6 +1311,7 @@ void ParamTraits<ViewHostMsg_ShowNotification_Params>::Write(
   WriteParam(m, p.direction);
   WriteParam(m, p.replace_id);
   WriteParam(m, p.notification_id);
+  WriteParam(m, p.routing_id);
 }
 
 bool ParamTraits<ViewHostMsg_ShowNotification_Params>::Read(
@@ -1326,7 +1327,8 @@ bool ParamTraits<ViewHostMsg_ShowNotification_Params>::Read(
       ReadParam(m, iter, &p->body) &&
       ReadParam(m, iter, &p->direction) &&
       ReadParam(m, iter, &p->replace_id) &&
-      ReadParam(m, iter, &p->notification_id);
+      ReadParam(m, iter, &p->notification_id) &&
+      ReadParam(m, iter, &p->routing_id);
 }
 
 void ParamTraits<ViewHostMsg_ShowNotification_Params>::Log(
@@ -1350,6 +1352,8 @@ void ParamTraits<ViewHostMsg_ShowNotification_Params>::Log(
   LogParam(p.replace_id, l);
   l->append(",");
   LogParam(p.notification_id, l);
+  l->append(",");
+  LogParam(p.routing_id, l);
   l->append(")");
 }
 

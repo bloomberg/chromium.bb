@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/desktop_notification_handler.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
@@ -146,6 +147,9 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   // be the same extension that this points to.
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  Source<Profile>(profile_));
+
+  desktop_notification_handler_.reset(
+      new DesktopNotificationHandler(NULL, render_process_host()));
 }
 
 ExtensionHost::~ExtensionHost() {
@@ -763,6 +767,11 @@ bool ExtensionHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
+  if (!handled) {
+    // Pass desktop notification IPCs to the DesktopNotificationHandler.
+    handled = desktop_notification_handler_->OnMessageReceived(message);
+  }
   return handled;
 }
 
