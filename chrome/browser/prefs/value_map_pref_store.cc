@@ -39,3 +39,19 @@ void ValueMapPrefStore::RemoveValue(const std::string& key) {
 void ValueMapPrefStore::NotifyInitializationCompleted() {
   FOR_EACH_OBSERVER(Observer, observers_, OnInitializationCompleted());
 }
+
+ValueMapPrefStore::iterator ValueMapPrefStore::begin() {
+  return prefs_.begin();
+}
+
+ValueMapPrefStore::iterator ValueMapPrefStore::end() {
+  return prefs_.end();
+}
+
+ValueMapPrefStore::const_iterator ValueMapPrefStore::begin() const {
+  return prefs_.begin();
+}
+
+ValueMapPrefStore::const_iterator ValueMapPrefStore::end() const {
+  return prefs_.end();
+}

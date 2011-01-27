@@ -67,9 +67,6 @@
       'popups',
       '-popups',  # Flaky. crbug.com/70659
       'prefs',
-      # Some pref tests broken by r72489. crbug.com/70809
-      '-prefs.PrefsTest.testUnderTheHoodPref',
-      '-prefs.PrefsTest.testHomepagePrefs',
       'search_engines',
       # crbug.com/67628
       '-search_engines.SearchEnginesTest.testTabToSearch',

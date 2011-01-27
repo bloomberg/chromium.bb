@@ -211,14 +211,9 @@ class PrefService : public base::NonThreadSafe {
   // this checks if a value exists for the path.
   bool HasPrefPath(const char* path) const;
 
-  class PreferencePathComparator {
-   public:
-    bool operator() (Preference* lhs, Preference* rhs) const {
-      return lhs->name() < rhs->name();
-    }
-  };
-  typedef std::set<Preference*, PreferencePathComparator> PreferenceSet;
-  const PreferenceSet& preference_set() const { return prefs_; }
+  // Returns a dictionary with effective preference values. The ownership
+  // is passed to the caller.
+  DictionaryValue* GetPreferenceValues() const;
 
   // A helper method to quickly look up a preference.  Returns NULL if the
   // preference is not registered.
@@ -248,6 +243,14 @@ class PrefService : public base::NonThreadSafe {
   scoped_ptr<PrefNotifierImpl> pref_notifier_;
 
  private:
+  class PreferencePathComparator {
+   public:
+    bool operator() (Preference* lhs, Preference* rhs) const {
+      return lhs->name() < rhs->name();
+    }
+  };
+  typedef std::set<Preference*, PreferencePathComparator> PreferenceSet;
+
   friend class PrefServiceMockBuilder;
 
   // Registration of pref change observers must be done using the

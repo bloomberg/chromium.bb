@@ -356,6 +356,17 @@ bool PrefService::HasPrefPath(const char* path) const {
   return pref && !pref->IsDefaultValue();
 }
 
+DictionaryValue* PrefService::GetPreferenceValues() const {
+  DCHECK(CalledOnValidThread());
+  DictionaryValue* out = new DictionaryValue;
+  DefaultPrefStore::const_iterator i = default_store_->begin();
+  for (; i != default_store_->end(); ++i) {
+    const Value* value = FindPreference(i->first.c_str())->GetValue();
+    out->Set(i->first, value->DeepCopy());
+  }
+  return out;
+}
+
 const PrefService::Preference* PrefService::FindPreference(
     const char* pref_name) const {
   DCHECK(CalledOnValidThread());

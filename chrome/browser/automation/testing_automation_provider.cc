@@ -2786,13 +2786,8 @@ void TestingAutomationProvider::PerformActionOnSearchEngine(
 void TestingAutomationProvider::GetPrefsInfo(Browser* browser,
                                              DictionaryValue* args,
                                              IPC::Message* reply_message) {
-  const PrefService::PreferenceSet& prefs =
-      profile_->GetPrefs()->preference_set();
-  DictionaryValue* items = new DictionaryValue;
-  for (PrefService::PreferenceSet::const_iterator it = prefs.begin();
-       it != prefs.end(); ++it) {
-    items->Set((*it)->name(), (*it)->GetValue()->DeepCopy());
-  }
+  DictionaryValue* items = profile_->GetPrefs()->GetPreferenceValues();
+
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->Set("prefs", items);  // return_value owns items.
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
