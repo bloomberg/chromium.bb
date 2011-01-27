@@ -11,10 +11,12 @@
 #include "base/file_path.h"
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
-#include "base/third_party/nss/blapi.h"
 #include "chrome/browser/power_save_blocker.h"
 #include "googleurl/src/gurl.h"
 
+namespace base {
+class SecureHash;
+}
 namespace net {
 class FileStream;
 }
@@ -95,7 +97,7 @@ class BaseFile {
 
   // Used to calculate sha256 hash for the file when calculate_hash_
   // is set.
-  scoped_ptr<SHA256Context> sha_context_;
+  scoped_ptr<base::SecureHash> secure_hash_;
 
   unsigned char sha256_hash_[kSha256HashLen];
 

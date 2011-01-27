@@ -4,11 +4,10 @@
 
 #include "chrome/browser/download/base_file.h"
 
+#include "base/crypto/secure_hash.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "base/third_party/nss/blapi.h"
-#include "base/third_party/nss/sha256.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "chrome/browser/browser_thread.h"
@@ -33,8 +32,7 @@ BaseFile::BaseFile(const FilePath& full_path,
       file_stream_(file_stream),
       bytes_so_far_(received_bytes),
       power_save_blocker_(true),
-      calculate_hash_(false),
-      sha_context_(NULL) {
+      calculate_hash_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
@@ -50,10 +48,8 @@ bool BaseFile::Initialize(bool calculate_hash) {
 
   calculate_hash_ = calculate_hash;
 
-  if (calculate_hash_) {
-    sha_context_.reset(new SHA256Context);
-    SHA256_Begin(sha_context_.get());
-  }
+  if (calculate_hash_)
+    secure_hash_.reset(base::SecureHash::Create(base::SecureHash::SHA256));
 
   if (!full_path_.empty() ||
       download_util::CreateTemporaryFileForDownload(&full_path_))
@@ -78,11 +74,8 @@ bool BaseFile::AppendDataToFile(const char* data, size_t data_len) {
   if (written != data_len)
     return false;
 
-  if (calculate_hash_) {
-    SHA256_Update(sha_context_.get(),
-                  reinterpret_cast<const unsigned char*>(data),
-                  data_len);
-  }
+  if (calculate_hash_)
+    secure_hash_->Update(data, data_len);
 
   return true;
 }
@@ -162,7 +155,7 @@ void BaseFile::Finish() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (calculate_hash_)
-    SHA256_End(sha_context_.get(), sha256_hash_, NULL, kSha256HashLen);
+    secure_hash_->Finish(sha256_hash_, kSha256HashLen);
 
   Close();
 }
