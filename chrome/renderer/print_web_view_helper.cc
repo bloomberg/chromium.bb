@@ -510,12 +510,12 @@ void PrintWebViewHelper::RenderPagesForPreview(WebFrame *frame) {
   Send(new ViewHostMsg_PagesReadyForPreview(routing_id(), preview_params));
 }
 
-#if !defined(OS_MACOSX)
+#if defined(OS_LINUX)
 void PrintWebViewHelper::CreatePreviewDocument(
     const ViewMsg_PrintPages_Params& params,
     WebFrame* frame,
     ViewHostMsg_DidPreviewDocument_Params* preview_params) {
-  // TODO(kmadhusu): Implement this function for windows & linux.
+  // TODO(kmadhusu): Implement this function for linux.
   preview_params->document_cookie = params.params.document_cookie;
 }
 #endif

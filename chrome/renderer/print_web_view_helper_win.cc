@@ -75,26 +75,12 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
 
   int page_number = params.page_number;
 
-  double content_width_in_points;
-  double content_height_in_points;
-  GetPageSizeAndMarginsInPoints(frame, page_number, params.params,
-      &content_width_in_points, &content_height_in_points, NULL, NULL, NULL,
-      NULL);
-
   // Calculate the dpi adjustment.
   float scale_factor = static_cast<float>(params.params.desired_dpi /
                                           params.params.dpi);
 
-  // Since WebKit extends the page width depending on the magical |scale_factor|
-  // we make sure the canvas covers the worst case scenario (x2.0 currently).
-  // PrintContext will then set the correct clipping region.
-  gfx::Size page_size(
-      static_cast<int>(content_width_in_points * params.params.max_shrink),
-      static_cast<int>(content_height_in_points * params.params.max_shrink));
-
   // Render page for printing.
-  RenderPage(page_size, &scale_factor, page_number, frame, &metafile,
-      params.params.supports_alpha_blend);
+  RenderPage(params.params, &scale_factor, page_number, frame, &metafile);
 
   // Close the device context to retrieve the compiled metafile.
   if (!metafile->CloseDc())
@@ -129,15 +115,92 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   }
 }
 
+void PrintWebViewHelper::CreatePreviewDocument(
+    const ViewMsg_PrintPages_Params& params, WebFrame* frame,
+    ViewHostMsg_DidPreviewDocument_Params* preview_params) {
+  int page_count = 0;
+  ViewMsg_Print_Params print_params = params.params;
+  UpdatePrintableSizeInPrintParameters(frame, NULL, &print_params);
+  PrepareFrameAndViewForPrint prep_frame_view(print_params, frame, NULL,
+                                              frame->view());
+  page_count = prep_frame_view.GetExpectedPageCount();
+  if (!page_count)
+    return;
+
+  // NOTE: This is an enhanced-format metafile(EMF) which has an appearance of
+  // single page metafile. For print preview, we need a metafile with multiple
+  // pages.
+  // TODO(kmadhusu): Use a PDF metafile to support multiple pages. After "Skia
+  // PDF backend" work is completed for windows, make changes to replace this
+  // EMF with PDF metafile.
+  // http://code.google.com/p/chromium/issues/detail?id=62889
+  scoped_ptr<printing::NativeMetafile> metafile(new printing::NativeMetafile);
+  metafile->CreateDc(NULL, NULL);
+  DCHECK(metafile->hdc());
+  skia::PlatformDevice::InitializeDC(metafile->hdc());
+
+  // Calculate the dpi adjustment.
+  float shrink = static_cast<float>(params.params.desired_dpi /
+                                    params.params.dpi);
+
+  if (params.pages.empty()) {
+    for (int i = 0; i < page_count; ++i) {
+      float scale_factor = shrink;
+      RenderPage(params.params, &scale_factor, i, frame, &metafile);
+    }
+  } else {
+    for (size_t i = 0; i < params.pages.size(); ++i) {
+      if (params.pages[i] >= page_count)
+        break;
+      float scale_factor = shrink;
+      RenderPage(params.params, &scale_factor,
+          static_cast<int>(params.pages[i]), frame, &metafile);
+    }
+  }
+
+  // Close the device context to retrieve the compiled metafile.
+  if (!metafile->CloseDc())
+    NOTREACHED();
+
+  // Get the size of the compiled metafile.
+  uint32 buf_size = metafile->GetDataSize();
+  DCHECK_GT(buf_size, 128u);
+
+  preview_params->document_cookie = params.params.document_cookie;
+  preview_params->data_size = 0;
+  preview_params->metafile_data_handle = NULL;
+
+  if (CopyMetafileDataToSharedMem(metafile.get(),
+          &(preview_params->metafile_data_handle))) {
+    preview_params->data_size = buf_size;
+  }
+  metafile->CloseEmf();
+  if (!Send(new ViewHostMsg_DuplicateSection(
+          routing_id(),
+          preview_params->metafile_data_handle,
+          &preview_params->metafile_data_handle))) {
+    NOTREACHED() << "Send message failed.";
+  }
+}
+
 void PrintWebViewHelper::RenderPage(
-    const gfx::Size& page_size, float* scale_factor, int page_number,
-    WebFrame* frame, scoped_ptr<printing::NativeMetafile>* metafile,
-    bool supports_alpha_blend) {
+    const ViewMsg_Print_Params& params, float* scale_factor, int page_number,
+    WebFrame* frame, scoped_ptr<printing::NativeMetafile>* metafile) {
   HDC hdc = (*metafile)->hdc();
   DCHECK(hdc);
 
-  int width = page_size.width();
-  int height = page_size.height();
+  double content_width_in_points;
+  double content_height_in_points;
+  GetPageSizeAndMarginsInPoints(frame, page_number, params,
+      &content_width_in_points, &content_height_in_points, NULL, NULL, NULL,
+      NULL);
+
+  // Since WebKit extends the page width depending on the magical scale factor
+  // we make sure the canvas covers the worst case scenario (x2.0 currently).
+  // PrintContext will then set the correct clipping region.
+  int width = static_cast<int>(content_width_in_points * params.max_shrink);
+  int height = static_cast<int>(content_height_in_points * params.max_shrink);
+
 #if 0
   // TODO(maruel): This code is kept for testing until the 100% GDI drawing
   // code is stable. maruels use this code's output as a reference when the
@@ -186,7 +249,7 @@ void PrintWebViewHelper::RenderPage(
 
   skia::VectorPlatformDevice* platform_device =
       static_cast<skia::VectorPlatformDevice*>(canvas.getDevice());
-  if (platform_device->alpha_blend_used() && !supports_alpha_blend) {
+  if (platform_device->alpha_blend_used() && !params.supports_alpha_blend) {
     // Close the device context to retrieve the compiled metafile.
     if (!(*metafile)->CloseDc())
       NOTREACHED();

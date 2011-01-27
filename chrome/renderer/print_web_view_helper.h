@@ -174,6 +174,10 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
 
   // Render the frame for preview.
   void RenderPagesForPreview(WebKit::WebFrame* frame);
+
+  // Renders all the pages listed in |params| for preview.
+  // On Success, |preview_params| will have a valid handle to metafile data,
+  // data buffer size and document cookie.
   void CreatePreviewDocument(const ViewMsg_PrintPages_Params& params,
       WebKit::WebFrame* frame,
       ViewHostMsg_DidPreviewDocument_Params* preview_params);
@@ -182,10 +186,9 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
                   const float& scale_factor, int page_number,
                   WebKit::WebFrame* frame, printing::NativeMetafile* metafile);
 #elif defined(OS_WIN)
-  void RenderPage(const gfx::Size& page_size, float* scale_factor,
+  void RenderPage(const ViewMsg_Print_Params& params, float* scale_factor,
                   int page_number, WebKit::WebFrame* frame,
-                  scoped_ptr<printing::NativeMetafile>* metafile,
-                  bool supports_alpha_blend);
+                  scoped_ptr<printing::NativeMetafile>* metafile);
 #endif
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
