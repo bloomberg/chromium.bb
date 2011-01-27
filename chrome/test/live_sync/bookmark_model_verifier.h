@@ -38,9 +38,17 @@ class BookmarkModelVerifier {
   // under the same parent folder. Returns true if even one instance is found.
   static bool ContainsDuplicateBookmarks(BookmarkModel* model);
 
+  // Checks if the favicon in |node_a| from |model_a| matches that of |node_b|
+  // from |model_b|. Returns true if they match.
+  static bool FaviconsMatch(BookmarkModel* model_a,
+                            BookmarkModel* model_b,
+                            const BookmarkNode* node_a,
+                            const BookmarkNode* node_b);
+
   // Checks if the favicon data in |bitmap_a| and |bitmap_b| are equivalent.
   // Returns true if they match.
-  static bool FaviconsMatch(const SkBitmap& bitmap_a, const SkBitmap& bitmap_b);
+  static bool FaviconBitmapsMatch(const SkBitmap& bitmap_a,
+                                  const SkBitmap& bitmap_b);
 
   // Adds the same bookmark to |model| and |verifier_model_|. See
   // BookmarkModel::AddURL for details.

@@ -9,6 +9,7 @@
 
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -32,6 +33,13 @@ class FaviconLoadObserver : public BookmarkModelObserver {
     model_->RemoveObserver(this);
   }
   void WaitForFaviconLoad() { ui_test_utils::RunMessageLoop(); }
+  void WaitForFaviconLoadWithTimeout(int64 timeout_ms) {
+    MessageLoopForUI::current()->PostDelayedTask(FROM_HERE,
+                                                 new MessageLoop::QuitTask,
+                                                 timeout_ms);
+
+    ui_test_utils::RunMessageLoop();
+  }
   virtual void Loaded(BookmarkModel* model) {}
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
@@ -106,16 +114,43 @@ bool BookmarkModelVerifier::ModelsMatch(BookmarkModel* model_a,
     EXPECT_TRUE(iterator_b.has_next());
     const BookmarkNode* node_b = iterator_b.Next();
     ret_val = ret_val && NodesMatch(node_a, node_b);
-    const SkBitmap& bitmap_a = model_a->GetFavIcon(node_a);
-    const SkBitmap& bitmap_b = model_b->GetFavIcon(node_b);
-    ret_val = ret_val && FaviconsMatch(bitmap_a, bitmap_b);
+    if (node_a->type() != BookmarkNode::URL ||
+        node_b->type() != BookmarkNode::URL)
+      continue;
+    ret_val = ret_val && FaviconsMatch(model_a, model_b, node_a, node_b);
   }
   ret_val = ret_val && (!iterator_b.has_next());
   return ret_val;
 }
 
-bool BookmarkModelVerifier::FaviconsMatch(const SkBitmap& bitmap_a,
-                                          const SkBitmap& bitmap_b) {
+bool BookmarkModelVerifier::FaviconsMatch(BookmarkModel* model_a,
+                                          BookmarkModel* model_b,
+                                          const BookmarkNode* node_a,
+                                          const BookmarkNode* node_b) {
+  // BookmarkModel::GetFavIcon() can be an asynchronous operation if a bookmark
+  // node's favicon has not yet loaded.
+  // We wait for TestTimeouts::tiny_timeout_ms() because the favicon is local
+  // and expected to load "almost immediately", if in fact one is present.
+  // See http://crbug.com/69694.
+  if (!node_a->is_favicon_loaded()) {
+    FaviconLoadObserver observer_a(model_a, node_a);
+    model_a->GetFavIcon(node_a);
+    observer_a.WaitForFaviconLoadWithTimeout(TestTimeouts::tiny_timeout_ms());
+  }
+
+  if (!node_b->is_favicon_loaded()) {
+    FaviconLoadObserver observer_b(model_b, node_b);
+    model_b->GetFavIcon(node_b);
+    observer_b.WaitForFaviconLoadWithTimeout(TestTimeouts::tiny_timeout_ms());
+  }
+
+  const SkBitmap& bitmap_a = model_a->GetFavIcon(node_a);
+  const SkBitmap& bitmap_b = model_b->GetFavIcon(node_b);
+  return FaviconBitmapsMatch(bitmap_a, bitmap_b);
+}
+
+bool BookmarkModelVerifier::FaviconBitmapsMatch(const SkBitmap& bitmap_a,
+                                                const SkBitmap& bitmap_b) {
   if (bitmap_a.getSize() == 0U && bitmap_a.getSize() == 0U)
     return true;
   if ((bitmap_a.getSize() != bitmap_b.getSize()) ||
