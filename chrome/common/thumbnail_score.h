@@ -6,6 +6,7 @@
 #define CHROME_COMMON_THUMBNAIL_SCORE_H_
 #pragma once
 
+#include <string>
 #include "base/time.h"
 
 // A set of metadata about a Thumbnail.
@@ -26,6 +27,9 @@ struct ThumbnailScore {
 
   // Tests for equivalence between two ThumbnailScore objects.
   bool Equals(const ThumbnailScore& rhs) const;
+
+  // Returns string representation of this object.
+  std::string ToString() const;
 
   // How "boring" a thumbnail is. The boring score is the 0,1 ranged
   // percentage of pixels that are the most common luma. Higher boring
@@ -67,6 +71,10 @@ struct ThumbnailScore {
   // How bad a thumbnail needs to be before we completely ignore it.
   static const double kThumbnailMaximumBoringness;
 
+  // We consider a thumbnail interesting enough if the boring score is
+  // lower than this.
+  static const double kThumbnailInterestingEnoughBoringness;
+
   // Time before we take a worse thumbnail (subject to
   // kThumbnailMaximumBoringness) over what's currently in the database
   // for freshness.
@@ -74,6 +82,11 @@ struct ThumbnailScore {
 
   // Penalty of how much more boring a thumbnail should be per hour.
   static const double kThumbnailDegradePerHour;
+
+  // Checks whether we should consider updating a new thumbnail based on
+  // this score. For instance, we don't have to update a new thumbnail
+  // if the current thumbnail is new and interesting enough.
+  bool ShouldConsiderUpdating();
 };
 
 // Checks whether we should replace one thumbnail with another.

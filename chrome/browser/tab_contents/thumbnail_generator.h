@@ -19,9 +19,14 @@
 #include "chrome/common/notification_registrar.h"
 
 class GURL;
+class Profile;
 class RenderWidgetHost;
 class SkBitmap;
 class TabContents;
+
+namespace history {
+class TopSites;
+}
 
 class ThumbnailGenerator : NotificationObserver {
  public:
@@ -120,6 +125,11 @@ class ThumbnailGenerator : NotificationObserver {
   // Update the thumbnail of the given URL if necessary.
   static void UpdateThumbnailIfNecessary(TabContents* tab_contents,
                                          const GURL& url);
+
+  // Returns true if we should update the thumbnail of the given URL.
+  static bool ShouldUpdateThumbnail(Profile* profile,
+                                    history::TopSites* top_sites,
+                                    const GURL& url);
 
  private:
   // RenderWidgetHostPaintingObserver implementation.

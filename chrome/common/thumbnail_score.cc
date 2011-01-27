@@ -5,12 +5,15 @@
 #include "chrome/common/thumbnail_score.h"
 
 #include "base/logging.h"
+#include "base/stringprintf.h"
 
 using base::Time;
 using base::TimeDelta;
 
 const TimeDelta ThumbnailScore::kUpdateThumbnailTime = TimeDelta::FromDays(1);
 const double ThumbnailScore::kThumbnailMaximumBoringness = 0.94;
+// Per crbug.com/65936#c4, 91.83% of thumbnail scores are less than 0.70.
+const double ThumbnailScore::kThumbnailInterestingEnoughBoringness = 0.70;
 const double ThumbnailScore::kThumbnailDegradePerHour = 0.01;
 
 // Calculates a numeric score from traits about where a snapshot was
@@ -70,6 +73,16 @@ bool ThumbnailScore::Equals(const ThumbnailScore& rhs) const {
       redirect_hops_from_dest == rhs.redirect_hops_from_dest;
 }
 
+std::string ThumbnailScore::ToString() const {
+  return StringPrintf("boring_score: %f, at_top %d, good_clipping %d, "
+                      "time_at_snapshot: %f, redirect_hops_from_dest: %d",
+                      boring_score,
+                      at_top,
+                      good_clipping,
+                      time_at_snapshot.ToDoubleT(),
+                      redirect_hops_from_dest);
+}
+
 bool ShouldReplaceThumbnailWith(const ThumbnailScore& current,
                                 const ThumbnailScore& replacement) {
   int current_type = GetThumbnailType(current.good_clipping, current.at_top);
@@ -115,4 +128,17 @@ bool ShouldReplaceThumbnailWith(const ThumbnailScore& current,
   // current one even if we're using a worse thumbnail type.
   return current.boring_score >= ThumbnailScore::kThumbnailMaximumBoringness &&
       replacement.boring_score < ThumbnailScore::kThumbnailMaximumBoringness;
+}
+
+bool ThumbnailScore::ShouldConsiderUpdating() {
+  const TimeDelta time_elapsed = Time::Now() - time_at_snapshot;
+  // Consider the current thumbnail to be new and interesting enough if
+  // the following critera are met.
+  const bool new_and_interesting_enough =
+      (time_elapsed < kUpdateThumbnailTime &&
+       good_clipping && at_top &&
+       boring_score < kThumbnailInterestingEnoughBoringness);
+  // We want to generate a new thumbnail when the current thumbnail is
+  // sufficiently old or uninteresting.
+  return !new_and_interesting_enough;
 }

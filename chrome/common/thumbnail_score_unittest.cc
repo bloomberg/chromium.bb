@@ -52,3 +52,27 @@ TEST(ThumbnailScoreTest, RedirectCount) {
   lotsa_redirects.redirect_hops_from_dest = 4;
   EXPECT_FALSE(ShouldReplaceThumbnailWith(no_redirects, lotsa_redirects));
 }
+
+TEST(ThumbnailScoreTest, ShouldConsiderUpdating) {
+  ThumbnailScore score;
+  // By default, the score is 1.0, meaning very boring, thus we should
+  // generate a new thumbnail.
+  EXPECT_DOUBLE_EQ(1.0, score.boring_score);
+  EXPECT_TRUE(score.ShouldConsiderUpdating());
+
+  // Make it very interesting, but this is not enough.
+  score.boring_score = 0.0;
+  EXPECT_TRUE(score.ShouldConsiderUpdating());
+
+  // good_clipping is important, but sill not enough.
+  score.good_clipping = true;
+  EXPECT_TRUE(score.ShouldConsiderUpdating());
+
+  // at_top is important. Finally, the thumbnail is new and interesting enough.
+  score.at_top = true;
+  EXPECT_FALSE(score.ShouldConsiderUpdating());
+
+  // Make it old. Then, it's no longer new enough.
+  score.time_at_snapshot -= ThumbnailScore::kUpdateThumbnailTime;
+  EXPECT_TRUE(score.ShouldConsiderUpdating());
+}

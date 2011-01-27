@@ -45,6 +45,10 @@ class TopSitesCache {
   bool GetPageThumbnail(const GURL& url,
                         scoped_refptr<RefCountedBytes>* bytes);
 
+  // Fetches the thumbnail score for the specified url. Returns true if
+  // there is a thumbnail score for the specified url.
+  bool GetPageThumbnailScore(const GURL& url, ThumbnailScore* score);
+
   // Returns the canonical URL for |url|.
   GURL GetCanonicalURL(const GURL& url);
 

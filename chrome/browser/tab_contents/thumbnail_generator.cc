@@ -632,11 +632,10 @@ SkBitmap ThumbnailGenerator::GetClippedBitmap(const SkBitmap& bitmap,
 
 void ThumbnailGenerator::UpdateThumbnailIfNecessary(
     TabContents* tab_contents, const GURL& url) {
-  if (tab_contents->profile()->IsOffTheRecord() ||
-      (url.SchemeIs("chrome") && url.host() == "newtab"))
+  history::TopSites* top_sites = tab_contents->profile()->GetTopSites();
+  // Skip if we don't need to update the thumbnail.
+  if (!ShouldUpdateThumbnail(tab_contents->profile(), top_sites, url))
     return;
-  // TODO(satorux): Add more conditions here to avoid unnecessary
-  // thumbnail generation.
 
   ThumbnailGenerator* generator = g_browser_process->GetThumbnailGenerator();
   const int options = ThumbnailGenerator::kClippedThumbnail;
@@ -656,10 +655,31 @@ void ThumbnailGenerator::UpdateThumbnailIfNecessary(
       (clip_result == ThumbnailGenerator::kTallerThanWide ||
        clip_result == ThumbnailGenerator::kNotClipped);
 
-  history::TopSites* top_sites = tab_contents->profile()->GetTopSites();
   top_sites->SetPageThumbnail(url, thumbnail, score);
-  VLOG(1) << "Thumbnail taken for " << url
-          << ", at_top: " << score.at_top
-          << ", boring_score: " << score.boring_score
-          << ", good_clipping: " << score.good_clipping;
+  VLOG(1) << "Thumbnail taken for " << url << ": " << score.ToString();
+}
+
+bool ThumbnailGenerator::ShouldUpdateThumbnail(Profile* profile,
+                                               history::TopSites* top_sites,
+                                               const GURL& url) {
+  if (!profile || !top_sites)
+    return false;
+  // Skip if it's in the off-the-record mode.
+  if (profile->IsOffTheRecord())
+    return false;
+  // Skip if the given URL is not appropriate for history.
+  if (!HistoryService::CanAddURL(url))
+    return false;
+  // Skip if the top sites list is full, and the URL is not known.
+  const bool is_known = top_sites->IsKnownURL(url);
+  if (top_sites->IsFull() && !is_known)
+    return false;
+  // Skip if we don't have to udpate the existing thumbnail.
+  ThumbnailScore current_score;
+  if (is_known &&
+      top_sites->GetPageThumbnailScore(url, &current_score) &&
+      !current_score.ShouldConsiderUpdating())
+    return false;
+
+  return true;
 }

@@ -127,7 +127,7 @@ class LoadThumbnailsFromHistoryTask : public HistoryDBTask {
 }  // namespace
 
 TopSites::TopSites(Profile* profile)
-    : backend_(new TopSitesBackend()),
+    : backend_(NULL),
       cache_(new TopSitesCache()),
       thread_safe_cache_(new TopSitesCache()),
       profile_(profile),
@@ -154,6 +154,9 @@ TopSites::TopSites(Profile* profile)
 }
 
 void TopSites::Init(const FilePath& db_name) {
+  // Create the backend here, rather than in the constructor, so that
+  // unit tests that do not need the backend can run without a problem.
+  backend_ = new TopSitesBackend;
   backend_->Init(db_name);
   backend_->GetMostVisitedThumbnails(
       &cancelable_consumer_,
@@ -181,8 +184,8 @@ bool TopSites::SetPageThumbnail(const GURL& url,
   }
 
   bool add_temp_thumbnail = false;
-  if (!cache_->IsKnownURL(url)) {
-    if (cache_->top_sites().size() < kTopSitesNumber) {
+  if (!IsKnownURL(url)) {
+    if (!IsFull()) {
       add_temp_thumbnail = true;
     } else {
       return false;  // This URL is not known to us.
@@ -235,6 +238,13 @@ bool TopSites::GetPageThumbnail(const GURL& url,
   // WARNING: this may be invoked on any thread.
   base::AutoLock lock(lock_);
   return thread_safe_cache_->GetPageThumbnail(url, bytes);
+}
+
+bool TopSites::GetPageThumbnailScore(const GURL& url,
+                                     ThumbnailScore* score) {
+  // WARNING: this may be invoked on any thread.
+  base::AutoLock lock(lock_);
+  return thread_safe_cache_->GetPageThumbnailScore(url, score);
 }
 
 // Returns the index of |url| in |urls|, or -1 if not found.
@@ -447,6 +457,14 @@ CancelableRequestProvider::Handle TopSites::StartQueryForMostVisited() {
         NewCallback(this, &TopSites::OnTopSitesAvailableFromHistory));
   }
   return 0;
+}
+
+bool TopSites::IsKnownURL(const GURL& url) {
+  return loaded_ && cache_->IsKnownURL(url);
+}
+
+bool TopSites::IsFull() {
+  return loaded_ && cache_->top_sites().size() >= kTopSitesNumber;
 }
 
 TopSites::~TopSites() {
@@ -724,7 +742,7 @@ void TopSites::Observe(NotificationType type,
     }
     StartQueryForMostVisited();
   } else if (type == NotificationType::NAV_ENTRY_COMMITTED) {
-    if (cache_->top_sites().size() < kTopSitesNumber) {
+    if (!IsFull()) {
       NavigationController::LoadCommittedDetails* load_details =
           Details<NavigationController::LoadCommittedDetails>(details).ptr();
       if (!load_details)
