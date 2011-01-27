@@ -274,28 +274,6 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	return 0;
 }
 
-static struct wl_buffer *
-create_invisible_pointer(struct wayland_compositor *c)
-{
-	struct wl_buffer *buffer;
-	struct wl_visual *visual;
-	GLuint texture;
-	const int width = 1, height = 1;
-	const GLubyte data[] = { 0, 0, 0, 0 };
-
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	visual = wl_display_get_premultiplied_argb_visual(c->parent.display);
-	buffer = c->base.create_buffer(&c->base, width, height, visual, data);
-
-	return buffer;
-}
-
 /* Events received from the wayland-server this compositor is client of: */
 
 /* parent output interface */
@@ -395,18 +373,15 @@ input_handle_pointer_focus(void *data,
 			    int32_t x, int32_t y, int32_t sx, int32_t sy)
 {
 	struct wayland_input *input = data;
+	struct wayland_output *output = data;
 	struct wayland_compositor *c = input->compositor;
-	static struct wl_buffer *pntr_buffer = NULL;
 
 	if (surface) {
-		c->base.focus = 1;
-		/* FIXME: extend protocol to allow hiding the cursor? */
-		if (pntr_buffer == NULL)
-			pntr_buffer = create_invisible_pointer(c);
-		wl_input_device_attach(input_device, time, pntr_buffer, x, y);
+		output = wl_surface_get_user_data(surface);
+		notify_pointer_focus(c->base.input_device,
+				     time, &output->base, sx, sy);
 	} else {
-		/* FIXME. hide our own pointer */
-		c->base.focus = 0;
+		notify_pointer_focus(c->base.input_device, time, NULL, 0, 0);
 	}
 }
 

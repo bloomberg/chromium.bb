@@ -547,6 +547,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	struct wl_event_loop *loop;
 	xcb_client_message_event_t *client_message;
 	xcb_motion_notify_event_t *motion_notify;
+	xcb_enter_notify_event_t *enter_notify;
 	xcb_key_press_event_t *key_press;
 	xcb_button_press_event_t *button_press;
 	xcb_expose_event_t *expose;
@@ -605,13 +606,22 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			break;
 
 		case XCB_ENTER_NOTIFY:
-			c->base.focus = 1;
-			wlsc_compositor_schedule_repaint(&c->base);
+			enter_notify = (xcb_enter_notify_event_t *) event;
+			output = x11_compositor_find_output(c, enter_notify->event);
+			notify_pointer_focus(c->base.input_device,
+					     enter_notify->time,
+					     &output->base,
+					     enter_notify->event_x,
+					     enter_notify->event_y);
 			break;
 
 		case XCB_LEAVE_NOTIFY:
-			c->base.focus = 0;
-			wlsc_compositor_schedule_repaint(&c->base);
+			enter_notify = (xcb_enter_notify_event_t *) event;
+			notify_pointer_focus(c->base.input_device,
+					     enter_notify->time,
+					     NULL,
+					     enter_notify->event_x,
+					     enter_notify->event_y);
 			break;
 
 		case XCB_CLIENT_MESSAGE:

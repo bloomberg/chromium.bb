@@ -805,6 +805,39 @@ notify_key(struct wl_input_device *device,
 				     WL_INPUT_DEVICE_KEY, time, key, state);
 }
 
+void
+notify_pointer_focus(struct wl_input_device *device,
+		     uint32_t time, struct wlsc_output *output,
+		     int32_t x, int32_t y)
+{
+	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
+	struct wlsc_compositor *compositor =
+		(struct wlsc_compositor *) device->compositor;
+	struct wlsc_surface *es;
+	int32_t sx, sy;
+
+	if (output) {
+		device->x = x;
+		device->y = y;
+		es = pick_surface(device, &sx, &sy);
+		wl_input_device_set_pointer_focus(device,
+						  &es->surface,
+						  time, x, y, sx, sy);
+
+		compositor->focus = 1;
+
+		wd->sprite->x = device->x - wd->hotspot_x;
+		wd->sprite->y = device->y - wd->hotspot_y;
+		wlsc_surface_update_matrix(wd->sprite);
+	} else {
+		wl_input_device_set_pointer_focus(device, NULL,
+						  time, 0, 0, 0, 0);
+		compositor->focus = 0;
+	}
+
+	wlsc_compositor_schedule_repaint(compositor);
+}
+
 static void
 input_device_attach(struct wl_client *client,
 		    struct wl_input_device *device_base,

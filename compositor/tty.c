@@ -54,7 +54,6 @@ static void on_enter_vt(int signal_number, void *data)
 	ret = ioctl(tty->fd, KDSETMODE, KD_GRAPHICS);
 	if (ret)
 		fprintf(stderr, "failed to set KD_GRAPHICS mode on console: %m\n");
-	tty->compositor->focus = 1;
 }
 
 static void on_leave_vt(int signal_number, void *data)
@@ -67,8 +66,6 @@ static void on_leave_vt(int signal_number, void *data)
 	if (ret)
 		fprintf(stderr,
 			"failed to set KD_TEXT mode on console: %m\n");
-
-	tty->compositor->focus = 0;
 }
 
 static void

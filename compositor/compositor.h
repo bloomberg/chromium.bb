@@ -156,6 +156,12 @@ notify_key(struct wl_input_device *device,
 	   uint32_t time, uint32_t key, uint32_t state);
 
 void
+notify_pointer_focus(struct wl_input_device *device,
+		     uint32_t time,
+		     struct wlsc_output *output,
+		     int32_t x, int32_t y);
+
+void
 wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs);
 void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor);
