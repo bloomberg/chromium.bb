@@ -134,7 +134,8 @@ body {
   color: $8; /* COLOR_NTP_TEXT */
 }
 
-.app:hover > a {
+.app:hover > a,
+.app.dragging > a {
   color: $$3; /* COLOR_NTP_SECTION_TEXT */
   background-color: $$1; /* COLOR_NTP_SECTION */;
 }

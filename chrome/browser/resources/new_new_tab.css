@@ -547,23 +547,20 @@ html[anim=true][enable-section-animations=true] .miniview {
 
 /* small */
 
-@media (max-width: 940px) {
+.small-layout #main,
+.small-layout .section,
+.small-layout .maxiview,
+.small-layout #login-container,
+.small-layout #notification-container {
+  width: 692px;
+}
 
-  #main,
-  .section,
-  .maxiview,
-  #login-container,
-  #notification-container {
-    width: 692px;
-  }
+.small-layout  #notification > * {
+  max-width: 300px;
+}
 
-  #notification > * {
-    max-width: 300px;
-  }
-
-  #notification > span > .blacklist-title {
-    max-width: 15ex;
-  }
+.small-layout  #notification > span > .blacklist-title {
+  max-width: 15ex;
 }
 
 /* Ensure we have at least 10px horizontal marging. */

@@ -9,16 +9,13 @@ html.apps-promo-visible #apps-content {
   max-width: 650px; /* (124 + margin * 2) * 5 */
 }
 
-/* small */
-@media (max-width: 940px) {
-  /*
-  We don't need to do anything for html.apps-promo-visible because there is
-  enough extra space in the small grid layout.
-  */
-  #apps-content,
-  html.apps-promo-visible #apps-content {
-    max-width: 520px;  /* (124 + margin * 2) * 4 */
-  }
+/*
+We don't need to do anything for html.apps-promo-visible because there is
+enough extra space in the small grid layout.
+*/
+.small-layout #apps-content,
+.small-layout html.apps-promo-visible #apps-content {
+  max-width: 520px;  /* (124 + margin * 2) * 4 */
 }
 
 .app,

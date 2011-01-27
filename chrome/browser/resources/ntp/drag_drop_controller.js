@@ -28,30 +28,51 @@
 //         position last specified by setDragPlaceholder. (e.g., commit changes)
 //
 
+// The distance, in px, that the mouse must move before initiating a drag.
+var DRAG_THRESHOLD = 35;
+
 function DragAndDropController(delegate) {
   this.delegate_ = delegate;
 
-  this.installHandlers_();
+  // Install the 'mousedown' handler, the entry point to drag and drop.
+  var el = this.delegate_.dragContainer;
+  el.addEventListener('mousedown', this.handleMouseDown_.bind(this));
 }
 
 DragAndDropController.prototype = {
-  startX_: 0,
-  startY_: 0,
-  startScreenX_: 0,
-  startScreenY_: 0,
+  isDragging_: false,
+  startItem_: null,
+  startItemXY_: null,
+  startMouseXY_: null,
 
-  installHandlers_: function() {
-    var el = this.delegate_.dragContainer;
-    el.addEventListener('dragstart', this.handleDragStart_.bind(this));
-    el.addEventListener('dragenter', this.handleDragEnter_.bind(this));
-    el.addEventListener('dragover', this.handleDragOver_.bind(this));
-    el.addEventListener('dragleave', this.handleDragLeave_.bind(this));
-    el.addEventListener('drop', this.handleDrop_.bind(this));
-    el.addEventListener('dragend', this.handleDragEnd_.bind(this));
-    el.addEventListener('drag', this.handleDrag_.bind(this));
-    el.addEventListener('mousedown', this.handleMouseDown_.bind(this));
+  // Enables the handlers that are only active during a drag.
+  enableHandlers_: function() {
+    // Record references to the generated functions so we can
+    // remove the listeners later.
+    this.mouseMoveListener_ = this.handleMouseMove_.bind(this);
+    this.mouseUpListener_ = this.handleMouseUp_.bind(this);
+
+    document.addEventListener('mousemove', this.mouseMoveListener_, true);
+    document.addEventListener('mouseup', this.mouseUpListener_, true);
   },
 
+  disableHandlers_: function() {
+    document.removeEventListener('mousemove', this.mouseMoveListener_, true);
+    document.removeEventListener('mouseup', this.mouseUpListener_, true);
+  },
+
+  isDragging: function() {
+    return this.isDragging_;
+  },
+
+  distance_: function(p1, p2) {
+    var x2 = Math.pow(p1.x - p2.x, 2);
+    var y2 = Math.pow(p1.y - p2.y, 2);
+    return Math.sqrt(x2 + y2);
+  },
+
+  // Gets the coordinates of the mouse event |e| relative to the top left of
+  // the drag container.
   getCoordinates_: function(e) {
     var rect = this.delegate_.dragContainer.getBoundingClientRect();
     var coordinates = {
@@ -71,41 +92,48 @@ DragAndDropController.prototype = {
   // starting drag and drop.
   handleMouseDown_: function(e) {
     var item = this.delegate_.getItem(e);
-    if (!item) {
-      e.preventDefault();
+
+    // This can't be a drag & drop event if it's not the left mouse button
+    // or if the mouse is not above an item. We also bail out if the dragging
+    // flag is still set (the flag remains around for a bit so that 'click'
+    // event handlers can distinguish between a click and drag).
+    if (!item || e.button != 0 || this.isDragging())
+      return;
+
+    this.startItem_ = item;
+    this.startItemXY_ = {x:item.offsetLeft, y:item.offsetTop};
+    this.startMouseXY_ = {x:e.clientX, y:e.clientY};
+    this.startScrollXY_ = {x:window.scrollX, y:window.scrollY};
+
+    this.enableHandlers_();
+  },
+
+  handleMouseMove_: function(e) {
+    if (this.isDragging()) {
+      this.handleDrag_(e);
       return;
     }
 
-    this.startX_ = item.offsetLeft;
-    this.startY_ = item.offsetTop;
-    this.startScreenX_ = e.screenX;
-    this.startScreenY_ = e.screenY;
+    // Initiate the drag if the mouse has moved far enough.
+    var now = this.getCoordinates_(e);
+    if (this.distance_(this.startMouseXY_, now) >= DRAG_THRESHOLD)
+      this.handleDragStart_(e);
+  },
 
-    // We don't want to focus the item on mousedown. However, to prevent
-    // focus one has to call preventDefault but this also prevents the drag
-    // and drop (sigh) so we only prevent it when the user is not doing a
-    // left mouse button drag.
-    if (e.button != 0) // LEFT
-      e.preventDefault();
+  handleMouseUp_: function(e) {
+    this.handleDrop_(e);
   },
 
   handleDragStart_: function(e) {
-    var item = this.delegate_.getItem(e);
+    // Use the item that the mouse was above when 'mousedown' fired.
+    var item = this.startItem_;
     if (!item)
       return;
 
-    // Don't set data since HTML5 does not allow setting the name for
-    // url-list. Instead, we just rely on the dragging of link behavior.
+    this.isDragging_ = true;
     this.delegate_.dragItem = item;
     item.classList.add('dragging');
     item.style.zIndex = 2;
-
-    e.dataTransfer.effectAllowed = 'copyLinkMove';
-  },
-
-  handleDragEnter_: function(e) {
-    if (this.delegate_.canDropOn(this.getCoordinates_(e)))
-      e.preventDefault();
   },
 
   handleDragOver_: function(e) {
@@ -114,55 +142,58 @@ DragAndDropController.prototype = {
       return;
 
     this.delegate_.setDragPlaceholder(coordinates);
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  },
-
-  handleDragLeave_: function(e) {
-    if (this.delegate_.canDropOn(this.getCoordinates_(e)))
-      e.preventDefault();
   },
 
   handleDrop_: function(e) {
+    this.disableHandlers_();
+
     var dragItem = this.delegate_.dragItem;
     if (!dragItem)
       return;
 
-    this.delegate_.dragItem = null;
+    this.delegate_.dragItem = this.startItem_ = null;
     this.delegate_.saveDrag();
     dragItem.classList.remove('dragging');
 
     setTimeout(function() {
+      // Keep the flag around a little so other 'mouseup' and 'click'
+      // listeners know the event is from a drag operation.
+      this.isDragging_ = false;
       dragItem.style.zIndex = 0;
-    }, this.delegate_.transitionsDuration + 10);
-  },
-
-  handleDragEnd_: function(e) {
-    return this.handleDrop_(e);
+    }.bind(this), this.delegate_.transitionsDuration);
   },
 
   handleDrag_: function(e) {
     // Moves the drag item making sure that it is not displayed outside the
-    // browser viewport.
+    // drag container.
     var dragItem = this.delegate_.dragItem;
-    var rect = this.delegate_.dragContainer.getBoundingClientRect();
+    var dragContainer = this.delegate_.dragContainer;
+    var rect = dragContainer.getBoundingClientRect();
 
-    var x = this.startX_ + e.screenX - this.startScreenX_;
-    var y = this.startY_ + e.screenY - this.startScreenY_;
+    // First, move the item the same distance the mouse has moved.
+    var x = this.startItemXY_.x + e.clientX - this.startMouseXY_.x +
+              window.scrollX - this.startScrollXY_.x;
+    var y = this.startItemXY_.y + e.clientY - this.startMouseXY_.y +
+              window.scrollY - this.startScrollXY_.y;
 
-    // The position of the item is relative to #apps so we need to
-    // subtract that when calculating the allowed position.
-    x = Math.max(x, -rect.left);
-    x = Math.min(x, document.body.clientWidth - rect.left -
-                    dragItem.offsetWidth - 2);
+    var w = this.delegate_.dimensions.width;
+    var h = this.delegate_.dimensions.height;
 
-    // The shadow is 2px
-    y = Math.max(-rect.top, y);
-    y = Math.min(y, document.body.clientHeight - rect.top -
-                    dragItem.offsetHeight - 2);
+    var offset = parseInt(getComputedStyle(dragContainer).marginLeft);
 
-    // Override right in case of RTL.
+    // The position of the item is relative to the drag container. We
+    // want to make sure that half of the item's width or height is within
+    // the container.
+    x = Math.max(x, - w / 2 - offset);
+    x = Math.min(x, rect.width  + w / 2 - offset);
+
+    y = Math.max(- h / 2, y);
+    y = Math.min(y, rect.height - h / 2);
+
     dragItem.style.left = x + 'px';
     dragItem.style.top = y + 'px';
+
+    // Update the layouts and positions based on the new drag location.
+    this.handleDragOver_(e);
   }
 };

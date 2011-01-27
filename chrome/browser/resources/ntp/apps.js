@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,6 +125,7 @@ var apps = (function() {
     var a = div.appendChild(document.createElement('a'));
     a.setAttribute('app-id', app['id']);
     a.setAttribute('launch-type', app['launch_type']);
+    a.draggable = false;
     a.xtitle = a.textContent = app['name'];
     a.href = app['launch_url'];
 
@@ -171,7 +172,8 @@ var apps = (function() {
    */
   function handleClick(e) {
     var appId = e.currentTarget.getAttribute('app-id');
-    launchApp(appId);
+    if (!appDragAndDrop.isDragging())
+      launchApp(appId);
     return false;
   }
 
@@ -325,33 +327,20 @@ var apps = (function() {
       }
     },
 
-    // The dimensions of each item in the app launcher. This calculates the
-    // dimensions dynamically, so it should be called after creating the DOM.
+    // The dimensions of each item in the app launcher.
     dimensions_: null,
     get dimensions() {
       if (this.dimensions_)
         return this.dimensions_;
 
-      var app = this.dragContainer.firstChild;
+      var width = 124;
+      var height = 136;
 
-      var width = app.offsetWidth;
-      var height = app.offsetHeight;
+      var marginWidth = 6;
+      var marginHeight = 10;
 
-      // If the apps haven't properly loaded yet, don't cache the result.
-      if (app.offsetWidth == 0 || app.offsetHeight == 0)
-        return {width:0, height:0};
-
-      var style = getComputedStyle(app);
-
-      var marginWidth =
-          parseInt(style.marginLeft) + parseInt(style.marginRight);
-      var marginHeight =
-          parseInt(style.marginTop) + parseInt(style.marginBottom);
-
-      var borderWidth = parseInt(style.borderLeftWidth) +
-                        parseInt(style.borderRightWidth);
-      var borderHeight = parseInt(style.borderTopWidth) +
-                         parseInt(style.borderBottomWidth);
+      var borderWidth = 0;
+      var borderHeight = 0;
 
       this.dimensions_ = {
         width: width + marginWidth + borderWidth,
@@ -383,8 +372,8 @@ var apps = (function() {
       var bottom = rows * this.dimensions.height;
       var right = cols * this.dimensions.width;
 
-      if (coordinates.x > right || coordinates.x < 0 ||
-          coordinates.y > bottom || coordinates.y < 0)
+      if (coordinates.x >= right || coordinates.x < 0 ||
+          coordinates.y >= bottom || coordinates.y < 0)
         return false;
 
       var position = this.getIndexAt_(coordinates);
@@ -413,19 +402,18 @@ var apps = (function() {
       var w = this.dimensions.width;
       var h = this.dimensions.height;
 
-      var availableWidth = this.dragContainer.offsetWidth;
+      var appsPerRow = MAX_APPS_PER_ROW[layoutMode];
 
       var row = Math.floor(coordinates.y / h);
       var col = Math.floor(coordinates.x / w);
-      var index = Math.floor(availableWidth / w) * row + col;
+      var index = appsPerRow * row + col;
 
       var appCount = this.data.length;
-      var cols = MAX_APPS_PER_ROW[layoutMode];
-      var rows = Math.ceil(appCount / cols);
+      var rows = Math.ceil(appCount / appsPerRow);
 
       // Rather than making the free space on the last row invalid, we
       // map it to the last valid position.
-      if (index >= appCount && index < cols * rows)
+      if (index >= appCount && index < appsPerRow * rows)
         return appCount-1;
 
       return index;
@@ -436,7 +424,7 @@ var apps = (function() {
       this.layout();
 
       var appIds = this.data.filter(function(id) {
-          return id != 'web-store-entry';
+        return id != 'web-store-entry';
       });
 
       // Wait until the transitions are complete before notifying the browser.
@@ -502,16 +490,16 @@ var apps = (function() {
       var rects = [];
       var w = this.dimensions.width;
       var h = this.dimensions.height;
+      var appsPerRow = MAX_APPS_PER_ROW[layoutMode];
 
       for (var i = 0; i < appCount; i++) {
-        var row = Math.floor((w * i) / availableWidth);
-        var top = row * h;
-        var left = (w * i) % availableWidth;
+        var top = Math.floor(i / appsPerRow) * h;
+        var left = (i % appsPerRow) * w;
 
         // Reflect the X axis if an RTL language is active.
         if (rtl)
           left = availableWidth - left - w;
-        rects[i] = {left: left, top: top, row: row};
+        rects[i] = {left: left, top: top};
       }
       return rects;
     },

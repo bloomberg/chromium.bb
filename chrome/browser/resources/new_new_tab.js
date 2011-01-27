@@ -302,9 +302,17 @@ function handleWindowResize() {
     return;
   }
 
+  // TODO(jstritar): Remove the small-layout class and revert back to the
+  // @media (max-width) directive once http://crbug.com/70930 is fixed.
   var oldLayoutMode = layoutMode;
   var b = useSmallGrid();
-  layoutMode = b ? LayoutMode.SMALL : LayoutMode.NORMAL;
+  if (b) {
+    layoutMode = LayoutMode.SMALL;
+    document.body.classList.add('small-layout');
+  } else {
+    layoutMode = LayoutMode.NORMAL;
+    document.body.classList.remove('small-layout');
+  }
 
   if (layoutMode != oldLayoutMode){
     mostVisited.useSmallGrid = b;
