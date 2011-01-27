@@ -71,6 +71,9 @@ class TouchFactory {
   // is used to keep track of the idleness.
   base::OneShotTimer<TouchFactory> cursor_timer_;
 
+  // The default cursor.
+  Cursor arrow_cursor_;
+
   // The invisible cursor.
   Cursor invisible_cursor_;
 

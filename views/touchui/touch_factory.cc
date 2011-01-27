@@ -4,7 +4,7 @@
 
 #include "views/touchui/touch_factory.h"
 
-#include <gdk/gdkx.h>
+#include <X11/cursorfont.h>
 #include <X11/extensions/XInput2.h>
 
 #include "base/compiler_specific.h"
@@ -25,22 +25,24 @@ TouchFactory::TouchFactory()
     : is_cursor_visible_(true),
       cursor_timer_(),
       touch_device_list_() {
-  Pixmap blank;
+  char nodata[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
   XColor black;
-  static char nodata[] = { 0,0,0,0,0,0,0,0 };
   black.red = black.green = black.blue = 0;
   Display* display = ui::GetXDisplay();
-
-  blank = XCreateBitmapFromData(display, ui::GetX11RootWindow(), nodata, 8, 8);
+  Pixmap blank = XCreateBitmapFromData(display, ui::GetX11RootWindow(),
+                                       nodata, 8, 8);
   invisible_cursor_ = XCreatePixmapCursor(display, blank, blank,
                                           &black, &black, 0, 0);
+  arrow_cursor_ = XCreateFontCursor(display, XC_arrow);
 
   SetCursorVisible(false, false);
 }
 
 TouchFactory::~TouchFactory() {
   SetCursorVisible(true, false);
-  XFreeCursor(ui::GetXDisplay(), invisible_cursor_);
+  Display* display = ui::GetXDisplay();
+  XFreeCursor(display, invisible_cursor_);
+  XFreeCursor(display, arrow_cursor_);
 }
 
 void TouchFactory::SetTouchDeviceList(
@@ -113,17 +115,13 @@ void TouchFactory::SetCursorVisible(bool show, bool start_timer) {
 
   is_cursor_visible_ = show;
 
-  GdkDisplay* display = gdk_display_get_default();
-  if (!display)
-    return;
-
-  Display* xdisplay = GDK_DISPLAY_XDISPLAY(display);
-  Window window = DefaultRootWindow(xdisplay);
+  Display* display = ui::GetXDisplay();
+  Window window = DefaultRootWindow(display);
 
   if (is_cursor_visible_) {
-    XUndefineCursor(xdisplay, window);
+    XDefineCursor(display, window, arrow_cursor_);
   } else {
-    XDefineCursor(xdisplay, window, invisible_cursor_);
+    XDefineCursor(display, window, invisible_cursor_);
   }
 }
 
