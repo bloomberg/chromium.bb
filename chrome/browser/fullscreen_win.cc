@@ -7,8 +7,43 @@
 #include <windows.h>
 #include <shellapi.h>
 
+#include "base/logging.h"
+#include "base/sys_info.h"
+
 static bool IsPlatformFullScreenMode() {
+  // SHQueryUserNotificationState is only available for Vista and above.
+#if defined(NTDDI_VERSION) && (NTDDI_VERSION >= NTDDI_VISTA)
+  int32 major_version, minor_version, fix_version;
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version,
+                                               &minor_version,
+                                               &fix_version);
+  if (major_version < 6)
+    return false;
+
+  typedef HRESULT(WINAPI *SHQueryUserNotificationStatePtr)(
+      QUERY_USER_NOTIFICATION_STATE* state);
+
+  HMODULE shell32_base = ::GetModuleHandle(L"shell32.dll");
+  if (!shell32_base) {
+    NOTREACHED();
+    return false;
+  }
+  SHQueryUserNotificationStatePtr query_user_notification_state_ptr =
+        reinterpret_cast<SHQueryUserNotificationStatePtr>
+            (::GetProcAddress(shell32_base, "SHQueryUserNotificationState"));
+  if (!query_user_notification_state_ptr) {
+    NOTREACHED();
+    return false;
+  }
+
+  QUERY_USER_NOTIFICATION_STATE state;
+  if (FAILED((*query_user_notification_state_ptr)(&state)))
+    return false;
+  return state == QUNS_RUNNING_D3D_FULL_SCREEN ||
+         state == QUNS_PRESENTATION_MODE;
+#else
   return false;
+#endif
 }
 
 static bool IsFullScreenWindowMode() {
