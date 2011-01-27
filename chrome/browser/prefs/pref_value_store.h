@@ -20,7 +20,6 @@
 class FilePath;
 class PrefNotifier;
 class PrefStore;
-class Profile;
 
 // The PrefValueStore manages various sources of values for Preferences
 // (e.g., configuration policies, extensions, and user settings). It returns
@@ -46,12 +45,6 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   //
   // |pref_notifier| facilitates broadcasting preference change notifications
   // to the world.
-  //
-  // The |profile| parameter is used to construct a replacement device
-  // management pref store. This is done after policy refresh when we swap out
-  // the policy pref stores for new ones, so the |profile| pointer needs to be
-  // kept around for then. It is safe to pass a NULL pointer for local state
-  // preferences.
   PrefValueStore(PrefStore* managed_platform_prefs,
                  PrefStore* device_management_prefs,
                  PrefStore* extension_prefs,
