@@ -28,8 +28,8 @@
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/policy_constants.h"
 #include "chrome/common/pref_names.h"
-#include "policy/policy_constants.h"
 
 namespace policy {
 
@@ -150,12 +150,12 @@ class ConfigurationPolicyPrefKeeper
 
 const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     ConfigurationPolicyPrefKeeper::kSimplePolicyMap[] = {
-  { Value::TYPE_STRING, kPolicyHomepageLocation,  prefs::kHomePage },
+  { Value::TYPE_STRING, kPolicyHomePage,  prefs::kHomePage },
   { Value::TYPE_BOOLEAN, kPolicyHomepageIsNewTabPage,
     prefs::kHomePageIsNewTabPage },
   { Value::TYPE_INTEGER, kPolicyRestoreOnStartup,
     prefs::kRestoreOnStartup},
-  { Value::TYPE_LIST, kPolicyRestoreOnStartupURLs,
+  { Value::TYPE_LIST, kPolicyURLsToRestoreOnStartup,
     prefs::kURLsToRestoreOnStartup },
   { Value::TYPE_BOOLEAN, kPolicyAlternateErrorPagesEnabled,
     prefs::kAlternateErrorPagesEnabled },
@@ -175,13 +175,13 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kPrintingEnabled },
   { Value::TYPE_BOOLEAN, kPolicyMetricsReportingEnabled,
     prefs::kMetricsReportingEnabled },
-  { Value::TYPE_STRING, kPolicyApplicationLocaleValue,
+  { Value::TYPE_STRING, kPolicyApplicationLocale,
     prefs::kApplicationLocale},
-  { Value::TYPE_LIST, kPolicyExtensionInstallWhitelist,
+  { Value::TYPE_LIST, kPolicyExtensionInstallAllowList,
     prefs::kExtensionInstallAllowList},
-  { Value::TYPE_LIST, kPolicyExtensionInstallBlacklist,
+  { Value::TYPE_LIST, kPolicyExtensionInstallDenyList,
     prefs::kExtensionInstallDenyList},
-  { Value::TYPE_LIST, kPolicyExtensionInstallForcelist,
+  { Value::TYPE_LIST, kPolicyExtensionInstallForceList,
     prefs::kExtensionInstallForceList},
   { Value::TYPE_LIST, kPolicyDisabledPlugins,
     prefs::kPluginsPluginsBlacklist},
@@ -747,12 +747,12 @@ ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore() {
 const ConfigurationPolicyProvider::PolicyDefinitionList*
 ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
   static ConfigurationPolicyProvider::PolicyDefinitionList::Entry entries[] = {
-    { kPolicyHomepageLocation, Value::TYPE_STRING, key::kHomepageLocation },
+    { kPolicyHomePage, Value::TYPE_STRING, key::kHomepageLocation },
     { kPolicyHomepageIsNewTabPage, Value::TYPE_BOOLEAN,
       key::kHomepageIsNewTabPage },
     { kPolicyRestoreOnStartup, Value::TYPE_INTEGER, key::kRestoreOnStartup },
-    { kPolicyRestoreOnStartupURLs, Value::TYPE_LIST,
-      key::kRestoreOnStartupURLs },
+    { kPolicyURLsToRestoreOnStartup, Value::TYPE_LIST,
+      key::kURLsToRestoreOnStartup },
     { kPolicyDefaultSearchProviderEnabled, Value::TYPE_BOOLEAN,
       key::kDefaultSearchProviderEnabled },
     { kPolicyDefaultSearchProviderName, Value::TYPE_STRING,
@@ -791,15 +791,15 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kPasswordManagerAllowShowPasswords },
     { kPolicyAutoFillEnabled, Value::TYPE_BOOLEAN, key::kAutoFillEnabled },
     { kPolicyDisabledPlugins, Value::TYPE_LIST, key::kDisabledPlugins },
-    { kPolicyApplicationLocaleValue, Value::TYPE_STRING,
+    { kPolicyApplicationLocale, Value::TYPE_STRING,
       key::kApplicationLocaleValue },
     { kPolicySyncDisabled, Value::TYPE_BOOLEAN, key::kSyncDisabled },
-    { kPolicyExtensionInstallWhitelist, Value::TYPE_LIST,
-      key::kExtensionInstallWhitelist },
-    { kPolicyExtensionInstallBlacklist, Value::TYPE_LIST,
-      key::kExtensionInstallBlacklist },
-    { kPolicyExtensionInstallForcelist, Value::TYPE_LIST,
-      key::kExtensionInstallForcelist },
+    { kPolicyExtensionInstallAllowList, Value::TYPE_LIST,
+      key::kExtensionInstallAllowList },
+    { kPolicyExtensionInstallDenyList, Value::TYPE_LIST,
+      key::kExtensionInstallDenyList },
+    { kPolicyExtensionInstallForceList, Value::TYPE_LIST,
+      key::kExtensionInstallForceList },
     { kPolicyShowHomeButton, Value::TYPE_BOOLEAN, key::kShowHomeButton },
     { kPolicyPrintingEnabled, Value::TYPE_BOOLEAN, key::kPrintingEnabled },
     { kPolicyJavascriptEnabled, Value::TYPE_BOOLEAN, key::kJavascriptEnabled },

@@ -7,7 +7,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "policy/policy_constants.h"
+#include "chrome/common/policy_constants.h"
 
 using base::win::RegKey;
 

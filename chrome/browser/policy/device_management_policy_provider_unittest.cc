@@ -16,9 +16,9 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/policy_constants.h"
 #include "chrome/test/testing_device_token_fetcher.h"
 #include "chrome/test/testing_profile.h"
-#include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

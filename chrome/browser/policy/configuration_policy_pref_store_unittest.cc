@@ -71,11 +71,11 @@ INSTANTIATE_TEST_CASE_P(
     ConfigurationPolicyPrefStoreListTestInstance,
     ConfigurationPolicyPrefStoreListTest,
     testing::Values(
-        TypeAndName(kPolicyRestoreOnStartupURLs,
+        TypeAndName(kPolicyURLsToRestoreOnStartup,
                     prefs::kURLsToRestoreOnStartup),
-        TypeAndName(kPolicyExtensionInstallWhitelist,
+        TypeAndName(kPolicyExtensionInstallAllowList,
                     prefs::kExtensionInstallAllowList),
-        TypeAndName(kPolicyExtensionInstallBlacklist,
+        TypeAndName(kPolicyExtensionInstallDenyList,
                     prefs::kExtensionInstallDenyList),
         TypeAndName(kPolicyDisabledPlugins,
                     prefs::kPluginsPluginsBlacklist)));
@@ -105,11 +105,11 @@ INSTANTIATE_TEST_CASE_P(
     ConfigurationPolicyPrefStoreStringTestInstance,
     ConfigurationPolicyPrefStoreStringTest,
     testing::Values(
-        TypeAndName(kPolicyHomepageLocation,
+        TypeAndName(kPolicyHomePage,
                     prefs::kHomePage),
-        TypeAndName(kPolicyApplicationLocaleValue,
+        TypeAndName(kPolicyApplicationLocale,
                     prefs::kApplicationLocale),
-        TypeAndName(kPolicyApplicationLocaleValue,
+        TypeAndName(kPolicyApplicationLocale,
                     prefs::kApplicationLocale),
         TypeAndName(kPolicyAuthSchemes,
                     prefs::kAuthSchemes),
@@ -670,7 +670,7 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
             store_->GetValue(prefs::kHomePage, NULL));
 
   EXPECT_CALL(observer_, OnPrefValueChanged(prefs::kHomePage)).Times(1);
-  provider_.AddPolicy(kPolicyHomepageLocation,
+  provider_.AddPolicy(kPolicyHomePage,
                       Value::CreateStringValue("http://www.chromium.org"));
   store_->OnUpdatePolicy();
   Mock::VerifyAndClearExpectations(&observer_);
@@ -683,7 +683,7 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_CALL(observer_, OnPrefValueChanged(prefs::kHomePage)).Times(1);
-  provider_.RemovePolicy(kPolicyHomepageLocation);
+  provider_.RemovePolicy(kPolicyHomePage);
   store_->OnUpdatePolicy();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_EQ(PrefStore::READ_NO_VALUE,

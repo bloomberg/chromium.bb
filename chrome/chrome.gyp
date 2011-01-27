@@ -38,7 +38,6 @@
       'common_nacl_win64',
       'common_constants_win64',
       'installer_util_nacl_win64',
-      'policy_win64',
     ],
     'allocator_target': '../base/allocator/allocator.gyp:allocator',
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
@@ -850,7 +849,6 @@
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
         'common_constants',
         'common_net',
-        'policy',
         'sync',
         'sync_notifier',
       ],
@@ -1796,7 +1794,6 @@
           'dependencies': [
             'common_constants',
             'installer_util',
-            'policy',
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',

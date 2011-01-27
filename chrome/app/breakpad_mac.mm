@@ -23,8 +23,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/common/policy_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "policy/policy_constants.h"
 
 namespace {
 

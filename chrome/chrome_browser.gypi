@@ -20,7 +20,6 @@
         'profile_import',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
         'browser/policy/proto/device_management_proto.gyp:device_management_proto_cpp',
-        'policy',
         'safe_browsing_csd_proto',
         'safe_browsing_report_proto',
         'syncapi',
