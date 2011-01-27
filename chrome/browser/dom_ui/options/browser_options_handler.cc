@@ -55,8 +55,8 @@ void BrowserOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION));
   localized_strings->SetString("startupShowPages",
       l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_PAGES));
-  localized_strings->SetString("startupShowManyPages",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_MANY_PAGES));
+  localized_strings->SetString("startupAddButton",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_ADD_BUTTON));
   localized_strings->SetString("startupUseCurrent",
       l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_USE_CURRENT));
   localized_strings->SetString("homepageGroupName",

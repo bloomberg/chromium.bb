@@ -34,7 +34,7 @@ cr.define('options', function() {
       addForm.onreset = this.dismissOverlay_.bind(this);
       addForm.onsubmit =  function(e) {
         var urlField = $('addStartupPageURL');
-        StartupPageManager.addStartupPage(urlField.value);
+        BrowserOptions.addStartupPage(urlField.value);
 
         self.dismissOverlay_();
         return false;

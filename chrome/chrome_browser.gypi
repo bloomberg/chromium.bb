@@ -967,8 +967,6 @@
         'browser/dom_ui/options/personal_options_handler.h',
         'browser/dom_ui/options/search_engine_manager_handler.cc',
         'browser/dom_ui/options/search_engine_manager_handler.h',
-        'browser/dom_ui/options/startup_page_manager_handler.cc',
-        'browser/dom_ui/options/startup_page_manager_handler.h',
         'browser/dom_ui/options/stop_syncing_handler.cc',
         'browser/dom_ui/options/stop_syncing_handler.h',
         'browser/dom_ui/shared_resources_data_source.cc',

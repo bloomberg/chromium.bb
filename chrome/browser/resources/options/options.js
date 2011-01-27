@@ -25,7 +25,6 @@ var Preferences = options.Preferences;
 var ProxyOptions = options.ProxyOptions;
 var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
-var StartupPageManager = options.StartupPageManager;
 
 /**
  * DOMContentLoaded handler, sets up the page.
@@ -54,9 +53,6 @@ function load() {
   OptionsPage.registerSubPage(SearchEngineManager.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('defaultSearchManageEnginesButton')]);
-  OptionsPage.registerSubPage(StartupPageManager.getInstance(),
-                              BrowserOptions.getInstance(),
-                              [$('startupPageManagerButton')]);
   OptionsPage.register(PersonalOptions.getInstance());
   OptionsPage.registerSubPage(AutoFillOptions.getInstance(),
                               PersonalOptions.getInstance(),

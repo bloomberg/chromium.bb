@@ -1,23 +1,22 @@
-
 #startupPageManagement.settings-list > :last-child {
   border-top: 1px solid #d9d9d9;
   padding: 5px 10px;
 }
 
-#startupPagesShortList {
-  min-height: 0;
+#startupPagesList {
+  min-height: 64px;
 }
 
-.startup-page-list .title {
+#startupPagesList .title {
   width: 40%;
 }
 
-.startup-page-list .url {
+#startupPagesList .url {
   -webkit-box-flex: 1;
   color: #666;
 }
 
-.startup-page-list .url input {
+#startupPagesList .url input {
   box-sizing: border-box;
   margin: 0;
   width: 100%;
@@ -77,9 +76,4 @@
 #instantConfirmLearnMore {
   position: absolute;
   bottom: 18px;
-}
-
-#startupAddButton {
-  margin-left: 0;
-  margin-top: 10px;
 }

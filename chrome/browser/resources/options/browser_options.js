@@ -44,8 +44,8 @@ cr.define('options', function() {
       $('startupUseCurrentButton').onclick = function(event) {
         chrome.send('setStartupPagesToCurrentPages');
       };
-      $('startupPageManagerButton').onclick = function(event) {
-        OptionsPage.showPageByName('startupPages');
+      $('startupAddButton').onclick = function(event) {
+        OptionsPage.showOverlay('addStartupPageOverlay');
       };
       $('defaultSearchManageEnginesButton').onclick = function(event) {
         OptionsPage.showPageByName('searchEngines');
@@ -74,9 +74,14 @@ cr.define('options', function() {
 
       // Ensure that changes are committed when closing the page.
       window.addEventListener('unload', function() {
-          if (document.activeElement == homepageField)
-            homepageField.blur();
-          });
+        if (document.activeElement == homepageField)
+          homepageField.blur();
+      });
+
+      // Remove Windows-style accelerators from button labels.
+      // TODO(stuartmorgan): Remove this once the strings are updated.
+      $('startupAddButton').textContent =
+          localStrings.getStringWithoutAccelerator('startupAddButton');
 
       if (!cr.isChromeOS) {
         $('defaultBrowserUseAsDefaultButton').onclick = function(event) {
@@ -84,7 +89,7 @@ cr.define('options', function() {
         };
       }
 
-      var list = $('startupPagesShortList');
+      var list = $('startupPagesList');
       options.browser_options.StartupPageList.decorate(list);
       list.autoExpands = true;
       list.selectionModel = new ListSingleSelectionModel;
@@ -169,19 +174,7 @@ cr.define('options', function() {
      * @param {Array} pages List of startup pages.
      */
     updateStartupPages_: function(pages) {
-      var list = $('startupPagesShortList');
-      list.dataModel = new ArrayDataModel(pages);
-      if (pages.length > 0 && pages.length <= 10) {
-        list.classList.remove("hidden");
-        $('startupPageManagement').classList.add('settings-list');
-        $('startupShowPagesLabel').textContent =
-            localStrings.getStringWithoutAccelerator('startupShowPages');
-      } else {
-        list.classList.add("hidden");
-        $('startupPageManagement').classList.remove('settings-list');
-        $('startupShowPagesLabel').textContent =
-            localStrings.getStringWithoutAccelerator('startupShowManyPages');
-      }
+      $('startupPagesList').dataModel = new ArrayDataModel(pages);
     },
 
     /**
@@ -344,9 +337,9 @@ cr.define('options', function() {
      */
     updateCustomStartupPageControlStates_: function() {
       var disable = !this.shouldEnableCustomStartupPageControls_();
-      $('startupPagesShortList').disabled = disable;
+      $('startupPagesList').disabled = disable;
       $('startupUseCurrentButton').disabled = disable;
-      $('startupPageManagerButton').disabled = disable;
+      $('startupAddButton').disabled = disable;
     },
 
     /**
@@ -359,6 +352,16 @@ cr.define('options', function() {
         var selection = engineSelect.options[selectedIndex];
         chrome.send('setDefaultSearchEngine', [String(selection.value)]);
       }
+    },
+
+    /**
+     * Adds the given startup page at the current selection point.
+     * @private
+     */
+    addStartupPage_: function(url) {
+      var selectedIndex =
+          $('startupPagesList').selectionModel.selectedIndex;
+      chrome.send('addStartupPage', [url, String(selectedIndex)]);
     },
   };
 
@@ -377,7 +380,10 @@ cr.define('options', function() {
 
   BrowserOptions.updateStartupPages = function(pages) {
     BrowserOptions.getInstance().updateStartupPages_(pages);
-    StartupPageManager.getInstance().updateStartupPages_(pages);
+  };
+
+  BrowserOptions.addStartupPage = function(url) {
+    BrowserOptions.getInstance().addStartupPage_(url);
   };
 
   // Export
