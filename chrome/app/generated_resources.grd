@@ -8167,13 +8167,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Set up encrypted sync
       </message>
       <message name="IDS_SYNC_FIRST_PASSPHRASE_MESSAGE" desc="Message for setting up first passphrase.">
-        To sync passwords, <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> requires you to encrypt certain data using either your Google password or your own passphrase.
+        <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> can now sync your passwords; your data will be encrypted with your Google Account password or a passphrase of your choosing.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_OPT_GOOGLE" desc="Radio button label for using Google password.">
-        Use my Google password
+        Use my Google Account password
       </message>
       <message name="IDS_SYNC_PASSPHRASE_OPT_EXPLICIT" desc="Radio button label for using explicit passphrase.">
-        Choose my own passphrase
+        Choose my own sync passphrase
       </message>
       <message name="IDS_SYNC_PASSPHRASE_OPT_CANCEL" desc="Radio button label for not syncing encrypted types.">
         Do not sync my passwords
@@ -8322,7 +8322,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Use a sync passphrase to encrypt my data
       </message>
       <message name="IDS_SYNC_PASSPHRASE_WARNING" desc="Warning message about using a passphrase for sync.">
-        You are currently using a passphrase.  If you have forgotten your passphrase, you can reset sync to clear your synced data from Google's servers using the Google Dashboard.
+        You are currently using a passphrase.  If you have forgotten your passphrase, you can reset sync to clear your data from Google's servers using the Google Dashboard.
       </message>
       <message name="IDS_SYNC_CLEAR_DATA_LINK" desc="Link to the Google Dashboard.">
         Visit the Google Dashboard
@@ -8330,19 +8330,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Passphrase dialog strings -->
       <message name="IDS_SYNC_ENTER_PASSPHRASE_TITLE" desc="Title for the dialog where the user enters the passphrase.">
-        Enter your passphrase
+        Enter your sync passphrase
       </message>
       <message name="IDS_SYNC_ENTER_PASSPHRASE_BODY" desc="Instructions for the dialog where the user enters the passphrase.">
-        You already have data that is encrypted with a custom passphrase. Please enter it below.
+        You already have data that is encrypted with a passphrase. Please enter it below.
       </message>
       <message name="IDS_SYNC_ENTER_OTHER_PASSPHRASE_BODY" desc="Instructions for the dialog where the user needs to enter a different passphrase.">
-        The passphrase you entered can't be used because you already have data encrypted with a custom passphrase. Please enter your existing passphrase below.
+        The passphrase you entered can't be used because you already have data encrypted with a passphrase. Please enter your existing sync passphrase below.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_LABEL" desc="Label for the passphrase field.">
         Passphrase:
       </message>
       <message name="IDS_SYNC_CONFIRM_PASSPHRASE_LABEL" desc="Label for the confirm-passphrase field.">
-        Confirm Passphrase:
+        Confirm passphrase:
       </message>
       <message name="IDS_SYNC_EMPTY_PASSPHRASE_ERROR" desc="Error message when the passphrase is empty.">
         Empty passphrase is not allowed.
@@ -8354,17 +8354,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
         The passphrase you entered is incorrect.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_RECOVER" desc="Message about how to recover from a lost passphrase.">
-        If you've forgotten your passphrase, stop and reset Sync via the Google Dashboard.
+        If you've forgotten your passphrase, you'll need to stop sync via the Google Dashboard.
       </message>
 
       <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING_HEADER" desc="Header for the passphrase cancel warning.  Should be phrased as a yes-or-no question.">
-        Skip password sync?
+        Skip syncing encrypted data?
       </message>
       <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING" desc="Warning message when the passphrase entry is canceled.">
-        Without a passphrase, your passwords will not be synced on this computer.  You can enable password sync by changing your sync settings and entering your passphrase.
+        Without a passphrase, your passwords and other encrypted data will not be synced on this computer.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_CANCEL_YES" desc="String for 'yes' button on passphrase cancel warning dialog.">
-        Skip password sync
+        Skip
       </message>
       <message name="IDS_SYNC_PASSPHRASE_CANCEL_NO" desc="String for 'no' button on passphrase cancel warning dialog.">
         Enter passphrase
