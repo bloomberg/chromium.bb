@@ -6,12 +6,57 @@
 from grit.format.policy_templates.writers import template_writer
 
 
+NEWLINE = '\r\n'
+
+
 def GetWriter(config):
   '''Factory method for creating AdmWriter objects.
   See the constructor of TemplateWriter for description of
   arguments.
   '''
   return AdmWriter(['win'], config)
+
+
+class IndentedStringBuilder:
+  '''Utility class for building text with indented lines.'''
+
+  def __init__(self):
+    self.lines = []
+    self.indent = ''
+
+  def AddLine(self, string='', indent_diff=0):
+    '''Appends a string with indentation and a linebreak to |self.lines|.
+
+    Args:
+      string: The string to print.
+      indent_diff: the difference of indentation of the printed line,
+        compared to the next/previous printed line. Increment occurs
+        after printing the line, while decrement occurs before that.
+    '''
+    indent_diff *= 2
+    if indent_diff < 0:
+      self.indent = self.indent[(-indent_diff):]
+    if string != '':
+      self.lines.append(self.indent + string)
+    else:
+      self.lines.append('')
+    if indent_diff > 0:
+      self.indent += ''.ljust(indent_diff)
+
+  def AddLines(self, other):
+    '''Appends the content of another |IndentedStringBuilder| to |self.lines|.
+    Indentation of the added lines will be the sum of |self.indent| and
+    their original indentation.
+
+    Args:
+      other: The buffer from which lines are copied.
+    '''
+    for line in other.lines:
+      self.AddLine(line)
+
+  def ToString(self):
+    '''Returns |self.lines| as text string.'''
+    return NEWLINE.join(self.lines)
 
 
 class AdmWriter(template_writer.TemplateWriter):
@@ -24,38 +69,19 @@ class AdmWriter(template_writer.TemplateWriter):
     'int': 'NUMERIC',
     'string-enum': 'DROPDOWNLIST',
     'int-enum': 'DROPDOWNLIST',
-    'list': 'LISTBOX'}
-  NEWLINE = '\r\n'
+    'list': 'LISTBOX'
+  }
 
   def _AddGuiString(self, name, value):
     # Escape newlines in the value.
     value = value.replace('\n', '\\n')
     line = '%s="%s"' % (name, value)
-    self.str_list.append(line)
-
-  def _PrintLine(self, string='', indent_diff=0):
-    '''Prints a string with indents and a linebreak to the output.
-
-    Args:
-      string: The string to print.
-      indent_diff: the difference of indentation of the printed line,
-        compared to the next/previous printed line. Increment occurs
-        after printing the line, while decrement occurs before that.
-    '''
-    indent_diff *= 2
-    if indent_diff < 0:
-      self.indent = self.indent[(-indent_diff):]
-    if string != '':
-      self.policy_list.append(self.indent + string)
-    else:
-      self.policy_list.append('')
-    if indent_diff > 0:
-      self.indent += ''.ljust(indent_diff)
+    self.strings.AddLine(line)
 
   def _WriteSupported(self):
-    self._PrintLine('#if version >= 4', 1)
-    self._PrintLine('SUPPORTED !!SUPPORTED_WINXPSP2')
-    self._PrintLine('#endif', -1)
+    self.policies.AddLine('#if version >= 4', 1)
+    self.policies.AddLine('SUPPORTED !!SUPPORTED_WINXPSP2')
+    self.policies.AddLine('#endif', -1)
 
   def _WritePart(self, policy):
     '''Writes the PART ... END PART section of a policy.
@@ -67,47 +93,47 @@ class AdmWriter(template_writer.TemplateWriter):
     self._AddGuiString(policy_part_name, policy['label'])
 
     # Print the PART ... END PART section:
-    self._PrintLine()
+    self.policies.AddLine()
     adm_type = self.TYPE_TO_INPUT[policy['type']]
-    self._PrintLine('PART !!%s  %s' % (policy_part_name, adm_type), 1)
+    self.policies.AddLine('PART !!%s  %s' % (policy_part_name, adm_type), 1)
     if policy['type'] == 'list':
       # Note that the following line causes FullArmor ADMX Migrator to create
       # corrupt ADMX files. Please use admx_writer to get ADMX files.
-      self._PrintLine('KEYNAME "%s\\%s"' %
+      self.policies.AddLine('KEYNAME "%s\\%s"' %
                       (self.config['win_reg_key_name'], policy['name']))
-      self._PrintLine('VALUEPREFIX ""')
+      self.policies.AddLine('VALUEPREFIX ""')
     else:
-      self._PrintLine('VALUENAME "%s"' % policy['name'])
+      self.policies.AddLine('VALUENAME "%s"' % policy['name'])
     if policy['type'] in ('int-enum', 'string-enum'):
-      self._PrintLine('ITEMLIST', 1)
+      self.policies.AddLine('ITEMLIST', 1)
       for item in policy['items']:
         if policy['type'] == 'int-enum':
           value_text = 'NUMERIC ' + str(item['value'])
         else:
           value_text = '"' + item['value'] + '"'
-        self._PrintLine('NAME !!%s_DropDown VALUE %s' %
+        self.policies.AddLine('NAME !!%s_DropDown VALUE %s' %
             (item['name'], value_text))
         self._AddGuiString(item['name'] + '_DropDown', item['caption'])
-      self._PrintLine('END ITEMLIST', -1)
-    self._PrintLine('END PART', -1)
+      self.policies.AddLine('END ITEMLIST', -1)
+    self.policies.AddLine('END PART', -1)
 
   def WritePolicy(self, policy):
     self._AddGuiString(policy['name'] + '_Policy', policy['caption'])
-    self._PrintLine('POLICY !!%s_Policy' % policy['name'], 1)
+    self.policies.AddLine('POLICY !!%s_Policy' % policy['name'], 1)
     self._WriteSupported()
     policy_explain_name = policy['name'] + '_Explain'
     self._AddGuiString(policy_explain_name, policy['desc'])
-    self._PrintLine('EXPLAIN !!' + policy_explain_name)
+    self.policies.AddLine('EXPLAIN !!' + policy_explain_name)
 
     if policy['type'] == 'main':
-      self._PrintLine('VALUENAME "%s"' % policy['name'])
-      self._PrintLine('VALUEON NUMERIC 1')
-      self._PrintLine('VALUEOFF NUMERIC 0')
+      self.policies.AddLine('VALUENAME "%s"' % policy['name'])
+      self.policies.AddLine('VALUEON NUMERIC 1')
+      self.policies.AddLine('VALUEOFF NUMERIC 0')
     else:
       self._WritePart(policy)
 
-    self._PrintLine('END POLICY', -1)
-    self._PrintLine()
+    self.policies.AddLine('END POLICY', -1)
+    self.policies.AddLine()
 
   def BeginPolicyGroup(self, group):
     self._open_category = len(group['policies']) > 1
@@ -116,44 +142,78 @@ class AdmWriter(template_writer.TemplateWriter):
     if self._open_category:
       category_name = group['name'] + '_Category'
       self._AddGuiString(category_name, group['caption'])
-      self._PrintLine('CATEGORY !!' + category_name, 1)
+      self.policies.AddLine('CATEGORY !!' + category_name, 1)
 
   def EndPolicyGroup(self):
     if self._open_category:
-      self._PrintLine('END CATEGORY', -1)
+      self.policies.AddLine('END CATEGORY', -1)
+      self.policies.AddLine('')
+
+  def _CreateTemplateForClass(self, policy_class, policies):
+    '''Creates the whole ADM template except for the [Strings] section, and
+    returns it as an |IndentedStringBuilder|.
+
+    Args:
+      policy_class: USER or MACHINE
+      policies: ADM code for all the policies in an |IndentedStringBuilder|.
+    '''
+    lines = IndentedStringBuilder()
+    category_path = self.config['win_category_path']
+
+    lines.AddLine('CLASS ' + policy_class, 1)
+    if self.config['build'] == 'chrome':
+      lines.AddLine('CATEGORY !!' + category_path[0], 1)
+      lines.AddLine('CATEGORY !!' + category_path[1], 1)
+    elif self.config['build'] == 'chromium':
+      lines.AddLine('CATEGORY !!' + category_path[0], 1)
+    lines.AddLine('KEYNAME "%s"' % self.config['win_reg_key_name'])
+    lines.AddLine()
+
+    lines.AddLines(policies)
+
+    if self.config['build'] == 'chrome':
+      lines.AddLine('END CATEGORY', -1)
+      lines.AddLine('END CATEGORY', -1)
+      lines.AddLine('', -1)
+    elif self.config['build'] == 'chromium':
+      lines.AddLine('END CATEGORY', -1)
+      lines.AddLine('', -1)
+
+    return lines
 
   def BeginTemplate(self):
     category_path = self.config['win_category_path']
     self._AddGuiString(self.config['win_supported_os'],
                        self.messages['win_supported_winxpsp2']['text'])
-    self._PrintLine(
-        'CLASS ' + self.config['win_group_policy_class'].upper(),
-        1)
     if self.config['build'] == 'chrome':
       self._AddGuiString(category_path[0], 'Google')
       self._AddGuiString(category_path[1], self.config['app_name'])
-      self._PrintLine('CATEGORY !!' + category_path[0], 1)
-      self._PrintLine('CATEGORY !!' + category_path[1], 1)
     elif self.config['build'] == 'chromium':
       self._AddGuiString(category_path[0], self.config['app_name'])
-      self._PrintLine('CATEGORY !!' + category_path[0], 1)
-    self._PrintLine('KEYNAME "%s"' % self.config['win_reg_key_name'])
-    self._PrintLine()
+    # All the policies will be written into self.policies.
+    # The final template text will be assembled into self.lines by
+    # self.EndTemplate().
 
   def EndTemplate(self):
-    if self.config['build'] == 'chrome':
-      self._PrintLine('END CATEGORY', -1)
-      self._PrintLine('END CATEGORY', -1)
-      self._PrintLine('', -1)
-    elif self.config['build'] == 'chromium':
-      self._PrintLine('END CATEGORY', -1)
-      self._PrintLine('', -1)
+    # Copy policies into self.lines.
+    policy_class = self.config['win_group_policy_class'].upper()
+    if policy_class in ('BOTH', 'MACHINE'):
+      self.lines.AddLines(self._CreateTemplateForClass('MACHINE',
+                                                       self.policies))
+    if policy_class in ('BOTH', 'USER'):
+      self.lines.AddLines(self._CreateTemplateForClass('USER',
+                                                       self.policies))
+    # Copy user strings into self.lines.
+    self.lines.AddLine('[Strings]')
+    self.lines.AddLines(self.strings)
 
   def Init(self):
-    self.policy_list = []
-    self.str_list = ['[Strings]']
-    self.indent = ''
+    # String buffer for building the whole ADM file.
+    self.lines = IndentedStringBuilder()
+    # String buffer for building the strings section of the ADM file.
+    self.strings = IndentedStringBuilder()
+    # String buffer for building the policies of the ADM file.
+    self.policies = IndentedStringBuilder()
 
   def GetTemplateText(self):
-    lines = self.policy_list + self.str_list
-    return self.NEWLINE.join(lines)
+    return self.lines.ToString()

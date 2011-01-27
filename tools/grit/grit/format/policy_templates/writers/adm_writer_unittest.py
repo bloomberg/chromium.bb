@@ -24,6 +24,14 @@ from grit.tool import build
 class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
   '''Unit tests for AdmWriter.'''
 
+  def ConstructOutput(self, classes, body, strings):
+    result = []
+    for clazz in classes:
+      result.append('CLASS ' + clazz)
+      result.append(body)
+    result.append(strings)
+    return ''.join(result)
+
   def CompareOutputs(self, output, expected_output):
     '''Compares the output of the adm_writer with its expected output.
 
@@ -51,15 +59,16 @@ class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         }
       }''')
     output = self.GetOutput(grd, 'fr', {'_chromium': '1',}, 'adm', 'en')
-    expected_output = '''CLASS MACHINE
+    expected_output = self.ConstructOutput(
+        ['MACHINE', 'USER'], '''
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
   END CATEGORY
 
-[Strings]
+''', '''[Strings]
 SUPPORTED_WINXPSP2="At least "Windows 3.11"
-chromium="Chromium"'''
+chromium="Chromium"''')
     self.CompareOutputs(output, expected_output)
 
   def testMainPolicy(self):
@@ -83,7 +92,8 @@ chromium="Chromium"'''
         }
       }''')
     output = self.GetOutput(grd, 'fr', {'_google_chrome' : '1'}, 'adm', 'en')
-    expected_output = '''CLASS MACHINE
+    expected_output = self.ConstructOutput(
+        ['MACHINE', 'USER'], '''
   CATEGORY !!google
     CATEGORY !!googlechrome
       KEYNAME "Software\\Policies\\Google\\Chrome"
@@ -101,12 +111,12 @@ chromium="Chromium"'''
     END CATEGORY
   END CATEGORY
 
-[Strings]
+''', '''[Strings]
 SUPPORTED_WINXPSP2="At least Windows 3.12"
 google="Google"
 googlechrome="Google Chrome"
 MainPolicy_Policy="Caption of main."
-MainPolicy_Explain="Description of main."'''
+MainPolicy_Explain="Description of main."''')
     self.CompareOutputs(output, expected_output)
 
   def testStringPolicy(self):
@@ -131,7 +141,8 @@ With a newline.""",
         }
       }''')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
-    expected_output = '''CLASS MACHINE
+    expected_output = self.ConstructOutput(
+        ['MACHINE', 'USER'], '''
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
@@ -148,13 +159,13 @@ With a newline.""",
 
   END CATEGORY
 
-[Strings]
+''', '''[Strings]
 SUPPORTED_WINXPSP2="At least Windows 3.13"
 chromium="Chromium"
 StringPolicy_Policy="Caption of policy."
 StringPolicy_Explain="Description of group.\\nWith a newline."
 StringPolicy_Part="Caption of policy."
-'''
+''')
     self.CompareOutputs(output, expected_output)
 
   def testIntPolicy(self):
@@ -178,7 +189,8 @@ StringPolicy_Part="Caption of policy."
         }
       }''')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
-    expected_output = '''CLASS MACHINE
+    expected_output = self.ConstructOutput(
+        ['MACHINE', 'USER'], '''
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
@@ -195,13 +207,13 @@ StringPolicy_Part="Caption of policy."
 
   END CATEGORY
 
-[Strings]
+''', '''[Strings]
 SUPPORTED_WINXPSP2="At least Windows 3.13"
 chromium="Chromium"
 IntPolicy_Policy="Caption of policy."
 IntPolicy_Explain="Description of policy."
 IntPolicy_Part="Caption of policy."
-'''
+''')
     self.CompareOutputs(output, expected_output)
 
   def testIntEnumPolicy(self):
@@ -237,7 +249,8 @@ IntPolicy_Part="Caption of policy."
         }
       }''')
     output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'adm', 'en')
-    expected_output = '''CLASS MACHINE
+    expected_output = self.ConstructOutput(
+        ['MACHINE', 'USER'], '''
   CATEGORY !!google
     CATEGORY !!googlechrome
       KEYNAME "Software\\Policies\\Google\\Chrome"
@@ -260,7 +273,7 @@ IntPolicy_Part="Caption of policy."
     END CATEGORY
   END CATEGORY
 
-[Strings]
+''', '''[Strings]
 SUPPORTED_WINXPSP2="At least Windows 3.14"
 google="Google"
 googlechrome="Google Chrome"
@@ -269,7 +282,7 @@ EnumPolicy_Explain="Description of policy."
 EnumPolicy_Part="Caption of policy."
 ProxyServerDisabled_DropDown="Option1"
 ProxyServerAutoDetect_DropDown="Option2"
-'''
+''')
     self.CompareOutputs(output, expected_output)
 
   def testStringEnumPolicy(self):
@@ -299,7 +312,8 @@ ProxyServerAutoDetect_DropDown="Option2"
         }
       }''')
     output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'adm', 'en')
-    expected_output = '''CLASS MACHINE
+    expected_output = self.ConstructOutput(
+        ['MACHINE', 'USER'], '''
   CATEGORY !!google
     CATEGORY !!googlechrome
       KEYNAME "Software\\Policies\\Google\\Chrome"
@@ -322,7 +336,7 @@ ProxyServerAutoDetect_DropDown="Option2"
     END CATEGORY
   END CATEGORY
 
-[Strings]
+''', '''[Strings]
 SUPPORTED_WINXPSP2="At least Windows 3.14"
 google="Google"
 googlechrome="Google Chrome"
@@ -331,7 +345,7 @@ EnumPolicy_Explain="Description of policy."
 EnumPolicy_Part="Caption of policy."
 ProxyServerDisabled_DropDown="Option1"
 ProxyServerAutoDetect_DropDown="Option2"
-'''
+''')
     self.CompareOutputs(output, expected_output)
 
   def testListPolicy(self):
@@ -357,7 +371,8 @@ With a newline.""",
         },
       }''')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
-    expected_output = '''CLASS MACHINE
+    expected_output = self.ConstructOutput(
+        ['MACHINE', 'USER'], '''
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
@@ -375,13 +390,13 @@ With a newline.""",
 
   END CATEGORY
 
-[Strings]
+''', '''[Strings]
 SUPPORTED_WINXPSP2="At least Windows 3.15"
 chromium="Chromium"
 ListPolicy_Policy="Caption of list policy."
 ListPolicy_Explain="Description of list policy.\\nWith a newline."
 ListPolicy_Part="Label of list policy."
-'''
+''')
     self.CompareOutputs(output, expected_output)
 
   def testNonSupportedPolicy(self):
@@ -412,16 +427,17 @@ ListPolicy_Part="Label of list policy."
         }
       }''')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
-    expected_output = '''CLASS MACHINE
+    expected_output = self.ConstructOutput(
+        ['MACHINE', 'USER'], '''
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
   END CATEGORY
 
-[Strings]
+''', '''[Strings]
 SUPPORTED_WINXPSP2="At least Windows 3.16"
 chromium="Chromium"
-'''
+''')
     self.CompareOutputs(output, expected_output)
 
   def testPolicyGroup(self):
@@ -459,7 +475,8 @@ With a newline."""
         }
       }''')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
-    expected_output = '''CLASS MACHINE
+    expected_output = self.ConstructOutput(
+        ['MACHINE', 'USER'], '''
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
@@ -488,9 +505,10 @@ With a newline."""
       END POLICY
 
     END CATEGORY
+
   END CATEGORY
 
-[Strings]
+''', '''[Strings]
 SUPPORTED_WINXPSP2="At least Windows 3.16"
 chromium="Chromium"
 Group1_Category="Caption of group."
@@ -500,7 +518,7 @@ Policy1_Part="Caption of policy1."
 Policy2_Policy="Caption of policy2."
 Policy2_Explain="Description of policy2.\\nWith a newline."
 Policy2_Part="Caption of policy2."
-'''
+''')
     self.CompareOutputs(output, expected_output)
 
 if __name__ == '__main__':
