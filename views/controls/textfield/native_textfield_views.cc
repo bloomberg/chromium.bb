@@ -59,7 +59,9 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
       text_offset_(0),
       insert_(true),
       is_cursor_visible_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(cursor_timer_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(cursor_timer_(this)),
+      last_mouse_press_time_(base::Time::FromInternalValue(0)),
+      click_state_(NONE) {
   set_border(text_border_);
 
   // Multiline is not supported.
@@ -77,14 +79,8 @@ NativeTextfieldViews::~NativeTextfieldViews() {
 // NativeTextfieldViews, View overrides:
 
 bool NativeTextfieldViews::OnMousePressed(const views::MouseEvent& e) {
-  textfield_->RequestFocus();
-  if (e.IsLeftMouseButton()) {
-    size_t pos = FindCursorPosition(e.location());
-    if (model_->MoveCursorTo(pos, false)) {
-      UpdateCursorBoundsAndTextOffset();
-      SchedulePaint();
-    }
-  }
+  if (HandleMousePressed(e))
+    SchedulePaint();
   return true;
 }
 
@@ -782,6 +778,47 @@ size_t NativeTextfieldViews::FindCursorPosition(const gfx::Point& point) const {
     }
   }
   return left_pos;
+}
+
+bool NativeTextfieldViews::HandleMousePressed(const views::MouseEvent& e) {
+  textfield_->RequestFocus();
+  base::TimeDelta time_delta = e.GetTimeStamp() - last_mouse_press_time_;
+  gfx::Point location_delta = e.location().Subtract(last_mouse_press_location_);
+  last_mouse_press_time_ = e.GetTimeStamp();
+  last_mouse_press_location_ = e.location();
+  if (e.IsLeftMouseButton()) {
+    if (!ExceededDragThreshold(location_delta.x(), location_delta.y())
+      && time_delta.InMilliseconds() <= GetDoubleClickTimeMS()) {
+      // Multiple mouse press detected. Check for double or triple.
+      switch (click_state_) {
+        case TRACKING_DOUBLE_CLICK:
+          click_state_ = TRACKING_TRIPLE_CLICK;
+          model_->SelectWord();
+          return true;
+        case TRACKING_TRIPLE_CLICK:
+          click_state_ = NONE;
+          model_->SelectAll();
+          return true;
+        case NONE:
+          click_state_ = TRACKING_DOUBLE_CLICK;
+          SetCursorForMouseClick(e);
+          return true;
+      }
+    } else {
+      // Single mouse press.
+      click_state_ = TRACKING_DOUBLE_CLICK;
+      SetCursorForMouseClick(e);
+      return true;
+    }
+  }
+  return false;
+}
+
+void NativeTextfieldViews::SetCursorForMouseClick(const views::MouseEvent& e) {
+  size_t pos = FindCursorPosition(e.location());
+  if (model_->MoveCursorTo(pos, false)) {
+    UpdateCursorBoundsAndTextOffset();
+  }
 }
 
 void NativeTextfieldViews::PropagateTextChange() {

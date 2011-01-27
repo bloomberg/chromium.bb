@@ -14,6 +14,10 @@
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/view.h"
 
+namespace base {
+class Time;
+}
+
 namespace gfx {
 class Canvas;
 }  // namespace
@@ -108,6 +112,13 @@ class NativeTextfieldViews : public views::View,
   // Enable/Disable TextfieldViews implementation for Textfield.
   static void SetEnableTextfieldViews(bool enabled);
 
+  enum ClickState {
+    TRACKING_DOUBLE_CLICK,
+    TRACKING_TRIPLE_CLICK,
+    NONE,
+  };
+
+
  private:
   friend class NativeTextfieldViewsTest;
 
@@ -162,6 +173,13 @@ class NativeTextfieldViews : public views::View,
   // Find a cusor position for given |point| in this views coordinates.
   size_t FindCursorPosition(const gfx::Point& point) const;
 
+  // Mouse event handler. Returns true if textfield needs to be repainted.
+  bool HandleMousePressed(const views::MouseEvent& e);
+
+  // Helper function that sets the cursor position at the location of mouse
+  // event.
+  void SetCursorForMouseClick(const views::MouseEvent& e);
+
   // Utility function to inform the parent textfield (and its controller if any)
   // that the text in the textfield has changed.
   void PropagateTextChange();
@@ -192,6 +210,15 @@ class NativeTextfieldViews : public views::View,
 
   // A runnable method factory for callback to update the cursor.
   ScopedRunnableMethodFactory<NativeTextfieldViews> cursor_timer_;
+
+  // Time of last LEFT mouse press. Used for tracking double/triple click.
+  base::Time last_mouse_press_time_;
+
+  // Position of last LEFT mouse press. Used for tracking double/triple click.
+  gfx::Point last_mouse_press_location_;
+
+  // State variable to track double and triple clicks.
+  ClickState click_state_;
 
   // Context menu and its content list for the textfield.
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;

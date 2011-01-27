@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/time.h"
 #include "gfx/point.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
@@ -80,8 +81,8 @@ class Event {
     return type_;
   }
 
-  // Return the event time stamp in ticks
-  int GetTimeStamp() const {
+  // Return the event time stamp.
+  const base::Time& GetTimeStamp() const {
     return time_stamp_;
   }
 
@@ -157,7 +158,7 @@ class Event {
   void operator=(const Event&);
 
   EventType type_;
-  int time_stamp_;
+  base::Time time_stamp_;
   int flags_;
 };
 

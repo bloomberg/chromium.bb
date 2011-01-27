@@ -10,11 +10,7 @@ namespace views {
 
 Event::Event(EventType type, int flags)
     : type_(type),
-#if defined(OS_WIN)
-      time_stamp_(GetTickCount()),
-#else
-      time_stamp_(0),
-#endif
+      time_stamp_(base::Time::NowFromSystemTime()),
       flags_(flags) {
 }
 

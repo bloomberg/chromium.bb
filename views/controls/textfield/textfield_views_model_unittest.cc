@@ -361,6 +361,49 @@ TEST_F(TextfieldViewsModelTest, Clipboard) {
   EXPECT_EQ(29U, model.cursor_pos());
 }
 
+void SelectWordTestVerifier(TextfieldViewsModel &model,
+    const std::string &expected_selected_string, size_t expected_cursor_pos) {
+  EXPECT_STR_EQ(expected_selected_string, model.GetSelectedText());
+  EXPECT_EQ(expected_cursor_pos, model.cursor_pos());
+}
+
+TEST_F(TextfieldViewsModelTest, SelectWordTest) {
+  TextfieldViewsModel model;
+  model.Append(ASCIIToUTF16("  HELLO  !!  WO     RLD "));
+
+  // Test when cursor is at the beginning.
+  model.MoveCursorToStart(false);
+  model.SelectWord();
+  SelectWordTestVerifier(model, "  ", 2U);
+
+  // Test when cursor is at the beginning of a word.
+  model.MoveCursorTo(2U, false);
+  model.SelectWord();
+  SelectWordTestVerifier(model, "HELLO", 7U);
+
+  // Test when cursor is at the end of a word.
+  model.MoveCursorTo(15U, false);
+  model.SelectWord();
+  SelectWordTestVerifier(model, "WO", 15U);
+
+  // Test when cursor is somewhere in a non-alph-numeric fragment.
+  for (size_t cursor_pos = 8; cursor_pos < 13U; cursor_pos++) {
+    model.MoveCursorTo(cursor_pos, false);
+    model.SelectWord();
+    SelectWordTestVerifier(model, "  !!  ", 13U);
+  }
+
+  // Test when cursor is somewhere in a whitespace fragment.
+  model.MoveCursorTo(17U, false);
+  model.SelectWord();
+  SelectWordTestVerifier(model, "     ", 20U);
+
+  // Test when cursor is at the end.
+  model.MoveCursorToEnd(false);
+  model.SelectWord();
+  SelectWordTestVerifier(model, " ", 24U);
+}
+
 TEST_F(TextfieldViewsModelTest, RangeTest) {
   TextfieldViewsModel model;
   model.Append(ASCIIToUTF16("HELLO WORLD"));

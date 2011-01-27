@@ -235,6 +235,41 @@ void TextfieldViewsModel::SelectAll() {
   selection_begin_ = 0;
 }
 
+void TextfieldViewsModel::SelectWord() {
+  // First we setup selection_begin_ and cursor_pos_. There are so many cases
+  // because we try to emulate what select-word looks like in a gtk textfield.
+  // See associated testcase for different cases.
+  if (cursor_pos_ > 0 && cursor_pos_ < text_.length()) {
+    if (isalnum(text_[cursor_pos_])) {
+      selection_begin_ = cursor_pos_;
+      cursor_pos_++;
+    } else
+      selection_begin_ = cursor_pos_ - 1;
+  } else if (cursor_pos_ == 0) {
+    selection_begin_ = cursor_pos_;
+    if (text_.length() > 0)
+      cursor_pos_++;
+  } else {
+    selection_begin_ = cursor_pos_ - 1;
+  }
+
+  // Now we move selection_begin_ to beginning of selection. Selection boundary
+  // is defined as the position where we have alpha-num character on one side
+  // and non-alpha-num char on the other side.
+  for (; selection_begin_ > 0; selection_begin_--) {
+    if (IsPositionAtWordSelectionBoundary(selection_begin_))
+      break;
+  }
+
+  // Now we move cursor_pos_ to end of selection. Selection boundary
+  // is defined as the position where we have alpha-num character on one side
+  // and non-alpha-num char on the other side.
+  for (; cursor_pos_ < text_.length(); cursor_pos_++) {
+    if (IsPositionAtWordSelectionBoundary(cursor_pos_))
+      break;
+  }
+}
+
 void TextfieldViewsModel::ClearSelection() {
   selection_begin_ = cursor_pos_;
 }
@@ -290,6 +325,11 @@ string16 TextfieldViewsModel::GetVisibleText(size_t begin, size_t end) const {
     return string16(end - begin, '*');
   }
   return text_.substr(begin, end - begin);
+}
+
+bool TextfieldViewsModel::IsPositionAtWordSelectionBoundary(size_t pos) {
+  return (isalnum(text_[pos - 1]) && !isalnum(text_[pos])) ||
+      (!isalnum(text_[pos - 1]) && isalnum(text_[pos]));
 }
 
 size_t TextfieldViewsModel::GetSafePosition(size_t position) const {

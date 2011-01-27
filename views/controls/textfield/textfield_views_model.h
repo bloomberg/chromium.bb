@@ -123,6 +123,9 @@ class TextfieldViewsModel {
   // Selects all text.
   void SelectAll();
 
+  // Selects the word at which the cursor is currently positioned.
+  void SelectWord();
+
   // Clears selection.
   void ClearSelection();
 
@@ -154,6 +157,9 @@ class TextfieldViewsModel {
 
   // Returns the visible text given |start| and |end|.
   string16 GetVisibleText(size_t start, size_t end) const;
+
+  // Utility for SelectWord(). Checks whether position pos is at word boundary.
+  bool IsPositionAtWordSelectionBoundary(size_t pos);
 
   // Returns the normalized cursor position that does not exceed the
   // text length.
