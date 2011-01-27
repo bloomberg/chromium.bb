@@ -16,7 +16,7 @@
 namespace webkit {
 namespace npapi {
 
-const char* PluginGroup::kAdobeReaderGroupName = "Adobe Reader";
+const char* PluginGroup::kAdobeReaderGroupName = "Adobe Acrobat";
 const char* PluginGroup::kAdobeReaderUpdateURL = "http://get.adobe.com/reader/";
 
 /*static*/
