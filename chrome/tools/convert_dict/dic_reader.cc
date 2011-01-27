@@ -132,8 +132,13 @@ DicReader::DicReader(const FilePath& path) {
   file_ = file_util::OpenFile(path, "r");
 
   FilePath additional_path =
-      path.InsertBeforeExtension(FILE_PATH_LITERAL("_delta"));
+      path.ReplaceExtension(FILE_PATH_LITERAL("dic_delta"));
   additional_words_file_ = file_util::OpenFile(additional_path, "r");
+
+  if (additional_words_file_)
+    printf("Reading %" PRFilePath " ...\n", additional_path.value().c_str());
+  else
+    printf("%" PRFilePath " not found.\n", additional_path.value().c_str());
 }
 
 DicReader::~DicReader() {
