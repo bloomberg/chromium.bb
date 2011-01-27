@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "base/task.h"
 #include "ui/base/models/menu_model.h"
 
 namespace ui {
@@ -138,9 +139,14 @@ class SimpleMenuModel : public MenuModel {
   void InsertItemAtIndex(const Item& item, int index);
   void ValidateItem(const Item& item);
 
+  // Notify the delegate that the menu is closed.
+  void OnMenuClosed();
+
   std::vector<Item> items_;
 
   Delegate* delegate_;
+
+  ScopedRunnableMethodFactory<SimpleMenuModel> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleMenuModel);
 };

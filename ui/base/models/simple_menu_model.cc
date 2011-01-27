@@ -4,6 +4,7 @@
 
 #include "ui/base/models/simple_menu_model.h"
 
+#include "base/message_loop.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -51,7 +52,9 @@ void SimpleMenuModel::Delegate::MenuClosed() {
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMenuModel, public:
 
-SimpleMenuModel::SimpleMenuModel(Delegate* delegate) : delegate_(delegate) {
+SimpleMenuModel::SimpleMenuModel(Delegate* delegate)
+    : delegate_(delegate),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
 SimpleMenuModel::~SimpleMenuModel() {
@@ -288,6 +291,15 @@ MenuModel* SimpleMenuModel::GetSubmenuModelAt(int index) const {
 }
 
 void SimpleMenuModel::MenuClosed() {
+  // Due to how menus work on the different platforms, ActivatedAt will be
+  // called after this.  It's more convenient for the delegate to be called
+  // afterwards though, so post a task.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(&SimpleMenuModel::OnMenuClosed));
+}
+
+void SimpleMenuModel::OnMenuClosed() {
   if (delegate_)
     delegate_->MenuClosed();
 }

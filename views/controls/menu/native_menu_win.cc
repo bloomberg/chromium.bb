@@ -5,9 +5,7 @@
 #include "views/controls/menu/native_menu_win.h"
 
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "base/stl_util-inl.h"
-#include "base/task.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -54,9 +52,7 @@ struct NativeMenuWin::ItemData {
 // structure we have constructed in NativeMenuWin.
 class NativeMenuWin::MenuHostWindow {
  public:
-  MenuHostWindow(NativeMenuWin* parent)
-      : parent_(parent),
-        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  MenuHostWindow(NativeMenuWin* parent) : parent_(parent) {
     RegisterClass();
     hwnd_ = CreateWindowEx(l10n_util::GetExtendedStyles(), kWindowClassName,
                            L"", 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
@@ -247,10 +243,6 @@ class NativeMenuWin::MenuHostWindow {
     SetTextColor(dc, prev_text_color);
   }
 
-  void OnMenuClosed() {
-    parent_->model_->MenuClosed();
-  }
-
   bool ProcessWindowMessage(HWND window,
                             UINT message,
                             WPARAM w_param,
@@ -274,12 +266,7 @@ class NativeMenuWin::MenuHostWindow {
         *l_result = 0;
         return true;
       case WM_EXITMENULOOP:
-        // WM_MENUCOMMAND comes after this message, but still in the same
-        // callstack.  So use PostTask to guarantee that we'll tell the model
-        // that the menus is closed after any other notifications.
-        MessageLoop::current()->PostTask(
-            FROM_HERE,
-            method_factory_.NewRunnableMethod(&MenuHostWindow::OnMenuClosed));
+        parent_->model_->MenuClosed();
         return true;
       // TODO(beng): bring over owner draw from old menu system.
     }
@@ -303,7 +290,6 @@ class NativeMenuWin::MenuHostWindow {
 
   HWND hwnd_;
   NativeMenuWin* parent_;
-  ScopedRunnableMethodFactory<MenuHostWindow> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuHostWindow);
 };
