@@ -1316,3 +1316,28 @@
    fun:_ZN12_GLOBAL__N_127CookiesWindowControllerTest5SetUpEv
    fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
+{
+   bug_71111
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFDictionaryInit
+   fun:utDeactivateAllSelectedIMInDoc
+   fun:MyDeactivateTSMDocument
+   fun:_ReactivateTSMDocumentAfterMenuTracking
+   fun:_Z20TearDownMenuTrackingR14MenuSelectData
+   fun:_Z19PopUpMenuSelectCoreP8MenuData5PointdS1_tjPK4RecttmS4_S4_PK10__CFStringPP13OpaqueMenuRefPt
+   fun:_HandlePopUpMenuSelection7
+   fun:_NSPopUpCarbonMenu3
+   fun:-[NSCarbonMenuImpl popUpMenu:atLocation:width:forView:withSelectedItem:withFont:withFlags:withOptions:]
+   fun:-[NSPopUpButtonCell trackMouse:inRect:ofView:untilMouseUp:]
+   fun:-[NSPopUpButtonCell performClickWithFrame:inView:]
+   fun:-[MenuButton(Private) showMenu:]
+   fun:-[MenuButton(Private) clickShowMenu:]
+   fun:-[NSApplication sendAction:to:from:]
+   fun:-[NSControl sendAction:to:]
+   fun:-[NSCell _sendActionFrom:]
+   fun:-[NSButtonCell performClick:]
+   fun:_ZN12_GLOBAL__N_131MenuButtonTest_OpenOnClick_Test8TestBodyEv
+   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
