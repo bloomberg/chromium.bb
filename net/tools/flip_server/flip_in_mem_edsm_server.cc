@@ -2075,6 +2075,11 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
          headers.header_lines_begin();
          hi != headers.header_lines_end();
          ++hi) {
+      // It is illegal to send SPDY headers with empty value or header
+      // names.
+      if (!hi->first.length() || !hi->second.length())
+        continue;
+
       SpdyHeaderBlock::iterator fhi = dest.find(hi->first.as_string());
       if (fhi == dest.end()) {
         dest[hi->first.as_string()] = hi->second.as_string();
