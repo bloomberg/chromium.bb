@@ -1,5 +1,5 @@
 /*
- * Copyright 2010, Google Inc.
+ * Copyright 2011, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,6 +82,31 @@ void Pattern::SetAffineTransform(double xx,
   cairo_matrix_t matrix;
   cairo_matrix_init(&matrix, xx, yx, xy, yy, x0, y0);
   cairo_pattern_set_matrix(pattern_, &matrix);
+}
+
+void Pattern::set_filter(Filter filter) {
+  cairo_filter_t cairo_filter;
+  switch (filter) {
+    case FAST:
+      cairo_filter = CAIRO_FILTER_FAST;
+      break;
+    case GOOD:
+      cairo_filter = CAIRO_FILTER_GOOD;
+      break;
+    case BEST:
+      cairo_filter = CAIRO_FILTER_BEST;
+      break;
+    case NEAREST:
+      cairo_filter = CAIRO_FILTER_NEAREST;
+      break;
+    case BILINEAR:
+      cairo_filter = CAIRO_FILTER_BILINEAR;
+      break;
+    default:
+      DCHECK(false);
+      return;
+  }
+  cairo_pattern_set_filter(pattern_, cairo_filter);
 }
 
 Pattern::Pattern(ServiceLocator* service_locator, cairo_pattern_t* pattern)

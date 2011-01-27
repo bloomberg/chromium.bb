@@ -1,5 +1,5 @@
 /*
- * Copyright 2010, Google Inc.
+ * Copyright 2011, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,14 @@ class Pattern : public ObjectBase {
  public:
   typedef SmartPointer<Pattern> Ref;
 
+  enum Filter {
+    FAST,
+    GOOD,
+    BEST,
+    NEAREST,
+    BILINEAR
+  };
+
   // Create a pattern that paints the content of a texture.
   static Pattern* CreateTexturePattern(Pack* pack, Texture* texture);
 
@@ -78,6 +86,8 @@ class Pattern : public ObjectBase {
                           double yy,
                           double x0,
                           double y0);
+
+  void set_filter(Filter filter);
 
  private:
   Pattern(ServiceLocator* service_locator, cairo_pattern_t* pattern);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010, Google Inc.
+ * Copyright 2011, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,25 @@ namespace o2d {
   A Pattern is a container for pixel content for painting to a Layer.
 %]
 [nocpp, include="core/cross/cairo/pattern.h"] class Pattern : ObjectBase {
+  %[
+    Available resizing filters.
+
+    \var Filter,
+    \li FAST,  A high-performance filter, with quality similar to NEAREST
+    \li GOOD,  A reasonable-performance filter, with quality similar to BILINEAR
+    \li BEST,  The highest-quality available, performance may not be suitable
+               for interactive use
+    \li NEAREST,  Nearest-neighbor filtering
+    \li BILINEAR,  Linear interpolation in two dimensions
+  %]
+  enum Filter {
+    FAST,
+    GOOD,
+    BEST,
+    NEAREST,
+    BILINEAR
+  };
+
   %[
     Create a pattern that paints the content of a texture.
 
@@ -93,6 +112,11 @@ namespace o2d {
                           double yy,
                           double x0,
                           double y0);
+
+  %[
+    The filter to use when resizing this Pattern.
+  %]
+  [setter] Filter filter;
 };  // Pattern
 
 }  // namespace o2d
