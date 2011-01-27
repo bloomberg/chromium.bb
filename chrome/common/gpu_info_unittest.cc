@@ -8,7 +8,7 @@
 // Test that an empty GPUInfo has valid members
 TEST(GPUInfoBasicTest, EmptyGPUInfo) {
   GPUInfo gpu_info;
-  EXPECT_EQ(gpu_info.progress(), GPUInfo::kUninitialized);
+  EXPECT_EQ(gpu_info.level(), GPUInfo::kUninitialized);
   EXPECT_EQ(gpu_info.initialization_time().ToInternalValue(), 0);
   EXPECT_EQ(gpu_info.vendor_id(), 0u);
   EXPECT_EQ(gpu_info.device_id(), 0u);

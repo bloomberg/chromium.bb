@@ -50,7 +50,7 @@ class GpuThread : public ChildThread {
   void OnEstablishChannel(int renderer_id);
   void OnCloseChannel(const IPC::ChannelHandle& channel_handle);
   void OnSynchronize();
-  void OnCollectGraphicsInfo();
+  void OnCollectGraphicsInfo(GPUInfo::Level level);
 #if defined(OS_MACOSX)
   void OnAcceleratedSurfaceBuffersSwappedACK(
       int renderer_id, int32 route_id, uint64 swap_buffers_count);

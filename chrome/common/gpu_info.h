@@ -22,15 +22,16 @@ class GPUInfo {
   GPUInfo();
   ~GPUInfo() {}
 
-  enum Progress {
+  enum Level {
     kUninitialized,
     kPartial,
+    kCompleting,
     kComplete,
   };
 
   // Returns whether this GPUInfo has been partially or fully initialized with
   // information.
-  Progress progress() const;
+  Level level() const;
 
   // The amount of time taken to get from the process starting to the message
   // loop being pumped.
@@ -87,7 +88,7 @@ class GPUInfo {
   // semantics are available.
   bool can_lose_context() const;
 
-  void SetProgress(Progress progress);
+  void SetLevel(Level level);
 
   void SetInitializationTime(const base::TimeDelta& initialization_time);
 
@@ -119,7 +120,7 @@ class GPUInfo {
 #endif
 
  private:
-  Progress progress_;
+  Level level_;
   base::TimeDelta initialization_time_;
   uint32 vendor_id_;
   uint32 device_id_;

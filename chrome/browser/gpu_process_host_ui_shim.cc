@@ -82,12 +82,13 @@ bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
   return router_.RouteMessage(message);
 }
 
-void GpuProcessHostUIShim::CollectGraphicsInfoAsynchronously() {
+void GpuProcessHostUIShim::CollectGraphicsInfoAsynchronously(
+    GPUInfo::Level level) {
   DCHECK(CalledOnValidThread());
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      new SendOnIOThreadTask(new GpuMsg_CollectGraphicsInfo()));
+      new SendOnIOThreadTask(new GpuMsg_CollectGraphicsInfo(level)));
 }
 
 void GpuProcessHostUIShim::SendAboutGpuCrash() {

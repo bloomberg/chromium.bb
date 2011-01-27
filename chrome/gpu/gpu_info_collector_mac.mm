@@ -48,7 +48,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
 
   gpu_info->SetCanLoseContext(
       gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
-  gpu_info->SetProgress(GPUInfo::kComplete);
+  gpu_info->SetLevel(GPUInfo::kComplete);
   return CollectGraphicsInfoGL(gpu_info);
 }
 

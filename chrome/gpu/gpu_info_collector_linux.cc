@@ -133,7 +133,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   // desktop GL and GL_ARB_robustness extension is available.
   gpu_info->SetCanLoseContext(
       gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
-  gpu_info->SetProgress(GPUInfo::kComplete);
+  gpu_info->SetLevel(GPUInfo::kComplete);
   return CollectGraphicsInfoGL(gpu_info);
 }
 

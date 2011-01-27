@@ -95,18 +95,6 @@ void GpuThread::OnInitialize() {
   gpu_info_collector::CollectGraphicsInfo(&gpu_info_);
   child_process_logging::SetGpuInfo(gpu_info_);
 
-#if defined(OS_WIN)
-  // Asynchronously collect the DirectX diagnostics because this can take a
-  // couple of seconds.
-  if (!base::WorkerPool::PostTask(
-      FROM_HERE,
-      NewRunnableFunction(&GpuThread::CollectDxDiagnostics, this),
-      true)) {
-    // Flag GPU info as complete if the DirectX diagnostics cannot be collected.
-    gpu_info_.SetProgress(GPUInfo::kComplete);
-  }
-#endif
-
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
   gpu_info_.SetInitializationTime(base::Time::Now() - process_start_time_);
@@ -208,7 +196,26 @@ void GpuThread::OnSynchronize() {
   Send(new GpuHostMsg_SynchronizeReply());
 }
 
-void GpuThread::OnCollectGraphicsInfo() {
+void GpuThread::OnCollectGraphicsInfo(GPUInfo::Level level) {
+#if defined(OS_WIN)
+  if (level == GPUInfo::kComplete && gpu_info_.level() <= GPUInfo::kPartial) {
+    // Prevent concurrent collection of DirectX diagnostics.
+    gpu_info_.SetLevel(GPUInfo::kCompleting);
+
+    // Asynchronously collect the DirectX diagnostics because this can take a
+    // couple of seconds.
+    if (!base::WorkerPool::PostTask(
+        FROM_HERE,
+        NewRunnableFunction(&GpuThread::CollectDxDiagnostics, this),
+        true)) {
+
+      // Flag GPU info as complete if the DirectX diagnostics cannot be
+      // collected.
+      gpu_info_.SetLevel(GPUInfo::kComplete);
+    }
+  }
+#endif
+
   Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
 }
 
@@ -262,7 +269,7 @@ void GpuThread::CollectDxDiagnostics(GpuThread* thread) {
 // Runs on the GPU thread.
 void GpuThread::SetDxDiagnostics(GpuThread* thread, const DxDiagNode& node) {
   thread->gpu_info_.SetDxDiagnostics(node);
-  thread->gpu_info_.SetProgress(GPUInfo::kComplete);
+  thread->gpu_info_.SetLevel(GPUInfo::kComplete);
 }
 
 #endif

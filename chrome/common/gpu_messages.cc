@@ -128,7 +128,7 @@ void ParamTraits<GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params> ::Log(
 #endif  // if defined(OS_MACOSX)
 
 void ParamTraits<GPUInfo> ::Write(Message* m, const param_type& p) {
-  WriteParam(m, static_cast<int32>(p.progress()));
+  WriteParam(m, static_cast<int32>(p.level()));
   WriteParam(m, p.initialization_time());
   WriteParam(m, p.vendor_id());
   WriteParam(m, p.device_id());
@@ -149,7 +149,7 @@ void ParamTraits<GPUInfo> ::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
-  int32 progress;
+  int32 level;
   base::TimeDelta initialization_time;
   uint32 vendor_id;
   uint32 device_id;
@@ -163,7 +163,7 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
   std::string gl_renderer;
   std::string gl_extensions;
   bool can_lose_context;
-  bool ret = ReadParam(m, iter, &progress);
+  bool ret = ReadParam(m, iter, &level);
   ret = ret && ReadParam(m, iter, &initialization_time);
   ret = ret && ReadParam(m, iter, &vendor_id);
   ret = ret && ReadParam(m, iter, &device_id);
@@ -177,7 +177,7 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
   ret = ret && ReadParam(m, iter, &gl_renderer);
   ret = ret && ReadParam(m, iter, &gl_extensions);
   ret = ret && ReadParam(m, iter, &can_lose_context);
-  p->SetProgress(static_cast<GPUInfo::Progress>(progress));
+  p->SetLevel(static_cast<GPUInfo::Level>(level));
   if (!ret)
     return false;
 
@@ -205,7 +205,7 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
 
 void ParamTraits<GPUInfo> ::Log(const param_type& p, std::string* l) {
   l->append(base::StringPrintf("<GPUInfo> %d %d %x %x %s %s %x %x %x %d",
-                               p.progress(),
+                               p.level(),
                                static_cast<int32>(
                                    p.initialization_time().InMilliseconds()),
                                p.vendor_id(),
@@ -216,6 +216,24 @@ void ParamTraits<GPUInfo> ::Log(const param_type& p, std::string* l) {
                                p.vertex_shader_version(),
                                p.gl_version(),
                                p.can_lose_context()));
+}
+
+
+void ParamTraits<GPUInfo::Level> ::Write(Message* m, const param_type& p) {
+  WriteParam(m, static_cast<int32>(p));
+}
+
+bool ParamTraits<GPUInfo::Level> ::Read(const Message* m,
+                                    void** iter,
+                                    param_type* p) {
+  int32 level;
+  bool ret = ReadParam(m, iter, &level);
+  *p = static_cast<GPUInfo::Level>(level);
+  return ret;
+}
+
+void ParamTraits<GPUInfo::Level> ::Log(const param_type& p, std::string* l) {
+  LogParam(static_cast<int32>(p), l);
 }
 
 void ParamTraits<DxDiagNode> ::Write(Message* m, const param_type& p) {
