@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
 // http://code.google.com/p/chromium/issues/detail?id=70829
 // Only mac is okay.
 #if !defined(OS_MACOSX)
-#define MAYBE_BrowserActionPopup FLAKY_BrowserActionPopup
+#define MAYBE_BrowserActionPopup DISABLED_BrowserActionPopup
 #else
 #define MAYBE_BrowserActionPopup BrowserActionPopup
 #endif
