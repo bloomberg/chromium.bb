@@ -27,6 +27,7 @@ extern const char kAllowOutdatedPlugins[];
 extern const char kAllowSSLMITMProxies[];
 extern const char kAllowSandboxDebugging[];
 extern const char kAllowScriptingGallery[];
+extern const char kAlwaysAuthorizePlugins[];
 extern const char kAlwaysEnableDevTools[];
 extern const char kApp[];
 extern const char kAppId[];

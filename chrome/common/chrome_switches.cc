@@ -43,6 +43,10 @@ const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 // useful for automation testing of the gallery.
 const char kAllowScriptingGallery[]         = "allow-scripting-gallery";
 
+// This prevents Chrome from requiring authorization to run certain widely
+// installed but less commonly used plug-ins.
+const char kAlwaysAuthorizePlugins[]        = "always-authorize-plugins";
+
 // Enable web inspector for all windows, even if they're part of the browser.
 // Allows us to use our dev tools to debug browser windows itself.
 const char kAlwaysEnableDevTools[]          = "always-enable-dev-tools";

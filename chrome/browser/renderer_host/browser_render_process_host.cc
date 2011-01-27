@@ -637,6 +637,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
   static const char* const kSwitchNames[] = {
     switches::kAllowOutdatedPlugins,
     switches::kAllowScriptingGallery,
+    switches::kAlwaysAuthorizePlugins,
     switches::kAppsGalleryURL,
     // We propagate the Chrome Frame command line here as well in case the
     // renderer is not run in the sandbox.

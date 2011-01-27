@@ -100,6 +100,7 @@ class PluginTest : public UITest {
 #endif  // defined(OS_WIN)
 
     launch_arguments_.AppendSwitch(switches::kAllowOutdatedPlugins);
+    launch_arguments_.AppendSwitch(switches::kAlwaysAuthorizePlugins);
 
     UITest::SetUp();
   }

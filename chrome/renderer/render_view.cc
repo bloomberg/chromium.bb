@@ -2728,6 +2728,23 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
 
   ContentSetting host_setting =
       current_content_settings_.settings[CONTENT_SETTINGS_TYPE_PLUGINS];
+
+  if (group->RequiresAuthorization() &&
+      !cmd->HasSwitch(switches::kAlwaysAuthorizePlugins) &&
+      (plugin_setting == CONTENT_SETTING_ALLOW ||
+       plugin_setting == CONTENT_SETTING_ASK) &&
+      host_setting == CONTENT_SETTING_DEFAULT) {
+    Send(new ViewHostMsg_BlockedOutdatedPlugin(routing_id_,
+                                               group->GetGroupName(),
+                                               GURL()));
+    return CreatePluginPlaceholder(frame,
+                                   params,
+                                   *group,
+                                   IDR_BLOCKED_PLUGIN_HTML,
+                                   IDS_PLUGIN_NOT_AUTHORIZED,
+                                   false);
+  }
+
   if (info.path.value() == webkit::npapi::kDefaultPluginLibraryName ||
       plugin_setting == CONTENT_SETTING_ALLOW ||
       host_setting == CONTENT_SETTING_ALLOW) {

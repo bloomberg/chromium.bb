@@ -38,6 +38,7 @@ struct VersionRangeDefinition {
   // to match anything higher than |version_matcher_low|.
   const char* version_matcher_high;
   const char* min_version;  // Minimum secure version.
+  bool requires_authorization;  // If this range needs user permission to run.
 };
 
 // Hard-coded definitions of plugin groups.
@@ -64,6 +65,7 @@ struct VersionRange {
   scoped_ptr<Version> low;
   scoped_ptr<Version> high;
   scoped_ptr<Version> min;
+  bool requires_authorization;
  private:
   void InitFrom(const VersionRange& other);
 };
@@ -81,6 +83,9 @@ class PluginGroup {
   // enabled.
   static const char* kAdobeReaderGroupName;
   static const char* kAdobeReaderUpdateURL;
+  static const char* kJavaGroupName;
+  static const char* kQuickTimeGroupName;
+  static const char* kShockwaveGroupName;
 
   PluginGroup(const PluginGroup& other);
 
@@ -159,6 +164,10 @@ class PluginGroup {
   // Returns true if the highest-priority plugin in this group has known
   // security problems.
   bool IsVulnerable() const;
+
+  // Returns true if this plug-in group always requires user authorization
+  // to run.
+  bool RequiresAuthorization() const;
 
   // Check if the group has no plugins. Could happen after a reload if the plug-
   // in has disappeared from the pc (or in the process of updating).

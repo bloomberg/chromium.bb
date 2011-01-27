@@ -18,6 +18,9 @@ namespace npapi {
 
 const char* PluginGroup::kAdobeReaderGroupName = "Adobe Acrobat";
 const char* PluginGroup::kAdobeReaderUpdateURL = "http://get.adobe.com/reader/";
+const char* PluginGroup::kJavaGroupName = "Java";
+const char* PluginGroup::kQuickTimeGroupName = "QuickTime";
+const char* PluginGroup::kShockwaveGroupName = "Shockwave";
 
 /*static*/
 std::set<string16>* PluginGroup::policy_disabled_plugin_patterns_;
@@ -50,7 +53,8 @@ bool PluginGroup::IsPluginNameDisabledByPolicy(const string16& plugin_name) {
 VersionRange::VersionRange(VersionRangeDefinition definition)
     : low_str(definition.version_matcher_low),
       high_str(definition.version_matcher_high),
-      min_str(definition.min_version) {
+      min_str(definition.min_version),
+      requires_authorization(definition.requires_authorization) {
   if (!low_str.empty())
     low.reset(Version::GetVersionFromString(low_str));
   if (!high_str.empty())
@@ -77,6 +81,7 @@ void VersionRange::InitFrom(const VersionRange& other) {
   low.reset(Version::GetVersionFromString(other.low_str));
   high.reset(Version::GetVersionFromString(other.high_str));
   min.reset(Version::GetVersionFromString(other.min_str));
+  requires_authorization = other.requires_authorization;
 }
 
 PluginGroup::PluginGroup(const string16& group_name,
@@ -396,6 +401,15 @@ bool PluginGroup::IsPluginOutdated(const Version& plugin_version,
 bool PluginGroup::IsVulnerable() const {
   for (size_t i = 0; i < version_ranges_.size(); ++i) {
     if (IsPluginOutdated(*version_, version_ranges_[i]))
+      return true;
+  }
+  return false;
+}
+
+bool PluginGroup::RequiresAuthorization() const {
+  for (size_t i = 0; i < version_ranges_.size(); ++i) {
+    if (IsVersionInRange(*version_, version_ranges_[i]) &&
+        version_ranges_[i].requires_authorization)
       return true;
   }
   return false;

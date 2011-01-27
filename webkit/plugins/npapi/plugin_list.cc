@@ -29,7 +29,7 @@ FilePath::CharType kDefaultPluginLibraryName[] =
 // Some version ranges can be shared across operating systems. This should be
 // done where possible to avoid duplication.
 static const VersionRangeDefinition kFlashVersionRange[] = {
-    { "", "", "10.1.102" }
+    { "", "", "10.1.102", false }
 };
 
 // Similarly, try and share the group definition for plug-ins that are
@@ -44,36 +44,38 @@ static const PluginGroupDefinition kFlashDefinition = {
 // (new versions) are published.
 // TODO(panayiotis): Get the Real Player version on Mac, somehow.
 static const VersionRangeDefinition kQuicktimeVersionRange[] = {
-    { "", "", "7.6.6" }
+    { "", "", "7.6.6", true }
 };
 static const VersionRangeDefinition kJavaVersionRange[] = {
-    { "13.0", "14.0", "13.3.0" }  // Snow Leopard
+    { "13.0", "14.0", "13.3.0", true }  // Snow Leopard
 };
 static const VersionRangeDefinition kSilverlightVersionRange[] = {
-    { "0", "4", "3.0.50106.0" },
-    { "4", "5", "" }
+    { "0", "4", "3.0.50106.0", false },
+    { "4", "5", "", false }
 };
 static const VersionRangeDefinition kFlip4MacVersionRange[] = {
-    { "", "", "2.2.1" }
+    { "", "", "2.2.1", false }
 };
 static const VersionRangeDefinition kShockwaveVersionRange[] = {
-    { "",  "", "11.5.9.615" }
+    { "",  "", "11.5.9.615", true }
 };
+// TODO(cevans) - I don't see Adobe Reader in here for Mac.
 static const PluginGroupDefinition kGroupDefinitions[] = {
   kFlashDefinition,
-  { "apple-quicktime", "Quicktime", "QuickTime Plug-in", kQuicktimeVersionRange,
-    arraysize(kQuicktimeVersionRange),
+  { "apple-quicktime", PluginGroup::kQuickTimeGroupName, "QuickTime Plug-in",
+    kQuicktimeVersionRange, arraysize(kQuicktimeVersionRange),
     "http://www.apple.com/quicktime/download/" },
-  { "java-runtime-environment", "Java", "Java", kJavaVersionRange,
-    arraysize(kJavaVersionRange), "http://support.apple.com/kb/HT1338" },
+  { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java",
+    kJavaVersionRange, arraysize(kJavaVersionRange),
+    "http://support.apple.com/kb/HT1338" },
   { "silverlight", "Silverlight", "Silverlight", kSilverlightVersionRange,
     arraysize(kSilverlightVersionRange),
     "http://www.microsoft.com/getsilverlight/" },
   { "flip4mac", "Flip4Mac", "Flip4Mac", kFlip4MacVersionRange,
     arraysize(kFlip4MacVersionRange),
     "http://www.telestream.net/flip4mac-wmv/overview.htm" },
-  { "shockwave", "Shockwave", "Shockwave for Director", kShockwaveVersionRange,
-    arraysize(kShockwaveVersionRange),
+  { "shockwave", PluginGroup::kShockwaveGroupName, "Shockwave for Director",
+    kShockwaveVersionRange, arraysize(kShockwaveVersionRange),
     "http://www.adobe.com/shockwave/download/" }
 };
 
@@ -81,41 +83,41 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
 // TODO(panayiotis): We should group "RealJukebox NS Plugin" with the rest of
 // the RealPlayer files.
 static const VersionRangeDefinition kQuicktimeVersionRange[] = {
-    { "", "", "7.6.8" }
+    { "", "", "7.6.8", true }
 };
 static const VersionRangeDefinition kJavaVersionRange[] = {
-    { "0", "7", "6.0.220" }  // "220" is not a typo.
+    { "0", "7", "6.0.220", true }  // "220" is not a typo.
 };
 static const VersionRangeDefinition kAdobeReaderVersionRange[] = {
-    { "10", "11", "" },
-    { "9", "10", "9.4.1" },
-    { "0", "9", "8.2.5" }
+    { "10", "11", "", false },
+    { "9", "10", "9.4.1", false },
+    { "0", "9", "8.2.5", false }
 };
 static const VersionRangeDefinition kSilverlightVersionRange[] = {
-    { "0", "4", "3.0.50106.0" },
-    { "4", "5", "" }
+    { "0", "4", "3.0.50106.0", false },
+    { "4", "5", "", false }
 };
 static const VersionRangeDefinition kShockwaveVersionRange[] = {
-    { "", "", "11.5.9.615" }
+    { "", "", "11.5.9.615", true }
 };
 static const VersionRangeDefinition kDivXVersionRange[] = {
-    { "", "", "1.4.3.4" }
+    { "", "", "1.4.3.4", false }
 };
 static const PluginGroupDefinition kGroupDefinitions[] = {
   kFlashDefinition,
-  { "apple-quicktime", "Quicktime", "QuickTime Plug-in", kQuicktimeVersionRange,
-    arraysize(kQuicktimeVersionRange),
+  { "apple-quicktime", PluginGroup::kQuickTimeGroupName, "QuickTime Plug-in",
+    kQuicktimeVersionRange, arraysize(kQuicktimeVersionRange),
     "http://www.apple.com/quicktime/download/" },
-  { "java-runtime-environment", "Java 6", "Java", kJavaVersionRange,
-    arraysize(kJavaVersionRange), "http://www.java.com/" },
+  { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java",
+    kJavaVersionRange, arraysize(kJavaVersionRange), "http://www.java.com/" },
   { "adobe-reader", PluginGroup::kAdobeReaderGroupName, "Adobe Acrobat",
     kAdobeReaderVersionRange, arraysize(kAdobeReaderVersionRange),
     "http://get.adobe.com/reader/" },
   { "silverlight", "Silverlight", "Silverlight", kSilverlightVersionRange,
     arraysize(kSilverlightVersionRange),
     "http://www.microsoft.com/getsilverlight/" },
-  { "shockwave", "Shockwave", "Shockwave for Director", kShockwaveVersionRange,
-    arraysize(kShockwaveVersionRange),
+  { "shockwave", PluginGroup::kShockwaveGroupName, "Shockwave for Director",
+    kShockwaveVersionRange, arraysize(kShockwaveVersionRange),
     "http://www.adobe.com/shockwave/download/" },
   { "divx-player", "DivX Player", "DivX Web Player", kDivXVersionRange,
     arraysize(kDivXVersionRange),
@@ -135,23 +137,23 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
 
 #else
 static const VersionRangeDefinition kJavaVersionRange[] = {
-    { "0", "1.7", "1.6.0.22" }
+    { "0", "1.7", "1.6.0.22", true }
 };
 
 static const VersionRangeDefinition kRedhatIcedTeaVersionRange[] = {
-    { "0", "1.9", "1.8.3" },
-    { "1.9", "1.10", "1.9.2" },
+    { "0", "1.9", "1.8.3", true },
+    { "1.9", "1.10", "1.9.2", true },
 };
 
 static const PluginGroupDefinition kGroupDefinitions[] = {
   // Flash on Linux is significant because there isn't yet a built-in Flash
   // plug-in on the Linux 64-bit version of Chrome.
   kFlashDefinition,
-  { "java-runtime-environment", "Java 6", "Java", kJavaVersionRange,
-    arraysize(kJavaVersionRange),
+  { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java",
+    kJavaVersionRange, arraysize(kJavaVersionRange),
     "http://www.java.com/en/download/manual.jsp" },
-  { "redhat-icetea-java", "IcedTea", "IcedTea", kRedhatIcedTeaVersionRange,
-    arraysize(kRedhatIcedTeaVersionRange),
+  { "redhat-icetea-java", "IceTea", "IcedTea",
+    kRedhatIcedTeaVersionRange, arraysize(kRedhatIcedTeaVersionRange),
     "http://www.linuxsecurity.com/content/section/3/170/" },
 };
 #endif

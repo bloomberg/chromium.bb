@@ -296,7 +296,8 @@ ContentSettings HostContentSettingsMap::GetContentSettings(
     } else {
       // A managed default content setting has the highest priority and hence
       // will overwrite any previously set value.
-      if ((output.settings[j] == CONTENT_SETTING_DEFAULT) ||
+      if ((output.settings[j] == CONTENT_SETTING_DEFAULT &&
+           j != CONTENT_SETTINGS_TYPE_PLUGINS) ||
           IsDefaultContentSettingManaged(ContentSettingsType(j))) {
         output.settings[j] = GetDefaultContentSetting(ContentSettingsType(j));
       }
