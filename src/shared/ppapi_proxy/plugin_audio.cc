@@ -64,16 +64,18 @@ PluginAudio::PluginAudio()
     shm_buffer_(NULL),
     state_(AUDIO_INCOMPLETE),
     thread_id_(),
+    thread_active_(false),
     user_callback_(NULL),
     user_data_(NULL) {
   DebugPrintf("PluginAudio::PluginAudio()\n");
 }
 
 PluginAudio::~PluginAudio() {
-  // Stop playback should terminate the audio thread, if
-  // one is currently running.
   DebugPrintf("PluginAudio::~PluginAudio()\n");
-  GetInterface()->StopPlayback(GetReference());
+  // Stop the audio thread, if one is currently running.
+  if (thread_active_) {
+    StopAudioThread();
+  }
   // Unmap the shared memory buffer, if present.
   if (shm_buffer_) {
     munmap(shm_buffer_, ceil64k(shm_size_));
@@ -146,6 +148,7 @@ bool PluginAudio::StartAudioThread() {
   memset(shm_buffer_, 0, shm_size_);
   int ret = pthread_create(&thread_id_, NULL, AudioThread, this);
   if (0 == ret) {
+    thread_active_ = true;
     set_state(AUDIO_PLAYING);
     return true;
   }
@@ -154,10 +157,13 @@ bool PluginAudio::StartAudioThread() {
 
 bool PluginAudio::StopAudioThread() {
   DebugPrintf("PluginAudio::StopAudioThread\n");
-  int ret = pthread_join(thread_id_, NULL);
-  if (0 == ret) {
-    set_state(AUDIO_READY);
-    return true;
+  if (thread_active_) {
+    int ret = pthread_join(thread_id_, NULL);
+    if (0 == ret) {
+      thread_active_ = false;
+      set_state(AUDIO_READY);
+      return true;
+    }
   }
   return false;
 }
@@ -190,8 +196,7 @@ PP_Resource Create(PP_Instance instance,
     return kInvalidResourceId;
   }
   scoped_refptr<PluginAudio> audio =
-      PluginResource::AdoptAs<PluginAudio>(
-      static_cast<PP_Resource>(audioResource));
+      PluginResource::AdoptAs<PluginAudio>(audioResource);
   if (audio.get()) {
     audio->set_callback(user_callback, user_data);
     return audioResource;

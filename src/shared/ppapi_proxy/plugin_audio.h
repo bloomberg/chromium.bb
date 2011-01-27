@@ -54,6 +54,7 @@ class PluginAudio : public PluginResource {
   void *shm_buffer_;
   PluginAudioState state_;
   pthread_t thread_id_;
+  bool thread_active_;
   PPB_Audio_Callback user_callback_;
   void* user_data_;
   IMPLEMENT_RESOURCE(PluginAudio);
