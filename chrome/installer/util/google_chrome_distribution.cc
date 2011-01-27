@@ -170,7 +170,7 @@ bool RelaunchSetup(const std::string& flag, int value,
 // This function changes the permisions so that any authenticated user
 // can launch |exe| later on. This function should only be called if the
 // code is running at the system level.
-bool FixDACLsForExecute(const wchar_t* exe) {
+bool FixDACLsForExecute(const FilePath& exe) {
   // The general strategy to is to add an ACE to the exe DACL the quick
   // and dirty way: a) read the DACL b) convert it to sddl string c) add the
   // new ACE to the string d) convert sddl string back to DACL and finally
@@ -178,8 +178,10 @@ bool FixDACLsForExecute(const wchar_t* exe) {
   char buff[1024];
   DWORD len = sizeof(buff);
   PSECURITY_DESCRIPTOR sd = reinterpret_cast<PSECURITY_DESCRIPTOR>(buff);
-  if (!::GetFileSecurityW(exe, DACL_SECURITY_INFORMATION, sd, len, &len))
+  if (!::GetFileSecurityW(exe.value().c_str(), DACL_SECURITY_INFORMATION,
+                          sd, len, &len)) {
     return false;
+  }
   wchar_t* sddl = 0;
   if (!::ConvertSecurityDescriptorToStringSecurityDescriptorW(sd,
       SDDL_REVISION_1, DACL_SECURITY_INFORMATION, &sddl, NULL))
@@ -205,7 +207,8 @@ bool FixDACLsForExecute(const wchar_t* exe) {
   if (!::ConvertStringSecurityDescriptorToSecurityDescriptorW(new_sddl.c_str(),
       SDDL_REVISION_1, &sd, NULL))
     return false;
-  bool rv = ::SetFileSecurityW(exe, DACL_SECURITY_INFORMATION, sd) == TRUE;
+  bool rv = ::SetFileSecurityW(exe.value().c_str(), DACL_SECURITY_INFORMATION,
+                               sd) == TRUE;
   ::LocalFree(sd);
   return rv;
 }
@@ -232,7 +235,7 @@ bool RelaunchSetupAsConsoleUser(const std::string& flag) {
   if (base::win::GetVersion() > base::win::VERSION_XP) {
     // Make sure that in Vista and Above we have the proper DACLs so
     // the interactive user can launch it.
-    if (!FixDACLsForExecute(setup_exe.ToWStringHack().c_str()))
+    if (!FixDACLsForExecute(setup_exe))
       NOTREACHED();
   }
 

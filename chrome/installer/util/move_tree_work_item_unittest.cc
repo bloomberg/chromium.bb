@@ -58,10 +58,10 @@ namespace {
   }
 
   // Simple function to read text from a file.
-  std::wstring ReadTextFile(const std::wstring& filename) {
+  std::wstring ReadTextFile(const FilePath& path) {
     WCHAR contents[64];
     std::wifstream file;
-    file.open(filename.c_str());
+    file.open(path.value().c_str());
     EXPECT_TRUE(file.is_open());
     file.getline(contents, 64);
     file.close();
@@ -102,9 +102,8 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectory) {
   ASSERT_FALSE(file_util::PathExists(to_file));
 
   // test Do()
-  scoped_ptr<MoveTreeWorkItem> work_item(WorkItem::CreateMoveTreeWorkItem(
-      from_dir1.ToWStringHack(), to_dir.ToWStringHack(),
-          temp_dir_.ToWStringHack()));
+  scoped_ptr<MoveTreeWorkItem> work_item(
+      WorkItem::CreateMoveTreeWorkItem(from_dir1, to_dir, temp_dir_));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_FALSE(file_util::PathExists(from_dir1));
@@ -155,9 +154,8 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExists) {
   ASSERT_FALSE(file_util::PathExists(new_to_file));
 
   // test Do()
-  scoped_ptr<MoveTreeWorkItem> work_item(WorkItem::CreateMoveTreeWorkItem(
-      from_dir1.ToWStringHack(), to_dir.ToWStringHack(),
-          temp_dir_.ToWStringHack()));
+  scoped_ptr<MoveTreeWorkItem> work_item(
+      WorkItem::CreateMoveTreeWorkItem(from_dir1, to_dir, temp_dir_));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_FALSE(file_util::PathExists(from_dir1));
@@ -172,9 +170,8 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExists) {
   EXPECT_TRUE(file_util::PathExists(to_dir));
   EXPECT_FALSE(file_util::PathExists(new_to_file));
   EXPECT_TRUE(file_util::PathExists(orig_to_file));
-  EXPECT_EQ(0, ReadTextFile(orig_to_file.ToWStringHack()).compare(
-      text_content_2));
-  EXPECT_EQ(0, ReadTextFile(from_file.ToWStringHack()).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(orig_to_file).compare(text_content_2));
+  EXPECT_EQ(0, ReadTextFile(from_file).compare(text_content_1));
 }
 
 // Move one file from source to destination when destination does not
@@ -197,15 +194,14 @@ TEST_F(MoveTreeWorkItemTest, MoveAFile) {
   ASSERT_FALSE(file_util::PathExists(to_file));
 
   // test Do()
-  scoped_ptr<MoveTreeWorkItem> work_item(WorkItem::CreateMoveTreeWorkItem(
-      from_file.ToWStringHack(), to_file.ToWStringHack(),
-          temp_dir_.ToWStringHack()));
+  scoped_ptr<MoveTreeWorkItem> work_item(
+      WorkItem::CreateMoveTreeWorkItem(from_file, to_file, temp_dir_));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_TRUE(file_util::PathExists(from_dir));
   EXPECT_FALSE(file_util::PathExists(from_file));
   EXPECT_TRUE(file_util::PathExists(to_file));
-  EXPECT_EQ(0, ReadTextFile(to_file.value()).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(to_file).compare(text_content_1));
 
   // test rollback()
   work_item->Rollback();
@@ -213,7 +209,7 @@ TEST_F(MoveTreeWorkItemTest, MoveAFile) {
   EXPECT_TRUE(file_util::PathExists(from_dir));
   EXPECT_TRUE(file_util::PathExists(from_file));
   EXPECT_FALSE(file_util::PathExists(to_file));
-  EXPECT_EQ(0, ReadTextFile(from_file.value()).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(from_file).compare(text_content_1));
 }
 
 // Move one file from source to destination when destination already
@@ -242,24 +238,23 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestExists) {
   ASSERT_TRUE(file_util::PathExists(to_file));
 
   // test Do()
-  scoped_ptr<MoveTreeWorkItem> work_item(WorkItem::CreateMoveTreeWorkItem(
-      from_file.ToWStringHack(), to_dir.ToWStringHack(),
-          temp_dir_.ToWStringHack()));
+  scoped_ptr<MoveTreeWorkItem> work_item(
+      WorkItem::CreateMoveTreeWorkItem(from_file, to_dir, temp_dir_));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_TRUE(file_util::PathExists(from_dir));
   EXPECT_FALSE(file_util::PathExists(from_file));
   EXPECT_TRUE(file_util::PathExists(to_dir));
   EXPECT_FALSE(file_util::PathExists(to_file));
-  EXPECT_EQ(0, ReadTextFile(to_dir.value()).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(to_dir).compare(text_content_1));
 
   // test rollback()
   work_item->Rollback();
 
   EXPECT_TRUE(file_util::PathExists(from_dir));
-  EXPECT_EQ(0, ReadTextFile(from_file.value()).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(from_file).compare(text_content_1));
   EXPECT_TRUE(file_util::PathExists(to_dir));
-  EXPECT_EQ(0, ReadTextFile(to_file.value()).compare(text_content_2));
+  EXPECT_EQ(0, ReadTextFile(to_file).compare(text_content_2));
 }
 
 // Move one file from source to destination when destination already
@@ -300,21 +295,20 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestInUse) {
                               NULL, NULL, &si, &pi));
 
   // test Do()
-  scoped_ptr<MoveTreeWorkItem> work_item(WorkItem::CreateMoveTreeWorkItem(
-      from_file.ToWStringHack(), to_file.ToWStringHack(),
-          temp_dir_.ToWStringHack()));
+  scoped_ptr<MoveTreeWorkItem> work_item(
+      WorkItem::CreateMoveTreeWorkItem(from_file, to_file, temp_dir_));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_TRUE(file_util::PathExists(from_dir));
   EXPECT_FALSE(file_util::PathExists(from_file));
   EXPECT_TRUE(file_util::PathExists(to_dir));
-  EXPECT_EQ(0, ReadTextFile(to_file.value()).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(to_file).compare(text_content_1));
 
   // test rollback()
   work_item->Rollback();
 
   EXPECT_TRUE(file_util::PathExists(from_dir));
-  EXPECT_EQ(0, ReadTextFile(from_file.value()).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(from_file).compare(text_content_1));
   EXPECT_TRUE(file_util::PathExists(to_dir));
   EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, to_file));
 
@@ -361,9 +355,8 @@ TEST_F(MoveTreeWorkItemTest, MoveFileInUse) {
                               NULL, NULL, &si, &pi));
 
   // test Do()
-  scoped_ptr<MoveTreeWorkItem> work_item(WorkItem::CreateMoveTreeWorkItem(
-      from_file.ToWStringHack(), to_file.ToWStringHack(),
-          temp_dir_.ToWStringHack()));
+  scoped_ptr<MoveTreeWorkItem> work_item(
+      WorkItem::CreateMoveTreeWorkItem(from_file, to_file, temp_dir_));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_TRUE(file_util::PathExists(from_dir));
@@ -389,5 +382,5 @@ TEST_F(MoveTreeWorkItemTest, MoveFileInUse) {
   EXPECT_TRUE(file_util::PathExists(from_dir));
   EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, from_file));
   EXPECT_TRUE(file_util::PathExists(to_dir));
-  EXPECT_EQ(0, ReadTextFile(to_file.value()).compare(text_content_1));
+  EXPECT_EQ(0, ReadTextFile(to_file).compare(text_content_1));
 }

@@ -16,9 +16,9 @@ MoveTreeWorkItem::~MoveTreeWorkItem() {
   }
 }
 
-MoveTreeWorkItem::MoveTreeWorkItem(const std::wstring& source_path,
-                                   const std::wstring& dest_path,
-                                   const std::wstring& temp_dir)
+MoveTreeWorkItem::MoveTreeWorkItem(const FilePath& source_path,
+                                   const FilePath& dest_path,
+                                   const FilePath& temp_dir)
     : source_path_(source_path),
       dest_path_(dest_path),
       temp_dir_(temp_dir),

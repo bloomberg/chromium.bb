@@ -59,9 +59,9 @@ DeleteTreeWorkItem* WorkItem::CreateDeleteTreeWorkItem(
 }
 
 MoveTreeWorkItem* WorkItem::CreateMoveTreeWorkItem(
-    const std::wstring& source_path,
-    const std::wstring& dest_path,
-    const std::wstring& temp_dir) {
+    const FilePath& source_path,
+    const FilePath& dest_path,
+    const FilePath& temp_dir) {
   return new MoveTreeWorkItem(source_path, dest_path, temp_dir);
 }
 

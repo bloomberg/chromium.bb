@@ -24,7 +24,7 @@ void UpOneDirectoryOrEmpty(std::wstring* dir) {
   if (directory == path || directory.value() == FilePath::kCurrentDirectory)
     dir->clear();
   else
-    *dir = directory.ToWStringHack();
+    *dir = directory.value();
 }
 
 }  // namespace

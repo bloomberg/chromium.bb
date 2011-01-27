@@ -133,8 +133,9 @@ WorkItem* WorkItemList::AddDeleteTreeWorkItem(const FilePath& root_path) {
 WorkItem* WorkItemList::AddMoveTreeWorkItem(const std::wstring& source_path,
                                             const std::wstring& dest_path,
                                             const std::wstring& temp_dir) {
-  WorkItem* item = WorkItem::CreateMoveTreeWorkItem(source_path, dest_path,
-                                                    temp_dir);
+  WorkItem* item = WorkItem::CreateMoveTreeWorkItem(FilePath(source_path),
+                                                    FilePath(dest_path),
+                                                    FilePath(temp_dir));
   AddWorkItem(item);
   return item;
 }

@@ -36,9 +36,9 @@ class MoveTreeWorkItem : public WorkItem {
   // specified by dest_path. To facilitate rollback, the caller needs to supply
   // a temporary directory (temp_dir) to save the original files if they exist
   // under dest_path.
-  MoveTreeWorkItem(const std::wstring& source_path,
-                   const std::wstring& dest_path,
-                   const std::wstring& temp_dir);
+  MoveTreeWorkItem(const FilePath& source_path,
+                   const FilePath& dest_path,
+                   const FilePath& temp_dir);
 
   // Source path to move files from.
   FilePath source_path_;
