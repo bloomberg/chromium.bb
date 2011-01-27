@@ -75,7 +75,7 @@ fetch_logs() {
     for BUILD in $LIST_OF_BUILDS
     do
       # We'll fetch a few tiny URLs now, let's use a temp file.
-      TMPFILE=$(mktemp)
+      TMPFILE=$(mktemp -t memory_waterfall.XXXXXX)
       download $SLAVE_URL/builds/$BUILD "$TMPFILE"
 
       REPORT_FILE="$LOGS_DIR/report_${S}_${BUILD}"
