@@ -46,8 +46,7 @@ void NotificationProvider::cancel(const WebNotification& notification) {
   bool id_found = manager_.GetId(notification, id);
   // Won't be found if the notification has already been closed by the user.
   if (id_found)
-    Send(new ViewHostMsg_CancelDesktopNotification(routing_id(), routing_id(),
-                                                   id));
+    Send(new ViewHostMsg_CancelDesktopNotification(routing_id(), id));
 }
 
 void NotificationProvider::objectDestroyed(
@@ -79,7 +78,6 @@ void NotificationProvider::requestPermission(
   int id = manager_.RegisterPermissionRequest(callback);
 
   Send(new ViewHostMsg_RequestNotificationPermission(routing_id(),
-                                                     routing_id(),
                                                      GURL(origin.toString()),
                                                      id));
 }
@@ -121,7 +119,6 @@ bool NotificationProvider::ShowHTML(const WebNotification& notification,
   params.contents_url = notification.url();
   params.notification_id = id;
   params.replace_id = notification.replaceId();
-  params.routing_id = routing_id();
   return Send(new ViewHostMsg_ShowDesktopNotification(routing_id(), params));
 }
 
@@ -138,7 +135,7 @@ bool NotificationProvider::ShowText(const WebNotification& notification,
   params.direction = notification.direction();
   params.notification_id = id;
   params.replace_id = notification.replaceId();
-  params.routing_id = routing_id();
+
   return Send(new ViewHostMsg_ShowDesktopNotification(routing_id(), params));
 }
 

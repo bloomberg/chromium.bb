@@ -25,7 +25,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/desktop_notification_handler.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -596,9 +595,6 @@ TabContents::TabContents(Profile* profile,
   AddNavigationObserver(prerender_plt_recorder_.get());
   AddNavigationObserver(&fav_icon_helper_);
   AddNavigationObserver(printing_.get());
-  desktop_notification_handler_.reset(
-      new DesktopNotificationHandler(this, GetRenderProcessHost()));
-  AddNavigationObserver(desktop_notification_handler_.get());
 }
 
 TabContents::~TabContents() {

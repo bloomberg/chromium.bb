@@ -826,8 +826,6 @@
         'browser/default_encoding_combo_model.h',
         'browser/defaults.cc',
         'browser/defaults.h',
-        'browser/desktop_notification_handler.cc',
-        'browser/desktop_notification_handler.h',
         'browser/device_orientation/accelerometer_mac.cc',
         'browser/device_orientation/accelerometer_mac.h',
         'browser/device_orientation/data_fetcher.h',

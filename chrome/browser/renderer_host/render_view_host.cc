@@ -15,6 +15,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/in_process_webkit/session_storage_namespace.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
@@ -786,6 +788,12 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_FORWARD(ViewHostMsg_JSOutOfMemory, delegate_,
                         RenderViewHostDelegate::OnJSOutOfMemory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDesktopNotification,
+                        OnShowDesktopNotification)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CancelDesktopNotification,
+                        OnCancelDesktopNotification)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestNotificationPermission,
+                        OnRequestNotificationPermission)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionRequest, OnExtensionRequest)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnMsgSelectionChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionPostMessage,
@@ -1469,6 +1477,39 @@ void RenderViewHost::ForwardMessageFromExternalHost(const std::string& message,
                                                     const std::string& target) {
   Send(new ViewMsg_HandleMessageFromExternalHost(routing_id(), message, origin,
                                                  target));
+}
+
+void RenderViewHost::OnShowDesktopNotification(
+    const ViewHostMsg_ShowNotification_Params& params) {
+  DesktopNotificationService* service =
+      process()->profile()->GetDesktopNotificationService();
+
+    service->ShowDesktopNotification(
+        params, process()->id(), routing_id(),
+        DesktopNotificationService::PageNotification);
+}
+
+void RenderViewHost::OnCancelDesktopNotification(int notification_id) {
+  DesktopNotificationService* service=
+      process()->profile()->GetDesktopNotificationService();
+  service->CancelDesktopNotification(
+      process()->id(), routing_id(), notification_id);
+}
+
+void RenderViewHost::OnRequestNotificationPermission(
+    const GURL& source_origin, int callback_context) {
+  Browser* browser = BrowserList::GetLastActive();
+  // We may not have a BrowserList if the chrome browser process is launched as
+  // a ChromeFrame process in which case we attempt to use the TabContents
+  // provided by the RenderViewHostDelegate.
+  TabContents* tab = browser ? browser->GetSelectedTabContents() :
+      (delegate_ ? delegate_->GetAsTabContents() : NULL);
+  if (tab) {
+    DesktopNotificationService* service =
+        process()->profile()->GetDesktopNotificationService();
+    service->RequestPermission(
+        source_origin, process()->id(), routing_id(), callback_context, tab);
+  }
 }
 
 void RenderViewHost::OnExtensionRequest(

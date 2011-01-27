@@ -742,9 +742,6 @@ struct ViewHostMsg_ShowNotification_Params {
 
   // Notification ID for sending events back for this notification.
   int notification_id;
-
-  // The routing id of the message.
-  int routing_id;
 };
 
 // Creates a new view via a control message since the view doesn't yet exist.
