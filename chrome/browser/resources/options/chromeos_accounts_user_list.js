@@ -103,7 +103,7 @@ cr.define('options.accounts', function() {
       // Handle left button click
       if (e.button == 0) {
         var el = e.target;
-        if (el.className == 'remove-user-button') {
+        if (el.classList.contains('remove-user-button')) {
           this.removeUser(el.parentNode.user);
         }
       }
@@ -173,13 +173,21 @@ cr.define('options.accounts', function() {
           localStrings.getStringF('username_format', this.user.name) :
           this.user.name;
 
+      var emailNameBlock = this.ownerDocument.createElement('div');
+      emailNameBlock.className = 'user-email-name-block';
+      emailNameBlock.appendChild(labelEmail);
+      emailNameBlock.appendChild(labelName);
+      emailNameBlock.title = this.user.owner ?
+          localStrings.getStringF('username_format', this.user.email) :
+          this.user.email;
+
       this.appendChild(icon);
-      this.appendChild(labelEmail);
-      this.appendChild(labelName);
+      this.appendChild(emailNameBlock);
 
       if (!this.user.owner) {
         var removeButton = this.ownerDocument.createElement('button');
-        removeButton.className = 'remove-user-button';
+        removeButton.classList.add('raw-button');
+        removeButton.classList.add('remove-user-button');
         this.appendChild(removeButton);
       }
     }

@@ -11,7 +11,6 @@
 }
 
 .user-list-item {
-  line-height: 35px;
   padding: 2px;
 }
 
@@ -19,7 +18,6 @@
   border: 1px solid black;
   width: 26px;
   height: 26px;
-  vertical-align: middle;
 }
 
 .user-email-label {
@@ -31,23 +29,18 @@
   -webkit-margin-start: 10px;
 }
 
+.user-email-name-block {
+  -webkit-box-flex: 1;
+  max-width: 318px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .remove-user-button {
   background-image: url(chrome://theme/IDR_CLOSE_BAR);
-  background-color: transparent;
-  border: 0;
   width: 16px;
   height: 16px;
-  margin-top: 8px;
-  min-width: 16px;
-  padding: 1px 6px 1px 6px;
-}
-
-html[dir=ltr] .remove-user-button {
-  float: right;
-}
-
-html[dir=rtl] .remove-user-button {
-  float: left;
 }
 
 .remove-user-button:hover {
