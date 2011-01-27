@@ -11,7 +11,6 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_pref_service.h"

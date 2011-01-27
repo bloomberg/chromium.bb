@@ -5,6 +5,9 @@
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/printing/print_dialog_cloud_internal.h"
 
+#include <string>
+#include <vector>
+
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -17,7 +20,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"

@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "gfx/font.h"
 #include "gfx/rect.h"
 #include "views/controls/native/native_view_host.h"

@@ -12,7 +12,6 @@
 #include "base/file_path.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/test/in_process_browser_test.h"
 

@@ -13,7 +13,6 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"

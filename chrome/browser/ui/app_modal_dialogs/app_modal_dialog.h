@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "build/build_config.h"
 #include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 
 class NativeAppModalDialog;
 class TabContents;

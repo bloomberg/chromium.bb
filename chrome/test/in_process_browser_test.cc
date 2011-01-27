@@ -31,7 +31,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/test_launcher_utils.h"

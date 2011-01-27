@@ -22,7 +22,6 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/net/url_request_context_getter.h"
-#include "chrome/common/notification_registrar.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_policy.h"
 #include "net/url_request/url_request_context.h"

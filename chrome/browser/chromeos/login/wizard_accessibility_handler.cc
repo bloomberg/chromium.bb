@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/extension_accessibility_api_constants.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/notification_details.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
