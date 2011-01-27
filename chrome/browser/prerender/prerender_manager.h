@@ -22,11 +22,14 @@ class TabContents;
 // views of webpages.
 class PrerenderManager : public base::RefCounted<PrerenderManager> {
  public:
+  // PrerenderManagerMode is used in a UMA_HISTOGRAM, so please do not
+  // add in the middle.
   enum PrerenderManagerMode {
     PRERENDER_MODE_DISABLED,
     PRERENDER_MODE_ENABLED,
     PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP,
-    PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP
+    PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP,
+    PRERENDER_MODE_MAX
   };
 
   // Owned by a Profile object for the lifetime of the profile.
@@ -58,6 +61,9 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   void set_max_prerender_age(base::TimeDelta td) { max_prerender_age_ = td; }
   unsigned int max_elements() const { return max_elements_; }
   void set_max_elements(unsigned int num) { max_elements_ = num; }
+
+  static PrerenderManagerMode GetMode();
+  static void SetMode(PrerenderManagerMode mode);
 
  protected:
   virtual ~PrerenderManager();
@@ -100,7 +106,7 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
 
   scoped_ptr<PrerenderContents::Factory> prerender_contents_factory_;
 
-  PrerenderManagerMode mode_;
+  static PrerenderManagerMode mode_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

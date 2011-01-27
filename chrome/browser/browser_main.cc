@@ -56,6 +56,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/process_singleton.h"
@@ -224,7 +225,7 @@ void BrowserMainParts::SetupFieldTrials() {
   ConnectionFieldTrial();
   SocketTimeoutFieldTrial();
   ProxyConnectionsFieldTrial();
-  PrefetchFieldTrial();
+  PrefetchAndPrerenderFieldTrial();
   SpdyFieldTrial();
   ConnectBackupJobsFieldTrial();
 }
@@ -429,7 +430,7 @@ void BrowserMainParts::SpdyFieldTrial() {
 // --disable-content-prefetch are set, use those to determine if
 // prefetch is enabled. Otherwise, randomly assign users to an A/B test for
 // prefetching.
-void BrowserMainParts::PrefetchFieldTrial() {
+void BrowserMainParts::PrefetchAndPrerenderFieldTrial() {
   if (parsed_command_line().HasSwitch(switches::kEnableContentPrefetch) ||
       parsed_command_line().HasSwitch(switches::kEnablePagePrerender))
     ResourceDispatcherHost::set_is_prefetch_enabled(true);
@@ -448,6 +449,17 @@ void BrowserMainParts::PrefetchFieldTrial() {
     ResourceDispatcherHost::set_is_prefetch_enabled(
         trial_grp == yes_prefetch_grp);
   }
+
+  PrerenderManager::PrerenderManagerMode prerender_mode =
+      PrerenderManager::PRERENDER_MODE_DISABLED;
+  if (parsed_command_line().HasSwitch(switches::kEnablePagePrerender))
+    prerender_mode = PrerenderManager::PRERENDER_MODE_ENABLED;
+  else
+    prerender_mode = PrerenderManager::PRERENDER_MODE_DISABLED;
+  PrerenderManager::SetMode(prerender_mode);
+
+  UMA_HISTOGRAM_ENUMERATION("Prerender.Sessions", prerender_mode,
+                            PrerenderManager::PRERENDER_MODE_MAX);
 }
 
 // If neither --enable-connect-backup-jobs or --disable-connect-backup-jobs is

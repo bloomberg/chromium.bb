@@ -15,6 +15,20 @@
 #include "chrome/browser/tab_contents/render_view_host_manager.h"
 #include "chrome/common/render_messages.h"
 
+// static
+PrerenderManager::PrerenderManagerMode PrerenderManager::mode_ =
+    PRERENDER_MODE_ENABLED;
+
+// static
+PrerenderManager::PrerenderManagerMode PrerenderManager::GetMode() {
+  return mode_;
+}
+
+// static
+void PrerenderManager::SetMode(PrerenderManagerMode mode) {
+  mode_ = mode;
+}
+
 struct PrerenderManager::PrerenderContentsData {
   PrerenderContents* contents_;
   base::Time start_time_;
@@ -33,8 +47,7 @@ PrerenderManager::PrerenderManager(Profile* profile)
       max_prerender_age_(base::TimeDelta::FromSeconds(
           kDefaultMaxPrerenderAgeSeconds)),
       max_elements_(kDefaultMaxPrerenderElements),
-      prerender_contents_factory_(PrerenderContents::CreateFactory()),
-      mode_(PRERENDER_MODE_ENABLED) {
+      prerender_contents_factory_(PrerenderContents::CreateFactory()) {
 }
 
 PrerenderManager::~PrerenderManager() {
@@ -154,7 +167,7 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
 }
 
 void PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta pplt) {
-  switch(mode_) {
+  switch (mode_) {
     case PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP:
       UMA_HISTOGRAM_TIMES("PLT.PerceivedPageLoadTime_PrerenderControl", pplt);
       break;
