@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
 class NullWifiDataListenerInterface
     : public WifiDataProviderCommon::ListenerInterface {
  public:
@@ -16,7 +17,6 @@ class NullWifiDataListenerInterface
   virtual void DeviceDataUpdateAvailable(
       DeviceDataProvider<WifiData>* provider) {}
 };
-}
 
 TEST(GeolocationDeviceDataProviderWifiData, CreateDestroy) {
   // See http://crbug.com/59913 .  The main_message_loop is not required to be
@@ -38,3 +38,5 @@ TEST(GeolocationDeviceDataProviderWifiData, CreateDestroy) {
     }
   }
 }
+
+}  // namespace

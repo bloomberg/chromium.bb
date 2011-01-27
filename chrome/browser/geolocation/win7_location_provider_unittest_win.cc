@@ -16,6 +16,7 @@ using testing::DoDefault;
 using testing::Invoke;
 using testing::Return;
 
+namespace {
 
 class MockWin7LocationApi : public Win7LocationApi {
  public:
@@ -136,3 +137,5 @@ TEST_F(GeolocationProviderWin7Tests, GetInvalidPosition) {
   provider_->GetPosition(&position);
   EXPECT_FALSE(position.IsValidFix());
 }
+
+}  // namespace

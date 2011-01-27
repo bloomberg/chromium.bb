@@ -14,14 +14,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
 // Constants used in multiple tests.
 const char kTestServerUrl[] = "https://www.geolocation.test/service";
 const char kTestHost[] = "myclienthost.test";
 const char kTestHostUrl[] = "http://myclienthost.test/some/path";
 // Using #define so we can easily paste this into various other strings.
 #define REFERENCE_ACCESS_TOKEN "2:k7j3G6LaL6u_lafw:4iXOeOpTh1glSXe"
-
-}  // namespace
 
 // Stops the specified (nested) message loop when the listener is called back.
 class MessageLoopQuitListener
@@ -779,3 +778,4 @@ TEST_F(GeolocationNetworkProviderTest, NetworkPositionCache) {
   }
 }
 
+}  // namespace

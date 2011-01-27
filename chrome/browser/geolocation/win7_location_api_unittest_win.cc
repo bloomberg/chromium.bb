@@ -23,6 +23,8 @@ using testing::DoDefault;
 using testing::Invoke;
 using testing::Return;
 
+namespace {
+
 class MockLatLongReport : public ILatLongReport {
  public:
   MockLatLongReport() : ref_count_(1) {
@@ -331,3 +333,5 @@ TEST_F(GeolocationApiWin7Tests, GetInvalidPosition) {
   api_->GetPosition(&position);
   EXPECT_FALSE(position.IsValidFix());
 }
+
+}  // namespace

@@ -19,6 +19,8 @@ using testing::DoDefault;
 using testing::Invoke;
 using testing::Return;
 
+namespace {
+
 class MockWlanApi : public WifiDataProviderCommon::WlanApiInterface {
  public:
   MockWlanApi() : calls_(0), bool_return_(true) {
@@ -225,3 +227,6 @@ TEST_F(GeolocationWifiDataProviderCommonTest,
   DeviceDataProvider<WifiData>::Unregister(&quit_listener);
   DeviceDataProvider<WifiData>::ResetFactory();
 }
+
+}  // namespace
+

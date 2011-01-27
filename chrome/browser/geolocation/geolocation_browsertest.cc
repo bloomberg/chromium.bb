@@ -27,6 +27,8 @@
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
+namespace {
+
 // Used to block until an iframe is loaded via a javascript call.
 // Note: NavigateToURLBlockUntilNavigationsComplete doesn't seem to work for
 // multiple embedded iframes, as notifications seem to be 'batched'. Instead, we
@@ -635,3 +637,5 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_TabDestroyed) {
       L"", UTF8ToWide(script));
   EXPECT_EQ(result, true);
 }
+
+}  // namespace

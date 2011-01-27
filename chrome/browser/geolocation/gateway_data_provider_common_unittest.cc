@@ -17,6 +17,8 @@ using testing::DoDefault;
 using testing::Invoke;
 using testing::Return;
 
+namespace {
+
 class MockGatewayApi : public GatewayDataProviderCommon::GatewayApiInterface {
  public:
   MockGatewayApi() {
@@ -185,3 +187,5 @@ TEST_F(GeolocationGatewayDataProviderCommonTest, DoScanWithResults) {
   EXPECT_EQ(1, static_cast<int>(data.router_data.size()));
   EXPECT_EQ(single_router.mac_address, data.router_data.begin()->mac_address);
 }
+
+}  // namespace

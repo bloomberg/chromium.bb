@@ -21,6 +21,8 @@
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
 // TestTabContents short-circuits TAB_CONTENTS_INFOBAR_REMOVED to call
 // InfoBarClosed() directly. We need to observe it and call InfoBarClosed()
 // later.
@@ -421,3 +423,5 @@ TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
   // Delete the tab contents.
   DeleteContents();
 }
+
+}  // namespace

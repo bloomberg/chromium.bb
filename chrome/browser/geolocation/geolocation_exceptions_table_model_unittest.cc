@@ -15,7 +15,6 @@ namespace {
 const GURL kUrl0("http://www.example.com");
 const GURL kUrl1("http://www.example1.com");
 const GURL kUrl2("http://www.example2.com");
-}  // namespace
 
 class GeolocationExceptionsTableModelTest : public RenderViewHostTestHarness {
  public:
@@ -141,3 +140,5 @@ TEST_F(GeolocationExceptionsTableModelTest, GetText) {
   EXPECT_NE(string16::npos,
             text.find(content_settings_helper::OriginToString16(kUrl2)));
 }
+
+}  // namespace
