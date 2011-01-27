@@ -33,6 +33,9 @@ deps = {
   "src/testing/gtest":
     (Var("googlecode_url") % "googletest") + "/trunk@492",
 
+  "src/testing/gmock":
+    "http://googlemock.googlecode.com/svn/trunk@300",
+
   "src/third_party/angle":
     (Var("googlecode_url") % "angleproject") + "/trunk@541",
 
