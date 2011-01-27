@@ -121,13 +121,10 @@ MessageType GetStatusInfo(ProfileSyncService* service,
         }
         result_type = SYNC_PROMO;
       } else {
-        // First machine.  Show as a promotion.
-        if (status_label && link_label) {
+        // First machine.  Don't show promotion, just show everything
+        // normal.
+        if (status_label)
           status_label->assign(GetSyncedStateStatusLabel(service));
-          link_label->assign(
-              l10n_util::GetStringUTF16(IDS_SYNC_NEW_PASSWORD_SYNC));
-        }
-        result_type = SYNC_PROMO;
       }
     } else if (auth_error.state() != AuthError::NONE) {
       if (status_label && link_label) {
