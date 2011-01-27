@@ -15,6 +15,8 @@ struct PPB_AudioConfig;
 namespace pp {
 namespace proxy {
 
+class HostResource;
+
 class PPB_AudioConfig_Proxy : public InterfaceProxy {
  public:
   PPB_AudioConfig_Proxy(Dispatcher* dispatcher, const void* target_interface);
@@ -34,7 +36,7 @@ class PPB_AudioConfig_Proxy : public InterfaceProxy {
   void OnMsgCreateStereo16Bit(PP_Instance instance,
                               int32_t sample_rate,
                               uint32_t sample_frame_count,
-                              PP_Resource* result);
+                              HostResource* result);
   void OnMsgRecommendSampleFrameCount(int32_t sample_rate,
                                       uint32_t requested,
                                       uint32_t* result);

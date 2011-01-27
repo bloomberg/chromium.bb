@@ -44,6 +44,11 @@ class PluginVarTracker {
   // Dispatcher in this class, which makes it easy to unit test.
   typedef IPC::Channel::Sender Sender;
 
+  // Called by tests that want to specify a specific VarTracker. This allows
+  // them to use a unique one each time and avoids singletons sticking around
+  // across tests.
+  static void SetInstanceForTest(PluginVarTracker* tracker);
+
   // Returns the global var tracker for the plugin object.
   static PluginVarTracker* GetInstance();
 
@@ -75,6 +80,10 @@ class PluginVarTracker {
   // should be a VARTYPE_OBJECT
   PP_Var GetHostObject(const PP_Var& plugin_object) const;
 
+  // Like Release() but the var is identified by its host object ID (as
+  // returned by GetHostObject).
+  void ReleaseHostObject(Sender* sender, const PP_Var& host_object);
+
   // Retrieves the internal reference counts for testing. Returns 0 if we
   // know about the object but the corresponding value is 0, or -1 if the
   // given object ID isn't in our map.
@@ -83,7 +92,7 @@ class PluginVarTracker {
 
  private:
   friend struct DefaultSingletonTraits<PluginVarTracker>;
-  friend class PluginVarTrackerTest;
+  friend class PluginProxyTest;
 
   // Represents a var as received from the host.
   struct HostVar {

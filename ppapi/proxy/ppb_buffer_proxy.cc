@@ -20,7 +20,9 @@ namespace proxy {
 
 class Buffer : public PluginResource {
  public:
-  Buffer(PP_Instance instance, int memory_handle, uint32_t size);
+  Buffer(const HostResource& resource,
+         int memory_handle,
+         uint32_t size);
   virtual ~Buffer();
 
   // Resource overrides.
@@ -40,8 +42,10 @@ class Buffer : public PluginResource {
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
 
-Buffer::Buffer(PP_Instance instance, int memory_handle, uint32_t size)
-    : PluginResource(instance),
+Buffer::Buffer(const HostResource& resource,
+               int memory_handle,
+               uint32_t size)
+    : PluginResource(resource),
       memory_handle_(memory_handle),
       size_(size),
       mapped_data_(NULL) {
@@ -63,19 +67,18 @@ void Buffer::Unmap() {
 namespace {
 
 PP_Resource Create(PP_Instance instance, uint32_t size) {
-  PP_Resource result = 0;
+  HostResource result;
   int32_t shm_handle = -1;
   PluginDispatcher::GetForInstance(instance)->Send(
       new PpapiHostMsg_PPBBuffer_Create(
           INTERFACE_ID_PPB_BUFFER, instance, size,
           &result, &shm_handle));
-  if (!result)
+  if (result.is_null())
     return 0;
 
-  linked_ptr<Buffer> object(new Buffer(instance, static_cast<int>(shm_handle),
-                                       size));
-  PluginResourceTracker::GetInstance()->AddResource(result, object);
-  return result;
+  linked_ptr<Buffer> object(new Buffer(result,
+                                       static_cast<int>(shm_handle), size));
+  return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
 PP_Bool IsBuffer(PP_Resource resource) {
@@ -144,9 +147,11 @@ bool PPB_Buffer_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPB_Buffer_Proxy::OnMsgCreate(PP_Instance instance,
                                    uint32_t size,
-                                   PP_Resource* result_resource,
+                                   HostResource* result_resource,
                                    int* result_shm_handle) {
-  *result_resource = ppb_buffer_target()->Create(instance, size);
+  result_resource->SetHostResource(
+      instance,
+      ppb_buffer_target()->Create(instance, size));
   // TODO(brettw) set the shm handle from a trusted interface.
   *result_shm_handle = 0;
 }

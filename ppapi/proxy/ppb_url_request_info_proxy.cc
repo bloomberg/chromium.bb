@@ -14,8 +14,10 @@ namespace proxy {
 
 class URLRequestInfo : public PluginResource {
  public:
-  URLRequestInfo(PP_Instance instance) : PluginResource(instance) {}
-  virtual ~URLRequestInfo() {}
+  URLRequestInfo(const HostResource& resource) : PluginResource(resource) {
+  }
+  virtual ~URLRequestInfo() {
+  }
 
   // Resource overrides.
   virtual URLRequestInfo* AsURLRequestInfo() { return this; }
@@ -26,13 +28,16 @@ class URLRequestInfo : public PluginResource {
 
 namespace {
 
-// Returns the dispatcher associated with the given URLRequestInfo, or NULL if
-// none exists.
-PluginDispatcher* DispatcherFromURLRequestInfo(PP_Resource resource) {
-  URLRequestInfo* object = PluginResource::GetAs<URLRequestInfo>(resource);
-  if (!object)
-    return NULL;
-  return PluginDispatcher::GetForInstance(object->instance());
+// Computes the dispatcher and request object for the given plugin resource,
+// returning true on success.
+bool DispatcherFromURLRequestInfo(PP_Resource resource,
+                                  PluginDispatcher** dispatcher,
+                                  URLRequestInfo** request_info) {
+  *request_info = PluginResource::GetAs<URLRequestInfo>(resource);
+  if (!*request_info)
+    return false;
+  *dispatcher = PluginDispatcher::GetForInstance((*request_info)->instance());
+  return !!*dispatcher;
 }
 
 PP_Resource Create(PP_Instance instance) {
@@ -40,14 +45,14 @@ PP_Resource Create(PP_Instance instance) {
   if (!dispatcher)
     return 0;
 
-  PP_Resource result;
+  HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBURLRequestInfo_Create(
       INTERFACE_ID_PPB_URL_REQUEST_INFO, instance, &result));
-  if (result) {
-    linked_ptr<URLRequestInfo> object(new URLRequestInfo(instance));
-    PluginResourceTracker::GetInstance()->AddResource(result, object);
-  }
-  return result;
+  if (result.is_null())
+    return 0;
+
+  linked_ptr<URLRequestInfo> object(new URLRequestInfo(result));
+  return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
 PP_Bool IsURLRequestInfo(PP_Resource resource) {
@@ -58,12 +63,13 @@ PP_Bool IsURLRequestInfo(PP_Resource resource) {
 PP_Bool SetProperty(PP_Resource request_id,
                     PP_URLRequestProperty property,
                     PP_Var var) {
-  PluginDispatcher* dispatcher = DispatcherFromURLRequestInfo(request_id);
-  if (!dispatcher)
+  PluginDispatcher* dispatcher;
+  URLRequestInfo* request_info;
+  if (!DispatcherFromURLRequestInfo(request_id, &dispatcher, &request_info))
     return PP_FALSE;
 
   dispatcher->Send(new PpapiHostMsg_PPBURLRequestInfo_SetProperty(
-      INTERFACE_ID_PPB_URL_REQUEST_INFO, request_id,
+      INTERFACE_ID_PPB_URL_REQUEST_INFO, request_info->host_resource(),
       static_cast<int32_t>(property),
       SerializedVarSendInput(dispatcher, var)));
 
@@ -74,12 +80,14 @@ PP_Bool SetProperty(PP_Resource request_id,
 
 PP_Bool AppendDataToBody(PP_Resource request_id,
                          const char* data, uint32_t len) {
-  PluginDispatcher* dispatcher = DispatcherFromURLRequestInfo(request_id);
-  if (!dispatcher)
+  PluginDispatcher* dispatcher;
+  URLRequestInfo* request_info;
+  if (!DispatcherFromURLRequestInfo(request_id, &dispatcher, &request_info))
     return PP_FALSE;
 
   dispatcher->Send(new PpapiHostMsg_PPBURLRequestInfo_AppendDataToBody(
-      INTERFACE_ID_PPB_URL_REQUEST_INFO, request_id, std::string(data, len)));
+      INTERFACE_ID_PPB_URL_REQUEST_INFO, request_info->host_resource(),
+      std::string(data, len)));
 
   // TODO(brettw) do some validation. We should be able to tell on the plugin
   // side whether the request will succeed or fail in the renderer.
@@ -91,12 +99,18 @@ PP_Bool AppendFileToBody(PP_Resource request_id,
                          int64_t start_offset,
                          int64_t number_of_bytes,
                          PP_Time expected_last_modified_time) {
-  PluginDispatcher* dispatcher = DispatcherFromURLRequestInfo(request_id);
-  if (!dispatcher)
+  PluginDispatcher* dispatcher;
+  URLRequestInfo* request_info;
+  if (!DispatcherFromURLRequestInfo(request_id, &dispatcher, &request_info))
+    return PP_FALSE;
+  PluginResource* file_ref_object =
+      PluginResourceTracker::GetInstance()->GetResourceObject(file_ref_id);
+  if (!file_ref_object)
     return PP_FALSE;
 
   dispatcher->Send(new PpapiHostMsg_PPBURLRequestInfo_AppendFileToBody(
-      INTERFACE_ID_PPB_URL_REQUEST_INFO, request_id, file_ref_id,
+      INTERFACE_ID_PPB_URL_REQUEST_INFO, request_info->host_resource(),
+      file_ref_object->host_resource(),
       start_offset, number_of_bytes, expected_last_modified_time));
 
   // TODO(brettw) do some validation. We should be able to tell on the plugin
@@ -149,35 +163,36 @@ bool PPB_URLRequestInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPB_URLRequestInfo_Proxy::OnMsgCreate(
     PP_Instance instance,
-    PP_Resource* result) {
-  *result = ppb_url_request_info_target()->Create(instance);
+    HostResource* result) {
+  result->SetHostResource(instance,
+                          ppb_url_request_info_target()->Create(instance));
 }
 
 void PPB_URLRequestInfo_Proxy::OnMsgSetProperty(
-    PP_Resource request,
+    HostResource request,
     int32_t property,
     SerializedVarReceiveInput value) {
-  ppb_url_request_info_target()->SetProperty(request,
+  ppb_url_request_info_target()->SetProperty(request.host_resource(),
       static_cast<PP_URLRequestProperty>(property),
       value.Get(dispatcher()));
 }
 
 void PPB_URLRequestInfo_Proxy::OnMsgAppendDataToBody(
-    PP_Resource request,
+    HostResource request,
     const std::string& data) {
-  ppb_url_request_info_target()->AppendDataToBody(request, data.c_str(),
-                                                  data.size());
+  ppb_url_request_info_target()->AppendDataToBody(request.host_resource(),
+                                                  data.c_str(), data.size());
 }
 
 void PPB_URLRequestInfo_Proxy::OnMsgAppendFileToBody(
-    PP_Resource request,
-    PP_Resource file_ref,
+    HostResource request,
+    HostResource file_ref,
     int64_t start_offset,
     int64_t number_of_bytes,
     double expected_last_modified_time) {
   ppb_url_request_info_target()->AppendFileToBody(
-      request, file_ref, start_offset, number_of_bytes,
-      expected_last_modified_time);
+      request.host_resource(), file_ref.host_resource(),
+      start_offset, number_of_bytes, expected_last_modified_time);
 }
 
 }  // namespace proxy

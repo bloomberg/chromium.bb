@@ -15,6 +15,9 @@ namespace proxy {
 
 namespace {
 
+// When non-NULL, this object overrides the VarTrackerSingleton.
+PluginVarTracker* var_tracker_override = NULL;
+
 class RefCountedString : public base::RefCounted<RefCountedString> {
  public:
   RefCountedString() {
@@ -64,7 +67,15 @@ PluginVarTracker::PluginVarTracker() : last_plugin_object_id_(0) {
 PluginVarTracker::~PluginVarTracker() {
 }
 
+// static
+void PluginVarTracker::SetInstanceForTest(PluginVarTracker* tracker) {
+  var_tracker_override = tracker;
+}
+
+// static
 PluginVarTracker* PluginVarTracker::GetInstance() {
+  if (var_tracker_override)
+    return var_tracker_override;
   return Singleton<PluginVarTracker>::get();
 }
 
@@ -219,6 +230,24 @@ PP_Var PluginVarTracker::GetHostObject(const PP_Var& plugin_object) const {
   ret.type = PP_VARTYPE_OBJECT;
   ret.value.as_id = found->second.host_var.host_object_id;
   return ret;
+}
+
+void PluginVarTracker::ReleaseHostObject(Sender* sender,
+                                         const PP_Var& host_object) {
+  // Convert the host object to a normal var valid in the plugin.
+  DCHECK(host_object.type == PP_VARTYPE_OBJECT);
+  HostVarToPluginVarMap::iterator found = host_var_to_plugin_var_.find(
+      HostVar(sender, host_object.value.as_id));
+  if (found == host_var_to_plugin_var_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  // Now just release the object like normal.
+  PP_Var plugin_object;
+  plugin_object.type = PP_VARTYPE_OBJECT;
+  plugin_object.value.as_id = found->second;
+  Release(plugin_object);
 }
 
 int PluginVarTracker::GetRefCountForObject(const PP_Var& plugin_object) {

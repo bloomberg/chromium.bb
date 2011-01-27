@@ -1,11 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/proxy/ppb_cursor_control_proxy.h"
 
+#include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_resource.h"
+#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
 namespace pp {
@@ -21,11 +24,24 @@ PP_Bool SetCursor(PP_Instance instance_id,
   if (!dispatcher)
     return PP_FALSE;
 
+  // It's legal for the image ID to be null if the type is not custom.
+  HostResource cursor_image_resource;
+  if (type == PP_CURSORTYPE_CUSTOM) {
+    PluginResource* cursor_image = PluginResourceTracker::GetInstance()->
+        GetResourceObject(custom_image_id);
+    if (!cursor_image || cursor_image->instance() != instance_id)
+      return PP_FALSE;
+    cursor_image_resource = cursor_image->host_resource();
+  } else {
+    if (custom_image_id)
+      return PP_FALSE;  // Image specified for a predefined type.
+  }
+
   PP_Bool result = PP_FALSE;
   PP_Point empty_point = { 0, 0 };
   dispatcher->Send(new PpapiHostMsg_PPBCursorControl_SetCursor(
       INTERFACE_ID_PPB_CURSORCONTROL,
-      instance_id, static_cast<int32_t>(type), custom_image_id,
+      instance_id, static_cast<int32_t>(type), cursor_image_resource,
       hot_spot ? *hot_spot : empty_point, &result));
   return result;
 }
@@ -121,11 +137,12 @@ bool PPB_CursorControl_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPB_CursorControl_Proxy::OnMsgSetCursor(PP_Instance instance,
                                              int32_t type,
-                                             PP_Resource custom_image,
+                                             HostResource custom_image,
                                              const PP_Point& hot_spot,
                                              PP_Bool* result) {
   *result = ppb_cursor_control_target()->SetCursor(
-      instance, static_cast<PP_CursorType_Dev>(type), custom_image, &hot_spot);
+      instance, static_cast<PP_CursorType_Dev>(type),
+      custom_image.host_resource(), &hot_spot);
 }
 
 void PPB_CursorControl_Proxy::OnMsgLockCursor(PP_Instance instance,

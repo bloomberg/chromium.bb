@@ -67,13 +67,22 @@ PP_Bool DrawGlyphs(PP_Instance instance,
                    uint32_t glyph_count,
                    const uint16_t glyph_indices[],
                    const PP_Point glyph_advances[]) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  PluginResource* image_data = PluginResourceTracker::GetInstance()->
+      GetResourceObject(pp_image_data);
+  if (!image_data)
+    return PP_FALSE;
+  // The instance parameter isn't strictly necessary but we check that it
+  // matches anyway.
+  if (image_data->instance() != instance)
+    return PP_FALSE;
+
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
+      image_data->instance());
   if (!dispatcher)
     return PP_FALSE;
 
   PPBFlash_DrawGlyphs_Params params;
-  params.instance = instance,
-  params.pp_image_data = pp_image_data;
+  params.image_data = image_data->host_resource();
   params.font_desc.SetFromPPFontDescription(dispatcher, *font_desc, true);
   params.color = color;
   params.position = position;
@@ -305,8 +314,9 @@ void PPB_Flash_Proxy::OnMsgDrawGlyphs(
     return;
 
   *result = ppb_flash_target()->DrawGlyphs(
-      params.instance, params.pp_image_data, &font_desc, params.color,
-      params.position, params.clip,
+      0,  // Unused instance param.
+      params.image_data.host_resource(), &font_desc,
+      params.color, params.position, params.clip,
       const_cast<float(*)[3]>(params.transformation),
       static_cast<uint32_t>(params.glyph_indices.size()),
       const_cast<uint16_t*>(&params.glyph_indices[0]),

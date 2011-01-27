@@ -8,6 +8,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
 struct PPB_Core;
@@ -31,8 +32,8 @@ class PPB_Core_Proxy : public InterfaceProxy {
 
  private:
   // Message handlers.
-  void OnMsgAddRefResource(PP_Resource resource);
-  void OnMsgReleaseResource(PP_Resource resource);
+  void OnMsgAddRefResource(HostResource resource);
+  void OnMsgReleaseResource(HostResource resource);
 };
 
 }  // namespace proxy

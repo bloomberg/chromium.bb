@@ -62,7 +62,7 @@ PP_Var HostVarSerializationRules::ReceivePassRef(const PP_Var& var,
 }
 
 PP_Var HostVarSerializationRules::BeginSendPassRef(const PP_Var& var,
-                                                 std::string* str_val) {
+                                                   std::string* str_val) {
   // See PluginVarSerialization::ReceivePassRef for an example. We don't need
   // to do anything here other than convert the string.
   if (var.type == PP_VARTYPE_STRING)
@@ -70,7 +70,8 @@ PP_Var HostVarSerializationRules::BeginSendPassRef(const PP_Var& var,
   return var;
 }
 
-void HostVarSerializationRules::EndSendPassRef(const PP_Var& var) {
+void HostVarSerializationRules::EndSendPassRef(const PP_Var& /* var */,
+                                               Dispatcher* /* dispatcher */) {
   // See PluginVarSerialization::ReceivePassRef for an example. We don't need
   // to do anything here.
 }

@@ -267,8 +267,15 @@
       'sources': [
         'proxy/run_all_unittests.cc',
 
+        'proxy/mock_resource.cc',
+        'proxy/mock_resource.h',
+        'proxy/plugin_resource_tracker_unittest.cc',
         'proxy/plugin_var_tracker_unittest.cc',
+        'proxy/ppapi_proxy_test.cc',
+        'proxy/ppapi_proxy_test.h',
+        'proxy/serialized_var_unittest.cc',
+        'proxy/serialized_var_unittest.h',
       ],
-    },    
+    },
   ],
 }

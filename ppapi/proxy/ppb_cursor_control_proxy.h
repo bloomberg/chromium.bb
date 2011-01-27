@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
 struct PPB_CursorControl_Dev;
@@ -35,7 +36,7 @@ class PPB_CursorControl_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnMsgSetCursor(PP_Instance instance,
                       int32_t type,
-                      PP_Resource custom_image,
+                      HostResource custom_image,
                       const PP_Point& hot_spot,
                       PP_Bool* result);
   void OnMsgLockCursor(PP_Instance instance,

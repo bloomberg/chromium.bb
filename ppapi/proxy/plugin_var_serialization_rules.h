@@ -31,7 +31,7 @@ class PluginVarSerializationRules : public VarSerializationRules {
                                 const std::string& str_val,
                                 Dispatcher* dispatcher);
   virtual PP_Var BeginSendPassRef(const PP_Var& var, std::string* str_val);
-  virtual void EndSendPassRef(const PP_Var& var);
+  virtual void EndSendPassRef(const PP_Var& var, Dispatcher* dispatcher);
   virtual void ReleaseObjectRef(const PP_Var& var);
 
  private:

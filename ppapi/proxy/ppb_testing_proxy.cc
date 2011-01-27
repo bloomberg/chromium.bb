@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,9 @@
 
 #include "base/message_loop.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
-#include "ppapi/proxy/image_data.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_resource.h"
+#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
 namespace pp {
@@ -15,12 +16,19 @@ namespace proxy {
 
 namespace {
 
-PP_Bool ReadImageData(PP_Resource device_context_2d,
+PP_Bool ReadImageData(PP_Resource graphics_2d,
                       PP_Resource image,
                       const PP_Point* top_left) {
-  ImageData* image_object = PluginResource::GetAs<ImageData>(image);
+  PluginResource* image_object = PluginResourceTracker::GetInstance()->
+      GetResourceObject(image);
   if (!image_object)
     return PP_FALSE;
+  PluginResource* graphics_2d_object =
+      PluginResourceTracker::GetInstance()->GetResourceObject(graphics_2d);
+  if (!graphics_2d_object ||
+      image_object->instance() != graphics_2d_object->instance())
+    return PP_FALSE;
+
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
       image_object->instance());
   if (!dispatcher)
@@ -28,7 +36,8 @@ PP_Bool ReadImageData(PP_Resource device_context_2d,
 
   PP_Bool result = PP_FALSE;
   dispatcher->Send(new PpapiHostMsg_PPBTesting_ReadImageData(
-      INTERFACE_ID_PPB_TESTING, device_context_2d, image, *top_left, &result));
+      INTERFACE_ID_PPB_TESTING, graphics_2d_object->host_resource(),
+      image_object->host_resource(), *top_left, &result));
   return result;
 }
 
@@ -95,12 +104,13 @@ bool PPB_Testing_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void PPB_Testing_Proxy::OnMsgReadImageData(PP_Resource device_context_2d,
-                                           PP_Resource image,
-                                           const PP_Point& top_left,
-                                           PP_Bool* result) {
+void PPB_Testing_Proxy::OnMsgReadImageData(
+    const HostResource& device_context_2d,
+    const HostResource& image,
+    const PP_Point& top_left,
+    PP_Bool* result) {
   *result = ppb_testing_target()->ReadImageData(
-      device_context_2d, image, &top_left);
+      device_context_2d.host_resource(), image.host_resource(), &top_left);
 }
 
 void PPB_Testing_Proxy::OnMsgRunMessageLoop(bool* dummy) {
@@ -113,7 +123,7 @@ void PPB_Testing_Proxy::OnMsgQuitMessageLoop() {
 }
 
 void PPB_Testing_Proxy::OnMsgGetLiveObjectsForInstance(PP_Instance instance,
-                                                uint32_t* result) {
+                                                       uint32_t* result) {
   *result = ppb_testing_target()->GetLiveObjectsForInstance(instance);
 }
 

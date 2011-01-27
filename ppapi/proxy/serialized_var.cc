@@ -19,7 +19,8 @@ namespace proxy {
 SerializedVar::Inner::Inner()
     : serialization_rules_(NULL),
       var_(PP_MakeUndefined()),
-      cleanup_mode_(CLEANUP_NONE) {
+      cleanup_mode_(CLEANUP_NONE),
+      dispatcher_for_end_send_pass_ref_(NULL) {
 #ifndef NDEBUG
   has_been_serialized_ = false;
   has_been_deserialized_ = false;
@@ -29,7 +30,8 @@ SerializedVar::Inner::Inner()
 SerializedVar::Inner::Inner(VarSerializationRules* serialization_rules)
     : serialization_rules_(serialization_rules),
       var_(PP_MakeUndefined()),
-      cleanup_mode_(CLEANUP_NONE) {
+      cleanup_mode_(CLEANUP_NONE),
+      dispatcher_for_end_send_pass_ref_(NULL) {
 #ifndef NDEBUG
   has_been_serialized_ = false;
   has_been_deserialized_ = false;
@@ -40,7 +42,8 @@ SerializedVar::Inner::Inner(VarSerializationRules* serialization_rules,
                             const PP_Var& var)
     : serialization_rules_(serialization_rules),
       var_(var),
-      cleanup_mode_(CLEANUP_NONE) {
+      cleanup_mode_(CLEANUP_NONE),
+      dispatcher_for_end_send_pass_ref_(NULL) {
 #ifndef NDEBUG
   has_been_serialized_ = false;
   has_been_deserialized_ = false;
@@ -50,7 +53,9 @@ SerializedVar::Inner::Inner(VarSerializationRules* serialization_rules,
 SerializedVar::Inner::~Inner() {
   switch (cleanup_mode_) {
     case END_SEND_PASS_REF:
-      serialization_rules_->EndSendPassRef(var_);
+      DCHECK(dispatcher_for_end_send_pass_ref_);
+      serialization_rules_->EndSendPassRef(var_,
+                                           dispatcher_for_end_send_pass_ref_);
       break;
     case END_RECEIVE_CALLER_OWNED:
       serialization_rules_->EndReceiveCallerOwned(var_);
@@ -204,6 +209,18 @@ bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m, void** iter) {
   return success;
 }
 
+void SerializedVar::Inner::SetCleanupModeToEndSendPassRef(
+    Dispatcher* dispatcher) {
+  DCHECK(dispatcher);
+  DCHECK(!dispatcher_for_end_send_pass_ref_);
+  dispatcher_for_end_send_pass_ref_ = dispatcher;
+  cleanup_mode_ = END_SEND_PASS_REF;
+}
+
+void SerializedVar::Inner::SetCleanupModeToEndReceiveCallerOwned() {
+  cleanup_mode_ = END_RECEIVE_CALLER_OWNED;
+}
+
 // SerializedVar ---------------------------------------------------------------
 
 SerializedVar::SerializedVar() : inner_(new Inner) {
@@ -339,7 +356,7 @@ PP_Var SerializedVarReceiveInput::Get(Dispatcher* dispatcher) {
 
   // Ensure that when the serialized var goes out of scope it cleans up the
   // stuff we're making in BeginReceiveCallerOwned.
-  serialized_.inner_->set_cleanup_mode(SerializedVar::END_RECEIVE_CALLER_OWNED);
+  serialized_.inner_->SetCleanupModeToEndReceiveCallerOwned();
 
   serialized_.inner_->SetVar(
       serialized_.inner_->serialization_rules()->BeginReceiveCallerOwned(
@@ -396,7 +413,7 @@ void SerializedVarReturnValue::Return(Dispatcher* dispatcher,
       dispatcher->serialization_rules());
 
   // Var must clean up after our BeginSendPassRef call.
-  serialized_->inner_->set_cleanup_mode(SerializedVar::END_SEND_PASS_REF);
+  serialized_->inner_->SetCleanupModeToEndSendPassRef(dispatcher);
 
   serialized_->inner_->SetVar(
       dispatcher->serialization_rules()->BeginSendPassRef(
@@ -408,7 +425,8 @@ void SerializedVarReturnValue::Return(Dispatcher* dispatcher,
 
 SerializedVarOutParam::SerializedVarOutParam(SerializedVar* serialized)
     : serialized_(serialized),
-      writable_var_(PP_MakeUndefined()) {
+      writable_var_(PP_MakeUndefined()),
+      dispatcher_(NULL) {
 }
 
 SerializedVarOutParam::~SerializedVarOutParam() {
@@ -422,11 +440,12 @@ SerializedVarOutParam::~SerializedVarOutParam() {
     // Normally the current object will be created on the stack to wrap a
     // SerializedVar and won't have a scope around the actual IPC send. So we
     // need to tell the SerializedVar to do the begin/end send pass ref calls.
-    serialized_->inner_->set_cleanup_mode(SerializedVar::END_SEND_PASS_REF);
+    serialized_->inner_->SetCleanupModeToEndSendPassRef(dispatcher_);
   }
 }
 
 PP_Var* SerializedVarOutParam::OutParam(Dispatcher* dispatcher) {
+  dispatcher_ = dispatcher;
   serialized_->inner_->set_serialization_rules(
       dispatcher->serialization_rules());
   return &writable_var_;
@@ -466,6 +485,25 @@ PP_Var** SerializedVarVectorOutParam::ArrayOutParam(Dispatcher* dispatcher) {
   DCHECK(!dispatcher_);  // Should only be called once.
   dispatcher_ = dispatcher;
   return &array_;
+}
+
+SerializedVarTestConstructor::SerializedVarTestConstructor(
+    const PP_Var& pod_var) {
+  DCHECK(pod_var.type != PP_VARTYPE_STRING);
+  inner_->SetVar(pod_var);
+}
+
+SerializedVarTestConstructor::SerializedVarTestConstructor(
+    const std::string& str) {
+  PP_Var string_var;
+  string_var.type = PP_VARTYPE_STRING;
+  string_var.value.as_id = 0;
+  inner_->SetVar(string_var);
+  *inner_->GetStringPtr() = str;
+}
+
+SerializedVarTestReader::SerializedVarTestReader(const SerializedVar& var)
+    : SerializedVar(var) {
 }
 
 }  // namespace proxy

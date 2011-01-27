@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -14,7 +14,7 @@
 #define PPB_CURSOR_CONTROL_DEV_INTERFACE "PPB_CursorControl(Dev);0.3"
 
 struct PPB_CursorControl_Dev {
-  // Set a cursor.  If "type" is PP_CURSOR_TYPE_CUSTOM, then "custom_image"
+  // Set a cursor.  If "type" is PP_CURSORTYPE_CUSTOM, then "custom_image"
   // must be an ImageData resource containing the cursor and "hot_spot" must
   // contain the offset within that image that refers to the cursor's position.
   PP_Bool (*SetCursor)(PP_Instance instance,

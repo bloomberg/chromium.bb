@@ -7,7 +7,8 @@
 namespace pp {
 namespace proxy {
 
-PluginResource::PluginResource(PP_Instance instance) : instance_(instance) {
+PluginResource::PluginResource(const HostResource& resource)
+    : host_resource_(resource) {
 }
 
 PluginResource::~PluginResource() {

@@ -118,10 +118,14 @@ PP_Var PluginVarSerializationRules::BeginSendPassRef(const PP_Var& var,
   return var;
 }
 
-void PluginVarSerializationRules::EndSendPassRef(const PP_Var& var) {
+void PluginVarSerializationRules::EndSendPassRef(const PP_Var& var,
+                                                 Dispatcher* dispatcher) {
   // See BeginSendPassRef for an example of why we release our ref here.
+  // The var we have in our inner class has been converted to a host object
+  // by BeginSendPassRef. This means it's not a normal var valid in the plugin,
+  // so we need to use the special ReleaseHostObject.
   if (var.type == PP_VARTYPE_OBJECT)
-    var_tracker_->Release(var);
+    var_tracker_->ReleaseHostObject(dispatcher, var);
 }
 
 void PluginVarSerializationRules::ReleaseObjectRef(const PP_Var& var) {

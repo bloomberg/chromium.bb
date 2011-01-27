@@ -66,9 +66,11 @@ PP_Bool HandleInputEvent(PP_Instance instance,
 PP_Bool HandleDocumentLoad(PP_Instance instance,
                            PP_Resource url_loader) {
   PP_Bool result = PP_FALSE;
+  HostResource serialized_loader;
+  serialized_loader.SetHostResource(instance, url_loader);
   HostDispatcher::GetForInstance(instance)->Send(
       new PpapiMsg_PPPInstance_HandleDocumentLoad(INTERFACE_ID_PPP_INSTANCE,
-                                                  instance, url_loader,
+                                                  instance, serialized_loader,
                                                   &result));
   return result;
 }
@@ -180,11 +182,12 @@ void PPP_Instance_Proxy::OnMsgHandleInputEvent(PP_Instance instance,
 }
 
 void PPP_Instance_Proxy::OnMsgHandleDocumentLoad(PP_Instance instance,
-                                                 PP_Resource url_loader,
+                                                 const HostResource& url_loader,
                                                  PP_Bool* result) {
-  PPB_URLLoader_Proxy::TrackPluginResource(instance, url_loader);
+  PP_Resource plugin_loader =
+      PPB_URLLoader_Proxy::TrackPluginResource(url_loader);
   *result = ppp_instance_target()->HandleDocumentLoad(
-      instance, url_loader);
+      instance, plugin_loader);
 }
 
 void PPP_Instance_Proxy::OnMsgGetInstanceObject(

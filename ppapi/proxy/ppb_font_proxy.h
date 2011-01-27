@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
 struct PPB_Font_Dev;
@@ -37,24 +38,24 @@ class PPB_Font_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnMsgCreate(PP_Instance instance,
                    const SerializedFontDescription& in_description,
-                   PP_Resource* result,
+                   HostResource* result,
                    SerializedFontDescription* out_description,
                    std::string* out_metrics);
   void OnMsgDrawTextAt(SerializedVarReceiveInput text,
                        const PPBFont_DrawTextAt_Params& params,
                        PP_Bool* result);
-  void OnMsgMeasureText(PP_Resource font,
+  void OnMsgMeasureText(HostResource font,
                         SerializedVarReceiveInput text,
                         PP_Bool text_is_rtl,
                         PP_Bool override_direction,
                         int32_t* result);
-  void OnMsgCharacterOffsetForPixel(PP_Resource font,
+  void OnMsgCharacterOffsetForPixel(HostResource font,
                                     SerializedVarReceiveInput text,
                                     PP_Bool text_is_rtl,
                                     PP_Bool override_direction,
                                     int32_t pixel_pos,
                                     uint32_t* result);
-  void OnMsgPixelOffsetForCharacter(PP_Resource font,
+  void OnMsgPixelOffsetForCharacter(HostResource font,
                                     SerializedVarReceiveInput text,
                                     PP_Bool text_is_rtl,
                                     PP_Bool override_direction,

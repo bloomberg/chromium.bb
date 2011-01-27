@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
 struct PP_Point;
@@ -32,8 +33,8 @@ class PPB_Testing_Proxy : public InterfaceProxy {
 
  private:
   // Message handlers.
-  void OnMsgReadImageData(PP_Resource device_context_2d,
-                          PP_Resource image,
+  void OnMsgReadImageData(const HostResource& device_context_2d,
+                          const HostResource& image,
                           const PP_Point& top_left,
                           PP_Bool* result);
   void OnMsgRunMessageLoop(bool* dummy);

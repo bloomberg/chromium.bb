@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 
@@ -18,6 +19,7 @@
   F(Font) \
   F(Graphics2D) \
   F(ImageData) \
+  F(MockResource) \
   F(PrivateFontFile) \
   F(URLLoader) \
   F(URLRequestInfo)\
@@ -33,7 +35,7 @@ FOR_ALL_PLUGIN_RESOURCES(DECLARE_RESOURCE_CLASS)
 
 class PluginResource {
  public:
-  PluginResource(PP_Instance instance);
+  PluginResource(const HostResource& resource);
   virtual ~PluginResource();
 
   // Returns NULL if the resource is invalid or is a different type.
@@ -45,7 +47,12 @@ class PluginResource {
 
   template <typename T> T* Cast() { return NULL; }
 
-  PP_Instance instance() const { return instance_; }
+  PP_Instance instance() const { return host_resource_.instance(); }
+
+  // Returns the host resource ID for sending to the host process.
+  const HostResource& host_resource() const {
+    return host_resource_;
+  }
 
  private:
   // Type-specific getters for individual resource types. These will return
@@ -56,8 +63,11 @@ class PluginResource {
   FOR_ALL_PLUGIN_RESOURCES(DEFINE_TYPE_GETTER)
   #undef DEFINE_TYPE_GETTER
 
-  // Instance this resource is associated with.
-  PP_Instance instance_;
+  // The resource ID in the host that this object corresponds to. Inside the
+  // plugin we'll remap the resource IDs so we can have many host processes
+  // each independently generating resources (which may conflict) but the IDs
+  // in the plugin will all be unique.
+  HostResource host_resource_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginResource);
 };

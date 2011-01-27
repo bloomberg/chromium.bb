@@ -39,7 +39,7 @@ class VarSerializationRules;
 // different combinations of reference counting for sending and receiving
 // objects and for dealing with strings
 //
-// This makes SerializedVar complicate and easy to mess up. To make it
+// This makes SerializedVar complicated and easy to mess up. To make it
 // reasonable to use all functions are protected and there are a use-specific
 // classes that encapsulate exactly one type of use in a way that typically
 // won't compile if you do the wrong thing.
@@ -63,17 +63,6 @@ class VarSerializationRules;
 // behavior and will enforce that you don't do stupid things.
 class SerializedVar {
  public:
-  enum CleanupMode {
-    // The serialized var won't do anything special in the destructor (default).
-    CLEANUP_NONE,
-
-    // The serialized var will call EndSendPassRef in the destructor.
-    END_SEND_PASS_REF,
-
-    // The serialized var will call EndReceiveCallerOwned in the destructor.
-    END_RECEIVE_CALLER_OWNED
-  };
-
   SerializedVar();
   ~SerializedVar();
 
@@ -90,6 +79,7 @@ class SerializedVar {
   friend class SerializedVarReturnValue;
   friend class SerializedVarOutParam;
   friend class SerializedVarSendInput;
+  friend class SerializedVarTestConstructor;
   friend class SerializedVarVectorReceiveInput;
 
   class Inner : public base::RefCounted<Inner> {
@@ -106,8 +96,6 @@ class SerializedVar {
       serialization_rules_ = serialization_rules;
     }
 
-    void set_cleanup_mode(CleanupMode cm) { cleanup_mode_ = cm; }
-
     // See outer class's declarations above.
     PP_Var GetVar() const;
     PP_Var GetIncompleteVar() const;
@@ -118,7 +106,25 @@ class SerializedVar {
     void WriteToMessage(IPC::Message* m) const;
     bool ReadFromMessage(const IPC::Message* m, void** iter);
 
+    // Sets the cleanup mode. See the CleanupMode enum below. These functions
+    // are not just a simple setter in order to require that the appropriate
+    // data is set along with the corresponding mode.
+    void SetCleanupModeToEndSendPassRef(Dispatcher* dispatcher);
+    void SetCleanupModeToEndReceiveCallerOwned();
+
    private:
+    enum CleanupMode {
+      // The serialized var won't do anything special in the destructor
+      // (default).
+      CLEANUP_NONE,
+
+      // The serialized var will call EndSendPassRef in the destructor.
+      END_SEND_PASS_REF,
+
+      // The serialized var will call EndReceiveCallerOwned in the destructor.
+      END_RECEIVE_CALLER_OWNED
+    };
+
     // Rules for serializing and deserializing vars for this process type.
     // This may be NULL, but must be set before trying to serialize to IPC when
     // sending, or before converting back to a PP_Var when receiving.
@@ -139,6 +145,10 @@ class SerializedVar {
     std::string string_value_;
 
     CleanupMode cleanup_mode_;
+
+    // The dispatcher saved for the call to EndSendPassRef for the cleanup.
+    // This is only valid when cleanup_mode == END_SEND_PASS_REF.
+    Dispatcher* dispatcher_for_end_send_pass_ref_;
 
 #ifndef NDEBUG
     // When being sent or received over IPC, we should only be serialized or
@@ -378,6 +388,8 @@ class SerializedVarOutParam {
   // This is the value actually written by the code and returned by OutParam.
   // We'll write this into serialized_ in our destructor.
   PP_Var writable_var_;
+
+  Dispatcher* dispatcher_;
 };
 
 // For returning an array of PP_Vars to the other side and transferring
@@ -397,6 +409,30 @@ class SerializedVarVectorOutParam {
 
   uint32_t count_;
   PP_Var* array_;
+};
+
+// For tests that just want to construct a SerializedVar for giving it to one
+// of the other classes.
+class SerializedVarTestConstructor : public SerializedVar {
+ public:
+  // For POD-types and objects.
+  explicit SerializedVarTestConstructor(const PP_Var& pod_var);
+
+  // For strings.
+  explicit SerializedVarTestConstructor(const std::string& str);
+};
+
+// For tests that want to read what's in a SerializedVar.
+class SerializedVarTestReader : public SerializedVar {
+ public:
+  explicit SerializedVarTestReader(const SerializedVar& var);
+
+  // The "incomplete" var is the one sent over the wire. Strings and object
+  // IDs have not yet been converted, so this is the thing that tests will
+  // actually want to check.
+  PP_Var GetIncompleteVar() const { return inner_->GetIncompleteVar(); }
+
+  const std::string& GetString() const { return inner_->GetString(); }
 };
 
 }  // namespace proxy

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,20 +11,24 @@
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/proxy/serialized_var.h" // TODO(brettw) eraseme.
 
 struct PP_FileInfo_Dev;
 struct PP_ObjectProperty;
 
 namespace pp {
 namespace proxy {
+
+struct PPBAudio_NotifyAudioStreamCreated_Params;
 struct PPBFlash_DrawGlyphs_Params;
 struct PPBFont_DrawTextAt_Params;
+struct PPBURLLoader_UpdateProgress_Params;
 struct SerializedDirEntry;
 struct SerializedFontDescription;
+class HostResource;
 class SerializedVar;
-}
-}
+
+}  // namespace proxy
+}  // namespace pp
 
 namespace IPC {
 
@@ -84,6 +88,14 @@ struct ParamTraits<PP_Size> {
   static void Log(const param_type& p, std::string* l);
 };
 
+template<> struct ParamTraits<
+    pp::proxy::PPBAudio_NotifyAudioStreamCreated_Params> {
+  typedef pp::proxy::PPBAudio_NotifyAudioStreamCreated_Params param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
 template<>
 struct ParamTraits<pp::proxy::PPBFlash_DrawGlyphs_Params> {
   typedef pp::proxy::PPBFlash_DrawGlyphs_Params param_type;
@@ -101,6 +113,14 @@ struct ParamTraits<pp::proxy::PPBFont_DrawTextAt_Params> {
 };
 
 template<>
+struct ParamTraits<pp::proxy::PPBURLLoader_UpdateProgress_Params> {
+  typedef pp::proxy::PPBURLLoader_UpdateProgress_Params param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template<>
 struct ParamTraits<pp::proxy::SerializedDirEntry> {
   typedef pp::proxy::SerializedDirEntry param_type;
   static void Write(Message* m, const param_type& p);
@@ -111,6 +131,14 @@ struct ParamTraits<pp::proxy::SerializedDirEntry> {
 template<>
 struct ParamTraits<pp::proxy::SerializedFontDescription> {
   typedef pp::proxy::SerializedFontDescription param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template<>
+struct ParamTraits<pp::proxy::HostResource> {
+  typedef pp::proxy::HostResource param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ namespace proxy {
 
 class Font : public PluginResource {
  public:
-  Font(PP_Instance instance);
+  Font(const HostResource& resource);
   virtual ~Font();
 
   // PluginResource overrides.
@@ -31,7 +31,7 @@ class Font : public PluginResource {
   DISALLOW_COPY_AND_ASSIGN(Font);
 };
 
-Font::Font(PP_Instance instance) : PluginResource(instance) {
+Font::Font(const HostResource& resource) : PluginResource(resource) {
   memset(&desc_, 0, sizeof(PP_FontDescription_Dev));
   desc_.face.type = PP_VARTYPE_UNDEFINED;
   memset(&metrics_, 0, sizeof(PP_FontMetrics_Dev));
@@ -52,17 +52,17 @@ PP_Resource Create(PP_Instance instance,
   SerializedFontDescription in_description;
   in_description.SetFromPPFontDescription(dispatcher, *description, true);
 
-  PP_Resource result;
+  HostResource result;
   SerializedFontDescription out_description;
   std::string out_metrics;
   dispatcher->Send(new PpapiHostMsg_PPBFont_Create(
       INTERFACE_ID_PPB_FONT,
       instance, in_description, &result, &out_description, &out_metrics));
 
-  if (!result)
+  if (result.is_null())
     return 0;  // Failure creating font.
 
-  linked_ptr<Font> object(new Font(instance));
+  linked_ptr<Font> object(new Font(result));
   out_description.SetToPPFontDescription(dispatcher, object->desc_ptr(), true);
 
   // Convert the metrics, this is just serialized as a string of bytes.
@@ -70,8 +70,7 @@ PP_Resource Create(PP_Instance instance,
     return 0;
   memcpy(&object->metrics(), out_metrics.data(), sizeof(PP_FontMetrics_Dev));
 
-  PluginResourceTracker::GetInstance()->AddResource(result, object);
-  return result;
+  return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
 PP_Bool IsFont(PP_Resource resource) {
@@ -102,13 +101,19 @@ PP_Bool DrawTextAt(PP_Resource font_id,
                    uint32_t color,
                    const PP_Rect* clip,
                    PP_Bool image_data_is_opaque) {
-  Font* object = PluginResource::GetAs<Font>(font_id);
-  if (!object)
+  Font* font_object = PluginResource::GetAs<Font>(font_id);
+  if (!font_object)
+    return PP_FALSE;
+  PluginResource* image_object = PluginResourceTracker::GetInstance()->
+      GetResourceObject(image_data);
+  if (!image_object)
+    return PP_FALSE;
+  if (font_object->instance() != image_object->instance())
     return PP_FALSE;
 
   PPBFont_DrawTextAt_Params params;
-  params.font = font_id;
-  params.image_data = image_data;
+  params.font = font_object->host_resource();
+  params.image_data = image_object->host_resource();
   params.text_is_rtl = text->rtl;
   params.override_direction = text->override_direction;
   params.position = *position;
@@ -122,7 +127,8 @@ PP_Bool DrawTextAt(PP_Resource font_id,
   }
   params.image_data_is_opaque = image_data_is_opaque;
 
-  Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
+  Dispatcher* dispatcher = PluginDispatcher::GetForInstance(
+      image_object->instance());
   PP_Bool result = PP_FALSE;
   if (dispatcher) {
     dispatcher->Send(new PpapiHostMsg_PPBFont_DrawTextAt(
@@ -141,7 +147,7 @@ int32_t MeasureText(PP_Resource font_id, const PP_TextRun_Dev* text) {
   Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
   int32_t result = 0;
   dispatcher->Send(new PpapiHostMsg_PPBFont_MeasureText(
-      INTERFACE_ID_PPB_FONT, font_id,
+      INTERFACE_ID_PPB_FONT, object->host_resource(),
       SerializedVarSendInput(dispatcher, text->text),
       text->rtl, text->override_direction, &result));
   return result;
@@ -157,7 +163,7 @@ uint32_t CharacterOffsetForPixel(PP_Resource font_id,
   Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
   uint32_t result = 0;
   dispatcher->Send(new PpapiHostMsg_PPBFont_CharacterOffsetForPixel(
-      INTERFACE_ID_PPB_FONT, font_id,
+      INTERFACE_ID_PPB_FONT, object->host_resource(),
       SerializedVarSendInput(dispatcher, text->text),
       text->rtl, text->override_direction, pixel_position, &result));
   return result;
@@ -173,7 +179,7 @@ int32_t PixelOffsetForCharacter(PP_Resource font_id,
   Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
   int32_t result = 0;
   dispatcher->Send(new PpapiHostMsg_PPBFont_PixelOffsetForCharacter(
-      INTERFACE_ID_PPB_FONT, font_id,
+      INTERFACE_ID_PPB_FONT, object->host_resource(),
       SerializedVarSendInput(dispatcher, text->text),
       text->rtl, text->override_direction, char_offset, &result));
   return result;
@@ -228,7 +234,7 @@ bool PPB_Font_Proxy::OnMessageReceived(const IPC::Message& msg) {
 void PPB_Font_Proxy::OnMsgCreate(
     PP_Instance instance,
     const SerializedFontDescription& in_description,
-    PP_Resource* result,
+    HostResource* result,
     SerializedFontDescription* out_description,
     std::string* out_metrics) {
   // Convert the face name in the input description.
@@ -241,11 +247,13 @@ void PPB_Font_Proxy::OnMsgCreate(
   memset(&out_pp_desc, 0, sizeof(PP_FontDescription_Dev));
   out_pp_desc.face = PP_MakeUndefined();
 
-  *result = ppb_font_target()->Create(instance, &in_pp_desc);
-  if (*result) {
+  result->SetHostResource(instance,
+                          ppb_font_target()->Create(instance, &in_pp_desc));
+  if (result->is_null()) {
     // Get the metrics and resulting description to return to the browser.
     PP_FontMetrics_Dev metrics;
-    if (ppb_font_target()->Describe(*result, &out_pp_desc, &metrics)) {
+    if (ppb_font_target()->Describe(result->host_resource(), &out_pp_desc,
+                                    &metrics)) {
         out_metrics->assign(reinterpret_cast<const char*>(&metrics),
                             sizeof(PP_FontMetrics_Dev));
     }
@@ -264,12 +272,12 @@ void PPB_Font_Proxy::OnMsgDrawTextAt(SerializedVarReceiveInput text,
   run.rtl = params.text_is_rtl;
   run.override_direction = params.override_direction;
 
-  *result = ppb_font_target()->DrawTextAt(params.font, params.image_data,
-      &run, &params.position, params.color,
+  *result = ppb_font_target()->DrawTextAt(params.font.host_resource(),
+      params.image_data.host_resource(), &run, &params.position, params.color,
       params.clip_is_null ? NULL : &params.clip, params.image_data_is_opaque);
 }
 
-void PPB_Font_Proxy::OnMsgMeasureText(PP_Resource font,
+void PPB_Font_Proxy::OnMsgMeasureText(HostResource font,
                                       SerializedVarReceiveInput text,
                                       PP_Bool text_is_rtl,
                                       PP_Bool override_direction,
@@ -279,11 +287,11 @@ void PPB_Font_Proxy::OnMsgMeasureText(PP_Resource font,
   run.rtl = text_is_rtl;
   run.override_direction = override_direction;
 
-  *result = ppb_font_target()->MeasureText(font, &run);
+  *result = ppb_font_target()->MeasureText(font.host_resource(), &run);
 }
 
 void PPB_Font_Proxy::OnMsgCharacterOffsetForPixel(
-    PP_Resource font,
+    HostResource font,
     SerializedVarReceiveInput text,
     PP_Bool text_is_rtl,
     PP_Bool override_direction,
@@ -294,11 +302,12 @@ void PPB_Font_Proxy::OnMsgCharacterOffsetForPixel(
   run.rtl = text_is_rtl;
   run.override_direction = override_direction;
 
-  *result = ppb_font_target()->CharacterOffsetForPixel(font, &run, pixel_pos);
+  *result = ppb_font_target()->CharacterOffsetForPixel(font.host_resource(),
+                                                       &run, pixel_pos);
 }
 
 void PPB_Font_Proxy::OnMsgPixelOffsetForCharacter(
-    PP_Resource font,
+    HostResource font,
     SerializedVarReceiveInput text,
     PP_Bool text_is_rtl,
     PP_Bool override_direction,
@@ -309,7 +318,8 @@ void PPB_Font_Proxy::OnMsgPixelOffsetForCharacter(
   run.rtl = text_is_rtl;
   run.override_direction = override_direction;
 
-  *result = ppb_font_target()->PixelOffsetForCharacter(font, &run, char_offset);
+  *result = ppb_font_target()->PixelOffsetForCharacter(font.host_resource(),
+                                                       &run, char_offset);
 }
 
 }  // namespace proxy

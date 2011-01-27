@@ -110,12 +110,12 @@ bool PPB_Core_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void PPB_Core_Proxy::OnMsgAddRefResource(PP_Resource resource) {
-  ppb_core_target()->AddRefResource(resource);
+void PPB_Core_Proxy::OnMsgAddRefResource(HostResource resource) {
+  ppb_core_target()->AddRefResource(resource.host_resource());
 }
 
-void PPB_Core_Proxy::OnMsgReleaseResource(PP_Resource resource) {
-  ppb_core_target()->ReleaseResource(resource);
+void PPB_Core_Proxy::OnMsgReleaseResource(HostResource resource) {
+  ppb_core_target()->ReleaseResource(resource.host_resource());
 }
 
 }  // namespace proxy

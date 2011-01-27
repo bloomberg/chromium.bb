@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,9 @@ namespace proxy {
 
 class URLResponseInfo : public PluginResource {
  public:
-  URLResponseInfo(PP_Instance instance) : PluginResource(instance) {}
+  URLResponseInfo(const HostResource& resource)
+      : PluginResource(resource) {
+  }
   virtual ~URLResponseInfo() {}
 
   // Resource overrides.
@@ -43,19 +45,19 @@ PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
 
   ReceiveSerializedVarReturnValue result;
   dispatcher->Send(new PpapiHostMsg_PPBURLResponseInfo_GetProperty(
-      INTERFACE_ID_PPB_URL_RESPONSE_INFO, response, property, &result));
+      INTERFACE_ID_PPB_URL_RESPONSE_INFO, object->host_resource(), property,
+      &result));
   return result.Return(dispatcher);
 }
 
 PP_Resource GetBodyAsFileRef(PP_Resource response) {
-  PP_Resource result = 0;
   /*
   dispatcher->Send(new PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef(
       INTERFACE_ID_PPB_URL_RESPONSE_INFO, response, &result));
   // TODO(brettw) when we have FileRef proxied, make an object from that
   // ref so we can track it properly and then uncomment this.
   */
-  return result;
+  return 0;
 }
 
 const PPB_URLResponseInfo ppb_urlresponseinfo = {
@@ -76,12 +78,10 @@ PPB_URLResponseInfo_Proxy::~PPB_URLResponseInfo_Proxy() {
 }
 
 // static
-void PPB_URLResponseInfo_Proxy::TrackPluginResource(
-    PP_Instance instance,
-    PP_Resource response_resource) {
-  linked_ptr<URLResponseInfo> object(new URLResponseInfo(instance));
-  PluginResourceTracker::GetInstance()->AddResource(
-      response_resource, object);
+PP_Resource PPB_URLResponseInfo_Proxy::CreateResponseForResource(
+    const HostResource& resource) {
+  linked_ptr<URLResponseInfo> object(new URLResponseInfo(resource));
+  return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
 const void* PPB_URLResponseInfo_Proxy::GetSourceInterface() const {
@@ -106,17 +106,20 @@ bool PPB_URLResponseInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void PPB_URLResponseInfo_Proxy::OnMsgGetProperty(
-    PP_Resource response,
+    HostResource response,
     int32_t property,
     SerializedVarReturnValue result) {
   result.Return(dispatcher(), ppb_url_response_info_target()->GetProperty(
-      response, static_cast<PP_URLResponseProperty>(property)));
+      response.host_resource(), static_cast<PP_URLResponseProperty>(property)));
 }
 
 void PPB_URLResponseInfo_Proxy::OnMsgGetBodyAsFileRef(
-    PP_Resource response,
-    PP_Resource* file_ref_result) {
-  *file_ref_result = ppb_url_response_info_target()->GetBodyAsFileRef(response);
+    HostResource response,
+    HostResource* file_ref_result) {
+  file_ref_result->SetHostResource(
+      response.instance(),
+      ppb_url_response_info_target()->GetBodyAsFileRef(
+          response.host_resource()));
 }
 
 }  // namespace proxy

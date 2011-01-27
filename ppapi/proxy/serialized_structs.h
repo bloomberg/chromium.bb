@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,11 +10,12 @@
 
 #include "base/shared_memory.h"
 #include "build/build_config.h"
+#include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_rect.h"
-#include "ppapi/c/pp_resource.h"
+#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/serialized_var.h"
 
 struct PP_FontDescription_Dev;
@@ -74,8 +75,8 @@ struct SerializedDirEntry {
 // is a var, it's much more convenient to use the normal way of passing a
 // PP_Var.
 struct PPBFont_DrawTextAt_Params {
-  PP_Resource font;
-  PP_Resource image_data;
+  HostResource font;
+  HostResource image_data;
   PP_Bool text_is_rtl;
   PP_Bool override_direction;
   PP_Point position;
@@ -90,7 +91,7 @@ struct PPBFlash_DrawGlyphs_Params {
   ~PPBFlash_DrawGlyphs_Params();
 
   PP_Instance instance;
-  PP_Resource pp_image_data;
+  HostResource image_data;
   SerializedFontDescription font_desc;
   uint32_t color;
   PP_Point position;
@@ -98,6 +99,23 @@ struct PPBFlash_DrawGlyphs_Params {
   float transformation[3][3];
   std::vector<uint16_t> glyph_indices;
   std::vector<PP_Point> glyph_advances;
+};
+
+struct PPBAudio_NotifyAudioStreamCreated_Params {
+  pp::proxy::HostResource audio_id;
+  int32_t result_code;  // Will be != PP_OK on failure
+  IPC::PlatformFileForTransit socket_handle;
+  base::SharedMemoryHandle handle;
+  int32_t length;
+};
+
+struct PPBURLLoader_UpdateProgress_Params {
+  PP_Instance instance;
+  pp::proxy::HostResource resource;
+  int64_t bytes_sent;
+  int64_t total_bytes_to_be_sent;
+  int64_t bytes_received;
+  int64_t total_bytes_to_be_received;
 };
 
 #if defined(OS_WIN)

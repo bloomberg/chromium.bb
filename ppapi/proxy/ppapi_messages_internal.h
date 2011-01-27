@@ -45,16 +45,12 @@ IPC_MESSAGE_CONTROL2(PpapiMsg_ExecuteCallback,
 //
 // The handler of this message should always close all of the handles passed
 // in, since some could be valid even in the error case.
-IPC_MESSAGE_ROUTED5(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
-                    PP_Resource /* audio_id */,
-                    int32_t /* result_code (will be != PP_OK on failure) */,
-                    IPC::PlatformFileForTransit /* socket_handle */,
-                    base::SharedMemoryHandle /* handle */,
-                    int32_t /* length */)
+IPC_MESSAGE_ROUTED1(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
+                    pp::proxy::PPBAudio_NotifyAudioStreamCreated_Params);
 
 // PPB_Graphics2D.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,
-                    PP_Resource /* graphics_2d */,
+                    pp::proxy::HostResource /* graphics_2d */,
                     int32_t /* pp_error */)
 
 // PPP_Class.
@@ -130,7 +126,7 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiMsg_PPPInstance_HandleInputEvent,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiMsg_PPPInstance_HandleDocumentLoad,
                            PP_Instance /* instance */,
-                           PP_Resource /* url_loader */,
+                           pp::proxy::HostResource /* url_loader */,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPInstance_GetInstanceObject,
                            PP_Instance /* instance */,
@@ -139,14 +135,10 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPInstance_GetInstanceObject,
 
 // PPB_URLLoader
 // (Messages from browser to plugin to notify it of changes in state.)
-IPC_MESSAGE_ROUTED5(PpapiMsg_PPBURLLoader_UpdateProgress,
-                    PP_Resource /* resource */,
-                    int64 /* bytes_sent */,
-                    int64 /* total_bytes_to_be_sent */,
-                    int64 /* bytes_received */,
-                    int64 /* total_bytes_to_be_received */)
+IPC_MESSAGE_ROUTED1(PpapiMsg_PPBURLLoader_UpdateProgress,
+                    pp::proxy::PPBURLLoader_UpdateProgress_Params /* params */)
 IPC_MESSAGE_ROUTED3(PpapiMsg_PPBURLLoader_ReadResponseBody_Ack,
-                    PP_Resource /* loader */,
+                    pp::proxy::HostResource /* loader */,
                     int32 /* result */,
                     std::string /* data */)
 
@@ -159,10 +151,10 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_PluginLoaded,
 // PPB_Audio.
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBAudio_Create,
                            PP_Instance /* instance_id */,
-                           PP_Resource /* config_id */,
-                           PP_Resource /* result */)
+                           pp::proxy::HostResource /* config_id */,
+                           pp::proxy::HostResource /* result */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBAudio_StartOrStop,
-                    PP_Resource /* audio_id */,
+                    pp::proxy::HostResource /* audio_id */,
                     bool /* play */)
 
 // PPB_AudioConfig.
@@ -170,7 +162,7 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBAudioConfig_Create,
                            PP_Instance /* instance */,
                            int32_t /* sample_rate */,
                            uint32_t /* sample_frame_count */,
-                           PP_Resource /* result */)
+                           pp::proxy::HostResource /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(
     PpapiHostMsg_PPBAudioConfig_RecommendSampleFrameCount,
     int32_t /* sample_rate */,
@@ -181,12 +173,14 @@ IPC_SYNC_MESSAGE_ROUTED2_1(
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBBuffer_Create,
                            PP_Instance /* instance */,
                            uint32_t /* size */,
-                           PP_Resource /* result_resource */,
+                           pp::proxy::HostResource /* result_resource */,
                            int32_t /* result_shm_handle */)
 
 // PPB_Core.
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_AddRefResource, PP_Resource)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_ReleaseResource, PP_Resource)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_AddRefResource,
+                    pp::proxy::HostResource)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_ReleaseResource,
+                    pp::proxy::HostResource)
 
 // PPB_CharSet.
 IPC_SYNC_MESSAGE_ROUTED4_2(PpapiHostMsg_PPBCharSet_UTF16ToCharSet,
@@ -211,7 +205,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCharSet_GetDefaultCharSet,
 IPC_SYNC_MESSAGE_ROUTED4_1(PpapiHostMsg_PPBCursorControl_SetCursor,
                            PP_Instance /* instance */,
                            int32_t /* type */,
-                           PP_Resource /* custom_image */,
+                           pp::proxy::HostResource /* custom_image */,
                            PP_Point /* hot_spot */,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCursorControl_LockCursor,
@@ -282,7 +276,7 @@ IPC_SYNC_MESSAGE_ROUTED2_3(
     PpapiHostMsg_PPBFont_Create,
     PP_Instance /* instance */,
     pp::proxy::SerializedFontDescription /* in_description */,
-    PP_Resource /* result */,
+    pp::proxy::HostResource /* result */,
     pp::proxy::SerializedFontDescription /* out_description */,
     std::string /* out_metrics */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFont_DrawTextAt,
@@ -290,20 +284,20 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFont_DrawTextAt,
                            pp::proxy::PPBFont_DrawTextAt_Params /* params */,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED4_1(PpapiHostMsg_PPBFont_MeasureText,
-                           PP_Resource /* font */,
+                           pp::proxy::HostResource /* font */,
                            pp::proxy::SerializedVar /* text */,
                            PP_Bool /* text_is_rtl */,
                            PP_Bool /* override_direction */,
                            int32_t /* result */)
 IPC_SYNC_MESSAGE_ROUTED5_1(PpapiHostMsg_PPBFont_CharacterOffsetForPixel,
-                           PP_Resource /* font */,
+                           pp::proxy::HostResource /* font */,
                            pp::proxy::SerializedVar /* text */,
                            PP_Bool /* text_is_rtl */,
                            PP_Bool /* override_direction */,
                            int32_t /* pixel_pos */,
                            uint32_t /* result */)
 IPC_SYNC_MESSAGE_ROUTED5_1(PpapiHostMsg_PPBFont_PixelOffsetForCharacter,
-                           PP_Resource /* font */,
+                           pp::proxy::HostResource /* font */,
                            pp::proxy::SerializedVar /* text */,
                            PP_Bool /* text_is_rtl */,
                            PP_Bool /* override_direction */,
@@ -324,23 +318,23 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics2D_Create,
                            PP_Instance /* instance */,
                            PP_Size /* size */,
                            PP_Bool /* is_always_opaque */,
-                           PP_Resource /* result */)
+                           pp::proxy::HostResource /* result */)
 IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBGraphics2D_PaintImageData,
-                    PP_Resource /* graphics_2d */,
-                    PP_Resource /* image_data */,
+                    pp::proxy::HostResource /* graphics_2d */,
+                    pp::proxy::HostResource /* image_data */,
                     PP_Point /* top_left */,
                     bool /* src_rect_specified */,
                     PP_Rect /* src_rect */)
 IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBGraphics2D_Scroll,
-                    PP_Resource /* graphics_2d */,
+                    pp::proxy::HostResource /* graphics_2d */,
                     bool /* clip_specified */,
                     PP_Rect /* clip */,
                     PP_Point /* amount */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics2D_ReplaceContents,
-                    PP_Resource /* graphics_2d */,
-                    PP_Resource /* image_data */)
+                    pp::proxy::HostResource /* graphics_2d */,
+                    pp::proxy::HostResource /* image_data */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics2D_Flush,
-                    PP_Resource /* graphics_2d */)
+                    pp::proxy::HostResource /* graphics_2d */)
 
 // PPB_ImageData.
 IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_Create,
@@ -348,7 +342,7 @@ IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_Create,
                            int32 /* format */,
                            PP_Size /* size */,
                            PP_Bool /* init_to_zero */,
-                           PP_Resource /* result_resource */,
+                           pp::proxy::HostResource /* result_resource */,
                            std::string /* image_data_desc */,
                            pp::proxy::ImageHandle /* result */)
 
@@ -361,7 +355,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetOwnerElementObject,
                            pp::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_BindGraphics,
                            PP_Instance /* instance */,
-                           PP_Resource /* device */,
+                           pp::proxy::HostResource /* device */,
                            PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_IsFullFrame,
                            PP_Instance /* instance */,
@@ -377,19 +371,20 @@ IPC_SYNC_MESSAGE_ROUTED3_1(
     PP_Instance /* instance */,
     pp::proxy::SerializedFontDescription /* description */,
     int32_t /* charset */,
-    PP_Resource /* result */)
+    pp::proxy::HostResource /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(
     PpapiHostMsg_PPBPDF_GetFontTableForPrivateFontFile,
-    PP_Resource /* font_file */,
+    pp::proxy::HostResource /* font_file */,
     uint32_t /* table */,
     std::string /* result */)
 
 // PPB_Testing.
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBTesting_ReadImageData,
-                           PP_Resource /* device_context_2d */,
-                           PP_Resource /* image */,
-                           PP_Point /* top_left */,
-                           PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED3_1(
+    PpapiHostMsg_PPBTesting_ReadImageData,
+    pp::proxy::HostResource /* device_context_2d */,
+    pp::proxy::HostResource /* image */,
+    PP_Point /* top_left */,
+    PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED0_1(PpapiHostMsg_PPBTesting_RunMessageLoop,
                            bool /* dummy since there's no 0_0 variant */)
 IPC_MESSAGE_ROUTED0(PpapiHostMsg_PPBTesting_QuitMessageLoop)
@@ -400,56 +395,57 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBTesting_GetLiveObjectsForInstance,
 // PPB_URLLoader.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLLoader_Create,
                            PP_Instance /* instance */,
-                           PP_Resource /* result */)
+                           pp::proxy::HostResource /* result */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBURLLoader_Open,
-                    PP_Resource /* loader */,
-                    PP_Resource /*request_info */,
+                    pp::proxy::HostResource /* loader */,
+                    pp::proxy::HostResource /*request_info */,
                     uint32_t /* serialized_callback */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBURLLoader_FollowRedirect,
-                    PP_Resource /* loader */,
+                    pp::proxy::HostResource /* loader */,
                     uint32_t /* serialized_callback */)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLLoader_GetResponseInfo,
-                           PP_Resource /* loader */,
-                           PP_Resource /* response_info_out */)
+IPC_SYNC_MESSAGE_ROUTED1_1(
+    PpapiHostMsg_PPBURLLoader_GetResponseInfo,
+    pp::proxy::HostResource /* loader */,
+    pp::proxy::HostResource /* response_info_out */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBURLLoader_ReadResponseBody,
-                    PP_Resource /* loader */,
+                    pp::proxy::HostResource /* loader */,
                     int32_t /* bytes_to_read */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBURLLoader_FinishStreamingToFile,
-                    PP_Resource /* loader */,
+                    pp::proxy::HostResource /* loader */,
                     uint32_t /* serialized_callback */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoader_Close,
-                    PP_Resource /* loader */)
+                    pp::proxy::HostResource /* loader */)
 
 // PPB_URLLoaderTrusted.
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoaderTrusted_GrantUniversalAccess,
-                    PP_Resource /* loader */)
+                    pp::proxy::HostResource /* loader */)
 
 // PPB_URLRequestInfo.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLRequestInfo_Create,
                            PP_Instance /* instance */,
-                           PP_Resource /* result */)
+                           pp::proxy::HostResource /* result */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBURLRequestInfo_SetProperty,
-                    PP_Resource /* request */,
+                    pp::proxy::HostResource /* request */,
                     int32_t /* property */,
                     pp::proxy::SerializedVar /* value */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBURLRequestInfo_AppendDataToBody,
-                    PP_Resource /* request */,
+                    pp::proxy::HostResource /* request */,
                     std::string /* data */)
 IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBURLRequestInfo_AppendFileToBody,
-                    PP_Resource /* request */,
-                    PP_Resource /* file_ref */,
+                    pp::proxy::HostResource /* request */,
+                    pp::proxy::HostResource /* file_ref */,
                     int64_t /* start_offset */,
                     int64_t /* number_of_bytes */,
                     double /* expected_last_modified_time */)
 
 // PPB_URLResponseInfo.
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLResponseInfo_GetProperty,
-                           PP_Resource /* response */,
+                           pp::proxy::HostResource /* response */,
                            int32_t /* property */,
                            pp::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef,
-                           PP_Resource /* response */,
-                           PP_Resource /* file_ref_result */)
+                           pp::proxy::HostResource /* response */,
+                           pp::proxy::HostResource /* file_ref_result */)
 
 // PPB_Var.
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVar_AddRefObject,

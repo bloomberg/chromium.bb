@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ipc/ipc_test_sink.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
@@ -65,6 +66,7 @@ Dispatcher::Dispatcher(base::ProcessHandle remote_process_handle,
                        GetInterfaceFunc local_get_interface)
     : pp_module_(0),
       remote_process_handle_(remote_process_handle),
+      test_sink_(NULL),
       disallow_trusted_interfaces_(false),  // TODO(brettw) make this settable.
       local_get_interface_(local_get_interface),
       declared_supported_remote_interfaces_(false),
@@ -85,6 +87,11 @@ bool Dispatcher::InitWithChannel(MessageLoop* ipc_message_loop,
   channel_.reset(new IPC::SyncChannel(channel_handle, mode, this,
                                       ipc_message_loop, false, shutdown_event));
   return true;
+}
+
+void Dispatcher::InitWithTestSink(IPC::TestSink* test_sink) {
+  DCHECK(!test_sink_);
+  test_sink_ = test_sink;
 }
 
 bool Dispatcher::OnMessageReceived(const IPC::Message& msg) {
@@ -157,6 +164,8 @@ const void* Dispatcher::GetProxiedInterface(const std::string& interface) {
 }
 
 bool Dispatcher::Send(IPC::Message* msg) {
+  if (test_sink_)
+    return test_sink_->Send(msg);
   return channel_->Send(msg);
 }
 

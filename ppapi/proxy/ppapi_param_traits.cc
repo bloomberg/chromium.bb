@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
@@ -180,6 +181,36 @@ bool ParamTraits<PP_Size>::Read(const Message* m, void** iter, param_type* r) {
 void ParamTraits<PP_Size>::Log(const param_type& p, std::string* l) {
 }
 
+// PPBAudio_NotifyAudioStreamCreated_Params ------------------------------------
+
+// static
+void ParamTraits<pp::proxy::PPBAudio_NotifyAudioStreamCreated_Params>::Write(
+    Message* m,
+    const param_type& p) {
+  ParamTraits<pp::proxy::HostResource>::Write(m, p.audio_id);
+  ParamTraits<int32_t>::Write(m, p.result_code);
+  ParamTraits<PlatformFileForTransit>::Write(m, p.socket_handle);
+  ParamTraits<int32_t>::Write(m, p.length);
+}
+
+// static
+bool ParamTraits<pp::proxy::PPBAudio_NotifyAudioStreamCreated_Params>::Read(
+    const Message* m,
+    void** iter,
+    param_type* r) {
+  return
+      ParamTraits<pp::proxy::HostResource>::Read(m, iter, &r->audio_id) &&
+      ParamTraits<int32_t>::Read(m, iter, &r->result_code) &&
+      ParamTraits<PlatformFileForTransit>::Read(m, iter, &r->socket_handle) &&
+      ParamTraits<int32_t>::Read(m, iter, &r->length);
+}
+
+// static
+void ParamTraits<pp::proxy::PPBAudio_NotifyAudioStreamCreated_Params>::Log(
+    const param_type& p,
+    std::string* l) {
+}
+
 // PPBFlash_DrawGlyphs_Params --------------------------------------------------
 
 // static
@@ -187,7 +218,7 @@ void ParamTraits<pp::proxy::PPBFlash_DrawGlyphs_Params>::Write(
     Message* m,
     const param_type& p) {
   ParamTraits<PP_Instance>::Write(m, p.instance);
-  ParamTraits<PP_Resource>::Write(m, p.pp_image_data);
+  ParamTraits<pp::proxy::HostResource>::Write(m, p.image_data);
   ParamTraits<pp::proxy::SerializedFontDescription>::Write(m, p.font_desc);
   ParamTraits<uint32_t>::Write(m, p.color);
   ParamTraits<PP_Point>::Write(m, p.position);
@@ -212,7 +243,8 @@ bool ParamTraits<pp::proxy::PPBFlash_DrawGlyphs_Params>::Read(
     param_type* r) {
   return
       ParamTraits<PP_Instance>::Read(m, iter, &r->instance) &&
-      ParamTraits<PP_Resource>::Read(m, iter, &r->pp_image_data) &&
+      ParamTraits<pp::proxy::HostResource>::Read(m, iter,
+                                                       &r->image_data) &&
       ParamTraits<pp::proxy::SerializedFontDescription>::Read(m, iter,
                                                               &r->font_desc) &&
       ParamTraits<uint32_t>::Read(m, iter, &r->color) &&
@@ -244,8 +276,8 @@ void ParamTraits<pp::proxy::PPBFlash_DrawGlyphs_Params>::Log(
 void ParamTraits<pp::proxy::PPBFont_DrawTextAt_Params>::Write(
     Message* m,
     const param_type& p) {
-  ParamTraits<PP_Resource>::Write(m, p.font);
-  ParamTraits<PP_Resource>::Write(m, p.image_data);
+  ParamTraits<pp::proxy::HostResource>::Write(m, p.font);
+  ParamTraits<pp::proxy::HostResource>::Write(m, p.image_data);
   ParamTraits<PP_Bool>::Write(m, p.text_is_rtl);
   ParamTraits<PP_Bool>::Write(m, p.override_direction);
   ParamTraits<PP_Point>::Write(m, p.position);
@@ -261,8 +293,9 @@ bool ParamTraits<pp::proxy::PPBFont_DrawTextAt_Params>::Read(
     void** iter,
     param_type* r) {
   return
-      ParamTraits<PP_Resource>::Read(m, iter, &r->font) &&
-      ParamTraits<PP_Resource>::Read(m, iter, &r->image_data) &&
+      ParamTraits<pp::proxy::HostResource>::Read(m, iter, &r->font) &&
+      ParamTraits<pp::proxy::HostResource>::Read(m, iter,
+                                                       &r->image_data) &&
       ParamTraits<PP_Bool>::Read(m, iter, &r->text_is_rtl) &&
       ParamTraits<PP_Bool>::Read(m, iter, &r->override_direction) &&
       ParamTraits<PP_Point>::Read(m, iter, &r->position) &&
@@ -274,6 +307,40 @@ bool ParamTraits<pp::proxy::PPBFont_DrawTextAt_Params>::Read(
 
 // static
 void ParamTraits<pp::proxy::PPBFont_DrawTextAt_Params>::Log(
+    const param_type& p,
+    std::string* l) {
+}
+
+// PPBURLLoader_UpdateProgress_Params ------------------------------------------
+
+// static
+void ParamTraits<pp::proxy::PPBURLLoader_UpdateProgress_Params>::Write(
+    Message* m,
+    const param_type& p) {
+  ParamTraits<PP_Instance>::Write(m, p.instance);
+  ParamTraits<pp::proxy::HostResource>::Write(m, p.resource);
+  ParamTraits<int64_t>::Write(m, p.bytes_sent);
+  ParamTraits<int64_t>::Write(m, p.total_bytes_to_be_sent);
+  ParamTraits<int64_t>::Write(m, p.bytes_received);
+  ParamTraits<int64_t>::Write(m, p.total_bytes_to_be_received);
+}
+
+// static
+bool ParamTraits<pp::proxy::PPBURLLoader_UpdateProgress_Params>::Read(
+    const Message* m,
+    void** iter,
+    param_type* r) {
+  return
+      ParamTraits<PP_Instance>::Read(m, iter, &r->instance) &&
+      ParamTraits<pp::proxy::HostResource>::Read(m, iter, &r->resource) &&
+      ParamTraits<int64_t>::Read(m, iter, &r->bytes_sent) &&
+      ParamTraits<int64_t>::Read(m, iter, &r->total_bytes_to_be_sent) &&
+      ParamTraits<int64_t>::Read(m, iter, &r->bytes_received) &&
+      ParamTraits<int64_t>::Read(m, iter, &r->total_bytes_to_be_received);
+}
+
+// static
+void ParamTraits<pp::proxy::PPBURLLoader_UpdateProgress_Params>::Log(
     const param_type& p,
     std::string* l) {
 }
@@ -298,26 +365,6 @@ bool ParamTraits<pp::proxy::SerializedDirEntry>::Read(const Message* m,
 // static
 void ParamTraits<pp::proxy::SerializedDirEntry>::Log(const param_type& p,
                                                      std::string* l) {
-}
-
-// SerializedVar ---------------------------------------------------------------
-
-// static
-void ParamTraits<pp::proxy::SerializedVar>::Write(Message* m,
-                                                  const param_type& p) {
-  p.WriteToMessage(m);
-}
-
-// static
-bool ParamTraits<pp::proxy::SerializedVar>::Read(const Message* m,
-                                                 void** iter,
-                                                 param_type* r) {
-  return r->ReadFromMessage(m, iter);
-}
-
-// static
-void ParamTraits<pp::proxy::SerializedVar>::Log(const param_type& p,
-                                                std::string* l) {
 }
 
 // pp::proxy::SerializedFontDescription ----------------------------------------
@@ -356,6 +403,53 @@ bool ParamTraits<pp::proxy::SerializedFontDescription>::Read(
 void ParamTraits<pp::proxy::SerializedFontDescription>::Log(
     const param_type& p,
     std::string* l) {
+}
+
+// HostResource ----------------------------------------------------------
+
+// static
+void ParamTraits<pp::proxy::HostResource>::Write(Message* m,
+                                                 const param_type& p) {
+  ParamTraits<PP_Instance>::Write(m, p.instance());
+  ParamTraits<PP_Resource>::Write(m, p.host_resource());
+}
+
+// static
+bool ParamTraits<pp::proxy::HostResource>::Read(const Message* m,
+                                                void** iter,
+                                                param_type* r) {
+  PP_Instance instance;
+  PP_Resource resource;
+  if (!ParamTraits<PP_Instance>::Read(m, iter, &instance) ||
+      !ParamTraits<PP_Resource>::Read(m, iter, &resource))
+    return false;
+  r->SetHostResource(instance, resource);
+  return true;
+}
+
+// static
+void ParamTraits<pp::proxy::HostResource>::Log(const param_type& p,
+                                               std::string* l) {
+}
+
+// SerializedVar ---------------------------------------------------------------
+
+// static
+void ParamTraits<pp::proxy::SerializedVar>::Write(Message* m,
+                                                  const param_type& p) {
+  p.WriteToMessage(m);
+}
+
+// static
+bool ParamTraits<pp::proxy::SerializedVar>::Read(const Message* m,
+                                                 void** iter,
+                                                 param_type* r) {
+  return r->ReadFromMessage(m, iter);
+}
+
+// static
+void ParamTraits<pp::proxy::SerializedVar>::Log(const param_type& p,
+                                                std::string* l) {
 }
 
 // std::vector<SerializedVar> --------------------------------------------------

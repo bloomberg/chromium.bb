@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/cpp/completion_callback.h"
+#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
 
@@ -42,25 +43,27 @@ class PPB_Graphics2D_Proxy : public InterfaceProxy {
   void OnMsgCreate(PP_Module module,
                    const PP_Size& size,
                    PP_Bool is_always_opaque,
-                   PP_Resource* result);
-  void OnMsgPaintImageData(PP_Resource graphics_2d,
-                           PP_Resource image_data,
+                   HostResource* result);
+  void OnMsgPaintImageData(const HostResource& graphics_2d,
+                           const HostResource& image_data,
                            const PP_Point& top_left,
                            bool src_rect_specified,
                            const PP_Rect& src_rect);
-  void OnMsgScroll(PP_Resource graphics_2d,
+  void OnMsgScroll(const HostResource& graphics_2d,
                    bool clip_specified,
                    const PP_Rect& clip,
                    const PP_Point& amount);
-  void OnMsgReplaceContents(PP_Resource graphics_2d,
-                            PP_Resource image_data);
-  void OnMsgFlush(PP_Resource graphics_2d);
+  void OnMsgReplaceContents(const HostResource& graphics_2d,
+                            const HostResource& image_data);
+  void OnMsgFlush(const HostResource& graphics_2d);
 
   // Renderer->plugin message handlers.
-  void OnMsgFlushACK(PP_Resource graphics_2d, int32_t pp_error);
+  void OnMsgFlushACK(const HostResource& graphics_2d,
+                     int32_t pp_error);
 
   // Called in the renderer to send the given flush ACK to the plugin.
-  void SendFlushACKToPlugin(int32_t result, PP_Resource graphics_2d);
+  void SendFlushACKToPlugin(int32_t result,
+                            const HostResource& graphics_2d);
 
   CompletionCallbackFactory<PPB_Graphics2D_Proxy,
                             ProxyNonThreadSafeRefCount> callback_factory_;

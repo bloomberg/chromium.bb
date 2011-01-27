@@ -11,6 +11,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/proxy/host_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
 struct PP_InputEvent;
@@ -51,7 +52,7 @@ class PPP_Instance_Proxy : public InterfaceProxy {
                              const PP_InputEvent& event,
                              PP_Bool* result);
   void OnMsgHandleDocumentLoad(PP_Instance instance,
-                               PP_Resource url_loader,
+                               const HostResource& url_loader,
                                PP_Bool* result);
   void OnMsgGetInstanceObject(PP_Instance instance,
                               SerializedVarReturnValue result);

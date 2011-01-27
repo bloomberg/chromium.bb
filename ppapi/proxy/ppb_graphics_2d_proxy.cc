@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,13 +21,15 @@ namespace proxy {
 
 class Graphics2D : public PluginResource {
  public:
-  Graphics2D(PP_Instance instance,
+  Graphics2D(const HostResource& host_resource,
              const PP_Size& size,
              PP_Bool is_always_opaque)
-      : PluginResource(instance),
+      : PluginResource(host_resource),
         size_(size),
         is_always_opaque_(is_always_opaque),
         current_flush_callback_(PP_BlockUntilComplete()) {
+  }
+  virtual ~Graphics2D() {
   }
 
   // Resource overrides.
@@ -65,16 +67,15 @@ PP_Resource Create(PP_Instance instance,
   if (!dispatcher)
     return PP_ERROR_BADARGUMENT;
 
-  PP_Resource result = 0;
+  HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBGraphics2D_Create(
       INTERFACE_ID_PPB_GRAPHICS_2D, instance, *size, is_always_opaque,
       &result));
-  if (result) {
-    linked_ptr<Graphics2D> graphics_2d(new Graphics2D(instance, *size,
-                                                      is_always_opaque));
-    PluginResourceTracker::GetInstance()->AddResource(result, graphics_2d);
-  }
-  return result;
+  if (result.is_null())
+    return 0;
+  linked_ptr<Graphics2D> graphics_2d(new Graphics2D(result, *size,
+                                                    is_always_opaque));
+  return PluginResourceTracker::GetInstance()->AddResource(graphics_2d);
 }
 
 PP_Bool IsGraphics2D(PP_Resource resource) {
@@ -102,19 +103,27 @@ void PaintImageData(PP_Resource graphics_2d,
                     PP_Resource image_data,
                     const PP_Point* top_left,
                     const PP_Rect* src_rect) {
-  Graphics2D* object = PluginResource::GetAs<Graphics2D>(graphics_2d);
-  if (!object)
+  Graphics2D* graphics_object = PluginResource::GetAs<Graphics2D>(graphics_2d);
+  if (!graphics_object)
     return;
+  PluginResource* image_object = PluginResourceTracker::GetInstance()->
+      GetResourceObject(image_data);
+  if (!image_object)
+    return;
+  if (graphics_object->instance() != image_object->instance())
+    return;
+
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
-      object->instance());
+      graphics_object->instance());
   if (!dispatcher)
     return;
 
   PP_Rect dummy;
   memset(&dummy, 0, sizeof(PP_Rect));
   dispatcher->Send(new PpapiHostMsg_PPBGraphics2D_PaintImageData(
-      INTERFACE_ID_PPB_GRAPHICS_2D, graphics_2d, image_data, *top_left,
-      !!src_rect, src_rect ? *src_rect : dummy));
+      INTERFACE_ID_PPB_GRAPHICS_2D, graphics_object->host_resource(),
+      image_object->host_resource(), *top_left, !!src_rect,
+      src_rect ? *src_rect : dummy));
 }
 
 void Scroll(PP_Resource graphics_2d,
@@ -131,21 +140,29 @@ void Scroll(PP_Resource graphics_2d,
   PP_Rect dummy;
   memset(&dummy, 0, sizeof(PP_Rect));
   dispatcher->Send(new PpapiHostMsg_PPBGraphics2D_Scroll(
-      INTERFACE_ID_PPB_GRAPHICS_2D, graphics_2d, !!clip_rect,
-      clip_rect ? *clip_rect : dummy, *amount));
+      INTERFACE_ID_PPB_GRAPHICS_2D, object->host_resource(),
+      !!clip_rect, clip_rect ? *clip_rect : dummy, *amount));
 }
 
 void ReplaceContents(PP_Resource graphics_2d, PP_Resource image_data) {
-  Graphics2D* object = PluginResource::GetAs<Graphics2D>(graphics_2d);
-  if (!object)
+  Graphics2D* graphics_object = PluginResource::GetAs<Graphics2D>(graphics_2d);
+  if (!graphics_object)
     return;
+  PluginResource* image_object = PluginResourceTracker::GetInstance()->
+      GetResourceObject(image_data);
+  if (!image_object)
+    return;
+  if (graphics_object->instance() != image_object->instance())
+    return;
+
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
-      object->instance());
+      graphics_object->instance());
   if (!dispatcher)
     return;
 
   dispatcher->Send(new PpapiHostMsg_PPBGraphics2D_ReplaceContents(
-      INTERFACE_ID_PPB_GRAPHICS_2D, graphics_2d, image_data));
+      INTERFACE_ID_PPB_GRAPHICS_2D, graphics_object->host_resource(),
+      image_object->host_resource()));
 }
 
 int32_t Flush(PP_Resource graphics_2d,
@@ -168,7 +185,7 @@ int32_t Flush(PP_Resource graphics_2d,
   object->set_current_flush_callback(callback);
 
   dispatcher->Send(new PpapiHostMsg_PPBGraphics2D_Flush(
-      INTERFACE_ID_PPB_GRAPHICS_2D, graphics_2d));
+      INTERFACE_ID_PPB_GRAPHICS_2D, object->host_resource()));
   return PP_ERROR_WOULDBLOCK;
 }
 
@@ -226,40 +243,42 @@ bool PPB_Graphics2D_Proxy::OnMessageReceived(const IPC::Message& msg) {
 void PPB_Graphics2D_Proxy::OnMsgCreate(PP_Instance instance,
                                        const PP_Size& size,
                                        PP_Bool is_always_opaque,
-                                       PP_Resource* result) {
-  *result = ppb_graphics_2d_target()->Create(
-      instance, &size, is_always_opaque);
+                                       HostResource* result) {
+  result->SetHostResource(instance, ppb_graphics_2d_target()->Create(
+      instance, &size, is_always_opaque));
 }
 
-void PPB_Graphics2D_Proxy::OnMsgPaintImageData(PP_Resource graphics_2d,
-                                               PP_Resource image_data,
-                                               const PP_Point& top_left,
-                                               bool src_rect_specified,
-                                               const PP_Rect& src_rect) {
+void PPB_Graphics2D_Proxy::OnMsgPaintImageData(
+    const HostResource& graphics_2d,
+    const HostResource& image_data,
+    const PP_Point& top_left,
+    bool src_rect_specified,
+    const PP_Rect& src_rect) {
   ppb_graphics_2d_target()->PaintImageData(
-      graphics_2d, image_data, &top_left,
+      graphics_2d.host_resource(), image_data.host_resource(), &top_left,
       src_rect_specified ? &src_rect : NULL);
 }
 
-void PPB_Graphics2D_Proxy::OnMsgScroll(PP_Resource graphics_2d,
+void PPB_Graphics2D_Proxy::OnMsgScroll(const HostResource& graphics_2d,
                                        bool clip_specified,
                                        const PP_Rect& clip,
                                        const PP_Point& amount) {
-  ppb_graphics_2d_target()->Scroll(
-      graphics_2d,
-      clip_specified ? &clip : NULL, &amount);
+  ppb_graphics_2d_target()->Scroll(graphics_2d.host_resource(),
+                                   clip_specified ? &clip : NULL, &amount);
 }
 
-void PPB_Graphics2D_Proxy::OnMsgReplaceContents(PP_Resource graphics_2d,
-                                                PP_Resource image_data) {
-  ppb_graphics_2d_target()->ReplaceContents(graphics_2d, image_data);
+void PPB_Graphics2D_Proxy::OnMsgReplaceContents(
+    const HostResource& graphics_2d,
+    const HostResource& image_data) {
+  ppb_graphics_2d_target()->ReplaceContents(graphics_2d.host_resource(),
+                                            image_data.host_resource());
 }
 
-void PPB_Graphics2D_Proxy::OnMsgFlush(PP_Resource graphics_2d) {
+void PPB_Graphics2D_Proxy::OnMsgFlush(const HostResource& graphics_2d) {
   CompletionCallback callback = callback_factory_.NewCallback(
       &PPB_Graphics2D_Proxy::SendFlushACKToPlugin, graphics_2d);
   int32_t result = ppb_graphics_2d_target()->Flush(
-      graphics_2d, callback.pp_completion_callback());
+      graphics_2d.host_resource(), callback.pp_completion_callback());
   if (result != PP_ERROR_WOULDBLOCK) {
     // There was some error, so we won't get a flush callback. We need to now
     // issue the ACK to the plugin hears about the error. This will also clean
@@ -268,9 +287,15 @@ void PPB_Graphics2D_Proxy::OnMsgFlush(PP_Resource graphics_2d) {
   }
 }
 
-void PPB_Graphics2D_Proxy::OnMsgFlushACK(PP_Resource resource,
+void PPB_Graphics2D_Proxy::OnMsgFlushACK(const HostResource& host_resource,
                                          int32_t pp_error) {
-  Graphics2D* object = PluginResource::GetAs<Graphics2D>(resource);
+  PP_Resource plugin_resource =
+      PluginResourceTracker::GetInstance()->PluginResourceForHostResource(
+          host_resource);
+  if (!plugin_resource)
+    return;
+
+  Graphics2D* object = PluginResource::GetAs<Graphics2D>(plugin_resource);
   if (!object) {
     // The plugin has released the graphics 2D object so don't issue the
     // callback.
@@ -284,8 +309,9 @@ void PPB_Graphics2D_Proxy::OnMsgFlushACK(PP_Resource resource,
   PP_RunCompletionCallback(&callback, pp_error);
 }
 
-void PPB_Graphics2D_Proxy::SendFlushACKToPlugin(int32_t result,
-                                                PP_Resource graphics_2d) {
+void PPB_Graphics2D_Proxy::SendFlushACKToPlugin(
+    int32_t result,
+    const HostResource& graphics_2d) {
   dispatcher()->Send(new PpapiMsg_PPBGraphics2D_FlushACK(
       INTERFACE_ID_PPB_GRAPHICS_2D, graphics_2d, result));
 }

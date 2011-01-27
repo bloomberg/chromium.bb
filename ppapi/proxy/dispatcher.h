@@ -29,6 +29,7 @@ class WaitableEvent;
 
 namespace IPC {
 class SyncChannel;
+class TestSink;
 }
 
 namespace pp {
@@ -60,10 +61,16 @@ class Dispatcher : public IPC::Channel::Listener,
 
   ~Dispatcher();
 
+  // You must call this function before anything else. Returns true on success.
   bool InitWithChannel(MessageLoop* ipc_message_loop,
                        const IPC::ChannelHandle& channel_handle,
                        bool is_client,
                        base::WaitableEvent* shutdown_event);
+
+  // Alternative to InitWithChannel() for unit tests that want to send all
+  // messages sent via this dispatcher to the given test sink. The test sink
+  // must outlive this class.
+  void InitWithTestSink(IPC::TestSink* test_sink);
 
   // Returns true if the dispatcher is on the plugin side, or false if it's the
   // browser side.
@@ -104,6 +111,7 @@ class Dispatcher : public IPC::Channel::Listener,
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
+  // Will be NULL in some unit tests.
   IPC::SyncChannel* channel() const {
     return channel_.get();
   }
@@ -164,6 +172,13 @@ class Dispatcher : public IPC::Channel::Listener,
   PP_Module pp_module_;
 
   base::ProcessHandle remote_process_handle_;  // See getter above.
+
+  // When we're unit testing, this will indicate the sink for the messages to
+  // be deposited so they can be inspected by the test. When non-NULL, this
+  // indicates that the channel should not be used.
+  IPC::TestSink* test_sink_;
+
+  // Will be null for some tests when there is a test_sink_.
   scoped_ptr<IPC::SyncChannel> channel_;
 
   bool disallow_trusted_interfaces_;

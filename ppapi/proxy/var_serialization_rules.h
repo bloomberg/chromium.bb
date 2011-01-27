@@ -73,10 +73,11 @@ class VarSerializationRules {
   // Prepares a var to be sent to the remote side. One local reference will
   // be passed to the remote side. Call Begin* before doing the send and End*
   // after doing the send. See SendCallerOwned for a description of the string.
+  //
   // The return value from BeginSendPassRef will be the var valid for the host
-  // process.
+  // process. This same value must be passed to EndSendPassRef.
   virtual PP_Var BeginSendPassRef(const PP_Var& var, std::string* str_val) = 0;
-  virtual void EndSendPassRef(const PP_Var& var) = 0;
+  virtual void EndSendPassRef(const PP_Var& var, Dispatcher* dispatcher) = 0;
 
   // ---------------------------------------------------------------------------
 

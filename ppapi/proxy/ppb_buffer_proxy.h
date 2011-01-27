@@ -13,6 +13,8 @@ struct PPB_Buffer_Dev;
 namespace pp {
 namespace proxy {
 
+class HostResource;
+
 class PPB_Buffer_Proxy : public InterfaceProxy {
  public:
   PPB_Buffer_Proxy(Dispatcher* dispatcher, const void* target_interface);
@@ -31,7 +33,7 @@ class PPB_Buffer_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnMsgCreate(PP_Instance instance,
                    uint32_t size,
-                   PP_Resource* result_resource,
+                   HostResource* result_resource,
                    int* result_shm_handle);
 };
 

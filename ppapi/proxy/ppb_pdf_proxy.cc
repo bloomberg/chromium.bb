@@ -22,7 +22,8 @@ namespace proxy {
 
 class PrivateFontFile : public PluginResource {
  public:
-  PrivateFontFile(PP_Instance instance) : PluginResource(instance) {}
+  PrivateFontFile(const HostResource& resource) : PluginResource(resource) {
+  }
   virtual ~PrivateFontFile() {}
 
   // Resource overrides.
@@ -68,15 +69,14 @@ PP_Resource GetFontFileWithFallback(
   SerializedFontDescription desc;
   desc.SetFromPPFontDescription(dispatcher, *description, true);
 
-  PP_Resource result = 0;
+  HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBPDF_GetFontFileWithFallback(
       INTERFACE_ID_PPB_PDF, instance, desc, charset, &result));
-  if (!result)
+  if (result.is_null())
     return 0;
 
-  linked_ptr<PrivateFontFile> object(new PrivateFontFile(instance));
-  PluginResourceTracker::GetInstance()->AddResource(result, object);
-  return result;
+  linked_ptr<PrivateFontFile> object(new PrivateFontFile(result));
+  return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
 bool GetFontTableForPrivateFontFile(PP_Resource font_file,
@@ -95,7 +95,7 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
   if (!contents) {
     std::string deserialized;
     dispatcher->Send(new PpapiHostMsg_PPBPDF_GetFontTableForPrivateFontFile(
-        INTERFACE_ID_PPB_PDF, font_file, table, &deserialized));
+        INTERFACE_ID_PPB_PDF, object->host_resource(), table, &deserialized));
     if (deserialized.empty())
       return false;
     contents = object->AddFontTable(table, deserialized);
@@ -149,26 +149,28 @@ void PPB_PDF_Proxy::OnMsgGetFontFileWithFallback(
     PP_Instance instance,
     const SerializedFontDescription& in_desc,
     int32_t charset,
-    PP_Resource* result) {
+    HostResource* result) {
   PP_FontDescription_Dev desc;
   in_desc.SetToPPFontDescription(dispatcher(), &desc, false);
-  *result = ppb_pdf_target()->GetFontFileWithFallback(instance, &desc,
-      static_cast<PP_PrivateFontCharset>(charset));
+  result->SetHostResource(instance,
+      ppb_pdf_target()->GetFontFileWithFallback(
+          instance, &desc, static_cast<PP_PrivateFontCharset>(charset)));
 }
 
-void PPB_PDF_Proxy::OnMsgGetFontTableForPrivateFontFile(PP_Resource font_file,
-                                                        uint32_t table,
-                                                        std::string* result) {
+void PPB_PDF_Proxy::OnMsgGetFontTableForPrivateFontFile(
+    const HostResource& font_file,
+    uint32_t table,
+    std::string* result) {
   // TODO(brettw): It would be nice not to copy here. At least on Linux,
   // we can map the font file into shared memory and read it that way.
   uint32_t table_length = 0;
   if (!ppb_pdf_target()->GetFontTableForPrivateFontFile(
-          font_file, table, NULL, &table_length))
+          font_file.host_resource(), table, NULL, &table_length))
     return;
 
   result->resize(table_length);
-  ppb_pdf_target()->GetFontTableForPrivateFontFile(font_file, table,
-      const_cast<char*>(result->c_str()), &table_length);
+  ppb_pdf_target()->GetFontTableForPrivateFontFile(font_file.host_resource(),
+      table, const_cast<char*>(result->c_str()), &table_length);
 }
 
 }  // namespace proxy
