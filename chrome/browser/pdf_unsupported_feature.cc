@@ -314,8 +314,13 @@ class PDFUnsupportedFeatureConfirmInfoBarDelegate
       return true;
     }
 
+    // Don't show the enable Reader by default info bar for now.
+    /*
     OpenUsingReader(tab_contents_, reader_webplugininfo_, this);
     return false;
+    */
+    OpenUsingReader(tab_contents_, reader_webplugininfo_, NULL);
+    return true;
   }
 
   bool OnNo() {
