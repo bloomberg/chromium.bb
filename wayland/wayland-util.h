@@ -148,6 +148,7 @@ struct wl_array {
 void wl_array_init(struct wl_array *array);
 void wl_array_release(struct wl_array *array);
 void *wl_array_add(struct wl_array *array, int size);
+void wl_array_copy(struct wl_array *array, struct wl_array *source);
 
 #ifdef  __cplusplus
 }

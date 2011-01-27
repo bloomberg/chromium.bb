@@ -113,3 +113,11 @@ wl_array_add(struct wl_array *array, int size)
 
 	return p;
 }
+
+WL_EXPORT void
+wl_array_copy(struct wl_array *array, struct wl_array *source)
+{
+	array->size = 0;
+	wl_array_add(array, source->size);
+	memcpy(array->data, source->data, source->size);
+}

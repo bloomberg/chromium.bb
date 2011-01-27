@@ -53,6 +53,7 @@ struct x11_compositor {
 	xcb_cursor_t		 null_cursor;
 	int			 dri2_major;
 	int			 dri2_minor;
+	struct wl_array		 keys;
 	struct wl_event_source	*xcb_source;
 	struct {
 		xcb_atom_t		 wm_protocols;
@@ -381,7 +382,9 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 		XCB_EVENT_MASK_EXPOSURE |
 		XCB_EVENT_MASK_STRUCTURE_NOTIFY |
 		XCB_EVENT_MASK_ENTER_WINDOW |
-		XCB_EVENT_MASK_LEAVE_WINDOW,
+		XCB_EVENT_MASK_LEAVE_WINDOW |
+		XCB_EVENT_MASK_KEYMAP_STATE |
+		XCB_EVENT_MASK_FOCUS_CHANGE,
 		0
 	};
 
@@ -550,9 +553,13 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	xcb_enter_notify_event_t *enter_notify;
 	xcb_key_press_event_t *key_press;
 	xcb_button_press_event_t *button_press;
+	xcb_keymap_notify_event_t *keymap_notify;
+	xcb_focus_in_event_t *focus_in;
 	xcb_expose_event_t *expose;
 	xcb_rectangle_t *r;
 	xcb_atom_t atom;
+	uint32_t *k;
+	int i, set;
 
 	loop = wl_display_get_event_loop(c->base.wl_display);
         while (event = xcb_poll_for_event (c->conn), event != NULL) {
@@ -630,13 +637,44 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			if (atom == c->atom.wm_delete_window)
 				wl_display_terminate(c->base.wl_display);
 			break;
-		default: 
 
+		case XCB_FOCUS_IN:
+			focus_in = (xcb_focus_in_event_t *) event;
+			if (focus_in->mode == XCB_NOTIFY_MODE_WHILE_GRABBED)
+				break;
+
+			output = x11_compositor_find_output(c, focus_in->event);
+			notify_keyboard_focus(c->base.input_device,
+					      get_time(),
+					      &output->base, &c->keys);
+			break;
+
+		case XCB_FOCUS_OUT:
+			focus_in = (xcb_focus_in_event_t *) event;
+			if (focus_in->mode == XCB_NOTIFY_MODE_WHILE_GRABBED)
+				break;
+			notify_keyboard_focus(c->base.input_device,
+					      get_time(), NULL, NULL);
+			break;
+
+		case XCB_KEYMAP_NOTIFY:
+			keymap_notify = (xcb_keymap_notify_event_t *) event;
+			c->keys.size = 0;
+			for (i = 0; i < ARRAY_LENGTH(keymap_notify->keys) * 8; i++) {
+				set = keymap_notify->keys[i >> 3] &
+					(1 << (i & 7));
+				if (set) {
+					k = wl_array_add(&c->keys, sizeof *k);
+					*k = i;
+				}
+			}
+			break;
+		default:
 			break;
 		}
 
 		free (event);
-        }
+	}
 }
 
 #define F(field) offsetof(struct x11_compositor, field)
@@ -719,6 +757,7 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 
 	s = xcb_setup_roots_iterator(xcb_get_setup(c->conn));
 	c->screen = s.data;
+	wl_array_init(&c->keys);
 
 	x11_compositor_get_resources(c);
 

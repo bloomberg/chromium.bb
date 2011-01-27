@@ -1015,6 +1015,7 @@ window_handle_keyboard_focus(void *data,
 		input->keyboard_focus = NULL;
 
 	end = keys->data + keys->size;
+	input->modifiers = 0;
 	for (k = keys->data; k < end; k++)
 		input->modifiers |= d->xkb->map->modmap[*k];
 

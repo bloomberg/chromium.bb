@@ -70,6 +70,7 @@ struct wlsc_input_device {
 	struct wl_list link;
 	uint32_t modifier_state;
 	struct wl_selection *selection;
+	struct wl_surface *saved_keyboard_focus;
 };
 
 struct wlsc_drm {
@@ -160,6 +161,11 @@ notify_pointer_focus(struct wl_input_device *device,
 		     uint32_t time,
 		     struct wlsc_output *output,
 		     int32_t x, int32_t y);
+
+void
+notify_keyboard_focus(struct wl_input_device *device,
+		      uint32_t time, struct wlsc_output *output,
+		      struct wl_array *keys);
 
 void
 wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs);
