@@ -9,6 +9,7 @@
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/sync/signin_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -107,6 +108,42 @@ TEST_F(NewTabUITest, AboutHangInNTP) {
   scoped_refptr<TabProxy> tab2 = window->GetActiveTab();
   ASSERT_TRUE(tab2.get());
   ASSERT_TRUE(tab2->NavigateToURLAsync(GURL(chrome::kAboutHangURL)));
+}
+
+// Allows testing NTP in process-per-tab mode.
+class NewTabUIProcessPerTabTest : public NewTabUITest {
+ public:
+  NewTabUIProcessPerTabTest() : NewTabUITest() {}
+
+ protected:
+  virtual void SetUp() {
+    launch_arguments_.AppendSwitch(switches::kProcessPerTab);
+    UITest::SetUp();
+  }
+};
+
+// Navigates away from NTP before it commits, in process-per-tab mode.
+// Ensures that we don't load the normal page in the NTP process (and thus
+// crash), as in http://crbug.com/69224.
+TEST_F(NewTabUIProcessPerTabTest, NavBeforeNTPCommits) {
+  scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(window.get());
+
+  // Bring up a new tab page.
+  ASSERT_TRUE(window->RunCommand(IDC_NEW_TAB));
+  int load_time;
+  ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
+  scoped_refptr<TabProxy> tab = window->GetActiveTab();
+  ASSERT_TRUE(tab.get());
+
+  // Navigate to about:hang to stall the process.
+  ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kAboutHangURL)));
+
+  // Visit a normal URL in another NTP that hasn't committed.
+  ASSERT_TRUE(window->RunCommand(IDC_NEW_TAB));
+  scoped_refptr<TabProxy> tab2 = window->GetActiveTab();
+  ASSERT_TRUE(tab2.get());
+  ASSERT_TRUE(tab2->NavigateToURL(GURL("data:text/html,hello world")));
 }
 
 // Fails about ~5% of the time on all platforms. http://crbug.com/45001

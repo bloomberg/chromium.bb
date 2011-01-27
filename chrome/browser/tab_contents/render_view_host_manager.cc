@@ -292,18 +292,32 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
     const NavigationEntry* new_entry) const {
   DCHECK(new_entry);
 
+  // Check for reasons to swap processes even if we are in a process model that
+  // doesn't usually swap (e.g., process-per-tab).
+
+  // For security, we should transition between processes when one is a DOM UI
+  // page and one isn't.  If there's no cur_entry, check the current RVH's
+  // site, which might already be committed to a DOM UI URL (such as the NTP).
+  const GURL& current_url = (cur_entry) ? cur_entry->url() :
+      render_view_host_->site_instance()->site();
+  Profile* profile = delegate_->GetControllerForRenderManager().profile();
+  if (DOMUIFactory::UseDOMUIForURL(profile, current_url)) {
+    // Force swap if it's not an acceptable URL for DOM UI.
+    if (!DOMUIFactory::IsURLAcceptableForDOMUI(profile, new_entry->url()))
+      return true;
+  } else {
+    // Force swap if it's a DOM UI URL.
+    if (DOMUIFactory::UseDOMUIForURL(profile, new_entry->url()))
+      return true;
+  }
+
   if (!cur_entry) {
     // Always choose a new process when navigating to extension URLs. The
     // process grouping logic will combine all of a given extension's pages
     // into the same process.
     if (new_entry->url().SchemeIs(chrome::kExtensionScheme))
       return true;
-    // When a tab is created, it starts as TYPE_NORMAL. If the new entry is a
-    // DOM UI page, it needs to be grouped with other DOM UI pages. This matches
-    // the logic when transitioning between DOM UI and normal pages.
-    Profile* profile = delegate_->GetControllerForRenderManager().profile();
-    if (DOMUIFactory::UseDOMUIForURL(profile, new_entry->url()))
-      return true;
+
     return false;
   }
 
@@ -313,19 +327,6 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
   // it as a new navigation). So require a view switch.
   if (cur_entry->IsViewSourceMode() != new_entry->IsViewSourceMode())
     return true;
-
-  // For security, we should transition between processes when one is a DOM UI
-  // page and one isn't.
-  Profile* profile = delegate_->GetControllerForRenderManager().profile();
-  if (DOMUIFactory::UseDOMUIForURL(profile, cur_entry->url())) {
-    // Force swap if it's not an acceptable URL for DOM UI.
-    if (!DOMUIFactory::IsURLAcceptableForDOMUI(profile, new_entry->url()))
-      return true;
-  } else {
-    // Force swap if it's a DOM UI URL.
-    if (DOMUIFactory::UseDOMUIForURL(profile, new_entry->url()))
-      return true;
-  }
 
   // Also, we must switch if one is an extension and the other is not the exact
   // same extension.
