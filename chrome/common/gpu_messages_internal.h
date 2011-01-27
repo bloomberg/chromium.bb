@@ -115,6 +115,12 @@ IPC_MESSAGE_CONTROL3(GpuHostMsg_DestroyCommandBuffer,
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GraphicsInfoCollected,
                      GPUInfo /* GPU logging stats */)
 
+// Add a GPU log message to the about:gpu page
+IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,
+                     int /*severity*/,
+                     std::string /* header */,
+                     std::string /* message */)
+
 // Response to a GpuMsg_Synchronize message.
 IPC_MESSAGE_CONTROL0(GpuHostMsg_SynchronizeReply)
 

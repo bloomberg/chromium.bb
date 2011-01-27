@@ -52,6 +52,7 @@ GpuThread::GpuThread(const std::string& channel_id)
 }
 
 GpuThread::~GpuThread() {
+  logging::SetLogMessageHandler(NULL);
 }
 
 void GpuThread::Init(const base::Time& process_start_time) {
@@ -86,16 +87,36 @@ bool GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+namespace {
+
+bool GpuProcessLogMessageHandler(int severity,
+                                 const char* file, int line,
+                                 size_t message_start,
+                                 const std::string& str) {
+  std::string header = str.substr(0,message_start);
+  std::string message = str.substr(message_start);
+  ChildThread::current()->Send(
+      new GpuHostMsg_OnLogMessage(severity, header, message));
+  return false;
+}
+
+} // namespace
+
 void GpuThread::OnInitialize() {
+  // Redirect LOG messages to the GpuProcessHost
+  logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
+
   // Load the GL implementation and locate the bindings before starting the GPU
   // watchdog because this can take a lot of time and the GPU watchdog might
   // terminate the GPU process.
   if (!gfx::GLContext::InitializeOneOff()) {
+    LOG(INFO) << "GLContext::InitializeOneOff failed";
     MessageLoop::current()->Quit();
     return;
   }
   gpu_info_collector::CollectGraphicsInfo(&gpu_info_);
   child_process_logging::SetGpuInfo(gpu_info_);
+  LOG(INFO) << "gpu_info_collector::CollectGraphicsInfo complete";
 
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
@@ -256,12 +277,14 @@ void GpuThread::OnDidDestroyAcceleratedSurface(
 #endif
 
 void GpuThread::OnCrash() {
+  LOG(INFO) << "GPU: Simulating GPU crash";
   // Good bye, cruel world.
   volatile int* it_s_the_end_of_the_world_as_we_know_it = NULL;
   *it_s_the_end_of_the_world_as_we_know_it = 0xdead;
 }
 
 void GpuThread::OnHang() {
+  LOG(INFO) << "GPU: Simulating GPU hang";
   for (;;) {
     // Do not sleep here. The GPU watchdog timer tracks the amount of user
     // time this thread is using and it doesn't use much while calling Sleep.

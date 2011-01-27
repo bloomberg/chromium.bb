@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
+#include "base/values.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/message_router.h"
@@ -70,6 +71,8 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
     gpu_info_collected_callback_.reset(callback);
   }
 
+  ListValue* logMessages() const { return log_messages_.DeepCopy(); }
+
  private:
   friend struct DefaultSingletonTraits<GpuProcessHostUIShim>;
 
@@ -77,11 +80,13 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
   virtual ~GpuProcessHostUIShim();
 
   // Message handlers.
+  bool OnControlMessageReceived(const IPC::Message& message);
+
   void OnDestroyCommandBuffer(gfx::PluginWindowHandle window,
                               int32 renderer_id, int32 render_view_id);
   void OnGraphicsInfoCollected(const GPUInfo& gpu_info);
-  bool OnControlMessageReceived(const IPC::Message& message);
-
+  void OnLogMessage(int level, const std::string& header,
+      const std::string& message);
 #if defined(OS_LINUX)
   void OnResizeXID(unsigned long xid, gfx::Size size, IPC::Message* reply_msg);
 #elif defined(OS_MACOSX)
@@ -96,6 +101,7 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
   int last_routing_id_;
 
   GPUInfo gpu_info_;
+  ListValue log_messages_;
 
   MessageRouter router_;
 

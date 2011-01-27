@@ -21,6 +21,10 @@ cr.define('gpu', function() {
 
     this.beginRequestClientInfo();
     this.beginRequestGpuInfo();
+
+    this.logMessages_ = [];
+    this.beginRequestLogMessages();
+
     this.refresh();
   }
 
@@ -54,6 +58,23 @@ cr.define('gpu', function() {
         }
       }).bind(this));
     },
+
+    /**
+     * This function checks for new GPU_LOG messages.
+     * If any are found, a refresh is triggered.
+     */
+    beginRequestLogMessages : function() {
+      browserBridge.callAsync('requestLogMessages', undefined,
+        (function(messages) {
+           if(messages.length != this.logMessages_.length) {
+             this.logMessages_ = messages;
+             this.refresh();
+           }
+           // check again in 250 ms
+           window.setTimeout(this.beginRequestLogMessages.bind(this), 250);
+         }).bind(this));
+    },
+
 
     /**
     * Updates the view based on its currently known data
@@ -92,6 +113,10 @@ cr.define('gpu', function() {
         this.setText_('basic-info', '... loading ...');
         this.setText_('diagnostics', '... loading ...');
       }
+
+      // Log messages
+      jstProcess(new JsEvalContext({values: this.logMessages_}),
+                 document.getElementById('log-messages'));
     },
 
     setText_: function(outputElementId, text) {

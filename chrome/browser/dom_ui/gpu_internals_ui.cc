@@ -78,6 +78,7 @@ class GpuMessageHandler
   // Submessages dispatched from OnCallAsync
   Value* OnRequestGpuInfo(const ListValue* list);
   Value* OnRequestClientInfo(const ListValue* list);
+  Value* OnRequestLogMessages(const ListValue* list);
 
   // Executes the javascript function |function_name| in the renderer, passing
   // it the argument |value|.
@@ -179,6 +180,8 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
     ret = OnRequestGpuInfo(submessageArgs);
   } else if (submessage == "requestClientInfo") {
     ret = OnRequestClientInfo(submessageArgs);
+  } else if (submessage == "requestLogMessages") {
+    ret = OnRequestLogMessages(submessageArgs);
   } else {  // unrecognized submessage
     NOTREACHED();
     delete submessageArgs;
@@ -335,7 +338,13 @@ Value* GpuMessageHandler::OnRequestGpuInfo(const ListValue* list) {
   }
 }
 
+Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return GpuProcessHostUIShim::GetInstance()->logMessages();
+}
+
 }  // namespace
+
 
 
 ////////////////////////////////////////////////////////////////////////////////

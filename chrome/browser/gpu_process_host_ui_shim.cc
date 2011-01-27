@@ -147,6 +147,16 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
     gpu_info_collected_callback_->Run();
 }
 
+void GpuProcessHostUIShim::OnLogMessage(int level,
+    const std::string& header,
+    const std::string& message) {
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetInteger("level", level);
+  dict->SetString("header", header);
+  dict->SetString("message", message);
+  log_messages_.Append(dict);
+}
+
 bool GpuProcessHostUIShim::OnControlMessageReceived(
     const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
@@ -156,6 +166,8 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnDestroyCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
                         OnGraphicsInfoCollected)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_OnLogMessage,
+                        OnLogMessage)
 #if defined(OS_LINUX)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_ResizeXID, OnResizeXID)
 #elif defined(OS_MACOSX)
