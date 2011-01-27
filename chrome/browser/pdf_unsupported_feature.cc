@@ -34,7 +34,8 @@ static const uint16 kMinReaderVersionToUse = 10;
 namespace {
 
 // The info bar delegate used to ask the user if they want to use Adobe Reader
-// by default.
+// by default.  We want the infobar to have [No][Yes], so we swap the text on
+// the buttons, and the meaning of the delegate callbacks.
 class PDFEnableAdobeReaderConfirmInfoBarDelegate
     : public ConfirmInfoBarDelegate {
  public:
@@ -51,7 +52,7 @@ class PDFEnableAdobeReaderConfirmInfoBarDelegate
   }
 
   virtual void InfoBarDismissed() {
-    Cancel();
+    OnNo();
   }
 
   virtual Type GetInfoBarType() const {
@@ -59,19 +60,11 @@ class PDFEnableAdobeReaderConfirmInfoBarDelegate
   }
 
   virtual bool Accept() {
-    UserMetrics::RecordAction(
-        UserMetricsAction("PDF_EnableReaderInfoBarOK"));
-    webkit::npapi::PluginList::Singleton()->EnableGroup(
-        false, ASCIIToUTF16(PepperPluginRegistry::kPDFPluginName));
-    webkit::npapi::PluginList::Singleton()->EnableGroup(
-        true, ASCIIToUTF16(webkit::npapi::PluginGroup::kAdobeReaderGroupName));
-    return true;
+    return OnNo();
   }
 
   virtual bool Cancel() {
-    UserMetrics::RecordAction(
-        UserMetricsAction("PDF_EnableReaderInfoBarCancel"));
-    return true;
+    return OnYes();
   }
 
   virtual int GetButtons() const {
@@ -82,10 +75,10 @@ class PDFEnableAdobeReaderConfirmInfoBarDelegate
     switch (button) {
       case BUTTON_OK:
         return l10n_util::GetStringUTF16(
-            IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL);
+            IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
       case BUTTON_CANCEL:
         return l10n_util::GetStringUTF16(
-            IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
+            IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL);
       default:
         // All buttons are labeled above.
         NOTREACHED() << "Bad button id " << button;
@@ -99,6 +92,22 @@ class PDFEnableAdobeReaderConfirmInfoBarDelegate
   }
 
  private:
+  bool OnYes() {
+    UserMetrics::RecordAction(
+        UserMetricsAction("PDF_EnableReaderInfoBarOK"));
+    webkit::npapi::PluginList::Singleton()->EnableGroup(
+        false, ASCIIToUTF16(PepperPluginRegistry::kPDFPluginName));
+    webkit::npapi::PluginList::Singleton()->EnableGroup(
+        true, ASCIIToUTF16(webkit::npapi::PluginGroup::kAdobeReaderGroupName));
+    return true;
+  }
+
+  bool OnNo() {
+    UserMetrics::RecordAction(
+        UserMetricsAction("PDF_EnableReaderInfoBarCancel"));
+    return true;
+  }
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(PDFEnableAdobeReaderConfirmInfoBarDelegate);
 };
 
@@ -206,7 +215,8 @@ class PDFUnsupportedFeatureInterstitial : public InterstitialPage {
 };
 
 // The info bar delegate used to inform the user that we don't support a feature
-// in the PDF.
+// in the PDF.  See the comment about how we swap buttons for
+// PDFEnableAdobeReaderConfirmInfoBarDelegate.
 class PDFUnsupportedFeatureConfirmInfoBarDelegate
     : public ConfirmInfoBarDelegate {
  public:
@@ -244,7 +254,7 @@ class PDFUnsupportedFeatureConfirmInfoBarDelegate
   }
 
   virtual void InfoBarDismissed() {
-    Cancel();
+    OnNo();
   }
 
   virtual Type GetInfoBarType() const {
@@ -252,7 +262,41 @@ class PDFUnsupportedFeatureConfirmInfoBarDelegate
   }
 
   virtual bool Accept() {
-    if (!reader_installed_) {
+    return OnNo();
+  }
+
+  virtual bool Cancel() {
+    return OnYes();
+  }
+
+  virtual int GetButtons() const {
+    return BUTTON_OK | BUTTON_CANCEL;
+  }
+
+  virtual string16 GetButtonLabel(InfoBarButton button) const {
+    switch (button) {
+      case BUTTON_OK:
+        return l10n_util::GetStringUTF16(
+            IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
+      case BUTTON_CANCEL:
+        return l10n_util::GetStringUTF16(
+            IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL);
+      default:
+        // All buttons are labeled above.
+        NOTREACHED() << "Bad button id " << button;
+        return string16();
+    }
+  }
+
+  virtual string16 GetMessageText() const {
+    return l10n_util::GetStringUTF16(reader_installed_ ?
+        IDS_PDF_INFOBAR_QUESTION_READER_INSTALLED :
+        IDS_PDF_INFOBAR_QUESTION_READER_NOT_INSTALLED);
+  }
+
+ private:
+  bool OnYes() {
+   if (!reader_installed_) {
       UserMetrics::RecordAction(
           UserMetricsAction("PDF_InstallReaderInfoBarOK"));
       OpenReaderUpdateURL(tab_contents_);
@@ -274,7 +318,7 @@ class PDFUnsupportedFeatureConfirmInfoBarDelegate
     return false;
   }
 
-  virtual bool Cancel() {
+  bool OnNo() {
     if (reader_installed_) {
       UserMetrics::RecordAction(
           UserMetricsAction("PDF_UseReaderInfoBarCancel"));
@@ -285,32 +329,6 @@ class PDFUnsupportedFeatureConfirmInfoBarDelegate
     return true;
   }
 
-  virtual int GetButtons() const {
-    return BUTTON_OK | BUTTON_CANCEL;
-  }
-
-  virtual string16 GetButtonLabel(InfoBarButton button) const {
-    switch (button) {
-      case BUTTON_OK:
-        return l10n_util::GetStringUTF16(
-            IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL);
-      case BUTTON_CANCEL:
-        return l10n_util::GetStringUTF16(
-            IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
-      default:
-        // All buttons are labeled above.
-        NOTREACHED() << "Bad button id " << button;
-        return string16();
-    }
-  }
-
-  virtual string16 GetMessageText() const {
-    return l10n_util::GetStringUTF16(reader_installed_ ?
-        IDS_PDF_INFOBAR_QUESTION_READER_INSTALLED :
-        IDS_PDF_INFOBAR_QUESTION_READER_NOT_INSTALLED);
-  }
-
- private:
   TabContents* tab_contents_;
   bool reader_installed_;
   bool reader_vulnerable_;
