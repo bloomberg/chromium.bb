@@ -343,6 +343,10 @@ IPC_SYNC_MESSAGE_CONTROL4_2(IndexedDBHostMsg_DatabaseTransaction,
                             int32, /* idb_transaction_id */
                             WebKit::WebExceptionCode /* ec */)
 
+// WebIDBDatabase::close() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseClose,
+                     int32 /* idb_database_id */)
+
 // WebIDBDatabase::~WebIDBDatabase() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseDestroyed,
                      int32 /* idb_database_id */)

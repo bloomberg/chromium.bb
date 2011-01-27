@@ -26,7 +26,7 @@ RendererWebIDBDatabaseImpl::RendererWebIDBDatabaseImpl(int32 idb_database_id)
 
 RendererWebIDBDatabaseImpl::~RendererWebIDBDatabaseImpl() {
   // It's not possible for there to be pending callbacks that address this
-  // object since inside WebKit, they hold a reference to the object wich owns
+  // object since inside WebKit, they hold a reference to the object which owns
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
   RenderThread::current()->Send(new IndexedDBHostMsg_DatabaseDestroyed(
@@ -74,7 +74,8 @@ WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
 
   int object_store;
   RenderThread::current()->Send(
-      new IndexedDBHostMsg_DatabaseCreateObjectStore(params, &object_store, &ec));
+      new IndexedDBHostMsg_DatabaseCreateObjectStore(
+          params, &object_store, &ec));
   if (!object_store)
     return NULL;
   return new RendererWebIDBObjectStoreImpl(object_store);
@@ -118,4 +119,9 @@ WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
   if (!transaction_id)
     return NULL;
   return new RendererWebIDBTransactionImpl(transaction_id);
+}
+
+void RendererWebIDBDatabaseImpl::close() {
+  RenderThread::current()->Send(
+      new IndexedDBHostMsg_DatabaseClose(idb_database_id_));
 }

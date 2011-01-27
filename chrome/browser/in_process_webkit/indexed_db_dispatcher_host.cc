@@ -287,6 +287,7 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
                         OnDeleteObjectStore)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetVersion, OnSetVersion)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseTransaction, OnTransaction)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -400,7 +401,14 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnTransaction(
   *idb_transaction_id = *ec ? 0 : parent_->Add(transaction);
 }
 
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClose(
+    int32 idb_database_id) {
+  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
+      &map_, idb_database_id);
+  database->close();
+}
+
+ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(
     int32 object_id) {
   parent_->DestroyObject(&map_, object_id);
 }

@@ -43,6 +43,7 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
       const WebKit::WebDOMStringList& names,
       unsigned short mode, unsigned long timeout,
       WebKit::WebExceptionCode& ec);
+  virtual void close();
 
  private:
   int32 idb_database_id_;
