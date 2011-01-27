@@ -33,16 +33,22 @@ if __name__ == '__main__':
     chromite_path = os.path.join(os.environ['CROS_WORKON_SRCROOT'],
                                  'chromite', 'shell', 'main.py')
     if os.path.isfile(chromite_path):
-      # Exec the script, which will never return; note that python will
-      # replace argv[0] with chromite_path when called, so we'll lose
-      # the name of / path to this wrapper.
+      # Exec the script, which will never return.
       os.execv(chromite_path, sys.argv)
+    else:
+      print (
+          "ERROR: Couldn't find the chromite tool.\n"
+          "\n"
+          "You may need to update your chroot.  If you need help, see:\n"
+          "  http://www.chromium.org/chromium-os/developer-guide"
+      )
+      sys.exit(1)
 
-  # Outside the chroot, search upward until we either end up with a blank dir
-  # or the "parent" dir doesn't change.  Either of those is an error case.
+  # Outside the chroot, search upward until the "parent" dir doesn't change
+  # (on Linux, that means we're at '/').  That is an error case.
   dir = os.getcwd()
   prev_dir = None
-  while dir and dir != prev_dir:
+  while dir != prev_dir:
     chromite_path = os.path.join(dir, 'chromite', 'shell', 'main.py')
     if os.path.isfile(chromite_path):
       # Add the directory above chromite to PYTHONPATH before executing, so
@@ -53,9 +59,7 @@ if __name__ == '__main__':
       else:
         env['PYTHONPATH'] = dir
 
-      # Exec the script, which will never return; note that python will
-      # replace argv[0] with chromite_path when called, so we'll lose
-      # the name of / path to this wrapper.
+      # Exec the script, which will never return.
       os.execve(chromite_path, sys.argv, env)
 
     prev_dir = dir
@@ -70,3 +74,4 @@ if __name__ == '__main__':
       "and retry.  If you need to setup a Chromium OS source tree, see:\n"
       "  http://www.chromium.org/chromium-os/developer-guide"
   )
+  sys.exit(1)
