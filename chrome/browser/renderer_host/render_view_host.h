@@ -46,7 +46,6 @@ struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_PageHasOSDD_Type;
 struct ViewHostMsg_RunFileChooser_Params;
-struct ViewHostMsg_ShowNotification_Params;
 struct ViewHostMsg_ShowPopup_Params;
 struct ViewMsg_Navigate_Params;
 struct WebApplicationInfo;
@@ -616,10 +615,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnDevToolsRuntimePropertyChanged(const std::string& name,
                                         const std::string& value);
   void OnMsgShouldCloseACK(bool proceed);
-  void OnShowDesktopNotification(
-      const ViewHostMsg_ShowNotification_Params& params);
-  void OnCancelDesktopNotification(int notification_id);
-  void OnRequestNotificationPermission(const GURL& origin, int callback_id);
 
   void OnExtensionRequest(const ViewHostMsg_DomMessage_Params& params);
   void OnExtensionPostMessage(int port_id, const std::string& message);
