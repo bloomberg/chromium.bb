@@ -78,11 +78,11 @@ WorkItem* WorkItemList::AddCopyTreeWorkItem(
     const std::wstring& temp_dir,
     CopyOverWriteOption overwrite_option,
     const std::wstring& alternative_path) {
-  WorkItem* item = WorkItem::CreateCopyTreeWorkItem(source_path,
-                                                    dest_path,
-                                                    temp_dir,
+  WorkItem* item = WorkItem::CreateCopyTreeWorkItem(FilePath(source_path),
+                                                    FilePath(dest_path),
+                                                    FilePath(temp_dir),
                                                     overwrite_option,
-                                                    alternative_path);
+                                                    FilePath(alternative_path));
   AddWorkItem(item);
   return item;
 }

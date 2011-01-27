@@ -107,10 +107,11 @@ TEST_F(CopyTreeWorkItemTest, CopyFile) {
 
   // test Do()
   scoped_ptr<CopyTreeWorkItem> work_item(
-      WorkItem::CreateCopyTreeWorkItem(file_name_from.ToWStringHack(),
-                                       file_name_to.ToWStringHack(),
-                                       temp_dir_.ToWStringHack(),
-                                       WorkItem::ALWAYS));
+      WorkItem::CreateCopyTreeWorkItem(file_name_from,
+                                       file_name_to,
+                                       temp_dir_,
+                                       WorkItem::ALWAYS,
+                                       FilePath()));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -148,10 +149,11 @@ TEST_F(CopyTreeWorkItemTest, CopyFileOverwrite) {
 
   // test Do() with always_overwrite being true.
   scoped_ptr<CopyTreeWorkItem> work_item(
-      WorkItem::CreateCopyTreeWorkItem(file_name_from.ToWStringHack(),
-                                       file_name_to.ToWStringHack(),
-                                       temp_dir_.ToWStringHack(),
-                                       WorkItem::ALWAYS));
+      WorkItem::CreateCopyTreeWorkItem(file_name_from,
+                                       file_name_to,
+                                       temp_dir_,
+                                       WorkItem::ALWAYS,
+                                       FilePath()));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -171,10 +173,11 @@ TEST_F(CopyTreeWorkItemTest, CopyFileOverwrite) {
   // test Do() with always_overwrite being false.
   // the file is still overwritten since the content is different.
   work_item.reset(
-      WorkItem::CreateCopyTreeWorkItem(file_name_from.ToWStringHack(),
-                                       file_name_to.ToWStringHack(),
-                                       temp_dir_.ToWStringHack(),
-                                       WorkItem::IF_DIFFERENT));
+      WorkItem::CreateCopyTreeWorkItem(file_name_from,
+                                       file_name_to,
+                                       temp_dir_,
+                                       WorkItem::IF_DIFFERENT,
+                                       FilePath()));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -220,10 +223,11 @@ TEST_F(CopyTreeWorkItemTest, CopyFileSameContent) {
 
   // test Do() with always_overwrite being true.
   scoped_ptr<CopyTreeWorkItem> work_item(
-      WorkItem::CreateCopyTreeWorkItem(file_name_from.ToWStringHack(),
-                                       file_name_to.ToWStringHack(),
-                                       temp_dir_.ToWStringHack(),
-                                       WorkItem::ALWAYS));
+      WorkItem::CreateCopyTreeWorkItem(file_name_from,
+                                       file_name_to,
+                                       temp_dir_,
+                                       WorkItem::ALWAYS,
+                                       FilePath()));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -248,10 +252,11 @@ TEST_F(CopyTreeWorkItemTest, CopyFileSameContent) {
 
   // test Do() with always_overwrite being false. nothing should change.
   work_item.reset(
-      WorkItem::CreateCopyTreeWorkItem(file_name_from.ToWStringHack(),
-                                       file_name_to.ToWStringHack(),
-                                       temp_dir_.ToWStringHack(),
-                                       WorkItem::IF_DIFFERENT));
+      WorkItem::CreateCopyTreeWorkItem(file_name_from,
+                                       file_name_to,
+                                       temp_dir_,
+                                       WorkItem::IF_DIFFERENT,
+                                       FilePath()));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -299,10 +304,11 @@ TEST_F(CopyTreeWorkItemTest, CopyFileAndCleanup) {
   {
     // test Do().
     scoped_ptr<CopyTreeWorkItem> work_item(
-        WorkItem::CreateCopyTreeWorkItem(file_name_from.ToWStringHack(),
-                                         file_name_to.ToWStringHack(),
-                                         temp_dir_.ToWStringHack(),
-                                         WorkItem::IF_DIFFERENT));
+        WorkItem::CreateCopyTreeWorkItem(file_name_from,
+                                         file_name_to,
+                                         temp_dir_,
+                                         WorkItem::IF_DIFFERENT,
+                                         FilePath()));
 
     EXPECT_TRUE(work_item->Do());
 
@@ -361,10 +367,11 @@ TEST_F(CopyTreeWorkItemTest, CopyFileInUse) {
 
   // test Do().
   scoped_ptr<CopyTreeWorkItem> work_item(
-      WorkItem::CreateCopyTreeWorkItem(file_name_from.ToWStringHack(),
-                                       file_name_to.ToWStringHack(),
-                                       temp_dir_.ToWStringHack(),
-                                       WorkItem::IF_DIFFERENT));
+      WorkItem::CreateCopyTreeWorkItem(file_name_from,
+                                       file_name_to,
+                                       temp_dir_,
+                                       WorkItem::IF_DIFFERENT,
+                                       FilePath()));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -439,11 +446,11 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
 
   // test Do().
   scoped_ptr<CopyTreeWorkItem> work_item(
-      WorkItem::CreateCopyTreeWorkItem(file_name_from.ToWStringHack(),
-                                       file_name_to.ToWStringHack(),
-                                       temp_dir_.ToWStringHack(),
+      WorkItem::CreateCopyTreeWorkItem(file_name_from,
+                                       file_name_to,
+                                       temp_dir_,
                                        WorkItem::NEW_NAME_IF_IN_USE,
-                                       alternate_to.ToWStringHack()));
+                                       alternate_to));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -474,9 +481,9 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
 
   // Now the process has terminated, lets try overwriting the file again
   work_item.reset(WorkItem::CreateCopyTreeWorkItem(
-      file_name_from.ToWStringHack(), file_name_to.ToWStringHack(),
-      temp_dir_.ToWStringHack(), WorkItem::NEW_NAME_IF_IN_USE,
-      alternate_to.ToWStringHack()));
+      file_name_from, file_name_to,
+      temp_dir_, WorkItem::NEW_NAME_IF_IN_USE,
+      alternate_to));
   if (IsFileInUse(file_name_to))
     base::PlatformThread::Sleep(2000);
   // If file is still in use, the rest of the test will fail.
@@ -536,9 +543,11 @@ TEST_F(CopyTreeWorkItemTest, FLAKY_IfNotPresentTest) {
 
   // test Do().
   scoped_ptr<CopyTreeWorkItem> work_item(
-      WorkItem::CreateCopyTreeWorkItem(file_name_from.ToWStringHack(),
-          file_name_to.ToWStringHack(), temp_dir_.ToWStringHack(),
-          WorkItem::IF_NOT_PRESENT, L""));
+      WorkItem::CreateCopyTreeWorkItem(
+          file_name_from,
+          file_name_to, temp_dir_,
+          WorkItem::IF_NOT_PRESENT,
+          FilePath()));
   EXPECT_TRUE(work_item->Do());
 
   // verify that the source, destination have not changed and backup path
@@ -563,8 +572,9 @@ TEST_F(CopyTreeWorkItemTest, FLAKY_IfNotPresentTest) {
   // Now delete the destination and try copying the file again.
   file_util::Delete(file_name_to, true);
   work_item.reset(WorkItem::CreateCopyTreeWorkItem(
-      file_name_from.ToWStringHack(), file_name_to.ToWStringHack(),
-      temp_dir_.ToWStringHack(), WorkItem::IF_NOT_PRESENT, L""));
+      file_name_from, file_name_to,
+      temp_dir_, WorkItem::IF_NOT_PRESENT,
+      FilePath()));
   EXPECT_TRUE(work_item->Do());
 
   // verify that the source, destination are the same and backup path
@@ -628,10 +638,11 @@ TEST_F(CopyTreeWorkItemTest, FLAKY_CopyFileInUseAndCleanup) {
   // test Do().
   {
     scoped_ptr<CopyTreeWorkItem> work_item(
-        WorkItem::CreateCopyTreeWorkItem(file_name_from.ToWStringHack(),
-                                         file_name_to.ToWStringHack(),
-                                         temp_dir_.ToWStringHack(),
-                                         WorkItem::IF_DIFFERENT));
+        WorkItem::CreateCopyTreeWorkItem(file_name_from,
+                                         file_name_to,
+                                         temp_dir_,
+                                         WorkItem::IF_DIFFERENT,
+                                         FilePath()));
 
     EXPECT_TRUE(work_item->Do());
 
@@ -690,10 +701,11 @@ TEST_F(CopyTreeWorkItemTest, FLAKY_CopyTree) {
   // test Do()
   {
     scoped_ptr<CopyTreeWorkItem> work_item(
-        WorkItem::CreateCopyTreeWorkItem(dir_name_from.ToWStringHack(),
-                                         dir_name_to.ToWStringHack(),
-                                         temp_dir_.ToWStringHack(),
-                                         WorkItem::ALWAYS));
+        WorkItem::CreateCopyTreeWorkItem(dir_name_from,
+                                         dir_name_to,
+                                         temp_dir_,
+                                         WorkItem::ALWAYS,
+                                         FilePath()));
 
     EXPECT_TRUE(work_item->Do());
   }

@@ -59,11 +59,11 @@ class WorkItem {
   // * If overwrite_option is NEW_NAME_IF_IN_USE, file is copied with an
   //   alternate name specified by alternative_path.
   static CopyTreeWorkItem* CreateCopyTreeWorkItem(
-      const std::wstring& source_path,
-      const std::wstring& dest_path,
-      const std::wstring& temp_dir,
+      const FilePath& source_path,
+      const FilePath& dest_path,
+      const FilePath& temp_dir,
       CopyOverWriteOption overwrite_option,
-      const std::wstring& alternative_path = L"");
+      const FilePath& alternative_path);
 
   // Create a CreateDirWorkItem that creates a directory at the given path.
   static CreateDirWorkItem* CreateCreateDirWorkItem(const FilePath& path);

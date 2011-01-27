@@ -37,11 +37,11 @@ class CopyTreeWorkItem : public WorkItem {
   // Notes on temp_path: to facilitate rollback, the caller needs to supply
   // a temporary directory to save the original files if they exist under
   // dest_path.
-  CopyTreeWorkItem(const std::wstring& source_path,
-                   const std::wstring& dest_path,
-                   const std::wstring& temp_dir,
+  CopyTreeWorkItem(const FilePath& source_path,
+                   const FilePath& dest_path,
+                   const FilePath& temp_dir,
                    CopyOverWriteOption overwrite_option,
-                   const std::wstring& alternative_path);
+                   const FilePath& alternative_path);
 
   // Checks if the path specified is in use (and hence can not be deleted)
   bool IsFileInUse(const FilePath& path);

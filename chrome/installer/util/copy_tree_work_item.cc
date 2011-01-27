@@ -16,11 +16,11 @@ CopyTreeWorkItem::~CopyTreeWorkItem() {
   }
 }
 
-CopyTreeWorkItem::CopyTreeWorkItem(const std::wstring& source_path,
-                                   const std::wstring& dest_path,
-                                   const std::wstring& temp_dir,
+CopyTreeWorkItem::CopyTreeWorkItem(const FilePath& source_path,
+                                   const FilePath& dest_path,
+                                   const FilePath& temp_dir,
                                    CopyOverWriteOption overwrite_option,
-                                   const std::wstring& alternative_path)
+                                   const FilePath& alternative_path)
     : source_path_(source_path),
       dest_path_(dest_path),
       temp_dir_(temp_dir),
