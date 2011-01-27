@@ -10,7 +10,7 @@
 #include "grit/generated_resources.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"

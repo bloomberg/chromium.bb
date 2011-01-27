@@ -10,7 +10,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 
 GenericInfoView::GenericInfoView(int number_of_rows)

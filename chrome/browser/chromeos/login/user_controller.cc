@@ -29,7 +29,7 @@
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 #include "views/painter.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"

@@ -15,7 +15,7 @@
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/button/native_button.h"
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 #include "views/views_delegate.h"
 #include "views/widget/root_view.h"
 #include "views/window/window.h"

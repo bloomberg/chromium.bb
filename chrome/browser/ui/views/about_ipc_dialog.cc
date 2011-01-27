@@ -32,7 +32,7 @@
 #include "net/url_request/url_request_job_tracker.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/native/native_view_host.h"
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"

@@ -11,7 +11,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/message_box_flags.h"
 #include "views/controls/button/checkbox.h"
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/views_delegate.h"
 #include "views/window/client_view.h"

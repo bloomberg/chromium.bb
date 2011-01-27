@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/views/options/options_page_view.h"
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 
 using views::ColumnSet;
 using views::GridLayout;

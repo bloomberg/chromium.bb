@@ -26,7 +26,7 @@
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/separator.h"
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "webkit/glue/plugins/plugin_list.h"
 

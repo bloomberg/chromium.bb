@@ -14,7 +14,7 @@
 #include "ui/base/x/x11_util.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 
 using std::vector;
 

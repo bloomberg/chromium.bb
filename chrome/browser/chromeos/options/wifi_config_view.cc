@@ -18,7 +18,7 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/window/window.h"
 

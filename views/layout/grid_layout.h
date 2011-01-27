@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_GRID_LAYOUT_H_
-#define VIEWS_GRID_LAYOUT_H_
+#ifndef VIEWS_LAYOUT_GRID_LAYOUT_H_
+#define VIEWS_LAYOUT_GRID_LAYOUT_H_
 #pragma once
 
 #include <string>
@@ -368,4 +368,4 @@ class ColumnSet {
 
 }  // namespace views
 
-#endif  // VIEWS_GRID_LAYOUT_H_
+#endif  // VIEWS_LAYOUT_GRID_LAYOUT_H_

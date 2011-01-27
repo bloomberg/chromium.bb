@@ -14,7 +14,7 @@
 #include "ui/base/text/text_elider.h"
 #include "views/background.h"
 #include "views/controls/button/native_button.h"
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 
 using views::ColumnSet;

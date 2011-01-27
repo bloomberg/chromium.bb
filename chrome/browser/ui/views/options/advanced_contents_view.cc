@@ -64,7 +64,7 @@
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/scroll_view.h"
 #include "views/controls/textfield/textfield.h"
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"

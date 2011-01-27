@@ -50,7 +50,7 @@
 #include "views/controls/image_view.h"
 #include "views/controls/link.h"
 #include "views/focus/accelerator_handler.h"
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"

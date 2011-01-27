@@ -4,7 +4,7 @@
 
 #include "views/examples/tabbed_pane_example.h"
 
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 
 namespace examples {
 

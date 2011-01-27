@@ -4,7 +4,7 @@
 
 #include "views/examples/single_split_view_example.h"
 
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 
 namespace examples {
 

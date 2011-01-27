@@ -36,7 +36,7 @@
 #include "views/controls/button/radio_button.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/controls/table/table_view.h"
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"

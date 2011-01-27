@@ -13,7 +13,7 @@
 #include "views/controls/button/button.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
-#include "views/grid_layout.h"
+#include "views/layout/grid_layout.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 
