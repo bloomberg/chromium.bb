@@ -371,7 +371,8 @@ bool PluginService::GetFirstAllowedPluginInfo(
       if (overridden_plugins_[i].render_process_id == render_process_id &&
           overridden_plugins_[i].render_view_id == render_view_id &&
           overridden_plugins_[i].url == url) {
-        *actual_mime_type = mime_type;
+        if (actual_mime_type)
+          *actual_mime_type = mime_type;
         *info = overridden_plugins_[i].plugin;
         return true;
       }
