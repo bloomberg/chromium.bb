@@ -403,15 +403,13 @@ LRESULT TabContentsViewWin::OnMouseRange(UINT msg,
 void TabContentsViewWin::OnPaint(HDC junk_dc) {
   if (tab_contents()->render_view_host() &&
       !tab_contents()->render_view_host()->IsRenderViewLive()) {
-    if (sad_tab_ == NULL) {
-      base::TerminationStatus status =
-          tab_contents()->render_view_host()->render_view_termination_status();
-      SadTabView::Kind kind =
-          status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
-          SadTabView::KILLED : SadTabView::CRASHED;
-      sad_tab_ = new SadTabView(tab_contents(), kind);
-      SetContentsView(sad_tab_);
-    }
+    base::TerminationStatus status =
+        tab_contents()->render_view_host()->render_view_termination_status();
+    SadTabView::Kind kind =
+        status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
+        SadTabView::KILLED : SadTabView::CRASHED;
+    sad_tab_ = new SadTabView(tab_contents(), kind);
+    SetContentsView(sad_tab_);
     CRect cr;
     GetClientRect(&cr);
     sad_tab_->SetBounds(gfx::Rect(cr));
