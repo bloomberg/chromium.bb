@@ -207,6 +207,14 @@ void ChromeURLDataManager::AddDataSource(scoped_refptr<DataSource> source) {
   data_sources_[source->source_name()] = source;
 }
 
+void ChromeURLDataManager::RemoveDataSourceForTest(const char* source_name) {
+  DataSourceMap::iterator i = data_sources_.find(source_name);
+  if (i == data_sources_.end())
+    return;
+  (*i).second = NULL;  // Calls Release().
+  data_sources_.erase(i);
+}
+
 void ChromeURLDataManager::RemoveAllDataSources() {
   for (DataSourceMap::iterator i = data_sources_.begin();
        i != data_sources_.end();

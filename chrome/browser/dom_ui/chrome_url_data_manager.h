@@ -114,9 +114,9 @@ class ChromeURLDataManager {
   // NOTE: Calling this from threads other the IO thread must be done via
   // InvokeLater.
   void AddDataSource(scoped_refptr<DataSource> source);
-
   // Called during shutdown, before destruction of |BrowserThread|.
-  void RemoveAllDataSources();
+  void RemoveDataSourceForTest(const char* source_name);  // For unit tests.
+  void RemoveAllDataSources();  // For the browser.
 
   // Add/remove a path from the collection of file sources.
   // A file source acts like a file:// URL to the specified path.
