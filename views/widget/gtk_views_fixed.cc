@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,6 +70,7 @@ static void gtk_views_fixed_class_init(GtkViewsFixedClass* views_fixed_class) {
 }
 
 static void gtk_views_fixed_init(GtkViewsFixed* fixed) {
+  GTK_WIDGET_SET_FLAGS(GTK_WIDGET(fixed), GTK_CAN_FOCUS);
 }
 
 GtkWidget* gtk_views_fixed_new(void) {
