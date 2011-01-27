@@ -33,6 +33,7 @@ class VarObjectClass : public Resource {
 
   struct InstanceData : public NPObject {
     InstanceData();
+    ~InstanceData();
 
     scoped_refptr<VarObjectClass> object_class;
     void* native_data;

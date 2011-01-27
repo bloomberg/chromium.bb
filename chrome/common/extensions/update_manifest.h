@@ -36,6 +36,9 @@ class UpdateManifest {
 
   // The result of parsing one <app> tag in an xml update check manifest.
   struct Result {
+    Result();
+    ~Result();
+
     std::string extension_id;
     std::string version;
     std::string browser_min_version;

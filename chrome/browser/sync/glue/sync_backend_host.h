@@ -268,14 +268,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
           bool delete_sync_data_folder,
           const notifier::NotifierOptions& notifier_options,
           std::string restored_key_for_bootstrapping,
-          bool setup_for_test_mode)
-          : service_url(service_url),
-            http_bridge_factory(http_bridge_factory),
-            credentials(credentials),
-            delete_sync_data_folder(delete_sync_data_folder),
-            notifier_options(notifier_options),
-            restored_key_for_bootstrapping(restored_key_for_bootstrapping),
-            setup_for_test_mode(setup_for_test_mode) {}
+          bool setup_for_test_mode);
+      ~DoInitializeOptions();
 
       GURL service_url;
       sync_api::HttpPostProviderFactory* http_bridge_factory;

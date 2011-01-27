@@ -53,6 +53,7 @@
         'notifier/listener/mediator_thread_mock.h',
         'notifier/listener/notification_constants.cc',
         'notifier/listener/notification_constants.h',
+        'notifier/listener/notification_defines.cc',
         'notifier/listener/notification_defines.h',
         'notifier/listener/push_notifications_listen_task.cc',
         'notifier/listener/push_notifications_listen_task.h',

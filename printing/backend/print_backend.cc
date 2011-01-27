@@ -10,6 +10,10 @@ PrinterBasicInfo::PrinterBasicInfo() : printer_status(0) {}
 
 PrinterBasicInfo::~PrinterBasicInfo() {}
 
+PrinterCapsAndDefaults::PrinterCapsAndDefaults() {}
+
+PrinterCapsAndDefaults::~PrinterCapsAndDefaults() {}
+
 PrintBackend::~PrintBackend() {}
 
 }  // namespace printing

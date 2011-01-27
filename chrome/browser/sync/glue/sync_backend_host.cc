@@ -491,6 +491,25 @@ void SyncBackendHost::Core::NotifyUpdatedToken(const std::string& token) {
       Details<const TokenAvailableDetails>(&details));
 }
 
+SyncBackendHost::Core::DoInitializeOptions::DoInitializeOptions(
+    const GURL& service_url,
+    sync_api::HttpPostProviderFactory* http_bridge_factory,
+    const sync_api::SyncCredentials& credentials,
+    bool delete_sync_data_folder,
+    const notifier::NotifierOptions& notifier_options,
+    std::string restored_key_for_bootstrapping,
+    bool setup_for_test_mode)
+    : service_url(service_url),
+      http_bridge_factory(http_bridge_factory),
+      credentials(credentials),
+      delete_sync_data_folder(delete_sync_data_folder),
+      notifier_options(notifier_options),
+      restored_key_for_bootstrapping(restored_key_for_bootstrapping),
+      setup_for_test_mode(setup_for_test_mode) {
+}
+
+SyncBackendHost::Core::DoInitializeOptions::~DoInitializeOptions() {}
+
 sync_api::UserShare* SyncBackendHost::GetUserShare() const {
   DCHECK(syncapi_initialized_);
   return core_->syncapi()->GetUserShare();

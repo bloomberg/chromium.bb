@@ -46,6 +46,8 @@ void ChromotingHostManager::Teardown() {
   Stop();
 }
 
+ChromotingHostManager::~ChromotingHostManager() {}
+
 bool ChromotingHostManager::IsConfigInitialized() {
   std::string host_id;
   if (!chromoting_config_->GetString(remoting::kHostIdConfigPath, &host_id))

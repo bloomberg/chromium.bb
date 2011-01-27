@@ -84,25 +84,7 @@ class SyncerThread : public sessions::SyncSession::Delegate {
   friend class SyncerThread2Test;
 
   // State pertaining to exponential backoff or throttling periods.
-  struct WaitInterval {
-    enum Mode {
-      // A wait interval whose duration has been affected by exponential
-      // backoff.
-      // EXPONENTIAL_BACKOFF intervals are nudge-rate limited to 1 per interval.
-      EXPONENTIAL_BACKOFF,
-      // A server-initiated throttled interval.  We do not allow any syncing
-      // during such an interval.
-      THROTTLED,
-    };
-    Mode mode;
-
-    // This bool is set to true if we have observed a nudge during this
-    // interval and mode == EXPONENTIAL_BACKOFF.
-    bool had_nudge;
-    base::TimeDelta length;
-    base::OneShotTimer<SyncerThread> timer;
-    WaitInterval(Mode mode, base::TimeDelta length);
-  };
+  struct WaitInterval;
 
   // Internal state for every sync task that is scheduled.
   struct SyncSessionJob {

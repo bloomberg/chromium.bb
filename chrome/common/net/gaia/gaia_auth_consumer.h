@@ -15,24 +15,14 @@ class GoogleServiceAuthError;
 class GaiaAuthConsumer {
  public:
   struct ClientLoginResult {
-    inline ClientLoginResult() : two_factor(false) {}
-    inline ClientLoginResult(const std::string& new_sid,
-                             const std::string& new_lsid,
-                             const std::string& new_token,
-                             const std::string& new_data)
-        : sid(new_sid),
-          lsid(new_lsid),
-          token(new_token),
-          data(new_data),
-          two_factor(false) {}
+    ClientLoginResult();
+    ClientLoginResult(const std::string& new_sid,
+                      const std::string& new_lsid,
+                      const std::string& new_token,
+                      const std::string& new_data);
+    ~ClientLoginResult();
 
-    inline bool operator==(const ClientLoginResult &b) const {
-      return sid == b.sid &&
-             lsid == b.lsid &&
-             token == b.token &&
-             data == b.data &&
-             two_factor == b.two_factor;
-    }
+    bool operator==(const ClientLoginResult &b) const;
 
     std::string sid;
     std::string lsid;

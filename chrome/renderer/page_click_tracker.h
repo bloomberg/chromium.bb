@@ -51,7 +51,7 @@ class PageClickTracker : public RenderViewObserver,
   virtual void handleEvent(const WebKit::WebDOMEvent& event);
 
   // Called after the mouse event |event| has been processed by WebKit.
-  void DidHandleMouseEvent(const WebKit::WebMouseEvent& event);
+  virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event);
 
   // Returns the currently focused node in the associated render view.
   // That node may be null.

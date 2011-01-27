@@ -31,6 +31,7 @@ class PageOverlays {
   };
 
   PageOverlays();
+  ~PageOverlays();
 
   // Equality operator.
   bool Equals(const PageOverlays& rhs) const;

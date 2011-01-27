@@ -27,14 +27,14 @@ class WebSocketStreamHandleDelegate;
 class SocketStreamDispatcher : public IPC::Channel::Listener {
  public:
   SocketStreamDispatcher();
-  ~SocketStreamDispatcher() {}
+  virtual ~SocketStreamDispatcher() {}
 
   static webkit_glue::WebSocketStreamHandleBridge* CreateBridge(
       WebKit::WebSocketStreamHandle* handle,
       webkit_glue::WebSocketStreamHandleDelegate* delegate);
 
   // IPC::Channel::Listener implementation.
-  bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:
   void OnConnected(int socket_id, int max_amount_send_allowed);

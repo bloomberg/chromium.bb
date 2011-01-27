@@ -44,6 +44,8 @@ PageOverlays::PageOverlays()
       bottom_right(kPageOnTotal) {
 }
 
+PageOverlays::~PageOverlays() {}
+
 bool PageOverlays::Equals(const PageOverlays& rhs) const {
   return top_left == rhs.top_left &&
       top_center == rhs.top_center &&

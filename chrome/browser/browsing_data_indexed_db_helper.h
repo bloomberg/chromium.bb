@@ -37,16 +37,8 @@ class BrowsingDataIndexedDBHelper
         const std::string& origin,
         const FilePath& file_path,
         int64 size,
-        base::Time last_modified)
-        : protocol(protocol),
-          host(host),
-          port(port),
-          database_identifier(database_identifier),
-          origin(origin),
-          file_path(file_path),
-          size(size),
-          last_modified(last_modified) {
-    }
+        base::Time last_modified);
+    ~IndexedDBInfo();
 
     bool IsFileSchemeData() {
       return protocol == chrome::kFileScheme;

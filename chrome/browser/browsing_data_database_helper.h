@@ -29,28 +29,17 @@ class BrowsingDataDatabaseHelper
  public:
   // Contains detailed information about a web database.
   struct DatabaseInfo {
-    DatabaseInfo() {}
+    DatabaseInfo();
     DatabaseInfo(const std::string& host,
                  const std::string& database_name,
                  const std::string& origin_identifier,
                  const std::string& description,
                  const std::string& origin,
                  int64 size,
-                 base::Time last_modified)
-        : host(host),
-          database_name(database_name),
-          origin_identifier(origin_identifier),
-          description(description),
-          origin(origin),
-          size(size),
-          last_modified(last_modified) {
-    }
+                 base::Time last_modified);
+    ~DatabaseInfo();
 
-    bool IsFileSchemeData() {
-      return StartsWithASCII(origin_identifier,
-                             std::string(chrome::kFileScheme),
-                             true);
-    }
+    bool IsFileSchemeData();
 
     std::string host;
     std::string database_name;

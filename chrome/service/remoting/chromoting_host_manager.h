@@ -38,7 +38,7 @@ class ChromotingHostManager
 
   // Caller keeps ownership of |observer|. |observer| must not be
   // destroyed while this object exists.
-  ChromotingHostManager(Observer* observer);
+  explicit ChromotingHostManager(Observer* observer);
 
   void Initialize(base::MessageLoopProxy* file_message_loop);
   void Teardown();
@@ -60,6 +60,9 @@ class ChromotingHostManager
   void GetHostInfo(ChromotingHostInfo* host_info);
 
  private:
+  friend class base::RefCountedThreadSafe<ChromotingHostManager>;
+  virtual ~ChromotingHostManager();
+
   bool IsConfigInitialized();
   void InitializeConfig();
 

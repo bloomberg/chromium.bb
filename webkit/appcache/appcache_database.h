@@ -31,45 +31,52 @@ namespace appcache {
 class AppCacheDatabase {
  public:
   struct GroupRecord {
+    GroupRecord();
+    ~GroupRecord();
+
     int64 group_id;
     GURL origin;
     GURL manifest_url;
     base::Time creation_time;
     base::Time last_access_time;
-    GroupRecord() : group_id(0) {}
   };
 
   struct CacheRecord {
+    CacheRecord()
+        : cache_id(0), group_id(0), online_wildcard(false), cache_size(0) {}
+
     int64 cache_id;
     int64 group_id;
     bool online_wildcard;
     base::Time update_time;
     int64 cache_size;  // the sum of all response sizes in this cache
-    CacheRecord()
-        : cache_id(0), group_id(0), online_wildcard(false), cache_size(0) {}
   };
 
   struct EntryRecord {
+    EntryRecord() : cache_id(0), flags(0), response_id(0), response_size(0) {}
+
     int64 cache_id;
     GURL url;
     int flags;
     int64 response_id;
     int64 response_size;
-    EntryRecord() : cache_id(0), flags(0), response_id(0), response_size(0) {}
   };
 
   struct FallbackNameSpaceRecord {
+    FallbackNameSpaceRecord();
+    ~FallbackNameSpaceRecord();
+
     int64 cache_id;
     GURL origin;  // intentionally not normalized
     GURL namespace_url;
     GURL fallback_entry_url;
-    FallbackNameSpaceRecord() : cache_id(0) {}
   };
 
   struct OnlineWhiteListRecord {
+    OnlineWhiteListRecord() : cache_id(0) {}
+
     int64 cache_id;
     GURL namespace_url;
-    OnlineWhiteListRecord() : cache_id(0) {}
   };
 
   explicit AppCacheDatabase(const FilePath& path);

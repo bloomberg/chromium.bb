@@ -52,6 +52,8 @@ AutoFillHelper::AutoFillHelper(
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
+AutoFillHelper::~AutoFillHelper() {}
+
 bool AutoFillHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutoFillHelper, message)

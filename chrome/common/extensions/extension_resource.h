@@ -22,6 +22,8 @@ class ExtensionResource {
                     const FilePath& extension_root,
                     const FilePath& relative_path);
 
+  ~ExtensionResource();
+
   // Returns actual path to the resource (default or locale specific). In the
   // browser process, this will DCHECK if not called on the file thread. To
   // easily load extension images on the UI thread, see ImageLoadingTracker.

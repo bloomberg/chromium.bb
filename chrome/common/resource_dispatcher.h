@@ -29,7 +29,7 @@ class ResourceDispatcher : public IPC::Channel::Listener {
   ~ResourceDispatcher();
 
   // IPC::Channel::Listener implementation.
-  bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // Creates a ResourceLoaderBridge for this type of dispatcher, this is so
   // this can be tested regardless of the ResourceLoaderBridge::Create

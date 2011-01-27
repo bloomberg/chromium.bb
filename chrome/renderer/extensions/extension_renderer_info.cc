@@ -10,6 +10,9 @@
 ExtensionRendererInfo::ExtensionRendererInfo() {
 }
 
+ExtensionRendererInfo::~ExtensionRendererInfo() {
+}
+
 size_t ExtensionRendererInfo::size() const {
   return extensions_.size();
 }

@@ -26,7 +26,8 @@ class RendererWebAudioDeviceImpl : public WebKit::WebAudioDevice,
   virtual void stop();
 
   // AudioDevice::RenderCallback implementation.
-  void Render(const std::vector<float*>& audio_data, size_t number_of_frames);
+  virtual void Render(const std::vector<float*>& audio_data,
+                      size_t number_of_frames);
 
  private:
   scoped_ptr<AudioDevice> audio_device_;

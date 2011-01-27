@@ -19,6 +19,10 @@ static const char* kExpectedGupdateProtocol = "2.0";
 static const char* kExpectedGupdateXmlns =
     "http://www.google.com/update2/response";
 
+UpdateManifest::Result::Result() {}
+
+UpdateManifest::Result::~Result() {}
+
 UpdateManifest::Results::Results() : daystart_elapsed_seconds(kNoDaystart) {}
 
 UpdateManifest::Results::~Results() {}

@@ -17,12 +17,12 @@ struct ViewMsg_DeviceOrientationUpdated_Params;
 class DeviceOrientationDispatcher : public RenderViewObserver,
                                     public WebKit::WebDeviceOrientationClient {
  public:
-  DeviceOrientationDispatcher(RenderView* render_view);
+  explicit DeviceOrientationDispatcher(RenderView* render_view);
   virtual ~DeviceOrientationDispatcher();
 
  private:
   // RenderView::Observer implementation.
-  bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // From WebKit::WebDeviceOrientationClient.
   virtual void setController(

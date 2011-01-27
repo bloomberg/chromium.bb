@@ -11,6 +11,9 @@ namespace remoting {
 
 // This struct is used for ServiceHostMsg_ChromotingHost_Info IPC message.
 struct ChromotingHostInfo {
+  ChromotingHostInfo();
+  ~ChromotingHostInfo();
+
   std::string host_id;
   std::string hostname;
   std::string public_key;

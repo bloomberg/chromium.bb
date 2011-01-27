@@ -20,6 +20,7 @@
 class ExtensionRendererInfo {
  public:
   ExtensionRendererInfo();
+  ~ExtensionRendererInfo();
 
   // Gets the number of extensions contained.
   size_t size() const;

@@ -145,9 +145,22 @@ sql::ErrorDelegate* GetErrorHandlerForAppCacheDb() {
 
 }  // anon namespace
 
-
 // AppCacheDatabase ----------------------------------------------------------
 namespace appcache {
+
+AppCacheDatabase::GroupRecord::GroupRecord()
+    : group_id(0) {
+}
+
+AppCacheDatabase::GroupRecord::~GroupRecord() {
+}
+
+AppCacheDatabase::FallbackNameSpaceRecord::FallbackNameSpaceRecord()
+    : cache_id(0) {
+}
+
+AppCacheDatabase::FallbackNameSpaceRecord::~FallbackNameSpaceRecord() {
+}
 
 AppCacheDatabase::AppCacheDatabase(const FilePath& path)
     : db_file_path_(path), is_disabled_(false), is_recreating_(false) {

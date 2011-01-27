@@ -80,6 +80,20 @@ int64 SessionModelAssociator::GetSyncIdFromSessionTag(const std::string& tag) {
     return sync_api::kInvalidId;
   return node.GetId();
 }
+
+const TabContents*
+SessionModelAssociator::GetChromeNodeFromSyncId(int64 sync_id) {
+  NOTREACHED();
+  return NULL;
+}
+
+bool SessionModelAssociator::InitSyncNodeFromChromeId(
+    const size_t& id,
+    sync_api::BaseNode* sync_node) {
+  NOTREACHED();
+  return false;
+}
+
 void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
   DCHECK(CalledOnValidThread());
   sync_pb::SessionSpecifics specifics;
@@ -691,6 +705,8 @@ SessionModelAssociator::TabNodePool::TabNodePool(
     : tab_pool_fp_(-1),
       sync_service_(sync_service) {
 }
+
+SessionModelAssociator::TabNodePool::~TabNodePool() {}
 
 void SessionModelAssociator::TabNodePool::AddTabNode(int64 sync_id) {
   tab_syncid_pool_.resize(tab_syncid_pool_.size() + 1);

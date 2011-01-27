@@ -19,6 +19,8 @@ ExtensionResource::ExtensionResource(const std::string& extension_id,
       relative_path_(relative_path) {
 }
 
+ExtensionResource::~ExtensionResource() {}
+
 const FilePath& ExtensionResource::GetFilePath() const {
   if (extension_root_.empty() || relative_path_.empty()) {
     DCHECK(full_resource_path_.empty());

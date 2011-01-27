@@ -470,5 +470,12 @@ bool AutofillProfileModelAssociator::IsAbortPending() {
   return abort_association_pending_;
 }
 
+AutofillProfileModelAssociator::DataBundle::DataBundle() {}
+
+AutofillProfileModelAssociator::DataBundle::~DataBundle() {
+  STLDeleteElements(&new_profiles);
+}
+
+
 }  // namespace browser_sync
 

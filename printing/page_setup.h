@@ -35,6 +35,7 @@ class PageMargins {
 class PageSetup {
  public:
   PageSetup();
+  ~PageSetup();
 
   void Clear();
 

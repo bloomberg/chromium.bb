@@ -30,6 +30,9 @@ struct PrinterBasicInfo {
 typedef std::vector<PrinterBasicInfo> PrinterList;
 
 struct PrinterCapsAndDefaults {
+  PrinterCapsAndDefaults();
+  ~PrinterCapsAndDefaults();
+
   std::string printer_capabilities;
   std::string caps_mime_type;
   std::string printer_defaults;

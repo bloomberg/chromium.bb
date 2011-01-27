@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ class WebNavigationObserver : public IPC::Channel::Listener {
   virtual void DidStopLoading() { }
 
   // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) { return false; }
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
 #if 0
   // For unifying with delegate...

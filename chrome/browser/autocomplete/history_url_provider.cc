@@ -425,6 +425,8 @@ bool HistoryURLProvider::PromoteMatchForInlineAutocomplete(
   return true;
 }
 
+HistoryURLProvider::~HistoryURLProvider() {}
+
 // static
 history::Prefixes HistoryURLProvider::GetPrefixes() {
   // We'll complete text following these prefixes.

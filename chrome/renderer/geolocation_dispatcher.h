@@ -32,7 +32,7 @@ class GeolocationDispatcher : public RenderViewObserver,
 
  private:
   // RenderView::Observer implementation.
-  bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // WebGeolocationClient
   virtual void geolocationDestroyed();

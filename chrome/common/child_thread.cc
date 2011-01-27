@@ -168,6 +168,10 @@ bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
   return router_.OnMessageReceived(msg);
 }
 
+bool ChildThread::OnControlMessageReceived(const IPC::Message& msg) {
+  return false;
+}
+
 void ChildThread::OnAskBeforeShutdown() {
   check_with_browser_before_shutdown_ = true;
 }

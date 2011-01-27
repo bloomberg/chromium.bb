@@ -252,6 +252,8 @@ VarObjectClass::Property::Property(const PP_ClassProperty& prop)
 VarObjectClass::InstanceData::InstanceData() : native_data(NULL) {
 }
 
+VarObjectClass::InstanceData::~InstanceData() {}
+
 VarObjectClass::VarObjectClass(PluginInstance* instance,
                                PP_ClassDestructor destruct,
                                PP_ClassFunction invoke,

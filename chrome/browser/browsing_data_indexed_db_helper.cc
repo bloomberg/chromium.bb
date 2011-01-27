@@ -158,6 +158,27 @@ void BrowsingDataIndexedDBHelperImpl::DeleteIndexedDBFileInWebKitThread(
 
 }  // namespace
 
+BrowsingDataIndexedDBHelper::IndexedDBInfo::IndexedDBInfo(
+    const std::string& protocol,
+    const std::string& host,
+    unsigned short port,
+    const std::string& database_identifier,
+    const std::string& origin,
+    const FilePath& file_path,
+    int64 size,
+    base::Time last_modified)
+    : protocol(protocol),
+      host(host),
+      port(port),
+      database_identifier(database_identifier),
+      origin(origin),
+      file_path(file_path),
+      size(size),
+      last_modified(last_modified) {
+}
+
+BrowsingDataIndexedDBHelper::IndexedDBInfo::~IndexedDBInfo() {}
+
 // static
 BrowsingDataIndexedDBHelper* BrowsingDataIndexedDBHelper::Create(
     Profile* profile) {

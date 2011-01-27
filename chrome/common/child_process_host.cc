@@ -143,6 +143,16 @@ void ChildProcessHost::InstanceCreated() {
   Notify(NotificationType::CHILD_INSTANCE_CREATED);
 }
 
+bool ChildProcessHost::OnMessageReceived(const IPC::Message& msg) {
+  return false;
+}
+
+void ChildProcessHost::OnChannelConnected(int32 peer_pid) {
+}
+
+void ChildProcessHost::OnChannelError() {
+}
+
 bool ChildProcessHost::Send(IPC::Message* message) {
   if (!channel_.get()) {
     delete message;
@@ -153,6 +163,12 @@ bool ChildProcessHost::Send(IPC::Message* message) {
 
 void ChildProcessHost::OnChildDied() {
   delete this;
+}
+
+void ChildProcessHost::ShutdownStarted() {
+}
+
+void ChildProcessHost::Notify(NotificationType type) {
 }
 
 ChildProcessHost::ListenerHook::ListenerHook(ChildProcessHost* host)

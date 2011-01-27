@@ -22,6 +22,26 @@ using sync_pb::GetUpdatesCallerInfo;
 
 namespace s3 {
 
+struct SyncerThread::WaitInterval {
+  enum Mode {
+    // A wait interval whose duration has been affected by exponential
+    // backoff.
+    // EXPONENTIAL_BACKOFF intervals are nudge-rate limited to 1 per interval.
+    EXPONENTIAL_BACKOFF,
+    // A server-initiated throttled interval.  We do not allow any syncing
+    // during such an interval.
+    THROTTLED,
+  };
+  Mode mode;
+
+  // This bool is set to true if we have observed a nudge during this
+  // interval and mode == EXPONENTIAL_BACKOFF.
+  bool had_nudge;
+  base::TimeDelta length;
+  base::OneShotTimer<SyncerThread> timer;
+  WaitInterval(Mode mode, base::TimeDelta length);
+};
+
 SyncerThread::DelayProvider::DelayProvider() {}
 SyncerThread::DelayProvider::~DelayProvider() {}
 

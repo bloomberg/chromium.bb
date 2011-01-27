@@ -80,7 +80,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
  private:
   // Message handling routines
   void OnDebuggerOutput(const std::string& msg);
-  void FrameNavigating(const std::string& url);
+  virtual void FrameNavigating(const std::string& url);
   void TabClosed();
 
   int32 id_;

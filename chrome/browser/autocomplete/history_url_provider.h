@@ -175,7 +175,7 @@ class HistoryURLProvider : public HistoryProvider {
   void QueryComplete(HistoryURLProviderParams* params_gets_deleted);
 
  private:
-  ~HistoryURLProvider() {}
+  ~HistoryURLProvider();
 
   // Returns the set of prefixes to use for prefixes_.
   static history::Prefixes GetPrefixes();

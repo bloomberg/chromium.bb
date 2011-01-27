@@ -26,7 +26,7 @@ class SpeechInputDispatcher : public RenderViewObserver,
 
  private:
   // RenderView::Observer implementation.
-  bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // WebKit::WebSpeechInputController.
   virtual bool startRecognition(int request_id,

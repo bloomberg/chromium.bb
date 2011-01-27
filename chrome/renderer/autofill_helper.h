@@ -33,6 +33,7 @@ class AutoFillHelper : public RenderViewObserver,
   // PasswordAutocompleteManager is guaranteed to outlive AutoFillHelper.
   AutoFillHelper(RenderView* render_view,
                  PasswordAutocompleteManager* password_autocomplete_manager);
+  virtual ~AutoFillHelper();
 
   // WebKit::WebAutoFillClient implementation.  Public for tests.
   virtual void didAcceptAutoFillSuggestion(const WebKit::WebNode& node,

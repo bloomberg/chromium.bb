@@ -58,7 +58,7 @@ class ChildProcessHost : public IPC::Channel::Listener,
 #endif  // defined(OS_WIN)
 
   // IPC::Message::Sender implementation.
-  bool Send(IPC::Message* message);
+  virtual bool Send(IPC::Message* message);
 
  protected:
   ChildProcessHost();
@@ -80,9 +80,9 @@ class ChildProcessHost : public IPC::Channel::Listener,
   virtual void InstanceCreated();
 
   // IPC::Channel::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg) { return false; }
-  virtual void OnChannelConnected(int32 peer_pid) { }
-  virtual void OnChannelError() { }
+  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual void OnChannelConnected(int32 peer_pid);
+  virtual void OnChannelError();
 
   bool opening_channel() { return opening_channel_; }
   const std::string& channel_id() { return channel_id_; }
@@ -91,9 +91,9 @@ class ChildProcessHost : public IPC::Channel::Listener,
   // Called when the child process goes away.
   virtual void OnChildDied();
   // Notifies the derived class that we told the child process to kill itself.
-  virtual void ShutdownStarted() { }
+  virtual void ShutdownStarted();
   // Subclasses can implement specific notification methods.
-  virtual void Notify(NotificationType type) { }
+  virtual void Notify(NotificationType type);
 
  private:
   // By using an internal class as the IPC::Channel::Listener, we can intercept

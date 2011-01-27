@@ -38,6 +38,8 @@ bool PageMargins::Equals(const PageMargins& rhs) const {
 PageSetup::PageSetup() : text_height_(0) {
 }
 
+PageSetup::~PageSetup() {}
+
 void PageSetup::Clear() {
   physical_size_.SetSize(0, 0);
   printable_area_.SetRect(0, 0, 0, 0);

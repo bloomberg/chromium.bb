@@ -30,7 +30,7 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
   ~IndexedDBDispatcher();
 
   // IPC::Channel::Listener implementation.
-  bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
 
   void RequestIDBFactoryOpen(
       const string16& name,

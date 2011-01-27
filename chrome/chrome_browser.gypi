@@ -2581,6 +2581,7 @@
         'browser/tab_contents/web_drag_utils_win.h',
         'browser/tab_contents/web_drop_target_win.cc',
         'browser/tab_contents/web_drop_target_win.h',
+        'browser/tab_contents/web_navigation_observer.cc',
         'browser/tab_contents/web_navigation_observer.h',
         'browser/tabs/default_tab_handler.cc',
         'browser/tabs/default_tab_handler.h',
