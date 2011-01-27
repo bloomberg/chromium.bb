@@ -82,22 +82,18 @@ cr.define('cr', function() {
      */
     openUrlFromEvent: function(url, e) {
       // We only support keydown Enter and non right click events.
-      if (e.type == 'keydown') {
-        if(e.keyIdentifier != 'Enter')
-          return;
-      } else if (e.type != 'click' || e.button == 2) {
-        return;
+      if (e.type == 'keydown' && e.keyIdentifier == 'Enter' ||
+          e.button != 2) {
+        var kind;
+        var ctrl = cr.isMac && e.metaKey || !cr.isMac && e.ctrlKey;
+
+        if (e.button == 1 || ctrl) // middle, ctrl or keyboard
+          kind = e.shiftKey ? LinkKind.FOREGROUND_TAB : LinkKind.BACKGROUND_TAB;
+        else // left or keyboard
+          kind = e.shiftKey ? LinkKind.WINDOW : LinkKind.SELF;
+
+        this.openUrls([url], kind);
       }
-
-      var kind;
-      var ctrl = cr.isMac && e.metaKey || !cr.isMac && e.ctrlKey;
-
-      if (e.button == 1 || ctrl) // middle, ctrl or keyboard
-        kind = e.shiftKey ? LinkKind.FOREGROUND_TAB : LinkKind.BACKGROUND_TAB;
-      else // left or keyboard
-        kind = e.shiftKey ? LinkKind.WINDOW : LinkKind.SELF;
-
-      this.openUrls([url], kind);
     },
 
 

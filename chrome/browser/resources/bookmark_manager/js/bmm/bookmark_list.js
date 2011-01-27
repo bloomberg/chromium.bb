@@ -68,7 +68,6 @@ cr.define('bmm', function() {
     /** @inheritDoc */
     decorate: function() {
       List.prototype.decorate.call(this);
-      this.addEventListener('click', this.handleClick_);
       this.addEventListener('mousedown', this.handleMouseDown_);
 
       // HACK(arv): http://crbug.com/40902
@@ -190,26 +189,17 @@ cr.define('bmm', function() {
     },
 
     /**
-     * Handles the clicks on the list so that we can check if the user clicked
-     * on a link or a folder.
+     * Dispatches an urlClicked event which is used to open URLs in new
+     * tabs etc.
      * @private
-     * @param {!Event} e The click event object.
+     * @param {string} url The URL that was clicked.
+     * @param {!Event} originalEvent The original click event object.
      */
-    handleClick_: function(e) {
-      // Handle middle click to open bookmark in a new tab.
-      if (e.button == 1) {
-        var el = e.target;
-        while (el.parentNode != this) {
-          el = el.parentNode;
-        }
-        var node = el.bookmarkNode;
-        if (!bmm.isFolder(node)) {
-          var event = new cr.Event('urlClicked', true, false);
-          event.url = node.url;
-          event.originalEvent = e;
-          this.dispatchEvent(event);
-        }
-      }
+    dispatchUrlClickedEvent_: function(url, originalEvent) {
+      var event = new cr.Event('urlClicked', true, false);
+      event.url = url;
+      event.originalEvent = originalEvent;
+      this.dispatchEvent(event);
     },
 
     /**
@@ -243,15 +233,13 @@ cr.define('bmm', function() {
     handleMiddleMouseUp_: function(e) {
       this.removeEventListener('mouseup', this.handleMiddleMouseUp_);
       if (e.button == 1) {
-        var clickEvent = document.createEvent('MouseEvent');
-        clickEvent.initMouseEvent('click',
-                                  true,  // canBubble
-                                  true,  // cancelable,
-                                  e.view, e.detail,
-                                  e.screenX, e.screenY, e.clientX, e.clientY,
-                                  e.ctrlKey, e.altKey, e.shiftKey, e.metaKey,
-                                  e.button, e.relatedTarget);
-        e.target.dispatchEvent(clickEvent);
+        var el = e.target;
+        while (el.parentNode != this) {
+          el = el.parentNode;
+        }
+        var node = el.bookmarkNode;
+        if (node && !bmm.isFolder(node))
+          this.dispatchUrlClickedEvent_(node.url, e);
       }
     },
 
