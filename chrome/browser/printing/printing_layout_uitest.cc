@@ -1,11 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/string_util.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/simple_thread.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/test/test_server.h"
@@ -142,8 +145,8 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
       found_prn = false;
       std::wstring file;
       while (!(file = enumerator.Next().ToWStringHack()).empty()) {
-        std::wstring ext = file_util::GetFileExtensionFromPath(file);
-        if (!_wcsicmp(ext.c_str(), L"emf")) {
+        std::wstring ext = FilePath(file).Extension();
+        if (base::strcasecmp(WideToUTF8(ext).c_str(), ".emf") == 0) {
           EXPECT_FALSE(found_emf) << "Found a leftover .EMF file: \"" <<
               emf_file << "\" and \"" << file << "\" when looking for \"" <<
               verification_name << "\"";
@@ -151,7 +154,7 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
           emf_file = file;
           continue;
         }
-        if (!_wcsicmp(ext.c_str(), L"prn")) {
+        if (base::strcasecmp(WideToUTF8(ext).c_str(), ".prn") == 0) {
           EXPECT_FALSE(found_prn) << "Found a leftover .PRN file: \"" <<
               prn_file << "\" and \"" << file << "\" when looking for \"" <<
               verification_name << "\"";
