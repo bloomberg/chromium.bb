@@ -9,9 +9,9 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "chrome/common/policy_constants.h"
 #include "chrome_frame/policy_settings.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;

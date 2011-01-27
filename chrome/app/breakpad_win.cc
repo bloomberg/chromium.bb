@@ -28,10 +28,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/result_codes.h"
-#include "chrome/common/policy_constants.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
+#include "policy/policy_constants.h"
 
 namespace {
 

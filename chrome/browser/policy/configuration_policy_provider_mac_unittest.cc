@@ -11,7 +11,7 @@
 #include "chrome/browser/policy/configuration_policy_provider_mac.h"
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/browser/preferences_mock_mac.h"
-#include "chrome/common/policy_constants.h"
+#include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -200,7 +200,7 @@ INSTANTIATE_TEST_CASE_P(
     ConfigurationPolicyProviderMacTest,
     testing::Values(
         PolicyTestParams::ForStringPolicy(
-            kPolicyHomePage,
+            kPolicyHomepageLocation,
             key::kHomepageLocation),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyHomepageIsNewTabPage,
@@ -209,8 +209,8 @@ INSTANTIATE_TEST_CASE_P(
             kPolicyRestoreOnStartup,
             key::kRestoreOnStartup),
         PolicyTestParams::ForListPolicy(
-            kPolicyURLsToRestoreOnStartup,
-            key::kURLsToRestoreOnStartup),
+            kPolicyRestoreOnStartupURLs,
+            key::kRestoreOnStartupURLs),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyDefaultSearchProviderEnabled,
             key::kDefaultSearchProviderEnabled),
@@ -278,17 +278,17 @@ INSTANTIATE_TEST_CASE_P(
             kPolicyAutoFillEnabled,
             key::kAutoFillEnabled),
         PolicyTestParams::ForStringPolicy(
-            kPolicyApplicationLocale,
+            kPolicyApplicationLocaleValue,
             key::kApplicationLocaleValue),
         PolicyTestParams::ForBooleanPolicy(
             kPolicySyncDisabled,
             key::kSyncDisabled),
         PolicyTestParams::ForListPolicy(
-            kPolicyExtensionInstallAllowList,
-            key::kExtensionInstallAllowList),
+            kPolicyExtensionInstallWhitelist,
+            key::kExtensionInstallWhitelist),
         PolicyTestParams::ForListPolicy(
-            kPolicyExtensionInstallDenyList,
-            key::kExtensionInstallDenyList),
+            kPolicyExtensionInstallBlacklist,
+            key::kExtensionInstallBlacklist),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyShowHomeButton,
             key::kShowHomeButton),

@@ -8,6 +8,7 @@ include_rules = [
   "+chrome/tools/profiles",  # For history unit tests.
   "+chrome/views",
   "+grit",  # For generated headers
+  "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.
   "+ppapi/proxy",
   "+rlz",
