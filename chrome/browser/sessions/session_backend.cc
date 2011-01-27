@@ -21,6 +21,13 @@ static const int32 kFileSignature = 0x53534E53;
 
 namespace {
 
+// The file header is the first bytes written to the file,
+// and is used to identify the file as one written by us.
+struct FileHeader {
+  int32 signature;
+  int32 version;
+};
+
 // SessionFileReader ----------------------------------------------------------
 
 // SessionFileReader is responsible for reading the set of SessionCommands that
@@ -81,13 +88,13 @@ bool SessionFileReader::Read(BaseSessionService::SessionType type,
                              std::vector<SessionCommand*>* commands) {
   if (!file_->IsOpen())
     return false;
-  int32 header[2];
+  FileHeader header;
   int read_count;
   TimeTicks start_time = TimeTicks::Now();
   read_count = file_->ReadUntilComplete(reinterpret_cast<char*>(&header),
                                         sizeof(header));
-  if (read_count != sizeof(header) || header[0] != kFileSignature ||
-      header[1] != kFileCurrentVersion)
+  if (read_count != sizeof(header) || header.signature != kFileSignature ||
+      header.version != kFileCurrentVersion)
     return false;
 
   ScopedVector<SessionCommand> read_commands;
@@ -346,7 +353,8 @@ void SessionBackend::ResetFile() {
     // reopening to avoid the possibility of scanners locking the file out
     // from under us once we close it. If truncation fails, we'll try to
     // recreate.
-    if (current_session_file_->Truncate(sizeof_header()) != sizeof_header())
+    const int header_size = static_cast<int>(sizeof(FileHeader));
+    if (current_session_file_->Truncate(header_size) != header_size)
       current_session_file_.reset(NULL);
   }
   if (!current_session_file_.get())
@@ -362,12 +370,12 @@ net::FileStream* SessionBackend::OpenAndWriteHeader(const FilePath& path) {
              base::PLATFORM_FILE_EXCLUSIVE_READ);
   if (!file->IsOpen())
     return NULL;
-  int32 header[2];
-  header[0] = kFileSignature;
-  header[1] = kFileCurrentVersion;
+  FileHeader header;
+  header.signature = kFileSignature;
+  header.version = kFileCurrentVersion;
   int wrote = file->Write(reinterpret_cast<char*>(&header),
                           sizeof(header), NULL);
-  if (wrote != sizeof_header())
+  if (wrote != sizeof(header))
     return NULL;
   return file.release();
 }

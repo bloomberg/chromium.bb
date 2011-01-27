@@ -114,13 +114,6 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
   bool AppendCommandsToFile(net::FileStream* file,
                             const std::vector<SessionCommand*>& commands);
 
-  // Returns the size of the header. The header is the first bytes written to
-  // the file, and is used to identify the file as one written by us.
-  int32 sizeof_header() const {
-    int32 header[2];
-    return sizeof(header);
-  }
-
   const BaseSessionService::SessionType type_;
 
   // Returns the path to the last file.
