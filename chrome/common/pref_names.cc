@@ -158,6 +158,9 @@ const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
 const char kSafeBrowsingReportingEnabled[] =
     "safebrowsing.reporting_enabled";
 
+// Boolean that is true when Incognito support is enabled.
+const char kIncognitoEnabled[] = "incognito.enabled";
+
 // Boolean that is true when Suggest support is enabled.
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 

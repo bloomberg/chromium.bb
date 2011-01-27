@@ -206,6 +206,19 @@
       If this setting is disabled, web pages cannot use JavaScript.''',
     },
     {
+      'name': 'IncognitoEnabled',
+      'type': 'main',
+      'supported_on': ['chrome.*:11-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': False,
+      'caption': '''Enable Incognito mode''',
+      'desc': '''Enables Incognito mode in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If this setting is enabled or not configured, users can open web pages in incognito mode.
+
+      If this setting is disabled, users cannot open web pages in incognito mode.''',
+    },
+    {
       'name': 'SavingBrowserHistoryDisabled',
       'type': 'main',
       'supported_on': ['chrome.*:8-'],

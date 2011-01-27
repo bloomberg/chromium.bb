@@ -365,7 +365,8 @@ SessionStartupPref GetSessionStartupPref(const CommandLine& command_line,
   if (command_line.HasSwitch(switches::kRestoreLastSession))
     pref.type = SessionStartupPref::LAST;
   if (command_line.HasSwitch(switches::kIncognito) &&
-      pref.type == SessionStartupPref::LAST) {
+      pref.type == SessionStartupPref::LAST &&
+      profile->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
     // We don't store session information when incognito. If the user has
     // chosen to restore last session and launched incognito, fallback to
     // default launch behavior.
@@ -479,8 +480,10 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
 #endif
 
   // Continue with the off-the-record profile from here on if --incognito
-  if (command_line.HasSwitch(switches::kIncognito))
+  if (command_line.HasSwitch(switches::kIncognito) &&
+      profile->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
     profile = profile->GetOffTheRecordProfile();
+  }
 
   BrowserInit::LaunchWithProfile lwp(cur_dir, command_line, this);
   bool launched = lwp.Launch(profile, process_startup);

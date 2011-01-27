@@ -221,11 +221,15 @@ Browser::Browser(Type type, Profile* profile)
   registrar_.Add(this, NotificationType::EXTENSION_READY_FOR_INSTALL,
                  NotificationService::AllSources());
 
+  // NOTE: These prefs all need to be explicitly destroyed in the destructor
+  // or you'll get a nasty surprise when you run the incognito tests.
   PrefService* local_state = g_browser_process->local_state();
   if (local_state)
     printing_enabled_.Init(prefs::kPrintingEnabled, local_state, this);
   dev_tools_disabled_.Init(prefs::kDevToolsDisabled,
                            profile_->GetPrefs(), this);
+  incognito_mode_allowed_.Init(prefs::kIncognitoEnabled,
+                               profile_->GetPrefs(), this);
 
   InitCommandState();
   BrowserList::AddBrowser(this);
@@ -289,6 +293,7 @@ Browser::~Browser() {
   encoding_auto_detect_.Destroy();
   printing_enabled_.Destroy();
   dev_tools_disabled_.Destroy();
+  incognito_mode_allowed_.Destroy();
   instant_enabled_.Destroy();
   use_vertical_tabs_.Destroy();
 
@@ -1316,7 +1321,8 @@ void Browser::Stop() {
 
 void Browser::NewWindow() {
   if (browser_defaults::kAlwaysOpenIncognitoWindow &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kIncognito)) {
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kIncognito) &&
+      incognito_mode_allowed_.GetValue()) {
     NewIncognitoWindow();
     return;
   }
@@ -1330,6 +1336,11 @@ void Browser::NewWindow() {
 }
 
 void Browser::NewIncognitoWindow() {
+  if (!incognito_mode_allowed_.GetValue()) {
+    NewWindow();
+    return;
+  }
+
   UserMetrics::RecordAction(UserMetricsAction("NewIncognitoWindow"), profile_);
   Browser::OpenEmptyWindow(profile_->GetOffTheRecordProfile());
 }
@@ -1953,7 +1964,7 @@ void Browser::OpenLanguageOptionsDialog() {
       switches::kDisableTabbedOptions)) {
     ShowOptionsTab(chrome::kLanguageOptionsSubPage);
   } else {
-   // Language options dialog has been replaced by DOMUI.
+    // Language options dialog has been replaced by DOMUI.
   }
 }
 
@@ -2049,6 +2060,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kRemotingHasSetupCompleted, false);
   prefs->RegisterStringPref(prefs::kCloudPrintEmail, std::string());
   prefs->RegisterBooleanPref(prefs::kDevToolsDisabled, false);
+  prefs->RegisterBooleanPref(prefs::kIncognitoEnabled, true);
   prefs->RegisterRealPref(prefs::kDefaultZoomLevel, 0.0);
   prefs->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
   // We need to register the type of this preference in order to query
@@ -3452,7 +3464,8 @@ void Browser::InitCommandState() {
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW, true);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_INCOGNITO_WINDOW, true);
+  command_updater_.UpdateCommandEnabled(IDC_NEW_INCOGNITO_WINDOW,
+                                        incognito_mode_allowed_.GetValue());
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_WINDOW, true);
   command_updater_.UpdateCommandEnabled(IDC_NEW_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, true);
