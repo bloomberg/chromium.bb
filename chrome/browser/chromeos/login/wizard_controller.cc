@@ -964,6 +964,9 @@ void ShowLoginWizard(const std::string& first_screen_name,
             ResourceBundle::ReloadSharedInstance(locale);
         CHECK(!loaded_locale.empty()) << "Locale could not be found for "
                                       << locale;
+        // Set the application locale here so that the language switch
+        // menu works properly with the newly loaded locale.
+        g_browser_process->SetApplicationLocale(loaded_locale);
       }
     }
   }
@@ -977,9 +980,6 @@ void ShowLoginWizard(const std::string& first_screen_name,
     chromeos::CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
 
   if (controller->GetCustomization()) {
-    if (!locale.empty())
-      chromeos::LanguageSwitchMenu::SwitchLanguage(locale);
-
     // Set initial timezone if specified by customization.
     const std::string timezone_name =
         controller->GetCustomization()->initial_timezone();
