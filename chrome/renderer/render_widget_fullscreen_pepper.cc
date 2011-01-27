@@ -162,9 +162,6 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     webkit::ppapi::PluginInstance* plugin)
     : RenderWidgetFullscreen(render_thread, WebKit::WebPopupTypeSelect),
       plugin_(plugin),
-#if defined(OS_MACOSX)
-      plugin_handle_(NULL),
-#endif
       context_(NULL),
       buffer_(0),
       program_(0) {
@@ -267,16 +264,6 @@ void RenderWidgetFullscreenPepper::CreateContext() {
   GpuChannelHost* host = render_thread->EstablishGpuChannelSync();
   if (!host)
     return;
-  gfx::NativeViewId view_id;
-#if !defined(OS_MACOSX)
-  view_id = host_window();
-#else
-  Send(new ViewHostMsg_AllocateFakePluginWindowHandle(
-        routing_id(), true, true, &plugin_handle_));
-  if (!plugin_handle_)
-    return;
-  view_id = static_cast<gfx::NativeViewId>(plugin_handle_);
-#endif
   const int32 attribs[] = {
     ggl::GGL_ALPHA_SIZE, 8,
     ggl::GGL_DEPTH_SIZE, 0,
@@ -287,7 +274,6 @@ void RenderWidgetFullscreenPepper::CreateContext() {
   };
   context_ = ggl::CreateViewContext(
       host,
-      view_id,
       routing_id(),
       "GL_OES_packed_depth_stencil GL_OES_depth24",
       attribs);
@@ -314,13 +300,6 @@ void RenderWidgetFullscreenPepper::DestroyContext() {
     ggl::DestroyContext(context_);
     context_ = NULL;
   }
-#if defined(OS_MACOSX)
-  if (plugin_handle_) {
-    Send(new ViewHostMsg_DestroyFakePluginWindowHandle(routing_id(),
-                                                       plugin_handle_));
-    plugin_handle_ = NULL;
-  }
-#endif
 }
 
 namespace {

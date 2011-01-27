@@ -48,6 +48,7 @@
 typedef std::map<std::string, std::string> SubstitutionMap;
 
 class Value;
+struct GPUCreateCommandBufferConfig;
 class GPUInfo;
 class SkBitmap;
 struct ThumbnailScore;
@@ -1543,6 +1544,13 @@ IPC_MESSAGE_CONTROL0(ViewHostMsg_EstablishGpuChannel)
 // point for GPU operations, in particular to make sure the GPU channel has
 // been established.
 IPC_SYNC_MESSAGE_CONTROL0_0(ViewHostMsg_SynchronizeGpu)
+
+// A renderer sends this to the browser process when it wants to
+// create a GL context associated with the given view_id.
+IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CreateViewCommandBuffer,
+                            int32, /* render_view_id */
+                            GPUCreateCommandBufferConfig, /* init_params */
+                            int32 /* route_id */)
 
 // A renderer sends this to the browser process when it wants to start
 // a new instance of the Native Client process. The browser will launch

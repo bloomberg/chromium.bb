@@ -80,17 +80,7 @@ static LRESULT CALLBACK CompositorWindowProc(
 
 bool GpuCommandBufferStub::CreateCompositorWindow() {
   DCHECK(handle_ != gfx::kNullPluginWindow);
-
-  // Ask the browser to create the the host window.
-  GpuThread* gpu_thread = channel_->gpu_thread();
-  gfx::PluginWindowHandle host_window_id = gfx::kNullPluginWindow;
-  gpu_thread->Send(new GpuHostMsg_GetCompositorHostWindow(
-      renderer_id_,
-      render_view_id_,
-      &host_window_id));
-  if (host_window_id == gfx::kNullPluginWindow)
-    return false;
-  HWND host_window = static_cast<HWND>(host_window_id);
+  HWND host_window = static_cast<HWND>(handle_);
 
   // Create the compositor window itself.
   DCHECK(host_window);
@@ -163,11 +153,11 @@ GpuCommandBufferStub::~GpuCommandBufferStub() {
     DestroyWindow(static_cast<HWND>(compositor_window_));
     compositor_window_ = NULL;
   }
-#elif defined(OS_LINUX)
-  GpuThread* gpu_thread = channel_->gpu_thread();
-  gpu_thread->Send(
-      new GpuHostMsg_ReleaseXID(handle_));
 #endif  // defined(OS_WIN)
+
+  GpuThread* gpu_thread = channel_->gpu_thread();
+  gpu_thread->Send(new GpuHostMsg_DestroyCommandBuffer(
+      handle_, renderer_id_, render_view_id_));
 }
 
 bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {

@@ -78,9 +78,6 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   // The plugin instance this widget wraps.
   webkit::ppapi::PluginInstance* plugin_;
 
-#if defined(OS_MACOSX)
-  gfx::PluginWindowHandle plugin_handle_;
-#endif
   // GL context for compositing.
   ggl::Context* context_;
   unsigned int buffer_;

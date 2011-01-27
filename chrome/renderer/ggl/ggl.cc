@@ -62,7 +62,7 @@ class Context : public base::SupportsWeakPtr<Context> {
 
   // Initialize a GGL context that can be used in association with a a GPU
   // channel acquired from a RenderWidget or RenderView.
-  bool Initialize(gfx::NativeViewId view,
+  bool Initialize(bool onscreen,
                   int render_view_id,
                   const gfx::Size& size,
                   const char* allowed_extensions,
@@ -156,7 +156,7 @@ Context::~Context() {
   Destroy();
 }
 
-bool Context::Initialize(gfx::NativeViewId view,
+bool Context::Initialize(bool onscreen,
                          int render_view_id,
                          const gfx::Size& size,
                          const char* allowed_extensions,
@@ -207,9 +207,8 @@ bool Context::Initialize(gfx::NativeViewId view,
   }
 
   // Create a proxy to a command buffer in the GPU process.
-  if (view) {
+  if (onscreen) {
     command_buffer_ = channel_->CreateViewCommandBuffer(
-        view,
         render_view_id,
         allowed_extensions,
         attribs);
@@ -434,14 +433,13 @@ void Context::OnSwapBuffers() {
 #endif  // ENABLE_GPU
 
 Context* CreateViewContext(GpuChannelHost* channel,
-                           gfx::NativeViewId view,
                            int render_view_id,
                            const char* allowed_extensions,
                            const int32* attrib_list) {
 #if defined(ENABLE_GPU)
   scoped_ptr<Context> context(new Context(channel, NULL));
   if (!context->Initialize(
-      view, render_view_id, gfx::Size(), allowed_extensions, attrib_list))
+      true, render_view_id, gfx::Size(), allowed_extensions, attrib_list))
     return NULL;
 
   return context.release();
@@ -465,7 +463,7 @@ Context* CreateOffscreenContext(GpuChannelHost* channel,
                                 const int32* attrib_list) {
 #if defined(ENABLE_GPU)
   scoped_ptr<Context> context(new Context(channel, parent));
-  if (!context->Initialize(0, 0, size, allowed_extensions, attrib_list))
+  if (!context->Initialize(false, 0, size, allowed_extensions, attrib_list))
     return NULL;
 
   return context.release();

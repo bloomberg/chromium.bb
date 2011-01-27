@@ -69,6 +69,8 @@ bool GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_Initialize, OnInitialize)
     IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel, OnEstablishChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
+    IPC_MESSAGE_HANDLER(GpuMsg_CreateViewCommandBuffer,
+                        OnCreateViewCommandBuffer);
     IPC_MESSAGE_HANDLER(GpuMsg_Synchronize, OnSynchronize)
     IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo, OnCollectGraphicsInfo)
 #if defined(OS_MACOSX)
@@ -215,8 +217,23 @@ void GpuThread::OnCollectGraphicsInfo(GPUInfo::Level level) {
     }
   }
 #endif
-
   Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
+}
+
+void GpuThread::OnCreateViewCommandBuffer(
+    gfx::PluginWindowHandle window,
+    int32 render_view_id,
+    int32 renderer_id,
+    const GPUCreateCommandBufferConfig& init_params) {
+  int32 route_id = MSG_ROUTING_NONE;
+
+  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
+  if (iter != gpu_channels_.end()) {
+    iter->second->CreateViewCommandBuffer(
+        window, render_view_id, init_params, &route_id);
+  }
+
+  Send(new GpuHostMsg_CommandBufferCreated(route_id));
 }
 
 #if defined(OS_MACOSX)

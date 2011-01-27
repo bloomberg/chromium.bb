@@ -59,6 +59,12 @@ class GpuChannel : public IPC::Channel::Listener,
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);
 
+  void CreateViewCommandBuffer(
+      gfx::PluginWindowHandle window,
+      int32 render_view_id,
+      const GPUCreateCommandBufferConfig& init_params,
+      int32* route_id);
+
 #if defined(OS_MACOSX)
   virtual void AcceleratedSurfaceBuffersSwapped(
       int32 route_id, uint64 swap_buffers_count);
@@ -73,11 +79,6 @@ class GpuChannel : public IPC::Channel::Listener,
   int GenerateRouteID();
 
   // Message handlers.
-  void OnCreateViewCommandBuffer(
-      gfx::NativeViewId view,
-      int32 render_view_id,
-      const GPUCreateCommandBufferConfig& init_params,
-      int32* route_id);
   void OnCreateOffscreenCommandBuffer(
       int32 parent_route_id,
       const gfx::Size& size,

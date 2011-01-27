@@ -387,10 +387,6 @@ class WebGraphicsContext3DCommandBufferImpl
   ggl::Context* context_;
   // If rendering directly to WebView, weak pointer to it.
   WebKit::WebView* web_view_;
-#if defined(OS_MACOSX)
-  // "Fake" plugin window handle in browser process for the compositor's output.
-  gfx::PluginWindowHandle plugin_handle_;
-#endif
 
   WebKit::WebGraphicsContext3D::Attributes attributes_;
   int cached_width_, cached_height_;

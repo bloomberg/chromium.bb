@@ -31,6 +31,7 @@
 
 class ChromeURLRequestContext;
 struct FontDescriptor;
+struct GPUCreateCommandBufferConfig;
 class HostContentSettingsMap;
 class HostZoomMap;
 class NotificationsPrefsCache;
@@ -332,7 +333,10 @@ class RenderMessageFilter : public BrowserMessageFilter,
       IPC::Message* reply_msg);
   void OnEstablishGpuChannel();
   void OnSynchronizeGpu(IPC::Message* reply);
-
+  void OnCreateViewCommandBuffer(
+      int32 render_view_id,
+      const GPUCreateCommandBufferConfig& init_params,
+      IPC::Message* reply);
   void OnAsyncOpenFile(const IPC::Message& msg,
                        const FilePath& path,
                        int flags,

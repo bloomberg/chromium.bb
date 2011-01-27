@@ -71,6 +71,23 @@ bool GpuChannel::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
+void GpuChannel::CreateViewCommandBuffer(
+    gfx::PluginWindowHandle window,
+    int32 render_view_id,
+    const GPUCreateCommandBufferConfig& init_params,
+    int32* route_id) {
+  *route_id = MSG_ROUTING_NONE;
+
+#if defined(ENABLE_GPU)
+  *route_id = GenerateRouteID();
+  scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
+      this, window, NULL, gfx::Size(), init_params.allowed_extensions,
+      init_params.attribs, 0, *route_id, renderer_id_, render_view_id));
+  router_.AddRoute(*route_id, stub.get());
+  stubs_.AddWithID(stub.release(), *route_id);
+#endif  // ENABLE_GPU
+}
+
 #if defined(OS_MACOSX)
 void GpuChannel::AcceleratedSurfaceBuffersSwapped(
     int32 route_id, uint64 swap_buffers_count) {
@@ -97,8 +114,6 @@ bool GpuChannel::IsRenderViewGone(int32 renderer_route_id) {
 bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChannel, msg)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateViewCommandBuffer,
-        OnCreateViewCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateOffscreenCommandBuffer,
         OnCreateOffscreenCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
@@ -116,53 +131,6 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
 int GpuChannel::GenerateRouteID() {
   static int last_id = 0;
   return ++last_id;
-}
-
-void GpuChannel::OnCreateViewCommandBuffer(
-    gfx::NativeViewId view_id,
-    int32 render_view_id,
-    const GPUCreateCommandBufferConfig& init_params,
-    int32* route_id) {
-  *route_id = MSG_ROUTING_NONE;
-
-#if defined(ENABLE_GPU)
-
-  gfx::PluginWindowHandle handle = gfx::kNullPluginWindow;
-#if defined(OS_WIN)
-  // TODO(apatrick): We don't actually need the window handle on the Windows
-  // platform. At this point, it only indicates to the GpuCommandBufferStub
-  // whether onscreen or offscreen rendering is requested. The window handle
-  // that will be rendered to is the child compositor window and that window
-  // handle is provided by the browser process. Looking at what we are doing on
-  // this and other platforms, I think a redesign is in order here. Perhaps
-  // on all platforms the renderer just indicates whether it wants onscreen or
-  // offscreen rendering and the browser provides whichever platform specific
-  // "render target" the GpuCommandBufferStub targets.
-  handle = gfx::NativeViewFromId(view_id);
-#elif defined(OS_LINUX)
-  // Ask the browser for the view's XID.
-  gpu_thread_->Send(new GpuHostMsg_GetViewXID(view_id, &handle));
-#elif defined(OS_MACOSX)
-  // On Mac OS X we currently pass a (fake) PluginWindowHandle for the
-  // NativeViewId. We could allocate fake NativeViewIds on the browser
-  // side as well, and map between those and PluginWindowHandles, but
-  // this seems excessive.
-  handle = static_cast<gfx::PluginWindowHandle>(
-      static_cast<intptr_t>(view_id));
-#else
-  // TODO(apatrick): This needs to be something valid for mac and linux.
-  // Offscreen rendering will work on these platforms but not rendering to the
-  // window.
-  DCHECK_EQ(view_id, 0);
-#endif
-
-  *route_id = GenerateRouteID();
-  scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
-      this, handle, NULL, gfx::Size(), init_params.allowed_extensions,
-      init_params.attribs, 0, *route_id, renderer_id_, render_view_id));
-  router_.AddRoute(*route_id, stub.get());
-  stubs_.AddWithID(stub.release(), *route_id);
-#endif  // ENABLE_GPU
 }
 
 void GpuChannel::OnCreateOffscreenCommandBuffer(

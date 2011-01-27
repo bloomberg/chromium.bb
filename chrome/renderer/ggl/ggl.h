@@ -80,7 +80,6 @@ bool Terminate();
 // TODO(kbr): clean up the arguments to this function and make them
 // more cross-platform.
 Context* CreateViewContext(GpuChannelHost* channel,
-                           gfx::NativeViewId view,
                            int render_view_id,
                            const char* allowed_extensions,
                            const int32* attrib_list);

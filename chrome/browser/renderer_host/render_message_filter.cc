@@ -48,6 +48,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
+#include "chrome/common/gpu_create_command_buffer_config.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -397,6 +398,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_EstablishGpuChannel, OnEstablishGpuChannel)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_SynchronizeGpu,
                                     OnSynchronizeGpu)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_CreateViewCommandBuffer,
+                                    OnCreateViewCommandBuffer)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AsyncOpenFile, OnAsyncOpenFile)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -1421,6 +1424,14 @@ void RenderMessageFilter::OnSynchronizeGpu(IPC::Message* reply) {
   // the reply message, and also send down a "this" pointer so that
   // the GPU process host can send the reply later.
   GpuProcessHost::Get()->Synchronize(reply, this);
+}
+
+void RenderMessageFilter::OnCreateViewCommandBuffer(
+    int32 render_view_id,
+    const GPUCreateCommandBufferConfig& init_params,
+    IPC::Message* reply) {
+  GpuProcessHost::Get()->CreateViewCommandBuffer(
+      render_view_id, render_process_id_, init_params, reply, this);
 }
 
 void RenderMessageFilter::OnGetExtensionMessageBundle(

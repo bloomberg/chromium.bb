@@ -112,6 +112,32 @@ const GPUInfo& GpuProcessHostUIShim::gpu_info() const {
   return gpu_info_;
 }
 
+void GpuProcessHostUIShim::OnDestroyCommandBuffer(
+    gfx::PluginWindowHandle window, int32 renderer_id,
+    int32 render_view_id) {
+  if (!window)
+    return;
+
+#if defined(OS_LINUX)
+  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
+  manager->ReleasePermanentXID(window);
+#elif defined(OS_MACOSX) || defined(OS_WIN)
+  RenderViewHost* host = RenderViewHost::FromID(renderer_id,
+                                                render_view_id);
+  if (!host)
+    return;
+  RenderWidgetHostView* view = host->view();
+  if (!view)
+    return;
+#if defined(OS_MACOSX)
+  view->DestroyFakePluginWindowHandle(window);
+#elif defined(OS_WIN)
+  view->ShowCompositorHostWindow(false);
+#endif
+
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
+}
+
 void GpuProcessHostUIShim::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
   gpu_info_ = gpu_info;
   child_process_logging::SetGpuInfo(gpu_info);
@@ -119,6 +145,31 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
   // Used only in testing.
   if (gpu_info_collected_callback_.get())
     gpu_info_collected_callback_->Run();
+}
+
+bool GpuProcessHostUIShim::OnControlMessageReceived(
+    const IPC::Message& message) {
+  DCHECK(CalledOnValidThread());
+
+  IPC_BEGIN_MESSAGE_MAP(GpuProcessHostUIShim, message)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyCommandBuffer,
+                        OnDestroyCommandBuffer)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
+                        OnGraphicsInfoCollected)
+#if defined(OS_LINUX)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_ResizeXID, OnResizeXID)
+#elif defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
+                        OnAcceleratedSurfaceSetIOSurface)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
+                        OnAcceleratedSurfaceBuffersSwapped)
+#elif defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_ScheduleComposite, OnScheduleComposite);
+#endif
+    IPC_MESSAGE_UNHANDLED_ERROR()
+  IPC_END_MESSAGE_MAP()
+
+  return true;
 }
 
 namespace {
@@ -133,25 +184,6 @@ void SendDelayedReply(IPC::Message* reply_msg) {
 }  // namespace
 
 #if defined(OS_LINUX)
-
-void GpuProcessHostUIShim::OnGetViewXID(gfx::NativeViewId id,
-                                        IPC::Message* reply_msg) {
-  XID xid;
-
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  if (!manager->GetPermanentXIDForId(&xid, id)) {
-    DLOG(ERROR) << "Can't find XID for view id " << id;
-    xid = 0;
-  }
-
-  GpuHostMsg_GetViewXID::WriteReplyParams(reply_msg, xid);
-  SendDelayedReply(reply_msg);
-}
-
-void GpuProcessHostUIShim::OnReleaseXID(unsigned long xid) {
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  manager->ReleasePermanentXID(xid);
-}
 
 void GpuProcessHostUIShim::OnResizeXID(unsigned long xid, gfx::Size size,
                                        IPC::Message *reply_msg) {
@@ -204,26 +236,6 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
 
 #elif defined(OS_WIN)
 
-void GpuProcessHostUIShim::OnGetCompositorHostWindow(
-    int renderer_id,
-    int render_view_id,
-    IPC::Message* reply_msg) {
-  RenderViewHost* host = RenderViewHost::FromID(renderer_id,
-                                                render_view_id);
-  if (!host) {
-    GpuHostMsg_GetCompositorHostWindow::WriteReplyParams(reply_msg,
-        gfx::kNullPluginWindow);
-    SendDelayedReply(reply_msg);
-    return;
-  }
-
-  RenderWidgetHostView* view = host->view();
-  gfx::PluginWindowHandle id = view->GetCompositorHostWindow();
-
-  GpuHostMsg_GetCompositorHostWindow::WriteReplyParams(reply_msg, id);
-  SendDelayedReply(reply_msg);
-}
-
 void GpuProcessHostUIShim::OnScheduleComposite(int renderer_id,
     int render_view_id) {
   RenderViewHost* host = RenderViewHost::FromID(renderer_id,
@@ -233,31 +245,5 @@ void GpuProcessHostUIShim::OnScheduleComposite(int renderer_id,
   }
   host->ScheduleComposite();
 }
+
 #endif
-
-bool GpuProcessHostUIShim::OnControlMessageReceived(
-    const IPC::Message& message) {
-  DCHECK(CalledOnValidThread());
-
-  IPC_BEGIN_MESSAGE_MAP(GpuProcessHostUIShim, message)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
-                        OnGraphicsInfoCollected)
-#if defined(OS_LINUX)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_GetViewXID, OnGetViewXID)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_ReleaseXID, OnReleaseXID)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_ResizeXID, OnResizeXID)
-#elif defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
-                        OnAcceleratedSurfaceSetIOSurface)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
-                        OnAcceleratedSurfaceBuffersSwapped)
-#elif defined(OS_WIN)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_GetCompositorHostWindow,
-                                    OnGetCompositorHostWindow)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_ScheduleComposite, OnScheduleComposite);
-#endif
-    IPC_MESSAGE_UNHANDLED_ERROR()
-  IPC_END_MESSAGE_MAP()
-
-  return true;
-}

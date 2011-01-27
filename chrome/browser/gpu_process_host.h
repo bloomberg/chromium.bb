@@ -16,6 +16,7 @@
 #include "gfx/native_widget_types.h"
 
 class GpuBlacklist;
+struct GPUCreateCommandBufferConfig;
 class GPUInfo;
 class RenderMessageFilter;
 
@@ -44,6 +45,19 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // in.
   void Synchronize(IPC::Message* reply, RenderMessageFilter* filter);
 
+  // Tells the GPU process to create a new command buffer that draws into the
+  // window associated with the given renderer.
+  void CreateViewCommandBuffer(
+      int32 render_view_id,
+      int32 renderer_id,
+      const GPUCreateCommandBufferConfig& init_params,
+      IPC::Message* reply,
+      RenderMessageFilter* filter);
+
+  // We need to hop threads when creating the command buffer.
+  // Let these tasks access our internals.
+  friend class CVCBThreadHopping;
+
  private:
   // Used to queue pending channel requests.
   struct ChannelRequest {
@@ -54,10 +68,9 @@ class GpuProcessHost : public BrowserChildProcessHost,
     scoped_refptr<RenderMessageFilter> filter;
   };
 
-  // Used to queue pending synchronization requests.
-  struct SynchronizationRequest {
-    SynchronizationRequest(IPC::Message* reply, RenderMessageFilter* filter);
-    ~SynchronizationRequest();
+  struct DelayedReply {
+    DelayedReply(IPC::Message* reply, RenderMessageFilter* filter);
+    ~DelayedReply();
 
     // The delayed reply message which needs to be sent to the
     // renderer.
@@ -79,14 +92,12 @@ class GpuProcessHost : public BrowserChildProcessHost,
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle,
                             const GPUInfo& gpu_info);
   void OnSynchronizeReply();
+  void OnCommandBufferCreated(const int32 route_id);
 
   // Sends the response for establish channel request to the renderer.
   void SendEstablishChannelReply(const IPC::ChannelHandle& channel,
                                  const GPUInfo& gpu_info,
                                  RenderMessageFilter* filter);
-  // Sends the response for synchronization request to the renderer.
-  void SendSynchronizationReply(IPC::Message* reply,
-                                RenderMessageFilter* filter);
 
   // Sends outstanding replies to renderer processes. This is only called
   // in error situations like the GPU process crashing -- but is necessary
@@ -114,9 +125,13 @@ class GpuProcessHost : public BrowserChildProcessHost,
   std::queue<ChannelRequest> sent_requests_;
 
   // The pending synchronization requests we need to reply to.
-  std::queue<SynchronizationRequest> queued_synchronization_replies_;
+  std::queue<DelayedReply> queued_synchronization_replies_;
+
+  // The pending create command buffer requests we need to reply to.
+  std::queue<DelayedReply> create_command_buffer_replies_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };
+
 
 #endif  // CHROME_BROWSER_GPU_PROCESS_HOST_H_

@@ -7,8 +7,10 @@
 #include "chrome/common/child_process.h"
 #include "chrome/common/gpu_create_command_buffer_config.h"
 #include "chrome/common/gpu_messages.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/gpu_video_service_host.h"
+#include "chrome/renderer/render_thread.h"
 
 GpuChannelHost::GpuChannelHost() : state_(kUnconnected) {
 }
@@ -90,7 +92,6 @@ bool GpuChannelHost::Send(IPC::Message* message) {
 }
 
 CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
-    gfx::NativeViewId view,
     int render_view_id,
     const std::string& allowed_extensions,
     const std::vector<int32>& attribs) {
@@ -101,10 +102,8 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
 
   GPUCreateCommandBufferConfig init_params(allowed_extensions, attribs);
   int32 route_id;
-  if (!Send(new GpuChannelMsg_CreateViewCommandBuffer(view,
-                                                      render_view_id,
-                                                      init_params,
-                                                      &route_id))) {
+  if (!RenderThread::current()->Send(new ViewHostMsg_CreateViewCommandBuffer(
+       render_view_id, init_params, &route_id))) {
     return NULL;
   }
 

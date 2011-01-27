@@ -27,9 +27,6 @@
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
     : context_(NULL),
       web_view_(NULL),
-#if defined(OS_MACOSX)
-      plugin_handle_(NULL),
-#endif  // defined(OS_MACOSX)
       cached_width_(0),
       cached_height_(0),
       bound_fbo_(0) {
@@ -37,19 +34,6 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
 
 WebGraphicsContext3DCommandBufferImpl::
     ~WebGraphicsContext3DCommandBufferImpl() {
-#if defined(OS_MACOSX)
-  if (web_view_) {
-    DCHECK(plugin_handle_ != gfx::kNullPluginWindow);
-    RenderView* renderview = RenderView::FromWebView(web_view_);
-    // The RenderView might already have been freed, but in its
-    // destructor it destroys all fake plugin window handles it
-    // allocated.
-    if (renderview) {
-      renderview->DestroyFakePluginWindowHandle(plugin_handle_);
-    }
-    plugin_handle_ = gfx::kNullPluginWindow;
-  }
-#endif
   if (context_) {
     ggl::DestroyContext(context_);
   }
@@ -101,18 +85,10 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     RenderView* renderview = RenderView::FromWebView(web_view);
     if (!renderview)
       return false;
-    gfx::NativeViewId view_id;
-#if !defined(OS_MACOSX)
-    view_id = renderview->host_window();
-#else
-    plugin_handle_ = renderview->AllocateFakePluginWindowHandle(
-        /*opaque=*/true, /*root=*/true);
-    view_id = static_cast<gfx::NativeViewId>(plugin_handle_);
-#endif
+
     web_view_ = web_view;
     context_ = ggl::CreateViewContext(
         host,
-        view_id,
         renderview->routing_id(),
         kWebGraphicsContext3DPerferredGLExtensions,
         attribs);
