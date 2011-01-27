@@ -120,6 +120,10 @@ class BalloonCollectionImpl : public BalloonCollection
     // to be used as the initial position for an animation into view.
     gfx::Point OffScreenLocation() const;
 
+    // Returns true if the layout requires offsetting for keeping the close
+    // buttons under the cursor during rapid-close interaction.
+    bool RequiresOffsets() const;
+
    private:
     // Layout parameters
     int VerticalEdgeMargin() const;

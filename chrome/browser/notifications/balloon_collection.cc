@@ -53,7 +53,7 @@ void BalloonCollectionImpl::Add(const Notification& notification,
   new_balloon->Show();
 #if USE_OFFSETS
   int count = base_.count();
-  if (count > 0)
+  if (count > 0 && layout_.RequiresOffsets())
     new_balloon->set_offset(base_.balloons()[count - 1]->offset());
 #endif
   base_.Add(new_balloon);
@@ -112,26 +112,28 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
   Balloons::const_iterator it = balloons.begin();
 
 #if USE_OFFSETS
-  gfx::Point offset;
-  bool apply_offset = false;
-  while (it != balloons.end()) {
-    if (*it == source) {
-      ++it;
-      if (it != balloons.end()) {
-        apply_offset = true;
-        offset.set_y((source)->offset().y() - (*it)->offset().y() +
-            (*it)->content_size().height() - source->content_size().height());
+  if (layout_.RequiresOffsets()) {
+    gfx::Point offset;
+    bool apply_offset = false;
+    while (it != balloons.end()) {
+      if (*it == source) {
+        ++it;
+        if (it != balloons.end()) {
+          apply_offset = true;
+          offset.set_y((source)->offset().y() - (*it)->offset().y() +
+              (*it)->content_size().height() - source->content_size().height());
+        }
+      } else {
+        if (apply_offset)
+          (*it)->add_offset(offset);
+        ++it;
       }
-    } else {
-      if (apply_offset)
-        (*it)->add_offset(offset);
-      ++it;
     }
+    // Start listening for UI events so we cancel the offset when the mouse
+    // leaves the balloon area.
+    if (apply_offset)
+      AddMessageLoopObserver();
   }
-  // Start listening for UI events so we cancel the offset when the mouse
-  // leaves the balloon area.
-  if (apply_offset)
-    AddMessageLoopObserver();
 #endif
 
   base_.Remove(source);
@@ -328,6 +330,21 @@ gfx::Point BalloonCollectionImpl::Layout::OffScreenLocation() const {
       break;
   }
   return gfx::Point(x, y);
+}
+
+bool BalloonCollectionImpl::Layout::RequiresOffsets() const {
+  // Layout schemes that grow up from the bottom require offsets;
+  // schemes that grow down do not require offsets.
+  bool offsets = (placement_ == VERTICALLY_FROM_BOTTOM_LEFT ||
+                  placement_ == VERTICALLY_FROM_BOTTOM_RIGHT);
+
+#if defined(OS_MACOSX)
+  // These schemes are in screen-coordinates, and top and bottom
+  // are inverted on Mac.
+  offsets = !offsets;
+#endif
+
+  return offsets;
 }
 
 // static
