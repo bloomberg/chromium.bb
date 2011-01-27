@@ -1202,3 +1202,19 @@
    fun:SyncSetupWizard
    fun:ProfileSyncService
 }
+{
+   bug_71070
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::string::_Rep::_S_create
+   fun:std::string::_S_construct
+   fun:std::string::_S_construct_aux
+   fun:std::string::_S_construct
+   fun:basic_string
+   fun:SyncResourcesSource
+   fun:SyncSetupWizard
+   fun:ProfileSyncService
+   fun:ProfileSyncServiceMock
+   fun:NiceMock
+   fun:SyncUIUtilTest_ConstructAboutInformationWithUnrecoverableErrorTest_Test::TestBody
+}
