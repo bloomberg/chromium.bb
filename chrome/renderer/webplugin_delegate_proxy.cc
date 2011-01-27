@@ -201,6 +201,12 @@ WebPluginDelegateProxy::~WebPluginDelegateProxy() {
 }
 
 void WebPluginDelegateProxy::PluginDestroyed() {
+#if defined(OS_MACOSX)
+  // Ensure that the renderer doesn't think the plugin still has focus.
+  if (render_view_)
+    render_view_->PluginFocusChanged(false, instance_id_);
+#endif
+
   if (window_)
     WillDestroyWindow();
 
@@ -498,6 +504,12 @@ void WebPluginDelegateProxy::OnChannelError() {
   }
   if (!channel_host_->expecting_shutdown())
     render_view_->PluginCrashed(info_.path);
+
+#if defined(OS_MACOSX)
+  // Ensure that the renderer doesn't think the plugin still has focus.
+  if (render_view_)
+    render_view_->PluginFocusChanged(false, instance_id_);
+#endif
 }
 
 void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
