@@ -40,16 +40,15 @@ class PDFTest(pyauto.PyUITest):
     breakpad_folder = properties['DIR_CRASH_DUMPS']
     old_dmp_files = glob.glob(os.path.join(breakpad_folder, '*.dmp'))
     pdf_files_path = os.path.join(self.DataDir(), 'pyauto_private', 'pdf')
-    pdf_files = glob.glob(os.path.join(pdf_files_path, '*.pdf'))
+    pdf_files = map(self.GetFileURLForPath,
+                    glob.glob(os.path.join(pdf_files_path, '*.pdf')))
     # Add a pdf file over http:// to the list of pdf files.
     # crbug.com/70454
-    pdf_files += ['http://www.irs.gov/pub/irs-pdf/fw9.pdf']
-    for pdf_file in pdf_files:
+    pdf_files += ['http://www.irs.gov/pub/irs-pdf/fw4.pdf']
+    for url in pdf_files:
       # Some pdfs cause known crashes. Exclude them. crbug.com/63549
-      # crbug.com/70811
-      if os.path.basename(pdf_file) in ('nullip.pdf', 'sample.pdf', 'fw4.pdf'):
+      if os.path.basename(url) in ('nullip.pdf', 'sample.pdf'):
         continue
-      url = self.GetFileURLForPath(pdf_file)
       self.AppendTab(pyauto.GURL(url))
     for tab_index in range(1, len(pdf_files) + 1):
       self.ActivateTab(tab_index)
