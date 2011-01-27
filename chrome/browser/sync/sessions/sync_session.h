@@ -15,16 +15,20 @@
 #define CHROME_BROWSER_SYNC_SESSIONS_SYNC_SESSION_H_
 #pragma once
 
+#include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/sessions/ordered_commit_set.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/sessions/status_controller.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 
 namespace syncable {

@@ -32,8 +32,38 @@ namespace sessions {
 
 class UpdateProgress;
 
-typedef std::pair<sync_pb::GetUpdatesCallerInfo::GetUpdatesSource,
-    syncable::ModelTypeBitSet> SyncSourceInfo;
+// A container that contains a set of datatypes with possible string payloads.
+typedef std::map<syncable::ModelType, std::string> TypePayloadMap;
+
+// Helper utils for building TypePayloadMaps.
+// Make a TypePayloadMap from all the types in a ModelTypeBitSet using a
+// default payload.
+TypePayloadMap MakeTypePayloadMapFromBitSet(
+    const syncable::ModelTypeBitSet& types,
+    const std::string& payload);
+
+// Make a TypePayloadMap for all the enabled types in a ModelSafeRoutingInfo
+// using a default payload.
+TypePayloadMap MakeTypePayloadMapFromRoutingInfo(
+    const ModelSafeRoutingInfo& routes,
+    const std::string& payload);
+
+// Coalesce |update| into |original|, overwriting only when |update| has
+// a non-empty payload.
+void CoalescePayloads(TypePayloadMap* original, const TypePayloadMap& update);
+
+// A container for the source of a sync session. This includes the update
+// source, the datatypes triggering the sync session, and possible session
+// specific payloads which should be sent to the server.
+struct SyncSourceInfo {
+  SyncSourceInfo();
+  SyncSourceInfo(
+      const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& u,
+      const TypePayloadMap& t);
+
+  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source;
+  TypePayloadMap types;
+};
 
 // Data pertaining to the status of an active Syncer object.
 struct SyncerStatus {

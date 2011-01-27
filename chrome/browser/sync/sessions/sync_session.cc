@@ -30,8 +30,10 @@ void SyncSession::Coalesce(const SyncSession& session) {
     return;
   }
 
-  source_ = SyncSourceInfo(session.source_.first,
-                           source_.second | session.source_.second);
+  // When we coalesce sessions, the sync update source gets overwritten with the
+  // most recent, while the type/payload map gets merged.
+  CoalescePayloads(&source_.types, session.source_.types);
+  source_.updates_source = session.source_.updates_source;
 
   std::vector<ModelSafeWorker*> temp;
   std::set_union(workers_.begin(), workers_.end(),
@@ -89,7 +91,7 @@ SyncSourceInfo SyncSession::TestAndSetSource() {
   SyncSourceInfo old_source = source_;
   source_ = SyncSourceInfo(
       sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION,
-      source_.second);
+      source_.types);
   return old_source;
 }
 

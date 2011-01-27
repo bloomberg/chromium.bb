@@ -60,6 +60,9 @@ class SyncerThread : public sessions::SyncSession::Delegate {
   // The meat and potatoes.
   void ScheduleNudge(const base::TimeDelta& delay, NudgeSource source,
                      const syncable::ModelTypeBitSet& types);
+  void ScheduleNudgeWithPayloads(
+      const base::TimeDelta& delay, NudgeSource source,
+      const sessions::TypePayloadMap& types_with_payloads);
   void ScheduleConfig(const base::TimeDelta& delay,
                       const syncable::ModelTypeBitSet& types);
 
@@ -150,7 +153,7 @@ class SyncerThread : public sessions::SyncSession::Delegate {
   void StartImpl(Mode mode);
   void ScheduleNudgeImpl(const base::TimeDelta& delay,
                          NudgeSource source,
-                         const syncable::ModelTypeBitSet& model_types);
+                         const sessions::TypePayloadMap& types_with_payloads);
   void ScheduleConfigImpl(const base::TimeDelta& delay,
                           const ModelSafeRoutingInfo& routing_info,
                           const std::vector<ModelSafeWorker*>& workers);

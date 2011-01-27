@@ -5,6 +5,8 @@
 // Syncer unit tests. Unfortunately a lot of these tests
 // are outdated and need to be reworked and updated.
 
+#include <algorithm>
+#include <limits>
 #include <list>
 #include <map>
 #include <set>
@@ -25,6 +27,7 @@
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
 #include "chrome/test/sync/engine/mock_connection_manager.h"
@@ -150,8 +153,11 @@ class SyncerTest : public testing::Test,
     std::vector<ModelSafeWorker*> workers;
     GetModelSafeRoutingInfo(&info);
     GetWorkers(&workers);
-    return new SyncSession(context_.get(), this, sessions::SyncSourceInfo(),
-                           info, workers);
+    sessions::TypePayloadMap types =
+        sessions::MakeTypePayloadMapFromRoutingInfo(info, std::string());
+    return new SyncSession(context_.get(), this,
+        sessions::SyncSourceInfo(sync_pb::GetUpdatesCallerInfo::UNKNOWN, types),
+        info, workers);
   }
 
   bool SyncShareAsDelegate() {

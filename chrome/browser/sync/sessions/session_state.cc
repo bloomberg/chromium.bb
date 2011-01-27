@@ -13,6 +13,54 @@ using std::vector;
 namespace browser_sync {
 namespace sessions {
 
+TypePayloadMap MakeTypePayloadMapFromBitSet(
+    const syncable::ModelTypeBitSet& types,
+    const std::string& payload) {
+  TypePayloadMap types_with_payloads;
+  for (size_t i = syncable::FIRST_REAL_MODEL_TYPE;
+       i < types.size(); ++i) {
+    if (types[i]) {
+      types_with_payloads[syncable::ModelTypeFromInt(i)] = payload;
+    }
+  }
+  return types_with_payloads;
+}
+
+TypePayloadMap MakeTypePayloadMapFromRoutingInfo(
+    const ModelSafeRoutingInfo& routes,
+    const std::string& payload) {
+  TypePayloadMap types_with_payloads;
+  for (ModelSafeRoutingInfo::const_iterator i = routes.begin();
+       i != routes.end(); ++i) {
+    types_with_payloads[i->first] = payload;
+  }
+  return types_with_payloads;
+}
+
+void CoalescePayloads(TypePayloadMap* original,
+                      const TypePayloadMap& update) {
+  for (TypePayloadMap::const_iterator i = update.begin();
+       i != update.end(); ++i) {
+    if (original->count(i->first) == 0) {
+      // If this datatype isn't already in our map, add it with whatever payload
+      // it has.
+      (*original)[i->first] = i->second;
+    } else if (i->second.length() > 0) {
+      // If this datatype is already in our map, we only overwrite the payload
+      // if the new one is non-empty.
+      (*original)[i->first] = i->second;
+    }
+  }
+}
+
+SyncSourceInfo::SyncSourceInfo()
+    : updates_source(sync_pb::GetUpdatesCallerInfo::UNKNOWN) {}
+
+SyncSourceInfo::SyncSourceInfo(
+    const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& u,
+    const TypePayloadMap& t)
+    : updates_source(u), types(t) {}
+
 SyncerStatus::SyncerStatus()
     : invalid_store(false),
       syncer_stuck(false),

@@ -89,7 +89,7 @@ class SyncerThread2Test : public testing::Test {
       TimeTicks optimal_next_sync = optimal_start + poll_interval * i;
       EXPECT_GE(data[i], optimal_next_sync);
       EXPECT_EQ(GetUpdatesCallerInfo::PERIODIC,
-                records.snapshots[i]->source.first);
+                records.snapshots[i]->source.updates_source);
     }
   }
 
@@ -127,6 +127,21 @@ class SyncerThread2Test : public testing::Test {
 
   static void SignalWaitableEvent(base::WaitableEvent* event) {
     event->Signal();
+  }
+
+  // Compare a ModelTyepBitSet to a TypePayloadMap, ignoring payload values.
+  bool CompareModelTypeBitSetToTypePayloadMap(
+      const syncable::ModelTypeBitSet& lhs,
+      const sessions::TypePayloadMap& rhs) {
+    size_t count = 0;
+    for (sessions::TypePayloadMap::const_iterator i = rhs.begin();
+         i != rhs.end(); ++i, ++count) {
+      if (!lhs.test(i->first))
+        return false;
+    }
+    if (lhs.count() != count)
+      return false;
+    return true;
   }
 
  private:
@@ -170,13 +185,32 @@ TEST_F(SyncerThread2Test, Nudge) {
 
   EXPECT_CALL(*syncer(), SyncShare(_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-          WithArg<0>(RecordSyncShare(&records, 1U, &done))));
+          WithArg<0>(RecordSyncShare(&records, 1U, &done))))
+      .RetiresOnSaturation();
   syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, model_types);
   done.TimedWait(timeout());
 
   EXPECT_EQ(1U, records.snapshots.size());
-  EXPECT_EQ(model_types, records.snapshots[0]->source.second);
-  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL, records.snapshots[0]->source.first);
+  EXPECT_TRUE(CompareModelTypeBitSetToTypePayloadMap(model_types,
+      records.snapshots[0]->source.types));
+  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
+            records.snapshots[0]->source.updates_source);
+
+  // Make sure a second, later, nudge is unaffected by first (no coalescing).
+  SyncShareRecords records2;
+  model_types[syncable::BOOKMARKS] = false;
+  model_types[syncable::AUTOFILL] = true;
+  EXPECT_CALL(*syncer(), SyncShare(_))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
+          WithArg<0>(RecordSyncShare(&records2, 1U, &done))));
+  syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_LOCAL, model_types);
+  done.TimedWait(timeout());
+
+  EXPECT_EQ(1U, records2.snapshots.size());
+  EXPECT_TRUE(CompareModelTypeBitSetToTypePayloadMap(model_types,
+      records2.snapshots[0]->source.types));
+  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
+            records2.snapshots[0]->source.updates_source);
 }
 
 // Test that nudges are coalesced.
@@ -200,8 +234,10 @@ TEST_F(SyncerThread2Test, NudgeCoalescing) {
 
   EXPECT_EQ(1U, r.snapshots.size());
   EXPECT_GE(r.times[0], optimal_time);
-  EXPECT_EQ(types1 | types2 | types3, r.snapshots[0]->source.second);
-  EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION, r.snapshots[0]->source.first);
+  EXPECT_TRUE(CompareModelTypeBitSetToTypePayloadMap(types1 | types2 | types3,
+      r.snapshots[0]->source.types));
+  EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION,
+            r.snapshots[0]->source.updates_source);
 
   SyncShareRecords r2;
   EXPECT_CALL(*syncer(), SyncShare(_))
@@ -210,8 +246,93 @@ TEST_F(SyncerThread2Test, NudgeCoalescing) {
   syncer_thread()->ScheduleNudge(zero(), NUDGE_SOURCE_NOTIFICATION, types3);
   done.TimedWait(timeout());
   EXPECT_EQ(1U, r2.snapshots.size());
-  EXPECT_EQ(types3, r2.snapshots[0]->source.second);
-  EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION, r2.snapshots[0]->source.first);
+  EXPECT_TRUE(CompareModelTypeBitSetToTypePayloadMap(types3,
+      r2.snapshots[0]->source.types));
+  EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION,
+            r2.snapshots[0]->source.updates_source);
+}
+
+// Test nudge scheduling.
+TEST_F(SyncerThread2Test, NudgeWithPayloads) {
+  syncer_thread()->Start(SyncerThread::NORMAL_MODE);
+  base::WaitableEvent done(false, false);
+  SyncShareRecords records;
+  sessions::TypePayloadMap model_types_with_payloads;
+  model_types_with_payloads[syncable::BOOKMARKS] = "test";
+
+  EXPECT_CALL(*syncer(), SyncShare(_))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
+          WithArg<0>(RecordSyncShare(&records, 1U, &done))))
+      .RetiresOnSaturation();
+  syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_LOCAL,
+      model_types_with_payloads);
+  done.TimedWait(timeout());
+
+  EXPECT_EQ(1U, records.snapshots.size());
+  EXPECT_EQ(model_types_with_payloads, records.snapshots[0]->source.types);
+  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
+            records.snapshots[0]->source.updates_source);
+
+  // Make sure a second, later, nudge is unaffected by first (no coalescing).
+  SyncShareRecords records2;
+  model_types_with_payloads.erase(syncable::BOOKMARKS);
+  model_types_with_payloads[syncable::AUTOFILL] = "test2";
+  EXPECT_CALL(*syncer(), SyncShare(_))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
+          WithArg<0>(RecordSyncShare(&records2, 1U, &done))));
+  syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_LOCAL,
+      model_types_with_payloads);
+  done.TimedWait(timeout());
+
+  EXPECT_EQ(1U, records2.snapshots.size());
+  EXPECT_EQ(model_types_with_payloads, records2.snapshots[0]->source.types);
+  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
+            records2.snapshots[0]->source.updates_source);
+}
+
+// Test that nudges are coalesced.
+TEST_F(SyncerThread2Test, NudgeWithPayloadsCoalescing) {
+  syncer_thread()->Start(SyncerThread::NORMAL_MODE);
+  base::WaitableEvent done(false, false);
+  SyncShareRecords r;
+  EXPECT_CALL(*syncer(), SyncShare(_))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
+           WithArg<0>(RecordSyncShare(&r, 1U, &done))));
+  sessions::TypePayloadMap types1, types2, types3;
+  types1[syncable::BOOKMARKS] = "test1";
+  types2[syncable::AUTOFILL] = "test2";
+  types3[syncable::THEMES] = "test3";
+  TimeDelta delay = TimeDelta::FromMilliseconds(20);
+  TimeTicks optimal_time = TimeTicks::Now() + delay;
+  syncer_thread()->ScheduleNudgeWithPayloads(delay, NUDGE_SOURCE_UNKNOWN,
+      types1);
+  syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_LOCAL,
+      types2);
+  syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_NOTIFICATION,
+      types3);
+  done.TimedWait(timeout());
+
+  EXPECT_EQ(1U, r.snapshots.size());
+  EXPECT_GE(r.times[0], optimal_time);
+  sessions::TypePayloadMap coalesced_types;
+  sessions::CoalescePayloads(&coalesced_types, types1);
+  sessions::CoalescePayloads(&coalesced_types, types2);
+  sessions::CoalescePayloads(&coalesced_types, types3);
+  EXPECT_EQ(coalesced_types, r.snapshots[0]->source.types);
+  EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION,
+            r.snapshots[0]->source.updates_source);
+
+  SyncShareRecords r2;
+  EXPECT_CALL(*syncer(), SyncShare(_))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
+           WithArg<0>(RecordSyncShare(&r2, 1U, &done))));
+  syncer_thread()->ScheduleNudgeWithPayloads(zero(), NUDGE_SOURCE_NOTIFICATION,
+      types3);
+  done.TimedWait(timeout());
+  EXPECT_EQ(1U, r2.snapshots.size());
+  EXPECT_EQ(types3, r2.snapshots[0]->source.types);
+  EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION,
+            r2.snapshots[0]->source.updates_source);
 }
 
 // Test that polling works as expected.
@@ -413,9 +534,10 @@ TEST_F(SyncerThread2Test, BackoffDropsJobs) {
 
   Mock::VerifyAndClearExpectations(syncer());
   EXPECT_EQ(2U, r.snapshots.size());
-  EXPECT_EQ(GetUpdatesCallerInfo::PERIODIC, r.snapshots[0]->source.first);
+  EXPECT_EQ(GetUpdatesCallerInfo::PERIODIC,
+            r.snapshots[0]->source.updates_source);
   EXPECT_EQ(GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION,
-            r.snapshots[1]->source.first);
+            r.snapshots[1]->source.updates_source);
 
   EXPECT_CALL(*syncer(), SyncShare(_)).Times(1)
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
@@ -430,7 +552,8 @@ TEST_F(SyncerThread2Test, BackoffDropsJobs) {
   Mock::VerifyAndClearExpectations(syncer());
   Mock::VerifyAndClearExpectations(delay());
   EXPECT_EQ(3U, r.snapshots.size());
-  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL, r.snapshots[2]->source.first);
+  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
+            r.snapshots[2]->source.updates_source);
 
   EXPECT_CALL(*syncer(), SyncShare(_)).Times(0);
   EXPECT_CALL(*delay(), GetDelay(_)).Times(0);
@@ -511,7 +634,7 @@ TEST_F(SyncerThread2Test, BackoffRelief) {
     EXPECT_GE(r.times[i], optimal_next_sync);
     EXPECT_EQ(i == 0 ? GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION
                      : GetUpdatesCallerInfo::PERIODIC,
-              r.snapshots[i]->source.first);
+              r.snapshots[i]->source.updates_source);
   }
 }
 
