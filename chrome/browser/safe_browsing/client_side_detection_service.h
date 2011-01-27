@@ -17,6 +17,7 @@
 #pragma once
 
 #include <map>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -29,6 +30,7 @@
 #include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "base/time.h"
 #include "chrome/browser/safe_browsing/csd.pb.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
@@ -99,6 +101,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
 
   static const char kClientReportPhishingUrl[];
   static const char kClientModelUrl[];
+  static const int kMaxReportsPerDay;
 
   // Use Create() method to create an instance of this object.
   ClientSideDetectionService(const FilePath& model_path,
@@ -162,6 +165,10 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
                              const ResponseCookies& cookies,
                              const std::string& data);
 
+  // Get the number of phishing reports that we have sent over the last 24
+  // hours.
+  int GetNumReportsPerDay();
+
   FilePath model_path_;
   ModelStatus model_status_;
   base::PlatformFile model_file_;
@@ -173,6 +180,11 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
   // has to be invoked when the request is done.
   struct ClientReportInfo;
   std::map<const URLFetcher*, ClientReportInfo*> client_phishing_reports_;
+
+  // Timestamp of when we sent a phishing request. Used to limit the number
+  // of phishing requests that we send in a day.
+  // TODO(gcasto): Serialize this so that it doesn't reset on browser restart.
+  std::queue<base::Time> phishing_report_times_;
 
   // Used to asynchronously call the callbacks for GetModelFile and
   // SendClientReportPhishingRequest.

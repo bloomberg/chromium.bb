@@ -9,10 +9,12 @@
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/task.h"
+#include "base/time.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/safe_browsing/csd.pb.h"
 #include "chrome/common/net/http_return.h"
@@ -23,6 +25,8 @@
 #include "net/url_request/url_request_status.h"
 
 namespace safe_browsing {
+
+const int ClientSideDetectionService::kMaxReportsPerDay = 3;
 
 const char ClientSideDetectionService::kClientReportPhishingUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/phishing";
@@ -222,6 +226,14 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<ClientReportPhishingRequestCallback> cb(callback);
 
+  if (GetNumReportsPerDay() > kMaxReportsPerDay) {
+    LOG(WARNING) << "Too many report phishing requests sent in the last day, "
+                 << "not checking " << phishing_url;
+    UMA_HISTOGRAM_COUNTS("SBClientPhishing.RequestNotSent", 1);
+    cb->Run(phishing_url, false);
+    return;
+  }
+
   ClientPhishingRequest request;
   request.set_url(phishing_url.spec());
   request.set_client_score(static_cast<float>(score));
@@ -249,6 +261,9 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   fetcher->set_request_context(request_context_getter_.get());
   fetcher->set_upload_data("application/octet-stream", request_data);
   fetcher->Start();
+
+  // Record that we made a request
+  phishing_report_times_.push(base::Time::Now());
 }
 
 void ClientSideDetectionService::HandleModelResponse(
@@ -301,6 +316,20 @@ void ClientSideDetectionService::HandlePhishingVerdict(
   }
   client_phishing_reports_.erase(source);
   delete source;
+}
+
+int ClientSideDetectionService::GetNumReportsPerDay() {
+  base::Time cutoff = base::Time::Now() - base::TimeDelta::FromDays(1);
+
+  // Erase elements older than a day because we will never care about them
+  // again.
+  while (!phishing_report_times_.empty() &&
+         phishing_report_times_.front() < cutoff) {
+    phishing_report_times_.pop();
+  }
+
+  // Return the number of elements that are above the cutoff.
+  return phishing_report_times_.size();
 }
 
 }  // namespace safe_browsing

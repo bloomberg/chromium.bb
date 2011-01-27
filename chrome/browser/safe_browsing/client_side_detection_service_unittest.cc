@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <queue>
 #include <string>
 
 #include "base/callback.h"
@@ -15,6 +16,7 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/task.h"
+#include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
@@ -82,6 +84,14 @@ class ClientSideDetectionServiceTest : public testing::Test {
     factory_->SetFakeResponse(
         ClientSideDetectionService::kClientReportPhishingUrl,
         response_data, success);
+  }
+
+  int GetNumReportsPerDay() {
+    return csd_service_->GetNumReportsPerDay();
+  }
+
+  std::queue<base::Time>& GetPhishingReportTimes() {
+    return csd_service_->phishing_report_times_;
   }
 
  protected:
@@ -166,6 +176,8 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
   GURL url("http://a.com/");
   double score = 0.4;  // Some random client score.
 
+  base::Time before = base::Time::Now();
+
   // Invalid response body from the server.
   SetClientReportPhishingResponse("invalid proto response", true /* success */);
   EXPECT_FALSE(SendClientReportPhishingRequest(url, score));
@@ -180,6 +192,36 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
   SetClientReportPhishingResponse(response.SerializeAsString(),
                                   true /* success */);
   EXPECT_FALSE(SendClientReportPhishingRequest(url, score));
+
+  base::Time after = base::Time::Now();
+
+  // Check that we have recorded 3 requests, all within the correct time range.
+  std::queue<base::Time>& report_times = GetPhishingReportTimes();
+  EXPECT_EQ(3U, report_times.size());
+  while (!report_times.empty()) {
+    base::Time time = report_times.back();
+    report_times.pop();
+    EXPECT_LE(before, time);
+    EXPECT_GE(after, time);
+  }
+}
+
+TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
+  SetModelFetchResponse("bogus model", true /* success */);
+  ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+  csd_service_.reset(ClientSideDetectionService::Create(
+      tmp_dir.path().AppendASCII("model"), NULL));
+
+  std::queue<base::Time>& report_times = GetPhishingReportTimes();
+  base::Time now = base::Time::Now();
+  base::TimeDelta twenty_five_hours = base::TimeDelta::FromHours(25);
+  report_times.push(now - twenty_five_hours);
+  report_times.push(now - twenty_five_hours);
+  report_times.push(now);
+  report_times.push(now);
+
+  EXPECT_EQ(2, GetNumReportsPerDay());
 }
 
 }  // namespace safe_browsing
