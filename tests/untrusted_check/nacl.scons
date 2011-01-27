@@ -1,0 +1,26 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+import os
+
+Import('env')
+
+env.ComponentProgram('untrusted_check_test.nexe',
+                     ['untrusted_check_test.c'],
+                     EXTRA_LIBS=['google_nacl_platform',
+                                 'gio',
+                                 'pthread'])
+
+node = env.CommandSelLdrTestNacl(
+    'untrusted_check_test.out',
+    command = [env.File('untrusted_check_test.nexe')],
+    filter_regex = ('"(Fatal error in file[^/\\\\\\\\]*)'
+                    '|(LOG_FATAL.*)'
+                    '|(Log output.*)"'),
+    filter_group_only = 'true',
+    stderr_golden = env.File('untrusted_check_test.stderr'),
+    exit_status='hybrid_log_fatal')
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_untrusted_check_test')

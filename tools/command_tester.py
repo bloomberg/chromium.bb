@@ -47,7 +47,7 @@ import test_lib
 GlobalPlatform=None  # for pychecker, initialized in ProcessOptions
 GlobalReportStream = [sys.stdout]
 GlobalSettings = {}
-GlobalSigType = 'normal'
+GlobalSigType = ['normal']
 
 # Hook print to we can print to both stdout and a file
 def Print(message):
@@ -198,6 +198,16 @@ status_map = {
         'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
         'win64':  -11,
         },
+    'hybrid_log_fatal': {
+        'linux2': {
+            'normal': [ 1,],
+            'untrusted': [ -11 ],
+            }, # newlib vs glibc: exit 1 or signal 11
+        'darwin': 1,
+        'cygwin': 1,
+        'win32': 1,
+        'win64': 1,
+        },
     'trusted_sigabrt' : {
         'linux2': -6, # SIGABRT
         'darwin': -6, # SIGABRT
@@ -231,12 +241,15 @@ status_map = {
 def GetSigType(sig):
   if (type(sig)==type('string')):
     if (sig[:8]=='trusted_'):
-      return 'trusted'
+      return ['trusted']
 
     if (sig[:10]=='untrusted_'):
-      return 'untrusted'
+      return ['untrusted']
 
-  return 'normal'
+    if (sig[:7]=='hybrid_'):
+      return ['normal', 'untrusted']
+
+  return ['normal']
 
 
 def MassageExitStatus(v):
@@ -277,8 +290,8 @@ def ProcessOptions(argv):
 
   GlobalSigType = GetSigType(GlobalSettings['exit_status'])
   # In win32, we can't catch a signal, so it always appears as a 'normal' exit
-  if GlobalPlatform == 'win32' and GlobalSigType == 'untrusted':
-    GlobalSigType = 'normal'
+  if GlobalPlatform == 'win32' and GlobalSigType == ['untrusted']:
+    GlobalSigType = ['normal']
   # return the unprocessed options, i.e. the command
   return args
 
@@ -321,8 +334,13 @@ def ExitStatusIsOK(expected, actual, stderr):
   sigNum, sigType = ExitStatusInfo(stderr)
 
   # If scanning the output reveals an exit status of a type unexpected
-  if GlobalSigType != sigType:
+  if sigType not in GlobalSigType:
     return False
+
+  if isinstance(expected, dict):
+    if sigType not in expected:
+      return False
+    expected = expected[sigType]
 
   # If the expected value is a list
   if isinstance(expected, list):
@@ -399,7 +417,8 @@ def main(argv):
       sigNum, sigType = ExitStatusInfo(stderr)
       val = MassageExitStatus(GlobalSettings['exit_status'])
       Print('\nERROR: Command returned %s %s, expecting %s %s for %s' %
-         (sigType, str(exit_status), GlobalSigType, str(val), GlobalPlatform))
+         (sigType, str(exit_status),
+          str(GlobalSigType), str(val), GlobalPlatform))
     Banner('Stdout')
     Print(stdout)
     Banner('Stderr')
