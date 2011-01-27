@@ -4922,7 +4922,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <message name="IDS_FLASH_STORAGE_SETTINGS" desc="Link for opening Adobe Flash Player storage settings">
-        Manage Adobe Flash Player local storage and settings...
+        Adobe Flash Player storage settings...
       </message>
       <message name="IDS_CLEAR_DATA_HOUR" desc="deletion period combo box: hour">
         the past hour
