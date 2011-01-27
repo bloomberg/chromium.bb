@@ -20,7 +20,11 @@
 #define DISABLED_REQUEST_URL "http://disabled"
 
 #if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/autofill/internal/autofill_download_internal.h"
+#define AUTO_FILL_QUERY_SERVER_REQUEST_URL \
+    "http://toolbarqueries.clients.google.com:80/tbproxy/af/query"
+#define AUTO_FILL_UPLOAD_SERVER_REQUEST_URL \
+    "http://toolbarqueries.clients.google.com:80/tbproxy/af/upload"
+#define AUTO_FILL_QUERY_SERVER_NAME_START_IN_HEADER "GFE/"
 #else
 #define AUTO_FILL_QUERY_SERVER_REQUEST_URL DISABLED_REQUEST_URL
 #define AUTO_FILL_UPLOAD_SERVER_REQUEST_URL DISABLED_REQUEST_URL
