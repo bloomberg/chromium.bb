@@ -279,8 +279,8 @@ SSL* spdy_new_ssl(SSL_CTX* ssl_ctx) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const int kMSS = 1400;  // Linux default
-const int kSSLOverhead = 33;
+const int kMSS = 1460;
+const int kSSLOverhead = 25;
 const int kSpdyOverhead = SpdyFrame::size();
 const int kInitialDataSendersThreshold = (2 * kMSS) - kSpdyOverhead;
 const int kSSLSegmentSize = (1 * kMSS) - kSSLOverhead;
@@ -809,7 +809,7 @@ class SMConnection:  public SMConnectionInterface,
         ssl_state_(ssl_state),
         memory_cache_(memory_cache),
         acceptor_(acceptor),
-        read_buffer_(4096*10),
+        read_buffer_(kSpdySegmentSize * 40),
         sm_spdy_interface_(NULL),
         sm_http_interface_(NULL),
         sm_streamer_interface_(NULL),
@@ -973,17 +973,36 @@ class SMConnection:  public SMConnectionInterface,
     }
   }
 
+  void CorkSocket() {
+    int state = 1;
+    int rv = setsockopt(fd_, IPPROTO_TCP, TCP_CORK, &state, sizeof(state));
+    if (rv < 0)
+      VLOG(1) << "setsockopt(CORK): " << errno;
+  }
+
+  void UncorkSocket() {
+    int state = 0;
+    int rv = setsockopt(fd_, IPPROTO_TCP, TCP_CORK, &state, sizeof(state));
+    if (rv < 0)
+      VLOG(1) << "setsockopt(CORK): " << errno;
+  }
+
   int Send(const char* data, int len, int flags) {
-    ssize_t bytes_written = 0;
+    int rv;
+    CorkSocket();
     if (ssl_) {
+      ssize_t bytes_written = 0;
       // Write smallish chunks to SSL so that we don't have large
       // multi-packet TLS records to receive before being able to handle
-      // the data.
+      // the data.  We don't have to be too careful here, because our data
+      // frames are already getting chunked appropriately, and those are
+      // the most likely "big" frames.
       while(len > 0) {
-        const int kMaxTLSRecordSize = 1460;
+        const int kMaxTLSRecordSize = 1500;
         const char* ptr = &(data[bytes_written]);
         int chunksize = std::min(len, kMaxTLSRecordSize);
-        int rv = SSL_write(ssl_, ptr, chunksize);
+        rv = SSL_write(ssl_, ptr, chunksize);
+        VLOG(2) << "SSLWrite(" << chunksize << " bytes): " << rv;
         if (rv <= 0) {
           switch(SSL_get_error(ssl_, rv)) {
             case SSL_ERROR_WANT_READ:
@@ -996,25 +1015,23 @@ class SMConnection:  public SMConnectionInterface,
               PrintSslError();
               break;
           }
-          // If we wrote some data, return that count.  Otherwise
-          // return the stall error.
-          return bytes_written > 0 ? bytes_written : rv;
+          break;
         }
         bytes_written += rv;
         len -= rv;
         if (rv != chunksize)
           break;  // If we couldn't write everything, we're implicitly stalled
       }
-      if (!(flags & MSG_MORE)) {
-        int state = 0;
-        setsockopt( fd_, IPPROTO_TCP, TCP_CORK, &state, sizeof( state ) );
-        state = 1;
-        setsockopt( fd_, IPPROTO_TCP, TCP_CORK, &state, sizeof( state ) );
-      }
+      // If we wrote some data, return that count.  Otherwise
+      // return the stall error.
+      if (bytes_written > 0)
+        rv = bytes_written;
     } else {
-      bytes_written = send(fd_, data, len, flags);
+      rv = send(fd_, data, len, flags);
     }
-    return bytes_written;
+    if (!(flags & MSG_MORE))
+      UncorkSocket();
+    return rv;
   }
 
   // the following are from the EpollCallbackInterface
@@ -1184,6 +1201,8 @@ class SMConnection:  public SMConnectionInterface,
         }
         break;
     }
+
+    CorkSocket();
     if (!sm_interface_->PostAcceptHook())
       return false;
 
@@ -1354,17 +1373,14 @@ class SMConnection:  public SMConnectionInterface,
       size -= data_frame->index;
       DCHECK_GE(size, 0);
       if (size <= 0) {
-        // Empty data frame. Indicates end of data from client.
-        // Uncork the socket.
-        int state = 0;
-        VLOG(2) << log_prefix_ << "Empty data frame, uncorking socket.";
-        setsockopt( fd_, IPPROTO_TCP, TCP_CORK, &state, sizeof( state ) );
         output_list_.pop_front();
         delete data_frame;
         continue;
       }
 
       flags = MSG_NOSIGNAL | MSG_DONTWAIT;
+      // Look for a queue size > 1 because |this| frame is remains on the list
+      // until it has finished sending.
       if (output_list_.size() > 1) {
         VLOG(2) << log_prefix_ << "Outlist size: " << output_list_.size()
                 << ": Adding MSG_MORE flag";
@@ -1406,6 +1422,7 @@ class SMConnection:  public SMConnectionInterface,
       goto error_or_close;
     }
    done:
+    UncorkSocket();
     return true;
 
    error_or_close:
@@ -1413,6 +1430,7 @@ class SMConnection:  public SMConnectionInterface,
             << "DoWrite: error_or_close. Returning false "
             << "after cleaning up";
     Cleanup("DoWrite");
+    UncorkSocket();
     return false;
   }
 
@@ -1948,25 +1966,19 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
 
   // Send a settings frame
   int PostAcceptHook() {
-    ssize_t bytes_written;
     spdy::SpdySettings settings;
-    spdy::SettingsFlagsAndId settings_id(0);
-    settings_id.set_id(spdy::SETTINGS_MAX_CONCURRENT_STREAMS);
+    spdy::SettingsFlagsAndId settings_id(spdy::SETTINGS_MAX_CONCURRENT_STREAMS);
     settings.push_back(spdy::SpdySetting(settings_id, 100));
-    scoped_ptr<SpdySettingsControlFrame>
-      settings_frame(spdy_framer_->CreateSettings(settings));
+    SpdySettingsControlFrame* settings_frame =
+        spdy_framer_->CreateSettings(settings);
 
-    char* bytes = settings_frame->data();
-    size_t size = SpdyFrame::size() + settings_frame->length();
     VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Sending Settings Frame";
-    bytes_written = connection_->Send(bytes, size,
-                                      MSG_NOSIGNAL | MSG_DONTWAIT);
-    if (static_cast<size_t>(bytes_written) != size) {
-      LOG(ERROR) << "Trouble sending SETTINGS frame! (" << errno << ")";
-      if (errno == EAGAIN) {
-        return 0;
-      }
-    }
+    SpdyFrameDataFrame* df = new SpdyFrameDataFrame;
+    df->size = settings_frame->length() + SpdyFrame::size();
+    df->data = settings_frame->data();
+    df->frame = settings_frame;
+    df->delete_when_done = true;
+    EnqueueDataFrame(df);
     return 1;
   }
 
