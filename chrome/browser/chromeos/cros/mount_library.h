@@ -49,6 +49,7 @@ class MountLibrary {
 
   class Observer {
    public:
+    virtual ~Observer() {}
     virtual void MountChanged(MountLibrary* obj,
                               MountEventType evt,
                               const std::string& path) = 0;
@@ -59,6 +60,7 @@ class MountLibrary {
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual const DiskVector& disks() const = 0;
   virtual bool MountPath(const char* device_path) = 0;
+  virtual bool IsBootPath(const char* device_path) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().

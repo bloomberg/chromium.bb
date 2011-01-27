@@ -28,65 +28,142 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+static const char kPropertyPath[] = "path";
+static const char kPropertyTitle[] = "title";
+static const char kPropertyDirectory[] = "isDirectory";
+static const char kImageBaseURL[] =
+    "http://chrome-master.mtv.corp.google.com/chromeos/dev-channel/";
+static const char kImageFetcherName[] = "LATEST-x86-generic";
+static const char kImageDownloadURL[] =
+    "https://dl.google.com/dl/chromeos/recovery/latest_mario_beta_channel";
+static const char kImageFileName[] = "chromeos_image.bin.zip";
+static const char kTempImageFolderName[] = "chromeos_image";
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // ImageBurnUIHTMLSource
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-ImageBurnUIHTMLSource::ImageBurnUIHTMLSource()
-    : DataSource(chrome::kChromeUIImageBurnerHost, MessageLoop::current()) {
-}
+class ImageBurnUIHTMLSource : public ChromeURLDataManager::DataSource {
+ public:
+  ImageBurnUIHTMLSource()
+      : DataSource(chrome::kChromeUIImageBurnerHost, MessageLoop::current()) {
+  }
 
-void ImageBurnUIHTMLSource::StartDataRequest(const std::string& path,
-                                             bool is_off_the_record,
-                                             int request_id) {
-  DictionaryValue localized_strings;
-  localized_strings.SetString("burnConfirmText1",
-      l10n_util::GetStringUTF16(IDS_IMAGEBURN_CONFIM_BURN1));
-  localized_strings.SetString("burnConfirmText2",
-      l10n_util::GetStringUTF16(IDS_IMAGEBURN_CONFIM_BURN2));
-  localized_strings.SetString("burnUnsuccessfulMessage",
-      l10n_util::GetStringUTF16(IDS_IMAGEBURN_BURN_UNSUCCESSFUL));
-  localized_strings.SetString("burnSuccessfulMessage",
-      l10n_util::GetStringUTF16(IDS_IMAGEBURN_BURN_SUCCESSFUL));
-  localized_strings.SetString("downloadAbortedMessage",
-      l10n_util::GetStringUTF16(IDS_IMAGEBURN_DOWNLOAD_UNSUCCESSFUL));
-  localized_strings.SetString("title",
-      l10n_util::GetStringUTF16(IDS_IMAGEBURN_TITLE));
-  localized_strings.SetString("listTitle",
-      l10n_util::GetStringUTF16(IDS_IMAGEBURN_ROOT_LIST_TITLE));
-  localized_strings.SetString("downloadStatusStart",
-      l10n_util::GetStringUTF16(IDS_IMAGEBURN_DOWNLOAD_STARTING_STATUS));
-  localized_strings.SetString("downloadStatusInProgress",
-      l10n_util::GetStringUTF16(IDS_IMAGEBURN_DOWNLOAD_IN_PROGRESS_STATUS));
-  localized_strings.SetString("downloadStatusComplete",
-      l10n_util::GetStringUTF16(IDS_IMAGEBURN_DOWNLOAD_COMPLETE_STATUS));
-  localized_strings.SetString("downloadStatusCanceled",
-      l10n_util::GetStringUTF16(IDS_IMAGEBURN_DOWNLOAD_CANCELED_STATUS));
-  localized_strings.SetString("burnStatusStart",
-      l10n_util::GetStringUTF16(IDS_IMAGEBURN_BURN_STARTING_STATUS));
-  localized_strings.SetString("burnStatusInProgress",
-      l10n_util::GetStringUTF16(IDS_IMAGEBURN_BURN_IN_PROGRESS_STATUS));
-  localized_strings.SetString("burnStatusComplete",
-      l10n_util::GetStringUTF16(IDS_IMAGEBURN_BURN_COMPLETE_STATUS));
-  localized_strings.SetString("burnStatusCanceled",
-      l10n_util::GetStringUTF16(IDS_IMAGEBURN_BURN_CANCELED_STATUS));
+  // Called when the network layer has requested a resource underneath
+  // the path we registered.
+  virtual void StartDataRequest(const std::string& path,
+                                 bool is_off_the_record,
+                                 int request_id) {
+    DictionaryValue localized_strings;
+    localized_strings.SetString("burnConfirmText1",
+        l10n_util::GetStringUTF16(IDS_IMAGEBURN_CONFIM_BURN1));
+    localized_strings.SetString("burnConfirmText2",
+        l10n_util::GetStringUTF16(IDS_IMAGEBURN_CONFIM_BURN2));
+    localized_strings.SetString("burnUnsuccessfulMessage",
+        l10n_util::GetStringUTF16(IDS_IMAGEBURN_BURN_UNSUCCESSFUL));
+    localized_strings.SetString("burnSuccessfulMessage",
+        l10n_util::GetStringUTF16(IDS_IMAGEBURN_BURN_SUCCESSFUL));
+    localized_strings.SetString("downloadAbortedMessage",
+        l10n_util::GetStringUTF16(IDS_IMAGEBURN_DOWNLOAD_UNSUCCESSFUL));
+    localized_strings.SetString("title",
+        l10n_util::GetStringUTF16(IDS_IMAGEBURN_TITLE));
+    localized_strings.SetString("listTitle",
+        l10n_util::GetStringUTF16(IDS_IMAGEBURN_ROOT_LIST_TITLE));
+    localized_strings.SetString("downloadStatusStart",
+        l10n_util::GetStringUTF16(IDS_IMAGEBURN_DOWNLOAD_STARTING_STATUS));
+    localized_strings.SetString("downloadStatusInProgress",
+        l10n_util::GetStringUTF16(IDS_IMAGEBURN_DOWNLOAD_IN_PROGRESS_STATUS));
+    localized_strings.SetString("downloadStatusComplete",
+        l10n_util::GetStringUTF16(IDS_IMAGEBURN_DOWNLOAD_COMPLETE_STATUS));
+    localized_strings.SetString("downloadStatusCanceled",
+        l10n_util::GetStringUTF16(IDS_IMAGEBURN_DOWNLOAD_CANCELED_STATUS));
+    localized_strings.SetString("burnStatusStart",
+        l10n_util::GetStringUTF16(IDS_IMAGEBURN_BURN_STARTING_STATUS));
+    localized_strings.SetString("burnStatusInProgress",
+        l10n_util::GetStringUTF16(IDS_IMAGEBURN_BURN_IN_PROGRESS_STATUS));
+    localized_strings.SetString("burnStatusComplete",
+        l10n_util::GetStringUTF16(IDS_IMAGEBURN_BURN_COMPLETE_STATUS));
+    localized_strings.SetString("burnStatusCanceled",
+        l10n_util::GetStringUTF16(IDS_IMAGEBURN_BURN_CANCELED_STATUS));
 
-  SetFontAndTextDirection(&localized_strings);
+    SetFontAndTextDirection(&localized_strings);
 
-  static const base::StringPiece imageburn_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_IMAGEBURNER_HTML));
-  const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
-      imageburn_html, &localized_strings);
+    static const base::StringPiece imageburn_html(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+        IDR_IMAGEBURNER_HTML));
+    const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
+        imageburn_html, &localized_strings);
 
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
+    scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+    html_bytes->data.resize(full_html.size());
+    std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
 
-  SendResponse(request_id, html_bytes);
-}
+    SendResponse(request_id, html_bytes);
+  }
+
+  virtual std::string GetMimeType(const std::string&) const {
+    return "text/html";
+  }
+
+ private:
+  virtual ~ImageBurnUIHTMLSource() {}
+
+  DISALLOW_COPY_AND_ASSIGN(ImageBurnUIHTMLSource);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// ImageBurnTaskProxy
+//
+////////////////////////////////////////////////////////////////////////////////
+
+class ImageBurnTaskProxy
+    : public base::RefCountedThreadSafe<ImageBurnTaskProxy> {
+ public:
+  explicit ImageBurnTaskProxy(const base::WeakPtr<ImageBurnHandler>& handler)
+      : handler_(handler) {
+        resource_manager_ = ImageBurnResourceManager::GetInstance();
+  }
+
+  bool ReportDownloadInitialized() {
+    bool initialized = resource_manager_-> CheckImageDownloadStarted();
+    if (!initialized)
+      resource_manager_-> ReportImageDownloadStarted();
+    return initialized;
+  }
+
+  bool CheckDownloadFinished() {
+    return resource_manager_->CheckDownloadFinished();
+  }
+
+  void BurnImage() {
+    if (!resource_manager_->CheckBurnInProgress() && handler_) {
+      resource_manager_->SetBurnInProgress(true);
+      handler_->BurnImage();
+    }
+  }
+
+  void FinalizeBurn(bool success) {
+    if (handler_) {
+      handler_->FinalizeBurn(success);
+      resource_manager_->SetBurnInProgress(false);
+    }
+  }
+
+  void CreateImageUrl(TabContents* tab_contents, ImageBurnHandler* downloader) {
+    resource_manager_->CreateImageUrl(tab_contents, downloader);
+  }
+
+ private:
+  base::WeakPtr<ImageBurnHandler> handler_;
+  ImageBurnResourceManager* resource_manager_;
+
+  friend class base::RefCountedThreadSafe<ImageBurnTaskProxy>;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageBurnTaskProxy);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -188,14 +265,16 @@ void ImageBurnHandler::OnDownloadOpened(DownloadItem* download) {
 }
 
 void ImageBurnHandler::ModelChanged() {
+  // Find our item and observe it.
   std::vector<DownloadItem*> downloads;
   download_manager_->GetTemporaryDownloads(
       burn_resource_manager_->GetLocalImageDirPath(), &downloads);
-  if (download_item_observer_added_)
+  if (download_item_observer_added_)  // Already added.
     return;
   std::vector<DownloadItem*>::const_iterator it = downloads.begin();
   for (; it != downloads.end(); ++it) {
-    if ((*it)->url() == *image_download_url_) {
+    if ((*it)->original_url() == *image_download_url_) {
+      // Found it.
       download_item_observer_added_ = true;
       (*it)->AddObserver(this);
       active_download_item_ = *it;
@@ -213,18 +292,20 @@ void ImageBurnHandler::HandleGetRoots(const ListValue* args) {
   if (!burn_resource_manager_->CheckBurnInProgress()) {
     for (size_t i = 0; i < disks.size(); ++i) {
       if (!disks[i].mount_path.empty()) {
-        DictionaryValue* page_value = new DictionaryValue();
         FilePath disk_path = FilePath(disks[i].system_path).DirName();
         std::string title = "/dev/" + disk_path.BaseName().value();
-        page_value->SetString(kPropertyTitle, title);
-        page_value->SetString(kPropertyPath, title);
-        page_value->SetBoolean(kPropertyDirectory, true);
-        results_value.Append(page_value);
+        if (!mount_lib->IsBootPath(title.c_str())) {
+          DictionaryValue* page_value = new DictionaryValue();
+          page_value->SetString(std::string(kPropertyTitle), title);
+          page_value->SetString(std::string(kPropertyPath), title);
+          page_value->SetBoolean(std::string(kPropertyDirectory), true);
+          results_value.Append(page_value);
+        }
       }
     }
   }
   info_value.SetString("functionCall", "getRoots");
-  info_value.SetString(kPropertyPath, "");
+  info_value.SetString(std::string(kPropertyPath), "");
   dom_ui_->CallJavascriptFunction(L"browseFileResult",
                                   info_value, results_value);
 }
@@ -282,10 +363,8 @@ void ImageBurnHandler::BurnImage() {
 
 void ImageBurnHandler::FinalizeBurn(bool successful) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (successful)
-    dom_ui_->CallJavascriptFunction(L"burnSuccessful");
-  else
-    dom_ui_->CallJavascriptFunction(L"burnUnsuccessful");
+  dom_ui_->CallJavascriptFunction(successful ?
+      L"burnSuccessful" : L"burnUnsuccessful");
 }
 
 void ImageBurnHandler::UpdateBurnProgress(int64 total_burnt,
@@ -392,48 +471,6 @@ void ImageBurnHandler::CreateLocalImagePath() {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// ImageBurnTaskProxy
-//
-////////////////////////////////////////////////////////////////////////////////
-ImageBurnTaskProxy::ImageBurnTaskProxy(
-                        const base::WeakPtr<ImageBurnHandler>& handler)
-                            : handler_(handler) {
-  resource_manager_ = ImageBurnResourceManager::GetInstance();
-}
-
-bool ImageBurnTaskProxy::ReportDownloadInitialized() {
-  bool initialized = resource_manager_-> CheckImageDownloadStarted();
-  if (!initialized)
-    resource_manager_-> ReportImageDownloadStarted();
-  return initialized;
-}
-
-bool ImageBurnTaskProxy::CheckDownloadFinished() {
-  return resource_manager_->CheckDownloadFinished();
-}
-
-void ImageBurnTaskProxy:: BurnImage() {
-  if (!resource_manager_->CheckBurnInProgress() && handler_) {
-    resource_manager_->SetBurnInProgress(true);
-    handler_->BurnImage();
-  }
-}
-
-void ImageBurnTaskProxy::FinalizeBurn(bool success) {
-  if (handler_) {
-    handler_->FinalizeBurn(success);
-    resource_manager_->SetBurnInProgress(false);
-  }
-}
-
-void ImageBurnTaskProxy::CreateImageUrl(TabContents* tab_contents,
-                             ImageBurnHandler* downloader) {
-  resource_manager_->CreateImageUrl(tab_contents, downloader);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-//
 // ImageBurnResourceManager
 //
 ////////////////////////////////////////////////////////////////////////////////
@@ -445,10 +482,10 @@ ImageBurnResourceManager::ImageBurnResourceManager()
       download_manager_(NULL),
       download_item_observer_added_(false),
       active_download_item_(NULL),
-      image_url_(NULL),
-      image_fetcher_url_(kImageBaseURL + kImageFetcherName),
+      image_url_(new GURL(kImageDownloadURL)),
+      image_fetcher_url_(std::string(kImageBaseURL) + kImageFetcherName),
       image_url_fetching_requested_(false),
-      image_url_fetched_(false) {
+      image_url_fetched_(true) {
   local_image_dir_file_path_.clear();
   image_fecher_local_path_ = GetLocalImageDirPath().Append(kImageFetcherName);
 }
@@ -480,7 +517,7 @@ void ImageBurnResourceManager::OnDownloadFileCompleted(DownloadItem* download) {
   DCHECK(download->state() == DownloadItem::COMPLETE);
   std::string image_url;
   if (file_util::ReadFileToString(image_fecher_local_path_, &image_url)) {
-    image_url_.reset(new GURL(kImageBaseURL + image_url));
+    image_url_.reset(new GURL(std::string(kImageBaseURL) + image_url));
     ImageUrlFetched(true);
   } else {
     image_url_.reset();

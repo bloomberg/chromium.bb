@@ -28,36 +28,8 @@
 
 template <typename T> struct DefaultSingletonTraits;
 
-static const std::string kPropertyPath = "path";
-static const std::string kPropertyTitle = "title";
-static const std::string kPropertyDirectory = "isDirectory";
-static const std::string kImageBaseURL =
-    "http://chrome-master.mtv.corp.google.com/chromeos/dev-channel/";
-static const std::string kImageFetcherName = "LATEST-x86-generic";
-static const std::string kImageFileName = "chromeos_image.bin.gz";
-static const std::string kTempImageFolderName = "chromeos_image";
-
 class ImageBurnResourceManager;
 class TabContents;
-
-class ImageBurnUIHTMLSource : public ChromeURLDataManager::DataSource {
- public:
-  ImageBurnUIHTMLSource();
-
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                 bool is_off_the_record,
-                                 int request_id);
-  virtual std::string GetMimeType(const std::string&) const {
-    return "text/html";
-  }
-
- private:
-  ~ImageBurnUIHTMLSource() {}
-
-  DISALLOW_COPY_AND_ASSIGN(ImageBurnUIHTMLSource);
-};
 
 class ImageBurnHandler : public DOMMessageHandler,
                          public chromeos::MountLibrary::Observer,
@@ -135,27 +107,6 @@ class ImageBurnHandler : public DOMMessageHandler,
   friend class ImageBurnTaskProxy;
 
   DISALLOW_COPY_AND_ASSIGN(ImageBurnHandler);
-};
-
-class ImageBurnTaskProxy
-    : public base::RefCountedThreadSafe<ImageBurnTaskProxy> {
- public:
-  explicit ImageBurnTaskProxy(const base::WeakPtr<ImageBurnHandler>& handler);
-
-  bool ReportDownloadInitialized();
-  bool CheckDownloadFinished();
-  void BurnImage();
-  void FinalizeBurn(bool success);
-
-  void CreateImageUrl(TabContents* tab_contents, ImageBurnHandler* downloader);
-
- private:
-  base::WeakPtr<ImageBurnHandler> handler_;
-  ImageBurnResourceManager* resource_manager_;
-
-  friend class base::RefCountedThreadSafe<ImageBurnTaskProxy>;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageBurnTaskProxy);
 };
 
 class ImageBurnResourceManager : public DownloadManager::Observer,

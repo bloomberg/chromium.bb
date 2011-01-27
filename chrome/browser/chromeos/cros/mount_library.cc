@@ -39,6 +39,10 @@ class MountLibraryImpl : public MountLibrary {
     return MountDevicePath(device_path);
   }
 
+  bool IsBootPath(const char* device_path) {
+    return IsBootDevicePath(device_path);
+  }
+
   const DiskVector& disks() const { return disks_; }
 
  private:
@@ -124,6 +128,7 @@ class MountLibraryStubImpl : public MountLibrary {
   virtual void RemoveObserver(Observer* observer) {}
   virtual const DiskVector& disks() const { return disks_; }
   virtual bool MountPath(const char* device_path) { return false; }
+  virtual bool IsBootPath(const char* device_path) { return true; }
 
  private:
   // The list of disks found.
