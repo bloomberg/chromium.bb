@@ -136,7 +136,10 @@ cr.define('options', function() {
                                this.handleCheckboxClick_.bind(this));
         var label = document.createElement('label');
         label.appendChild(input);
-        label.appendChild(document.createTextNode(inputMethod.displayName));
+        // Adding a space between the checkbox and the text. This is a bit
+        // dirty, but we rely on a space character for all other checkboxes.
+        label.appendChild(document.createTextNode(
+            ' ' + inputMethod.displayName));
         label.style.display = 'none';
         label.languageCodeSet = inputMethod.languageCodeSet;
         // Add the configure button if the config page is present for this
