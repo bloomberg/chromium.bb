@@ -73,8 +73,15 @@ bool PreferenceModelAssociator::InitPrefNodeAndAssociate(
 
       // Update the local preference based on what we got from the
       // sync server.
-      if (!pref->GetValue()->Equals(new_value.get()))
+      if (new_value->IsType(Value::TYPE_NULL)) {
+        pref_service->ClearPref(pref_name.c_str());
+      } else if (!new_value->IsType(pref->GetType())) {
+        LOG(WARNING) << "Synced value for " << preference.name()
+                     << " is of type " << new_value->GetType()
+                     << " which doesn't match pref type " << pref->GetType();
+      } else if (!pref->GetValue()->Equals(new_value.get())) {
         pref_service->Set(pref_name.c_str(), *new_value);
+      }
 
       AfterUpdateOperations(pref_name);
 
