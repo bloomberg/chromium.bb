@@ -32,7 +32,6 @@ html[dir=ltr] .cookie-details-label {
 
 #cookiesTree {
   border: 1px solid lightgrey;
-  height: 200px;
   margin: 0;
   padding: 5px;
 }

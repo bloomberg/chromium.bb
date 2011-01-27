@@ -12,6 +12,11 @@ found in the LICENSE file.
   margin: 5px 0;
 }
 
+#clear-data-checkboxes {
+  -webkit-padding-start: 8px;
+  margin: 5px 0;
+}
+
 #cbdThrobber {
   background-image: url("../../../../app/resources/throbber.png");
   display: inline-block;

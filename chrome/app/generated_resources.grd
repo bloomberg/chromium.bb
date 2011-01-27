@@ -7135,7 +7135,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Signing in...
       </message>
       <message name="IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Enable phishing and malware protection' checkbox">
-        Enable phishing and malware protection.
+        Enable phishing and malware protection
       </message>
       <message name="IDS_OPTIONS_SSL_GROUP_DESCRIPTION" desc="The description of the 'SSL Connections' group">
         Computer-wide SSL settings:
@@ -7177,7 +7177,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Options search page strings. -->
       <message name="IDS_OPTIONS_SEARCH_PAGE_TITLE" desc="">
-        Search
+        Search Results
       </message>
       <message name="IDS_OPTIONS_SEARCH_PAGE_NO_MATCHES" desc="">
         No matches were found.
@@ -7191,7 +7191,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Misc advanced option description strings. -->
       <message name="IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables DNS prefetching.  DNS prefetching involves scanning pages and user text entries, guessing what domain the user may next navigate to, and obtaining the domain's DNS information for that URL in advance. ">
-        Use DNS pre-fetching to improve page load performance.
+        Use DNS pre-fetching to improve page load performance
       </message>
 
       <!-- Collected cookies window -->
@@ -7780,11 +7780,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You may optionally disable these services
       </message>
       <message name="IDS_OPTIONS_LINKDOCTOR_PREF" desc="The documentation string of the 'Use Link Doctor' preference">
-        Show suggestions for navigation errors
+        Use a web service to help resolve navigation errors
       </message>
 
       <message name="IDS_OPTIONS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
-        Show suggestions to help complete searches and URLs
+        Use a prediction service to help complete searches and URLs typed in the address bar
       </message>
 
       <message name="IDS_OPTIONS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">

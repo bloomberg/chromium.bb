@@ -521,7 +521,7 @@ html[dir=rtl].option-name {
   background-repeat: no-repeat;
 }
 
-input.favicon-cell {
+input[type="url"].favicon-cell {
   -webkit-padding-start: 22px;
   background-position-x: 4px;
 }
@@ -577,7 +577,8 @@ html[os=mac] input[type='submit']:focus {
 
 /* TEXT */
 input[type='password'],
-input[type='text'] {
+input[type='text'],
+input[type='url']{
   -webkit-border-radius: 2px;
   border: 1px solid #aaa;
   font-size: inherit;

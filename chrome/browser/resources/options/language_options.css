@@ -1,6 +1,6 @@
 .language-options {
   display: -webkit-box;
-  margin: 15px;
+  margin: 10px 0;
 }
 
 .language-options button {
@@ -25,7 +25,7 @@
 }
 
 .language-options-header, .language-options-footer {
-  margin: 15px;
+  margin: 10px 0;
 }
 
 .language-options-left, .language-options-right {
