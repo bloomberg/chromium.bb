@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits>
+
 #include "remoting/protocol/jingle_session_manager.h"
 
 #include "base/base64.h"
 #include "base/message_loop.h"
+#include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/jingle_thread.h"
@@ -282,7 +285,8 @@ void JingleSessionManager::OnSessionCreate(
     if (!certificate_) {
       private_key_.reset(base::RSAPrivateKey::Create(1024));
       certificate_ = net::X509Certificate::CreateSelfSigned(
-          private_key_.get(), "CN=chromoting", 1,
+          private_key_.get(), "CN=chromoting",
+          base::RandInt(1, std::numeric_limits<int>::max()),
           base::TimeDelta::FromDays(1));
       CHECK(certificate_);
     }
