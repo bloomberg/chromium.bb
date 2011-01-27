@@ -285,14 +285,6 @@ bool WrenchMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
-#if defined(OS_CHROMEOS)
-  // Special case because IDC_NEW_WINDOW item should be disabled in BWSI mode,
-  // but accelerator should work.
-  if (command_id == IDC_NEW_WINDOW &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession))
-    return false;
-#endif
-
   return browser_->command_updater()->IsCommandEnabled(command_id);
 }
 
@@ -372,8 +364,12 @@ WrenchMenuModel::WrenchMenuModel()
 void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
   AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
-  AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW,
-                             IDS_NEW_INCOGNITO_WINDOW);
+#if defined(OS_CHROMEOS)
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession))
+    AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
+#else
+  AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
+#endif
 
   AddSeparator();
 #if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(TOOLKIT_VIEWS))
