@@ -295,24 +295,25 @@ class DataFrame {
   bool delete_when_done;
   size_t index;
   DataFrame() : data(NULL), size(0), delete_when_done(false), index(0) {}
-  virtual void MaybeDelete() {
-    if (delete_when_done) {
-      delete[] data;
-    }
-  }
   virtual ~DataFrame() {
-    MaybeDelete();
+    if (delete_when_done)
+      delete[] data;
   }
 };
 
 class SpdyFrameDataFrame : public DataFrame {
  public:
-  SpdyFrame* frame;
-  virtual void MaybeDelete() {
-    if (delete_when_done) {
-      delete frame;
-    }
+  SpdyFrameDataFrame(SpdyFrame* spdy_frame)
+    : frame(spdy_frame) {
+    data = spdy_frame->data();
+    size = spdy_frame->length() + SpdyFrame::size();
   }
+
+  virtual ~SpdyFrameDataFrame() {
+    delete frame;
+  }
+
+  const SpdyFrame* frame;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1973,12 +1974,7 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
         spdy_framer_->CreateSettings(settings);
 
     VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Sending Settings Frame";
-    SpdyFrameDataFrame* df = new SpdyFrameDataFrame;
-    df->size = settings_frame->length() + SpdyFrame::size();
-    df->data = settings_frame->data();
-    df->frame = settings_frame;
-    df->delete_when_done = true;
-    EnqueueDataFrame(df);
+    EnqueueDataFrame(new SpdyFrameDataFrame(settings_frame));
     return 1;
   }
 
@@ -2125,13 +2121,8 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
     SpdySynStreamControlFrame* fsrcf =
       spdy_framer_->CreateSynStream(stream_id, 0, 0, CONTROL_FLAG_NONE, true,
                                     &block);
-    SpdyFrameDataFrame* df = new SpdyFrameDataFrame;
-    df->size = fsrcf->length() + SpdyFrame::size();
-    size_t df_size = df->size;
-    df->data = fsrcf->data();
-    df->frame = fsrcf;
-    df->delete_when_done = true;
-    EnqueueDataFrame(df);
+    size_t df_size = fsrcf->length() + SpdyFrame::size();
+    EnqueueDataFrame(new SpdyFrameDataFrame(fsrcf));
 
     VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: Sending SynStreamheader "
             << stream_id;
@@ -2147,13 +2138,8 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
 
     SpdySynReplyControlFrame* fsrcf =
       spdy_framer_->CreateSynReply(stream_id, CONTROL_FLAG_NONE, true, &block);
-    SpdyFrameDataFrame* df = new SpdyFrameDataFrame;
-    df->size = fsrcf->length() + SpdyFrame::size();
-    size_t df_size = df->size;
-    df->data = fsrcf->data();
-    df->frame = fsrcf;
-    df->delete_when_done = true;
-    EnqueueDataFrame(df);
+    size_t df_size = fsrcf->length() + SpdyFrame::size();
+    EnqueueDataFrame(new SpdyFrameDataFrame(fsrcf));
 
     VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: Sending SynReplyheader "
             << stream_id;
@@ -2172,11 +2158,7 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
     if (len == 0) {
       SpdyDataFrame* fdf = spdy_framer_->CreateDataFrame(stream_id, data, len,
                                                          flags);
-      SpdyFrameDataFrame* df = new SpdyFrameDataFrame;
-      df->size = fdf->length() + SpdyFrame::size();
-      df->data = fdf->data();
-      df->delete_when_done = true;
-      EnqueueDataFrame(df);
+      EnqueueDataFrame(new SpdyFrameDataFrame(fdf));
       return;
     }
 
@@ -2193,11 +2175,7 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
 
       SpdyDataFrame* fdf = spdy_framer_->CreateDataFrame(stream_id, data, size,
                                                          chunk_flags);
-      SpdyFrameDataFrame* df = new SpdyFrameDataFrame;
-      df->size = fdf->length() + SpdyFrame::size();
-      df->data = fdf->data();
-      df->delete_when_done = true;
-      EnqueueDataFrame(df);
+      EnqueueDataFrame(new SpdyFrameDataFrame(fdf));
 
       VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: Sending data frame "
               << stream_id << " [" << size << "] shrunk to " << fdf->length()
