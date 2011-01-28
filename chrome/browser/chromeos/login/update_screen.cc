@@ -70,7 +70,7 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
       if (!HasCriticalUpdate()) {
         LOG(INFO) << "Noncritical update available: "
                   << library->status().new_version;
-        ExitUpdate(false);
+        ExitUpdate(REASON_UPDATE_NON_CRITICAL);
       } else {
         LOG(INFO) << "Critical update available: "
                   << library->status().new_version;
@@ -85,7 +85,7 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
           if (!HasCriticalUpdate()) {
             LOG(INFO) << "Non-critical update available: "
                       << library->status().new_version;
-            ExitUpdate(false);
+            ExitUpdate(REASON_UPDATE_NON_CRITICAL);
           } else {
             LOG(INFO) << "Critical update available: "
                       << library->status().new_version;
@@ -115,13 +115,13 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
                             this,
                             &UpdateScreen::OnWaitForRebootTimeElapsed);
       } else {
-        ExitUpdate(false);
+        ExitUpdate(REASON_UPDATE_NON_CRITICAL);
       }
       break;
     case UPDATE_STATUS_IDLE:
     case UPDATE_STATUS_ERROR:
     case UPDATE_STATUS_REPORTING_ERROR_EVENT:
-      ExitUpdate(false);
+      ExitUpdate(REASON_UPDATE_ENDED);
       break;
     default:
       NOTREACHED();
@@ -138,11 +138,12 @@ void UpdateScreen::StartUpdate() {
 
   if (!CrosLibrary::Get()->EnsureLoaded()) {
     LOG(ERROR) << "Error loading CrosLibrary";
+    ExitUpdate(REASON_UPDATE_INIT_FAILED);
   } else {
     CrosLibrary::Get()->GetUpdateLibrary()->AddObserver(this);
     VLOG(1) << "Initiate update check";
     if (!CrosLibrary::Get()->GetUpdateLibrary()->CheckForUpdate()) {
-      ExitUpdate(true);
+      ExitUpdate(REASON_UPDATE_INIT_FAILED);
     }
   }
 }
@@ -151,41 +152,47 @@ void UpdateScreen::CancelUpdate() {
   // Screen has longer lifetime than it's view.
   // View is deleted after wizard proceeds to the next screen.
   if (view())
-    ExitUpdate(true);
+    ExitUpdate(REASON_UPDATE_CANCELED);
 }
 
-void UpdateScreen::ExitUpdate(bool forced) {
+void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
   ScreenObserver* observer = delegate()->GetObserver(this);
+  if (CrosLibrary::Get()->EnsureLoaded())
+    CrosLibrary::Get()->GetUpdateLibrary()->RemoveObserver(this);
 
-  if (!CrosLibrary::Get()->EnsureLoaded()) {
-    observer->OnExit(ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE);
-    return;
-  }
-
-  if (forced) {
-    observer->OnExit(ScreenObserver::UPDATE_NOUPDATE);
-    return;
-  }
-
-  UpdateLibrary* update_library = CrosLibrary::Get()->GetUpdateLibrary();
-  update_library->RemoveObserver(this);
-  switch (update_library->status().status) {
-    case UPDATE_STATUS_UPDATE_AVAILABLE:
-    case UPDATE_STATUS_UPDATED_NEED_REBOOT:
-    case UPDATE_STATUS_DOWNLOADING:
-    case UPDATE_STATUS_FINALIZING:
-    case UPDATE_STATUS_VERIFYING:
-      DCHECK(!HasCriticalUpdate());
-      // Noncritical update, just exit screen as if there is no update.
-      // no break
-    case UPDATE_STATUS_IDLE:
+  switch(reason) {
+    case REASON_UPDATE_CANCELED:
       observer->OnExit(ScreenObserver::UPDATE_NOUPDATE);
       break;
-    case UPDATE_STATUS_ERROR:
-    case UPDATE_STATUS_REPORTING_ERROR_EVENT:
-      observer->OnExit(checking_for_update_ ?
-          ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE :
-          ScreenObserver::UPDATE_ERROR_UPDATING);
+    case REASON_UPDATE_INIT_FAILED:
+      observer->OnExit(ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE);
+      break;
+    case REASON_UPDATE_NON_CRITICAL:
+    case REASON_UPDATE_ENDED:
+      {
+        UpdateLibrary* update_library = CrosLibrary::Get()->GetUpdateLibrary();
+        switch (update_library->status().status) {
+          case UPDATE_STATUS_UPDATE_AVAILABLE:
+          case UPDATE_STATUS_UPDATED_NEED_REBOOT:
+          case UPDATE_STATUS_DOWNLOADING:
+          case UPDATE_STATUS_FINALIZING:
+          case UPDATE_STATUS_VERIFYING:
+            DCHECK(!HasCriticalUpdate());
+            // Noncritical update, just exit screen as if there is no update.
+            // no break
+          case UPDATE_STATUS_IDLE:
+            observer->OnExit(ScreenObserver::UPDATE_NOUPDATE);
+            break;
+          case UPDATE_STATUS_ERROR:
+          case UPDATE_STATUS_REPORTING_ERROR_EVENT:
+            observer->OnExit(checking_for_update_ ?
+                ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE :
+                ScreenObserver::UPDATE_ERROR_UPDATING);
+            break;
+          default:
+            NOTREACHED();
+        }
+      }
       break;
     default:
       NOTREACHED();

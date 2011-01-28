@@ -164,8 +164,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
 
   controller()->set_observer(NULL);
 }
-// TODO(zelidrag): bug chromium-os:7140 Fix this flaky test on ChromeOS.
-IN_PROC_BROWSER_TEST_F(UpdateScreenTest, FLAKY_TestErrorIssuingUpdateCheck) {
+
+IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {
   ASSERT_TRUE(controller() != NULL);
   scoped_ptr<MockScreenObserver> mock_screen_observer(new MockScreenObserver());
   controller()->set_observer(mock_screen_observer.get());
@@ -173,12 +173,10 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, FLAKY_TestErrorIssuingUpdateCheck) {
   ASSERT_TRUE(update_screen != NULL);
   ASSERT_EQ(controller()->current_screen(), update_screen);
 
-  UpdateLibrary::Status status;
-
   // First, cancel the update that is already in progress.
-  EXPECT_CALL(*mock_update_library_, status())
-      .Times(AtLeast(1))
-      .WillRepeatedly(ReturnRef(status));
+  EXPECT_CALL(*mock_screen_observer,
+              OnExit(ScreenObserver::UPDATE_NOUPDATE))
+      .Times(1);
   update_screen->CancelUpdate();
 
   // Run UpdateScreen::StartUpdate() again, but CheckForUpdate() will fail
@@ -190,11 +188,6 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, FLAKY_TestErrorIssuingUpdateCheck) {
   EXPECT_CALL(*mock_update_library_, CheckForUpdate())
       .Times(1)
       .WillOnce(Return(false));
-
-  status.status = UPDATE_STATUS_ERROR;
-  EXPECT_CALL(*mock_update_library_, status())
-      .Times(AtLeast(1))
-      .WillRepeatedly(ReturnRef(status));
   EXPECT_CALL(*mock_screen_observer,
               OnExit(ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE))
       .Times(1);

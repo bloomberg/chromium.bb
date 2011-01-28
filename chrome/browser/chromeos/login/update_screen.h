@@ -35,11 +35,15 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
   virtual void StartUpdate();
   virtual void CancelUpdate();
 
+  enum ExitReason {
+     REASON_UPDATE_CANCELED,
+     REASON_UPDATE_INIT_FAILED,
+     REASON_UPDATE_NON_CRITICAL,
+     REASON_UPDATE_ENDED
+  };
+
   // Reports update results to the ScreenObserver.
-  // |forced| should be set to true when calling this method and update status
-  // is not one of UPDATE_STATUS_IDLE, UPDATE_STATUS_ERROR,
-  // UPDATE_STATUS_REPORTING_ERROR_EVENT.
-  virtual void ExitUpdate(bool forced);
+  virtual void ExitUpdate(ExitReason reason);
 
   // Reboot check delay get/set, in seconds.
   int reboot_check_delay() const { return reboot_check_delay_; }
