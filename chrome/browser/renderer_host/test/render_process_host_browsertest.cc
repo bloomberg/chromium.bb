@@ -3,10 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -27,6 +31,32 @@ class RenderProcessHostTest : public InProcessBrowserTest {
       hosts.Advance();
     }
     return count;
+  }
+
+  RenderViewHost* FindFirstDevToolsHost() {
+    RenderProcessHost::iterator hosts = RenderProcessHost::AllHostsIterator();
+    for (; !hosts.IsAtEnd(); hosts.Advance()) {
+      RenderProcessHost* render_process_host = hosts.GetCurrentValue();
+      DCHECK(render_process_host);
+      if (!render_process_host->HasConnection())
+        continue;
+      RenderProcessHost::listeners_iterator iter(
+          render_process_host->ListenersIterator());
+      for (; !iter.IsAtEnd(); iter.Advance()) {
+        const RenderWidgetHost* widget =
+            static_cast<const RenderWidgetHost*>(iter.GetCurrentValue());
+        DCHECK(widget);
+        if (!widget || !widget->IsRenderView())
+          continue;
+        RenderViewHost* host = const_cast<RenderViewHost*>(
+            static_cast<const RenderViewHost*>(widget));
+        RenderViewHostDelegate* host_delegate = host->delegate();
+        GURL url = host_delegate->GetURL();
+        if (url.SchemeIs(chrome::kChromeDevToolsScheme))
+          return host;
+      }
+    }
+    return NULL;
   }
 };
 
@@ -78,6 +108,73 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;
+  EXPECT_EQ(tab_count, browser()->tab_count());
+  EXPECT_EQ(host_count, RenderProcessHostCount());
+}
+
+// Ensure that DevTools opened to debug DevTools is launched in a separate
+// process when --process-per-tab is set. See crbug.com/69873.
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DevToolsOnSelfInOwnProcessPPT) {
+  CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  parsed_command_line.AppendSwitch(switches::kProcessPerTab);
+
+  int tab_count = 1;
+  int host_count = 1;
+
+  GURL page1("data:text/html,hello world1");
+  browser()->ShowSingletonTab(page1, false);
+  if (browser()->tab_count() == tab_count)
+    ui_test_utils::WaitForNewTab(browser());
+  tab_count++;
+  host_count++;
+  EXPECT_EQ(tab_count, browser()->tab_count());
+  EXPECT_EQ(host_count, RenderProcessHostCount());
+
+  // DevTools start in docked mode (no new tab), in a separate process.
+  browser()->ToggleDevToolsWindow(DEVTOOLS_TOGGLE_ACTION_INSPECT);
+  host_count++;
+  EXPECT_EQ(tab_count, browser()->tab_count());
+  EXPECT_EQ(host_count, RenderProcessHostCount());
+
+  RenderViewHost* devtools = FindFirstDevToolsHost();
+  DCHECK(devtools);
+
+  // DevTools start in a separate process.
+  DevToolsManager::GetInstance()->ToggleDevToolsWindow(
+      devtools, DEVTOOLS_TOGGLE_ACTION_INSPECT);
+  host_count++;
+  EXPECT_EQ(tab_count, browser()->tab_count());
+  EXPECT_EQ(host_count, RenderProcessHostCount());
+}
+
+// Ensure that DevTools opened to debug DevTools is launched in a separate
+// process. See crbug.com/69873.
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DevToolsOnSelfInOwnProcess) {
+  int tab_count = 1;
+  int host_count = 1;
+
+  GURL page1("data:text/html,hello world1");
+  browser()->ShowSingletonTab(page1, false);
+  if (browser()->tab_count() == tab_count)
+    ui_test_utils::WaitForNewTab(browser());
+  tab_count++;
+  host_count++;
+  EXPECT_EQ(tab_count, browser()->tab_count());
+  EXPECT_EQ(host_count, RenderProcessHostCount());
+
+  // DevTools start in docked mode (no new tab), in a separate process.
+  browser()->ToggleDevToolsWindow(DEVTOOLS_TOGGLE_ACTION_INSPECT);
+  host_count++;
+  EXPECT_EQ(tab_count, browser()->tab_count());
+  EXPECT_EQ(host_count, RenderProcessHostCount());
+
+  RenderViewHost* devtools = FindFirstDevToolsHost();
+  DCHECK(devtools);
+
+  // DevTools start in a separate process.
+  DevToolsManager::GetInstance()->ToggleDevToolsWindow(
+      devtools, DEVTOOLS_TOGGLE_ACTION_INSPECT);
+  host_count++;
   EXPECT_EQ(tab_count, browser()->tab_count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
 }

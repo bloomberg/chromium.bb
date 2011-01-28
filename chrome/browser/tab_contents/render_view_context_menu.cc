@@ -1432,11 +1432,6 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
     if (!profile_->GetPrefs()->GetBoolean(prefs::kWebKitJavascriptEnabled) ||
         command_line.HasSwitch(switches::kDisableJavaScript))
       return false;
-    // Don't enable the web inspector on web inspector if there is no process
-    // per tab flag set.
-    if (IsDevToolsURL(active_entry->url()) &&
-        !command_line.HasSwitch(switches::kProcessPerTab))
-      return false;
     // Don't enable the web inspector if the developer tools are disabled via
     // the preference dev-tools-disabled.
     if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))

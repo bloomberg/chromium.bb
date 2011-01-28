@@ -38,7 +38,9 @@ bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
   if (url.SchemeIs(chrome::kExtensionScheme))
     return true;
 
-  if (DOMUIFactory::UseDOMUIForURL(profile_, url))
+  // DevTools pages have DOMUI type but should not reuse the same host.
+  if (DOMUIFactory::UseDOMUIForURL(profile_, url) &&
+      !url.SchemeIs(chrome::kChromeDevToolsScheme))
     return true;
 
   // In all other cases, don't use process-per-site logic.
