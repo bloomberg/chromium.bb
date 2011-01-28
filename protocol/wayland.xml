@@ -368,6 +368,16 @@
       <arg name="flags" type="uint"/>
     </request>
 
+    <!-- Map the surface as a fullscreen surface.  There are a number
+         of options here: on which output? if the surface size doesn't
+         match the output size, do we scale, change resolution, or add
+         black borders? is that something the client controls?  what
+         about transient surfaces, do they float on top of the
+         fullscreen? what if there's already a fullscreen surface on
+         the output, maybe you can only go fullscreen if you're
+         active?  -->
+    <request name="map_fullscreen"/>
+
     <!-- Notify the server that the attached buffer's contents have
          changed, and request a redraw. The arguments allow you to
          damage only a part of the surface, but the server may ignore

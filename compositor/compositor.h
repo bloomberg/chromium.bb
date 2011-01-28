@@ -130,17 +130,26 @@ struct wlsc_vector {
 	GLfloat f[4];
 };
 
+enum wlsc_surface_map_type {
+	WLSC_SURFACE_MAP_UNMAPPED,
+	WLSC_SURFACE_MAP_TOPLEVEL,
+	WLSC_SURFACE_MAP_TRANSIENT,
+	WLSC_SURFACE_MAP_FULLSCREEN
+};
+
 struct wlsc_surface {
 	struct wl_surface surface;
 	struct wlsc_compositor *compositor;
 	GLuint texture;
 	int32_t x, y, width, height;
+	int32_t saved_x, saved_y;
 	struct wl_list link;
 	struct wlsc_matrix matrix;
 	struct wlsc_matrix matrix_inv;
 	struct wl_visual *visual;
 	struct wl_buffer *buffer;
-	int mapped;
+	enum wlsc_surface_map_type map_type;
+	struct wlsc_output *fullscreen_output;
 };
 
 void

@@ -1017,6 +1017,10 @@ resize_handler(struct window *window,
 	height = (pixel_height - 2 * terminal->margin) /
 		(int32_t) terminal->extents.height;
 
+	if (terminal->fullscreen)
+		window_set_child_size(terminal->window,
+				      pixel_width, pixel_height);
+
 	terminal_resize(terminal, width, height);
 }
 
@@ -2283,7 +2287,6 @@ terminal_create(struct display *display, int fullscreen)
 	terminal->display = display;
 	terminal->margin = 5;
 
-	window_set_fullscreen(terminal->window, terminal->fullscreen);
 	window_set_user_data(terminal->window, terminal);
 	window_set_redraw_handler(terminal->window, redraw_handler);
 	window_set_resize_handler(terminal->window, resize_handler);

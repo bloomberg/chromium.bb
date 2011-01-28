@@ -131,7 +131,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 
 	wl_list_init(&surface->surface.destroy_listener_list);
 	wl_list_init(&surface->link);
-	surface->mapped = 0;
+	surface->map_type = WLSC_SURFACE_MAP_UNMAPPED;
 
 	glGenTextures(1, &surface->texture);
 	glBindTexture(GL_TEXTURE_2D, surface->texture);
@@ -403,13 +403,21 @@ wlsc_output_repaint(struct wlsc_output *output)
 
 	glViewport(0, 0, output->width, output->height);
 
-	if (output->background)
-		wlsc_surface_draw(output->background, output);
-	else
-		glClear(GL_COLOR_BUFFER_BIT);
-
-	wl_list_for_each_reverse(es, &ec->surface_list, link)
+	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
+	if (es->map_type == WLSC_SURFACE_MAP_FULLSCREEN &&
+	    es->fullscreen_output == output) {
+		if (es->width < output->width || es->height < output->height)
+			glClear(GL_COLOR_BUFFER_BIT);
 		wlsc_surface_draw(es, output);
+	} else {
+		if (output->background)
+			wlsc_surface_draw(output->background, output);
+		else
+			glClear(GL_COLOR_BUFFER_BIT);
+
+		wl_list_for_each_reverse(es, &ec->surface_list, link)
+			wlsc_surface_draw(es, output);
+	}
 
 	if (ec->focus)
 		wl_list_for_each(eid, &ec->input_device_list, link)
@@ -475,16 +483,27 @@ surface_map_toplevel(struct wl_client *client,
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
-	if (es->mapped)
+	switch (es->map_type) {
+	case WLSC_SURFACE_MAP_UNMAPPED:
+		es->x = 10 + random() % 400;
+		es->y = 10 + random() % 400;
+		wlsc_surface_update_matrix(es);
+		wl_list_insert(&es->compositor->surface_list, &es->link);
+		break;
+	case WLSC_SURFACE_MAP_TOPLEVEL:
 		return;
+	case WLSC_SURFACE_MAP_FULLSCREEN:
+		es->fullscreen_output = NULL;
+		es->x = es->saved_x;
+		es->y = es->saved_y;
+		wlsc_surface_update_matrix(es);
+		break;
+	default:
+		break;
+	}
 
-	es->x = 10 + random() % 400;
-	es->y = 10 + random() % 400;
-
-	wlsc_surface_update_matrix(es);
-	wl_list_insert(&es->compositor->surface_list, &es->link);
 	wlsc_compositor_schedule_repaint(es->compositor);
-	es->mapped = 1;
+	es->map_type = WLSC_SURFACE_MAP_TOPLEVEL;
 }
 
 static void
@@ -495,16 +514,56 @@ surface_map_transient(struct wl_client *client,
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 	struct wlsc_surface *pes = (struct wlsc_surface *) parent;
 
-	if (es->mapped)
-		return;
+	switch (es->map_type) {
+	case WLSC_SURFACE_MAP_UNMAPPED:
+		wl_list_insert(&es->compositor->surface_list, &es->link);
+		break;
+	case WLSC_SURFACE_MAP_FULLSCREEN:
+		es->fullscreen_output = NULL;
+		break;
+	default:
+		break;
+	}
 
 	es->x = pes->x + x;
 	es->y = pes->y + y;
 
 	wlsc_surface_update_matrix(es);
-	wl_list_insert(&es->compositor->surface_list, &es->link);
 	wlsc_compositor_schedule_repaint(es->compositor);
-	es->mapped = 1;
+	es->map_type = WLSC_SURFACE_MAP_TRANSIENT;
+}
+
+static void
+surface_map_fullscreen(struct wl_client *client, struct wl_surface *surface)
+{
+	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_output *output;
+
+	switch (es->map_type) {
+	case WLSC_SURFACE_MAP_UNMAPPED:
+		es->x = 10 + random() % 400;
+		es->y = 10 + random() % 400;
+		wl_list_insert(&es->compositor->surface_list, &es->link);
+		break;
+	case WLSC_SURFACE_MAP_FULLSCREEN:
+		return;
+	default:
+		break;
+	}
+
+	/* FIXME: Fullscreen on first output */
+	/* FIXME: Handle output going away */
+	output = container_of(es->compositor->output_list.next,
+			      struct wlsc_output, link);
+
+	es->saved_x = es->x;
+	es->saved_y = es->y;
+	es->x = (output->width - es->width) / 2;
+	es->y = (output->height - es->height) / 2;
+	es->fullscreen_output = output;
+	wlsc_surface_update_matrix(es);
+	wlsc_compositor_schedule_repaint(es->compositor);
+	es->map_type = WLSC_SURFACE_MAP_FULLSCREEN;
 }
 
 static void
@@ -523,6 +582,7 @@ const static struct wl_surface_interface surface_interface = {
 	surface_attach,
 	surface_map_toplevel,
 	surface_map_transient,
+	surface_map_fullscreen,
 	surface_damage
 };
 

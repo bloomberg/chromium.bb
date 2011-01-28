@@ -80,6 +80,8 @@ shell_move(struct wl_client *client, struct wl_shell *shell,
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 	struct wlsc_move_grab *move;
 
+	/* FIXME: Reject if fullscreen */
+
 	move = malloc(sizeof *move);
 	if (!move) {
 		wl_client_post_no_memory(client);
@@ -173,6 +175,8 @@ shell_resize(struct wl_client *client, struct wl_shell *shell,
 	struct wlsc_resize_grab *resize;
 	enum wlsc_pointer_type pointer = WLSC_POINTER_LEFT_PTR;
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+
+	/* FIXME: Reject if fullscreen */
 
 	resize = malloc(sizeof *resize);
 	if (!resize) {

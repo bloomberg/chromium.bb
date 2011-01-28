@@ -99,7 +99,6 @@ struct window {
 	struct input *keyboard_device;
 	uint32_t name;
 	enum window_buffer_type buffer_type;
-	int mapped;
 
 	EGLImageKHR *image;
 	cairo_surface_t *cairo_surface, *pending_surface;
@@ -599,15 +598,14 @@ window_attach_surface(struct window *window)
 	wl_surface_attach(window->surface, buffer, x, y);
 	wl_display_sync_callback(display->display, free_surface, window);
 
-	if (!window->mapped) {
-		if (!window->parent)
-			wl_surface_map_toplevel(window->surface);
-		else
-			wl_surface_map_transient(window->surface,
-						 window->parent->surface,
-						 window->x, window->y, 0);
-		window->mapped = 1;
-	}
+	if (window->fullscreen)
+		wl_surface_map_fullscreen(window->surface);
+	else if (!window->parent)
+		wl_surface_map_toplevel(window->surface);
+	else
+		wl_surface_map_transient(window->surface,
+					 window->parent->surface,
+					 window->x, window->y, 0);
 
 	wl_surface_damage(window->surface, 0, 0,
 			  window->allocation.width,
@@ -1086,10 +1084,10 @@ handle_configure(void *data, struct wl_shell *shell,
 	struct window *window = wl_surface_get_user_data(surface);
 	int32_t child_width, child_height;
 
-	/* FIXME this is probably the wrong place to check for width or
-	   height <= 0, but it prevents the compositor from crashing
-	*/
-	if(width <= 0 || height <= 0)
+	/* FIXME: this is probably the wrong place to check for width
+	 * or height <= 0, but it prevents the compositor from crashing
+	 */
+	if (width <= 0 || height <= 0)
 		return;
 
 	window->resize_edges = edges;
@@ -1118,7 +1116,7 @@ void
 window_get_child_allocation(struct window *window,
 			    struct rectangle *allocation)
 {
-	if (window->fullscreen && !window->decoration) {
+	if (window->fullscreen || !window->decoration) {
 		*allocation = window->allocation;
 	} else {
 		allocation->x = window->margin + 10;
@@ -1134,8 +1132,15 @@ void
 window_set_child_size(struct window *window, int32_t width, int32_t height)
 {
 	if (!window->fullscreen) {
+		window->allocation.x = 20 + window->margin;
+		window->allocation.y = 60 + window->margin;
 		window->allocation.width = width + 20 + window->margin * 2;
 		window->allocation.height = height + 60 + window->margin * 2;
+	} else {
+		window->allocation.x = 0;
+		window->allocation.y = 0;
+		window->allocation.width = width;
+		window->allocation.height = height;
 	}
 }
 
@@ -1163,13 +1168,22 @@ window_schedule_redraw(struct window *window)
 void
 window_set_fullscreen(struct window *window, int fullscreen)
 {
+	int32_t width, height;
+
+	if (window->fullscreen == fullscreen)
+		return;
+
 	window->fullscreen = fullscreen;
 	if (window->fullscreen) {
 		window->saved_allocation = window->allocation;
-		window->allocation = window->display->screen_allocation;
+		width = window->display->screen_allocation.width;
+		height = window->display->screen_allocation.height;
 	} else {
-		window->allocation = window->saved_allocation;
+		width = window->saved_allocation.width - 20 - window->margin * 2;
+		height = window->saved_allocation.height - 60 - window->margin * 2;
 	}
+
+	(*window->resize_handler)(window, width, height, window->user_data);
 }
 
 void
