@@ -449,7 +449,7 @@ public:
     void Load(IMkvReader*);
 
     long long GetTimeCode() const;      //absolute but unscaled
-    long long GetTime(Segment*) const;  //absolute and scaled (ns units)
+    long long GetTime(const Segment*) const;  //absolute and scaled (ns units)
 
     struct TrackPosition
     {

@@ -3070,7 +3070,7 @@ long long CuePoint::GetTimeCode() const
     return m_timecode;
 }
 
-long long CuePoint::GetTime(Segment* pSegment) const
+long long CuePoint::GetTime(const Segment* pSegment) const
 {
     assert(pSegment);
     assert(m_timecode >= 0);
