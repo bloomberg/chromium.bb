@@ -41,7 +41,7 @@ class BalloonViewImpl : public BalloonView,
                         public ui::AnimationDelegate {
  public:
   explicit BalloonViewImpl(BalloonCollection* collection);
-  virtual ~BalloonViewImpl();
+  ~BalloonViewImpl();
 
   // BalloonView interface.
   virtual void Show(Balloon* balloon);
