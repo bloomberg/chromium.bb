@@ -189,6 +189,10 @@ static bool PrintMinidumpDump(const char *minidump_file) {
                 MD_LINUX_CPU_INFO,
                 "MD_LINUX_CPU_INFO",
                 &errors);
+  DumpRawStream(&minidump,
+                MD_LINUX_MAPS,
+                "MD_LINUX_MAPS",
+                &errors);
 
   return errors == 0;
 }
