@@ -8,6 +8,17 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_value_map.h"
 
+struct ExtensionPrefValueMap::ExtensionEntry {
+  // Installation time of the extension.
+  base::Time install_time;
+  // Whether extension is enabled in the profile.
+  bool enabled;
+  // Regular preferences.
+  PrefValueMap reg_preferences;
+  // Incognito preferences, empty for regular ExtensionPrefStore.
+  PrefValueMap inc_preferences;
+};
+
 ExtensionPrefValueMap::ExtensionPrefValueMap() {
 }
 

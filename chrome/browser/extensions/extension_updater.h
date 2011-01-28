@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -178,14 +178,15 @@ class ExtensionUpdater
   // We need to keep track of some information associated with a url
   // when doing a fetch.
   struct ExtensionFetch {
+    ExtensionFetch();
+    ExtensionFetch(const std::string& i, const GURL& u,
+                   const std::string& h, const std::string& v);
+    ~ExtensionFetch();
+
     std::string id;
     GURL url;
     std::string package_hash;
     std::string version;
-    ExtensionFetch() : id(""), url(), package_hash(""), version("") {}
-    ExtensionFetch(const std::string& i, const GURL& u,
-      const std::string& h, const std::string& v)
-      : id(i), url(u), package_hash(h), version(v) {}
   };
 
   // These are needed for unit testing, to help identify the correct mock

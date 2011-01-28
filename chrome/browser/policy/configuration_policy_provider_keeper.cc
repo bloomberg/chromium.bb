@@ -34,6 +34,8 @@ ConfigurationPolicyProviderKeeper::ConfigurationPolicyProviderKeeper(
       recommended_provider_(recommended_provider) {
 }
 
+ConfigurationPolicyProviderKeeper::~ConfigurationPolicyProviderKeeper() {}
+
 ConfigurationPolicyProvider*
     ConfigurationPolicyProviderKeeper::managed_platform_provider() const {
   return managed_platform_provider_.get();

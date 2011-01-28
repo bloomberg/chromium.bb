@@ -357,6 +357,20 @@ class ExtensionUpdaterFileHandler
   ~ExtensionUpdaterFileHandler() {}
 };
 
+ExtensionUpdater::ExtensionFetch::ExtensionFetch()
+    : id(""),
+      url(),
+      package_hash(""),
+      version("") {}
+
+ExtensionUpdater::ExtensionFetch::ExtensionFetch(const std::string& i,
+                                                 const GURL& u,
+                                                 const std::string& h,
+                                                 const std::string& v)
+    : id(i), url(u), package_hash(h), version(v) {}
+
+ExtensionUpdater::ExtensionFetch::~ExtensionFetch() {}
+
 ExtensionUpdater::ExtensionUpdater(ExtensionUpdateService* service,
                                    PrefService* prefs,
                                    int frequency_seconds)

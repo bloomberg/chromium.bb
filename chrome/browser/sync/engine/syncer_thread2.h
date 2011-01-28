@@ -89,26 +89,22 @@ class SyncerThread : public sessions::SyncSession::Delegate {
   // State pertaining to exponential backoff or throttling periods.
   struct WaitInterval;
 
-  // Internal state for every sync task that is scheduled.
-  struct SyncSessionJob {
-    // An enum used to describe jobs for scheduling purposes.
-    enum Purpose {
-      // Our poll timer schedules POLL jobs periodically based on a server
-      // assigned poll interval.
-      POLL,
-      // A nudge task can come from a variety of components needing to force
-      // a sync.  The source is inferable from |session.source()|.
-      NUDGE,
-      // Typically used for fetching updates for a subset of the enabled types
-      // during initial sync or reconfiguration.  We don't run all steps of
-      // the sync cycle for these (e.g. CleanupDisabledTypes is skipped).
-      CONFIGURATION,
-    };
-
-    Purpose purpose;
-    base::TimeTicks scheduled_start;
-    linked_ptr<sessions::SyncSession> session;
+  // An enum used to describe jobs for scheduling purposes.
+  enum SyncSessionJobPurpose {
+    // Our poll timer schedules POLL jobs periodically based on a server
+    // assigned poll interval.
+    POLL,
+    // A nudge task can come from a variety of components needing to force
+    // a sync.  The source is inferable from |session.source()|.
+    NUDGE,
+    // Typically used for fetching updates for a subset of the enabled types
+    // during initial sync or reconfiguration.  We don't run all steps of
+    // the sync cycle for these (e.g. CleanupDisabledTypes is skipped).
+    CONFIGURATION,
   };
+
+  // Internal state for every sync task that is scheduled.
+  struct SyncSessionJob;
 
   // A component used to get time delays associated with exponential backoff.
   // Encapsulated into a class to facilitate testing.
@@ -123,7 +119,7 @@ class SyncerThread : public sessions::SyncSession::Delegate {
 
   // Helper to assemble a job and post a delayed task to sync.
   void ScheduleSyncSessionJob(const base::TimeDelta& delay,
-                              SyncSessionJob::Purpose purpose,
+                              SyncSessionJobPurpose purpose,
                               sessions::SyncSession* session);
 
   // Invoke the Syncer to perform a sync.
@@ -145,7 +141,7 @@ class SyncerThread : public sessions::SyncSession::Delegate {
   // Determines if it is legal to run a sync job for |purpose| at
   // |scheduled_start|.  This checks current operational mode, backoff or
   // throttling, freshness (so we don't make redundant syncs), and connection.
-  bool ShouldRunJob(SyncSessionJob::Purpose purpose,
+  bool ShouldRunJob(SyncSessionJobPurpose purpose,
                     const base::TimeTicks& scheduled_start);
 
   // 'Impl' here refers to real implementation of public functions, running on

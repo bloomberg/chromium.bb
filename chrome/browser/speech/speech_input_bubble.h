@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,7 +130,7 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
   virtual void SetRecognizingMode();
   virtual void SetMessage(const string16& text);
   virtual void SetInputVolume(float volume);
-  virtual TabContents* tab_contents() { return tab_contents_; }
+  virtual TabContents* tab_contents();
 
  protected:
   // Updates the platform specific UI layout for the current display mode.

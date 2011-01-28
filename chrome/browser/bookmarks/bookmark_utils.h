@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,6 +131,9 @@ void GetMostRecentlyAddedEntries(BookmarkModel* model,
 // Used by GetBookmarksMatchingText to return a matching node and the location
 // of the match in the title.
 struct TitleMatch {
+  TitleMatch();
+  ~TitleMatch();
+
   const BookmarkNode* node;
 
   // Location of the matching words in the title of the node.

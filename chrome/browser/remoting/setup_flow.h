@@ -121,7 +121,7 @@ class SetupFlowDoneStep : public SetupFlowStepBase {
   virtual void Cancel();
 
  protected:
-  void DoStart();
+  virtual void DoStart();
 
  private:
   string16 message_;

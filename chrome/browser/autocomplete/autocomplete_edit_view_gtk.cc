@@ -48,7 +48,6 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
-#include "views/controls/native/native_view_host.h"
 #endif
 
 namespace {

@@ -27,7 +27,7 @@ class ExternalExtensionProviderImpl;
 class ExternalExtensionLoader
     : public base::RefCountedThreadSafe<ExternalExtensionLoader> {
  public:
-  explicit ExternalExtensionLoader() : running_(false) {}
+  explicit ExternalExtensionLoader();
 
   // Specifies the provider that owns this object.
   void Init(ExternalExtensionProviderImpl* owner);
@@ -50,7 +50,7 @@ class ExternalExtensionLoader
   virtual const FilePath GetBaseCrxFilePath();
 
  protected:
-  virtual ~ExternalExtensionLoader() {}
+  virtual ~ExternalExtensionLoader();
 
   // Notifies the provider that the list of extensions has been loaded.
   void LoadFinished();

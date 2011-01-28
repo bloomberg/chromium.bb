@@ -103,16 +103,7 @@ class ExtensionPrefValueMap {
                                      bool incognito) const;
 
  private:
-  struct ExtensionEntry {
-    // Installation time of the extension.
-    base::Time install_time;
-    // Whether extension is enabled in the profile.
-    bool enabled;
-    // Regular preferences.
-    PrefValueMap reg_preferences;
-    // Incognito preferences, empty for regular ExtensionPrefStore.
-    PrefValueMap inc_preferences;
-  };
+  struct ExtensionEntry;
 
   typedef std::map<std::string, ExtensionEntry*> ExtensionEntryMap;
 

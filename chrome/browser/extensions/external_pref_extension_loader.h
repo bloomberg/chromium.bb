@@ -58,7 +58,7 @@ class ExternalTestingExtensionLoader : public ExternalExtensionLoader {
  private:
   friend class base::RefCountedThreadSafe<ExternalExtensionLoader>;
 
-  virtual ~ExternalTestingExtensionLoader() {}
+  virtual ~ExternalTestingExtensionLoader();
 
   FilePath fake_base_path_;
   scoped_ptr<DictionaryValue> testing_prefs_;

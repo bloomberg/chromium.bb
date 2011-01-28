@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,29 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/webkit_glue.h"
+
+BrowsingDataLocalStorageHelper::LocalStorageInfo::LocalStorageInfo() {}
+
+BrowsingDataLocalStorageHelper::LocalStorageInfo::LocalStorageInfo(
+    const std::string& protocol,
+    const std::string& host,
+    unsigned short port,
+    const std::string& database_identifier,
+    const std::string& origin,
+    const FilePath& file_path,
+    int64 size,
+    base::Time last_modified)
+    : protocol(protocol),
+      host(host),
+      port(port),
+      database_identifier(database_identifier),
+      origin(origin),
+      file_path(file_path),
+      size(size),
+      last_modified(last_modified) {
+      }
+
+BrowsingDataLocalStorageHelper::LocalStorageInfo::~LocalStorageInfo() {}
 
 BrowsingDataLocalStorageHelper::BrowsingDataLocalStorageHelper(
     Profile* profile)

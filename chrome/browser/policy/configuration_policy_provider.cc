@@ -17,6 +17,10 @@ ConfigurationPolicyProvider::ConfigurationPolicyProvider(
 
 ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {}
 
+bool ConfigurationPolicyProvider::IsInitializationComplete() const {
+  return true;
+}
+
 void ConfigurationPolicyProvider::DecodePolicyValueTree(
     const DictionaryValue* policies,
     ConfigurationPolicyStoreInterface* store) {

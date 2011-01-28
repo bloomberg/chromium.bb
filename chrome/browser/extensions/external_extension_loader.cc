@@ -9,6 +9,8 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 
+ExternalExtensionLoader::ExternalExtensionLoader() : running_(false) {}
+
 void ExternalExtensionLoader::Init(
     ExternalExtensionProviderImpl* owner) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -27,6 +29,8 @@ void ExternalExtensionLoader::OwnerShutdown() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   owner_ = NULL;
 }
+
+ExternalExtensionLoader::~ExternalExtensionLoader() {}
 
 void ExternalExtensionLoader::LoadFinished() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

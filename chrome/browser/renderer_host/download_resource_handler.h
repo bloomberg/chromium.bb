@@ -91,8 +91,9 @@ class DownloadResourceHandler : public ResourceHandler,
   void StartDownloadUrlCheck();
 
   // Called when the result of checking a download URL is known.
-  void OnDownloadUrlCheckResult(const GURL& url,
-                                SafeBrowsingService::UrlCheckResult result);
+  virtual void OnDownloadUrlCheckResult(
+      const GURL& url,
+      SafeBrowsingService::UrlCheckResult result);
 
   // A helper function that updates UMA for download url checks.
   static void UpdateDownloadUrlCheckStats(SBStatsType stat_type);

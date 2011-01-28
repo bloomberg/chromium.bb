@@ -21,7 +21,7 @@ class ConfigurationPolicyProviderKeeper {
       ConfigurationPolicyProvider* managed_platform_provider,
       ConfigurationPolicyProvider* device_management_provider,
       ConfigurationPolicyProvider* recommended_provider);
-  virtual ~ConfigurationPolicyProviderKeeper() {}
+  virtual ~ConfigurationPolicyProviderKeeper();
 
   ConfigurationPolicyProvider* managed_platform_provider() const;
 

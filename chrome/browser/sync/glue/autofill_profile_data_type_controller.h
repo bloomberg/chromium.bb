@@ -1,6 +1,7 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #ifndef CHROME_BROWSER_SYNC_GLUE_AUTOFILL_PROFILE_DATA_TYPE_CONTROLLER_H_
 #define CHROME_BROWSER_SYNC_GLUE_AUTOFILL_PROFILE_DATA_TYPE_CONTROLLER_H_
 #pragma once
@@ -16,16 +17,12 @@ class AutofillProfileDataTypeController : public AutofillDataTypeController {
       ProfileSyncFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
-  virtual ~AutofillProfileDataTypeController() {}
+  virtual ~AutofillProfileDataTypeController();
 
-  virtual syncable::ModelType type() {
-    return syncable::AUTOFILL_PROFILE;
-  }
+  virtual syncable::ModelType type();
 
-  virtual const char* name() const {
-    // For logging only.
-    return "autofill_profile";
-  }
+  virtual const char* name() const;
+
  protected:
   virtual ProfileSyncFactory::SyncComponents CreateSyncComponents(
       ProfileSyncService* profile_sync_service,

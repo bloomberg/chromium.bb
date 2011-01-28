@@ -73,9 +73,11 @@ class WebSocketExperimentTask : public URLFetcher::Delegate,
     STATE_WEBSOCKET_CLOSE_COMPLETE,
     NUM_STATES,
   };
+
   class Config {
    public:
     Config();
+    ~Config();
 
     GURL url;
     std::string ws_protocol;
@@ -95,6 +97,7 @@ class WebSocketExperimentTask : public URLFetcher::Delegate,
     int64 websocket_bye_deadline_ms;
     int64 websocket_close_deadline_ms;
   };
+
   class Context {
    public:
     Context() {}
@@ -108,6 +111,7 @@ class WebSocketExperimentTask : public URLFetcher::Delegate,
    private:
     DISALLOW_COPY_AND_ASSIGN(Context);
   };
+
   class Result {
    public:
     Result()

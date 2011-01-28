@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,6 +113,8 @@ WebSocketExperimentTask::Config::Config()
       websocket_bye_deadline_ms(kWebSocketByeDeadlineSec * 1000),
       websocket_close_deadline_ms(kWebSocketCloseDeadlineSec * 1000) {
 }
+
+WebSocketExperimentTask::Config::~Config() {}
 
 WebSocketExperimentTask::WebSocketExperimentTask(
     const Config& config,

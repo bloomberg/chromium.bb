@@ -55,7 +55,7 @@ class ConfigurationPolicyProvider {
   // Check whether this provider has completed initialization. This is used to
   // detect whether initialization is done in case providers implementations
   // need to do asynchronous operations for initialization.
-  virtual bool IsInitializationComplete() const { return true; }
+  virtual bool IsInitializationComplete() const;
 
  protected:
   // Decodes the value tree and writes the configuration to the given |store|.

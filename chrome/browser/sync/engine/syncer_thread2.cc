@@ -43,6 +43,12 @@ struct SyncerThread::WaitInterval {
   WaitInterval(Mode mode, base::TimeDelta length);
 };
 
+struct SyncerThread::SyncSessionJob {
+  SyncSessionJobPurpose purpose;
+  base::TimeTicks scheduled_start;
+  linked_ptr<sessions::SyncSession> session;
+};
+
 SyncerThread::DelayProvider::DelayProvider() {}
 SyncerThread::DelayProvider::~DelayProvider() {}
 
@@ -89,7 +95,7 @@ void SyncerThread::StartImpl(Mode mode) {
   AdjustPolling(NULL);  // Will kick start poll timer if needed.
 }
 
-bool SyncerThread::ShouldRunJob(SyncSessionJob::Purpose purpose,
+bool SyncerThread::ShouldRunJob(SyncSessionJobPurpose purpose,
     const TimeTicks& scheduled_start) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
 
@@ -99,9 +105,9 @@ bool SyncerThread::ShouldRunJob(SyncSessionJob::Purpose purpose,
       return false;
 
     DCHECK_EQ(wait_interval_->mode, WaitInterval::EXPONENTIAL_BACKOFF);
-    DCHECK(purpose == SyncSessionJob::POLL ||
-           purpose == SyncSessionJob::NUDGE);
-    if ((purpose != SyncSessionJob::NUDGE) || wait_interval_->had_nudge)
+    DCHECK(purpose == POLL ||
+           purpose == NUDGE);
+    if ((purpose != NUDGE) || wait_interval_->had_nudge)
       return false;
   }
 
@@ -110,11 +116,11 @@ bool SyncerThread::ShouldRunJob(SyncSessionJob::Purpose purpose,
   // versa.
   switch (mode_) {
     case CONFIGURATION_MODE:
-      if (purpose != SyncSessionJob::CONFIGURATION)
+      if (purpose != CONFIGURATION)
         return false;
       break;
     case NORMAL_MODE:
-      if (purpose != SyncSessionJob::POLL && purpose != SyncSessionJob::NUDGE)
+      if (purpose != POLL && purpose != NUDGE)
         return false;
       break;
     default:
@@ -126,14 +132,14 @@ bool SyncerThread::ShouldRunJob(SyncSessionJob::Purpose purpose,
   // only tasks that trigger exponential backoff, so this prevents them from
   // being starved from running (e.g. due to a very, very low poll interval,
   // such as 0ms). It's rare that this would ever matter in practice.
-  if (purpose == SyncSessionJob::POLL && (pending_nudge_.get() &&
+  if (purpose == POLL && (pending_nudge_.get() &&
       pending_nudge_->session->source().updates_source ==
           GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION)) {
     return false;
   }
 
   // Freshness condition.
-  if (purpose == SyncSessionJob::NUDGE &&
+  if (purpose == NUDGE &&
       (scheduled_start < last_sync_session_end_time_)) {
     return false;
   }
@@ -199,7 +205,7 @@ void SyncerThread::ScheduleNudgeImpl(const TimeDelta& delay,
     NudgeSource source, const TypePayloadMap& types_with_payloads) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
   TimeTicks rough_start = TimeTicks::Now() + delay;
-  if (!ShouldRunJob(SyncSessionJob::NUDGE, rough_start))
+  if (!ShouldRunJob(NUDGE, rough_start))
     return;
 
   // Note we currently nudge for all types regardless of the ones incurring
@@ -230,7 +236,7 @@ void SyncerThread::ScheduleNudgeImpl(const TimeDelta& delay,
       pending_nudge_.reset();
     }
   }
-  ScheduleSyncSessionJob(delay, SyncSessionJob::NUDGE, session.release());
+  ScheduleSyncSessionJob(delay, NUDGE, session.release());
 }
 
 // Helper to extract the routing info and workers corresponding to types in
@@ -289,11 +295,11 @@ void SyncerThread::ScheduleConfigImpl(const TimeDelta& delay,
 }
 
 void SyncerThread::ScheduleSyncSessionJob(const base::TimeDelta& delay,
-    SyncSessionJob::Purpose purpose, sessions::SyncSession* session) {
+    SyncSessionJobPurpose purpose, sessions::SyncSession* session) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
   SyncSessionJob job = {purpose, TimeTicks::Now() + delay,
                         make_linked_ptr(session)};
-  if (purpose == SyncSessionJob::NUDGE) {
+  if (purpose == NUDGE) {
     DCHECK(!pending_nudge_.get() || pending_nudge_->session.get() == session);
     pending_nudge_.reset(new SyncSessionJob(job));
   }
@@ -304,12 +310,12 @@ void SyncerThread::ScheduleSyncSessionJob(const base::TimeDelta& delay,
 void SyncerThread::DoSyncSessionJob(const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
 
-  if (job.purpose == SyncSessionJob::NUDGE) {
+  if (job.purpose == NUDGE) {
     DCHECK(pending_nudge_.get());
     if (pending_nudge_->session != job.session)
       return;  // Another nudge must have been scheduled in in the meantime.
     pending_nudge_.reset();
-  } else if (job.purpose == SyncSessionJob::CONFIGURATION) {
+  } else if (job.purpose == CONFIGURATION) {
     NOTIMPLEMENTED() << "TODO(tim): SyncShare [DOWNLOAD_UPDATES,APPLY_UPDATES]";
   }
 
@@ -378,7 +384,7 @@ void SyncerThread::ScheduleNextSync(const SyncSessionJob& old_job) {
     HandleConsecutiveContinuationError(old_job);
   } else if (IsBackingOff()) {
     // We weren't continuing but we're in backoff; must have been a nudge.
-    DCHECK_EQ(SyncSessionJob::NUDGE, old_job.purpose);
+    DCHECK_EQ(NUDGE, old_job.purpose);
     DCHECK(!wait_interval_->had_nudge);
     wait_interval_->had_nudge = true;
     wait_interval_->timer.Reset();
@@ -400,7 +406,7 @@ void SyncerThread::AdjustPolling(const SyncSessionJob* old_job) {
   bool rate_changed = !poll_timer_.IsRunning() ||
                        poll != poll_timer_.GetCurrentDelay();
 
-  if (old_job && old_job->purpose != SyncSessionJob::POLL && !rate_changed)
+  if (old_job && old_job->purpose != POLL && !rate_changed)
     poll_timer_.Reset();
 
   if (!rate_changed)
@@ -422,7 +428,7 @@ void SyncerThread::HandleConsecutiveContinuationError(
       IsBackingOff() ? wait_interval_->length : TimeDelta::FromSeconds(1));
   wait_interval_.reset(new WaitInterval(WaitInterval::EXPONENTIAL_BACKOFF,
                                         length));
-  SyncSessionJob job = {SyncSessionJob::NUDGE, TimeTicks::Now() + length,
+  SyncSessionJob job = {NUDGE, TimeTicks::Now() + length,
                         make_linked_ptr(s)};
   pending_nudge_.reset(new SyncSessionJob(job));
   wait_interval_->timer.Start(length, this, &SyncerThread::DoCanaryJob);
@@ -477,7 +483,7 @@ void SyncerThread::PollTimerCallback() {
       sessions::MakeTypePayloadMapFromRoutingInfo(r, std::string());
   SyncSourceInfo info(GetUpdatesCallerInfo::PERIODIC, types_with_payloads);
   SyncSession* s = new SyncSession(session_context_.get(), this, info, r, w);
-  ScheduleSyncSessionJob(TimeDelta::FromSeconds(0), SyncSessionJob::POLL, s);
+  ScheduleSyncSessionJob(TimeDelta::FromSeconds(0), POLL, s);
 }
 
 void SyncerThread::Unthrottle() {

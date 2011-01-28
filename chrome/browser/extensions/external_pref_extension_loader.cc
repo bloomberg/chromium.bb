@@ -112,6 +112,8 @@ void ExternalTestingExtensionLoader::StartLoading() {
   LoadFinished();
 }
 
+ExternalTestingExtensionLoader::~ExternalTestingExtensionLoader() {}
+
 const FilePath ExternalTestingExtensionLoader::GetBaseCrxFilePath() {
   return fake_base_path_;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,13 @@ static const wchar_t* kChooseDataTypesIFrameXPath =
 static const wchar_t* kPassphraseIFrameXPath =
     L"//iframe[@id='passphrase']";
 static const wchar_t* kDoneIframeXPath = L"//iframe[@id='done']";
+
+SyncConfiguration::SyncConfiguration()
+    : sync_everything(false),
+      use_secondary_passphrase(false) {
+}
+
+SyncConfiguration::~SyncConfiguration() {}
 
 void FlowHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("SubmitAuth",
