@@ -20,7 +20,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/bug_report_data.h"
 #include "chrome/browser/bug_report_util.h"
-#include "chrome/browser/dom_ui/dom_ui_screenshot_source.h"
+#include "chrome/browser/dom_ui/web_ui_screenshot_source.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -223,7 +223,7 @@ class BugReportHandler : public DOMMessageHandler,
   void CloseFeedbackTab();
 
   TabContents* tab_;
-  DOMUIScreenshotSource* screenshot_source_;
+  WebUIScreenshotSource* screenshot_source_;
 
   BugReportData* bug_report_;
   std::string target_tab_url_;
@@ -469,7 +469,7 @@ void BugReportHandler::ClobberScreenshotsSource() {
       NewRunnableMethod(
           ChromeURLDataManager::GetInstance(),
           &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(new DOMUIScreenshotSource(NULL))));
+          make_scoped_refptr(new WebUIScreenshotSource(NULL))));
 
   // clobber last screenshot
   if (browser::last_screenshot_png)
@@ -479,7 +479,7 @@ void BugReportHandler::ClobberScreenshotsSource() {
 void BugReportHandler::SetupScreenshotsSource() {
   // If we don't already have a screenshot source object created, create one.
   if (!screenshot_source_)
-    screenshot_source_ = new DOMUIScreenshotSource(
+    screenshot_source_ = new WebUIScreenshotSource(
         browser::last_screenshot_png);
 
   // Add the source to the data manager.

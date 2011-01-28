@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/dom_ui_screenshot_source.h"
+#include "chrome/browser/dom_ui/web_ui_screenshot_source.h"
 
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -69,7 +69,7 @@ std::vector<unsigned char> GetSavedScreenshot(std::string filename) {
 }
 #endif
 
-std::vector<unsigned char> DOMUIScreenshotSource::GetScreenshot(
+std::vector<unsigned char> WebUIScreenshotSource::GetScreenshot(
     const std::string& full_path) {
   // Strip the query param value - we only use it as a hack to ensure our
   // image gets reloaded instead of being pulled from the browser cache
@@ -93,7 +93,7 @@ std::vector<unsigned char> DOMUIScreenshotSource::GetScreenshot(
   }
 }
 
-DOMUIScreenshotSource::DOMUIScreenshotSource(
+WebUIScreenshotSource::WebUIScreenshotSource(
     std::vector<unsigned char>* current_screenshot)
     : DataSource(chrome::kChromeUIScreenshotPath, MessageLoop::current()) {
   // Setup the last screenshot taken.
@@ -103,15 +103,15 @@ DOMUIScreenshotSource::DOMUIScreenshotSource(
     current_screenshot_.clear();
 }
 
-DOMUIScreenshotSource::~DOMUIScreenshotSource() {}
+WebUIScreenshotSource::~WebUIScreenshotSource() {}
 
-void DOMUIScreenshotSource::StartDataRequest(const std::string& path,
+void WebUIScreenshotSource::StartDataRequest(const std::string& path,
                                             bool is_off_the_record,
                                             int request_id) {
   SendResponse(request_id, new RefCountedBytes(GetScreenshot(path)));
 }
 
-std::string DOMUIScreenshotSource::GetMimeType(const std::string&) const {
+std::string WebUIScreenshotSource::GetMimeType(const std::string&) const {
   // We need to explicitly return a mime type, otherwise if the user tries to
   // drag the image they get no extension.
   return "image/png";
