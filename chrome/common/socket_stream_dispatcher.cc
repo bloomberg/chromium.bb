@@ -141,10 +141,10 @@ void IPCWebSocketStreamHandleBridge::DoConnect(const GURL& url) {
 
   socket_id_ = all_bridges.Add(this);
   DCHECK_NE(socket_id_, chrome_common_net::kNoSocketId);
+  AddRef();  // Released in OnClosed().
   if (child_thread_->Send(
       new ViewHostMsg_SocketStream_Connect(url, socket_id_))) {
     DVLOG(1) << "Connect socket_id=" << socket_id_;
-    AddRef();  // Released in OnClosed().
     // TODO(ukai): timeout to OnConnected.
   } else {
     LOG(ERROR) << "IPC SocketStream_Connect failed.";
