@@ -20,6 +20,8 @@ WizardInProcessBrowserTest::WizardInProcessBrowserTest(const char* screen_name)
 Browser* WizardInProcessBrowserTest::CreateBrowser(Profile* profile) {
   SetUpWizard();
 
+  WizardController::SetZeroDelays();
+
   if (!screen_name_.empty()) {
     browser::ShowLoginWizard(screen_name_.c_str(), gfx::Size(1024, 600));
     controller_ = WizardController::default_controller();

@@ -66,6 +66,7 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
       // check unless there is an update.
       break;
     case UPDATE_STATUS_UPDATE_AVAILABLE:
+      MakeSureScreenIsShown();
       view()->SetProgress(kBeforeDownloadProgress);
       if (!HasCriticalUpdate()) {
         LOG(INFO) << "Noncritical update available: "
@@ -78,6 +79,7 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
       break;
     case UPDATE_STATUS_DOWNLOADING:
       {
+        MakeSureScreenIsShown();
         if (!is_downloading_update_) {
           // Because update engine doesn't send UPDATE_STATUS_UPDATE_AVAILABLE
           // we need to is update critical on first downloading notification.
@@ -98,12 +100,15 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
       }
       break;
     case UPDATE_STATUS_VERIFYING:
+      MakeSureScreenIsShown();
       view()->SetProgress(kBeforeVerifyingProgress);
       break;
     case UPDATE_STATUS_FINALIZING:
+      MakeSureScreenIsShown();
       view()->SetProgress(kBeforeFinalizingProgress);
       break;
     case UPDATE_STATUS_UPDATED_NEED_REBOOT:
+      MakeSureScreenIsShown();
       // Make sure that first OOBE stage won't be shown after reboot.
       WizardController::MarkOobeCompleted();
       view()->SetProgress(kProgressComplete);
@@ -130,11 +135,13 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
 }
 
 void UpdateScreen::StartUpdate() {
-  // Reset view.
-  view()->Reset();
-  view()->set_controller(this);
-  is_downloading_update_ = false;
-  view()->SetProgress(kBeforeUpdateCheckProgress);
+  // Reset view if view was created.
+  if (view()) {
+    view()->Reset();
+    view()->set_controller(this);
+    is_downloading_update_ = false;
+    view()->SetProgress(kBeforeUpdateCheckProgress);
+  }
 
   if (!CrosLibrary::Get()->EnsureLoaded()) {
     LOG(ERROR) << "Error loading CrosLibrary";
@@ -153,6 +160,13 @@ void UpdateScreen::CancelUpdate() {
   // View is deleted after wizard proceeds to the next screen.
   if (view())
     ExitUpdate(REASON_UPDATE_CANCELED);
+}
+
+void UpdateScreen::Show() {
+  DefaultViewScreen<UpdateView>::Show();
+  view()->set_controller(this);
+  is_downloading_update_ = false;
+  view()->SetProgress(kBeforeUpdateCheckProgress);
 }
 
 void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
@@ -201,7 +215,14 @@ void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
 
 void UpdateScreen::OnWaitForRebootTimeElapsed() {
   LOG(ERROR) << "Unable to reboot - asking user for a manual reboot.";
+  MakeSureScreenIsShown();
   view()->ShowManualRebootInfo();
+}
+
+void UpdateScreen::MakeSureScreenIsShown() {
+  if (!view()) {
+    delegate()->ShowCurrentScreen();
+  }
 }
 
 void UpdateScreen::SetRebootCheckDelay(int seconds) {

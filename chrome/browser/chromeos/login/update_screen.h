@@ -35,6 +35,9 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
   virtual void StartUpdate();
   virtual void CancelUpdate();
 
+  // Overridden from ViewScreen.
+  virtual void Show();
+
   enum ExitReason {
      REASON_UPDATE_CANCELED,
      REASON_UPDATE_INIT_FAILED,
@@ -60,6 +63,9 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
  private:
   // Timer notification handlers.
   void OnWaitForRebootTimeElapsed();
+
+  // Checks that screen is shown, shows if not.
+  void MakeSureScreenIsShown();
 
   // Timer for the interval to wait for the reboot.
   // If reboot didn't happen - ask user to reboot manually.

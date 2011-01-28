@@ -75,6 +75,9 @@ const char kOobeCompleteFlagFilePath[] =
 // If reboot didn't happen, ask user to reboot device manually.
 const int kWaitForRebootTimeSec = 3;
 
+// Interval in ms which is used for smooth screen showing.
+static int kShowDelayMs = 400;
+
 // RootView of the Widget WizardController creates. Contains the contents of the
 // WizardController.
 class ContentView : public views::View {
@@ -256,6 +259,7 @@ WizardController::WizardController()
       background_view_(NULL),
       contents_(NULL),
       current_screen_(NULL),
+      initial_show_(true),
 #if defined(OFFICIAL_BUILD)
       is_official_build_(true),
 #else
@@ -305,17 +309,6 @@ void WizardController::Init(const std::string& first_screen_name,
   }
 
   ShowFirstScreen(first_screen_name);
-}
-
-void WizardController::Show() {
-  // In tests and in case of --login-screen=login there is no screen to show.
-  if (first_screen_name_ != kTestNoScreenName &&
-      first_screen_name_ != kLoginScreenName) {
-    DCHECK(widget_);
-  }
-
-  if (widget_)
-    widget_->Show();
 }
 
 void WizardController::ShowBackground(const gfx::Rect& bounds) {
@@ -639,8 +632,8 @@ void WizardController::OnOOBECompleted() {
 }
 
 void WizardController::InitiateOOBEUpdate() {
-  ShowUpdateScreen();
   GetUpdateScreen()->StartUpdate();
+  SetCurrentScreenSmooth(GetUpdateScreen(), true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -680,17 +673,12 @@ gfx::Rect WizardController::GetWizardScreenBounds(int screen_width,
 
 
 void WizardController::SetCurrentScreen(WizardScreen* new_current) {
-  if (current_screen_ == new_current ||
-      new_current == NULL)
-    return;
+  SetCurrentScreenSmooth(new_current, false);
+}
 
-  bool initial_show = true;
-  if (current_screen_) {
-    initial_show = false;
-    current_screen_->Hide();
-  }
+void WizardController::ShowCurrentScreen() {
+  smooth_show_timer_.Stop();
 
-  current_screen_ = new_current;
   bool force_widget_show = false;
   views::WidgetGtk* window = NULL;
 
@@ -704,7 +692,7 @@ void WizardController::SetCurrentScreen(WizardScreen* new_current) {
     if (widget_)
       widget_->Close();
     force_widget_show = true;
-    window = CreateScreenWindow(new_bounds, initial_show);
+    window = CreateScreenWindow(new_bounds, initial_show_);
   }
   current_screen_->Show();
   contents_->Layout();
@@ -715,6 +703,32 @@ void WizardController::SetCurrentScreen(WizardScreen* new_current) {
     gdk_window_set_back_pixmap(gdk_window, NULL, false);
     if (widget_)
       widget_->Show();
+  }
+}
+
+void WizardController::SetCurrentScreenSmooth(WizardScreen* new_current,
+                                              bool use_smoothing) {
+  if (current_screen_ == new_current || new_current == NULL)
+    return;
+
+  smooth_show_timer_.Stop();
+
+  if (current_screen_) {
+    initial_show_ = false;
+    current_screen_->Hide();
+  }
+
+  current_screen_ = new_current;
+
+  if (use_smoothing) {
+    smooth_show_timer_.Start(
+        base::TimeDelta::FromMilliseconds(kShowDelayMs),
+        this,
+        &WizardController::ShowCurrentScreen);
+    contents_->Layout();
+    contents_->SchedulePaint();
+  } else {
+    ShowCurrentScreen();
   }
 }
 
@@ -881,6 +895,10 @@ chromeos::ScreenObserver* WizardController::GetObserver(WizardScreen* screen) {
   return observer_ ? observer_ : this;
 }
 
+void WizardController::SetZeroDelays() {
+  kShowDelayMs = 0;
+}
+
 namespace browser {
 
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
@@ -973,7 +991,6 @@ void ShowLoginWizard(const std::string& first_screen_name,
 
   controller->ShowBackground(screen_bounds);
   controller->Init(first_screen_name, screen_bounds);
-  controller->Show();
 
   chromeos::LoginUtils::Get()->PrewarmAuthentication();
   if (chromeos::CrosLibrary::Get()->EnsureLoaded())

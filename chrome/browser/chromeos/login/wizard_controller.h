@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
+#include "base/timer.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
@@ -34,6 +35,7 @@ class RegistrationScreen;
 class StartupCustomizationDocument;
 class UpdateScreen;
 class UserImageScreen;
+class WizardInProcessBrowserTest;
 }
 
 namespace gfx {
@@ -89,9 +91,6 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Returns the view that contains all the other views.
   views::View* contents() { return contents_; }
-
-  // Shows the wizard controller in a window.
-  void Show();
 
   // Creates and shows a background window.
   void ShowBackground(const gfx::Rect& bounds);
@@ -202,12 +201,17 @@ class WizardController : public chromeos::ScreenObserver,
   // Switches from one screen to another.
   void SetCurrentScreen(WizardScreen* screen);
 
+  // Switches from one screen to another with delay before showing. Calling
+  // ShowCurrentScreen directly forces screen to be shown immediately.
+  void SetCurrentScreenSmooth(WizardScreen* screen, bool use_smoothing);
+
   // Changes status area visibility.
   void SetStatusAreaVisible(bool visible);
 
   // Overridden from WizardScreenDelegate:
   virtual views::View* GetWizardView();
   virtual chromeos::ScreenObserver* GetObserver(WizardScreen* screen);
+  virtual void ShowCurrentScreen();
 
   // Determines which screen to show first by the parameter, shows it and
   // sets it as the current one.
@@ -215,6 +219,9 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Logs in the specified user via default login screen.
   void Login(const std::string& username, const std::string& password);
+
+  // Sets delays to zero. MUST be used only for browser tests.
+  static void SetZeroDelays();
 
   // Widget we're showing in.
   views::Widget* widget_;
@@ -240,6 +247,9 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Screen that's currently active.
   WizardScreen* current_screen_;
+
+  // Holds whether this is initial show.
+  bool initial_show_;
 
   std::string username_;
   std::string password_;
@@ -267,6 +277,8 @@ class WizardController : public chromeos::ScreenObserver,
 
   NotificationRegistrar registrar_;
 
+  base::OneShotTimer<WizardController> smooth_show_timer_;
+
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowErrorNetwork);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowErrorUpdate);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowEulaDeclined);
@@ -277,6 +289,7 @@ class WizardController : public chromeos::ScreenObserver,
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowMain);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerTest, SwitchLanguage);
   friend class WizardControllerFlowTest;
+  friend class chromeos::WizardInProcessBrowserTest;
 
   DISALLOW_COPY_AND_ASSIGN(WizardController);
 };

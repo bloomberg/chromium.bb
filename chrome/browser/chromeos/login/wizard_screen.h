@@ -28,6 +28,9 @@ class WizardScreenDelegate {
   // Returns observer screen should notify.
   virtual chromeos::ScreenObserver* GetObserver(WizardScreen* screen) = 0;
 
+  // Forces the current screen to be shown immediately.
+  virtual void ShowCurrentScreen() = 0;
+
  protected:
   virtual ~WizardScreenDelegate() {}
 };

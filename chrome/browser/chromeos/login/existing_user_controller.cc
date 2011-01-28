@@ -364,7 +364,6 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
 
   controller->Init(screen_name, background_bounds_);
   controller->set_start_url(start_url_);
-  controller->Show();
 
   delete_timer_.Start(base::TimeDelta::FromSeconds(1), this,
                       &ExistingUserController::Delete);
