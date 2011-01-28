@@ -57,6 +57,7 @@ class LoginUIHandler : public DOMMessageHandler,
 
   void HandleAuthenticateUser(const ListValue* args);
   void HandleLaunchIncognito(const ListValue* args);
+  void HandleShutdownSystem(const ListValue* args);
 
   // Overridden from LoginStatusConsumer.
   virtual void OnLoginFailure(const chromeos::LoginFailure& failure);

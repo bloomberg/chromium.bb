@@ -15,6 +15,8 @@
 #include "chrome/common/url_constants.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/dom_ui/login/authenticator_facade_cros.h"
 #else
 #include "chrome/browser/chromeos/dom_ui/login/authenticator_facade_stub.h"
@@ -83,6 +85,10 @@ void LoginUIHandler::RegisterMessages() {
       "AuthenticateUser",
       NewCallback(this,
                   &LoginUIHandler::HandleAuthenticateUser));
+  dom_ui_->RegisterMessageCallback(
+      "ShutdownSystem",
+      NewCallback(this,
+                  &LoginUIHandler::HandleShutdownSystem));
 }
 
 void LoginUIHandler::HandleAuthenticateUser(const ListValue* args) {
@@ -113,6 +119,19 @@ void LoginUIHandler::HandleLaunchIncognito(const ListValue* args) {
   logged_in->NewTab();
   logged_in->window()->Show();
   login_browser->CloseWindow();
+}
+
+void LoginUIHandler::HandleShutdownSystem(const ListValue* args) {
+#if defined(OS_CHROMEOS)
+  DCHECK(CrosLibrary::Get()->EnsureLoaded());
+  CrosLibrary::Get()->GetPowerLibrary()->RequestShutdown();
+#else
+  // When were are not running in cros we are just shutting the browser instead
+  // of trying to shutdown the system
+  Profile* profile = profile_operations_->GetDefaultProfileByPath();
+  Browser* browser = browser_operations_->GetLoginBrowser(profile);
+  browser->CloseWindow();
+#endif
 }
 
 void LoginUIHandler::OnLoginFailure(const LoginFailure& failure) {
