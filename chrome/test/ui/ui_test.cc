@@ -220,10 +220,6 @@ void UITestBase::QuitBrowser() {
   launcher_->QuitBrowser(shutdown_type_);
 }
 
-void UITestBase::TerminateBrowser() {
-  launcher_->TerminateBrowser();
-}
-
 void UITestBase::CleanupAppProcesses() {
   TerminateAllChromeProcesses(browser_process_id());
 }
@@ -815,6 +811,10 @@ bool UITest::WaitForFindWindowVisibilityChange(BrowserProxy* browser,
 
   ADD_FAILURE() << "Timeout reached in WaitForFindWindowVisibilityChange";
   return false;
+}
+
+void UITest::TerminateBrowser() {
+  launcher_->TerminateBrowser();
 }
 
 bool UITest::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,

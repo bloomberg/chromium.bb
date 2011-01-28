@@ -48,24 +48,6 @@ class TabProxy;
 // If using gtest, you probably want to inherit from UITest (declared below)
 // rather than UITestBase.
 class UITestBase {
- protected:
-  // String to display when a test fails because the crash service isn't
-  // running.
-  static const wchar_t kFailedNoCrashService[];
-
-  // Constructor
-  UITestBase();
-  explicit UITestBase(MessageLoop::Type msg_loop_type);
-
-  virtual ~UITestBase();
-
-  // Starts the browser using the arguments in launch_arguments_, and
-  // sets up member variables.
-  virtual void SetUp();
-
-  // Closes the browser window.
-  virtual void TearDown();
-
  public:
   // ********* Utility functions *********
 
@@ -106,9 +88,6 @@ class UITestBase {
 
   // Exits out browser instance.
   void QuitBrowser();
-
-  // Terminates the browser, simulates end of session.
-  void TerminateBrowser();
 
   // Tells the browser to navigate to the given URL in the active tab
   // of the first app window.
@@ -282,6 +261,22 @@ class UITestBase {
   void SetBrowserDirectory(const FilePath& dir);
 
  protected:
+  // String to display when a test fails because the crash service isn't
+  // running.
+  static const wchar_t kFailedNoCrashService[];
+
+  UITestBase();
+  explicit UITestBase(MessageLoop::Type msg_loop_type);
+
+  virtual ~UITestBase();
+
+  // Starts the browser using the arguments in launch_arguments_, and
+  // sets up member variables.
+  virtual void SetUp();
+
+  // Closes the browser window.
+  virtual void TearDown();
+
   AutomationProxy* automation() const {
     return launcher_->automation();
   }
@@ -485,6 +480,9 @@ class UITest : public UITestBase, public PlatformTest {
   // out (return false) if the window doesn't appear within a specific time.
   bool WaitForFindWindowVisibilityChange(BrowserProxy* browser,
                                          bool wait_for_open);
+
+  // Terminates the browser, simulates end of session.
+  void TerminateBrowser();
 
  private:
   // Waits for download shelf visibility or invisibility.
