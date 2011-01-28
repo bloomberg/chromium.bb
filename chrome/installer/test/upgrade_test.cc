@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,8 +24,10 @@ class UpgradeTest : public testing::Test {
     ASSERT_TRUE(PathService::Get(base::DIR_EXE, &dir_exe));
     ASSERT_TRUE(file_util::CreateTemporaryFile(&next_mini_installer_path_));
     ASSERT_TRUE(
-        upgrade_test::GenerateNextVersion(dir_exe.Append(&kMiniInstallerExe[0]),
-                                          next_mini_installer_path_));
+        upgrade_test::GenerateAlternateVersion(
+            dir_exe.Append(&kMiniInstallerExe[0]),
+            next_mini_installer_path_,
+            upgrade_test::NEXT_VERSION, NULL, NULL));
   }
 
   // Clean up by deleting the created newer version of mini_installer.exe.

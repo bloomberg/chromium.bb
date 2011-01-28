@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -343,22 +343,27 @@ bool UpdateVersionIfMatch(const FilePath& image_file,
   return result;
 }
 
-// Bumps the version of all .exe and .dll files in |work_dir| as well as the
-// |work-dir|\Chrome-bin\w.x.y.z directory.
-bool ApplyNextVersion(const FilePath& work_dir) {
+// Raises or lowers the version of all .exe and .dll files in |work_dir| as well
+// as the |work-dir|\Chrome-bin\w.x.y.z directory.  |original_version| and
+// |new_version|, when non-NULL, are given the original and new version numbers
+// on success.
+bool ApplyAlternateVersion(const FilePath& work_dir,
+                           upgrade_test::Direction direction,
+                           std::wstring* original_version,
+                           std::wstring* new_version) {
   VisitResourceContext ctx;
   if (!GetSetupExeVersion(work_dir, &ctx.current_version)) {
     return false;
   }
   ctx.current_version_str = ctx.current_version.ToString();
 
-  // Figure out a future version with the same string length as this one by
-  // incrementing each component.
-  ULONGLONG incrementer = 1;
+  // Figure out a past or future version with the same string length as this one
+  // by decrementing or incrementing each component.
+  LONGLONG incrementer = (direction == upgrade_test::PREVIOUS_VERSION ? -1 : 1);
 
   do {
     if (incrementer == 0) {
-      LOG(DFATAL) << "Improbable version composed of only 9s and/or USHRT_MAX";
+      LOG(DFATAL) << "Improbable version at the cusp of complete rollover";
       return false;
     }
     ctx.new_version.set_value(ctx.current_version.value() + incrementer);
@@ -385,6 +390,14 @@ bool ApplyNextVersion(const FilePath& work_dir) {
   FilePath chrome_bin = work_dir.Append(&kChromeBin[0]);
   doing_great = file_util::Move(chrome_bin.Append(ctx.current_version_str),
                                 chrome_bin.Append(ctx.new_version_str));
+
+  if (doing_great) {
+    // Report the version numbers if requested.
+    if (original_version != NULL)
+      original_version->assign(ctx.current_version_str);
+    if (new_version != NULL)
+      new_version->assign(ctx.new_version_str);
+  }
 
   return doing_great;
 }
@@ -437,8 +450,11 @@ bool CreateArchive(const FilePath& output_file, const FilePath& input_path,
 
 namespace upgrade_test {
 
-bool GenerateNextVersion(const FilePath& original_installer_path,
-                         const FilePath& target_path) {
+bool GenerateAlternateVersion(const FilePath& original_installer_path,
+                              const FilePath& target_path,
+                              Direction direction,
+                              std::wstring* original_version,
+                              std::wstring* new_version) {
   // Create a temporary directory in which we'll do our work.
   ScopedTempDirectory work_dir;
   if (!work_dir.Initialize())
@@ -532,7 +548,8 @@ bool GenerateNextVersion(const FilePath& original_installer_path,
   }
 
   // Increment the version in all files.
-  ApplyNextVersion(work_dir.directory());
+  ApplyAlternateVersion(work_dir.directory(), direction, original_version,
+                        new_version);
 
   // Pack up files into chrome.7z
   if (!CreateArchive(chrome_7z, work_dir.directory().Append(&kChromeBin[0]), 0))
