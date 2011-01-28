@@ -10,7 +10,7 @@ Import('env')
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
 ppapi_example_2d_nexe = env.ComponentProgram('ppapi_example_audio.nexe',
-    [ '$SOURCE_ROOT/ppapi/examples/audio/audio.cc' ],
+    [ 'audio.cc' ],
     EXTRA_LIBS=['ppruntime',
                 'ppapi_cpp',
                 'google_nacl_imc',
