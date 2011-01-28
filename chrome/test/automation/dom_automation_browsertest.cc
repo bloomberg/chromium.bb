@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,9 +33,9 @@ typedef DOMElementProxy::By By;
 
 #if defined(OS_WIN)
 // See http://crbug.com/61636
-#define MAYBE_FindByXPath DISABLED_FindByXPath
-#define MAYBE_FindBySelectors DISABLED_FindBySelectors
-#define MAYBE_FindByText DISABLED_FindByText
+#define MAYBE_FindByXPath FLAKY_FindByXPath
+#define MAYBE_FindBySelectors FLAKY_FindBySelectors
+#define MAYBE_FindByText FLAKY_FindByText
 #else
 #define MAYBE_FindByXPath FindByXPath
 #define MAYBE_FindBySelectors FindBySelectors
