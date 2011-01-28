@@ -110,6 +110,8 @@
       '-crash_reporter.CrashReporterTest.testRendererCrash',  # crbug.com/69464
       # crbug.com/70437
       '-omnibox.OmniboxTest.testHistoryResult',
+      # crbug.com/71158 
+      '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
     ],
 
     'linux': [  # linux != chromeos
