@@ -7,7 +7,8 @@
 ;
 ; MASM 8.0 inserts an additional leading underscore in front of names
 ; and this is an attempted fix until we understand why.
-IF @version LT 800
+; MASM 10.0 fixed this.
+IF @version LT 800 OR @version GE 1000
 _ExceptionBarrierHandler PROTO
 .SAFESEH _ExceptionBarrierHandler
 _ExceptionBarrierReportOnlyModuleHandler PROTO
