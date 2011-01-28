@@ -80,16 +80,18 @@ TEST_F(AppCacheUITest, FLAKY_AppCacheLayoutTests_PHP) {
       "non-html.xhtml",
       "offline-access.html",
       "online-whitelist.html",
+      "remove-cache.html",
       "resource-redirect.html",
       "resource-redirect-2.html",
       "update-cache.html",
   };
 
-  // These tests are racey due to status polling on timers.
-  // https://bugs.webkit.org/show_bug.cgi?id=49104
+  // This tests loads a data url which calls notifyDone, this just
+  // doesn't work with the layoutTestController in this test harness.
   // "fail-on-update.html",
+
+  // Flaky for reasons i don't yet see?
   // "fail-on-update2.html",
-  // "remove-cache.html",
 
   // TODO(michaeln): investigate these more closely
   // "crash-when-navigating-away-then-back.html",

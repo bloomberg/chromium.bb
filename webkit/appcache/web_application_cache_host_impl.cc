@@ -69,10 +69,7 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
     : client_(client),
       backend_(backend),
       ALLOW_THIS_IN_INITIALIZER_LIST(host_id_(g_hosts_map.Get().Add(this))),
-      has_status_(false),
       status_(UNCACHED),
-      has_cached_status_(false),
-      cached_status_(UNCACHED),
       is_scheme_supported_(false),
       is_get_method_(false),
       is_new_master_entry_(MAYBE) {
@@ -88,15 +85,12 @@ WebApplicationCacheHostImpl::~WebApplicationCacheHostImpl() {
 
 void WebApplicationCacheHostImpl::OnCacheSelected(
     const appcache::AppCacheInfo& info) {
-  status_ = info.status;
-  has_status_ = true;
   cache_info_ = info;
   client_->didChangeCacheAssociation();
 }
 
 void WebApplicationCacheHostImpl::OnStatusChanged(appcache::Status status) {
-  if (has_status_)
-    status_ = status;
+  // TODO(michaeln): delete me, not used
 }
 
 void WebApplicationCacheHostImpl::OnEventRaised(appcache::EventID event_id) {
@@ -110,10 +104,28 @@ void WebApplicationCacheHostImpl::OnEventRaised(appcache::EventID event_id) {
                                            kEventNames[event_id]);
   OnLogMessage(LOG_INFO, message);
 
-  // Most events change the status. Clear out what we know so that the latest
-  // status will be obtained from the backend.
-  has_status_ = false;
-  has_cached_status_ = false;
+  switch (event_id) {
+    case CHECKING_EVENT:
+      status_ = CHECKING;
+      break;
+    case DOWNLOADING_EVENT:
+      status_ = DOWNLOADING;
+      break;
+    case UPDATE_READY_EVENT:
+      status_ = UPDATE_READY;
+      break;
+    case CACHED_EVENT:
+    case NO_UPDATE_EVENT:
+      status_ = IDLE;
+      break;
+    case OBSOLETE_EVENT:
+      status_ = OBSOLETE;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
   client_->notifyEventListener(static_cast<EventID>(event_id));
 }
 
@@ -125,7 +137,7 @@ void WebApplicationCacheHostImpl::OnProgressEventRaised(
   std::string message = base::StringPrintf(kFormatString, num_complete,
                                            num_total, url.spec().c_str());
   OnLogMessage(LOG_INFO, message);
-
+  status_ = DOWNLOADING;
   client_->notifyProgressEventListener(url, num_total, num_complete);
 }
 
@@ -138,10 +150,7 @@ void WebApplicationCacheHostImpl::OnErrorEventRaised(
                                                 message.c_str());
   OnLogMessage(LOG_ERROR, full_message);
 
-  // Most events change the status. Clear out what we know so that the latest
-  // status will be obtained from the backend.
-  has_status_ = false;
-  has_cached_status_ = false;
+  status_ = cache_info_.is_complete ? IDLE : UNCACHED;
   client_->notifyEventListener(static_cast<EventID>(ERROR_EVENT));
 }
 
@@ -162,55 +171,16 @@ void WebApplicationCacheHostImpl::willStartSubResourceRequest(
 }
 
 void WebApplicationCacheHostImpl::selectCacheWithoutManifest() {
-  // Reset any previous status values we've received from the backend
-  // since we're now selecting a new cache.
-  has_status_ = false;
-  has_cached_status_ = false;
+  status_ = (document_response_.appCacheID() == kNoCacheId) ?
+      UNCACHED : CHECKING;
   is_new_master_entry_ = NO;
   backend_->SelectCache(host_id_, document_url_,
                         document_response_.appCacheID(),
                         GURL());
 }
 
-void WebApplicationCacheHostImpl::getAssociatedCacheInfo(
-    WebApplicationCacheHost::CacheInfo* info) {
-  if (!cache_info_.is_complete)
-    return;
-  info->manifestURL = cache_info_.manifest_url;
-  info->creationTime = cache_info_.creation_time.ToDoubleT();
-  info->updateTime = cache_info_.last_update_time.ToDoubleT();
-  info->totalSize = cache_info_.size;
-}
-
-void WebApplicationCacheHostImpl::getResourceList(
-    WebVector<ResourceInfo>* resources) {
-  if (!cache_info_.is_complete)
-    return;
-  std::vector<AppCacheResourceInfo> resource_infos;
-  backend_->GetResourceList(host_id_, &resource_infos);
-
-  WebVector<ResourceInfo> web_resources(resource_infos.size());
-  // Convert resource_infos to WebKit API.
-  for (size_t i = 0; i < resource_infos.size(); ++i) {
-    web_resources[i].size = resource_infos[i].size;
-    web_resources[i].isMaster = resource_infos[i].is_master;
-    web_resources[i].isExplicit = resource_infos[i].is_explicit;
-    web_resources[i].isManifest = resource_infos[i].is_manifest;
-    web_resources[i].isForeign = resource_infos[i].is_foreign;
-    web_resources[i].isFallback = resource_infos[i].is_fallback;
-    web_resources[i].url = resource_infos[i].url;
-  }
-
-  resources->swap(web_resources);
-}
-
 bool WebApplicationCacheHostImpl::selectCacheWithManifest(
     const WebURL& manifest_url) {
-  // Reset any previous status values we've received from the backend
-  // since we're now selecting a new cache.
-  has_status_ = false;
-  has_cached_status_ = false;
-
   GURL manifest_gurl(ClearUrlRef(manifest_url));
 
   // 6.9.6 The application cache selection algorithm
@@ -218,8 +188,10 @@ bool WebApplicationCacheHostImpl::selectCacheWithManifest(
   if (document_response_.appCacheID() == kNoCacheId) {
     if (is_scheme_supported_ && is_get_method_ &&
         (manifest_gurl.GetOrigin() == document_url_.GetOrigin())) {
+      status_ = CHECKING;
       is_new_master_entry_ = YES;
     } else {
+      status_ = UNCACHED;
       is_new_master_entry_ = NO;
       manifest_gurl = GURL();
     }
@@ -236,10 +208,11 @@ bool WebApplicationCacheHostImpl::selectCacheWithManifest(
   if (document_manifest_gurl != manifest_gurl) {
     backend_->MarkAsForeignEntry(host_id_, document_url_,
                                  document_response_.appCacheID());
-    has_cached_status_ = true;
-    cached_status_ = UNCACHED;
+    status_ = UNCACHED;
     return false;  // the navigation will be restarted
   }
+
+  status_ = CHECKING;
 
   // Its a 'master' entry thats already in the cache.
   backend_->SelectCache(host_id_, document_url_,
@@ -276,41 +249,54 @@ void WebApplicationCacheHostImpl::didFinishLoadingMainResource(bool success) {
 }
 
 WebApplicationCacheHost::Status WebApplicationCacheHostImpl::status() {
-  // We're careful about the status value to avoid race conditions.
-  //
-  // Generally the webappcachehost sends an async stream of messages to the
-  // backend, and receives an asyncronous stream of events from the backend.
-  // In the backend, all operations are serialized and as state changes
-  // 'events' are streamed out to relevant parties. In particular the
-  // 'SelectCache' message is async. Regular page loading and navigation
-  // involves two non-blocking ipc calls: RegisterHost + SelectCache.
-  //
-  // However, the page can call the scriptable API in advance of a cache
-  // selection being complete (and/or in advance of the webappcachehost having
-  // received the event about completion). In that case, we force an end-to-end
-  // fetch of the 'status' value, and cache that value seperately from the
-  // value we receive via the async event stream. We'll use that cached value
-  // until cache selection is complete.
-  if (has_status_)
-    return static_cast<WebApplicationCacheHost::Status>(status_);
-
-  if (!has_cached_status_) {
-    cached_status_ = backend_->GetStatus(host_id_);
-    has_cached_status_ = true;
-  }
-  return static_cast<WebApplicationCacheHost::Status>(cached_status_);
+  return static_cast<WebApplicationCacheHost::Status>(status_);
 }
 
 bool WebApplicationCacheHostImpl::startUpdate() {
-  return backend_->StartUpdate(host_id_);
+  if (!backend_->StartUpdate(host_id_))
+    return false;
+  if (status_ == IDLE || status_ == UPDATE_READY)
+    status_ = CHECKING;
+  else
+    status_ = backend_->GetStatus(host_id_);
+  return true;
 }
 
 bool WebApplicationCacheHostImpl::swapCache() {
-  // Cache status will change when cache is swapped. Clear out any saved idea
-  // of status so that backend will be queried for actual status.
-  has_status_ = false;
-  has_cached_status_ = false;
-  return backend_->SwapCache(host_id_);
+  if (!backend_->SwapCache(host_id_))
+    return false;
+  status_ = backend_->GetStatus(host_id_);
+  return true;
+}
+
+void WebApplicationCacheHostImpl::getAssociatedCacheInfo(
+    WebApplicationCacheHost::CacheInfo* info) {
+  if (!cache_info_.is_complete)
+    return;
+  info->manifestURL = cache_info_.manifest_url;
+  info->creationTime = cache_info_.creation_time.ToDoubleT();
+  info->updateTime = cache_info_.last_update_time.ToDoubleT();
+  info->totalSize = cache_info_.size;
+}
+
+void WebApplicationCacheHostImpl::getResourceList(
+    WebVector<ResourceInfo>* resources) {
+  if (!cache_info_.is_complete)
+    return;
+  std::vector<AppCacheResourceInfo> resource_infos;
+  backend_->GetResourceList(host_id_, &resource_infos);
+
+  WebVector<ResourceInfo> web_resources(resource_infos.size());
+  for (size_t i = 0; i < resource_infos.size(); ++i) {
+    web_resources[i].size = resource_infos[i].size;
+    web_resources[i].isMaster = resource_infos[i].is_master;
+    web_resources[i].isExplicit = resource_infos[i].is_explicit;
+    web_resources[i].isManifest = resource_infos[i].is_manifest;
+    web_resources[i].isForeign = resource_infos[i].is_foreign;
+    web_resources[i].isFallback = resource_infos[i].is_fallback;
+    web_resources[i].url = resource_infos[i].url;
+  }
+  resources->swap(web_resources);
 }
 
 }  // appcache namespace

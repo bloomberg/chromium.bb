@@ -67,10 +67,7 @@ class WebApplicationCacheHostImpl : public WebKit::WebApplicationCacheHost {
   WebKit::WebApplicationCacheHostClient* client_;
   AppCacheBackend* backend_;
   int host_id_;
-  bool has_status_;
   appcache::Status status_;
-  bool has_cached_status_;
-  appcache::Status cached_status_;
   WebKit::WebURLResponse document_response_;
   GURL document_url_;
   bool is_scheme_supported_;
