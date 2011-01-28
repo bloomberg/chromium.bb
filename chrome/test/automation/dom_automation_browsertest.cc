@@ -34,7 +34,7 @@ typedef DOMElementProxy::By By;
 #if defined(OS_WIN)
 // See http://crbug.com/61636
 #define MAYBE_FindByXPath DISABLED_FindByXPath
-#define MAYBE_FindBySelectors DISABLED_FindByXPath
+#define MAYBE_FindBySelectors DISABLED_FindBySelectors
 #define MAYBE_FindByText DISABLED_FindByText
 #else
 #define MAYBE_FindByXPath FindByXPath
@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, MAYBE_FindByXPath) {
   ASSERT_EQ(3, nested_count);
 }
 
-IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindBySelectors) {
+IN_PROC_BROWSER_TEST_F(DOMAutomationTest, MAYBE_FindBySelectors) {
   ASSERT_TRUE(test_server()->Start());
   ui_test_utils::NavigateToURL(browser(),
                                GetTestURL("find_elements/test.html"));
@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindBySelectors) {
   ASSERT_EQ(3, nested_count);
 }
 
-IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindByText) {
+IN_PROC_BROWSER_TEST_F(DOMAutomationTest, MAYBE_FindByText) {
   ASSERT_TRUE(test_server()->Start());
   ui_test_utils::NavigateToURL(browser(),
                                GetTestURL("find_elements/test.html"));
