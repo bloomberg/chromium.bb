@@ -19,5 +19,13 @@
 }
 
 .sync-error {
-  background-color: #FF9A9A;
+  background: #FFDBDB;
+  border: 1px solid #ce4c4c;
+  border-radius: 2px;
+  padding: 10px;
+}
+
+.sync-error .link-button {
+  margin: 0 1ex;
+  padding: 0;
 }

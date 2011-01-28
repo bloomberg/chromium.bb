@@ -255,12 +255,6 @@ void PersonalOptionsHandler::OnStateChanged() {
   visible.reset(Value::CreateBooleanValue(status_has_error));
   dom_ui_->CallJavascriptFunction(
     L"PersonalOptions.setSyncStatusErrorVisible", *visible);
-
-#if defined(OS_CHROMEOS)
-  visible.reset(Value::CreateBooleanValue(false));
-#endif  // defined(OS_CHROMEOS)
-  dom_ui_->CallJavascriptFunction(
-    L"PersonalOptions.setSyncActionLinkErrorVisible", *visible);
 }
 
 void PersonalOptionsHandler::OnLoginSuccess() {

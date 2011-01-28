@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,11 +96,6 @@ cr.define('options', function() {
         element.classList.add('hidden');
     },
 
-    setElementClassSyncError_: function(element, visible) {
-      visible ? element.classList.add('sync-error') :
-                element.classList.remove('sync-error');
-    },
-
     setSyncEnabled_: function(enabled) {
       this.syncEnabled = enabled;
     },
@@ -115,15 +110,12 @@ cr.define('options', function() {
     },
 
     setSyncStatus_: function(status) {
-      $('sync-status').textContent = status;
+      $('sync-status-text').textContent = status;
     },
 
     setSyncStatusErrorVisible_: function(visible) {
-      this.setElementClassSyncError_($('sync-status'), visible);
-    },
-
-    setSyncActionLinkErrorVisible_: function(visible) {
-      this.setElementClassSyncError_($('sync-action-link'), visible);
+      visible ? $('sync-status').classList.add('sync-error') :
+                $('sync-status').classList.remove('sync-error');
     },
 
     setSyncActionLinkEnabled_: function(enabled) {
@@ -190,7 +182,6 @@ cr.define('options', function() {
     'setAccountPicture',
     'setSyncStatus',
     'setSyncStatusErrorVisible',
-    'setSyncActionLinkErrorVisible',
     'setSyncActionLinkEnabled',
     'setSyncActionLinkLabel',
     'setStartStopButtonVisible',

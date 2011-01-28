@@ -13,6 +13,7 @@ a:active {
 
 #settings-title {
   -webkit-padding-end: 24px;
+  -webkit-user-select: none;
   color: #53637d;
   cursor: pointer;
   font-size: 200%;
@@ -21,6 +22,7 @@ a:active {
   padding-bottom: 14px;
   padding-top: 13px;
   text-align: end;
+  text-shadow: white 0 1px 2px;
 }
 
 #main-content {
@@ -39,11 +41,14 @@ a:active {
 .overlay {
   -webkit-box-align: center;
   -webkit-box-pack: center;
-  background: rgba(233, 238, 242, .5);
+  background: -webkit-radial-gradient(rgba(127, 127, 127, 0.5),
+                                      rgba(127, 127, 127, 0.5) 35%,
+                                      rgba(0, 0, 0, 0.7));
   bottom: 0;
   display: -webkit-box;
   left: 0;
   padding: 20px;
+  padding-bottom: 130px;
   position: fixed;
   right: 0;
   top: 0;
@@ -128,7 +133,7 @@ html[toolkit=views] .button-strip {
 }
 
 .overlay .page {
-  -webkit-box-shadow: 0px 0px 40px -5px #888;
+  -webkit-box-shadow: 0px 5px 80px #505050;
   background: white;
   border: 1px solid rgb(188, 193, 208);
   border-radius: 2px;
@@ -143,7 +148,7 @@ html[toolkit=views] .button-strip {
 
 #navbar-container {
   -webkit-border-end: 1px solid #c6c9ce;
-  background: -webkit-linear-gradient(rgba(234, 238, 243, 0), #eaeef3),
+  background: -webkit-linear-gradient(rgba(234, 238, 243, 0.2), #eaeef3),
               -webkit-linear-gradient(left, #eaeef3, #eaeef3 97%, #d3d7db);
   bottom: 0;
   display: none;
@@ -166,12 +171,13 @@ html[hide-menu=false] #navbar-container {
 }
 
 #navbar-container > ul {
+  -webkit-user-select: none;
   list-style-type: none;
   margin: 0;
   padding: 0;
 }
 
-.navbar-item, .navbar-item2 {
+.navbar-item {
   border-bottom: 1px solid transparent;
   border-top: 1px solid transparent;
   color: #426dc9;
@@ -181,14 +187,17 @@ html[hide-menu=false] #navbar-container {
   outline: none;
   padding: 7px 0;
   text-align: end;
+  text-shadow: white 0 1px 1px;
   -webkit-padding-end: 24px;
 }
 
 .navbar-item-selected {
-  background: -webkit-linear-gradient(left, #bbcee9, #bbcee9 97%, #96b1cd);
+  -webkit-box-shadow: 0px 1px 0px #f7f7f7;
+  background: -webkit-linear-gradient(left, #bbcee9, #bbcee9 97%, #aabedc);
   border-bottom: 1px solid #8faad9;
   border-top: 1px solid #8faad9;
   color: black;
+  text-shadow: #bbcee9 0 1px 1px;
 }
 
 #mainview {
@@ -292,6 +301,7 @@ html[hide-menu=true] #mainview {
 
 .page h1 {
   -webkit-padding-end: 24px;
+  -webkit-user-select: none;
   border-bottom: 1px solid #eeeeee;
   color: #53637d;
   font-size: 200%;
@@ -299,6 +309,7 @@ html[hide-menu=true] #mainview {
   margin: 0;
   padding-bottom: 4px;
   padding-top: 13px;
+  text-shadow: white 0 1px 2px;
 }
 
 .subpage-sheet .page h1 {

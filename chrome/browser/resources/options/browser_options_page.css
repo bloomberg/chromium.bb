@@ -51,7 +51,7 @@
 #defaultSearchEngine {
   display: block;
   -webkit-box-flex: 1;
-  max-width: 300px;
+  max-width: 200px;
 }
 
 #defaultSearchManageEnginesButton {
