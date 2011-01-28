@@ -13,7 +13,8 @@
 #include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/renderer_host/render_message_filter.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/common/chrome_switches.h"
@@ -253,8 +254,12 @@ void CVCBThreadHopping::GetViewWindow(
     scoped_refptr<RenderMessageFilter> filter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   gfx::PluginWindowHandle window = gfx::kNullPluginWindow;
-  RenderViewHost* host = RenderViewHost::FromID(renderer_id,
-                                                render_view_id);
+  RenderProcessHost* process = RenderProcessHost::FromID(renderer_id);
+  RenderWidgetHost* host = NULL;
+  if (process) {
+    host = static_cast<RenderWidgetHost*>(
+        process->GetListenerByID(render_view_id));
+  }
 #if defined(OS_LINUX)
   gfx::NativeViewId view = NULL;
   if (host)
