@@ -728,6 +728,19 @@
           </ph>.''',
         },
         {
+          'name': 'BlockThirdPartyCookies',
+          'type': 'main',
+          'supported_on': ['chrome.*:10-'],
+          'features': {'dynamic_refresh': 1},
+          'example_value': False,
+          'caption': '''Block third party cookies''',
+          'desc': '''Blocks third party cookies.
+
+          Enabling this setting prevents cookies from being set by web page elements that are not from the domain that is in the browser's address bar.
+
+          Disabling this setting allows cookies to be set by web page elements that are not from the domain that is in the browser's address bar and prevents users from changing this setting.''',
+        },
+        {
           'name': 'DefaultSearchProviderName',
           'type': 'string',
           'supported_on': ['chrome.*:8-'],

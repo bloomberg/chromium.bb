@@ -17,8 +17,8 @@
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider_win.h"
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
-#include "chrome/common/policy_constants.h"
 #include "chrome/common/pref_names.h"
+#include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
@@ -358,7 +358,7 @@ INSTANTIATE_TEST_CASE_P(
     ConfigurationPolicyProviderWinTest,
     testing::Values(
         PolicyTestParams::ForStringPolicy(
-            kPolicyHomePage,
+            kPolicyHomepageLocation,
             key::kHomepageLocation),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyHomepageIsNewTabPage,
@@ -367,8 +367,8 @@ INSTANTIATE_TEST_CASE_P(
             kPolicyRestoreOnStartup,
             key::kRestoreOnStartup),
         PolicyTestParams::ForListPolicy(
-            kPolicyURLsToRestoreOnStartup,
-            key::kURLsToRestoreOnStartup),
+            kPolicyRestoreOnStartupURLs,
+            key::kRestoreOnStartupURLs),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyDefaultSearchProviderEnabled,
             key::kDefaultSearchProviderEnabled),
@@ -436,14 +436,14 @@ INSTANTIATE_TEST_CASE_P(
             kPolicySyncDisabled,
             key::kSyncDisabled),
         PolicyTestParams::ForStringPolicy(
-            kPolicyApplicationLocale,
+            kPolicyApplicationLocaleValue,
             key::kApplicationLocaleValue),
         PolicyTestParams::ForListPolicy(
-            kPolicyExtensionInstallAllowList,
-            key::kExtensionInstallAllowList),
+            kPolicyExtensionInstallWhitelist,
+            key::kExtensionInstallWhitelist),
         PolicyTestParams::ForListPolicy(
-            kPolicyExtensionInstallDenyList,
-            key::kExtensionInstallDenyList),
+            kPolicyExtensionInstallBlacklist,
+            key::kExtensionInstallBlacklist),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyShowHomeButton,
             key::kShowHomeButton),

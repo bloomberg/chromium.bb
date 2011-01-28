@@ -7,72 +7,13 @@
 #pragma once
 
 #include "base/basictypes.h"
+// configuration_policy_type.h is generated. See policy_template.json for
+// policy definitions.
+#include "policy/configuration_policy_type.h"
 
 class Value;
 
 namespace policy {
-
-enum ConfigurationPolicyType {
-  kPolicyHomePage,
-  kPolicyHomepageIsNewTabPage,
-  kPolicyRestoreOnStartup,
-  kPolicyURLsToRestoreOnStartup,
-  kPolicyDefaultSearchProviderEnabled,
-  kPolicyDefaultSearchProviderName,
-  kPolicyDefaultSearchProviderKeyword,
-  kPolicyDefaultSearchProviderSearchURL,
-  kPolicyDefaultSearchProviderSuggestURL,
-  kPolicyDefaultSearchProviderIconURL,
-  kPolicyDefaultSearchProviderInstantURL,
-  kPolicyDefaultSearchProviderEncodings,
-  kPolicyDisableSpdy,
-  kPolicyProxyMode,
-  kPolicyProxyServerMode,
-  kPolicyProxyServer,
-  kPolicyProxyPacUrl,
-  kPolicyProxyBypassList,
-  kPolicyAlternateErrorPagesEnabled,
-  kPolicySearchSuggestEnabled,
-  kPolicyDnsPrefetchingEnabled,
-  kPolicySafeBrowsingEnabled,
-  kPolicyMetricsReportingEnabled,
-  kPolicyPasswordManagerEnabled,
-  kPolicyPasswordManagerAllowShowPasswords,
-  kPolicyAutoFillEnabled,
-  kPolicySyncDisabled,
-  kPolicyApplicationLocale,
-  kPolicyExtensionInstallAllowList,
-  kPolicyExtensionInstallDenyList,
-  kPolicyShowHomeButton,
-  kPolicyDisabledPlugins,
-  kPolicyPrintingEnabled,
-  kPolicyChromeFrameRendererSettings,
-  kPolicyRenderInChromeFrameList,
-  kPolicyRenderInHostList,
-  kPolicyJavascriptEnabled,
-  kPolicyIncognitoEnabled,
-  kPolicySavingBrowserHistoryDisabled,
-  kPolicyDeveloperToolsDisabled,
-  kPolicyBlockThirdPartyCookies,
-  kPolicyDefaultCookiesSetting,
-  kPolicyDefaultImagesSetting,
-  kPolicyDefaultJavaScriptSetting,
-  kPolicyDefaultPluginsSetting,
-  kPolicyDefaultPopupsSetting,
-  kPolicyDefaultNotificationSetting,
-  kPolicyDefaultGeolocationSetting,
-  kPolicyExtensionInstallForceList,
-  kPolicyChromeOsLockOnIdleSuspend,
-  kPolicyAuthSchemes,
-  kPolicyDisableAuthNegotiateCnameLookup,
-  kPolicyEnableAuthNegotiatePort,
-  kPolicyAuthServerWhitelist,
-  kPolicyAuthNegotiateDelegateWhitelist,
-  kPolicyGSSAPILibraryName,
-  kPolicyDisable3DAPIs,
-  kPolicyPolicyRefreshRate,
-};
-
 
 // Constants for the "Proxy Server Mode" defined in the policies.
 // Note that these diverge from internal presentation defined in

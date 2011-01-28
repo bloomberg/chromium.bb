@@ -26,8 +26,6 @@
           'common/json_value_serializer.h',
           'common/net/gaia/gaia_constants.cc',
           'common/net/gaia/gaia_constants.h',
-          'common/policy_constants.cc',
-          'common/policy_constants.h',
           'common/pref_names.cc',
           'common/pref_names.h',
         ],
