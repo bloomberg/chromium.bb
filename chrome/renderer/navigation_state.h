@@ -27,18 +27,20 @@ class UserScriptIdleScheduler;
 // WebDataSource (see RenderView::DidCreateDataSource).
 class NavigationState : public WebKit::WebDataSource::ExtraData {
  public:
+  // The exact values of this enum are used in histograms, so new values must be
+  // added to the end.
   enum LoadType {
     UNDEFINED_LOAD,            // Not yet initialized.
     RELOAD,                    // User pressed reload.
     HISTORY_LOAD,              // Back or forward.
     NORMAL_LOAD,               // User entered URL, or omnibox search.
-    PRERENDER_LOAD,            // Navigation started as the speculatively
-                               // prendering of a linked page.
     LINK_LOAD,                 // (deprecated) Included next 4 categories.
     LINK_LOAD_NORMAL,          // Commonly following of link.
     LINK_LOAD_RELOAD,          // JS/link directed reload.
     LINK_LOAD_CACHE_STALE_OK,  // back/forward or encoding change.
     LINK_LOAD_CACHE_ONLY,      // Allow stale data (avoid doing a re-post)
+    PRERENDER_LOAD,            // Navigation started as the speculative
+                               // prendering of a linked page.
     kLoadTypeMax               // Bounding value for this enum.
   };
 
