@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,9 +73,6 @@ FilePath GetVersionedFileName(const std::string& input_language,
   // with additional words found by the translation team.
   static const char kDefaultVersionString[] = "-1-2";
 
-  // The following dictionaries have either not been augmented with additional
-  // words (version 1-1) or have new words, as well as an upgraded dictionary
-  // as of Feb 2009 (version 1-3).
   static const struct {
     // The language input.
     const char* language;
@@ -83,9 +80,7 @@ FilePath GetVersionedFileName(const std::string& input_language,
     // The corresponding version.
     const char* version;
   } special_version_string[] = {
-    {"en-AU", "-1-1"},
-    {"en-GB", "-1-1"},
-    {"es-ES", "-1-1"},
+    {"es-ES", "-1-1"}, // 1-1: Have not been augmented with addtional words.
     {"nl-NL", "-1-1"},
     {"sv-SE", "-1-1"},
     {"he-IL", "-1-1"},
@@ -93,14 +88,15 @@ FilePath GetVersionedFileName(const std::string& input_language,
     {"hi-IN", "-1-1"},
     {"tr-TR", "-1-1"},
     {"et-EE", "-1-1"},
-    {"fr-FR", "-2-0"}, // Hunspell fr(modern) 3.7 + Chromium delta.
-    {"lt-LT", "-1-3"},
+    {"lt-LT", "-1-3"}, // 1-3 (Feb 2009): new words, as well as an upgraded
+                       // dictionary.
     {"pl-PL", "-1-3"},
+    {"fr-FR", "-2-0"}, // 2-0 (2010): upgraded dictionaries.
     {"hu-HU", "-2-0"},
     {"ro-RO", "-2-0"},
     {"ru-RU", "-2-0"},
     {"bg-BG", "-2-0"},
-    {"sr", "-2-0"},
+    {"sr",    "-2-0"},
     {"uk-UA", "-2-0"},
   };
 
