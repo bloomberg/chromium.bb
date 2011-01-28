@@ -873,6 +873,10 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
 
     // Delete the inline autocomplete part.
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_DELETE, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+    ASSERT_TRUE(popup_model->IsOpen());
+    ASSERT_GE(popup_model->result().size(), 3U);
+
     string16 user_text = edit_view->GetText();
     ASSERT_EQ(ASCIIToUTF16("bar"), user_text);
     edit_view->SelectAll(true);
