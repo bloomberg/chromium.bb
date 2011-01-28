@@ -185,6 +185,7 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       delete_at_end_pressed_(false),
       handling_key_press_(false),
       content_maybe_changed_by_key_press_(false),
+      update_popup_without_focus_(false),
 #if GTK_CHECK_VERSION(2, 20, 0)
       preedit_size_before_change_(0),
 #endif
@@ -595,7 +596,7 @@ void AutocompleteEditViewGtk::RevertAll() {
 
 void AutocompleteEditViewGtk::UpdatePopup() {
   model_->SetInputInProgress(true);
-  if (!model_->has_focus())
+  if (!update_popup_without_focus_ && !model_->has_focus())
     return;
 
   // Don't inline autocomplete when the caret/selection isn't at the end of
@@ -1281,6 +1282,8 @@ gboolean AutocompleteEditViewGtk::HandleViewButtonRelease(
 
 gboolean AutocompleteEditViewGtk::HandleViewFocusIn(GtkWidget* sender,
                                                     GdkEventFocus* event) {
+  update_popup_without_focus_ = false;
+
   GdkModifierType modifiers;
   gdk_window_get_pointer(text_view_->window, NULL, NULL, &modifiers);
   model_->OnSetFocus((modifiers & GDK_CONTROL_MASK) != 0);
@@ -1394,6 +1397,15 @@ void AutocompleteEditViewGtk::HandleViewSizeRequest(GtkWidget* sender,
   req->width = 1;
 }
 
+void AutocompleteEditViewGtk::HandlePopupMenuDeactivate(GtkWidget* sender) {
+  // When the context menu appears, |text_view_|'s focus is lost. After an item
+  // is activated, the focus comes back to |text_view_|, but only after the
+  // check in UpdatePopup(). We set this flag to make UpdatePopup() aware that
+  // it will be receiving focus again.
+  if (!model_->has_focus())
+    update_popup_without_focus_ = true;
+}
+
 void AutocompleteEditViewGtk::HandlePopulatePopup(GtkWidget* sender,
                                                   GtkMenu* menu) {
   GtkWidget* separator = gtk_separator_menu_item_new();
@@ -1431,6 +1443,9 @@ void AutocompleteEditViewGtk::HandlePopulatePopup(GtkWidget* sender,
   gtk_widget_set_sensitive(paste_go_menuitem,
                            model_->CanPasteAndGo(text_wstr));
   gtk_widget_show(paste_go_menuitem);
+
+  g_signal_connect(menu, "deactivate",
+                   G_CALLBACK(HandlePopupMenuDeactivateThunk), this);
 }
 
 void AutocompleteEditViewGtk::HandleEditSearchEngines(GtkWidget* sender) {

@@ -259,6 +259,10 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   CHROMEG_CALLBACK_1(AutocompleteEditViewGtk, void, HandleWindowSetFocus,
                      GtkWindow*, GtkWidget*);
 
+  // Callback function called after context menu is closed.
+  CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void,
+                       HandlePopupMenuDeactivate);
+
   // Callback for the PRIMARY selection clipboard.
   static void ClipboardGetSelectionThunk(GtkClipboard* clipboard,
                                          GtkSelectionData* selection_data,
@@ -511,6 +515,11 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // Changes caused by function calls like SetUserText() should not affect this
   // flag.
   bool content_maybe_changed_by_key_press_;
+
+  // Set this flag to call UpdatePopup() in lost focus and need to update.
+  // Because context menu might take the focus, before setting the flag, check
+  // the focus with model_->has_focus().
+  bool update_popup_without_focus_;
 
 #if GTK_CHECK_VERSION(2, 20, 0)
   // Stores the text being composed by the input method.
