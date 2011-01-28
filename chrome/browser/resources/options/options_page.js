@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -513,8 +513,11 @@ cr.define('options', function() {
     updateManagedBannerVisibility: function() {
       if (this.managed) {
         $('managed-prefs-banner').classList.remove('hidden');
+        var height = window.getComputedStyle($('managed-prefs-banner')).height;
+        $('subpage-backdrop').style.top = height;
       } else {
         $('managed-prefs-banner').classList.add('hidden');
+        $('subpage-backdrop').style.top = '0';
       }
     },
 
@@ -543,6 +546,8 @@ cr.define('options', function() {
           if (nestingLevel > 0) {
             var containerId = 'subpage-sheet-container-' + nestingLevel;
             $(containerId).classList.remove('hidden');
+            if (nestingLevel == 1)
+              $('subpage-backdrop').classList.remove('hidden');
           }
 
           // The managed prefs banner is global, so after any visibility change
@@ -566,6 +571,8 @@ cr.define('options', function() {
           if (nestingLevel > 0) {
             var containerId = 'subpage-sheet-container-' + nestingLevel;
             $(containerId).classList.add('hidden');
+            if (nestingLevel == 1)
+              $('subpage-backdrop').classList.add('hidden');
           }
 
           OptionsPage.updateManagedBannerVisibility();

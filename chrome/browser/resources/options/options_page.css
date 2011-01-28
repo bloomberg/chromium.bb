@@ -216,6 +216,16 @@ html[hide-menu=true] #mainview {
   position: relative;
 }
 
+#subpage-backdrop {
+  background-color: rgba(233, 238, 242, .5);
+  height: 100%;
+  left: 267px;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 3;
+}
+
 .subpage-sheet-container {
   -webkit-margin-start: 60px;
   box-sizing: border-box;
@@ -237,6 +247,7 @@ html[hide-menu=true] #mainview {
 
 #subpage-sheet-container-2 {
   -webkit-padding-start: 60px;
+  background-color: rgba(233, 238, 242, .5);
   z-index: 10;
 }
 
