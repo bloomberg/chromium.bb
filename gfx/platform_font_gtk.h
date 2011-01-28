@@ -27,9 +27,6 @@ class PlatformFontGtk : public PlatformFont {
   // pango_font_description_free().
   static PangoFontDescription* PangoFontFromGfxFont(const gfx::Font& gfx_font);
 
-  // Return the scale factor for fonts that account for DPI.
-  static float GetPangoScaleFactor();
-
   // Position as an offset from the height of the drawn text, used to draw
   // an underline. This is a negative number, so the underline would be
   // drawn at y + height + underline_position;
@@ -87,19 +84,19 @@ class PlatformFontGtk : public PlatformFont {
   // Additional information about the face
   // Skia actually expects a family name and not a font name.
   string16 font_family_;
-  int font_size_;
+  int font_size_pixels_;
   int style_;
 
   // Cached metrics, generated at construction
-  int height_;
-  int ascent_;
+  int height_pixels_;
+  int ascent_pixels_;
 
   // The pango metrics are much more expensive so we wait until we need them
   // to compute them.
   bool pango_metrics_inited_;
-  double average_width_;
-  double underline_position_;
-  double underline_thickness_;
+  double average_width_pixels_;
+  double underline_position_pixels_;
+  double underline_thickness_pixels_;
 
   // The default font, used for the default constructor.
   static Font* default_font_;
@@ -108,4 +105,3 @@ class PlatformFontGtk : public PlatformFont {
 }  // namespace gfx
 
 #endif  // GFX_PLATFORM_FONT_GTK_
-

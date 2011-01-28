@@ -253,9 +253,9 @@ void BackgroundView::Paint(gfx::Canvas* canvas) {
 
 void BackgroundView::Layout() {
   const int kCornerPadding = 5;
-  const int kInfoLeftPadding = 15;
-  const int kInfoBottomPadding = 15;
-  const int kInfoBetweenLinesPadding = 4;
+  const int kInfoLeftPadding = 10;
+  const int kInfoBottomPadding = 10;
+  const int kInfoBetweenLinesPadding = 1;
   const int kProgressBarBottomPadding = 20;
   const int kProgressBarWidth = 750;
   const int kProgressBarHeight = 70;
@@ -268,7 +268,7 @@ void BackgroundView::Layout() {
   gfx::Size version_size = os_version_label_->GetPreferredSize();
   int os_version_y = height() - version_size.height() - kInfoBottomPadding;
   if (!is_official_build_)
-    os_version_y -= version_size.height() - kInfoBetweenLinesPadding;
+    os_version_y -= (version_size.height() + kInfoBetweenLinesPadding);
   os_version_label_->SetBounds(
       kInfoLeftPadding,
       os_version_y,

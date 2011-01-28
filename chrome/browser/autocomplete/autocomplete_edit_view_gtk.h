@@ -89,9 +89,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // LocationBarView::Layout as to why this uses -1.
   int WidthOfTextAfterCursor();
 
-  // Returns the font.
-  gfx::Font GetFont();
-
   // Implement the AutocompleteEditView interface.
   virtual AutocompleteEditModel* model();
   virtual const AutocompleteEditModel* model() const;
@@ -272,6 +269,9 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                              guint info);
 
   void HandleCopyOrCutClipboard(bool copy);
+
+  // Returns the font used in |text_view_|.
+  gfx::Font GetFont();
 
   // Take control of the PRIMARY selection clipboard with |text|. Use
   // |text_buffer_| as the owner, so that this doesn't remove the selection on

@@ -10,12 +10,9 @@ namespace browser_defaults {
 
 // Make the regular omnibox text two points larger than the nine-point font
 // used in the tab strip (11pt / 72pt/in * 96px/in = 14.667px).
-const double kAutocompleteEditFontPixelSize = 14.7;
-const double kAutocompleteEditFontPixelSizeInPopup = 10.0;
+const int kAutocompleteEditFontPixelSize = 15;
 
-// This is only used by AutocompletePopupViewGtk which is unused
-// unless TOOLKIT_VIEWS is undefined:
-const int kAutocompletePopupFontSize = 7;
+const int kAutocompleteEditFontPixelSizeInPopup = 10;
 
 const SessionStartupPref::Type kDefaultSessionStartupType =
     SessionStartupPref::LAST;
@@ -36,14 +33,12 @@ const bool kShowCancelButtonInTaskManager = true;
 #elif defined(TOOLKIT_USES_GTK)
 
 // 13.4px = 10pt @ 96dpi.
-const double kAutocompleteEditFontPixelSize = 13.4;
+const int kAutocompleteEditFontPixelSize = 13;
 
-// On Windows, popup windows' autocomplete box have a font 5/6 the size of a
-// regular window, which we duplicate here for GTK.
-const double kAutocompleteEditFontPixelSizeInPopup =
+// On Windows, popup windows' location text uses a font 5/6 the size of
+// that in a regular window, which we duplicate here for GTK.
+const int kAutocompleteEditFontPixelSizeInPopup =
     kAutocompleteEditFontPixelSize * 5.0 / 6.0;
-
-const int kAutocompletePopupFontSize = 10;
 
 #if defined(TOOLKIT_VIEWS)
 const bool kCanToggleSystemTitleBar = false;

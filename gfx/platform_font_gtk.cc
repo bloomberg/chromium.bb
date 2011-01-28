@@ -27,6 +27,27 @@ namespace {
 // IsFallbackFontAllowed function in skia/ext/SkFontHost_fontconfig_direct.cpp.
 const char* kFallbackFontFamilyName = "sans";
 
+// Returns the number of pixels in a point.
+// - multiply a point size by this to get pixels ("device units")
+// - divide a pixel size by this to get points
+float GetPixelsInPoint() {
+  static float pixels_in_point = 1.0;
+  static bool determined_value = false;
+
+  if (!determined_value) {
+    // http://goo.gl/UIh5m: "This is a scale factor between points specified in
+    // a PangoFontDescription and Cairo units.  The default value is 96, meaning
+    // that a 10 point font will be 13 units high. (10 * 96. / 72. = 13.3)."
+    double pango_dpi = gfx::GetPangoResolution();
+    if (pango_dpi <= 0)
+      pango_dpi = 96.0;
+    pixels_in_point = pango_dpi / 72.0;  // 72 points in an inch
+    determined_value = true;
+  }
+
+  return pixels_in_point;
+}
+
 // Retrieves the pango metrics for a pango font description. Caches the metrics
 // and never frees them. The metrics objects are relatively small and
 // very expensive to look up.
@@ -127,14 +148,18 @@ PlatformFontGtk::PlatformFontGtk(const Font& other) {
 }
 
 PlatformFontGtk::PlatformFontGtk(NativeFont native_font) {
-  gint size = pango_font_description_get_size(native_font);
   const char* family_name = pango_font_description_get_family(native_font);
 
+  gint size_in_pixels = 0;
   if (pango_font_description_get_size_is_absolute(native_font)) {
-    // font_size_ is treated as scaled (see comment in GetPangoScaleFactor). If
-    // we get here the font size is absolute though, and we need to invert the
-    // scale so that when scaled in the rest of this class everything lines up.
-    size /= GetPangoScaleFactor();
+    // If the size is absolute, then it's in Pango units rather than points.
+    // There are PANGO_SCALE Pango units in a device unit (pixel).
+    size_in_pixels = pango_font_description_get_size(native_font) / PANGO_SCALE;
+  } else {
+    // Otherwise, we need to convert from points.
+    size_in_pixels =
+        pango_font_description_get_size(native_font) * GetPixelsInPoint() /
+        PANGO_SCALE;
   }
 
   // Find best match font for |family_name| to make sure we can get
@@ -142,7 +167,7 @@ PlatformFontGtk::PlatformFontGtk(NativeFont native_font) {
   // TODO(agl): remove this.
   string16 font_family = FindBestMatchFontFamilyName(family_name);
 
-  InitWithNameAndSize(font_family, size / PANGO_SCALE);
+  InitWithNameAndSize(font_family, size_in_pixels);
   int style = 0;
   if (pango_font_description_get_weight(native_font) == PANGO_WEIGHT_BOLD) {
     // TODO(davemoore) What should we do about other weights? We currently
@@ -164,12 +189,12 @@ PlatformFontGtk::PlatformFontGtk(const string16& font_name,
 
 double PlatformFontGtk::underline_position() const {
   const_cast<PlatformFontGtk*>(this)->InitPangoMetrics();
-  return underline_position_;
+  return underline_position_pixels_;
 }
 
 double PlatformFontGtk::underline_thickness() const {
   const_cast<PlatformFontGtk*>(this)->InitPangoMetrics();
-  return underline_thickness_;
+  return underline_thickness_pixels_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -178,13 +203,13 @@ double PlatformFontGtk::underline_thickness() const {
 Font PlatformFontGtk::DeriveFont(int size_delta, int style) const {
   // If the delta is negative, if must not push the size below 1
   if (size_delta < 0)
-    DCHECK_LT(-size_delta, font_size_);
+    DCHECK_LT(-size_delta, font_size_pixels_);
 
   if (style == style_) {
     // Fast path, we just use the same typeface at a different size
     return Font(new PlatformFontGtk(typeface_,
                                     font_family_,
-                                    font_size_ + size_delta,
+                                    font_size_pixels_ + size_delta,
                                     style_));
   }
 
@@ -202,20 +227,20 @@ Font PlatformFontGtk::DeriveFont(int size_delta, int style) const {
 
   return Font(new PlatformFontGtk(typeface,
                                   font_family_,
-                                  font_size_ + size_delta,
+                                  font_size_pixels_ + size_delta,
                                   style));
 }
 
 int PlatformFontGtk::GetHeight() const {
-  return height_;
+  return height_pixels_;
 }
 
 int PlatformFontGtk::GetBaseline() const {
-  return ascent_;
+  return ascent_pixels_;
 }
 
 int PlatformFontGtk::GetAverageCharacterWidth() const {
-  return SkScalarRound(average_width_);
+  return SkScalarRound(average_width_pixels_);
 }
 
 int PlatformFontGtk::GetStringWidth(const string16& text) const {
@@ -239,15 +264,18 @@ string16 PlatformFontGtk::GetFontName() const {
 }
 
 int PlatformFontGtk::GetFontSize() const {
-  return font_size_;
+  return font_size_pixels_;
 }
 
 NativeFont PlatformFontGtk::GetNativeFont() const {
   PangoFontDescription* pfd = pango_font_description_new();
   pango_font_description_set_family(pfd, UTF16ToUTF8(GetFontName()).c_str());
   // Set the absolute size to avoid overflowing UI elements.
-  pango_font_description_set_absolute_size(pfd,
-      GetFontSize() * PANGO_SCALE * GetPangoScaleFactor());
+  // pango_font_description_set_absolute_size() takes a size in Pango units.
+  // There are PANGO_SCALE Pango units in one device unit.  Screen output
+  // devices use pixels as their device units.
+  pango_font_description_set_absolute_size(
+      pfd, font_size_pixels_ * PANGO_SCALE);
 
   switch (GetStyle()) {
     case gfx::Font::NORMAL:
@@ -314,20 +342,20 @@ void PlatformFontGtk::InitWithTypefaceNameSizeAndStyle(
   typeface_ = typeface;
   typeface_->ref();
   font_family_ = font_family;
-  font_size_ = font_size;
+  font_size_pixels_ = font_size;
   style_ = style;
   pango_metrics_inited_ = false;
-  average_width_ = 0.0f;
-  underline_position_ = 0.0f;
-  underline_thickness_ = 0.0f;
+  average_width_pixels_ = 0.0f;
+  underline_position_pixels_ = 0.0f;
+  underline_thickness_pixels_ = 0.0f;
 
   SkPaint paint;
   SkPaint::FontMetrics metrics;
   PaintSetup(&paint);
   paint.getFontMetrics(&metrics);
 
-  ascent_ = SkScalarCeil(-metrics.fAscent);
-  height_ = ascent_ + SkScalarCeil(metrics.fDescent);
+  ascent_pixels_ = SkScalarCeil(-metrics.fAscent);
+  height_pixels_ = ascent_pixels_ + SkScalarCeil(metrics.fDescent);
 }
 
 void PlatformFontGtk::InitFromPlatformFont(const PlatformFontGtk* other) {
@@ -335,21 +363,20 @@ void PlatformFontGtk::InitFromPlatformFont(const PlatformFontGtk* other) {
   typeface_ = other->typeface_;
   typeface_->ref();
   font_family_ = other->font_family_;
-  font_size_ = other->font_size_;
+  font_size_pixels_ = other->font_size_pixels_;
   style_ = other->style_;
-  height_ = other->height_;
-  ascent_ = other->ascent_;
+  height_pixels_ = other->height_pixels_;
+  ascent_pixels_ = other->ascent_pixels_;
   pango_metrics_inited_ = other->pango_metrics_inited_;
-  average_width_ = other->average_width_;
-  underline_position_ = other->underline_position_;
-  underline_thickness_ = other->underline_thickness_;
+  average_width_pixels_ = other->average_width_pixels_;
+  underline_position_pixels_ = other->underline_position_pixels_;
+  underline_thickness_pixels_ = other->underline_thickness_pixels_;
 }
 
 void PlatformFontGtk::PaintSetup(SkPaint* paint) const {
   paint->setAntiAlias(false);
   paint->setSubpixelText(false);
-  paint->setTextSize(
-      SkFloatToScalar(font_size_ * GetPangoScaleFactor()));
+  paint->setTextSize(font_size_pixels_);
   paint->setTypeface(typeface_);
   paint->setFakeBoldText((gfx::Font::BOLD & style_) && !typeface_->isBold());
   paint->setTextSkewX((gfx::Font::ITALIC & style_) && !typeface_->isItalic() ?
@@ -362,57 +389,38 @@ void PlatformFontGtk::InitPangoMetrics() {
     PangoFontDescription* pango_desc = GetNativeFont();
     PangoFontMetrics* pango_metrics = GetPangoFontMetrics(pango_desc);
 
-    underline_position_ =
-        pango_font_metrics_get_underline_position(pango_metrics);
-    underline_position_ /= PANGO_SCALE;
+    underline_position_pixels_ =
+        pango_font_metrics_get_underline_position(pango_metrics) /
+        PANGO_SCALE;
 
-    // todo(davemoore) Come up with a better solution.
+    // TODO(davemoore): Come up with a better solution.
     // This is a hack, but without doing this the underlines
     // we get end up fuzzy. So we align to the midpoint of a pixel.
-    underline_position_ /= 2;
+    underline_position_pixels_ /= 2;
 
-    underline_thickness_ =
-        pango_font_metrics_get_underline_thickness(pango_metrics);
-    underline_thickness_ /= PANGO_SCALE;
+    underline_thickness_pixels_ =
+        pango_font_metrics_get_underline_thickness(pango_metrics) /
+        PANGO_SCALE;
 
-    // First get the pango based width
-    double pango_width =
-        pango_font_metrics_get_approximate_char_width(pango_metrics);
-    pango_width /= PANGO_SCALE;
+    // First get the Pango-based width (converting from Pango units to pixels).
+    double pango_width_pixels =
+        pango_font_metrics_get_approximate_char_width(pango_metrics) /
+        PANGO_SCALE;
 
     // Yes, this is how Microsoft recommends calculating the dialog unit
     // conversions.
-    int text_width = GetStringWidth(
+    int text_width_pixels = GetStringWidth(
         ASCIIToUTF16("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
-    double dialog_units = (text_width / 26 + 1) / 2;
-    average_width_ = std::min(pango_width, dialog_units);
+    double dialog_units_pixels = (text_width_pixels / 26 + 1) / 2;
+    average_width_pixels_ = std::min(pango_width_pixels, dialog_units_pixels);
     pango_font_description_free(pango_desc);
   }
 }
 
 
-float PlatformFontGtk::GetPangoScaleFactor() {
-  // Pango scales font sizes. This returns the scale factor. See
-  // pango_cairo_context_set_resolution for details.
-  // NOTE: this isn't entirely accurate, in that Pango also consults the
-  // FC_PIXEL_SIZE first (see get_font_size in pangocairo-fcfont), but this
-  // seems to give us the same sizes as used by Pango for all our fonts in both
-  // English and Thai.
-  static float scale_factor = gfx::GetPangoResolution();
-  static bool determined_scale = false;
-  if (!determined_scale) {
-    if (scale_factor <= 0)
-      scale_factor = 1;
-    else
-      scale_factor /= 72.0;
-    determined_scale = true;
-  }
-  return scale_factor;
-}
-
 double PlatformFontGtk::GetAverageWidth() const {
   const_cast<PlatformFontGtk*>(this)->InitPangoMetrics();
-  return average_width_;
+  return average_width_pixels_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

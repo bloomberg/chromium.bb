@@ -76,6 +76,10 @@ const float kContentWidthPercentage = 0.7;
 // How much to offset the popup from the bottom of the location bar.
 const int kVerticalOffset = 3;
 
+// The size delta between the font used for the edit and the result rows. Passed
+// to gfx::Font::DeriveFont.
+const int kEditFontAdjust = -1;
+
 // UTF-8 Left-to-right embedding.
 const char* kLRE = "\xe2\x80\xaa";
 
@@ -256,6 +260,7 @@ void AutocompletePopupViewGtk::SetupLayoutForMatch(
 }
 
 AutocompletePopupViewGtk::AutocompletePopupViewGtk(
+    const gfx::Font& font,
     AutocompleteEditView* edit_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
@@ -266,6 +271,7 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
       window_(gtk_window_new(GTK_WINDOW_POPUP)),
       layout_(NULL),
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
+      font_(font.DeriveFont(kEditFontAdjust)),
       ignore_mouse_drag_(false),
       opened_(false) {
   GTK_WIDGET_UNSET_FLAGS(window_, GTK_CAN_FOCUS);
@@ -284,15 +290,6 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
   pango_layout_set_auto_dir(layout_, FALSE);
   // We always ellipsize when drawing our text runs.
   pango_layout_set_ellipsize(layout_, PANGO_ELLIPSIZE_END);
-  // TODO(deanm): We might want to eventually follow what Windows does and
-  // plumb a gfx::Font through.  This is because popup windows have a
-  // different font size, although we could just derive that font here.
-  // For now, force the font size.
-  gfx::Font font(gfx::Font().GetFontName(),
-                 browser_defaults::kAutocompletePopupFontSize);
-  PangoFontDescription* pfd = font.GetNativeFont();
-  pango_layout_set_font_description(layout_, pfd);
-  pango_font_description_free(pfd);
 
   gtk_widget_add_events(window_, GDK_BUTTON_MOTION_MASK |
                                  GDK_POINTER_MOTION_MASK |
@@ -395,6 +392,8 @@ void AutocompletePopupViewGtk::Observe(NotificationType type,
   DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
 
   if (theme_provider_->UseGtkTheme()) {
+    gtk_util::UndoForceFontSize(window_);
+
     border_color_ = theme_provider_->GetBorderColor();
 
     gtk_util::GetTextColors(
@@ -407,6 +406,8 @@ void AutocompletePopupViewGtk::Observe(NotificationType type,
     url_selected_text_color_ = SelectedURLColor(selected_content_text_color_,
                                                 selected_background_color_);
   } else {
+    gtk_util::ForceFontSizePixels(window_, font_.GetFontSize());
+
     border_color_ = kBorderColor;
     background_color_ = kBackgroundColor;
     selected_background_color_ = kSelectedBackgroundColor;

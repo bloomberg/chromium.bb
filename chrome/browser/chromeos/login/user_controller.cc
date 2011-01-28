@@ -410,7 +410,8 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
                                              WmIpcWindowType type) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Font& font = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
-      rb.GetFont(ResourceBundle::MediumBoldFont) :
+      rb.GetFont(ResourceBundle::MediumBoldFont).DeriveFont(
+          kSelectedUsernameFontDelta) :
       rb.GetFont(ResourceBundle::BaseFont).DeriveFont(
           kUnselectedUsernameFontDelta, gfx::Font::BOLD);
   std::wstring text;

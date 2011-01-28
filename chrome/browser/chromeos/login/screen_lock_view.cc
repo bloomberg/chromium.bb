@@ -117,7 +117,8 @@ void ScreenLockView::Init() {
   std::wstring text = UTF8ToWide(user.GetDisplayName());
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const gfx::Font& font = rb.GetFont(ResourceBundle::MediumBoldFont);
+  const gfx::Font& font = rb.GetFont(ResourceBundle::MediumBoldFont).DeriveFont(
+      kSelectedUsernameFontDelta);
 
   // Layouts image, textfield and button components.
   GridLayout* layout = new GridLayout(main_);

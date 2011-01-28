@@ -122,8 +122,8 @@ const int kIconVerticalPadding = 2;
 const int kTextVerticalPadding = 3;
 // The size delta between the font used for the edit and the result rows. Passed
 // to gfx::Font::DeriveFont.
-#if defined(OS_CHROMEOS) && !defined(CROS_FONTS_USING_BCI)
-// Don't adjust font on chromeos as it becomes too small.
+#if defined(OS_CHROMEOS)
+// Don't adjust the size on Chrome OS (http://crbug.com/61433).
 const int kEditFontAdjust = 0;
 #else
 const int kEditFontAdjust = -1;

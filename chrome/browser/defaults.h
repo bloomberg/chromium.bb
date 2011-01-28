@@ -15,14 +15,11 @@ namespace browser_defaults {
 
 #if defined(USE_X11)
 
-// Size of the font in pixels used in the autocomplete box for normal windows.
-extern const double kAutocompleteEditFontPixelSize;
+// Size of the font used in the autocomplete box for normal windows, in pixels.
+extern const int kAutocompleteEditFontPixelSize;
 
-// Size of the font in pixels used in the autocomplete box for popup windows.
-extern const double kAutocompleteEditFontPixelSizeInPopup;
-
-// Size of the font used in the autocomplete popup.
-extern const int kAutocompletePopupFontSize;
+// Size of the font used in the autocomplete box for popup windows, in pixels.
+extern const int kAutocompleteEditFontPixelSizeInPopup;
 
 // Can the user toggle the system title bar?
 extern const bool kCanToggleSystemTitleBar;

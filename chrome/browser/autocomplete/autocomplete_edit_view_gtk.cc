@@ -36,6 +36,7 @@
 #include "third_party/undoview/undo_view.h"
 #include "ui/base/animation/multi_animation.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/autocomplete/autocomplete_edit_view_views.h"
@@ -161,13 +162,6 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       instant_view_(NULL),
       instant_mark_(NULL),
       model_(new AutocompleteEditModel(this, controller, profile)),
-#if defined(TOOLKIT_VIEWS)
-      popup_view_(new AutocompletePopupContentsView(
-          gfx::Font(), this, model_.get(), profile, location_bar)),
-#else
-      popup_view_(new AutocompletePopupViewGtk(this, model_.get(), profile,
-                                               location_bar)),
-#endif
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),
@@ -195,6 +189,14 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       preedit_size_before_change_(0),
 #endif
       going_to_focus_(NULL) {
+  popup_view_.reset(
+#if defined(TOOLKIT_VIEWS)
+      new AutocompletePopupContentsView
+#else
+      new AutocompletePopupViewGtk
+#endif
+          (GetFont(), this, model_.get(), profile, location_bar));
+
   model_->SetPopupModel(popup_view_->GetModel());
 }
 
@@ -424,12 +426,6 @@ void AutocompleteEditViewGtk::SetFocus() {
 int AutocompleteEditViewGtk::WidthOfTextAfterCursor() {
   // Not used.
   return -1;
-}
-
-gfx::Font AutocompleteEditViewGtk::GetFont() {
-  GtkRcStyle* rc_style = gtk_widget_get_modifier_style(text_view_);
-  return gfx::Font((rc_style && rc_style->font_desc) ?
-                   rc_style->font_desc : text_view_->style->font_desc);
 }
 
 AutocompleteEditModel* AutocompleteEditViewGtk::model() {
@@ -975,15 +971,8 @@ void AutocompleteEditViewGtk::SetBaseColor() {
 #endif
 
     // Until we switch to vector graphics, force the font size.
-    gtk_util::ForceFontSizePixels(text_view_,
-        popup_window_mode_ ?
-        browser_defaults::kAutocompleteEditFontPixelSizeInPopup :
-        browser_defaults::kAutocompleteEditFontPixelSize);
-
-    gtk_util::ForceFontSizePixels(instant_view_,
-        popup_window_mode_ ?
-        browser_defaults::kAutocompleteEditFontPixelSizeInPopup :
-        browser_defaults::kAutocompleteEditFontPixelSize);
+    gtk_util::ForceFontSizePixels(text_view_, GetFont().GetFontSize());
+    gtk_util::ForceFontSizePixels(instant_view_, GetFont().GetFontSize());
 
     g_object_set(faded_text_tag_, "foreground", kTextBaseColor, NULL);
     g_object_set(normal_text_tag_, "foreground", "#000000", NULL);
@@ -1710,6 +1699,37 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(bool copy) {
   }
 
   OwnPrimarySelection(UTF16ToUTF8(text));
+}
+
+gfx::Font AutocompleteEditViewGtk::GetFont() {
+#if defined(TOOLKIT_VIEWS)
+  bool use_gtk = false;
+#else
+  bool use_gtk = theme_provider_->UseGtkTheme();
+#endif
+
+  if (use_gtk) {
+    // If we haven't initialized the text view yet, just create a temporary one
+    // whose style we can grab.
+    GtkWidget* widget = text_view_ ? text_view_ : gtk_text_view_new();
+    GtkRcStyle* rc_style = gtk_widget_get_modifier_style(widget);
+    gfx::Font font((rc_style && rc_style->font_desc) ?
+                   rc_style->font_desc :
+                   widget->style->font_desc);
+    if (!text_view_)
+      g_object_unref(g_object_ref_sink(widget));
+
+    // Scaling the font down for popup windows doesn't help here, since we just
+    // use the normal unforced font size when using the GTK theme.
+    return font;
+  } else {
+    return gfx::Font(
+        ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont).
+            GetFontName(),
+        popup_window_mode_ ?
+            browser_defaults::kAutocompleteEditFontPixelSizeInPopup :
+            browser_defaults::kAutocompleteEditFontPixelSize);
+  }
 }
 
 void AutocompleteEditViewGtk::OwnPrimarySelection(const std::string& text) {

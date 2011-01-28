@@ -31,6 +31,7 @@
 
 namespace {
 
+const int kFontPixelSize = 13;
 const int kLeftPadding = 16;
 const int kTopPadding = 6;
 const int kRightPadding = 15;
@@ -1074,10 +1075,7 @@ void TabRendererGtk::InitResources() {
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
-  // Dividing by the pango scale factor maintains an absolute pixel size across
-  // all DPIs.
-  int size = static_cast<int>(13 / gfx::PlatformFontGtk::GetPangoScaleFactor());
-  title_font_ = new gfx::Font(base_font.GetFontName(), size);
+  title_font_ = new gfx::Font(base_font.GetFontName(), kFontPixelSize);
   title_font_height_ = title_font_->GetHeight();
 
   crashed_fav_icon = rb.GetBitmapNamed(IDR_SAD_FAVICON);

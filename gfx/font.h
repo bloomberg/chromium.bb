@@ -111,4 +111,3 @@ class Font {
 }  // namespace gfx
 
 #endif  // GFX_FONT_H_
-

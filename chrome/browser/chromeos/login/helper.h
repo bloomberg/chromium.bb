@@ -153,15 +153,21 @@ class WideButton : public views::NativeButton {
 
 }  // namespace login
 
-// Font size correction in points for login/oobe controls.
+// Font size correction in pixels for login/oobe controls.
 #if defined(CROS_FONTS_USING_BCI)
 const int kFontSizeCorrectionDelta = 1;
-const int kUnselectedUsernameFontDelta = 0;
-const int kWelcomeTitleFontDelta = 5;
+const int kNetworkSelectionLabelFontDelta = 1;
+const int kSelectedUsernameFontDelta = 1;
+const int kUnselectedUsernameFontDelta = 1;
+const int kWelcomeTitleFontDelta = 8;
+const int kLoginTitleFontDelta = 3;
 #else
 const int kFontSizeCorrectionDelta = 2;
-const int kUnselectedUsernameFontDelta = 1;
-const int kWelcomeTitleFontDelta = 5;
+const int kNetworkSelectionLabelFontDelta = 1;
+const int kSelectedUsernameFontDelta = 1;
+const int kUnselectedUsernameFontDelta = 2;
+const int kWelcomeTitleFontDelta = 9;
+const int kLoginTitleFontDelta = 4;
 #endif
 
 // New pod sizes.

@@ -292,15 +292,18 @@ void NetworkSelectionView::Init() {
   welcome_label_->SetFont(welcome_label_font);
   welcome_label_->SetMultiLine(true);
 
+  gfx::Font select_label_font = rb.GetFont(ResourceBundle::MediumFont).
+      DeriveFont(kNetworkSelectionLabelFontDelta);
+
   select_language_label_ = new views::Label();
-  select_language_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+  select_language_label_->SetFont(select_label_font);
 
   languages_menubutton_ = new NotifyingMenuButton(
       NULL, std::wstring(), delegate_->language_switch_menu(), true, delegate_);
   InitMenuButtonProperties(languages_menubutton_);
 
   select_keyboard_label_ = new views::Label();
-  select_keyboard_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+  select_keyboard_label_->SetFont(select_label_font);
 
   keyboards_menubutton_ = new DropDownButton(
       NULL /* listener */, L"", delegate_->keyboard_switch_menu(),
@@ -308,7 +311,7 @@ void NetworkSelectionView::Init() {
   InitMenuButtonProperties(keyboards_menubutton_);
 
   select_network_label_ = new views::Label();
-  select_network_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+  select_network_label_->SetFont(select_label_font);
 
   network_dropdown_ = new NetworkControlReportOnActivate(false,
                                                          GetNativeWindow(),

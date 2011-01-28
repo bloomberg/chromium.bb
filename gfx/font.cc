@@ -83,4 +83,3 @@ NativeFont Font::GetNativeFont() const {
 }
 
 }  // namespace gfx
-

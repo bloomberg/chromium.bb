@@ -144,7 +144,7 @@ void NewUserView::Init() {
   // Set up fonts.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gfx::Font title_font = rb.GetFont(ResourceBundle::MediumBoldFont).DeriveFont(
-      kFontSizeCorrectionDelta);
+      kLoginTitleFontDelta);
   gfx::Font title_hint_font = rb.GetFont(ResourceBundle::BoldFont);
 
   title_label_ = new views::Label();
