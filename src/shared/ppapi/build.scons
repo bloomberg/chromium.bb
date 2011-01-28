@@ -9,12 +9,12 @@
 
 # update-scons.py reads the .scons files in this directory.  It replaces all
 # of the lines between the starting marker and the ending marker with the
-# corresponding list of files from the ppapi.gyp file.
+# corresponding list of files from the given gyp file.
 #
 # The starting marker format is:
-#   # From ppapi.gyp:TARGET:REGEXP
+#   # From GYP_FILE_NAME:TARGET:REGEXP
 # The ending marker format is:
-#   # End ppapi.gyp
+#   # End GYP_FILE_NAME
 #
 # For example, if this exists in the .scons file:
 #   # From ppapi.gyp:ppapi_c:.*\.h
@@ -38,7 +38,7 @@ if env.Bit('windows'):
 
 cpp_sources = [
     # Updated automatically by update-scons.py.
-    # From ppapi.gyp:ppapi_cpp_objects:.*\.cc
+    # From ppapi_cpp.gypi:ppapi_cpp_objects:.*\.cc
     'cpp/audio.cc',
     'cpp/audio_config.cc',
     'cpp/core.cc',
@@ -78,11 +78,11 @@ cpp_sources = [
     'cpp/dev/widget_dev.cc',
     'cpp/dev/zoom_dev.cc',
     'cpp/dev/scriptable_object_deprecated.cc',
-    # End ppapi.gyp
+    # End ppapi_cpp.gypi
     # Updated automatically by update-scons.py.
-    # From ppapi.gyp:ppapi_cpp:.*\.cc
+    # From ppapi_cpp.gypi:ppapi_cpp:.*\.cc
     'cpp/ppp_entrypoints.cc',
-    # End ppapi.gyp
+    # End ppapi_cpp.gypi
     ]
 
 env.DualLibrary('ppapi_cpp', cpp_sources)

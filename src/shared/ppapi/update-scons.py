@@ -7,12 +7,12 @@
 
 This script reads the .scons files in this directory.  It replaces all of the
 lines between the starting marker and the ending marker with the corresponding
-list of files from the ppapi.gyp file.
+list of files from the given gyp file.
 
 The starting marker format is:
-  # From ppapi.gyp:TARGET:REGEXP
+  # From GYP_FILE_NAME:TARGET:REGEXP
 The ending marker format is:
-  # End ppapi.gyp
+  # End GYP_FILE_NAME
 
 For example, if this exists in the .scons file:
   # From ppapi.gyp:ppapi_c:.*\.h
@@ -46,7 +46,7 @@ NATIVE_CLIENT = os.path.dirname(NATIVE_CLIENT_SRC)
 CLIENTDIR = os.path.dirname(NATIVE_CLIENT)
 
 # Known files names.
-PPAPI_GYP = os.path.join(CLIENTDIR, 'ppapi', 'ppapi.gyp')
+PPAPI_GYP_DIR = os.path.join(CLIENTDIR, 'ppapi')
 BUILD_SCONS = os.path.join(NATIVE_CLIENT_SRC_SHARED_PPAPI, 'build.scons')
 NACL_SCONS = os.path.join(NATIVE_CLIENT_SRC_SHARED_PPAPI, 'nacl.scons')
 CPP_HEADER_TEST = os.path.join(
@@ -56,13 +56,13 @@ CPP_DEV_HEADER_TEST = os.path.join(
 
 # Regular expressions for the .scons files.
 START_PATTERN = re.compile(
-    '^([ \t]*)#[ \t]*From ppapi\.gyp:([^:]*):(.*) *\n',
+    '^([ \t]*)#[ \t]*From ([^:]*):([^:]*):(.*) *\n',
     re.IGNORECASE)
-END_PATTERN = re.compile('^[ \t]*#[ \t]*End ppapi\.gyp *\n', re.IGNORECASE)
+END_PATTERN = re.compile('^[ \t]*#[ \t]*End ([^:]*) *\n', re.IGNORECASE)
 
 # Regular expressions for the .cc files.
 INCLUDE_PATTERN = re.compile(
-    '^[ \t]*//[ \t]*From ppapi\.gyp:([^:]*):(.*) *\n',
+    '^[ \t]*//[ \t]*From ([^:]*):([^:]*):(.*) *\n',
     re.IGNORECASE)
 
 # Regular expressions for the ppapi.gyp file.
@@ -179,12 +179,14 @@ def TransferLinesFromPpapiGyp(marker, write_fp, is_cc_file):
   if not is_cc_file:
     match = re.match(START_PATTERN, marker)
     scons_indentation = match.group(1)
-    target = match.group(2)
-    file_regexp = match.group(3)
+    gyp_file_name = match.group(2)
+    target = match.group(3)
+    file_regexp = match.group(4)
   else:
     match = re.match(INCLUDE_PATTERN, marker)
-    target = match.group(1)
-    file_regexp = match.group(2)
+    gyp_file_name = match.group(1)
+    target = match.group(2)
+    file_regexp = match.group(3)
 
   # Convert the input file_regexp into a pattern that will match the syntax
   # of a source file in the ppapi.gyp file.  The .gyp file looks like:
@@ -201,10 +203,10 @@ def TransferLinesFromPpapiGyp(marker, write_fp, is_cc_file):
   else:
     file_pattern = re.compile('^[ \t]*\'(' + file_regexp + ')\',')
 
-  ppapi_gyp = open(PPAPI_GYP, 'r')
+  gyp_file = open(os.path.join(PPAPI_GYP_DIR, gyp_file_name), 'r')
   found_target = False
   found_sources = False
-  for line in ppapi_gyp:
+  for line in gyp_file:
     if not found_target:
       # Still looking for:
       #    'target_name': 'TARGET'
@@ -232,14 +234,14 @@ def TransferLinesFromPpapiGyp(marker, write_fp, is_cc_file):
           out_line = '#include "ppapi/' + match.group(1) + '"\n'
         write_fp.write(out_line)
 
-  ppapi_gyp.close()
+  gyp_file.close()
 
 
 def UpdateSconsToTmp(filename):
   """Updates the input .scons file, writing to filename.tmp.
 
   Updates all filename lines between the start and end header markers with
-  the current values from PPAPI_GYP. Writes all output to a temporary file.
+  the current values from gyp_file. Writes all output to a temporary file.
 
   Args:
     filename: the file to update.
@@ -274,7 +276,7 @@ def UpdateCcToTmp(filename):
   """Updates the input .cc file, writing to filename.tmp.
 
   Updates all #include lines after the inclusion marker with the
-  current values from PPAPI_GYP. Writes all output to a temporary file.
+  current values from gyp_file. Writes all output to a temporary file.
 
   Args:
     filename: the file to update.
@@ -300,7 +302,6 @@ def main():
   ParseCommandLine()
 
   # Make sure all of the files are accessible.
-  CheckFileIsReadable(PPAPI_GYP)
   CheckFileIsReadable(BUILD_SCONS)
   CheckFileIsReadable(NACL_SCONS)
   CheckFileIsReadable(CPP_HEADER_TEST)

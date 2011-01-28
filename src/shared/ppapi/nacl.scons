@@ -9,12 +9,12 @@
 
 # update-scons.py reads the .scons files in this directory.  It replaces all
 # of the lines between the starting marker and the ending marker with the
-# corresponding list of files from the ppapi.gyp file.
+# corresponding list of files from the given gyp file.
 #
 # The starting marker format is:
-#   # From ppapi.gyp:TARGET:REGEXP
+#   # From GYP_FILE_NAME:TARGET:REGEXP
 # The ending marker format is:
-#   # End ppapi.gyp
+#   # End GYP_FILE_NAME
 #
 # For example, if this exists in the .scons file:
 #   # From ppapi.gyp:ppapi_c:.*\.h
@@ -36,7 +36,7 @@ Dir('.').addRepository(Dir('#/../ppapi'))
 
 cpp_sources = [
     # Updated automatically by update-scons.py.
-    # From ppapi.gyp:ppapi_cpp_objects:.*\.cc
+    # From ppapi_cpp.gypi:ppapi_cpp_objects:.*\.cc
     'cpp/audio.cc',
     'cpp/audio_config.cc',
     'cpp/core.cc',
@@ -76,18 +76,18 @@ cpp_sources = [
     'cpp/dev/widget_dev.cc',
     'cpp/dev/zoom_dev.cc',
     'cpp/dev/scriptable_object_deprecated.cc',
-    # End ppapi.gyp
+    # End ppapi_cpp.gypi
     # Updated automatically by update-scons.py.
-    # From ppapi.gyp:ppapi_cpp:.*\.cc
+    # From ppapi_cpp.gypi:ppapi_cpp:.*\.cc
     'cpp/ppp_entrypoints.cc',
-    # End ppapi.gyp
+    # End ppapi_cpp.gypi
     ]
 
 env.ComponentLibrary('ppapi_cpp', cpp_sources)
 
 c_headers = [
     # Updated automatically by update-scons.py.
-    # From ppapi.gyp:ppapi_c:c/[^/]*\.h
+    # From ppapi_cpp.gypi:ppapi_c:c/[^/]*\.h
     'c/pp_bool.h',
     'c/pp_completion_callback.h',
     'c/pp_errors.h',
@@ -116,12 +116,12 @@ c_headers = [
     'c/ppb_var.h',
     'c/ppp.h',
     'c/ppp_instance.h',
-    # End ppapi.gyp
+    # End ppapi_cpp.gypi
     ]
 
 c_dev_headers = [
     # Updated automatically by update-scons.py.
-    # From ppapi.gyp:ppapi_c:c/dev/[^/]*\.h
+    # From ppapi_cpp.gypi:ppapi_c:c/dev/[^/]*\.h
     'c/dev/pp_cursor_type_dev.h',
     'c/dev/pp_file_info_dev.h',
     'c/dev/pp_graphics_3d_dev.h',
@@ -160,12 +160,12 @@ c_dev_headers = [
     'c/dev/deprecated_bool.h',
     'c/dev/ppb_var_deprecated.h',
     'c/dev/ppp_class_deprecated.h',
-    # End ppapi.gyp
+    # End ppapi_cpp.gypi
     ]
 
 cpp_headers = [
     # Updated automatically by update-scons.py.
-    # From ppapi.gyp:ppapi_cpp_objects:cpp/[^/]*\.h
+    # From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/[^/]*\.h
     'cpp/audio.h',
     'cpp/audio_config.h',
     'cpp/common.h',
@@ -188,16 +188,16 @@ cpp_headers = [
     'cpp/url_request_info.h',
     'cpp/url_response_info.h',
     'cpp/var.h',
-    # End ppapi.gyp
+    # End ppapi_cpp.gypi
     # Updated automatically by update-scons.py.
-    # From ppapi.gyp:ppapi_cpp:cpp/[^/]*\.h
+    # From ppapi_cpp.gypi:ppapi_cpp:cpp/[^/]*\.h
     'cpp/module_embedder.h',
-    # End ppapi.gyp
+    # End ppapi_cpp.gypi
     ]
 
 cpp_dev_headers = [
     # Updated automatically by update-scons.py.
-    # From ppapi.gyp:ppapi_cpp_objects:cpp/dev/[^/]*\.h
+    # From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/dev/[^/]*\.h
     'cpp/dev/buffer_dev.h',
     'cpp/dev/context_3d_dev.h',
     'cpp/dev/directory_entry_dev.h',
@@ -222,7 +222,7 @@ cpp_dev_headers = [
     'cpp/dev/widget_dev.h',
     'cpp/dev/zoom_dev.h',
     'cpp/dev/scriptable_object_deprecated.h',
-    # End ppapi.gyp
+    # End ppapi_cpp.gypi
     ]
 
 c_header_install = env.AddHeaderToSdk(

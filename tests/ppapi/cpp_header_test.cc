@@ -10,10 +10,10 @@
 
 // update-scons.py reads this file and finds the inclusion marker.  It
 // replaces all of the #includes with the corresponding list of files from
-// the ppapi.gyp file.
+// the given gyp file.
 //
 // The inclusion marker format is:
-//   // From ppapi.gyp:TARGET:REGEXP
+//   // From GYP_FILE_NAME:TARGET:REGEXP
 //
 // For example, if this exists in this file:
 //   // From ppapi.gyp:ppapi_cpp_objects:cpp/[^/]*\.h
@@ -23,7 +23,7 @@
 // 'sources' for that target that match the regular expression 'cpp/[^/]*\.h'
 // and will insert lines to #include each of those files.
 
-// From ppapi.gyp:ppapi_cpp_objects:cpp/[^/]*\.h
+// From ppapi_cpp.gypi:ppapi_cpp_objects:cpp/[^/]*\.h
 #include "ppapi/cpp/audio.h"
 #include "ppapi/cpp/audio_config.h"
 #include "ppapi/cpp/common.h"
