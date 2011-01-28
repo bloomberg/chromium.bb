@@ -445,16 +445,17 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
   // showing the url.
   last_transition_type_ = transition_type;
 
-  // If state hasn't changed, just reuse the last suggestion. If the user
-  // modifies the text of the omnibox in anyway the URL changes. We also need to
-  // update if verbatim changes and we're showing instant results. We have to be
-  // careful in checking user_text as in some situations InstantController
-  // passes in an empty string (when it knows the user_text won't matter). In
-  // these cases, we don't worry about whether the new user text matches the old
-  // user text.
-  if ((url_ == url) &&
-      (new_user_text.empty() || user_text_ == new_user_text) &&
-      (!template_url || verbatim == verbatim_)) {
+  // If state hasn't changed, reuse the last suggestion. There are two cases:
+  // 1. If no template url (not using instant API), then we only care if the url
+  //    changes.
+  // 2. Template url (using instant API) then the important part is if the
+  //    user_text changes.
+  //    We have to be careful in checking user_text as in some situations
+  //    InstantController passes in an empty string (when it knows the user_text
+  //    won't matter).
+  if ((!template_url_id_ && url_ == url) ||
+      (template_url_id_ &&
+       (new_user_text.empty() || user_text_ == new_user_text))) {
     suggested_text->assign(last_suggestion_);
     return;
   }
@@ -640,8 +641,13 @@ void InstantLoader::SetCompleteSuggestedText(
   }
 
   complete_suggested_text_ = complete_suggested_text;
-  last_suggestion_ = complete_suggested_text_.substr(user_text_.size());
-  delegate_->SetSuggestedTextFor(this, last_suggestion_);
+  // We are effectively showing complete_suggested_text_ now. Update user_text_
+  // so we don't notify the page again if Update happens to be invoked (which is
+  // more than likely if this callback completes before the omnibox is done).
+  string16 suggestion = complete_suggested_text_.substr(user_text_.size());
+  user_text_ = complete_suggested_text_;
+  last_suggestion_.clear();
+  delegate_->SetSuggestedTextFor(this, suggestion);
 }
 
 void InstantLoader::PreviewPainted() {

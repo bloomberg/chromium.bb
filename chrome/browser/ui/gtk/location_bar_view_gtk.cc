@@ -627,18 +627,13 @@ void LocationBarViewGtk::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
 }
 
 void LocationBarViewGtk::SetSuggestedText(const string16& text) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kInstantAutocompleteImmediately)) {
-    // This method is internally invoked to reset suggest text, so we only do
-    // anything if the text isn't empty.
-    // TODO: if we keep autocomplete, make it so this isn't invoked with empty
-    // text.
-    if (!text.empty()) {
-      location_entry_->model()->FinalizeInstantQuery(
-          location_entry_->GetText(), text, false);
-    }
-  } else {
-    location_entry_->SetInstantSuggestion(text);
+  // This method is internally invoked to reset suggest text, so we only do
+  // anything if the text isn't empty.
+  // TODO: if we keep autocomplete, make it so this isn't invoked with empty
+  // text.
+  if (!text.empty()) {
+    location_entry_->model()->FinalizeInstantQuery(
+        location_entry_->GetText(), text, false);
   }
 }
 

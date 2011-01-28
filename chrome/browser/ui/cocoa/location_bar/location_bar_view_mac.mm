@@ -139,8 +139,14 @@ std::wstring LocationBarViewMac::GetInputString() const {
 }
 
 void LocationBarViewMac::SetSuggestedText(const string16& text) {
-  edit_view_->SetInstantSuggestion(
-      edit_view_->model()->UseVerbatimInstant() ? string16() : text);
+  // This method is internally invoked to reset suggest text, so we only do
+  // anything if the text isn't empty.
+  // TODO: if we keep autocomplete, make it so this isn't invoked with empty
+  // text.
+  if (!text.empty()) {
+    edit_view_->model()->FinalizeInstantQuery(edit_view_->GetText(), text,
+                                              false);
+  }
 }
 
 WindowOpenDisposition LocationBarViewMac::GetWindowOpenDisposition() const {

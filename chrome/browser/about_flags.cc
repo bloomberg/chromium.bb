@@ -242,13 +242,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kExperimentalLocationFeatures)
   },
   {
-    "instant-autocomplete-immediately",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_INSTANT_AUTOCOMPLETE_IMMEDIATELY_NAME,
-    IDS_FLAGS_INSTANT_AUTOCOMPLETE_IMMEDIATELY_DESCRIPTION,
-    kOsWin | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kInstantAutocompleteImmediately)
-  },
-  {
     "block-reading-third-party-cookies",
     IDS_FLAGS_BLOCK_ALL_THIRD_PARTY_COOKIES_NAME,
     IDS_FLAGS_BLOCK_ALL_THIRD_PARTY_COOKIES_DESCRIPTION,

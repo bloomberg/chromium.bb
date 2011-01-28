@@ -1123,49 +1123,14 @@ void LocationBarView::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
 }
 
 void LocationBarView::SetSuggestedText(const string16& input) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kInstantAutocompleteImmediately)) {
-    // This method is internally invoked to reset suggest text, so we only do
-    // anything if the text isn't empty.
-    // TODO: if we keep autocomplete, make it so this isn't invoked with empty
-    // text.
-    if (!input.empty()) {
-      location_entry_->model()->FinalizeInstantQuery(
-          location_entry_->GetText(), input, false);
-    }
-    return;
+  // This method is internally invoked to reset suggest text, so we only do
+  // anything if the text isn't empty.
+  // TODO: if we keep autocomplete, make it so this isn't invoked with empty
+  // text.
+  if (!input.empty()) {
+    location_entry_->model()->FinalizeInstantQuery(location_entry_->GetText(),
+                                                   input, false);
   }
-#if defined(OS_WIN)
-  // Don't show the suggested text if inline autocomplete is prevented.
-  string16 text = location_entry_->model()->UseVerbatimInstant() ?
-      string16() : input;
-  if (!text.empty()) {
-    if (!suggested_text_view_) {
-      suggested_text_view_ = new SuggestedTextView(this);
-      suggested_text_view_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-      suggested_text_view_->SetColor(
-          GetColor(ToolbarModel::NONE,
-                   LocationBarView::DEEMPHASIZED_TEXT));
-      suggested_text_view_->SetText(UTF16ToWide(text));
-      suggested_text_view_->SetFont(location_entry_->GetFont());
-      AddChildView(suggested_text_view_);
-    } else if (suggested_text_view_->GetText() != UTF16ToWide(text)) {
-      suggested_text_view_->SetText(UTF16ToWide(text));
-    }
-    if (!location_entry_->IsImeComposing())
-      suggested_text_view_->StartAnimation();
-  } else if (suggested_text_view_) {
-    delete suggested_text_view_;
-    suggested_text_view_ = NULL;
-  } else {
-    return;
-  }
-
-  Layout();
-  SchedulePaint();
-#else
-  location_entry_->SetInstantSuggestion(input);
-#endif
 }
 
 std::wstring LocationBarView::GetInputString() const {

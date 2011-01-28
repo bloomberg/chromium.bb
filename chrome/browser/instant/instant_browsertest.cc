@@ -292,9 +292,11 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
 
   ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
 
+  ASSERT_EQ(ASCIIToUTF16("abcdef"), location_bar_->location_entry()->GetText());
+
   // Check that the value is reflected and onchange is called.
-  EXPECT_EQ("true 0 0 1 1 a false abc false 3 3",
-      GetSearchStateAsString(preview_));
+  EXPECT_EQ("true 0 0 1 2 a false abc false 3 3",
+            GetSearchStateAsString(preview_));
 }
 
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsArrayOfStrings) {
@@ -634,8 +636,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and onsubmit is called.
-  EXPECT_EQ("true 1 0 1 1 a false abc true 3 3",
-      GetSearchStateAsString(preview_));
+  EXPECT_EQ("true 1 0 1 2 a false abcdef true 3 3",
+            GetSearchStateAsString(preview_));
 }
 
 // Verify that the oncancel event is dispatched upon losing focus.
@@ -659,39 +661,6 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and oncancel is called.
-  EXPECT_EQ("true 0 1 1 1 a false abc false 3 3",
-      GetSearchStateAsString(preview_));
-}
-
-IN_PROC_BROWSER_TEST_F(InstantTest, TabKey) {
-  ASSERT_TRUE(test_server()->Start());
-  EnableInstant();
-  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
-
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
-  ASSERT_NO_FATAL_FAILURE(SetupPreview());
-
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
-
-  // Pressing tab to convert instant suggest into inline autocomplete.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB));
-
-  ASSERT_EQ(ASCIIToUTF16("abcdef"), location_bar_->location_entry()->GetText());
-
-  EXPECT_EQ("true 0 0 2 1 a false abcdef false 6 6",
-      GetSearchStateAsString(preview_));
-
-  // Pressing tab again to accept the current instant preview.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB));
-
-  // Check that the preview contents have been committed.
-  ASSERT_FALSE(browser()->instant()->GetPreviewContents());
-  ASSERT_FALSE(browser()->instant()->is_active());
-  TabContents* contents = browser()->GetSelectedTabContents();
-  ASSERT_TRUE(contents);
-
-  // Check that the value is reflected and onsubmit is called.
-  EXPECT_EQ("true 1 0 2 1 a false abcdef true 6 6",
-      GetSearchStateAsString(preview_));
+  EXPECT_EQ("true 0 1 1 2 a false abc false 3 3",
+            GetSearchStateAsString(preview_));
 }
