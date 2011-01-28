@@ -331,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 // there are multiple authenticated resources.
 // Marked as flaky.  See http://crbug.com/69266 and http://crbug.com/68860
 // TODO(asanka): Remove logging when timeout issues are resolved.
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, FLAKY_IncorrectConfirmation) {
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, DISABLED_IncorrectConfirmation) {
   ASSERT_TRUE(test_server()->Start());
   GURL test_page = test_server()->GetURL(kSingleRealmTestPage);
 
