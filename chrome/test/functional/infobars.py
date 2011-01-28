@@ -56,7 +56,7 @@ class InfobarTest(pyauto.PyUITest):
     self.assertEqual(1, len(crash_infobar))
     self.assertTrue(re.match('The following plug-in has crashed:',
                              crash_infobar[0]['text']))
-    self.assertEqual('alert_infobar', crash_infobar[0]['type'])
+    self.assertEqual('confirm_infobar', crash_infobar[0]['type'])
     # Dismiss the infobar
     self.PerformActionOnInfobar('dismiss', infobar_index=0)
     self.assertFalse(self._GetTabInfo()['infobars'])
@@ -166,7 +166,7 @@ class InfobarTest(pyauto.PyUITest):
       if not urls_type[i]:
         self.assertFalse(infobar)
       elif urls_type[i]:
-        self.assertEqual(infobar[0]['type'], 'alert_infobar')
+        self.assertEqual(infobar[0]['type'], 'confirm_infobar')
         self.assertEqual(len(infobar), 1)
 
 if __name__ == '__main__':
