@@ -10,6 +10,7 @@
 <head>
 <meta charset="utf-8">
 <title i18n-content="title"></title>
+<script src="shared/js/util.js"></script>
 <script>
 // Logging info for benchmarking purposes.
 var log = [];
@@ -20,8 +21,6 @@ function logEvent(name, shouldLogTime) {
   log.push([name, Date.now()]);
 }
 logEvent('Tab.NewTabScriptStart', true);
-
-var global = this;
 
 /**
  * Registers a callback function so that if the backend calls it too early it
@@ -290,7 +289,6 @@ i18nTemplate.process(document, templateData);
 <script src="shared/js/cr/ui/context_menu_button.js"></script>
 <script src="shared/js/cr/ui/context_menu_handler.js"></script>
 
-<script src="ntp/util.js"></script>
 <script src="ntp/drag_drop_controller.js"></script>
 <script src="ntp/most_visited.js"></script>
 <script src="new_new_tab.js"></script>
