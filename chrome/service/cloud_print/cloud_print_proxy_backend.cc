@@ -214,6 +214,7 @@ class CloudPrintProxyBackend::Core
   scoped_refptr<cloud_print::PrintSystem::PrintServerWatcher>
       print_server_watcher_;
   bool new_printers_available_;
+  bool registration_in_progress_;
   // Notification (xmpp) handler.
   scoped_ptr<notifier::TalkMediator> talk_mediator_;
   // Indicates whether XMPP notifications are currently enabled.
@@ -296,6 +297,7 @@ CloudPrintProxyBackend::Core::Core(CloudPrintProxyBackend* backend,
       next_upload_index_(0),
       next_response_handler_(NULL),
       new_printers_available_(false),
+      registration_in_progress_(false),
       notifications_enabled_(false),
       job_poll_scheduled_(false) {
   if (print_system_settings) {
@@ -408,6 +410,7 @@ void CloudPrintProxyBackend::Core::StartRegistration() {
   cloud_print::PrintSystem::PrintSystemResult result =
       print_system_->EnumeratePrinters(&printer_list_);
   complete_list_available_ = result.succeeded();
+  registration_in_progress_ = true;
   if (!result.succeeded()) {
     std::string message = result.message();
     if (message.empty())
@@ -427,6 +430,7 @@ void CloudPrintProxyBackend::Core::StartRegistration() {
 void CloudPrintProxyBackend::Core::EndRegistration() {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   request_ = NULL;
+  registration_in_progress_ = false;
   if (new_printers_available_) {
     new_printers_available_ = false;
     StartRegistration();
@@ -900,7 +904,7 @@ void CloudPrintProxyBackend::Core::OnOutgoingNotification() {}
 // cloud_print::PrinterChangeNotifier::Delegate implementation
 void CloudPrintProxyBackend::Core::OnPrinterAdded() {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  if (request_.get())
+  if (registration_in_progress_)
     new_printers_available_ = true;
   else
     StartRegistration();
