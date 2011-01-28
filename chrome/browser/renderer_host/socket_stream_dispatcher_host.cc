@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/socket_stream_host.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/net/socket_stream.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/websockets/websocket_job.h"
@@ -149,8 +150,8 @@ void SocketStreamDispatcherHost::DeleteSocketStreamHost(int socket_id) {
 net::URLRequestContext* SocketStreamDispatcherHost::GetURLRequestContext() {
   net::URLRequestContext* rv = NULL;
   if (url_request_context_override_.get()) {
-    rv = url_request_context_override_->GetRequestContext(
-        0, ResourceType::SUB_RESOURCE);
+    ViewHostMsg_Resource_Request request;
+    rv = url_request_context_override_->GetRequestContext(request);
   }
   if (!rv) {
     URLRequestContextGetter* context_getter =

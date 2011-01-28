@@ -358,7 +358,7 @@ void ResourceDispatcherHost::BeginRequest(
   int child_id = filter_->child_id();
 
   ChromeURLRequestContext* context = filter_->GetURLRequestContext(
-      request_id, request_data.resource_type);
+      request_data);
 
   // Might need to resolve the blob references in the upload data.
   if (request_data.upload_data && context) {

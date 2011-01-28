@@ -36,6 +36,7 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "gfx/native_widget_types.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/cookie_store.h"
@@ -68,9 +69,9 @@ class PluginURLRequestContextOverride
   }
 
   virtual net::URLRequestContext* GetRequestContext(
-      uint32 request_id, ResourceType::Type resource_type) {
+      const ViewHostMsg_Resource_Request& resource_request) {
     return CPBrowsingContextManager::GetInstance()->ToURLRequestContext(
-        request_id);
+        resource_request.request_context);
   }
 
  private:

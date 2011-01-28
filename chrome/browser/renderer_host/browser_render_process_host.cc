@@ -241,12 +241,12 @@ class RendererURLRequestContextOverride
   }
 
   virtual net::URLRequestContext* GetRequestContext(
-      uint32 request_id, ResourceType::Type resource_type) {
+      const ViewHostMsg_Resource_Request& resource_request) {
     URLRequestContextGetter* request_context = request_context_;
     // If the request has resource type of ResourceType::MEDIA, we use a request
     // context specific to media for handling it because these resources have
     // specific needs for caching.
-    if (resource_type == ResourceType::MEDIA)
+    if (resource_request.resource_type == ResourceType::MEDIA)
       request_context = media_request_context_;
     return request_context->GetURLRequestContext();
   }

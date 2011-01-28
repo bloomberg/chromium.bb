@@ -36,12 +36,10 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message,
 }
 
 ChromeURLRequestContext* ResourceMessageFilter::GetURLRequestContext(
-    uint32 request_id, ResourceType::Type resource_type) {
+    const ViewHostMsg_Resource_Request& resource_request) {
   net::URLRequestContext* rv = NULL;
-  if (url_request_context_override_.get()) {
-    rv = url_request_context_override_->GetRequestContext(
-        request_id, resource_type);
-  }
+  if (url_request_context_override_.get())
+    rv = url_request_context_override_->GetRequestContext(resource_request);
 
   if (!rv) {
     URLRequestContextGetter* context_getter =
