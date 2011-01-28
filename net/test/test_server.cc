@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -331,7 +331,7 @@ bool TestServer::ParseServerData(const std::string& server_data) {
   return true;
 }
 
-FilePath TestServer::GetRootCertificatePath() {
+FilePath TestServer::GetRootCertificatePath() const {
   return certificates_dir_.AppendASCII("root_ca_cert.crt");
 }
 
@@ -344,6 +344,9 @@ bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
   command_line->AppendSwitchASCII("port",
                                   base::IntToString(host_port_pair_.port()));
   command_line->AppendSwitchPath("data-dir", document_root_);
+  command_line->AppendSwitchPath("policy-cert-chain",
+                                 certificates_dir_.AppendASCII("ok_cert.pem"));
+  command_line->AppendSwitchPath("policy-cert-chain", GetRootCertificatePath());
 
   if (type_ == TYPE_FTP) {
     command_line->AppendArg("-f");

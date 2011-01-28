@@ -2033,6 +2033,8 @@
         'browser/policy/profile_policy_context.cc',
         'browser/policy/profile_policy_context.h',
         # TODO(danno): Find a better way to include these files
+        '<(protoc_out_dir)/chrome/browser/policy/proto/cloud_policy.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/policy/proto/cloud_policy.pb.h',
         '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_backend.pb.cc',
         '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_backend.pb.h',
         'browser/policy/proto/device_management_constants.cc',

@@ -1,12 +1,21 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 syntax = "proto2";
 
+import "cloud_policy.proto";
+
 option optimize_for = LITE_RUNTIME;
 
 package enterprise_management;
+
+// Protocol buffers for the obsolete protocol:
+// -------------------------------------------
+//    GenericValue, GenericNamedValue, GenericSetting, DevicePolicySetting,
+//    DevicePolicySettingRequest, DevicePolicyRequest, DevicePolicyResponse
+// TODO(gfeher): Remove these when both Chrome and DMServer is switched to
+// using the new protocol.
 
 // Generic value container.
 message GenericValue {
@@ -57,27 +66,6 @@ message DevicePolicySetting {
   optional string watermark = 3;
 }
 
-// Request from device to server to register device.
-message DeviceRegisterRequest {
-  // reregister device without erasing server state.
-  // it can be used to refresh dmtoken etc.
-  optional bool reregister = 1;
-}
-
-// Response from server to device register request.
-message DeviceRegisterResponse {
-  // device mangement toke for this registration.
-  required string device_management_token = 1;
-}
-
-// Request from device to server to unregister device.
-message DeviceUnregisterRequest {
-}
-
-// Response from server to device unregister request.
-message DeviceUnregisterResponse {
-}
-
 // Request for a setting or with optional watermark on client side.
 message DevicePolicySettingRequest {
   // setting key
@@ -100,26 +88,117 @@ message DevicePolicyResponse {
   repeated DevicePolicySetting setting = 1;
 }
 
+// Protocol buffers for the new protocol:
+// --------------------------------------
+
+// Request from device to server to query if the authenticated user is in a
+// managed domain.
+message ManagedCheckRequest {
+}
+
+// Response from server to device indicating if the authenticated user is in a 
+// managed domain.
+message ManagedCheckResponse {
+  enum Mode {
+    // The device must be enrolled for policies.
+    MANAGED = 1;
+    // The device is not automatically enrolled for policies, but the user
+    // may choose to try to enroll it.
+    UNMANAGED = 2;
+  }
+
+  optional Mode mode = 1; 
+}
+
+// Request from device to server to register device.
+message DeviceRegisterRequest {
+  // reregister device without erasing server state.
+  // it can be used to refresh dmtoken etc.
+  optional bool reregister = 1;
+}
+
+// Response from server to device register request.
+message DeviceRegisterResponse {
+  // device mangement toke for this registration.
+  required string device_management_token = 1;
+
+  // The name of the device, assigned by the server.
+  optional string device_name = 2;
+}
+
+// Request from device to server to unregister device.
+message DeviceUnregisterRequest {
+}
+
+// Response from server to device unregister request.
+message DeviceUnregisterResponse {
+}
+
+message CloudPolicyRequest {
+  // Identify request scope: chromeos/device for device policies, chromeos/user
+  // for user policies.
+  optional string policy_scope = 1;
+  // The device token of the owner of the device sending the request. In cases
+  // the request was sent by the device owner or device policies were
+  // requested, this is the same as the token used for authentication.
+  // Otherwise (if the user policy is requested for someone else than the device
+  // owner) this token is different from the token used for authentication.
+  optional string device_token = 2;
+}
+
+// Response from server to device for reading policies.
+message CloudPolicyResponse {
+  // Serialized SignedCloudPolicyResponse.
+  optional bytes signed_response = 1;
+  // RSA signature of the SHA1 hash of the above data.
+  optional bytes signature = 2;
+  // The chain of DER-encoded X.509 certificates of the server's signing key.
+  // The first element should be the certificate whose private key was used
+  // for signing the response, and each of the following certificates signs the
+  // previous one.
+  repeated bytes certificate_chain = 3;
+}
+message SignedCloudPolicyResponse {
+  // The following two are necessary against replay attacks.
+  // |timestamp| is a unix timestamp (seconds since 1970).
+  optional int64 timestamp = 1;
+  // The token that was used for the request.
+  optional string request_token = 2;
+  // The name of the device, assigned by the server.
+  optional string device_name = 3;
+  // CloudPolicySettings is defined in cloud_policy.proto (which is
+  // auto-generated from chrome/app/policy_templates.json).
+  optional CloudPolicySettings settings = 4;
+}
+
 // Request from the DMAgent on the device to the DMServer.
 // This is container for all requests from client.
 //
+// Http Query parameters:
+// Query parameters contain the following information in each request:
+//   request: register/unregister/policy/cloud_policy/managed_check etc.
+//   devicetype: CrOS/Android/Iphone etc.
+//   apptype: CrOS/AndroidDM etc.
+//   deviceid: unique id that identify the device.
+//   agent: identify agent on device.
+//
 // Authorization:
-// 1. If request is register_request, client must pass in GoogleLogin auth
+// 1. If request is managed_check, client must pass in GoogleLogin auth 
+//    cookie in Authorization header:
+//      Authorization: GoogleLogin auth=<auth cookie>
+//    This is the only case when the deviceid query parameter is set to empty.
+//    The response will contain a flag indicating if the user is in a managed
+//    domain or not. (We don't want to expose device ids of users not in
+//    managed domains.)
+// 2. If request is register_request, client must pass in GoogleLogin auth
 //    cookie in Authorization header:
 //      Authorization: GoogleLogin auth=<auth cookie>
 //    The response will contain an unique DMToken for future requests.
 //    Depending on domain policy, the request may need admin approval before
 //    DMToken is issued.
-// 2. For other requests, client must pass in DMToken in Authorization header:
+// 3. For other requests, client must pass in DMToken in Authorization header:
 //    Authorization: GoogleDMToken token=<google dm token>
 //
-// Http Query parameters:
-// Query parameters contain the following information in each request:
-//   request: register/unregister/policy etc.
-//   devicetype: CrOS/Android/Iphone etc.
-//   apptype: CrOS/AndroidDM etc.
-//   deviceid: unique id that identify the device.
-//   agent: identify agent on device.
 message DeviceManagementRequest {
   // Register request.
   optional DeviceRegisterRequest register_request = 1;
@@ -129,6 +208,12 @@ message DeviceManagementRequest {
 
   // Data request.
   optional DevicePolicyRequest policy_request = 3;
+
+  // Data request (new protocol).
+  optional CloudPolicyRequest cloud_policy_request = 4;
+
+  // Request to check if a user is managed or not.
+  optional ManagedCheckRequest managed_check_request = 5;
 }
 
 // Response from server to device.
@@ -164,4 +249,10 @@ message DeviceManagementResponse {
 
   // Policy response.
   optional DevicePolicyResponse policy_response = 5;
+
+  // Policy response (new protocol).
+  optional CloudPolicyResponse cloud_policy_response  = 6;
+
+  // Response to managed check request.
+  optional ManagedCheckResponse managed_check_response = 7;
 }

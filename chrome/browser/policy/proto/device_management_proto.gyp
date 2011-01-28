@@ -13,6 +13,7 @@
       'target_name': 'device_management_proto',
       'type': 'none',
       'sources': [
+        'cloud_policy.proto',
         'device_management_backend.proto',
         'device_management_local.proto',
       ],
