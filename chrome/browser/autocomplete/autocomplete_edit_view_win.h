@@ -134,12 +134,11 @@ class AutocompleteEditViewWin
   virtual gfx::NativeView GetNativeView() const;
   virtual CommandUpdater* GetCommandUpdater();
   virtual void SetInstantSuggestion(const string16& suggestion);
+  virtual string16 GetInstantSuggestion() const;
   virtual int TextWidth() const;
   virtual bool IsImeComposing() const;
 
   virtual views::View* AddToView(views::View* parent);
-  virtual bool CommitInstantSuggestion(const string16& typed_text,
-                                       const string16& suggested_text);
 
   int GetPopupMaxYCoordinate();
 
@@ -215,6 +214,9 @@ class AutocompleteEditViewWin
   virtual bool IsItemForCommandIdDynamic(int command_id) const;
   virtual string16 GetLabelForCommandId(int command_id) const;
   virtual void ExecuteCommand(int command_id);
+
+  // Returns true if the caret is at the end of the content.
+  bool IsCaretAtEnd() const;
 
  private:
   enum MouseButton {

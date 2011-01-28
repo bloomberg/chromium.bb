@@ -56,14 +56,12 @@ class TestingAutocompleteEditView : public AutocompleteEditView {
   virtual gfx::NativeView GetNativeView() const { return 0; }
   virtual CommandUpdater* GetCommandUpdater() { return NULL; }
   virtual void SetInstantSuggestion(const string16& input) {}
+  virtual string16 GetInstantSuggestion() const { return string16(); }
   virtual int TextWidth() const { return 0; }
   virtual bool IsImeComposing() const { return false; }
 
 #if defined(TOOLKIT_VIEWS)
   virtual views::View* AddToView(views::View* parent) { return NULL; }
-  virtual bool CommitInstantSuggestion(
-      const string16& typed_text,
-      const string16& suggested_text) { return false; }
 #endif
 
  private:
@@ -76,7 +74,7 @@ class TestingAutocompleteEditController : public AutocompleteEditController {
   virtual void OnAutocompleteWillClosePopup() {}
   virtual void OnAutocompleteLosingFocus(gfx::NativeView view_gaining_focus) {}
   virtual void OnAutocompleteWillAccept() {}
-  virtual bool OnCommitSuggestedText(const string16& typed_text) {
+  virtual bool OnCommitSuggestedText(bool skip_inline_autocomplete) {
     return false;
   }
   virtual bool AcceptCurrentInstantPreview() {

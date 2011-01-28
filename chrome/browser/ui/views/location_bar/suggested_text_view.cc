@@ -46,7 +46,7 @@ void SuggestedTextView::PaintBackground(gfx::Canvas* canvas) {
 }
 
 void SuggestedTextView::AnimationEnded(const ui::Animation* animation) {
-  location_bar_->OnCommitSuggestedText();
+  location_bar_->OnCommitSuggestedText(false);
 }
 
 void SuggestedTextView::AnimationProgressed(const ui::Animation* animation) {

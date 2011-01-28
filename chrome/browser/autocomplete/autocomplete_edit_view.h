@@ -161,6 +161,9 @@ class AutocompleteEditView {
   // Shows the instant suggestion text.
   virtual void SetInstantSuggestion(const string16& input) = 0;
 
+  // Returns the current instant suggestion text.
+  virtual string16 GetInstantSuggestion() const = 0;
+
   // Returns the width in pixels needed to display the current text. The
   // returned value includes margins.
   virtual int TextWidth() const = 0;
@@ -172,10 +175,6 @@ class AutocompleteEditView {
   // Adds the autocomplete edit view to view hierarchy and
   // returns the views::View of the edit view.
   virtual views::View* AddToView(views::View* parent) = 0;
-
-  // Commits the suggested text.
-  virtual bool CommitInstantSuggestion(const string16& typed_text,
-                                       const string16& suggested_text) = 0;
 #endif
 
   virtual ~AutocompleteEditView() {}

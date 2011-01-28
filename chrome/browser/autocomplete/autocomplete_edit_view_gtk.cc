@@ -779,6 +779,11 @@ void AutocompleteEditViewGtk::SetInstantSuggestion(const string16& suggestion) {
   UpdateInstantViewColors();
 }
 
+string16 AutocompleteEditViewGtk::GetInstantSuggestion() const {
+  const gchar* suggestion = gtk_label_get_text(GTK_LABEL(instant_view_));
+  return suggestion ? UTF8ToUTF16(suggestion) : string16();
+}
+
 int AutocompleteEditViewGtk::TextWidth() const {
   int horizontal_border_size =
       gtk_text_view_get_border_window_size(GTK_TEXT_VIEW(text_view_),
@@ -832,12 +837,6 @@ views::View* AutocompleteEditViewGtk::AddToView(views::View* parent) {
   host->set_focus_view(parent);
   host->Attach(GetNativeView());
   return host;
-}
-
-bool AutocompleteEditViewGtk::CommitInstantSuggestion(
-    const string16& typed_text,
-    const string16& suggestion) {
-  return CommitInstantSuggestion();
 }
 
 void AutocompleteEditViewGtk::EnableAccessibility() {
@@ -898,7 +897,7 @@ void AutocompleteEditViewGtk::Observe(NotificationType type,
 }
 
 void AutocompleteEditViewGtk::AnimationEnded(const ui::Animation* animation) {
-  controller_->OnCommitSuggestedText(GetText());
+  controller_->OnCommitSuggestedText(false);
 }
 
 void AutocompleteEditViewGtk::AnimationProgressed(
@@ -1344,9 +1343,6 @@ void AutocompleteEditViewGtk::HandleViewMoveCursor(
 
   if (step == GTK_MOVEMENT_VISUAL_POSITIONS && !extend_selection &&
       (count == 1 || count == -1)) {
-    gint cursor_pos;
-    g_object_get(G_OBJECT(text_buffer_), "cursor-position", &cursor_pos, NULL);
-
     // We need to take the content direction into account when handling cursor
     // movement, because the behavior of Left and Right key will be inverted if
     // the direction is RTL. Although we should check the direction around the
@@ -1369,8 +1365,8 @@ void AutocompleteEditViewGtk::HandleViewMoveCursor(
           text_buffer_, count == count_towards_end ? &sel_end : &sel_start);
       OnAfterPossibleChange();
       handled = true;
-    } else if (count == count_towards_end && cursor_pos == GetTextLength()) {
-      handled = controller_->OnCommitSuggestedText(GetText());
+    } else if (count == count_towards_end && !IsCaretAtEnd()) {
+      handled = controller_->OnCommitSuggestedText(true);
     }
   } else if (step == GTK_MOVEMENT_PAGES) {  // Page up and down.
     // Multiply by count for the direction (if we move too much that's ok).
@@ -1638,14 +1634,28 @@ void AutocompleteEditViewGtk::HandleViewMoveFocus(GtkWidget* widget,
   bool handled = false;
 
   // Trigger Tab to search behavior only when Tab key is pressed.
-  if (model_->is_keyword_hint()) {
+  if (model_->is_keyword_hint())
     handled = model_->AcceptKeyword();
-  } else if (GTK_WIDGET_VISIBLE(instant_view_)) {
-    controller_->OnCommitSuggestedText(GetText());
+
+#if GTK_CHECK_VERSION(2, 20, 0)
+  if (!handled && !preedit_.empty())
     handled = true;
-  } else {
-    handled = controller_->AcceptCurrentInstantPreview();
+#endif
+
+  if (!handled && GTK_WIDGET_VISIBLE(instant_view_))
+    handled = controller_->OnCommitSuggestedText(true);
+
+  if (!handled) {
+    if (!IsCaretAtEnd()) {
+      OnBeforePossibleChange();
+      PlaceCaretAt(GetTextLength());
+      OnAfterPossibleChange();
+      handled = true;
+    }
   }
+
+  if (!handled)
+    handled = controller_->AcceptCurrentInstantPreview();
 
   if (handled) {
     static guint signal_id = g_signal_lookup("move-focus", GTK_TYPE_WIDGET);
@@ -1822,7 +1832,8 @@ void AutocompleteEditViewGtk::FinishUpdatingHighlightedText() {
   g_signal_handler_unblock(text_buffer_, mark_set_handler_id2_);
 }
 
-AutocompleteEditViewGtk::CharRange AutocompleteEditViewGtk::GetSelection() {
+AutocompleteEditViewGtk::CharRange
+  AutocompleteEditViewGtk::GetSelection() const {
   // You can not just use get_selection_bounds here, since the order will be
   // ascending, and you don't know where the user's start and end of the
   // selection was (if the selection was forwards or backwards).  Get the
@@ -1869,6 +1880,18 @@ int AutocompleteEditViewGtk::GetTextLength() const {
 #else
   return gtk_text_iter_get_offset(&end);
 #endif
+}
+
+void AutocompleteEditViewGtk::PlaceCaretAt(int pos) {
+  GtkTextIter cursor;
+  gtk_text_buffer_get_iter_at_offset(text_buffer_, &cursor, pos);
+  gtk_text_buffer_place_cursor(text_buffer_, &cursor);
+}
+
+bool AutocompleteEditViewGtk::IsCaretAtEnd() const {
+  const CharRange selection = GetSelection();
+  return selection.cp_min == selection.cp_max &&
+      selection.cp_min == GetTextLength();
 }
 
 void AutocompleteEditViewGtk::EmphasizeURLComponents() {
@@ -1944,16 +1967,6 @@ void AutocompleteEditViewGtk::StopAnimation() {
   instant_animation_->set_delegate(NULL);
   instant_animation_->Stop();
   UpdateInstantViewColors();
-}
-
-bool AutocompleteEditViewGtk::CommitInstantSuggestion() {
-  const gchar* suggestion = gtk_label_get_text(GTK_LABEL(instant_view_));
-  if (!suggestion || !*suggestion)
-    return false;
-
-  model()->FinalizeInstantQuery(GetText(),
-                                UTF8ToUTF16(suggestion));
-  return true;
 }
 
 void AutocompleteEditViewGtk::TextChanged() {

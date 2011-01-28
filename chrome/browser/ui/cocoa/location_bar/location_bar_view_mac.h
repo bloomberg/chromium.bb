@@ -132,7 +132,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual void OnAutocompleteWillClosePopup();
   virtual void OnAutocompleteLosingFocus(gfx::NativeView unused);
   virtual void OnAutocompleteWillAccept();
-  virtual bool OnCommitSuggestedText(const string16& typed_text);
+  virtual bool OnCommitSuggestedText(bool skip_inline_autocomplete);
   virtual bool AcceptCurrentInstantPreview();
   virtual void OnPopupBoundsChanged(const gfx::Rect& bounds);
   virtual void OnAutocompleteAccept(const GURL& url,

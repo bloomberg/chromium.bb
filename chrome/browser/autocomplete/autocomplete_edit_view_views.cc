@@ -197,10 +197,20 @@ bool AutocompleteEditViewViews::HandleAfterKeyEvent(
              event.GetKeyCode() == ui::VKEY_TAB &&
              !event.IsShiftDown() &&
              !event.IsControlDown()) {
-    if (model_->is_keyword_hint() && !model_->keyword().empty()) {
-      model_->AcceptKeyword();
-      handled = true;
+    if (model_->is_keyword_hint()) {
+      handled = model_->AcceptKeyword();
     } else {
+      string16::size_type start = 0;
+      string16::size_type end = 0;
+      size_t length = GetTextLength();
+      GetSelectionBounds(&start, &end);
+      if (start != end || start < length) {
+        OnBeforePossibleChange();
+        SelectRange(length, length);
+        OnAfterPossibleChange();
+        handled = true;
+      }
+
       // TODO(Oshima): handle instant
     }
   }
@@ -527,10 +537,13 @@ CommandUpdater* AutocompleteEditViewViews::GetCommandUpdater() {
   return command_updater_;
 }
 
-views::View* AutocompleteEditViewViews::AddToView(views::View* parent) {
-  parent->AddChildView(this);
-  AddChildView(textfield_);
-  return this;
+void AutocompleteEditViewViews::SetInstantSuggestion(const string16& input) {
+  NOTIMPLEMENTED();
+}
+
+string16 AutocompleteEditViewViews::GetInstantSuggestion() const {
+  NOTIMPLEMENTED();
+  return string16();
 }
 
 int AutocompleteEditViewViews::TextWidth() const {
@@ -542,15 +555,10 @@ bool AutocompleteEditViewViews::IsImeComposing() const {
   return false;
 }
 
-bool AutocompleteEditViewViews::CommitInstantSuggestion(
-    const string16& typed_text,
-    const string16& suggested_text) {
-  model_->FinalizeInstantQuery(typed_text, suggested_text);
-  return true;
-}
-
-void AutocompleteEditViewViews::SetInstantSuggestion(const string16& input) {
-  NOTIMPLEMENTED();
+views::View* AutocompleteEditViewViews::AddToView(views::View* parent) {
+  parent->AddChildView(this);
+  AddChildView(textfield_);
+  return this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

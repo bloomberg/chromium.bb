@@ -399,15 +399,6 @@ gfx::Point LocationBarView::GetLocationEntryOrigin() const {
   return origin;
 }
 
-#if defined(OS_WIN)
-void LocationBarView::OnCommitSuggestedText() {
-  InstantController* instant = delegate_->GetInstant();
-  DCHECK(instant);
-  DCHECK(suggested_text_view_);
-  OnCommitSuggestedText(location_entry_->GetText());
-}
-#endif
-
 gfx::Size LocationBarView::GetPreferredSize() {
   return gfx::Size(0, GetThemeProvider()->GetBitmapNamed(mode_ == POPUP ?
       IDR_LOCATIONBG_POPUPMODE_CENTER : IDR_LOCATIONBG_C)->height());
@@ -768,17 +759,24 @@ void LocationBarView::OnAutocompleteWillAccept() {
   update_instant_ = false;
 }
 
-bool LocationBarView::OnCommitSuggestedText(const string16& typed_text) {
-  InstantController* instant = delegate_->GetInstant();
-  if (!instant)
+bool LocationBarView::OnCommitSuggestedText(bool skip_inline_autocomplete) {
+  if (!delegate_->GetInstant())
     return false;
+
   string16 suggestion;
 #if defined(OS_WIN)
-  if (!HasValidSuggestText())
-    return false;
-  suggestion = suggested_text_view_->GetText();
+  if (HasValidSuggestText())
+    suggestion = suggested_text_view_->GetText();
+#else
+  suggestion = location_entry_->GetInstantSuggestion();
 #endif
-  return location_entry_->CommitInstantSuggestion(typed_text, suggestion);
+
+  if (suggestion.empty())
+    return false;
+
+  location_entry_->model()->FinalizeInstantQuery(
+      location_entry_->GetText(), suggestion, skip_inline_autocomplete);
+  return true;
 }
 
 bool LocationBarView::AcceptCurrentInstantPreview() {
@@ -852,13 +850,13 @@ void LocationBarView::OnChanged() {
                       location_entry_->model()->UseVerbatimInstant(),
                       &suggested_text);
       if (!instant->MightSupportInstant()) {
-        location_entry_->model()->FinalizeInstantQuery(string16(),
-                                                       string16());
+        location_entry_->model()->FinalizeInstantQuery(
+            string16(), string16(), false);
       }
     } else {
       instant->DestroyPreviewContents();
-      location_entry_->model()->FinalizeInstantQuery(string16(),
-                                                     string16());
+      location_entry_->model()->FinalizeInstantQuery(
+          string16(), string16(), false);
     }
   }
 
@@ -1058,6 +1056,10 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
       return true;
     }
 
+    // If the caret is not at the end, then tab moves the caret to the end.
+    if (!location_entry_->IsCaretAtEnd())
+      return true;
+
     // Tab while showing instant commits instant immediately.
     // Return true so that focus traversal isn't attempted. The edit ends
     // up doing nothing in this case.
@@ -1128,8 +1130,8 @@ void LocationBarView::SetSuggestedText(const string16& input) {
     // TODO: if we keep autocomplete, make it so this isn't invoked with empty
     // text.
     if (!input.empty()) {
-      location_entry_->model()->FinalizeInstantQuery(location_entry_->GetText(),
-                                                     input);
+      location_entry_->model()->FinalizeInstantQuery(
+          location_entry_->GetText(), input, false);
     }
     return;
   }

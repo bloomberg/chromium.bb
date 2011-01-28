@@ -111,12 +111,11 @@ class AutocompleteEditViewViews : public views::View,
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
   virtual CommandUpdater* GetCommandUpdater();
-  virtual views::View* AddToView(views::View* parent);
+  virtual void SetInstantSuggestion(const string16& input);
+  virtual string16 GetInstantSuggestion() const;
   virtual int TextWidth() const;
   virtual bool IsImeComposing() const;
-  virtual bool CommitInstantSuggestion(const string16& typed_text,
-                                       const string16& suggested_text);
-  virtual void SetInstantSuggestion(const string16& input);
+  virtual views::View* AddToView(views::View* parent);
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

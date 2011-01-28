@@ -95,7 +95,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual void OnAutocompleteLosingFocus(gfx::NativeView view_gaining_focus);
   virtual void OnAutocompleteWillAccept();
   // For this implementation, the parameter is ignored.
-  virtual bool OnCommitSuggestedText(const string16& typed_text);
+  virtual bool OnCommitSuggestedText(bool skip_inline_autocomplete);
   virtual bool AcceptCurrentInstantPreview();
   virtual void OnPopupBoundsChanged(const gfx::Rect& bounds);
   virtual void OnAutocompleteAccept(const GURL& url,

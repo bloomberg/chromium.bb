@@ -155,11 +155,6 @@ class LocationBarView : public LocationBar,
   // appears, not where the icons are shown).
   gfx::Point GetLocationEntryOrigin() const;
 
-#if defined(OS_WIN)
-  // Invoked from SuggestedTextView when the suggested text should be committed.
-  void OnCommitSuggestedText();
-#endif
-
   // Sizing functions
   virtual gfx::Size GetPreferredSize();
 
@@ -194,7 +189,7 @@ class LocationBarView : public LocationBar,
   virtual void OnAutocompleteWillClosePopup();
   virtual void OnAutocompleteLosingFocus(gfx::NativeView view_gaining_focus);
   virtual void OnAutocompleteWillAccept();
-  virtual bool OnCommitSuggestedText(const string16& typed_text);
+  virtual bool OnCommitSuggestedText(bool skip_inline_autocomplete);
   virtual bool AcceptCurrentInstantPreview();
   virtual void OnPopupBoundsChanged(const gfx::Rect& bounds);
   virtual void OnAutocompleteAccept(const GURL& url,

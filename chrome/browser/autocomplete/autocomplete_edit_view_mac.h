@@ -84,6 +84,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   virtual gfx::NativeView GetNativeView() const;
   virtual CommandUpdater* GetCommandUpdater();
   virtual void SetInstantSuggestion(const string16& input);
+  virtual string16 GetInstantSuggestion() const;
   virtual int TextWidth() const;
   virtual bool IsImeComposing() const;
 
@@ -103,8 +104,6 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   virtual bool OnDoCommandBySelector(SEL cmd);
   virtual void OnSetFocus(bool control_down);
   virtual void OnKillFocus();
-
-  bool CommitSuggestText();
 
   // Helper for LocationBarViewMac.  Optionally selects all in |field_|.
   void FocusLocation(bool select_all);
@@ -160,6 +159,9 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   // Returns the non-suggest portion of |field_|'s string value.
   NSString* GetNonSuggestTextSubstring() const;
 
+  // Returns the suggest portion of |field_|'s string value.
+  NSString* GetSuggestTextSubstring() const;
+
   // Pass the current content of |field_| to SetText(), maintaining
   // any selection.  Named to be consistent with GTK and Windows,
   // though here we cannot really do the in-place operation they do.
@@ -169,6 +171,16 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   // to the given |as| object.
   void ApplyTextAttributes(const string16& display_text,
                            NSMutableAttributedString* as);
+
+  // Return the number of UTF-16 units in the current buffer, excluding the
+  // suggested text.
+  NSUInteger GetTextLength() const;
+
+  // Places the caret at the given position. This clears any selection.
+  void PlaceCaretAt(NSUInteger pos);
+
+  // Returns true if the caret is at the end of the content.
+  bool IsCaretAtEnd() const;
 
   scoped_ptr<AutocompleteEditModel> model_;
   scoped_ptr<AutocompletePopupViewMac> popup_view_;

@@ -154,8 +154,16 @@ void AutocompleteEditModel::SetUserText(const string16& text) {
 
 void AutocompleteEditModel::FinalizeInstantQuery(
     const string16& input_text,
-    const string16& suggest_text) {
-  popup_->FinalizeInstantQuery(input_text, suggest_text);
+    const string16& suggest_text,
+    bool skip_inline_autocomplete) {
+  if (skip_inline_autocomplete) {
+    const string16 final_text = input_text + suggest_text;
+    view_->OnBeforePossibleChange();
+    view_->SetWindowTextAndCaretPos(final_text, final_text.length());
+    view_->OnAfterPossibleChange();
+  } else {
+    popup_->FinalizeInstantQuery(input_text, suggest_text);
+  }
 }
 
 void AutocompleteEditModel::GetDataForURLExport(GURL* url,

@@ -944,6 +944,52 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(edit_view->IsSelectAll());
   }
 
+  void TabMoveCursorToEndTest() {
+    AutocompleteEditView* edit_view = NULL;
+    ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
+
+    edit_view->SetUserText(ASCIIToUTF16("Hello world"));
+
+    // Move cursor to the beginning.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_HOME, false, false, false));
+
+    string16::size_type start, end;
+    edit_view->GetSelectionBounds(&start, &end);
+    EXPECT_EQ(0U, start);
+    EXPECT_EQ(0U, end);
+
+    // Pressing tab should move cursor to the end.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, false, false, false));
+
+    edit_view->GetSelectionBounds(&start, &end);
+    EXPECT_EQ(edit_view->GetText().size(), start);
+    EXPECT_EQ(edit_view->GetText().size(), end);
+
+    // The location bar should still have focus.
+    ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
+
+    // Select all text.
+    edit_view->SelectAll(true);
+    EXPECT_TRUE(edit_view->IsSelectAll());
+    edit_view->GetSelectionBounds(&start, &end);
+    EXPECT_EQ(0U, start);
+    EXPECT_EQ(edit_view->GetText().size(), end);
+
+    // Pressing tab should move cursor to the end.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, false, false, false));
+
+    edit_view->GetSelectionBounds(&start, &end);
+    EXPECT_EQ(edit_view->GetText().size(), start);
+    EXPECT_EQ(edit_view->GetText().size(), end);
+
+    // The location bar should still have focus.
+    ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
+
+    // Pressing tab when cursor is at the end should change focus.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, false, false, false));
+
+    ASSERT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
+  }
 };
 
 // Test if ctrl-* accelerators are workable in omnibox.
@@ -1003,6 +1049,10 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, NonSubstitutingKeywordTest) {
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DeleteItem) {
   DeleteItemTest();
+}
+
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, TabMoveCursorToEnd) {
+  TabMoveCursorToEndTest();
 }
 
 #if defined(OS_LINUX)
@@ -1188,6 +1238,13 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest,
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest, DeleteItem) {
   DeleteItemTest();
+}
+
+// TODO(suzhe): This test is broken because of broken ViewID support when
+// enabling AutocompleteEditViewViews.
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest,
+                       DISABLED_TabMoveCursorToEnd) {
+  TabMoveCursorToEndTest();
 }
 
 #endif

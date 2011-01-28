@@ -924,6 +924,12 @@ void AutocompleteEditViewWin::SetInstantSuggestion(const string16& suggestion) {
   NOTREACHED();
 }
 
+string16 AutocompleteEditViewWin::GetInstantSuggestion() const {
+  // On Windows, we shows the suggestion in LocationBarView.
+  NOTREACHED();
+  return string16();
+}
+
 int AutocompleteEditViewWin::TextWidth() const {
   return WidthNeededToDisplay(GetText());
 }
@@ -944,13 +950,6 @@ views::View* AutocompleteEditViewWin::AddToView(views::View* parent) {
   host->set_focus_view(parent);
   host->Attach(GetNativeView());
   return host;
-}
-
-bool AutocompleteEditViewWin::CommitInstantSuggestion(
-    const string16& typed_text,
-    const string16& suggested_text) {
-  model_->FinalizeInstantQuery(typed_text, suggested_text);
-  return true;
 }
 
 void AutocompleteEditViewWin::PasteAndGo(const string16& text) {
@@ -1848,7 +1847,7 @@ bool AutocompleteEditViewWin::OnKeyDownOnlyWritable(TCHAR key,
         GetSel(selection);
         return (selection.cpMin == selection.cpMax) &&
             (selection.cpMin == GetTextLength()) &&
-            controller_->OnCommitSuggestedText(GetText());
+            controller_->OnCommitSuggestedText(true);
       }
 
     case VK_RETURN:
@@ -1977,8 +1976,13 @@ bool AutocompleteEditViewWin::OnKeyDownOnlyWritable(TCHAR key,
         // Accept the keyword.
         ScopedFreeze freeze(this, GetTextObjectModel());
         model_->AcceptKeyword();
+      } else if (!IsCaretAtEnd()) {
+        ScopedFreeze freeze(this, GetTextObjectModel());
+        OnBeforePossibleChange();
+        PlaceCaretAt(GetTextLength());
+        OnAfterPossibleChange();
       } else {
-        controller_->OnCommitSuggestedText(GetText());
+        controller_->OnCommitSuggestedText(true);
       }
       return true;
     }
@@ -2567,4 +2571,11 @@ int AutocompleteEditViewWin::WidthNeededToDisplay(
   // apparently buggy. In both LTR UI and RTL UI with left-to-right layout,
   // PosFromChar(i) might return 0 when i is greater than 1.
   return font_.GetStringWidth(text) + GetHorizontalMargin();
+}
+
+bool AutocompleteEditViewWin::IsCaretAtEnd() const {
+  long length = GetTextLength();
+  CHARRANGE sel;
+  GetSelection(sel);
+  return sel.cpMin == sel.cpMax && sel.cpMin == length;
 }

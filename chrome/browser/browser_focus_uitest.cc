@@ -469,6 +469,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
     // Location bar should be focused.
     ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
+    // Move the caret to the end, otherwise the next Tab key may not move focus.
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser(), ui::VKEY_END, false, false, false, false));
+
     // Now let's press tab to move the focus.
     for (size_t j = 0; j < arraysize(kExpElementIDs); ++j) {
       SCOPED_TRACE(StringPrintf("inner loop %" PRIuS, j));
@@ -514,6 +518,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
     SCOPED_TRACE(StringPrintf("outer loop: %d", i));
     // Location bar should be focused.
     ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
+
+    // Move the caret to the end, otherwise the next Tab key may not move focus.
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser(), ui::VKEY_END, false, false, false, false));
 
     // Now let's press shift-tab to move the focus in reverse.
     for (size_t j = 0; j < arraysize(kExpElementIDs); ++j) {
@@ -595,6 +603,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
     // Location bar should be focused.
     ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
+    // Move the caret to the end, otherwise the next Tab key may not move focus.
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser(), ui::VKEY_END, false, false, false, false));
+
     // Now let's press tab to move the focus.
     for (size_t j = 0; j < 7; ++j) {
       // Let's make sure the focus is on the expected element in the page.
@@ -633,6 +645,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
   for (int i = 0; i < 2; ++i) {
     // Location bar should be focused.
     ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
+
+    // Move the caret to the end, otherwise the next Tab key may not move focus.
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser(), ui::VKEY_END, false, false, false, false));
 
     // Now let's press shift-tab to move the focus in reverse.
     for (size_t j = 0; j < 7; ++j) {

@@ -663,13 +663,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
       GetSearchStateAsString(preview_));
 }
 
-#if !defined(OS_MACOSX)
-// Only passes on Mac.  http://crbug.com/66850
-#define MAYBE_TabKey FAILS_TabKey
-#else
-#define MAYBE_TabKey TabKey
-#endif
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_TabKey) {
+IN_PROC_BROWSER_TEST_F(InstantTest, TabKey) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -685,7 +679,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_TabKey) {
 
   ASSERT_EQ(ASCIIToUTF16("abcdef"), location_bar_->location_entry()->GetText());
 
-  EXPECT_EQ("true 0 0 2 2 a false abcdef false 6 6",
+  EXPECT_EQ("true 0 0 2 1 a false abcdef false 6 6",
       GetSearchStateAsString(preview_));
 
   // Pressing tab again to accept the current instant preview.
@@ -698,6 +692,6 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_TabKey) {
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and onsubmit is called.
-  EXPECT_EQ("true 1 0 2 2 a false abcdef true 6 6",
+  EXPECT_EQ("true 1 0 2 1 a false abcdef true 6 6",
       GetSearchStateAsString(preview_));
 }

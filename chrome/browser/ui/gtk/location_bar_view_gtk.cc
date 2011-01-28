@@ -458,9 +458,17 @@ void LocationBarViewGtk::OnAutocompleteWillAccept() {
   update_instant_ = false;
 }
 
-bool LocationBarViewGtk::OnCommitSuggestedText(
-    const string16& typed_text) {
-  return browser_->instant() && location_entry_->CommitInstantSuggestion();
+bool LocationBarViewGtk::OnCommitSuggestedText(bool skip_inline_autocomplete) {
+  if (!browser_->instant())
+    return false;
+
+  const string16 suggestion = location_entry_->GetInstantSuggestion();
+  if (suggestion.empty())
+    return false;
+
+  location_entry_->model()->FinalizeInstantQuery(
+      location_entry_->GetText(), suggestion, skip_inline_autocomplete);
+  return true;
 }
 
 bool LocationBarViewGtk::AcceptCurrentInstantPreview() {
@@ -538,13 +546,13 @@ void LocationBarViewGtk::OnChanged() {
           location_entry_->model()->UseVerbatimInstant(),
           &suggested_text);
       if (!instant->MightSupportInstant()) {
-        location_entry_->model()->FinalizeInstantQuery(string16(),
-                                                       string16());
+        location_entry_->model()->FinalizeInstantQuery(
+            string16(), string16(), false);
       }
     } else {
       instant->DestroyPreviewContents();
-      location_entry_->model()->FinalizeInstantQuery(string16(),
-                                                     string16());
+      location_entry_->model()->FinalizeInstantQuery(
+          string16(), string16(), false);
     }
   }
 
@@ -627,7 +635,7 @@ void LocationBarViewGtk::SetSuggestedText(const string16& text) {
     // text.
     if (!text.empty()) {
       location_entry_->model()->FinalizeInstantQuery(
-          location_entry_->GetText(), text);
+          location_entry_->GetText(), text, false);
     }
   } else {
     location_entry_->SetInstantSuggestion(text);

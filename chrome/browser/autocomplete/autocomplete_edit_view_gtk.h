@@ -144,13 +144,12 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   virtual gfx::NativeView GetNativeView() const;
   virtual CommandUpdater* GetCommandUpdater();
   virtual void SetInstantSuggestion(const string16& suggestion);
+  virtual string16 GetInstantSuggestion() const;
   virtual int TextWidth() const;
   virtual bool IsImeComposing() const;
 
 #if defined(TOOLKIT_VIEWS)
   virtual views::View* AddToView(views::View* parent);
-  virtual bool CommitInstantSuggestion(const string16& typed_text,
-                                       const string16& suggested_text);
 
   // Enables accessibility on AutocompleteEditView.
   void EnableAccessibility();
@@ -182,8 +181,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // Sets the colors of the instant suggestion view according to the theme and
   // the animation state.
   void UpdateInstantViewColors();
-
-  bool CommitInstantSuggestion();
 
   GtkWidget* text_view() {
     return text_view_;
@@ -302,7 +299,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
   // Get the character indices of the current selection.  This honors
   // direction, cp_max is the insertion point, and cp_min is the bound.
-  CharRange GetSelection();
+  CharRange GetSelection() const;
 
   // Translate from character positions to iterators for the current buffer.
   void ItersFromCharRange(const CharRange& range,
@@ -311,6 +308,12 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
   // Return the number of characers in the current buffer.
   int GetTextLength() const;
+
+  // Places the caret at the given position. This clears any selection.
+  void PlaceCaretAt(int pos);
+
+  // Returns true if the caret is at the end of the content.
+  bool IsCaretAtEnd() const;
 
   // Try to parse the current text as a URL and colorize the components.
   void EmphasizeURLComponents();

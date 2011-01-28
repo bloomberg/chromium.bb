@@ -48,9 +48,11 @@ class AutocompleteEditController {
   // OnAutoCompleteAccept.
   virtual void OnAutocompleteWillAccept() = 0;
 
-  // Commits the suggested text. |typed_text| is the current text showing in the
-  // autocomplete. Returns true if the text was committed.
-  virtual bool OnCommitSuggestedText(const string16& typed_text) = 0;
+  // Commits the suggested text. If |skip_inline_autocomplete| is true then the
+  // suggested text will be committed as final text as if it's inputted by the
+  // user, rather than as inline autocomplete suggest.
+  // Returns true if the text was committed.
+  virtual bool OnCommitSuggestedText(bool skip_inline_autocomplete) = 0;
 
   // Accepts the currently showing instant preview, if any, and returns true.
   // Returns false if there is no instant preview showing.
@@ -191,8 +193,11 @@ class AutocompleteEditModel : public NotificationObserver {
   void SetUserText(const string16& text);
 
   // Calls through to SearchProvider::FinalizeInstantQuery.
+  // If |skip_inline_autocomplete| is true then the |suggest_text| will be
+  // turned into final text instead of inline autocomplete suggest.
   void FinalizeInstantQuery(const string16& input_text,
-                            const string16& suggest_text);
+                            const string16& suggest_text,
+                            bool skip_inline_autocomplete);
 
   // Reverts the edit model back to its unedited state (permanent text showing,
   // no user input in progress).

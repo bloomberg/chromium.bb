@@ -276,6 +276,7 @@ void NativeTextfieldViews::GetSelectedRange(TextRange* range) const {
 
 void NativeTextfieldViews::SelectRange(const TextRange& range) {
   model_->SelectRange(range);
+  UpdateCursorBoundsAndTextOffset();
   SchedulePaint();
 }
 

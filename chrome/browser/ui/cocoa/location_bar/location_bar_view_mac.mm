@@ -248,8 +248,17 @@ void LocationBarViewMac::OnAutocompleteWillAccept() {
   update_instant_ = false;
 }
 
-bool LocationBarViewMac::OnCommitSuggestedText(const string16& typed_text) {
-  return edit_view_->CommitSuggestText();
+bool LocationBarViewMac::OnCommitSuggestedText(bool skip_inline_autocomplete) {
+  if (!browser_->instant())
+    return false;
+
+  const string16 suggestion = edit_view_->GetInstantSuggestion();
+  if (suggestion.empty())
+    return false;
+
+  edit_view_->model()->FinalizeInstantQuery(
+      edit_view_->GetText(), suggestion, skip_inline_autocomplete);
+  return true;
 }
 
 bool LocationBarViewMac::AcceptCurrentInstantPreview() {
@@ -321,13 +330,13 @@ void LocationBarViewMac::OnChanged() {
            edit_view_->model()->UseVerbatimInstant(),
            &suggested_text);
       if (!instant->MightSupportInstant()) {
-        edit_view_->model()->FinalizeInstantQuery(string16(),
-                                                  string16());
+        edit_view_->model()->FinalizeInstantQuery(
+            string16(), string16(), false);
       }
     } else {
       instant->DestroyPreviewContents();
-      edit_view_->model()->FinalizeInstantQuery(string16(),
-                                                string16());
+      edit_view_->model()->FinalizeInstantQuery(
+          string16(), string16(), false);
     }
   }
 
