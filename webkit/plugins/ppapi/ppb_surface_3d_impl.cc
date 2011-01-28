@@ -107,8 +107,11 @@ bool PPB_Surface3D_Impl::BindToContext(
   if (context) {
     // Resize the backing texture to the size of the instance when it is bound.
     // TODO(alokp): This should be the responsibility of plugins.
-    const gfx::Size& size = instance()->position().size();
-    context->gles2_impl()->ResizeCHROMIUM(size.width(), size.height());
+    gpu::gles2::GLES2Implementation* impl = context->gles2_impl();
+    if (impl) {
+      const gfx::Size& size = instance()->position().size();
+      impl->ResizeCHROMIUM(size.width(), size.height());
+    }
 
     context->platform_context()->SetSwapBuffersCallback(
         NewCallback(this, &PPB_Surface3D_Impl::OnSwapBuffers));
@@ -127,7 +130,10 @@ bool PPB_Surface3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
   }
 
   swap_callback_ = callback;
-  context_->gles2_impl()->SwapBuffers();
+  gpu::gles2::GLES2Implementation* impl = context_->gles2_impl();
+  if (impl) {
+    context_->gles2_impl()->SwapBuffers();
+  }
   return true;
 }
 

@@ -10,7 +10,10 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/resource.h"
 
+struct PPB_Context3DTrusted_Dev;
+
 namespace gpu {
+class CommandBuffer;
 namespace gles2 {
 class GLES2CmdHelper;
 class GLES2Implementation;
@@ -28,6 +31,7 @@ class PPB_Context3D_Impl : public Resource {
   virtual ~PPB_Context3D_Impl();
 
   static const PPB_Context3D_Dev* GetInterface();
+  static const PPB_Context3DTrusted_Dev* GetTrustedInterface();
 
   // Resource override.
   virtual PPB_Context3D_Impl* AsPPB_Context3D_Impl();
@@ -35,6 +39,9 @@ class PPB_Context3D_Impl : public Resource {
   bool Init(PP_Config3D_Dev config,
             PP_Resource share_context,
             const int32_t* attrib_list);
+  bool InitRaw(PP_Config3D_Dev config,
+               PP_Resource share_context,
+               const int32_t* attrib_list);
 
   PluginInstance* instance() {
     return instance_;
@@ -48,11 +55,14 @@ class PPB_Context3D_Impl : public Resource {
     return gles2_impl_.get();
   }
 
+  gpu::CommandBuffer* command_buffer();
+
   int32_t BindSurfaces(PPB_Surface3D_Impl* draw,
                        PPB_Surface3D_Impl* read);
 
  private:
   void Destroy();
+  bool CreateImplementation();
 
   // Plugin instance this context is associated with.
   PluginInstance* instance_;

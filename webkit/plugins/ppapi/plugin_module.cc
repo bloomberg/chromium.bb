@@ -15,6 +15,7 @@
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
 #include "ppapi/c/dev/ppb_context_3d_dev.h"
+#include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
@@ -287,6 +288,8 @@ const void* GetInterface(const char* name) {
       return PPB_Graphics3D_Impl::GetInterface();
     if (strcmp(name, PPB_CONTEXT_3D_DEV_INTERFACE) == 0)
       return PPB_Context3D_Impl::GetInterface();
+    if (strcmp(name, PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE) == 0)
+      return PPB_Context3D_Impl::GetTrustedInterface();
     if (strcmp(name, PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE) == 0)
       return PPB_GLESChromiumTextureMapping_Impl::GetInterface();
     if (strcmp(name, PPB_OPENGLES2_DEV_INTERFACE) == 0)

@@ -9,7 +9,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE "PPB_Context3DTrusted(Dev);0.1"
+#define PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE "PPB_Context3DTrusted(Dev);0.2"
 
 enum PPB_Context3DTrustedError {
   kNoError,
@@ -43,6 +43,19 @@ struct PP_Context3DTrustedState {
 };
 
 struct PPB_Context3DTrusted_Dev {
+  // Creates a raw Context3D resource. A raw Context3D is intended to be used
+  // with the trusted interface, through the command buffer (for proxying). In
+  // particular, when a Surface3D is bound to a raw context, SwapBuffers has no
+  // effect.
+  PP_Resource (*CreateRaw)(PP_Instance instance_id,
+                           PP_Config3D_Dev config,
+                           PP_Resource share_context,
+                           const int32_t* attrib_list);
+
+  // Initializes the command buffer with the given size.
+  PP_Bool (*Initialize)(PP_Resource context_id, int32_t size);
+
+  // Gets the ring buffer for the command buffer.
   PP_Bool (*GetRingBuffer)(PP_Resource context_id,
                            int* shm_handle,
                            uint32_t* shm_size);
