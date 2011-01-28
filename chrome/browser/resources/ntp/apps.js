@@ -281,6 +281,9 @@ var apps = (function() {
     arr.splice(to, 0, element[0]);
   }
 
+  // The autoscroll rate during drag and drop, in px per second.
+  var APP_AUTOSCROLL_RATE = 400;
+
   return {
     loaded: false,
 
@@ -289,6 +292,10 @@ var apps = (function() {
     showPromo: false,
 
     detachWebstoreEntry: false,
+
+    scrollMouseXY_: null,
+
+    scrollListener_: null,
 
     // The list of app ids, in order, of each app in the launcher.
     data_: null,
@@ -417,6 +424,76 @@ var apps = (function() {
         return appCount-1;
 
       return index;
+    },
+
+    scrollPage: function(xy) {
+      var rect = this.dragContainer.getBoundingClientRect();
+
+      // Here, we calculate the visible boundaries of the app launcher, which
+      // are then used to determine when we should auto-scroll.
+      var top = $('apps').getBoundingClientRect().bottom;
+      var bottomFudge = 15; // Fudge factor due to a gradient mask.
+      var bottom = top + maxiviewVisibleHeight - bottomFudge;
+      var left = rect.left + window.scrollX;
+      var right = Math.min(window.innerWidth, rect.left + rect.width);
+
+      var dy = Math.min(0, xy.y - top) + Math.max(0, xy.y - bottom);
+      var dx = Math.min(0, xy.x - left) + Math.max(0, xy.x - right);
+
+      if (dx == 0 && dy == 0) {
+        this.stopScroll_();
+        return;
+      }
+
+      // If we scroll the page directly from this method, it may be choppy and
+      // inconsistent. Instead, we loop using animation frames, and scroll at a
+      // speed that's independent of how many times this method is called.
+      this.scrollMouseXY_ = {dx: dx, dy: dy};
+
+      if (!this.scrollListener_) {
+        this.scrollListener_ = this.scrollImpl_.bind(this);
+        this.scrollStep_();
+      }
+    },
+
+    scrollStep_: function() {
+      this.scrollStart_ = Date.now();
+      window.webkitRequestAnimationFrame(this.scrollListener_);
+    },
+
+    scrollImpl_: function(time) {
+      if (!appDragAndDrop.isDragging()) {
+        this.stopScroll_();
+        return;
+      }
+
+      if (!this.scrollMouseXY_)
+        return;
+
+      var step = time - this.scrollStart_;
+
+      window.scrollBy(
+          this.calcScroll_(this.scrollMouseXY_.dx, step),
+          this.calcScroll_(this.scrollMouseXY_.dy, step));
+
+      this.scrollStep_();
+    },
+
+    calcScroll_: function(delta, step) {
+      if (delta == 0)
+        return 0;
+
+      // Increase the multiplier for every 50px the mouse is beyond the edge.
+      var sign = delta > 0 ? 1 : -1;
+      var scalar = APP_AUTOSCROLL_RATE * step / 1000;
+      var multiplier = Math.floor(Math.abs(delta) / 50) + 1;
+
+      return sign * scalar * multiplier;
+    },
+
+    stopScroll_: function() {
+      this.scrollListener_ = null;
+      this.scrollMouseXY_ = null;
     },
 
     saveDrag: function() {

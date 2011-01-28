@@ -9,6 +9,9 @@ var MAX_MINIVIEW_ITEMS = 15;
 // Extra spacing at the top of the layout.
 var LAYOUT_SPACING_TOP = 25;
 
+// The visible height of the expanded maxiview.
+var maxiviewVisibleHeight = 0;
+
 function getSectionCloseButton(sectionId) {
   return document.querySelector('#' + sectionId + ' .section-close-button');
 }
@@ -491,6 +494,8 @@ function layoutSections() {
     // all sections are collapsed, then get rid of the previous height.
     document.body.style.height = '';
   }
+
+  maxiviewVisibleHeight = expandedSectionHeight;
 
   // Now position all the elements.
   var y = LAYOUT_SPACING_TOP;

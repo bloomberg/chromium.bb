@@ -9,6 +9,10 @@ html.apps-promo-visible #apps-content {
   max-width: 650px; /* (124 + margin * 2) * 5 */
 }
 
+#apps-maxiview {
+  overflow: hidden;
+}
+
 /*
 We don't need to do anything for html.apps-promo-visible because there is
 enough extra space in the small grid layout.

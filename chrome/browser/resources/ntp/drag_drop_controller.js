@@ -44,6 +44,7 @@ DragAndDropController.prototype = {
   startItem_: null,
   startItemXY_: null,
   startMouseXY_: null,
+  mouseXY_: null,
 
   // Enables the handlers that are only active during a drag.
   enableHandlers_: function() {
@@ -51,14 +52,17 @@ DragAndDropController.prototype = {
     // remove the listeners later.
     this.mouseMoveListener_ = this.handleMouseMove_.bind(this);
     this.mouseUpListener_ = this.handleMouseUp_.bind(this);
+    this.scrollListener_ = this.handleScroll_.bind(this);
 
     document.addEventListener('mousemove', this.mouseMoveListener_, true);
     document.addEventListener('mouseup', this.mouseUpListener_, true);
+    document.addEventListener('scroll', this.scrollListener_, true);
   },
 
   disableHandlers_: function() {
     document.removeEventListener('mousemove', this.mouseMoveListener_, true);
     document.removeEventListener('mouseup', this.mouseUpListener_, true);
+    document.removeEventListener('scroll', this.scrollListener_, true);
   },
 
   isDragging: function() {
@@ -71,13 +75,13 @@ DragAndDropController.prototype = {
     return Math.sqrt(x2 + y2);
   },
 
-  // Gets the coordinates of the mouse event |e| relative to the top left of
-  // the drag container.
-  getCoordinates_: function(e) {
+  // Shifts the client coordinates, |xy|, so they are relative to the top left
+  // of the drag container.
+  getCoordinates_: function(xy) {
     var rect = this.delegate_.dragContainer.getBoundingClientRect();
     var coordinates = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      x: xy.x - rect.left,
+      y: xy.y - rect.top
     };
 
     // If we're in an RTL language, reflect the coordinates so the delegate
@@ -101,30 +105,36 @@ DragAndDropController.prototype = {
       return;
 
     this.startItem_ = item;
-    this.startItemXY_ = {x:item.offsetLeft, y:item.offsetTop};
-    this.startMouseXY_ = {x:e.clientX, y:e.clientY};
-    this.startScrollXY_ = {x:window.scrollX, y:window.scrollY};
+    this.startItemXY_ = {x: item.offsetLeft, y: item.offsetTop};
+    this.startMouseXY_ = {x: e.clientX, y: e.clientY};
+    this.startScrollXY_ = {x: window.scrollX, y: window.scrollY};
 
     this.enableHandlers_();
   },
 
   handleMouseMove_: function(e) {
+    this.mouseXY_ = {x: e.clientX, y: e.clientY};
+
     if (this.isDragging()) {
-      this.handleDrag_(e);
+      this.handleDrag_();
       return;
     }
 
     // Initiate the drag if the mouse has moved far enough.
-    var now = this.getCoordinates_(e);
-    if (this.distance_(this.startMouseXY_, now) >= DRAG_THRESHOLD)
-      this.handleDragStart_(e);
+    if (this.distance_(this.startMouseXY_, this.mouseXY_) >= DRAG_THRESHOLD)
+      this.handleDragStart_();
   },
 
-  handleMouseUp_: function(e) {
-    this.handleDrop_(e);
+  handleMouseUp_: function() {
+    this.handleDrop_();
   },
 
-  handleDragStart_: function(e) {
+  handleScroll_: function(e) {
+    if (this.isDragging())
+      this.handleDrag_();
+  },
+
+  handleDragStart_: function() {
     // Use the item that the mouse was above when 'mousedown' fired.
     var item = this.startItem_;
     if (!item)
@@ -136,15 +146,15 @@ DragAndDropController.prototype = {
     item.style.zIndex = 2;
   },
 
-  handleDragOver_: function(e) {
-    var coordinates = this.getCoordinates_(e);
+  handleDragOver_: function() {
+    var coordinates = this.getCoordinates_(this.mouseXY_);
     if (!this.delegate_.canDropOn(coordinates))
       return;
 
     this.delegate_.setDragPlaceholder(coordinates);
   },
 
-  handleDrop_: function(e) {
+  handleDrop_: function() {
     this.disableHandlers_();
 
     var dragItem = this.delegate_.dragItem;
@@ -163,7 +173,7 @@ DragAndDropController.prototype = {
     }.bind(this), this.delegate_.transitionsDuration);
   },
 
-  handleDrag_: function(e) {
+  handleDrag_: function() {
     // Moves the drag item making sure that it is not displayed outside the
     // drag container.
     var dragItem = this.delegate_.dragItem;
@@ -171,9 +181,9 @@ DragAndDropController.prototype = {
     var rect = dragContainer.getBoundingClientRect();
 
     // First, move the item the same distance the mouse has moved.
-    var x = this.startItemXY_.x + e.clientX - this.startMouseXY_.x +
+    var x = this.startItemXY_.x + this.mouseXY_.x - this.startMouseXY_.x +
               window.scrollX - this.startScrollXY_.x;
-    var y = this.startItemXY_.y + e.clientY - this.startMouseXY_.y +
+    var y = this.startItemXY_.y + this.mouseXY_.y - this.startMouseXY_.y +
               window.scrollY - this.startScrollXY_.y;
 
     var w = this.delegate_.dimensions.width;
@@ -194,6 +204,8 @@ DragAndDropController.prototype = {
     dragItem.style.top = y + 'px';
 
     // Update the layouts and positions based on the new drag location.
-    this.handleDragOver_(e);
+    this.handleDragOver_();
+
+    this.delegate_.scrollPage(this.mouseXY_);
   }
 };
