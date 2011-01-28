@@ -40,8 +40,6 @@ void MessageReader::Init(net::Socket* socket,
 }
 
 void MessageReader::DoRead() {
-  DCHECK(!read_pending_);
-
   // Don't try to read again if there is another read pending or we
   // have messages that we haven't finished processing yet.
   while (!closed_ && !read_pending_ && pending_messages_ == 0) {
