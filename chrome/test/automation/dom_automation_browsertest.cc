@@ -33,9 +33,13 @@ typedef DOMElementProxy::By By;
 
 #if defined(OS_WIN)
 // See http://crbug.com/61636
-#define MAYBE_FindByXPath FLAKY_FindByXPath
+#define MAYBE_FindByXPath DISABLED_FindByXPath
+#define MAYBE_FindBySelectors DISABLED_FindByXPath
+#define MAYBE_FindByText DISABLED_FindByText
 #else
 #define MAYBE_FindByXPath FindByXPath
+#define MAYBE_FindBySelectors FindBySelectors
+#define MAYBE_FindByText FindByText
 #endif
 
 IN_PROC_BROWSER_TEST_F(DOMAutomationTest, MAYBE_FindByXPath) {
