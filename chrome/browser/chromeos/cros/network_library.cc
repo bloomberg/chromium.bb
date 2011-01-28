@@ -624,6 +624,7 @@ CellularNetwork::DataLeft CellularNetwork::GetDataLeft() const {
       return DATA_VERY_LOW;
     if (remaining <= base::TimeDelta::FromSeconds(kCellularDataLowSecs))
       return DATA_LOW;
+    return DATA_NORMAL;
   } else if (plan->plan_type == CELLULAR_DATA_PLAN_METERED_PAID ||
              plan->plan_type == CELLULAR_DATA_PLAN_METERED_BASE) {
     int64 remaining = plan->remaining_data();
@@ -635,8 +636,9 @@ CellularNetwork::DataLeft CellularNetwork::GetDataLeft() const {
     if (remaining <= kCellularDataLowBytes &&
         plan->plan_type != CELLULAR_DATA_PLAN_METERED_BASE)
       return DATA_LOW;
+    return DATA_NORMAL;
   }
-  return DATA_NORMAL;
+  return DATA_UNKNOWN;
 }
 
 std::string CellularNetwork::GetNetworkTechnologyString() const {
@@ -874,8 +876,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   void NetworkStatusChanged() {
+    DVLOG(1) << "Got NetworkStatusChanged";
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (update_task_) {
+      DVLOG(1) << "  found previous task";
       update_task_->Cancel();
     }
     update_task_ =
