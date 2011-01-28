@@ -89,6 +89,10 @@ class WidgetWin : public ui::WindowImpl,
   // Returns the root Widget associated with the specified HWND (if any).
   static WidgetWin* GetRootWidget(HWND hwnd);
 
+  // Returns true if we are on Windows Vista or greater and composition is
+  // enabled.
+  static bool IsAeroGlassEnabled();
+
   void set_delete_on_destroy(bool delete_on_destroy) {
     delete_on_destroy_ = delete_on_destroy;
   }

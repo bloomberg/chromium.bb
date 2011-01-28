@@ -20,8 +20,8 @@
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 #include "gfx/font.h"
 #include "grit/theme_resources.h"
-#include "ui/base/win/hwnd_util.h"
 #include "views/screen.h"
+#include "views/widget/widget_win.h"
 #include "views/window/window_delegate.h"
 
 // static
@@ -109,7 +109,8 @@ bool BrowserFrameWin::AlwaysUseNativeFrame() const {
   // We don't theme popup or app windows, so regardless of whether or not a
   // theme is active for normal browser windows, we don't want to use the custom
   // frame for popups/apps.
-  if (!browser_view_->IsBrowserTypeNormal() && ui::ShouldUseVistaFrame())
+  if (!browser_view_->IsBrowserTypeNormal() &&
+      views::WidgetWin::IsAeroGlassEnabled())
     return true;
 
   // Otherwise, we use the native frame when we're told we should by the theme
@@ -166,7 +167,7 @@ void BrowserFrameWin::OnEnterSizeMove() {
 }
 
 void BrowserFrameWin::OnExitSizeMove() {
-  WidgetWin::OnExitSizeMove();
+  views::WidgetWin::OnExitSizeMove();
 }
 
 void BrowserFrameWin::OnInitMenuPopup(HMENU menu, UINT position,

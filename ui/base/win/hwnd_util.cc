@@ -4,14 +4,9 @@
 
 #include "ui/base/win/hwnd_util.h"
 
-#include <dwmapi.h>
-
 #include "base/string_util.h"
-#include "base/win/windows_version.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
-
-#pragma comment(lib, "dwmapi.lib")
 
 namespace ui {
 
@@ -167,15 +162,6 @@ void CenterAndSizeWindow(HWND parent,
   } else {
     NOTREACHED() << "Unable to adjust window to fit";
   }
-}
-
-bool ShouldUseVistaFrame() {
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return false;
-  // If composition is not enabled, we behave like on XP.
-  BOOL f;
-  DwmIsCompositionEnabled(&f);
-  return !!f;
 }
 
 }  // namespace ui

@@ -26,9 +26,9 @@
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/win/hwnd_util.h"
 #include "views/controls/button/image_button.h"
 #include "views/focus/focus_manager.h"
+#include "views/widget/widget_win.h"
 #include "views/window/client_view.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window_resources.h"
@@ -198,7 +198,8 @@ class ConstrainedWindowFrameView
 
   SkColor GetTitleColor() const {
     return (container_->owner()->profile()->IsOffTheRecord() ||
-        !ui::ShouldUseVistaFrame()) ? SK_ColorWHITE : SK_ColorBLACK;
+            !views::WidgetWin::IsAeroGlassEnabled()) ? SK_ColorWHITE
+                                                     : SK_ColorBLACK;
   }
 
   // Loads the appropriate set of WindowResources for the frame view.
@@ -535,7 +536,7 @@ gfx::Rect ConstrainedWindowFrameView::CalculateClientAreaBounds(
 }
 
 void ConstrainedWindowFrameView::InitWindowResources() {
-  resources_.reset(ui::ShouldUseVistaFrame() ?
+  resources_.reset(views::WidgetWin::IsAeroGlassEnabled() ?
     static_cast<views::WindowResources*>(new VistaWindowResources) :
     new XPWindowResources);
 }

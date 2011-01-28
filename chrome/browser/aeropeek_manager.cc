@@ -35,8 +35,8 @@
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/window_impl.h"
+#include "views/widget/widget_win.h"
 
 namespace {
 
@@ -1016,7 +1016,7 @@ bool AeroPeekManager::Enabled() {
   // flooding users with tab thumbnails.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   return base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      ui::ShouldUseVistaFrame() &&
+      views::WidgetWin::IsAeroGlassEnabled() &&
       !command_line->HasSwitch(switches::kApp) &&
       command_line->HasSwitch(switches::kEnableAeroPeekTabs);
 }

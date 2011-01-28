@@ -4,8 +4,11 @@
 
 #include "views/widget/widget_win.h"
 
+#include <dwmapi.h>
+
 #include "app/win/win_util.h"
 #include "base/string_util.h"
+#include "base/win/windows_version.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/native_theme_win.h"
 #include "gfx/path.h"
@@ -27,6 +30,8 @@
 #include "views/widget/widget_delegate.h"
 #include "views/widget/widget_utils.h"
 #include "views/window/window_win.h"
+
+#pragma comment(lib, "dwmapi.lib")
 
 using ui::ViewProp;
 
@@ -105,6 +110,15 @@ WidgetWin* WidgetWin::GetRootWidget(HWND hwnd) {
   } while (parent_hwnd != NULL && parent_widget != NULL);
 
   return widget;
+}
+
+// static
+bool WidgetWin::IsAeroGlassEnabled() {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return false;
+  // If composition is not enabled, we behave like on XP.
+  BOOL enabled = FALSE;
+  return SUCCEEDED(DwmIsCompositionEnabled(&enabled)) && enabled;
 }
 
 void WidgetWin::SetUseLayeredBuffer(bool use_layered_buffer) {
