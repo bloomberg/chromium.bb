@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/firefox_proxy_settings.h"
@@ -249,7 +250,9 @@ class ConnectionTester::TestRunner : public net::URLRequest::Delegate {
  public:
   // |tester| must remain alive throughout the TestRunner's lifetime.
   // |tester| will be notified of completion.
-  explicit TestRunner(ConnectionTester* tester) : tester_(tester) {}
+  explicit TestRunner(ConnectionTester* tester)
+      : tester_(tester),
+        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
 
   // Starts running |experiment|. Notifies tester->OnExperimentCompleted() when
   // it is done.
@@ -270,9 +273,12 @@ class ConnectionTester::TestRunner : public net::URLRequest::Delegate {
 
   // Called when the request has completed (for both success and failure).
   void OnResponseCompleted(net::URLRequest* request);
+  void OnExperimentCompletedWithResult(int result);
 
   ConnectionTester* tester_;
   scoped_ptr<net::URLRequest> request_;
+
+  ScopedRunnableMethodFactory<TestRunner> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRunner);
 };
@@ -318,6 +324,17 @@ void ConnectionTester::TestRunner::OnResponseCompleted(
     DCHECK_NE(net::ERR_IO_PENDING, request->status().os_error());
     result = request->status().os_error();
   }
+
+  // Post a task to notify the parent rather than handling it right away,
+  // to avoid re-entrancy problems with URLRequest. (Don't want the caller
+  // to end up deleting the URLRequest while in the middle of processing).
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &TestRunner::OnExperimentCompletedWithResult, result));
+}
+
+void ConnectionTester::TestRunner::OnExperimentCompletedWithResult(int result) {
   tester_->OnExperimentCompleted(result);
 }
 
