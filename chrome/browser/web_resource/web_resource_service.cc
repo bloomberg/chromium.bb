@@ -68,7 +68,7 @@ class WebResourceService::WebResourceFetcher
 
   // Delay initial load of resource data into cache so as not to interfere
   // with startup time.
-  void StartAfterDelay(int delay_ms) {
+  void StartAfterDelay(int64 delay_ms) {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
       fetcher_factory_.NewRunnableMethod(&WebResourceFetcher::StartFetch),
                                          delay_ms);
@@ -282,11 +282,11 @@ void WebResourceService::WebResourceStateChange() {
 void WebResourceService::ScheduleNotification(double promo_start,
                                               double promo_end) {
   if (promo_start > 0 && promo_end > 0 && !web_resource_update_scheduled_) {
-    int ms_until_start =
-        static_cast<int>((base::Time::FromDoubleT(
+    int64 ms_until_start =
+        static_cast<int64>((base::Time::FromDoubleT(
             promo_start) - base::Time::Now()).InMilliseconds());
-    int ms_until_end =
-        static_cast<int>((base::Time::FromDoubleT(
+    int64 ms_until_end =
+        static_cast<int64>((base::Time::FromDoubleT(
             promo_end) - base::Time::Now()).InMilliseconds());
     if (ms_until_start > 0) {
       web_resource_update_scheduled_ = true;
@@ -310,7 +310,7 @@ void WebResourceService::ScheduleNotification(double promo_start,
 }
 
 void WebResourceService::StartAfterDelay() {
-  int delay = kStartResourceFetchDelay;
+  int64 delay = kStartResourceFetchDelay;
   // Check whether we have ever put a value in the web resource cache;
   // if so, pull it out and see if it's time to update again.
   if (prefs_->HasPrefPath(prefs::kNTPWebResourceCacheUpdate)) {
@@ -319,8 +319,8 @@ void WebResourceService::StartAfterDelay() {
     if (!last_update_pref.empty()) {
       double last_update_value;
       base::StringToDouble(last_update_pref, &last_update_value);
-      int ms_until_update = cache_update_delay_ -
-          static_cast<int>((base::Time::Now() - base::Time::FromDoubleT(
+      int64 ms_until_update = cache_update_delay_ -
+          static_cast<int64>((base::Time::Now() - base::Time::FromDoubleT(
           last_update_value)).InMilliseconds());
       delay = ms_until_update > cache_update_delay_ ?
           cache_update_delay_ : (ms_until_update < kStartResourceFetchDelay ?
@@ -328,7 +328,7 @@ void WebResourceService::StartAfterDelay() {
     }
   }
   // Start fetch and wait for UpdateResourceCache.
-  web_resource_fetcher_->StartAfterDelay(static_cast<int>(delay));
+  web_resource_fetcher_->StartAfterDelay(delay);
 }
 
 void WebResourceService::UpdateResourceCache(const std::string& json_data) {
