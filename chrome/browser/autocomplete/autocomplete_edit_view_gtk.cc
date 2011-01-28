@@ -1432,7 +1432,7 @@ void AutocompleteEditViewGtk::HandlePopulatePopup(GtkWidget* sender,
   // back after shutdown, and similar issues.
   GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
   gchar* text = gtk_clipboard_wait_for_text(x_clipboard);
-  string16 text_wstr = UTF8ToUTF16(text);
+  string16 text_wstr = UTF8ToUTF16(text ? text : "");
   g_free(text);
 
   // Paste and Go menu item.
