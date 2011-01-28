@@ -127,6 +127,7 @@ void DownloadManager::Shutdown() {
     select_file_dialog_->ListenerDestroyed();
 
   download_history_.reset();
+  download_prefs_.reset();
 
   request_context_getter_ = NULL;
 
