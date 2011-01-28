@@ -358,7 +358,11 @@ void NetworkMenu::UpdateMenu() {
 SkBitmap NetworkMenu::IconForNetworkStrength(const WifiNetwork* wifi,
                                              bool black) {
   DCHECK(wifi);
-  // Compose wifi icon by superimposing various icons.
+  if (wifi->strength() == 0) {
+    return *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        black ? IDR_STATUSBAR_NETWORK_BARS0_BLACK :
+                IDR_STATUSBAR_NETWORK_BARS0);
+  }
   int index = static_cast<int>(wifi->strength() / 100.0 *
       nextafter(static_cast<float>(kNumBarsImages), 0));
   index = std::max(std::min(index, kNumBarsImages - 1), 0);
@@ -371,12 +375,12 @@ SkBitmap NetworkMenu::IconForNetworkStrength(const CellularNetwork* cellular,
                                              bool black) {
   DCHECK(cellular);
   // If no data, then we show 0 bars.
-  if (cellular->GetDataLeft() == CellularNetwork::DATA_NONE) {
+  if (cellular->strength() == 0 ||
+      cellular->GetDataLeft() == CellularNetwork::DATA_NONE) {
     return *ResourceBundle::GetSharedInstance().GetBitmapNamed(
         black ? IDR_STATUSBAR_NETWORK_BARS0_BLACK :
                 IDR_STATUSBAR_NETWORK_BARS0);
   }
-  // Compose cellular icon by superimposing various icons.
   int index = static_cast<int>(cellular->strength() / 100.0 *
       nextafter(static_cast<float>(kNumBarsImages), 0));
   index = std::max(std::min(index, kNumBarsImages - 1), 0);
