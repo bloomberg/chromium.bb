@@ -11,6 +11,30 @@ import pyauto_functional  # Must be imported before pyauto
 import pyauto
 
 
+class InstantSettingsTest(pyauto.PyUITest):
+  """Test Chrome Instant settings."""
+
+  def testEnableDisableInstant(self):
+    """Test to verify default Chrome Instant setting.
+    Check if the setting can be enabled and disabled."""
+    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kInstantEnabled),
+                     msg='Instant is enabled by default.')
+    # Enable instant.
+    self.SetPrefs(pyauto.kInstantEnabled, True)
+    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kInstantEnabled),
+                    msg='Instant is not enabled.')
+    self.SetOmniboxText('google.com')
+    self.assertTrue(self.WaitUntil(
+        lambda: self.GetInstantInfo().get('current') and not
+        self.GetInstantInfo().get('loading')))
+    title = self.GetInstantInfo()['title']
+    self.assertEqual('Google', title, msg='Instant did not load.')
+    # Disable Instant.
+    self.SetPrefs(pyauto.kInstantEnabled, False)
+    self.assertFalse(self.GetInstantInfo()['enabled'],
+                     msg='Instant is not disabled.')
+
+
 class InstantTest(pyauto.PyUITest):
   """TestCase for Omnibox Instant feature."""
 
@@ -58,6 +82,38 @@ class InstantTest(pyauto.PyUITest):
     location = self.GetInstantInfo()['location']
     self.assertTrue('google.com' in location,
                     msg='No google.com in %s' % location)
+
+  def testInstantCaseSensitivity(self):
+    """Verify that Chrome Instant results case insensitive."""
+    # Text in lowercase letters.
+    self.SetOmniboxText('google')
+    self.assertTrue(self.WaitUntil(self._DoneLoading))
+    lowercase_instant_info = self.GetInstantInfo()
+    # Text in uppercase letters.
+    self.SetOmniboxText('GOOGLE')
+    self.assertTrue(self.WaitUntil(self._DoneLoading))
+    uppercase_instant_info = self.GetInstantInfo()
+    # Check lowercase and uppercase text results are same.
+    self.assertEquals(lowercase_instant_info, uppercase_instant_info,
+        msg='Lowercase and Uppercase instant info doesn\'t match')
+    # Text in mixed case letters.
+    self.SetOmniboxText('GooGle')
+    self.assertTrue(self.WaitUntil(self._DoneLoading))
+    mixedcase_instant_info = self.GetInstantInfo()
+    # Check mixedcase and uppercase text results are same.
+    self.assertEquals(mixedcase_instant_info, uppercase_instant_info,
+        msg='Mixedcase and Uppercase instant info doesn\'t match')
+
+  def testInstantWithSearchEngineOtherThanGoogle(self):
+    """Verify that Instant is inactive for search engines other than Google."""
+    # Check with Yahoo!.
+    self.MakeSearchEngineDefault('yahoo.com')
+    self.assertFalse(self.GetInstantInfo()['active'],
+                     msg='Instant is active for Yahoo!')
+    # Check with Bing.
+    self.MakeSearchEngineDefault('bing.com')
+    self.assertFalse(self.GetInstantInfo()['active'],
+                     msg='Instant is active for Bing.')
 
   def testInstantDisabledInIncognito(self):
     """Test that instant is disabled in Incognito mode."""
