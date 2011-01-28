@@ -343,7 +343,6 @@
         'browser/instant/instant_browsertest.cc',
         'browser/notifications/notifications_interactive_uitest.cc',
         'browser/ui/views/bookmark_bar_view_test.cc',
-        'browser/ui/views/browser_keyboard_accessibility_test_win.cc',
         'browser/ui/views/find_bar_host_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_dragging_test.cc',
         'test/in_process_browser_test.cc',
