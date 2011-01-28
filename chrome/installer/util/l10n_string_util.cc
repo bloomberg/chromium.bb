@@ -5,6 +5,8 @@
 // This file defines specific implementation of BrowserDistribution class for
 // Google Chrome.
 
+#include <algorithm>
+
 #include <atlbase.h>
 
 #include "base/logging.h"

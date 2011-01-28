@@ -355,7 +355,7 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
         l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_HEADING));
   }
 
-  string16 failed_url(ASCIIToUTF16(error.unreachableURL.spec()));
+  string16 failed_url(ASCIIToUTF16(std::string(error.unreachableURL.spec())));
   // URLs are always LTR.
   if (rtl)
     base::i18n::WrapStringWithLTRFormatting(&failed_url);

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdlib.h>
+
 #include "webkit/plugins/npapi/test/plugin_arguments_test.h"
 
 #include "base/basictypes.h"

@@ -4,6 +4,8 @@
 //
 // Parse the data returned from the SafeBrowsing v2.1 protocol response.
 
+#include <stdlib.h>
+
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 

@@ -145,7 +145,7 @@ void WebClipboardImpl::writeURL(const WebURL& url, const WebString& title) {
 
   scw.WriteBookmark(title, url.spec());
   scw.WriteHTML(UTF8ToUTF16(URLToMarkup(url, title)), "");
-  scw.WriteText(UTF8ToUTF16(url.spec()));
+  scw.WriteText(UTF8ToUTF16(std::string(url.spec())));
 }
 
 void WebClipboardImpl::writeImage(

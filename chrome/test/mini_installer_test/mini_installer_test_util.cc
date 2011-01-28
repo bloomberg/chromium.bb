@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "chrome/test/mini_installer_test/mini_installer_test_util.h"
 
 #include "base/file_path.h"

@@ -4,6 +4,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "base/at_exit.h"
 #include "net/base/dns_util.h"

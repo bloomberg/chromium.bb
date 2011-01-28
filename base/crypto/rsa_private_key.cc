@@ -4,6 +4,7 @@
 
 #include "base/crypto/rsa_private_key.h"
 
+#include <algorithm>
 #include <list>
 
 #include "base/logging.h"

@@ -52,6 +52,7 @@
 //           <url>,<weight> where weight is an integer indicating the number of
 //           unique views for the URL.
 
+#include <algorithm>
 #include <fstream>
 #include <vector>
 
@@ -380,4 +381,3 @@ TEST(SafeBrowsingBloomFilter, HashTime) {
             << ", per-check (us): "        << time_per_check
             << std::endl;
 }
-
