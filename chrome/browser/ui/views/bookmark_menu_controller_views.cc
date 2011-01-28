@@ -85,6 +85,15 @@ void BookmarkMenuController::Cancel() {
   menu_->Cancel();
 }
 
+std::wstring BookmarkMenuController::GetTooltipText(
+    int id, const gfx::Point& screen_loc) {
+  DCHECK(menu_id_to_node_map_.find(id) != menu_id_to_node_map_.end());
+
+  const BookmarkNode* node = menu_id_to_node_map_[id];
+  return BookmarkBarView::CreateToolTipForURLAndTitle(
+      screen_loc, node->GetURL(), UTF16ToWide(node->GetTitle()), profile_);
+}
+
 bool BookmarkMenuController::IsTriggerableEvent(const views::MouseEvent& e) {
   return event_utils::IsPossibleDispositionEvent(e);
 }

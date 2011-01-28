@@ -126,46 +126,6 @@ static const int kSyncErrorButtonTag = 2;
 
 namespace {
 
-// Returns the tooltip text for the specified url and title. The returned
-// text is clipped to fit within the bounds of the monitor.
-//
-// Note that we adjust the direction of both the URL and the title based on the
-// locale so that pure LTR strings are displayed properly in RTL locales.
-static std::wstring CreateToolTipForURLAndTitle(const gfx::Point& screen_loc,
-                                                const GURL& url,
-                                                const std::wstring& title,
-                                                const std::wstring& languages) {
-  int max_width = views::TooltipManager::GetMaxWidth(screen_loc.x(),
-                                                     screen_loc.y());
-  gfx::Font tt_font = views::TooltipManager::GetDefaultFont();
-  std::wstring result;
-
-  // First the title.
-  if (!title.empty()) {
-    std::wstring localized_title = title;
-    base::i18n::AdjustStringForLocaleDirection(&localized_title);
-    result.append(UTF16ToWideHack(ui::ElideText(WideToUTF16Hack(
-        localized_title), tt_font, max_width, false)));
-  }
-
-  // Only show the URL if the url and title differ.
-  if (title != UTF8ToWide(url.spec())) {
-    if (!result.empty())
-      result.append(views::TooltipManager::GetLineSeparator());
-
-    // We need to explicitly specify the directionality of the URL's text to
-    // make sure it is treated as an LTR string when the context is RTL. For
-    // example, the URL "http://www.yahoo.com/" appears as
-    // "/http://www.yahoo.com" when rendered, as is, in an RTL context since
-    // the Unicode BiDi algorithm puts certain characters on the left by
-    // default.
-    string16 elided_url(ui::ElideUrl(url, tt_font, max_width, languages));
-    elided_url = base::i18n::GetDisplayStringInLTRDirectionality(elided_url);
-    result.append(UTF16ToWideHack(elided_url));
-  }
-  return result;
-}
-
 // BookmarkButton -------------------------------------------------------------
 
 // Buttons used for the bookmarks on the bookmark bar.
@@ -192,8 +152,8 @@ class BookmarkButton : public views::TextButton {
   bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
     gfx::Point location(p);
     ConvertPointToScreen(this, &location);
-    *tooltip = CreateToolTipForURLAndTitle(location, url_, text(),
-        UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)));
+    *tooltip = BookmarkBarView::CreateToolTipForURLAndTitle(location, url_,
+        text(), profile_);
     return !tooltip->empty();
   }
 
@@ -1580,6 +1540,45 @@ void BookmarkBarView::StopThrobbing(bool immediate) {
   // If not immediate, cycle through 2 more complete cycles.
   throbbing_view_->StartThrobbing(immediate ? 0 : 4);
   throbbing_view_ = NULL;
+}
+
+// static
+std::wstring BookmarkBarView::CreateToolTipForURLAndTitle(
+    const gfx::Point& screen_loc,
+    const GURL& url,
+    const std::wstring& title,
+    Profile* profile) {
+  int max_width = views::TooltipManager::GetMaxWidth(screen_loc.x(),
+                                                     screen_loc.y());
+  gfx::Font tt_font = views::TooltipManager::GetDefaultFont();
+  std::wstring result;
+
+  // First the title.
+  if (!title.empty()) {
+    std::wstring localized_title = title;
+    base::i18n::AdjustStringForLocaleDirection(&localized_title);
+    result.append(UTF16ToWideHack(ui::ElideText(WideToUTF16Hack(
+        localized_title), tt_font, max_width, false)));
+  }
+
+  // Only show the URL if the url and title differ.
+  if (title != UTF8ToWide(url.spec())) {
+    if (!result.empty())
+      result.append(views::TooltipManager::GetLineSeparator());
+
+    // We need to explicitly specify the directionality of the URL's text to
+    // make sure it is treated as an LTR string when the context is RTL. For
+    // example, the URL "http://www.yahoo.com/" appears as
+    // "/http://www.yahoo.com" when rendered, as is, in an RTL context since
+    // the Unicode BiDi algorithm puts certain characters on the left by
+    // default.
+    std::wstring languages =
+        UTF8ToWide(profile->GetPrefs()->GetString(prefs::kAcceptLanguages));
+    string16 elided_url(ui::ElideUrl(url, tt_font, max_width, languages));
+    elided_url = base::i18n::GetDisplayStringInLTRDirectionality(elided_url);
+    result.append(UTF16ToWideHack(elided_url));
+  }
+  return result;
 }
 
 void BookmarkBarView::UpdateColors() {

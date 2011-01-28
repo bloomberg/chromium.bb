@@ -241,6 +241,17 @@ class BookmarkBarView : public DetachableToolbarView,
   // bookmark bar model has.
   int GetBookmarkButtonCount();
 
+  // Returns the tooltip text for the specified url and title. The returned
+  // text is clipped to fit within the bounds of the monitor.
+  //
+  // Note that we adjust the direction of both the URL and the title based on
+  // the locale so that pure LTR strings are displayed properly in RTL locales.
+  static std::wstring CreateToolTipForURLAndTitle(
+      const gfx::Point& screen_loc,
+      const GURL& url,
+      const std::wstring& title,
+      Profile* profile);
+
   // If true we're running tests. This short circuits a couple of animations.
   static bool testing_;
 

@@ -99,7 +99,16 @@ MenuItemView::~MenuItemView() {
 
 bool MenuItemView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   *tooltip = UTF16ToWideHack(tooltip_);
-  return !tooltip_.empty();
+  if (!tooltip->empty())
+    return true;
+  if (GetType() != SEPARATOR) {
+    gfx::Point location(p);
+    ConvertPointToScreen(this, &location);
+    *tooltip = GetDelegate()->GetTooltipText(command_, location);
+    if (!tooltip->empty())
+      return true;
+  }
+  return false;
 }
 
 AccessibilityTypes::Role MenuItemView::GetAccessibleRole() {
