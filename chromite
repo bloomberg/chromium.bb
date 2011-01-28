@@ -1,0 +1,77 @@
+#!/usr/bin/python
+# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Wrapper for the chromite shell.
+
+This script is intended to run in several ways:
+- Outside the chroot, it should be _copied_ to someplace that is in the
+  path (like depot_tools).  It will search for the right chromite by looking
+  for a file 'chromite/shell/main.py' upward based on the CWD.
+- Inside the chroot, it might be _either_ copied to someplace in the path (since
+  depot_tools is in the path in the chroot) or it might run from chromite/bin
+  directly, which should be in the PATH.  In any case, we'll look for the
+  real 'chromite/shell/main.py' based on the environment variable
+  CROS_WORKON_SRCROOT, so it doesn't matter what the CWD is.
+
+If you're looking at a copy and want to know where the original looks at, look
+here:
+  http://git.chromium.org/gitweb/?p=chromite.git;a=blob;f=bin/chromite
+
+Since this script is _copied_, it should remain small and not use internal libs.
+"""
+
+# Python imports.
+import os
+import sys
+
+if __name__ == '__main__':
+  # Look relative to CROS_WORKON_SRCROOT if that variable exists.  This is
+  # the "inside the chroot" case.
+  if 'CROS_WORKON_SRCROOT' in os.environ:
+    chromite_path = os.path.join(os.environ['CROS_WORKON_SRCROOT'],
+                                 'chromite', 'shell', 'main.py')
+    if os.path.isfile(chromite_path):
+      # Exec the script, which will never return.
+      os.execv(chromite_path, sys.argv)
+    else:
+      print (
+          "ERROR: Couldn't find the chromite tool.\n"
+          "\n"
+          "You may need to update your chroot.  If you need help, see:\n"
+          "  http://www.chromium.org/chromium-os/developer-guide"
+      )
+      sys.exit(1)
+
+  # Outside the chroot, search upward until the "parent" dir doesn't change
+  # (on Linux, that means we're at '/').  That is an error case.
+  dir = os.getcwd()
+  prev_dir = None
+  while dir != prev_dir:
+    chromite_path = os.path.join(dir, 'chromite', 'shell', 'main.py')
+    if os.path.isfile(chromite_path):
+      # Add the directory above chromite to PYTHONPATH before executing, so
+      # that "import chromite.abc.xyz" works...
+      env = os.environ.copy()
+      if 'PYTHONPATH' in env:
+        env['PYTHONPATH'] += ':%s' % dir
+      else:
+        env['PYTHONPATH'] = dir
+
+      # Exec the script, which will never return.
+      os.execve(chromite_path, sys.argv, env)
+
+    prev_dir = dir
+    dir = os.path.dirname(dir)
+
+  # TODO(dianders): Should we actually print out the 'repo init' call that
+  # the user should use?
+  print (
+      "ERROR: Couldn't find the chromite tool.\n"
+      "\n"
+      "Please change to a directory inside your Chromium OS source tree\n"
+      "and retry.  If you need to setup a Chromium OS source tree, see:\n"
+      "  http://www.chromium.org/chromium-os/developer-guide"
+  )
+  sys.exit(1)
