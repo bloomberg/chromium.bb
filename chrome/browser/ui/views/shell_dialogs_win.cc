@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_comptr_win.h"
@@ -348,12 +349,11 @@ bool SaveFileAsWithFilter(HWND owner,
 bool SaveFileAs(HWND owner,
                 const std::wstring& suggested_name,
                 std::wstring* final_name) {
-  std::wstring file_ext = file_util::GetFileExtensionFromPath(suggested_name);
-  file_ext.insert(0, L"*.");
+  std::wstring file_ext = FilePath(suggested_name).Extension().insert(0, L"*");
   std::wstring filter = FormatFilterForExtensions(
-    std::vector<std::wstring>(1, file_ext),
-    std::vector<std::wstring>(),
-    true);
+      std::vector<std::wstring>(1, file_ext),
+      std::vector<std::wstring>(),
+      true);
   unsigned index = 1;
   return SaveFileAsWithFilter(owner,
                               suggested_name,
