@@ -901,22 +901,28 @@ notify_pointer_focus(struct wl_input_device *device,
 }
 
 void
-notify_keyboard_focus(struct wl_input_device *device_base,
+notify_keyboard_focus(struct wl_input_device *device,
 		      uint32_t time, struct wlsc_output *output,
 		      struct wl_array *keys)
 {
-	struct wlsc_input_device *device =
-		(struct wlsc_input_device *) device_base;
+	struct wlsc_input_device *wd =
+		(struct wlsc_input_device *) device;
+	struct wlsc_compositor *compositor =
+		(struct wlsc_compositor *) device->compositor;
+	struct wlsc_surface *es;
+
+	if (!wl_list_empty(&compositor->surface_list))
+		es = container_of(compositor->surface_list.next,
+				  struct wlsc_surface, link);
+	else
+		es = NULL;
 
 	if (output) {
-		wl_array_copy(&device->input_device.keys, keys);
-		wl_input_device_set_keyboard_focus(&device->input_device,
-						   device->saved_keyboard_focus,
-						   time);
+		wl_array_copy(&wd->input_device.keys, keys);
+		wl_input_device_set_keyboard_focus(&wd->input_device,
+						   &es->surface, time);
 	} else {
-		device->saved_keyboard_focus =
-			device->input_device.keyboard_focus;
-		wl_input_device_set_keyboard_focus(&device->input_device,
+		wl_input_device_set_keyboard_focus(&wd->input_device,
 						   NULL, time);
 	}
 }

@@ -70,7 +70,6 @@ struct wlsc_input_device {
 	struct wl_list link;
 	uint32_t modifier_state;
 	struct wl_selection *selection;
-	struct wl_surface *saved_keyboard_focus;
 };
 
 struct wlsc_drm {
