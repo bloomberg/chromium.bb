@@ -434,7 +434,7 @@ void UserManager::NotifyOnLogin() {
       SetDeferImeStartup(false);
   // Shut down the IME so that it will reload the user's settings.
   chromeos::CrosLibrary::Get()->GetInputMethodLibrary()->
-      StopInputMethodProcesses();
+      StopInputMethodDaemon();
   // Let the window manager know that we're logged in now.
   WmIpc::instance()->SetLoggedInProperty(true);
   // Ensure we've opened the real user's key/certificate database.

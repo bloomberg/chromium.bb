@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
+#include "chrome/browser/chromeos/input_method/candidate_window.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/common/notification_observer.h"
@@ -25,7 +26,6 @@
 namespace {
 
 const char kIBusDaemonPath[] = "/usr/bin/ibus-daemon";
-const char kCandidateWindowPath[] = "/opt/google/chrome/candidate_window";
 
 // Finds a property which has |new_prop.key| from |prop_list|, and replaces the
 // property with |new_prop|. Returns true if such a property is found.
@@ -62,7 +62,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         enable_auto_ime_shutdown_(true),
         should_change_input_method_(false),
         ibus_daemon_process_id_(0),
-        candidate_window_process_id_(0) {
+        candidate_window_controller_(NULL) {
     // TODO(yusukes): Using both CreateFallbackInputMethodDescriptors and
     // chromeos::GetHardwareKeyboardLayoutName doesn't look clean. Probably
     // we should unify these APIs.
@@ -72,8 +72,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     if (CrosLibrary::Get()->EnsureLoaded()) {
       current_input_method_id_ = chromeos::GetHardwareKeyboardLayoutName();
     }
-    // Observe APP_EXITING to stop input method processes gracefully.
-    // Note that even if we fail to stop input method processes from
+    // Observe APP_EXITING to stop input method daemon gracefully.
+    // Note that even if we fail to stop input method daemon from
     // Chrome in case of a sudden crash, we have a way to do it from an
     // upstart script. See crosbug.com/6515 and crosbug.com/6995 for
     // details.
@@ -126,7 +126,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     current_input_method_id_ = input_method_id;
     if (EnsureLoadedAndStarted()) {
       if (input_method_id != chromeos::GetHardwareKeyboardLayoutName()) {
-        StartInputMethodProcesses();
+        StartInputMethodDaemon();
       }
       ChangeInputMethodInternal(input_method_id);
     }
@@ -166,7 +166,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   bool SetImeConfig(const std::string& section, const std::string& config_name,
                     const ImeConfigValue& value) {
     // Before calling FlushImeConfig(), start input method process if necessary.
-    MaybeStartInputMethodProcesses(section, config_name, value);
+    MaybeStartInputMethodDaemon(section, config_name, value);
 
     const ConfigKeyType key = std::make_pair(section, config_name);
     current_config_values_[key] = value;
@@ -176,7 +176,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     }
 
     // Stop input method process if necessary.
-    MaybeStopInputMethodProcesses(section, config_name, value);
+    MaybeStopInputMethodDaemon(section, config_name, value);
     return pending_config_requests_.empty();
   }
 
@@ -199,12 +199,12 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   }
 
  private:
-  // Starts input method processes based on the |defer_ime_startup_| flag and
+  // Starts input method daemon based on the |defer_ime_startup_| flag and
   // input method configuration being updated. |section| is a section name of
   // the input method configuration (e.g. "general", "general/hotkey").
   // |config_name| is a name of the configuration (e.g. "preload_engines",
   // "previous_engine"). |value| is the configuration value to be set.
-  void MaybeStartInputMethodProcesses(const std::string& section,
+  void MaybeStartInputMethodDaemon(const std::string& section,
                                       const std::string& config_name,
                                       const ImeConfigValue& value) {
     if (section == language_prefs::kGeneralSectionName &&
@@ -217,19 +217,19 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
               value.string_list_value[0] == hardware_layout_name) &&
             !defer_ime_startup_) {
           // If there are no input methods other than one for the hardware
-          // keyboard, we don't start the input method processes.
+          // keyboard, we don't start the input method daemon.
           // When |defer_ime_startup_| is true, we don't start it either.
-          StartInputMethodProcesses();
+          StartInputMethodDaemon();
         }
         chromeos::SetActiveInputMethods(input_method_status_connection_, value);
       }
     }
   }
 
-  // Stops input method processes based on the |enable_auto_ime_shutdown_| flag
+  // Stops input method daemon based on the |enable_auto_ime_shutdown_| flag
   // and input method configuration being updated.
-  // See also: MaybeStartInputMethodProcesses().
-  void MaybeStopInputMethodProcesses(const std::string& section,
+  // See also: MaybeStartInputMethodDaemon().
+  void MaybeStopInputMethodDaemon(const std::string& section,
                                      const std::string& config_name,
                                      const ImeConfigValue& value) {
     if (section == language_prefs::kGeneralSectionName &&
@@ -243,8 +243,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
             enable_auto_ime_shutdown_) {
           // If there are no input methods other than one for the hardware
           // keyboard, and |enable_auto_ime_shutdown_| is true, we'll stop the
-          // input method processes.
-          StopInputMethodProcesses();
+          // input method daemon.
+          StopInputMethodDaemon();
         }
         chromeos::SetActiveInputMethods(input_method_status_connection_, value);
       }
@@ -483,9 +483,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     current_ime_properties_ = prop_list;
   }
 
-  void StartInputMethodProcesses() {
+  void StartInputMethodDaemon() {
     should_launch_ime_ = true;
-    MaybeLaunchInputMethodProcesses();
+    MaybeLaunchInputMethodDaemon();
   }
 
   void UpdateProperty(const ImePropertyList& prop_list) {
@@ -530,10 +530,17 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     return  true;
   }
 
-  // Launches input method processes if these are not yet running.
-  void MaybeLaunchInputMethodProcesses() {
+  // Launches input method daemon if these are not yet running.
+  void MaybeLaunchInputMethodDaemon() {
     if (!should_launch_ime_) {
       return;
+    }
+
+    if (!candidate_window_controller_.get()) {
+      candidate_window_controller_.reset(new CandidateWindowController);
+      if (!candidate_window_controller_->Init()) {
+        LOG(WARNING) << "Failed to initialize the candidate window controller";
+      }
     }
 
     if (ibus_daemon_process_id_ == 0) {
@@ -541,22 +548,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       const std::string ibus_daemon_command_line =
           StringPrintf("%s --panel=disable --cache=none --restart --replace",
                        kIBusDaemonPath);
-      if (!LaunchInputMethodProcess(ibus_daemon_command_line,
-                                    &ibus_daemon_process_id_)) {
-        // On failure, we should not attempt to launch candidate_window.
-        return;
-      }
-    }
-
-    if (candidate_window_process_id_ == 0) {
-      // Pass the UI language info to candidate_window via --lang flag.
-      const std::string candidate_window_command_line =
-          StringPrintf("%s --lang=%s", kCandidateWindowPath,
-                       g_browser_process->GetApplicationLocale().c_str());
-      if (!LaunchInputMethodProcess(candidate_window_command_line,
-                                    &candidate_window_process_id_)) {
-        // Return here just in case we add more code below.
-        return;
+      if (!LaunchInputMethodProcess(
+              ibus_daemon_command_line, &ibus_daemon_process_id_)) {
+        LOG(ERROR) << "Failed to launch " << ibus_daemon_command_line;
       }
     }
   }
@@ -567,15 +561,13 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     g_spawn_close_pid(pid);
     if (library->ibus_daemon_process_id_ == pid) {
       library->ibus_daemon_process_id_ = 0;
-    } else if (library->candidate_window_process_id_ == pid) {
-      library->candidate_window_process_id_ = 0;
     }
 
-    // Restart input method processes if needed.
-    library->MaybeLaunchInputMethodProcesses();
+    // Restart input method daemon if needed.
+    library->MaybeLaunchInputMethodDaemon();
   }
 
-  void StopInputMethodProcesses() {
+  void StopInputMethodDaemon() {
     should_launch_ime_ = false;
     if (ibus_daemon_process_id_) {
       const std::string xkb_engine_name =
@@ -594,12 +586,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
               << "terminated";
       ibus_daemon_process_id_ = 0;
     }
-    if (candidate_window_process_id_) {
-      kill(candidate_window_process_id_, SIGTERM);
-      VLOG(1) << "candidate_window (PID=" << candidate_window_process_id_
-              << ") is terminated";
-      candidate_window_process_id_ = 0;
-    }
   }
 
   void SetDeferImeStartup(bool defer) {
@@ -615,9 +601,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   void Observe(NotificationType type,
                const NotificationSource& source,
                const NotificationDetails& details) {
-    // Stop the input processes on browser shutdown.
+    // Stop the input method daemon on browser shutdown.
     if (type.value == NotificationType::APP_EXITING) {
-      StopInputMethodProcesses();
+      StopInputMethodDaemon();
     }
   }
 
@@ -654,14 +640,14 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // This is used to register this object to APP_EXITING notification.
   NotificationRegistrar notification_registrar_;
 
-  // True if we should launch the input method processes.
+  // True if we should launch the input method daemon.
   bool should_launch_ime_;
   // True if the connection to the IBus daemon is alive.
   bool ime_connected_;
   // If true, we'll defer the startup until a non-default method is
   // activated.
   bool defer_ime_startup_;
-  // True if we should stop input method processes when there are no input
+  // True if we should stop input method daemon when there are no input
   // methods other than one for the hardware keyboard.
   bool enable_auto_ime_shutdown_;
   // The ID of the current input method (ex. "mozc").
@@ -673,8 +659,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // The process id of the IBus daemon. 0 if it's not running. The process
   // ID 0 is not used in Linux, hence it's safe to use 0 for this purpose.
   int ibus_daemon_process_id_;
-  // The process id of the candidate window. 0 if it's not running.
-  int candidate_window_process_id_;
+
+  // The candidate window.
+  scoped_ptr<CandidateWindowController> candidate_window_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodLibraryImpl);
 };
@@ -740,8 +727,8 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
     return current_ime_properties_;
   }
 
-  virtual void StartInputMethodProcesses() {}
-  virtual void StopInputMethodProcesses() {}
+  virtual void StartInputMethodDaemon() {}
+  virtual void StopInputMethodDaemon() {}
   virtual void SetDeferImeStartup(bool defer) {}
   virtual void SetEnableAutoImeShutdown(bool enable) {}
 

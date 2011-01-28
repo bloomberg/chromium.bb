@@ -106,11 +106,11 @@ class InputMethodLibrary {
   virtual std::string GetKeyboardOverlayId(
       const std::string& input_method_id) = 0;
 
-  // Sets the IME state to enabled, and launches its processes if needed.
-  virtual void StartInputMethodProcesses() = 0;
+  // Sets the IME state to enabled, and launches input method daemon if needed.
+  virtual void StartInputMethodDaemon() = 0;
 
-  // Disables the IME, and kills the processes if they are running.
-  virtual void StopInputMethodProcesses() = 0;
+  // Disables the IME, and kills the daemon process if they are running.
+  virtual void StopInputMethodDaemon() = 0;
 
   // Controls whether the IME process is started when preload engines are
   // specificed, or defered until a non-default method is activated.

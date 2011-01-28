@@ -529,6 +529,8 @@
         'browser/chromeos/google_update_chromeos.cc',
         'browser/chromeos/gview_request_interceptor.cc',
         'browser/chromeos/gview_request_interceptor.h',
+        'browser/chromeos/input_method/candidate_window.h',
+        'browser/chromeos/input_method/candidate_window.cc',
         'browser/chromeos/input_method/input_method_util.cc',
         'browser/chromeos/input_method/input_method_util.h',
         'browser/chromeos/language_preferences.cc',

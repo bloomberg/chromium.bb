@@ -1397,8 +1397,8 @@ void CandidateWindowController::Impl::OnUpdateLookupTable(
 }
 
 void CandidateWindowController::Impl::OnCandidateCommitted(int index,
-                                                     int button,
-                                                     int flags) {
+                                                           int button,
+                                                           int flags) {
   NotifyCandidateClicked(ui_status_connection_, index, button, flags);
 }
 
@@ -1406,8 +1406,9 @@ void CandidateWindowController::Impl::OnConnectionChange(
     void* input_method_library,
     bool connected) {
   if (!connected) {
-    MessageLoopForUI::current()->PostTask(FROM_HERE,
-                                          new MessageLoop::QuitTask());
+    CandidateWindowController::Impl* controller =
+        static_cast<CandidateWindowController::Impl*>(input_method_library);
+    controller->candidate_window_->HideLookupTable();
   }
 }
 
