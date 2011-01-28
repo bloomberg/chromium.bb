@@ -10,7 +10,7 @@
 #include "base/stl_util-inl.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/tab_contents/web_navigation_observer.h"
+#include "chrome/browser/tab_contents/tab_contents_observer.h"
 #include "chrome/browser/ui/login/login_model.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/password_form_dom_manager.h"
@@ -25,7 +25,7 @@ class PrefService;
 // database through the WebDataService. The PasswordManager is a LoginModel
 // for purposes of supporting HTTP authentication dialogs.
 class PasswordManager : public LoginModel,
-                        public WebNavigationObserver {
+                        public TabContentsObserver {
  public:
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -48,7 +48,7 @@ class PasswordManager : public LoginModel,
   // of 2 (see SavePassword).
   void ProvisionallySavePassword(webkit_glue::PasswordForm form);
 
-  // WebNavigationObserver overrides.
+  // TabContentsObserver overrides.
   virtual void DidStopLoading();
   virtual void DidNavigateAnyFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,

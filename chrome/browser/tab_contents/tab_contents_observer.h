@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_NAVIGATION_OBSERVER_H_
-#define CHROME_BROWSER_TAB_CONTENTS_WEB_NAVIGATION_OBSERVER_H_
+#ifndef CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_OBSERVER_H_
+#define CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_OBSERVER_H_
 
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "ipc/ipc_channel.h"
@@ -12,7 +12,7 @@ struct ViewHostMsg_FrameNavigate_Params;
 
 // An observer API implemented by classes which are interested in various page
 // load events from TabContents.  They also get a chance to filter IPC messages.
-class WebNavigationObserver : public IPC::Channel::Listener {
+class TabContentsObserver : public IPC::Channel::Listener {
  public:
   virtual void NavigateToPendingEntry() { }
 
@@ -27,7 +27,7 @@ class WebNavigationObserver : public IPC::Channel::Listener {
   virtual void DidStopLoading() { }
 
   // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) { return false; }
 
 #if 0
   // For unifying with delegate...
@@ -45,4 +45,4 @@ class WebNavigationObserver : public IPC::Channel::Listener {
 #endif
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_WEB_NAVIGATION_OBSERVER_H_
+#endif  // CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_OBSERVER_H_

@@ -17,7 +17,7 @@
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "chrome/browser/shell_dialogs.h"
-#include "chrome/browser/tab_contents/web_navigation_observer.h"
+#include "chrome/browser/tab_contents/tab_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
 class SaveFileManager;
@@ -54,7 +54,7 @@ struct SavePackageParam;
 // by the SavePackage. SaveItems are created when a user initiates a page
 // saving job, and exist for the duration of one tab's life time.
 class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
-                    public WebNavigationObserver,
+                    public TabContentsObserver,
                     public SelectFileDialog::Listener {
  public:
   enum SavePackageType {
@@ -163,7 +163,7 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   void SaveNextFile(bool process_all_remainder_items);
   void DoSavingProcess();
 
-  // WebNavigationObserver implementation.
+  // TabContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   // Create a file name based on the response from the server.

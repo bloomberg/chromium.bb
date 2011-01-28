@@ -59,6 +59,7 @@ class AutocompleteHistoryManager;
 class AutoFillManager;
 class BlockedContentContainer;
 class DOMUI;
+class DesktopNotificationHandler;
 class DownloadItem;
 class Extension;
 class FileSelectHelper;
@@ -69,22 +70,21 @@ class PluginInstallerInfoBarDelegate;
 class Profile;
 class PrerenderManager;
 class PrerenderPLTRecorder;
-struct RendererPreferences;
 class RenderViewHost;
 class SessionStorageNamespace;
 class SiteInstance;
 class SkBitmap;
 class TabContents;
 class TabContentsDelegate;
+class TabContentsObserver;
 class TabContentsSSLHelper;
 class TabContentsView;
 class URLPattern;
+struct RendererPreferences;
 struct ThumbnailScore;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
-class WebNavigationObserver;
 struct WebPreferences;
-class DesktopNotificationHandler;
 
 // Describes what goes in the main content area of a tab. TabContents is
 // the only type of TabContents, and these should be merged together.
@@ -260,8 +260,8 @@ class TabContents : public PageNavigator,
   // removing multiple times has no effect. The order in which notifications
   // are sent to observers is undefined. Clients must be sure to remove the
   // observer before they go away.
-  void AddNavigationObserver(WebNavigationObserver* observer);
-  void RemoveNavigationObserver(WebNavigationObserver* observer);
+  void AddObserver(TabContentsObserver* observer);
+  void RemoveObserver(TabContentsObserver* observer);
 
   // Return whether this tab contents is loading a resource.
   bool is_loading() const { return is_loading_; }
@@ -1341,7 +1341,7 @@ class TabContents : public PageNavigator,
   bool temporary_zoom_settings_;
 
   // A list of observers notified when page state changes. Weak references.
-  ObserverList<WebNavigationObserver> web_navigation_observers_;
+  ObserverList<TabContentsObserver> observers_;
 
   // Content restrictions, used to disable print/copy etc based on content's
   // (full-page plugins for now only) permissions.

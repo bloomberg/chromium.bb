@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_DESKTOP_NOTIFICATION_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/tab_contents/web_navigation_observer.h"
+#include "chrome/browser/tab_contents/tab_contents_observer.h"
 #include "ipc/ipc_message.h"
 
 struct ViewHostMsg_ShowNotification_Params;
@@ -14,13 +14,13 @@ class RenderProcessHost;
 
 // Per-tab Desktop notification handler. Handles desktop notification IPCs
 // coming in from the renderer.
-class DesktopNotificationHandler : public WebNavigationObserver {
+class DesktopNotificationHandler : public TabContentsObserver {
  public:
   explicit DesktopNotificationHandler(TabContents* tab_contents,
                                       RenderProcessHost* process);
   virtual ~DesktopNotificationHandler() {}
 
-  // WebNavigationObserver implementation.
+  // TabContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   RenderProcessHost* GetRenderProcessHost();

@@ -16,7 +16,7 @@
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/tab_contents/web_navigation_observer.h"
+#include "chrome/browser/tab_contents/tab_contents_observer.h"
 
 class AutoFillCCInfoBarDelegate;
 class AutoFillProfile;
@@ -33,7 +33,7 @@ class FormField;
 
 // Manages saving and restoring the user's personal information entered into web
 // forms.
-class AutoFillManager : public WebNavigationObserver,
+class AutoFillManager : public TabContentsObserver,
                         public AutoFillDownloadManager::Observer {
  public:
   explicit AutoFillManager(TabContents* tab_contents);
@@ -48,7 +48,7 @@ class AutoFillManager : public WebNavigationObserver,
   // Returns the TabContents hosting this AutoFillManager.
   TabContents* tab_contents() const { return tab_contents_; }
 
-  // WebNavigationObserver implementation.
+  // TabContentsObserver implementation.
   virtual void DidNavigateMainFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);

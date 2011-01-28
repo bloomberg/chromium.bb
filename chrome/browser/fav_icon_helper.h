@@ -13,7 +13,7 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon_service.h"
-#include "chrome/browser/tab_contents/web_navigation_observer.h"
+#include "chrome/browser/tab_contents/tab_contents_observer.h"
 #include "chrome/common/ref_counted_util.h"
 #include "googleurl/src/gurl.h"
 
@@ -65,7 +65,7 @@ class TabContents;
 // at which point we update the favicon of the NavigationEntry and notify
 // the database to save the favicon.
 
-class FavIconHelper : public WebNavigationObserver {
+class FavIconHelper : public TabContentsObserver {
  public:
   explicit FavIconHelper(TabContents* tab_contents);
   virtual ~FavIconHelper();
@@ -99,7 +99,7 @@ class FavIconHelper : public WebNavigationObserver {
     ImageDownloadCallback* callback;
   };
 
-  // WebNavigationObserver implementation.
+  // TabContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   void OnDidDownloadFavIcon(int id,

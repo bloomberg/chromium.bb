@@ -74,10 +74,10 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/provisional_load_details.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/tab_contents/tab_contents_observer.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
-#include "chrome/browser/tab_contents/web_navigation_observer.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
@@ -589,16 +589,16 @@ TabContents::TabContents(Profile* profile,
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
 
   autofill_manager_.reset(new AutoFillManager(this));
-  AddNavigationObserver(autofill_manager_.get());
+  AddObserver(autofill_manager_.get());
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(this));
-  AddNavigationObserver(autocomplete_history_manager_.get());
+  AddObserver(autocomplete_history_manager_.get());
   prerender_plt_recorder_.reset(new PrerenderPLTRecorder(this));
-  AddNavigationObserver(prerender_plt_recorder_.get());
-  AddNavigationObserver(&fav_icon_helper_);
-  AddNavigationObserver(printing_.get());
+  AddObserver(prerender_plt_recorder_.get());
+  AddObserver(&fav_icon_helper_);
+  AddObserver(printing_.get());
   desktop_notification_handler_.reset(
       new DesktopNotificationHandler(this, GetRenderProcessHost()));
-  AddNavigationObserver(desktop_notification_handler_.get());
+  AddObserver(desktop_notification_handler_.get());
 }
 
 TabContents::~TabContents() {
@@ -718,9 +718,8 @@ void TabContents::RegisterUserPrefs(PrefService* prefs) {
 }
 
 bool TabContents::OnMessageReceived(const IPC::Message& message) {
-  ObserverListBase<WebNavigationObserver>::Iterator it(
-      web_navigation_observers_);
-  WebNavigationObserver* observer;
+  ObserverListBase<TabContentsObserver>::Iterator it(observers_);
+  TabContentsObserver* observer;
   while ((observer = it.GetNext()) != NULL)
     if (observer->OnMessageReceived(message))
       return true;
@@ -979,12 +978,12 @@ string16 TabContents::GetStatusText() const {
   return string16();
 }
 
-void TabContents::AddNavigationObserver(WebNavigationObserver* observer) {
-  web_navigation_observers_.AddObserver(observer);
+void TabContents::AddObserver(TabContentsObserver* observer) {
+  observers_.AddObserver(observer);
 }
 
-void TabContents::RemoveNavigationObserver(WebNavigationObserver* observer) {
-  web_navigation_observers_.RemoveObserver(observer);
+void TabContents::RemoveObserver(TabContentsObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void TabContents::SetIsCrashed(base::TerminationStatus status, int error_code) {
@@ -1149,8 +1148,7 @@ bool TabContents::NavigateToEntry(
   }
 
   // Notify observers about navigation.
-  FOR_EACH_OBSERVER(WebNavigationObserver, web_navigation_observers_,
-                    NavigateToPendingEntry());
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_, NavigateToPendingEntry());
 
   if (reload_type != NavigationController::NO_RELOAD &&
       !profile()->IsOffTheRecord()) {
@@ -1602,9 +1600,9 @@ bool TabContents::SavePage(const FilePath& main_file, const FilePath& dir_path,
 
 void TabContents::SetSavePackage(SavePackage* save_package) {
   if (save_package_.get())
-    RemoveNavigationObserver(save_package_.get());
+    RemoveObserver(save_package_.get());
   save_package_ = save_package;
-  AddNavigationObserver(save_package);
+  AddObserver(save_package);
 }
 
 void TabContents::EmailPageLocation() {
@@ -2145,7 +2143,7 @@ void TabContents::DidNavigateMainFramePostCommit(
   UpdateStarredStateForCurrentURL();
 
   // Notify observers about navigation.
-  FOR_EACH_OBSERVER(WebNavigationObserver, web_navigation_observers_,
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
                     DidNavigateMainFramePostCommit(details, params));
 }
 
@@ -2159,7 +2157,7 @@ void TabContents::DidNavigateAnyFramePostCommit(
   suppress_javascript_messages_ = false;
 
   // Notify observers about navigation.
-  FOR_EACH_OBSERVER(WebNavigationObserver, web_navigation_observers_,
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
                     DidNavigateAnyFramePostCommit(details, params));
 
   // Let the LanguageState clear its state.
@@ -2919,8 +2917,7 @@ void TabContents::DidStartLoading() {
   }
 
   // Notify observers about navigation.
-  FOR_EACH_OBSERVER(WebNavigationObserver, web_navigation_observers_,
-                    DidStartLoading());
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_, DidStartLoading());
 }
 
 void TabContents::DidStopLoading() {
@@ -2943,8 +2940,7 @@ void TabContents::DidStopLoading() {
   SetIsLoading(false, details.get());
 
   // Notify observers about navigation.
-  FOR_EACH_OBSERVER(WebNavigationObserver, web_navigation_observers_,
-                    DidStopLoading());
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_, DidStopLoading());
 }
 
 void TabContents::DidChangeLoadProgress(double progress) {

@@ -9,7 +9,7 @@
 #include "base/scoped_ptr.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/web_navigation_observer.h"
+#include "chrome/browser/tab_contents/tab_contents_observer.h"
 
 class Extension;
 class NavigationController;
@@ -23,7 +23,7 @@ class TabContentsDelegate;
 // TODO(pinkerton): Eventually, this class will become TabContents as far as
 // the browser front-end is concerned, and the current TabContents will be
 // renamed to something like WebPage or WebView (ben's suggestions).
-class TabContentsWrapper : public WebNavigationObserver {
+class TabContentsWrapper : public TabContentsObserver {
  public:
   // Takes ownership of |contents|, which must be heap-allocated (as it lives
   // in a scoped_ptr) and can not be NULL.
@@ -62,7 +62,7 @@ class TabContentsWrapper : public WebNavigationObserver {
   // Returns the PasswordManager, creating it if necessary.
   PasswordManager* GetPasswordManager();
 
-  // WebNavigationObserver overrides:
+  // TabContentsObserver overrides:
   virtual void NavigateToPendingEntry() OVERRIDE;
 
  private:

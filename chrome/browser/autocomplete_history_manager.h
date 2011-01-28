@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/tab_contents/web_navigation_observer.h"
+#include "chrome/browser/tab_contents/tab_contents_observer.h"
 #include "chrome/browser/webdata/web_data_service.h"
 
 namespace webkit_glue {
@@ -21,13 +21,13 @@ class TabContents;
 
 // Per-tab Autocomplete history manager. Handles receiving form data from the
 // renderer and the storing and retrieving of form data through WebDataService.
-class AutocompleteHistoryManager : public WebNavigationObserver,
+class AutocompleteHistoryManager : public TabContentsObserver,
                                    public WebDataServiceConsumer {
  public:
   explicit AutocompleteHistoryManager(TabContents* tab_contents);
   virtual ~AutocompleteHistoryManager();
 
-  // WebNavigationObserver implementation.
+  // TabContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   // WebDataServiceConsumer implementation.

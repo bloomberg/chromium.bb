@@ -11,7 +11,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/tab_contents/web_navigation_observer.h"
+#include "chrome/browser/tab_contents/tab_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
 class PrerenderContents;
@@ -20,12 +20,12 @@ class TabContents;
 
 // PrerenderPLTRecorder is responsible for recording perceived pageload times
 // to compare PLT's with prerendering enabled and disabled.
-class PrerenderPLTRecorder : public WebNavigationObserver {
+class PrerenderPLTRecorder : public TabContentsObserver {
  public:
   explicit PrerenderPLTRecorder(TabContents* tab_contents);
   virtual ~PrerenderPLTRecorder();
 
-  // WebNavigationObserver implementation.
+  // TabContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   // Message handler.

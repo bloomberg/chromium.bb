@@ -23,12 +23,12 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   property_accessor()->SetProperty(contents->property_bag(), this);
 
   // Needed so that we initialize the password manager on first navigation.
-  tab_contents()->AddNavigationObserver(this);
+  tab_contents()->AddObserver(this);
 }
 
 TabContentsWrapper::~TabContentsWrapper() {
   // Unregister observers (TabContents outlives supporting objects).
-  tab_contents()->RemoveNavigationObserver(password_manager_.get());
+  tab_contents()->RemoveObserver(password_manager_.get());
 }
 
 PropertyAccessor<TabContentsWrapper*>* TabContentsWrapper::property_accessor() {
@@ -52,15 +52,15 @@ PasswordManager* TabContentsWrapper::GetPasswordManager() {
     password_manager_.reset(
         new PasswordManager(password_manager_delegate_.get()));
     // Register the manager to receive navigation notifications.
-    tab_contents()->AddNavigationObserver(password_manager_.get());
+    tab_contents()->AddObserver(password_manager_.get());
   }
   return password_manager_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TabContentsWrapper, WebNavigationObserver implementation:
+// TabContentsWrapper, TabContentsObserver implementation:
 
 void TabContentsWrapper::NavigateToPendingEntry() {
   GetPasswordManager();
-  tab_contents()->RemoveNavigationObserver(this);
+  tab_contents()->RemoveObserver(this);
 }

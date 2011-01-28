@@ -8,7 +8,7 @@
 
 #include "base/ref_counted.h"
 #include "base/string16.h"
-#include "chrome/browser/tab_contents/web_navigation_observer.h"
+#include "chrome/browser/tab_contents/tab_contents_observer.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "printing/printed_pages_source.h"
@@ -27,7 +27,7 @@ class PrintJobWorkerOwner;
 // delegates a few printing related commands to this instance.
 class PrintViewManager : public NotificationObserver,
                          public PrintedPagesSource,
-                         public WebNavigationObserver {
+                         public TabContentsObserver {
  public:
   explicit PrintViewManager(TabContents& owner);
   virtual ~PrintViewManager();
@@ -48,7 +48,7 @@ class PrintViewManager : public NotificationObserver,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // WebNavigationObserver implementation.
+  // TabContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
