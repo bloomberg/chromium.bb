@@ -117,6 +117,29 @@ html[anim=false] *,
   color: rgb(0, 102, 204);
 }
 
+#notification-close {
+  display: inline-block;
+  border: 0;
+  -webkit-margin-start: 10px;
+  -webkit-margin-end: auto;
+  vertical-align: middle;
+  width: 16px;
+  height: 16px;
+  background: no-repeat;
+  background-color: transparent;  
+  background-image: url('chrome://theme/IDR_CLOSE_BAR');
+  padding: 0;
+}
+
+#notification-close:hover,
+#notification-close:focus {
+  background-image: url('chrome://theme/IDR_CLOSE_BAR_H');
+}
+
+#notification-close:active {
+  background-image: url('chrome://theme/IDR_CLOSE_BAR_P');
+}
+
 #notification > * {
   display: table-cell;
   max-width: 500px;
