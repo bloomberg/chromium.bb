@@ -79,9 +79,12 @@ void ConvertBetweenBGRAandRGBA(const uint32_t* input,
 }
 
 // Converts ImageData from PP_IMAGEDATAFORMAT_BGRA_PREMUL to
-// PP_IMAGEDATAFORMAT_RGBA_PREMUL, or reverse.
+// PP_IMAGEDATAFORMAT_RGBA_PREMUL, or reverse. It's assumed that the
+// destination image is always mapped (so will have non-NULL data).
 void ConvertImageData(PPB_ImageData_Impl* src_image, const SkIRect& src_rect,
                       PPB_ImageData_Impl* dest_image, const SkRect& dest_rect) {
+  ImageDataAutoMapper auto_mapper(src_image);
+
   DCHECK(src_image->format() != dest_image->format());
   DCHECK(PPB_ImageData_Impl::IsImageDataFormatSupported(src_image->format()));
   DCHECK(PPB_ImageData_Impl::IsImageDataFormatSupported(dest_image->format()));
@@ -430,7 +433,6 @@ bool PPB_Graphics2D_Impl::ReadImageData(PP_Resource image,
                        SkIntToScalar(image_resource->width()),
                        SkIntToScalar(image_resource->height()) };
 
-  ImageDataAutoMapper auto_mapper2(image_data_);
   if (image_resource->format() != image_data_->format()) {
     // Convert the image data if the format does not match.
     ConvertImageData(image_data_, src_irect, image_resource.get(), dest_rect);
@@ -636,6 +638,11 @@ void PPB_Graphics2D_Impl::ExecuteReplaceContents(PPB_ImageData_Impl* image,
                          SkIntToScalar(image_data_->height()) };
     ConvertImageData(image, src_irect, image_data_, dest_rect);
   } else {
+    // The passed-in image may not be mapped in our process, and we need to
+    // guarantee that the current backing store is always mapped.
+    if (!image->Map())
+      return;
+    image_data_->Unmap();
     image_data_->Swap(image);
   }
   *invalidated_rect = gfx::Rect(0, 0,
