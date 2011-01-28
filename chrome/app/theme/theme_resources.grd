@@ -580,6 +580,8 @@
         <include name="IDR_STATUSBAR_NETWORK_WARNING" file="statusbar_network_warning.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED_BLACK" file="statusbar_wiredb.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WINDOW_SWITCHER" file="statusbar_window_switcher.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WINDOW_SWITCHER_DISABLED" file="statusbar_window_switcher_disabled.png" type="BINDATA" />
         <include name="IDR_USER_IMAGE_NO_VIDEO" file="no_video.png" type="BINDATA" />
         <include name="IDR_USER_IMAGE_CAPTURE" file="snapshot_wide.png" type="BINDATA" />
         <include name="IDR_USER_IMAGE_RECYCLE" file="discard_wide.png" type="BINDATA" />

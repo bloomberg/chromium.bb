@@ -20,7 +20,7 @@ static const SkColor kStatusTextHaloColor = SkColorSetARGB(0xB3, 0, 0, 0);
 
 StatusAreaButton::StatusAreaButton(views::ViewMenuDelegate* menu_delegate)
     : MenuButton(NULL, std::wstring(), menu_delegate, false),
-      use_menu_button_paint_(false), enabled_(true) {
+      use_menu_button_paint_(false), active_(true) {
   set_border(NULL);
 
   // Use an offset that is top aligned with toolbar.
@@ -88,7 +88,7 @@ void StatusAreaButton::DrawIcon(gfx::Canvas* canvas) {
 }
 
 bool StatusAreaButton::Activate() {
-  if (enabled_) {
+  if (active_) {
     return views::MenuButton::Activate();
   } else {
     return true;

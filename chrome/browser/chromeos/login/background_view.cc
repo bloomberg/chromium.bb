@@ -199,7 +199,7 @@ void BackgroundView::SetStatusAreaVisible(bool visible) {
 }
 
 void BackgroundView::SetStatusAreaEnabled(bool enable) {
-  status_area_->EnableButtons(enable);
+  status_area_->MakeButtonsActive(enable);
 }
 
 void BackgroundView::SetOobeProgressBarVisible(bool visible) {

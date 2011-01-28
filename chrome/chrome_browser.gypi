@@ -758,6 +758,8 @@
         'browser/chromeos/status/status_area_host.h',
         'browser/chromeos/status/status_area_view.cc',
         'browser/chromeos/status/status_area_view.h',
+        'browser/chromeos/status/window_switcher_button.cc',
+        'browser/chromeos/status/window_switcher_button.h',
         'browser/chromeos/system_key_event_listener.cc',
         'browser/chromeos/system_key_event_listener.h',
         'browser/chromeos/tab_closeable_state_watcher.cc',
