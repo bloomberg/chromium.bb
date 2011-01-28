@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+# TODO(petkov): Integrate this utility into the build system in a more
+# consistent way -- e.g., create an ebuild that pulls the utility from a
+# mirrored upstream repo with a patch or upstream the patch.
+
 import fileinput
 import optparse
 import os
@@ -29,6 +33,25 @@ def symbol_type_to_human(type):
         'w': 'weak symbol',
         'v': 'weak symbol'
         }[type]
+
+
+def parse_du(input):
+    """Parse du output.
+
+    Argument: an iterable over lines of 'du -B 1' output.'
+
+    Yields: (size, path)
+    """
+
+    # Match lines with |size| |path|
+    line_re = re.compile(r'^([0-9]+)\s+(.*)$')
+    for line in input:
+        line = line.rstrip()
+        match = line_re.match(line)
+        if match:
+            size, path = match.groups()[0:2]
+            size = int(size)
+            yield size, path
 
 
 def parse_nm(input):
@@ -75,6 +98,29 @@ def parse_nm(input):
                 continue
 
         print >>sys.stderr, 'unparsed:', repr(line)
+
+
+def treeify_du(dulines, strip_prefix=None):
+    dirs = {}
+    for size, path in dulines:
+        if strip_prefix and path.startswith(strip_prefix):
+            path = path[len(strip_prefix):]
+        elif path.startswith('/'):
+            path = path[1:]
+        parts = path.split('/')
+        key = parts.pop()
+        tree = dirs
+        for part in parts:
+            if part not in tree:
+                tree[part] = {}
+            tree = tree[part]
+        if key not in tree:
+            tree[key] = size
+        else:
+            # du reports the total for each directory (which may include files
+            # contained in the directory itself).
+            tree[key][None] = size
+    return dirs
 
 
 def filter_syms(types, symbols):
@@ -144,8 +190,12 @@ def jsonify_tree(tree, name):
     children = []
     total = 0
     files = 0
+    subtree_total = None
 
     for key, val in tree.iteritems():
+        if key is None:
+            subtree_total = val
+            continue
         if isinstance(val, dict):
             subtree = jsonify_tree(val, key)
             total += subtree['data']['$area']
@@ -157,6 +207,14 @@ def jsonify_tree(tree, name):
                     'data': { '$area': val }
                     })
 
+    # Process du sub-tree totals by creating a '.' child with appropriate area.
+    if subtree_total:
+        dot_total = subtree_total - total
+        if dot_total > 0:
+            children.append({'name': '<self> ' + format_bytes(dot_total),
+                             'data': { '$area': dot_total }})
+            total = subtree_total
+
     children.sort(key=lambda child: -child['data']['$area'])
 
     return {
@@ -166,6 +224,11 @@ def jsonify_tree(tree, name):
             },
         'children': children,
         }
+
+
+def dump_du(dufile, strip_prefix):
+    dirs = treeify_du(parse_du(dufile), strip_prefix)
+    print 'var kTree = ' + json.dumps(jsonify_tree(dirs, '/'), indent=2)
 
 
 def dump_nm(nmfile, strip_prefix):
@@ -228,9 +291,14 @@ def dump_sections():
 usage="""%prog [options] MODE
 
 Modes are:
+  du: output 'du' json suitable for a treemap
   syms: output symbols json suitable for a treemap
   dump: print symbols sorted by size (pipe to head for best output)
   sections: output binary sections json suitable for a treemap
+
+du output passsed to --du-output should be from running a command
+like the following:
+  du -B 1 /path/to/root > du.out
 
 nm output passed to --nm-output should from running a command
 like the following (note, can take a long time -- 30 minutes):
@@ -240,6 +308,9 @@ objdump output passed to --objdump-output should be from a command
 like:
   objdump -h /path/to/binary > objdump.out"""
 parser = optparse.OptionParser(usage=usage)
+parser.add_option('--du-output', action='store', dest='dupath',
+                  metavar='PATH', default='du.out',
+                  help='path to nm output [default=nm.out]')
 parser.add_option('--nm-output', action='store', dest='nmpath',
                   metavar='PATH', default='nm.out',
                   help='path to nm output [default=nm.out]')
@@ -257,7 +328,10 @@ if len(args) != 1:
     sys.exit(1)
 
 mode = args[0]
-if mode == 'syms':
+if mode == 'du':
+    dufile = open(opts.dupath, 'r')
+    dump_du(dufile, strip_prefix=opts.strip_prefix)
+elif mode == 'syms':
     nmfile = open(opts.nmpath, 'r')
     dump_nm(nmfile, strip_prefix=opts.strip_prefix)
 elif mode == 'sections':
