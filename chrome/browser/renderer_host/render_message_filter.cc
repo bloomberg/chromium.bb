@@ -532,7 +532,7 @@ void RenderMessageFilter::OnGetRawCookies(
   // TODO(ananta) We need to support retreiving raw cookies from external
   // hosts.
   if (!ChildProcessSecurityPolicy::GetInstance()->CanReadRawCookies(
-          render_process_id_) || context->IsExternal()) {
+          render_process_id_)) {
     ViewHostMsg_GetRawCookies::WriteReplyParams(
         reply_msg,
         std::vector<webkit_glue::WebCookie>());
@@ -1555,12 +1555,10 @@ void SetCookieCompletion::RunWithParams(const Tuple1<int>& params) {
     context_->cookie_store()->SetCookieWithOptions(url_, cookie_line_,
                                                    options);
   }
-  if (!context_->IsExternal()) {
-    CallRenderViewHostContentSettingsDelegate(
-        render_process_id_, render_view_id_,
-        &RenderViewHostDelegate::ContentSettings::OnCookieChanged,
-        url_, cookie_line_, options, blocked_by_policy);
-  }
+  CallRenderViewHostContentSettingsDelegate(
+      render_process_id_, render_view_id_,
+      &RenderViewHostDelegate::ContentSettings::OnCookieChanged,
+      url_, cookie_line_, options, blocked_by_policy);
   delete this;
 }
 
@@ -1591,17 +1589,15 @@ void GetCookiesCompletion::RunWithParams(const Tuple1<int>& params) {
       cookies = cookie_store()->GetCookies(url_);
     ViewHostMsg_GetCookies::WriteReplyParams(reply_msg_, cookies);
     filter_->Send(reply_msg_);
-    if (!context_->IsExternal()) {
-      net::CookieMonster* cookie_monster =
-          context_->cookie_store()->GetCookieMonster();
-      net::CookieList cookie_list =
-          cookie_monster->GetAllCookiesForURLWithOptions(
-              url_, net::CookieOptions());
-      CallRenderViewHostContentSettingsDelegate(
-          render_process_id_, render_view_id_,
-          &RenderViewHostDelegate::ContentSettings::OnCookiesRead,
-          url_, cookie_list, result != net::OK);
-    }
+    net::CookieMonster* cookie_monster =
+        context_->cookie_store()->GetCookieMonster();
+    net::CookieList cookie_list =
+        cookie_monster->GetAllCookiesForURLWithOptions(
+            url_, net::CookieOptions());
+    CallRenderViewHostContentSettingsDelegate(
+        render_process_id_, render_view_id_,
+        &RenderViewHostDelegate::ContentSettings::OnCookiesRead,
+        url_, cookie_list, result != net::OK);
     delete this;
   } else {
     // Ignore the policy result.  We only waited on the policy result so that

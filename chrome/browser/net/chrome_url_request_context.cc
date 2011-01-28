@@ -816,10 +816,6 @@ const std::string& ChromeURLRequestContext::GetUserAgent(
   return webkit_glue::GetUserAgent(url);
 }
 
-bool ChromeURLRequestContext::IsExternal() const {
-  return false;
-}
-
 void ChromeURLRequestContext::OnAcceptLanguageChange(
     const std::string& accept_language) {
   CheckCurrentlyOnIOThread();

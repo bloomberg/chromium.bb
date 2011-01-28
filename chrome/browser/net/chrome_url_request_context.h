@@ -95,10 +95,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
     return prerender_manager_.get();
   }
 
-  // Returns true if this context is an external request context, like
-  // ChromeFrame.
-  virtual bool IsExternal() const;
-
  protected:
   virtual ~ChromeURLRequestContext();
 
