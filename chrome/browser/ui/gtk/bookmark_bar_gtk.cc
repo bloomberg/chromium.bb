@@ -438,9 +438,7 @@ void BookmarkBarGtk::BookmarkNodeAdded(BookmarkModel* model,
   SetInstructionState();
   SetChevronState();
 
-  MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &BookmarkBarGtk::StartThrobbing, node));
+  StartThrobbingAfterAllocation(GTK_WIDGET(item));
 }
 
 void BookmarkBarGtk::BookmarkNodeRemoved(BookmarkModel* model,
@@ -730,8 +728,6 @@ void BookmarkBarGtk::StartThrobbing(const BookmarkNode* node) {
     if (hidden >= 0 && hidden <= idx) {
       widget_to_throb = overflow_button_;
     } else {
-      if (parent_on_bb->is_url())
-        return;
       widget_to_throb = gtk_bin_get_child(GTK_BIN(gtk_toolbar_get_nth_item(
           GTK_TOOLBAR(bookmark_toolbar_.get()), idx)));
     }
@@ -766,6 +762,23 @@ void BookmarkBarGtk::SetThrobbingWidget(GtkWidget* widget) {
     if (hover_controller)
       hover_controller->StartThrobbing(4);
   }
+}
+
+void BookmarkBarGtk::OnItemAllocate(GtkWidget* item,
+                                    GtkAllocation* allocation) {
+  // We only want to fire on the item's first allocation.
+  g_signal_handlers_disconnect_by_func(
+      item, reinterpret_cast<gpointer>(&OnItemAllocateThunk), this);
+
+  GtkWidget* button = gtk_bin_get_child(GTK_BIN(item));
+  const BookmarkNode* node = GetNodeForToolButton(button);
+  if (node)
+    StartThrobbing(node);
+}
+
+void BookmarkBarGtk::StartThrobbingAfterAllocation(GtkWidget* item) {
+  g_signal_connect_after(
+      item, "size-allocate", G_CALLBACK(OnItemAllocateThunk), this);
 }
 
 bool BookmarkBarGtk::IsAlwaysShown() {

@@ -170,6 +170,15 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // condition that can happen during testing.
   bool GetTabContentsSize(gfx::Size* size);
 
+  // Connects to the "size-allocate" signal on the given widget, and causes it
+  // to throb after allocation. This is called when a new item is added to the
+  // bar. We can't call StartThrobbing directly because we don't know if it's
+  // visible or not until after the widget is allocated.
+  void StartThrobbingAfterAllocation(GtkWidget* item);
+
+  // Used by StartThrobbingAfterAllocation.
+  CHROMEGTK_CALLBACK_1(BookmarkBarGtk, void, OnItemAllocate, GtkAllocation*);
+
   // Makes the appropriate widget on the bookmark bar stop throbbing
   // (a folder, the overflow chevron, or nothing).
   void StartThrobbing(const BookmarkNode* node);
