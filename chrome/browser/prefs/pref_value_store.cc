@@ -12,8 +12,11 @@ PrefValueStore::PrefStoreKeeper::PrefStoreKeeper()
 }
 
 PrefValueStore::PrefStoreKeeper::~PrefStoreKeeper() {
-  if (pref_store_.get())
+  if (pref_store_.get()) {
     pref_store_->RemoveObserver(this);
+    pref_store_ = NULL;
+  }
+  pref_value_store_ = NULL;
 }
 
 void PrefValueStore::PrefStoreKeeper::Initialize(

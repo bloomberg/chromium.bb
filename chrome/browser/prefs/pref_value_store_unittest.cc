@@ -100,7 +100,7 @@ class PrefValueStoreTest : public testing::Test {
     CreateDefaultPrefs();
 
     // Create a fresh PrefValueStore.
-    pref_value_store_ = new PrefValueStore(
+    pref_value_store_.reset(new PrefValueStore(
         managed_platform_pref_store_,
         device_management_pref_store_,
         extension_pref_store_,
@@ -108,7 +108,7 @@ class PrefValueStoreTest : public testing::Test {
         user_pref_store_,
         recommended_pref_store_,
         default_pref_store_,
-        &pref_notifier_);
+        &pref_notifier_));
   }
 
   // Creates a new dictionary and stores some sample user preferences
@@ -197,7 +197,7 @@ class PrefValueStoreTest : public testing::Test {
   }
 
   MockPrefNotifier pref_notifier_;
-  scoped_refptr<PrefValueStore> pref_value_store_;
+  scoped_ptr<PrefValueStore> pref_value_store_;
 
   scoped_refptr<TestingPrefStore> managed_platform_pref_store_;
   scoped_refptr<TestingPrefStore> device_management_pref_store_;

@@ -137,7 +137,7 @@ PrefService::PrefService(PrefStore* managed_platform_prefs,
     : user_pref_store_(user_prefs),
       default_store_(default_store) {
   pref_notifier_.reset(new PrefNotifierImpl(this));
-  pref_value_store_ =
+  pref_value_store_.reset(
       new PrefValueStore(managed_platform_prefs,
                          device_management_prefs,
                          extension_prefs,
@@ -145,7 +145,7 @@ PrefService::PrefService(PrefStore* managed_platform_prefs,
                          user_pref_store_,
                          recommended_prefs,
                          default_store,
-                         pref_notifier_.get());
+                         pref_notifier_.get()));
   InitFromStorage();
 }
 
@@ -155,7 +155,7 @@ PrefService::PrefService(const PrefService& original,
             new OverlayPersistentPrefStore(original.user_pref_store_.get())),
         default_store_(original.default_store_.get()){
   pref_notifier_.reset(new PrefNotifierImpl(this));
-  pref_value_store_ = original.pref_value_store_->CloneAndSpecialize(
+  pref_value_store_.reset(original.pref_value_store_->CloneAndSpecialize(
       NULL, // managed_platform_prefs
       NULL, // device_management_prefs
       incognito_extension_prefs,
@@ -163,7 +163,7 @@ PrefService::PrefService(const PrefService& original,
       user_pref_store_.get(),
       NULL, // recommended_prefs
       default_store_.get(),
-      pref_notifier_.get() );
+      pref_notifier_.get()));
   InitFromStorage();
 }
 
@@ -171,6 +171,11 @@ PrefService::~PrefService() {
   DCHECK(CalledOnValidThread());
   STLDeleteContainerPointers(prefs_.begin(), prefs_.end());
   prefs_.clear();
+
+  // Reset pointers so accesses after destruction reliably crash.
+  pref_value_store_.reset();
+  user_pref_store_ = NULL;
+  default_store_ = NULL;
 }
 
 void PrefService::InitFromStorage() {
@@ -643,7 +648,7 @@ const Value* PrefService::Preference::GetValue() const {
 }
 
 bool PrefService::Preference::IsManaged() const {
-  PrefValueStore* pref_value_store = pref_service_->pref_value_store_;
+  PrefValueStore* pref_value_store = pref_service_->pref_value_store_.get();
   return pref_value_store->PrefValueInManagedPlatformStore(name_.c_str()) ||
       pref_value_store->PrefValueInDeviceManagementStore(name_.c_str());
 }

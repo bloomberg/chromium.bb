@@ -288,7 +288,7 @@ class PrefService : public base::NonThreadSafe {
 
   // The PrefValueStore provides prioritized preference values. It is created
   // and owned by this PrefService. Subclasses may access it for unit testing.
-  scoped_refptr<PrefValueStore> pref_value_store_;
+  scoped_ptr<PrefValueStore> pref_value_store_;
 
   // Pref Stores and profile that we passed to the PrefValueStore.
   scoped_refptr<PersistentPrefStore> user_pref_store_;

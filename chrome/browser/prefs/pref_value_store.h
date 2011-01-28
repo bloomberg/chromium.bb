@@ -28,7 +28,7 @@ class PrefStore;
 //
 // Unless otherwise explicitly noted, all of the methods of this class must
 // be called on the UI thread.
-class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
+class PrefValueStore {
  public:
   // In decreasing order of precedence:
   //   |managed_platform_prefs| contains all managed platform (non-cloud policy)
