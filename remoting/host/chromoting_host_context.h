@@ -29,7 +29,6 @@ class ChromotingHostContext {
 
   virtual JingleThread* jingle_thread();
 
-  // TODO(hclam): Change these all to MessageLoopProxy.
   virtual MessageLoop* main_message_loop();
   virtual MessageLoop* encode_message_loop();
   virtual MessageLoop* network_message_loop();

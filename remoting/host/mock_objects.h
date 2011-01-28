@@ -6,6 +6,7 @@
 #define REMOTING_HOST_MOCK_OBJECTS_H_
 
 #include "remoting/host/capturer.h"
+#include "remoting/host/chromoting_host_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace remoting {
@@ -26,6 +27,21 @@ class MockCapturer : public Capturer {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCapturer);
+};
+
+class MockChromotingHostContext : public ChromotingHostContext {
+ public:
+  MockChromotingHostContext() {}
+
+  MOCK_METHOD0(Start, void());
+  MOCK_METHOD0(Stop, void());
+  MOCK_METHOD0(jingle_thread, JingleThread*());
+  MOCK_METHOD0(main_message_loop, MessageLoop*());
+  MOCK_METHOD0(encode_message_loop, MessageLoop*());
+  MOCK_METHOD0(network_message_loop, MessageLoop*());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockChromotingHostContext);
 };
 
 }  // namespace remoting
