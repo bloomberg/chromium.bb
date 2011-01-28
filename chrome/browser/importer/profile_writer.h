@@ -56,6 +56,7 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
     ~BookmarkEntry();
 
     bool in_toolbar;
+    bool is_folder;
     GURL url;
     std::vector<std::wstring> path;
     std::wstring title;

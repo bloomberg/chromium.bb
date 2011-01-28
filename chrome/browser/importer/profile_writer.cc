@@ -19,7 +19,8 @@
 
 using webkit_glue::PasswordForm;
 
-ProfileWriter::BookmarkEntry::BookmarkEntry() : in_toolbar(false) {}
+ProfileWriter::BookmarkEntry::BookmarkEntry() : in_toolbar(false),
+    is_folder(false) {}
 
 ProfileWriter::BookmarkEntry::~BookmarkEntry() {}
 
@@ -82,7 +83,7 @@ void ProfileWriter::AddBookmarkEntry(
   for (std::vector<BookmarkEntry>::const_iterator it = bookmark.begin();
        it != bookmark.end(); ++it) {
     // Don't insert this url if it isn't valid.
-    if (!it->url.is_valid())
+    if (!it->is_folder && !it->url.is_valid())
       continue;
 
     // We suppose that bookmarks are unique by Title, URL, and Folder.  Since
@@ -119,8 +120,13 @@ void ProfileWriter::AddBookmarkEntry(
       parent = child;
     }
     groups_added_to.insert(parent);
-    model->AddURLWithCreationTime(parent, parent->GetChildCount(),
-        WideToUTF16Hack(it->title), it->url, it->creation_time);
+    if (it->is_folder) {
+      model->AddGroup(parent, parent->GetChildCount(),
+                      WideToUTF16Hack(it->title));
+    } else {
+      model->AddURLWithCreationTime(parent, parent->GetChildCount(),
+          WideToUTF16Hack(it->title), it->url, it->creation_time);
+    }
 
     // If some items are put into toolbar, it looks like the user was using
     // it in their last browser. We turn on the bookmarks toolbar.

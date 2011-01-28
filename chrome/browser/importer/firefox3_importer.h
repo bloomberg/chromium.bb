@@ -62,7 +62,7 @@ class Firefox3Importer : public Importer {
 
   // Loads all children of the given folder, and appends them to the |list|.
   void GetWholeBookmarkFolder(sqlite3* db, BookmarkList* list,
-                              size_t position);
+                              size_t position, bool* empty_folder);
 
   // Loads the favicons given in the map from the database, loads the data,
   // and converts it into FaviconUsage structures.

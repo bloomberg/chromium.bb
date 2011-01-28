@@ -52,6 +52,7 @@ class Firefox2Importer : public Importer {
  private:
   FRIEND_TEST_ALL_PREFIXES(FirefoxImporterTest, Firefox2BookmarkParse);
   FRIEND_TEST_ALL_PREFIXES(FirefoxImporterTest, Firefox2CookesParse);
+  FRIEND_TEST_ALL_PREFIXES(FirefoxImporterTest, Firefox2BookmarkFileImport);
 
   virtual ~Firefox2Importer();
 
@@ -84,7 +85,8 @@ class Firefox2Importer : public Importer {
   static bool ParseFolderNameFromLine(const std::string& line,
                                       const std::string& charset,
                                       std::wstring* folder_name,
-                                      bool* is_toolbar_folder);
+                                      bool* is_toolbar_folder,
+                                      base::Time* add_date);
   // See above, this will also put the data: URL of the favicon into *favicon
   // if there is a favicon given.  |post_data| is set for POST base keywords to
   // the contents of the actual POST (with %s for the search term).

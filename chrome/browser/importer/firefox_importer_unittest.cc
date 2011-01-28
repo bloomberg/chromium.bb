@@ -87,18 +87,20 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
   // Escaped characters in name.
   std::wstring folder_name;
   bool is_toolbar_folder;
+  Time folder_add_date;
   result = Firefox2Importer::ParseFolderNameFromLine(
       "<DT><H3 ADD_DATE=\"1207558707\" >&lt; &gt;"
       " &amp; &quot; &#39; \\ /</H3>",
-      charset, &folder_name, &is_toolbar_folder);
+      charset, &folder_name, &is_toolbar_folder, &folder_add_date);
   EXPECT_TRUE(result);
   EXPECT_EQ(L"< > & \" ' \\ /", folder_name);
   EXPECT_FALSE(is_toolbar_folder);
+  EXPECT_TRUE(Time::FromTimeT(1207558707) == folder_add_date);
 
   // Empty name and toolbar folder attribute.
   result = Firefox2Importer::ParseFolderNameFromLine(
       "<DT><H3 PERSONAL_TOOLBAR_FOLDER=\"true\"></H3>",
-      charset, &folder_name, &is_toolbar_folder);
+      charset, &folder_name, &is_toolbar_folder, &folder_add_date);
   EXPECT_TRUE(result);
   EXPECT_EQ(L"", folder_name);
   EXPECT_TRUE(is_toolbar_folder);
@@ -176,4 +178,44 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
   EXPECT_EQ(L"", shortcut);
   EXPECT_EQ(L"", post_data);
   EXPECT_TRUE(Time() == add_date);
+}
+
+TEST(FirefoxImporterTest, Firefox2BookmarkFileImport) {
+  FilePath path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
+  path = path.AppendASCII("firefox2_importer");
+
+  // Import all bookmarks from a file which include an empty folder entry.
+  FilePath empty_folder_path = path.AppendASCII("empty_folder.html");
+  std::set<GURL> default_urls;
+  std::wstring first_folder_name;
+  Firefox2Importer* importer = new Firefox2Importer();
+  importer->AddRef();
+  std::vector<ProfileWriter::BookmarkEntry> bookmarks;
+  importer->ImportBookmarksFile(empty_folder_path, default_urls, false,
+                                first_folder_name, importer, &bookmarks,
+                                NULL, NULL);
+  EXPECT_EQ(3, static_cast<int>(bookmarks.size()));
+  std::vector<ProfileWriter::BookmarkEntry>::iterator it = bookmarks.begin();
+  ProfileWriter::BookmarkEntry entry = *it++;
+  EXPECT_EQ(L"Empty", entry.title);
+  entry = *it++;
+  EXPECT_EQ(L"[Tamura Yukari.com]", entry.title);
+  entry = *it++;
+  EXPECT_EQ(L"Google", entry.title);
+
+  // Import non-default bookmarks from a file.
+  bookmarks.clear();
+  default_urls.insert(GURL("http://www.google.com/"));
+  importer->ImportBookmarksFile(empty_folder_path, default_urls, false,
+                                first_folder_name, importer, &bookmarks,
+                                NULL, NULL);
+  EXPECT_EQ(2, static_cast<int>(bookmarks.size()));
+  it = bookmarks.begin();
+  entry = *it++;
+  EXPECT_EQ(L"Empty", entry.title);
+  entry = *it++;
+  EXPECT_EQ(L"[Tamura Yukari.com]", entry.title);
+
+  importer->Release();
 }

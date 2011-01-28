@@ -165,6 +165,8 @@ void Firefox2Importer::ImportBookmarksFile(
   std::vector<ProfileWriter::BookmarkEntry> toolbar_bookmarks;
   std::wstring last_folder = first_folder_name;
   bool last_folder_on_toolbar = false;
+  bool last_folder_is_empty = true;
+  Time last_folder_add_date;
   std::vector<std::wstring> path;
   size_t toolbar_folder = 0;
   std::string charset;
@@ -179,7 +181,8 @@ void Firefox2Importer::ImportBookmarksFile(
 
     // Get the folder name.
     if (ParseFolderNameFromLine(line, charset, &last_folder,
-                                &last_folder_on_toolbar))
+                                &last_folder_on_toolbar,
+                                &last_folder_add_date))
       continue;
 
     // Get the bookmark entry.
@@ -187,11 +190,16 @@ void Firefox2Importer::ImportBookmarksFile(
     GURL url, favicon;
     Time add_date;
     std::wstring post_data;
+    bool is_bookmark;
     // TODO(jcampan): http://b/issue?id=1196285 we do not support POST based
     //                keywords yet.
-    if (ParseBookmarkFromLine(line, charset, &title,
-                              &url, &favicon, &shortcut, &add_date,
-                              &post_data) &&
+    is_bookmark = ParseBookmarkFromLine(line, charset, &title,
+                                        &url, &favicon, &shortcut, &add_date,
+                                        &post_data);
+    if (is_bookmark)
+      last_folder_is_empty = false;
+
+    if (is_bookmark &&
         post_data.empty() &&
         CanImportURL(GURL(url)) &&
         default_urls.find(url) == default_urls.end()) {
@@ -240,10 +248,39 @@ void Firefox2Importer::ImportBookmarksFile(
       last_folder.clear();
       if (last_folder_on_toolbar && !toolbar_folder)
         toolbar_folder = path.size();
+
+      // Mark next folder empty as initial state.
+      last_folder_is_empty = true;
     } else if (StartsWithASCII(line, "</DL>", true)) {
       if (path.empty())
         break;  // Mismatch <DL>.
+
+      std::wstring folder_title = path.back();
       path.pop_back();
+
+      if (last_folder_is_empty) {
+        // Empty folder should be added explicitly.
+        ProfileWriter::BookmarkEntry entry;
+        entry.is_folder = true;
+        entry.creation_time = last_folder_add_date;
+        entry.title = folder_title;
+        if (import_to_bookmark_bar && toolbar_folder) {
+          // Flatten the folder in toolbar.
+          entry.in_toolbar = true;
+          entry.path.assign(path.begin() + toolbar_folder, path.end());
+          toolbar_bookmarks.push_back(entry);
+        } else {
+          // Insert the folder into the "Imported from Firefox" folder.
+          entry.path.assign(path.begin(), path.end());
+          if (import_to_bookmark_bar)
+            entry.path.erase(entry.path.begin());
+          bookmarks->push_back(entry);
+        }
+
+        // Parent folder include current one, so it's not empty.
+        last_folder_is_empty = false;
+      }
+
       if (toolbar_folder > path.size())
         toolbar_folder = 0;
     }
@@ -382,10 +419,12 @@ bool Firefox2Importer::ParseCharsetFromLine(const std::string& line,
 bool Firefox2Importer::ParseFolderNameFromLine(const std::string& line,
                                                const std::string& charset,
                                                std::wstring* folder_name,
-                                               bool* is_toolbar_folder) {
+                                               bool* is_toolbar_folder,
+                                               Time* add_date) {
   const char kFolderOpen[] = "<DT><H3";
   const char kFolderClose[] = "</H3>";
   const char kToolbarFolderAttribute[] = "PERSONAL_TOOLBAR_FOLDER";
+  const char kAddDateAttribute[] = "ADD_DATE";
 
   if (!StartsWithASCII(line, kFolderOpen, true))
     return false;
@@ -403,6 +442,16 @@ bool Firefox2Importer::ParseFolderNameFromLine(const std::string& line,
   std::string attribute_list = line.substr(arraysize(kFolderOpen),
       tag_end - arraysize(kFolderOpen) - 1);
   std::string value;
+
+  // Add date
+  if (GetAttribute(attribute_list, kAddDateAttribute, &value)) {
+    int64 time;
+    base::StringToInt64(value, &time);
+    // Upper bound it at 32 bits.
+    if (0 < time && time < (1LL << 32))
+      *add_date = Time::FromTimeT(time);
+  }
+
   if (GetAttribute(attribute_list, kToolbarFolderAttribute, &value) &&
       LowerCaseEqualsASCII(value, "true"))
     *is_toolbar_folder = true;
