@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "views/screen.h"
 
 namespace {
 
@@ -230,12 +231,10 @@ class DockToWindowFinder : public BaseWindowFinder {
                      const std::set<HWND>& ignore)
       : BaseWindowFinder(ignore),
         screen_loc_(screen_loc) {
-    HMONITOR monitor = MonitorFromPoint(screen_loc.ToPOINT(),
-                                        MONITOR_DEFAULTTONULL);
-    MONITORINFO monitor_info = {0};
-    monitor_info.cbSize = sizeof(MONITORINFO);
-    if (monitor && GetMonitorInfo(monitor, &monitor_info)) {
-      result_.set_monitor_bounds(gfx::Rect(monitor_info.rcWork));
+    gfx::Rect work_area = views::Screen::GetMonitorWorkAreaNearestPoint(
+        screen_loc);
+    if (!work_area.IsEmpty()) {
+      result_.set_monitor_bounds(work_area);
       EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc,
                         reinterpret_cast<LPARAM>(this));
     }

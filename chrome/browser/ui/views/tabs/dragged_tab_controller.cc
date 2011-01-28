@@ -34,6 +34,7 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/event.h"
+#include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
@@ -536,6 +537,20 @@ gfx::Point DraggedTabController::GetWindowCreatePoint() const {
     // If we're going to dock, we need to return the exact coordinate,
     // otherwise we may attempt to maximize on the wrong monitor.
     return cursor_point;
+  }
+  // If the cursor is outside the monitor area, move it inside. For example,
+  // dropping a tab onto the task bar on Windows produces this situation.
+  gfx::Rect work_area = views::Screen::GetMonitorWorkAreaNearestPoint(
+      cursor_point);
+  if (!work_area.IsEmpty()) {
+    if (cursor_point.x() < work_area.x())
+      cursor_point.set_x(work_area.x());
+    else if (cursor_point.x() > work_area.right())
+      cursor_point.set_x(work_area.right());
+    if (cursor_point.y() < work_area.y())
+      cursor_point.set_y(work_area.y());
+    else if (cursor_point.y() > work_area.bottom())
+      cursor_point.set_y(work_area.bottom());
   }
   return gfx::Point(cursor_point.x() - window_create_point_.x(),
                     cursor_point.y() - window_create_point_.y());

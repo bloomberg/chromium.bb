@@ -33,17 +33,25 @@ gfx::Rect Screen::GetMonitorAreaNearestWindow(gfx::NativeWindow window) {
   return gfx::Rect(monitor_info.rcMonitor);
 }
 
-// static
-gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
+static gfx::Rect GetMonitorAreaOrWorkAreaNearestPoint(const gfx::Point& point,
+                                                      bool work_area) {
   POINT initial_loc = { point.x(), point.y() };
   HMONITOR monitor = MonitorFromPoint(initial_loc, MONITOR_DEFAULTTONEAREST);
-  if (!monitor)
-    return gfx::Rect();
-
   MONITORINFO mi = {0};
   mi.cbSize = sizeof(mi);
-  GetMonitorInfo(monitor, &mi);
-  return gfx::Rect(mi.rcMonitor);
+  if (monitor && GetMonitorInfo(monitor, &mi))
+    return gfx::Rect(work_area ? mi.rcWork : mi.rcMonitor);
+  return gfx::Rect();
+}
+
+// static
+gfx::Rect Screen::GetMonitorWorkAreaNearestPoint(const gfx::Point& point) {
+  return GetMonitorAreaOrWorkAreaNearestPoint(point, true);
+}
+
+// static
+gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
+  return GetMonitorAreaOrWorkAreaNearestPoint(point, false);
 }
 
 gfx::NativeWindow Screen::GetWindowAtCursorScreenPoint() {

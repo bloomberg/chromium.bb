@@ -76,6 +76,12 @@ gfx::Rect Screen::GetMonitorAreaNearestWindow(gfx::NativeView view) {
 }
 
 // static
+gfx::Rect Screen::GetMonitorWorkAreaNearestPoint(const gfx::Point& point) {
+  // TODO(jamiewalch): Restrict this to the work area of the monitor.
+  return GetMonitorAreaNearestPoint(point);
+}
+
+// static
 gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
   GdkScreen* screen = gdk_screen_get_default();
   gint monitor = gdk_screen_get_monitor_at_point(screen, point.x(), point.y());
