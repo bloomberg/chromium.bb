@@ -4543,12 +4543,12 @@ worker_thread(struct mg_context *ctx)
   }
 
   /* Signal master that we're done with connection and exiting */
-  pthread_mutex_lock(&conn.ctx->thr_mutex);
-  conn.ctx->num_threads--;
-  conn.ctx->num_idle--;
-  pthread_cond_signal(&conn.ctx->thr_cond);
-  assert(conn.ctx->num_threads >= 0);
-  pthread_mutex_unlock(&conn.ctx->thr_mutex);
+  pthread_mutex_lock(&ctx->thr_mutex);
+  ctx->num_threads--;
+  ctx->num_idle--;
+  pthread_cond_signal(&ctx->thr_cond);
+  assert(ctx->num_threads >= 0);
+  pthread_mutex_unlock(&ctx->thr_mutex);
 
   DEBUG_TRACE((DEBUG_MGS_PREFIX "%s: thread %p exiting",
       __func__, (void *) pthread_self()));
