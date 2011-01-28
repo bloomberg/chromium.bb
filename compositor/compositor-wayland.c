@@ -373,7 +373,7 @@ input_handle_pointer_focus(void *data,
 			    int32_t x, int32_t y, int32_t sx, int32_t sy)
 {
 	struct wayland_input *input = data;
-	struct wayland_output *output = data;
+	struct wayland_output *output;
 	struct wayland_compositor *c = input->compositor;
 
 	if (surface) {
@@ -392,7 +392,17 @@ input_handle_keyboard_focus(void *data,
 			     struct wl_surface *surface,
 			     struct wl_array *keys)
 {
-	/* FIXME: sth to be done here? */
+	struct wayland_input *input = data;
+	struct wayland_compositor *c = input->compositor;
+	struct wayland_output *output;
+
+	if (surface) {
+		output = wl_surface_get_user_data(surface);
+		notify_keyboard_focus(c->base.input_device,
+				      time, &output->base, keys);
+	} else {
+		notify_keyboard_focus(c->base.input_device, time, NULL, NULL);
+	}
 }
 
 static const struct wl_input_device_listener input_device_listener = {
