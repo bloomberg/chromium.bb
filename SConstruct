@@ -436,7 +436,10 @@ MAJOR_TEST_SUITES = set([
   # Tests using the firefox plugin, usually only run on firefox
   'browser_tests',
   # Tests using the pepper plugin, only run with chrome
+  # TODO(ncbray): migrate pepper_browser_tests to chrome_browser_tests
   'pepper_browser_tests',
+  # Lightweight browser tests
+  'chrome_browser_tests',
   'huge_tests',
 ])
 
@@ -569,6 +572,7 @@ Alias('medium_tests', [])
 Alias('large_tests', [])
 Alias('browser_tests', [])
 Alias('pepper_browser_tests', [])
+Alias('chrome_browser_tests', [])
 
 Alias('unit_tests', 'small_tests')
 Alias('smoke_tests', ['small_tests', 'medium_tests'])
