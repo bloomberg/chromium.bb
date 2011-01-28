@@ -123,6 +123,11 @@ class Context : public base::SupportsWeakPtr<Context> {
   gpu::gles2::GLES2Implementation* gles2_implementation() const {
     return gles2_implementation_;
   }
+
+  CommandBufferProxy* command_buffer() const {
+    return command_buffer_;
+  }
+
  private:
   void OnSwapBuffers();
 
@@ -573,6 +578,11 @@ gpu::gles2::GLES2Implementation* GetImplementation(Context* context) {
     return NULL;
 
   return context->gles2_implementation();
+}
+
+CommandBufferProxy* GetCommandBufferProxy(Context* context) {
+  DCHECK(context);
+  return context->command_buffer();
 }
 
 }  // namespace ggl

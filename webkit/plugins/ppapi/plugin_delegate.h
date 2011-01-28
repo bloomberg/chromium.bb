@@ -38,9 +38,7 @@ class Rect;
 }
 
 namespace gpu {
-namespace gles2 {
-class GLES2Implementation;
-}
+class CommandBuffer;
 }
 
 namespace skia {
@@ -145,12 +143,6 @@ class PluginDelegate {
     // Initialize the context.
     virtual bool Init() = 0;
 
-    // Present the rendered frame to the compositor.
-    virtual bool SwapBuffers() = 0;
-
-    // Get the last EGL error.
-    virtual unsigned GetError() = 0;
-
     // Set an optional callback that will be invoked when the side effects of
     // a SwapBuffers call become visible to the compositor. Takes ownership
     // of the callback.
@@ -160,10 +152,10 @@ class PluginDelegate {
     // compositors namespace. Otherwise return 0. Returns 0 by default.
     virtual unsigned GetBackingTextureId() = 0;
 
-    // This call will return the address of the GLES2 implementation for this
-    // context that is constructed in Initialize() and is valid until this
-    // context is destroyed.
-    virtual gpu::gles2::GLES2Implementation* GetGLES2Implementation() = 0;
+    // This call will return the address of the command buffer for this context
+    // that is constructed in Initialize() and is valid until this context is
+    // destroyed.
+    virtual gpu::CommandBuffer* GetCommandBuffer() = 0;
   };
 
   class PlatformAudio {

@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/client/gles2_cmd_helper.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
@@ -16,7 +18,8 @@ namespace ppapi {
 namespace {
 
 // Size of the transfer buffer.
-enum { kTransferBufferSize = 512 * 1024 };
+const int32 kCommandBufferSize = 1024 * 1024;
+const int32 kTransferBufferSize = 1024 * 1024;
 
 PP_Resource Create(PP_Instance instance_id,
                    PP_Config3D_Dev config,
@@ -91,7 +94,7 @@ const PPB_Context3D_Dev ppb_context3d = {
 PPB_Context3D_Impl::PPB_Context3D_Impl(PluginInstance* instance)
     : Resource(instance),
       instance_(instance),
-      gles2_impl_(NULL),
+      transfer_buffer_id_(0),
       draw_surface_(NULL),
       read_surface_(NULL) {
 }
@@ -122,8 +125,45 @@ bool PPB_Context3D_Impl::Init(PP_Config3D_Dev config,
     return false;
   }
 
-  gles2_impl_ = platform_context_->GetGLES2Implementation();
-  DCHECK(gles2_impl_);
+  gpu::CommandBuffer* command_buffer = platform_context_->GetCommandBuffer();
+  DCHECK(command_buffer);
+
+  if (!command_buffer->Initialize(kCommandBufferSize)) {
+    Destroy();
+    return false;
+  }
+
+  // Create the GLES2 helper, which writes the command buffer protocol.
+  helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer));
+  if (!helper_->Initialize(kCommandBufferSize)) {
+    Destroy();
+    return false;
+  }
+
+  // Create a transfer buffer used to copy resources between the renderer
+  // process and the GPU process.
+  transfer_buffer_id_ =
+      command_buffer->CreateTransferBuffer(kTransferBufferSize);
+  if (transfer_buffer_id_ < 0) {
+    Destroy();
+    return false;
+  }
+
+  // Map the buffer into the renderer process's address space.
+  gpu::Buffer transfer_buffer =
+      command_buffer->GetTransferBuffer(transfer_buffer_id_);
+  if (!transfer_buffer.ptr) {
+    Destroy();
+    return false;
+  }
+
+  // Create the object exposing the OpenGL API.
+  gles2_impl_.reset(new gpu::gles2::GLES2Implementation(
+      helper_.get(),
+      transfer_buffer.size,
+      transfer_buffer.ptr,
+      transfer_buffer_id_,
+      false));
 
   return true;
 }
@@ -143,7 +183,7 @@ int32_t PPB_Context3D_Impl::BindSurfaces(PPB_Surface3D_Impl* draw,
 
   if (draw_surface_)
     draw_surface_->BindToContext(NULL);
-  if (draw && !draw->BindToContext(platform_context_.get()))
+  if (draw && !draw->BindToContext(this))
     return PP_ERROR_NOMEMORY;
 
   draw_surface_ = draw;
@@ -155,7 +195,15 @@ void PPB_Context3D_Impl::Destroy() {
   if (draw_surface_)
     draw_surface_->BindToContext(NULL);
 
-  gles2_impl_ = NULL;
+  gles2_impl_.reset();
+
+  if (platform_context_.get() && transfer_buffer_id_ != 0) {
+    gpu::CommandBuffer* command_buffer = platform_context_->GetCommandBuffer();
+    command_buffer->DestroyTransferBuffer(transfer_buffer_id_);
+    transfer_buffer_id_ = 0;
+  }
+
+  helper_.reset();
   platform_context_.reset();
 }
 

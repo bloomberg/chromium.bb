@@ -17,6 +17,7 @@
 
 class GpuChannelHost;
 class MessageLoop;
+class CommandBufferProxy;
 
 namespace gpu {
 namespace gles2 {
@@ -164,6 +165,8 @@ Error GetError(Context* context);
 // Return true if GPU process reported context lost or there was a problem
 // communicating with the GPU process.
 bool IsCommandBufferContextLost(Context* context);
+
+CommandBufferProxy* GetCommandBufferProxy(Context* context);
 
 }  // namespace ggl
 

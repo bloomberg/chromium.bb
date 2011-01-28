@@ -9,6 +9,7 @@
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
 
 namespace webkit {
 namespace ppapi {
@@ -95,22 +96,21 @@ bool PPB_Surface3D_Impl::BindToInstance(bool bind) {
 }
 
 bool PPB_Surface3D_Impl::BindToContext(
-    PluginDelegate::PlatformContext3D* context) {
+    PPB_Context3D_Impl* context) {
   if (context == context_)
     return true;
 
   // Unbind from the current context.
   if (context_) {
-    context_->SetSwapBuffersCallback(NULL);
+    context_->platform_context()->SetSwapBuffersCallback(NULL);
   }
   if (context) {
     // Resize the backing texture to the size of the instance when it is bound.
     // TODO(alokp): This should be the responsibility of plugins.
     const gfx::Size& size = instance()->position().size();
-    context->GetGLES2Implementation()->ResizeCHROMIUM(
-        size.width(), size.height());
+    context->gles2_impl()->ResizeCHROMIUM(size.width(), size.height());
 
-    context->SetSwapBuffersCallback(
+    context->platform_context()->SetSwapBuffersCallback(
         NewCallback(this, &PPB_Surface3D_Impl::OnSwapBuffers));
   }
   context_ = context;
@@ -127,7 +127,8 @@ bool PPB_Surface3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
   }
 
   swap_callback_ = callback;
-  return context_->SwapBuffers();
+  context_->gles2_impl()->SwapBuffers();
+  return true;
 }
 
 void PPB_Surface3D_Impl::ViewInitiatedPaint() {
@@ -149,7 +150,7 @@ void PPB_Surface3D_Impl::ViewFlushedPaint() {
 }
 
 unsigned int PPB_Surface3D_Impl::GetBackingTextureId() {
-  return context_ ? context_->GetBackingTextureId() : 0;
+  return context_ ? context_->platform_context()->GetBackingTextureId() : 0;
 }
 
 void PPB_Surface3D_Impl::OnSwapBuffers() {

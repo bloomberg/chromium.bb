@@ -4,40 +4,58 @@
 
 #include "chrome/renderer/pepper_platform_context_3d_impl.h"
 
+#include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/ggl/ggl.h"
 #include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/render_thread.h"
+#include "gpu/command_buffer/client/gles2_cmd_helper.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 
 #ifdef ENABLE_GPU
 PlatformContext3DImpl::PlatformContext3DImpl(ggl::Context* parent_context)
       : parent_context_(parent_context),
-  context_(NULL) {
+        command_buffer_(NULL) {
 }
 
 PlatformContext3DImpl::~PlatformContext3DImpl() {
-  if (context_) {
-    ggl::DestroyContext(context_);
-    context_ = NULL;
+  if (command_buffer_) {
+    DCHECK(channel_.get());
+    channel_->DestroyCommandBuffer(command_buffer_);
+    command_buffer_ = NULL;
   }
+
+  channel_ = NULL;
+
+  if (parent_context_ && parent_texture_id_ != 0) {
+    ggl::GetImplementation(parent_context_)->FreeTextureId(parent_texture_id_);
+  }
+
 }
 
 bool PlatformContext3DImpl::Init() {
   // Ignore initializing more than once.
-  if (context_)
+  if (command_buffer_)
     return true;
 
   RenderThread* render_thread = RenderThread::current();
   if (!render_thread)
     return false;
 
-  GpuChannelHost* host = render_thread->GetGpuChannel();
-  if (!host)
+  channel_ = render_thread->GetGpuChannel();
+  if (!channel_.get())
     return false;
 
-  DCHECK(host->state() == GpuChannelHost::kConnected);
+  DCHECK(channel_->state() == GpuChannelHost::kConnected);
+
+  // Flush any remaining commands in the parent context to make sure the
+  // texture id accounting stays consistent.
+  gpu::gles2::GLES2Implementation* parent_gles2 =
+      ggl::GetImplementation(parent_context_);
+  parent_gles2->helper()->CommandBufferHelper::Finish();
+  parent_texture_id_ = parent_gles2->MakeTextureId();
 
   // TODO(apatrick): Let Pepper plugins configure their back buffer surface.
-  static const int32 attribs[] = {
+  static const int32 kAttribs[] = {
     ggl::GGL_ALPHA_SIZE, 8,
     ggl::GGL_DEPTH_SIZE, 24,
     ggl::GGL_STENCIL_SIZE, 8,
@@ -45,44 +63,35 @@ bool PlatformContext3DImpl::Init() {
     ggl::GGL_SAMPLE_BUFFERS, 0,
     ggl::GGL_NONE,
   };
+  std::vector<int32> attribs(kAttribs, kAttribs + ARRAYSIZE_UNSAFE(kAttribs));
+  CommandBufferProxy* parent_command_buffer =
+      ggl::GetCommandBufferProxy(parent_context_);
+  command_buffer_ = channel_->CreateOffscreenCommandBuffer(
+        parent_command_buffer,
+        gfx::Size(1, 1),
+        "",
+        attribs,
+        parent_texture_id_);
 
-  // TODO(apatrick): Decide which extensions to expose to Pepper plugins.
-  // Currently they get only core GLES2.
-  context_ = ggl::CreateOffscreenContext(host,
-                                         parent_context_,
-                                         gfx::Size(1, 1),
-                                         "",
-                                         attribs);
-  if (!context_)
+  if (!command_buffer_)
     return false;
 
   return true;
 }
 
-bool PlatformContext3DImpl::SwapBuffers() {
-  DCHECK(context_);
-  return ggl::SwapBuffers(context_);
-}
-
-unsigned PlatformContext3DImpl::GetError() {
-  DCHECK(context_);
-  return ggl::GetError(context_);
-}
-
 void PlatformContext3DImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
-  DCHECK(context_);
-  ggl::SetSwapBuffersCallback(context_, callback);
+  DCHECK(command_buffer_);
+  command_buffer_->SetSwapBuffersCallback(callback);
 }
 
 unsigned PlatformContext3DImpl::GetBackingTextureId() {
-  DCHECK(context_);
-  return ggl::GetParentTextureId(context_);
+  DCHECK(command_buffer_);
+  return parent_texture_id_;
 }
 
-gpu::gles2::GLES2Implementation*
-    PlatformContext3DImpl::GetGLES2Implementation() {
-  DCHECK(context_);
-  return ggl::GetImplementation(context_);
+gpu::CommandBuffer*
+    PlatformContext3DImpl::GetCommandBuffer() {
+  return command_buffer_;
 }
 
 #endif  // ENABLE_GPU

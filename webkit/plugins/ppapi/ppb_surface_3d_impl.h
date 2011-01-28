@@ -30,7 +30,7 @@ class PPB_Surface3D_Impl : public Resource {
   bool Init(PP_Config3D_Dev config,
             const int32_t* attrib_list);
 
-  PluginDelegate::PlatformContext3D* context() const {
+  PPB_Context3D_Impl* context() const {
     return context_;
   }
 
@@ -42,7 +42,7 @@ class PPB_Surface3D_Impl : public Resource {
   // Binds the context such that all draw calls to context
   // affect this surface. To unbind call this function will NULL context.
   // Returns true if successful.
-  bool BindToContext(PluginDelegate::PlatformContext3D* context);
+  bool BindToContext(PPB_Context3D_Impl* context);
 
   unsigned int GetBackingTextureId();
 
@@ -62,7 +62,7 @@ class PPB_Surface3D_Impl : public Resource {
   PP_CompletionCallback swap_callback_;
 
   // The context this surface is currently bound to.
-  PluginDelegate::PlatformContext3D* context_;
+  PPB_Context3D_Impl* context_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Surface3D_Impl);
 };

@@ -12,6 +12,7 @@
 
 namespace gpu {
 namespace gles2 {
+class GLES2CmdHelper;
 class GLES2Implementation;
 }  // namespace gles2
 }  // namespace gpu
@@ -39,8 +40,12 @@ class PPB_Context3D_Impl : public Resource {
     return instance_;
   }
 
+  PluginDelegate::PlatformContext3D* platform_context() {
+    return platform_context_.get();
+  }
+
   gpu::gles2::GLES2Implementation* gles2_impl() {
-    return gles2_impl_;
+    return gles2_impl_.get();
   }
 
   int32_t BindSurfaces(PPB_Surface3D_Impl* draw,
@@ -55,8 +60,9 @@ class PPB_Context3D_Impl : public Resource {
   // PluginDelegate's 3D Context. Responsible for providing the command buffer.
   scoped_ptr<PluginDelegate::PlatformContext3D> platform_context_;
 
-  // GLES2 Implementation instance. Owned by the platform context's GGL context.
-  gpu::gles2::GLES2Implementation* gles2_impl_;
+  scoped_ptr<gpu::gles2::GLES2CmdHelper> helper_;
+  int32 transfer_buffer_id_;
+  scoped_ptr<gpu::gles2::GLES2Implementation> gles2_impl_;
 
   PPB_Surface3D_Impl* draw_surface_;
   PPB_Surface3D_Impl* read_surface_;

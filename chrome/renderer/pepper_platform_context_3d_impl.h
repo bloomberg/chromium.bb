@@ -8,11 +8,20 @@
 
 #ifdef ENABLE_GPU
 
+namespace gpu {
+
+class CommandBuffer;
+
+}  // namespace gpu
+
 namespace ggl {
 
 class Context;
 
 }  // namespace ggl;
+
+class GpuChannelHost;
+class CommandBufferProxy;
 
 class PlatformContext3DImpl
     : public webkit::ppapi::PluginDelegate::PlatformContext3D {
@@ -21,15 +30,17 @@ class PlatformContext3DImpl
   virtual ~PlatformContext3DImpl();
 
   virtual bool Init();
-  virtual bool SwapBuffers();
-  virtual unsigned GetError();
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
   virtual unsigned GetBackingTextureId();
-  virtual gpu::gles2::GLES2Implementation* GetGLES2Implementation();
+  virtual gpu::CommandBuffer* GetCommandBuffer();
 
  private:
+  bool InitRaw();
+
   ggl::Context* parent_context_;
-  ggl::Context* context_;
+  scoped_refptr<GpuChannelHost> channel_;
+  unsigned int parent_texture_id_;
+  CommandBufferProxy* command_buffer_;
 };
 
 #endif  // ENABLE_GPU
