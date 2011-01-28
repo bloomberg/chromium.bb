@@ -37,8 +37,7 @@ const wchar_t NSSDecryptor::kSoftokn3Library[] = L"softokn3.dll";
 const wchar_t NSSDecryptor::kPLDS4Library[] = L"plds4.dll";
 const wchar_t NSSDecryptor::kNSPR4Library[] = L"nspr4.dll";
 
-bool NSSDecryptor::Init(const std::wstring& dll_path,
-                        const std::wstring& db_path) {
+bool NSSDecryptor::Init(const FilePath& dll_path, const FilePath& db_path) {
   // We call SetDllDirectory to work around a Purify bug (GetModuleHandle
   // fails inside Purify under certain conditions).  SetDllDirectory only
   // exists on Windows XP SP1 or later, so we look up its address at run time.
@@ -50,7 +49,7 @@ bool NSSDecryptor::Init(const std::wstring& dll_path,
   SetDllDirectoryCaller caller;
 
   if (set_dll_directory != NULL) {
-    if (!set_dll_directory(dll_path.c_str()))
+    if (!set_dll_directory(dll_path.value().c_str()))
       return false;
     caller.set_func(set_dll_directory);
     nss3_dll_ = LoadLibrary(kNSS3Library);
@@ -60,7 +59,7 @@ bool NSSDecryptor::Init(const std::wstring& dll_path,
     // Fall back on LoadLibraryEx if SetDllDirectory isn't available.  We
     // actually prefer this method because it doesn't change the DLL search
     // path, which is a process-wide property.
-    FilePath path = FilePath(dll_path).Append(kNSS3Library);
+    FilePath path = dll_path.Append(kNSS3Library);
     nss3_dll_ = LoadLibraryEx(path.value().c_str(), NULL,
                               LOAD_WITH_ALTERED_SEARCH_PATH);
     if (nss3_dll_ == NULL)
@@ -103,7 +102,7 @@ NSSDecryptor::~NSSDecryptor() {
   Free();
 }
 
-bool NSSDecryptor::InitNSS(const std::wstring& db_path,
+bool NSSDecryptor::InitNSS(const FilePath& db_path,
                            base::NativeLibrary plds4_dll,
                            base::NativeLibrary nspr4_dll) {
   // NSPR DLLs are already loaded now.
@@ -142,7 +141,7 @@ bool NSSDecryptor::InitNSS(const std::wstring& db_path,
     return false;
   }
 
-  SECStatus result = NSS_Init(base::SysWideToNativeMB(db_path).c_str());
+  SECStatus result = NSS_Init(base::SysWideToNativeMB(db_path.value()).c_str());
   if (result != SECSuccess) {
     Free();
     return false;

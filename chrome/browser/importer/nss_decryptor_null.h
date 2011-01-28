@@ -23,8 +23,7 @@ struct PasswordForm;
 class NSSDecryptor {
  public:
   NSSDecryptor() {}
-  bool Init(const std::wstring& /* dll_path */,
-            const std::wstring& db_path) { return false; }
+  bool Init(const FilePath& dll_path, const FilePath& db_path) { return false; }
   string16 Decrypt(const std::string& crypt) const { return string16(); }
   void ParseSignons(const std::string& content,
                     std::vector<webkit_glue::PasswordForm>* forms) {}

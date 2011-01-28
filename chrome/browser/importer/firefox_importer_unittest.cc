@@ -33,10 +33,9 @@ TEST(FirefoxImporterTest, Firefox2NSS3Decryptor) {
   db_path = db_path.AppendASCII("firefox2_profile");
 
   FFUnitTestDecryptorProxy decryptor_proxy;
-  ASSERT_TRUE(decryptor_proxy.Setup(nss_path.ToWStringHack()));
+  ASSERT_TRUE(decryptor_proxy.Setup(nss_path));
 
-  EXPECT_TRUE(decryptor_proxy.DecryptorInit(nss_path.ToWStringHack(),
-                                            db_path.ToWStringHack()));
+  EXPECT_TRUE(decryptor_proxy.DecryptorInit(nss_path, db_path));
   EXPECT_EQ(ASCIIToUTF16("hello"),
       decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAEwFAYIKoZIhvcNAwcECBJ"
                               "M63MpT9rtBAjMCm7qo/EhlA=="));
@@ -59,10 +58,9 @@ TEST(FirefoxImporterTest, Firefox3NSS3Decryptor) {
   db_path = db_path.AppendASCII("firefox3_profile");
 
   FFUnitTestDecryptorProxy decryptor_proxy;
-  ASSERT_TRUE(decryptor_proxy.Setup(nss_path.ToWStringHack()));
+  ASSERT_TRUE(decryptor_proxy.Setup(nss_path));
 
-  EXPECT_TRUE(decryptor_proxy.DecryptorInit(nss_path.ToWStringHack(),
-                                            db_path.ToWStringHack()));
+  EXPECT_TRUE(decryptor_proxy.DecryptorInit(nss_path, db_path));
   EXPECT_EQ(ASCIIToUTF16("hello"),
       decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAEwFAYIKoZIhvcNAwcECKa"
                               "jtRg4qFSHBAhv9luFkXgDJA=="));

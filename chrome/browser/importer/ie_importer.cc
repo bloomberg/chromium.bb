@@ -75,7 +75,7 @@ void IEImporter::StartImport(const ProfileInfo& profile_info,
                              uint16 items,
                              ImporterBridge* bridge) {
   bridge_ = bridge;
-  source_path_ = profile_info.source_path.ToWStringHack();
+  source_path_ = profile_info.source_path.value();
 
   bridge_->NotifyStarted();
 

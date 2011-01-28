@@ -13,25 +13,20 @@
 #include "chrome/browser/importer/nss_decryptor_mac.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 
-// static
-const wchar_t NSSDecryptor::kNSS3Library[] = L"libnss3.dylib";
-
 // Important!! : On OS X the nss3 libraries are compiled with depedencies
 // on one another, referenced using dyld's @executable_path directive.
 // To make a long story short in order to get the libraries to load, dyld's
 // fallback path needs to be set to the directory containing the libraries.
 // To do so, the process this function runs in must have the
 // DYLD_FALLBACK_LIBRARY_PATH set on startup to said directory.
-bool NSSDecryptor::Init(const std::wstring& dll_path,
-                        const std::wstring& db_path) {
+bool NSSDecryptor::Init(const FilePath& dll_path, const FilePath& db_path) {
   if (getenv("DYLD_FALLBACK_LIBRARY_PATH") == NULL) {
     LOG(ERROR) << "DYLD_FALLBACK_LIBRARY_PATH variable not set";
     return false;
   }
-  FilePath dylib_file_path = FilePath::FromWStringHack(dll_path);
-  FilePath nss3_path = dylib_file_path.Append("libnss3.dylib");
+  FilePath nss3_path = dll_path.Append("libnss3.dylib");
 
-  void *nss_3_lib = dlopen(nss3_path.value().c_str(), RTLD_LAZY);
+  void* nss_3_lib = dlopen(nss3_path.value().c_str(), RTLD_LAZY);
   if (!nss_3_lib) {
     LOG(ERROR) << "Failed to load nss3 lib" << dlerror();
     return false;
@@ -56,7 +51,7 @@ bool NSSDecryptor::Init(const std::wstring& dll_path,
     return false;
   }
 
-  SECStatus result = NSS_Init(base::SysWideToNativeMB(db_path).c_str());
+  SECStatus result = NSS_Init(db_path.value().c_str());
 
   if (result != SECSuccess) {
     LOG(ERROR) << "NSS_Init Failed returned: " << result;

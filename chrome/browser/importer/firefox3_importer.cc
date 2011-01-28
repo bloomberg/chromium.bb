@@ -114,10 +114,8 @@ void Firefox3Importer::ImportHistory() {
     return;
 
   sqlite3* sqlite;
-  if (sqlite3_open(WideToUTF8(file.ToWStringHack()).c_str(),
-                   &sqlite) != SQLITE_OK) {
+  if (sqlite_utils::OpenSqliteDb(file, &sqlite) != SQLITE_OK)
     return;
-  }
   sqlite_utils::scoped_sqlite_db_ptr db(sqlite);
 
   SQLStatement s;
@@ -163,10 +161,8 @@ void Firefox3Importer::ImportBookmarks() {
     return;
 
   sqlite3* sqlite;
-  if (sqlite3_open(WideToUTF8(file.ToWStringHack()).c_str(),
-                   &sqlite) != SQLITE_OK) {
+  if (sqlite_utils::OpenSqliteDb(file, &sqlite) != SQLITE_OK)
     return;
-  }
   sqlite_utils::scoped_sqlite_db_ptr db(sqlite);
 
   // Get the bookmark folders that we are interested in.
@@ -319,10 +315,8 @@ void Firefox3Importer::ImportBookmarks() {
 void Firefox3Importer::ImportPasswords() {
   // Initializes NSS3.
   NSSDecryptor decryptor;
-  if (!decryptor.Init(source_path_.ToWStringHack(),
-                      source_path_.ToWStringHack()) &&
-      !decryptor.Init(app_path_.ToWStringHack(),
-                      source_path_.ToWStringHack())) {
+  if (!decryptor.Init(source_path_, source_path_) &&
+      !decryptor.Init(app_path_, source_path_)) {
     return;
   }
 
@@ -375,10 +369,8 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
     return;
 
   sqlite3* sqlite;
-  if (sqlite3_open(WideToUTF8(file.ToWStringHack()).c_str(),
-                   &sqlite) != SQLITE_OK) {
+  if (sqlite_utils::OpenSqliteDb(file, &sqlite) != SQLITE_OK)
     return;
-  }
   sqlite_utils::scoped_sqlite_db_ptr db(sqlite);
 
   SQLStatement s;

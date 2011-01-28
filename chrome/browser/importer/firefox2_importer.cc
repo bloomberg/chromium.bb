@@ -335,10 +335,8 @@ void Firefox2Importer::ImportBookmarks() {
 void Firefox2Importer::ImportPasswords() {
   // Initializes NSS3.
   NSSDecryptor decryptor;
-  if (!decryptor.Init(source_path_.ToWStringHack(),
-                      source_path_.ToWStringHack()) &&
-      !decryptor.Init(app_path_.ToWStringHack(),
-                      source_path_.ToWStringHack())) {
+  if (!decryptor.Init(source_path_, source_path_) &&
+      !decryptor.Init(app_path_, source_path_)) {
     return;
   }
 

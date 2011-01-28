@@ -29,19 +29,18 @@ const char kTestChannelID[] = "T1";
 // |channel| - IPC Channel to use for communication.
 // |handle| - On return, the process handle to use to communicate with the
 // child.
-bool LaunchNSSDecrypterChildProcess(const std::wstring& nss_path,
+bool LaunchNSSDecrypterChildProcess(const FilePath& nss_path,
     const IPC::Channel& channel, base::ProcessHandle* handle) {
   CommandLine cl(*CommandLine::ForCurrentProcess());
   cl.AppendSwitchASCII(switches::kTestChildProcess, "NSSDecrypterChildProcess");
 
-  FilePath ff_dylib_dir = FilePath::FromWStringHack(nss_path);
   // Set env variable needed for FF encryption libs to load.
   // See "chrome/browser/importer/nss_decryptor_mac.mm" for an explanation of
   // why we need this.
   base::environment_vector env;
   std::pair<std::string, std::string> dyld_override;
   dyld_override.first = "DYLD_FALLBACK_LIBRARY_PATH";
-  dyld_override.second = ff_dylib_dir.value();
+  dyld_override.second = nss_path.value();
   env.push_back(dyld_override);
 
   base::file_handle_mapping_vector fds_to_map;
@@ -123,7 +122,7 @@ FFUnitTestDecryptorProxy::FFUnitTestDecryptorProxy()
     : child_process_(0) {
 }
 
-bool FFUnitTestDecryptorProxy::Setup(const std::wstring& nss_path) {
+bool FFUnitTestDecryptorProxy::Setup(const FilePath& nss_path) {
   // Create a new message loop and spawn the child process.
   message_loop_.reset(new MessageLoopForIO());
 
@@ -185,8 +184,8 @@ bool FFUnitTestDecryptorProxy::WaitForClientResponse() {
   return ret;
 }
 
-bool FFUnitTestDecryptorProxy::DecryptorInit(const std::wstring& dll_path,
-    const std::wstring& db_path) {
+bool FFUnitTestDecryptorProxy::DecryptorInit(const FilePath& dll_path,
+                                             const FilePath& db_path) {
   channel_->Send(new Msg_Decryptor_Init(dll_path, db_path));
   bool ok = WaitForClientResponse();
   if (ok && listener_->got_result) {
@@ -219,7 +218,7 @@ class FFDecryptorClientChannelListener : public IPC::Channel::Listener {
     sender_ = sender;
   }
 
-  void OnDecryptor_Init(std::wstring dll_path, std::wstring db_path) {
+  void OnDecryptor_Init(FilePath dll_path, FilePath db_path) {
     bool ret = decryptor_.Init(dll_path, db_path);
     sender_->Send(new Msg_Decryptor_InitReturnCode(ret));
   }

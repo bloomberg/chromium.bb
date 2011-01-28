@@ -11,8 +11,8 @@
 
 // Server->Child: Initialize the decrytor with the following paramters.
 IPC_MESSAGE_CONTROL2(Msg_Decryptor_Init,
-                     std::wstring /* dll_path */,
-                     std::wstring /* db_path */)
+                     FilePath /* dll_path */,
+                     FilePath /* db_path */)
 // Child->Server: Return paramter from init call.
 IPC_MESSAGE_CONTROL1(Msg_Decryptor_InitReturnCode,
                      bool /* ret */)

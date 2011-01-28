@@ -8,6 +8,7 @@
 #include <pk11sdr.h>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/nss_util.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -23,13 +24,12 @@ NSSDecryptor::~NSSDecryptor() {
   }
 }
 
-bool NSSDecryptor::Init(const std::wstring& /* dll_path */,
-                        const std::wstring& db_path) {
+bool NSSDecryptor::Init(const FilePath& dll_path, const FilePath& db_path) {
   base::EnsureNSSInit();
   is_nss_initialized_ = true;
   const std::string modspec =
       StringPrintf("configDir='%s' tokenDescription='Firefox NSS database' "
-                   "flags=readOnly", base::SysWideToNativeMB(db_path).c_str());
+                   "flags=readOnly", db_path.value().c_str());
   db_slot_ = SECMOD_OpenUserDB(modspec.c_str());
   return db_slot_ != NULL;
 }

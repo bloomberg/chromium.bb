@@ -117,7 +117,7 @@ class NSSDecryptor {
   // Loads NSS3 library and returns true if successful.
   // |dll_path| indicates the location of NSS3 DLL files, and |db_path|
   // is the location of the database file that stores the keys.
-  bool Init(const std::wstring& dll_path, const std::wstring& db_path);
+  bool Init(const FilePath& dll_path, const FilePath& db_path);
 
   // Frees the libraries.
   void Free();
@@ -139,8 +139,8 @@ class NSSDecryptor {
                            std::vector<webkit_glue::PasswordForm>* forms);
 
  private:
-  // Performs tasks common across all platforms to initialize NSS.
-  bool InitNSS(const std::wstring& db_path,
+  // Call NSS initialization funcs.
+  bool InitNSS(const FilePath& db_path,
                base::NativeLibrary plds4_dll,
                base::NativeLibrary nspr4_dll);
 

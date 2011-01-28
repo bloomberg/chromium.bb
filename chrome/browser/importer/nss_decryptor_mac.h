@@ -120,8 +120,7 @@ class NSSDecryptor {
   ~NSSDecryptor();
 
   // Initializes NSS if it hasn't already been initialized.
-  bool Init(const std::wstring& /* dll_path */,
-            const std::wstring& /* db_path */);
+  bool Init(const FilePath& dll_path, const FilePath& db_path);
 
   // Decrypts Firefox stored passwords. Before using this method,
   // make sure Init() returns true.
@@ -151,9 +150,6 @@ class NSSDecryptor {
   PK11AuthenticateFunc PK11_Authenticate;
   PK11SDRDecryptFunc PK11SDR_Decrypt;
   SECITEMFreeItemFunc SECITEM_FreeItem;
-
-  // Libraries necessary for decrypting the passwords.
-  static const wchar_t kNSS3Library[];
 
   // True if NSS_Init() has been called
   bool is_nss_initialized_;
