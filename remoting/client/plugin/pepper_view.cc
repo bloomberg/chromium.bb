@@ -131,6 +131,7 @@ void PepperView::UnsetSolidFill() {
 void PepperView::SetConnectionState(ConnectionState state) {
   DCHECK(instance_->CurrentlyOnPluginThread());
 
+  // TODO(hclam): Re-consider the way we communicate with Javascript.
   ChromotingScriptableObject* scriptable_obj = instance_->GetScriptableObject();
   switch (state) {
     case CREATED:
@@ -140,7 +141,7 @@ void PepperView::SetConnectionState(ConnectionState state) {
 
     case CONNECTED:
       UnsetSolidFill();
-      scriptable_obj->SetConnectionInfo(STATUS_CONNECTED, QUALITY_UNKNOWN);
+      scriptable_obj->SignalLoginChallenge();
       break;
 
     case DISCONNECTED:
@@ -153,6 +154,17 @@ void PepperView::SetConnectionState(ConnectionState state) {
       scriptable_obj->SetConnectionInfo(STATUS_FAILED, QUALITY_UNKNOWN);
       break;
   }
+}
+
+void PepperView::UpdateLoginStatus(bool success, const std::string& info) {
+  DCHECK(instance_->CurrentlyOnPluginThread());
+
+  // TODO(hclam): Re-consider the way we communicate with Javascript.
+  ChromotingScriptableObject* scriptable_obj = instance_->GetScriptableObject();
+  if (success)
+    scriptable_obj->SetConnectionInfo(STATUS_CONNECTED, QUALITY_UNKNOWN);
+  else
+    scriptable_obj->SignalLoginChallenge();
 }
 
 void PepperView::SetViewport(int x, int y, int width, int height) {

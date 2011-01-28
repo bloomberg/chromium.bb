@@ -29,12 +29,11 @@
 //   // status has been updated.
 //   attribute Function connectionInfoUpdate;
 //
-//   // This function is called with a callback function as argument. The
-//   // signature of this function is:
-//   // function login(username, password);
+//   // This function is called when login information for the host machine is
+//   // needed.
 //   //
-//   // The provided callback function should be called when username and
-//   // password is available, e.g. collected by a login prompt.
+//   // User of this object should respond with calling submitLoginInfo() when
+//   // username and password is available.
 //   //
 //   // This function will be called multiple times until login was successful
 //   // or the maximum number of login attempts has been reached. In the
@@ -44,6 +43,9 @@
 //   // Methods on the object.
 //   void connect(string username, string host_jid, string auth_token);
 //   void disconnect();
+//
+//   // Method for submitting login information.
+//   void submitLoginInfo(string username, string password);
 // }
 
 #ifndef REMOTING_CLIENT_PLUGIN_CHROMOTING_SCRIPTABLE_OBJECT_H_
@@ -101,6 +103,9 @@ class ChromotingScriptableObject : public pp::deprecated::ScriptableObject {
 
   void SetConnectionInfo(ConnectionStatus status, ConnectionQuality quality);
 
+  // This should be called to signal JS code to provide login information.
+  void SignalLoginChallenge();
+
  private:
   typedef std::map<std::string, int> PropertyNameMap;
   typedef pp::Var (ChromotingScriptableObject::*MethodHandler)(
@@ -133,15 +138,11 @@ class ChromotingScriptableObject : public pp::deprecated::ScriptableObject {
   // changed.
   void SignalConnectionInfoChange();
 
-  // This should be called to signal JS code to provide login information.
-  void SignalLoginChallenge();
-
   pp::Var DoConnect(const std::vector<pp::Var>& args, pp::Var* exception);
   pp::Var DoDisconnect(const std::vector<pp::Var>& args, pp::Var* exception);
 
-  // This method is called by JS to provide login information. Note that this
-  // method is provided as a callback.
-  pp::Var DoLogin(const std::vector<pp::Var>& args, pp::Var* exception);
+  // This method is called by JS to provide login information.
+  pp::Var DoSubmitLogin(const std::vector<pp::Var>& args, pp::Var* exception);
 
   PropertyNameMap property_names_;
   std::vector<PropertyDescriptor> properties_;

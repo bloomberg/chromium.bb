@@ -80,6 +80,18 @@ void PepperViewProxy::SetConnectionState(ConnectionState state) {
     view_->SetConnectionState(state);
 }
 
+void PepperViewProxy::UpdateLoginStatus(bool success, const std::string& info) {
+  if (instance_ && !instance_->CurrentlyOnPluginThread()) {
+    RunTaskOnPluginThread(NewTracedMethod(this,
+                                          &PepperViewProxy::UpdateLoginStatus,
+                                          success, info));
+    return;
+  }
+
+  if (view_)
+    view_->UpdateLoginStatus(success, info);
+}
+
 void PepperViewProxy::SetViewport(int x, int y, int width, int height) {
   if (instance_ && !instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(NewTracedMethod(this, &PepperViewProxy::SetViewport,

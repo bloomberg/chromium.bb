@@ -54,6 +54,7 @@ void ChromotingScriptableObject::Init() {
 
   AddMethod("connect", &ChromotingScriptableObject::DoConnect);
   AddMethod("disconnect", &ChromotingScriptableObject::DoDisconnect);
+  AddMethod("submitLoginInfo", &ChromotingScriptableObject::DoSubmitLogin);
 }
 
 bool ChromotingScriptableObject::HasProperty(const Var& name, Var* exception) {
@@ -183,10 +184,10 @@ void ChromotingScriptableObject::AddMethod(const std::string& name,
 }
 
 void ChromotingScriptableObject::SignalConnectionInfoChange() {
-  pp::Var exception;
+  Var exception;
 
   // The JavaScript callback function is the 'callback' property on the
-  // 'kConnectionInfoUpdate' object.
+  // 'connectionInfoUpdate' object.
   Var cb = GetProperty(Var(kConnectionInfoUpdate), &exception);
 
   // Var() means call the object directly as a function rather than calling
@@ -200,22 +201,24 @@ void ChromotingScriptableObject::SignalConnectionInfoChange() {
 }
 
 void ChromotingScriptableObject::SignalLoginChallenge() {
-  pp::Var exception;
+  Var exception;
 
-  Var fun = GetProperty(Var(kLoginChallenge), &exception);
+  // The JavaScript callback function is the 'callback' property on the
+  // 'connectionInfoUpdate' object.
+  Var cb = GetProperty(Var(kLoginChallenge), &exception);
 
-  // Calls the loginChallenge() function with a callback.
-  fun.Call(Var(), MethodHandler(&ChromotingScriptableObject::DoLogin),
-           &exception);
+  // Var() means call the object directly as a function rather than calling
+  // a method in the object.
+  cb.Call(Var(), 0, NULL, &exception);
 
   if (!exception.is_undefined()) {
-    LOG(WARNING) << "Exception when calling JS callback"
+    LOG(WARNING) << "Exception when invoking JS callback"
                  << exception.AsString();
   }
 }
 
-pp::Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
-                                              Var* exception) {
+Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
+                                          Var* exception) {
   if (args.size() != 3) {
     *exception = Var("Usage: connect(username, host_jid, auth_token)");
     return Var();
@@ -246,15 +249,32 @@ pp::Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
   return Var();
 }
 
-pp::Var ChromotingScriptableObject::DoDisconnect(const std::vector<Var>& args,
-                                                 Var* exception) {
+Var ChromotingScriptableObject::DoDisconnect(const std::vector<Var>& args,
+                                             Var* exception) {
   instance_->Disconnect();
   return Var();
 }
 
-pp::Var ChromotingScriptableObject::DoLogin(const std::vector<pp::Var>& args,
-                                            pp::Var* exception) {
-  NOTIMPLEMENTED();
+Var ChromotingScriptableObject::DoSubmitLogin(const std::vector<Var>& args,
+                                              Var* exception) {
+  if (args.size() != 2) {
+    *exception = Var("Usage: login(username, password)");
+    return Var();
+  }
+
+  if (!args[0].is_string()) {
+    *exception = Var("Username must be a string.");
+    return Var();
+  }
+  std::string username = args[0].AsString();
+
+  if (!args[1].is_string()) {
+    *exception = Var("Password must be a string.");
+    return Var();
+  }
+  std::string password = args[1].AsString();
+
+  instance_->SubmitLoginInfo(username, password);
   return Var();
 }
 

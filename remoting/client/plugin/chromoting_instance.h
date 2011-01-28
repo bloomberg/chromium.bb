@@ -72,6 +72,10 @@ class ChromotingInstance : public pp::Instance {
   // Convenience wrapper to get the ChromotingScriptableObject.
   ChromotingScriptableObject* GetScriptableObject();
 
+  // Called by ChromotingScriptableObject to provide username and password.
+  void SubmitLoginInfo(const std::string& username,
+                       const std::string& password);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingInstanceTest, TestCaseSetup);
 

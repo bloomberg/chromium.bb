@@ -219,11 +219,23 @@ void ChromotingClient::Initialize() {
 void ChromotingClient::NotifyResolution(
     const protocol::NotifyResolutionRequest* msg, Task* done) {
   NOTIMPLEMENTED();
+  done->Run();
+  delete done;
 }
 
 void ChromotingClient::BeginSessionResponse(
     const protocol::LocalLoginStatus* msg, Task* done) {
-  NOTIMPLEMENTED();
+  if (message_loop() != MessageLoop::current()) {
+    message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingClient::BeginSessionResponse,
+                          msg, done));
+    return;
+  }
+
+  view_->UpdateLoginStatus(msg->success(), msg->error_info());
+  done->Run();
+  delete done;
 }
 
 }  // namespace remoting

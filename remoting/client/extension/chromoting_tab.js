@@ -39,6 +39,7 @@ function requestListener(request, sender, sendResponse) {
   // has changes and the UI needs to be updated. It needs to be an object with
   // a 'callback' property that contains the callback function.
   plugin.connectionInfoUpdate = pluginCallback;
+  plugin.loginChallenge = pluginLoginChallenge;
 
   // TODO(garykac): Clean exit if |connect| isn't a funtion.
   if (typeof plugin.connect === 'function') {
@@ -50,6 +51,19 @@ function requestListener(request, sender, sendResponse) {
 
   // Send an empty response since we have nothing to say.
   sendResponse({});
+}
+
+/**
+ * This is the callback method that the plugin calls to request username and
+ * password for logging into the remote host.
+ */
+function pluginLoginChallenge() {
+  if (typeof chromoting.plugin.submitLoginInfo === 'function') {
+    window.setTimeout("chromoting.plugin.submitLoginInfo('hello', 'world')",
+                      100);
+  } else {
+    alert("Error calling methods in plugin.");
+  }
 }
 
 /**

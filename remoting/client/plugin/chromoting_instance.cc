@@ -9,6 +9,7 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/task.h"
 #include "base/threading/thread.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
@@ -22,6 +23,7 @@
 #include "remoting/client/plugin/pepper_view.h"
 #include "remoting/client/plugin/pepper_view_proxy.h"
 #include "remoting/jingle_glue/jingle_thread.h"
+#include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/jingle_connection_to_host.h"
 
@@ -178,6 +180,19 @@ ChromotingScriptableObject* ChromotingInstance::GetScriptableObject() {
   }
   LOG(ERROR) << "Unable to get ScriptableObject for Chromoting plugin.";
   return NULL;
+}
+
+void ChromotingInstance::SubmitLoginInfo(const std::string& username,
+                                         const std::string& password) {
+  protocol::LocalLoginCredentials* credentials =
+      new protocol::LocalLoginCredentials();
+  credentials->set_type(protocol::PASSWORD);
+  credentials->set_username(username);
+  credentials->set_credential(password.data(), password.length());
+
+  host_connection_->host_stub()->BeginSessionRequest(
+      credentials,
+      new DeleteTask<protocol::LocalLoginCredentials>(credentials));
 }
 
 pp::Var ChromotingInstance::GetInstanceObject() {

@@ -5,6 +5,8 @@
 #ifndef REMOTING_CLIENT_CHROMOTING_VIEW_H_
 #define REMOTING_CLIENT_CHROMOTING_VIEW_H_
 
+#include <string>
+
 #include "base/ref_counted.h"
 #include "media/base/video_frame.h"
 
@@ -60,6 +62,11 @@ class ChromotingView {
 
   // Record the update the state of the connection, updating the UI as needed.
   virtual void SetConnectionState(ConnectionState s) = 0;
+
+  // Update the status of the last login attempt. Updating the UI as needed.
+  // |success| is set to true if the last login successful otherwise false.
+  // |info| contains the error information if available.
+  virtual void UpdateLoginStatus(bool success, const std::string& info) = 0;
 
   // Reposition and resize the viewport into the backing store. If the viewport
   // extends past the end of the backing store, it is filled with black.
