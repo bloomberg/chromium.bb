@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,14 +89,15 @@ class CppVariant : public NPVariant {
   bool isObject() const { return (type == NPVariantType_Object); }
 
   // Converters.  The CppVariant must be of a type convertible to these values.
-  // For example, ToInteger() works only if isNumber() is true.
+  // For example, ToInt32() works only if isNumber() is true.
   std::string ToString() const;
   int32_t ToInt32() const;
   double ToDouble() const;
   bool ToBoolean() const;
-  // Returns a vector of strings for the specified argument. This is useful
-  // for converting a JavaScript array of strings into a vector of strings.
-  std::vector<std::string> ToStringVector() const;
+  // Returns a vector of CppVariant for the specified variant. This should only
+  // be called on an Object. If the object has no "length" property an empty
+  // vector is returned.
+  std::vector<CppVariant> ToVector() const;
 
   // Invoke method of the given name on an object with the supplied arguments.
   // The first argument should be the object on which the method is to be

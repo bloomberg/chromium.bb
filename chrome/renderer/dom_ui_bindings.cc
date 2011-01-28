@@ -1,15 +1,47 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/renderer/dom_ui_bindings.h"
 
 #include "base/json/json_writer.h"
+#include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/values.h"
 #include "chrome/common/render_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
+
+namespace {
+
+// Creates a Value which is a copy of the CppVariant |value|. All objects are
+// treated as Lists for now since CppVariant does not distinguish arrays in any
+// convenient way and we currently have no need of non array objects.
+Value* CreateValueFromCppVariant(const CppVariant& value) {
+  if (value.isBool())
+    return Value::CreateBooleanValue(value.ToBoolean());
+  if (value.isDouble())
+    return Value::CreateRealValue(value.ToDouble());
+  if (value.isInt32())
+    return Value::CreateIntegerValue(value.ToInt32());
+  if (value.isString())
+    return Value::CreateStringValue(value.ToString());
+
+  if (value.isObject()) {
+    // We currently assume all objects are arrays.
+    std::vector<CppVariant> vector = value.ToVector();
+    ListValue* list = new ListValue();
+    for (size_t i = 0; i < vector.size(); ++i) {
+      list->Append(CreateValueFromCppVariant(vector[i]));
+    }
+    return list;
+  }
+
+  // Covers null and undefined.
+  return Value::CreateNullValue();
+}
+
+}  // namespace
 
 DOMBoundBrowserObject::DOMBoundBrowserObject()
     : sender_(NULL),
@@ -42,12 +74,9 @@ void DOMUIBindings::send(const CppArgumentList& args, CppVariant* result) {
   if (args.size() == 2) {
     if (!args[1].isObject())
       return;
-    std::vector<std::string> strings = args[1].ToStringVector();
-    ListValue value;
-    for (size_t i = 0; i < strings.size(); ++i) {
-      value.Append(Value::CreateStringValue(strings[i]));
-    }
-    base::JSONWriter::Write(&value, /* pretty_print= */ false, &content);
+
+    scoped_ptr<Value> value(CreateValueFromCppVariant(args[1]));
+    base::JSONWriter::Write(value.get(), /* pretty_print= */ false, &content);
   }
 
   // Retrieve the source frame's url

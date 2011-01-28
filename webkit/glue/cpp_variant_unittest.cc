@@ -1,8 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/compiler_specific.h"
+#include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/cpp_variant.h"
@@ -423,4 +426,68 @@ TEST(CppVariantTest, IsTypeFunctionsWork) {
   EXPECT_TRUE(cpp.isObject());
   WebBindings::releaseObject(obj);
   CheckObject(cpp);
+}
+
+bool MockNPHasPropertyFunction(NPObject *npobj, NPIdentifier name) {
+  return true;
+}
+
+bool MockNPGetPropertyFunction(NPObject *npobj, NPIdentifier name,
+                               NPVariant *result) {
+  if (WebBindings::getStringIdentifier("length") == name) {
+    DOUBLE_TO_NPVARIANT(4, *result);
+  } else if (WebBindings::getIntIdentifier(0) == name) {
+    DOUBLE_TO_NPVARIANT(0, *result);
+  } else if (WebBindings::getIntIdentifier(1) == name) {
+    BOOLEAN_TO_NPVARIANT(true, *result);
+  } else if (WebBindings::getIntIdentifier(2) == name) {
+    NULL_TO_NPVARIANT(*result);
+  } else if (WebBindings::getIntIdentifier(3) == name) {
+    const char* s = "string";
+    size_t length = strlen(s);
+    char* mem = static_cast<char*>(malloc(length + 1));
+    base::strlcpy(mem, s, length + 1);
+    STRINGZ_TO_NPVARIANT(mem, *result);
+  }
+
+  return true;
+}
+
+TEST(CppVariantTest, ToVector) {
+  NPClass array_like_class = {
+      NP_CLASS_STRUCT_VERSION,
+      0, // NPAllocateFunctionPtr allocate;
+      0, // NPDeallocateFunctionPtr deallocate;
+      0, // NPInvalidateFunctionPtr invalidate;
+      0, // NPHasMethodFunctionPtr hasMethod;
+      0, // NPInvokeFunctionPtr invoke;
+      0, // NPInvokeDefaultFunctionPtr invokeDefault;
+      MockNPHasPropertyFunction, // NPHasPropertyFunctionPtr hasProperty;
+      MockNPGetPropertyFunction, // NPGetPropertyFunctionPtr getProperty;
+      0, // NPSetPropertyFunctionPtr setProperty;
+      0, // NPRemovePropertyFunctionPtr removeProperty;
+      0, // NPEnumerationFunctionPtr enumerate;
+      0 // NPConstructFunctionPtr construct;
+      };
+
+  NPObject* obj = WebBindings::createObject(NULL, &array_like_class);
+
+  CppVariant cpp;
+  cpp.Set(obj);
+
+  std::vector<CppVariant> cpp_vector = cpp.ToVector();
+  EXPECT_EQ(4u, cpp_vector.size());
+
+  EXPECT_TRUE(cpp_vector[0].isDouble());
+  EXPECT_EQ(0, cpp_vector[0].ToDouble());
+
+  EXPECT_TRUE(cpp_vector[1].isBool());
+  EXPECT_EQ(true, cpp_vector[1].ToBoolean());
+
+  EXPECT_TRUE(cpp_vector[2].isNull());
+
+  EXPECT_TRUE(cpp_vector[3].isString());
+  CheckString("string", cpp_vector[3]);
+
+  WebBindings::releaseObject(obj);
 }

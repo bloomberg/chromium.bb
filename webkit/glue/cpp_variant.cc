@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -211,14 +211,14 @@ bool CppVariant::ToBoolean() const {
   return value.boolValue;
 }
 
-std::vector<std::string> CppVariant::ToStringVector() const {
+std::vector<CppVariant> CppVariant::ToVector() const {
   DCHECK(isObject());
-  std::vector<std::string> string_vector;
+  std::vector<CppVariant> vector;
   NPObject* np_value = value.objectValue;
   NPIdentifier length_id = WebBindings::getStringIdentifier("length");
 
   if (WebBindings::hasProperty(NULL, np_value, length_id)) {
-    NPVariant length_value;
+    CppVariant length_value;
     if (WebBindings::getProperty(NULL, np_value, length_id, &length_value)) {
       int length = 0;
       // The length is a double in some cases.
@@ -226,30 +226,25 @@ std::vector<std::string> CppVariant::ToStringVector() const {
         length = static_cast<int>(NPVARIANT_TO_DOUBLE(length_value));
       else if (NPVARIANT_IS_INT32(length_value))
         length = NPVARIANT_TO_INT32(length_value);
-      WebBindings::releaseVariantValue(&length_value);
+      else
+        NOTREACHED();
 
       // For sanity, only allow 60000 items.
       length = std::min(60000, length);
       for (int i = 0; i < length; ++i) {
         // Get each of the items.
-        std::string index = base::StringPrintf("%d", i);
-        NPIdentifier index_id = WebBindings::getStringIdentifier(index.c_str());
-        if (WebBindings::hasProperty(NULL, np_value, index_id)) {
-          NPVariant index_value;
-          if (WebBindings::getProperty(NULL, np_value, index_id, &index_value)) {
-            if (NPVARIANT_IS_STRING(index_value)) {
-              std::string string(
-                  NPVARIANT_TO_STRING(index_value).UTF8Characters,
-                  NPVARIANT_TO_STRING(index_value).UTF8Length);
-              string_vector.push_back(string);
-            }
-            WebBindings::releaseVariantValue(&index_value);
-          }
+        NPIdentifier index = WebBindings::getIntIdentifier(i);
+        if (WebBindings::hasProperty(NULL, np_value, index)) {
+          CppVariant index_value;
+          if (WebBindings::getProperty(NULL, np_value, index, &index_value))
+            vector.push_back(index_value);
         }
       }
     }
+  } else {
+    NOTREACHED();
   }
-  return string_vector;
+  return vector;
 }
 
 bool CppVariant::Invoke(const std::string& method, const CppVariant* args,
