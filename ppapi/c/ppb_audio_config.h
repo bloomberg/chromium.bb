@@ -14,6 +14,11 @@
 #define PPB_AUDIO_CONFIG_INTERFACE "PPB_AudioConfig;0.5"
 
 /**
+ * @file
+ * Defines the API ...
+ */
+
+/**
  *
  * @addtogroup Enums
  * @{

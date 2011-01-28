@@ -14,6 +14,11 @@
 #define PPB_AUDIO_INTERFACE "PPB_Audio;0.5"
 
 /**
+ * @file
+ * Defines the API ...
+ */
+
+/**
  * @addtogroup Typedefs
  * @{
  */

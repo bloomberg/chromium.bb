@@ -16,13 +16,17 @@
 #define PPB_VAR_INTERFACE "PPB_Var;0.4"
 
 /**
+ * @file
+ * Defines the API ...
+ */
+
+/**
  *
  * @addtogroup Enums
  * @{
  */
 
 /**
- * @file
  * Defines the PPB_Var struct.
  * See http://code.google.com/p/ppapi/wiki/InterfacingWithJavaScript
  * for general information on using this interface.

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+[include "/chrome/nativeclient/_local_variables.ezt"]  [# this file should be at root of your document hierarchy ]
+[define section]docs[end]  [# this should be "docs" if the file lives in the "Docs" section (top nav)]
+                           [# Otherwise, it's "home," "articles," "download," or "terms" ]
+[define page_title][end]  [# this is the title for only this page ]
+
+[define css_includes]
+<link href="stylesheet.css" rel="stylesheet" type="text/css"> 
+<link href="tabs.css" rel="stylesheet" type="text/css">
+[end]
+
+[include "/_boilerplate_header.ezt"]
+[verbatim]
+<div id="doxygen-ref">

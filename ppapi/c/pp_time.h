@@ -8,13 +8,14 @@
 /**
  * @file
  * Defines the API ...
- *
- * @addtogroup PP
- * @{
  */
 
 #include "ppapi/c/pp_macros.h"
 
+/**
+ * @addtogroup Typedefs
+ * @{
+ */
 /**
  * PP_Time represents the "wall clock time" according to the browser and is
  * defined as the number of seconds since the Epoch (00:00:00 UTC, January 1,
@@ -22,7 +23,14 @@
  */
 typedef double PP_Time;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Time, 8);
+/**
+ * @}
+ */
 
+/**
+ * @addtogroup Typedefs
+ * @{
+ */
 /**
  * Represents time ticks which is measured in seconds and is used for indicating
  * the time that certain messages were received. In contrast to PP_Time, it
@@ -34,10 +42,9 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Time, 8);
  */
 typedef double PP_TimeTicks;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TimeTicks, 8);
-
 /**
  * @}
- * End addtogroup PP
  */
+
 #endif  /* PPAPI_C_PP_TIME_H_ */
 

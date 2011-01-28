@@ -11,6 +11,11 @@
 #include "ppapi/c/pp_var.h"
 
 /**
+ * @file
+ * Defines the API ...
+ */
+
+/**
  *
  * @addtogroup Enums
  * @{

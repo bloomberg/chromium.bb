@@ -1,0 +1,18 @@
+/**
+ *
+ * @defgroup Interfaces Interfaces
+ * A list of all Pepper C Interfaces. PPB_ interfaces are implemented within the browser. PPP_ Interfaces 
+ * implemented in the Native Client module.
+ *
+ * @defgroup  Structs Structures
+ * A list of all Pepper C structures.
+ *
+ * @defgroup Functions Functions
+ * A list of all Pepper C functions. PPP_ functions are implemented in the Native Client module.
+ *
+ * @defgroup Enums Enums
+ * A list of all Pepper C Enumerations.
+ *
+ * @defgroup Typedefs Typedefs
+ * A list of all Pepper C Typedefs.
+ */

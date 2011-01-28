@@ -19,7 +19,9 @@ struct PP_Var;
  * @file
  * Defines the API ...
  *
- * @addtogroup Interfaces
+ */
+
+/** @addtogroup Interfaces
  * @{
  */
 
