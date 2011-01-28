@@ -4,6 +4,8 @@
 
 #include "net/base/x509_openssl_util.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
