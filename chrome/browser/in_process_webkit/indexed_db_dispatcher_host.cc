@@ -678,7 +678,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnDelete(
 
   *ec = 0;
   scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<void>(parent_, response_id));
+      new IndexedDBCallbacks<WebSerializedScriptValue>(parent_, response_id));
   idb_object_store->deleteFunction(
       key, callbacks.release(), *idb_transaction, *ec);
 }
@@ -840,7 +840,8 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnUpdate(
 
   *ec = 0;
   idb_cursor->update(
-      value, new IndexedDBCallbacks<void>(parent_, response_id), *ec);
+      value,
+      new IndexedDBCallbacks<WebSerializedScriptValue>(parent_, response_id), *ec);
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
@@ -869,7 +870,8 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnDelete(
 
   *ec = 0;
   // TODO(jorlow): This should be delete.
-  idb_cursor->remove(new IndexedDBCallbacks<void>(parent_, response_id), *ec);
+  idb_cursor->remove(
+      new IndexedDBCallbacks<WebSerializedScriptValue>(parent_, response_id), *ec);
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnDestroyed(

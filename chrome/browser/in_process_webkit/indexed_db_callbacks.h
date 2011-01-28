@@ -97,12 +97,6 @@ class IndexedDBCallbacks<WebKit::WebIDBCursor>
             response_id(), SerializedScriptValue(value)));
   }
 
-  // TODO(hans): Remove when WebKit rolls.
-  virtual void onSuccess() {
-    dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessNull(
-        response_id()));
-  }
-
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
 };
@@ -143,30 +137,6 @@ class IndexedDBCallbacks<WebKit::WebSerializedScriptValue>
     dispatcher_host()->Send(
         new IndexedDBMsg_CallbacksSuccessSerializedScriptValue(
             response_id(), SerializedScriptValue(value)));
-  }
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
-};
-
-// A WebIDBCallbacks implementation that doesn't return a result.
-template <>
-class IndexedDBCallbacks<void> : public IndexedDBCallbacksBase {
- public:
-  IndexedDBCallbacks(
-      IndexedDBDispatcherHost* dispatcher_host, int32 response_id)
-      : IndexedDBCallbacksBase(dispatcher_host, response_id) { }
-
-  virtual void onSuccess(const WebKit::WebSerializedScriptValue& value) {
-    dispatcher_host()->Send(
-        new IndexedDBMsg_CallbacksSuccessSerializedScriptValue(
-            response_id(), SerializedScriptValue(value)));
-  }
-
-  // TODO(hans): Remove when WebKit rolls.
-  virtual void onSuccess() {
-    dispatcher_host()->Send(
-        new IndexedDBMsg_CallbacksSuccessNull(response_id()));
   }
 
  private:

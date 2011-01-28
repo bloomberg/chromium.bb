@@ -37,7 +37,6 @@ IndexedDBDispatcher::~IndexedDBDispatcher() {
 bool IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(IndexedDBDispatcher, msg)
-    IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessNull, OnSuccessNull)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessIDBCursor,
                         OnSuccessOpenCursor)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessIDBDatabase,
@@ -310,12 +309,6 @@ int32 IndexedDBDispatcher::TransactionId(
   const RendererWebIDBTransactionImpl* impl =
       static_cast<const RendererWebIDBTransactionImpl*>(&transaction);
   return impl->id();
-}
-
-void IndexedDBDispatcher::OnSuccessNull(int32 response_id) {
-  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
-  callbacks->onSuccess();
-  pending_callbacks_.Remove(response_id);
 }
 
 void IndexedDBDispatcher::OnSuccessIDBDatabase(int32 response_id,

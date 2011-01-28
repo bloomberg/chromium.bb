@@ -216,8 +216,6 @@ struct ParamTraits<IndexedDBHostMsg_ObjectStoreOpenCursor_Params> {
 // Indexed DB messages sent from the browser to the renderer.
 
 // IDBCallback message handlers.
-IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessNull,
-                     int32 /* response_id */)
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIDBCursor,
                      int32 /* response_id */,
                      int32 /* cursor_id */)
