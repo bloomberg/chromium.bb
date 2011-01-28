@@ -50,7 +50,7 @@ class BalloonCollectionImpl : public BalloonCollection
   virtual void SetPositionPreference(PositionPreference position);
   virtual void DisplayChanged();
   virtual void OnBalloonClosed(Balloon* source);
-  virtual const Balloons& GetActiveBalloons() { return base_.balloons(); }
+  virtual const Balloons& GetActiveBalloons();
 
   // MessageLoopForUI::Observer interface.
 #if defined(OS_WIN)
