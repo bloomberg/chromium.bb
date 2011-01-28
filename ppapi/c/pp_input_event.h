@@ -8,9 +8,6 @@
 /**
  * @file
  * Defines the API ...
- *
- * @addtogroup PP
- * @{
  */
 
 #include "ppapi/c/pp_bool.h"
@@ -18,6 +15,11 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_time.h"
 
+/**
+ *
+ * @addtogroup Enums
+ * @{
+ */
 typedef enum {
   PP_INPUTEVENT_MOUSEBUTTON_NONE   = -1,
   PP_INPUTEVENT_MOUSEBUTTON_LEFT   = 0,
@@ -25,7 +27,15 @@ typedef enum {
   PP_INPUTEVENT_MOUSEBUTTON_RIGHT  = 2
 } PP_InputEvent_MouseButton;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_MouseButton, 4);
+/**
+ * @}
+ */
 
+/**
+ *
+ * @addtogroup Enums
+ * @{
+ */
 typedef enum {
   PP_INPUTEVENT_TYPE_UNDEFINED   = -1,
   PP_INPUTEVENT_TYPE_MOUSEDOWN   = 0,  // PP_InputEvent_Mouse
@@ -41,7 +51,15 @@ typedef enum {
   PP_INPUTEVENT_TYPE_CONTEXTMENU = 10  // PP_InputEvent_Mouse
 } PP_InputEvent_Type;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Type, 4);
+/**
+ * @}
+ */
 
+/**
+ *
+ * @addtogroup Enums
+ * @{
+ */
 typedef enum {
   PP_INPUTEVENT_MODIFIER_SHIFTKEY         = 1 << 0,
   PP_INPUTEVENT_MODIFIER_CONTROLKEY       = 1 << 1,
@@ -56,6 +74,14 @@ typedef enum {
   PP_INPUTEVENT_MODIFIER_NUMLOCKKEY       = 1 << 10
 } PP_InputEvent_Modifier;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Modifier, 4);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Structs
+ * @{
+ */
 
 /**
  * An event representing a key up or down event.
@@ -70,6 +96,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Modifier, 4);
  * click elsewhere on the web page, the plugin focus will be lost and no more
  * input events will be delivered. If you depend on getting key up events, you
  * will also want to handle "lost focus" as the equivalent of "all keys up."
+ *
  */
 struct PP_InputEvent_Key {
   /** A combination of the EVENT_MODIFIER flags. */
@@ -83,6 +110,14 @@ struct PP_InputEvent_Key {
   uint32_t key_code;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Key, 8);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Structs
+ * @{
+ */
 
 /**
  * An event representing a typed character.
@@ -103,6 +138,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Key, 8);
  * an 'R', the system might send unlaut down, umlaut up, 'R' key down, umlaut
  * character ("whoops, I can't combine it with 'R', I better just send the raw
  * unlaut so it isn't lost"), 'R' character event, 'R' key up.
+ *
  */
 struct PP_InputEvent_Character {
   /** A combination of the EVENT_MODIFIER flags. */
@@ -117,6 +153,14 @@ struct PP_InputEvent_Character {
   char text[5];
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Character, 12);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Structs
+ * @{
+ */
 
 /** Represents a mouse event for everything other than the mouse wheel. */
 struct PP_InputEvent_Mouse {
@@ -144,7 +188,14 @@ struct PP_InputEvent_Mouse {
   int32_t click_count;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Mouse, 20);
+/**
+ * @}
+ */
 
+/**
+ * @addtogroup Structs
+ * @{
+ */
 struct PP_InputEvent_Wheel {
   /** A combination of the EVENT_MODIFIER flags. */
   uint32_t modifier;
@@ -157,7 +208,15 @@ struct PP_InputEvent_Wheel {
   PP_Bool scroll_by_page;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Wheel, 24);
+/**
+ * @}
+ */
 
+/**
+ *
+ * @addtogroup Structs
+ * @{
+ */
 struct PP_InputEvent {
   /** Identifies the type of the event. */
   PP_InputEvent_Type type;
@@ -188,10 +247,8 @@ struct PP_InputEvent {
   } u;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent, 80);
-
 /**
  * @}
- * End of addtogroup PP
  */
 
 #endif  /* PPAPI_C_PP_INPUT_EVENT_H_ */

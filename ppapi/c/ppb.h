@@ -9,7 +9,10 @@
  * @file
  * Defines the API ...
  *
- * @addtogroup PPB
+ */
+
+/**
+ * @addtogroup Typedefs
  * @{
  */
 
@@ -18,10 +21,8 @@
  * if the interface is not supported. Interface names should be ASCII.
  */
 typedef const void* (*PPB_GetInterface)(const char* interface_name);
-
 /**
  * @}
- * End addtogroup PPB
  */
 #endif  /* PPAPI_C_PPB_H_ */
 

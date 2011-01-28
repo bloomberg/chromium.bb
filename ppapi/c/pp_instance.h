@@ -8,13 +8,15 @@
 /**
  * @file
  * Defines the API ...
- *
- * @addtogroup PP
- * @{
  */
 
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
+
+/**
+ * @addtogroup Typedefs
+ * @{
+ */
 
 /** A PP_Instance uniquely identifies one plugin instance, which is one time
  * that a page says \<embed>. There can be multiple instances of the same plugin
@@ -26,10 +28,8 @@
  */
 typedef int32_t PP_Instance;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Instance, 4);
-
 /**
  * @}
- * End addtogroup PP
  */
 
 #endif  /* PPAPI_C_PP_INSTANCE_H_ */

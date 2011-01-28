@@ -13,12 +13,29 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
 
+/**
+ * @file
+ * Defines the API ...
+ */
+
+/**
+ * @addtogroup Enums
+ * @{
+ */
+
 typedef enum {
   PP_IMAGEDATAFORMAT_BGRA_PREMUL,
   PP_IMAGEDATAFORMAT_RGBA_PREMUL
 } PP_ImageDataFormat;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_ImageDataFormat, 4);
+/**
+ * @}
+ */
 
+/**
+ * @addtogroup Structs
+ * @{
+ */
 struct PP_ImageDataDesc {
   PP_ImageDataFormat format;
 
@@ -31,17 +48,16 @@ struct PP_ImageDataDesc {
   int32_t stride;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_ImageDataDesc, 16);
+/**
+ * @}
+ */
 
 #define PPB_IMAGEDATA_INTERFACE "PPB_ImageData;0.3"
 
 /**
- * @file
- * Defines the API ...
- *
- * @addtogroup PPB
+ * @addtogroup Interfaces
  * @{
  */
-
 struct PPB_ImageData {
   /**
    * Returns the browser's preferred format for image data. This format will be
@@ -97,10 +113,9 @@ struct PPB_ImageData {
 
   void (*Unmap)(PP_Resource image_data);
 };
-
 /**
  * @}
- * End addtogroup PPB
  */
+
 #endif  /* PPAPI_C_PPB_IMAGE_DATA_H_ */
 

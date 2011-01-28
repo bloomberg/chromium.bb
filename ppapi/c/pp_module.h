@@ -8,13 +8,16 @@
 /**
  * @file
  * Defines the API ...
- *
- * @addtogroup PP
- * @{
  */
 
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
+
+/**
+ *
+ * @addtogroup Typedefs
+ * @{
+ */
 
 /**
  * A module uniquely identifies one plugin library. The identifier is an opaque
@@ -23,10 +26,8 @@
  */
 typedef int32_t PP_Module;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Module, 4);
-
 /**
  * @}
- * End addtogroup PP
  */
 
 #endif  /* PPAPI_C_PP_MODULE_H_ */

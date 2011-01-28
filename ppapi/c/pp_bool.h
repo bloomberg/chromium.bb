@@ -10,8 +10,11 @@
 /**
  * @file
  * Defines the API ...
+ */
+
+/**
  *
- * @addtogroup PP
+ * @addtogroup Enums
  * @{
  */
 
@@ -26,11 +29,13 @@ typedef enum {
   PP_TRUE = 1
 } PP_Bool;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Bool, 4);
-
 /**
  * @}
- * End addtogroup PP
  */
+
+
+
+
 
 #endif  /* PPAPI_C_PP_BOOL_H_ */
 

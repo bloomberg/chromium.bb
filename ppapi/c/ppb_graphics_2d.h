@@ -22,7 +22,7 @@ struct PP_Size;
  * @file
  * Defines the PPB_Graphics2D struct.
  *
- * @addtogroup PPB
+ * @addtogroup Interfaces
  * @{
  */
 
@@ -219,7 +219,6 @@ struct PPB_Graphics2D {
 
 /**
  * @}
- * End addtogroup PPB
  */
 #endif  /* PPAPI_C_PPB_GRAPHICS_2D_H_ */
 

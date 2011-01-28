@@ -8,8 +8,11 @@
 /**
  * @file
  * Defines the API ...
+
+ */
+/**
  *
- * @addtogroup PP
+ * @addtogroup Enums
  * @{
  */
 
@@ -76,7 +79,7 @@ enum {
 
 /**
  * @}
- * End of addtogroup PP
+ * End of addtogroup Enums
  */
 
 #endif  /* PPAPI_C_PP_ERRORS_H_ */

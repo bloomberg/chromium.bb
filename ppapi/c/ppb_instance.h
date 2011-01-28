@@ -16,7 +16,7 @@
  * @file
  * Defines the API ...
  *
- * @addtogroup PPB
+ * @addtogroup Interfaces
  * @{
  */
 
@@ -83,10 +83,9 @@ struct PPB_Instance {
                                  struct PP_Var script,
                                  struct PP_Var* exception);
 };
-
 /**
  * @}
- * End addtogroup PPB
  */
+
 #endif  /* PPAPI_C_PPB_INSTANCE_H_ */
 

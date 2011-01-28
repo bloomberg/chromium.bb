@@ -19,7 +19,10 @@ struct PP_CompletionCallback;
  * @file
  * Defines the API ...
  *
- * @addtogroup PPB
+ */
+
+/**
+ * @addtogroup Interfaces
  * @{
  */
 
@@ -85,10 +88,10 @@ struct PPB_Core {
    */
   PP_Bool (*IsMainThread)();
 };
-
 /**
  * @}
- * End addtogroup PPB
  */
+
+
 #endif  /* PPAPI_C_DEV_PPB_CORE_DEV_H_ */
 

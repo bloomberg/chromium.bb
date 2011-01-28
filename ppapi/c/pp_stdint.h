@@ -9,9 +9,6 @@
  * @file
  * Provides a definition of C99 sized types
  * across different compilers.
- *
- * @addtogroup PP
- * @{
  */
 #if defined(_MSC_VER)
 
@@ -30,9 +27,5 @@ typedef unsigned __int64 uint64_t;
 
 #include <stddef.h>  /* Needed for size_t. */
 
-/**
- * @}
- * End addtogroup PP
- */
 #endif  /* PPAPI_C_PP_STDINT_H_ */
 

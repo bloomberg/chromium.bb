@@ -14,6 +14,16 @@
 
 struct PP_Var;
 
+/**
+ * @file
+ * Defines the API ...
+ */
+
+/**
+ *
+ * @addtogroup Enums
+ * @{
+ */
 typedef enum {
   PP_URLREQUESTPROPERTY_URL,                  // string
   PP_URLREQUESTPROPERTY_METHOD,               // string
@@ -34,9 +44,17 @@ typedef enum {
   PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS
 } PP_URLRequestProperty;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLRequestProperty, 4);
+/**
+ * @}
+ */
 
 #define PPB_URLREQUESTINFO_INTERFACE "PPB_URLRequestInfo;0.2"
 
+/**
+ *
+ * @addtogroup Interfaces
+ * @{
+ */
 struct PPB_URLRequestInfo {
   // Create a new URLRequestInfo object.  Returns 0 if the module is invalid.
   PP_Resource (*Create)(PP_Instance instance);
@@ -83,6 +101,9 @@ struct PPB_URLRequestInfo {
                               int64_t number_of_bytes,
                               PP_Time expected_last_modified_time);
 };
+/**
+ * @}
+ */
 
 #endif  /* PPAPI_C_PPB_URL_REQUEST_INFO_H_ */
 

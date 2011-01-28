@@ -10,6 +10,11 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 
+/**
+ *
+ * @addtogroup Enums
+ * @{
+ */
 typedef enum {
   PP_URLRESPONSEPROPERTY_URL,             // string
   PP_URLRESPONSEPROPERTY_REDIRECTURL,     // string
@@ -19,9 +24,22 @@ typedef enum {
   PP_URLRESPONSEPROPERTY_HEADERS          // string, \n-delim
 } PP_URLResponseProperty;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLResponseProperty, 4);
+/**
+ * @}
+ */
 
 #define PPB_URLRESPONSEINFO_INTERFACE "PPB_URLResponseInfo;0.1"
 
+/**
+ * @file
+ * Defines the API ...
+ */
+
+/**
+ *
+ * @addtogroup Interfaces
+ * @{
+ */
 struct PPB_URLResponseInfo {
   // Returns PP_TRUE if the given resource is an URLResponseInfo. Returns
   // PP_FALSE if the resource is invalid or some type other than an
@@ -41,6 +59,9 @@ struct PPB_URLResponseInfo {
   // requested or if the URLLoader has not been opened yet.
   PP_Resource (*GetBodyAsFileRef)(PP_Resource response);
 };
+/**
+ * @}
+ */
 
 #endif  /* PPAPI_C_PPB_URL_RESPONSE_INFO_H_ */
 

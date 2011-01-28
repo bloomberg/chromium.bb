@@ -13,11 +13,22 @@
 
 #define PPB_AUDIO_INTERFACE "PPB_Audio;0.5"
 
+/**
+ * @addtogroup Typedefs
+ * @{
+ */
 // Callback function type for SetCallback.
 typedef void (*PPB_Audio_Callback)(void* sample_buffer,
                                    size_t buffer_size_in_bytes,
                                    void* user_data);
+/**
+ * @}
+ */
 
+/**
+ * @addtogroup Structs
+ * @{
+ */
 // Callback-based audio interface. User of audio must set the callback that will
 // be called each time that the buffer needs to be filled.
 //
@@ -68,6 +79,9 @@ struct PPB_Audio {
   // StopPlayback will block until callback completes.
   PP_Bool (*StopPlayback)(PP_Resource audio);
 };
+/**
+ * @}
+ */
 
 #endif  /* PPAPI_C_PPB_DEVICE_CONTEXT_AUDIO_H_ */
 

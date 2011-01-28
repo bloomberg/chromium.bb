@@ -11,8 +11,10 @@
 /**
  * @file
  * Defines the API ...
- *
- * @addtogroup PP
+ */
+
+/**
+ * @addtogroup Typedefs
  * @{
  */
 
@@ -29,13 +31,12 @@
  * guaranteed never to be 0 for a valid resource, so a plugin can initialize
  * it to 0 to indicate a "NULL handle." Some interfaces may return a NULL
  * resource to indicate failure.
+ *
  */
 typedef int32_t PP_Resource;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Resource, 4);
-
 /**
  * @}
- * End addtogroup PP
  */
 
 #endif  /* PPAPI_C_PP_RESOURCE_H_ */

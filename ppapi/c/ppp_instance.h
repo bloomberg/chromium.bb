@@ -19,7 +19,7 @@ struct PP_Var;
  * @file
  * Defines the API ...
  *
- * @addtogroup PPP
+ * @addtogroup Interfaces
  * @{
  */
 
@@ -126,10 +126,9 @@ struct PPP_Instance {
    */
   struct PP_Var (*GetInstanceObject)(PP_Instance instance);
 };
-
 /**
  * @}
- * End addtogroup PPP
  */
+
 #endif  /* PPAPI_C_PPP_INSTANCE_H_ */
 

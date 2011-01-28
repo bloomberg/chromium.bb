@@ -8,9 +8,6 @@
 /**
  * @file
  * Defines the API ...
- *
- * @addtogroup PP
- * @{
  */
 
 #include <stdlib.h>
@@ -18,7 +15,19 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 
+/**
+ * @addtogroup Typedefs
+ * @{
+ */
 typedef void (*PP_CompletionCallback_Func)(void* user_data, int32_t result);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Structs
+ * @{
+ */
 
 /**
  * Any method that takes a PP_CompletionCallback has the option of completing
@@ -36,7 +45,14 @@ struct PP_CompletionCallback {
   PP_CompletionCallback_Func func;
   void* user_data;
 };
+/**
+ * @}
+ */
 
+/**
+ * @addtogroup Functions
+ * @{
+ */
 PP_INLINE struct PP_CompletionCallback PP_MakeCompletionCallback(
     PP_CompletionCallback_Func func,
     void* user_data) {
@@ -45,11 +61,26 @@ PP_INLINE struct PP_CompletionCallback PP_MakeCompletionCallback(
   cc.user_data = user_data;
   return cc;
 }
+/**
+ * @}
+ */
 
+/**
+ * @addtogroup Functions
+ * @{
+ */
 PP_INLINE void PP_RunCompletionCallback(struct PP_CompletionCallback* cc,
                                         int32_t res) {
   cc->func(cc->user_data, res);
 }
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Functions
+ * @{
+ */
 
 /**
  * Use this in place of an actual completion callback to request blocking
@@ -59,10 +90,9 @@ PP_INLINE void PP_RunCompletionCallback(struct PP_CompletionCallback* cc,
 PP_INLINE struct PP_CompletionCallback PP_BlockUntilComplete() {
   return PP_MakeCompletionCallback(NULL, NULL);
 }
-
 /**
  * @}
- * End of addtogroup PP
  */
+
 #endif  /* PPAPI_C_PP_COMPLETION_CALLBACK_H_ */
 

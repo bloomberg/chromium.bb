@@ -17,7 +17,10 @@
  * @file
  * Defines the PPB_Class struct.
  *
- * @addtogroup PPB
+ */
+
+/**
+ * @addtogroup Typedefs
  * @{
  */
 
@@ -29,14 +32,30 @@
  * is no other type protection - if your module contains two objects with
  * different native_ptr information, make sure you can handle the case of
  * JS calling one object's function with another object set as this.
+ *
  */
 typedef struct PP_Var (*PP_ClassFunction)(void* native_ptr,
                                           struct PP_Var this_object, /*NOLINT*/
                                           struct PP_Var* args,
                                           uint32_t argc,
                                           struct PP_Var* exception);
+/**
+ * @}
+ */
 
+/**
+ * @addtogroup Typedefs
+ * @{
+ */
 typedef void (*PP_ClassDestructor)(void* native_ptr);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Structs
+ * @{
+ */
 
 /**
  * One property of a class.
@@ -50,6 +69,7 @@ typedef void (*PP_ClassDestructor)(void* native_ptr);
  * Not providing a getter will be equivalent to having a getter which returns
  * undefined. Not providing a setter will be equivalent to providing a setter
  * which doesn't do anything.
+ *
  */
 struct PP_ClassProperty {
   const char* name;
@@ -58,6 +78,14 @@ struct PP_ClassProperty {
   PP_ClassFunction setter;
   uint32_t modifiers;
 };
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Interfaces
+ * @{
+ */
 
 /** Interface for implementing JavaScript-accessible objects.
  *
@@ -116,10 +144,10 @@ struct PPB_Class {
                                void* native_ptr,
                                struct PP_Var* exception);
 };
-
 /**
  * @}
- * End addtogroup PPP
  */
+
+
 #endif  /* PPAPI_C_PPP_CLASS_H_ */
 

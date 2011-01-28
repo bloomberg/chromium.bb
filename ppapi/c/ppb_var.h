@@ -16,16 +16,18 @@
 #define PPB_VAR_INTERFACE "PPB_Var;0.4"
 
 /**
+ *
+ * @addtogroup Enums
+ * @{
+ */
+
+/**
  * @file
  * Defines the PPB_Var struct.
  * See http://code.google.com/p/ppapi/wiki/InterfacingWithJavaScript
  * for general information on using this interface.
  * {PENDING: Should the generated doc really be pointing to methods?}
- *
- * @addtogroup PPB
- * @{
  */
-
 enum PP_ObjectProperty_Modifier {
   PP_OBJECTPROPERTY_MODIFIER_NONE       = 0,
   PP_OBJECTPROPERTY_MODIFIER_READONLY   = 1 << 0,
@@ -34,7 +36,14 @@ enum PP_ObjectProperty_Modifier {
   PP_OBJECTPROPERTY_MODIFIER_HASVALUE   = 1 << 3
 };
 PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_ObjectProperty_Modifier, 4);
+/**
+ * @}
+ */
 
+/**
+ * @addtogroup Structs
+ * @{
+ */
 struct PP_ObjectProperty {
   struct PP_Var name;
   struct PP_Var value;
@@ -51,6 +60,14 @@ struct PP_ObjectProperty {
   int32_t padding;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_ObjectProperty, 72);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Interfaces
+ * @{
+ */
 
 /**
  * PPB_Var API
@@ -81,6 +98,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_ObjectProperty, 72);
  * type.
  * TODO(neb): Specify the exception for ill-formed PP_Vars, invalid module,
  * instance, resource, string and object ids.
+ *
  */
 struct PPB_Var {
   /**
@@ -290,7 +308,14 @@ struct PPB_Var {
                              struct PP_Var* argv,
                              struct PP_Var* exception);
 };
+/**
+ * @}
+ */
 
+/**
+ * @addtogroup Functions
+ * @{
+ */
 PP_INLINE struct PP_ObjectProperty PP_MakeSimpleProperty(struct PP_Var name,
                                                          struct PP_Var value) {
   struct PP_ObjectProperty result;
@@ -301,10 +326,9 @@ PP_INLINE struct PP_ObjectProperty PP_MakeSimpleProperty(struct PP_Var name,
   result.modifiers = PP_OBJECTPROPERTY_MODIFIER_HASVALUE;
   return result;
 }
-
 /**
  * @}
- * End addtogroup PPB
  */
+
 #endif  /* PPAPI_C_PPB_VAR_H_ */
 

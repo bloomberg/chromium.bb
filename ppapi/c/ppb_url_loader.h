@@ -14,6 +14,16 @@ struct PP_CompletionCallback;
 
 #define PPB_URLLOADER_INTERFACE "PPB_URLLoader;0.1"
 
+/**
+ * @file
+ * Defines the API ...
+ */
+
+/**
+ * @addtogroup Interfaces
+ * @{
+ */
+
 // The interface for loading URLs.
 //
 // Typical steps for loading an URL:
@@ -105,6 +115,9 @@ struct PPB_URLLoader {
   // Close method.
   void (*Close)(PP_Resource loader);
 };
+/**
+ * @}
+ */
 
 #endif  /* PPAPI_C_PPB_URL_LOADER_H_ */
 

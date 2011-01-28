@@ -13,17 +13,38 @@
 
 #define PPB_AUDIO_CONFIG_INTERFACE "PPB_AudioConfig;0.5"
 
+/**
+ *
+ * @addtogroup Enums
+ * @{
+ */
 enum {
   PP_AUDIOMINSAMPLEFRAMECOUNT = 64,
   PP_AUDIOMAXSAMPLEFRAMECOUNT = 32768
 };
+/**
+ * @}
+ */
 
+/**
+ *
+ * @addtogroup Enums
+ * @{
+ */
 typedef enum {
   PP_AUDIOSAMPLERATE_NONE = 0,
   PP_AUDIOSAMPLERATE_44100 = 44100,
   PP_AUDIOSAMPLERATE_48000 = 48000
 } PP_AudioSampleRate;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_AudioSampleRate, 4);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Interfaces
+ * @{
+ */
 
 /**
  * Audio configuration. This base configuration interface supports only stereo
@@ -93,6 +114,9 @@ struct PPB_AudioConfig {
    */
   uint32_t (*GetSampleFrameCount)(PP_Resource config);
 };
+/**
+ * @}
+ */
 
 #endif  /* PPAPI_C_PPB_AUDIO_CONFIG_H_ */
 

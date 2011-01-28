@@ -8,15 +8,17 @@
 /**
  * @file
  * Defines the API ...
- *
- * @addtogroup PP
- * @{
  */
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 
+/**
+ *
+ * @addtogroup Enums
+ * @{
+ */
 typedef enum {
   PP_VARTYPE_UNDEFINED,
   PP_VARTYPE_NULL,
@@ -27,6 +29,14 @@ typedef enum {
   PP_VARTYPE_OBJECT
 } PP_VarType;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VarType, 4);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Structs
+ * @{
+ */
 
 /**
  * Do not rely on having a predictable and reproducible
@@ -39,6 +49,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VarType, 4);
  *
  * Your best bet is to have a wrapper for variables
  * that always gets out the type you expect, converting as necessary.
+ *
  */
 struct PP_Var {
   PP_VarType type;
@@ -63,7 +74,14 @@ struct PP_Var {
   } value;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_Var, 16);
+/**
+ * @}
+ */
 
+/**
+ * @addtogroup Functions
+ * @{
+ */
 PP_INLINE struct PP_Var PP_MakeUndefined() {
   struct PP_Var result = { PP_VARTYPE_UNDEFINED, 0, {PP_FALSE} };
   return result;
@@ -91,10 +109,9 @@ PP_INLINE struct PP_Var PP_MakeDouble(double value) {
   result.value.as_double = value;
   return result;
 }
-
 /**
  * @}
- * End addtogroup PP
  */
+
 #endif  /* PPAPI_C_PP_VAR_H_ */
 
