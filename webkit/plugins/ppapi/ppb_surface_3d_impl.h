@@ -46,7 +46,7 @@ class PPB_Surface3D_Impl : public Resource {
 
   unsigned int GetBackingTextureId();
 
-  bool SwapBuffers(PP_CompletionCallback callback);
+  int32_t SwapBuffers(PP_CompletionCallback callback);
 
   void ViewInitiatedPaint();
   void ViewFlushedPaint();

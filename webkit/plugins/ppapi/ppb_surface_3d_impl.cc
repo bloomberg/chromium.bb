@@ -120,13 +120,19 @@ bool PPB_Surface3D_Impl::BindToContext(
   return true;
 }
 
-bool PPB_Surface3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
+int32_t PPB_Surface3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
   if (!context_)
-    return false;
+    return PP_ERROR_FAILED;
 
   if (swap_callback_.func) {
     // Already a pending SwapBuffers that hasn't returned yet.
-    return false;
+    return PP_ERROR_INPROGRESS;
+  }
+
+  if (!callback.func) {
+    // Blocking SwapBuffers isn't supported (since we have to be on the main
+    // thread).
+    return PP_ERROR_BADARGUMENT;
   }
 
   swap_callback_ = callback;
@@ -134,7 +140,7 @@ bool PPB_Surface3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
   if (impl) {
     context_->gles2_impl()->SwapBuffers();
   }
-  return true;
+  return PP_ERROR_WOULDBLOCK;
 }
 
 void PPB_Surface3D_Impl::ViewInitiatedPaint() {
