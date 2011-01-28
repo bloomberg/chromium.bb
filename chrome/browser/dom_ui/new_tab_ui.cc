@@ -394,21 +394,30 @@ void NewTabUI::RenderViewReused(RenderViewHost* render_view_host) {
 void NewTabUI::Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-  if (NotificationType::BROWSER_THEME_CHANGED == type) {
-    InitializeCSSCaches();
-    ListValue args;
-    args.Append(Value::CreateStringValue(
-        GetProfile()->GetThemeProvider()->HasCustomImage(
-            IDR_THEME_NTP_ATTRIBUTION) ?
-        "true" : "false"));
-    CallJavascriptFunction(L"themeChanged", args);
-  } else if (NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED) {
-    if (GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
-      CallJavascriptFunction(L"bookmarkBarAttached");
-    else
-      CallJavascriptFunction(L"bookmarkBarDetached");
-  } else if (NotificationType::RENDER_WIDGET_HOST_DID_PAINT) {
-    last_paint_ = base::TimeTicks::Now();
+  switch (type.value) {
+    case NotificationType::BROWSER_THEME_CHANGED: {
+      InitializeCSSCaches();
+      ListValue args;
+      args.Append(Value::CreateStringValue(
+          GetProfile()->GetThemeProvider()->HasCustomImage(
+              IDR_THEME_NTP_ATTRIBUTION) ?
+          "true" : "false"));
+      CallJavascriptFunction(L"themeChanged", args);
+      break;
+    }
+    case NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED: {
+      if (GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
+        CallJavascriptFunction(L"bookmarkBarAttached");
+      else
+        CallJavascriptFunction(L"bookmarkBarDetached");
+      break;
+    }
+    case NotificationType::RENDER_WIDGET_HOST_DID_PAINT: {
+      last_paint_ = base::TimeTicks::Now();
+      break;
+    }
+    default:
+      CHECK(false) << "Unexpected notification: " << type.value;
   }
 }
 
