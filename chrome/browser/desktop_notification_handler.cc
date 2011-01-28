@@ -36,6 +36,7 @@ bool DesktopNotificationHandler::OnMessageReceived(
 }
 
 void DesktopNotificationHandler::OnShowDesktopNotification(
+    const IPC::Message& message,
     const ViewHostMsg_ShowNotification_Params& params) {
   RenderProcessHost* process = GetRenderProcessHost();
   DesktopNotificationService* service =
@@ -44,24 +45,25 @@ void DesktopNotificationHandler::OnShowDesktopNotification(
   service->ShowDesktopNotification(
     params,
     process->id(),
-    params.routing_id,
+    message.routing_id(),
     DesktopNotificationService::PageNotification);
 }
 
 void DesktopNotificationHandler::OnCancelDesktopNotification(
-    int routing_id, int notification_id) {
+    const IPC::Message& message, int notification_id) {
   RenderProcessHost* process = GetRenderProcessHost();
   DesktopNotificationService* service =
       process->profile()->GetDesktopNotificationService();
 
   service->CancelDesktopNotification(
       process->id(),
-      routing_id,
+      message.routing_id(),
       notification_id);
 }
 
 void DesktopNotificationHandler::OnRequestNotificationPermission(
-    int routing_id, const GURL& source_origin, int callback_context) {
+    const IPC::Message& message, const GURL& source_origin,
+    int callback_context) {
   RenderProcessHost* process = GetRenderProcessHost();
   Browser* browser = BrowserList::GetLastActive();
   // We may not have a BrowserList if the chrome browser process is launched as
@@ -76,7 +78,7 @@ void DesktopNotificationHandler::OnRequestNotificationPermission(
   service->RequestPermission(
       source_origin,
       process->id(),
-      routing_id,
+      message.routing_id(),
       callback_context,
       tab);
 }

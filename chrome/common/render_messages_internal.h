@@ -2180,11 +2180,9 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_DocumentDetached,
 // a desktop notification.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowDesktopNotification,
                     ViewHostMsg_ShowNotification_Params)
-IPC_MESSAGE_ROUTED2(ViewHostMsg_CancelDesktopNotification,
-                    int /* routing_id */,
+IPC_MESSAGE_ROUTED1(ViewHostMsg_CancelDesktopNotification,
                     int /* notification_id */)
-IPC_MESSAGE_ROUTED3(ViewHostMsg_RequestNotificationPermission,
-                    int /* routing_id */,
+IPC_MESSAGE_ROUTED2(ViewHostMsg_RequestNotificationPermission,
                     GURL /* origin */,
                     int /* callback_context */)
 IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_CheckNotificationPermission,

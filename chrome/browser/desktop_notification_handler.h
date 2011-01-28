@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/tab_contents/web_navigation_observer.h"
+#include "ipc/ipc_message.h"
 
 struct ViewHostMsg_ShowNotification_Params;
 class RenderProcessHost;
@@ -27,9 +28,12 @@ class DesktopNotificationHandler : public WebNavigationObserver {
  private:
   // IPC handlers.
   void OnShowDesktopNotification(
+      const IPC::Message& message,
       const ViewHostMsg_ShowNotification_Params& params);
-  void OnCancelDesktopNotification(int routing_id, int notification_id);
-  void OnRequestNotificationPermission(int routing_id, const GURL& origin,
+  void OnCancelDesktopNotification(const IPC::Message& message,
+                                   int notification_id);
+  void OnRequestNotificationPermission(const IPC::Message& message,
+                                       const GURL& origin,
                                        int callback_id);
 
  private:
