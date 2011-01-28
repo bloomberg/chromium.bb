@@ -249,7 +249,7 @@ void PPB_Font_Proxy::OnMsgCreate(
 
   result->SetHostResource(instance,
                           ppb_font_target()->Create(instance, &in_pp_desc));
-  if (result->is_null()) {
+  if (!result->is_null()) {
     // Get the metrics and resulting description to return to the browser.
     PP_FontMetrics_Dev metrics;
     if (ppb_font_target()->Describe(result->host_resource(), &out_pp_desc,

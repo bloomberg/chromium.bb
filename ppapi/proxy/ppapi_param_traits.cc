@@ -181,36 +181,6 @@ bool ParamTraits<PP_Size>::Read(const Message* m, void** iter, param_type* r) {
 void ParamTraits<PP_Size>::Log(const param_type& p, std::string* l) {
 }
 
-// PPBAudio_NotifyAudioStreamCreated_Params ------------------------------------
-
-// static
-void ParamTraits<pp::proxy::PPBAudio_NotifyAudioStreamCreated_Params>::Write(
-    Message* m,
-    const param_type& p) {
-  ParamTraits<pp::proxy::HostResource>::Write(m, p.audio_id);
-  ParamTraits<int32_t>::Write(m, p.result_code);
-  ParamTraits<PlatformFileForTransit>::Write(m, p.socket_handle);
-  ParamTraits<int32_t>::Write(m, p.length);
-}
-
-// static
-bool ParamTraits<pp::proxy::PPBAudio_NotifyAudioStreamCreated_Params>::Read(
-    const Message* m,
-    void** iter,
-    param_type* r) {
-  return
-      ParamTraits<pp::proxy::HostResource>::Read(m, iter, &r->audio_id) &&
-      ParamTraits<int32_t>::Read(m, iter, &r->result_code) &&
-      ParamTraits<PlatformFileForTransit>::Read(m, iter, &r->socket_handle) &&
-      ParamTraits<int32_t>::Read(m, iter, &r->length);
-}
-
-// static
-void ParamTraits<pp::proxy::PPBAudio_NotifyAudioStreamCreated_Params>::Log(
-    const param_type& p,
-    std::string* l) {
-}
-
 // PPBFlash_DrawGlyphs_Params --------------------------------------------------
 
 // static

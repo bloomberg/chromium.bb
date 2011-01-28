@@ -185,24 +185,27 @@ void PPB_Audio_Proxy::OnMsgStartOrStop(const HostResource& audio_id,
 
 // Processed in the plugin (message from host).
 void PPB_Audio_Proxy::OnMsgNotifyAudioStreamCreated(
-    const PPBAudio_NotifyAudioStreamCreated_Params& params) {
+    const HostResource& audio_id,
+    int32_t result_code,
+    IPC::PlatformFileForTransit socket_handle,
+    base::SharedMemoryHandle handle,
+    uint32_t length) {
   PP_Resource plugin_resource =
       PluginResourceTracker::GetInstance()->PluginResourceForHostResource(
-          params.audio_id);
+          audio_id);
   Audio* object = plugin_resource ?
       PluginResource::GetAs<Audio>(plugin_resource) : NULL;
-  if (!object || params.result_code != PP_OK) {
+  if (!object || result_code != PP_OK) {
     // The caller may still have given us these handles in the failure case.
     // The easiest way to clean these up is to just put them in the objects
     // and then close them. This failure case is not performance critical.
     base::SyncSocket temp_socket(
-        IPC::PlatformFileForTransitToPlatformFile(params.socket_handle));
-    base::SharedMemory temp_mem(params.handle, false);
+        IPC::PlatformFileForTransitToPlatformFile(socket_handle));
+    base::SharedMemory temp_mem(handle, false);
     return;
   }
   object->SetStreamInfo(
-      params.handle, params.length,
-      IPC::PlatformFileForTransitToPlatformFile(params.socket_handle));
+      handle, length, IPC::PlatformFileForTransitToPlatformFile(socket_handle));
 }
 
 void PPB_Audio_Proxy::AudioChannelConnected(
@@ -231,14 +234,9 @@ void PPB_Audio_Proxy::AudioChannelConnected(
   // inconvenient to clean up. Our IPC code will automatically handle this for
   // us, as long as the remote side always closes the handles it receives
   // (in OnMsgNotifyAudioStreamCreated), even in the failure case.
-  PPBAudio_NotifyAudioStreamCreated_Params params;
-  params.audio_id = resource;
-  params.result_code = result;
-  params.socket_handle = socket_handle;
-  params.handle = shared_memory;
-  params.length = shared_memory_length;
   dispatcher()->Send(new PpapiMsg_PPBAudio_NotifyAudioStreamCreated(
-      INTERFACE_ID_PPB_AUDIO, params));
+      INTERFACE_ID_PPB_AUDIO, resource, result_code, socket_handle,
+      shared_memory, shared_memory_length));
 }
 
 int32_t PPB_Audio_Proxy::GetAudioConnectedHandles(

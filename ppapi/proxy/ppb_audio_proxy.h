@@ -21,7 +21,6 @@ struct PPB_Audio;
 namespace pp {
 namespace proxy {
 
-struct PPBAudio_NotifyAudioStreamCreated_Params;
 class HostResource;
 
 class PPB_Audio_Proxy : public InterfaceProxy {
@@ -46,8 +45,11 @@ class PPB_Audio_Proxy : public InterfaceProxy {
   void OnMsgStartOrStop(const HostResource& audio_id, bool play);
 
   // Renderer->plugin message handlers.
-  void OnMsgNotifyAudioStreamCreated(
-      const PPBAudio_NotifyAudioStreamCreated_Params& params);
+  void OnMsgNotifyAudioStreamCreated(const HostResource& audio_id,
+                                     int32_t result_code,
+                                     IPC::PlatformFileForTransit socket_handle,
+                                     base::SharedMemoryHandle handle,
+                                     uint32_t length);
 
   void AudioChannelConnected(int32_t result,
                              const HostResource& resource);

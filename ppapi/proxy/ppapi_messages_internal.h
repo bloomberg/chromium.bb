@@ -45,8 +45,12 @@ IPC_MESSAGE_CONTROL2(PpapiMsg_ExecuteCallback,
 //
 // The handler of this message should always close all of the handles passed
 // in, since some could be valid even in the error case.
-IPC_MESSAGE_ROUTED1(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
-                    pp::proxy::PPBAudio_NotifyAudioStreamCreated_Params);
+IPC_MESSAGE_ROUTED5(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
+                    pp::proxy::HostResource /* audio_id */,
+                    int32_t /* result_code (will be != PP_OK on failure) */,
+                    IPC::PlatformFileForTransit /* socket_handle */,
+                    base::SharedMemoryHandle /* handle */,
+                    int32_t /* length */)
 
 // PPB_Graphics2D.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,

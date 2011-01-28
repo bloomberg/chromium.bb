@@ -18,7 +18,6 @@ struct PP_ObjectProperty;
 namespace pp {
 namespace proxy {
 
-struct PPBAudio_NotifyAudioStreamCreated_Params;
 struct PPBFlash_DrawGlyphs_Params;
 struct PPBFont_DrawTextAt_Params;
 struct PPBURLLoader_UpdateProgress_Params;
@@ -83,14 +82,6 @@ struct ParamTraits<PP_Rect> {
 template<>
 struct ParamTraits<PP_Size> {
   typedef PP_Size param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template<> struct ParamTraits<
-    pp::proxy::PPBAudio_NotifyAudioStreamCreated_Params> {
-  typedef pp::proxy::PPBAudio_NotifyAudioStreamCreated_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

@@ -47,7 +47,7 @@ PP_Resource CreateStereo16bit(PP_Instance instance,
           INTERFACE_ID_PPB_AUDIO_CONFIG, instance,
           static_cast<int32_t>(sample_rate), sample_frame_count,
           &resource));
-  if (!resource.is_null())
+  if (resource.is_null())
     return 0;
 
   linked_ptr<AudioConfig> object(
