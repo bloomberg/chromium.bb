@@ -64,7 +64,7 @@ PKG_CHECK_MODULES(CAIRO_EGL, [cairo-egl],
 AS_IF([test "x$have_cairo_egl" = "xyes"],
       [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])])
 
-if test $CC = gcc; then
+if test "x$GCC" = "xyes"; then
 	GCC_CFLAGS="-Wall -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden"
 fi
 AC_SUBST(GCC_CFLAGS)
