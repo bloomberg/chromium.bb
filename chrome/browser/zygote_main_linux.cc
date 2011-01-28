@@ -232,10 +232,10 @@ class Zygote {
     Pickle write_pickle;
     write_pickle.WriteInt(static_cast<int>(status));
     write_pickle.WriteInt(exit_code);
-    if (HANDLE_EINTR(write(fd, write_pickle.data(), write_pickle.size())) !=
-        write_pickle.size()) {
+    ssize_t written =
+        HANDLE_EINTR(write(fd, write_pickle.data(), write_pickle.size()));
+    if (written != static_cast<ssize_t>(write_pickle.size()))
       PLOG(ERROR) << "write";
-    }
   }
 
   // This is equivalent to fork(), except that, when using the SUID

@@ -765,8 +765,10 @@ struct ParamTraits<LogData> {
 template <>
 struct ParamTraits<Message> {
   static void Write(Message* m, const Message& p) {
-    m->WriteInt(p.size());
-    m->WriteData(reinterpret_cast<const char*>(p.data()), p.size());
+    DCHECK(p.size() <= INT_MAX);
+    int message_size = static_cast<int>(p.size());
+    m->WriteInt(message_size);
+    m->WriteData(reinterpret_cast<const char*>(p.data()), message_size);
   }
   static bool Read(const Message* m, void** iter, Message* r) {
     int size;

@@ -427,9 +427,10 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages(
 
   // Write to pipe...
   Message* m = output_queue_.front();
+  DCHECK(m->size() <= INT_MAX);
   BOOL ok = WriteFile(pipe_,
                       m->data(),
-                      m->size(),
+                      static_cast<int>(m->size()),
                       &bytes_written,
                       &output_state_.context.overlapped);
   if (!ok) {
