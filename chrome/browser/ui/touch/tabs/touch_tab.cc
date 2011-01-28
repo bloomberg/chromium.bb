@@ -16,6 +16,7 @@
 static const int kLeftPadding = 16;
 static const int kRightPadding = 15;
 static const int kDropShadowHeight = 2;
+static const int kTouchFaviconSize = 32;
 
 TouchTab::TouchTabImage TouchTab::tab_alpha = {0};
 TouchTab::TouchTabImage TouchTab::tab_active = {0};
@@ -176,10 +177,8 @@ void TouchTab::PaintIcon(gfx::Canvas* canvas) {
         IDR_THROBBER_WAITING : IDR_THROBBER));
     int image_size = frames.height();
     int image_offset = loading_animation_frame() * image_size;
-    int dst_y = (height() - image_size) / 2;
-    canvas->DrawBitmapInt(frames, image_offset, 0, image_size,
-                          image_size, favicon_x, dst_y, image_size, image_size,
-                          false);
+    canvas->DrawBitmapInt(frames, image_offset, 0, image_size, image_size, x, y,
+                          kTouchFaviconSize, kTouchFaviconSize, false);
   } else {
     canvas->Save();
     canvas->ClipRectInt(0, 0, width(), height());
@@ -187,17 +186,14 @@ void TouchTab::PaintIcon(gfx::Canvas* canvas) {
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       SkBitmap crashed_fav_icon(*rb.GetBitmapNamed(IDR_SAD_FAVICON));
       canvas->DrawBitmapInt(crashed_fav_icon, 0, 0, crashed_fav_icon.width(),
-          crashed_fav_icon.height(), favicon_x,
-          (height() - crashed_fav_icon.height()) / 2 + fav_icon_hiding_offset(),
-          kFavIconSize, kFavIconSize, true);
+          crashed_fav_icon.height(), x, y + fav_icon_hiding_offset(),
+          kTouchFaviconSize, kTouchFaviconSize, true);
     } else {
       if (!data().favicon.isNull()) {
-        int size = 32;
         canvas->DrawBitmapInt(data().favicon, 0, 0,
-                              data().favicon.width(),
-                              data().favicon.height(),
-                              x, y + fav_icon_hiding_offset(), size, size,
-                              true);
+                              data().favicon.width(), data().favicon.height(),
+                              x, y + fav_icon_hiding_offset(),
+                              kTouchFaviconSize, kTouchFaviconSize, true);
       }
     }
     canvas->Restore();
