@@ -89,7 +89,8 @@ void ServerNotifierThread::OnInvalidateAll() {
   syncable::ModelTypeBitSet model_types;
   model_types.set();  // InvalidateAll, so set all datatypes to true.
   IncomingNotificationData notification_data;
-  notification_data.service_specific_data = model_types.to_string();
+  notification_data.service_url = model_types.to_string();
+  notification_data.service_specific_data = std::string();  // No payload.
   observers_->Notify(&Observer::OnIncomingNotification, notification_data);
 }
 
