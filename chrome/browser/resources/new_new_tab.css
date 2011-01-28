@@ -285,7 +285,7 @@ html[dir=rtl] .foreign-session-client {
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 106%;
-  margin: 0 10px;
+  margin: 0;
 }
 
 .notification.hidden {
