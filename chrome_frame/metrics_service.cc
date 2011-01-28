@@ -79,7 +79,9 @@
 #include "net/base/upload_data.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
-#include "net/http/http_network_layer.h"
+#include "net/http/http_network_session.h"
+#include "net/socket/client_socket_factory.h"
+#include "net/spdy/spdy_session_pool.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 
@@ -178,18 +180,23 @@ class ChromeFrameUploadRequestContext : public net::URLRequestContext {
         supported_schemes, url_security_manager_.get(), host_resolver_,
         std::string(), false, false);
 
+    scoped_refptr<net::HttpNetworkSession> network_session =
+        new net::HttpNetworkSession(
+            host_resolver_,
+            cert_verifier_,
+            NULL /* dnsrr_resolver */,
+            NULL /* dns_cert_checker*/,
+            NULL /* ssl_host_info_factory */,
+            proxy_service_,
+            net::ClientSocketFactory::GetDefaultFactory(),
+            ssl_config_service_,
+            new net::SpdySessionPool(ssl_config_service_),
+            http_auth_handler_factory_,
+            network_delegate_,
+            NULL);
+
     http_transaction_factory_ = new net::HttpCache(
-        net::HttpNetworkLayer::CreateFactory(host_resolver_,
-                                             cert_verifier_,
-                                             NULL /* dnsrr_resovler */,
-                                             NULL /* dns_cert_checker*/,
-                                             NULL /* ssl_host_info */,
-                                             proxy_service_,
-                                             ssl_config_service_,
-                                             http_auth_handler_factory_,
-                                             network_delegate_,
-                                             NULL),
-        NULL /* net_log */,
+        network_session,
         net::HttpCache::DefaultBackend::InMemory(0));
   }
 

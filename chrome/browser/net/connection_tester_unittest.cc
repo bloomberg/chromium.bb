@@ -14,6 +14,7 @@
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
+#include "net/http/http_network_session.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/spdy/spdy_session_pool.h"
@@ -117,20 +118,22 @@ class ConnectionTesterTest : public PlatformTest {
     proxy_service_ = net::ProxyService::CreateDirect();
     proxy_script_fetcher_context_->set_proxy_service(proxy_service_);
     ssl_config_service_ = net::SSLConfigService::CreateSystemSSLConfigService();
-    http_transaction_factory_.reset(
-        new net::HttpNetworkLayer(
-            client_socket_factory_,
+    scoped_refptr<net::HttpNetworkSession> network_session(
+        new net::HttpNetworkSession(
             &host_resolver_,
             &cert_verifier_,
             &dnsrr_resolver_,
-            NULL /* DNS cert provenance checker */,
+            NULL /* dns_cert_checker */,
             NULL /* ssl_host_info_factory */,
             proxy_service_.get(),
+            client_socket_factory_,
             ssl_config_service_,
             new net::SpdySessionPool(ssl_config_service_),
             &http_auth_handler_factory_,
-            NULL /* NetworkDelegate */,
-            NULL /* NetLog */));
+            NULL /* network_delegate */,
+            NULL /* net_log */));
+    http_transaction_factory_.reset(
+        new net::HttpNetworkLayer(network_session));
     proxy_script_fetcher_context_->set_http_transaction_factory(
         http_transaction_factory_.get());
     // In-memory cookie store.

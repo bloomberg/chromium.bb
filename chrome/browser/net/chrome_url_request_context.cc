@@ -281,17 +281,17 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
   net::HttpCache::DefaultBackend* backend = new net::HttpCache::DefaultBackend(
       net::DISK_CACHE, disk_cache_path_, cache_size_,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
-  net::HttpCache* cache =
-      new net::HttpCache(context->host_resolver(),
-                         context->cert_verifier(),
-                         context->dnsrr_resolver(),
-                         context->dns_cert_checker(),
-                         context->proxy_service(),
-                         context->ssl_config_service(),
-                         context->http_auth_handler_factory(),
-                         &io_thread_globals->network_delegate,
-                         io_thread()->net_log(),
-                         backend);
+  net::HttpCache* cache = new net::HttpCache(
+      context->host_resolver(),
+      context->cert_verifier(),
+      context->dnsrr_resolver(),
+      context->dns_cert_checker(),
+      context->proxy_service(),
+      context->ssl_config_service(),
+      context->http_auth_handler_factory(),
+      &io_thread_globals->network_delegate,
+      io_thread()->net_log(),
+      backend);
 
   bool record_mode = chrome::kRecordModeEnabled &&
                      command_line.HasSwitch(switches::kRecordMode);
@@ -491,35 +491,8 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
 
   net::HttpCache* main_cache =
       main_context->http_transaction_factory()->GetCache();
-  net::HttpCache* cache;
-  if (main_cache) {
-    // Try to reuse HttpNetworkSession in the main context, assuming that
-    // HttpTransactionFactory (network_layer()) of HttpCache is implemented
-    // by HttpNetworkLayer so we can reuse HttpNetworkSession within it. This
-    // assumption will be invalid if the original HttpCache is constructed with
-    // HttpCache(HttpTransactionFactory*, BackendFactory*) constructor.
-    net::HttpNetworkLayer* main_network_layer =
-        static_cast<net::HttpNetworkLayer*>(main_cache->network_layer());
-    cache = new net::HttpCache(main_network_layer->GetSession(), backend);
-    // TODO(eroman): Since this is poaching the session from the main
-    // context, it should hold a reference to that context preventing the
-    // session from getting deleted.
-  } else {
-    // If original HttpCache doesn't exist, simply construct one with a whole
-    // new set of network stack.
-    cache = new net::HttpCache(
-        io_thread_globals->host_resolver.get(),
-        io_thread_globals->cert_verifier.get(),
-        io_thread_globals->dnsrr_resolver.get(),
-        NULL /* dns_cert_checker */,
-        main_context->proxy_service(),
-        main_context->ssl_config_service(),
-        io_thread_globals->http_auth_handler_factory.get(),
-        &io_thread_globals->network_delegate,
-        io_thread()->net_log(),
-        backend);
-  }
-
+  net::HttpNetworkSession* network_session = main_cache->GetSession();
+  net::HttpCache* cache = new net::HttpCache(network_session, backend);
   context->set_http_transaction_factory(cache);
   context->set_net_log(io_thread()->net_log());
 

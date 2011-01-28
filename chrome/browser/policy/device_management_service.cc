@@ -48,8 +48,9 @@ DeviceManagementRequestContext::DeviceManagementRequestContext(
   ssl_config_service_ = base_context->ssl_config_service();
 
   // Share the http session.
-  http_transaction_factory_ = net::HttpNetworkLayer::CreateFactory(
-      base_context->http_transaction_factory()->GetSession());
+  http_transaction_factory_ =
+      new net::HttpNetworkLayer(
+          base_context->http_transaction_factory()->GetSession());
 
   // No cookies, please.
   cookie_store_ = new net::CookieMonster(NULL, NULL);

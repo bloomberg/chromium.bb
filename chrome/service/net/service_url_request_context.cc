@@ -22,7 +22,9 @@
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
-#include "net/http/http_network_layer.h"
+#include "net/http/http_network_session.h"
+#include "net/socket/client_socket_factory.h"
+#include "net/spdy/spdy_session_pool.h"
 #include "net/proxy/proxy_service.h"
 
 namespace {
@@ -124,18 +126,22 @@ ServiceURLRequestContext::ServiceURLRequestContext(
   ssl_config_service_ = new net::SSLConfigServiceDefaults;
   http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
       host_resolver_);
+  scoped_refptr<net::HttpNetworkSession> network_session(
+      new net::HttpNetworkSession(
+          host_resolver_,
+          cert_verifier_,
+          dnsrr_resolver_,
+          NULL /* dns_cert_checker */,
+          NULL /* ssl_host_info_factory */,
+          proxy_service_,
+          net::ClientSocketFactory::GetDefaultFactory(),
+          ssl_config_service_,
+          new net::SpdySessionPool(NULL),
+          http_auth_handler_factory_,
+          NULL /* network_delegate */,
+          NULL /* net_log */));
   http_transaction_factory_ = new net::HttpCache(
-      net::HttpNetworkLayer::CreateFactory(host_resolver_,
-                                           cert_verifier_,
-                                           dnsrr_resolver_,
-                                           NULL /* dns_cert_checker */,
-                                           NULL /* ssl_host_info_factory */,
-                                           proxy_service_,
-                                           ssl_config_service_,
-                                           http_auth_handler_factory_,
-                                           NULL /* network_delegate */,
-                                           NULL /* net_log */),
-      NULL /* net_log */,
+      network_session,
       net::HttpCache::DefaultBackend::InMemory(0));
   // In-memory cookie store.
   cookie_store_ = new net::CookieMonster(NULL, NULL);

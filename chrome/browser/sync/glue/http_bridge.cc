@@ -87,7 +87,7 @@ HttpBridge::RequestContext::RequestContext(
   net::HttpNetworkSession* session =
       baseline_context->http_transaction_factory()->GetSession();
   DCHECK(session);
-  http_transaction_factory_ = net::HttpNetworkLayer::CreateFactory(session);
+  http_transaction_factory_ = new net::HttpNetworkLayer(session);
 
   // TODO(timsteele): We don't currently listen for pref changes of these
   // fields or CookiePolicy; I'm not sure we want to strictly follow the

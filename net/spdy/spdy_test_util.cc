@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_network_transaction.h"
 #include "net/spdy/spdy_framer.h"
 
@@ -924,20 +925,22 @@ SpdyURLRequestContext::SpdyURLRequestContext() {
   ssl_config_service_ = new SSLConfigServiceDefaults;
   http_auth_handler_factory_ = HttpAuthHandlerFactory::CreateDefault(
       host_resolver_);
+  scoped_refptr<HttpNetworkSession> network_session(
+      new HttpNetworkSession(
+          host_resolver_,
+          cert_verifier_,
+          NULL /* dnsrr_resolver */,
+          NULL /* dns_cert_checker */,
+          NULL /* ssl_host_info_factory */,
+          proxy_service_,
+          &socket_factory_,
+          ssl_config_service_,
+          new SpdySessionPool(NULL),
+          http_auth_handler_factory_,
+          network_delegate_,
+          NULL /* net_log */));
   http_transaction_factory_ = new HttpCache(
-      new HttpNetworkLayer(&socket_factory_,
-                           host_resolver_,
-                           cert_verifier_,
-                           NULL /* dnsrr_resolver */,
-                           NULL /* dns_cert_checker */,
-                           NULL /* ssl_host_info_factory */,
-                           proxy_service_,
-                           ssl_config_service_,
-                           new SpdySessionPool(NULL),
-                           http_auth_handler_factory_,
-                           network_delegate_,
-                           NULL),
-      NULL /* net_log */,
+      network_session,
       HttpCache::DefaultBackend::InMemory(0));
 }
 

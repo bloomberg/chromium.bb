@@ -38,6 +38,7 @@
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
+#include "net/http/http_network_session.h"
 #if defined(USE_NSS)
 #include "net/ocsp/nss_ocsp.h"
 #endif  // defined(USE_NSS)
@@ -333,20 +334,22 @@ void IOThread::Init() {
   // For the ProxyScriptFetcher, we use a direct ProxyService.
   globals_->proxy_script_fetcher_proxy_service =
       net::ProxyService::CreateDirectWithNetLog(net_log_);
-  globals_->proxy_script_fetcher_http_transaction_factory.reset(
-      new net::HttpNetworkLayer(
-          globals_->client_socket_factory,
+  scoped_refptr<net::HttpNetworkSession> network_session(
+      new net::HttpNetworkSession(
           globals_->host_resolver.get(),
           globals_->cert_verifier.get(),
           globals_->dnsrr_resolver.get(),
           NULL /* dns_cert_checker */,
           NULL /* ssl_host_info_factory */,
           globals_->proxy_script_fetcher_proxy_service.get(),
+          globals_->client_socket_factory,
           globals_->ssl_config_service.get(),
           new net::SpdySessionPool(globals_->ssl_config_service.get()),
           globals_->http_auth_handler_factory.get(),
           &globals_->network_delegate,
           net_log_));
+  globals_->proxy_script_fetcher_http_transaction_factory.reset(
+      new net::HttpNetworkLayer(network_session));
 
   scoped_refptr<net::URLRequestContext> proxy_script_fetcher_context =
       ConstructProxyScriptFetcherContext(globals_, net_log_);

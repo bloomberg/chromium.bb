@@ -14,7 +14,10 @@
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
+#include "net/http/http_network_session.h"
 #include "net/proxy/proxy_service.h"
+#include "net/socket/client_socket_factory.h"
+#include "net/spdy/spdy_session_pool.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,18 +73,19 @@ class URLRequestTestContext : public net::URLRequestContext {
     http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
         host_resolver_);
     http_transaction_factory_ = new net::HttpCache(
-        net::HttpNetworkLayer::CreateFactory(
+        new net::HttpNetworkSession(
             host_resolver_,
             cert_verifier_,
             NULL /* dnsrr_resolver */,
             NULL /* dns_cert_checker */,
             NULL /* ssl_host_info_factory */,
             proxy_service_,
+            net::ClientSocketFactory::GetDefaultFactory(),
             ssl_config_service_,
+            new net::SpdySessionPool(ssl_config_service_),
             http_auth_handler_factory_,
             NULL /* network_delegate */,
             NULL /* net_log */),
-        NULL /* net_log */,
         net::HttpCache::DefaultBackend::InMemory(0));
     // In-memory cookie store.
     cookie_store_ = new net::CookieMonster(NULL, NULL);
