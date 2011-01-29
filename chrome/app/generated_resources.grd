@@ -8164,10 +8164,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> can now sync your passwords. To protect your data, you need to confirm your account information.
       </message>
       <message name="IDS_SYNC_FIRST_PASSPHRASE_TITLE" desc="Title for dialog setting up first passphrase.">
-        Set up encrypted sync
+        Sync your passwords
       </message>
       <message name="IDS_SYNC_FIRST_PASSPHRASE_MESSAGE" desc="Message for setting up first passphrase.">
         <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> can now sync your passwords; your data will be encrypted with your Google Account password or a passphrase of your choosing.
+      </message>
+      <message name="IDS_SYNC_FIRST_PASSPHRASE_OK" desc="Message to confirm the passphrase setup.">
+        Sync passwords
+      </message>
+      <message name="IDS_SYNC_FIRST_PASSPHRASE_CANCEL" desc="Message to opt out of the passphrase setup and password sync">
+        No thanks
       </message>
       <message name="IDS_SYNC_PASSPHRASE_OPT_GOOGLE" desc="Radio button label for using Google password.">
         Use my Google Account password

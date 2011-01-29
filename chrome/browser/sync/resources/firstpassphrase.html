@@ -54,6 +54,7 @@ input[type='button'],
 input[type='submit'] {
   min-width: 87px;
   min-height: 26px;
+  margin-left: 7px;
 }
 html[os='mac'] input[type='button'],
 html[os='mac'] input[type='submit'] {
@@ -83,15 +84,9 @@ html[os='mac'] input[type='submit'] {
 
   function switchToMode(mode) {
     document.getElementById("section-explicit").style.display = "none";
-    document.getElementById("section-nothanks").style.display = "none";
-    document.getElementById("section-google").style.display = "none";
 
-    if (mode == "google") {
-      document.getElementById("section-google").style.display = "block";
-    } else if (mode =="explicit") {
+    if (mode == "explicit") {
       document.getElementById("section-explicit").style.display = "block";
-    } else if (mode == "nothanks") {
-      document.getElementById("section-nothanks").style.display = "block";
     }
   }
 
@@ -140,6 +135,12 @@ html[os='mac'] input[type='submit'] {
                                  "passphrase": f.passphrase.value});
     chrome.send("FirstPassphrase", [result]);
   }
+
+  function optOutOfPasswordsAndClose() {
+    var result = JSON.stringify({"option": "nothanks",
+                                 "passphrase": ""});
+    chrome.send("FirstPassphrase", [result]);
+  }
 </script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily" onload="setupDialog();">
@@ -163,16 +164,7 @@ html[os='mac'] input[type='submit'] {
     <label for="explicit-option" i18n-content="explicitOption"></label>
     </input>
   </div>
-  <div>
-    <input name="option" type="radio" value="nothanks"
-           id="nothanks-option" onchange="onRadioChange();">
-    <label for="nothanks-option" i18n-content="nothanksOption"></label>
-    </input>
-  </div>
 
-  <div class="sync-section" id="section-google">
-    <div i18n-content="sectionGoogleMessage"></div>
-  </div>
   <div class="sync-section" id="section-explicit">
     <div i18n-content="sectionExplicitMessage"></div>
     <div>
@@ -191,12 +183,11 @@ html[os='mac'] input[type='submit'] {
     <div class="error" style="display:none"
          id="mismatcherror" i18n-content="mismatchErrorMessage"></div>
   </div>
-  <div class="sync-section" id="section-nothanks">
-    <div i18n-content="sectionNothanksMessage"></div>
-  </div>
 
   <div class="sync-footer">
-    <input id="okButton" type="submit" i18n-values="value:ok" />
+    <input id="okButton" type="submit" i18n-values="value:syncpasswords" />
+    <input id="noThanksButton" type="submit" i18n-values="value:nothanks"
+           onclick="optOutOfPasswordsAndClose(); return false;"/>
   </div>
 </form>
 </body>

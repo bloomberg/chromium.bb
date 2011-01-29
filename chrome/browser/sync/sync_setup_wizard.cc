@@ -202,10 +202,8 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
                                     GetStringUTF16(IDS_PRODUCT_NAME)));
     AddString(dict, "googleOption", IDS_SYNC_PASSPHRASE_OPT_GOOGLE);
     AddString(dict, "explicitOption", IDS_SYNC_PASSPHRASE_OPT_EXPLICIT);
-    AddString(dict, "nothanksOption", IDS_SYNC_PASSPHRASE_OPT_CANCEL);
     AddString(dict, "sectionGoogleMessage", IDS_SYNC_PASSPHRASE_MSG_GOOGLE);
     AddString(dict, "sectionExplicitMessage", IDS_SYNC_PASSPHRASE_MSG_EXPLICIT);
-    AddString(dict, "sectionNothanksMessage", IDS_SYNC_PASSPHRASE_MSG_CANCEL);
     AddString(dict, "passphraseLabel", IDS_SYNC_PASSPHRASE_LABEL);
     AddString(dict, "confirmLabel", IDS_SYNC_CONFIRM_PASSPHRASE_LABEL);
     AddString(dict, "emptyErrorMessage", IDS_SYNC_EMPTY_PASSPHRASE_ERROR);
@@ -215,8 +213,8 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     dict->SetString("encryptionhelpurl",
                     GetLocalizedUrl(kEncryptionHelpUrl));
 
-    AddString(dict, "ok", IDS_OK);
-    AddString(dict, "cancel", IDS_CANCEL);
+    AddString(dict, "syncpasswords", IDS_SYNC_FIRST_PASSPHRASE_OK);
+    AddString(dict, "nothanks", IDS_SYNC_FIRST_PASSPHRASE_CANCEL);
   } else if (path_raw == kSyncSettingUpPath) {
     html_resource_id = IDR_SYNC_SETTING_UP_HTML;
 
