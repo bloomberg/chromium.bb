@@ -42,12 +42,12 @@
         ],
       },
       'sources': [
-        # TODO(jrg): to link ipc_tests, these files need to be in renderer.a.
-        # But app/ is the wrong directory for them.
-        # Better is to remove the dep of *_tests on renderer, but in the
-        # short term I'd like the build to work.
-        'renderer/autofill_helper.cc',
-        'renderer/autofill_helper.h',
+        'renderer/autofill/autofill_agent.cc',
+        'renderer/autofill/autofill_agent.h',
+        'renderer/autofill/form_manager.cc',
+        'renderer/autofill/form_manager.h',
+        'renderer/autofill/password_autofill_manager.cc',
+        'renderer/autofill/password_autofill_manager.h',
         'renderer/automation/dom_automation_controller.cc',
         'renderer/automation/dom_automation_controller.h',
         'renderer/automation/dom_automation_v8_extension.cc',
@@ -111,8 +111,6 @@
         'renderer/external_host_bindings.h',
         'renderer/external_extension.cc',
         'renderer/external_extension.h',
-        'renderer/form_manager.cc',
-        'renderer/form_manager.h',
         'renderer/geolocation_dispatcher.cc',
         'renderer/geolocation_dispatcher.h',
         'renderer/gpu_channel_host.cc',
@@ -137,8 +135,6 @@
         'renderer/page_click_tracker.h',
         'renderer/page_load_histograms.cc',
         'renderer/page_load_histograms.h',
-        'renderer/password_autocomplete_manager.cc',
-        'renderer/password_autocomplete_manager.h',
         'renderer/pepper_devices.cc',
         'renderer/pepper_devices.h',
         'renderer/pepper_platform_context_3d_impl.cc',

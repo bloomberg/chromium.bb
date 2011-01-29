@@ -2173,9 +2173,9 @@
         'browser/ui/views/browser_actions_container_browsertest.cc',
         'browser/ui/views/dom_view_browsertest.cc',
         'browser/ui/views/html_dialog_view_browsertest.cc',
-        'renderer/form_autocomplete_browsertest.cc',
-        'renderer/form_manager_browsertest.cc',
-        'renderer/password_autocomplete_manager_unittest.cc',
+        'renderer/autofill/form_autocomplete_browsertest.cc',
+        'renderer/autofill/form_manager_browsertest.cc',
+        'renderer/autofill/password_autofill_manager_unittest.cc',
         'renderer/pepper_devices_browsertest.cc',
         'renderer/render_view_browsertest.cc',
         'renderer/render_view_browsertest_mac.mm',
@@ -2344,7 +2344,7 @@
             # run time dependency
             '../webkit/webkit.gyp:copy_npapi_test_plugin',
           ],
-        }],  
+        }],
       ],  # conditions
     },  # target browser_tests
     {

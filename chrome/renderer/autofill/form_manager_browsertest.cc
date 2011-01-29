@@ -4,7 +4,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/renderer/form_manager.h"
+#include "chrome/renderer/autofill/form_manager.h"
 #include "chrome/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -29,6 +29,8 @@ using WebKit::WebSelectElement;
 using WebKit::WebNode;
 using WebKit::WebString;
 using WebKit::WebVector;
+
+using autofill::FormManager;
 
 using webkit_glue::FormData;
 using webkit_glue::FormField;

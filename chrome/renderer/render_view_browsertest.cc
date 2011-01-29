@@ -13,7 +13,7 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/renderer/autofill_helper.h"
+#include "chrome/renderer/autofill/autofill_agent.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/test/render_view_test.h"
 #include "gfx/codec/jpeg_codec.h"
@@ -1067,7 +1067,7 @@ TEST_F(RenderViewTest, SendForms) {
   // Accept suggestion that contains a label.  Labeled items indicate AutoFill
   // as opposed to Autocomplete.  We're testing this distinction below with
   // the |AutoFillHostMsg_FillAutoFillFormData::ID| message.
-  autofill_helper_->didAcceptAutoFillSuggestion(
+  autofill_agent_->didAcceptAutoFillSuggestion(
       firstname,
       WebKit::WebString::fromUTF8("Johnny"),
       WebKit::WebString::fromUTF8("Home"),
@@ -1153,7 +1153,7 @@ TEST_F(RenderViewTest, FillFormElement) {
 
   // Accept a suggestion in a form that has been auto-filled.  This triggers
   // the direct filling of the firstname element with value parameter.
-  autofill_helper_->didAcceptAutoFillSuggestion(
+  autofill_agent_->didAcceptAutoFillSuggestion(
       firstname,
       WebKit::WebString::fromUTF8("David"),
       WebKit::WebString(),

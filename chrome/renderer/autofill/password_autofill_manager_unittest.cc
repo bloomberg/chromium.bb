@@ -5,8 +5,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/autofill_messages.h"
-#include "chrome/renderer/autofill_helper.h"
-#include "chrome/renderer/password_autocomplete_manager.h"
+#include "chrome/renderer/autofill/autofill_agent.h"
+#include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -53,9 +53,11 @@ const char* const kFormHTML =
 
 }  // namespace
 
-class PasswordAutocompleteManagerTest : public RenderViewTest {
+namespace autofill {
+
+class PasswordAutoFillManagerTest : public RenderViewTest {
  public:
-  PasswordAutocompleteManagerTest() {
+  PasswordAutoFillManagerTest() {
   }
 
   // Simulates the fill password form message being sent to the renderer.
@@ -64,7 +66,7 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
   void SimulateOnFillPasswordForm(
       const PasswordFormFillData& fill_data) {
     AutoFillMsg_FillPasswordForm msg(0, fill_data);
-    password_autocomplete_->OnMessageReceived(msg);
+    password_autofill_->OnMessageReceived(msg);
   }
 
   virtual void SetUp() {
@@ -119,7 +121,7 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
     username_element_.setValue(WebString::fromUTF8(username));
     if (move_caret_to_end)
       username_element_.setSelectionRange(username.length(), username.length());
-    autofill_helper_->textFieldDidChange(username_element_);
+    autofill_agent_->textFieldDidChange(username_element_);
     // Processing is delayed because of a WebKit bug, see
     // PasswordAutocompleteManager::TextDidChangeInTextField() for details.
     MessageLoop::current()->RunAllPending();
@@ -129,7 +131,7 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
                             ui::KeyboardCode key_code) {
     WebKit::WebKeyboardEvent key_event;
     key_event.windowsKeyCode = key_code;
-    autofill_helper_->textFieldDidReceiveKeyDown(element, key_event);
+    autofill_agent_->textFieldDidReceiveKeyDown(element, key_event);
   }
 
   void CheckTextFieldsState(const std::string& username,
@@ -161,12 +163,16 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
   WebInputElement password_element_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PasswordAutocompleteManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(PasswordAutoFillManagerTest);
 };
+
+}
+
+using autofill::PasswordAutoFillManagerTest;
 
 // Tests that the password login is autocompleted as expected when the browser
 // sends back the password info.
-TEST_F(PasswordAutocompleteManagerTest, InitialAutocomplete) {
+TEST_F(PasswordAutoFillManagerTest, InitialAutocomplete) {
   /*
    * Right now we are not sending the message to the browser because we are
    * loading a data URL and the security origin canAccessPasswordManager()
@@ -198,7 +204,7 @@ TEST_F(PasswordAutocompleteManagerTest, InitialAutocomplete) {
 }
 
 // Tests that changing the username does not fill a read-only password field.
-TEST_F(PasswordAutocompleteManagerTest, NoInitialAutocompleteForReadOnly) {
+TEST_F(PasswordAutoFillManagerTest, NoInitialAutocompleteForReadOnly) {
   password_element_.setAttribute(WebString::fromUTF8("readonly"),
                                  WebString::fromUTF8("true"));
 
@@ -212,7 +218,7 @@ TEST_F(PasswordAutocompleteManagerTest, NoInitialAutocompleteForReadOnly) {
 }
 
 // Tests that editing the password clears the autocompleted password field.
-TEST_F(PasswordAutocompleteManagerTest, PasswordClearOnEdit) {
+TEST_F(PasswordAutoFillManagerTest, PasswordClearOnEdit) {
   // Simulate the browser sending back the login info, it triggers the
   // autocomplete.
   SimulateOnFillPasswordForm(fill_data_);
@@ -226,7 +232,7 @@ TEST_F(PasswordAutocompleteManagerTest, PasswordClearOnEdit) {
 
 // Tests that we only autocomplete on focus lost and with a full username match
 // when |wait_for_username| is true.
-TEST_F(PasswordAutocompleteManagerTest, WaitUsername) {
+TEST_F(PasswordAutoFillManagerTest, WaitUsername) {
   // Simulate the browser sending back the login info.
   fill_data_.wait_for_username = true;
   SimulateOnFillPasswordForm(fill_data_);
@@ -245,21 +251,21 @@ TEST_F(PasswordAutocompleteManagerTest, WaitUsername) {
   // Autocomplete should happen only when the username textfield is blurred with
   // a full match.
   username_element_.setValue("a");
-  autofill_helper_->textFieldDidEndEditing(username_element_);
+  autofill_agent_->textFieldDidEndEditing(username_element_);
   CheckTextFieldsState("a", false, "", false);
   username_element_.setValue("al");
-  autofill_helper_->textFieldDidEndEditing(username_element_);
+  autofill_agent_->textFieldDidEndEditing(username_element_);
   CheckTextFieldsState("al", false, "", false);
   username_element_.setValue("alices");
-  autofill_helper_->textFieldDidEndEditing(username_element_);
+  autofill_agent_->textFieldDidEndEditing(username_element_);
   CheckTextFieldsState("alices", false, "", false);
   username_element_.setValue(ASCIIToUTF16(kAliceUsername));
-  autofill_helper_->textFieldDidEndEditing(username_element_);
+  autofill_agent_->textFieldDidEndEditing(username_element_);
   CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
 }
 
 // Tests that inline autocompletion works properly.
-TEST_F(PasswordAutocompleteManagerTest, InlineAutocomplete) {
+TEST_F(PasswordAutoFillManagerTest, InlineAutocomplete) {
   // Simulate the browser sending back the login info.
   SimulateOnFillPasswordForm(fill_data_);
 
@@ -317,7 +323,7 @@ TEST_F(PasswordAutocompleteManagerTest, InlineAutocomplete) {
 }
 
 // Tests that selecting and item in the suggestion drop-down works.
-TEST_F(PasswordAutocompleteManagerTest, SuggestionSelect) {
+TEST_F(PasswordAutoFillManagerTest, SuggestionSelect) {
   // Simulate the browser sending back the login info.
   SimulateOnFillPasswordForm(fill_data_);
 
@@ -327,10 +333,10 @@ TEST_F(PasswordAutocompleteManagerTest, SuggestionSelect) {
   // To simulate a selection in the suggestion drop-down we just mimick what the
   // WebView does: it sets the element value then calls
   // didSelectAutoFillSuggestion on the renderer.
-  autofill_helper_->didSelectAutoFillSuggestion(username_element_,
-                                                ASCIIToUTF16(kAliceUsername),
-                                                WebKit::WebString(),
-                                                0);
+  autofill_agent_->didSelectAutoFillSuggestion(username_element_,
+                                               ASCIIToUTF16(kAliceUsername),
+                                               WebKit::WebString(),
+                                               0);
 
   // Autocomplete should have kicked in.
   CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);

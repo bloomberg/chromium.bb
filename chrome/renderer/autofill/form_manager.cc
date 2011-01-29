@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/form_manager.h"
+#include "chrome/renderer/autofill/form_manager.h"
 
 #include "base/logging.h"
 #include "base/scoped_vector.h"
@@ -274,6 +274,8 @@ void GetOptionStringsFromElement(WebFormControlElement element,
 }
 
 }  // namespace
+
+namespace autofill {
 
 struct FormManager::FormElement {
   WebKit::WebFormElement form_element;
@@ -920,3 +922,5 @@ void FormManager::PreviewFormField(WebFormControlElement* field,
   if (is_initiating_node)
     input_element.setSelectionRange(0, input_element.suggestedValue().length());
 }
+
+}  // namespace autofill

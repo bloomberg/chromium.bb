@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_AUTOFILL_HELPER_H_
-#define CHROME_RENDERER_AUTOFILL_HELPER_H_
+#ifndef CHROME_RENDERER_AUTOFILL_AUTOFILL_AGENT_H_
+#define CHROME_RENDERER_AUTOFILL_AUTOFILL_AGENT_H_
 #pragma once
 
 #include <vector>
@@ -11,29 +11,32 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/task.h"
-#include "chrome/renderer/form_manager.h"
+#include "chrome/renderer/autofill/form_manager.h"
 #include "chrome/renderer/page_click_listener.h"
 #include "chrome/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutoFillClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 
-class PasswordAutocompleteManager;
+namespace autofill {
 
-// AutoFillHelper deals with AutoFill related communications between WebKit and
-// the browser.  There is one AutofillHelper per RenderView.
+class PasswordAutoFillManager;
+
+// AutoFillAgent deals with AutoFill related communications between WebKit and
+// the browser.  There is one AutoFillAgent per RenderView.
 // This code was originally part of RenderView.
 // Note that AutoFill encompasses:
-// - single text field suggestions, that we usually refer to as Autocomplete
+// - single text field suggestions, that we usually refer to as Autocomplete,
+// - password form fill, refered to as password AutoFill, and
 // - entire form fill based on one field entry, referred to as form AutoFill.
 
-class AutoFillHelper : public RenderViewObserver,
-                       public PageClickListener,
-                       public WebKit::WebAutoFillClient {
+class AutoFillAgent : public RenderViewObserver,
+                      public PageClickListener,
+                      public WebKit::WebAutoFillClient {
  public:
-  // PasswordAutocompleteManager is guaranteed to outlive AutoFillHelper.
-  AutoFillHelper(RenderView* render_view,
-                 PasswordAutocompleteManager* password_autocomplete_manager);
-  virtual ~AutoFillHelper();
+  // PasswordAutoFillManager is guaranteed to outlive AutoFillAgent.
+  AutoFillAgent(RenderView* render_view,
+                PasswordAutoFillManager* password_autofill_manager);
+  virtual ~AutoFillAgent();
 
   // WebKit::WebAutoFillClient implementation.  Public for tests.
   virtual void didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
@@ -84,7 +87,7 @@ class AutoFillHelper : public RenderViewObserver,
   // http://bugs.webkit.org/show_bug.cgi?id=16976
   void TextFieldDidChangeImpl(const WebKit::WebInputElement& element);
 
-  // Shows the autocomplete suggestions for |element|.
+  // Shows the autofill suggestions for |element|.
   // This call is asynchronous and may or may not lead to the showing of a
   // suggestion popup (no popup is shown if there are no available suggestions).
   // |autofill_on_empty_values| specifies whether suggestions should be shown
@@ -125,7 +128,7 @@ class AutoFillHelper : public RenderViewObserver,
 
   FormManager form_manager_;
 
-  PasswordAutocompleteManager* password_autocomplete_manager_;
+  PasswordAutoFillManager* password_autofill_manager_;
 
   // The ID of the last request sent for form field AutoFill.  Used to ignore
   // out of date responses.
@@ -149,9 +152,11 @@ class AutoFillHelper : public RenderViewObserver,
   // The menu index of the "AutoFill options..." menu item.
   int suggestions_options_index_;
 
-  ScopedRunnableMethodFactory<AutoFillHelper> method_factory_;
+  ScopedRunnableMethodFactory<AutoFillAgent> method_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutoFillHelper);
+  DISALLOW_COPY_AND_ASSIGN(AutoFillAgent);
 };
 
-#endif  // CHROME_RENDERER_AUTOFILL_HELPER_H_
+}  // namespace autofill
+
+#endif  // CHROME_RENDERER_AUTOFILL_AUTOFILL_AGENT_H_

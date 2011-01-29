@@ -11,13 +11,13 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/renderer_preferences.h"
-#include "chrome/renderer/autofill_helper.h"
+#include "chrome/renderer/autofill/autofill_agent.h"
+#include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/mock_render_process.h"
-#include "chrome/renderer/password_autocomplete_manager.h"
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -39,6 +39,8 @@ using WebKit::WebScriptController;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
+using autofill::AutoFillAgent;
+using autofill::PasswordAutoFillManager;
 
 namespace {
 const int32 kRouteId = 5;
@@ -138,11 +140,11 @@ void RenderViewTest::SetUp() {
   // Attach a pseudo keyboard device to this object.
   mock_keyboard_.reset(new MockKeyboard());
 
-  // RenderView doesn't expose it's PasswordAutocompleteManager or
+  // RenderView doesn't expose it's PasswordAutoFillManager or
   // AutoFillHelper objects, because it has no need to store them directly
   // (they're stored as RenderViewObserver*).  So just create another set.
-  password_autocomplete_ = new PasswordAutocompleteManager(view_);
-  autofill_helper_ = new AutoFillHelper(view_, password_autocomplete_);
+  password_autofill_ = new PasswordAutoFillManager(view_);
+  autofill_agent_ = new AutoFillAgent(view_, password_autofill_);
 }
 
 void RenderViewTest::TearDown() {

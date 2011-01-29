@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_FORM_MANAGER_H_
-#define CHROME_RENDERER_FORM_MANAGER_H_
+#ifndef CHROME_RENDERER_AUTOFILL_FORM_MANAGER_H_
+#define CHROME_RENDERER_AUTOFILL_FORM_MANAGER_H_
 #pragma once
 
 #include <map>
@@ -22,6 +22,8 @@ namespace WebKit {
 class WebFormControlElement;
 class WebFrame;
 }  // namespace WebKit
+
+namespace autofill {
 
 // Manages the forms in a RenderView.
 class FormManager {
@@ -182,4 +184,6 @@ class FormManager {
   DISALLOW_COPY_AND_ASSIGN(FormManager);
 };
 
-#endif  // CHROME_RENDERER_FORM_MANAGER_H_
+}  // namespace autofill
+
+#endif  // CHROME_RENDERER_AUTOFILL_FORM_MANAGER_H_

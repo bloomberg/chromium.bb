@@ -48,7 +48,9 @@
 #include "chrome/common/window_container_type.h"
 #include "chrome/renderer/about_handler.h"
 #include "chrome/renderer/audio_message_filter.h"
-#include "chrome/renderer/autofill_helper.h"
+#include "chrome/renderer/autofill/autofill_agent.h"
+#include "chrome/renderer/autofill/form_manager.h"
+#include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
 #include "chrome/renderer/blocked_plugin.h"
 #include "chrome/renderer/device_orientation_dispatcher.h"
@@ -72,7 +74,6 @@
 #include "chrome/renderer/notification_provider.h"
 #include "chrome/renderer/page_click_tracker.h"
 #include "chrome/renderer/page_load_histograms.h"
-#include "chrome/renderer/password_autocomplete_manager.h"
 #include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
@@ -268,6 +269,9 @@ using WebKit::WebWindowFeatures;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
 using appcache::WebApplicationCacheHostImpl;
+using autofill::AutoFillAgent;
+using autofill::FormManager;
+using autofill::PasswordAutoFillManager;
 using base::Time;
 using base::TimeDelta;
 using webkit_glue::AltErrorPageResourceFetcher;
@@ -604,12 +608,12 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   notification_provider_ = new NotificationProvider(this);
 
   devtools_agent_ = new DevToolsAgent(this);
-  PasswordAutocompleteManager* password_autocomplete_manager =
-      new PasswordAutocompleteManager(this);
-  AutoFillHelper* autofill_helper = new AutoFillHelper(
-      this, password_autocomplete_manager);
+  PasswordAutoFillManager* password_autofill_manager =
+      new PasswordAutoFillManager(this);
+  AutoFillAgent* autofill_agent = new AutoFillAgent(this,
+                                                    password_autofill_manager);
 
-  webwidget_ = WebView::create(this, devtools_agent_, autofill_helper);
+  webwidget_ = WebView::create(this, devtools_agent_, autofill_agent);
   g_view_map.Get().insert(std::make_pair(webview(), this));
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
@@ -645,8 +649,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   // Note that the order of insertion of the listeners is important.
   // The password_autocomplete_manager takes the first shot at processing the
   // notification and can stop the propagation.
-  page_click_tracker->AddListener(password_autocomplete_manager);
-  page_click_tracker->AddListener(autofill_helper);
+  page_click_tracker->AddListener(password_autofill_manager);
+  page_click_tracker->AddListener(autofill_agent);
 }
 
 RenderView::~RenderView() {
@@ -3145,8 +3149,8 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
   if (FormManager::WebFormElementToFormData(
           form,
           FormManager::REQUIRE_AUTOCOMPLETE,
-          static_cast<FormManager::ExtractMask>(FormManager::EXTRACT_VALUE |
-              FormManager::EXTRACT_OPTION_TEXT),
+          static_cast<FormManager::ExtractMask>(
+              FormManager::EXTRACT_VALUE | FormManager::EXTRACT_OPTION_TEXT),
           &form_data)) {
     Send(new AutoFillHostMsg_FormSubmitted(routing_id_, form_data));
   }

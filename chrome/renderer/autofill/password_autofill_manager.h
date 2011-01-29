@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_PASSWORD_AUTOCOMPLETE_MANAGER_H_
-#define CHROME_RENDERER_PASSWORD_AUTOCOMPLETE_MANAGER_H_
+#ifndef CHROME_RENDERER_AUTOFILL_PASSWORD_AUTOFILL_MANAGER_H_
+#define CHROME_RENDERER_AUTOFILL_PASSWORD_AUTOFILL_MANAGER_H_
 #pragma once
 
 #include <map>
@@ -20,13 +20,15 @@ class WebInputElement;
 class WebKeyboardEvent;
 }
 
+namespace autofill {
+
 // This class is responsible for filling password forms.
-// There is one PasswordAutocompleteManager per RenderView.
-class PasswordAutocompleteManager : public RenderViewObserver,
-                                    public PageClickListener {
+// There is one PasswordAutoFillManager per RenderView.
+class PasswordAutoFillManager : public RenderViewObserver,
+                                public PageClickListener {
  public:
-  explicit PasswordAutocompleteManager(RenderView* render_view);
-  virtual ~PasswordAutocompleteManager();
+  explicit PasswordAutoFillManager(RenderView* render_view);
+  virtual ~PasswordAutoFillManager();
 
   // WebViewClient editor related calls forwarded by the RenderView.
   // If they return true, it indicates the event was consumed and should not
@@ -41,7 +43,7 @@ class PasswordAutocompleteManager : public RenderViewObserver,
                                    const WebKit::WebString& value);
 
  private:
-  friend class PasswordAutocompleteManagerTest;
+  friend class PasswordAutoFillManagerTest;
 
   struct PasswordInfo {
     WebKit::WebInputElement password_field;
@@ -64,21 +66,18 @@ class PasswordAutocompleteManager : public RenderViewObserver,
                                    bool is_focused);
 
   // RenderView IPC handlers:
-  void OnFillPasswordForm(
-      const webkit_glue::PasswordFormFillData& form_data);
+  void OnFillPasswordForm(const webkit_glue::PasswordFormFillData& form_data);
 
   // Scans the given frame for password forms and sends them up to the browser.
   // If |only_visible| is true, only forms visible in the layout are sent.
   void SendPasswordForms(WebKit::WebFrame* frame, bool only_visible);
 
-  void GetSuggestions(
-      const webkit_glue::PasswordFormFillData& fill_data,
-      const string16& input,
-      std::vector<string16>* suggestions);
+  void GetSuggestions(const webkit_glue::PasswordFormFillData& fill_data,
+                      const string16& input,
+                      std::vector<string16>* suggestions);
 
-  bool ShowSuggestionPopup(
-      const webkit_glue::PasswordFormFillData& fill_data,
-      const WebKit::WebInputElement& user_input);
+  bool ShowSuggestionPopup(const webkit_glue::PasswordFormFillData& fill_data,
+                           const WebKit::WebInputElement& user_input);
 
   bool FillUserNameAndPassword(
       WebKit::WebInputElement* username_element,
@@ -101,9 +100,11 @@ class PasswordAutocompleteManager : public RenderViewObserver,
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;
 
-  ScopedRunnableMethodFactory<PasswordAutocompleteManager> method_factory_;
+  ScopedRunnableMethodFactory<PasswordAutoFillManager> method_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordAutocompleteManager);
+  DISALLOW_COPY_AND_ASSIGN(PasswordAutoFillManager);
 };
 
-#endif  // CHROME_RENDERER_PASSWORD_AUTOCOMPLETE_MANAGER_H_
+}  // namespace autofill
+
+#endif  // CHROME_RENDERER_AUTOFILL_PASSWORD_AUTOFILL_MANAGER_H_
