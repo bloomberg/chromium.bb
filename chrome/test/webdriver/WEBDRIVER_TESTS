@@ -1,0 +1,89 @@
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# This file lists the webdriver tests that run as a part of the functional test
+# suite.
+#
+# Tests can be enabled on a per-platform basis. Tests not listed here will
+# not be run.
+#
+# Test names can be specified in any of the following ways:
+# 1. as a module, in which case all tests in that module will be run
+#      example: 'test_basic'
+# 2. or as a test case, in which case all tess in that test case will be run
+#      example: 'test_basic.SimpleTest'
+# 3. or as an individual test
+#      example: 'test_basic.SimpleTest.testCanOpenGoogle'
+#
+# Tests beginning with '-' will be excluded.  This can be used to enforce
+# exclusions for a particular platform.
+
+# Most of these tests are disabled because they involve not yet implemented
+# features. See bug 71237.
+{
+  'all': [
+    'children_finding_tests',
+    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementByClassName',
+    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementById',
+    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementByIdWhenMultipleMatchesExist',
+    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementByLinkText',
+    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementByName',
+    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementByTagName',
+    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementByXPath',
+    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementsByTagName',
+    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementsByXpath',
+#   'cookie_tests',
+#   'correct_event_firing_tests',
+    'driver_element_finding_test',
+    '-driver_element_finding_test.DriverElementFindingTests.testShouldFindElementByLinkText',
+    '-driver_element_finding_test.DriverElementFindingTests.testShouldFindElementByPartialLinkText',
+    '-driver_element_finding_test.DriverElementFindingTests.testShouldFindElementByTagName',
+    '-driver_element_finding_test.DriverElementFindingTests.testShouldFindElementsByTagName',
+    '-driver_element_finding_test.DriverElementFindingTests.testShouldFindElementByClassName',
+    '-driver_element_finding_test.DriverElementFindingTests.testShouldFindElementById',
+    '-driver_element_finding_test.DriverElementFindingTests.testShouldFindElementByName',
+    '-driver_element_finding_test.DriverElementFindingTests.testShouldFindElementByXPath',
+    '-driver_element_finding_test.DriverElementFindingTests.testShouldFindElementsByLinkText',
+    '-driver_element_finding_test.DriverElementFindingTests.testShouldFindElementsByPartialLinkText',
+#   'element_attribute_tests',
+#   'executing_async_javascript_test',
+    'executing_javascript_test',
+    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToCallFunctionsDefinedOnThePage',
+    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToExecuteSimpleJavascriptAndReturnAWebElement',
+    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassACollectionAsArgument',
+    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassAWebElementAsArgument',
+    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassAnArrayAsArgument',
+    '-executing_javascript_test.ExecutingJavaScriptTests.testPassingAndReturningADoubleShouldReturnADecimal',
+    '-executing_javascript_test.ExecutingJavaScriptTests.testPassingAndReturningALongShouldReturnAWholeNumber',
+    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassABooleanAnAsArgument',
+    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassANumberAnAsArgument',
+    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassAStringAnAsArgument',
+    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassInMoreThanOneArgument',
+#   'form_handling_tests',
+#   'frame_switching_tests',
+#   'implicit_waits_tests',
+    'page_loading_tests',
+    '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateBackInTheBrowserHistory',
+    '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateBackInTheBrowserHistoryInPresenceOfIframes',
+    '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateForwardsInTheBrowserHistory',
+#   'rendered_webelement_tests'
+#   'select_element_handling_tests',
+#   'stale_reference_tests',
+#   'text_handling_tests',
+#   'typing_tests',
+#   'visibility_tests',
+  ],
+
+  'win': [
+
+  ],
+
+  'mac': [
+
+  ],
+
+  'linux': [
+
+  ],
+}
