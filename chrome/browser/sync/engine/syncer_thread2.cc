@@ -67,6 +67,7 @@ SyncerThread::SyncerThread(sessions::SyncSessionContext* context,
           TimeDelta::FromSeconds(kDefaultShortPollIntervalSeconds)),
       syncer_long_poll_interval_seconds_(
           TimeDelta::FromSeconds(kDefaultLongPollIntervalSeconds)),
+      mode_(NORMAL_MODE),
       server_connection_ok_(false),
       delay_provider_(new DelayProvider()),
       syncer_(syncer),
