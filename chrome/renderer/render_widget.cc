@@ -488,10 +488,24 @@ void RenderWidget::CallDoDeferredUpdate() {
 }
 
 void RenderWidget::UpdateAnimationsIfNeeded() {
-  if (!is_hidden() && animation_update_pending_ &&
-      base::Time::Now() > animation_floor_time_) {
-    animation_update_pending_ = false;
-    webwidget_->animate();
+  if (!is_hidden() && animation_update_pending_) {
+    base::Time now = base::Time::Now();
+    if (now >= animation_floor_time_) {
+       animation_update_pending_ = false;
+       webwidget_->animate();
+    } else {
+      // This code uses base::Time::Now() to calculate the floor and next fire
+      // time because javascript's Date object uses base::Time::Now().  The
+      // message loop uses base::TimeTicks, which on windows can have a
+      // different granularity than base::Time.
+      // The upshot of all this is that this function might be called before
+      // base::Time::Now() has advanced past the animation_floor_time_.  To
+      // avoid exposing this delay to javascript, we keep posting delayed
+      // tasks until we observe base::Time::Now() advancing far enough.
+      int64 delay = (animation_floor_time_ - now).InMillisecondsRoundedUp();
+      MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
+          this, &RenderWidget::UpdateAnimationsIfNeeded), delay);
+    }
   }
 }
 
