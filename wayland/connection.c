@@ -265,10 +265,12 @@ wl_connection_data(struct wl_connection *connection, uint32_t mask)
 		msg.msg_flags = 0;
 
 		do {
-			len = sendmsg(connection->fd, &msg, 0);
+			len = sendmsg(connection->fd, &msg, MSG_NOSIGNAL);
 		} while (len < 0 && errno == EINTR);
 
-		if (len < 0) {
+		if (len == -1 && errno == EPIPE) {
+			return -1;
+		} else if (len < 0) {
 			fprintf(stderr,
 				"write error for connection %p, fd %d: %m\n",
 				connection, connection->fd);
