@@ -87,17 +87,23 @@ class PasswordTest(pyauto.PyUITest):
     test_utils.GoogleAccountsLogin(self, username, password)
     # Wait until page completes loading.
     self.WaitUntil(
-        lambda: self.GetDOMValue('document.readyState'), 'complete')
+        lambda: self.GetDOMValue('document.readyState'),
+        expect_retval='complete')
     self.assertTrue(self.WaitForInfobarCount(1),
-                    'Did not get save password infobar')
+                    'Save password infobar did not appear.')
     infobar = self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars']
     self.assertEqual(infobar[0]['type'], 'confirm_infobar')
     self.PerformActionOnInfobar('accept', infobar_index=0)
     self.NavigateToURL(url_logout)
-    self.NavigateToURL(url_https)
-    test_utils.VerifyGoogleAccountCredsFilled(self, username, password)
+    self.AppendTab(pyauto.GURL(url_https))  # New tab to avoid bug 70694
+    # Wait until accounts page load to detect value in username field.
+    self.WaitUntil(lambda: self.GetDOMValue('document.readyState', 0, 1),
+                   expect_retval='complete')
+    test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
+                                              tab_index=1, windex=0)
     self.ExecuteJavascript('document.getElementById("gaia_loginform").submit();'
-                           'window.domAutomationController.send("done")')
+                           'window.domAutomationController.send("done")',
+                           0, 1)
     test_utils.ClearPasswords(self)
 
   def testNeverSavePasswords(self):
@@ -110,7 +116,6 @@ class PasswordTest(pyauto.PyUITest):
     self.PerformActionOnInfobar('accept', infobar_index=0)
     self.assertEquals(1, len(self.GetSavedPasswords()))
     self.AppendTab(pyauto.GURL(creds1['logout_url']))
-
     creds2 = self.GetPrivateInfo()['test_google_account_2']
     test_utils.GoogleAccountsLogin(
         self, creds2['username'], creds2['password'], tab_index=1)

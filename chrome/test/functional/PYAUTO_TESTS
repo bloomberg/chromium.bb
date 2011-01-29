@@ -92,8 +92,6 @@
       '-downloads.DownloadsTest.testZip',
       '-downloads.DownloadsTest.testRemoveDownload',
       '-prefs.PrefsTest.testDownloadDirPref',
-      # crbug.com/64269
-      '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
       # crbug.com/67588
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
     ],
@@ -121,8 +119,6 @@
       # crbug.com/64664
       '-databases.DatabasesTest.testReloadActiveTab',
       '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
-      # crbug.com/64269
-      '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
     ],
 
     # ChromeOS is linux, but note that this section does not include the
@@ -154,8 +150,6 @@
       '-downloads.DownloadsTest.testPauseAndResume',
       # crosbug.com/9499
       '-crash_reporter.CrashReporterTest.testRendererCrash',
-      # crbug.com/64269
-      '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
     ],
   },
 
