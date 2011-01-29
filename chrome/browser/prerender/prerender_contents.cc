@@ -137,7 +137,12 @@ void PrerenderContents::RunJavaScriptMessage(
     const int flags,
     IPC::Message* reply_msg,
     bool* did_suppress_message) {
+  // Always suppress JavaScript messages if they're triggered by a page being
+  // prerendered.
   *did_suppress_message = true;
+  // We still want to show the user the message when they navigate to this
+  // page, so cancel this prerender.
+  prerender_manager_->RemoveEntry(this);
 }
 
 bool PrerenderContents::PreHandleKeyboardEvent(

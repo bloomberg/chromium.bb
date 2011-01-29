@@ -38,6 +38,13 @@ class TestPrerenderContents : public PrerenderContents {
         did_finish_loading_(false) {
   }
 
+  virtual ~TestPrerenderContents() {
+    // In the event we are destroyed, say if the prerender was canceled, quit
+    // the UI message loop.
+    if (!did_finish_loading_)
+      MessageLoopForUI::current()->Quit();
+  }
+
   virtual void DidStopLoading() {
     PrerenderContents::DidStopLoading();
     did_finish_loading_ = true;
@@ -82,7 +89,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 #endif
   }
 
-  void RunTestURL(const std::string& html_file) {
+  void PrerenderTestURL(const std::string& html_file, bool expect_success) {
     ASSERT_TRUE(test_server()->Start());
 
     std::string src_path = "files/prerender/prerender_loader.html?";
@@ -91,14 +98,14 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     dest_path.append(html_file);
 
     GURL src_url = test_server()->GetURL(src_path);
-    GURL dest_url = test_server()->GetURL(dest_path);
+    dest_url_ = test_server()->GetURL(dest_path);
 
     Profile* profile = browser()->GetSelectedTabContents()->profile();
     PrerenderManager* prerender_manager = profile->GetPrerenderManager();
     ASSERT_TRUE(prerender_manager);
 
     // This is needed to exit the event loop once the prerendered page has
-    // stopped loading.
+    // stopped loading or was cancelled.
     prerender_manager->SetPrerenderContentsFactory(
         new WaitForLoadPrerenderContentsFactory());
 
@@ -112,38 +119,65 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
     TestPrerenderContents* prerender_contents =
         static_cast<TestPrerenderContents*>(
-            prerender_manager->FindEntry(dest_url));
+            prerender_manager->FindEntry(dest_url_));
 
-    // Make sure the prefetech link was caught and the page was prerendered.
-    ASSERT_TRUE(prerender_contents != NULL);
-    ASSERT_TRUE(prerender_contents->did_finish_loading());
+    if (expect_success) {
+      ASSERT_TRUE(prerender_contents != NULL);
+      ASSERT_TRUE(prerender_contents->did_finish_loading());
 
-    // Check if page behaves as expected while in prerendered state.
-    bool prerender_test_result;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        prerender_contents->render_view_host(), L"",
-        L"window.domAutomationController.send(DidPrerenderPass())",
-        &prerender_test_result));
-    EXPECT_TRUE(prerender_test_result);
+      // Check if page behaves as expected while in prerendered state.
+      bool prerender_test_result;
+      ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+          prerender_contents->render_view_host(), L"",
+          L"window.domAutomationController.send(DidPrerenderPass())",
+          &prerender_test_result));
+      EXPECT_TRUE(prerender_test_result);
+    } else {
+      // In the failure case, we should have removed dest_url_ from the
+      // prerender_manager.
+      EXPECT_TRUE(prerender_contents == NULL);
+    }
+  }
 
-    ui_test_utils::NavigateToURL(browser(), dest_url);
+  void NavigateToDestURL() const {
+    ui_test_utils::NavigateToURL(browser(), dest_url_);
 
-    // Make sure the PrerenderContents found earlier was used.
-    EXPECT_TRUE(prerender_manager->FindEntry(dest_url) == NULL);
+    Profile* profile = browser()->GetSelectedTabContents()->profile();
+    PrerenderManager* prerender_manager = profile->GetPrerenderManager();
+    ASSERT_TRUE(prerender_manager);
+
+    // Make sure the PrerenderContents found earlier was used or removed
+    EXPECT_TRUE(prerender_manager->FindEntry(dest_url_) == NULL);
 
     // Check if page behaved as expected when actually displayed.
-    bool display_test_result;
+    bool display_test_result = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
         browser()->GetSelectedTabContents()->render_view_host(), L"",
         L"window.domAutomationController.send(DidDisplayPass())",
         &display_test_result));
     EXPECT_TRUE(display_test_result);
   }
+
+ private:
+  GURL dest_url_;
 };
 
 // Checks that a page is correctly prerendered in the case of a
 // <link rel=prefetch> tag and then loaded into a tab in response to a
 // navigation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
-  RunTestURL("prerender_page.html");
+  PrerenderTestURL("prerender_page.html", true);
+  NavigateToDestURL();
+}
+
+// Checks that the prerendering of a page is canceled correctly when a
+// Javascript alert is called
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertBeforeOnload) {
+  PrerenderTestURL("prerender_alert_before_onload.html", false);
+}
+
+// Checks that the prerendering of a page is canceled correctly when a
+// Javascript alert is called
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
+  PrerenderTestURL("prerender_alert_after_onload.html", false);
 }

@@ -1,0 +1,16 @@
+<html>
+  <!--
+  This test checks to make sure an alert after onLoad causes
+  prerendering to fail.
+  -->
+  <head>
+    <title>Prerender alert after onload cancellation</title>
+
+    <script language="javascript" type="text/javascript">
+      window.onload = function() {
+        alert("Testing prerender");
+      };
+    </script>
+  </head>
+  <body></body>
+</html>
