@@ -15,6 +15,15 @@ function init() {
   chrome.extension.onRequest.addListener(requestListener);
 }
 
+function submitLogin() {
+  var username = document.getElementById("username").value;
+  var password = document.getElementById("password").value;
+
+  // Make the login panel invisible and submit login info.
+  document.getElementById("login_panel").className = "login_panel";
+  chromoting.plugin.submitLoginInfo(username, password);
+}
+
 /**
  * A listener function to be called when the extension fires a request.
  *
@@ -58,12 +67,8 @@ function requestListener(request, sender, sendResponse) {
  * password for logging into the remote host.
  */
 function pluginLoginChallenge() {
-  if (typeof chromoting.plugin.submitLoginInfo === 'function') {
-    window.setTimeout("chromoting.plugin.submitLoginInfo('hello', 'world')",
-                      100);
-  } else {
-    alert("Error calling methods in plugin.");
-  }
+  // Make the login panel visible.
+  document.getElementById("login_panel").style.display = "block";
 }
 
 /**

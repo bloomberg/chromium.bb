@@ -13,6 +13,13 @@ found in the LICENSE file.
   </head>
   <body class="chromoting_body" onload="init();">
     <div id="status_msg" class="status_msg"></div>
+    <div id="login_panel" class="login_panel">
+      <table>
+        <tr><td>Username:</td><td><input type="text" id="username" value="demo"/></td></tr>
+        <tr><td>Password:</td><td><input type="password" id="password" value="none" /></td></tr>
+        <tr><td colspan="2"><input type="button" value="Login" onclick="submitLogin();" /></td></tr>
+      </table>
+    </div>
     <div id="plugin_div" class="plugin">
       <embed width="100%" height="100%" name="chromoting" id="chromoting"
              src="about://none" type="pepper-application/x-chromoting">
