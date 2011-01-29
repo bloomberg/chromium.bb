@@ -513,22 +513,23 @@ TEST_F(PageCyclerReferenceTest, name) { \
 
 // This macro simplifies setting up regular and reference build tests
 // for HTML5 database tests.
+// FLAKY http://crbug.com/67918
 #define PAGE_CYCLER_DATABASE_TESTS(test, name) \
-TEST_F(PageCyclerDatabaseTest, Database##name##File) { \
+TEST_F(PageCyclerDatabaseTest, FLAKY_Database##name##File) { \
   RunTest(test, test, false); \
 } \
-TEST_F(PageCyclerDatabaseReferenceTest, Database##name##File) { \
+TEST_F(PageCyclerDatabaseReferenceTest, FLAKY_Database##name##File) { \
   RunTest(test, test, false); \
 }
 
 // This macro simplifies setting up regular and reference build tests
 // for HTML5 Indexed DB tests.
-// FAILS crbug.com/68660
+// FLAKY http://crbug.com/67918
 #define PAGE_CYCLER_IDB_TESTS(test, name) \
-TEST_F(PageCyclerIndexedDatabaseTest, FAILS_IndexedDB##name##File) { \
+TEST_F(PageCyclerIndexedDatabaseTest, FLAKY_IndexedDB##name##File) { \
   RunTest(test, test, false); \
 } \
-TEST_F(PageCyclerIndexedDatabaseReferenceTest, FAILS_IndexedDB##name##File) { \
+TEST_F(PageCyclerIndexedDatabaseReferenceTest, FLAKY_IndexedDB##name##File) { \
   RunTest(test, test, false); \
 }
 
@@ -591,10 +592,6 @@ PAGE_CYCLER_DATABASE_TESTS("pseudo-random-transactions",
 #endif
 
 // Indexed DB tests.
-// Disabled in debug builds on Windows.
-// Bug http://code.google.com/p/chromium/issues/detail?id=67918
-#if !defined(OS_WIN) || defined(NDEBUG)
 PAGE_CYCLER_IDB_TESTS("basic_insert", BasicInsert);
-#endif
 
 }  // namespace
