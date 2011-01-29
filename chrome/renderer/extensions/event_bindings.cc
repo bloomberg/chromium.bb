@@ -6,12 +6,12 @@
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
-#include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
@@ -265,7 +265,7 @@ void EventBindings::HandleContextCreated(WebFrame* frame, bool content_script) {
   if (!ds)
     ds = frame->dataSource();
   GURL url = ds->request().url();
-  const ExtensionRendererInfo* extensions = GetRenderThread()->GetExtensions();
+  const ExtensionSet* extensions = GetRenderThread()->GetExtensions();
   std::string extension_id = extensions->GetIdByURL(url);
 
   if (!extensions->ExtensionBindingsAllowed(url) &&

@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_RENDERER_INFO_H_
-#define CHROME_RENDERER_EXTENSIONS_EXTENSION_RENDERER_INFO_H_
+#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_SET_H_
+#define CHROME_COMMON_EXTENSIONS_EXTENSION_SET_H_
 #pragma once
 
 #include <string>
@@ -14,19 +14,22 @@
 #include "chrome/common/extensions/extension.h"
 #include "googleurl/src/gurl.h"
 
-// ExtensionRendererInfo is a convenience wrapper around a map of extension
-// objects. It is used by renderers to maintain information about currently
-// loaded extensions.
-class ExtensionRendererInfo {
+// The one true extension container. Extensions are identified by their id.
+// Only one extension can be in the set with a given ID.
+class ExtensionSet {
  public:
-  ExtensionRendererInfo();
-  ~ExtensionRendererInfo();
+  ExtensionSet();
+  ~ExtensionSet();
 
   // Gets the number of extensions contained.
   size_t size() const;
 
-  // Updates the specified extension.
-  void Update(const scoped_refptr<const Extension>& extension);
+  // Returns true if the set contains the specified extension.
+  bool Contains(const std::string& id);
+
+  // Adds the specified extension to the set. The set becomes an owner. Any
+  // previous extension with the same ID is removed.
+  void Insert(const scoped_refptr<const Extension>& extension);
 
   // Removes the specified extension.
   void Remove(const std::string& id);
@@ -55,13 +58,13 @@ class ExtensionRendererInfo {
   bool ExtensionBindingsAllowed(const GURL& url) const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ExtensionRendererInfoTest, ExtensionRendererInfo);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionSetTest, ExtensionSet);
 
   // static
   typedef std::map<std::string, scoped_refptr<const Extension> > ExtensionMap;
   ExtensionMap extensions_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionRendererInfo);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionSet);
 };
 
-#endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_RENDERER_INFO_H_
+#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_SET_H_

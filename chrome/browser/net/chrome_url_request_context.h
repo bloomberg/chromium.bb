@@ -181,6 +181,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   scoped_refptr<fileapi::SandboxedFileSystemContext> file_system_context_;
+  // TODO(aa): This should use chrome/common/extensions/extension_set.h.
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_refptr<PrerenderManager> prerender_manager_;
 

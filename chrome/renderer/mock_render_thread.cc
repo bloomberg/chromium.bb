@@ -27,7 +27,7 @@ MockRenderThread::MockRenderThread()
 MockRenderThread::~MockRenderThread() {
 }
 
-const ExtensionRendererInfo* MockRenderThread::GetExtensions() const {
+const ExtensionSet* MockRenderThread::GetExtensions() const {
   return &extensions_;
 }
 

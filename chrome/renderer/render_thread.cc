@@ -29,6 +29,8 @@
 #include "chrome/common/database_messages.h"
 #include "chrome/common/db_message_filter.h"
 #include "chrome/common/dom_storage_messages.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -48,7 +50,6 @@
 #include "chrome/renderer/devtools_agent_filter.h"
 #include "chrome/renderer/extension_groups.h"
 #include "chrome/renderer/extensions/chrome_app_bindings.h"
-#include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
@@ -350,7 +351,7 @@ int32 RenderThread::RoutingIDForCurrentContext() {
   return routing_id;
 }
 
-const ExtensionRendererInfo* RenderThread::GetExtensions() const {
+const ExtensionSet* RenderThread::GetExtensions() const {
   return &extensions_;
 }
 
@@ -551,7 +552,7 @@ void RenderThread::OnExtensionLoaded(
     return;
   }
 
-  extensions_.Update(extension);
+  extensions_.Insert(extension);
 }
 
 void RenderThread::OnSetExtensionScriptingWhitelist(

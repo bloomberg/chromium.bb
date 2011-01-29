@@ -11,7 +11,7 @@
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/renderer/extensions/extension_renderer_info.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

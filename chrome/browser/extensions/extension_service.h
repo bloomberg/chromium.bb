@@ -521,6 +521,7 @@ class ExtensionService
   ExtensionPrefs* extension_prefs_;
 
   // The current list of installed extensions.
+  // TODO(aa): This should use chrome/common/extensions/extension_set.h.
   ExtensionList extensions_;
 
   // The list of installed extensions that have been disabled.

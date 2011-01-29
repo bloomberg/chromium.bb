@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "chrome/renderer/extensions/extension_renderer_info.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/mock_printer.h"
 #include "chrome/renderer/render_thread.h"
 #include "ipc/ipc_test_sink.h"
@@ -31,7 +31,7 @@ class MockRenderThread : public RenderThreadBase {
   MockRenderThread();
   virtual ~MockRenderThread();
 
-  virtual const ExtensionRendererInfo* GetExtensions() const;
+  virtual const ExtensionSet* GetExtensions() const;
 
   // Provides access to the messages that have been received by this thread.
   IPC::TestSink& sink() { return sink_; }
@@ -144,7 +144,7 @@ class MockRenderThread : public RenderThreadBase {
 
   // Contains extensions currently loaded by browser. This is usually empty
   // for MockRenderThread.
-  ExtensionRendererInfo extensions_;
+  ExtensionSet extensions_;
 
   bool is_extension_process_;
 };

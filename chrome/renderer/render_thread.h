@@ -16,8 +16,8 @@
 #include "build/build_config.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/common/css_colors.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/gpu_info.h"
-#include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "gfx/native_widget_types.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -27,7 +27,7 @@ class AppCacheDispatcher;
 class CookieMessageFilter;
 class DBMessageFilter;
 class DevToolsAgentFilter;
-class ExtensionRendererInfo;
+class ExtensionSet;
 class FilePath;
 class GpuChannelHost;
 class IndexedDBDispatcher;
@@ -105,10 +105,10 @@ class RenderThreadBase {
  public:
   virtual ~RenderThreadBase() {}
 
-  // Information about currently loaded extensions. This is essentially the
-  // renderer counterpart to ExtensionService in the browser. It contains
-  // information about all extensions currently loaded by the browser.
-  virtual const ExtensionRendererInfo* GetExtensions() const = 0;
+  // Gets currently loaded extensions. This is essentially the renderer
+  // counterpart to ExtensionService in the browser. It contains information
+  // about all extensions currently loaded by the browser.
+  virtual const ExtensionSet* GetExtensions() const = 0;
 
   virtual bool Send(IPC::Message* msg) = 0;
 
@@ -162,7 +162,7 @@ class RenderThread : public RenderThreadBase,
   static int32 RoutingIDForCurrentContext();
 
   // Overridden from RenderThreadBase.
-  virtual const ExtensionRendererInfo* GetExtensions() const;
+  virtual const ExtensionSet* GetExtensions() const;
   virtual bool Send(IPC::Message* msg);
   virtual void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
   virtual void RemoveRoute(int32 routing_id);
@@ -421,7 +421,7 @@ class RenderThread : public RenderThreadBase,
   std::map<std::string, bool> v8_extensions_;
 
   // Contains all loaded extensions.
-  ExtensionRendererInfo extensions_;
+  ExtensionSet extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThread);
 };

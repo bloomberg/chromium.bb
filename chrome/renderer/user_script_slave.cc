@@ -14,9 +14,9 @@
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extension_groups.h"
-#include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
@@ -60,7 +60,7 @@ int UserScriptSlave::GetIsolatedWorldId(const std::string& extension_id) {
   return new_id;
 }
 
-UserScriptSlave::UserScriptSlave(const ExtensionRendererInfo* extensions)
+UserScriptSlave::UserScriptSlave(const ExtensionSet* extensions)
     : shared_memory_(NULL),
       script_deleter_(&scripts_),
       extensions_(extensions) {

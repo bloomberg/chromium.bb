@@ -282,6 +282,8 @@
         'common/extensions/extension_message_bundle.h',
         'common/extensions/extension_resource.cc',
         'common/extensions/extension_resource.h',
+        'common/extensions/extension_set.cc',
+        'common/extensions/extension_set.h',
         'common/extensions/extension_sidebar_defaults.h',
         'common/extensions/extension_sidebar_utils.cc',
         'common/extensions/extension_sidebar_utils.h',

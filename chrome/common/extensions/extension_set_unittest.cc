@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/renderer/extensions/extension_renderer_info.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -47,7 +47,7 @@ scoped_refptr<Extension> CreateTestExtension(const std::string& name,
 
 } // namespace
 
-TEST(ExtensionRendererInfoTest, ExtensionRendererInfo) {
+TEST(ExtensionSetTest, ExtensionSet) {
   scoped_refptr<Extension> ext1(CreateTestExtension(
       "a", "https://chrome.google.com/launch", "https://chrome.google.com/"));
 
@@ -62,21 +62,21 @@ TEST(ExtensionRendererInfoTest, ExtensionRendererInfo) {
 
   ASSERT_TRUE(ext1 && ext2 && ext3 && ext4);
 
-  ExtensionRendererInfo extensions;
+  ExtensionSet extensions;
 
   // Add an extension.
-  extensions.Update(ext1);
+  extensions.Insert(ext1);
   EXPECT_EQ(1u, extensions.size());
   EXPECT_EQ(ext1, extensions.GetByID(ext1->id()));
 
   // Since extension2 has same ID, it should overwrite extension1.
-  extensions.Update(ext2);
+  extensions.Insert(ext2);
   EXPECT_EQ(1u, extensions.size());
   EXPECT_EQ(ext2, extensions.GetByID(ext1->id()));
 
   // Add the other extensions.
-  extensions.Update(ext3);
-  extensions.Update(ext4);
+  extensions.Insert(ext3);
+  extensions.Insert(ext4);
   EXPECT_EQ(3u, extensions.size());
 
   // Get extension by its chrome-extension:// URL

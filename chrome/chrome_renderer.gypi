@@ -56,8 +56,6 @@
         'renderer/extensions/bindings_utils.h',
         'renderer/extensions/chrome_app_bindings.cc',
         'renderer/extensions/chrome_app_bindings.h',
-        'renderer/extensions/extension_renderer_info.cc',
-        'renderer/extensions/extension_renderer_info.h',
         'renderer/extensions/event_bindings.cc',
         'renderer/extensions/event_bindings.h',
         'renderer/extensions/extension_process_bindings.cc',

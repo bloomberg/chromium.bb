@@ -6,8 +6,8 @@
 
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
-#include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"

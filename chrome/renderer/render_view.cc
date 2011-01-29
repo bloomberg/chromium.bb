@@ -31,6 +31,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/database_messages.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/file_system/file_system_dispatcher.h"
 #include "chrome/common/file_system/webfilesystem_callback_dispatcher.h"
 #include "chrome/common/json_value_serializer.h"
@@ -58,7 +59,6 @@
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
-#include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/external_popup_menu.h"
@@ -389,7 +389,7 @@ static bool IsWhitelistedForContentSettings(WebFrame* frame) {
 // we would enter an extension app's extent from a non-app.  We avoid swapping
 // processes to exit an app for now, since we do not yet restore context (such
 // as window.opener) if the window navigates back.
-static bool CrossesIntoExtensionExtent(const ExtensionRendererInfo* extensions,
+static bool CrossesIntoExtensionExtent(const ExtensionSet* extensions,
                                        WebFrame* frame,
                                        const GURL& new_url) {
   // If the URL is still empty, this is a window.open navigation. Check the
