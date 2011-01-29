@@ -163,6 +163,9 @@ deps = {
   "src/third_party/swig/Lib":
     "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),
 
+  "src/third_party/webdriver/python":
+    (Var("googlecode_url") % "selenium") + "/trunk/py@11167",
+
   "src/third_party/libvpx":
     "/trunk/deps/third_party/libvpx@" +
     Var("libvpx_revision"),

@@ -16,7 +16,7 @@ from chromedriver_launcher import ChromeDriverLauncher
 def _AddWebDriverBindingsToPythonPath():
   py_path = os.path.join(os.path.dirname(__file__),
                          os.pardir, os.pardir, os.pardir,
-                         'third_party', 'webdriver', 'py')
+                         'third_party', 'webdriver', 'python')
   sys.path = [os.path.abspath(py_path)] + sys.path
 
 _AddWebDriverBindingsToPythonPath()
