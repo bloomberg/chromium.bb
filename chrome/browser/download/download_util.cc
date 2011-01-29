@@ -762,24 +762,25 @@ FilePath GetCrDownloadPath(const FilePath& suggested_path) {
 }
 
 // TODO(erikkay,phajdan.jr): This is apparently not being exercised in tests.
-bool IsDangerous(DownloadCreateInfo* info, Profile* profile) {
+bool IsDangerous(DownloadCreateInfo* info, Profile* profile, bool auto_open) {
   DownloadDangerLevel danger_level = GetFileDangerLevel(
       info->suggested_path.BaseName());
 
+  bool ret = false;
   if (danger_level == Dangerous) {
-    return true;
+    ret = !(auto_open && info->has_user_gesture);
   } else if (danger_level == AllowOnUserGesture && !info->has_user_gesture) {
-    return true;
+    ret = true;
   } else if (info->is_extension_install) {
     ExtensionService* service = profile->GetExtensionService();
     if (!service ||
         !service->IsDownloadFromGallery(info->url, info->referrer_url)) {
       // Extensions that are not from the gallery are considered dangerous.
-      return true;
+      ret = true;
     }
   }
 
-  return false;
+  return ret;
 }
 
 }  // namespace download_util

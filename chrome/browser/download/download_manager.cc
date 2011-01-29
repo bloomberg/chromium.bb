@@ -290,7 +290,8 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
 
   if (!info->prompt_user_for_save_location &&
       info->save_info.file_path.empty()) {
-    info->is_dangerous = download_util::IsDangerous(info, profile());
+    info->is_dangerous = download_util::IsDangerous(
+        info, profile(), ShouldOpenFileBasedOnExtension(info->suggested_path));
   }
 
   // We need to move over to the download thread because we don't want to stat

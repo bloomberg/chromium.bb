@@ -207,8 +207,11 @@ void EraseUniqueDownloadFiles(const FilePath& path_prefix);
 // Returns a .crdownload intermediate path for the |suggested_path|.
 FilePath GetCrDownloadPath(const FilePath& suggested_path);
 
-// Whether a given download should be considered potentially dangerous.
-bool IsDangerous(DownloadCreateInfo *info, Profile* profile);
+// Returns true if this download should show the "dangerous file" warning.
+// Various factors are considered, such as the type of the file, whether a
+// user action initiated the download, and whether the user has explictly
+// marked the file type as "auto open".
+bool IsDangerous(DownloadCreateInfo* info, Profile* profile, bool auto_open);
 
 }  // namespace download_util
 
