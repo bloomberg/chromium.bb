@@ -1680,6 +1680,7 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
   vector<int32> unused_server_interface_list;
   typedef map<uint32,SMInterface*> StreamToSmif;
   StreamToSmif stream_to_smif_;
+  bool close_on_error_;
  public:
   SpdySM(SMConnection* connection,
          SMInterface* sm_http_interface,
@@ -1695,7 +1696,8 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
            next_outgoing_stream_id_(2),
            epoll_server_(epoll_server),
            acceptor_(acceptor),
-           memory_cache_(memory_cache) {
+           memory_cache_(memory_cache),
+           close_on_error_(false) {
     spdy_framer_->set_visitor(this);
   }
 
@@ -1906,7 +1908,7 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
     if (it == stream_to_smif_.end()) {
       VLOG(2) << "Dropping frame from unknown stream " << stream_id;
       if (!valid_spdy_session_)
-        connection_->Cleanup("invalid");
+        close_on_error_ = true;
       return;
     }
 
@@ -1931,7 +1933,7 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
   void SetStreamID(uint32 stream_id) {}
 
   bool Error() const {
-    return spdy_framer_->HasError();
+    return close_on_error_ || spdy_framer_->HasError();
   }
 
   const char* ErrorAsString() const {
@@ -2982,40 +2984,47 @@ class SMAcceptorThread : public SimpleThread,
     quitting_.Notify();
   }
 
- // Iterates through a list of active connections expiring any that have been
- // idle longer than the configured timeout.
- void HandleConnectionIdleTimeout() {
-   int cur_time = time(NULL);
-   static time_t oldest_time = cur_time;
-   // Only iterate the list if we speculate that a connection is ready to be
-   // expired
-   if ((cur_time - oldest_time) < g_proxy_config.idle_timeout_s_)
-     return;
-   list<SMConnection*>::iterator iter = active_server_connections_.begin();
-   while (iter != active_server_connections_.end()) {
-     SMConnection *conn = *iter;
-     int elapsed_time = (cur_time - conn->last_read_time_);
-     if (elapsed_time > g_proxy_config.idle_timeout_s_) {
-       conn->Cleanup("Connection idle timeout reached.");
-       iter = active_server_connections_.erase(iter);
-       continue;
-     }
-     if (conn->last_read_time_ < oldest_time)
-       oldest_time = conn->last_read_time_;
-     iter++;
-   }
-   if ((cur_time - oldest_time) >= g_proxy_config.idle_timeout_s_)
-     oldest_time = cur_time;
- }
+  // Iterates through a list of active connections expiring any that have been
+  // idle longer than the configured timeout.
+  void HandleConnectionIdleTimeout() {
+    static time_t oldest_time = time(NULL);
+
+    int cur_time = time(NULL);
+    // Only iterate the list if we speculate that a connection is ready to be
+    // expired
+    if ((cur_time - oldest_time) < g_proxy_config.idle_timeout_s_)
+      return;
+    list<SMConnection*>::iterator iter = active_server_connections_.begin();
+    while (iter != active_server_connections_.end()) {
+      SMConnection *conn = *iter;
+      int elapsed_time = (cur_time - conn->last_read_time_);
+      if (elapsed_time > g_proxy_config.idle_timeout_s_) {
+        conn->Cleanup("Connection idle timeout reached.");
+        iter = active_server_connections_.erase(iter);
+        delete(conn);
+        continue;
+      }
+      if (conn->last_read_time_ < oldest_time)
+        oldest_time = conn->last_read_time_;
+      iter++;
+    }
+    if ((cur_time - oldest_time) >= g_proxy_config.idle_timeout_s_)
+      oldest_time = cur_time;
+  }
 
   void Run() {
     while (!quitting_.HasBeenNotified()) {
       epoll_server_.set_timeout_in_us(10 * 1000);  // 10 ms
       epoll_server_.WaitForEventsAndExecuteCallbacks();
-      unused_server_connections_.insert(unused_server_connections_.end(),
-                                        tmp_unused_server_connections_.begin(),
-                                        tmp_unused_server_connections_.end());
-      tmp_unused_server_connections_.clear();
+      if (tmp_unused_server_connections_.size()) {
+        VLOG(2) << "have " << tmp_unused_server_connections_.size()
+                << " additional unused connections.  Total = "
+                << unused_server_connections_.size();
+        unused_server_connections_.insert(unused_server_connections_.end(),
+                                          tmp_unused_server_connections_.begin(),
+                                          tmp_unused_server_connections_.end());
+        tmp_unused_server_connections_.clear();
+      }
       HandleConnectionIdleTimeout();
     }
   }
