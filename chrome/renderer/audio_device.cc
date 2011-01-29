@@ -76,7 +76,7 @@ bool AudioDevice::Start() {
   stream_id_ = filter_->AddDelegate(this);
 
   ViewHostMsg_Audio_CreateStream_Params params;
-  params.params.format = AudioParameters::AUDIO_PCM_LINEAR;
+  params.params.format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
   params.params.channels = channels_;
   params.params.sample_rate = static_cast<int>(sample_rate_);
   params.params.bits_per_sample = 16;
