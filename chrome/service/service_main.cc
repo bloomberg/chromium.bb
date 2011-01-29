@@ -15,6 +15,10 @@
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/service_process.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/common/chrome_application_mac.h"
+#endif
+
 // Mainline routine for running as the service process.
 int ServiceProcessMain(const MainFunctionParams& parameters) {
   // If there is already a service process running, quit now.
@@ -25,6 +29,10 @@ int ServiceProcessMain(const MainFunctionParams& parameters) {
   if (parameters.command_line_.HasSwitch(switches::kWaitForDebugger)) {
     base::debug::WaitForDebugger(60, true);
   }
+
+#if defined(OS_MACOSX)
+  chrome_application_mac::RegisterCrApp();
+#endif
 
   base::PlatformThread::SetName("CrServiceMain");
 
