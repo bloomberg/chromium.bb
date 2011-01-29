@@ -112,10 +112,6 @@ void ChromeInvalidationClient::RegisterTypes() {
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     registration_manager_->RegisterType(syncable::ModelTypeFromInt(i));
   }
-  // TODO(akalin): This is a hack to make new sync data types work
-  // with server-issued notifications.  Remove this when it's not
-  // needed anymore.
-  registration_manager_->RegisterType(syncable::UNSPECIFIED);
 }
 
 void ChromeInvalidationClient::Invalidate(
@@ -131,14 +127,7 @@ void ChromeInvalidationClient::Invalidate(
     if (invalidation.has_payload())
       payload = invalidation.payload();
 
-    // TODO(akalin): This is a hack to make new sync data types work
-    // with server-issued notifications.  Remove this when it's not
-    // needed anymore.
-    if (model_type == syncable::UNSPECIFIED) {
-      listener_->OnInvalidateAll();
-    } else {
-      listener_->OnInvalidate(model_type, payload);
-    }
+    listener_->OnInvalidate(model_type, payload);
   } else {
     LOG(WARNING) << "Could not get invalidation model type; "
                  << "invalidating everything";

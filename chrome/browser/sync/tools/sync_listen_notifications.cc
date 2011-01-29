@@ -224,7 +224,6 @@ int main(int argc, char* argv[]) {
       logging::LOCK_LOG_FILE,
       logging::DELETE_OLD_LOG_FILE,
       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
-  logging::SetMinLogLevel(logging::LOG_INFO);
   // TODO(akalin): Make sure that all log messages are printed to the
   // console, even on Windows (SetMinLogLevel isn't enough).
   talk_base::LogMessage::LogToDebug(talk_base::LS_VERBOSE);
