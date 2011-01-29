@@ -520,6 +520,7 @@
         '..',
       ],
       'sources': [
+        'examples/button_example.cc',
         'examples/button_example.h',
         'examples/combobox_example.cc',
         'examples/combobox_example.h',

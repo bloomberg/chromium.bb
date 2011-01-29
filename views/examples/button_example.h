@@ -6,37 +6,31 @@
 #define VIEWS_EXAMPLES_BUTTON_EXAMPLE_H_
 #pragma once
 
-#include "base/string_util.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "views/controls/button/text_button.h"
 #include "views/examples/example_base.h"
-#include "views/layout/fill_layout.h"
-#include "views/view.h"
+
+namespace views {
+class View;
+}
 
 namespace examples {
 
 // ButtonExample simply counts the number of clicks.
 class ButtonExample : public ExampleBase, public views::ButtonListener {
  public:
-  explicit ButtonExample(ExamplesMain* main) : ExampleBase(main), count_(0) {
-    button_ = new views::TextButton(this, L"Button");
-  }
+  explicit ButtonExample(ExamplesMain* main);
+  virtual ~ButtonExample();
 
-  virtual ~ButtonExample() {}
-
-  virtual std::wstring GetExampleTitle() {
-    return L"Text Button";
-  }
-
-  virtual void CreateExampleView(views::View* container) {
-    container->SetLayoutManager(new views::FillLayout);
-    container->AddChildView(button_);
-  }
+  // Overridden from ExampleBase:
+  virtual std::wstring GetExampleTitle() OVERRIDE;
+  virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:
-  // ButtonListner implementation.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
-    PrintStatus(L"Pressed! count:%d", ++count_);
-  }
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // The only control in this test.
   views::TextButton* button_;
