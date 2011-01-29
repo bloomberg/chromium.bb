@@ -289,13 +289,13 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
 GpuBlacklist::GpuBlacklistEntry::~GpuBlacklistEntry() {}
 
 GpuBlacklist::GpuBlacklistEntry::GpuBlacklistEntry()
-    : vendor_id_(0),
+    : id_(0),
+      vendor_id_(0),
       device_id_(0) {
 }
 
 bool GpuBlacklist::GpuBlacklistEntry::SetId(
     const std::string& id_string) {
-  id_ = 0;
   int my_id;
   if (base::HexStringToInt(id_string, &my_id) && my_id != 0) {
     id_ = static_cast<uint32>(my_id);
