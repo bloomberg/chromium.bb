@@ -16,7 +16,7 @@
 #include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/desktop_notification_handler.h"
-#include "chrome/browser/dom_ui/dom_ui_factory.h"
+#include "chrome/browser/dom_ui/web_ui_factory.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -544,7 +544,7 @@ void ExtensionHost::CreateNewWindow(
       route_id,
       render_view_host()->process()->profile(),
       site_instance(),
-      DOMUIFactory::GetDOMUIType(render_view_host()->process()->profile(),
+      WebUIFactory::GetWebUIType(render_view_host()->process()->profile(),
           url_),
       this,
       params.window_container_type,

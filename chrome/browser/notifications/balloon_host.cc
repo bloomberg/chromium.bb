@@ -145,7 +145,7 @@ void BalloonHost::CreateNewWindow(
       route_id,
       balloon_->profile(),
       site_instance_.get(),
-      DOMUIFactory::GetDOMUIType(balloon_->profile(),
+      WebUIFactory::GetWebUIType(balloon_->profile(),
           balloon_->notification().content_url()),
       this,
       params.window_container_type,

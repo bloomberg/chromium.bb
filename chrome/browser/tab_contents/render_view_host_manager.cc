@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
-#include "chrome/browser/dom_ui/dom_ui_factory.h"
+#include "chrome/browser/dom_ui/web_ui_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -295,19 +295,19 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
   // Check for reasons to swap processes even if we are in a process model that
   // doesn't usually swap (e.g., process-per-tab).
 
-  // For security, we should transition between processes when one is a DOM UI
+  // For security, we should transition between processes when one is a Web UI
   // page and one isn't.  If there's no cur_entry, check the current RVH's
-  // site, which might already be committed to a DOM UI URL (such as the NTP).
+  // site, which might already be committed to a Web UI URL (such as the NTP).
   const GURL& current_url = (cur_entry) ? cur_entry->url() :
       render_view_host_->site_instance()->site();
   Profile* profile = delegate_->GetControllerForRenderManager().profile();
-  if (DOMUIFactory::UseDOMUIForURL(profile, current_url)) {
+  if (WebUIFactory::UseWebUIForURL(profile, current_url)) {
     // Force swap if it's not an acceptable URL for DOM UI.
-    if (!DOMUIFactory::IsURLAcceptableForDOMUI(profile, new_entry->url()))
+    if (!WebUIFactory::IsURLAcceptableForWebUI(profile, new_entry->url()))
       return true;
   } else {
-    // Force swap if it's a DOM UI URL.
-    if (DOMUIFactory::UseDOMUIForURL(profile, new_entry->url()))
+    // Force swap if it's a Web UI URL.
+    if (WebUIFactory::UseWebUIForURL(profile, new_entry->url()))
       return true;
   }
 
@@ -387,13 +387,13 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
       // we need to set the site first, otherwise after a restore none of the
       // pages would share renderers.
       //
-      // For DOM UI (this mostly comes up for the new tab page), the
+      // For Web UI (this mostly comes up for the new tab page), the
       // SiteInstance has special meaning: we never want to reassign the
-      // process. If you navigate to another site before the DOM UI commits,
+      // process. If you navigate to another site before the Web UI commits,
       // we still want to create a new process rather than re-using the
-      // existing DOM UI process.
+      // existing Web UI process.
       if (entry.restore_type() != NavigationEntry::RESTORE_NONE ||
-          DOMUIFactory::HasDOMUIScheme(dest_url))
+          WebUIFactory::HasWebUIScheme(dest_url))
         curr_instance->SetSite(dest_url);
       return curr_instance;
     }

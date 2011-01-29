@@ -1,10 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/favicon_service.h"
 
-#include "chrome/browser/dom_ui/dom_ui_factory.h"
+#include "chrome/browser/dom_ui/web_ui_factory.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,7 +51,7 @@ FaviconService::Handle FaviconService::GetFaviconForURL(
   FaviconService::Handle handle = request->handle();
   if (page_url.SchemeIs(chrome::kChromeUIScheme) ||
       page_url.SchemeIs(chrome::kExtensionScheme)) {
-    DOMUIFactory::GetFaviconForURL(profile_, request, page_url);
+    WebUIFactory::GetFaviconForURL(profile_, request, page_url);
   } else {
     HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
     if (hs)

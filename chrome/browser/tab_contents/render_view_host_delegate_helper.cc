@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,7 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
     int route_id,
     Profile* profile,
     SiteInstance* site,
-    DOMUITypeID domui_type,
+    WebUITypeID webui_type,
     RenderViewHostDelegate* opener,
     WindowContainerType window_container_type,
     const string16& frame_name) {
@@ -101,7 +101,7 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
                       route_id,
                       opener->GetAsTabContents(),
                       NULL);
-  new_contents->set_opener_dom_ui_type(domui_type);
+  new_contents->set_opener_web_ui_type(webui_type);
   TabContentsView* new_view = new_contents->view();
 
   // TODO(brettw) it seems bogus that we have to call this function on the

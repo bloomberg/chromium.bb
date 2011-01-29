@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/browser_about_handler.h"
-#include "chrome/browser/dom_ui/dom_ui_factory.h"
+#include "chrome/browser/dom_ui/web_ui_factory.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -61,7 +61,7 @@ static bool ReverseViewSource(GURL* url, Profile* profile) {
 
 // Handles rewriting DOM UI URLs.
 static bool HandleDOMUI(GURL* url, Profile* profile) {
-  if (!DOMUIFactory::UseDOMUIForURL(profile, *url))
+  if (!WebUIFactory::UseWebUIForURL(profile, *url))
     return false;
 
   // Special case the new tab page. In older versions of Chrome, the new tab

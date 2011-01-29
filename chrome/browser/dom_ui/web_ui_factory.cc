@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/dom_ui_factory.h"
+#include "chrome/browser/dom_ui/web_ui_factory.h"
 
 #include "base/command_line.h"
 #include "chrome/browser/about_flags.h"
@@ -58,14 +58,14 @@
 #include "chrome/browser/dom_ui/conflicts_ui.h"
 #endif
 
-const DOMUITypeID DOMUIFactory::kNoDOMUI = NULL;
+const WebUITypeID WebUIFactory::kNoWebUI = NULL;
 
 // A function for creating a new DOMUI. The caller owns the return value, which
 // may be NULL (for example, if the URL refers to an non-existent extension).
-typedef DOMUI* (*DOMUIFactoryFunction)(TabContents* tab_contents,
+typedef DOMUI* (*WebUIFactoryFunction)(TabContents* tab_contents,
                                        const GURL& url);
 
-// Template for defining DOMUIFactoryFunction.
+// Template for defining WebUIFactoryFunction.
 template<class T>
 DOMUI* NewDOMUI(TabContents* contents, const GURL& url) {
   return new T(contents);
@@ -88,7 +88,7 @@ DOMUI* NewDOMUI<ExtensionDOMUI>(TabContents* contents, const GURL& url) {
 // tab, based on its URL. Returns NULL if the URL doesn't have DOMUI associated
 // with it. Even if the factory function is valid, it may yield a NULL DOMUI
 // when invoked for a particular tab - see NewDOMUI<ExtensionDOMUI>.
-static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
+static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     const GURL& url) {
   // Currently, any gears: URL means an HTML dialog.
   if (url.SchemeIs(chrome::kGearsScheme))
@@ -225,13 +225,13 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
 }
 
 // static
-DOMUITypeID DOMUIFactory::GetDOMUIType(Profile* profile, const GURL& url) {
-  DOMUIFactoryFunction function = GetDOMUIFactoryFunction(profile, url);
-  return function ? reinterpret_cast<DOMUITypeID>(function) : kNoDOMUI;
+WebUITypeID WebUIFactory::GetWebUIType(Profile* profile, const GURL& url) {
+  WebUIFactoryFunction function = GetWebUIFactoryFunction(profile, url);
+  return function ? reinterpret_cast<WebUITypeID>(function) : kNoWebUI;
 }
 
 // static
-bool DOMUIFactory::HasDOMUIScheme(const GURL& url) {
+bool WebUIFactory::HasWebUIScheme(const GURL& url) {
   return url.SchemeIs(chrome::kChromeDevToolsScheme) ||
          url.SchemeIs(chrome::kChromeInternalScheme) ||
          url.SchemeIs(chrome::kChromeUIScheme) ||
@@ -239,13 +239,13 @@ bool DOMUIFactory::HasDOMUIScheme(const GURL& url) {
 }
 
 // static
-bool DOMUIFactory::UseDOMUIForURL(Profile* profile, const GURL& url) {
-  return GetDOMUIFactoryFunction(profile, url) != NULL;
+bool WebUIFactory::UseWebUIForURL(Profile* profile, const GURL& url) {
+  return GetWebUIFactoryFunction(profile, url) != NULL;
 }
 
 // static
-bool DOMUIFactory::IsURLAcceptableForDOMUI(Profile* profile, const GURL& url) {
-  return UseDOMUIForURL(profile, url) ||
+bool WebUIFactory::IsURLAcceptableForWebUI(Profile* profile, const GURL& url) {
+  return UseWebUIForURL(profile, url) ||
       // javacsript: URLs are allowed to run in DOM UI pages
       url.SchemeIs(chrome::kJavaScriptScheme) ||
       // It's possible to load about:blank in a DOM UI renderer.
@@ -259,9 +259,9 @@ bool DOMUIFactory::IsURLAcceptableForDOMUI(Profile* profile, const GURL& url) {
 }
 
 // static
-DOMUI* DOMUIFactory::CreateDOMUIForURL(TabContents* tab_contents,
+DOMUI* WebUIFactory::CreateWebUIForURL(TabContents* tab_contents,
                                        const GURL& url) {
-  DOMUIFactoryFunction function = GetDOMUIFactoryFunction(
+  WebUIFactoryFunction function = GetWebUIFactoryFunction(
       tab_contents->profile(), url);
   if (!function)
     return NULL;
@@ -269,7 +269,7 @@ DOMUI* DOMUIFactory::CreateDOMUIForURL(TabContents* tab_contents,
 }
 
 // static
-void DOMUIFactory::GetFaviconForURL(Profile* profile,
+void WebUIFactory::GetFaviconForURL(Profile* profile,
                                     FaviconService::GetFaviconRequest* request,
                                     const GURL& page_url) {
   // All extensions but the bookmark manager get their favicon from the icons
@@ -279,7 +279,7 @@ void DOMUIFactory::GetFaviconForURL(Profile* profile,
     ExtensionDOMUI::GetFaviconForURL(profile, request, page_url);
   } else {
     scoped_refptr<RefCountedMemory> icon_data(
-        DOMUIFactory::GetFaviconResourceBytes(profile, page_url));
+        WebUIFactory::GetFaviconResourceBytes(profile, page_url));
     bool know_icon = icon_data.get() != NULL && icon_data->size() > 0;
     request->ForwardResultAsync(
         FaviconService::FaviconDataCallback::TupleType(request->handle(),
@@ -288,7 +288,7 @@ void DOMUIFactory::GetFaviconForURL(Profile* profile,
 }
 
 // static
-RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(Profile* profile,
+RefCountedMemory* WebUIFactory::GetFaviconResourceBytes(Profile* profile,
                                                         const GURL& page_url) {
   // The bookmark manager is a chrome extension, so we have to check for it
   // before we check for extension scheme.
@@ -301,7 +301,7 @@ RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(Profile* profile,
     return NULL;
   }
 
-  if (!HasDOMUIScheme(page_url))
+  if (!HasWebUIScheme(page_url))
     return NULL;
 
 #if defined(OS_WIN)

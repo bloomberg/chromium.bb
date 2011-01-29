@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "chrome/browser/dom_ui/dom_ui_factory.h"
+#include "chrome/browser/dom_ui/web_ui_factory.h"
 #include "chrome/common/window_container_type.h"
 #include "gfx/rect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
@@ -41,7 +41,7 @@ class RenderViewHostDelegateViewHelper {
       int route_id,
       Profile* profile,
       SiteInstance* site,
-      DOMUITypeID domui_type,
+      WebUITypeID webui_type,
       RenderViewHostDelegate* opener,
       WindowContainerType window_container_type,
       const string16& frame_name);

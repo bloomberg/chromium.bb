@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@
 // CloudPrintHtmlDialogDelegate and asks the current active browser to
 // show an HTML dialog using that class as the delegate. That class
 // hands in the kCloudPrintResourcesURL as the URL to visit.  That is
-// recognized by the GetDOMUIFactoryFunction as a signal to create an
+// recognized by the GetWebUIFactoryFunction as a signal to create an
 // ExternalHtmlDialogUI.
 
 // CloudPrintHtmlDialogDelegate also temporarily owns a

@@ -1,11 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/renderer_host/site_instance.h"
 
 #include "chrome/browser/browsing_instance.h"
-#include "chrome/browser/dom_ui/dom_ui_factory.h"
+#include "chrome/browser/dom_ui/web_ui_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/url_constants.h"
@@ -210,8 +210,8 @@ RenderProcessHost::Type SiteInstance::RendererTypeForURL(const GURL& url) {
   if (url.SchemeIs(chrome::kExtensionScheme))
     return RenderProcessHost::TYPE_EXTENSION;
 
-  // TODO(erikkay) creis recommends using UseDOMUIForURL instead.
-  if (DOMUIFactory::HasDOMUIScheme(url))
+  // TODO(erikkay) creis recommends using UseWebUIForURL instead.
+  if (WebUIFactory::HasWebUIScheme(url))
     return RenderProcessHost::TYPE_DOMUI;
 
   return RenderProcessHost::TYPE_NORMAL;

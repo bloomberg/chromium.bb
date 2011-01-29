@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,13 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "chrome/browser/dom_ui/dom_ui_factory.h"
+#include "chrome/browser/dom_ui/web_ui_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 
-/*static*/
+// static
 BrowsingInstance::ProfileSiteInstanceMap
     BrowsingInstance::profile_site_instance_map_;
 
@@ -29,7 +29,7 @@ bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
   if (command_line.HasSwitch(switches::kProcessPerSite))
     return true;
 
-  // We want to consolidate particular sites like extensions and DOMUI whether
+  // We want to consolidate particular sites like extensions and WebUI whether
   // it is in process-per-tab or process-per-site-instance.
   // Note that --single-process may have been specified, but that affects the
   // process creation logic in RenderProcessHost, so we do not need to worry
@@ -38,8 +38,8 @@ bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
   if (url.SchemeIs(chrome::kExtensionScheme))
     return true;
 
-  // DevTools pages have DOMUI type but should not reuse the same host.
-  if (DOMUIFactory::UseDOMUIForURL(profile_, url) &&
+  // DevTools pages have WebUI type but should not reuse the same host.
+  if (WebUIFactory::UseWebUIForURL(profile_, url) &&
       !url.SchemeIs(chrome::kChromeDevToolsScheme))
     return true;
 

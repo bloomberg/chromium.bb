@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -214,7 +214,7 @@ void BackgroundContents::CreateNewWindow(
       route_id,
       render_view_host_->process()->profile(),
       render_view_host_->site_instance(),
-      DOMUIFactory::GetDOMUIType(render_view_host_->process()->profile(), url_),
+      WebUIFactory::GetWebUIType(render_view_host_->process()->profile(), url_),
       this,
       params.window_container_type,
       params.frame_name);

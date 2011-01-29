@@ -525,7 +525,7 @@ TabContents::TabContents(Profile* profile,
       suppress_javascript_messages_(false),
       is_showing_before_unload_dialog_(false),
       renderer_preferences_(),
-      opener_dom_ui_type_(DOMUIFactory::kNoDOMUI),
+      opener_web_ui_type_(WebUIFactory::kNoWebUI),
       language_state_(&controller_),
       closed_by_user_gesture_(false),
       minimum_zoom_percent_(
@@ -1109,11 +1109,11 @@ bool TabContents::NavigateToEntry(
         kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
   }
 
-  // For security, we should never send non-DOM-UI URLs to a DOM UI renderer.
+  // For security, we should never send non-Web-UI URLs to a Web UI renderer.
   // Double check that here.
   int enabled_bindings = dest_render_view_host->enabled_bindings();
   bool is_allowed_in_dom_ui_renderer =
-      DOMUIFactory::IsURLAcceptableForDOMUI(profile(), entry.url());
+      WebUIFactory::IsURLAcceptableForWebUI(profile(), entry.url());
   CHECK(!BindingsPolicy::is_dom_ui_enabled(enabled_bindings) ||
         is_allowed_in_dom_ui_renderer);
 
@@ -2057,20 +2057,20 @@ DOMUI* TabContents::GetDOMUIForCurrentState() {
 void TabContents::DidNavigateMainFramePostCommit(
     const NavigationController::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
-  if (opener_dom_ui_type_ != DOMUIFactory::kNoDOMUI) {
-    // If this is a window.open navigation, use the same DOMUI as the renderer
+  if (opener_web_ui_type_ != WebUIFactory::kNoWebUI) {
+    // If this is a window.open navigation, use the same WebUI as the renderer
     // that opened the window, as long as both renderers have the same
     // privileges.
-    if (opener_dom_ui_type_ ==
-        DOMUIFactory::GetDOMUIType(profile(), GetURL())) {
-      DOMUI* dom_ui = DOMUIFactory::CreateDOMUIForURL(this, GetURL());
+    if (opener_web_ui_type_ ==
+        WebUIFactory::GetWebUIType(profile(), GetURL())) {
+      DOMUI* dom_ui = WebUIFactory::CreateWebUIForURL(this, GetURL());
       // dom_ui might be NULL if the URL refers to a non-existent extension.
       if (dom_ui) {
         render_manager_.SetDOMUIPostCommit(dom_ui);
         dom_ui->RenderViewCreated(render_view_host());
       }
     }
-    opener_dom_ui_type_ = DOMUIFactory::kNoDOMUI;
+    opener_web_ui_type_ = WebUIFactory::kNoWebUI;
   }
 
   if (details.is_user_initiated_main_frame_load()) {
@@ -3320,7 +3320,7 @@ NavigationController& TabContents::GetControllerForRenderManager() {
 }
 
 DOMUI* TabContents::CreateDOMUIForRenderManager(const GURL& url) {
-  return DOMUIFactory::CreateDOMUIForURL(this, url);
+  return WebUIFactory::CreateWebUIForURL(this, url);
 }
 
 NavigationEntry*

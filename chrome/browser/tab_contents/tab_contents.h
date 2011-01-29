@@ -15,7 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/dom_ui/dom_ui_factory.h"
+#include "chrome/browser/dom_ui/web_ui_factory.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/fav_icon_helper.h"
@@ -661,8 +661,8 @@ class TabContents : public PageNavigator,
     return &renderer_preferences_;
   }
 
-  void set_opener_dom_ui_type(DOMUITypeID opener_dom_ui_type) {
-    opener_dom_ui_type_ = opener_dom_ui_type;
+  void set_opener_web_ui_type(WebUITypeID opener_web_ui_type) {
+    opener_web_ui_type_ = opener_web_ui_type;
   }
 
   // We want to time how long it takes to create a new tab page.  This method
@@ -1314,8 +1314,8 @@ class TabContents : public PageNavigator,
   RendererPreferences renderer_preferences_;
 
   // If this tab was created from a renderer using window.open, this will be
-  // non-NULL and represent the DOMUI of the opening renderer.
-  DOMUITypeID opener_dom_ui_type_;
+  // non-NULL and represent the WebUI of the opening renderer.
+  WebUITypeID opener_web_ui_type_;
 
   // The time that we started to create the new tab page.
   base::TimeTicks new_tab_start_time_;
