@@ -573,10 +573,6 @@ void GLES2DecoderTestBase::SetupShader(
         .WillOnce(SetArgumentPointee<2>(0))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_,
-        GetProgramInfoLog(program_service_id, _, _, _))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_,
         GetProgramiv(program_service_id, GL_ACTIVE_ATTRIBUTES, _))
         .WillOnce(SetArgumentPointee<2>(num_attribs))
         .RetiresOnSaturation();

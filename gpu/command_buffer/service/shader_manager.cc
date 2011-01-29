@@ -9,9 +9,9 @@ namespace gpu {
 namespace gles2 {
 
 void ShaderManager::ShaderInfo::SetStatus(
-    bool valid, const std::string& log, ShaderTranslatorInterface* translator) {
+    bool valid, const char* log, ShaderTranslatorInterface* translator) {
   valid_ = valid;
-  log_info_ = log;
+  log_info_.reset(log ? new std::string(log) : NULL);
   if (translator && valid) {
     attrib_map_ = translator->attrib_map();
     uniform_map_ = translator->uniform_map();

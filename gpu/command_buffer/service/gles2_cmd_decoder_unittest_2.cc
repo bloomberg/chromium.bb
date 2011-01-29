@@ -61,10 +61,6 @@ void GLES2DecoderTestBase::SpecializedSetup<LinkProgram, 0>(bool /* valid */) {
       GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
       .WillOnce(SetArgumentPointee<2>(0))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_,
-      GetProgramInfoLog(kServiceProgramId, _, _, _))
-      .Times(1)
-      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_ACTIVE_ATTRIBUTES, _))
       .WillOnce(SetArgumentPointee<2>(0));
   EXPECT_CALL(
@@ -103,10 +99,6 @@ void GLES2DecoderTestBase::SpecializedSetup<ValidateProgram, 0>(
   EXPECT_CALL(*gl_,
       GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
       .WillOnce(SetArgumentPointee<2>(0))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_,
-      GetProgramInfoLog(kServiceProgramId, _, _, _))
-      .Times(1)
       .RetiresOnSaturation();
 };
 

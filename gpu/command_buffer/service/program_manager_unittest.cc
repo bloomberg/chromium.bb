@@ -99,7 +99,7 @@ TEST_F(ProgramManagerTest, ProgramInfo) {
   EXPECT_FALSE(info1->IsValid());
   EXPECT_FALSE(info1->IsDeleted());
   EXPECT_FALSE(info1->CanLink());
-  EXPECT_STREQ("", info1->log_info().c_str());
+  EXPECT_TRUE(info1->log_info() == NULL);
 }
 
 class ProgramManagerWithShaderTest : public testing::Test {
@@ -184,10 +184,6 @@ class ProgramManagerWithShaderTest : public testing::Test {
     EXPECT_CALL(*gl_,
         GetProgramiv(service_id, GL_INFO_LOG_LENGTH, _))
         .WillOnce(SetArgumentPointee<2>(0))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_,
-        GetProgramInfoLog(service_id, _, _, _))
-        .Times(1)
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_,
         GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTES, _))

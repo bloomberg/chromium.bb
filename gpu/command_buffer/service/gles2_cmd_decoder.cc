@@ -4218,7 +4218,7 @@ error::Error GLES2DecoderImpl::ShaderSourceHelper(
   }
   // Note: We don't actually call glShaderSource here. We wait until
   // the call to glCompileShader.
-  info->Update(std::string(data, data + data_size));
+  info->Update(std::string(data, data + data_size).c_str());
   return error::kNoError;
 }
 
@@ -4263,7 +4263,7 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   }
   // Translate GL ES 2.0 shader to Desktop GL shader and pass that to
   // glShaderSource and then glCompileShader.
-  const char* shader_src = info->source().c_str();
+  const char* shader_src = info->source() ? info->source()->c_str() : "";
   ShaderTranslator* translator = NULL;
   if (use_shader_translator_) {
     translator = info->shader_type() == GL_VERTEX_SHADER ?
@@ -4295,7 +4295,7 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
     glGetShaderInfoLog(info->service_id(), max_len, &len, temp.get());
     DCHECK(max_len == 0 || len < max_len);
     DCHECK(len ==0 || temp[len] == '\0');
-    info->SetStatus(false, std::string(temp.get(), len), NULL);
+    info->SetStatus(false, std::string(temp.get(), len).c_str(), NULL);
   }
 };
 
@@ -4308,13 +4308,13 @@ void GLES2DecoderImpl::DoGetShaderiv(
   }
   switch (pname) {
     case GL_SHADER_SOURCE_LENGTH:
-      *params = info->source().size() + 1;
+      *params = info->source() ? info->source()->size() + 1 : 0;
       return;
     case GL_COMPILE_STATUS:
       *params = info->IsValid();
       return;
     case GL_INFO_LOG_LENGTH:
-      *params = info->log_info().size() + 1;
+      *params = info->log_info() ? info->log_info()->size() + 1 : 0;
       return;
     default:
       break;
@@ -4329,11 +4329,11 @@ error::Error GLES2DecoderImpl::HandleGetShaderSource(
   Bucket* bucket = CreateBucket(bucket_id);
   ShaderManager::ShaderInfo* info = GetShaderInfoNotProgram(
       shader, "glGetShaderSource");
-  if (!info) {
+  if (!info || !info->source()) {
     bucket->SetSize(0);
     return error::kNoError;
   }
-  bucket->SetFromString(info->source().c_str());
+  bucket->SetFromString(info->source()->c_str());
   return error::kNoError;
 }
 
@@ -4344,10 +4344,11 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
   Bucket* bucket = CreateBucket(bucket_id);
   ProgramManager::ProgramInfo* info = GetProgramInfoNotShader(
       program, "glGetProgramInfoLog");
-  if (!info) {
+  if (!info || !info->log_info()) {
+    bucket->SetSize(0);
     return error::kNoError;
   }
-  bucket->SetFromString(info->log_info().c_str());
+  bucket->SetFromString(info->log_info()->c_str());
   return error::kNoError;
 }
 
@@ -4358,11 +4359,11 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
   Bucket* bucket = CreateBucket(bucket_id);
   ShaderManager::ShaderInfo* info = GetShaderInfoNotProgram(
       shader, "glGetShaderInfoLog");
-  if (!info) {
+  if (!info || !info->log_info()) {
     bucket->SetSize(0);
     return error::kNoError;
   }
-  bucket->SetFromString(info->log_info().c_str());
+  bucket->SetFromString(info->log_info()->c_str());
   return error::kNoError;
 }
 
@@ -5428,10 +5429,21 @@ void GLES2DecoderImpl::DoCompressedTexSubImage2D(
     return;
   }
   GLenum type = 0;
-  GLenum dummy = 0;
-  if (!info->GetLevelType(target, level, &type, &dummy) ||
-      !info->ValidForTexture(
-          target, level, xoffset, yoffset, width, height, format, type)) {
+  GLenum internal_format = 0;
+  if (!info->GetLevelType(target, level, &type, &internal_format)) {
+    SetGLError(
+        GL_INVALID_OPERATION,
+        "glCompressdTexSubImage2D: level does not exist.");
+    return;
+  }
+  if (internal_format != format) {
+    SetGLError(
+        GL_INVALID_OPERATION,
+        "glCompressdTexSubImage2D: format does not match internal format.");
+    return;
+  }
+  if (!info->ValidForTexture(
+      target, level, xoffset, yoffset, width, height, format, type)) {
     SetGLError(GL_INVALID_VALUE,
                "glCompressdTexSubImage2D: bad dimensions.");
     return;
@@ -5627,6 +5639,25 @@ void GLES2DecoderImpl::DoTexSubImage2D(
                "glTexSubImage2D: unknown texture for target");
     return;
   }
+  GLenum current_type = 0;
+  GLenum internal_format = 0;
+  if (!info->GetLevelType(target, level, &current_type, &internal_format)) {
+    SetGLError(
+        GL_INVALID_OPERATION,
+        "glTexSubImage2D: level does not exist.");
+    return;
+  }
+  if (format != internal_format) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glTexSubImage2D: format does not match internal format.");
+    return;
+  }
+  if (type != current_type) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glTexSubImage2D: type does not match type of texture.");
+    return;
+  }
+
   if (!info->ValidForTexture(
           target, level, xoffset, yoffset, width, height, format, type)) {
     SetGLError(GL_INVALID_VALUE,

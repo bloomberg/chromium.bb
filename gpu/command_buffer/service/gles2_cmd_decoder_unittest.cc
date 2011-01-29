@@ -2369,11 +2369,11 @@ TEST_F(GLES2DecoderTest, TexSubImage2DBadArgs) {
   cmd.Init(GL_TEXTURE_2D, 1, 0, 0, kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE,
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   cmd.Init(GL_TEXTURE_2D, 1, 0, 0, kWidth, kHeight, GL_RGBA,
            GL_UNSIGNED_SHORT_4_4_4_4, kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   cmd.Init(GL_TEXTURE_2D, 1, 0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE,
            kInvalidSharedMemoryId, kSharedMemoryOffset);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));

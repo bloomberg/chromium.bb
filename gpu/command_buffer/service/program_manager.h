@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 
@@ -137,12 +138,12 @@ class ProgramManager {
 
     bool CanLink() const;
 
-    const std::string& log_info() const {
-      return log_info_;
+    const std::string* log_info() const {
+      return log_info_.get();
     }
 
-    void set_log_info(const std::string& str) {
-      log_info_ = str;
+    void set_log_info(const char* str) {
+      log_info_.reset(str ? new std::string(str) : NULL);
     }
 
     bool InUse() const {
@@ -216,7 +217,7 @@ class ProgramManager {
     bool link_status_;
 
     // Log info
-    std::string log_info_;
+    scoped_ptr<std::string> log_info_;
   };
 
   ProgramManager();

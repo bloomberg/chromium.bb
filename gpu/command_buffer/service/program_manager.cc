@@ -68,12 +68,16 @@ void ProgramManager::ProgramInfo::Reset() {
 void ProgramManager::ProgramInfo::UpdateLogInfo() {
   GLint max_len = 0;
   glGetProgramiv(service_id_, GL_INFO_LOG_LENGTH, &max_len);
+  if (max_len == 0) {
+    set_log_info(NULL);
+    return;
+  }
   scoped_array<char> temp(new char[max_len]);
   GLint len = 0;
   glGetProgramInfoLog(service_id_, max_len, &len, temp.get());
   DCHECK(max_len == 0 || len < max_len);
   DCHECK(len == 0 || temp[len] == '\0');
-  set_log_info(std::string(temp.get(), len));
+  set_log_info(std::string(temp.get(), len).c_str());
 }
 
 void ProgramManager::ProgramInfo::Update() {
@@ -344,7 +348,7 @@ void ProgramManager::ProgramInfo::GetProgramiv(GLenum pname, GLint* params) {
       break;
     case GL_INFO_LOG_LENGTH:
       // Notice +1 to accomodate NULL terminator.
-      *params = log_info_.size() + 1;
+      *params = log_info_.get() ? (log_info_->size() + 1) : 0;
       break;
     case GL_VALIDATE_STATUS:
       if (!CanLink()) {

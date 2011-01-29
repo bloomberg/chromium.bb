@@ -79,7 +79,7 @@ TEST_F(ShaderManagerTest, ShaderInfo) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
   const GLenum kShader1Type = GL_VERTEX_SHADER;
-  const std::string kClient1Source("hello world");
+  const char* kClient1Source = "hello world";
   // Check we can create shader.
   manager_.CreateShaderInfo(kClient1Id, kService1Id, kShader1Type);
   // Check shader got created.
@@ -90,14 +90,15 @@ TEST_F(ShaderManagerTest, ShaderInfo) {
   EXPECT_EQ(kShader1Type, info1->shader_type());
   EXPECT_FALSE(info1->IsValid());
   EXPECT_FALSE(info1->InUse());
-  EXPECT_STREQ("", info1->log_info().c_str());
+  EXPECT_TRUE(info1->source() == NULL);
+  EXPECT_TRUE(info1->log_info() == NULL);
   const char* kLog = "foo";
   info1->SetStatus(true, kLog, NULL);
   EXPECT_TRUE(info1->IsValid());
-  EXPECT_STREQ(kLog, info1->log_info().c_str());
+  EXPECT_STREQ(kLog, info1->log_info()->c_str());
   // Check we can set its source.
   info1->Update(kClient1Source);
-  EXPECT_STREQ(kClient1Source.c_str(), info1->source().c_str());
+  EXPECT_STREQ(kClient1Source, info1->source()->c_str());
 }
 
 TEST_F(ShaderManagerTest, GetInfo) {
@@ -155,7 +156,8 @@ TEST_F(ShaderManagerTest, GetInfo) {
     EXPECT_EQ(it->second.size, variable_info->size);
   }
   // Check attrib and uniform get cleared.
-  info1->SetStatus(true, "", NULL);
+  info1->SetStatus(true, NULL, NULL);
+  EXPECT_TRUE(info1->log_info() == NULL);
   for (ShaderTranslator::VariableMap::const_iterator it = attrib_map.begin();
        it != attrib_map.end(); ++it) {
     const ShaderManager::ShaderInfo::VariableInfo* variable_info =
