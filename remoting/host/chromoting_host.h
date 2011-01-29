@@ -32,6 +32,7 @@ class CandidateSessionConfig;
 class Capturer;
 class ChromotingHostContext;
 class Encoder;
+class HostStubFake;
 class MutableHostConfig;
 class ScreenRecorder;
 
@@ -50,10 +51,8 @@ class ScreenRecorder;
 //    the screen captures. An InputStub is created and registered with the
 //    ConnectionToClient to receive mouse / keyboard events from the remote
 //    client.
-//    This is also the right time to create multiple threads to host
-//    the above objects. After we have done all the initialization
-//    we'll start the ScreenRecorder. We'll then enter the running state
-//    of the host process.
+//    After we have done all the initialization we'll start the ScreenRecorder.
+//    We'll then enter the running state of the host process.
 //
 // 3. When the user is disconnected, we will pause the ScreenRecorder
 //    and try to terminate the threads we have created. This will allow
@@ -112,8 +111,18 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // |config| is transferred to the object. Must be called before Start().
   void set_protocol_config(protocol::CandidateSessionConfig* config);
 
+  // The getter for |host_stub_| is only used in unit test.
+  protocol::HostStub* host_stub() const { return host_stub_.get(); }
+
+  // This setter is only used in unit test to simulate client connection.
+  void set_connection(protocol::ConnectionToClient* conn) {
+    connection_ = conn;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<ChromotingHost>;
+  friend class HostStubFake;
+
   ChromotingHost(ChromotingHostContext* context, MutableHostConfig* config,
                  Capturer* capturer, protocol::InputStub* input_stub);
   virtual ~ChromotingHost();
@@ -131,6 +140,16 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   Encoder* CreateEncoder(const protocol::SessionConfig* config);
 
   std::string GenerateHostAuthToken(const std::string& encoded_client_token);
+
+  // Called by HostStub to signal that local login has succeeded and
+  // ChromotingHost can proceed with the next step.
+  // This method is only called by HostStubFake.
+  void LocalLoginSucceeded();
+
+  // This method is only called by HostStubFake.
+  protocol::ConnectionToClient* connection_to_client() const {
+    return connection_;
+  }
 
   // The context that the chromoting host runs on.
   ChromotingHostContext* context_;

@@ -70,6 +70,19 @@ class MockHostStub : public HostStub {
   DISALLOW_COPY_AND_ASSIGN(MockHostStub);
 };
 
+class MockClientStub : public ClientStub {
+ public:
+  MockClientStub() {}
+
+  MOCK_METHOD2(NotifyResolution, void(const NotifyResolutionRequest* msg,
+                                      Task* done));
+  MOCK_METHOD2(BeginSessionResponse, void(const LocalLoginStatus* msg,
+                                          Task* done));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockClientStub);
+};
+
 class MockVideoStub : public VideoStub {
  public:
   MockVideoStub() {}

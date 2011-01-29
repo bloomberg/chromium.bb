@@ -17,7 +17,9 @@
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_stub_fake.h"
 #include "remoting/host/screen_recorder.h"
+#include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/connection_to_client.h"
+#include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/jingle_session_manager.h"
@@ -53,11 +55,11 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       config_(config),
       capturer_(capturer),
       input_stub_(input_stub),
-      host_stub_(new HostStubFake()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          host_stub_(new HostStubFake(this))),
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()) {
 }
-
 
 ChromotingHost::~ChromotingHost() {
 }
@@ -178,8 +180,6 @@ void ChromotingHost::OnClientConnected(ConnectionToClient* connection) {
 
   // Immediately add the connection and start the session.
   recorder_->AddConnection(connection);
-  recorder_->Start();
-  VLOG(1) << "Session manager started";
 }
 
 void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
@@ -344,6 +344,18 @@ std::string ChromotingHost::GenerateHostAuthToken(
     const std::string& encoded_client_token) {
   // TODO(ajwong): Return the signature of this instead.
   return encoded_client_token;
+}
+
+void ChromotingHost::LocalLoginSucceeded() {
+  if (MessageLoop::current() != context_->main_message_loop()) {
+    context_->main_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingHost::LocalLoginSucceeded));
+    return;
+  }
+
+  // If local login has succeeded the recorder can start.
+  recorder_->Start();
 }
 
 }  // namespace remoting

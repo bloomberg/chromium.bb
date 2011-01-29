@@ -8,13 +8,17 @@
 #define REMOTING_PROTOCOL_HOST_STUB_FAKE_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
+#include "base/scoped_ptr.h"
 #include "remoting/protocol/host_stub.h"
 
 namespace remoting {
 
+class ChromotingHost;
+
 class HostStubFake : public protocol::HostStub {
  public:
-  HostStubFake() {}
+  HostStubFake(ChromotingHost* host);
   virtual ~HostStubFake() {}
 
   virtual void SuggestResolution(
@@ -23,6 +27,8 @@ class HostStubFake : public protocol::HostStub {
       const protocol::LocalLoginCredentials* credentials, Task* done);
 
  private:
+  ChromotingHost* host_;
+
   DISALLOW_COPY_AND_ASSIGN(HostStubFake);
 };
 
