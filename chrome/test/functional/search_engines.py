@@ -156,7 +156,9 @@ class SearchEnginesTest(pyauto.PyUITest):
       search_engine = self._GetSearchEngineWithKeyword(keyword)
       self.assertTrue(search_engine['is_default'])
       self.SetOmniboxText('test search')
-      self.OmniboxAcceptInput()
+      # Due to slow navigation to yahoo.com, increasing timeout to 1 min. 
+      test_utils.CallFunctionWithNewTimeout(self, 1 * 60 * 1000,
+                                            self.OmniboxAcceptInput)
       self.assertTrue(re.search(keyword, self.GetActiveTabURL().spec()))
 
   def testSearchEngineSpecialChars(self):
