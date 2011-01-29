@@ -4,7 +4,3 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
-
-// Fixed in http://trac.webkit.org/changeset/76986
-// We should remove this once we rolled WebKit past r76986.
-BUGRNIWA MAC : fast/dom/prototype-inheritance.html = TEXT
