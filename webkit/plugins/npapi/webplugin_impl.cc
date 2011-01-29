@@ -289,6 +289,13 @@ void WebPluginImpl::updateGeometry(
       page_delegate_ &&
       (first_geometry_update_ || !new_geometry.Equals(geometry_))) {
     page_delegate_->DidMovePlugin(new_geometry);
+    // We invalidate windowed plugins during the first geometry update to
+    // ensure that they get reparented to the wrapper window in the browser.
+    // This ensures that they become visible and are painted by the OS. This is
+    // required as some pages don't invalidate when the plugin is added.
+    if (first_geometry_update_ && window_) {
+      InvalidateRect(window_rect);
+    }
   }
 
   // Only UpdateGeometry if either the window or clip rects have changed.
