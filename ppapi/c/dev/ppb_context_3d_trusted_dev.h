@@ -5,7 +5,9 @@
 #ifndef PPAPI_C_DEV_PPB_CONTEXT_3D_TRUSTED_DEV_H_
 #define PPAPI_C_DEV_PPB_CONTEXT_3D_TRUSTED_DEV_H_
 
+#include "ppapi/c/dev/ppb_context_3d_dev.h"
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
