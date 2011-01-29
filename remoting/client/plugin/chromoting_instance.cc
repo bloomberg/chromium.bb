@@ -154,6 +154,11 @@ bool ChromotingInstance::HandleInputEvent(const PP_InputEvent& event) {
       pih->HandleMouseMoveEvent(event.u.mouse);
       return true;
 
+    case PP_INPUTEVENT_TYPE_CONTEXTMENU:
+      // We need to return true here or else we'll get a local (plugin) context
+      // menu instead of the mouseup event for the right click.
+      return true;
+
     case PP_INPUTEVENT_TYPE_KEYDOWN:
     case PP_INPUTEVENT_TYPE_KEYUP:
       pih->HandleKeyEvent(event.type == PP_INPUTEVENT_TYPE_KEYDOWN,
