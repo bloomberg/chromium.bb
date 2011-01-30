@@ -61,6 +61,19 @@ class PrivateHookAllocator {
   PrivateHookAllocator(const PrivateHookAllocator<U>&) {}
 };
 
+template<class T, class U> inline
+bool operator==(const PrivateHookAllocator<T>&,
+                const PrivateHookAllocator<U>&) {
+  return (true);
+}
+
+template<class T, class U> inline
+bool operator!=(const PrivateHookAllocator<T>& left,
+                const PrivateHookAllocator<U>& right) {
+  return (!(left == right));
+}
+
+
 // Classes which monitor memory from these hooks implement
 // the MemoryObserver interface.
 class MemoryObserver {

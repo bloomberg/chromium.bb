@@ -786,7 +786,7 @@ END_MSG_MAP()
       return hr;
 
     DCHECK(handlers != NULL);
-    std::remove(handlers->begin(), handlers->end(), listener);
+    handlers->erase(base::win::ScopedComPtr<IDispatch>(listener));
 
     return hr;
   }

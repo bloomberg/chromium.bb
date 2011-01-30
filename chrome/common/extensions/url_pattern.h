@@ -114,6 +114,14 @@ class URLPattern {
   // Parse() instead, which returns success or failure.
   URLPattern(int valid_schemes, const std::string& pattern);
 
+#if defined(_MSC_VER) && _MSC_VER >= 1600
+  // Note: don't use this directly. This exists so URLPattern can be used
+  // with STL containers.  Starting with Visual Studio 2010, we can't have this
+  // method private and use "friend class std::vector<URLPattern>;" as we used
+  // to do.
+  URLPattern();
+#endif
+
   ~URLPattern();
 
   // Gets the bitmask of valid schemes.
@@ -201,11 +209,13 @@ class URLPattern {
   };
 
  private:
+#if !(defined(_MSC_VER) && _MSC_VER >= 1600)
   friend class std::vector<URLPattern>;
 
   // Note: don't use this directly. This exists so URLPattern can be used
   // with STL containers.
   URLPattern();
+#endif
 
   // A bitmask containing the schemes which are considered valid for this
   // pattern. Parse() uses this to decide whether a pattern contains a valid

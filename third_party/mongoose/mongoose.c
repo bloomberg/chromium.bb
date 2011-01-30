@@ -99,7 +99,9 @@ typedef long off_t;
 #define DIRSEP      '\\'
 #define IS_DIRSEP_CHAR(c) ((c) == '/' || (c) == '\\')
 #define O_NONBLOCK    0
+#if !defined(_MSC_VER) || _MSC_VER < 1600
 #define EWOULDBLOCK   WSAEWOULDBLOCK
+#endif
 #define _POSIX_
 #define UINT64_FMT    "I64"
 
