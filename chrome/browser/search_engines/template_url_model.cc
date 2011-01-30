@@ -246,6 +246,15 @@ void TemplateURLModel::FindMatchingKeywords(
   DCHECK(matches != NULL);
   DCHECK(matches->empty());  // The code for exact matches assumes this.
 
+  // Visual Studio 2010 has problems converting NULL to the null pointer for
+  // std::pair.  See http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
+  // It will work if we pass nullptr.
+#if defined(_MSC_VER) && _MSC_VER >= 1600
+  const TemplateURL* null_url = nullptr;
+#else
+  const TemplateURL* null_url = NULL;
+#endif
+
   // Find matching keyword range.  Searches the element map for keywords
   // beginning with |prefix| and stores the endpoints of the resulting set in
   // |match_range|.
@@ -253,7 +262,8 @@ void TemplateURLModel::FindMatchingKeywords(
                   KeywordToTemplateMap::const_iterator> match_range(
       std::equal_range(
           keyword_to_template_map_.begin(), keyword_to_template_map_.end(),
-          KeywordToTemplateMap::value_type(prefix, NULL), LessWithPrefix()));
+          KeywordToTemplateMap::value_type(prefix, null_url),
+          LessWithPrefix()));
 
   // Return vector of matching keywords.
   for (KeywordToTemplateMap::const_iterator i(match_range.first);

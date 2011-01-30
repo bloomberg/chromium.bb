@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,7 +141,15 @@ void RenderWidgetHelper::DidReceiveUpdateMsg(const IPC::Message& msg) {
   {
     base::AutoLock lock(pending_paints_lock_);
 
-    UpdateMsgProxyMap::value_type new_value(render_widget_id, NULL);
+    // Visual Studio 2010 has problems converting NULL to the null pointer for
+    // std::pair.  See http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
+    // It will work if we pass nullptr.
+#if defined(_MSC_VER) && _MSC_VER >= 1600
+    RenderWidgetHelper::UpdateMsgProxy* null_proxy = nullptr;
+#else
+    RenderWidgetHelper::UpdateMsgProxy* null_proxy = NULL;
+#endif
+    UpdateMsgProxyMap::value_type new_value(render_widget_id, null_proxy);
 
     // We expect only a single PaintRect message at a time.  Optimize for the
     // case that we don't already have an entry by using the 'insert' method.

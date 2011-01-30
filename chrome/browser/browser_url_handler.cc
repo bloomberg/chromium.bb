@@ -83,13 +83,23 @@ void BrowserURLHandler::InitURLHandlers() {
   if (!url_handlers_.empty())
     return;
 
+  // Visual Studio 2010 has problems converting NULL to the null pointer for
+  // std::pair.  See http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
+  // It will work if we pass nullptr.
+#if defined(_MSC_VER) && _MSC_VER >= 1600
+  URLHandler null_handler = nullptr;
+#else
+  URLHandler null_handler = NULL;
+#endif
+
   // Add the default URL handlers.
   url_handlers_.push_back(
-      HandlerPair(&ExtensionDOMUI::HandleChromeURLOverride, NULL));
+      HandlerPair(&ExtensionDOMUI::HandleChromeURLOverride, null_handler));
   // about:
-  url_handlers_.push_back(HandlerPair(&WillHandleBrowserAboutURL, NULL));
+  url_handlers_.push_back(HandlerPair(&WillHandleBrowserAboutURL,
+                                      null_handler));
   // chrome: & friends.
-  url_handlers_.push_back(HandlerPair(&HandleDOMUI, NULL));
+  url_handlers_.push_back(HandlerPair(&HandleDOMUI, null_handler));
   // view-source:
   url_handlers_.push_back(HandlerPair(&HandleViewSource, &ReverseViewSource));
 }
