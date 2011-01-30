@@ -5,6 +5,7 @@
 #include "chrome/browser/history/in_memory_url_index.h"
 
 #include <algorithm>
+#include <iterator>
 #include <limits>
 
 #include "base/i18n/break_iterator.h"

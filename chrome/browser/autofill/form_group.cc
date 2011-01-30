@@ -6,6 +6,8 @@
 
 #include "chrome/browser/autofill/form_group.h"
 
+#include <iterator>
+
 string16 FormGroup::GetPreviewText(const AutoFillType& type) const {
   return GetFieldText(type);
 }
