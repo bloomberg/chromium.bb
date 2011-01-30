@@ -154,7 +154,6 @@
         'controls/menu/menu_separator_gtk.cc',
         'controls/menu/menu_separator_gtk.h',
         'controls/menu/menu_separator_win.cc',
-        'controls/menu/menu_separator_win.h',
         'controls/menu/menu_win.cc',
         'controls/menu/menu_win.h',
         'controls/menu/menu_wrapper.h',

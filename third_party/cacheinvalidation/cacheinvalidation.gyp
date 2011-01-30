@@ -81,8 +81,8 @@
         'overrides/google/cacheinvalidation/mutex.h',
         'overrides/google/cacheinvalidation/random.h',
         'overrides/google/cacheinvalidation/scoped_ptr.h',
-        'overrides/google/cacheinvalidation/stl-namespace.h'
-        'overrides/google/cacheinvalidation/string_util.h'
+        'overrides/google/cacheinvalidation/stl-namespace.h',
+        'overrides/google/cacheinvalidation/string_util.h',
         'overrides/google/cacheinvalidation/time.h',
         'files/src/google/cacheinvalidation/invalidation-client-impl.cc',
         'files/src/google/cacheinvalidation/invalidation-client-impl.h',
