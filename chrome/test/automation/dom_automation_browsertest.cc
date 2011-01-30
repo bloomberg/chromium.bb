@@ -11,9 +11,27 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 
+extern base::hash_map<std::string, int> g_test_timeout_overrides;
+
 namespace {
 
-// Tests the DOMAutomation framework for manipulating DOMElements within
+static const int kTimeout = 30000;
+
+class IncreaseLoadingTimeout {
+ public:
+  IncreaseLoadingTimeout() {
+    // Those tests are at the beginning of the browser_tests suite. On the
+    // XP buildbot the cold start is often slow enough to make it go over the
+    // default timeout of 20 seconds.  Bump those initial tests to 30 seconds.
+    g_test_timeout_overrides["DOMAutomationTest.FLAKY_FindByXPath"] = kTimeout;
+    g_test_timeout_overrides["DOMAutomationTest.FindBySelectors"] = kTimeout;
+    g_test_timeout_overrides["DOMAutomationTest.FindByText"] = kTimeout;
+  }
+};
+
+IncreaseLoadingTimeout g_increase_loading_timeout;
+
+// Tests the DOMAutomation framework for manipulating DOMElements withina
 // browser tests.
 class DOMAutomationTest : public InProcessBrowserTest {
  public:
@@ -34,12 +52,8 @@ typedef DOMElementProxy::By By;
 #if defined(OS_WIN)
 // See http://crbug.com/61636
 #define MAYBE_FindByXPath FLAKY_FindByXPath
-#define MAYBE_FindBySelectors FLAKY_FindBySelectors
-#define MAYBE_FindByText FLAKY_FindByText
 #else
 #define MAYBE_FindByXPath FindByXPath
-#define MAYBE_FindBySelectors FindBySelectors
-#define MAYBE_FindByText FindByText
 #endif
 
 IN_PROC_BROWSER_TEST_F(DOMAutomationTest, MAYBE_FindByXPath) {
@@ -88,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, MAYBE_FindByXPath) {
   ASSERT_EQ(3, nested_count);
 }
 
-IN_PROC_BROWSER_TEST_F(DOMAutomationTest, MAYBE_FindBySelectors) {
+IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindBySelectors) {
   ASSERT_TRUE(test_server()->Start());
   ui_test_utils::NavigateToURL(browser(),
                                GetTestURL("find_elements/test.html"));
@@ -132,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, MAYBE_FindBySelectors) {
   ASSERT_EQ(3, nested_count);
 }
 
-IN_PROC_BROWSER_TEST_F(DOMAutomationTest, MAYBE_FindByText) {
+IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindByText) {
   ASSERT_TRUE(test_server()->Start());
   ui_test_utils::NavigateToURL(browser(),
                                GetTestURL("find_elements/test.html"));
