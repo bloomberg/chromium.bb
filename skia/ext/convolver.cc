@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -233,31 +233,53 @@ ConvolutionFilter1D::~ConvolutionFilter1D() {
 void ConvolutionFilter1D::AddFilter(int filter_offset,
                                     const float* filter_values,
                                     int filter_length) {
-  FilterInstance instance;
-  instance.data_location = static_cast<int>(filter_values_.size());
-  instance.offset = filter_offset;
-  instance.length = filter_length;
-  filters_.push_back(instance);
-
   SkASSERT(filter_length > 0);
-  for (int i = 0; i < filter_length; i++)
-    filter_values_.push_back(FloatToFixed(filter_values[i]));
 
-  max_filter_ = std::max(max_filter_, filter_length);
+  std::vector<Fixed> fixed_values;
+  fixed_values.reserve(filter_length);
+
+  for (int i = 0; i < filter_length; ++i)
+    fixed_values.push_back(FloatToFixed(filter_values[i]));
+
+  AddFilter(filter_offset, &fixed_values[0], filter_length);
 }
 
 void ConvolutionFilter1D::AddFilter(int filter_offset,
                                     const Fixed* filter_values,
                                     int filter_length) {
+  // It is common for leading/trailing filter values to be zeros. In such
+  // cases it is beneficial to only store the central factors.
+  // For a scaling to 1/4th in each dimension using a Lanczos-2 filter on
+  // a 1080p image this optimization gives a ~10% speed improvement.
+  int first_non_zero = 0;
+  while (first_non_zero < filter_length && filter_values[first_non_zero] == 0)
+    first_non_zero++;
+
+  if (first_non_zero < filter_length) {
+    // Here we have at least one non-zero factor.
+    int last_non_zero = filter_length - 1;
+    while (last_non_zero >= 0 && filter_values[last_non_zero] == 0)
+      last_non_zero--;
+
+    filter_offset += first_non_zero;
+    filter_length = last_non_zero + 1 - first_non_zero;
+    SkASSERT(filter_length > 0);
+
+    for (int i = first_non_zero; i <= last_non_zero; i++)
+      filter_values_.push_back(filter_values[i]);
+  } else {
+    // Here all the factors were zeroes.
+    filter_length = 0;
+  }
+
   FilterInstance instance;
-  instance.data_location = static_cast<int>(filter_values_.size());
+
+  // We pushed filter_length elements onto filter_values_
+  instance.data_location = (static_cast<int>(filter_values_.size()) -
+                            filter_length);
   instance.offset = filter_offset;
   instance.length = filter_length;
   filters_.push_back(instance);
-
-  SkASSERT(filter_length > 0);
-  for (int i = 0; i < filter_length; i++)
-    filter_values_.push_back(filter_values[i]);
 
   max_filter_ = std::max(max_filter_, filter_length);
 }
@@ -269,6 +291,7 @@ void BGRAConvolve2D(const unsigned char* source_data,
                     bool source_has_alpha,
                     const ConvolutionFilter1D& filter_x,
                     const ConvolutionFilter1D& filter_y,
+                    int output_byte_row_stride,
                     unsigned char* output) {
   int max_y_filter_size = filter_y.max_filter();
 
@@ -292,7 +315,7 @@ void BGRAConvolve2D(const unsigned char* source_data,
 
   // Loop over every possible output row, processing just enough horizontal
   // convolutions to run each subsequent vertical convolution.
-  int output_row_byte_width = filter_x.num_values() * 4;
+  SkASSERT(output_byte_row_stride >= filter_x.num_values() * 4);
   int num_output_rows = filter_y.num_values();
   for (int out_y = 0; out_y < num_output_rows; out_y++) {
     filter_values = filter_y.FilterForValue(out_y,
@@ -313,7 +336,7 @@ void BGRAConvolve2D(const unsigned char* source_data,
     }
 
     // Compute where in the output image this row of final data will go.
-    unsigned char* cur_output_row = &output[out_y * output_row_byte_width];
+    unsigned char* cur_output_row = &output[out_y * output_byte_row_stride];
 
     // Get the list of rows that the circular buffer has, in order.
     int first_row_in_circular_buffer;
@@ -338,4 +361,3 @@ void BGRAConvolve2D(const unsigned char* source_data,
 }
 
 }  // namespace skia
-

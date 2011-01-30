@@ -1,8 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #define _USE_MATH_DEFINES
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
@@ -59,6 +60,33 @@ float EvalLanczos(int filter_size, float x) {
           sin(xpi / filter_size) / (xpi / filter_size);  // sinc(x/filter_size)
 }
 
+// Evaluates the Hamming filter of the given filter size window for the given
+// position.
+//
+// The filter covers [-filter_size, +filter_size]. Outside of this window
+// the value of the function is 0. Inside of the window, the value is sinus
+// cardinal multiplied by a recentered Hamming function. The traditional
+// Hamming formula for a window of size N and n ranging in [0, N-1] is:
+//   hamming(n) = 0.54 - 0.46 * cos(2 * pi * n / (N-1)))
+// In our case we want the function centered for x == 0 and at its minimum
+// on both ends of the window (x == +/- filter_size), hence the adjusted
+// formula:
+//   hamming(x) = (0.54 -
+//                 0.46 * cos(2 * pi * (x - filter_size)/ (2 * filter_size)))
+//              = 0.54 - 0.46 * cos(pi * x / filter_size - pi)
+//              = 0.54 + 0.46 * cos(pi * x / filter_size)
+float EvalHamming(int filter_size, float x) {
+  if (x <= -filter_size || x >= filter_size)
+    return 0.0f;  // Outside of the window.
+  if (x > -std::numeric_limits<float>::epsilon() &&
+      x < std::numeric_limits<float>::epsilon())
+    return 1.0f;  // Special case the sinc discontinuity at the origin.
+  const float xpi = x * static_cast<float>(M_PI);
+
+  return ((sin(xpi) / xpi) *  // sinc(x)
+          (0.54f + 0.46f * cos(xpi / filter_size)));  // hamming(x)
+}
+
 // ResizeFilter ----------------------------------------------------------------
 
 // Encapsulates computation and storage of the filters required for one complete
@@ -86,8 +114,16 @@ class ResizeFilter {
       case ImageOperations::RESIZE_BOX:
         // The box filter just scales with the image scaling.
         return 0.5f;  // Only want one side of the filter = /2.
+      case ImageOperations::RESIZE_HAMMING1:
+        // The Hamming filter takes as much space in the source image in
+        // each direction as the size of the window = 1 for Hamming1.
+        return 1.0f;
+      case ImageOperations::RESIZE_LANCZOS2:
+        // The Lanczos filter takes as much space in the source image in
+        // each direction as the size of the window = 2 for Lanczos2.
+        return 2.0f;
       case ImageOperations::RESIZE_LANCZOS3:
-        // The lanczos filter takes as much space in the source image in
+        // The Lanczos filter takes as much space in the source image in
         // each direction as the size of the window = 3 for Lanczos3.
         return 3.0f;
       default:
@@ -116,6 +152,10 @@ class ResizeFilter {
     switch (method_) {
       case ImageOperations::RESIZE_BOX:
         return EvalBox(pos);
+      case ImageOperations::RESIZE_HAMMING1:
+        return EvalHamming(1, pos);
+      case ImageOperations::RESIZE_LANCZOS2:
+        return EvalLanczos(2, pos);
       case ImageOperations::RESIZE_LANCZOS3:
         return EvalLanczos(3, pos);
       default:
@@ -149,6 +189,10 @@ ResizeFilter::ResizeFilter(ImageOperations::ResizeMethod method,
                            const SkIRect& dest_subset)
     : method_(method),
       out_bounds_(dest_subset) {
+  // method_ will only ever refer to an "algorithm method".
+  SkASSERT((ImageOperations::RESIZE_FIRST_ALGORITHM_METHOD <= method) &&
+           (method <= ImageOperations::RESIZE_LAST_ALGORITHM_METHOD));
+
   float scale_x = static_cast<float>(dest_width) /
                   static_cast<float>(src_full_width);
   float scale_y = static_cast<float>(dest_height) /
@@ -156,10 +200,6 @@ ResizeFilter::ResizeFilter(ImageOperations::ResizeMethod method,
 
   x_filter_support_ = GetFilterSupport(scale_x);
   y_filter_support_ = GetFilterSupport(scale_y);
-
-  SkIRect src_full = { 0, 0, src_full_width, src_full_height };
-  SkIRect dest_full = { 0, 0, static_cast<int>(src_full_width * scale_x + 0.5),
-                        static_cast<int>(src_full_height * scale_y + 0.5) };
 
   // Support of the filter in source space.
   float src_x_support = x_filter_support_ / scale_x;
@@ -171,6 +211,17 @@ ResizeFilter::ResizeFilter(ImageOperations::ResizeMethod method,
                  scale_y, src_y_support, &y_filter_);
 }
 
+// TODO(egouriou): Take advantage of periods in the convolution.
+// Practical resizing filters are periodic outside of the border area.
+// For Lanczos, a scaling by a (reduced) factor of p/q (q pixels in the
+// source become p pixels in the destination) will have a period of p.
+// A nice consequence is a period of 1 when downscaling by an integral
+// factor. Downscaling from typical display resolutions is also bound
+// to produce interesting periods as those are chosen to have multiple
+// small factors.
+// Small periods reduce computational load and improve cache usage if
+// the coefficients can be shared. For periods of 1 we can consider
+// loading the factors only once outside the borders.
 void ResizeFilter::ComputeFilters(int src_size,
                                   int dest_subset_lo, int dest_subset_size,
                                   float scale, float src_support,
@@ -201,6 +252,15 @@ void ResizeFilter::ComputeFilters(int src_size,
     fixed_filter_values->clear();
 
     // This is the pixel in the source directly under the pixel in the dest.
+    // Note that we base computations on the "center" of the pixels. To see
+    // why, observe that the destination pixel at coordinates (0, 0) in a 5.0x
+    // downscale should "cover" the pixels around the pixel with *its center*
+    // at coordinates (2.5, 2.5) in the source, not those around (0, 0).
+    // Hence we need to scale coordinates (0.5, 0.5), not (0, 0).
+    // TODO(evannier): this code is therefore incorrect and should read:
+    // float src_pixel = (static_cast<float>(dest_subset_i) + 0.5f) * inv_scale;
+    // I leave it incorrect, because changing it would require modifying
+    // the results for the webkit test, which I will do in a subsequent checkin.
     float src_pixel = dest_subset_i * inv_scale;
 
     // Compute the (inclusive) range of source pixels the filter covers.
@@ -213,14 +273,22 @@ void ResizeFilter::ComputeFilters(int src_size,
     for (int cur_filter_pixel = src_begin; cur_filter_pixel <= src_end;
          cur_filter_pixel++) {
       // Distance from the center of the filter, this is the filter coordinate
-      // in source space.
-      float src_filter_pos = cur_filter_pixel - src_pixel;
+      // in source space. We also need to consider the center of the pixel
+      // when comparing distance against 'src_pixel'. In the 5x downscale
+      // example used above the distance from the center of the filter to
+      // the pixel with coordinates (2, 2) should be 0, because its center
+      // is at (2.5, 2.5).
+      // TODO(evannier): as above (in regards to the 0.5 pixel error),
+      // this code is incorrect, but is left it for the same reasons.
+      // float src_filter_dist =
+      //     ((static_cast<float>(cur_filter_pixel) + 0.5f) - src_pixel);
+      float src_filter_dist = cur_filter_pixel - src_pixel;
 
       // Since the filter really exists in dest space, map it there.
-      float dest_filter_pos = src_filter_pos * clamped_scale;
+      float dest_filter_dist = src_filter_dist * clamped_scale;
 
       // Compute the filter value at that location.
-      float filter_value = ComputeFilter(dest_filter_pos);
+      float filter_value = ComputeFilter(dest_filter_dist);
       filter_values->push_back(filter_value);
 
       filter_sum += filter_value;
@@ -247,6 +315,35 @@ void ResizeFilter::ComputeFilters(int src_size,
     // Now it's ready to go.
     output->AddFilter(src_begin, &fixed_filter_values[0],
                       static_cast<int>(fixed_filter_values->size()));
+  }
+}
+
+ImageOperations::ResizeMethod ResizeMethodToAlgorithmMethod(
+    ImageOperations::ResizeMethod method) {
+  // Convert any "Quality Method" into an "Algorithm Method"
+  if (method >= ImageOperations::RESIZE_FIRST_ALGORITHM_METHOD &&
+      method <= ImageOperations::RESIZE_LAST_ALGORITHM_METHOD) {
+    return method;
+  }
+  // The call to ImageOperationsGtv::Resize() above took care of
+  // GPU-acceleration in the cases where it is possible. So now we just
+  // pick the appropriate software method for each resize quality.
+  switch (method) {
+    // Users of RESIZE_GOOD are willing to trade a lot of quality to
+    // get speed, allowing the use of linear resampling to get hardware
+    // acceleration (SRB). Hence any of our "good" software filters
+    // will be acceptable, and we use the fastest one, Hamming-1.
+    case ImageOperations::RESIZE_GOOD:
+      // Users of RESIZE_BETTER are willing to trade some quality in order
+      // to improve performance, but are guaranteed not to devolve to a linear
+      // resampling. In visual tests we see that Hamming-1 is not as good as
+      // Lanczos-2, however it is about 40% faster and Lanczos-2 itself is
+      // about 30% faster than Lanczos-3. The use of Hamming-1 has been deemed
+      // an acceptable trade-off between quality and speed.
+    case ImageOperations::RESIZE_BETTER:
+      return ImageOperations::RESIZE_HAMMING1;
+    default:
+      return ImageOperations::RESIZE_LANCZOS3;
   }
 }
 
@@ -369,6 +466,12 @@ SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
                                       ResizeMethod method,
                                       int dest_width, int dest_height,
                                       const SkIRect& dest_subset) {
+  // Ensure that the ResizeMethod enumeration is sound.
+  SkASSERT(((RESIZE_FIRST_QUALITY_METHOD <= method) &&
+            (method <= RESIZE_LAST_QUALITY_METHOD)) ||
+           ((RESIZE_FIRST_ALGORITHM_METHOD <= method) &&
+            (method <= RESIZE_LAST_ALGORITHM_METHOD)));
+
   // Time how long this takes to see if it's a problem for users.
   base::TimeTicks resize_start = base::TimeTicks::Now();
 
@@ -381,6 +484,11 @@ SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
   if (source.width() < 1 || source.height() < 1 ||
       dest_width < 1 || dest_height < 1)
     return SkBitmap();
+
+  method = ResizeMethodToAlgorithmMethod(method);
+  // Check that we deal with an "algorithm methods" from this point onward.
+  SkASSERT((ImageOperations::RESIZE_FIRST_ALGORITHM_METHOD <= method) &&
+           (method <= ImageOperations::RESIZE_LAST_ALGORITHM_METHOD));
 
   SkAutoLockPixels locker(source);
 
@@ -400,6 +508,7 @@ SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
   result.allocPixels();
   BGRAConvolve2D(source_subset, static_cast<int>(source.rowBytes()),
                  !source.isOpaque(), filter.x_filter(), filter.y_filter(),
+                 static_cast<int>(result.rowBytes()),
                  static_cast<unsigned char*>(result.getPixels()));
 
   // Preserve the "opaque" flag for use as an optimization later.

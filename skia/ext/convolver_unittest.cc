@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include <time.h>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "skia/ext/convolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,7 +34,8 @@ void TestImpulseConvolution(const unsigned char* data, int width, int height) {
 
   std::vector<unsigned char> output;
   output.resize(byte_count);
-  BGRAConvolve2D(data, width * 4, true, filter_x, filter_y, &output[0]);
+  BGRAConvolve2D(data, width * 4, true, filter_x, filter_y,
+                 filter_x.num_values() * 4, &output[0]);
 
   // Output should exactly match input.
   EXPECT_EQ(0, memcmp(data, &output[0], byte_count));
@@ -103,7 +105,8 @@ TEST(Convolver, Halve) {
   FillBoxFilter(dest_height, &filter_y);
 
   // Do the convolution.
-  BGRAConvolve2D(&input[0], src_width, true, filter_x, filter_y, &output[0]);
+  BGRAConvolve2D(&input[0], src_width, true, filter_x, filter_y,
+                 filter_x.num_values() * 4, &output[0]);
 
   // Compute the expected results and check, allowing for a small difference
   // to account for rounding errors.
@@ -123,5 +126,82 @@ TEST(Convolver, Halve) {
   }
 }
 
-}  // namespace skia
+// Tests the optimization in Convolver1D::AddFilter that avoids storing
+// leading/trailing zeroes.
+TEST(Convolver, AddFilter) {
+  skia::ConvolutionFilter1D filter;
 
+  const skia::ConvolutionFilter1D::Fixed* values = NULL;
+  int filter_offset = 0;
+  int filter_length = 0;
+
+  // An all-zero filter is handled correctly, all factors ignored
+  static const float factors1[] = { 0.0f, 0.0f, 0.0f };
+  filter.AddFilter(11, factors1, arraysize(factors1));
+  ASSERT_EQ(0, filter.max_filter());
+  ASSERT_EQ(1, filter.num_values());
+
+  values = filter.FilterForValue(0, &filter_offset, &filter_length);
+  ASSERT_TRUE(values == NULL);   // No values => NULL.
+  ASSERT_EQ(11, filter_offset);  // Same as input offset.
+  ASSERT_EQ(0, filter_length);   // But no factors since all are zeroes.
+
+  // Zeroes on the left are ignored
+  static const float factors2[] = { 0.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+  filter.AddFilter(22, factors2, arraysize(factors2));
+  ASSERT_EQ(4, filter.max_filter());
+  ASSERT_EQ(2, filter.num_values());
+
+  values = filter.FilterForValue(1, &filter_offset, &filter_length);
+  ASSERT_TRUE(values != NULL);
+  ASSERT_EQ(23, filter_offset);  // 22 plus 1 leading zero
+  ASSERT_EQ(4, filter_length);   // 5 - 1 leading zero
+
+  // Zeroes on the right are ignored
+  static const float factors3[] = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f };
+  filter.AddFilter(33, factors3, arraysize(factors3));
+  ASSERT_EQ(5, filter.max_filter());
+  ASSERT_EQ(3, filter.num_values());
+
+  values = filter.FilterForValue(2, &filter_offset, &filter_length);
+  ASSERT_TRUE(values != NULL);
+  ASSERT_EQ(33, filter_offset);  // 33, same as input due to no leading zero
+  ASSERT_EQ(5, filter_length);   // 7 - 2 trailing zeroes
+
+  // Zeroes in leading & trailing positions
+  static const float factors4[] = { 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f };
+  filter.AddFilter(44, factors4, arraysize(factors4));
+  ASSERT_EQ(5, filter.max_filter());  // No change from existing value.
+  ASSERT_EQ(4, filter.num_values());
+
+  values = filter.FilterForValue(3, &filter_offset, &filter_length);
+  ASSERT_TRUE(values != NULL);
+  ASSERT_EQ(46, filter_offset);  // 44 plus 2 leading zeroes
+  ASSERT_EQ(3, filter_length);   // 7 - (2 leading + 2 trailing) zeroes
+
+  // Zeroes surrounded by non-zero values are ignored
+  static const float factors5[] = { 0.0f, 0.0f,
+                                    1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+                                    0.0f };
+  filter.AddFilter(55, factors5, arraysize(factors5));
+  ASSERT_EQ(6, filter.max_filter());
+  ASSERT_EQ(5, filter.num_values());
+
+  values = filter.FilterForValue(4, &filter_offset, &filter_length);
+  ASSERT_TRUE(values != NULL);
+  ASSERT_EQ(57, filter_offset);  // 55 plus 2 leading zeroes
+  ASSERT_EQ(6, filter_length);   // 9 - (2 leading + 1 trailing) zeroes
+
+  // All-zero filters after the first one also work
+  static const float factors6[] = { 0.0f };
+  filter.AddFilter(66, factors6, arraysize(factors6));
+  ASSERT_EQ(6, filter.max_filter());
+  ASSERT_EQ(6, filter.num_values());
+
+  values = filter.FilterForValue(5, &filter_offset, &filter_length);
+  ASSERT_TRUE(values == NULL);   // filter_length == 0 => values is NULL
+  ASSERT_EQ(66, filter_offset);  // value passed in
+  ASSERT_EQ(0, filter_length);
+}
+
+}  // namespace skia

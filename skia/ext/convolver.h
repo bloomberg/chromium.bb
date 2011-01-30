@@ -6,11 +6,15 @@
 #define SKIA_EXT_CONVOLVER_H_
 #pragma once
 
+#include <cmath>
 #include <vector>
+
+#include "base/basictypes.h"
 
 // avoid confusion with Mac OS X's math library (Carbon)
 #if defined(__APPLE__)
 #undef FloatToFixed
+#undef FixedToFloat
 #endif
 
 namespace skia {
@@ -39,6 +43,14 @@ class ConvolutionFilter1D {
   }
   static unsigned char FixedToChar(Fixed x) {
     return static_cast<unsigned char>(x >> kShiftBits);
+  }
+  static float FixedToFloat(Fixed x) {
+    // The cast relies on Fixed being a short, implying that on
+    // the platforms we care about all (16) bits will fit into
+    // the mantissa of a (32-bit) float.
+    COMPILE_ASSERT(sizeof(Fixed) == 2, fixed_type_should_fit_in_float_mantissa);
+    float raw = static_cast<float>(x);
+    return ldexpf(raw, -kShiftBits);
   }
 
   // Returns the maximum pixel span of a filter.
@@ -80,6 +92,9 @@ class ConvolutionFilter1D {
     const FilterInstance& filter = filters_[value_offset];
     *filter_offset = filter.offset;
     *filter_length = filter.length;
+    if (filter.length == 0) {
+      return NULL;
+    }
     return &filter_values_[filter.data_location];
   }
 
@@ -130,9 +145,9 @@ void BGRAConvolve2D(const unsigned char* source_data,
                     bool source_has_alpha,
                     const ConvolutionFilter1D& xfilter,
                     const ConvolutionFilter1D& yfilter,
+                    int output_byte_row_stride,
                     unsigned char* output);
 
 }  // namespace skia
 
 #endif  // SKIA_EXT_CONVOLVER_H_
-

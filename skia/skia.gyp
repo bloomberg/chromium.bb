@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -434,8 +434,8 @@
         #'../third_party/skia/src/images/SkImageDecoder_libpng.cpp',
         #'../third_party/skia/src/images/SkImageDecoder_libpvjpeg.cpp',
         #'../third_party/skia/src/images/SkImageDecoder_wbmp.cpp',
-        #'../third_party/skia/src/images/SKImageEncoder.cpp',
-        #'../third_party/skia/src/images/SKImageEncoder_Factory.cpp',
+        #'../third_party/skia/src/images/SkImageEncoder.cpp',
+        #'../third_party/skia/src/images/SkImageEncoder_Factory.cpp',
         #'../third_party/skia/src/images/SkImageRef.cpp',
         #'../third_party/skia/src/images/SkImageRefPool.cpp',
         #'../third_party/skia/src/images/SkImageRefPool.h',
@@ -851,6 +851,20 @@
             '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
           ],
         }],
+      ],
+    },
+    {
+      'target_name': 'image_operations_bench',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'skia',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'ext/image_operations_bench.cc',
       ],
     },
   ],
