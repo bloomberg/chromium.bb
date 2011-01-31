@@ -110,6 +110,10 @@ class FormStructure {
   ScopedVector<AutoFillField>* fields() { return &fields_; }
 
  private:
+  friend class FormStructureTest;
+  // 64-bit hash of the string - used in FormSignature and unit-tests.
+  static std::string Hash64Bit(const std::string& str);
+
   enum EncodeRequestType {
     QUERY,
     UPLOAD,

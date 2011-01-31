@@ -40,22 +40,6 @@ const char* const kControlTypeText = "text";
 // The number of fillable fields necessary for a form to be fillable.
 const size_t kRequiredFillableFields = 3;
 
-static std::string Hash64Bit(const std::string& str) {
-  std::string hash_bin = base::SHA1HashString(str);
-  DCHECK_EQ(20U, hash_bin.length());
-
-  uint64 hash64 = (((static_cast<uint64>(hash_bin[0])) & 0xFF) << 56) |
-                  (((static_cast<uint64>(hash_bin[1])) & 0xFF) << 48) |
-                  (((static_cast<uint64>(hash_bin[2])) & 0xFF) << 40) |
-                  (((static_cast<uint64>(hash_bin[3])) & 0xFF) << 32) |
-                  (((static_cast<uint64>(hash_bin[4])) & 0xFF) << 24) |
-                  (((static_cast<uint64>(hash_bin[5])) & 0xFF) << 16) |
-                  (((static_cast<uint64>(hash_bin[6])) & 0xFF) << 8) |
-                   ((static_cast<uint64>(hash_bin[7])) & 0xFF);
-
-  return base::Uint64ToString(hash64);
-}
-
 }  // namespace
 
 FormStructure::FormStructure(const FormData& form)
@@ -265,10 +249,17 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
 }
 
 std::string FormStructure::FormSignature() const {
-  std::string form_string = target_url_.scheme() +
-                            "://" +
-                            target_url_.host() +
-                            "&" +
+  std::string scheme(target_url_.scheme());
+  std::string host(target_url_.host());
+
+  // If target host or scheme is empty, set scheme and host of source url.
+  // This is done to match the Toolbar's behavior.
+  if (scheme.empty() || host.empty()) {
+    scheme = source_url_.scheme();
+    host = source_url_.host();
+  }
+
+  std::string form_string = scheme + "://" + host + "&" +
                             UTF16ToUTF8(form_name_) +
                             form_signature_field_names_;
 
@@ -352,6 +343,22 @@ bool FormStructure::operator==(const FormData& form) const {
 
 bool FormStructure::operator!=(const FormData& form) const {
   return !operator==(form);
+}
+
+std::string FormStructure::Hash64Bit(const std::string& str) {
+  std::string hash_bin = base::SHA1HashString(str);
+  DCHECK_EQ(20U, hash_bin.length());
+
+  uint64 hash64 = (((static_cast<uint64>(hash_bin[0])) & 0xFF) << 56) |
+                  (((static_cast<uint64>(hash_bin[1])) & 0xFF) << 48) |
+                  (((static_cast<uint64>(hash_bin[2])) & 0xFF) << 40) |
+                  (((static_cast<uint64>(hash_bin[3])) & 0xFF) << 32) |
+                  (((static_cast<uint64>(hash_bin[4])) & 0xFF) << 24) |
+                  (((static_cast<uint64>(hash_bin[5])) & 0xFF) << 16) |
+                  (((static_cast<uint64>(hash_bin[6])) & 0xFF) << 8) |
+                   ((static_cast<uint64>(hash_bin[7])) & 0xFF);
+
+  return base::Uint64ToString(hash64);
 }
 
 void FormStructure::GetHeuristicAutoFillTypes() {

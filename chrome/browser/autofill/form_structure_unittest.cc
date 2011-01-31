@@ -39,6 +39,13 @@ std::ostream& operator<<(std::ostream& os, const FormData& form) {
 
 }  // namespace webkit_glue
 
+class FormStructureTest {
+ public:
+  static std::string Hash64Bit(const std::string& str) {
+    return FormStructure::Hash64Bit(str);
+  }
+};
+
 namespace {
 
 TEST(FormStructureTest, FieldCount) {
@@ -1954,6 +1961,48 @@ TEST(FormStructureTest, CheckMultipleTypes) {
             "\"509334676\" autofilltype=\"30\"/><field signature=\"509334676\" "
             "autofilltype=\"38\"/></autofillupload>",
             encoded_xml);
+}
+
+TEST(FormStructureTest, CheckFormSignature) {
+  // Check that form signature is created correctly.
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("email"),
+                        ASCIIToUTF16("email"),
+                        string16(),
+                        ASCIIToUTF16("text"),
+                        0,
+                        false));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
+                        ASCIIToUTF16("first"),
+                        string16(),
+                        ASCIIToUTF16("text"),
+                        0,
+                        false));
+  form_structure.reset(new FormStructure(form));
+
+  EXPECT_EQ(FormStructureTest::Hash64Bit(
+      std::string("://&&email&first")),
+      form_structure->FormSignature());
+
+  form.origin = GURL(std::string("http://www.facebook.com"));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_EQ(FormStructureTest::Hash64Bit(
+      std::string("http://www.facebook.com&&email&first")),
+      form_structure->FormSignature());
+
+  form.action = GURL(std::string("https://login.facebook.com/path"));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_EQ(FormStructureTest::Hash64Bit(
+      std::string("https://login.facebook.com&&email&first")),
+      form_structure->FormSignature());
+
+  form.name = ASCIIToUTF16("login_form");
+  form_structure.reset(new FormStructure(form));
+  EXPECT_EQ(FormStructureTest::Hash64Bit(
+      std::string("https://login.facebook.com&login_form&email&first")),
+      form_structure->FormSignature());
 }
 
 }  // namespace
