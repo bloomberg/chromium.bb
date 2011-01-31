@@ -530,8 +530,8 @@ std::wstring InputMethodMenu::GetTextForIndicator(
     }
   }
 
-  // Display the keyboard layout name when using ibus-xkb.
-  if (text.empty()) {
+  // Display the keyboard layout name when using a keyboard layout.
+  if (text.empty() && input_method::IsKeyboardLayout(input_method.id)) {
     const size_t kMaxKeyboardLayoutNameLen = 2;
     const std::wstring keyboard_layout = UTF8ToWide(
         input_method::GetKeyboardLayoutName(input_method.id));

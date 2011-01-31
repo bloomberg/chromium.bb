@@ -71,9 +71,9 @@ std::string GetLanguageCodeFromDescriptor(
 // Examples:
 //
 // "xkb:us::eng"       => "us"
-// "xkb:us:dvorak:eng" => "us"
+// "xkb:us:dvorak:eng" => "us(dvorak)"
 // "xkb:gb::eng"       => "gb"
-// "pinyin"            => ""
+// "pinyin"            => "us" (because Pinyin uses US keyboard layout)
 std::string GetKeyboardLayoutName(const std::string& input_method_id);
 
 // Gets the ID for the keyboard overlay from the given input method ID.
@@ -99,6 +99,13 @@ std::string GetLanguageCodeFromInputMethodId(
 // Examples: "pinyin" => "Pinyin"
 //           "m17n:ar:kbd" => "kbd (m17n)"
 std::string GetInputMethodDisplayNameFromId(const std::string& input_method_id);
+
+// Converts an input method ID to an input method descriptor. Returns NULL
+// when |input_method_id| is unknown.
+// Example: "pinyin" => { id: "pinyin", display_name: "Pinyin",
+//                        keyboard_layout: "us", language_code: "zh" }
+const chromeos::InputMethodDescriptor* GetInputMethodDescriptorFromId(
+    const std::string& input_method_id);
 
 // Converts a language code to a language display name, using the
 // current application locale. MaybeRewriteLanguageName() is called

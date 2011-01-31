@@ -792,6 +792,8 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
     descriptions->push_back(InputMethodDescriptor(
         "xkb:us:dvorak:eng", "USA - Dvorak", "us(dvorak)", "eng"));
     descriptions->push_back(InputMethodDescriptor(
+        "xkb:us:colemak:eng", "USA - Colemak", "us(colemak)", "eng"));
+    descriptions->push_back(InputMethodDescriptor(
         "xkb:be::ger", "Belgium", "be", "ger"));
     descriptions->push_back(InputMethodDescriptor(
         "xkb:be::nld", "Belgium", "be", "nld"));

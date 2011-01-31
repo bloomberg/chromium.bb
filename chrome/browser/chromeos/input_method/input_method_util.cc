@@ -30,10 +30,14 @@ namespace {
 
 // Map from language code to associated input method IDs, etc.
 typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
+// Map from input method ID to associated input method descriptor.
+typedef std::map<std::string, chromeos::InputMethodDescriptor>
+    InputMethodIdToDescriptorMap;
+
 struct IdMaps {
   scoped_ptr<LanguageCodeToIdsMap> language_code_to_ids;
   scoped_ptr<std::map<std::string, std::string> > id_to_language_code;
-  scoped_ptr<std::map<std::string, std::string> > id_to_display_name;
+  scoped_ptr<InputMethodIdToDescriptorMap> id_to_descriptor;
 
   // Returns the singleton instance.
   static IdMaps* GetInstance() {
@@ -50,24 +54,23 @@ struct IdMaps {
       // TODO(yusukes): Handle this error in nicer way.
     }
 
+    // Clear the existing maps.
     language_code_to_ids->clear();
     id_to_language_code->clear();
-    id_to_display_name->clear();
-
-    // Build the id to descriptor map for handling kExtraLanguages later.
-    typedef std::map<std::string,
-        const chromeos::InputMethodDescriptor*> DescMap;
-    DescMap id_to_descriptor_map;
+    id_to_descriptor->clear();
 
     for (size_t i = 0; i < supported_input_methods->size(); ++i) {
       const chromeos::InputMethodDescriptor& input_method =
           supported_input_methods->at(i);
       const std::string language_code =
           chromeos::input_method::GetLanguageCodeFromDescriptor(input_method);
-      AddInputMethodToMaps(language_code, input_method);
-      // Remember the pair.
-      id_to_descriptor_map.insert(
-          std::make_pair(input_method.id, &input_method));
+      language_code_to_ids->insert(
+          std::make_pair(language_code, input_method.id));
+      // Remember the pairs.
+      id_to_language_code->insert(
+          std::make_pair(input_method.id, language_code));
+      id_to_descriptor->insert(
+          std::make_pair(input_method.id, input_method));
     }
 
     // Go through the languages listed in kExtraLanguages.
@@ -75,12 +78,14 @@ struct IdMaps {
     for (size_t i = 0; i < arraysize(kExtraLanguages); ++i) {
       const char* language_code = kExtraLanguages[i].language_code;
       const char* input_method_id = kExtraLanguages[i].input_method_id;
-      DescMap::const_iterator iter = id_to_descriptor_map.find(input_method_id);
+      InputMethodIdToDescriptorMap::const_iterator iter =
+          id_to_descriptor->find(input_method_id);
       // If the associated input method descriptor is found, add the
       // language code and the input method.
-      if (iter != id_to_descriptor_map.end()) {
-        const chromeos::InputMethodDescriptor& input_method = *(iter->second);
-        AddInputMethodToMaps(language_code, input_method);
+      if (iter != id_to_descriptor->end()) {
+        const chromeos::InputMethodDescriptor& input_method = iter->second;
+        language_code_to_ids->insert(
+            std::make_pair(language_code, input_method.id));
       }
     }
   }
@@ -88,20 +93,8 @@ struct IdMaps {
  private:
   IdMaps() : language_code_to_ids(new LanguageCodeToIdsMap),
              id_to_language_code(new std::map<std::string, std::string>),
-             id_to_display_name(new std::map<std::string, std::string>) {
+             id_to_descriptor(new InputMethodIdToDescriptorMap) {
     ReloadMaps();
-  }
-
-  void AddInputMethodToMaps(
-      const std::string& language_code,
-      const chromeos::InputMethodDescriptor& input_method) {
-    language_code_to_ids->insert(
-        std::make_pair(language_code, input_method.id));
-    id_to_language_code->insert(
-        std::make_pair(input_method.id, language_code));
-    id_to_display_name->insert(std::make_pair(
-        input_method.id,
-        chromeos::input_method::GetStringUTF8(input_method.display_name)));
   }
 
   friend struct DefaultSingletonTraits<IdMaps>;
@@ -467,22 +460,27 @@ std::string GetLanguageCodeFromInputMethodId(
 }
 
 std::string GetKeyboardLayoutName(const std::string& input_method_id) {
-  if (!StartsWithASCII(input_method_id, "xkb:", true)) {
-    return "";
-  }
-
-  std::vector<std::string> splitted_id;
-  base::SplitString(input_method_id, ':', &splitted_id);
-  return (splitted_id.size() > 1) ? splitted_id[1] : "";
+  InputMethodIdToDescriptorMap::const_iterator iter
+      = IdMaps::GetInstance()->id_to_descriptor->find(input_method_id);
+  return (iter == IdMaps::GetInstance()->id_to_descriptor->end()) ?
+      "" : iter->second.keyboard_layout;
 }
 
 std::string GetInputMethodDisplayNameFromId(
     const std::string& input_method_id) {
   static const char kDefaultDisplayName[] = "USA";
-  std::map<std::string, std::string>::const_iterator iter
-      = IdMaps::GetInstance()->id_to_display_name->find(input_method_id);
-  return (iter == IdMaps::GetInstance()->id_to_display_name->end()) ?
-      kDefaultDisplayName : iter->second;
+  InputMethodIdToDescriptorMap::const_iterator iter
+      = IdMaps::GetInstance()->id_to_descriptor->find(input_method_id);
+  return (iter == IdMaps::GetInstance()->id_to_descriptor->end()) ?
+      kDefaultDisplayName : iter->second.display_name;
+}
+
+const chromeos::InputMethodDescriptor* GetInputMethodDescriptorFromId(
+    const std::string& input_method_id) {
+  InputMethodIdToDescriptorMap::const_iterator iter
+      = IdMaps::GetInstance()->id_to_descriptor->find(input_method_id);
+  return (iter == IdMaps::GetInstance()->id_to_descriptor->end()) ?
+      NULL : &(iter->second);
 }
 
 string16 GetLanguageDisplayNameFromCode(const std::string& language_code) {

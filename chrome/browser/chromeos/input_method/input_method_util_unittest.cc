@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -78,67 +79,46 @@ TEST(InputMethodUtilTest, GetLanguageCodeFromDescriptor) {
 }
 
 TEST(InputMethodUtilTest, GetKeyboardLayoutName) {
-  // Unsupported cases
+  ScopedStubCrosEnabler stub_cros_enabler;
+  // Unsupported case.
   EXPECT_EQ("", GetKeyboardLayoutName("UNSUPPORTED_ID"));
-  EXPECT_EQ("", GetKeyboardLayoutName("chewing"));
-  EXPECT_EQ("", GetKeyboardLayoutName("hangul"));
-  EXPECT_EQ("", GetKeyboardLayoutName("mozc"));
-  EXPECT_EQ("", GetKeyboardLayoutName("mozc-jp"));
-  EXPECT_EQ("", GetKeyboardLayoutName("pinyin"));
-  EXPECT_EQ("", GetKeyboardLayoutName("m17n:ar:kbd"));
-  EXPECT_EQ("", GetKeyboardLayoutName("m17n:he:kbd"));
-  EXPECT_EQ("", GetKeyboardLayoutName("m17n:hi:itrans"));
-  EXPECT_EQ("", GetKeyboardLayoutName("m17n:fa:isiri"));
-  EXPECT_EQ("", GetKeyboardLayoutName("m17n:th:kesmanee"));
-  EXPECT_EQ("", GetKeyboardLayoutName("m17n:th:pattachote"));
-  EXPECT_EQ("", GetKeyboardLayoutName("m17n:th:tis820"));
-  EXPECT_EQ("", GetKeyboardLayoutName("m17n:vi:tcvn"));
-  EXPECT_EQ("", GetKeyboardLayoutName("m17n:vi:telex"));
-  EXPECT_EQ("", GetKeyboardLayoutName("m17n:vi:viqr"));
-  EXPECT_EQ("", GetKeyboardLayoutName("m17n:vi:vni"));
-  EXPECT_EQ("", GetKeyboardLayoutName("m17n:zh:cangjie"));
-  EXPECT_EQ("", GetKeyboardLayoutName("m17n:zh:quick"));
 
-  // Supported cases
-  EXPECT_EQ("be", GetKeyboardLayoutName("xkb:be::fra"));
-  EXPECT_EQ("br", GetKeyboardLayoutName("xkb:br::por"));
-  EXPECT_EQ("bg", GetKeyboardLayoutName("xkb:bg::bul"));
-  EXPECT_EQ("cz", GetKeyboardLayoutName("xkb:cz::cze"));
-  EXPECT_EQ("de", GetKeyboardLayoutName("xkb:de::ger"));
-  EXPECT_EQ("ee", GetKeyboardLayoutName("xkb:ee::est"));
+  // Supported cases (samples).
+  EXPECT_EQ("jp", GetKeyboardLayoutName("mozc-jp"));
+  EXPECT_EQ("us", GetKeyboardLayoutName("pinyin"));
+  EXPECT_EQ("us", GetKeyboardLayoutName("m17n:ar:kbd"));
   EXPECT_EQ("es", GetKeyboardLayoutName("xkb:es::spa"));
-  EXPECT_EQ("es", GetKeyboardLayoutName("xkb:es:cat:cat"));
-  EXPECT_EQ("dk", GetKeyboardLayoutName("xkb:dk::dan"));
-  EXPECT_EQ("gr", GetKeyboardLayoutName("xkb:gr::gre"));
-  EXPECT_EQ("lt", GetKeyboardLayoutName("xkb:lt::lit"));
-  EXPECT_EQ("lv", GetKeyboardLayoutName("xkb:lv::lav"));
-  EXPECT_EQ("hr", GetKeyboardLayoutName("xkb:hr::scr"));
-  EXPECT_EQ("nl", GetKeyboardLayoutName("xkb:nl::nld"));
-  EXPECT_EQ("gb", GetKeyboardLayoutName("xkb:gb::eng"));
-  EXPECT_EQ("fi", GetKeyboardLayoutName("xkb:fi::fin"));
-  EXPECT_EQ("fr", GetKeyboardLayoutName("xkb:fr::fra"));
-  EXPECT_EQ("hu", GetKeyboardLayoutName("xkb:hu::hun"));
-  EXPECT_EQ("it", GetKeyboardLayoutName("xkb:it::ita"));
-  EXPECT_EQ("jp", GetKeyboardLayoutName("xkb:jp::jpn"));
-  EXPECT_EQ("no", GetKeyboardLayoutName("xkb:no::nor"));
-  EXPECT_EQ("pl", GetKeyboardLayoutName("xkb:pl::pol"));
-  EXPECT_EQ("pt", GetKeyboardLayoutName("xkb:pt::por"));
-  EXPECT_EQ("ro", GetKeyboardLayoutName("xkb:ro::rum"));
-  EXPECT_EQ("se", GetKeyboardLayoutName("xkb:se::swe"));
-  EXPECT_EQ("sk", GetKeyboardLayoutName("xkb:sk::slo"));
-  EXPECT_EQ("si", GetKeyboardLayoutName("xkb:si::slv"));
-  EXPECT_EQ("rs", GetKeyboardLayoutName("xkb:rs::srp"));
-  EXPECT_EQ("ch", GetKeyboardLayoutName("xkb:ch::ger"));
-  EXPECT_EQ("ru", GetKeyboardLayoutName("xkb:ru::rus"));
-  EXPECT_EQ("tr", GetKeyboardLayoutName("xkb:tr::tur"));
-  EXPECT_EQ("ua", GetKeyboardLayoutName("xkb:ua::ukr"));
+  EXPECT_EQ("es(cat)", GetKeyboardLayoutName("xkb:es:cat:cat"));
+  EXPECT_EQ("gb(extd)", GetKeyboardLayoutName("xkb:gb:extd:eng"));
   EXPECT_EQ("us", GetKeyboardLayoutName("xkb:us::eng"));
-  EXPECT_EQ("us", GetKeyboardLayoutName("xkb:us:dvorak:eng"));
-  EXPECT_EQ("us", GetKeyboardLayoutName("xkb:us:colemak:eng"));
+  EXPECT_EQ("us(dvorak)", GetKeyboardLayoutName("xkb:us:dvorak:eng"));
+  EXPECT_EQ("us(colemak)", GetKeyboardLayoutName("xkb:us:colemak:eng"));
 }
 
-TEST(InputMethodUtilTest, GetLanguageDisplayNameFromCode) {
-  EXPECT_EQ(UTF8ToUTF16("Finnish"), GetLanguageDisplayNameFromCode("fi"));
+TEST(InputMethodUtilTest, GetLanguageCodeFromInputMethodId) {
+  ScopedStubCrosEnabler stub_cros_enabler;
+  // Make sure that the -CN is added properly.
+  EXPECT_EQ("zh-CN", GetLanguageCodeFromInputMethodId("pinyin"));
+}
+
+TEST(InputMethodUtilTest, GetInputMethodDisplayNameFromId) {
+  EXPECT_EQ("Pinyin", GetInputMethodDisplayNameFromId("pinyin"));
+}
+
+TEST(InputMethodUtilTest, GetInputMethodDescriptorFromId) {
+  ScopedStubCrosEnabler stub_cros_enabler;
+  EXPECT_EQ(NULL, GetInputMethodDescriptorFromId("non_existent"));
+
+  const InputMethodDescriptor* descriptor =
+      GetInputMethodDescriptorFromId("pinyin");
+  ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
+  EXPECT_EQ("pinyin", descriptor->id);
+  EXPECT_EQ("Pinyin", descriptor->display_name);
+  EXPECT_EQ("us", descriptor->keyboard_layout);
+  // This is not zh-CN as the language code in InputMethodDescriptor is
+  // not normalized to our format. The normalization is done in
+  // GetLanguageCodeFromDescriptor().
+  EXPECT_EQ("zh", descriptor->language_code);
 }
 
 TEST(InputMethodUtilTest, GetLanguageNativeDisplayNameFromCode) {
