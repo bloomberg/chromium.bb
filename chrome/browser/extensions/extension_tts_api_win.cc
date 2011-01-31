@@ -85,8 +85,10 @@ bool ExtensionTtsPlatformImplWin::Speak(
     speech_synthesizer_->SetVolume(static_cast<uint16>(volume * 100));
   }
 
-  if (paused_)
+  if (paused_) {
     speech_synthesizer_->Resume();
+    paused_ = false;
+  }
   speech_synthesizer_->Speak(
       utterance.c_str(), SPF_ASYNC | SPF_PURGEBEFORESPEAK, NULL);
 
