@@ -231,12 +231,12 @@ void ScriptableHandlePpapi::SetProperty(const pp::Var& name,
     scriptable_proxy_.SetProperty(name, value, exception);
   }
 
-  const char* exception_string = "NULL";
+  std::string exception_string("NULL");
   if (exception != NULL) {
-    exception_string = exception->DebugString().c_str();
+    exception_string = exception->DebugString();
   }
   PLUGIN_PRINTF(("ScriptableHandlePpapi::SetProperty (exception=%s)\n",
-                 exception_string));
+                 exception_string.c_str()));
 }
 
 
