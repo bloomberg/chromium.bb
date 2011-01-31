@@ -3638,6 +3638,7 @@
         ['touchui==1', {
           'sources/': [
             ['include', '^browser/ui/touch/*'],
+            ['include', '^browser/chromeos/dom_ui/login/'],
             ['exclude', '^browser/chromeos/frame/browser_non_client_frame_view_factory_chromeos.cc'],
             ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.cc'],
             ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.h'],
@@ -3646,11 +3647,6 @@
             ['exclude', '^browser/ui/views/frame/browser_non_client_frame_view_factory_gtk.cc'],
             ['exclude', '^browser/views/tab_contents/tab_contents_view_gtk.cc'],
             ['exclude', '^browser/views/tab_contents/tab_contents_view_gtk.h'],
-          ],
-        }],
-        ['touchui==1 and chromeos==1', {
-          'sources/': [
-            ['include', '^browser/chromeos/dom_ui/login/'],
           ],
         }],
         ['OS=="linux"', {
