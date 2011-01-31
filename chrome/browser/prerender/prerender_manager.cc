@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,6 +54,8 @@ PrerenderManager::~PrerenderManager() {
   while (prerender_list_.size() > 0) {
     PrerenderContentsData data = prerender_list_.front();
     prerender_list_.pop_front();
+    data.contents_->set_final_status(
+        PrerenderContents::FINAL_STATUS_MANAGER_SHUTDOWN);
     delete data.contents_;
   }
 }
@@ -81,6 +83,7 @@ void PrerenderManager::AddPreload(const GURL& url,
   while (prerender_list_.size() > max_elements_) {
     data = prerender_list_.front();
     prerender_list_.pop_front();
+    data.contents_->set_final_status(PrerenderContents::FINAL_STATUS_EVICTED);
     delete data.contents_;
   }
 }
@@ -91,6 +94,7 @@ void PrerenderManager::DeleteOldEntries() {
     if (IsPrerenderElementFresh(data.start_time_))
       return;
     prerender_list_.pop_front();
+    data.contents_->set_final_status(PrerenderContents::FINAL_STATUS_TIMED_OUT);
     delete data.contents_;
   }
 }
@@ -116,6 +120,8 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
   scoped_ptr<PrerenderContents> pc(GetEntry(url));
   if (pc.get() == NULL)
     return false;
+
+  pc->set_final_status(PrerenderContents::FINAL_STATUS_USED);
 
   RenderViewHost* rvh = pc->render_view_host();
   pc->set_render_view_host(NULL);
@@ -146,7 +152,6 @@ void PrerenderManager::RemoveEntry(PrerenderContents* entry) {
       break;
     }
   }
-  delete entry;
   DeleteOldEntries();
 }
 

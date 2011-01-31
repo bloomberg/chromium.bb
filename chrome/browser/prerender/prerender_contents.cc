@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/prerender/prerender_contents.h"
 
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/browsing_instance.h"
@@ -38,7 +39,8 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       prerender_url_(url),
       profile_(profile),
       page_id_(0),
-      has_stopped_loading_(false) {
+      has_stopped_loading_(false),
+      final_status_(FINAL_STATUS_MAX) {
   DCHECK(prerender_manager != NULL);
   AddAliasURL(prerender_url_);
   for (std::vector<GURL>::const_iterator it = alias_urls.begin();
@@ -79,7 +81,22 @@ void PrerenderContents::StartPrerendering() {
   render_view_host_->Navigate(params);
 }
 
+void PrerenderContents::set_final_status(FinalStatus final_status) {
+  DCHECK(final_status >= FINAL_STATUS_USED && final_status < FINAL_STATUS_MAX);
+  DCHECK_EQ(FINAL_STATUS_MAX, final_status_);
+  final_status_ = final_status;
+}
+
+PrerenderContents::FinalStatus PrerenderContents::final_status() const {
+  return final_status_;
+}
+
 PrerenderContents::~PrerenderContents() {
+  DCHECK(final_status_ != FINAL_STATUS_MAX);
+  UMA_HISTOGRAM_ENUMERATION("Prerender.FinalStatus",
+                            final_status_,
+                            FINAL_STATUS_MAX);
+
   if (!render_view_host_)   // Will be null for unit tests.
     return;
 
@@ -142,7 +159,7 @@ void PrerenderContents::RunJavaScriptMessage(
   *did_suppress_message = true;
   // We still want to show the user the message when they navigate to this
   // page, so cancel this prerender.
-  prerender_manager_->RemoveEntry(this);
+  Destroy(FINAL_STATUS_JAVASCRIPT_ALERT);
 }
 
 bool PrerenderContents::PreHandleKeyboardEvent(
@@ -156,10 +173,11 @@ void PrerenderContents::Observe(NotificationType type,
                                 const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::PROFILE_DESTROYED:
-    case NotificationType::APP_TERMINATING: {
-      prerender_manager_->RemoveEntry(this);
-      break;
-    }
+      Destroy(FINAL_STATUS_PROFILE_DESTROYED);
+      return;
+    case NotificationType::APP_TERMINATING:
+      Destroy(FINAL_STATUS_APP_TERMINATING);
+      return;
     default:
       NOTREACHED() << "Unexpected notification sent.";
       break;
@@ -195,7 +213,7 @@ void PrerenderContents::ClearInspectorSettings() {
 }
 
 void PrerenderContents::Close(RenderViewHost* render_view_host) {
-  prerender_manager_->RemoveEntry(this);
+  Destroy(FINAL_STATUS_CLOSED);
 }
 
 RendererPreferences PrerenderContents::GetRendererPrefs(
@@ -220,7 +238,7 @@ void PrerenderContents::CreateNewWindow(
     const ViewHostMsg_CreateWindow_Params& params) {
   // Since we don't want to permit child windows that would have a
   // window.opener property, terminate prerendering.
-  prerender_manager_->RemoveEntry(this);
+  Destroy(FINAL_STATUS_CREATE_NEW_WINDOW);
 }
 
 void PrerenderContents::CreateNewWidget(int route_id,
@@ -288,4 +306,10 @@ bool PrerenderContents::MatchesURL(const GURL& url) const {
 
 void PrerenderContents::DidStopLoading() {
   has_stopped_loading_ = true;
+}
+
+void PrerenderContents::Destroy(FinalStatus final_status) {
+  prerender_manager_->RemoveEntry(this);
+  set_final_status(final_status);
+  delete this;
 }

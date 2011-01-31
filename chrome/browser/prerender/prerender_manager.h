@@ -46,7 +46,7 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   bool MaybeUsePreloadedPage(TabContents* tc, const GURL& url);
 
   // Allows PrerenderContents to remove itself when prerendering should
-  // be cancelled.  Also deletes the entry.
+  // be cancelled.
   void RemoveEntry(PrerenderContents* entry);
 
   // Retrieves the PrerenderContents object for the specified URL, if it

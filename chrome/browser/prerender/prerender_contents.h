@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,20 @@ class PrerenderContents : public RenderViewHostDelegate,
                           public NotificationObserver,
                           public JavaScriptAppModalDialogDelegate {
  public:
+  // FinalStatus indicates how |this| ended up being used.
+  enum FinalStatus {
+    FINAL_STATUS_USED,
+    FINAL_STATUS_TIMED_OUT,
+    FINAL_STATUS_EVICTED,
+    FINAL_STATUS_MANAGER_SHUTDOWN,
+    FINAL_STATUS_CLOSED,
+    FINAL_STATUS_CREATE_NEW_WINDOW,
+    FINAL_STATUS_PROFILE_DESTROYED,
+    FINAL_STATUS_APP_TERMINATING,
+    FINAL_STATUS_JAVASCRIPT_ALERT,
+    FINAL_STATUS_MAX,
+  };
+
   // PrerenderContents::Create uses the currently registered Factory to create
   // the PrerenderContents. Factory is intended for testing.
   class Factory {
@@ -68,6 +82,12 @@ class PrerenderContents : public RenderViewHostDelegate,
   string16 title() const { return title_; }
   int32 page_id() const { return page_id_; }
   bool has_stopped_loading() const { return has_stopped_loading_; }
+
+  // Set the final status for how the PrerenderContents was used. This
+  // should only be called once, and should be called before the prerender
+  // contents are destroyed.
+  void set_final_status(FinalStatus final_status);
+  FinalStatus final_status() const;
 
   // Indicates whether this prerendered page can be used for the provided
   // URL, i.e. whether there is a match.
@@ -175,6 +195,10 @@ class PrerenderContents : public RenderViewHostDelegate,
 
   void AddAliasURL(const GURL& url);
 
+  // Remove |this| from the PrerenderManager, set a final status, and
+  // delete |this|.
+  void Destroy(FinalStatus reason);
+
   // The prerender manager owning this object.
   PrerenderManager* prerender_manager_;
 
@@ -209,6 +233,8 @@ class PrerenderContents : public RenderViewHostDelegate,
   std::vector<GURL> alias_urls_;
 
   bool has_stopped_loading_;
+
+  FinalStatus final_status_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };
