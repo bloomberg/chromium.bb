@@ -9,9 +9,6 @@ namespace test_shell {
 // Suppresses all error dialogs when present.
 const char kNoErrorDialogs[]                = "noerrdialogs";
 
-// Causes the test_shell to run using stdin and stdout for URLs and output,
-// respectively, and interferes with interactive use of the UI.
-const char kLayoutTests[] = "layout-tests";
 const char kCrashDumps[] = "crash-dumps";  // Enable crash dumps
 // Dumps the full-heap instead of only stack. Used with kCrashDumps.
 const char kCrashDumpsFulldump[] = "crash-dumps-fulldump";
@@ -27,9 +24,6 @@ const char kClassicTheme[] = "classic-theme";
 // enabled. This is the default unless --layout-tests is specified.
 const char kUxTheme[] = "ux-theme";
 
-// Command line flags that control the tests when layout-tests is specified.
-const char kNoTree[] = "notree";  // Don't dump the render tree.
-const char kDumpPixels[] = "pixel-tests";  // Enable pixel tests.
 // Optional command line switch that specifies timeout time for page load when
 // running file tests in layout test mode, in ms.
 const char kTestShellTimeOut[] = "time-out-ms";

@@ -11,13 +11,10 @@ namespace test_shell {
 
 extern const char kCrashDumps[];
 extern const char kCrashDumpsFulldump[];
-extern const char kDumpPixels[];
-extern const char kLayoutTests[];
 extern const char kGenericTheme[];
 extern const char kClassicTheme[];
 extern const char kUxTheme[];
 extern const char kNoErrorDialogs[];
-extern const char kNoTree[];
 extern const char kTestShellTimeOut[];
 extern const char kStartupDialog[];
 extern const char kGPFaultErrorBox[];

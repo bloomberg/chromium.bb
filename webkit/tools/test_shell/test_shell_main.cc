@@ -99,10 +99,7 @@ int main(int argc, char* argv[]) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   bool suppress_error_dialogs = (
        env->HasVar("CHROME_HEADLESS") ||
-       parsed_command_line.HasSwitch(test_shell::kNoErrorDialogs) ||
-       parsed_command_line.HasSwitch(test_shell::kLayoutTests));
-  bool layout_test_mode =
-      parsed_command_line.HasSwitch(test_shell::kLayoutTests);
+       parsed_command_line.HasSwitch(test_shell::kNoErrorDialogs));
   bool ux_theme = parsed_command_line.HasSwitch(test_shell::kUxTheme);
 #if defined(OS_MACOSX)
   // The "classic theme" flag is meaningless on OS X.  But there is a bunch
@@ -114,8 +111,7 @@ int main(int argc, char* argv[]) {
       parsed_command_line.HasSwitch(test_shell::kClassicTheme);
 #endif  // !OS_MACOSX
 #if defined(OS_WIN)
-  bool generic_theme = (layout_test_mode && !ux_theme && !classic_theme) ||
-      parsed_command_line.HasSwitch(test_shell::kGenericTheme);
+  bool generic_theme = parsed_command_line.HasSwitch(test_shell::kGenericTheme);
 #else
   // Stop compiler warnings about unused variables.
   static_cast<void>(ux_theme);
@@ -148,6 +144,7 @@ int main(int argc, char* argv[]) {
     TestShell::SetMultipleLoad(load_count);
   }
 
+  bool layout_test_mode = false;
   TestShell::InitLogging(suppress_error_dialogs,
                          layout_test_mode,
                          enable_gp_fault_error_box);
@@ -182,16 +179,12 @@ int main(int argc, char* argv[]) {
   else if (record_mode)
     cache_mode = net::HttpCache::RECORD;
 
-  if (layout_test_mode ||
-      parsed_command_line.HasSwitch(test_shell::kEnableFileCookies))
+  if (parsed_command_line.HasSwitch(test_shell::kEnableFileCookies))
     net::CookieMonster::EnableFileScheme();
 
   FilePath cache_path =
       parsed_command_line.GetSwitchValuePath(test_shell::kCacheDir);
-  // If the cache_path is empty and it's layout_test_mode, leave it empty
-  // so we use an in-memory cache. This makes running multiple test_shells
-  // in parallel less flaky.
-  if (cache_path.empty() && !layout_test_mode) {
+  if (cache_path.empty()) {
     PathService::Get(base::DIR_EXE, &cache_path);
     cache_path = cache_path.AppendASCII("cache");
   }
@@ -241,16 +234,11 @@ int main(int argc, char* argv[]) {
   // Treat the first argument as the initial URL to open.
   GURL starting_url;
 
-  // Default to a homepage if we're interactive.
-  if (!layout_test_mode) {
-    FilePath path;
-    PathService::Get(base::DIR_SOURCE_ROOT, &path);
-    path = path.AppendASCII("webkit");
-    path = path.AppendASCII("data");
-    path = path.AppendASCII("test_shell");
-    path = path.AppendASCII("index.html");
-    starting_url = net::FilePathToFileURL(path);
-  }
+  FilePath path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  path = path.AppendASCII("webkit").AppendASCII("data")
+             .AppendASCII("test_shell").AppendASCII("index.html");
+  starting_url = net::FilePathToFileURL(path);
 
   const std::vector<CommandLine::StringType>& args = parsed_command_line.args();
   if (args.size() > 0) {
@@ -348,101 +336,8 @@ int main(int argc, char* argv[]) {
       base::MemoryDebug::DumpAllMemoryInUse();
     }
 
-    // See if we need to run the tests.
-    if (layout_test_mode) {
-      // Set up for the kind of test requested.
-      TestShell::TestParams params;
-      if (parsed_command_line.HasSwitch(test_shell::kDumpPixels)) {
-        // The pixel test flag also gives the image file name to use.
-        params.dump_pixels = true;
-        params.pixel_file_name = parsed_command_line.GetSwitchValuePath(
-            test_shell::kDumpPixels);
-        if (params.pixel_file_name.empty()) {
-          fprintf(stderr, "No file specified for pixel tests");
-          exit(1);
-        }
-      }
-      if (parsed_command_line.HasSwitch(test_shell::kNoTree)) {
-          params.dump_tree = false;
-      }
-
-      if (!starting_url.is_valid()) {
-        // Watch stdin for URLs.
-        char filenameBuffer[kPathBufSize];
-        while (fgets(filenameBuffer, sizeof(filenameBuffer), stdin)) {
-          // When running layout tests we pass new line separated
-          // tests to TestShell. Each line is a space separated list
-          // of filename, timeout and expected pixel hash. The timeout
-          // and the pixel hash are optional.
-          char* newLine = strchr(filenameBuffer, '\n');
-          if (newLine)
-            *newLine = '\0';
-          if (!*filenameBuffer)
-            continue;
-
-          params.test_url = strtok(filenameBuffer, " ");
-
-          // Set the current path to the directory that contains the test
-          // files. This is because certain test file may use the relative
-          // path.
-          GURL test_url(params.test_url);
-          FilePath test_file_path;
-          net::FileURLToFilePath(test_url, &test_file_path);
-          file_util::SetCurrentDirectory(test_file_path.DirName());
-
-          int old_timeout_ms = TestShell::GetLayoutTestTimeout();
-
-          char* timeout = strtok(NULL, " ");
-          if (timeout) {
-            TestShell::SetFileTestTimeout(atoi(timeout));
-            char* pixel_hash = strtok(NULL, " ");
-            if (pixel_hash)
-              params.pixel_hash = pixel_hash;
-          }
-
-          // Load the page the number of times specified.
-          bool fatal_error = false;
-          for (int i = 0; i < TestShell::GetLoadCount(); i++) {
-            // Set the JavaScript flags specified for this load.
-            webkit_glue::SetJavaScriptFlags(TestShell::GetJSFlagsForLoad(i));
-
-            // Only dump for the last load.
-            bool is_last_load = (i == (TestShell::GetLoadCount() - 1));
-            TestShell::SetDumpWhenFinished(is_last_load);
-
-            if (!TestShell::RunFileTest(params)) {
-              fatal_error = true;
-              break;
-            }
-          }
-
-          if (fatal_error)
-            break;
-
-          TestShell::SetFileTestTimeout(old_timeout_ms);
-        }
-      } else {
-        // TODO(ojan): Provide a way for run-singly tests to pass
-        // in a hash and then set params.pixel_hash here.
-        params.test_url = starting_url.spec();
-        TestShell::RunFileTest(params);
-      }
-
-      shell->CallJSGC();
-      shell->CallJSGC();
-
-      // When we finish the last test, cleanup the LayoutTestController.
-      // It may have references to not-yet-cleaned up windows.  By
-      // cleaning up here we help purify reports.
-      shell->ResetTestController();
-
-      // Flush any remaining messages before we kill ourselves.
-      // http://code.google.com/p/chromium/issues/detail?id=9500
-      MessageLoop::current()->RunAllPending();
-    } else {
-      webkit_glue::SetJavaScriptFlags(TestShell::GetJSFlagsForLoad(0));
-      MessageLoop::current()->Run();
-    }
+    webkit_glue::SetJavaScriptFlags(TestShell::GetJSFlagsForLoad(0));
+    MessageLoop::current()->Run();
 
     if (record_mode)
       base::EventRecorder::current()->StopRecording();
