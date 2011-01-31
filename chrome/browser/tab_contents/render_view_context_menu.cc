@@ -60,6 +60,98 @@
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;
 
+namespace {
+
+bool IsCustomItemEnabled(const std::vector<WebMenuItem>& items, int id) {
+  DCHECK(id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
+         id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST);
+  for (size_t i = 0; i < items.size(); ++i) {
+    int action_id = IDC_CONTENT_CONTEXT_CUSTOM_FIRST + items[i].action;
+    if (action_id == id)
+      return items[i].enabled;
+    if (items[i].type == WebMenuItem::SUBMENU) {
+      if (IsCustomItemEnabled(items[i].submenu, id))
+        return true;
+    }
+  }
+  return false;
+}
+
+bool IsCustomItemChecked(const std::vector<WebMenuItem>& items, int id) {
+  DCHECK(id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
+         id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST);
+  for (size_t i = 0; i < items.size(); ++i) {
+    int action_id = IDC_CONTENT_CONTEXT_CUSTOM_FIRST + items[i].action;
+    if (action_id == id)
+      return items[i].checked;
+    if (items[i].type == WebMenuItem::SUBMENU) {
+      if (IsCustomItemChecked(items[i].submenu, id))
+        return true;
+    }
+  }
+  return false;
+}
+
+const size_t kMaxCustomMenuDepth = 5;
+const size_t kMaxCustomMenuTotalItems = 1000;
+
+void AddCustomItemsToMenu(const std::vector<WebMenuItem>& items,
+                          size_t depth,
+                          size_t* total_items,
+                          ui::SimpleMenuModel::Delegate* delegate,
+                          ui::SimpleMenuModel* menu_model) {
+  if (depth > kMaxCustomMenuDepth) {
+    LOG(ERROR) << "Custom menu too deeply nested.";
+    return;
+  }
+  for (size_t i = 0; i < items.size(); ++i) {
+    if (IDC_CONTENT_CONTEXT_CUSTOM_FIRST + items[i].action >=
+        IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
+      LOG(ERROR) << "Custom menu action value too big.";
+      return;
+    }
+    if (*total_items >= kMaxCustomMenuTotalItems) {
+      LOG(ERROR) << "Custom menu too large (too many items).";
+      return;
+    }
+    (*total_items)++;
+    switch (items[i].type) {
+      case WebMenuItem::OPTION:
+        menu_model->AddItem(
+            items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
+            items[i].label);
+        break;
+      case WebMenuItem::CHECKABLE_OPTION:
+        menu_model->AddCheckItem(
+            items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
+            items[i].label);
+        break;
+      case WebMenuItem::GROUP:
+        // TODO(viettrungluu): I don't know what this is supposed to do.
+        NOTREACHED();
+        break;
+      case WebMenuItem::SEPARATOR:
+        menu_model->AddSeparator();
+        break;
+      case WebMenuItem::SUBMENU: {
+        ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(delegate);
+        AddCustomItemsToMenu(items[i].submenu, depth + 1, total_items, delegate,
+                             submenu);
+        menu_model->AddSubMenu(
+            items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
+            items[i].label,
+            submenu);
+        break;
+      }
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+}
+
+}  // namespace
+
 // static
 const size_t RenderViewContextMenu::kMaxExtensionItemTitleLength = 75;
 // static
@@ -358,7 +450,9 @@ void RenderViewContextMenu::InitMenu() {
   bool has_selection = !params_.selection_text.empty();
 
   if (AppendCustomItems()) {
-    AppendDeveloperItems();
+    // Don't add items for Pepper menu.
+    if (!params_.custom_context.is_pepper_menu)
+      AppendDeveloperItems();
     return;
   }
 
@@ -424,23 +518,10 @@ void RenderViewContextMenu::LookUpInDictionary() {
 }
 
 bool RenderViewContextMenu::AppendCustomItems() {
-  std::vector<WebMenuItem>& custom_items = params_.custom_items;
-  for (size_t i = 0; i < custom_items.size(); ++i) {
-    DCHECK(IDC_CONTENT_CONTEXT_CUSTOM_FIRST + custom_items[i].action <
-        IDC_CONTENT_CONTEXT_CUSTOM_LAST);
-    if (custom_items[i].type == WebMenuItem::SEPARATOR) {
-      menu_model_.AddSeparator();
-    } else if (custom_items[i].type == WebMenuItem::CHECKABLE_OPTION) {
-      menu_model_.AddCheckItem(
-          custom_items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
-          custom_items[i].label);
-    } else {
-      menu_model_.AddItem(
-          custom_items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
-          custom_items[i].label);
-    }
-  }
-  return custom_items.size() > 0;
+  size_t total_items = 0;
+  AddCustomItemsToMenu(params_.custom_items, 0, &total_items, this,
+                       &menu_model_);
+  return total_items > 0;
 }
 
 void RenderViewContextMenu::AppendDeveloperItems() {
@@ -773,28 +854,10 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     return profile_->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck);
   }
 
-  // Process custom actions range.
-  if ((id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST) &&
-      (id < IDC_CONTENT_CONTEXT_CUSTOM_LAST)) {
-    unsigned action = id - IDC_CONTENT_CONTEXT_CUSTOM_FIRST;
-    for (size_t i = 0; i < params_.custom_items.size(); ++i) {
-      if (params_.custom_items[i].action == action)
-        return params_.custom_items[i].enabled;
-    }
-    NOTREACHED();
-    return false;
-  }
-
-  // Custom WebKit items.
+  // Custom items.
   if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
-    const std::vector<WebMenuItem>& custom_items = params_.custom_items;
-    for (size_t i = 0; i < custom_items.size(); ++i) {
-      int action_id = IDC_CONTENT_CONTEXT_CUSTOM_FIRST + custom_items[i].action;
-      if (action_id == id)
-        return custom_items[i].enabled;
-    }
-    return true;
+    return IsCustomItemEnabled(params_.custom_items, id);
   }
 
   // Extension items.
@@ -1020,16 +1083,10 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
             WebContextMenuData::MediaControls) != 0;
   }
 
-  // Custom WebKit items.
+  // Custom items.
   if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
-    const std::vector<WebMenuItem>& custom_items = params_.custom_items;
-    for (size_t i = 0; i < custom_items.size(); ++i) {
-      int action_id = IDC_CONTENT_CONTEXT_CUSTOM_FIRST + custom_items[i].action;
-      if (action_id == id)
-        return custom_items[i].checked;
-    }
-    return false;
+    return IsCustomItemChecked(params_.custom_items, id);
   }
 
   // Extension items.
@@ -1090,11 +1147,11 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
   }
 
   // Process custom actions range.
-  if ((id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST) &&
-      (id < IDC_CONTENT_CONTEXT_CUSTOM_LAST)) {
+  if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
+      id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
     unsigned action = id - IDC_CONTENT_CONTEXT_CUSTOM_FIRST;
-    source_tab_contents_->render_view_host()->
-        PerformCustomContextMenuAction(action);
+    source_tab_contents_->render_view_host()->PerformCustomContextMenuAction(
+        params_.custom_context, action);
     return;
   }
 
@@ -1399,7 +1456,8 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
 }
 
 void RenderViewContextMenu::MenuClosed() {
-  source_tab_contents_->render_view_host()->ContextMenuClosed();
+  source_tab_contents_->render_view_host()->ContextMenuClosed(
+      params_.custom_context);
 }
 
 bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {

@@ -49,6 +49,7 @@ class BlobData;
 }
 
 namespace webkit_glue {
+struct CustomContextMenuContext;
 struct ResourceDevToolsInfo;
 struct ResourceLoadTimingInfo;
 struct ResourceResponseInfo;
@@ -142,6 +143,14 @@ struct ParamTraits<FontDescriptor> {
   static void Log(const param_type& p, std::string* l);
 };
 #endif
+
+template <>
+struct ParamTraits<webkit_glue::CustomContextMenuContext> {
+  typedef webkit_glue::CustomContextMenuContext param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
 
 template <>
 struct ParamTraits<ContextMenuParams> {

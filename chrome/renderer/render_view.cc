@@ -4716,8 +4716,13 @@ void RenderView::OnSetAltErrorPageURL(const GURL& url) {
   alternate_error_page_url_ = url;
 }
 
-void RenderView::OnCustomContextMenuAction(unsigned action) {
-  webview()->performCustomContextMenuAction(action);
+void RenderView::OnCustomContextMenuAction(
+    const webkit_glue::CustomContextMenuContext& custom_context,
+    unsigned action) {
+  if (custom_context.is_pepper_menu)
+    pepper_delegate_.OnCustomContextMenuAction(custom_context, action);
+  else
+    webview()->performCustomContextMenuAction(action);
 }
 
 void RenderView::OnTranslatePage(int page_id,
@@ -5774,6 +5779,10 @@ void RenderView::OnJavaScriptStressTestControl(int cmd, int param) {
   }
 }
 
-void RenderView::OnContextMenuClosed() {
-  context_menu_node_.reset();
+void RenderView::OnContextMenuClosed(
+    const webkit_glue::CustomContextMenuContext& custom_context) {
+  if (custom_context.is_pepper_menu)
+    pepper_delegate_.OnContextMenuClosed(custom_context);
+  else
+    context_menu_node_.reset();
 }

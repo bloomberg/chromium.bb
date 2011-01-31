@@ -55,11 +55,17 @@ struct ParamTraits<WebMenuItem::Type> {
       case WebMenuItem::OPTION:
         type = "OPTION";
         break;
+      case WebMenuItem::CHECKABLE_OPTION:
+        type = "CHECKABLE_OPTION";
+        break;
       case WebMenuItem::GROUP:
         type = "GROUP";
         break;
       case WebMenuItem::SEPARATOR:
         type = "SEPARATOR";
+        break;
+      case WebMenuItem::SUBMENU:
+        type = "SUBMENU";
         break;
       default:
         type = "UNKNOWN";
@@ -78,15 +84,40 @@ void ParamTraits<FontDescriptor>::Write(Message* m, const param_type& p) {
 bool ParamTraits<FontDescriptor>::Read(const Message* m,
                                        void** iter,
                                        param_type* p) {
-  return(
+  return
       ReadParam(m, iter, &p->font_name) &&
-      ReadParam(m, iter, &p->font_point_size));
+      ReadParam(m, iter, &p->font_point_size);
 }
 
 void ParamTraits<FontDescriptor>::Log(const param_type& p, std::string* l) {
   l->append("<FontDescriptor>");
 }
 #endif
+
+void ParamTraits<webkit_glue::CustomContextMenuContext>::Write(
+    Message* m,
+    const param_type& p) {
+  WriteParam(m, p.is_pepper_menu);
+  WriteParam(m, p.request_id);
+}
+
+bool ParamTraits<webkit_glue::CustomContextMenuContext>::Read(const Message* m,
+                                                              void** iter,
+                                                              param_type* p) {
+  return
+      ReadParam(m, iter, &p->is_pepper_menu) &&
+      ReadParam(m, iter, &p->request_id);
+}
+
+void ParamTraits<webkit_glue::CustomContextMenuContext>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("(");
+  LogParam(p.is_pepper_menu, l);
+  l->append(", ");
+  LogParam(p.request_id, l);
+  l->append(")");
+}
 
 void ParamTraits<ContextMenuParams>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.media_type);
@@ -112,6 +143,7 @@ void ParamTraits<ContextMenuParams>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.edit_flags);
   WriteParam(m, p.security_info);
   WriteParam(m, p.frame_charset);
+  WriteParam(m, p.custom_context);
   WriteParam(m, p.custom_items);
 }
 
@@ -141,6 +173,7 @@ bool ParamTraits<ContextMenuParams>::Read(const Message* m, void** iter,
       ReadParam(m, iter, &p->edit_flags) &&
       ReadParam(m, iter, &p->security_info) &&
       ReadParam(m, iter, &p->frame_charset) &&
+      ReadParam(m, iter, &p->custom_context) &&
       ReadParam(m, iter, &p->custom_items);
 }
 
@@ -742,6 +775,7 @@ void ParamTraits<WebMenuItem>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.enabled);
   WriteParam(m, p.checked);
   WriteParam(m, p.action);
+  WriteParam(m, p.submenu);
 }
 
 bool ParamTraits<WebMenuItem>::Read(const Message* m,
@@ -752,7 +786,8 @@ bool ParamTraits<WebMenuItem>::Read(const Message* m,
       ReadParam(m, iter, &p->type) &&
       ReadParam(m, iter, &p->enabled) &&
       ReadParam(m, iter, &p->checked) &&
-      ReadParam(m, iter, &p->action);
+      ReadParam(m, iter, &p->action) &&
+      ReadParam(m, iter, &p->submenu);
 }
 
 void ParamTraits<WebMenuItem>::Log(const param_type& p, std::string* l) {
@@ -766,6 +801,8 @@ void ParamTraits<WebMenuItem>::Log(const param_type& p, std::string* l) {
   LogParam(p.checked, l);
   l->append(", ");
   LogParam(p.action, l);
+  l->append(", ");
+  LogParam(p.submenu, l);
   l->append(")");
 }
 

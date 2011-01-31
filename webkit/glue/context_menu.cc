@@ -4,6 +4,15 @@
 
 #include "webkit/glue/context_menu.h"
 
+namespace webkit_glue {
+
+CustomContextMenuContext::CustomContextMenuContext()
+    : is_pepper_menu(false),
+      request_id(0) {
+}
+
+}  // namespace webkit_glue
+
 ContextMenuParams::ContextMenuParams() {
 }
 
@@ -30,6 +39,7 @@ ContextMenuParams::ContextMenuParams(const WebKit::WebContextMenuData& data)
       edit_flags(data.editFlags),
       security_info(data.securityInfo),
       frame_charset(data.frameEncoding.utf8()) {
+  custom_context.is_pepper_menu = false;
   for (size_t i = 0; i < data.customItems.size(); ++i)
     custom_items.push_back(WebMenuItem(data.customItems[i]));
 }

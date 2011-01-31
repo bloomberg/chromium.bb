@@ -955,7 +955,8 @@ IPC_MESSAGE_CONTROL1(ViewMsg_SpellChecker_EnableAutoSpellCorrect,
                      bool /* enable */)
 
 // Executes custom context menu action that was provided from WebKit.
-IPC_MESSAGE_ROUTED1(ViewMsg_CustomContextMenuAction,
+IPC_MESSAGE_ROUTED2(ViewMsg_CustomContextMenuAction,
+                    webkit_glue::CustomContextMenuContext /* custom_context */,
                     unsigned /* action */)
 
 // Tells the renderer to translate the page contents from one language to
@@ -1057,7 +1058,8 @@ IPC_MESSAGE_CONTROL1(ViewMsg_SpeechInput_SetFeatureEnabled,
 
 // Sent in response to a ViewHostMsg_ContextMenu to let the renderer know that
 // the menu has been closed.
-IPC_MESSAGE_ROUTED0(ViewMsg_ContextMenuClosed)
+IPC_MESSAGE_ROUTED1(ViewMsg_ContextMenuClosed,
+                    webkit_glue::CustomContextMenuContext /* custom_context */)
 
 //-----------------------------------------------------------------------------
 // TabContents messages

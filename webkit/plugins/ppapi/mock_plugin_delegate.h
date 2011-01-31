@@ -90,6 +90,9 @@ class MockPluginDelegate : public PluginDelegate {
   virtual int32_t ConnectTcpAddress(
       webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
       const struct PP_Flash_NetAddress* addr);
+  virtual int32_t ShowContextMenu(
+      webkit::ppapi::PPB_Flash_Menu_Impl* menu,
+      const gfx::Point& position);
   virtual FullscreenContainer* CreateFullscreenContainer(
       PluginInstance* instance);
   virtual std::string GetDefaultEncoding();

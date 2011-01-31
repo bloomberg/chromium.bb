@@ -114,6 +114,7 @@ class PhishingClassifierDelegate;
 }
 
 namespace webkit_glue {
+struct CustomContextMenuContext;
 class ImageResourceFetcher;
 struct FileUploadData;
 struct FormData;
@@ -826,7 +827,8 @@ class RenderView : public RenderWidget,
                        const PP_Flash_NetAddress& local_addr,
                        const PP_Flash_NetAddress& remote_addr);
 #endif
-  void OnContextMenuClosed();
+  void OnContextMenuClosed(
+      const webkit_glue::CustomContextMenuContext& custom_context);
   void OnCopy();
   void OnCopyImageAt(int x, int y);
 #if defined(OS_MACOSX)
@@ -838,7 +840,9 @@ class RenderView : public RenderWidget,
   void OnCSSInsertRequest(const std::wstring& frame_xpath,
                           const std::string& css,
                           const std::string& id);
-  void OnCustomContextMenuAction(unsigned action);
+  void OnCustomContextMenuAction(
+      const webkit_glue::CustomContextMenuContext& custom_context,
+      unsigned action);
   void OnDelete();
   void OnDeterminePageLanguage();
   void OnDisableScrollbarsForSmallWindows(

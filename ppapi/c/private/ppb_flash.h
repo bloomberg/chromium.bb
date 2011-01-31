@@ -19,7 +19,7 @@
 
 // PPB_Flash -------------------------------------------------------------------
 
-#define PPB_FLASH_INTERFACE "PPB_Flash;4"
+#define PPB_FLASH_INTERFACE "PPB_Flash;5"
 
 #ifdef _WIN32
 typedef HANDLE PP_FileHandle;
@@ -116,6 +116,17 @@ struct PPB_Flash {
   PP_Bool (*NavigateToURL)(PP_Instance instance,
                            const char* url,
                            const char* target);
+
+  // Runs a nested message loop. The plugin will be reentered from this call.
+  // This function is used in places where Flash would normally enter a nested
+  // message loop (e.g., when displaying context menus), but Pepper provides
+  // only an asynchronous call. After performing that asynchronous call, call
+  // |RunMessageLoop()|. In the callback, call |QuitMessageLoop()|.
+  void (*RunMessageLoop)();
+
+  // Posts a quit message for the outermost nested message loop. Use this to
+  // exit and return back to the caller after you call RunMessageLoop.
+  void (*QuitMessageLoop)();
 };
 
 // PPB_Flash_NetConnector ------------------------------------------------------

@@ -19,6 +19,10 @@ class PluginGroup;
 }
 }
 
+namespace webkit_glue {
+struct CustomContextMenuContext;
+}
+
 class BlockedPlugin : public RenderViewObserver,
                       public CppBoundClass,
                       public webkit::npapi::WebViewPlugin::Delegate {
@@ -45,7 +49,9 @@ class BlockedPlugin : public RenderViewObserver,
   // RenderViewObserver methods:
   virtual bool OnMessageReceived(const IPC::Message& message);
 
-  void OnMenuItemSelected(unsigned id);
+  void OnMenuItemSelected(
+      const webkit_glue::CustomContextMenuContext& /* ignored */,
+      unsigned id);
 
   // Load the blocked plugin.
   void LoadPlugin();

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1246,8 +1246,9 @@ void RenderViewHost::MediaPlayerActionAt(const gfx::Point& location,
   Send(new ViewMsg_MediaPlayerActionAt(routing_id(), location, action));
 }
 
-void RenderViewHost::ContextMenuClosed() {
-  Send(new ViewMsg_ContextMenuClosed(routing_id()));
+void RenderViewHost::ContextMenuClosed(
+    const webkit_glue::CustomContextMenuContext& custom_context) {
+  Send(new ViewMsg_ContextMenuClosed(routing_id(), custom_context));
 }
 
 void RenderViewHost::PrintNodeUnderContextMenu() {
@@ -1500,8 +1501,12 @@ void RenderViewHost::UpdateBrowserWindowId(int window_id) {
   Send(new ViewMsg_UpdateBrowserWindowId(routing_id(), window_id));
 }
 
-void RenderViewHost::PerformCustomContextMenuAction(unsigned action) {
-  Send(new ViewMsg_CustomContextMenuAction(routing_id(), action));
+void RenderViewHost::PerformCustomContextMenuAction(
+    const webkit_glue::CustomContextMenuContext& custom_context,
+    unsigned action) {
+  Send(new ViewMsg_CustomContextMenuAction(routing_id(),
+                                           custom_context,
+                                           action));
 }
 
 void RenderViewHost::SendContentSettings(const GURL& url,

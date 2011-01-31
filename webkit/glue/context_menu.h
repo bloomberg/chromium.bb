@@ -14,6 +14,18 @@
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 
+namespace webkit_glue {
+
+struct CustomContextMenuContext {
+  bool is_pepper_menu;
+  int request_id;
+
+  CustomContextMenuContext();
+};
+
+}  // namespace webkit_glue
+
+// TODO(viettrungluu): Put this in the webkit_glue namespace.
 // Parameters structure for ViewHostMsg_ContextMenu.
 // FIXME(beng): This would be more useful in the future and more efficient
 //              if the parameters here weren't so literally mapped to what
@@ -94,6 +106,7 @@ struct ContextMenuParams {
   // The character encoding of the frame on which the menu is invoked.
   std::string frame_charset;
 
+  webkit_glue::CustomContextMenuContext custom_context;
   std::vector<WebMenuItem> custom_items;
 
   ContextMenuParams();

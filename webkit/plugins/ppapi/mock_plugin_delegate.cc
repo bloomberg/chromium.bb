@@ -173,6 +173,12 @@ int32_t MockPluginDelegate::ConnectTcpAddress(
   return PP_ERROR_FAILED;
 }
 
+int32_t MockPluginDelegate::ShowContextMenu(
+    webkit::ppapi::PPB_Flash_Menu_Impl* menu,
+    const gfx::Point& position) {
+  return PP_ERROR_FAILED;
+}
+
 FullscreenContainer* MockPluginDelegate::CreateFullscreenContainer(
     PluginInstance* instance) {
   return NULL;

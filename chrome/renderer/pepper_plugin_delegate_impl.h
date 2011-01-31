@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,11 +16,13 @@
 #include "ppapi/c/pp_errors.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
 
 class FilePath;
 class RenderView;
 
 namespace gfx {
+class Point;
 class Rect;
 }
 
@@ -36,6 +38,10 @@ class PluginModule;
 namespace WebKit {
 class WebFileChooserCompletion;
 struct WebFileChooserParams;
+}
+
+namespace webkit_glue {
+struct CustomContextMenuContext;
 }
 
 class TransportDIB;
@@ -154,6 +160,17 @@ class PepperPluginDelegateImpl
       base::PlatformFile socket,
       const PP_Flash_NetAddress& local_addr,
       const PP_Flash_NetAddress& remote_addr);
+  virtual int32_t ShowContextMenu(
+      webkit::ppapi::PPB_Flash_Menu_Impl* menu,
+      const gfx::Point& position);
+  void OnContextMenuClosed(
+      const webkit_glue::CustomContextMenuContext& custom_context);
+  void OnCustomContextMenuAction(
+      const webkit_glue::CustomContextMenuContext& custom_context,
+      unsigned action);
+  void CompleteShowContextMenu(int request_id,
+                               bool did_select,
+                               unsigned action);
   virtual webkit::ppapi::FullscreenContainer*
       CreateFullscreenContainer(
           webkit::ppapi::PluginInstance* instance);
@@ -171,6 +188,10 @@ class PepperPluginDelegateImpl
 
   std::set<webkit::ppapi::PluginInstance*> active_instances_;
 
+  // Used to send a single context menu "completion" upon menu close.
+  bool has_saved_context_menu_action_;
+  unsigned saved_context_menu_action_;
+
   // TODO(viettrungluu): Get rid of |id_generator_| -- just use |IDMap::Add()|.
   // Rename |messages_waiting_replies_| (to specify async open file).
   int id_generator_;
@@ -178,6 +199,9 @@ class PepperPluginDelegateImpl
 
   IDMap<scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl>,
         IDMapOwnPointer> pending_connect_tcps_;
+
+  IDMap<scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>,
+        IDMapOwnPointer> pending_context_menus_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginDelegateImpl);
 };

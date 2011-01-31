@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "base/file_path.h"
+#include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
@@ -217,6 +218,17 @@ PP_Bool NavigateToURL(PP_Instance pp_instance,
   return BoolToPPBool(instance->NavigateToURL(url, target));
 }
 
+void RunMessageLoop() {
+  bool old_state = MessageLoop::current()->NestableTasksAllowed();
+  MessageLoop::current()->SetNestableTasksAllowed(true);
+  MessageLoop::current()->Run();
+  MessageLoop::current()->SetNestableTasksAllowed(old_state);
+}
+
+void QuitMessageLoop() {
+  MessageLoop::current()->QuitNow();
+}
+
 const PPB_Flash ppb_flash = {
   &SetInstanceAlwaysOnTop,
   &PPB_Flash_Impl::DrawGlyphs,
@@ -229,6 +241,8 @@ const PPB_Flash ppb_flash = {
   &GetModuleLocalDirContents,
   &FreeModuleLocalDirContents,
   &NavigateToURL,
+  &RunMessageLoop,
+  &QuitMessageLoop,
 };
 
 }  // namespace

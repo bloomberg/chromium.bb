@@ -50,6 +50,7 @@
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
@@ -67,6 +68,7 @@
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
+#include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
@@ -242,6 +244,8 @@ const void* GetInterface(const char* name) {
     return PluginInstance::GetFindInterface();
   if (strcmp(name, PPB_FLASH_INTERFACE) == 0)
     return PPB_Flash_Impl::GetInterface();
+  if (strcmp(name, PPB_FLASH_MENU_INTERFACE) == 0)
+    return PPB_Flash_Menu_Impl::GetInterface();
   if (strcmp(name, PPB_FONT_DEV_INTERFACE) == 0)
     return PPB_Font_Impl::GetInterface();
   if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE) == 0)

@@ -148,7 +148,9 @@ bool BlockedPlugin::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
-void BlockedPlugin::OnMenuItemSelected(unsigned id) {
+void BlockedPlugin::OnMenuItemSelected(
+    const webkit_glue::CustomContextMenuContext& /* ignored */,
+    unsigned id) {
   if (id == kMenuActionLoad) {
     LoadPlugin();
   } else if (id == kMenuActionRemove) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,7 @@ class FileSystemCallbackDispatcher;
 }
 
 namespace gfx {
+class Point;
 class Rect;
 }
 
@@ -64,6 +65,7 @@ class FileIO;
 class FullscreenContainer;
 class PluginInstance;
 class PluginModule;
+class PPB_Flash_Menu_Impl;
 class PPB_Flash_NetConnector_Impl;
 
 // Virtual interface that the browser implements to implement features for
@@ -301,6 +303,12 @@ class PluginDelegate {
   virtual int32_t ConnectTcpAddress(
       webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
       const struct PP_Flash_NetAddress* addr) = 0;
+
+  // Show the given context menu at the given position (in the render view's
+  // coordinates).
+  virtual int32_t ShowContextMenu(
+      webkit::ppapi::PPB_Flash_Menu_Impl* menu,
+      const gfx::Point& position) = 0;
 
   // Create a fullscreen container for a plugin instance. This effectively
   // switches the plugin to fullscreen.

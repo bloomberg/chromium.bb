@@ -75,7 +75,10 @@ enum {
   PP_ERROR_FILECHANGED = -23,
 
   /** Indicates failure due to a time limit being exceeded. */
-  PP_ERROR_TIMEDOUT = -30
+  PP_ERROR_TIMEDOUT = -30,
+
+  /** Indicates that the user cancelled rather providing expected input. */
+  PP_ERROR_USERCANCEL = -40
 };
 
 /**
@@ -84,4 +87,3 @@ enum {
  */
 
 #endif  /* PPAPI_C_PP_ERRORS_H_ */
-

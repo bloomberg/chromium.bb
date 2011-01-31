@@ -58,6 +58,7 @@ class Point;
 }  // namespace gfx
 
 namespace webkit_glue {
+struct CustomContextMenuContext;
 struct WebAccessibility;
 }  // namespace webkit_glue
 
@@ -318,7 +319,8 @@ class RenderViewHost : public RenderWidgetHost {
                            const WebKit::WebMediaPlayerAction& action);
 
   // Notifies the renderer that the context menu has closed.
-  void ContextMenuClosed();
+  void ContextMenuClosed(
+      const webkit_glue::CustomContextMenuContext& custom_context);
 
   // Prints the node that's under the context menu.
   void PrintNodeUnderContextMenu();
@@ -462,7 +464,9 @@ class RenderViewHost : public RenderWidgetHost {
   void UpdateBrowserWindowId(int window_id);
 
   // Tells the render view that a custom context action has been selected.
-  void PerformCustomContextMenuAction(unsigned action);
+  void PerformCustomContextMenuAction(
+      const webkit_glue::CustomContextMenuContext& custom_context,
+      unsigned action);
 
   // Informs renderer of updated content settings.
   void SendContentSettings(const GURL& url,

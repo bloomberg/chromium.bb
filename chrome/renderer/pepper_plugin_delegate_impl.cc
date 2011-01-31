@@ -35,6 +35,7 @@
 #include "grit/locale_settings.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ppapi/c/dev/pp_video_dev.h"
+#include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserCompletion.h"
@@ -43,6 +44,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
+#include "webkit/glue/context_menu.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/ppapi/ppb_file_io_impl.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -376,6 +378,8 @@ bool DispatcherWrapper::Init(
 
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderView* render_view)
     : render_view_(render_view),
+      has_saved_context_menu_action_(false),
+      saved_context_menu_action_(0),
       id_generator_(0) {
 }
 
@@ -818,8 +822,10 @@ int32_t PepperPluginDelegateImpl::ConnectTcp(
                                request_id,
                                std::string(host),
                                port);
-  if (!render_view_->Send(msg))
+  if (!render_view_->Send(msg)) {
+    pending_connect_tcps_.Remove(request_id);
     return PP_ERROR_FAILED;
+  }
 
   return PP_ERROR_WOULDBLOCK;
 }
@@ -833,8 +839,10 @@ int32_t PepperPluginDelegateImpl::ConnectTcpAddress(
       new PepperMsg_ConnectTcpAddress(render_view_->routing_id(),
                                       request_id,
                                       *addr);
-  if (!render_view_->Send(msg))
+  if (!render_view_->Send(msg)) {
+    pending_connect_tcps_.Remove(request_id);
     return PP_ERROR_FAILED;
+  }
 
   return PP_ERROR_WOULDBLOCK;
 }
@@ -849,6 +857,58 @@ void PepperPluginDelegateImpl::OnConnectTcpACK(
   pending_connect_tcps_.Remove(request_id);
 
   connector->CompleteConnectTcp(socket, local_addr, remote_addr);
+}
+
+int32_t PepperPluginDelegateImpl::ShowContextMenu(
+    webkit::ppapi::PPB_Flash_Menu_Impl* menu,
+    const gfx::Point& position) {
+  int request_id = pending_context_menus_.Add(
+      new scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>(menu));
+
+  ContextMenuParams params;
+  params.x = position.x();
+  params.y = position.y();
+  params.custom_context.is_pepper_menu = true;
+  params.custom_context.request_id = request_id;
+  params.custom_items = menu->menu_data();
+
+  IPC::Message* msg = new ViewHostMsg_ContextMenu(render_view_->routing_id(),
+                                                  params);
+  if (!render_view_->Send(msg)) {
+    pending_context_menus_.Remove(request_id);
+    return PP_ERROR_FAILED;
+  }
+
+  return PP_ERROR_WOULDBLOCK;
+}
+
+void PepperPluginDelegateImpl::OnContextMenuClosed(
+    const webkit_glue::CustomContextMenuContext& custom_context) {
+  int request_id = custom_context.request_id;
+  scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl> menu =
+      *pending_context_menus_.Lookup(request_id);
+  if (!menu) {
+    NOTREACHED() << "CompleteShowContextMenu() called twice for the same menu.";
+    return;
+  }
+  pending_context_menus_.Remove(request_id);
+
+  if (has_saved_context_menu_action_) {
+    menu->CompleteShow(PP_OK, saved_context_menu_action_);
+    has_saved_context_menu_action_ = false;
+    saved_context_menu_action_ = 0;
+  } else {
+    menu->CompleteShow(PP_ERROR_USERCANCEL, 0);
+  }
+}
+
+void PepperPluginDelegateImpl::OnCustomContextMenuAction(
+    const webkit_glue::CustomContextMenuContext& custom_context,
+    unsigned action) {
+  // Just save the action.
+  DCHECK(!has_saved_context_menu_action_);
+  has_saved_context_menu_action_ = true;
+  saved_context_menu_action_ = action;
 }
 
 webkit::ppapi::FullscreenContainer*

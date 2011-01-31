@@ -296,6 +296,8 @@
         '../plugins/ppapi/ppb_flash_impl.cc',
         '../plugins/ppapi/ppb_flash_impl.h',
         '../plugins/ppapi/ppb_flash_impl_linux.cc',
+        '../plugins/ppapi/ppb_flash_menu_impl.cc',
+        '../plugins/ppapi/ppb_flash_menu_impl.h',
         '../plugins/ppapi/ppb_font_impl.cc',
         '../plugins/ppapi/ppb_font_impl.h',
         '../plugins/ppapi/ppb_gles_chromium_texture_mapping_impl.cc',

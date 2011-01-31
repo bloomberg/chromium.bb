@@ -31,34 +31,34 @@ class PepperMessageFilter : public BrowserMessageFilter {
 
 #if defined(ENABLE_FLAPPER_HACKS)
   // Message handlers.
-  void OnPepperConnectTcp(int routing_id,
-                          int request_id,
-                          const std::string& host,
-                          uint16 port);
-  void OnPepperConnectTcpAddress(int routing_id,
-                                 int request_id,
-                                 const PP_Flash_NetAddress& address);
+  void OnConnectTcp(int routing_id,
+                    int request_id,
+                    const std::string& host,
+                    uint16 port);
+  void OnConnectTcpAddress(int routing_id,
+                           int request_id,
+                           const PP_Flash_NetAddress& address);
 
-  // |Send()| a |ViewMsg_PepperConnectTcpACK|, which reports an error.
-  bool SendPepperConnectTcpACKError(int routing_id,
-                                    int request_id);
+  // |Send()| a |PepperMsg_ConnectTcpACK|, which reports an error.
+  bool SendConnectTcpACKError(int routing_id,
+                              int request_id);
 
-  // Used by |OnPepperConnectTcp()| (below).
+  // Used by |OnConnectTcp()| (below).
   class LookupRequest;
   friend class LookupRequest;
 
-  // Continuation of |OnPepperConnectTcp()|.
-  void PepperConnectTcpLookupFinished(int routing_id,
-                                      int request_id,
-                                      const net::AddressList& addresses);
-  void PepperConnectTcpOnWorkerThread(int routing_id,
-                                      int request_id,
-                                      net::AddressList addresses);
+  // Continuation of |OnConnectTcp()|.
+  void ConnectTcpLookupFinished(int routing_id,
+                                int request_id,
+                                const net::AddressList& addresses);
+  void ConnectTcpOnWorkerThread(int routing_id,
+                                int request_id,
+                                net::AddressList addresses);
 
-  // Continuation of |OnPepperConnectTcpAddress()|.
-  void PepperConnectTcpAddressOnWorkerThread(int routing_id,
-                                             int request_id,
-                                             PP_Flash_NetAddress addr);
+  // Continuation of |OnConnectTcpAddress()|.
+  void ConnectTcpAddressOnWorkerThread(int routing_id,
+                                       int request_id,
+                                       PP_Flash_NetAddress addr);
 #endif  // ENABLE_FLAPPER_HACKS
 
   Profile* profile_;
