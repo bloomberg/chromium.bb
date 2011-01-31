@@ -3481,13 +3481,6 @@
    fun:_ZN8appcache16AppCacheDatabase22PrepareCachedStatementERKN3sql11StatementIDEPKcPNS1_9StatementE
 }
 {
-   bug_67289
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net12CertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_16CertVerifyResultEP14CallbackRunnerI6Tuple1IiEEPPv
-   fun:_ZN3net25SingleRequestCertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_16CertVerifyResultEP14CallbackRunnerI6Tuple1IiEE
-}
-{
    bug_67553
    Memcheck:Leak
    fun:_Znw*
