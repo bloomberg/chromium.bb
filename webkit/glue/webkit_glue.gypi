@@ -153,6 +153,35 @@
       ],
     },
     {
+      'target_name': 'ppapi_gles_implementation',
+      'type': 'none',
+      'suppress_wildcard': 1,
+      'conditions': [
+        ['enable_gpu==1', {
+          'actions': [
+            {
+              'action_name': 'generate_ppapi_gles_implementation',
+              'variables': {
+                'gles_script': '<(DEPTH)/gpu/command_buffer/build_gles2_cmd_buffer.py',
+              },
+              'inputs': [
+                '<(gles_script)',
+              ],
+              'outputs': [
+                '<(DEPTH)/webkit/plugins/ppapi/ppb_opengles_impl.cc',
+              ],
+              'action': [
+                'python',
+                '<(gles_script)',
+                '--alternate-mode=chrome_ppapi'
+              ],
+              'message': 'Generating Pepper OpenGL ES implementation',
+            }
+          ],
+        }],
+      ],
+    },
+    {
       'target_name': 'glue',
       'type': '<(library)',
       'msvs_guid': 'C66B126D-0ECE-4CA2-B6DC-FA780AFBBF09',

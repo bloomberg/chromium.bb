@@ -62,5 +62,30 @@
         'lib/gl/gles2/gles2.c',
       ],
     },
+    {
+      'target_name': 'ppapi_gles_bindings',
+      'type': 'none',
+      'suppress_wildcard': 1,
+      'actions': [
+       {
+         'action_name': 'generate_ppapi_gles_bindings',
+         'variables': {
+           'gles_script': '<(DEPTH)/gpu/command_buffer/build_gles2_cmd_buffer.py',
+         },
+         'inputs': [
+           '<(gles_script)',
+         ],
+         'outputs': [
+           'c/dev/ppb_opengles_dev.h',
+           'lib/gl/gles2/gles2.c',
+         ],
+         'action': [
+           'python',
+           '<(gles_script)',
+           '--alternate-mode=ppapi'
+         ],
+         'message': 'Generating Pepper OpenGL ES bindings',
+       }],
+    },
   ],
 }
