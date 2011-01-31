@@ -144,7 +144,8 @@ MATCHER(EmptyWDResult, "") {
       arg)->GetValue().empty();
 }
 
-TEST_F(PasswordStoreWinTest, ConvertIE7Login) {
+// Hangs flakily, http://crbug.com/71385.
+TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
   IE7PasswordInfo password_info;
   ASSERT_TRUE(CreateIE7PasswordInfo(L"http://example.com/origin",
                                     base::Time::FromDoubleT(1),
