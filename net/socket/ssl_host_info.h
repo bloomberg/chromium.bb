@@ -106,12 +106,6 @@ class SSLHostInfo {
     return verification_end_time_;
   }
 
-  // set_cert_verification_finished_time allows the SSL socket to tell us when
-  // it finished verifing the certificate. If the DNS request hasn't finished
-  // by this time then we record how long we would have had to have waited for
-  // it.
-  void set_cert_verification_finished_time();
-
  protected:
   // Parse parses an opaque blob of data and fills out the public member fields
   // of this object. It returns true iff the parse was successful. The public
@@ -128,10 +122,6 @@ class SSLHostInfo {
 
   // ParseInner is a helper function for Parse.
   bool ParseInner(const std::string& data);
-
-  // DnsComplete is a callback function which is called when our DNS resolution
-  // completes.
-  void DnsComplete(int rv);
 
   // This is the hostname that we'll validate the certificates against.
   const std::string hostname_;
