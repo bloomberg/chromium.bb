@@ -25,15 +25,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/nacl_types.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
-#include "native_client/src/shared/imc/nacl_imc.h"
-#include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "skia/ext/platform_canvas.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
@@ -48,41 +45,6 @@
 #if defined(OS_LINUX)
 #include "chrome/renderer/renderer_sandbox_support_linux.h"
 #endif
-
-namespace {
-
-// TODO(abarth): Remove this function in favor of webkit_glue::LaunchSelLdr.
-#if !defined(DISABLE_NACL)
-bool LaunchNaClProcessMultiFD(const char* alleged_url,
-                              int socket_count,
-                              nacl::Handle* imc_handles,
-                              nacl::Handle* nacl_process_handle,
-                              int* nacl_process_id) {
-  // TODO(gregoryd): nacl::FileDescriptor will be soon merged with
-  // base::FileDescriptor
-  std::vector<nacl::FileDescriptor> sockets;
-  base::ProcessHandle nacl_process;
-  if (!RenderThread::current()->Send(
-    new ViewHostMsg_LaunchNaCl(
-        ASCIIToWide(alleged_url),
-        socket_count,
-        &sockets,
-        &nacl_process,
-        reinterpret_cast<base::ProcessId*>(nacl_process_id)))) {
-    return false;
-  }
-  CHECK(static_cast<int>(sockets.size()) == socket_count);
-  for (int i = 0; i < socket_count; i++) {
-    imc_handles[i] = nacl::ToNativeHandle(sockets[i]);
-  }
-  *nacl_process_handle = nacl_process;
-  return true;
-}
-#endif
-
-}  // namespace
-
-//-----------------------------------------------------------------------------
 
 #if defined(OS_WIN)
 
@@ -167,19 +129,6 @@ RenderProcessImpl::RenderProcessImpl()
   if (command_line.HasSwitch(switches::kDumpHistogramsOnExit)) {
     base::StatisticsRecorder::set_dump_on_exit(true);
   }
-
-#if !defined(DISABLE_NACL)
-  if (command_line.HasSwitch(switches::kInternalNaCl)) {
-    std::map<std::string, uintptr_t> funcs;
-    funcs["launch_nacl_process_multi_fd"] =
-        reinterpret_cast<uintptr_t>(LaunchNaClProcessMultiFD);
-    RegisterInternalNaClPlugin(funcs);
-#if defined(OS_LINUX)
-    nacl::SetCreateMemoryObjectFunc(
-        renderer_sandbox_support::MakeSharedMemorySegmentViaIPC);
-#endif
-  }
-#endif
 
 #if defined(OS_MACOSX)
   FilePath bundle_path = base::mac::MainAppBundlePath();

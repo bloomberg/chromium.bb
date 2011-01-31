@@ -37,10 +37,6 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
 
-#ifndef DISABLE_NACL
-#include "native_client/src/trusted/plugin/nacl_entry_points.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/plugin_selection_policy.h"
 #endif
@@ -130,12 +126,6 @@ PluginService::PluginService()
       PathService::Get(chrome::FILE_FLASH_PLUGIN, &path)) {
     webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(path);
   }
-
-#ifndef DISABLE_NACL
-  if (command_line->HasSwitch(switches::kInternalNaCl)) {
-    RegisterInternalNaClPlugin();
-  }
-#endif
 
 #if defined(OS_CHROMEOS)
   plugin_selection_policy_ = new chromeos::PluginSelectionPolicy;
