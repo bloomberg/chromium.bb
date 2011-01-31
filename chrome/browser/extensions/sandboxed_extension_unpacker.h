@@ -101,6 +101,65 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
 
  private:
   class ProcessHostClient;
+
+  // Enumerate all the ways unpacking can fail.  Calls to ReportFailure()
+  // take a failure reason as an argument, and put it in histogram
+  // Extensions.SandboxUnpackFailureReason.
+  enum FailureReason {
+    // SandboxedExtensionUnpacker::CreateTempDirectory()
+    COULD_NOT_GET_TEMP_DIRECTORY,
+    COULD_NOT_CREATE_TEMP_DIRECTORY,
+
+    // SandboxedExtensionUnpacker::Start()
+    FAILED_TO_COPY_EXTENSION_FILE_TO_TEMP_DIRECTORY,
+    COULD_NOT_GET_SANDBOX_FRIENDLY_PATH,
+
+    // SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded()
+    COULD_NOT_LOCALIZE_EXTENSION,
+    INVALID_MANIFEST,
+
+    //SandboxedExtensionUnpacker::OnUnpackExtensionFailed()
+    UNPACKER_CLIENT_FAILED,
+
+    // SandboxedExtensionUnpacker::OnProcessCrashed()
+    UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL,
+
+    // SandboxedExtensionUnpacker::ValidateSignature()
+    CRX_FILE_NOT_READABLE,
+    CRX_HEADER_INVALID,
+    CRX_MAGIC_NUMBER_INVALID,
+    CRX_VERSION_NUMBER_INVALID,
+    CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE,
+    CRX_ZERO_KEY_LENGTH,
+    CRX_ZERO_SIGNATURE_LENGTH,
+    CRX_PUBLIC_KEY_INVALID,
+    CRX_SIGNATURE_INVALID,
+    CRX_SIGNATURE_VERIFICATION_INITIALIZATION_FAILED,
+    CRX_SIGNATURE_VERIFICATION_FAILED,
+
+    // SandboxedExtensionUnpacker::RewriteManifestFile()
+    ERROR_SERIALIZING_MANIFEST_JSON,
+    ERROR_SAVING_MANIFEST_JSON,
+
+    // SandboxedExtensionUnpacker::RewriteImageFiles()
+    COULD_NOT_READ_IMAGE_DATA_FROM_DISK,
+    DECODED_IMAGES_DO_NOT_MATCH_THE_MANIFEST,
+    INVALID_PATH_FOR_BROWSER_IMAGE,
+    ERROR_REMOVING_OLD_IMAGE_FILE,
+    INVALID_PATH_FOR_BITMAP_IMAGE,
+    ERROR_RE_ENCODING_THEME_IMAGE,
+    ERROR_SAVING_THEME_IMAGE,
+
+    // SandboxedExtensionUnpacker::RewriteCatalogFiles()
+    COULD_NOT_READ_CATALOG_DATA_FROM_DISK,
+    INVALID_CATALOG_DATA,
+    INVALID_PATH_FOR_CATALOG,
+    ERROR_SERIALIZING_CATALOG,
+    ERROR_SAVING_CATALOG,
+
+    NUM_FAILURE_REASONS
+  };
+
   friend class ProcessHostClient;
   friend class SandboxedExtensionUnpackerTest;
 
@@ -129,7 +188,7 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   virtual void OnUnpackExtensionFailed(const std::string& error_message);
   virtual void OnProcessCrashed(int exit_code);
 
-  void ReportFailure(const std::string& message);
+  void ReportFailure(FailureReason reason, const std::string& message);
   void ReportSuccess();
 
   // Overwrites original manifest with safe result from utility process.
