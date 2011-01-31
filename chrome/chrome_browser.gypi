@@ -2192,6 +2192,8 @@
         'browser/renderer_host/accelerated_surface_container_mac.h',
         'browser/renderer_host/accelerated_surface_container_manager_mac.cc',
         'browser/renderer_host/accelerated_surface_container_manager_mac.h',
+        'browser/renderer_host/gpu_message_filter.cc',
+        'browser/renderer_host/gpu_message_filter.h',
         'browser/renderer_host/gtk_im_context_wrapper.cc',
         'browser/renderer_host/gtk_im_context_wrapper.h',
         'browser/renderer_host/gtk_key_bindings_handler.cc',

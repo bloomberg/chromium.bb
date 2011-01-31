@@ -94,34 +94,52 @@ IPC_MESSAGE_CONTROL0(GpuMsg_Hang)
 
 //------------------------------------------------------------------------------
 // GPU Host Messages
-// These are messages from the GPU process to the browser.
-// Response to a GpuHostMsg_EstablishChannel message.
+// These are messages to the browser.
+
+// A renderer sends this when it wants to create a connection to the GPU
+// process. The browser will create the GPU process if necessary, and will
+// return a handle to the channel via a GpuChannelEstablished message.
+IPC_MESSAGE_CONTROL0(GpuHostMsg_EstablishGpuChannel)
+
+// A renderer sends this to the browser process to provide a synchronization
+// point for GPU operations, in particular to make sure the GPU channel has
+// been established.
+IPC_SYNC_MESSAGE_CONTROL0_0(GpuHostMsg_SynchronizeGpu)
+
+// A renderer sends this to the browser process when it wants to
+// create a GL context associated with the given view_id.
+IPC_SYNC_MESSAGE_CONTROL2_1(GpuHostMsg_CreateViewCommandBuffer,
+                            int32, /* render_view_id */
+                            GPUCreateCommandBufferConfig, /* init_params */
+                            int32 /* route_id */)
+
+// Response from GPU to a GpuHostMsg_EstablishChannel message.
 IPC_MESSAGE_CONTROL2(GpuHostMsg_ChannelEstablished,
                      IPC::ChannelHandle, /* channel_handle */
                      GPUInfo /* GPU logging stats */)
 
-// Respond to a GpuMsg_CreateViewCommandBuffer message.
+// Respond from GPU to a GpuMsg_CreateViewCommandBuffer message.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_CommandBufferCreated,
                      int32 /* route_id */)
 
-// Free the browser resources associated with the command buffer
-// (typically a window that was drawn into).
+// Request from GPU to free the browser resources associated with the
+// command buffer.
 IPC_MESSAGE_CONTROL3(GpuHostMsg_DestroyCommandBuffer,
                      gfx::PluginWindowHandle, /* view */
                      int32, /* render_view_id */
                      int32 /* renderer_id */)
 
-// Response to a GpuMsg_CollectGraphicsInfo.
+// Response from GPU to a GpuMsg_CollectGraphicsInfo.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GraphicsInfoCollected,
                      GPUInfo /* GPU logging stats */)
 
-// Add a GPU log message to the about:gpu page
+// Message from GPU to add a GPU log message to the about:gpu page.
 IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,
                      int /*severity*/,
                      std::string /* header */,
                      std::string /* message */)
 
-// Response to a GpuMsg_Synchronize message.
+// Response from GPU to a GpuMsg_Synchronize message.
 IPC_MESSAGE_CONTROL0(GpuHostMsg_SynchronizeReply)
 
 #if defined(OS_LINUX)

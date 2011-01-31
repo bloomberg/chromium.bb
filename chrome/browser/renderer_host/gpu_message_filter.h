@@ -1,0 +1,43 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_
+#define CHROME_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_
+#pragma once
+
+#include "chrome/browser/browser_message_filter.h"
+
+struct GPUCreateCommandBufferConfig;
+
+// A message filter for messages from the renderer to the GpuProcessHost
+// in the browser. Such messages are typically destined for the GPU process,
+// but need to be mediated by the browser.
+class GpuMessageFilter : public BrowserMessageFilter {
+ public:
+  explicit GpuMessageFilter(int render_process_id);
+
+  // BrowserMessageFilter methods:
+  virtual bool OnMessageReceived(const IPC::Message& message,
+                                 bool* message_was_ok);
+  virtual void OnDestruct() const;
+
+ private:
+  friend class BrowserThread;
+  friend class DeleteTask<GpuMessageFilter>;
+  virtual ~GpuMessageFilter();
+
+  // Message handlers called on the browser IO thread:
+  void OnEstablishGpuChannel();
+  void OnSynchronizeGpu(IPC::Message* reply);
+  void OnCreateViewCommandBuffer(
+      int32 render_view_id,
+      const GPUCreateCommandBufferConfig& init_params,
+      IPC::Message* reply);
+
+  int render_process_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(GpuMessageFilter);
+};
+
+#endif  // CHROME_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_

@@ -18,7 +18,7 @@
 class GpuBlacklist;
 struct GPUCreateCommandBufferConfig;
 class GPUInfo;
-class RenderMessageFilter;
+class GpuMessageFilter;
 
 namespace IPC {
 struct ChannelHandle;
@@ -39,11 +39,12 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // Tells the GPU process to create a new channel for communication with a
   // renderer. Will asynchronously send message to object with given routing id
   // on completion.
-  void EstablishGpuChannel(int renderer_id, RenderMessageFilter* filter);
+  void EstablishGpuChannel(int renderer_id,
+                           GpuMessageFilter* filter);
 
   // Sends a reply message later when the next GpuHostMsg_SynchronizeReply comes
   // in.
-  void Synchronize(IPC::Message* reply, RenderMessageFilter* filter);
+  void Synchronize(IPC::Message* reply, GpuMessageFilter* filter);
 
   // Tells the GPU process to create a new command buffer that draws into the
   // window associated with the given renderer.
@@ -52,7 +53,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
       int32 renderer_id,
       const GPUCreateCommandBufferConfig& init_params,
       IPC::Message* reply,
-      RenderMessageFilter* filter);
+      GpuMessageFilter* filter);
 
   // We need to hop threads when creating the command buffer.
   // Let these tasks access our internals.
@@ -61,15 +62,15 @@ class GpuProcessHost : public BrowserChildProcessHost,
  private:
   // Used to queue pending channel requests.
   struct ChannelRequest {
-    explicit ChannelRequest(RenderMessageFilter* filter);
+    explicit ChannelRequest(GpuMessageFilter* filter);
     ~ChannelRequest();
 
     // Used to send the reply message back to the renderer.
-    scoped_refptr<RenderMessageFilter> filter;
+    scoped_refptr<GpuMessageFilter> filter;
   };
 
   struct DelayedReply {
-    DelayedReply(IPC::Message* reply, RenderMessageFilter* filter);
+    DelayedReply(IPC::Message* reply, GpuMessageFilter* filter);
     ~DelayedReply();
 
     // The delayed reply message which needs to be sent to the
@@ -77,7 +78,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
     IPC::Message* reply;
 
     // Used to send the reply message back to the renderer.
-    scoped_refptr<RenderMessageFilter> filter;
+    scoped_refptr<GpuMessageFilter> filter;
   };
 
   GpuProcessHost();
@@ -97,7 +98,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // Sends the response for establish channel request to the renderer.
   void SendEstablishChannelReply(const IPC::ChannelHandle& channel,
                                  const GPUInfo& gpu_info,
-                                 RenderMessageFilter* filter);
+                                 GpuMessageFilter* filter);
 
   // Sends outstanding replies to renderer processes. This is only called
   // in error situations like the GPU process crashing -- but is necessary

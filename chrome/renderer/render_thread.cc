@@ -31,6 +31,7 @@
 #include "chrome/common/dom_storage_messages.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/gpu_messages.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -827,12 +828,12 @@ void RenderThread::EstablishGpuChannel() {
     gpu_channel_ = new GpuChannelHost;
 
   // Ask the browser for the channel name.
-  Send(new ViewHostMsg_EstablishGpuChannel());
+  Send(new GpuHostMsg_EstablishGpuChannel());
 }
 
 GpuChannelHost* RenderThread::EstablishGpuChannelSync() {
   EstablishGpuChannel();
-  Send(new ViewHostMsg_SynchronizeGpu());
+  Send(new GpuHostMsg_SynchronizeGpu());
   return GetGpuChannel();
 }
 

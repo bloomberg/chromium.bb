@@ -23,7 +23,6 @@
 #include "chrome/browser/clipboard_dispatcher.h"
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/extensions/extension_message_service.h"
-#include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -48,7 +47,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
-#include "chrome/common/gpu_create_command_buffer_config.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -395,11 +393,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
 #endif
-    IPC_MESSAGE_HANDLER(ViewHostMsg_EstablishGpuChannel, OnEstablishGpuChannel)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_SynchronizeGpu,
-                                    OnSynchronizeGpu)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_CreateViewCommandBuffer,
-                                    OnCreateViewCommandBuffer)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AsyncOpenFile, OnAsyncOpenFile)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -1412,27 +1405,6 @@ void RenderMessageFilter::OnRendererTcmalloc(base::ProcessId pid,
       NewRunnableFunction(AboutTcmallocRendererCallback, pid, output));
 }
 #endif
-
-void RenderMessageFilter::OnEstablishGpuChannel() {
-  GpuProcessHost::Get()->EstablishGpuChannel(render_process_id_, this);
-}
-
-void RenderMessageFilter::OnSynchronizeGpu(IPC::Message* reply) {
-  // We handle this message (and the other GPU process messages) here
-  // rather than handing the message to the GpuProcessHost for
-  // dispatch so that we can use the DELAY_REPLY macro to synthesize
-  // the reply message, and also send down a "this" pointer so that
-  // the GPU process host can send the reply later.
-  GpuProcessHost::Get()->Synchronize(reply, this);
-}
-
-void RenderMessageFilter::OnCreateViewCommandBuffer(
-    int32 render_view_id,
-    const GPUCreateCommandBufferConfig& init_params,
-    IPC::Message* reply) {
-  GpuProcessHost::Get()->CreateViewCommandBuffer(
-      render_view_id, render_process_id_, init_params, reply, this);
-}
 
 void RenderMessageFilter::OnGetExtensionMessageBundle(
     const std::string& extension_id, IPC::Message* reply_msg) {

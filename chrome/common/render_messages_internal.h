@@ -48,7 +48,6 @@
 typedef std::map<std::string, std::string> SubstitutionMap;
 
 class Value;
-struct GPUCreateCommandBufferConfig;
 class GPUInfo;
 class SkBitmap;
 struct ThumbnailScore;
@@ -645,7 +644,7 @@ IPC_MESSAGE_ROUTED3(ViewMsg_HandleMessageFromExternalHost,
 IPC_MESSAGE_ROUTED0(ViewMsg_DisassociateFromPopupCount)
 
 // The browser sends this to a renderer process in response to a
-// ViewHostMsg_EstablishGpuChannel message.
+// GpuHostMsg_EstablishGpuChannel message.
 IPC_MESSAGE_CONTROL2(ViewMsg_GpuChannelEstablished,
                      IPC::ChannelHandle /* handle to channel */,
                      GPUInfo /* stats about GPU process*/)
@@ -1533,24 +1532,6 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_OpenChannelToPepperPlugin,
                             FilePath /* path */,
                             base::ProcessHandle /* plugin_process_handle */,
                             IPC::ChannelHandle /* handle to channel */)
-
-// A renderer sends this to the browser process when it wants to
-// create connect to the GPU.  The browser will create the GPU process if
-// necessary, and will return a handle to the channel via
-// a GpuChannelEstablished message.
-IPC_MESSAGE_CONTROL0(ViewHostMsg_EstablishGpuChannel)
-
-// A renderer sends this to the browser process to provide a synchronization
-// point for GPU operations, in particular to make sure the GPU channel has
-// been established.
-IPC_SYNC_MESSAGE_CONTROL0_0(ViewHostMsg_SynchronizeGpu)
-
-// A renderer sends this to the browser process when it wants to
-// create a GL context associated with the given view_id.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CreateViewCommandBuffer,
-                            int32, /* render_view_id */
-                            GPUCreateCommandBufferConfig, /* init_params */
-                            int32 /* route_id */)
 
 // A renderer sends this to the browser process when it wants to start
 // a new instance of the Native Client process. The browser will launch

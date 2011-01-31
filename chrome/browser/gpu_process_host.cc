@@ -12,7 +12,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
-#include "chrome/browser/renderer_host/render_message_filter.h"
+#include "chrome/browser/renderer_host/gpu_message_filter.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
@@ -77,7 +77,7 @@ bool SendDelayedMsg(IPC::Message* reply_msg) {
   return GpuProcessHost::Get()->Send(reply_msg);
 }
 
-bool SendDelayedMsg(IPC::Message* reply, RenderMessageFilter* filter) {
+bool SendDelayedMsg(IPC::Message* reply, GpuMessageFilter* filter) {
   return filter->Send(reply);
 }
 
@@ -182,7 +182,7 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void GpuProcessHost::EstablishGpuChannel(int renderer_id,
-                                         RenderMessageFilter* filter) {
+                                         GpuMessageFilter* filter) {
   DCHECK(CalledOnValidThread());
 
   if (Send(new GpuMsg_EstablishChannel(renderer_id))) {
@@ -193,7 +193,7 @@ void GpuProcessHost::EstablishGpuChannel(int renderer_id,
 }
 
 void GpuProcessHost::Synchronize(IPC::Message* reply,
-                                 RenderMessageFilter* filter) {
+                                 GpuMessageFilter* filter) {
   DCHECK(CalledOnValidThread());
 
   if (Send(new GpuMsg_Synchronize())) {
@@ -213,7 +213,7 @@ class CVCBThreadHopping {
       int32 renderer_id,
       const GPUCreateCommandBufferConfig& init_params,
       IPC::Message* reply,
-      scoped_refptr<RenderMessageFilter> filter);
+      scoped_refptr<GpuMessageFilter> filter);
 
   // Get a window for the command buffer that we're creating.
   static void GetViewWindow(
@@ -221,7 +221,7 @@ class CVCBThreadHopping {
       int32 renderer_id,
       const GPUCreateCommandBufferConfig& init_params,
       IPC::Message* reply,
-      scoped_refptr<RenderMessageFilter> filter);
+      scoped_refptr<GpuMessageFilter> filter);
 };
 
 void CVCBThreadHopping::DispatchIPCAndQueueReply(
@@ -230,7 +230,7 @@ void CVCBThreadHopping::DispatchIPCAndQueueReply(
     int32 renderer_id,
     const GPUCreateCommandBufferConfig& init_params,
     IPC::Message* reply,
-    scoped_refptr<RenderMessageFilter> filter) {
+    scoped_refptr<GpuMessageFilter> filter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   GpuProcessHost* host = GpuProcessHost::Get();
 
@@ -241,7 +241,8 @@ void CVCBThreadHopping::DispatchIPCAndQueueReply(
         GpuProcessHost::DelayedReply(reply, filter));
   } else {
     int32 route_id = MSG_ROUTING_NONE;
-    ViewHostMsg_CreateViewCommandBuffer::WriteReplyParams(reply, route_id);
+    GpuHostMsg_CreateViewCommandBuffer::WriteReplyParams(
+        reply, route_id);
     SendDelayedMsg(reply, filter);
   }
 }
@@ -251,7 +252,7 @@ void CVCBThreadHopping::GetViewWindow(
     int32 renderer_id,
     const GPUCreateCommandBufferConfig& init_params,
     IPC::Message* reply,
-    scoped_refptr<RenderMessageFilter> filter) {
+    scoped_refptr<GpuMessageFilter> filter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   gfx::PluginWindowHandle window = gfx::kNullPluginWindow;
   RenderProcessHost* process = RenderProcessHost::FromID(renderer_id);
@@ -290,17 +291,18 @@ void GpuProcessHost::CreateViewCommandBuffer(
     int32 renderer_id,
     const GPUCreateCommandBufferConfig& init_params,
     IPC::Message* reply,
-    RenderMessageFilter* filter) {
+    GpuMessageFilter* filter) {
   DCHECK(CalledOnValidThread());
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableFunction(
       &CVCBThreadHopping::GetViewWindow,
       render_view_id, renderer_id, init_params, reply,
-      static_cast<scoped_refptr<RenderMessageFilter> > (filter)));
+      static_cast<scoped_refptr<GpuMessageFilter> > (filter)));
 }
 
 
-GpuProcessHost::ChannelRequest::ChannelRequest(RenderMessageFilter* filter)
+GpuProcessHost::ChannelRequest::ChannelRequest(
+    GpuMessageFilter* filter)
     : filter(filter) {
 }
 
@@ -308,7 +310,7 @@ GpuProcessHost::ChannelRequest::~ChannelRequest() {}
 
 GpuProcessHost::DelayedReply::DelayedReply(
     IPC::Message* reply,
-    RenderMessageFilter* filter)
+    GpuMessageFilter* filter)
     : reply(reply),
       filter(filter) {
 }
@@ -381,7 +383,7 @@ void GpuProcessHost::OnCommandBufferCreated(const int32 route_id) {
   if (create_command_buffer_replies_.size() > 0) {
     const DelayedReply& request =
         create_command_buffer_replies_.front();
-    ViewHostMsg_CreateViewCommandBuffer::WriteReplyParams(
+    GpuHostMsg_CreateViewCommandBuffer::WriteReplyParams(
         request.reply, route_id);
     SendDelayedMsg(request.reply, request.filter);
     create_command_buffer_replies_.pop();
@@ -391,12 +393,12 @@ void GpuProcessHost::OnCommandBufferCreated(const int32 route_id) {
 void GpuProcessHost::SendEstablishChannelReply(
     const IPC::ChannelHandle& channel,
     const GPUInfo& gpu_info,
-    RenderMessageFilter* filter) {
+    GpuMessageFilter* filter) {
   ViewMsg_GpuChannelEstablished* message =
       new ViewMsg_GpuChannelEstablished(channel, gpu_info);
   // If the renderer process is performing synchronous initialization,
   // it needs to handle this message before receiving the reply for
-  // the synchronous ViewHostMsg_SynchronizeGpu message.
+  // the synchronous GpuHostMsg_SynchronizeGpu message.
   message->set_unblock(true);
   filter->Send(message);
 }
