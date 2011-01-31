@@ -207,6 +207,11 @@ void PageInfoBubbleView::ModelChanged() {
 }
 
 void PageInfoBubbleView::LinkActivated(views::Link* source, int event_flags) {
+  // We want to make sure the info bubble closes once the link is activated.  So
+  // we close it explicitly rather than relying on a side-effect of opening a
+  // new tab (see http://crosbug.com/10186).
+  info_bubble_->Close();
+
   GURL url = google_util::AppendGoogleLocaleParam(
       GURL(chrome::kPageInfoHelpCenterURL));
   Browser* browser = BrowserList::GetLastActive();
