@@ -9,9 +9,13 @@
 namespace net {
 
 class HttpRequestHeaders;
+class URLRequest;
 
 class HttpNetworkDelegate {
  public:
+  // Called before a request is sent.
+  virtual void OnBeforeURLRequest(net::URLRequest* request) = 0;
+
   // Called right before the HTTP headers are sent.  Allows the delegate to
   // read/write |headers| before they get sent out.
   virtual void OnSendHttpRequest(HttpRequestHeaders* headers) = 0;

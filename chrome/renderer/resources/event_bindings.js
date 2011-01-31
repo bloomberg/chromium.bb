@@ -6,6 +6,8 @@ var chrome = chrome || {};
 (function () {
   native function GetChromeHidden();
   native function AttachEvent(eventName);
+  native function AttachComplexEvent(eventName, subEventName,
+                                     filter, extraInfo);
   native function DetachEvent(eventName);
 
   var chromeHidden = GetChromeHidden();
@@ -53,8 +55,9 @@ var chrome = chrome || {};
   //   chrome.tabs.onChanged.addListener(function(data) { alert(data); });
   //   chromeHidden.Event.dispatch("tab-changed", "hi");
   // will result in an alert dialog that says 'hi'.
-  chrome.Event = function(opt_eventName, opt_argSchemas) {
+  chrome.Event = function(opt_eventName, opt_argSchemas, opt_isSubEvent) {
     this.eventName_ = opt_eventName;
+    this.isSubEvent_ = opt_isSubEvent;
     this.listeners_ = [];
 
     // Validate event parameters if we are in debug.
@@ -109,7 +112,7 @@ var chrome = chrome || {};
   }
 
   // Registers a callback to be called when this event is dispatched.
-  chrome.Event.prototype.addListener = function(cb) {
+  chrome.Event.prototype.addListener = function(cb, opt_filter, opt_extraInfo) {
     if (this.listeners_.length == 0) {
       this.attach_();
     }
@@ -173,7 +176,8 @@ var chrome = chrome || {};
   // Attaches this event object to its name.  Only one object can have a given
   // name.
   chrome.Event.prototype.attach_ = function() {
-    AttachEvent(this.eventName_);
+    if (!this.isSubEvent_)
+      AttachEvent(this.eventName_);
     allAttachedEvents[allAttachedEvents.length] = this;
     if (!this.eventName_)
       return;
@@ -202,6 +206,63 @@ var chrome = chrome || {};
 
     delete attachedNamedEvents[this.eventName_];
   };
+
+  // ComplexEvent object. This is used for special events with extra parameters.
+  // Each invocation of addListener creates a new named sub-event. That
+  // sub-event is associated with the extra parameters in the browser process,
+  // so that only it is dispatched when the main event occurs matching the extra
+  // parameters.
+  //
+  // Example:
+  //   chrome.webRequest.onBeforeRequest.addListener(
+  //       callback, {urls: "http://*.google.com/*"});
+  //   ^ callback will only be called for onBeforeRequests matching the filter.
+  chrome.ComplexEvent = function(eventName, opt_argSchemas) {
+    if (typeof eventName != "string")
+      throw new Error("chrome.ComplexEvent requires an event name.");
+
+    this.eventName_ = eventName;
+    this.argSchemas_ = opt_argSchemas;
+    this.subEvents_ = [];
+  };
+
+  // Registers a callback to be called when this event is dispatched. If
+  // opt_filter is specified, then the callback is only called for events that
+  // match the given filters. If opt_extraInfo is specified, the given optional
+  // info is sent to the callback.
+  chrome.ComplexEvent.prototype.addListener =
+      function(cb, opt_filter, opt_extraInfo) {
+    var subevent = new chrome.Event(this.eventName_ + this.subEvents_.length,
+                                    this.argSchemas_, true);
+    this.subEvents_[this.subEvents_.length] = subevent;
+    subevent.addListener(cb, opt_filter, opt_extraInfo);
+    AttachComplexEvent(this.eventName_, subevent.eventName_,
+                       chromeHidden.JSON.stringify(opt_filter),
+                       chromeHidden.JSON.stringify(opt_extraInfo));
+  };
+
+  // Unregisters a callback.
+  chrome.ComplexEvent.prototype.removeListener = function(cb) {
+    var idx = this.findListener_(cb);
+    if (!idx) {
+      return;
+    }
+
+    this.subEvents_[idx].removeListener(cb);
+    if (!this.subEvents_[idx].hasListeners())
+      delete this.subEvents_[idx];
+  };
+
+  chrome.ComplexEvent.prototype.findListener_ = function(cb) {
+    for (var i = 0; i < this.subEvents_.length; i++) {
+      if (this.subEvents_[i].findListener_(cb) > -1)
+        return i;
+    }
+
+    return -1;
+  };
+
+  chrome.ch = chromeHidden;
 
   // Special load events: we don't use the DOM unload because that slows
   // down tab shutdown.  On the other hand, onUnload might not always fire,

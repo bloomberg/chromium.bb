@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "base/string_number_conversions.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -59,6 +60,8 @@ typedef std::map<std::string, int> EventListenerCounts;
 struct SingletonData {
   // A map of extension IDs to listener counts for that extension.
   std::map<std::string, EventListenerCounts> listener_counts_;
+  // @@@MP
+  int unique_event_counter_;
 };
 
 static base::LazyInstance<SingletonData> g_singleton_data(
@@ -81,6 +84,10 @@ class ExtensionImpl : public ExtensionBase {
       v8::Handle<v8::String> name) {
     if (name->Equals(v8::String::New("AttachEvent"))) {
       return v8::FunctionTemplate::New(AttachEvent);
+    } else if (name->Equals(v8::String::New("GetUniqueComplexEventName"))) {
+      return v8::FunctionTemplate::New(GetUniqueComplexEventName);
+    } else if (name->Equals(v8::String::New("AttachComplexEvent"))) {
+      return v8::FunctionTemplate::New(AttachComplexEvent);
     } else if (name->Equals(v8::String::New("DetachEvent"))) {
       return v8::FunctionTemplate::New(DetachEvent);
     }
@@ -116,6 +123,54 @@ class ExtensionImpl : public ExtensionBase {
         context_info->context.ClearWeak();
 
     }
+
+    return v8::Undefined();
+  }
+
+  // Attach an event name to an object.
+  static v8::Handle<v8::Value> GetUniqueComplexEventName(
+      const v8::Arguments& args) {
+    DCHECK(args.Length() == 1);
+    DCHECK(args[0]->IsString());
+    std::string event_name(*v8::String::AsciiValue(args[0]));
+    int unique_event_id = ++g_singleton_data.Get().unique_event_counter_;
+    std::string unique_event_name =
+        event_name + base::IntToString(unique_event_id);
+    return v8::String::New(unique_event_name.c_str());
+  }
+
+  // Attach an event name to an object.
+  static v8::Handle<v8::Value> AttachComplexEvent(const v8::Arguments& args) {
+    DCHECK(args.Length() == 4);
+    DCHECK(args[0]->IsString());
+    DCHECK(args[1]->IsString());
+    DCHECK(args[2]->IsString() || args[2]->IsUndefined());
+    DCHECK(args[3]->IsString() || args[3]->IsUndefined());
+
+    std::string event_name(*v8::String::AsciiValue(args[0]));
+    std::string sub_event_name(*v8::String::AsciiValue(args[1]));
+    std::string filter_str = *v8::String::Utf8Value(args[2]);
+    std::string extra_info_str = *v8::String::Utf8Value(args[3]);
+
+    ContextInfo* context_info = GetInfoForCurrentContext();
+    EventListenerCounts& listener_counts =
+        GetListenerCounts(context_info->extension_id);
+    bool has_permission =
+        ExtensionProcessBindings::CurrentContextHasPermission(event_name);
+
+    if (!has_permission) {
+      return ExtensionProcessBindings::ThrowPermissionDeniedException(
+          event_name);
+    }
+
+    if (++listener_counts[event_name] == 1) {
+      EventBindings::GetRenderThread()->Send(
+          new ViewHostMsg_ExtensionAddListener(context_info->extension_id,
+                                               event_name));
+    }
+
+    if (++context_info->num_connected_events == 1)
+      context_info->context.ClearWeak();
 
     return v8::Undefined();
   }

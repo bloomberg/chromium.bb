@@ -193,6 +193,7 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
       globals->proxy_script_fetcher_http_transaction_factory.get());
   // In-memory cookie store.
   context->set_cookie_store(new net::CookieMonster(NULL, NULL));
+  // TODO(mpcomplete): give it a SystemNetworkDelegate.
   return context;
 }
 
