@@ -59,7 +59,11 @@ namespace {
 
 // The maximum duration for which locker should try to grab the keyboard and
 // mouse and its interval for regrabbing on failure.
-const int kMaxGrabFailureSec = 30;
+// This was originally 30 seconds, but is temporarily increaed to 10 min
+// so that a user can report the situation when locker does not kick in.
+// This should be revereted before we moved out from pilot program and it's
+// tracked in crosbug.com/9938.
+const int kMaxGrabFailureSec = 600;
 const int64 kRetryGrabIntervalMs = 500;
 
 // Maximum number of times we'll try to grab the keyboard and mouse before
