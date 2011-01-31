@@ -1644,6 +1644,31 @@ void RendererProcessClosedObserver::Observe(
   delete this;
 }
 
+InputEventAckNotificationObserver::InputEventAckNotificationObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    int event_type)
+    : automation_(automation),
+      reply_message_(reply_message),
+      event_type_(event_type) {
+  registrar_.Add(
+      this, NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
+      NotificationService::AllSources());
+}
+
+void InputEventAckNotificationObserver::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  Details<int> request_details(details);
+  if (event_type_ == *request_details.ptr()) {
+    AutomationJSONReply(automation_, reply_message_).SendSuccess(NULL);
+    delete this;
+  } else {
+    LOG(WARNING) << "Ignoring unexpected event types.";
+  }
+}
+
 NewTabObserver::NewTabObserver(AutomationProvider* automation,
                                IPC::Message* reply_message)
     : automation_(automation),
@@ -1701,4 +1726,3 @@ void WaitForProcessLauncherThreadToGoIdleObserver::RunOnUIThread() {
   automation_->Send(reply_message_);
   Release();
 }
-

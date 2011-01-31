@@ -472,6 +472,13 @@ class NotificationType {
     // RenderWidgetHost::PaintAtSizeAckDetails.
     RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
 
+    // This notifies the observer that a HandleInputEventACK was received. The
+    // source is the RenderWidgetHost, the details are the type of event
+    // received.
+    // Note: The RenderWidgetHost may be deallocated at this point.
+    // Used only in testing.
+    RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
+
     // Sent from ~RenderViewHost. The source is the TabContents.
     RENDER_VIEW_HOST_DELETED,
 

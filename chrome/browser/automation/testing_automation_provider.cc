@@ -78,6 +78,7 @@
 #include "chrome/common/automation_messages.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/message_box_flags.h"
 #include "views/event.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -2095,6 +2096,9 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
 
   handler_map["KillRendererProcess"] =
       &TestingAutomationProvider::KillRendererProcess;
+
+  handler_map["SendKeyEventToActiveTab"] =
+      &TestingAutomationProvider::SendKeyEventToActiveTab;
 
   if (handler_map.find(std::string(command)) != handler_map.end()) {
     (this->*handler_map[command])(browser, dict_value, reply_message);
@@ -4371,6 +4375,99 @@ void TestingAutomationProvider::KillRendererProcess(
   new RendererProcessClosedObserver(this, reply_message);
   base::KillProcess(process, 0, false);
   base::CloseProcessHandle(process);
+}
+
+void TestingAutomationProvider::SendKeyEventToActiveTab(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  int type, modifiers;
+  bool is_system_key;
+  string16 unmodified_text, text;
+  std::string key_identifier;
+  NativeWebKeyboardEvent event;
+  if (!args->GetInteger("type", &type)) {
+    AutomationJSONReply reply(this, reply_message);
+    reply.SendError("'type' missing or invalid.");
+    return;
+  }
+  if (!args->GetBoolean("isSystemKey", &is_system_key)) {
+    AutomationJSONReply reply(this, reply_message);
+    reply.SendError("'isSystemKey' missing or invalid.");
+    return;
+  }
+  if (!args->GetString("unmodifiedText", &unmodified_text)) {
+    AutomationJSONReply reply(this, reply_message);
+    reply.SendError("'unmodifiedText' missing or invalid.");
+    return;
+  }
+  if (!args->GetString("text", &text)) {
+    AutomationJSONReply reply(this, reply_message);
+    reply.SendError("'text' missing or invalid.");
+    return;
+  }
+  if (!args->GetInteger("nativeKeyCode", &event.nativeKeyCode)) {
+    AutomationJSONReply reply(this, reply_message);
+    reply.SendError("'nativeKeyCode' missing or invalid.");
+    return;
+  }
+  if (!args->GetInteger("windowsKeyCode", &event.windowsKeyCode)) {
+    AutomationJSONReply reply(this, reply_message);
+    reply.SendError("'windowsKeyCode' missing or invalid.");
+    return;
+  }
+  if (!args->GetInteger("modifiers", &modifiers)) {
+    AutomationJSONReply reply(this, reply_message);
+    reply.SendError("'modifiers' missing or invalid.");
+    return;
+  }
+  if (args->GetString("keyIdentifier", &key_identifier)) {
+    base::strlcpy(event.keyIdentifier,
+                  key_identifier.c_str(),
+                  WebKit::WebKeyboardEvent::keyIdentifierLengthCap);
+  } else {
+    event.setKeyIdentifierFromWindowsKeyCode();
+  }
+
+  if (type == automation::kRawKeyDownType) {
+    event.type = WebKit::WebInputEvent::RawKeyDown;
+  } else if (type == automation::kKeyDownType) {
+    event.type = WebKit::WebInputEvent::KeyDown;
+  } else if (type == automation::kKeyUpType) {
+    event.type = WebKit::WebInputEvent::KeyUp;
+  } else if (type == automation::kCharType) {
+    event.type = WebKit::WebInputEvent::Char;
+  } else {
+    AutomationJSONReply reply(this, reply_message);
+    reply.SendError("'type' refers to an unrecognized keyboard event type");
+    return;
+  }
+
+  string16 unmodified_text_truncated = unmodified_text.substr(
+      0, WebKit::WebKeyboardEvent::textLengthCap - 1);
+  memcpy(event.unmodifiedText,
+         unmodified_text_truncated.c_str(),
+         unmodified_text_truncated.length() + 1);
+  string16 text_truncated = text.substr(
+      0, WebKit::WebKeyboardEvent::textLengthCap - 1);
+  memcpy(event.text, text_truncated.c_str(), text_truncated.length() + 1);
+
+  event.modifiers = 0;
+  if (modifiers & automation::kShiftKeyMask)
+    event.modifiers |= WebKit::WebInputEvent::ShiftKey;
+  if (modifiers & automation::kControlKeyMask)
+    event.modifiers |= WebKit::WebInputEvent::ControlKey;
+  if (modifiers & automation::kAltKeyMask)
+    event.modifiers |= WebKit::WebInputEvent::AltKey;
+  if (modifiers & automation::kMetaKeyMask)
+    event.modifiers |= WebKit::WebInputEvent::MetaKey;
+
+  event.isSystemKey = is_system_key;
+  event.timeStampSeconds = base::Time::Now().ToDoubleT();
+  event.skip_in_browser = true;
+  new InputEventAckNotificationObserver(this, reply_message, event.type);
+  browser->GetSelectedTabContents()->render_view_host()->
+    ForwardKeyboardEvent(event);
 }
 
 void TestingAutomationProvider::WaitForTabCountToBecome(

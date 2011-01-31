@@ -961,6 +961,11 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
 
     ProcessKeyboardEventAck(type, processed);
   }
+  // This is used only for testing.
+  NotificationService::current()->Notify(
+      NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
+      Source<RenderWidgetHost>(this),
+      Details<int>(&type));
 }
 
 void RenderWidgetHost::ProcessWheelAck() {

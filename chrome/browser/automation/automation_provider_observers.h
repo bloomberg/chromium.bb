@@ -1028,6 +1028,27 @@ class RendererProcessClosedObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(RendererProcessClosedObserver);
 };
 
+// Allows the automation provider to wait for acknowledgement that a input
+// event has been handled.
+class InputEventAckNotificationObserver : public NotificationObserver {
+ public:
+  InputEventAckNotificationObserver(AutomationProvider* automation,
+                                    IPC::Message* reply_message,
+                                    int event_type);
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+  int event_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputEventAckNotificationObserver);
+};
+
 // Observer used to listen for new tab creation to complete.
 class NewTabObserver : public NotificationObserver {
  public:

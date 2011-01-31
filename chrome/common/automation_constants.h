@@ -26,6 +26,24 @@ extern const char kNamedInterfacePrefix[];
 // Amount of time to wait before querying the browser.
 static const int kSleepTime = 250;
 
+// Recognized by the AutomationProvider's SendWebKeyboardEventToSelectedTab
+// command. Specifies the type of the keyboard event.
+enum KeyEventTypes {
+  kRawKeyDownType = 0,
+  kKeyDownType,
+  kCharType,
+  kKeyUpType,
+};
+
+// Recognized by the AutomationProvider's SendWebKeyboardEventToSelectedTab
+// command. Specifies masks to be used in constructing keyboard event modifiers.
+enum KeyModifierMasks {
+  kShiftKeyMask   = 1 << 0,
+  kControlKeyMask = 1 << 1,
+  kAltKeyMask     = 1 << 2,
+  kMetaKeyMask    = 1 << 3,
+};
+
 }  // namespace automation
 
 // Used by AutomationProxy, declared here so that other headers don't need

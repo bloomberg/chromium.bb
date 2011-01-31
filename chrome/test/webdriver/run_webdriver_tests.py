@@ -92,6 +92,8 @@ class Main(object):
   TEST_PREFIX = 'test.selenium.webdriver.common.'
 
   def __init__(self):
+    self._tests_path = os.path.join(os.path.dirname(__file__),
+                                    self.TESTS_FILENAME)
     self._ParseArgs()
     self._Run()
 
@@ -257,11 +259,11 @@ class Main(object):
             These modules or test cases or tests should be importable
     """
     if not args:  # Load tests ourselves
-      logging.debug("Reading %s", self.TESTS_FILENAME)
-      if not os.path.exists(self.TESTS_FILENAME):
-        logging.warn("%s missing. Cannot load tests." % self.TESTS_FILENAME)
+      logging.debug("Reading %s", self._tests_path)
+      if not os.path.exists(self._tests_path):
+        logging.warn("%s missing. Cannot load tests." % self._tests_path)
       else:
-        args = self._GetTestNamesFrom(self.TESTS_FILENAME)
+        args = self._GetTestNamesFrom(self._tests_path)
     return args
 
   @staticmethod
@@ -303,6 +305,8 @@ class Main(object):
 
     # The tests expect to run with preset 'driver' and 'webserver' class
     # properties.
+    import pdb
+    pdb.set_trace()
     launcher = ChromeDriverLauncher(self._options.driver_exe)
     driver = WebDriver(launcher.GetURL(), 'chrome', 'any')
     # The tests expect a webserver. Since ChromeDriver also operates as one,

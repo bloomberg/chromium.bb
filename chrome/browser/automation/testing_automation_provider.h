@@ -750,6 +750,13 @@ class TestingAutomationProvider : public AutomationProvider,
                            DictionaryValue* args,
                            IPC::Message* reply_message);
 
+  // Sends a web keyboard event to the active tab. This should not trigger any
+  // browser hotkeys.
+  // Uses the JSON interface for input/output.
+  void SendKeyEventToActiveTab(Browser* browser,
+                               DictionaryValue* args,
+                               IPC::Message* reply_message);
+
   void WaitForTabCountToBecome(int browser_handle,
                                int target_tab_count,
                                IPC::Message* reply_message);
