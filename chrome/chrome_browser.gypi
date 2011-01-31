@@ -3650,6 +3650,7 @@
         }],
         ['touchui==1 and chromeos==1', {
           'sources/': [
+            ['include', '^browser/chromeos/dom_ui/login/'],
           ],
         }],
         ['OS=="linux"', {
