@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/plugin_updater.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -136,6 +137,7 @@ class PluginsDOMHandler : public DOMMessageHandler,
   virtual ~PluginsDOMHandler() {}
 
   // DOMMessageHandler implementation.
+  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
   // Callback for the "requestPluginsData" message.
@@ -148,6 +150,12 @@ class PluginsDOMHandler : public DOMMessageHandler,
   // window with about:terms. Flash can't link directly to about:terms due to
   // the security model.
   void HandleShowTermsOfServiceMessage(const ListValue* args);
+
+  // Callback for the "saveShowDetailsToPrefs" message.
+  void HandleSaveShowDetailsToPrefs(const ListValue* args);
+
+  // Calback for the "getShowDetails" message.
+  void HandleGetShowDetails(const ListValue* args);
 
   // NotificationObserver method overrides
   void Observe(NotificationType type,
@@ -177,6 +185,10 @@ class PluginsDOMHandler : public DOMMessageHandler,
 
   ScopedRunnableMethodFactory<PluginsDOMHandler> get_plugins_factory_;
 
+  // This pref guards the value whether about:plugins is in the details mode or
+  // not.
+  BooleanPrefMember show_details_;
+
   DISALLOW_COPY_AND_ASSIGN(PluginsDOMHandler);
 };
 
@@ -187,6 +199,14 @@ PluginsDOMHandler::PluginsDOMHandler()
                  NotificationService::AllSources());
 }
 
+DOMMessageHandler* PluginsDOMHandler::Attach(DOMUI* dom_ui) {
+  PrefService* prefs = dom_ui->GetProfile()->GetPrefs();
+
+  show_details_.Init(prefs::kPluginsShowDetails, prefs, this);
+
+  return DOMMessageHandler::Attach(dom_ui);
+}
+
 void PluginsDOMHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("requestPluginsData",
       NewCallback(this, &PluginsDOMHandler::HandleRequestPluginsData));
@@ -194,6 +214,10 @@ void PluginsDOMHandler::RegisterMessages() {
       NewCallback(this, &PluginsDOMHandler::HandleEnablePluginMessage));
   dom_ui_->RegisterMessageCallback("showTermsOfService",
       NewCallback(this, &PluginsDOMHandler::HandleShowTermsOfServiceMessage));
+  dom_ui_->RegisterMessageCallback("saveShowDetailsToPrefs",
+      NewCallback(this, &PluginsDOMHandler::HandleSaveShowDetailsToPrefs));
+  dom_ui_->RegisterMessageCallback("getShowDetails",
+      NewCallback(this, &PluginsDOMHandler::HandleGetShowDetails));
 }
 
 void PluginsDOMHandler::HandleRequestPluginsData(const ListValue* args) {
@@ -250,6 +274,20 @@ void PluginsDOMHandler::HandleShowTermsOfServiceMessage(const ListValue* args) {
   browser->OpenURL(GURL(chrome::kAboutTermsURL),
                    GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   browser->window()->Show();
+}
+
+void PluginsDOMHandler::HandleSaveShowDetailsToPrefs(const ListValue* args) {
+  std::string details_mode;
+  if (!args->GetString(0, &details_mode)) {
+    NOTREACHED();
+    return;
+  }
+  show_details_.SetValue(details_mode == "true");
+}
+
+void PluginsDOMHandler::HandleGetShowDetails(const ListValue* args) {
+  FundamentalValue show_details(show_details_.GetValue());
+  dom_ui_->CallJavascriptFunction(L"loadShowDetailsFromPrefs", show_details);
 }
 
 void PluginsDOMHandler::Observe(NotificationType type,
@@ -335,4 +373,5 @@ void PluginsUI::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterListPref(prefs::kPluginsPluginsBlacklist);
   prefs->RegisterListPref(prefs::kPluginsPluginsList);
   prefs->RegisterBooleanPref(prefs::kPluginsEnabledInternalPDF, false);
+  prefs->RegisterBooleanPref(prefs::kPluginsShowDetails, false);
 }

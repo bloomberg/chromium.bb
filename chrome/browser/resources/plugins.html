@@ -324,6 +324,18 @@ function renderTemplate(pluginsData) {
  */
 function requestPluginsData() {
   chrome.send('requestPluginsData', []);
+  chrome.send('getShowDetails', []);
+}
+
+function loadShowDetailsFromPrefs(show_details) {
+  tmiModeExpanded = show_details;
+  document.getElementById('collapse').style.display =
+      show_details ? 'inline' : 'none';
+  document.getElementById('expand').style.display =
+      show_details ? 'none' : 'inline';
+
+  document.body.className =
+      show_details ? 'showTmiMode' : 'hideTmiMode';
 }
 
 /**
@@ -402,6 +414,8 @@ function toggleTmiMode() {
 
   document.body.className =
       tmiModeExpanded ? 'showTmiMode' : 'hideTmiMode';
+
+  chrome.send('saveShowDetailsToPrefs', [String(tmiModeExpanded)]);
 }
 
 /**
