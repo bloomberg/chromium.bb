@@ -175,7 +175,11 @@ SpeechInputManager* SpeechInputBrowserTest::speech_input_manager_ = NULL;
 // another test here to check that when speech recognition is in progress and
 // a renderer crashes, we get a call to
 // SpeechInputManager::CancelAllRequestsWithDelegate.
-#if defined(OS_WIN)
+//
+// Marked as DISABLED due to http://crbug.com/71227
+#if defined(GOOGLE_CHROME_BUILD)
+#define MAYBE_TestBasicRecognition DISABLED_TestBasicRecognition
+#elif defined(OS_WIN)
 #define MAYBE_TestBasicRecognition FLAKY_TestBasicRecognition
 #else
 #define MAYBE_TestBasicRecognition TestBasicRecognition
@@ -186,7 +190,10 @@ IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, MAYBE_TestBasicRecognition) {
 }
 
 // Marked as FLAKY due to http://crbug.com/51337
-#if defined(OS_WIN)
+// Marked as DISALBED due to http://crbug.com/71227
+#if defined(GOOGLE_CHROME_BUILD)
+#define MAYBE_GrammarAttribute DISABLED_GrammarAttribute
+#elif defined(OS_WIN)
 #define MAYBE_GrammarAttribute FLAKY_GrammarAttribute
 #else
 #define MAYBE_GrammarAttribute GrammarAttribute
