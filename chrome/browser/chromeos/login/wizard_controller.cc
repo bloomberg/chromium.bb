@@ -60,16 +60,18 @@ namespace {
 // A boolean pref of the EULA accepted flag.
 const char kEulaAccepted[] = "EulaAccepted";
 
-// A boolean pref of the OOBE complete flag.
+// A boolean pref of the OOBE complete flag (first OOBE part before login).
 const char kOobeComplete[] = "OobeComplete";
+
+// A boolean pref of the device registered flag (second part after first login).
+const char kDeviceRegistered[] = "DeviceRegistered";
 
 // Path to OEM partner startup customization manifest.
 const char kStartupCustomizationManifestPath[] =
     "/mnt/partner_partition/etc/chromeos/startup_manifest.json";
 
-// Path to flag file indicating that OOBE was completed successfully.
-const char kOobeCompleteFlagFilePath[] =
-    "/home/chronos/.oobe_completed";
+// Path to flag file indicating that both parts of OOBE were completed.
+const char kOobeCompleteFlagFilePath[] = "/home/chronos/.oobe_completed";
 
 // Time in seconds that we wait for the device to reboot.
 // If reboot didn't happen, ask user to reboot device manually.
@@ -222,10 +224,17 @@ bool IsRegistrationScreenValid(
          GURL(startup_manifest->registration_url()).is_valid();
 }
 
-// Saves boolean "Local State" preference and forces it's persistence to disk.
+// Saves boolean "Local State" preference and forces its persistence to disk.
 void SaveBoolPreferenceForced(const char* pref_name, bool value) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(pref_name, value);
+  prefs->SavePersistentPrefs();
+}
+
+// Saves integer "Local State" preference and forces its persistence to disk.
+void SaveIntegerPreferenceForced(const char* pref_name, int value) {
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetInteger(pref_name, value);
   prefs->SavePersistentPrefs();
 }
 
@@ -512,6 +521,7 @@ void WizardController::Observe(NotificationType type,
 // static
 void WizardController::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterBooleanPref(kOobeComplete, false);
+  local_state->RegisterIntegerPref(kDeviceRegistered, -1);
   local_state->RegisterBooleanPref(kEulaAccepted, false);
   // Check if the pref is already registered in case
   // Preferences::RegisterUserPrefs runs before this code in the future.
@@ -791,13 +801,48 @@ void WizardController::MarkOobeCompleted() {
   SaveBoolPreferenceForced(kOobeComplete, true);
 }
 
+static void CreateOobeCompleteFlagFile() {
+  // Create flag file for boot-time init scripts.
+  FilePath oobe_complete_path(kOobeCompleteFlagFilePath);
+  if (!file_util::PathExists(oobe_complete_path)) {
+    FILE* oobe_flag_file = file_util::OpenFile(oobe_complete_path, "w+b");
+    if (oobe_flag_file == NULL)
+      DLOG(WARNING) << kOobeCompleteFlagFilePath << " doesn't exist.";
+    else
+      file_util::CloseFile(oobe_flag_file);
+  }
+}
+
 // static
 bool WizardController::IsDeviceRegistered() {
-  // Checking for flag file causes us to do blocking IO on UI thread.
-  // Temporarily allow it until we fix http://crbug.com/70131
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  FilePath oobe_complete_flag_file_path(kOobeCompleteFlagFilePath);
-  return file_util::PathExists(oobe_complete_flag_file_path);
+  int value = g_browser_process->local_state()->GetInteger(kDeviceRegistered);
+  if (value > 0) {
+    // Recreate flag file in case it was lost.
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        NewRunnableFunction(&CreateOobeCompleteFlagFile));
+    return true;
+  } else if (value == 0) {
+    return false;
+  } else {
+    // Pref is not set. For compatibility check flag file. It causes blocking
+    // IO on UI thread. But it's required for update from old versions.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    FilePath oobe_complete_flag_file_path(kOobeCompleteFlagFilePath);
+    bool file_exists = file_util::PathExists(oobe_complete_flag_file_path);
+    SaveIntegerPreferenceForced(kDeviceRegistered, file_exists ? 1 : 0);
+    return file_exists;
+  }
+}
+
+// static
+void WizardController::MarkDeviceRegistered() {
+  SaveIntegerPreferenceForced(kDeviceRegistered, 1);
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      NewRunnableFunction(&CreateOobeCompleteFlagFile));
 }
 
 // static
@@ -810,20 +855,6 @@ bool WizardController::IsRegisterScreenDefined() {
   else
     manifest = LoadStartupManifest();
   return IsRegistrationScreenValid(manifest);
-}
-
-// static
-void WizardController::MarkDeviceRegistered() {
-  // Creating flag file causes us to do blocking IO on UI thread.
-  // Temporarily allow it until we fix http://crbug.com/70131
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  // Create flag file for boot-time init scripts.
-  FilePath oobe_complete_path(kOobeCompleteFlagFilePath);
-  FILE* oobe_flag_file = file_util::OpenFile(oobe_complete_path, "w+b");
-  if (oobe_flag_file == NULL)
-    DLOG(WARNING) << kOobeCompleteFlagFilePath << " doesn't exist.";
-  else
-    file_util::CloseFile(oobe_flag_file);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
