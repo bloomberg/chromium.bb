@@ -55,6 +55,9 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
     IPC_END_MESSAGE_MAP()
   }
 
+  virtual void TabReplaced(TabContentsWrapper* new_tab) {
+  }
+
   void NotifyCloseListener() {
     DevToolsClientHost::NotifyCloseListener();
   }

@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
@@ -243,6 +244,20 @@ void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
       return;
     }
   }
+}
+
+void DevToolsManager::TabReplaced(TabContentsWrapper* old_tab,
+                                  TabContentsWrapper* new_tab) {
+  RenderViewHost* old_rvh = old_tab->tab_contents()->render_view_host();
+  DevToolsClientHost* client_host = GetDevToolsClientHostFor(old_rvh);
+  if (!client_host)
+    return;  // Didn't know about old_tab.
+  int cookie = DetachClientHost(old_rvh);
+  if (cookie == -1)
+    return;  // Didn't know about old_tab.
+
+  client_host->TabReplaced(new_tab);
+  AttachClientHost(cookie, new_tab->tab_contents()->render_view_host());
 }
 
 int DevToolsManager::DetachClientHost(RenderViewHost* from_rvh) {

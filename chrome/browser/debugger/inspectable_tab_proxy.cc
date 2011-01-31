@@ -48,6 +48,11 @@ void DevToolsClientHostImpl::SendMessageToClient(
   IPC_END_MESSAGE_MAP()
 }
 
+void DevToolsClientHostImpl::TabReplaced(TabContentsWrapper* new_tab) {
+  map_->erase(id_);
+  id_ = new_tab->controller().session_id().id();
+  (*map_)[id_] = this;
+}
 
 void DevToolsClientHostImpl::OnDebuggerOutput(const std::string& data) {
   service_->DebuggerOutput(id_, data);

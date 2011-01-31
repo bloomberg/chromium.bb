@@ -23,7 +23,6 @@ class Browser;
 class BrowserWindow;
 class Profile;
 class RenderViewHost;
-class TabContentsWrapper;
 class Value;
 
 class DevToolsWindow
@@ -41,6 +40,7 @@ class DevToolsWindow
   virtual DevToolsWindow* AsDevToolsWindow();
   virtual void SendMessageToClient(const IPC::Message& message);
   virtual void InspectedTabClosing();
+  virtual void TabReplaced(TabContentsWrapper* new_tab);
 
   void Show(DevToolsToggleAction action);
   void Activate();

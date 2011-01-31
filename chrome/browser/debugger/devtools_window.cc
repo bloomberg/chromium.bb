@@ -126,6 +126,11 @@ void DevToolsWindow::InspectedTabClosing() {
   }
 }
 
+void DevToolsWindow::TabReplaced(TabContentsWrapper* new_tab) {
+  DCHECK_EQ(profile_, new_tab->profile());
+  inspected_tab_ = new_tab->tab_contents();
+}
+
 void DevToolsWindow::Show(DevToolsToggleAction action) {
   if (docked_) {
     Browser* inspected_browser;

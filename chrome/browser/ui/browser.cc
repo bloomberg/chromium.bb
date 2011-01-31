@@ -2745,6 +2745,10 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
         &new_contents->controller(),
         tab_handler_->GetTabStripModel()->IsTabPinned(index));
   }
+
+  DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
+  if (devtools_manager)  // NULL in unit tests.
+    devtools_manager->TabReplaced(old_contents, new_contents);
 }
 
 void Browser::TabPinnedStateChanged(TabContentsWrapper* contents, int index) {

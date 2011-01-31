@@ -31,6 +31,8 @@ class ExtensionDevToolsBridge : public DevToolsClientHost {
   // DevToolsClientHost, called to send a message to this host.
   virtual void SendMessageToClient(const IPC::Message& msg);
 
+  virtual void TabReplaced(TabContentsWrapper* new_tab);
+
  private:
   void OnDispatchOnInspectorFrontend(const std::string& data);
 

@@ -15,6 +15,7 @@ class Message;
 }
 
 class DevToolsWindow;
+class TabContentsWrapper;
 
 // Describes interface for managing devtools clients from browser process. There
 // are currently two types of clients: devtools windows and TCP socket
@@ -48,6 +49,10 @@ class DevToolsClientHost {
   }
 
   virtual DevToolsWindow* AsDevToolsWindow();
+
+  // Invoked when a tab is replaced by another tab. This is triggered by
+  // TabStripModel::ReplaceTabContentsAt.
+  virtual void TabReplaced(TabContentsWrapper* new_tab) = 0;
 
  protected:
   DevToolsClientHost() : close_listener_(NULL) {}
