@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_H_
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -467,6 +468,10 @@ class AutocompleteResult {
   // operator=() by another name.
   void CopyFrom(const AutocompleteResult& rhs);
 
+  // If there are fewer matches in this result set than in |old_matches|, copies
+  // enough matches from |old_matches| to make the counts equal.
+  void CopyOldMatches(const AutocompleteResult& old_matches);
+
   // Adds a single match. The match is inserted at the appropriate position
   // based on relevancy and display order. This is ONLY for use after
   // SortAndCull() has been invoked, and preserves default_match_.
@@ -479,6 +484,13 @@ class AutocompleteResult {
   // the best kMaxMatches matches.  Sets the default match to the best match
   // and updates the alternate nav URL.
   void SortAndCull(const AutocompleteInput& input);
+
+  // Returns true if at least one match was copied from the last result.
+  bool HasCopiedMatches() const;
+
+  // Removes any matches that were copied from the previous result. Returns true
+  // if at least one entry was removed.
+  bool RemoveCopiedMatches();
 
   // Vector-style accessors/operators.
   size_t size() const;
@@ -500,6 +512,8 @@ class AutocompleteResult {
   // Clears the matches for this result set.
   void Reset();
 
+  void Swap(AutocompleteResult* other);
+
 #ifndef NDEBUG
   // Does a data integrity check on this result.
   void Validate() const;
@@ -509,6 +523,24 @@ class AutocompleteResult {
   static const size_t kMaxMatches;
 
  private:
+  typedef std::vector<const AutocompleteMatch*> ACMatchPtrs;
+  typedef std::map<AutocompleteProvider*, ACMatchPtrs> ProviderToMatchPtrs;
+
+  // Populates |provider_to_matches| from |matches_|.
+  void BuildProviderToMatchPtrs(ProviderToMatchPtrs* provider_to_matches) const;
+
+  // Returns true if |matches| contains a match with the same destination as
+  // |match|.
+  static bool HasMatchByDestination(const AutocompleteMatch& match,
+                                    const ACMatchPtrs& matches);
+
+  // Copies matches into this result. |old_matches| gives the matches from the
+  // last result, and |new_matches| the results from this result. |max_to_add|
+  // is decremented for each match copied.
+  void MergeMatchesByProvider(const ACMatchPtrs& old_matches,
+                              const ACMatchPtrs& new_matches,
+                              size_t* max_to_add);
+
   ACMatches matches_;
 
   const_iterator default_match_;
@@ -543,10 +575,8 @@ class AutocompleteController : public ACProviderListener {
   explicit AutocompleteController(const ACProviders& providers)
       : providers_(providers),
         search_provider_(NULL),
-        updated_latest_result_(false),
-        delay_interval_has_passed_(false),
-        have_committed_during_this_query_(false),
-        done_(true) {
+        done_(true),
+        in_start_(false) {
   }
 #endif
   ~AutocompleteController();
@@ -580,13 +610,12 @@ class AutocompleteController : public ACProviderListener {
   // return matches which are synchronously available, which should mean that
   // all providers will be done immediately.
   //
-  // The controller will fire
-  // AUTOCOMPLETE_CONTROLLER_SYNCHRONOUS_MATCHES_AVAILABLE from inside this
-  // call, and unless the query is stopped, will fire at least one (and perhaps
-  // more) AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED later as more matches come in
-  // (even if the query completes synchronously).  Listeners should use the
-  // result set provided in the accompanying Details object to update
-  // themselves.
+  // The controller will fire AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED from
+  // inside this call, and unless the query is stopped, will fire at least one
+  // (and perhaps more) AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED later as more
+  // matches come in (even if the query completes synchronously).  Listeners
+  // should use the result set provided in the accompanying Details object to
+  // update themselves.
   void Start(const string16& text,
              const string16& desired_tld,
              bool prevent_inline_autocomplete,
@@ -606,43 +635,39 @@ class AutocompleteController : public ACProviderListener {
   // no query is running.
   void DeleteMatch(const AutocompleteMatch& match);
 
-  // Commits the results for the current query if they've never been committed.
-  // This is used by the popup to ensure it's not showing an out-of-date query.
-  void CommitIfQueryHasNeverBeenCommitted();
+  // Removes any entries that were copied from the last result. This is used by
+  // the popup to ensure it's not showing an out-of-date query.
+  void ExpireCopiedEntries();
 
   SearchProvider* search_provider() const { return search_provider_; }
 
   // Getters
   const AutocompleteInput& input() const { return input_; }
   const AutocompleteResult& result() const { return result_; }
-  // This next is temporary and should go away when
-  // AutocompletePopup::InfoForCurrentSelection() moves to the controller.
-  const AutocompleteResult& latest_result() const { return latest_result_; }
-  bool done() const { return done_ && !update_delay_timer_.IsRunning(); }
+  bool done() const { return done_; }
 
   // From AutocompleteProvider::Listener
   virtual void OnProviderUpdate(bool updated_matches);
 
  private:
-  // Updates |latest_result_| and |done_| to reflect the current provider state.
-  // Resets timers and fires notifications as necessary.  |is_synchronous_pass|
-  // is true only when Start() is calling this to get the synchronous result.
-  void UpdateLatestResult(bool is_synchronous_pass);
+  // Updates |result_| to reflect the current provider state.  Resets timers and
+  // fires notifications as necessary.  |is_synchronous_pass| is true only when
+  // Start() is calling this to get the synchronous result.
+  void UpdateResult(bool is_synchronous_pass);
 
-  // Callback for when |max_delay_timer_| fires; this notes that the delay
-  // interval has passed and commits the result, if it's changed.
-  void DelayTimerFired();
-
-  // Copies |latest_result_| to |result_| and notifies observers of updates.
-  // |notify_default_match| should normally be true; if it's false, we don't
-  // send an AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED notification.  This
-  // is a hack to avoid updating the edit with out-of-date data.
+  // Sends notifications that the results were updated. If
+  // |notify_default_match| is true,
+  // AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED is sent in addition to
+  // AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED.
   // TODO(pkasting): Don't hardcode assumptions about who listens to these
   // notificiations.
-  void CommitResult(bool notify_default_match);
+  void NotifyChanged(bool notify_default_match);
 
   // Updates |done_| to be accurate with respect to current providers' statuses.
   void CheckIfDone();
+
+  // Starts the expire timer.
+  void StartExpireTimer();
 
   // A list of all providers.
   ACProviders providers_;
@@ -655,43 +680,16 @@ class AutocompleteController : public ACProviderListener {
   // Data from the autocomplete query.
   AutocompleteResult result_;
 
-  // The latest result available from the autocomplete providers.  This may be
-  // different than |result_| if we've gotten matches from our providers that we
-  // haven't yet shown the user.  If there aren't yet as many matches as in
-  // |result|, we'll wait to display these in hopes of minimizing flicker in GUI
-  // observers.
-  AutocompleteResult latest_result_;
-
-  // True if |latest_result_| has been updated since it was last committed to
-  // |result_|.  Used to determine whether we need to commit any changes.
-  bool updated_latest_result_;
-
-  // True when it's been at least one interval of the delay timer since we
-  // committed any updates.  This is used to allow a new update to be committed
-  // immediately.
-  //
-  // NOTE: This can never be true when |have_committed_during_this_query_| is
-  // false (except transiently while processing the timer firing).
-  bool delay_interval_has_passed_;
-
-  // True when we've committed a result set at least once during this query.
-  // When this is false, we commit immediately when |done_| is set, since there
-  // are no more updates to come and thus no possible flicker due to committing
-  // immediately.
-  //
-  // NOTE: This can never be false when |delay_interval_has_passed_| is true
-  // (except transiently while processing the timer firing).
-  bool have_committed_during_this_query_;
+  // Timer used to remove any matches copied from the last result. When run
+  // invokes |ExpireCopiedEntries|.
+  base::OneShotTimer<AutocompleteController> expire_timer_;
 
   // True if a query is not currently running.
   bool done_;
 
-  // Timer that tracks how long it's been since the last time we sent our
-  // observers a new result set.  This is used both to enforce a lower bound on
-  // the delay between most commits (to reduce flicker), and ensure that updates
-  // eventually get committed no matter what delays occur between them or how
-  // fast or continuously the user is typing.
-  base::RepeatingTimer<AutocompleteController> update_delay_timer_;
+  // Are we in Start()? This is used to avoid updating |result_| and sending
+  // notifications until Start() has been invoked on all providers.
+  bool in_start_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteController);
 };

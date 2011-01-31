@@ -17,7 +17,8 @@ AutocompleteMatch::AutocompleteMatch()
       is_history_what_you_typed_match(false),
       type(SEARCH_WHAT_YOU_TYPED),
       template_url(NULL),
-      starred(false) {
+      starred(false),
+      from_previous(false) {
 }
 
 AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
@@ -32,7 +33,8 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
       is_history_what_you_typed_match(false),
       type(type),
       template_url(NULL),
-      starred(false) {
+      starred(false),
+      from_previous(false) {
 }
 
 AutocompleteMatch::~AutocompleteMatch() {

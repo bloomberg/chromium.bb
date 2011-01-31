@@ -1038,6 +1038,7 @@
         'browser/autocomplete/autocomplete_edit_view_mac_unittest.mm',
         'browser/autocomplete/autocomplete_popup_view_gtk_unittest.cc',
         'browser/autocomplete/autocomplete_popup_view_mac_unittest.mm',
+        'browser/autocomplete/autocomplete_result_unittest.cc',
         'browser/autocomplete/autocomplete_unittest.cc',
         'browser/autocomplete/history_contents_provider_unittest.cc',
         'browser/autocomplete/history_quick_provider_unittest.cc',

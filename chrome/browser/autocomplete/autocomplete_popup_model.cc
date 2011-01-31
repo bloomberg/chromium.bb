@@ -92,11 +92,6 @@ void AutocompletePopupModel::SetHoveredLine(size_t line) {
 void AutocompletePopupModel::SetSelectedLine(size_t line,
                                              bool reset_to_default,
                                              bool force) {
-  // We should at least be dealing with the results of the current query.  Note
-  // that even if |line| was valid on entry, this may make it invalid.  We clamp
-  // it below.
-  controller_->CommitIfQueryHasNeverBeenCommitted();
-
   const AutocompleteResult& result = controller_->result();
   if (result.empty())
     return;
@@ -167,39 +162,27 @@ void AutocompletePopupModel::InfoForCurrentSelection(
     AutocompleteMatch* match,
     GURL* alternate_nav_url) const {
   DCHECK(match != NULL);
-  const AutocompleteResult* result;
+  const AutocompleteResult& result = controller_->result();
   if (!controller_->done()) {
-    // NOTE: Using latest_result() is important here since not only could it
-    // contain newer results than result() for the current query, it could even
-    // refer to an entirely different query (e.g. if the user is typing rapidly
-    // and the controller is purposefully delaying updates to avoid flicker).
-    result = &controller_->latest_result();
     // It's technically possible for |result| to be empty if no provider returns
     // a synchronous result but the query has not completed synchronously;
     // pratically, however, that should never actually happen.
-    if (result->empty())
+    if (result.empty())
       return;
     // The user cannot have manually selected a match, or the query would have
     // stopped.  So the default match must be the desired selection.
-    *match = *result->default_match();
+    *match = *result.default_match();
   } else {
     CHECK(IsOpen());
-    // The query isn't running, so the standard result set can't possibly be out
-    // of date.
-    //
-    // NOTE: In practice, it should actually be safe to use
-    // controller_->latest_result() here too, since the controller keeps that
-    // up-to-date.  However we generally try to avoid referring to that.
-    result = &controller_->result();
     // If there are no results, the popup should be closed (so we should have
     // failed the CHECK above), and URLsForDefaultMatch() should have been
     // called instead.
-    CHECK(!result->empty());
-    CHECK(selected_line_ < result->size());
-    *match = result->match_at(selected_line_);
+    CHECK(!result.empty());
+    CHECK(selected_line_ < result.size());
+    *match = result.match_at(selected_line_);
   }
   if (alternate_nav_url && manually_selected_match_.empty())
-    *alternate_nav_url = result->alternate_nav_url();
+    *alternate_nav_url = result.alternate_nav_url();
 }
 
 bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,

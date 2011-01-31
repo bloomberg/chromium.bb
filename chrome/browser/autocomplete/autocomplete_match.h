@@ -182,6 +182,9 @@ struct AutocompleteMatch {
   // True if the user has starred the destination URL.
   bool starred;
 
+  // True if this match is from a previous result.
+  bool from_previous;
+
 #ifndef NDEBUG
   // Does a data integrity check on this match.
   void Validate() const;

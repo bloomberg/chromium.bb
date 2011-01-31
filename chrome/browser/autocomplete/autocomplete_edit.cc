@@ -147,6 +147,8 @@ bool AutocompleteEditModel::UpdatePermanentText(
 
 void AutocompleteEditModel::SetUserText(const string16& text) {
   SetInputInProgress(true);
+  keyword_.clear();
+  is_keyword_hint_ = false;
   InternalSetUserText(text);
   paste_state_ = NONE;
   has_temporary_text_ = false;
