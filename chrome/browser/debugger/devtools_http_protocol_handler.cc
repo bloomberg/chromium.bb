@@ -12,13 +12,11 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -75,9 +73,10 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
 // static
 scoped_refptr<DevToolsHttpProtocolHandler> DevToolsHttpProtocolHandler::Start(
     int port,
-    const std::string& frontend_url) {
+    const std::string& frontend_url,
+    TabContentsProvider* provider) {
   scoped_refptr<DevToolsHttpProtocolHandler> http_handler =
-      new DevToolsHttpProtocolHandler(port, frontend_url);
+      new DevToolsHttpProtocolHandler(port, frontend_url, provider);
   http_handler->Start();
   return http_handler;
 }
@@ -197,30 +196,32 @@ void DevToolsHttpProtocolHandler::OnHttpRequestUI(
       "    document.body.appendChild(document.createElement('br'));"
       "}";
 
-  for (BrowserList::const_iterator it = BrowserList::begin(),
-       end = BrowserList::end(); it != end; ++it) {
-    TabStripModel* model = (*it)->tabstrip_model();
-    for (int i = 0, size = model->count(); i < size; ++i) {
-      TabContentsWrapper* tab_contents = model->GetTabContentsAt(i);
-      NavigationController& controller = tab_contents->controller();
-      NavigationEntry* entry = controller.GetActiveEntry();
-      if (entry == NULL)
-        continue;
+  InspectableTabs inspectable_tabs =
+      tab_contents_provider_->GetInspectableTabs();
 
-      if (!entry->url().is_valid())
-        continue;
+  for (InspectableTabs::iterator it = inspectable_tabs.begin();
+       it != inspectable_tabs.end(); ++it) {
 
-      DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
-          GetDevToolsClientHostFor(tab_contents->tab_contents()->
+    TabContentsWrapper* tab_contents = *it;
+    NavigationController& controller = tab_contents->controller();
+    NavigationEntry* entry = controller.GetActiveEntry();
+    if (entry == NULL)
+      continue;
+
+    if (!entry->url().is_valid())
+      continue;
+
+    DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
+        GetDevToolsClientHostFor(tab_contents->tab_contents()->
                                       render_view_host());
-      response += StringPrintf(
-          "addTab(%d, '%s', %s, '%s');\n",
-          controller.session_id().id(),
-          entry->url().spec().c_str(),
-          client_host ? "true" : "false",
-          overriden_frontend_url_.c_str());
-    }
+    response += StringPrintf(
+        "addTab(%d, '%s', %s, '%s');\n",
+        controller.session_id().id(),
+        entry->url().spec().c_str(),
+        client_host ? "true" : "false",
+        overriden_frontend_url_.c_str());
   }
+
   response += "</script></body></html>";
   Send200(socket, response, "text/html; charset=UTF-8");
 }
@@ -362,10 +363,12 @@ void DevToolsHttpProtocolHandler::OnReadCompleted(net::URLRequest* request,
 
 DevToolsHttpProtocolHandler::DevToolsHttpProtocolHandler(
     int port,
-    const std::string& frontend_host)
+    const std::string& frontend_host,
+    TabContentsProvider* provider)
     : port_(port),
       overriden_frontend_url_(frontend_host),
-      server_(NULL) {
+      server_(NULL),
+      tab_contents_provider_(provider) {
   if (overriden_frontend_url_.empty())
       overriden_frontend_url_ = "/devtools/devtools.html";
 }
@@ -449,16 +452,16 @@ void DevToolsHttpProtocolHandler::ReleaseSocket(
 }
 
 TabContents* DevToolsHttpProtocolHandler::GetTabContents(int session_id) {
-  for (BrowserList::const_iterator it = BrowserList::begin(),
-       end = BrowserList::end(); it != end; ++it) {
-    TabStripModel* model = (*it)->tabstrip_model();
-    for (int i = 0, size = model->count(); i < size; ++i) {
-      TabContentsWrapper* tab_contents = model->GetTabContentsAt(i);
-      NavigationController& controller =
-          tab_contents->controller();
-      if (controller.session_id().id() == session_id)
-        return controller.tab_contents();
-    }
+  InspectableTabs inspectable_tabs =
+      tab_contents_provider_->GetInspectableTabs();
+
+  for (InspectableTabs::iterator it = inspectable_tabs.begin();
+       it != inspectable_tabs.end(); ++it) {
+    TabContentsWrapper* tab_contents = *it;
+    NavigationController& controller =
+        tab_contents->controller();
+    if (controller.session_id().id() == session_id)
+      return controller.tab_contents();
   }
   return NULL;
 }

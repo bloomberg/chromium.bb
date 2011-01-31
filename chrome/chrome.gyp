@@ -508,6 +508,8 @@
         '..',
       ],
       'sources': [
+        'browser/debugger/browser_list_tabcontents_provider.cc',
+        'browser/debugger/browser_list_tabcontents_provider.h',
         'browser/debugger/debugger_remote_service.cc',
         'browser/debugger/debugger_remote_service.h',
         'browser/debugger/devtools_client_host.cc',

@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/browser_trial.h"
+#include "chrome/browser/debugger/browser_list_tabcontents_provider.h"
 #include "chrome/browser/debugger/devtools_http_protocol_handler.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_protocol_handler.h"
@@ -464,7 +465,9 @@ void BrowserProcessImpl::InitDevToolsHttpProtocolHandler(
     const std::string& frontend_url) {
   DCHECK(CalledOnValidThread());
   devtools_http_handler_ =
-      DevToolsHttpProtocolHandler::Start(port, frontend_url);
+      DevToolsHttpProtocolHandler::Start(port,
+                                         frontend_url,
+                                         new BrowserListTabContentsProvider());
 }
 
 void BrowserProcessImpl::InitDevToolsLegacyProtocolHandler(int port) {

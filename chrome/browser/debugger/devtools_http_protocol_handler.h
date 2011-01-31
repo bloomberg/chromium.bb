@@ -8,23 +8,38 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "net/server/http_listen_socket.h"
 #include "net/url_request/url_request.h"
 
 class DevToolsClientHost;
 class DevToolsHttpServer;
 class TabContents;
+class TabContentsWrapper;
 
 class DevToolsHttpProtocolHandler
     : public HttpListenSocket::Delegate,
       public net::URLRequest::Delegate,
       public base::RefCountedThreadSafe<DevToolsHttpProtocolHandler> {
  public:
+  typedef std::vector<TabContentsWrapper*> InspectableTabs;
+  class TabContentsProvider {
+   public:
+    TabContentsProvider() {}
+    virtual ~TabContentsProvider() {}
+    virtual InspectableTabs GetInspectableTabs() = 0;
+   private:
+    DISALLOW_COPY_AND_ASSIGN(TabContentsProvider);
+  };
+
+  // Takes ownership over |provider|.
   static scoped_refptr<DevToolsHttpProtocolHandler> Start(
       int port,
-      const std::string& frontend_url);
+      const std::string& frontend_url,
+      TabContentsProvider* provider);
 
   // Called from the main thread in order to stop protocol handler.
   // Will schedule tear down task on IO thread.
@@ -33,7 +48,9 @@ class DevToolsHttpProtocolHandler
  private:
   friend class base::RefCountedThreadSafe<DevToolsHttpProtocolHandler>;
 
-  DevToolsHttpProtocolHandler(int port, const std::string& frontend_url);
+  DevToolsHttpProtocolHandler(int port,
+                              const std::string& frontend_url,
+                              TabContentsProvider* provider);
   virtual ~DevToolsHttpProtocolHandler();
   void Start();
 
@@ -90,6 +107,7 @@ class DevToolsHttpProtocolHandler
   typedef std::map<HttpListenSocket*, DevToolsClientHost*>
       SocketToClientHostMap;
   SocketToClientHostMap socket_to_client_host_ui_;
+  scoped_ptr<TabContentsProvider> tab_contents_provider_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpProtocolHandler);
 };
 
