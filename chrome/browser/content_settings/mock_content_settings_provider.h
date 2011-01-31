@@ -9,7 +9,9 @@
 #include "base/basictypes.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 
-class MockContentSettingsProvider : public DefaultContentSettingsProvider {
+namespace content_settings {
+
+class MockContentSettingsProvider : public DefaultProviderInterface {
  public:
   // Create a content settings provider that provides a given setting for a
   // given type.
@@ -36,5 +38,7 @@ class MockContentSettingsProvider : public DefaultContentSettingsProvider {
 
   DISALLOW_COPY_AND_ASSIGN(MockContentSettingsProvider);
 };
+
+}  // namespace content_settings
 
 #endif  // CHROME_BROWSER_CONTENT_SETTINGS_MOCK_CONTENT_SETTINGS_PROVIDER_H_

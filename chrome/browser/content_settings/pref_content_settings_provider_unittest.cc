@@ -13,11 +13,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 
-namespace {
+namespace content_settings {
 
-class PrefContentSettingsProviderTest : public testing::Test {
+class PrefDefaultProviderTest : public testing::Test {
  public:
-  PrefContentSettingsProviderTest()
+  PrefDefaultProviderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
@@ -26,9 +26,9 @@ class PrefContentSettingsProviderTest : public testing::Test {
   BrowserThread ui_thread_;
 };
 
-TEST_F(PrefContentSettingsProviderTest, DefaultValues) {
+TEST_F(PrefDefaultProviderTest, DefaultValues) {
   TestingProfile profile;
-  PrefContentSettingsProvider provider(&profile);
+  content_settings::PrefDefaultProvider provider(&profile);
 
   ASSERT_TRUE(
       provider.CanProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
@@ -47,9 +47,9 @@ TEST_F(PrefContentSettingsProviderTest, DefaultValues) {
             provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
 }
 
-TEST_F(PrefContentSettingsProviderTest, Observer) {
+TEST_F(PrefDefaultProviderTest, Observer) {
   TestingProfile profile;
-  PrefContentSettingsProvider provider(&profile);
+  PrefDefaultProvider provider(&profile);
   StubSettingsObserver observer;
 
   provider.UpdateDefaultSetting(
@@ -60,9 +60,9 @@ TEST_F(PrefContentSettingsProviderTest, Observer) {
   EXPECT_EQ(1, observer.counter);
 }
 
-TEST_F(PrefContentSettingsProviderTest, ObserveDefaultPref) {
+TEST_F(PrefDefaultProviderTest, ObserveDefaultPref) {
   TestingProfile profile;
-  PrefContentSettingsProvider provider(&profile);
+  PrefDefaultProvider provider(&profile);
 
   PrefService* prefs = profile.GetPrefs();
 
@@ -90,12 +90,12 @@ TEST_F(PrefContentSettingsProviderTest, ObserveDefaultPref) {
             provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
 }
 
-TEST_F(PrefContentSettingsProviderTest, OffTheRecord) {
+TEST_F(PrefDefaultProviderTest, OffTheRecord) {
   TestingProfile profile;
-  PrefContentSettingsProvider provider(&profile);
+  PrefDefaultProvider provider(&profile);
 
   profile.set_off_the_record(true);
-  PrefContentSettingsProvider otr_provider(&profile);
+  PrefDefaultProvider otr_provider(&profile);
   profile.set_off_the_record(false);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -121,4 +121,4 @@ TEST_F(PrefContentSettingsProviderTest, OffTheRecord) {
             otr_provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
 }
 
-}  // namespace
+}  // namespace content_settings

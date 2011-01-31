@@ -4,6 +4,8 @@
 
 #include "chrome/browser/content_settings/mock_content_settings_provider.h"
 
+namespace content_settings {
+
 MockContentSettingsProvider::MockContentSettingsProvider(
     ContentSettingsType content_type,
     ContentSetting setting,
@@ -42,3 +44,5 @@ bool MockContentSettingsProvider::DefaultSettingIsManaged(
 
 void MockContentSettingsProvider::ResetToDefaults() {
 }
+
+}  // namespace content_settings

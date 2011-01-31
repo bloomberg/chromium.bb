@@ -38,7 +38,9 @@ const char* kPrefToManageType[CONTENT_SETTINGS_NUM_TYPES] = {
 
 }  // namespace
 
-PolicyContentSettingsProvider::PolicyContentSettingsProvider(Profile* profile)
+namespace content_settings {
+
+PolicyDefaultProvider::PolicyDefaultProvider(Profile* profile)
     : profile_(profile),
       is_off_the_record_(profile_->IsOffTheRecord()) {
   PrefService* prefs = profile->GetPrefs();
@@ -65,11 +67,11 @@ PolicyContentSettingsProvider::PolicyContentSettingsProvider(Profile* profile)
                               Source<Profile>(profile_));
 }
 
-PolicyContentSettingsProvider::~PolicyContentSettingsProvider() {
+PolicyDefaultProvider::~PolicyDefaultProvider() {
   UnregisterObservers();
 }
 
-bool PolicyContentSettingsProvider::CanProvideDefaultSetting(
+bool PolicyDefaultProvider::CanProvideDefaultSetting(
     ContentSettingsType content_type) const {
   base::AutoLock lock(lock_);
   if (managed_default_content_settings_.settings[content_type] !=
@@ -80,18 +82,18 @@ bool PolicyContentSettingsProvider::CanProvideDefaultSetting(
   }
 }
 
-ContentSetting PolicyContentSettingsProvider::ProvideDefaultSetting(
+ContentSetting PolicyDefaultProvider::ProvideDefaultSetting(
     ContentSettingsType content_type) const {
   base::AutoLock auto_lock(lock_);
   return managed_default_content_settings_.settings[content_type];
 }
 
-void PolicyContentSettingsProvider::UpdateDefaultSetting(
+void PolicyDefaultProvider::UpdateDefaultSetting(
     ContentSettingsType content_type,
     ContentSetting setting) {
 }
 
-bool PolicyContentSettingsProvider::DefaultSettingIsManaged(
+bool PolicyDefaultProvider::DefaultSettingIsManaged(
     ContentSettingsType content_type) const {
   base::AutoLock lock(lock_);
   if (managed_default_content_settings_.settings[content_type] !=
@@ -102,12 +104,12 @@ bool PolicyContentSettingsProvider::DefaultSettingIsManaged(
   }
 }
 
-void PolicyContentSettingsProvider::ResetToDefaults() {
+void PolicyDefaultProvider::ResetToDefaults() {
 }
 
-void PolicyContentSettingsProvider::Observe(NotificationType type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
+void PolicyDefaultProvider::Observe(NotificationType type,
+                                    const NotificationSource& source,
+                                    const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (type == NotificationType::PREF_CHANGED) {
@@ -140,7 +142,7 @@ void PolicyContentSettingsProvider::Observe(NotificationType type,
   }
 }
 
-void PolicyContentSettingsProvider::UnregisterObservers() {
+void PolicyDefaultProvider::UnregisterObservers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!profile_)
     return;
@@ -151,7 +153,7 @@ void PolicyContentSettingsProvider::UnregisterObservers() {
 }
 
 
-void PolicyContentSettingsProvider::NotifyObservers(
+void PolicyDefaultProvider::NotifyObservers(
     const ContentSettingsDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (profile_ == NULL)
@@ -162,7 +164,7 @@ void PolicyContentSettingsProvider::NotifyObservers(
       Details<const ContentSettingsDetails>(&details));
 }
 
-void PolicyContentSettingsProvider::ReadManagedDefaultSettings() {
+void PolicyDefaultProvider::ReadManagedDefaultSettings() {
   for (size_t type = 0; type < arraysize(kPrefToManageType); ++type) {
     if (kPrefToManageType[type] == NULL) {
       // TODO(markusheintz): Handle Geolocation and notification separately.
@@ -172,7 +174,7 @@ void PolicyContentSettingsProvider::ReadManagedDefaultSettings() {
   }
 }
 
-void PolicyContentSettingsProvider::UpdateManagedDefaultSetting(
+void PolicyDefaultProvider::UpdateManagedDefaultSetting(
     ContentSettingsType type) {
   // If a pref to manage a default-content-setting was not set (NOTICE:
   // "HasPrefPath" returns false if no value was set for a registered pref) then
@@ -189,7 +191,7 @@ void PolicyContentSettingsProvider::UpdateManagedDefaultSetting(
 }
 
 // static
-void PolicyContentSettingsProvider::RegisterUserPrefs(PrefService* prefs) {
+void PolicyDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
   // Preferences for default content setting policies. A policy is not set of
   // the corresponding preferences below is set to CONTENT_SETTING_DEFAULT.
   prefs->RegisterIntegerPref(prefs::kManagedDefaultCookiesSetting,
@@ -203,3 +205,5 @@ void PolicyContentSettingsProvider::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kManagedDefaultPopupsSetting,
       CONTENT_SETTING_DEFAULT);
 }
+
+}  // namespace content_settings

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/content_settings/pref_content_settings_provider.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
@@ -57,7 +59,9 @@ ContentSetting ClickToPlayFixup(ContentSettingsType content_type,
 
 }  // namespace
 
-PrefContentSettingsProvider::PrefContentSettingsProvider(Profile* profile)
+namespace content_settings {
+
+PrefDefaultProvider::PrefDefaultProvider(Profile* profile)
     : profile_(profile),
       is_off_the_record_(profile_->IsOffTheRecord()),
       updating_preferences_(false) {
@@ -74,22 +78,22 @@ PrefContentSettingsProvider::PrefContentSettingsProvider(Profile* profile)
                               Source<Profile>(profile_));
 }
 
-PrefContentSettingsProvider::~PrefContentSettingsProvider() {
+PrefDefaultProvider::~PrefDefaultProvider() {
   UnregisterObservers();
 }
 
-bool PrefContentSettingsProvider::CanProvideDefaultSetting(
+bool PrefDefaultProvider::CanProvideDefaultSetting(
     ContentSettingsType content_type) const {
   return true;
 }
 
-ContentSetting PrefContentSettingsProvider::ProvideDefaultSetting(
+ContentSetting PrefDefaultProvider::ProvideDefaultSetting(
     ContentSettingsType content_type) const {
   base::AutoLock lock(lock_);
   return default_content_settings_.settings[content_type];
 }
 
-void PrefContentSettingsProvider::UpdateDefaultSetting(
+void PrefDefaultProvider::UpdateDefaultSetting(
     ContentSettingsType content_type,
     ContentSetting setting) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -131,12 +135,12 @@ void PrefContentSettingsProvider::UpdateDefaultSetting(
       ContentSettingsDetails(ContentSettingsPattern(), content_type, ""));
 }
 
-bool PrefContentSettingsProvider::DefaultSettingIsManaged(
+bool PrefDefaultProvider::DefaultSettingIsManaged(
     ContentSettingsType content_type) const {
   return false;
 }
 
-void PrefContentSettingsProvider::ResetToDefaults() {
+void PrefDefaultProvider::ResetToDefaults() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::AutoLock lock(lock_);
   default_content_settings_ = ContentSettings();
@@ -150,9 +154,9 @@ void PrefContentSettingsProvider::ResetToDefaults() {
   }
 }
 
-void PrefContentSettingsProvider::Observe(NotificationType type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
+void PrefDefaultProvider::Observe(NotificationType type,
+                                  const NotificationSource& source,
+                                  const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (type == NotificationType::PREF_CHANGED) {
@@ -180,7 +184,7 @@ void PrefContentSettingsProvider::Observe(NotificationType type,
   }
 }
 
-void PrefContentSettingsProvider::UnregisterObservers() {
+void PrefDefaultProvider::UnregisterObservers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!profile_)
     return;
@@ -190,7 +194,7 @@ void PrefContentSettingsProvider::UnregisterObservers() {
   profile_ = NULL;
 }
 
-void PrefContentSettingsProvider::ReadDefaultSettings(bool overwrite) {
+void PrefDefaultProvider::ReadDefaultSettings(bool overwrite) {
   PrefService* prefs = profile_->GetPrefs();
   const DictionaryValue* default_settings_dictionary =
       prefs->GetDictionary(prefs::kDefaultContentSettings);
@@ -208,7 +212,7 @@ void PrefContentSettingsProvider::ReadDefaultSettings(bool overwrite) {
   ForceDefaultsToBeExplicit();
 }
 
-void PrefContentSettingsProvider::ForceDefaultsToBeExplicit() {
+void PrefDefaultProvider::ForceDefaultsToBeExplicit() {
   DCHECK_EQ(arraysize(kDefaultSettings),
             static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
 
@@ -218,7 +222,7 @@ void PrefContentSettingsProvider::ForceDefaultsToBeExplicit() {
   }
 }
 
-void PrefContentSettingsProvider::GetSettingsFromDictionary(
+void PrefDefaultProvider::GetSettingsFromDictionary(
     const DictionaryValue* dictionary,
     ContentSettings* settings) {
   for (DictionaryValue::key_iterator i(dictionary->begin_keys());
@@ -245,7 +249,7 @@ void PrefContentSettingsProvider::GetSettingsFromDictionary(
                        settings->settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
 }
 
-void PrefContentSettingsProvider::NotifyObservers(
+void PrefDefaultProvider::NotifyObservers(
     const ContentSettingsDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (profile_ == NULL)
@@ -258,6 +262,8 @@ void PrefContentSettingsProvider::NotifyObservers(
 
 
 // static
-void PrefContentSettingsProvider::RegisterUserPrefs(PrefService* prefs) {
+void PrefDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings);
 }
+
+}  // namespace content_settings

@@ -6,6 +6,8 @@
 
 #include "chrome/browser/content_settings/mock_content_settings_provider.h"
 
+namespace content_settings {
+
 TEST(ContentSettingsProviderTest, Mock) {
   MockContentSettingsProvider provider(CONTENT_SETTINGS_TYPE_COOKIES,
                                        CONTENT_SETTING_ALLOW,
@@ -24,3 +26,5 @@ TEST(ContentSettingsProviderTest, Mock) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
 }
+
+}  // namespace content_settings

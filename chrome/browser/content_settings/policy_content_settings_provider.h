@@ -20,11 +20,13 @@ class DictionaryValue;
 class PrefService;
 class Profile;
 
-class PolicyContentSettingsProvider : public DefaultContentSettingsProvider,
-                                      public NotificationObserver {
+namespace content_settings {
+
+class PolicyDefaultProvider : public DefaultProviderInterface,
+                              public NotificationObserver {
  public:
-  explicit PolicyContentSettingsProvider(Profile* profile);
-  virtual ~PolicyContentSettingsProvider();
+  explicit PolicyDefaultProvider(Profile* profile);
+  virtual ~PolicyDefaultProvider();
 
   // DefaultContentSettingsProvider implementation.
   virtual bool CanProvideDefaultSetting(ContentSettingsType content_type) const;
@@ -72,7 +74,9 @@ class PolicyContentSettingsProvider : public DefaultContentSettingsProvider,
   PrefChangeRegistrar pref_change_registrar_;
   NotificationRegistrar notification_registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(PolicyContentSettingsProvider);
+  DISALLOW_COPY_AND_ASSIGN(PolicyDefaultProvider);
 };
+
+}  // namespace content_settings
 
 #endif  // CHROME_BROWSER_CONTENT_SETTINGS_POLICY_CONTENT_SETTINGS_PROVIDER_H_

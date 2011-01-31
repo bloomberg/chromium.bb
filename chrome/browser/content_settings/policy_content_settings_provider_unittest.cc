@@ -13,11 +13,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 
-namespace {
+namespace content_settings {
 
-class PolicyContentSettingsProviderTest : public testing::Test {
+class PolicyDefaultProviderTest : public testing::Test {
  public:
-  PolicyContentSettingsProviderTest()
+  PolicyDefaultProviderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
@@ -26,9 +26,9 @@ class PolicyContentSettingsProviderTest : public testing::Test {
   BrowserThread ui_thread_;
 };
 
-TEST_F(PolicyContentSettingsProviderTest, DefaultValues) {
+TEST_F(PolicyDefaultProviderTest, DefaultValues) {
   TestingProfile profile;
-  PolicyContentSettingsProvider provider(&profile);
+  PolicyDefaultProvider provider(&profile);
   TestingPrefService* prefs = profile.GetTestingPrefService();
 
   // By default, policies should be off.
@@ -58,7 +58,7 @@ TEST_F(PolicyContentSettingsProviderTest, DefaultValues) {
 // When a default-content-setting is set to a managed setting a
 // CONTENT_SETTINGS_CHANGED notification should be fired. The same should happen
 // if the managed setting is removed.
-TEST_F(PolicyContentSettingsProviderTest, ObserveManagedSettingsChange) {
+TEST_F(PolicyDefaultProviderTest, ObserveManagedSettingsChange) {
   TestingProfile profile;
   StubSettingsObserver observer;
   // Make sure the content settings map exists.
@@ -85,4 +85,4 @@ TEST_F(PolicyContentSettingsProviderTest, ObserveManagedSettingsChange) {
   EXPECT_EQ(2, observer.counter);
 }
 
-}  // namespace
+}  // namespace content_settings

@@ -20,11 +20,13 @@ class DictionaryValue;
 class PrefService;
 class Profile;
 
-class PrefContentSettingsProvider : public DefaultContentSettingsProvider,
-                                    public NotificationObserver {
+namespace content_settings {
+
+class PrefDefaultProvider : public DefaultProviderInterface,
+                            public NotificationObserver {
  public:
-  explicit PrefContentSettingsProvider(Profile* profile);
-  virtual ~PrefContentSettingsProvider();
+  explicit PrefDefaultProvider(Profile* profile);
+  virtual ~PrefDefaultProvider();
 
   // DefaultContentSettingsProvider implementation.
   virtual bool CanProvideDefaultSetting(ContentSettingsType content_type) const;
@@ -82,7 +84,9 @@ class PrefContentSettingsProvider : public DefaultContentSettingsProvider,
   // notifications from the preferences service that we triggered ourself.
   bool updating_preferences_;
 
-  DISALLOW_COPY_AND_ASSIGN(PrefContentSettingsProvider);
+  DISALLOW_COPY_AND_ASSIGN(PrefDefaultProvider);
 };
+
+}  // namespace content_settings
 
 #endif  // CHROME_BROWSER_CONTENT_SETTINGS_PREF_CONTENT_SETTINGS_PROVIDER_H_

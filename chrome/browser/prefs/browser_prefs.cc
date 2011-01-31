@@ -12,8 +12,6 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/content_settings/policy_content_settings_provider.h"
-#include "chrome/browser/content_settings/pref_content_settings_provider.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/dom_ui/flags_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
@@ -133,8 +131,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   PluginsUI::RegisterUserPrefs(user_prefs);
   ProfileImpl::RegisterUserPrefs(user_prefs);
   HostContentSettingsMap::RegisterUserPrefs(user_prefs);
-  PolicyContentSettingsProvider::RegisterUserPrefs(user_prefs);
-  PrefContentSettingsProvider::RegisterUserPrefs(user_prefs);
   HostZoomMap::RegisterUserPrefs(user_prefs);
   DevToolsManager::RegisterUserPrefs(user_prefs);
   PinnedTabCodec::RegisterUserPrefs(user_prefs);

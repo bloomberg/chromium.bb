@@ -88,7 +88,7 @@ ContentSetting ClickToPlayFixup(ContentSettingsType content_type,
   return setting;
 }
 
-typedef linked_ptr<DefaultContentSettingsProvider>
+typedef linked_ptr<content_settings::DefaultProviderInterface>
     DefaultContentSettingsProviderPtr;
 typedef std::vector<DefaultContentSettingsProviderPtr>::iterator
     provider_iterator;
@@ -114,10 +114,10 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   // providers further up.
   default_content_settings_providers_.push_back(
       DefaultContentSettingsProviderPtr(
-          new PrefContentSettingsProvider(profile)));
+          new content_settings::PrefDefaultProvider(profile)));
   default_content_settings_providers_.push_back(
       DefaultContentSettingsProviderPtr(
-          new PolicyContentSettingsProvider(profile)));
+          new content_settings::PolicyDefaultProvider(profile)));
 
   PrefService* prefs = profile_->GetPrefs();
 
@@ -171,6 +171,10 @@ void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
                              net::StaticCookiePolicy::ALLOW_ALL_COOKIES);
   prefs->RegisterListPref(prefs::kPopupWhitelistedHosts);
   prefs->RegisterDictionaryPref(prefs::kPerHostContentSettings);
+
+  // Register the prefs for the content settings providers.
+  content_settings::PrefDefaultProvider::RegisterUserPrefs(prefs);
+  content_settings::PolicyDefaultProvider::RegisterUserPrefs(prefs);
 }
 
 ContentSetting HostContentSettingsMap::GetDefaultContentSetting(

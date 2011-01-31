@@ -10,9 +10,11 @@
 
 #include "chrome/common/content_settings.h"
 
-class DefaultContentSettingsProvider {
+namespace content_settings {
+
+class DefaultProviderInterface {
  public:
-  virtual ~DefaultContentSettingsProvider() {}
+  virtual ~DefaultProviderInterface() {}
 
   // True if this provider can provide a default setting for the |content_type|.
   virtual bool CanProvideDefaultSetting(
@@ -38,5 +40,7 @@ class DefaultContentSettingsProvider {
   virtual bool DefaultSettingIsManaged(
       ContentSettingsType content_type) const = 0;
 };
+
+}  // namespace content_settings
 
 #endif  // CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PROVIDER_H_

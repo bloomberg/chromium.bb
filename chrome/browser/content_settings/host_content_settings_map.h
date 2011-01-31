@@ -25,8 +25,11 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+namespace content_settings {
+class DefaultProviderInterface;
+}  // namespace content_settings
+
 class ContentSettingsDetails;
-class DefaultContentSettingsProvider;
 class DictionaryValue;
 class GURL;
 class PrefService;
@@ -229,7 +232,7 @@ class HostContentSettingsMap
   bool updating_preferences_;
 
   // Content setting providers.
-  std::vector<linked_ptr<DefaultContentSettingsProvider> >
+  std::vector<linked_ptr<content_settings::DefaultProviderInterface> >
       default_content_settings_providers_;
 
   // Used around accesses to the following objects to guarantee thread safety.
