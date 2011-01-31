@@ -65,8 +65,9 @@ int ListenTask::ProcessResponse() {
   // Note that there can be multiple "Result" elements, so we need to loop
   // through all of them.
   bool update_signaled = false;
+  const buzz::QName kQnNotifierGetAll(kNotifierNamespace, "getAll");
   const buzz::XmlElement* get_all_element =
-      stanza->FirstNamed(buzz::QName("google:notifier", "getAll"));
+      stanza->FirstNamed(kQnNotifierGetAll);
   if (get_all_element) {
     const buzz::XmlElement* result_element =
         get_all_element->FirstNamed(
@@ -125,8 +126,6 @@ bool ListenTask::HandleStanza(const buzz::XmlElement* stanza) {
 }
 
 bool ListenTask::IsValidNotification(const buzz::XmlElement* stanza) {
-  static const buzz::QName kQnNotifierGetAll(
-      kNotifierNamespace, "getAll");
   // An update notificaiton has the following form.
   //  <cli:iq from="{bare_jid}" to="{full_jid}"
   //      id="#" type="set" xmlns:cli="jabber:client">
@@ -134,10 +133,11 @@ bool ListenTask::IsValidNotification(const buzz::XmlElement* stanza) {
   //      <Timestamp long="#" xmlns=""/>
   //    </not:getAll>
   //  </cli:iq>
-  return
-      (MatchRequestIq(stanza, buzz::STR_SET, kQnNotifierGetAll) &&
-       (stanza->Attr(buzz::QN_TO) == GetClient()->jid().Str()) &&
-       (stanza->Attr(buzz::QN_FROM) == GetClient()->jid().BareJid().Str()));
+  //
+  // We deliberately minimize the verification we do here, though: see
+  // http://crbug.com/71285 .
+  const buzz::QName kQnNotifierGetAll(kNotifierNamespace, "getAll");
+  return MatchRequestIq(stanza, buzz::STR_SET, kQnNotifierGetAll);
 }
 
 }  // namespace notifier

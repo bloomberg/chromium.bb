@@ -84,15 +84,9 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
 
  private:
   bool IsValidCacheInvalidationIqPacket(const buzz::XmlElement* stanza) {
-    // We make sure to compare jids (which are normalized) instead of
-    // just strings -- server may use non-normalized jids in
-    // attributes.
-    //
-    // TODO(akalin): Add unit tests for this.
-    buzz::Jid to(stanza->Attr(buzz::QN_TO));
-    return
-        (MatchRequestIq(stanza, buzz::STR_SET, kQnData) &&
-         (to == GetClient()->jid()));
+    // We deliberately minimize the verification we do here: see
+    // http://crbug.com/71285 .
+    return MatchRequestIq(stanza, buzz::STR_SET, kQnData);
   }
 
   bool GetCacheInvalidationIqPacketData(const buzz::XmlElement* stanza,
