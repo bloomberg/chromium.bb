@@ -9,7 +9,7 @@
     # with extra parameter checking. Once with no parameter checking to be 100%
     # OpenGL ES 2.0 compliant for the conformance tests.
     'gles2_c_lib_source_files': [
-      'command_buffer/client/gles2_lib.h',
+      'command_buffer/client/gles2_c_lib.h',
       'command_buffer/client/gles2_c_lib.cc',
       'command_buffer/client/gles2_c_lib_autogen.h',
     ],

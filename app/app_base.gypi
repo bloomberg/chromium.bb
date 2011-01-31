@@ -206,6 +206,7 @@
         'gfx/gl/gl_context_stub.cc',
         'gfx/gl/gl_context_stub.h',
         'gfx/gl/gl_context_win.cc',
+        'gfx/gl/gl_headers.h',
         'gfx/gl/gl_implementation.cc',
         'gfx/gl/gl_implementation.h',
         'gfx/gl/gl_implementation_linux.cc',
