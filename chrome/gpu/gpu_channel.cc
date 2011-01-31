@@ -54,7 +54,7 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
 }
 
 void GpuChannel::OnChannelError() {
-  static_cast<GpuThread*>(ChildThread::current())->RemoveChannel(renderer_id_);
+  gpu_thread_->RemoveChannel(renderer_id_);
 }
 
 bool GpuChannel::Send(IPC::Message* message) {

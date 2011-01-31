@@ -93,18 +93,21 @@ bool GpuProcessLogMessageHandler(int severity,
                                  const char* file, int line,
                                  size_t message_start,
                                  const std::string& str) {
-  std::string header = str.substr(0,message_start);
+  std::string header = str.substr(0, message_start);
   std::string message = str.substr(message_start);
   ChildThread::current()->Send(
       new GpuHostMsg_OnLogMessage(severity, header, message));
   return false;
 }
 
-} // namespace
+}  // namespace
 
 void GpuThread::OnInitialize() {
   // Redirect LOG messages to the GpuProcessHost
-  logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
+  bool single_process = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSingleProcess);
+  if (!single_process)
+    logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
 
   // Load the GL implementation and locate the bindings before starting the GPU
   // watchdog because this can take a lot of time and the GPU watchdog might
