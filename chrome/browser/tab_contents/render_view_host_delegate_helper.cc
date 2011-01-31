@@ -50,8 +50,11 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
       extensions_service->GetExtensionByURL(opener_url);
   if (!extension)
     extension = extensions_service->GetExtensionByWebExtent(opener_url);
+  // Only hosted apps with background permission are allowed to create a
+  // BackgroundContents.
   if (!extension ||
-      !extension->HasApiPermission(Extension::kBackgroundPermission))
+      !extension->HasApiPermission(Extension::kBackgroundPermission) ||
+      extension->GetType() != Extension::TYPE_HOSTED_APP)
     return NULL;
 
   // Only allow a single background contents per app.
