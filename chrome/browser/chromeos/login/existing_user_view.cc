@@ -93,7 +93,7 @@ void ExistingUserView::RecreateFields() {
 bool ExistingUserView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
   if (accelerator == accel_login_off_the_record_) {
-    user_controller_->OnLoginOffTheRecord();
+    user_controller_->OnLoginAsGuest();
     return true;
   } else if (accelerator == accel_toggle_accessibility_) {
     WizardAccessibilityHelper::GetInstance()->ToggleAccessibility(this);

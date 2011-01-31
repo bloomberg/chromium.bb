@@ -44,22 +44,16 @@ class NewUserView : public ThrobberHostView,
                          const std::string& password) = 0;
 
     // Initiates off the record (incognito) login.
-    virtual void OnLoginOffTheRecord() = 0;
+    virtual void OnLoginAsGuest() = 0;
 
     // User initiated new account creation.
     virtual void OnCreateAccount() = 0;
-
-    // Adds start URL that will be opened after login.
-    virtual void AddStartUrl(const GURL& start_url) = 0;
 
     // User started typing so clear all error messages.
     virtual void ClearErrors() = 0;
 
     // User tries to navigate away from NewUserView pod.
     virtual void NavigateAway() = 0;
-
-    // Enables/disables raw of controls at status area.
-    virtual void SetStatusAreaEnabled(bool enable) = 0;
   };
 
   // If |need_border| is true, RoundedRect border and background are required.

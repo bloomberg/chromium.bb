@@ -555,15 +555,13 @@ void WizardController::OnNetworkOffline() {
 }
 
 void WizardController::OnAccountCreateBack() {
-  chromeos::ExistingUserController* controller = ShowLoginScreen();
-  DCHECK(controller);
-  controller->SelectNewUser();
+  ShowLoginScreen();
 }
 
 void WizardController::OnAccountCreated() {
   chromeos::ExistingUserController* controller = ShowLoginScreen();
   DCHECK(controller);
-  controller->LoginNewUser(username_, password_);
+  controller->Login(username_, password_);
   // TODO(dpolukhin): clear password memory for real. Now it is not
   // a problem because we can't extract password from the form.
   password_.clear();

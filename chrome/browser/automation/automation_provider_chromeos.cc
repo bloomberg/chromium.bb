@@ -18,5 +18,5 @@ void AutomationProvider::LoginWithUserAndPass(const std::string& username,
   // Set up an observer (it will delete itself).
   new LoginManagerObserver(this, reply_message);
 
-  controller->LoginNewUser(username, password);
+  controller->Login(username, password);
 }

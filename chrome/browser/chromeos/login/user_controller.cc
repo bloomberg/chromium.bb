@@ -215,14 +215,12 @@ std::wstring UserController::GetNameTooltip() const {
 void UserController::ClearAndEnableFields() {
   user_input_->ClearAndFocusControls();
   user_input_->EnableInputControls(true);
-  SetStatusAreaEnabled(true);
   StopThrobber();
 }
 
 void UserController::ClearAndEnablePassword() {
   user_input_->ClearAndFocusPassword();
   user_input_->EnableInputControls(true);
-  SetStatusAreaEnabled(true);
   StopThrobber();
 }
 
@@ -469,22 +467,20 @@ void UserController::OnLogin(const std::string& username,
     user_.set_email(username);
 
   user_input_->EnableInputControls(false);
-  SetStatusAreaEnabled(false);
   StartThrobber();
 
   delegate_->Login(this, UTF8ToUTF16(password));
 }
 
 void UserController::OnCreateAccount() {
-  delegate_->ActivateWizard(WizardController::kAccountScreenName);
+  delegate_->CreateAccount();
 }
 
-void UserController::OnLoginOffTheRecord() {
+void UserController::OnLoginAsGuest() {
   user_input_->EnableInputControls(false);
-  SetStatusAreaEnabled(false);
   StartThrobber();
 
-  delegate_->LoginOffTheRecord();
+  delegate_->LoginAsGuest();
 }
 
 void UserController::ClearErrors() {
@@ -496,19 +492,6 @@ void UserController::NavigateAway() {
 }
 
 void UserController::OnRemoveUser() {
-  // Must not proceed without signature verification.
-  UserCrosSettingsProvider user_settings;
-  bool trusted_owner_available = user_settings.RequestTrustedOwner(
-      method_factory_.NewRunnableMethod(&UserController::OnRemoveUser));
-  if (!trusted_owner_available) {
-    // Value of owner email is still not verified.
-    // Another attempt will be invoked after verification completion.
-    return;
-  }
-  if (user().email() == UserCrosSettingsProvider::cached_owner()) {
-    // Owner is not allowed to be removed from the device.
-    return;
-  }
   delegate_->RemoveUser(this);
 }
 

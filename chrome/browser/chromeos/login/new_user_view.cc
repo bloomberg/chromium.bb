@@ -214,7 +214,7 @@ bool NewUserView::AcceleratorPressed(const views::Accelerator& accelerator) {
   } else if (accelerator == accel_focus_pass_) {
     password_field_->RequestFocus();
   } else if (accelerator == accel_login_off_the_record_) {
-    delegate_->OnLoginOffTheRecord();
+    delegate_->OnLoginAsGuest();
   } else if (accelerator == accel_toggle_accessibility_) {
     WizardAccessibilityHelper::GetInstance()->ToggleAccessibility(this);
   } else {
@@ -483,7 +483,7 @@ void NewUserView::LinkActivated(views::Link* source, int event_flags) {
   if (source == create_account_link_) {
     delegate_->OnCreateAccount();
   } else if (source == guest_link_) {
-    delegate_->OnLoginOffTheRecord();
+    delegate_->OnLoginAsGuest();
   }
 }
 
@@ -580,3 +580,4 @@ void NewUserView::InitLink(views::Link** link) {
 }
 
 }  // namespace chromeos
+

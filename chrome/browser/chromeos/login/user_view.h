@@ -53,7 +53,10 @@ class UserView : public views::View,
   virtual gfx::Size GetPreferredSize();
   virtual void OnLocaleChanged();
 
-  // Sets the user's image.
+  // Sets the user's image. If image's size is less than
+  // 75% of window size, image size is preserved to avoid blur. Otherwise,
+  // the image is resized to fit window size precisely. Image view repaints
+  // itself.
   void SetImage(const SkBitmap& image, const SkBitmap& image_hot);
 
   // Sets tooltip over the image.

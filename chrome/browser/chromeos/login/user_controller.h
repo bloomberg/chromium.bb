@@ -38,15 +38,13 @@ class UserController : public views::WidgetDelegate,
  public:
   class Delegate {
    public:
+    virtual void CreateAccount() = 0;
     virtual void Login(UserController* source,
                        const string16& password) = 0;
-    virtual void LoginOffTheRecord() = 0;
+    virtual void LoginAsGuest() = 0;
     virtual void ClearErrors() = 0;
     virtual void OnUserSelected(UserController* source) = 0;
-    virtual void ActivateWizard(const std::string& screen_name) = 0;
     virtual void RemoveUser(UserController* source) = 0;
-    virtual void AddStartUrl(const GURL& start_url) = 0;
-    virtual void SetStatusAreaEnabled(bool enable) = 0;
 
     // Selects user entry with specified |index|.
     // Does nothing if current user is already selected.
@@ -108,19 +106,13 @@ class UserController : public views::WidgetDelegate,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // NewUserView::Delegate
+  // NewUserView::Delegate implementation:
   virtual void OnLogin(const std::string& username,
                        const std::string& password);
+  virtual void OnLoginAsGuest();
   virtual void OnCreateAccount();
-  virtual void OnLoginOffTheRecord();
-  virtual void AddStartUrl(const GURL& start_url) {
-    delegate_->AddStartUrl(start_url);
-  }
   virtual void ClearErrors();
   virtual void NavigateAway();
-  virtual void SetStatusAreaEnabled(bool enable) {
-    delegate_->SetStatusAreaEnabled(enable);
-  }
 
   // UserView::Delegate implementation:
   virtual void OnRemoveUser();
@@ -153,12 +145,6 @@ class UserController : public views::WidgetDelegate,
   void CreateBorderWindow(int index,
                           int total_user_count,
                           int controls_width, int controls_height);
-
-  // Sets specified image on the image window. If image's size is less than
-  // 75% of window size, image size is preserved to avoid blur. Otherwise,
-  // the image is resized to fit window size precisely. Image view repaints
-  // itself.
-  void SetImage(const SkBitmap& image);
 
   // Returns tooltip text for user name.
   std::wstring GetNameTooltip() const;

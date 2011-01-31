@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, NewUserLogin) {
       new MockLoginPerformerDelegate(existing_user_controller());
   existing_user_controller()->set_login_performer_delegate(mock_delegate);
 
-  existing_user_controller()->LoginNewUser(kUsername, kPassword);
+  existing_user_controller()->Login(kUsername, kPassword);
 }
 
 }  // namespace chromeos

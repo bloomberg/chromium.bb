@@ -78,7 +78,7 @@ void GuestUserView::FocusSignInButton() {
 bool GuestUserView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
   if (accelerator == accel_login_off_the_record_)
-    user_controller_->OnLoginOffTheRecord();
+    user_controller_->OnLoginAsGuest();
   else if (accelerator == accel_toggle_accessibility_)
     WizardAccessibilityHelper::GetInstance()->ToggleAccessibility(this);
   else if (accelerator == accel_previous_pod_by_arrow_)
@@ -93,7 +93,7 @@ bool GuestUserView::AcceleratorPressed(
 void GuestUserView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   DCHECK(sender == submit_button_);
-  user_controller_->OnLoginOffTheRecord();
+  user_controller_->OnLoginAsGuest();
 }
 
 void GuestUserView::EnableInputControls(bool enabled) {
