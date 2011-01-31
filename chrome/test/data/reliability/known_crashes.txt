@@ -89,9 +89,6 @@ PREFIX : `anonymous namespace'::invalidparameter____purecall___notificationservi
 PREFIX : `anonymous namespace'::purecall____purecall___lockimpl::unlock___`anonymous namespace'::rolloverprotectednow___lockimpl::lock___conditionvariable::signal___watchdog::armsometimedeltaago___`anonymous namespace'::jankobserverhelper::startprocessingtimers___`anonymous namespace'::uijankobserver::willprocesstask
 PREFIX : `anonymous namespace'::invalidparameter____purecall___lockimpl::unlock___`anonymous namespace'::rolloverprotectednow___lockimpl::lock___conditionvariable::signal___watchdog::armsometimedeltaago___`anonymous namespace'::jankobserverhelper::startprocessingtimers___`anonymous namespace'::uijankobserver::willprocesstask
 
-# 57188
-PREFIX : `anonymous namespace'::invalidparameter____purecall___basetab::advanceloadinganimation___notificationservice::notify___`anonymous namespace'::painttimer::timeout
-
 # 57368
 PREFIX : appmodaldialog::closemodaldialog___javascriptappmodaldialog::observe___notificationservice::notify___tabcontents::~tabcontents
 
