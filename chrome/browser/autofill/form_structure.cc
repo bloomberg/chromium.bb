@@ -20,22 +20,27 @@ using webkit_glue::FormData;
 
 namespace {
 
-const char* kFormMethodPost = "post";
+const char kFormMethodPost[] = "post";
 
-// XML attribute names.
-const char* const kAttributeClientVersion = "clientversion";
-const char* const kAttributeAutoFillUsed = "autofillused";
-const char* const kAttributeSignature = "signature";
-const char* const kAttributeFormSignature = "formsignature";
-const char* const kAttributeDataPresent = "datapresent";
-
-const char* const kXMLElementForm = "form";
-const char* const kXMLElementField = "field";
-const char* const kAttributeAutoFillType = "autofilltype";
+// XML elements and attributes.
+const char kAttributeAcceptedFeatures[] = "accepts";
+const char kAttributeAutoFillUsed[] = "autofillused";
+const char kAttributeAutoFillType[] = "autofilltype";
+const char kAttributeClientVersion[] = "clientversion";
+const char kAttributeDataPresent[] = "datapresent";
+const char kAttributeFormSignature[] = "formsignature";
+const char kAttributeSignature[] = "signature";
+const char kAcceptedFeatures[] = "e"; // e=experiments
+const char kClientVersion[] = "6.1.1715.1442/en (GGLL)";
+const char kXMLDeclaration[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+const char kXMLElementAutoFillQuery[] = "autofillquery";
+const char kXMLElementAutoFillUpload[] = "autofillupload";
+const char kXMLElementForm[] = "form";
+const char kXMLElementField[] = "field";
 
 // The list of form control types we handle.
-const char* const kControlTypeSelect = "select-one";
-const char* const kControlTypeText = "text";
+const char kControlTypeSelect[] = "select-one";
+const char kControlTypeText[] = "text";
 
 // The number of fillable fields necessary for a form to be fillable.
 const size_t kRequiredFillableFields = 3;
@@ -97,21 +102,15 @@ bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
   if (!auto_fillable)
     return false;
 
-  buzz::XmlElement autofill_request_xml(buzz::QName("autofillupload"));
-
-  // Attributes for the <autofillupload> element.
-  //
-  // TODO(jhawkins): Work with toolbar devs to make a spec for autofill clients.
-  // For now these values are hacked from the toolbar code.
+  // Set up the <autofillupload> element and its attributes.
+  buzz::XmlElement autofill_request_xml(
+      (buzz::QName(kXMLElementAutoFillUpload)));
   autofill_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
-                               "6.1.1715.1442/en (GGLL)");
-
+                               kClientVersion);
   autofill_request_xml.SetAttr(buzz::QName(kAttributeFormSignature),
                                FormSignature());
-
   autofill_request_xml.SetAttr(buzz::QName(kAttributeAutoFillUsed),
                                auto_fill_used ? "true" : "false");
-
   autofill_request_xml.SetAttr(buzz::QName(kAttributeDataPresent),
                                ConvertPresenceBitsToString().c_str());
 
@@ -119,7 +118,7 @@ bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
     return false;  // Malformed form, skip it.
 
   // Obtain the XML structure as a string.
-  *encoded_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+  *encoded_xml = kXMLDeclaration;
   *encoded_xml += autofill_request_xml.Str().c_str();
 
   return true;
@@ -134,13 +133,15 @@ bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
   encoded_xml->clear();
   encoded_signatures->clear();
   encoded_signatures->reserve(forms.size());
-  buzz::XmlElement autofill_request_xml(buzz::QName("autofillquery"));
-  // Attributes for the <autofillquery> element.
-  //
-  // TODO(jhawkins): Work with toolbar devs to make a spec for autofill clients.
-  // For now these values are hacked from the toolbar code.
+
+  // Set up the <autofillquery> element and attributes.
+  buzz::XmlElement autofill_request_xml(
+      (buzz::QName(kXMLElementAutoFillQuery)));
   autofill_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
-                               "6.1.1715.1442/en (GGLL)");
+                               kClientVersion);
+  autofill_request_xml.SetAttr(buzz::QName(kAttributeAcceptedFeatures),
+                               kAcceptedFeatures);
+
   // Some badly formatted web sites repeat forms - detect that and encode only
   // one form as returned data would be the same for all the repeated forms.
   std::set<std::string> processed_forms;
@@ -152,7 +153,7 @@ bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
       continue;
     processed_forms.insert(signature);
     scoped_ptr<buzz::XmlElement> encompassing_xml_element(
-        new buzz::XmlElement(buzz::QName("form")));
+        new buzz::XmlElement(buzz::QName(kXMLElementForm)));
     encompassing_xml_element->SetAttr(buzz::QName(kAttributeSignature),
                                       signature);
 
@@ -168,7 +169,7 @@ bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
     return false;
 
   // Obtain the XML structure as a string.
-  *encoded_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+  *encoded_xml = kXMLDeclaration;
   *encoded_xml += autofill_request_xml.Str().c_str();
 
   return true;
@@ -183,7 +184,9 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
 
   // Parse the field types from the server response to the query.
   std::vector<AutoFillFieldType> field_types;
-  AutoFillQueryXmlParser parse_handler(&field_types, upload_required);
+  std::string experiment_id;
+  AutoFillQueryXmlParser parse_handler(&field_types, upload_required,
+                                       &experiment_id);
   buzz::XmlParser parser(&parse_handler);
   parser.Parse(response_xml.c_str(), response_xml.length(), true);
   if (!parse_handler.succeeded())
@@ -199,6 +202,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
   for (std::vector<FormStructure*>::const_iterator iter = forms.begin();
        iter != forms.end(); ++iter) {
     FormStructure* form = *iter;
+    form->server_experiment_id_ = experiment_id;
 
     if (form->has_autofillable_field_)
       heuristics_detected_fillable_field = true;
@@ -406,14 +410,15 @@ bool FormStructure::EncodeFormRequest(
     buzz::XmlElement* encompassing_xml_element) const {
   if (!field_count())  // Nothing to add.
     return false;
+
   // Some badly formatted web sites repeat fields - limit number of fields to
   // 48, which is far larger than any valid form and XML still fits into 2K.
+  // Do not send requests for forms with more than this many fields, as they are
+  // near certainly not valid/auto-fillable.
   const size_t kMaxFieldsOnTheForm = 48;
-  if (field_count() > kMaxFieldsOnTheForm) {
-    // This is not a valid form, most certainly. Do not send request for the
-    // wrongly formatted forms.
+  if (field_count() > kMaxFieldsOnTheForm)
     return false;
-  }
+
   // Add the child nodes for the form fields.
   for (size_t index = 0; index < field_count(); ++index) {
     const AutoFillField* field = fields_[index];

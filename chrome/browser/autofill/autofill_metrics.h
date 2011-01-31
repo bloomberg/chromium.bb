@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_METRICS_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 
 class AutoFillMetrics {
@@ -59,7 +61,8 @@ class AutoFillMetrics {
   virtual ~AutoFillMetrics();
 
   virtual void Log(ServerQueryMetric metric) const;
-  virtual void Log(QualityMetric metric) const;
+  virtual void Log(QualityMetric metric,
+                   const std::string& experiment_id) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutoFillMetrics);

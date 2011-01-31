@@ -235,6 +235,7 @@ class AutoFillManager : public TabContentsObserver,
                            NoQualityMetricsForNonAutoFillableForms);
   FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest, SaneMetricsWithCacheMismatch);
   FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest, QualityMetricsForFailure);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest, QualityMetricsWithExperimentId);
 
   DISALLOW_COPY_AND_ASSIGN(AutoFillManager);
 };

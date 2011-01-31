@@ -1531,25 +1531,25 @@ TEST(FormStructureTest, EncodeQueryRequest) {
   const char * const kSignature1 = "11337937696949187602";
   const char * const kResponse1 =
       "<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillquery "
-      "clientversion=\"6.1.1715.1442/en (GGLL)\"><form signature=\""
-      "11337937696949187602\"><field signature=\"412125936\"/><field "
-      "signature=\"1917667676\"/><field signature=\"2226358947\"/><field "
-      "signature=\"747221617\"/><field signature=\"4108155786\"/></form>"
+      "clientversion=\"6.1.1715.1442/en (GGLL)\" accepts=\"e\"><form "
+      "signature=\"11337937696949187602\"><field signature=\"412125936\"/>"
+      "<field signature=\"1917667676\"/><field signature=\"2226358947\"/>"
+      "<field signature=\"747221617\"/><field signature=\"4108155786\"/></form>"
       "</autofillquery>";
   ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
                                                 &encoded_xml));
-  ASSERT_EQ(encoded_signatures.size(), 1U);
-  EXPECT_EQ(encoded_signatures[0], kSignature1);
-  EXPECT_EQ(encoded_xml, kResponse1);
+  ASSERT_EQ(1U, encoded_signatures.size());
+  EXPECT_EQ(kSignature1, encoded_signatures[0]);
+  EXPECT_EQ(kResponse1, encoded_xml);
 
   // Add the same form, only one will be encoded, so EncodeQueryRequest() should
   // return the same data.
   forms.push_back(new FormStructure(form));
   ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
                                                 &encoded_xml));
-  ASSERT_EQ(encoded_signatures.size(), 1U);
-  EXPECT_EQ(encoded_signatures[0], kSignature1);
-  EXPECT_EQ(encoded_xml, kResponse1);
+  ASSERT_EQ(1U, encoded_signatures.size());
+  EXPECT_EQ(kSignature1, encoded_signatures[0]);
+  EXPECT_EQ(kResponse1, encoded_xml);
   // Add 5 address fields - this should be still a valid form.
   for (size_t i = 0; i < 5; ++i) {
     form.fields.push_back(
@@ -1564,23 +1564,23 @@ TEST(FormStructureTest, EncodeQueryRequest) {
   forms.push_back(new FormStructure(form));
   ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
                                                 &encoded_xml));
-  ASSERT_EQ(encoded_signatures.size(), 2U);
-  EXPECT_EQ(encoded_signatures[0], kSignature1);
+  ASSERT_EQ(2U, encoded_signatures.size());
+  EXPECT_EQ(kSignature1, encoded_signatures[0]);
   const char * const kSignature2 = "8308881815906226214";
-  EXPECT_EQ(encoded_signatures[1], kSignature2);
+  EXPECT_EQ(kSignature2, encoded_signatures[1]);
   const char * const kResponse2 =
       "<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillquery "
-      "clientversion=\"6.1.1715.1442/en (GGLL)\"><form signature=\""
-      "11337937696949187602\"><field signature=\"412125936\"/><field signature="
-      "\"1917667676\"/><field signature=\"2226358947\"/><field signature=\""
-      "747221617\"/><field signature=\"4108155786\"/></form><form signature=\""
-      "8308881815906226214\"><field signature=\"412125936\"/><field signature="
-      "\"1917667676\"/><field signature=\"2226358947\"/><field signature=\""
-      "747221617\"/><field signature=\"4108155786\"/><field signature=\""
-      "509334676\"/><field signature=\"509334676\"/><field signature=\""
-      "509334676\"/><field signature=\"509334676\"/><field signature=\""
-      "509334676\"/></form></autofillquery>";
-  EXPECT_EQ(encoded_xml, kResponse2);
+      "clientversion=\"6.1.1715.1442/en (GGLL)\" accepts=\"e\"><form "
+      "signature=\"11337937696949187602\"><field signature=\"412125936\"/>"
+      "<field signature=\"1917667676\"/><field signature=\"2226358947\"/>"
+      "<field signature=\"747221617\"/><field signature=\"4108155786\"/></form>"
+      "<form signature=\"8308881815906226214\"><field signature=\"412125936\"/>"
+      "<field signature=\"1917667676\"/><field signature=\"2226358947\"/>"
+      "<field signature=\"747221617\"/><field signature=\"4108155786\"/><field "
+      "signature=\"509334676\"/><field signature=\"509334676\"/><field "
+      "signature=\"509334676\"/><field signature=\"509334676\"/><field "
+      "signature=\"509334676\"/></form></autofillquery>";
+  EXPECT_EQ(kResponse2, encoded_xml);
 
   // Add 50 address fields - the form is not valid anymore, but previous ones
   // are. The result should be the same as in previous test.
@@ -1597,18 +1597,18 @@ TEST(FormStructureTest, EncodeQueryRequest) {
   forms.push_back(new FormStructure(form));
   ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
                                                 &encoded_xml));
-  ASSERT_EQ(encoded_signatures.size(), 2U);
-  EXPECT_EQ(encoded_signatures[0], kSignature1);
-  EXPECT_EQ(encoded_signatures[1], kSignature2);
-  EXPECT_EQ(encoded_xml, kResponse2);
+  ASSERT_EQ(2U, encoded_signatures.size());
+  EXPECT_EQ(kSignature1, encoded_signatures[0]);
+  EXPECT_EQ(kSignature2, encoded_signatures[1]);
+  EXPECT_EQ(kResponse2, encoded_xml);
 
   // Check that we fail if there are only bad form(s).
   ScopedVector<FormStructure> bad_forms;
   bad_forms.push_back(new FormStructure(form));
   EXPECT_FALSE(FormStructure::EncodeQueryRequest(bad_forms, &encoded_signatures,
                                                  &encoded_xml));
-  EXPECT_EQ(encoded_signatures.size(), 0U);
-  EXPECT_EQ(encoded_xml, "");
+  EXPECT_EQ(0U, encoded_signatures.size());
+  EXPECT_EQ("", encoded_xml);
 }
 
 TEST(FormStructureTest, EncodeUploadRequest) {

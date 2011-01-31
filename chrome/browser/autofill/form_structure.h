@@ -102,6 +102,10 @@ class FormStructure {
 
   const GURL& source_url() const { return source_url_; }
 
+  virtual std::string server_experiment_id() const {
+    return server_experiment_id_;
+  }
+
   bool operator==(const webkit_glue::FormData& form) const;
   bool operator!=(const webkit_glue::FormData& form) const;
 
@@ -159,6 +163,10 @@ class FormStructure {
   // The string starts with "&" and the names are also separated by the "&"
   // character. E.g.: "&form_input1_name&form_input2_name&...&form_inputN_name"
   std::string form_signature_field_names_;
+
+  // The server experiment corresponding to the server types returned for this
+  // form.
+  std::string server_experiment_id_;
 
   // GET or POST.
   RequestMethod method_;

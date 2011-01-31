@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_XML_PARSER_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -51,7 +52,7 @@ class AutoFillXmlParser : public buzz::XmlParseHandler {
 // The XML parse handler for parsing AutoFill query responses.  A typical
 // response looks like:
 //
-// <autofillqueryresponse>
+// <autofillqueryresponse experimentid="1">
 //   <field autofilltype="0" />
 //   <field autofilltype="1" />
 //   <field autofilltype="3" />
@@ -64,7 +65,8 @@ class AutoFillXmlParser : public buzz::XmlParseHandler {
 class AutoFillQueryXmlParser : public AutoFillXmlParser {
  public:
   AutoFillQueryXmlParser(std::vector<AutoFillFieldType>* field_types,
-                         UploadRequired* upload_required);
+                         UploadRequired* upload_required,
+                         std::string* experiment_id);
 
  private:
   // A callback for the beginning of a new <element>, called by Expat.
@@ -86,6 +88,10 @@ class AutoFillQueryXmlParser : public AutoFillXmlParser {
   // A flag indicating whether the client should upload AutoFill data when this
   // form is submitted.
   UploadRequired* upload_required_;
+
+  // The server experiment to which this query response belongs.
+  // For the default server implementation, this is empty.
+  std::string* experiment_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoFillQueryXmlParser);
 };

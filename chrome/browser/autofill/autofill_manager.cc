@@ -512,6 +512,7 @@ void AutoFillManager::LogMetricsAboutSubmittedForm(
     cached_fields[field->FieldSignature()] = field;
   }
 
+  std::string experiment_id = cached_submitted_form->server_experiment_id();
   for (size_t i = 0; i < submitted_form->field_count(); ++i) {
     const AutoFillField* field = submitted_form->field(i);
     FieldTypeSet field_types;
@@ -526,13 +527,14 @@ void AutoFillManager::LogMetricsAboutSubmittedForm(
     }
 
     // Log various quality metrics.
-    metric_logger_->Log(AutoFillMetrics::FIELD_SUBMITTED);
+    metric_logger_->Log(AutoFillMetrics::FIELD_SUBMITTED, experiment_id);
     if (field_types.find(EMPTY_TYPE) == field_types.end() &&
         field_types.find(UNKNOWN_TYPE) == field_types.end()) {
       if (field->is_autofilled()) {
-        metric_logger_->Log(AutoFillMetrics::FIELD_AUTOFILLED);
+        metric_logger_->Log(AutoFillMetrics::FIELD_AUTOFILLED, experiment_id);
       } else {
-        metric_logger_->Log(AutoFillMetrics::FIELD_AUTOFILL_FAILED);
+        metric_logger_->Log(AutoFillMetrics::FIELD_AUTOFILL_FAILED,
+                            experiment_id);
 
         AutoFillFieldType heuristic_type = UNKNOWN_TYPE;
         AutoFillFieldType server_type = NO_SERVER_DATA;
@@ -543,19 +545,27 @@ void AutoFillManager::LogMetricsAboutSubmittedForm(
           server_type = cached_field->second->server_type();
         }
 
-        if (heuristic_type == UNKNOWN_TYPE)
-          metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_UNKNOWN);
-        else if (field_types.count(heuristic_type))
-          metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_MATCH);
-        else
-          metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_MISMATCH);
+        if (heuristic_type == UNKNOWN_TYPE) {
+          metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_UNKNOWN,
+                              experiment_id);
+        } else if (field_types.count(heuristic_type)) {
+          metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_MATCH,
+                              experiment_id);
+        } else {
+          metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_MISMATCH,
+                              experiment_id);
+        }
 
-        if (server_type == NO_SERVER_DATA)
-          metric_logger_->Log(AutoFillMetrics::FIELD_SERVER_TYPE_UNKNOWN);
-        else if (field_types.count(server_type))
-          metric_logger_->Log(AutoFillMetrics::FIELD_SERVER_TYPE_MATCH);
-        else
-          metric_logger_->Log(AutoFillMetrics::FIELD_SERVER_TYPE_MISMATCH);
+        if (server_type == NO_SERVER_DATA) {
+          metric_logger_->Log(AutoFillMetrics::FIELD_SERVER_TYPE_UNKNOWN,
+                              experiment_id);
+        } else if (field_types.count(server_type)) {
+          metric_logger_->Log(AutoFillMetrics::FIELD_SERVER_TYPE_MATCH,
+                              experiment_id);
+        } else {
+          metric_logger_->Log(AutoFillMetrics::FIELD_SERVER_TYPE_MISMATCH,
+                              experiment_id);
+        }
       }
 
       // TODO(isherman): Other things we might want to log here:
