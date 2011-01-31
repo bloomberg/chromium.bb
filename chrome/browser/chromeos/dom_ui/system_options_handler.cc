@@ -49,6 +49,12 @@ void SystemOptionsHandler::GetLocalizedValues(
           IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION));
   localized_strings->SetString("sensitivity",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SENSITIVITY_DESCRIPTION));
+  localized_strings->SetString("sensitivity_less",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_SENSITIVITY_LESS_DESCRIPTION));
+  localized_strings->SetString("sensitivity_more",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_SENSITIVITY_MORE_DESCRIPTION));
 
   localized_strings->SetString("language",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE));

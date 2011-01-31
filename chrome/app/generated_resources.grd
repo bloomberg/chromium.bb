@@ -9311,6 +9311,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_DESCRIPTION" desc="In the settings tab, the text next to the slider for the touchpad touch sensitivity.">
         Sensitivity:
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_LESS_DESCRIPTION" desc="In the settings tab, the text under the left (less sensitive) side of the slider for the touchpad touch sensitivity.">
+        Less
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_MORE_DESCRIPTION" desc="In the settings tab, the text under the right (more sensitive) side of the slider for the touchpad touch sensitivity.">
+        More
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for accessbility.">
         Enable accessibility features
       </message>
