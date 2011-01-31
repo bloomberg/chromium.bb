@@ -61,7 +61,6 @@ class ProfileImpl : public Profile,
   virtual ExtensionProcessManager* GetExtensionProcessManager();
   virtual ExtensionMessageService* GetExtensionMessageService();
   virtual ExtensionEventRouter* GetExtensionEventRouter();
-  virtual ExtensionIOEventRouter* GetExtensionIOEventRouter();
   virtual FaviconService* GetFaviconService(ServiceAccessType sat);
   virtual HistoryService* GetHistoryService(ServiceAccessType sat);
   virtual HistoryService* GetHistoryServiceWithoutCreating();
@@ -194,7 +193,6 @@ class ProfileImpl : public Profile,
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_refptr<ExtensionMessageService> extension_message_service_;
   scoped_ptr<ExtensionEventRouter> extension_event_router_;
-  scoped_refptr<ExtensionIOEventRouter> extension_io_event_router_;
   scoped_ptr<SSLHostState> ssl_host_state_;
   scoped_refptr<net::TransportSecurityState>
       transport_security_state_;

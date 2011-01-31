@@ -58,7 +58,6 @@ class Extension;
 class ExtensionDevToolsManager;
 class ExtensionEventRouter;
 class ExtensionInfoMap;
-class ExtensionIOEventRouter;
 class ExtensionMessageService;
 class ExtensionPrefValueMap;
 class ExtensionProcessManager;
@@ -218,9 +217,6 @@ class Profile {
 
   // Accessor. The instance is created at startup.
   virtual ExtensionEventRouter* GetExtensionEventRouter() = 0;
-
-  // Accessor. The instance is created at startup.
-  virtual ExtensionIOEventRouter* GetExtensionIOEventRouter() = 0;
 
   // Retrieves a pointer to the SSLHostState associated with this profile.
   // The SSLHostState is lazily created the first time that this method is

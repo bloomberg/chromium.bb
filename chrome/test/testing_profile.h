@@ -150,7 +150,6 @@ class TestingProfile : public Profile {
   virtual ExtensionProcessManager* GetExtensionProcessManager() { return NULL; }
   virtual ExtensionMessageService* GetExtensionMessageService() { return NULL; }
   virtual ExtensionEventRouter* GetExtensionEventRouter() { return NULL; }
-  virtual ExtensionIOEventRouter* GetExtensionIOEventRouter() { return NULL; }
   virtual SSLHostState* GetSSLHostState() { return NULL; }
   virtual net::TransportSecurityState* GetTransportSecurityState() {
     return NULL;

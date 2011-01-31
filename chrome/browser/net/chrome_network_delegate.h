@@ -10,14 +10,15 @@
 #include "net/http/http_network_delegate.h"
 
 // ChromeNetworkDelegate is the central point from within the chrome code to
-// add hooks into the network stack.
+// add hooks into the network stack.  In the future, we can use this for
+// extensions to register hooks for the network stack.
 class ChromeNetworkDelegate : public net::HttpNetworkDelegate {
  public:
   ChromeNetworkDelegate();
   ~ChromeNetworkDelegate();
 
   // net::HttpNetworkDelegate methods:
-  virtual void OnBeforeURLRequest(net::URLRequest* request);
+
   virtual void OnSendHttpRequest(net::HttpRequestHeaders* headers);
 
   // TODO(willchan): Add functions for consumers to register ways to

@@ -263,7 +263,6 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
   context->set_host_resolver(io_thread_globals->host_resolver.get());
   context->set_cert_verifier(io_thread_globals->cert_verifier.get());
   context->set_dnsrr_resolver(io_thread_globals->dnsrr_resolver.get());
-  context->set_network_delegate(&io_thread_globals->network_delegate);
   context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
 
@@ -369,7 +368,6 @@ ChromeURLRequestContext* FactoryForExtensions::Create() {
                            chrome::kExtensionScheme};
   cookie_monster->SetCookieableSchemes(schemes, 2);
   context->set_cookie_store(cookie_monster);
-  context->set_network_delegate(&io_thread_globals->network_delegate);
   // TODO(cbentzel): How should extensions handle HTTP Authentication?
   context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
@@ -404,7 +402,6 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
   context->set_cert_verifier(io_thread_globals->cert_verifier.get());
   context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
-  context->set_network_delegate(&io_thread_globals->network_delegate);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   context->set_proxy_service(
@@ -480,7 +477,6 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
 
   // TODO(willchan): Make a global ProxyService available in IOThread::Globals.
   context->set_proxy_service(main_context->proxy_service());
-  context->set_network_delegate(main_context->network_delegate());
 
   // Also share the cookie store of the common profile.
   context->set_cookie_store(main_context->cookie_store());
@@ -859,7 +855,6 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
   blob_storage_context_ = profile->GetBlobStorageContext();
   file_system_context_ = profile->GetFileSystemContext();
   extension_info_map_ = profile->GetExtensionInfoMap();
-  extension_io_event_router_ = profile->GetExtensionIOEventRouter();
   prerender_manager_ = profile->GetPrerenderManager();
 }
 
@@ -886,6 +881,5 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
   context->set_blob_storage_context(blob_storage_context_);
   context->set_file_system_context(file_system_context_);
   context->set_extension_info_map(extension_info_map_);
-  context->set_extension_io_event_router(extension_io_event_router_);
   context->set_prerender_manager(prerender_manager_);
 }

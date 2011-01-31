@@ -12,10 +12,3 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebRequest) {
 
   ASSERT_TRUE(RunExtensionTest("webrequest/api")) << message_;
 }
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebRequestEvents) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-    switches::kEnableExperimentalExtensionApis);
-
-  ASSERT_TRUE(RunExtensionTest("webrequest/events")) << message_;
-}

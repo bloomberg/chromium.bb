@@ -33,7 +33,6 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/extensions/extension_io_event_router.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -344,7 +343,6 @@ void ProfileImpl::InitExtensions() {
 
   extension_process_manager_.reset(ExtensionProcessManager::Create(this));
   extension_event_router_.reset(new ExtensionEventRouter(this));
-  extension_io_event_router_ = new ExtensionIOEventRouter(this);
   extension_message_service_ = new ExtensionMessageService(this);
 
   ExtensionErrorReporter::Init(true);  // allow noisy errors.
@@ -528,7 +526,6 @@ ProfileImpl::~ProfileImpl() {
   if (default_request_context_ == request_context_)
     default_request_context_ = NULL;
 
-
   CleanupRequestContext(request_context_);
   CleanupRequestContext(media_request_context_);
   CleanupRequestContext(extensions_request_context_);
@@ -544,9 +541,6 @@ ProfileImpl::~ProfileImpl() {
   // FaviconService depends on HistoryServce so make sure we delete
   // HistoryService first.
   favicon_service_ = NULL;
-
-  if (extension_io_event_router_)
-    extension_io_event_router_->DestroyingProfile();
 
   if (extension_message_service_)
     extension_message_service_->DestroyingProfile();
@@ -664,10 +658,6 @@ ExtensionMessageService* ProfileImpl::GetExtensionMessageService() {
 
 ExtensionEventRouter* ProfileImpl::GetExtensionEventRouter() {
   return extension_event_router_.get();
-}
-
-ExtensionIOEventRouter* ProfileImpl::GetExtensionIOEventRouter() {
-  return extension_io_event_router_.get();
 }
 
 SSLHostState* ProfileImpl::GetSSLHostState() {
