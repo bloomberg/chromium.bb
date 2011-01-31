@@ -421,7 +421,6 @@
             'chrome.gyp:installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
-            '../third_party/isimpledom/isimpledom.gyp:isimpledom',
           ],
           'sources': [
             '../webkit/glue/resources/aliasb.cur',
