@@ -140,8 +140,10 @@ function doGaiaLogin(username, password, service, done) {
   };
 
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-  xhr.send('accountType=HOSTED_OR_GOOGLE&Email=' + username + '&Passwd=' +
-           password + '&service=' + service + '&source=chromoclient');
+  xhr.send('accountType=HOSTED_OR_GOOGLE&Email=' +
+           encodeURIComponent(username) + '&Passwd=' +
+           encodeURIComponent(password) + '&service=' +
+           encodeURIComponent(service) + '&source=chromoclient');
 }
 
 function extractAuthToken(message) {
