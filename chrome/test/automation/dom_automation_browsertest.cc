@@ -23,7 +23,7 @@ class IncreaseLoadingTimeout {
     // Those tests are at the beginning of the browser_tests suite. On the
     // XP buildbot the cold start is often slow enough to make it go over the
     // default timeout of 20 seconds.  Bump those initial tests to 30 seconds.
-    g_test_timeout_overrides["DOMAutomationTest.FLAKY_FindByXPath"] = kTimeout;
+    g_test_timeout_overrides["DOMAutomationTest.FindByXPath"] = kTimeout;
     g_test_timeout_overrides["DOMAutomationTest.FindBySelectors"] = kTimeout;
     g_test_timeout_overrides["DOMAutomationTest.FindByText"] = kTimeout;
   }
@@ -31,7 +31,7 @@ class IncreaseLoadingTimeout {
 
 IncreaseLoadingTimeout g_increase_loading_timeout;
 
-// Tests the DOMAutomation framework for manipulating DOMElements withina
+// Tests the DOMAutomation framework for manipulating DOMElements within
 // browser tests.
 class DOMAutomationTest : public InProcessBrowserTest {
  public:
@@ -49,14 +49,7 @@ class DOMAutomationTest : public InProcessBrowserTest {
 
 typedef DOMElementProxy::By By;
 
-#if defined(OS_WIN)
-// See http://crbug.com/61636
-#define MAYBE_FindByXPath FLAKY_FindByXPath
-#else
-#define MAYBE_FindByXPath FindByXPath
-#endif
-
-IN_PROC_BROWSER_TEST_F(DOMAutomationTest, MAYBE_FindByXPath) {
+IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindByXPath) {
   ASSERT_TRUE(test_server()->Start());
   ui_test_utils::NavigateToURL(browser(),
                                GetTestURL("find_elements/test.html"));
