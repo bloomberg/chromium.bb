@@ -259,12 +259,6 @@ scoped_refptr<TabProxy> UITestBase::GetActiveTab() {
   return tab_proxy;
 }
 
-void UITestBase::NavigateToURLAsync(const GURL& url) {
-  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-  ASSERT_TRUE(tab_proxy.get());
-  ASSERT_TRUE(tab_proxy->NavigateToURLAsync(url));
-}
-
 void UITestBase::NavigateToURL(const GURL& url) {
   NavigateToURL(url, 0, GetActiveTabIndex(0));
 }
@@ -815,6 +809,12 @@ bool UITest::WaitForFindWindowVisibilityChange(BrowserProxy* browser,
 
 void UITest::TerminateBrowser() {
   launcher_->TerminateBrowser();
+}
+
+void UITest::NavigateToURLAsync(const GURL& url) {
+  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  ASSERT_TRUE(tab_proxy.get());
+  ASSERT_TRUE(tab_proxy->NavigateToURLAsync(url));
 }
 
 bool UITest::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,

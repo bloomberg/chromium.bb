@@ -91,11 +91,6 @@ class UITestBase {
 
   // Tells the browser to navigate to the given URL in the active tab
   // of the first app window.
-  // Does not wait for the navigation to complete to return.
-  void NavigateToURLAsync(const GURL& url);
-
-  // Tells the browser to navigate to the given URL in the active tab
-  // of the first app window.
   // This method doesn't return until the navigation is complete.
   void NavigateToURL(const GURL& url);
 
@@ -380,6 +375,7 @@ class UITest : public UITestBase, public PlatformTest {
   explicit UITest(MessageLoop::Type msg_loop_type)
     : UITestBase(), PlatformTest(), message_loop_(msg_loop_type) {
   }
+
   virtual void SetUp();
   virtual void TearDown();
 
@@ -483,6 +479,13 @@ class UITest : public UITestBase, public PlatformTest {
 
   // Terminates the browser, simulates end of session.
   void TerminateBrowser();
+
+  // Tells the browser to navigate to the given URL in the active tab
+  // of the first app window.
+  // Does not wait for the navigation to complete to return.
+  // To avoid intermittent test failures, use NavigateToURL instead, if
+  // possible.
+  void NavigateToURLAsync(const GURL& url);
 
  private:
   // Waits for download shelf visibility or invisibility.
