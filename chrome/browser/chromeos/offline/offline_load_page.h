@@ -74,9 +74,6 @@ class OfflineLoadPage : public InterstitialPage {
   void GetNormalOfflineStrings(const string16& faield_url,
                                DictionaryValue* strings) const;
 
-  // Really proceed with loading.
-  void DoProceed();
-
   Delegate* delegate_;
   NotificationRegistrar registrar_;
 
