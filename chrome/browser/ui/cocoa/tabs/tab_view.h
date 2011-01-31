@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,9 +47,6 @@ enum AlertState {
   // TODO(rohitrao): Add this button to a CoreAnimation layer so we can fade it
   // in and out on mouseovers.
   IBOutlet HoverCloseButton* closeButton_;
-
-  // See awakeFromNib for purpose.
-  scoped_nsobject<HoverCloseButton> closeButtonRetainer_;
 
   BOOL closing_;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
@@ -73,16 +72,6 @@ const CGFloat kRapidCloseDist = 2.5;
 
 - (void)awakeFromNib {
   [self setShowsDivider:NO];
-
-  // It is desirable for us to remove the close button from the cocoa hierarchy,
-  // so that VoiceOver does not encounter it.
-  // TODO(dtseng): crbug.com/59978.
-  // Retain in case we remove it from its superview.
-  closeButtonRetainer_.reset([closeButton_ retain]);
-  if (BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
-    // The superview gives up ownership of the closeButton here.
-    [closeButton_ removeFromSuperview];
-  }
 }
 
 - (void)dealloc {
@@ -134,7 +123,9 @@ const CGFloat kRapidCloseDist = 2.5;
 }
 
 - (void)setTrackingEnabled:(BOOL)enabled {
-  [closeButton_ setTrackingEnabled:enabled];
+  if (![closeButton_ isHidden]) {
+    [closeButton_ setTrackingEnabled:enabled];
+  }
 }
 
 // Determines which view a click in our frame actually hit. It's either this
