@@ -14,7 +14,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
-#include "chrome/browser/dom_ui/dom_ui_util.h"
+#include "chrome/browser/dom_ui/web_ui_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
@@ -349,7 +349,7 @@ void CloudPrintFlowHandler::HandleSendPrintData(const ListValue* args) {
 }
 
 void CloudPrintFlowHandler::HandleSetPageParameters(const ListValue* args) {
-  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
   if (json.empty())
     return;
 

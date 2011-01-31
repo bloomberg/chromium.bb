@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/dom_ui/dom_ui_util.h"
+#include "chrome/browser/dom_ui/web_ui_util.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"

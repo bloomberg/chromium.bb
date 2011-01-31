@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
-#include "chrome/browser/dom_ui/dom_ui_util.h"
+#include "chrome/browser/dom_ui/web_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/time_format.h"
@@ -889,7 +889,7 @@ ListValue* InternetOptionsHandler::GetNetwork(
   network->Append(Value::CreateBooleanValue(connecting));
   // 6) icon data url
   network->Append(Value::CreateStringValue(icon.isNull() ? "" :
-      dom_ui_util::GetImageDataUrl(icon)));
+      web_ui_util::GetImageDataUrl(icon)));
   // 7) remembered
   network->Append(Value::CreateBooleanValue(remembered));
   // 8) activation state

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #include "chrome/browser/chromeos/views/native_menu_domui.h"
-#include "chrome/browser/dom_ui/dom_ui_util.h"
+#include "chrome/browser/dom_ui/web_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/url_constants.h"
@@ -100,9 +100,9 @@ SkBitmap CreateMenuScrollArrowImage(bool up) {
 // "down" image otherwise.
 const std::string& GetImageDataUrlForMenuScrollArrow(bool up) {
   static const std::string upImage =
-      dom_ui_util::GetImageDataUrl(CreateMenuScrollArrowImage(true));
+      web_ui_util::GetImageDataUrl(CreateMenuScrollArrowImage(true));
   static const std::string downImage =
-      dom_ui_util::GetImageDataUrl(CreateMenuScrollArrowImage(false));
+      web_ui_util::GetImageDataUrl(CreateMenuScrollArrowImage(false));
   return up ? upImage : downImage;
 }
 
@@ -110,9 +110,9 @@ const std::string& GetImageDataUrlForMenuScrollArrow(bool up) {
 // "off" image otherwise.
 const std::string& GetImageDataUrlForRadio(bool on) {
   static const std::string onImage =
-      dom_ui_util::GetImageDataUrl(*views::GetRadioButtonImage(true));
+      web_ui_util::GetImageDataUrl(*views::GetRadioButtonImage(true));
   static const std::string offImage =
-       dom_ui_util::GetImageDataUrl(*views::GetRadioButtonImage(false));
+      web_ui_util::GetImageDataUrl(*views::GetRadioButtonImage(false));
   return on ? onImage : offImage;
 }
 
@@ -139,9 +139,9 @@ std::string GetMenuUIHTMLSourceFromString(
   value_config.SetString("radioOnUrl", GetImageDataUrlForRadio(true));
   value_config.SetString("radioOffUrl", GetImageDataUrlForRadio(false));
   value_config.SetString(
-      "arrowUrl", dom_ui_util::GetImageDataUrlFromResource(IDR_MENU_ARROW));
+      "arrowUrl", web_ui_util::GetImageDataUrlFromResource(IDR_MENU_ARROW));
   value_config.SetString(
-      "checkUrl", dom_ui_util::GetImageDataUrlFromResource(IDR_MENU_CHECK));
+      "checkUrl", web_ui_util::GetImageDataUrlFromResource(IDR_MENU_CHECK));
 
   value_config.SetString(
       "scrollUpUrl", GetImageDataUrlForMenuScrollArrow(true));
@@ -622,7 +622,7 @@ DictionaryValue* MenuUI::CreateMenuItem(const ui::MenuModel* model,
       "font", GetFontShorthand(model->GetLabelFontAt(index)));
   SkBitmap icon;
   if (model->GetIconAt(index, &icon) && !icon.isNull() && !icon.empty()) {
-    item->SetString("icon", dom_ui_util::GetImageDataUrl(icon));
+    item->SetString("icon", web_ui_util::GetImageDataUrl(icon));
     *max_icon_width = std::max(*max_icon_width, icon.width());
   }
   views::Accelerator menu_accelerator;

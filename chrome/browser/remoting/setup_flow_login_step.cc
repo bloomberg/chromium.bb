@@ -9,7 +9,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/dom_ui/dom_ui_util.h"
+#include "chrome/browser/dom_ui/web_ui_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/remoting/setup_flow_get_status_step.h"
 #include "chrome/common/net/gaia/gaia_constants.h"

@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/dom_ui_util.h"
+#include "chrome/browser/dom_ui/web_ui_util.h"
 
 #include <vector>
 
@@ -12,7 +12,7 @@
 #include "gfx/codec/png_codec.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace dom_ui_util {
+namespace web_ui_util {
 
 std::string GetJsonResponseFromFirstArgumentInList(const ListValue* args) {
   return GetJsonResponseFromArgumentList(args, 0);
@@ -61,4 +61,4 @@ std::string GetImageDataUrlFromResource(int res) {
   return str_url;
 }
 
-}  // end of namespace dom_ui_util
+}  // namespace web_ui_util

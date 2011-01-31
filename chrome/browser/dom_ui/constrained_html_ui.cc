@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/dom_ui/constrained_html_ui.h"
 
 #include "base/lazy_instance.h"
-#include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
+#include "chrome/browser/dom_ui/web_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/bindings_policy.h"
@@ -42,7 +42,7 @@ void ConstrainedHtmlUI::RenderViewCreated(
 
 void ConstrainedHtmlUI::OnDialogClose(const ListValue* args) {
   GetConstrainedDelegate()->GetHtmlDialogUIDelegate()->OnDialogClosed(
-      dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+      web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
   GetConstrainedDelegate()->OnDialogClose();
 }
 

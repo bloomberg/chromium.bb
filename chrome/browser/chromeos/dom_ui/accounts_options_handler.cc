@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
-#include "chrome/browser/dom_ui/dom_ui_util.h"
+#include "chrome/browser/dom_ui/web_ui_util.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -93,7 +93,7 @@ void AccountsOptionsHandler::FetchUserPictures(const ListValue* args) {
        it < users.end(); ++it) {
     if (!it->image().isNull()) {
       StringValue* picture = new StringValue(
-          dom_ui_util::GetImageDataUrl(it->image()));
+          web_ui_util::GetImageDataUrl(it->image()));
       // SetWithoutPathExpansion because email has "." in it.
       user_pictures.SetWithoutPathExpansion(it->email(), picture);
     }

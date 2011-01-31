@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,8 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/constrained_html_ui.h"
-#include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
+#include "chrome/browser/dom_ui/web_ui_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -192,7 +192,7 @@ void BrowserSigninHtml::HandleSigninInit(const ListValue* args) {
 }
 
 void BrowserSigninHtml::HandleSubmitAuth(const ListValue* args) {
-  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
   scoped_ptr<DictionaryValue> result(static_cast<DictionaryValue*>(
       base::JSONReader::Read(json, false)));
   std::string username;

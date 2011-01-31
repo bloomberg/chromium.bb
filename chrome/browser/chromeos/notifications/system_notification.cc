@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/notifications/system_notification_factory.h"
-#include "chrome/browser/dom_ui/dom_ui_util.h"
+#include "chrome/browser/dom_ui/web_ui_util.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 
@@ -16,7 +16,7 @@ namespace chromeos {
 void SystemNotification::Init(int icon_resource_id) {
   collection_ = static_cast<BalloonCollectionImpl*>(
        g_browser_process->notification_ui_manager()->balloon_collection());
-  std::string url = dom_ui_util::GetImageDataUrlFromResource(icon_resource_id);
+  std::string url = web_ui_util::GetImageDataUrlFromResource(icon_resource_id);
   DCHECK(!url.empty());
   GURL tmp_gurl(url);
   icon_.Swap(&tmp_gurl);

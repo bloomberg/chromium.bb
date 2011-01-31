@@ -11,7 +11,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/dom_ui/dom_ui_util.h"
+#include "chrome/browser/dom_ui/web_ui_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -184,7 +184,7 @@ static void DisablePasswordSync(ProfileSyncService* service) {
 }
 
 void FlowHandler::HandleSubmitAuth(const ListValue* args) {
-  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
   std::string username, password, captcha, access_code;
   if (json.empty())
     return;
@@ -201,7 +201,7 @@ void FlowHandler::HandleSubmitAuth(const ListValue* args) {
 }
 
 void FlowHandler::HandleConfigure(const ListValue* args) {
-  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
   SyncConfiguration configuration;
 
   if (json.empty())
@@ -221,7 +221,7 @@ void FlowHandler::HandleConfigure(const ListValue* args) {
 }
 
 void FlowHandler::HandlePassphraseEntry(const ListValue* args) {
-  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
 
   if (json.empty())
     return;
@@ -243,7 +243,7 @@ void FlowHandler::HandlePassphraseCancel(const ListValue* args) {
 }
 
 void FlowHandler::HandleFirstPassphrase(const ListValue* args) {
-  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
 
   if (json.empty())
     return;

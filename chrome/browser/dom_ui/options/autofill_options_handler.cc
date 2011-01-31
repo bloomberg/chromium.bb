@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
-#include "chrome/browser/dom_ui/dom_ui_util.h"
+#include "chrome/browser/dom_ui/web_ui_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/guid.h"
 #include "grit/generated_resources.h"
@@ -199,7 +199,7 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
     entry->Append(new StringValue((*i)->PreviewSummary()));
     int res = CreditCardTypeToResourceID((*i)->type());
     entry->Append(
-        new StringValue(dom_ui_util::GetImageDataUrlFromResource(res)));
+        new StringValue(web_ui_util::GetImageDataUrlFromResource(res)));
     credit_cards.Append(entry);
   }
 

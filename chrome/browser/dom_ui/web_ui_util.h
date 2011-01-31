@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOM_UI_DOM_UI_UTIL_H_
-#define CHROME_BROWSER_DOM_UI_DOM_UI_UTIL_H_
+#ifndef CHROME_BROWSER_DOM_UI_WEB_UI_UTIL_H_
+#define CHROME_BROWSER_DOM_UI_WEB_UI_UTIL_H_
 #pragma once
 
 #include <string>
@@ -11,7 +11,7 @@
 class ListValue;
 class SkBitmap;
 
-namespace dom_ui_util {
+namespace web_ui_util {
 
 // Convenience routine to get the response string from an argument
 // list.  Typically used when supporting a DOMUI and getting calls
@@ -44,6 +44,6 @@ std::string GetImageDataUrl(const SkBitmap& bitmap);
 // |resource_id|.
 std::string GetImageDataUrlFromResource(int resource_id);
 
-}  // end of namespace
+}  // namespace web_ui_util
 
-#endif  // CHROME_BROWSER_DOM_UI_DOM_UI_UTIL_H_
+#endif  // CHROME_BROWSER_DOM_UI_WEB_UI_UTIL_H_
