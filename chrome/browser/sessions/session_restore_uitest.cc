@@ -450,7 +450,14 @@ TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
 // process-per-site and process-per-site-instance, because we treat the new tab
 // as a special case in process-per-site-instance so that it only ever uses one
 // process.)
-TEST_F(SessionRestoreUITest, ShareProcessesOnRestore) {
+
+// Flaky on mac: http://code.google.com/p/chromium/issues/detail?id=52022
+#if defined(OS_MACOSX)
+#define MAYBE_ShareProcessesOnRestore FLAKY_ShareProcessesOnRestore
+#else
+#define MAYBE_ShareProcessesOnRestore ShareProcessesOnRestore
+#endif
+TEST_F(SessionRestoreUITest, MAYBE_ShareProcessesOnRestore) {
   if (ProxyLauncher::in_process_renderer()) {
     // No point in running this test in single process mode.
     return;
