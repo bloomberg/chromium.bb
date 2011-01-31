@@ -91,6 +91,8 @@ class PluginsTest(pyauto.PyUITest):
   def testKillAndReloadAllPlugins(self):
     """Verify plugin processes and check if they can reload after killing."""
     for fname, plugin_name in self._ObtainPluginsList():
+      if plugin_name == 'Java':  # crbug.com/71223
+        continue
       url = self.GetFileURLForPath(
           os.path.join(self.DataDir(), 'plugin', fname))
       self.NavigateToURL(url)
@@ -130,8 +132,10 @@ class PluginsTest(pyauto.PyUITest):
       self.assertFalse([x for x in self.GetBrowserInfo()['child_processes']
                         if x['type'] == 'Plug-in' and
                         re.search(plugin_name, x['name'])])
-      if 'Shockwave Flash' == plugin_name:
+      if plugin_name == 'Shockwave Flash':
         continue  # cannot reload file:// flash URL - crbug.com/47249
+      if plugin_name == 'Java':
+        continue  # crbug.com/71223
       # Enable
       self._TogglePlugin(plugin_name)
       self.GetBrowserWindow(0).GetTab(0).Reload()
