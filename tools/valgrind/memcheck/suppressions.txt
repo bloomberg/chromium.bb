@@ -2072,7 +2072,7 @@
    fun:_ZN17FilebrowseHandler4InitEv
    fun:_ZN12FileBrowseUIC1EP11TabContents
    fun:_Z8NewDOMUII12FileBrowseUIEP5DOMUIP11TabContentsRK4GURL
-   fun:_ZN12DOMUIFactory17CreateDOMUIForURLEP11TabContentsRK4GURL
+   fun:_ZN12WebUIFactory17CreateWebUIForURLEP11TabContentsRK4GURL
    fun:_ZN11TabContents27CreateDOMUIForRenderManagerERK4GURL
    fun:_ZN21RenderViewHostManager30UpdateRendererStateForNavigateERK15NavigationEntry
    fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
