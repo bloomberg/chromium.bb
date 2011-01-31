@@ -21,6 +21,14 @@ bool TestSink::Send(Message* message) {
 }
 
 bool TestSink::OnMessageReceived(const Message& msg) {
+  ObserverListBase<Channel::Listener>::Iterator it(filter_list_);
+  Channel::Listener* observer;
+  while ((observer = it.GetNext()) != NULL) {
+    if (observer->OnMessageReceived(msg))
+      return true;
+  }
+
+  // No filter handled the message, so store it.
   messages_.push_back(Message(msg));
   return true;
 }
@@ -55,6 +63,14 @@ const Message* TestSink::GetUniqueMessageMatching(uint32 id) const {
   if (found_count != 1)
     return NULL;  // Didn't find a unique one.
   return &messages_[found_index];
+}
+
+void TestSink::AddFilter(Channel::Listener* filter) {
+  filter_list_.AddObserver(filter);
+}
+
+void TestSink::RemoveFilter(Channel::Listener* filter) {
+  filter_list_.RemoveObserver(filter);
 }
 
 }  // namespace IPC

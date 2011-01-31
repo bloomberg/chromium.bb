@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "ipc/ipc_channel.h"
 
 namespace IPC {
@@ -40,6 +41,26 @@ class Message;
 //
 //   // Go on to the next phase of the test.
 //   test_sink.ClearMessages();
+//
+// You can also register to be notified when messages are posted to the sink.
+// This can be useful if you need to wait for a particular message that will
+// be posted asynchronously.  Example usage:
+//
+//   class MyListener : public IPC::Channel::Listener {
+//    public:
+//     virtual bool OnMessageReceived(const IPC::Message& msg) {
+//       <do something with the message>
+//       MessageLoop::current()->Quit();
+//       return false;  // to store the message in the sink, or true to drop it
+//     }
+//   };
+//
+//   MyListener listener;
+//   test_sink.AddFilter(&listener);
+//   StartSomeAsynchronousProcess(&test_sink);
+//   MessageLoop::current()->Run();
+//   <inspect the results>
+//   ...
 //
 // To hook up the sink, all you need to do is call OnMessageReceived when a
 // message is received.
@@ -79,9 +100,20 @@ class TestSink : public Channel {
   // or the list is cleared.
   const Message* GetUniqueMessageMatching(uint32 id) const;
 
+  // Adds the given listener as a filter to the TestSink.
+  // When a message is received by the TestSink, it will be dispatched to
+  // the filters, in the order they were added.  If a filter returns true
+  // from OnMessageReceived, subsequent filters will not receive the message
+  // and the TestSink will not store it.
+  void AddFilter(Channel::Listener* filter);
+
+  // Removes the given filter from the TestSink.
+  void RemoveFilter(Channel::Listener* filter);
+
  private:
   // The actual list of received messages.
   std::vector<Message> messages_;
+  ObserverList<Channel::Listener> filter_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSink);
 };
