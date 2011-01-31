@@ -28,7 +28,8 @@
 
 class ChromeNetLog;
 class CommandLine;
-class DebuggerWrapper;
+class DevToolsHttpProtocolHandler;
+class DevToolsProtocolHandler;
 class FilePath;
 class NotificationService;
 class PluginDataRemover;
@@ -66,7 +67,10 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual IconManager* icon_manager();
   virtual ThumbnailGenerator* GetThumbnailGenerator();
   virtual AutomationProviderList* InitAutomationProviderList();
-  virtual void InitDebuggerWrapper(int port, bool useHttp);
+  virtual void InitDevToolsHttpProtocolHandler(
+      int port,
+      const std::string& frontend_url);
+  virtual void InitDevToolsLegacyProtocolHandler(int port);
   virtual unsigned int AddRefModule();
   virtual unsigned int ReleaseModule();
   virtual bool IsShuttingDown();
@@ -121,7 +125,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateLocalState();
   void CreateViewedPageTracker();
   void CreateIconManager();
-  void CreateDebuggerWrapper(int port, bool useHttp);
   void CreateDevToolsManager();
   void CreateSidebarManager();
   void CreateGoogleURLTracker();
@@ -172,8 +175,9 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_icon_manager_;
   scoped_ptr<IconManager> icon_manager_;
 
-  bool created_debugger_wrapper_;
-  scoped_refptr<DebuggerWrapper> debugger_wrapper_;
+  scoped_refptr<DevToolsHttpProtocolHandler> devtools_http_handler_;
+
+  scoped_refptr<DevToolsProtocolHandler> devtools_legacy_handler_;
 
   bool created_devtools_manager_;
   scoped_refptr<DevToolsManager> devtools_manager_;

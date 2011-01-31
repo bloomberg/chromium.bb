@@ -7,8 +7,29 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/debugger/inspectable_tab_proxy.h"
+#include "chrome/browser/debugger/debugger_remote_service.h"
 #include "chrome/browser/debugger/devtools_remote_message.h"
 #include "chrome/browser/debugger/devtools_remote_listen_socket.h"
+#include "chrome/browser/debugger/devtools_remote_service.h"
+#include "chrome/browser/debugger/extension_ports_remote_service.h"
+
+// static
+scoped_refptr<DevToolsProtocolHandler> DevToolsProtocolHandler::Start(
+    int port) {
+  scoped_refptr<DevToolsProtocolHandler> proto_handler =
+      new DevToolsProtocolHandler(port);
+  proto_handler->RegisterDestination(
+      new DevToolsRemoteService(proto_handler),
+      DevToolsRemoteService::kToolName);
+  proto_handler->RegisterDestination(
+      new DebuggerRemoteService(proto_handler),
+      DebuggerRemoteService::kToolName);
+  proto_handler->RegisterDestination(
+      new ExtensionPortsRemoteService(proto_handler),
+      ExtensionPortsRemoteService::kToolName);
+  proto_handler->Start();
+  return proto_handler;
+}
 
 DevToolsProtocolHandler::DevToolsProtocolHandler(int port)
     : port_(port),

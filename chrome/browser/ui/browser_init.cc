@@ -604,18 +604,23 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
     std::string port_str =
         command_line_.GetSwitchValueASCII(switches::kRemoteShellPort);
     int64 port;
-    if (base::StringToInt64(port_str, &port) && port > 0 && port < 65535)
-      g_browser_process->InitDebuggerWrapper(static_cast<int>(port), false);
-    else
+    if (base::StringToInt64(port_str, &port) && port > 0 && port < 65535) {
+      g_browser_process->InitDevToolsLegacyProtocolHandler(
+          static_cast<int>(port));
+    } else {
       DLOG(WARNING) << "Invalid remote shell port number " << port;
+    }
   } else if (command_line_.HasSwitch(switches::kRemoteDebuggingPort)) {
     std::string port_str =
         command_line_.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
     int64 port;
-    if (base::StringToInt64(port_str, &port) && port > 0 && port < 65535)
-      g_browser_process->InitDebuggerWrapper(static_cast<int>(port), true);
-    else
+    if (base::StringToInt64(port_str, &port) && port > 0 && port < 65535) {
+      g_browser_process->InitDevToolsHttpProtocolHandler(
+          static_cast<int>(port),
+          "");
+    } else {
       DLOG(WARNING) << "Invalid http debugger port number " << port;
+    }
   }
 
   if (command_line_.HasSwitch(switches::kUserAgent)) {

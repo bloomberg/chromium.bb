@@ -27,12 +27,10 @@ class DevToolsProtocolHandler
   typedef base::hash_map< std::string, scoped_refptr<DevToolsRemoteListener> >
       ToolToListenerMap;
 
-  explicit DevToolsProtocolHandler(int port);
+  static scoped_refptr<DevToolsProtocolHandler> Start(int port);
 
-  // This method should be called after the object construction.
-  void Start();
-
-  // This method should be called before the object destruction.
+  // Called from the main thread in order to stop protocol handler.
+  // Will schedule tear down task on IO thread.
   void Stop();
 
   // Registers a |listener| to handle messages for a certain |tool_name| Tool.
@@ -61,7 +59,9 @@ class DevToolsProtocolHandler
   virtual void Send(const DevToolsRemoteMessage& message);
 
  private:
+  explicit DevToolsProtocolHandler(int port);
   virtual ~DevToolsProtocolHandler();
+  void Start();
 
   void Init();
   void Teardown();

@@ -71,6 +71,17 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
 
 }  // namespace
 
+
+// static
+scoped_refptr<DevToolsHttpProtocolHandler> DevToolsHttpProtocolHandler::Start(
+    int port,
+    const std::string& frontend_url) {
+  scoped_refptr<DevToolsHttpProtocolHandler> http_handler =
+      new DevToolsHttpProtocolHandler(port, frontend_url);
+  http_handler->Start();
+  return http_handler;
+}
+
 DevToolsHttpProtocolHandler::~DevToolsHttpProtocolHandler() {
   // Stop() must be called prior to this being called
   DCHECK(server_.get() == NULL);
@@ -170,7 +181,22 @@ void DevToolsHttpProtocolHandler::OnClose(HttpListenSocket* socket) {
 void DevToolsHttpProtocolHandler::OnHttpRequestUI(
     HttpListenSocket* socket,
     const HttpServerRequestInfo& info) {
-  std::string response = "<html><body>";
+  std::string response = "<html><body><script>"
+      "function addTab(id, url, attached, frontendUrl) {"
+      "    if (!attached) {"
+      "        var a = document.createElement('a');"
+      "        a.textContent = url;"
+      "        a.href = frontendUrl + '?remotehost=' + window.location.host +"
+      "            '&page=' + id;"
+      "        document.body.appendChild(a);"
+      "    } else {"
+      "        var span = document.createElement('span');"
+      "        span.textContent = url + ' (attached)';"
+      "        document.body.appendChild(span);"
+      "    }"
+      "    document.body.appendChild(document.createElement('br'));"
+      "}";
+
   for (BrowserList::const_iterator it = BrowserList::begin(),
        end = BrowserList::end(); it != end; ++it) {
     TabStripModel* model = (*it)->tabstrip_model();
@@ -187,21 +213,15 @@ void DevToolsHttpProtocolHandler::OnHttpRequestUI(
       DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
           GetDevToolsClientHostFor(tab_contents->tab_contents()->
                                       render_view_host());
-      if (!client_host) {
-        response += StringPrintf(
-            "<a href='/devtools/devtools.html?page=%d'>%s (%s)</a><br>",
-            controller.session_id().id(),
-            UTF16ToUTF8(entry->title()).c_str(),
-            entry->url().spec().c_str());
-      } else {
-        response += StringPrintf(
-            "%s (%s)<br>",
-            UTF16ToUTF8(entry->title()).c_str(),
-            entry->url().spec().c_str());
-      }
+      response += StringPrintf(
+          "addTab(%d, '%s', %s, '%s');\n",
+          controller.session_id().id(),
+          entry->url().spec().c_str(),
+          client_host ? "true" : "false",
+          overriden_frontend_url_.c_str());
     }
   }
-  response += "</body></html>";
+  response += "</script></body></html>";
   Send200(socket, response, "text/html; charset=UTF-8");
 }
 
@@ -340,9 +360,14 @@ void DevToolsHttpProtocolHandler::OnReadCompleted(net::URLRequest* request,
     RequestCompleted(request);
 }
 
-DevToolsHttpProtocolHandler::DevToolsHttpProtocolHandler(int port)
+DevToolsHttpProtocolHandler::DevToolsHttpProtocolHandler(
+    int port,
+    const std::string& frontend_host)
     : port_(port),
+      overriden_frontend_url_(frontend_host),
       server_(NULL) {
+  if (overriden_frontend_url_.empty())
+      overriden_frontend_url_ = "/devtools/devtools.html";
 }
 
 void DevToolsHttpProtocolHandler::Init() {
@@ -428,8 +453,9 @@ TabContents* DevToolsHttpProtocolHandler::GetTabContents(int session_id) {
        end = BrowserList::end(); it != end; ++it) {
     TabStripModel* model = (*it)->tabstrip_model();
     for (int i = 0, size = model->count(); i < size; ++i) {
+      TabContentsWrapper* tab_contents = model->GetTabContentsAt(i);
       NavigationController& controller =
-          model->GetTabContentsAt(i)->controller();
+          tab_contents->controller();
       if (controller.session_id().id() == session_id)
         return controller.tab_contents();
     }

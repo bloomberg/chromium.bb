@@ -20,8 +20,9 @@
 #include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/browser_trial.h"
-#include "chrome/browser/debugger/debugger_wrapper.h"
+#include "chrome/browser/debugger/devtools_http_protocol_handler.h"
 #include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/debugger/devtools_protocol_handler.h"
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/save_file_manager.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -97,7 +98,6 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_profile_manager_(false),
       created_local_state_(false),
       created_icon_manager_(false),
-      created_debugger_wrapper_(false),
       created_devtools_manager_(false),
       created_sidebar_manager_(false),
       created_configuration_policy_provider_keeper_(false),
@@ -166,7 +166,14 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   profile_manager_.reset();
 
   // Debugger must be cleaned up before IO thread and NotificationService.
-  debugger_wrapper_ = NULL;
+  if (devtools_http_handler_.get()) {
+    devtools_http_handler_->Stop();
+    devtools_http_handler_ = NULL;
+  }
+  if (devtools_legacy_handler_.get()) {
+    devtools_legacy_handler_->Stop();
+    devtools_legacy_handler_ = NULL;
+  }
 
   if (resource_dispatcher_host_.get()) {
     // Need to tell Safe Browsing Service that the IO thread is going away
@@ -452,10 +459,17 @@ AutomationProviderList* BrowserProcessImpl::InitAutomationProviderList() {
   return automation_provider_list_.get();
 }
 
-void BrowserProcessImpl::InitDebuggerWrapper(int port, bool useHttp) {
+void BrowserProcessImpl::InitDevToolsHttpProtocolHandler(
+    int port,
+    const std::string& frontend_url) {
   DCHECK(CalledOnValidThread());
-  if (!created_debugger_wrapper_)
-    CreateDebuggerWrapper(port, useHttp);
+  devtools_http_handler_ =
+      DevToolsHttpProtocolHandler::Start(port, frontend_url);
+}
+
+void BrowserProcessImpl::InitDevToolsLegacyProtocolHandler(int port) {
+  DCHECK(CalledOnValidThread());
+  devtools_legacy_handler_ = DevToolsProtocolHandler::Start(port);
 }
 
 bool BrowserProcessImpl::IsShuttingDown() {
@@ -731,13 +745,6 @@ void BrowserProcessImpl::CreateIconManager() {
   DCHECK(!created_icon_manager_ && icon_manager_.get() == NULL);
   created_icon_manager_ = true;
   icon_manager_.reset(new IconManager);
-}
-
-void BrowserProcessImpl::CreateDebuggerWrapper(int port, bool useHttp) {
-  DCHECK(debugger_wrapper_.get() == NULL);
-  created_debugger_wrapper_ = true;
-
-  debugger_wrapper_ = new DebuggerWrapper(port, useHttp);
 }
 
 void BrowserProcessImpl::CreateDevToolsManager() {

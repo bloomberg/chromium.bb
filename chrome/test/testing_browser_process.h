@@ -149,7 +149,12 @@ class TestingBrowserProcess : public BrowserProcess {
     return NULL;
   }
 
-  virtual void InitDebuggerWrapper(int port, bool useHttp) {
+  virtual void InitDevToolsHttpProtocolHandler(
+      int port,
+      const std::string& frontend_url) {
+  }
+
+  virtual void InitDevToolsLegacyProtocolHandler(int port) {
   }
 
   virtual unsigned int AddRefModule() {

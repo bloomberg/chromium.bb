@@ -22,17 +22,20 @@ class DevToolsHttpProtocolHandler
       public net::URLRequest::Delegate,
       public base::RefCountedThreadSafe<DevToolsHttpProtocolHandler> {
  public:
-  explicit DevToolsHttpProtocolHandler(int port);
+  static scoped_refptr<DevToolsHttpProtocolHandler> Start(
+      int port,
+      const std::string& frontend_url);
 
-  // This method should be called after the object construction.
-  void Start();
-
-  // This method should be called before the object destruction.
+  // Called from the main thread in order to stop protocol handler.
+  // Will schedule tear down task on IO thread.
   void Stop();
 
  private:
   friend class base::RefCountedThreadSafe<DevToolsHttpProtocolHandler>;
+
+  DevToolsHttpProtocolHandler(int port, const std::string& frontend_url);
   virtual ~DevToolsHttpProtocolHandler();
+  void Start();
 
   // HttpListenSocket::Delegate implementation.
   virtual void OnHttpRequest(HttpListenSocket* socket,
@@ -73,6 +76,7 @@ class DevToolsHttpProtocolHandler
   TabContents* GetTabContents(int session_id);
 
   int port_;
+  std::string overriden_frontend_url_;
   scoped_refptr<HttpListenSocket> server_;
   typedef std::map<net::URLRequest*, HttpListenSocket*>
       RequestToSocketMap;

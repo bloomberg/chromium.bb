@@ -123,7 +123,11 @@ class BrowserProcess {
 
   virtual AutomationProviderList* InitAutomationProviderList() = 0;
 
-  virtual void InitDebuggerWrapper(int port, bool useHttp) = 0;
+  virtual void InitDevToolsHttpProtocolHandler(
+      int port,
+      const std::string& frontend_url) = 0;
+
+  virtual void InitDevToolsLegacyProtocolHandler(int port) = 0;
 
   virtual unsigned int AddRefModule() = 0;
   virtual unsigned int ReleaseModule() = 0;
