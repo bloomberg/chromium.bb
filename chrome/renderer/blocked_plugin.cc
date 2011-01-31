@@ -72,6 +72,7 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
   values.SetString("message", message);
   name_ = info.GetGroupName();
   values.SetString("name", name_);
+  values.SetString("hide", l10n_util::GetStringUTF8(IDS_PLUGIN_HIDE));
 
   // "t" is the id of the templates root node.
   std::string html_data = jstemplate_builder::GetTemplatesHtml(

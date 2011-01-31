@@ -30,7 +30,7 @@ h1 {
   visibility: hidden;
 }
 
-#outer:hover h1, #outer:hover img {
+#outer:hover h1, #outer:hover #close {
   visibility: visible;
 }
 
@@ -73,9 +73,23 @@ FIXME: This causes flickering on hover.
   visibility: hidden;
   cursor: pointer;
   position: absolute;
-  right: 0px;
-  top: 0px;
+  right: 3px;
+  top: 3px;
+  height: 14px;
+  width: 14px;
+  background-image: url("../../app/theme/close_bar.png");
+  background-position: right top;
+  background-repeat: no-repeat;
 }
+
+#close:hover {
+  background-image: url("../../app/theme/close_bar_h.png");
+}
+
+#close:active {
+  background-image: url("../../app/theme/close_bar_p.png");
+}
+
 </style>
 </head>
 
@@ -86,8 +100,7 @@ FIXME: This causes flickering on hover.
 <h1 i18n-content="message">PLUGIN_LOAD</h1>
 <p id="debug"> </p>
 </div>
-<img id="close" onclick="event.stopPropagation(); plugin.hide()"
-     src="../../app/theme/close_bar_h.png">
+<div id="close" i18n-values="title:hide" onclick="event.stopPropagation(); plugin.hide()" />
 </div>
 <script>
 size = document.getElementById('outer');
