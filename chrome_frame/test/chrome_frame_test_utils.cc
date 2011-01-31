@@ -21,7 +21,6 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
-#include "ceee/ie/common/ceee_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -438,14 +437,13 @@ IEVersion GetInstalledIEVersion() {
   return IE_UNSUPPORTED;
 }
 
-// TODO(joi@chromium.org) Could share this code with chrome_frame_plugin.h
 FilePath GetProfilePathForIE() {
   FilePath profile_path;
   // Browsers without IDeleteBrowsingHistory in non-priv mode
   // have their profiles moved into "Temporary Internet Files".
   // The code below basically retrieves the version of IE and computes
   // the profile directory accordingly.
-  if (GetInstalledIEVersion() <= IE_7 && !ceee_util::IsIeCeeeRegistered()) {
+  if (GetInstalledIEVersion() <= IE_7) {
     profile_path = GetIETemporaryFilesFolder();
     profile_path = profile_path.Append(L"Google Chrome Frame");
   } else {

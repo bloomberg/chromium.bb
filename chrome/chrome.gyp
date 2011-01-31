@@ -1607,7 +1607,6 @@
             'installer/upgrade_test.gyp:*',
             '../app/app.gyp:*',
             '../base/base.gyp:*',
-            '../ceee/ceee.gyp:*',
             '../chrome_frame/chrome_frame.gyp:*',
             '../gfx/gfx.gyp:*',
             '../ipc/ipc.gyp:*',

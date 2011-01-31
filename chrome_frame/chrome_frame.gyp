@@ -105,52 +105,14 @@
       },
     },
     {
-      'target_name': 'chrome_frame_privileged_mock',
-      'type': 'none',
-      'dependencies': [
-        'chrome_tab_idl',
-      ],
-      'sources': [
-        '../ceee/testing/utils/com_mock.py',
-        '<(SHARED_INTERMEDIATE_DIR)/chrome_tab.h',
-      ],
-      'actions': [
-        {
-          'action_name': 'make_chrome_frame_privileged_mock',
-          'msvs_cygwin_shell': 0,
-          'msvs_quote_cmd': 0,
-          'inputs': [
-            '../ceee/testing/utils/com_mock.py',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/mock_ichromeframeprivileged.gen',
-          ],
-          'action': [
-            '<@(python)',
-            '../ceee/testing/utils/com_mock.py',
-            'IChromeFramePrivileged',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_tab.h',
-            '> "<(SHARED_INTERMEDIATE_DIR)/mock_ichromeframeprivileged.gen"',
-          ],
-        },
-      ],
-      # All who use this need to be able to find the .gen file we generate.
-      'all_dependent_settings': {
-        'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
-      },
-    },
-    {
       'target_name': 'chrome_frame_unittests',
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:test_support_base',
-        '../ceee/ie/common/common.gyp:ie_common',
-        '../ceee/testing/utils/test_utils.gyp:test_utils',
         '../chrome/chrome.gyp:policy',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'chrome_frame_ie',
-        'chrome_frame_privileged_mock',
         'chrome_frame_strings',
         'chrome_tab_idl',
         'xulrunner_sdk',
@@ -165,7 +127,6 @@
         'chrome_launcher_unittest.cc',
         'function_stub_unittest.cc',
         'renderer_glue.cc',
-        'test/chrome_frame_activex_unittest.cc',
         'test/chrome_tab_mocks.h',
         'test/chrome_frame_test_utils.h',
         'test/chrome_frame_test_utils.cc',
@@ -793,8 +754,6 @@
         'chrome_frame_strings',
         'chrome_frame_utils',
         'chrome_tab_idl',
-        '../ceee/ie/common/common.gyp:ie_common',
-        '../ceee/ie/common/common.gyp:ie_guids',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:policy',
         '../chrome/chrome.gyp:utility',

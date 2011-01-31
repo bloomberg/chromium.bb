@@ -24,7 +24,6 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "grit/chrome_frame_resources.h"
-#include "ceee/ie/common/ceee_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome_frame/chrome_frame_plugin.h"
 #include "chrome_frame/com_message_event.h"
@@ -398,12 +397,7 @@ END_MSG_MAP()
                  (lstrcmpi(profile_name.c_str(), kRundllProfileName) == 0);
     // Browsers without IDeleteBrowsingHistory in non-priv mode
     // have their profiles moved into "Temporary Internet Files".
-    //
-    // If CEEE is registered, we must have a persistent profile. We
-    // considered checking if e.g. ceee_ie.dll is loaded in the process
-    // but this gets into edge cases when the user enables the CEEE add-on
-    // after CF is first loaded.
-    if (is_IE && GetIEVersion() < IE_8 && !ceee_util::IsIeCeeeRegistered()) {
+    if (is_IE && GetIEVersion() < IE_8) {
       *profile_path = GetIETemporaryFilesFolder();
       *profile_path = profile_path->Append(L"Google Chrome Frame");
     } else {
