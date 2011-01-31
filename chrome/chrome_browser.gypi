@@ -1989,6 +1989,8 @@
         'browser/plugin_exceptions_table_model.h',
         'browser/plugin_installer_infobar_delegate.cc',
         'browser/plugin_installer_infobar_delegate.h',
+        'browser/plugin_observer.cc',
+        'browser/plugin_observer.h',
         'browser/plugin_process_host.cc',
         'browser/plugin_process_host.h',
         'browser/plugin_process_host_mac.cc',

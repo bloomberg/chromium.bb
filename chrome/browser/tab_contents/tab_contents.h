@@ -66,7 +66,7 @@ class FileSelectHelper;
 class InfoBarDelegate;
 class LoadNotificationDetails;
 class OmniboxSearchHint;
-class PluginInstallerInfoBarDelegate;
+class PluginObserver;
 class Profile;
 class PrerenderManager;
 class PrerenderPLTRecorder;
@@ -146,9 +146,6 @@ class TabContents : public PageNavigator,
 
   // Returns true if contains content rendered by an extension.
   bool HostsExtension() const;
-
-  // Returns the PluginInstallerInfoBarDelegate, creating it if necessary.
-  PluginInstallerInfoBarDelegate* GetPluginInstaller();
 
   // Returns the TabContentsSSLHelper, creating it if necessary.
   TabContentsSSLHelper* GetSSLHelper();
@@ -823,11 +820,8 @@ class TabContents : public PageNavigator,
                    int active_match_ordinal,
                    bool final_update);
   void OnGoToEntryAtOffset(int offset);
-  void OnMissingPluginStatus(int status);
-  void OnCrashedPlugin(const FilePath& plugin_path);
   void OnDidGetApplicationInfo(int32 page_id, const WebApplicationInfo& info);
   void OnInstallApplication(const WebApplicationInfo& info);
-  void OnBlockedOutdatedPlugin(const string16& name, const GURL& update_url);
   void OnPageContents(const GURL& url,
                       int32 page_id,
                       const string16& contents,
@@ -1123,8 +1117,8 @@ class TabContents : public PageNavigator,
   // AutoFillManager.
   scoped_ptr<AutoFillManager> autofill_manager_;
 
-  // PluginInstallerInfoBarDelegate, lazily created.
-  scoped_ptr<PluginInstallerInfoBarDelegate> plugin_installer_;
+  // Handles plugin messages.
+  scoped_ptr<PluginObserver> plugin_observer_;
 
   // Prerender PageLoadTime Recorder.
   scoped_ptr<PrerenderPLTRecorder> prerender_plt_recorder_;

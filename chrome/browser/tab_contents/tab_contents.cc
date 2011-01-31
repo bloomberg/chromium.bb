@@ -50,7 +50,7 @@
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/pdf_unsupported_feature.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/plugin_installer_infobar_delegate.h"
+#include "chrome/browser/plugin_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_plt_recorder.h"
@@ -108,7 +108,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/password_form.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/glue/webpreferences.h"
 
 #if defined(OS_MACOSX)
@@ -250,214 +249,6 @@ void MakeNavigateParams(const NavigationEntry& entry,
   params->request_time = base::Time::Now();
 }
 
-// PluginInfoBar --------------------------------------------------------------
-
-class PluginInfoBar : public ConfirmInfoBarDelegate {
- public:
-  PluginInfoBar(TabContents* tab_contents, const string16& name);
-
-  // ConfirmInfoBarDelegate:
-  virtual void InfoBarClosed() = 0;
-  virtual SkBitmap* GetIcon() const;
-  virtual string16 GetMessageText() const = 0;
-  virtual int GetButtons() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const = 0;
-  virtual bool Accept() = 0;
-  virtual bool Cancel() = 0;
-  virtual string16 GetLinkText();
-  virtual bool LinkClicked(WindowOpenDisposition disposition) = 0;
-
- protected:
-  virtual ~PluginInfoBar();
-
-  void CommonCancel();
-  void CommonClose();
-  void CommonLearnMore(WindowOpenDisposition disposition);
-
-  string16 name_;
-  TabContents* tab_contents_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PluginInfoBar);
-};
-
-PluginInfoBar::PluginInfoBar(TabContents* tab_contents, const string16& name)
-    : ConfirmInfoBarDelegate(tab_contents),
-      name_(name),
-      tab_contents_(tab_contents) {
-}
-
-PluginInfoBar::~PluginInfoBar() {
-}
-
-void PluginInfoBar::CommonClose() {
-  delete this;
-}
-
-SkBitmap* PluginInfoBar::GetIcon() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_INFOBAR_PLUGIN_INSTALL);
-}
-
-int PluginInfoBar::GetButtons() const {
-  return BUTTON_OK | BUTTON_CANCEL;
-}
-
-void PluginInfoBar::CommonCancel() {
-  tab_contents_->render_view_host()->LoadBlockedPlugins();
-}
-
-string16 PluginInfoBar::GetLinkText() {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-}
-
-void PluginInfoBar::CommonLearnMore(WindowOpenDisposition disposition) {
-  // TODO(bauerb): Navigate to a help page explaining why we disabled
-  // or blocked the plugin, once we have one.
-}
-
-
-// BlockedPluginInfoBar -------------------------------------------------------
-
-class BlockedPluginInfoBar : public PluginInfoBar {
- public:
-  BlockedPluginInfoBar(TabContents* tab_contents,
-                       const string16& name);
-
-  // ConfirmInfoBarDelegate:
-  virtual string16 GetMessageText() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool Accept();
-  virtual bool Cancel();
-  virtual void InfoBarClosed();
-  virtual bool LinkClicked(WindowOpenDisposition disposition);
-
- protected:
-  virtual ~BlockedPluginInfoBar();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BlockedPluginInfoBar);
-};
-
-BlockedPluginInfoBar::BlockedPluginInfoBar(TabContents* tab_contents,
-                                           const string16& name)
-    : PluginInfoBar(tab_contents, name) {
-  tab_contents->AddInfoBar(this);
-  UserMetrics::RecordAction(UserMetricsAction("BlockedPluginInfobar.Shown"));
-}
-
-BlockedPluginInfoBar::~BlockedPluginInfoBar() {
-}
-
-string16 BlockedPluginInfoBar::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(IDS_PLUGIN_NOT_AUTHORIZED, name_);
-}
-
-string16 BlockedPluginInfoBar::GetButtonLabel(InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_PLUGIN_ENABLE_ALWAYS : IDS_PLUGIN_ENABLE_TEMPORARILY);
-}
-
-bool BlockedPluginInfoBar::Accept() {
-  UserMetrics::RecordAction(
-      UserMetricsAction("BlockedPluginInfobar.AlwaysAllow"));
-  tab_contents_->profile()->GetHostContentSettingsMap()->AddExceptionForURL(
-      tab_contents_->GetURL(), CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
-      CONTENT_SETTING_ALLOW);
-  tab_contents_->render_view_host()->LoadBlockedPlugins();
-  return false;
-}
-
-bool BlockedPluginInfoBar::Cancel() {
-  UserMetrics::RecordAction(
-      UserMetricsAction("BlockedPluginInfobar.AllowThisTime"));
-  CommonCancel();
-  return false;
-}
-
-void BlockedPluginInfoBar::InfoBarClosed() {
-  UserMetrics::RecordAction(UserMetricsAction("BlockedPluginInfobar.Closed"));
-  CommonClose();
-}
-
-bool BlockedPluginInfoBar::LinkClicked(WindowOpenDisposition disposition) {
-  UserMetrics::RecordAction(
-      UserMetricsAction("BlockedPluginInfobar.LearnMore"));
-  CommonLearnMore(disposition);
-  return false;
-}
-
-// OutdatedPluginInfoBar ------------------------------------------------------
-
-class OutdatedPluginInfoBar : public PluginInfoBar {
- public:
-  OutdatedPluginInfoBar(TabContents* tab_contents,
-                        const string16& name,
-                        const GURL& update_url);
-
-  // ConfirmInfoBarDelegate:
-  virtual string16 GetMessageText() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-  virtual bool Accept();
-  virtual bool Cancel();
-  virtual void InfoBarClosed();
-  virtual bool LinkClicked(WindowOpenDisposition disposition);
-
- protected:
-  virtual ~OutdatedPluginInfoBar();
-
- private:
-  GURL update_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(OutdatedPluginInfoBar);
-};
-
-OutdatedPluginInfoBar::OutdatedPluginInfoBar(TabContents* tab_contents,
-                                             const string16& name,
-                                             const GURL& update_url)
-    : PluginInfoBar(tab_contents, name), update_url_(update_url) {
-  tab_contents->AddInfoBar(this);
-  UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
-}
-
-OutdatedPluginInfoBar::~OutdatedPluginInfoBar() {
-}
-
-string16 OutdatedPluginInfoBar::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED_PROMPT, name_);
-}
-
-string16 OutdatedPluginInfoBar::GetButtonLabel(InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_PLUGIN_UPDATE : IDS_PLUGIN_ENABLE_TEMPORARILY);
-}
-
-bool OutdatedPluginInfoBar::Accept() {
-  UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Update"));
-  tab_contents_->OpenURL(update_url_, GURL(), NEW_FOREGROUND_TAB,
-                         PageTransition::LINK);
-  return false;
-}
-
-bool OutdatedPluginInfoBar::Cancel() {
-  UserMetrics::RecordAction(
-      UserMetricsAction("OutdatedPluginInfobar.AllowThisTime"));
-  CommonCancel();
-  return false;
-}
-
-void OutdatedPluginInfoBar::InfoBarClosed() {
-  UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Closed"));
-  CommonClose();
-}
-
-bool OutdatedPluginInfoBar::LinkClicked(WindowOpenDisposition disposition) {
-  UserMetrics::RecordAction(
-      UserMetricsAction("OutdatedPluginInfobar.LearnMore"));
-  CommonLearnMore(disposition);
-  return false;
-}
-
 }  // namespace
 
 
@@ -485,7 +276,6 @@ TabContents::TabContents(Profile* profile,
       save_package_(),
       autocomplete_history_manager_(),
       autofill_manager_(),
-      plugin_installer_(),
       prerender_plt_recorder_(),
       bookmark_drag_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(fav_icon_helper_(this)),
@@ -599,6 +389,8 @@ TabContents::TabContents(Profile* profile,
   desktop_notification_handler_.reset(
       new DesktopNotificationHandler(this, GetRenderProcessHost()));
   AddObserver(desktop_notification_handler_.get());
+  plugin_observer_.reset(new PluginObserver(this));
+  AddObserver(plugin_observer_.get());
 }
 
 TabContents::~TabContents() {
@@ -748,10 +540,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
                         OnPDFHasUnsupportedFeature)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MissingPluginStatus, OnMissingPluginStatus)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_BlockedOutdatedPlugin,
-                        OnBlockedOutdatedPlugin)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGetApplicationInfo,
                         OnDidGetApplicationInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_InstallApplication,
@@ -776,12 +564,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
 // Returns true if contains content rendered by an extension.
 bool TabContents::HostsExtension() const {
   return GetURL().SchemeIs(chrome::kExtensionScheme);
-}
-
-PluginInstallerInfoBarDelegate* TabContents::GetPluginInstaller() {
-  if (plugin_installer_.get() == NULL)
-    plugin_installer_.reset(new PluginInstallerInfoBarDelegate(this));
-  return plugin_installer_.get();
 }
 
 TabContentsSSLHelper* TabContents::GetSSLHelper() {
@@ -2443,37 +2225,6 @@ void TabContents::OnGoToEntryAtOffset(int offset) {
   }
 }
 
-void TabContents::OnMissingPluginStatus(int status) {
-#if defined(OS_WIN)
-// TODO(PORT): pull in when plug-ins work
-  GetPluginInstaller()->OnMissingPluginStatus(status);
-#endif
-}
-
-void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
-  DCHECK(!plugin_path.value().empty());
-
-  std::wstring plugin_name = plugin_path.ToWStringHack();
-  webkit::npapi::WebPluginInfo plugin_info;
-  if (webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
-          plugin_path, &plugin_info) &&
-      !plugin_info.name.empty()) {
-    plugin_name = UTF16ToWide(plugin_info.name);
-#if defined(OS_MACOSX)
-    // Many plugins on the Mac have .plugin in the actual name, which looks
-    // terrible, so look for that and strip it off if present.
-    const std::wstring plugin_extension(L".plugin");
-    if (EndsWith(plugin_name, plugin_extension, true))
-      plugin_name.erase(plugin_name.length() - plugin_extension.length());
-#endif  // OS_MACOSX
-  }
-  SkBitmap* crash_icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_INFOBAR_PLUGIN_CRASHED);
-  AddInfoBar(new SimpleAlertInfoBarDelegate(this, crash_icon,
-      l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT,
-                                 WideToUTF16Hack(plugin_name)), true));
-}
-
 void TabContents::OnDidGetApplicationInfo(int32 page_id,
                                           const WebApplicationInfo& info) {
   web_app_info_ = info;
@@ -2485,14 +2236,6 @@ void TabContents::OnDidGetApplicationInfo(int32 page_id,
 void TabContents::OnInstallApplication(const WebApplicationInfo& info) {
   if (delegate())
     delegate()->OnInstallApplication(this, info);
-}
-
-void TabContents::OnBlockedOutdatedPlugin(const string16& name,
-                                          const GURL& update_url) {
-  if (!update_url.is_empty())
-    new OutdatedPluginInfoBar(this, name, update_url);
-  else
-    new BlockedPluginInfoBar(this, name);
 }
 
 void TabContents::OnPageContents(const GURL& url,
