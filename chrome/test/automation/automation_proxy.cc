@@ -203,6 +203,10 @@ void AutomationProxy::SignalAppLaunch(const std::string& version_string) {
   app_launched_.Signal();
 }
 
+bool AutomationProxy::WaitForProcessLauncherThreadToGoIdle() {
+  return Send(new AutomationMsg_WaitForProcessLauncherThreadToGoIdle());
+}
+
 bool AutomationProxy::WaitForInitialLoads() {
   return initial_loads_complete_.TimedWait(command_execution_timeout_);
 }

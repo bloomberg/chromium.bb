@@ -92,7 +92,9 @@ class WorkerTest : public UILayoutTest {
 
     int cur_process_count;
     for (int i = 0; i < 10; ++i) {
-      cur_process_count = GetBrowserProcessCount();
+      cur_process_count = 0;
+      if (!GetBrowserProcessCount(&cur_process_count))
+        return false;
       if (cur_process_count == number_of_processes)
         return true;
 

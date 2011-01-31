@@ -393,6 +393,9 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_SetContentSetting, SetContentSetting)
     IPC_MESSAGE_HANDLER(AutomationMsg_LoadBlockedPlugins, LoadBlockedPlugins)
     IPC_MESSAGE_HANDLER(AutomationMsg_ResetToDefaultTheme, ResetToDefaultTheme)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        AutomationMsg_WaitForProcessLauncherThreadToGoIdle,
+        WaitForProcessLauncherThreadToGoIdle)
 
     IPC_MESSAGE_UNHANDLED(
         handled = AutomationProvider::OnMessageReceived(message))
@@ -1262,6 +1265,10 @@ void TestingAutomationProvider::WaitForTabToBeRestored(
     NavigationController* tab = tab_tracker_->GetResource(tab_handle);
     restore_tracker_.reset(
         new NavigationControllerRestoredObserver(this, tab, reply_message));
+  } else {
+    AutomationMsg_WaitForTabToBeRestored::WriteReplyParams(
+        reply_message, false);
+    Send(reply_message);
   }
 }
 
@@ -4467,6 +4474,11 @@ void TestingAutomationProvider::LoadBlockedPlugins(int tab_handle,
 
 void TestingAutomationProvider::ResetToDefaultTheme() {
   profile_->ClearTheme();
+}
+
+void TestingAutomationProvider::WaitForProcessLauncherThreadToGoIdle(
+    IPC::Message* reply_message) {
+  new WaitForProcessLauncherThreadToGoIdleObserver(this, reply_message);
 }
 
 // TODO(brettw) change this to accept GURLs when history supports it

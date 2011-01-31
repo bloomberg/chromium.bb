@@ -204,6 +204,7 @@ bool NavigationControllerRestoredObserver::FinishedRestoring() {
 
 void NavigationControllerRestoredObserver::SendDone() {
   DCHECK(reply_message_ != NULL);
+  AutomationMsg_WaitForTabToBeRestored::WriteReplyParams(reply_message_, true);
   automation_->Send(reply_message_);
 }
 
@@ -750,7 +751,6 @@ struct CommandNotification {
 
 const struct CommandNotification command_notifications[] = {
   {IDC_DUPLICATE_TAB, NotificationType::TAB_PARENTED},
-  {IDC_NEW_TAB, NotificationType::INITIAL_NEW_TAB_UI_LOAD},
 
   // Returns as soon as the restored tab is created. To further wait until
   // the content page is loaded, use WaitForTabToBeRestored.
@@ -776,6 +776,10 @@ bool ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
     IPC::Message* reply_message) {
   bool result = true;
   switch (command) {
+    case IDC_NEW_TAB: {
+      new NewTabObserver(automation, reply_message);
+      break;
+    }
     case IDC_NEW_WINDOW:
     case IDC_NEW_INCOGNITO_WINDOW: {
       BrowserOpenedNotificationObserver* observer =
@@ -1639,3 +1643,62 @@ void RendererProcessClosedObserver::Observe(
   AutomationJSONReply(automation_, reply_message_).SendSuccess(NULL);
   delete this;
 }
+
+NewTabObserver::NewTabObserver(AutomationProvider* automation,
+                               IPC::Message* reply_message)
+    : automation_(automation),
+      reply_message_(reply_message) {
+  // Use TAB_PARENTED to detect the new tab.
+  registrar_.Add(this,
+                 NotificationType::TAB_PARENTED,
+                 NotificationService::AllSources());
+}
+
+void NewTabObserver::Observe(NotificationType type,
+                             const NotificationSource& source,
+                             const NotificationDetails& details) {
+  DCHECK_EQ(NotificationType::TAB_PARENTED, type.value);
+  // We found the new tab. Now wait for it to load.
+  NavigationController* controller = Source<NavigationController>(source).ptr();
+  AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_, true);
+  automation_->AddNavigationStatusListener(
+      controller, reply_message_, 1, false);
+  delete this;
+}
+
+NewTabObserver::~NewTabObserver() {
+}
+
+WaitForProcessLauncherThreadToGoIdleObserver::
+WaitForProcessLauncherThreadToGoIdleObserver(
+    AutomationProvider* automation, IPC::Message* reply_message)
+    : automation_(automation),
+      reply_message_(reply_message) {
+  // Balanced in RunOnUIThread.
+  AddRef();
+  BrowserThread::PostTask(
+      BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &WaitForProcessLauncherThreadToGoIdleObserver::
+              RunOnProcessLauncherThread));
+}
+
+WaitForProcessLauncherThreadToGoIdleObserver::
+~WaitForProcessLauncherThreadToGoIdleObserver() {
+}
+
+void WaitForProcessLauncherThreadToGoIdleObserver::
+RunOnProcessLauncherThread() {
+  BrowserThread::PostTask(
+      BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &WaitForProcessLauncherThreadToGoIdleObserver::RunOnUIThread));
+}
+
+void WaitForProcessLauncherThreadToGoIdleObserver::RunOnUIThread() {
+  automation_->Send(reply_message_);
+  Release();
+}
+

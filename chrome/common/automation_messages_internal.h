@@ -533,8 +533,8 @@ IPC_MESSAGE_ROUTED3(AutomationMsg_OpenURL,
 //   - int: handle of the tab
 // Response:
 //  - bool: whether the operation was successful.
-IPC_SYNC_MESSAGE_CONTROL1_0(AutomationMsg_WaitForTabToBeRestored,
-                            int)
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_WaitForTabToBeRestored,
+                            int, bool)
 
 // This message is an outgoing message from Chrome to an external host.
 // It is a notification that a navigation happened
@@ -1445,3 +1445,8 @@ IPC_MESSAGE_ROUTED3(AutomationMsg_JavaScriptStressTestControl,
                     int /* tab handle */,
                     int /* command */,
                     int /* type or run */)
+
+// This message posts a task to the PROCESS_LAUNCHER thread. Once processed
+// the response is sent back. This is useful when you want to make sure all
+// changes to the number of processes have completed.
+IPC_SYNC_MESSAGE_CONTROL0_0(AutomationMsg_WaitForProcessLauncherThreadToGoIdle)

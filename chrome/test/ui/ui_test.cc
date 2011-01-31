@@ -595,8 +595,12 @@ void UITest::StopHttpServer() {
 #endif
 }
 
-int UITest::GetBrowserProcessCount() {
-  return GetRunningChromeProcesses(browser_process_id()).size();
+bool UITest::GetBrowserProcessCount(int* count) {
+  *count = 0;
+  if (!automation()->WaitForProcessLauncherThreadToGoIdle())
+    return false;
+  *count = GetRunningChromeProcesses(browser_process_id()).size();
+  return true;
 }
 
 static DictionaryValue* LoadDictionaryValueFromPath(const FilePath& path) {

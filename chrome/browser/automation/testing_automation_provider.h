@@ -775,6 +775,8 @@ class TestingAutomationProvider : public AutomationProvider,
   // Resets to the default theme.
   void ResetToDefaultTheme();
 
+  void WaitForProcessLauncherThreadToGoIdle(IPC::Message* reply_message);
+
   // Callback for history redirect queries.
   virtual void OnRedirectQueryComplete(
       HistoryService::Handle request_handle,

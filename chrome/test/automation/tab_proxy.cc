@@ -563,7 +563,10 @@ void TabProxy::HandleMessageFromExternalHost(const std::string& message,
 bool TabProxy::WaitForTabToBeRestored(uint32 timeout_ms) {
   if (!is_valid())
     return false;
-  return sender_->Send(new AutomationMsg_WaitForTabToBeRestored(handle_));
+  bool succeeded = false;
+  return sender_->Send(
+      new AutomationMsg_WaitForTabToBeRestored(handle_, &succeeded)) &&
+      succeeded;
 }
 
 bool TabProxy::GetSecurityState(SecurityStyle* security_style,

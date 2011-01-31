@@ -1028,5 +1028,47 @@ class RendererProcessClosedObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(RendererProcessClosedObserver);
 };
 
+// Observer used to listen for new tab creation to complete.
+class NewTabObserver : public NotificationObserver {
+ public:
+  NewTabObserver(AutomationProvider* automation, IPC::Message* reply_message);
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
+ private:
+  ~NewTabObserver();
+
+  NotificationRegistrar registrar_;
+  scoped_refptr<AutomationProvider> automation_;
+  IPC::Message* reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(NewTabObserver);
+};
+
+// Posts a task to the PROCESS_LAUNCHER thread, once processed posts a task
+// back to the UI thread that notifies the provider we're done.
+class WaitForProcessLauncherThreadToGoIdleObserver
+    : public base::RefCountedThreadSafe<
+          WaitForProcessLauncherThreadToGoIdleObserver> {
+ public:
+  WaitForProcessLauncherThreadToGoIdleObserver(
+      AutomationProvider* automation, IPC::Message* reply_message);
+
+ private:
+  friend class base::RefCountedThreadSafe<
+      WaitForProcessLauncherThreadToGoIdleObserver>;
+
+  ~WaitForProcessLauncherThreadToGoIdleObserver();
+
+  void RunOnProcessLauncherThread();
+  void RunOnUIThread();
+
+  scoped_refptr<AutomationProvider> automation_;
+  IPC::Message* reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaitForProcessLauncherThreadToGoIdleObserver);
+};
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

@@ -391,7 +391,7 @@ class UITest : public UITestBase, public PlatformTest {
 
   // Count the number of active browser processes launched by this test.
   // The count includes browser sub-processes.
-  int GetBrowserProcessCount();
+  bool GetBrowserProcessCount(int* count) WARN_UNUSED_RESULT;
 
   // Returns a copy of local state preferences. The caller is responsible for
   // deleting the returned object. Returns NULL if there is an error.

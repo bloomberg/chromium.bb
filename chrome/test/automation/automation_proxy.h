@@ -87,6 +87,9 @@ class AutomationProxy : public IPC::Channel::Listener,
   // set_perform_version_check() to set it.
   AutomationLaunchResult WaitForAppLaunch();
 
+  // See description in AutomationMsg_WaitForProcessLauncherThreadToGoIdle.
+  bool WaitForProcessLauncherThreadToGoIdle() WARN_UNUSED_RESULT;
+
   // Waits for any initial page loads to complete.
   // NOTE: this only fires once for a run of the application.
   // Returns true if the load is successful

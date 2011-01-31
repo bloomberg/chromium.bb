@@ -450,8 +450,7 @@ TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
 // process-per-site and process-per-site-instance, because we treat the new tab
 // as a special case in process-per-site-instance so that it only ever uses one
 // process.)
-// Flaky as per http://crbug.com/52022
-TEST_F(SessionRestoreUITest, FLAKY_ShareProcessesOnRestore) {
+TEST_F(SessionRestoreUITest, ShareProcessesOnRestore) {
   if (ProxyLauncher::in_process_renderer()) {
     // No point in running this test in single process mode.
     return;
@@ -469,7 +468,8 @@ TEST_F(SessionRestoreUITest, FLAKY_ShareProcessesOnRestore) {
   ASSERT_TRUE(browser_proxy->GetTabCount(&new_tab_count));
   ASSERT_EQ(tab_count + 2, new_tab_count);
 
-  int expected_process_count = GetBrowserProcessCount();
+  int expected_process_count = 0;
+  ASSERT_TRUE(GetBrowserProcessCount(&expected_process_count));
   int expected_tab_count = new_tab_count;
 
   // Restart.
@@ -483,16 +483,16 @@ TEST_F(SessionRestoreUITest, FLAKY_ShareProcessesOnRestore) {
   ASSERT_TRUE(browser_proxy->GetTabCount(&tab_count));
   ASSERT_EQ(expected_tab_count, tab_count);
 
-  scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(tab_count - 2));
-  ASSERT_TRUE(tab_proxy.get() != NULL);
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(
-      TestTimeouts::action_max_timeout_ms()));
-  tab_proxy = browser_proxy->GetTab(tab_count - 1);
-  ASSERT_TRUE(tab_proxy.get() != NULL);
-  ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(
-      TestTimeouts::action_max_timeout_ms()));
+  for (int i = 0; i < expected_tab_count; ++i) {
+    scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(i));
+    ASSERT_TRUE(tab_proxy.get() != NULL);
+    ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(
+                    TestTimeouts::action_max_timeout_ms()));
+  }
 
-  ASSERT_EQ(expected_process_count, GetBrowserProcessCount());
+  int process_count = 0;
+  ASSERT_TRUE(GetBrowserProcessCount(&process_count));
+  ASSERT_EQ(expected_process_count, process_count);
 }
 
 }  // namespace

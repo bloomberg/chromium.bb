@@ -40,8 +40,6 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
 
   // Bring up a new tab page.
   ASSERT_TRUE(window->RunCommand(IDC_NEW_TAB));
-  int load_time;
-  ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
 
   scoped_refptr<TabProxy> tab = window->GetActiveTab();
   ASSERT_TRUE(tab.get());
@@ -63,8 +61,6 @@ TEST_F(NewTabUITest, DISABLED_NTPHasLoginName) {
                                           "user@gmail.com"));
   // Bring up a new tab page.
   ASSERT_TRUE(window->RunCommand(IDC_NEW_TAB));
-  int load_time;
-  ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
 
   scoped_refptr<TabProxy> tab = window->GetActiveTab();
   ASSERT_TRUE(tab.get());
@@ -94,8 +90,6 @@ TEST_F(NewTabUITest, AboutHangInNTP) {
 
   // Bring up a new tab page.
   ASSERT_TRUE(window->RunCommand(IDC_NEW_TAB));
-  int load_time;
-  ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
   scoped_refptr<TabProxy> tab = window->GetActiveTab();
   ASSERT_TRUE(tab.get());
 
@@ -104,7 +98,7 @@ TEST_F(NewTabUITest, AboutHangInNTP) {
 
   // Visit about:hang again in another NTP.  Don't bother waiting for the
   // NTP to load, because it's hung.
-  ASSERT_TRUE(window->RunCommand(IDC_NEW_TAB));
+  ASSERT_TRUE(window->RunCommandAsync(IDC_NEW_TAB));
   scoped_refptr<TabProxy> tab2 = window->GetActiveTab();
   ASSERT_TRUE(tab2.get());
   ASSERT_TRUE(tab2->NavigateToURLAsync(GURL(chrome::kAboutHangURL)));
@@ -131,8 +125,6 @@ TEST_F(NewTabUIProcessPerTabTest, NavBeforeNTPCommits) {
 
   // Bring up a new tab page.
   ASSERT_TRUE(window->RunCommand(IDC_NEW_TAB));
-  int load_time;
-  ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
   scoped_refptr<TabProxy> tab = window->GetActiveTab();
   ASSERT_TRUE(tab.get());
 
@@ -140,7 +132,7 @@ TEST_F(NewTabUIProcessPerTabTest, NavBeforeNTPCommits) {
   ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kAboutHangURL)));
 
   // Visit a normal URL in another NTP that hasn't committed.
-  ASSERT_TRUE(window->RunCommand(IDC_NEW_TAB));
+  ASSERT_TRUE(window->RunCommandAsync(IDC_NEW_TAB));
   scoped_refptr<TabProxy> tab2 = window->GetActiveTab();
   ASSERT_TRUE(tab2.get());
   ASSERT_TRUE(tab2->NavigateToURL(GURL("data:text/html,hello world")));
