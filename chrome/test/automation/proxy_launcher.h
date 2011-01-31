@@ -25,6 +25,9 @@ class AutomationProxy;
 // implementation or to override browser launching behavior.
 class ProxyLauncher {
  public:
+  // Default path for named testing interface.
+  static const char kDefaultInterfacePath[];
+
   // Profile theme type choices.
   enum ProfileType {
     DEFAULT_THEME = 0,
@@ -297,7 +300,8 @@ class NamedProxyLauncher : public ProxyLauncher {
  public:
   // If launch_browser is true, launches Chrome with named interface enabled.
   // Otherwise, there should be an existing instance the proxy can connect to.
-  NamedProxyLauncher(bool launch_browser, bool disconnect_on_failure);
+  NamedProxyLauncher(const std::string& channel_id,
+                     bool launch_browser, bool disconnect_on_failure);
 
   virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
   virtual void InitializeConnection(const LaunchState& state,

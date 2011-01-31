@@ -32,9 +32,6 @@ namespace {
 // Passed as value of kTestType.
 const char kUITestType[] = "ui";
 
-// Default path of named testing interface.
-const char kInterfacePath[] = "/var/tmp/ChromeTestingInterface";
-
 // Rewrite the preferences file to point to the proper image directory.
 void RewritePreferencesFile(const FilePath& user_data_dir) {
   const FilePath pref_template_path(
@@ -97,6 +94,9 @@ void UpdateHistoryDates(const FilePath& user_data_dir) {
 }  // namespace
 
 // ProxyLauncher functions
+
+const char ProxyLauncher::kDefaultInterfacePath[] =
+    "/var/tmp/ChromeTestingInterface";
 
 bool ProxyLauncher::in_process_renderer_ = false;
 bool ProxyLauncher::no_sandbox_ = false;
@@ -484,11 +484,12 @@ base::TimeDelta ProxyLauncher::browser_quit_time() const {
 
 // NamedProxyLauncher functions
 
-NamedProxyLauncher::NamedProxyLauncher(bool launch_browser,
+NamedProxyLauncher::NamedProxyLauncher(const std::string& channel_id,
+                                       bool launch_browser,
                                        bool disconnect_on_failure)
-    : launch_browser_(launch_browser),
+    : channel_id_(channel_id),
+      launch_browser_(launch_browser),
       disconnect_on_failure_(disconnect_on_failure) {
-  channel_id_ = kInterfacePath;
 }
 
 AutomationProxy* NamedProxyLauncher::CreateAutomationProxy(
@@ -507,7 +508,7 @@ void NamedProxyLauncher::InitializeConnection(const LaunchState& state,
 
     // Wait for browser to be ready for connections.
     struct stat file_info;
-    while (stat(kInterfacePath, &file_info))
+    while (stat(channel_id_.c_str(), &file_info))
       base::PlatformThread::Sleep(automation::kSleepTime);
   }
 

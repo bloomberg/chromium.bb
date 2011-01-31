@@ -6,6 +6,7 @@
 
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/proxy_launcher.h"
+#include "chrome/test/test_switches.h"
 
 // The named testing interface enables the use of a named socket for controlling
 // the browser. This eliminates the dependency that the browser must be forked
@@ -19,7 +20,13 @@ class NamedInterfaceTest : public UITest {
   }
 
   virtual ProxyLauncher *CreateProxyLauncher() {
-    return new NamedProxyLauncher(true, true);
+    CommandLine::StringType channel_path =
+        CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+            switches::kTestingChannel);
+    if (channel_path.empty())
+      channel_path = ProxyLauncher::kDefaultInterfacePath;
+
+    return new NamedProxyLauncher(channel_path, true, true);
   }
 };
 

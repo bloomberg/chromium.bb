@@ -12,3 +12,8 @@ const char switches::kEnableErrorDialogs[] = "enable-errdialogs";
 
 // Number of iterations that page cycler tests will run.
 const char switches::kPageCyclerIterations[] = "page-cycler-iterations";
+
+// Name of channel used to connect to Chrome
+// when using the named testing interface.
+const char switches::kTestingChannel[] = "testing-channel";
+

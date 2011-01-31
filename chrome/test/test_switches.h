@@ -12,6 +12,7 @@ namespace switches {
 extern const char kExtraChromeFlags[];
 extern const char kEnableErrorDialogs[];
 extern const char kPageCyclerIterations[];
+extern const char kTestingChannel[];
 
 }  // namespace switches
 
