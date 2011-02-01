@@ -6,17 +6,31 @@
 // functionality is provided by the Syncable layer, which has its own
 // unit tests. We'll test SyncApi specific things in this harness.
 
+#include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
+#include "base/values.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/js_arg_list.h"
+#include "chrome/browser/sync/js_backend.h"
+#include "chrome/browser/sync/js_event_handler.h"
+#include "chrome/browser/sync/js_event_router.h"
+#include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
-
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using browser_sync::HasArgsAsList;
 using browser_sync::KeyParams;
+using browser_sync::JsArgList;
+using browser_sync::MockJsEventHandler;
+using browser_sync::MockJsEventRouter;
+using testing::_;
+using testing::StrictMock;
 
 namespace sync_api {
 
@@ -263,5 +277,154 @@ TEST_F(SyncApiTest, WriteAndReadPassword) {
     EXPECT_EQ("secret", data.password_value());
   }
 }
+
+namespace {
+
+class SyncManagerTest : public testing::Test {
+ protected:
+  SyncManagerTest() : ui_thread_(BrowserThread::UI, &ui_loop_) {}
+
+ private:
+  // Needed by |ui_thread_|.
+  MessageLoopForUI ui_loop_;
+  // Needed by |sync_manager_|.
+  BrowserThread ui_thread_;
+
+ protected:
+  SyncManager sync_manager_;
+};
+
+TEST_F(SyncManagerTest, ParentJsEventRouter) {
+  StrictMock<MockJsEventRouter> event_router;
+  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
+  EXPECT_EQ(NULL, js_backend->GetParentJsEventRouter());
+  js_backend->SetParentJsEventRouter(&event_router);
+  EXPECT_EQ(&event_router, js_backend->GetParentJsEventRouter());
+  js_backend->RemoveParentJsEventRouter();
+  EXPECT_EQ(NULL, js_backend->GetParentJsEventRouter());
+}
+
+TEST_F(SyncManagerTest, ProcessMessage) {
+  const JsArgList kNoArgs;
+
+  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
+
+  // Messages sent without any parent router should be dropped.
+  {
+    StrictMock<MockJsEventHandler> event_handler;
+    js_backend->ProcessMessage("unknownMessage",
+                               kNoArgs, &event_handler);
+    js_backend->ProcessMessage("getNotificationState",
+                               kNoArgs, &event_handler);
+  }
+
+  {
+    StrictMock<MockJsEventHandler> event_handler;
+    StrictMock<MockJsEventRouter> event_router;
+
+    ListValue false_args;
+    false_args.Append(Value::CreateBooleanValue(false));
+
+    EXPECT_CALL(event_router,
+                RouteJsEvent("onGetNotificationStateFinished",
+                             HasArgsAsList(false_args),
+                             &event_handler)).Times(1);
+
+    js_backend->SetParentJsEventRouter(&event_router);
+
+    // This message should be dropped.
+    js_backend->ProcessMessage("unknownMessage",
+                                 kNoArgs, &event_handler);
+
+    // This should trigger the reply.
+    js_backend->ProcessMessage("getNotificationState",
+                                 kNoArgs, &event_handler);
+
+    js_backend->RemoveParentJsEventRouter();
+  }
+
+  // Messages sent after a parent router has been removed should be
+  // dropped.
+  {
+    StrictMock<MockJsEventHandler> event_handler;
+    js_backend->ProcessMessage("unknownMessage",
+                                 kNoArgs, &event_handler);
+    js_backend->ProcessMessage("getNotificationState",
+                                 kNoArgs, &event_handler);
+  }
+}
+
+TEST_F(SyncManagerTest, OnNotificationStateChange) {
+  StrictMock<MockJsEventRouter> event_router;
+
+  ListValue true_args;
+  true_args.Append(Value::CreateBooleanValue(true));
+  ListValue false_args;
+  false_args.Append(Value::CreateBooleanValue(false));
+
+  EXPECT_CALL(event_router,
+              RouteJsEvent("onSyncNotificationStateChange",
+                           HasArgsAsList(true_args), NULL)).Times(1);
+  EXPECT_CALL(event_router,
+              RouteJsEvent("onSyncNotificationStateChange",
+                           HasArgsAsList(false_args), NULL)).Times(1);
+
+  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
+
+  sync_manager_.TriggerOnNotificationStateChangeForTest(true);
+  sync_manager_.TriggerOnNotificationStateChangeForTest(false);
+
+  js_backend->SetParentJsEventRouter(&event_router);
+  sync_manager_.TriggerOnNotificationStateChangeForTest(true);
+  sync_manager_.TriggerOnNotificationStateChangeForTest(false);
+  js_backend->RemoveParentJsEventRouter();
+
+  sync_manager_.TriggerOnNotificationStateChangeForTest(true);
+  sync_manager_.TriggerOnNotificationStateChangeForTest(false);
+}
+
+TEST_F(SyncManagerTest, OnIncomingNotification) {
+  StrictMock<MockJsEventRouter> event_router;
+
+  const syncable::ModelTypeBitSet empty_model_types;
+  syncable::ModelTypeBitSet model_types;
+  model_types.set(syncable::BOOKMARKS);
+  model_types.set(syncable::THEMES);
+
+  // Build expected_args to have a single argument with the string
+  // equivalents of model_types.
+  ListValue expected_args;
+  {
+    ListValue* model_type_list = new ListValue();
+    expected_args.Append(model_type_list);
+    for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+         i < syncable::MODEL_TYPE_COUNT; ++i) {
+      if (model_types[i]) {
+        model_type_list->Append(
+            Value::CreateStringValue(
+                syncable::ModelTypeToString(
+                    syncable::ModelTypeFromInt(i))));
+      }
+    }
+  }
+
+  EXPECT_CALL(event_router,
+              RouteJsEvent("onSyncIncomingNotification",
+                           HasArgsAsList(expected_args), NULL)).Times(1);
+
+  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
+
+  sync_manager_.TriggerOnIncomingNotificationForTest(empty_model_types);
+  sync_manager_.TriggerOnIncomingNotificationForTest(model_types);
+
+  js_backend->SetParentJsEventRouter(&event_router);
+  sync_manager_.TriggerOnIncomingNotificationForTest(model_types);
+  js_backend->RemoveParentJsEventRouter();
+
+  sync_manager_.TriggerOnIncomingNotificationForTest(empty_model_types);
+  sync_manager_.TriggerOnIncomingNotificationForTest(model_types);
+}
+
+}  // namespace
 
 }  // namespace browser_sync

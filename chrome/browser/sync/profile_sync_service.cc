@@ -30,9 +30,9 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
+#include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/signin_manager.h"
-#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/token_migrator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -78,9 +78,9 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       sync_service_url_(kDevServerUrl),
       backend_initialized_(false),
       is_auth_in_progress_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
+      wizard_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       unrecoverable_error_detected_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)),
+      scoped_runnable_method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       token_migrator_(NULL),
       clear_server_data_state_(CLEAR_NOT_STARTED) {
   DCHECK(factory);
@@ -475,6 +475,8 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
     data_type_manager_.reset();
   }
 
+  js_event_handlers_.RemoveBackend();
+
   // Move aside the backend so nobody else tries to use it while we are
   // shutting it down.
   scoped_ptr<SyncBackendHost> doomed_backend(backend_.release());
@@ -538,6 +540,8 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 
 void ProfileSyncService::NotifyObservers() {
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  js_event_handlers_.RouteJsEvent(
+      "onSyncServiceStateChanged", browser_sync::JsArgList(), NULL);
 }
 
 // static
@@ -601,6 +605,8 @@ void ProfileSyncService::OnUnrecoverableError(
 
 void ProfileSyncService::OnBackendInitialized() {
   backend_initialized_ = true;
+
+  js_event_handlers_.SetBackend(backend_->GetJsBackend());
 
   // The very first time the backend initializes is effectively the first time
   // we can say we successfully "synced".  last_synced_time_ will only be null
@@ -1280,6 +1286,10 @@ void ProfileSyncService::RemoveObserver(Observer* observer) {
 
 bool ProfileSyncService::HasObserver(Observer* observer) const {
   return observers_.HasObserver(observer);
+}
+
+browser_sync::JsFrontend* ProfileSyncService::GetJsFrontend() {
+  return &js_event_handlers_;
 }
 
 void ProfileSyncService::SyncEvent(SyncEventCodes code) {

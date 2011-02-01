@@ -6,15 +6,47 @@
 #define CHROME_BROWSER_DOM_UI_SYNC_INTERNALS_UI_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/sync/js_event_handler.h"
 
-class SyncInternalsUI : public DOMUI {
+namespace browser_sync {
+class JsFrontend;
+}  // namespace browser_sync
+
+// The implementation for the chrome://sync-internals page.
+class SyncInternalsUI : public DOMUI, public browser_sync::JsEventHandler {
  public:
   explicit SyncInternalsUI(TabContents* contents);
   virtual ~SyncInternalsUI();
 
+  // DOMUI implementation.
+  //
+  // The following messages are processed:
+  //
+  // getAboutInfo():
+  //   Immediately fires a onGetAboutInfoFinished() event with a
+  //   dictionary of sync-related stats and info.
+  //
+  // All other messages are routed to the sync service if it exists,
+  // and dropped otherwise.
+  //
+  // TODO(akalin): Add a simple isSyncEnabled() message and make
+  // getAboutInfo() be handled by the sync service.
+  virtual void ProcessDOMUIMessage(
+      const ViewHostMsg_DomMessage_Params& params);
+
+  // browser_sync::JsEventHandler implementation.
+  virtual void HandleJsEvent(const std::string& name,
+                             const browser_sync::JsArgList& args);
+
  private:
+  // Returns the sync service's JsFrontend object, or NULL if the sync
+  // service does not exist.
+  browser_sync::JsFrontend* GetJsFrontend();
+
   DISALLOW_COPY_AND_ASSIGN(SyncInternalsUI);
 };
 

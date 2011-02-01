@@ -19,8 +19,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/js_backend.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
+#include "chrome/browser/sync/js_event_router.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -42,6 +44,7 @@ struct SyncSessionSnapshot;
 
 class ChangeProcessor;
 class DataTypeController;
+class JsArgList;
 
 // SyncFrontend is the interface used by SyncBackendHost to communicate with
 // the entity that created it and, presumably, is interested in sync-related
@@ -110,7 +113,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // For testing.
   // TODO(skrul): Extract an interface so this is not needed.
   SyncBackendHost();
-  ~SyncBackendHost();
+  virtual ~SyncBackendHost();
 
   // Called on |frontend_loop_| to kick off asynchronous initialization.
   // As a fallback when no cached auth information is available, try to
@@ -231,10 +234,21 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // using a token previously received.
   bool IsCryptographerReady() const;
 
+  // Returns a pointer to the JsBackend (which is owned by the
+  // service).  Must be called only after the sync backend has been
+  // initialized, and never returns NULL if you do so.  Overrideable
+  // for testing purposes.
+  virtual JsBackend* GetJsBackend();
+
+  // TODO(akalin): Write unit tests for the JsBackend, finding a way
+  // to make this class testable in general.
+
  protected:
   // The real guts of SyncBackendHost, to keep the public client API clean.
   class Core : public base::RefCountedThreadSafe<SyncBackendHost::Core>,
-               public sync_api::SyncManager::Observer {
+               public sync_api::SyncManager::Observer,
+               public JsBackend,
+               public JsEventRouter {
    public:
     explicit Core(SyncBackendHost* backend);
 
@@ -259,6 +273,18 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     virtual void OnUpdatedToken(const std::string& token);
     virtual void OnClearServerDataFailed();
     virtual void OnClearServerDataSucceeded();
+
+    // JsBackend implementation.
+    virtual void SetParentJsEventRouter(JsEventRouter* router);
+    virtual void RemoveParentJsEventRouter();
+    virtual const JsEventRouter* GetParentJsEventRouter() const;
+    virtual void ProcessMessage(const std::string& name, const JsArgList& args,
+                                const JsEventHandler* sender);
+
+    // JsEventRouter implementation.
+    virtual void RouteJsEvent(const std::string& event_name,
+                              const JsArgList& args,
+                              const JsEventHandler* dst);
 
     struct DoInitializeOptions {
       DoInitializeOptions(
@@ -332,6 +358,14 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // sync databases), as well as shutdown when you're no longer syncing.
     void DeleteSyncDataFolder();
 
+    void ConnectChildJsEventRouter();
+
+    void DisconnectChildJsEventRouter();
+
+    void DoProcessMessage(
+        const std::string& name, const JsArgList& args,
+        const JsEventHandler* sender);
+
 #if defined(UNIT_TEST)
     // Special form of initialization that does not try and authenticate the
     // last known user (since it will fail in test mode) and does some extra
@@ -354,7 +388,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     friend class base::RefCountedThreadSafe<SyncBackendHost::Core>;
     friend class SyncBackendHostForProfileSyncTest;
 
-    ~Core();
+    virtual ~Core();
 
     // Return change processor for a particular model (return NULL on failure).
     ChangeProcessor* GetProcessor(syncable::ModelType modeltype);
@@ -413,11 +447,12 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // frontend thread components.
     void HandleInitalizationCompletedOnFrontendLoop();
 
+    void RouteJsEventOnFrontendLoop(
+        const std::string& name, const JsArgList& args,
+        const JsEventHandler* dst);
+
     // Return true if a model lives on the current thread.
     bool IsCurrentThreadSafeForModel(syncable::ModelType model_type);
-
-    // True if credentials are ready for sync use.
-    bool CredentialsAvailable();
 
     // Our parent SyncBackendHost
     SyncBackendHost* host_;
@@ -427,6 +462,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     // The top-level syncapi entry point.
     scoped_ptr<sync_api::SyncManager> syncapi_;
+
+    JsEventRouter* parent_router_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };

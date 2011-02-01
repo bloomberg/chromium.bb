@@ -56,6 +56,7 @@
 class FilePath;
 
 namespace browser_sync {
+class JsBackend;
 class ModelSafeWorkerRegistrar;
 
 namespace sessions {
@@ -899,6 +900,28 @@ class SyncManager {
   // destroyed so the SyncManager doesn't potentially dereference garbage.
   void RemoveObserver();
 
+  // Returns a pointer to the JsBackend (which is owned by the sync
+  // manager).  Never returns NULL.  The following events are sent by
+  // the returned backend:
+  //
+  // onSyncNotificationStateChange(boolean notificationsEnabled):
+  //   Sent when notifications are enabled or disabled.
+  //
+  // onSyncIncomingNotification(array changedTypes):
+  //   Sent when an incoming notification arrives.  |changedTypes|
+  //   contains a list of sync types (strings) which have changed.
+  //
+  // The following messages are processed by the returned backend:
+  //
+  // getNotificationState():
+  //   If there is a parent router, sends the
+  //   onGetNotificationStateFinished(boolean notifications_enabled)
+  //   event to |sender| via the parent router with whether or not
+  //   notifications are enabled.
+  //
+  // All other messages are dropped.
+  browser_sync::JsBackend* GetJsBackend();
+
   // Status-related getters. Typically GetStatusSummary will suffice, but
   // GetDetailedSyncStatus can be useful for gathering debug-level details of
   // the internals of the sync engine.
@@ -924,6 +947,14 @@ class SyncManager {
   // Uses a read-only transaction to determine if the directory being synced has
   // any remaining unsynced items.
   bool HasUnsyncedItems() const;
+
+  // Functions used for testing.
+
+  void TriggerOnNotificationStateChangeForTest(
+      bool notifications_enabled);
+
+  void TriggerOnIncomingNotificationForTest(
+      const syncable::ModelTypeBitSet& model_types);
 
  private:
   // An opaque pointer to the nested private class.

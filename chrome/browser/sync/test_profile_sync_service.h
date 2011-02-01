@@ -9,6 +9,7 @@
 #include <string>
 
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
+#include "chrome/browser/sync/js_backend.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/test/profile_mock.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
@@ -28,7 +29,8 @@ namespace browser_sync {
 // running in these tests, and allows tests to provide a task on construction
 // to set up initial nodes to mock out an actual server initial sync
 // download.
-class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
+class SyncBackendHostForProfileSyncTest
+    : public SyncBackendHost, public JsBackend {
  public:
   // |synchronous_init| causes initialization to block until the syncapi has
   //     completed setting itself up and called us back.
@@ -55,6 +57,18 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
       URLRequestContextGetter* getter);
 
   virtual void InitCore(const Core::DoInitializeOptions& options);
+
+  virtual JsBackend* GetJsBackend();
+
+  // JsBackend implementation.
+  virtual void SetParentJsEventRouter(JsEventRouter* router);
+  virtual void RemoveParentJsEventRouter();
+  virtual const JsEventRouter* GetParentJsEventRouter() const;
+  // Fires an event identical to the message unless the message has
+  // "delay" as a prefix, in which case a task to fire the identical
+  // event is posted instead.
+  virtual void ProcessMessage(const std::string& name, const JsArgList& args,
+                              const JsEventHandler* sender);
 
   static void SetDefaultExpectationsForWorkerCreation(ProfileMock* profile);
 

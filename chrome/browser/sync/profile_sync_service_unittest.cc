@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/net/gaia/token_service.h"
@@ -27,6 +28,8 @@
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
+#include "chrome/browser/sync/js_arg_list.h"
+#include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
@@ -43,12 +46,16 @@ using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkModelAssociator;
 using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
+using browser_sync::HasArgs;
+using browser_sync::JsArgList;
+using browser_sync::MockJsEventHandler;
 using browser_sync::ModelAssociator;
 using browser_sync::SyncBackendHost;
 using browser_sync::SyncBackendHostMock;
 using browser_sync::UnrecoverableErrorHandler;
 using testing::_;
 using testing::Return;
+using testing::StrictMock;
 using testing::WithArg;
 using testing::Invoke;
 
@@ -310,14 +317,16 @@ class ProfileSyncServiceTest : public testing::Test {
   }
 
   void StartSyncService() {
-    StartSyncServiceAndSetInitialSyncEnded(true);
+    StartSyncServiceAndSetInitialSyncEnded(true, true);
   }
-  void StartSyncServiceAndSetInitialSyncEnded(bool set_initial_sync_ended) {
+  void StartSyncServiceAndSetInitialSyncEnded(
+      bool set_initial_sync_ended,
+      bool issue_auth_token) {
     if (!service_.get()) {
       // Set bootstrap to true and it will provide a logged in user for test
       service_.reset(new TestProfileSyncService(&factory_,
                                                 profile_.get(),
-                                                "test", false, NULL));
+                                                "test", true, NULL));
       if (!set_initial_sync_ended)
         service_->dont_set_initial_sync_ended_on_init();
 
@@ -337,10 +346,11 @@ class ProfileSyncServiceTest : public testing::Test {
                                                        profile_.get(),
                                                        service_.get()));
 
-      profile_->GetTokenService()->IssueAuthTokenForTest(
-          GaiaConstants::kSyncService, "token");
+      if (issue_auth_token) {
+        profile_->GetTokenService()->IssueAuthTokenForTest(
+            GaiaConstants::kSyncService, "token");
+      }
       service_->Initialize();
-      MessageLoop::current()->Run();
     }
   }
 
@@ -947,6 +957,170 @@ TEST_F(ProfileSyncServiceTest, MergeDuplicates) {
   ExpectModelMatch();
 }
 
+TEST_F(ProfileSyncServiceTest, JsFrontendHandlersBasic) {
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  StartSyncService();
+
+  StrictMock<MockJsEventHandler> event_handler;
+
+  browser_sync::SyncBackendHostForProfileSyncTest* test_backend =
+      service_->GetBackendForTest();
+
+  EXPECT_TRUE(service_->sync_initialized());
+  ASSERT_TRUE(test_backend != NULL);
+  ASSERT_TRUE(test_backend->GetJsBackend() != NULL);
+  EXPECT_EQ(NULL, test_backend->GetJsBackend()->GetParentJsEventRouter());
+
+  browser_sync::JsFrontend* js_backend = service_->GetJsFrontend();
+  js_backend->AddHandler(&event_handler);
+  ASSERT_TRUE(test_backend->GetJsBackend() != NULL);
+  EXPECT_TRUE(test_backend->GetJsBackend()->GetParentJsEventRouter() != NULL);
+
+  js_backend->RemoveHandler(&event_handler);
+  EXPECT_EQ(NULL, test_backend->GetJsBackend()->GetParentJsEventRouter());
+}
+
+TEST_F(ProfileSyncServiceTest,
+       JsFrontendHandlersDelayedBackendInitialization) {
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  StartSyncServiceAndSetInitialSyncEnded(true, false);
+
+  StrictMock<MockJsEventHandler> event_handler;
+  EXPECT_CALL(event_handler,
+              HandleJsEvent("onSyncServiceStateChanged",
+                            HasArgs(JsArgList()))).Times(3);
+
+  EXPECT_EQ(NULL, service_->GetBackendForTest());
+  EXPECT_FALSE(service_->sync_initialized());
+
+  browser_sync::JsFrontend* js_backend = service_->GetJsFrontend();
+  js_backend->AddHandler(&event_handler);
+  // Since we're doing synchronous initialization, backend should be
+  // initialized by this call.
+  profile_->GetTokenService()->IssueAuthTokenForTest(
+      GaiaConstants::kSyncService, "token");
+
+  browser_sync::SyncBackendHostForProfileSyncTest* test_backend =
+      service_->GetBackendForTest();
+
+  EXPECT_TRUE(service_->sync_initialized());
+  ASSERT_TRUE(test_backend != NULL);
+  ASSERT_TRUE(test_backend->GetJsBackend() != NULL);
+  EXPECT_TRUE(test_backend->GetJsBackend()->GetParentJsEventRouter() != NULL);
+
+  js_backend->RemoveHandler(&event_handler);
+  EXPECT_EQ(NULL, test_backend->GetJsBackend()->GetParentJsEventRouter());
+}
+
+TEST_F(ProfileSyncServiceTest, JsFrontendProcessMessageBasic) {
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  StartSyncService();
+
+  StrictMock<MockJsEventHandler> event_handler;
+
+  ListValue arg_list1;
+  arg_list1.Append(Value::CreateBooleanValue(true));
+  arg_list1.Append(Value::CreateIntegerValue(5));
+  JsArgList args1(arg_list1);
+  EXPECT_CALL(event_handler, HandleJsEvent("testMessage1", HasArgs(args1)));
+
+  ListValue arg_list2;
+  arg_list2.Append(Value::CreateStringValue("test"));
+  arg_list2.Append(arg_list1.DeepCopy());
+  JsArgList args2(arg_list2);
+  EXPECT_CALL(event_handler,
+              HandleJsEvent("delayTestMessage2", HasArgs(args2)));
+
+  ListValue arg_list3;
+  arg_list3.Append(arg_list1.DeepCopy());
+  arg_list3.Append(arg_list2.DeepCopy());
+  JsArgList args3(arg_list3);
+
+  browser_sync::JsFrontend* js_backend = service_->GetJsFrontend();
+
+  // Never replied to.
+  js_backend->ProcessMessage("notRepliedTo", args3, &event_handler);
+
+  // Replied to later.
+  js_backend->ProcessMessage("delayTestMessage2", args2, &event_handler);
+
+  js_backend->AddHandler(&event_handler);
+
+  // Replied to immediately.
+  js_backend->ProcessMessage("testMessage1", args1, &event_handler);
+
+  // Fires off reply for delayTestMessage2.
+  message_loop_.RunAllPending();
+
+  // Never replied to.
+  js_backend->ProcessMessage("delayNotRepliedTo", args3, &event_handler);
+
+  js_backend->RemoveHandler(&event_handler);
+
+  message_loop_.RunAllPending();
+
+  // Never replied to.
+  js_backend->ProcessMessage("notRepliedTo", args3, &event_handler);
+}
+
+TEST_F(ProfileSyncServiceTest,
+       JsFrontendProcessMessageBasicDelayedBackendInitialization) {
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  StartSyncServiceAndSetInitialSyncEnded(true, false);
+
+  StrictMock<MockJsEventHandler> event_handler;
+
+  ListValue arg_list1;
+  arg_list1.Append(Value::CreateBooleanValue(true));
+  arg_list1.Append(Value::CreateIntegerValue(5));
+  JsArgList args1(arg_list1);
+  EXPECT_CALL(event_handler, HandleJsEvent("testMessage1", HasArgs(args1)));
+
+  ListValue arg_list2;
+  arg_list2.Append(Value::CreateStringValue("test"));
+  arg_list2.Append(arg_list1.DeepCopy());
+  JsArgList args2(arg_list2);
+  EXPECT_CALL(event_handler, HandleJsEvent("testMessage2", HasArgs(args2)));
+
+  ListValue arg_list3;
+  arg_list3.Append(arg_list1.DeepCopy());
+  arg_list3.Append(arg_list2.DeepCopy());
+  JsArgList args3(arg_list3);
+  EXPECT_CALL(event_handler,
+              HandleJsEvent("delayTestMessage3", HasArgs(args3)));
+
+  const JsArgList kNoArgs;
+
+  EXPECT_CALL(event_handler, HandleJsEvent("onSyncServiceStateChanged",
+                                           HasArgs(kNoArgs))).Times(3);
+
+  browser_sync::JsFrontend* js_backend = service_->GetJsFrontend();
+
+  // We expect a reply for this message, even though its sent before
+  // |event_handler| is added as a handler.
+  js_backend->ProcessMessage("testMessage1", args1, &event_handler);
+
+  js_backend->AddHandler(&event_handler);
+
+  js_backend->ProcessMessage("testMessage2", args2, &event_handler);
+  js_backend->ProcessMessage("delayTestMessage3", args3, &event_handler);
+
+  // Fires testMessage1 and testMessage2.
+  profile_->GetTokenService()->IssueAuthTokenForTest(
+      GaiaConstants::kSyncService, "token");
+
+  // Fires delayTestMessage3.
+  message_loop_.RunAllPending();
+
+  js_backend->ProcessMessage("delayNotRepliedTo", kNoArgs, &event_handler);
+
+  js_backend->RemoveHandler(&event_handler);
+
+  message_loop_.RunAllPending();
+
+  js_backend->ProcessMessage("notRepliedTo", kNoArgs, &event_handler);
+}
+
 struct TestData {
   const wchar_t* title;
   const char* url;
@@ -1401,7 +1575,7 @@ TEST_F(ProfileSyncServiceTestWithData, RecoverAfterDeletingSyncDataDirectory) {
 
   // Restart the sync service.  Don't fake out setting initial sync ended; lets
   // make sure the system does in fact nudge and wait for this to happen.
-  StartSyncServiceAndSetInitialSyncEnded(false);
+  StartSyncServiceAndSetInitialSyncEnded(false, true);
 
   // Make sure we're back in sync.  In real life, the user would need
   // to reauthenticate before this happens, but in the test, authentication

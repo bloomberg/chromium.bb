@@ -141,6 +141,10 @@ class DOMUI {
  protected:
   void AddMessageHandler(DOMMessageHandler* handler);
 
+  // Execute a string of raw Javascript on the page.  Overridable for
+  // testing purposes.
+  virtual void ExecuteJavascript(const std::wstring& javascript);
+
   // Options that may be overridden by individual DOM UI implementations. The
   // bool options default to false. See the public getters for more information.
   bool hide_favicon_;
@@ -159,9 +163,6 @@ class DOMUI {
   TabContents* tab_contents_;
 
  private:
-  // Execute a string of raw Javascript on the page.
-  void ExecuteJavascript(const std::wstring& javascript);
-
   // A map of message name -> message handling callback.
   typedef std::map<std::string, MessageCallback*> MessageCallbackMap;
   MessageCallbackMap message_callbacks_;

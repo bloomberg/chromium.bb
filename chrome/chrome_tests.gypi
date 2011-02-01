@@ -216,6 +216,22 @@
       ],
     },
     {
+      'target_name': 'test_support_sync',
+      'type': '<(library)',
+      'dependencies': [
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        'sync',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'browser/sync/js_test_util.cc',
+        'browser/sync/js_test_util.h',
+      ],
+    },
+    {
       'target_name': 'test_support_unit',
       'type': '<(library)',
       'dependencies': [
@@ -988,6 +1004,7 @@
         'renderer',
         'service',
         'test_support_common',
+        'test_support_sync',
         'test_support_unit',
         'utility',
         '../app/app.gyp:app_base',
@@ -1157,6 +1174,7 @@
         'browser/dom_ui/html_dialog_tab_contents_delegate_unittest.cc',
         'browser/dom_ui/options/language_options_handler_unittest.cc',
         'browser/dom_ui/shown_sections_handler_unittest.cc',
+        'browser/dom_ui/sync_internals_ui_unittest.cc',
         'browser/download/base_file_unittest.cc',
         'browser/download/download_manager_unittest.cc',
         'browser/download/download_request_infobar_delegate_unittest.cc',
@@ -2724,6 +2742,8 @@
         'browser/sync/engine/syncproto_unittest.cc',
         'browser/sync/engine/syncapi_mock.h',
         'browser/sync/engine/verify_updates_command_unittest.cc',
+        'browser/sync/js_arg_list_unittest.cc',
+        'browser/sync/js_event_handler_list_unittest.cc',
         'browser/sync/notifier/cache_invalidation_packet_handler_unittest.cc',
         'browser/sync/notifier/chrome_invalidation_client_unittest.cc',
         'browser/sync/notifier/chrome_system_resources_unittest.cc',
@@ -2781,6 +2801,7 @@
         'profile_import',
         'syncapi',
         'sync_notifier',
+        'test_support_sync',
         'test_support_unit',
       ],
       'conditions': [

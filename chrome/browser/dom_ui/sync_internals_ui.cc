@@ -4,22 +4,33 @@
 
 #include "chrome/browser/dom_ui/sync_internals_ui.h"
 
+#include <string>
+
+#include "base/logging.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "base/tracked_objects.h"
+#include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/sync_internals_html_source.h"
-#include "chrome/browser/dom_ui/sync_internals_message_handler.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/js_arg_list.h"
+#include "chrome/browser/sync/js_frontend.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/common/render_messages_params.h"
 
-SyncInternalsUI::SyncInternalsUI(TabContents* contents) : DOMUI(contents) {
-  SyncInternalsMessageHandler* message_handler =
-      new SyncInternalsMessageHandler(contents->profile());
-  message_handler->Attach(this);
-  AddMessageHandler(message_handler);
-
-  BrowserThread::PostTask(
+SyncInternalsUI::SyncInternalsUI(TabContents* contents)
+    : DOMUI(contents) {
+  browser_sync::JsFrontend* backend = GetJsFrontend();
+  if (backend) {
+    backend->AddHandler(this);
+  }
+  // If this PostTask() call fails, it's most likely because this is
+  // being run from a unit test.  The created objects will be cleaned
+  // up, anyway.
+  (void)BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           ChromeURLDataManager::GetInstance(),
@@ -27,4 +38,50 @@ SyncInternalsUI::SyncInternalsUI(TabContents* contents) : DOMUI(contents) {
           make_scoped_refptr(new SyncInternalsHTMLSource())));
 }
 
-SyncInternalsUI::~SyncInternalsUI() {}
+SyncInternalsUI::~SyncInternalsUI() {
+  browser_sync::JsFrontend* backend = GetJsFrontend();
+  if (backend) {
+    backend->RemoveHandler(this);
+  }
+}
+
+void SyncInternalsUI::ProcessDOMUIMessage(
+    const ViewHostMsg_DomMessage_Params& params) {
+  const std::string& name = params.name;
+  browser_sync::JsArgList args(params.arguments);
+  VLOG(1) << "Received message: " << name << " with args "
+          << args.ToString();
+  // We handle this case directly because it needs to work even if
+  // the sync service doesn't exist.
+  if (name == "getAboutInfo") {
+    ListValue args;
+    DictionaryValue* about_info = new DictionaryValue();
+    args.Append(about_info);
+    ProfileSyncService* service = GetProfile()->GetProfileSyncService();
+    sync_ui_util::ConstructAboutInformation(service, about_info);
+    HandleJsEvent("onGetAboutInfoFinished",
+                  browser_sync::JsArgList(args));
+  } else {
+    browser_sync::JsFrontend* backend = GetJsFrontend();
+    if (backend) {
+      backend->ProcessMessage(name, args, this);
+    } else {
+      LOG(WARNING) << "No sync service; dropping message " << name
+                   << " with args " << args.ToString();
+    }
+  }
+}
+
+void SyncInternalsUI::HandleJsEvent(const std::string& name,
+                                    const browser_sync::JsArgList& args) {
+  VLOG(1) << "Handling event: " << name << " with args " << args.ToString();
+  std::vector<const Value*> arg_list(args.Get().begin(), args.Get().end());
+  CallJavascriptFunction(UTF8ToWide(name), arg_list);
+}
+
+browser_sync::JsFrontend* SyncInternalsUI::GetJsFrontend() {
+  // If this returns NULL that means that sync is disabled for
+  // whatever reason.
+  ProfileSyncService* sync_service = GetProfile()->GetProfileSyncService();
+  return sync_service ? sync_service->GetJsFrontend() : NULL;
+}

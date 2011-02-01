@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/browser/sync/glue/password_model_worker.h"
+#include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 // TODO(tim): Remove this! We should have a syncapi pass-thru instead.
 #include "chrome/browser/sync/syncable/directory_manager.h"  // Cryptographer.
@@ -177,6 +178,15 @@ bool SyncBackendHost::IsUsingExplicitPassphrase() {
 bool SyncBackendHost::IsCryptographerReady() const {
   return syncapi_initialized_ &&
       GetUserShare()->dir_manager->cryptographer()->is_ready();
+}
+
+JsBackend* SyncBackendHost::GetJsBackend() {
+  if (syncapi_initialized_) {
+    return core_.get();
+  } else {
+    NOTREACHED();
+    return NULL;
+  }
 }
 
 sync_api::HttpPostProviderFactory* SyncBackendHost::MakeHttpBridgeFactory(
@@ -560,7 +570,8 @@ bool SyncBackendHost::HasUnsyncedItems() const {
 
 SyncBackendHost::Core::Core(SyncBackendHost* backend)
     : host_(backend),
-      syncapi_(new sync_api::SyncManager()) {
+      syncapi_(new sync_api::SyncManager()),
+      parent_router_(NULL) {
 }
 
 // Helper to construct a user agent string (ASCII) suitable for use by
@@ -656,6 +667,7 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   save_changes_timer_.Stop();
   syncapi_->Shutdown();  // Stops the SyncerThread.
   syncapi_->RemoveObserver();
+  DisconnectChildJsEventRouter();
   host_->ui_worker()->OnSyncerShutdownComplete();
 
   if (sync_disabled)
@@ -808,7 +820,6 @@ bool SyncBackendHost::Core::IsCurrentThreadSafeForModel(
   return worker->CurrentThreadIsWorkThread();
 }
 
-
 void SyncBackendHost::Core::OnAuthError(const AuthError& auth_error) {
   // Post to our core loop so we can modify state. Could be on another thread.
   host_->frontend_loop_->PostTask(FROM_HERE,
@@ -860,6 +871,14 @@ void SyncBackendHost::Core::OnClearServerDataFailed() {
       &Core::HandleClearServerDataFailedOnFrontendLoop));
 }
 
+void SyncBackendHost::Core::RouteJsEvent(
+    const std::string& name, const JsArgList& args,
+    const JsEventHandler* target) {
+  host_->frontend_loop_->PostTask(
+      FROM_HERE, NewRunnableMethod(
+          this, &Core::RouteJsEventOnFrontendLoop, name, args, target));
+}
+
 void SyncBackendHost::Core::HandleStopSyncingPermanentlyOnFrontendLoop() {
   if (!host_ || !host_->frontend_)
     return;
@@ -887,6 +906,17 @@ void SyncBackendHost::Core::HandleAuthErrorEventOnFrontendLoop(
 
   host_->last_auth_error_ = new_auth_error;
   host_->frontend_->OnAuthError();
+}
+
+void SyncBackendHost::Core::RouteJsEventOnFrontendLoop(
+    const std::string& name, const JsArgList& args,
+    const JsEventHandler* target) {
+  if (!host_ || !parent_router_)
+    return;
+
+  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
+
+  parent_router_->RouteJsEvent(name, args, target);
 }
 
 void SyncBackendHost::Core::StartSavingChanges() {
@@ -920,6 +950,64 @@ void SyncBackendHost::Core::DeleteSyncDataFolder() {
     if (!file_util::Delete(host_->sync_data_folder_path(), true))
       LOG(DFATAL) << "Could not delete the Sync Data folder.";
   }
+}
+
+void SyncBackendHost::Core::SetParentJsEventRouter(JsEventRouter* router) {
+  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
+  DCHECK(router);
+  parent_router_ = router;
+  MessageLoop* core_message_loop = host_->core_thread_.message_loop();
+  CHECK(core_message_loop);
+  core_message_loop->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this,
+                        &SyncBackendHost::Core::ConnectChildJsEventRouter));
+}
+
+void SyncBackendHost::Core::RemoveParentJsEventRouter() {
+  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
+  parent_router_ = NULL;
+  MessageLoop* core_message_loop = host_->core_thread_.message_loop();
+  CHECK(core_message_loop);
+  core_message_loop->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this,
+                        &SyncBackendHost::Core::DisconnectChildJsEventRouter));
+}
+
+const JsEventRouter* SyncBackendHost::Core::GetParentJsEventRouter() const {
+  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
+  return parent_router_;
+}
+
+void SyncBackendHost::Core::ProcessMessage(
+    const std::string& name, const JsArgList& args,
+    const JsEventHandler* sender) {
+  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
+  MessageLoop* core_message_loop = host_->core_thread_.message_loop();
+  CHECK(core_message_loop);
+  core_message_loop->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this,
+                        &SyncBackendHost::Core::DoProcessMessage,
+                        name, args, sender));
+}
+
+void SyncBackendHost::Core::ConnectChildJsEventRouter() {
+  DCHECK_EQ(MessageLoop::current(), host_->core_thread_.message_loop());
+  syncapi_->GetJsBackend()->SetParentJsEventRouter(this);
+}
+
+void SyncBackendHost::Core::DisconnectChildJsEventRouter() {
+  DCHECK_EQ(MessageLoop::current(), host_->core_thread_.message_loop());
+  syncapi_->GetJsBackend()->RemoveParentJsEventRouter();
+}
+
+void SyncBackendHost::Core::DoProcessMessage(
+    const std::string& name, const JsArgList& args,
+    const JsEventHandler* sender) {
+  DCHECK_EQ(MessageLoop::current(), host_->core_thread_.message_loop());
+  syncapi_->GetJsBackend()->ProcessMessage(name, args, sender);
 }
 
 }  // namespace browser_sync

@@ -134,18 +134,16 @@ Profile* DOMUI::GetProfile() const {
   return tab_contents()->profile();
 }
 
-// DOMUI, protected: ----------------------------------------------------------
-
-void DOMUI::AddMessageHandler(DOMMessageHandler* handler) {
-  handlers_.push_back(handler);
-}
-
 RenderViewHost* DOMUI::GetRenderViewHost() const {
   DCHECK(tab_contents());
   return tab_contents()->render_view_host();
 }
 
-// DOMUI, private: ------------------------------------------------------------
+// DOMUI, protected: ----------------------------------------------------------
+
+void DOMUI::AddMessageHandler(DOMMessageHandler* handler) {
+  handlers_.push_back(handler);
+}
 
 void DOMUI::ExecuteJavascript(const std::wstring& javascript) {
   GetRenderViewHost()->ExecuteJavascriptInWebFrame(std::wstring(), javascript);

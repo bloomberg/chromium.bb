@@ -19,6 +19,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/sync_constants.h"
 #include "chrome/browser/sync/engine/all_status.h"
@@ -28,6 +29,9 @@
 #include "chrome/browser/sync/engine/net/syncapi_server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_thread.h"
+#include "chrome/browser/sync/js_arg_list.h"
+#include "chrome/browser/sync/js_backend.h"
+#include "chrome/browser/sync/js_event_router.h"
 #include "chrome/browser/sync/notifier/server_notifier_thread.h"
 #include "chrome/browser/sync/notifier/state_writer.h"
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"
@@ -957,6 +961,7 @@ class SyncManager::SyncInternal
       public TalkMediator::Delegate,
       public sync_notifier::StateWriter,
       public browser_sync::ChannelEventHandler<syncable::DirectoryChangeEvent>,
+      public browser_sync::JsBackend,
       public SyncEngineEventListener {
   static const int kDefaultNudgeDelayMilliseconds;
   static const int kPreferencesNudgeDelayMilliseconds;
@@ -964,6 +969,7 @@ class SyncManager::SyncInternal
   explicit SyncInternal(SyncManager* sync_manager)
       : core_message_loop_(NULL),
         observer_(NULL),
+        parent_router_(NULL),
         sync_manager_(sync_manager),
         registrar_(NULL),
         notification_pending_(false),
@@ -1150,6 +1156,15 @@ class SyncManager::SyncInternal
 
   // SyncEngineEventListener implementation.
   virtual void OnSyncEngineEvent(const SyncEngineEvent& event);
+
+  // browser_sync::JsBackend implementation.
+  virtual void SetParentJsEventRouter(browser_sync::JsEventRouter* router);
+  virtual void RemoveParentJsEventRouter();
+  virtual const browser_sync::JsEventRouter* GetParentJsEventRouter() const;
+  virtual void ProcessMessage(const std::string& name,
+                              const browser_sync::JsArgList& args,
+                              const browser_sync::JsEventHandler* sender);
+
  private:
   // Helper to handle the details of initializing the TalkMediator.
   // Must be called only after OpenDirectory() is called.
@@ -1258,6 +1273,8 @@ class SyncManager::SyncInternal
   // Observer registered via SetObserver/RemoveObserver.
   // WARNING: This can be NULL!
   SyncManager::Observer* observer_;
+
+  browser_sync::JsEventRouter* parent_router_;
 
   // The ServerConnectionManager used to abstract communication between the
   // client (the Syncer) and the sync server.
@@ -1782,6 +1799,10 @@ void SyncManager::RemoveObserver() {
   data_->set_observer(NULL);
 }
 
+browser_sync::JsBackend* SyncManager::GetJsBackend() {
+  return data_;
+}
+
 void SyncManager::Shutdown() {
   data_->Shutdown();
 }
@@ -2154,6 +2175,42 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
   }
 }
 
+void SyncManager::SyncInternal::SetParentJsEventRouter(
+    browser_sync::JsEventRouter* router) {
+  DCHECK(router);
+  parent_router_ = router;
+}
+
+void SyncManager::SyncInternal::RemoveParentJsEventRouter() {
+  parent_router_ = NULL;
+}
+
+const browser_sync::JsEventRouter*
+    SyncManager::SyncInternal::GetParentJsEventRouter() const {
+  return parent_router_;
+}
+
+void SyncManager::SyncInternal::ProcessMessage(
+    const std::string& name, const browser_sync::JsArgList& args,
+    const browser_sync::JsEventHandler* sender) {
+  if (name == "getNotificationState") {
+    if (parent_router_) {
+      bool notifications_enabled = allstatus_.status().notifications_enabled;
+      ListValue return_args;
+      return_args.Append(Value::CreateBooleanValue(notifications_enabled));
+      parent_router_->RouteJsEvent(
+          "onGetNotificationStateFinished",
+          browser_sync::JsArgList(return_args), sender);
+    } else {
+      VLOG(1) << "No parent router; not replying to message " << name
+              << " with args " << args.ToString();
+    }
+  } else {
+    VLOG(1) << "Dropping unknown message " << name
+              << " with args " << args.ToString();
+  }
+}
+
 void SyncManager::SyncInternal::OnNotificationStateChange(
     bool notifications_enabled) {
   VLOG(1) << "P2P: Notifications enabled = "
@@ -2161,6 +2218,13 @@ void SyncManager::SyncInternal::OnNotificationStateChange(
   allstatus_.SetNotificationsEnabled(notifications_enabled);
   if (syncer_thread()) {
     syncer_thread()->SetNotificationsEnabled(notifications_enabled);
+  }
+  if (parent_router_) {
+    ListValue args;
+    args.Append(Value::CreateBooleanValue(notifications_enabled));
+    // TODO(akalin): Tidy up grammar in event names.
+    parent_router_->RouteJsEvent("onSyncNotificationStateChange",
+                                 browser_sync::JsArgList(args), NULL);
   }
   if ((notifier_options_.notification_method !=
        notifier::NOTIFICATION_SERVER) && notifications_enabled) {
@@ -2248,6 +2312,21 @@ void SyncManager::SyncInternal::OnIncomingNotification(
   } else {
     LOG(WARNING) << "Sync received notification without any type information.";
   }
+
+  if (parent_router_) {
+    ListValue args;
+    ListValue* changed_types = new ListValue();
+    args.Append(changed_types);
+    for (browser_sync::sessions::TypePayloadMap::const_iterator
+             it = model_types_with_payloads.begin();
+         it != model_types_with_payloads.end(); ++it) {
+      const std::string& model_type_str =
+          syncable::ModelTypeToString(it->first);
+      changed_types->Append(Value::CreateStringValue(model_type_str));
+    }
+    parent_router_->RouteJsEvent("onSyncIncomingNotification",
+                                 browser_sync::JsArgList(args), NULL);
+  }
 }
 
 void SyncManager::SyncInternal::OnOutgoingNotification() {
@@ -2319,6 +2398,19 @@ UserShare* SyncManager::GetUserShare() const {
 bool SyncManager::HasUnsyncedItems() const {
   sync_api::ReadTransaction trans(GetUserShare());
   return (trans.GetWrappedTrans()->directory()->unsynced_entity_count() != 0);
+}
+
+void SyncManager::TriggerOnNotificationStateChangeForTest(
+    bool notifications_enabled) {
+  data_->OnNotificationStateChange(notifications_enabled);
+}
+
+void SyncManager::TriggerOnIncomingNotificationForTest(
+    const syncable::ModelTypeBitSet& model_types) {
+  IncomingNotificationData notification_data;
+  notification_data.service_url = model_types.to_string();
+  // Here we rely on the default notification method being SERVER.
+  data_->OnIncomingNotification(notification_data);
 }
 
 }  // namespace sync_api

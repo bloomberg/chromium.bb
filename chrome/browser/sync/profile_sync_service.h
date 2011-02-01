@@ -21,6 +21,7 @@
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/js_event_handler_list.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
@@ -39,6 +40,10 @@ class Profile;
 class ProfileSyncFactory;
 class TabContents;
 class TokenMigrator;
+
+namespace browser_sync {
+class JsFrontend;
+}  // namespace browser_sync
 
 // ProfileSyncService is the layer between browser subsystems like bookmarks,
 // and the sync backend.  Each subsystem is logically thought of as being
@@ -305,6 +310,11 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Returns true if |observer| has already been added as an observer.
   bool HasObserver(Observer* observer) const;
+
+  // Returns a pointer to the service's JsFrontend (which is owned by
+  // the service).  Never returns NULL.  Overrideable for testing
+  // purposes.
+  virtual browser_sync::JsFrontend* GetJsFrontend();
 
   // Record stats on various events.
   static void SyncEvent(SyncEventCodes code);
@@ -580,6 +590,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   scoped_ptr<browser_sync::DataTypeManager> data_type_manager_;
 
   ObserverList<Observer> observers_;
+
+  browser_sync::JsEventHandlerList js_event_handlers_;
 
   NotificationRegistrar registrar_;
 

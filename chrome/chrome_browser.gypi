@@ -979,8 +979,6 @@
         'browser/dom_ui/slideshow_ui.h',
         'browser/dom_ui/sync_internals_html_source.cc',
         'browser/dom_ui/sync_internals_html_source.h',
-        'browser/dom_ui/sync_internals_message_handler.cc',
-        'browser/dom_ui/sync_internals_message_handler.h',
         'browser/dom_ui/sync_internals_ui.cc',
         'browser/dom_ui/sync_internals_ui.h',
         'browser/dom_ui/textfields_ui.cc',

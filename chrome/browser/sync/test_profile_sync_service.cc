@@ -111,6 +111,40 @@ void SyncBackendHostForProfileSyncTest::InitCore(
   }
 }
 
+JsBackend* SyncBackendHostForProfileSyncTest::GetJsBackend() {
+  // Return a non-NULL result only when the overridden function does.
+  if (SyncBackendHost::GetJsBackend()) {
+    return this;
+  } else {
+    NOTREACHED();
+    return NULL;
+  }
+}
+
+void SyncBackendHostForProfileSyncTest::SetParentJsEventRouter(
+    JsEventRouter* router) {
+  core_->SetParentJsEventRouter(router);
+}
+
+void SyncBackendHostForProfileSyncTest::RemoveParentJsEventRouter() {
+  core_->RemoveParentJsEventRouter();
+}
+
+const JsEventRouter*
+    SyncBackendHostForProfileSyncTest::GetParentJsEventRouter() const {
+  return core_->GetParentJsEventRouter();
+}
+
+void SyncBackendHostForProfileSyncTest::ProcessMessage(
+    const std::string& name, const JsArgList& args,
+    const JsEventHandler* sender) {
+  if (name.find("delay") != name.npos) {
+    core_->RouteJsEvent(name, args, sender);
+  } else {
+    core_->RouteJsEventOnFrontendLoop(name, args, sender);
+  }
+}
+
 void SyncBackendHostForProfileSyncTest::
     SetDefaultExpectationsForWorkerCreation(ProfileMock* profile) {
   EXPECT_CALL(*profile, GetPasswordStore(testing::_)).

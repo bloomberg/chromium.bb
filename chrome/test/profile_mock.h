@@ -22,6 +22,7 @@ class ProfileMock : public TestingProfile {
   MOCK_METHOD0(GetPersonalDataManager, PersonalDataManager*());
   MOCK_METHOD1(GetPasswordStore, PasswordStore* (ServiceAccessType access));
   MOCK_METHOD0(GetTokenService, TokenService*());
+  MOCK_METHOD0(GetProfileSyncService, ProfileSyncService*());
 };
 
 #endif  // CHROME_TEST_PROFILE_MOCK_H__

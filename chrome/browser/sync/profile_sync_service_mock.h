@@ -43,6 +43,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD0(InitializeBackend, void());
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
+  MOCK_METHOD0(GetJsFrontend, browser_sync::JsFrontend*());
   MOCK_CONST_METHOD0(HasSyncSetupCompleted, bool());
 
   MOCK_METHOD1(ChangePreferredDataTypes,
