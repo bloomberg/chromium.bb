@@ -10,8 +10,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
-#include "chrome/browser/ui/find_bar/find_manager.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/find_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -64,7 +62,7 @@ bool FindBarHost::MaybeForwardKeyEventToWebpage(
       return false;
   }
 
-  TabContentsWrapper* contents = find_bar_controller_->tab_contents();
+  TabContents* contents = find_bar_controller_->tab_contents();
   if (!contents)
     return false;
 
@@ -73,8 +71,7 @@ bool FindBarHost::MaybeForwardKeyEventToWebpage(
   // Make sure we don't have a text field element interfering with keyboard
   // input. Otherwise Up and Down arrow key strokes get eaten. "Nom Nom Nom".
   render_view_host->ClearFocusedNode();
-  NativeWebKeyboardEvent event = GetKeyboardEvent(contents->tab_contents(),
-                                                  key_event);
+  NativeWebKeyboardEvent event = GetKeyboardEvent(contents, key_event);
   render_view_host->ForwardKeyboardEvent(event);
   return true;
 }
@@ -113,8 +110,7 @@ void FindBarHost::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
   // don't check this, then SetWidgetPosition below will end up making the Find
   // Bar visible.
   if (!find_bar_controller_->tab_contents() ||
-      !find_bar_controller_->
-          tab_contents()->GetFindManager()->find_ui_active()) {
+      !find_bar_controller_->tab_contents()->find_ui_active()) {
     return;
   }
 
@@ -155,7 +151,7 @@ bool FindBarHost::IsFindBarVisible() {
 void FindBarHost::RestoreSavedFocus() {
   if (focus_tracker() == NULL) {
     // TODO(brettw) Focus() should be on TabContentsView.
-    find_bar_controller_->tab_contents()->tab_contents()->Focus();
+    find_bar_controller_->tab_contents()->Focus();
   } else {
     focus_tracker()->FocusLastFocusedExternalView();
   }

@@ -2861,8 +2861,6 @@
         'browser/ui/find_bar/find_bar_controller.h',
         'browser/ui/find_bar/find_bar_state.cc',
         'browser/ui/find_bar/find_bar_state.h',
-        'browser/ui/find_bar/find_manager.h',
-        'browser/ui/find_bar/find_manager.cc',
         'browser/ui/find_bar/find_notification_details.h',
         'browser/ui/gtk/about_chrome_dialog.cc',
         'browser/ui/gtk/about_chrome_dialog.h',

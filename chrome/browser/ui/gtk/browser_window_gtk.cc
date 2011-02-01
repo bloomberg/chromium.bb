@@ -37,7 +37,6 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
-#include "chrome/browser/ui/find_bar/find_manager.h"
 #include "chrome/browser/ui/gtk/about_chrome_dialog.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/bookmark_bar_gtk.h"
@@ -1183,7 +1182,7 @@ void BrowserWindowGtk::TabSelectedAt(TabContentsWrapper* old_contents,
   // we are the active browser before calling RestoreFocus().
   if (!browser_->tabstrip_model()->closing_all()) {
     new_contents->view()->RestoreFocus();
-    if (new_contents->GetFindManager()->find_ui_active())
+    if (new_contents->tab_contents()->find_ui_active())
       browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();
   }
 

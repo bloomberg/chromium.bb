@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
   browser()->Find();
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
                                            VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
-  ui_test_utils::FindInPage(browser()->GetSelectedTabContentsWrapper(),
+  ui_test_utils::FindInPage(browser()->GetSelectedTabContents(),
                             ASCIIToUTF16("a"), true, false, NULL);
   browser()->GetFindBarController()->EndFindSession(
       FindBarController::kKeepSelection);
@@ -135,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestoreOnTabSwitch) {
       browser()->GetFindBarController()->find_bar()->GetFindBarTesting();
 
   // Search for 'a'.
-  ui_test_utils::FindInPage(browser()->GetSelectedTabContentsWrapper(),
+  ui_test_utils::FindInPage(browser()->GetSelectedTabContents(),
                             ASCIIToUTF16("a"), true, false, NULL);
   EXPECT_TRUE(ASCIIToUTF16("a") == find_bar->GetFindSelectedText());
 
@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestoreOnTabSwitch) {
                                            VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   // Search for 'b'.
-  ui_test_utils::FindInPage(browser()->GetSelectedTabContentsWrapper(),
+  ui_test_utils::FindInPage(browser()->GetSelectedTabContents(),
                             ASCIIToUTF16("b"), true, false, NULL);
   EXPECT_TRUE(ASCIIToUTF16("b") == find_bar->GetFindSelectedText());
 

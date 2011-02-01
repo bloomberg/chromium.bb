@@ -86,8 +86,6 @@
         'browser/sync/profile_sync_service_mock.h',
         'browser/ui/browser.h',
         'browser/ui/cocoa/browser_test_helper.h',
-        'browser/ui/tab_contents/test_tab_contents_wrapper.cc',
-        'browser/ui/tab_contents/test_tab_contents_wrapper.h',
         'common/net/test_url_fetcher_factory.cc',
         'common/net/test_url_fetcher_factory.h',
         'common/notification_observer_mock.cc',

@@ -44,7 +44,6 @@ class RenderWidgetHost;
 class ScopedTempDir;
 class SkBitmap;
 class TabContents;
-class TabContentsWrapper;
 class Value;
 
 namespace gfx {
@@ -210,7 +209,7 @@ void WaitForFocusInBrowser(Browser* browser);
 // Performs a find in the page of the specified tab. Returns the number of
 // matches found.  |ordinal| is an optional parameter which is set to the index
 // of the current match.
-int FindInPage(TabContentsWrapper* tab,
+int FindInPage(TabContents* tab,
                const string16& search_string,
                bool forward,
                bool case_sensitive,

@@ -12,7 +12,6 @@
 #include "chrome/browser/tab_contents/tab_contents_observer.h"
 
 class Extension;
-class FindManager;
 class NavigationController;
 class PasswordManager;
 class PasswordManagerDelegate;
@@ -63,9 +62,6 @@ class TabContentsWrapper : public TabContentsObserver {
   // Returns the PasswordManager, creating it if necessary.
   PasswordManager* GetPasswordManager();
 
-  // Returns the FindManager, creating it if necessary.
-  FindManager* GetFindManager();
-
   // TabContentsObserver overrides:
   virtual void NavigateToPendingEntry() OVERRIDE;
 
@@ -74,9 +70,6 @@ class TabContentsWrapper : public TabContentsObserver {
   // outlive the manager, per documentation in password_manager.h.
   scoped_ptr<PasswordManagerDelegate> password_manager_delegate_;
   scoped_ptr<PasswordManager> password_manager_;
-
-  // FindManager, lazily created.
-  scoped_ptr<FindManager> find_manager_;
 
   // The supporting objects need to outlive the TabContents dtor (as they may
   // be called upon during its execution). As a result, this must come last
