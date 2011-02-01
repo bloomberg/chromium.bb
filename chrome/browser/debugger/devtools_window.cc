@@ -400,6 +400,18 @@ void DevToolsWindow::UpdateTheme() {
       ExecuteJavascriptInWebFrame(L"", UTF8ToWide(command));
 }
 
+void DevToolsWindow::AddNewContents(TabContents* source,
+                                    TabContents* new_contents,
+                                    WindowOpenDisposition disposition,
+                                    const gfx::Rect& initial_pos,
+                                    bool user_gesture) {
+  inspected_tab_->delegate()->AddNewContents(source,
+                                             new_contents,
+                                             disposition,
+                                             initial_pos,
+                                             user_gesture);
+}
+
 bool DevToolsWindow::CanReloadContents(TabContents* source) const {
   return false;
 }
