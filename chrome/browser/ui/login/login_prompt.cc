@@ -390,12 +390,11 @@ class LoginDialogTask : public Task {
     }
 
     // Tell the password manager to look for saved passwords.
-    TabContentsWrapper** wrapper =
-        TabContentsWrapper::property_accessor()->GetProperty(
-            parent_contents->property_bag());
+    TabContentsWrapper* wrapper =
+        TabContentsWrapper::GetCurrentWrapperForContents(parent_contents);
     if (!wrapper)
       return;
-    PasswordManager* password_manager = (*wrapper)->GetPasswordManager();
+    PasswordManager* password_manager = wrapper->GetPasswordManager();
     std::vector<PasswordForm> v;
     MakeInputForPasswordManager(&v);
     password_manager->OnPasswordFormsFound(v);

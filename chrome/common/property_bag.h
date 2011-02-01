@@ -16,7 +16,7 @@ class PropertyAccessorBase;
 
 // A property bag holds a generalized list of arbitrary metadata called
 // properties. Each property is a class type derived from PropertyBag::Prop
-// that can bet set and retrieved.
+// that can be set and retrieved.
 //
 // The property bag is not read or written directly. Instead, callers go
 // through a PropertyAccessor. The Accessor generates the unique IDs that

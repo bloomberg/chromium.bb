@@ -529,10 +529,9 @@ void AutomationProvider::SendFindRequest(
   if (!with_json) {
     find_in_page_observer_.reset(observer);
   }
-  TabContentsWrapper** wrapper =
-      TabContentsWrapper::property_accessor()->GetProperty(
-          tab_contents->property_bag());
-  (*wrapper)->GetFindManager()->set_current_find_request_id(request_id);
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  wrapper->GetFindManager()->set_current_find_request_id(request_id);
   tab_contents->render_view_host()->StartFinding(
       FindInPageNotificationObserver::kFindInPageRequestId,
       search_string,

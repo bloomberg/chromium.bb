@@ -45,6 +45,14 @@ TabContentsWrapper* TabContentsWrapper::Clone() {
   return new_wrapper;
 }
 
+TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
+    TabContents* contents) {
+  TabContentsWrapper** wrapper =
+      property_accessor()->GetProperty(contents->property_bag());
+
+  return wrapper ? *wrapper : NULL;
+}
+
 PasswordManager* TabContentsWrapper::GetPasswordManager() {
   if (!password_manager_.get()) {
     // Create the delegate then create the manager.

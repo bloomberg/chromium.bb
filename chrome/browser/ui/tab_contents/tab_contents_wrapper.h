@@ -39,6 +39,11 @@ class TabContentsWrapper : public TabContentsObserver {
   // heap-allocated pointer is owned by the caller.
   TabContentsWrapper* Clone();
 
+  // Helper to retrieve the existing instance that wraps a given TabContents.
+  // Returns NULL if there is no such existing instance.
+  static TabContentsWrapper* GetCurrentWrapperForContents(
+      TabContents* contents);
+
   TabContents* tab_contents() const { return tab_contents_.get(); }
   NavigationController& controller() const {
     return tab_contents()->controller();
