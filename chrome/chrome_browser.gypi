@@ -4164,8 +4164,6 @@
                 ['include', '^browser/ui/views/fullscreen_exit_bubble.cc'],
                 ['include', '^browser/ui/views/fullscreen_exit_bubble.h'],
                 ['include', '^browser/ui/views/html_dialog_view.cc'],
-                ['include', '^browser/ui/views/html_dialog_view.cc'],
-                ['include', '^browser/ui/views/html_dialog_view.h'],
                 ['include', '^browser/ui/views/html_dialog_view.h'],
                 ['include', '^browser/ui/views/info_bubble.cc'],
                 ['include', '^browser/ui/views/info_bubble.h'],
