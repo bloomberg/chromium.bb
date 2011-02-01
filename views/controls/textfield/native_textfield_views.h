@@ -58,6 +58,8 @@ class NativeTextfieldViews : public views::View,
   virtual void WillGainFocus();
   virtual void DidGainFocus();
   virtual void WillLoseFocus();
+  virtual gfx::NativeCursor GetCursorForPoint(Event::EventType event_type,
+                                              const gfx::Point& p);
 
   // views::ContextMenuController overrides:
   virtual void ShowContextMenu(View* source,
@@ -183,6 +185,10 @@ class NativeTextfieldViews : public views::View,
   // Utility function to inform the parent textfield (and its controller if any)
   // that the text in the textfield has changed.
   void PropagateTextChange();
+
+  // Does necessary updates when the text and/or the position of the cursor
+  // changed.
+  void UpdateAfterChange(bool text_changed, bool cursor_changed);
 
   // Utility function to create the context menu if one does not already exist.
   void InitContextMenuIfRequired();

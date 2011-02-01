@@ -23,6 +23,10 @@
 #include "views/event.h"
 #include "views/views_delegate.h"
 
+#if defined(OS_LINUX)
+#include "gfx/gtk_util.h"
+#endif
+
 namespace {
 
 // A global flag to switch the Textfield wrapper to TextfieldViews.
@@ -133,6 +137,17 @@ void NativeTextfieldViews::DidGainFocus() {
 
 void NativeTextfieldViews::WillLoseFocus() {
   NOTREACHED();
+}
+
+gfx::NativeCursor NativeTextfieldViews::GetCursorForPoint(
+    Event::EventType event_type,
+    const gfx::Point& p) {
+#if defined(OS_WIN)
+  static HCURSOR ibeam = LoadCursor(NULL, IDC_IBEAM);
+  return ibeam;
+#else
+  return gfx::GetCursor(GDK_XTERM);
+#endif
 }
 
 /////////////////////////////////////////////////////////////////
@@ -378,8 +393,9 @@ void NativeTextfieldViews::ExecuteCommand(int command_id) {
       NOTREACHED() << "unknown command: " << command_id;
       break;
   }
-  if (text_changed)
-    PropagateTextChange();
+
+  // The cursor must have changed if text changed during cut/paste/delete.
+  UpdateAfterChange(text_changed, text_changed);
 }
 
 // static
@@ -535,7 +551,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         break;
       case ui::VKEY_X:
         if (control && editable)
-          text_changed = model_->Cut();
+          cursor_changed = text_changed = model_->Cut();
         break;
       case ui::VKEY_C:
         if (control)
@@ -543,7 +559,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         break;
       case ui::VKEY_V:
         if (control && editable)
-          text_changed = model_->Paste();
+          cursor_changed = text_changed = model_->Paste();
         break;
       case ui::VKEY_RIGHT:
         control ? model_->MoveCursorToNextWord(selection)
@@ -600,7 +616,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
             model_->MoveCursorToNextWord(true);
           }
         }
-        text_changed = model_->Delete();
+        cursor_changed = text_changed = model_->Delete();
         break;
       case ui::VKEY_INSERT:
         insert_ = !insert_;
@@ -617,17 +633,9 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         model_->Replace(print_char);
       text_changed = true;
     }
-    if (text_changed)
-      PropagateTextChange();
-    if (cursor_changed) {
-      is_cursor_visible_ = true;
-      RepaintCursor();
-    }
-    if (text_changed || cursor_changed) {
-      UpdateCursorBoundsAndTextOffset();
-      SchedulePaint();
-      return true;
-    }
+
+    UpdateAfterChange(text_changed, cursor_changed);
+    return (text_changed || cursor_changed);
   }
   return false;
 }
@@ -827,6 +835,20 @@ void NativeTextfieldViews::PropagateTextChange() {
   Textfield::Controller* controller = textfield_->GetController();
   if (controller)
     controller->ContentsChanged(textfield_, GetText());
+}
+
+void NativeTextfieldViews::UpdateAfterChange(bool text_changed,
+                                             bool cursor_changed) {
+  if (text_changed)
+    PropagateTextChange();
+  if (cursor_changed) {
+    is_cursor_visible_ = true;
+    RepaintCursor();
+  }
+  if (text_changed || cursor_changed) {
+    UpdateCursorBoundsAndTextOffset();
+    SchedulePaint();
+  }
 }
 
 void NativeTextfieldViews::InitContextMenuIfRequired() {
