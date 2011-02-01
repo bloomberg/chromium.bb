@@ -455,6 +455,8 @@
         'browser/chromeos/dom_ui/core_chromeos_options_handler.h',
         'browser/chromeos/dom_ui/cros_options_page_ui_handler.cc',
         'browser/chromeos/dom_ui/cros_options_page_ui_handler.h',
+        'browser/chromeos/dom_ui/cros_personal_options_handler.cc',
+        'browser/chromeos/dom_ui/cros_personal_options_handler.h',
         'browser/chromeos/dom_ui/imageburner_ui.cc',
         'browser/chromeos/dom_ui/imageburner_ui.h',
         'browser/chromeos/dom_ui/internet_options_handler.cc',

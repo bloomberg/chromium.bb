@@ -55,6 +55,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/dom_ui/accounts_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/core_chromeos_options_handler.h"
+#include "chrome/browser/chromeos/dom_ui/cros_personal_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/internet_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_chewing_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_customize_modifier_keys_handler.h"
@@ -177,6 +178,8 @@ OptionsUI::OptionsUI(TabContents* contents)
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::StatsOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new SystemOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                           new chromeos::CrosPersonalOptionsHandler());
 #endif
 #if defined(USE_NSS)
   AddOptionsPageUIHandler(localized_strings, new CertificateManagerHandler());

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_DOM_UI_OPTIONS_PERSONAL_OPTIONS_HANDLER_H_
 #pragma once
 
-#include "base/basictypes.h"
 #include "chrome/browser/browser_signin.h"
 #include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -52,10 +51,6 @@ class PersonalOptionsHandler : public OptionsPageUIHandler,
   // Called when the user updates the set of enabled data types to sync. |args|
   // is ignored.
   void OnPreferredDataTypesUpdated(const ListValue* args);
-
-#if defined(OS_CHROMEOS)
-  void LoadAccountPicture(const ListValue* args);
-#endif
 
   scoped_ptr<OptionsManagedBannerHandler> banner_handler_;
 
