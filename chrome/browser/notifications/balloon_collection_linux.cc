@@ -5,8 +5,13 @@
 #include "chrome/browser/notifications/balloon_collection_impl.h"
 
 #include "chrome/browser/notifications/balloon.h"
-#include "chrome/browser/ui/views/notifications/balloon_view.h"
 #include "gfx/size.h"
+
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/views/notifications/balloon_view.h"
+#else
+#include "chrome/browser/ui/gtk/notifications/balloon_view_gtk.h"
+#endif
 
 Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
                                             Profile* profile) {
