@@ -83,10 +83,10 @@ bool PathProviderPosix(int key, FilePath* result) {
         }
       }
       // In a case of WebKit-only checkout, executable files are put into
-      // WebKit/out/{Debug|Release}, and we should return WebKit/WebKit/chromium
-      // for DIR_SOURCE_ROOT.
+      // <root of checkout>/out/{Debug|Release}, and we should return
+      // <root of checkout>/Source/WebKit/chromium for DIR_SOURCE_ROOT.
       if (PathService::Get(base::DIR_EXE, &path)) {
-        path = path.DirName().DirName().Append("WebKit/chromium");
+        path = path.DirName().DirName().Append("Source/WebKit/chromium");
         if (file_util::PathExists(path.Append(kThisSourceFile))) {
           *result = path;
           return true;
