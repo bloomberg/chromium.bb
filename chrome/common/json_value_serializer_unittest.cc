@@ -17,7 +17,7 @@
 
 TEST(JSONValueSerializerTest, Roundtrip) {
   const std::string original_serialization =
-    "{\"bool\":true,\"int\":42,\"list\":[1,2],\"null\":null,\"double\":3.14}";
+    "{\"bool\":true,\"double\":3.14,\"int\":42,\"list\":[1,2],\"null\":null}";
   JSONStringValueSerializer serializer(original_serialization);
   scoped_ptr<Value> root(serializer.Deserialize(NULL, NULL));
   ASSERT_TRUE(root.get());
@@ -63,10 +63,10 @@ TEST(JSONValueSerializerTest, Roundtrip) {
   const std::string pretty_serialization =
     "{" JSON_NEWLINE
     "   \"bool\": true," JSON_NEWLINE
+    "   \"double\": 3.14," JSON_NEWLINE
     "   \"int\": 42," JSON_NEWLINE
     "   \"list\": [ 1, 2 ]," JSON_NEWLINE
-    "   \"null\": null," JSON_NEWLINE
-    "   \"double\": 3.14" JSON_NEWLINE
+    "   \"null\": null" JSON_NEWLINE
     "}" JSON_NEWLINE;
 #undef JSON_NEWLINE
   ASSERT_EQ(pretty_serialization, test_serialization);
