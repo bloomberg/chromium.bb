@@ -89,8 +89,7 @@ UITestBase::UITestBase()
       clear_profile_(true),
       include_testing_id_(true),
       enable_file_cookies_(true),
-      profile_type_(ProxyLauncher::DEFAULT_THEME),
-      shutdown_type_(ProxyLauncher::WINDOW_CLOSE) {
+      profile_type_(ProxyLauncher::DEFAULT_THEME) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
 }
@@ -105,8 +104,7 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
       clear_profile_(true),
       include_testing_id_(true),
       enable_file_cookies_(true),
-      profile_type_(ProxyLauncher::DEFAULT_THEME),
-      shutdown_type_(ProxyLauncher::WINDOW_CLOSE) {
+      profile_type_(ProxyLauncher::DEFAULT_THEME) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
 }
@@ -131,7 +129,7 @@ void UITestBase::SetUp() {
 }
 
 void UITestBase::TearDown() {
-  CloseBrowserAndServer();
+  launcher_->TerminateConnection();
 
   // Make sure that we didn't encounter any assertion failures
   logging::AssertionList assertions;
@@ -197,7 +195,7 @@ void UITestBase::ConnectToRunningBrowser() {
 
 void UITestBase::CloseBrowserAndServer() {
   if (launcher_.get())
-    launcher_->CloseBrowserAndServer(shutdown_type_);
+    launcher_->CloseBrowserAndServer();
 }
 
 void UITestBase::LaunchBrowser(const CommandLine& arguments,
@@ -217,7 +215,7 @@ bool UITestBase::LaunchAnotherBrowserBlockUntilClosed(
 #endif
 
 void UITestBase::QuitBrowser() {
-  launcher_->QuitBrowser(shutdown_type_);
+  launcher_->QuitBrowser();
 }
 
 void UITestBase::CleanupAppProcesses() {

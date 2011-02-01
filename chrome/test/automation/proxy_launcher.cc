@@ -112,7 +112,9 @@ std::string ProxyLauncher::log_level_ = "";
 
 ProxyLauncher::ProxyLauncher()
     : process_(base::kNullProcessHandle),
-      process_id_(-1) {}
+      process_id_(-1),
+      shutdown_type_(WINDOW_CLOSE) {
+}
 
 ProxyLauncher::~ProxyLauncher() {}
 
@@ -144,8 +146,8 @@ void ProxyLauncher::ConnectToRunningBrowser(bool wait_for_initial_loads) {
   WaitForBrowserLaunch(wait_for_initial_loads);
 }
 
-void ProxyLauncher::CloseBrowserAndServer(ShutdownType shutdown_type) {
-  QuitBrowser(shutdown_type);
+void ProxyLauncher::CloseBrowserAndServer() {
+  QuitBrowser();
   CleanupAppProcesses();
 
   // Suppress spammy failures that seem to be occurring when running
@@ -156,6 +158,10 @@ void ProxyLauncher::CloseBrowserAndServer(ShutdownType shutdown_type) {
         StringPrintf(L"Unable to quit all browser processes. Original PID %d",
                      &process_id_));
 
+  DisconnectFromRunningBrowser();
+}
+
+void ProxyLauncher::DisconnectFromRunningBrowser() {
   automation_proxy_.reset();  // Shut down IPC testing interface.
 }
 
@@ -194,8 +200,8 @@ bool ProxyLauncher::LaunchAnotherBrowserBlockUntilClosed(
 }
 #endif
 
-void ProxyLauncher::QuitBrowser(ShutdownType shutdown_type) {
-  if (SESSION_ENDING == shutdown_type) {
+void ProxyLauncher::QuitBrowser() {
+  if (SESSION_ENDING == shutdown_type_) {
     TerminateBrowser();
     return;
   }
@@ -209,7 +215,7 @@ void ProxyLauncher::QuitBrowser(ShutdownType shutdown_type) {
     base::TimeTicks quit_start = base::TimeTicks::Now();
     EXPECT_TRUE(automation()->SetFilteredInet(false));
 
-    if (WINDOW_CLOSE == shutdown_type) {
+    if (WINDOW_CLOSE == shutdown_type_) {
       int window_count = 0;
       EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
 
@@ -237,7 +243,7 @@ void ProxyLauncher::QuitBrowser(ShutdownType shutdown_type) {
         EXPECT_TRUE(browser_proxy->ApplyAccelerator(IDC_CLOSE_WINDOW));
         browser_proxy = NULL;
       }
-    } else if (USER_QUIT == shutdown_type) {
+    } else if (USER_QUIT == shutdown_type_) {
       scoped_refptr<BrowserProxy> browser_proxy =
           automation()->GetBrowserWindow(0);
       EXPECT_TRUE(browser_proxy.get());
@@ -245,7 +251,7 @@ void ProxyLauncher::QuitBrowser(ShutdownType shutdown_type) {
         EXPECT_TRUE(browser_proxy->RunCommandAsync(IDC_EXIT));
       }
     } else {
-      NOTREACHED() << "Invalid shutdown type " << shutdown_type;
+      NOTREACHED() << "Invalid shutdown type " << shutdown_type_;
     }
 
     // Now, drop the automation IPC channel so that the automation provider in
@@ -515,6 +521,13 @@ void NamedProxyLauncher::InitializeConnection(const LaunchState& state,
   ConnectToRunningBrowser(wait_for_initial_loads);
 }
 
+void NamedProxyLauncher::TerminateConnection() {
+  if (launch_browser_)
+    CloseBrowserAndServer();
+  else
+    DisconnectFromRunningBrowser();
+}
+
 std::string NamedProxyLauncher::PrefixedChannelID() const {
   std::string channel_id;
   channel_id.append(automation::kNamedInterfacePrefix).append(channel_id_);
@@ -539,6 +552,10 @@ AutomationProxy* AnonymousProxyLauncher::CreateAutomationProxy(
 void AnonymousProxyLauncher::InitializeConnection(const LaunchState& state,
                                                   bool wait_for_initial_loads) {
   LaunchBrowserAndServer(state, wait_for_initial_loads);
+}
+
+void AnonymousProxyLauncher::TerminateConnection() {
+  CloseBrowserAndServer();
 }
 
 std::string AnonymousProxyLauncher::PrefixedChannelID() const {

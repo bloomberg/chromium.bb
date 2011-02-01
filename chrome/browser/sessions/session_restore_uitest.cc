@@ -33,7 +33,7 @@ class SessionRestoreUITest : public UITest {
 
   virtual void QuitBrowserAndRestore(int expected_tab_count) {
 #if defined(OS_MACOSX)
-    shutdown_type_ = ProxyLauncher::USER_QUIT;
+    set_shutdown_type(ProxyLauncher::USER_QUIT);
 #endif
     UITest::TearDown();
 

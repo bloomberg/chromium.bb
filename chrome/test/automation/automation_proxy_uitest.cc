@@ -70,6 +70,10 @@ class ExternalTabUITestMockLauncher : public ProxyLauncher {
     LaunchBrowserAndServer(state, wait_for_initial_loads);
   }
 
+  void TerminateConnection() {
+    CloseBrowserAndServer();
+  }
+
   std::string PrefixedChannelID() const {
     return channel_id_;
   }

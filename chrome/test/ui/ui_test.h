@@ -246,7 +246,7 @@ class UITestBase {
 
   // Sets the shutdown type, which defaults to WINDOW_CLOSE.
   void set_shutdown_type(ProxyLauncher::ShutdownType value) {
-    shutdown_type_ = value;
+    launcher_->set_shutdown_type(value);
   }
 
   // Get the number of crash dumps we've logged since the test started.
@@ -360,9 +360,6 @@ class UITestBase {
 
   // PID file for websocket server.
   FilePath websocket_pid_file_;
-
-  // The method for shutting down the browser. Used in ShutdownTest.
-  ProxyLauncher::ShutdownType shutdown_type_;
 
  private:
   // Time the test was started (so we can check for new crash dumps)

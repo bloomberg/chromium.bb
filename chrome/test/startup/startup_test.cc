@@ -275,7 +275,7 @@ void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
     UITest::SetUp();
     // Set flags to ensure profile is saved and can be restored.
 #if defined(OS_MACOSX)
-    shutdown_type_ = ProxyLauncher::USER_QUIT;
+    set_shutdown_type(ProxyLauncher::USER_QUIT);
 #endif
     clear_profile_ = false;
     // Quit and set flags to restore session.
