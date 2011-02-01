@@ -871,9 +871,7 @@ void MetricsService::StopRecording(MetricsLogBase** log) {
   if (!current_log_)
     return;
 
-  MetricsLog* current_log = current_log_->AsMetricsLog();
-  DCHECK(current_log);
-  current_log->set_hardware_class(hardware_class_);  // Adds to ongoing logs.
+  current_log_->set_hardware_class(hardware_class_);  // Adds to ongoing logs.
 
   // TODO(jar): Integrate bounds on log recording more consistently, so that we
   // can stop recording logs that are too big much sooner.
@@ -890,13 +888,17 @@ void MetricsService::StopRecording(MetricsLogBase** log) {
   // end of all log transmissions (initial log handles this separately).
   // Don't bother if we're going to discard current_log_.
   if (log) {
+    // RecordIncrementalStabilityElements only exists on the derived
+    // MetricsLog class.
+    MetricsLog* current_log = current_log_->AsMetricsLog();
+    DCHECK(current_log);
     current_log->RecordIncrementalStabilityElements();
     RecordCurrentHistograms();
   }
 
   current_log_->CloseLog();
   if (log)
-    *log = current_log;
+    *log = current_log_;
   else
     delete current_log_;
   current_log_ = NULL;
