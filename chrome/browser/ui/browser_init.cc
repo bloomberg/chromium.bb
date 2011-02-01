@@ -1055,8 +1055,22 @@ void BrowserInit::LaunchWithProfile::CheckDefaultBrowser(Profile* profile) {
   // We do not check if we are the default browser if:
   // - the user said "don't ask me again" on the infobar earlier.
   // - this is the first launch after the first run flow.
+  // - There is a policy in control of this setting.
   if (!profile->GetPrefs()->GetBoolean(prefs::kCheckDefaultBrowser) ||
       FirstRun::IsChromeFirstRun()) {
+    return;
+  }
+  if (g_browser_process->local_state()->IsManagedPreference(
+      prefs::kDefaultBrowserSettingEnabled)) {
+    if (g_browser_process->local_state()->GetBoolean(
+        prefs::kDefaultBrowserSettingEnabled)) {
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE, NewRunnableFunction(
+              &ShellIntegration::SetAsDefaultBrowser));
+    } else {
+      // TODO(pastarmovj): We can't really do anything meaningful here yet but
+      // just prevent showing the infobar.
+    }
     return;
   }
   BrowserThread::PostTask(

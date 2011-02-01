@@ -151,6 +151,7 @@ class GeneralPageGtk : public OptionsPageBase,
   // Widgets of the default browser group
   GtkWidget* default_browser_status_label_;
   GtkWidget* default_browser_use_as_default_button_;
+  BooleanPrefMember default_browser_policy_;
 
   // The parent GtkTable widget
   GtkWidget* page_;

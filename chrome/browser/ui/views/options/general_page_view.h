@@ -160,6 +160,7 @@ class GeneralPageView : public OptionsPageView,
   OptionsGroupView* default_browser_group_;
   views::Label* default_browser_status_label_;
   views::NativeButton* default_browser_use_as_default_button_;
+  BooleanPrefMember default_browser_policy_;
 
   // The helper object that performs default browser set/check tasks.
   scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;

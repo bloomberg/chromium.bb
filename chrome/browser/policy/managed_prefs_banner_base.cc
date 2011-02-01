@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,6 +67,7 @@ void ManagedPrefsBannerBase::Init(PrefService* local_state,
       AddUserPref(prefs::kDefaultSearchProviderSuggestURL);
       AddUserPref(prefs::kDefaultSearchProviderIconURL);
       AddUserPref(prefs::kDefaultSearchProviderEncodings);
+      AddLocalStatePref(prefs::kDefaultBrowserSettingEnabled);
       break;
     case OPTIONS_PAGE_CONTENT:
       AddUserPref(prefs::kSyncManaged);

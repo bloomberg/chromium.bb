@@ -570,6 +570,11 @@ const char kPluginsShowDetails[] = "plugins.show_details";
 // on start-up.
 const char kCheckDefaultBrowser[] = "browser.check_default_browser";
 
+// Policy setting whether default browser check should be disabled and default
+// browser registration should take place.
+const char kDefaultBrowserSettingEnabled[] =
+    "browser.default_browser_setting_enabled";
+
 #if defined(OS_MACOSX)
 // Boolean that indicates whether the application should show the info bar
 // asking the user to set up automatic updates when Keystone promotion is

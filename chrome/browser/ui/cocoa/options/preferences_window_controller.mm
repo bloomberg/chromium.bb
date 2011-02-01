@@ -406,6 +406,7 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 
 // KVC getter methods.
 - (BOOL)fileHandlerUIEnabled;
+- (BOOL)canChangeDefaultBrowser;
 @end
 
 namespace PreferencesWindowControllerInternal {
@@ -831,6 +832,13 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
 - (void)registerPrefObservers {
   if (!prefs_) return;
 
+  // During unit tests, there is no local state object, so we fall back to
+  // the prefs object (where we've explicitly registered this pref so we
+  // know it's there).
+  PrefService* local = g_browser_process->local_state();
+  if (!local)
+    local = prefs_;
+
   // Basics panel
   registrar_.Init(prefs_);
   registrar_.Add(prefs::kURLsToRestoreOnStartup, observer_.get());
@@ -840,6 +848,8 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
   homepage_.Init(prefs::kHomePage, prefs_, observer_.get());
   showHomeButton_.Init(prefs::kShowHomeButton, prefs_, observer_.get());
   instantEnabled_.Init(prefs::kInstantEnabled, prefs_, observer_.get());
+  default_browser_policy_.Init(prefs::kDefaultBrowserSettingEnabled,
+                               local, observer_.get());
 
   // Personal Stuff panel
   askSavePasswords_.Init(prefs::kPasswordManagerEnabled,
@@ -858,12 +868,6 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
   translateEnabled_.Init(prefs::kEnableTranslate, prefs_, observer_.get());
   tabsToLinks_.Init(prefs::kWebkitTabsToLinks, prefs_, observer_.get());
 
-  // During unit tests, there is no local state object, so we fall back to
-  // the prefs object (where we've explicitly registered this pref so we
-  // know it's there).
-  PrefService* local = g_browser_process->local_state();
-  if (!local)
-    local = prefs_;
   metricsReporting_.Init(prefs::kMetricsReportingEnabled,
                          local, observer_.get());
   defaultDownloadLocation_.Init(prefs::kDownloadDefaultDirectory, prefs_,
@@ -911,7 +915,7 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
     paths = [paths setByAddingObject:@"homepageURL"];
   } else if ([key isEqualToString:@"hompageURL"]) {
     paths = [paths setByAddingObject:@"newTabPageIsHomePageIndex"];
-  } else if ([key isEqualToString:@"isDefaultBrowser"]) {
+  } else if ([key isEqualToString:@"canChangeDefaultBrowser"]) {
     paths = [paths setByAddingObject:@"defaultBrowser"];
   } else if ([key isEqualToString:@"defaultBrowserTextColor"]) {
     paths = [paths setByAddingObject:@"defaultBrowser"];
@@ -978,6 +982,9 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
     [self setShowHomeButtonEnabled:!showHomeButton_.IsManaged()];
   } else if (*prefName == prefs::kInstantEnabled) {
     [self configureInstant];
+  } else if (*prefName == prefs::kDefaultBrowserSettingEnabled) {
+    [self willChangeValueForKey:@"defaultBrowser"];
+    [self didChangeValueForKey:@"defaultBrowser"];
   }
 }
 
@@ -1264,15 +1271,19 @@ enum { kHomepageNewTabPage, kHomepageURL };
   [self didChangeValueForKey:@"defaultBrowser"];
 }
 
-// Returns the Chromium default browser state.
-- (ShellIntegration::DefaultBrowserState)isDefaultBrowser {
-  return ShellIntegration::IsDefaultBrowser();
+// Returns the Chromium default browser state and whether this is user
+// controlled or locked by a policy.
+- (BOOL)canChangeDefaultBrowser {
+  return !default_browser_policy_.IsManaged() &&
+         ShellIntegration::IsDefaultBrowser() !=
+             ShellIntegration::IS_DEFAULT_BROWSER;
 }
 
 // Returns the text color of the "chromium is your default browser" text (green
 // for yes, red for no).
 - (NSColor*)defaultBrowserTextColor {
-  ShellIntegration::DefaultBrowserState state = [self isDefaultBrowser];
+  ShellIntegration::DefaultBrowserState state =
+      ShellIntegration::IsDefaultBrowser();
   return (state == ShellIntegration::IS_DEFAULT_BROWSER) ?
     [NSColor colorWithCalibratedRed:0.0 green:135.0/255.0 blue:0 alpha:1.0] :
     [NSColor colorWithCalibratedRed:135.0/255.0 green:0 blue:0 alpha:1.0];
@@ -1281,7 +1292,8 @@ enum { kHomepageNewTabPage, kHomepageURL };
 // Returns the text for the "chromium is your default browser" string dependent
 // on if Chromium actually is or not.
 - (NSString*)defaultBrowserText {
-  ShellIntegration::DefaultBrowserState state = [self isDefaultBrowser];
+  ShellIntegration::DefaultBrowserState state =
+      ShellIntegration::IsDefaultBrowser();
   int stringId;
   if (state == ShellIntegration::IS_DEFAULT_BROWSER)
     stringId = IDS_OPTIONS_DEFAULTBROWSER_DEFAULT;

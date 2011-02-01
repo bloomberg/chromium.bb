@@ -129,6 +129,22 @@
       ],
     },
     {
+      'name': 'DefaultBrowserSettingEnabled',
+      'type': 'main',
+      'supported_on': ['chrome.*:11-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
+      'caption': '''Set Chrome as Default Browser''',
+      'desc': '''Configures the default browser checks in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing them.
+
+      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will always check on startup whether it is the default browser and automatically register itself if possible.
+
+      If this setting is disabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will never check if it is the default browser and will disable user controls for setting this option.
+
+      If this setting is not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow the user to control whether it is the default browser and whether user notifications should be shown when it isn't.''',
+      'label': '''Set Chrome as Default Browser''',
+    },
+    {
       'name': 'ApplicationLocaleValue',
       'type': 'string',
       'supported_on': ['chrome.win:8-'],

@@ -48,6 +48,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/common/chrome_constants.h"
@@ -566,6 +567,12 @@ void BrowserProcessImpl::Observe(NotificationType type,
         plugin_data_remover_->StartRemoving(base::Time());
       }
     }
+  } else if (type == NotificationType::PREF_CHANGED) {
+    std::string* pref = Details<std::string>(details).ptr();
+    if (*pref == prefs::kDefaultBrowserSettingEnabled) {
+      if (local_state_->GetBoolean(prefs::kDefaultBrowserSettingEnabled))
+        ShellIntegration::SetAsDefaultBrowser();
+    }
   } else {
     NOTREACHED();
   }
@@ -742,6 +749,15 @@ void BrowserProcessImpl::CreateLocalState() {
   print_job_manager_->set_printing_enabled(printing_enabled);
   pref_change_registrar_.Add(prefs::kPrintingEnabled,
                              print_job_manager_.get());
+
+  // Initialize the notification for the default browser setting policy.
+  local_state_->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,
+                                    false);
+  if (local_state_->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled)) {
+    if (local_state_->GetBoolean(prefs::kDefaultBrowserSettingEnabled))
+      ShellIntegration::SetAsDefaultBrowser();
+  }
+  pref_change_registrar_.Add(prefs::kDefaultBrowserSettingEnabled, this);
 }
 
 void BrowserProcessImpl::CreateIconManager() {

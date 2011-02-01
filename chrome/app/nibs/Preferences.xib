@@ -2574,19 +2574,15 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: isDefaultBrowser</string>
+						<string key="label">enabled: canChangeDefaultBrowser</string>
 						<reference key="source" ref="192681043"/>
 						<reference key="destination" ref="1001"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="192681043"/>
 							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled: isDefaultBrowser</string>
+							<string key="NSLabel">enabled: canChangeDefaultBrowser</string>
 							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">isDefaultBrowser</string>
-							<object class="NSDictionary" key="NSOptions">
-								<string key="NS.key.0">NSValueTransformerName</string>
-								<string key="NS.object.0">NSNegateBoolean</string>
-							</object>
+							<string key="NSKeyPath">canChangeDefaultBrowser</string>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>

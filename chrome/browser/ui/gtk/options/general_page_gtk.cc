@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/instant/instant_controller.h"
@@ -108,6 +109,10 @@ GeneralPageGtk::GeneralPageGtk(Profile* profile)
   homepage_.Init(prefs::kHomePage, profile->GetPrefs(), this);
   show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(), this);
 
+  default_browser_policy_.Init(prefs::kDefaultBrowserSettingEnabled,
+                               g_browser_process->local_state(),
+                               this);
+
   instant_.Init(prefs::kInstantEnabled, profile->GetPrefs(), this);
 
   // Load initial values
@@ -201,6 +206,15 @@ void GeneralPageGtk::NotifyPrefChanged(const std::string* pref_name) {
       instant_checkbox_) {
     gtk_toggle_button_set_active(
         GTK_TOGGLE_BUTTON(instant_checkbox_), instant_.GetValue());
+  }
+
+  if (!pref_name || *pref_name == prefs::kDefaultBrowserSettingEnabled) {
+    // If the option is managed the UI is uncondionally disabled otherwise we
+    // restart the standard button enabling logic.
+    if (default_browser_policy_.IsManaged())
+      gtk_widget_set_sensitive(default_browser_use_as_default_button_, false);
+    else
+      default_browser_worker_->StartCheckDefaultBrowser();
   }
 
   initializing_ = false;
@@ -788,7 +802,8 @@ void GeneralPageGtk::SetDefaultBrowserUIState(
   }
 
   gtk_widget_set_sensitive(default_browser_use_as_default_button_,
-                           state == ShellIntegration::STATE_NOT_DEFAULT);
+                           state == ShellIntegration::STATE_NOT_DEFAULT &&
+                               !default_browser_policy_.IsManaged());
 }
 
 void GeneralPageGtk::OnInstantLabelSizeAllocate(GtkWidget* sender,

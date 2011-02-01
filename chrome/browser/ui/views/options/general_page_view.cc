@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
@@ -382,6 +383,9 @@ void GeneralPageView::InitControlLayout() {
       profile()->GetPrefs(), this);
   homepage_.Init(prefs::kHomePage, profile()->GetPrefs(), this);
   show_home_button_.Init(prefs::kShowHomeButton, profile()->GetPrefs(), this);
+  default_browser_policy_.Init(prefs::kDefaultBrowserSettingEnabled,
+                               g_browser_process->local_state(),
+                               this);
 }
 
 void GeneralPageView::NotifyPrefChanged(const std::string* pref_name) {
@@ -446,6 +450,15 @@ void GeneralPageView::NotifyPrefChanged(const std::string* pref_name) {
 
   if (!pref_name || *pref_name == prefs::kInstantEnabled)
     instant_checkbox_->SetChecked(prefs->GetBoolean(prefs::kInstantEnabled));
+
+  if (!pref_name || *pref_name == prefs::kDefaultBrowserSettingEnabled) {
+    // If the option is managed the UI is uncondionally disabled otherwise we
+    // restart the standard button enabling logic.
+    if (default_browser_policy_.IsManaged())
+      default_browser_use_as_default_button_->SetEnabled(false);
+    else
+      default_browser_worker_->StartCheckDefaultBrowser();
+  }
 }
 
 void GeneralPageView::HighlightGroup(OptionsGroup highlight_group) {
@@ -463,7 +476,9 @@ void GeneralPageView::LinkActivated(views::Link* source, int event_flags) {
 
 void GeneralPageView::SetDefaultBrowserUIState(
     ShellIntegration::DefaultBrowserUIState state) {
-  bool button_enabled = state == ShellIntegration::STATE_NOT_DEFAULT;
+  bool button_enabled =
+      (state == ShellIntegration::STATE_NOT_DEFAULT) &&
+      !default_browser_policy_.IsManaged();
   default_browser_use_as_default_button_->SetEnabled(button_enabled);
   default_browser_use_as_default_button_->SetNeedElevation(true);
   if (state == ShellIntegration::STATE_IS_DEFAULT) {

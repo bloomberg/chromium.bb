@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -301,10 +301,20 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   }
 #endif
 
-  if (prefs.GetBool(
-          installer::master_preferences::kMakeChromeDefaultForUser,
-          &value) && value) {
-    ShellIntegration::SetAsDefaultBrowser();
+  // Even on the first run we only allow for the user choice to take effect if
+  // no policy has been set by the admin.
+  if (!g_browser_process->local_state()->IsManagedPreference(
+          prefs::kDefaultBrowserSettingEnabled)) {
+    if (prefs.GetBool(
+            installer::master_preferences::kMakeChromeDefaultForUser,
+            &value) && value) {
+      ShellIntegration::SetAsDefaultBrowser();
+    }
+  } else {
+    if (g_browser_process->local_state()->GetBoolean(
+            prefs::kDefaultBrowserSettingEnabled)) {
+      ShellIntegration::SetAsDefaultBrowser();
+    }
   }
 
   return false;

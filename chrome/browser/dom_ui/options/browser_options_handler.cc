@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
@@ -133,6 +134,9 @@ void BrowserOptionsHandler::Initialize() {
           make_scoped_refptr(new DOMUIFavIconSource(profile))));
 
   homepage_.Init(prefs::kHomePage, profile->GetPrefs(), NULL);
+  default_browser_policy_.Init(prefs::kDefaultBrowserSettingEnabled,
+                               g_browser_process->local_state(),
+                               this);
   UpdateDefaultBrowserState();
   UpdateStartupPages();
   UpdateSearchEngines();
@@ -187,6 +191,11 @@ void BrowserOptionsHandler::UpdateDefaultBrowserState() {
 }
 
 void BrowserOptionsHandler::BecomeDefaultBrowser(const ListValue* args) {
+  // If the default browser setting is managed then we should not be able to
+  // call this function.
+  if (default_browser_policy_.IsManaged())
+    return;
+
   UserMetricsRecordAction(UserMetricsAction("Options_SetAsDefaultBrowser"));
 #if defined(OS_MACOSX)
   if (ShellIntegration::SetAsDefaultBrowser())
@@ -230,8 +239,9 @@ void BrowserOptionsHandler::SetDefaultBrowserUIString(int status_string_id) {
       status_string_id == IDS_OPTIONS_DEFAULTBROWSER_DEFAULT));
 
   scoped_ptr<Value> can_be_default(Value::CreateBooleanValue(
-      status_string_id == IDS_OPTIONS_DEFAULTBROWSER_DEFAULT ||
-      status_string_id == IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT));
+      !default_browser_policy_.IsManaged() &&
+      (status_string_id == IDS_OPTIONS_DEFAULTBROWSER_DEFAULT ||
+       status_string_id == IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT)));
 
   dom_ui_->CallJavascriptFunction(
       L"BrowserOptions.updateDefaultBrowserState",
@@ -331,6 +341,12 @@ void BrowserOptionsHandler::OnItemsAdded(int start, int length) {
 
 void BrowserOptionsHandler::OnItemsRemoved(int start, int length) {
   OnModelChanged();
+}
+
+void BrowserOptionsHandler::Observe(NotificationType type,
+                     const NotificationSource& source,
+                     const NotificationDetails& details) {
+  UpdateDefaultBrowserState();
 }
 
 void BrowserOptionsHandler::SetStartupPagesToCurrentPages(

@@ -92,6 +92,7 @@ class ProfileSyncService;
   BooleanPrefMember instantEnabled_;
   IBOutlet NSButton* instantCheckbox_;
   scoped_nsobject<SearchEngineListModel> searchEngineModel_;
+  BooleanPrefMember default_browser_policy_;
   // Used when creating a new home page url to make the new cell editable.
   BOOL pendingSelectForEdit_;
   BOOL restoreButtonsEnabled_;

@@ -46,6 +46,11 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   virtual void OnItemsRemoved(int start, int length);
 
  private:
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   // Sets the home page to the given string. Called from DOMUI.
   void SetHomePage(const ListValue* args);
 
@@ -91,6 +96,7 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
 
   StringPrefMember homepage_;
+  BooleanPrefMember default_browser_policy_;
 
   TemplateURLModel* template_url_model_;  // Weak.
 
