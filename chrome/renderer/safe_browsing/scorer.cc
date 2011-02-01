@@ -15,7 +15,7 @@
 
 namespace safe_browsing {
 
-const int Scorer::kMaxPhishingModelSizeBytes = 50 * 1024;
+const int Scorer::kMaxPhishingModelSizeBytes = 70 * 1024;
 
 // Helper function which converts log odds to a probability in the range
 // [0.0,1.0].
