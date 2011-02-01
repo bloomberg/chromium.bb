@@ -373,11 +373,11 @@ display_create_shm_surface(struct display *display,
 	data->length = stride * rectangle->height;
 	fd = mkstemp(filename);
 	if (fd < 0) {
-		fprintf(stderr, "open %s failed: %m", filename);
+		fprintf(stderr, "open %s failed: %m\n", filename);
 		return NULL;
 	}
 	if (ftruncate(fd, data->length) < 0) {
-		fprintf(stderr, "ftruncate failed: %m");
+		fprintf(stderr, "ftruncate failed: %m\n");
 		close(fd);
 		return NULL;
 	}
@@ -387,7 +387,7 @@ display_create_shm_surface(struct display *display,
 	unlink(filename);
 
 	if (data->map == MAP_FAILED) {
-		fprintf(stderr, "mmap failed: %m");
+		fprintf(stderr, "mmap failed: %m\n");
 		close(fd);
 		return NULL;
 	}
@@ -1592,7 +1592,7 @@ init_drm(struct display *d)
 	}
 
 	if (drmGetMagic(fd, &magic)) {
-		fprintf(stderr, "DRI2: failed to get drm magic");
+		fprintf(stderr, "DRI2: failed to get drm magic\n");
 		return -1;
 	}
 
