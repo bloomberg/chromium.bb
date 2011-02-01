@@ -129,3 +129,6 @@ fun:XSetErrorHandler
 # TSan doesn't support lockf and hence shared memory locks in this function;
 # http://crbug.com/45083
 fun_r:*base*StatsTable*AddCounter*
+
+# TSan doesn't understand internal libc locks, see http://crbug.com/71435
+fun_r:mbsrtowcs
