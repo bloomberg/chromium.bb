@@ -352,22 +352,8 @@ void AutoFillAgent::FillAutoFillFormData(const WebNode& node,
 }
 
 void AutoFillAgent::SendForms(WebFrame* frame) {
-  // TODO(jhawkins): Use FormManager once we have strict ordering of form
-  // control elements in the cache.
-  WebKit::WebVector<WebFormElement> web_forms;
-  frame->forms(web_forms);
-
   std::vector<webkit_glue::FormData> forms;
-  for (size_t i = 0; i < web_forms.size(); ++i) {
-    const WebFormElement& web_form = web_forms[i];
-
-    webkit_glue::FormData form;
-    if (FormManager::WebFormElementToFormData(
-            web_form, FormManager::REQUIRE_NONE,
-            FormManager::EXTRACT_NONE, &form)) {
-      forms.push_back(form);
-    }
-  }
+  form_manager_.GetFormsInFrame(frame, FormManager::REQUIRE_NONE, &forms);
 
   if (!forms.empty())
     Send(new AutoFillHostMsg_FormsSeen(routing_id(), forms));

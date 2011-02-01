@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/scoped_vector.h"
 #include "base/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 
@@ -92,16 +93,12 @@ class FormManager {
       RequirementsMask requirements,
       webkit_glue::FormData* form);
 
-  // Fills the form represented by |form|.  |form| should have the name set to
-  // the name of the form to fill out, and the number of elements and values
-  // must match the number of stored elements in the form. |node| is the form
-  // control element that initiated the auto-fill process.
-  // TODO(jhawkins): Is matching on name alone good enough?  It's possible to
-  // store multiple forms with the same names from different frames.
+  // Fills the form represented by |form|. |node| is the input element that
+  // initiated the auto-fill process.
   bool FillForm(const webkit_glue::FormData& form, const WebKit::WebNode& node);
 
-  // Previews the form represented by |form|. |node| is the form control element
-  // that initiated the preview process. Same conditions as FillForm.
+  // Previews the form represented by |form|. |node| is the input element that
+  // initiated the preview process.
   bool PreviewForm(const webkit_glue::FormData& form,
                    const WebKit::WebNode &node);
 
@@ -128,22 +125,16 @@ class FormManager {
  private:
   // Stores the WebFormElement and the form control elements for a form.
   // Original form values are stored so when we clear a form we can reset
-  // "select-one" values to their original state.
+  // <select> elements to their original value.
   struct FormElement;
 
   // Type for cache of FormElement objects.
-  typedef std::vector<FormElement*> FormElementList;
+  typedef ScopedVector<FormElement> FormElementList;
 
   // The callback type used by ForEachMatchingFormField().
   typedef Callback3<WebKit::WebFormControlElement*,
                     const webkit_glue::FormField*,
                     bool>::Type Callback;
-
-  // Infers corresponding label for |element| from surrounding context in the
-  // DOM.  Contents of preceding <p> tag or preceding text element found in
-  // the form.
-  static string16 InferLabelForElement(
-      const WebKit::WebFormControlElement& element);
 
   // Finds the cached FormElement that contains |node|.
   bool FindCachedFormElementWithNode(const WebKit::WebNode& node,

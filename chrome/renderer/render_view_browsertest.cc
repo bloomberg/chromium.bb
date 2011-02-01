@@ -1116,30 +1116,11 @@ TEST_F(RenderViewTest, FillFormElement) {
            "  <input type=\"text\" id=\"middlename\"/>"
            "</form>");
 
-  // Verify that "FormsSeen" sends the expected number of fields.
+  // Verify that "FormsSeen" isn't sent, as there are too few fields.
   ProcessPendingMessages();
   const IPC::Message* message = render_thread_.sink().GetFirstMessageMatching(
       AutoFillHostMsg_FormsSeen::ID);
-  ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  AutoFillHostMsg_FormsSeen::Param params;
-  AutoFillHostMsg_FormsSeen::Read(message, &params);
-  const std::vector<FormData>& forms = params.a;
-  ASSERT_EQ(1UL, forms.size());
-  ASSERT_EQ(2UL, forms[0].fields.size());
-  EXPECT_TRUE(forms[0].fields[0].StrictlyEqualsHack(
-      FormField(string16(),
-                ASCIIToUTF16("firstname"),
-                string16(),
-                ASCIIToUTF16("text"),
-                kDefaultMaxLength,
-                false))) << forms[0].fields[0];
-  EXPECT_TRUE(forms[0].fields[1].StrictlyEqualsHack(
-      FormField(string16(),
-                ASCIIToUTF16("middlename"),
-                string16(),
-                ASCIIToUTF16("text"),
-                kDefaultMaxLength,
-                false))) << forms[0].fields[1];
+  ASSERT_EQ(static_cast<IPC::Message*>(NULL), message);
 
   // Verify that |didAcceptAutoFillSuggestion()| sets the value of the expected
   // field.
@@ -1153,12 +1134,11 @@ TEST_F(RenderViewTest, FillFormElement) {
 
   // Accept a suggestion in a form that has been auto-filled.  This triggers
   // the direct filling of the firstname element with value parameter.
-  autofill_agent_->didAcceptAutoFillSuggestion(
-      firstname,
-      WebKit::WebString::fromUTF8("David"),
-      WebKit::WebString(),
-      0,
-      0);
+  autofill_agent_->didAcceptAutoFillSuggestion(firstname,
+                                               WebString::fromUTF8("David"),
+                                               WebString(),
+                                               0,
+                                               0);
 
   ProcessPendingMessages();
   const IPC::Message* message2 = render_thread_.sink().GetUniqueMessageMatching(
