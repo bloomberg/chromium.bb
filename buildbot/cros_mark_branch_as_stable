@@ -1,0 +1,98 @@
+#!/bin/bash
+
+# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Mark all ebuilds in chromiumos-overlay and chromeos-overlay as stable and
+# point them at the current version we have checked out.
+#
+# This is useful in case we want to verify that all ebuilds are pointing at the
+# right commit hash when we are doing a build on a branch. It is intended to be
+# used prior to tagging and can be used instead of a preflight queue. It is an
+# alternative to cros_mark_all_as_stable that does not require a chroot and
+# does not increase the revision number on ebuilds.
+#
+# Unlike cros_mark_all_as_stable, which only updates the latest stable ebuild
+# for a given board, this script updates all stable ebuilds for all boards,
+# including unused stable ebuilds. We do this for the sake of simplicity
+# because it's hard to know in advance which ebuilds are truly unused, and it
+# shouldn't hurt to update unused ebuilds.
+#
+# This script does not support cros_mark_as_stable_blacklist. If there are any
+# packages in the blacklist, this script exits with an error message.
+#
+# Long term, the plan is to get rid of this script and replace it with
+# cros_mark_all_as_stable. This script is only present to help with branching.
+#
+# Example usage: ./cros_mark_branch_as_stable
+
+# Load common constants.  This should be the first executable line.
+# The path to common.sh should be relative to your script's location.
+. "$(dirname "$0")/common.sh"
+
+function is_workon() { xargs grep -lE '^inherit.*cros-workon'; }
+function is_stable() { xargs grep -lE '^KEYWORDS=[^~]*$'; }
+function is_unstable() { xargs grep -lE '^KEYWORDS=.*~'; }
+
+function get_workon_commit() {
+  # Get the latest workon commit associated with an ebuild.
+  ebuild="$1"
+  dir=$(dirname $ebuild)
+  CATEGORY=$(basename $(dirname "$dir"))
+  CROS_WORKON_LOCALNAME=$(basename "$dir")
+  CROS_WORKON_SUBDIR=
+
+  # Grab the code from the ebuild that initializes the CROS_WORKON_*
+  # variables, and eval it. Note that this only works if the variables are at
+  # the start of the line (i.e. it doesn't work for "if" statements).
+  eval $(grep -E '^CROS_WORKON' $ebuild)
+
+  SUFFIX="$CROS_WORKON_LOCALNAME/$CROS_WORKON_SUBDIR"
+  if [[ "$CATEGORY" = "chromeos-base" ]]; then
+    SRCDIR="$GCLIENT_ROOT/src/platform/$SUFFIX"
+  else
+    SRCDIR="$GCLIENT_ROOT/src/third_party/$SUFFIX"
+  fi
+
+  # TODO(anush): This hack is only necessary because the kernel ebuild has "if"
+  # statements, so we can't grab the CROS_WORKON_LOCALNAME properly. We should
+  # clean up the kernel ebuild and remove this hack.
+  if ! [[ -d "$SRCDIR" ]] && [[ "$CROS_WORKON_LOCALNAME" = "kernel" ]]; then
+    SRCDIR="$GCLIENT_ROOT/src/third_party/kernel/files"
+  fi
+
+  cd $SRCDIR && git rev-parse HEAD
+}
+
+BLACKLIST_FILE=$(dirname "$0")/cros_mark_as_stable_blacklist
+BLACKLIST=$(cat "$BLACKLIST_FILE")
+if [[ -n "$BLACKLIST" ]]; then
+  die "$0 does not support cros_mark_as_stable_blacklist"
+fi
+
+for overlay in "$GCLIENT_ROOT/src/private-overlays/chromeos-overlay" \
+               "$GCLIENT_ROOT/src/third_party/chromiumos-overlay"; do
+  if [[ -d "$overlay" ]]; then
+    ebuilds=$(find "$overlay" -type f -name "*.ebuild" | is_workon | is_stable)
+    for ebuild in $ebuilds; do
+      dir=$(dirname "$ebuild")
+      unstable_ebuild=$(echo "$dir"/*-9999.ebuild | is_workon | is_unstable)
+      if [[ -f "$unstable_ebuild" ]]; then
+        COMMIT=$(get_workon_commit $unstable_ebuild)
+        sed -e '/^KEYWORDS="/s/~//g' -e '/^CROS_WORKON_COMMIT=/d' \
+            -e "/^EAPI/s/\$/\nCROS_WORKON_COMMIT=\"$COMMIT\"/g" \
+          "$unstable_ebuild" > "$ebuild"
+      else
+        echo "No 9999 ebuild for $ebuild" >&2
+        COMMIT=$(get_workon_commit $ebuild)
+        sed -i -e "/^CROS_WORKON_COMMIT/s|=.*|=\"$COMMIT\"|" "$ebuild"
+      fi
+      if [[ -z "$COMMIT" ]]; then
+        die "No commit hash for $ebuild"
+      fi
+    done
+  fi
+done
+
+echo Updated all ebuilds
