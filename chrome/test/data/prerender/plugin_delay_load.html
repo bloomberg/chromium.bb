@@ -1,0 +1,29 @@
+<html>
+<!-- 
+This test checks to make sure plugins aren't loaded when a page is prerendered,
+but are loaded once the page is displayed.
+-->
+<head>
+<title>Prerender Plugin Delay Loading</title>
+
+<script>
+// Make sure plugin was not loaded while prerendering.
+function DidPrerenderPass() {
+  // |plugin| should be the blocked plugin placeholder, rather than the
+  // test plugin.
+  var plugin = window.document['plugin'];
+  return plugin.getURL == undefined;
+}
+
+// Make sure plugin loads once the page is displayed.
+function DidDisplayPass() {
+  var plugin = window.document['plugin'];
+  return plugin.getURL != undefined;
+}
+</script>
+
+</head>
+<body>
+<embed name="plugin" type="application/x-webkit-test-netscape"></embed>
+</body>
+</html>

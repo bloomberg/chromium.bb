@@ -126,7 +126,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
       ASSERT_TRUE(prerender_contents->did_finish_loading());
 
       // Check if page behaves as expected while in prerendered state.
-      bool prerender_test_result;
+      bool prerender_test_result = false;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
           prerender_contents->render_view_host(), L"",
           L"window.domAutomationController.send(DidPrerenderPass())",
@@ -171,13 +171,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
 }
 
 // Checks that the prerendering of a page is canceled correctly when a
-// Javascript alert is called
+// Javascript alert is called.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertBeforeOnload) {
   PrerenderTestURL("prerender_alert_before_onload.html", false);
 }
 
 // Checks that the prerendering of a page is canceled correctly when a
-// Javascript alert is called
+// Javascript alert is called.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
   PrerenderTestURL("prerender_alert_after_onload.html", false);
+}
+
+// Checks that plugins are not loaded while a page is being preloaded, but
+// are loaded when the page is displayed.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
+  PrerenderTestURL("plugin_delay_load.html", true);
+  NavigateToDestURL();
 }
