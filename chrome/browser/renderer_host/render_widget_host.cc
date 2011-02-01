@@ -1051,11 +1051,13 @@ void RenderWidgetHost::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
 }
 
 void RenderWidgetHost::OnMsgPluginFocusChanged(bool focused, int plugin_id) {
-  view_->PluginFocusChanged(focused, plugin_id);
+  if (view_)
+    view_->PluginFocusChanged(focused, plugin_id);
 }
 
 void RenderWidgetHost::OnMsgStartPluginIme() {
-  view_->StartPluginIme();
+  if (view_)
+    view_->StartPluginIme();
 }
 
 void RenderWidgetHost::OnAllocateFakePluginWindowHandle(
