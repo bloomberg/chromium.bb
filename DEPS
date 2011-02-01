@@ -37,7 +37,7 @@ deps = {
     "http://googlemock.googlecode.com/svn/trunk@300",
 
   "src/third_party/angle":
-    (Var("googlecode_url") % "angleproject") + "/trunk@541",
+    (Var("googlecode_url") % "angleproject") + "/trunk@551",
 
   "src/third_party/WebKit":
     "/trunk/deps/third_party/WebKit@71605",
