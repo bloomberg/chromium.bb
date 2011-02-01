@@ -3714,3 +3714,17 @@
    fun:_ZN2ui17GetWindowGeometryEPiS0_PjS1_m
    fun:_ZN19RenderMessageFilter17DoOnGetWindowRectEiPN3IPC7MessageE
 }
+{
+   bug_71582
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12SiteInstance10GetProcessEv
+   fun:_ZN14RenderViewHostC1EP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
+   ...
+   fun:_ZN21RenderViewHostFactory6CreateEP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
+   fun:_ZN21RenderViewHostManager4InitEP7ProfileP12SiteInstancei
+   fun:_ZN11TabContentsC2EP7ProfileP12SiteInstanceiPKS_P23SessionStorageNamespace
+   fun:_ZN15TestTabContentsC1EP7ProfileP12SiteInstance
+   ...
+   fun:_ZN7testing8TestInfo3RunEv
+}

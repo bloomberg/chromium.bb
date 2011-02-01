@@ -1218,3 +1218,17 @@
    fun:NiceMock
    fun:SyncUIUtilTest_ConstructAboutInformationWithUnrecoverableErrorTest_Test::TestBody
 }
+{
+   bug_71582
+   Heapcheck:Leak
+   ...
+   fun:SiteInstance::GetProcess
+   fun:RenderViewHost
+   fun:RenderViewHostFactory::Create
+   fun:RenderViewHostManager::Init
+   fun:TabContents
+   fun:TestTabContents
+   fun:SyncInternalsUITest
+   fun:SyncInternalsUITest_*
+}
+
