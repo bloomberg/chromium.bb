@@ -488,7 +488,7 @@ void RenderWidget::CallDoDeferredUpdate() {
 }
 
 void RenderWidget::UpdateAnimationsIfNeeded() {
-  if (!is_hidden() && animation_update_pending_) {
+  if (webwidget_ && !is_hidden() && animation_update_pending_) {
     base::Time now = base::Time::Now();
     if (now >= animation_floor_time_) {
        animation_update_pending_ = false;
