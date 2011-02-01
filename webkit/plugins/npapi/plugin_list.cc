@@ -141,8 +141,8 @@ static const VersionRangeDefinition kJavaVersionRange[] = {
 };
 
 static const VersionRangeDefinition kRedhatIcedTeaVersionRange[] = {
-    { "0", "1.9", "1.8.3", true },
-    { "1.9", "1.10", "1.9.2", true },
+    { "0", "1.9", "1.8.5", true },
+    { "1.9", "1.10", "1.9.5", true },
 };
 
 static const PluginGroupDefinition kGroupDefinitions[] = {
@@ -152,7 +152,7 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
   { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java",
     kJavaVersionRange, arraysize(kJavaVersionRange),
     "http://www.java.com/en/download/manual.jsp" },
-  { "redhat-icetea-java", "IceTea", "IcedTea",
+  { "redhat-icetea-java", "IcedTea", "IcedTea",
     kRedhatIcedTeaVersionRange, arraysize(kRedhatIcedTeaVersionRange),
     "http://www.linuxsecurity.com/content/section/3/170/" },
 };
