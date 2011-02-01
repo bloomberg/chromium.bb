@@ -16,6 +16,7 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "ia2_api_all.h"  // Generated    NOLINT
+#include "ISimpleDOMNode.h"  // Generated   NOLINT
 
 using std::auto_ptr;
 using std::vector;
@@ -135,7 +136,7 @@ HRESULT QueryIAccessible2(IAccessible* accessible, IAccessible2** accessible2) {
 
 // Sets result to true if the child is located in the parent's tree. An
 // exhustive search is perform here because we determine equality using
-// IAccessible2::get_uniqueID which is only supported by the child node.
+// IAccessible2::get_unique_id which is only supported by the child node.
 void AccessibleContainsAccessible(
     IAccessible* parent, IAccessible2* child, bool* result) {
   vector<ScopedComPtr<IAccessible>> accessible_list;
@@ -143,7 +144,7 @@ void AccessibleContainsAccessible(
 
   LONG unique_id;
   HRESULT hr = child->get_uniqueID(&unique_id);
-  ASSERT_EQ(hr, S_OK);
+  ASSERT_EQ(S_OK, hr);
   *result = false;
 
   while (accessible_list.size()) {
@@ -163,7 +164,7 @@ void AccessibleContainsAccessible(
 
     LONG child_count;
     hr = accessible->get_accChildCount(&child_count);
-    ASSERT_EQ(hr, S_OK);
+    ASSERT_EQ(S_OK, hr);
     if (child_count == 0)
       continue;
 
@@ -171,7 +172,7 @@ void AccessibleContainsAccessible(
     LONG obtained_count = 0;
     hr = AccessibleChildren(
         accessible, 0, child_count, child_array.get(), &obtained_count);
-    ASSERT_EQ(hr, S_OK);
+    ASSERT_EQ(S_OK, hr);
     ASSERT_EQ(child_count, obtained_count);
 
     for (int index = 0; index < obtained_count; index++) {
@@ -259,7 +260,7 @@ void AccessibleChecker::CheckAccessibleName(IAccessible* accessible) {
     EXPECT_EQ(hr, S_FALSE);
   } else {
     // Test that the correct string was returned.
-    EXPECT_EQ(hr, S_OK);
+    EXPECT_EQ(S_OK, hr);
     EXPECT_STREQ(name_.c_str(),
                  wstring(name.m_str, SysStringLen(name)).c_str());
   }
@@ -269,7 +270,7 @@ void AccessibleChecker::CheckAccessibleRole(IAccessible* accessible) {
   VARIANT var_role = {0};
   HRESULT hr =
       accessible->get_accRole(CreateI4Variant(CHILDID_SELF), &var_role);
-  ASSERT_EQ(hr, S_OK);
+  ASSERT_EQ(S_OK, hr);
   EXPECT_TRUE(role_ == var_role);
 }
 
@@ -291,7 +292,7 @@ void AccessibleChecker::CheckAccessibleState(IAccessible* accessible) {
   VARIANT var_state = {0};
   HRESULT hr =
       accessible->get_accState(CreateI4Variant(CHILDID_SELF), &var_state);
-  EXPECT_EQ(hr, S_OK);
+  EXPECT_EQ(S_OK, hr);
   ASSERT_EQ(VT_I4, V_VT(&var_state));
   EXPECT_EQ(state_, V_I4(&var_state));
 }
@@ -299,14 +300,14 @@ void AccessibleChecker::CheckAccessibleState(IAccessible* accessible) {
 void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
   LONG child_count = 0;
   HRESULT hr = parent->get_accChildCount(&child_count);
-  EXPECT_EQ(hr, S_OK);
+  EXPECT_EQ(S_OK, hr);
   ASSERT_EQ(child_count, children_.size());
 
   auto_ptr<VARIANT> child_array(new VARIANT[child_count]);
   LONG obtained_count = 0;
   hr = AccessibleChildren(parent, 0, child_count,
                           child_array.get(), &obtained_count);
-  ASSERT_EQ(hr, S_OK);
+  ASSERT_EQ(S_OK, hr);
   ASSERT_EQ(child_count, obtained_count);
 
   VARIANT* child = child_array.get();
@@ -361,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_NE(document_accessible.get(), reinterpret_cast<IAccessible*>(NULL));
   ScopedComPtr<IDispatch> parent_dispatch;
   HRESULT hr = document_accessible->get_accParent(parent_dispatch.Receive());
-  EXPECT_EQ(hr, S_OK);
+  EXPECT_EQ(S_OK, hr);
   EXPECT_NE(parent_dispatch, reinterpret_cast<IDispatch*>(NULL));
 
   // Navigate to another page.
@@ -542,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_NE(document_accessible.get(), reinterpret_cast<IAccessible*>(NULL));
   HRESULT hr = document_accessible->accSelect(
     SELFLAG_TAKEFOCUS, CreateI4Variant(CHILDID_SELF));
-  ASSERT_EQ(hr, S_OK);
+  ASSERT_EQ(S_OK, hr);
   ui_test_utils::WaitForNotification(
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
@@ -637,12 +638,75 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   }
 
   // If pointer comparison fails resort to the exhuasive search that can use
-  // IAccessible2::get_uniqueID for equality comparison.
+  // IAccessible2::get_unique_id for equality comparison.
   if (!found) {
     AccessibleContainsAccessible(
         browser_accessible, document_accessible2, &found);
   }
 
   ASSERT_EQ(found, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       SupportsISimpleDOM) {
+  GURL tree_url("data:text/html,<body><input type='checkbox' /></body>");
+  browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  GetRendererAccessible();
+  ui_test_utils::WaitForNotification(
+      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
+
+  // Get the IAccessible object for the document.
+  ScopedComPtr<IAccessible> document_accessible(GetRendererAccessible());
+  ASSERT_NE(document_accessible.get(), reinterpret_cast<IAccessible*>(NULL));
+
+  // Get the ISimpleDOM object for the document.
+  ScopedComPtr<IServiceProvider> service_provider;
+  HRESULT hr = static_cast<IAccessible*>(document_accessible)->QueryInterface(
+      service_provider.Receive());
+  ASSERT_EQ(S_OK, hr);
+  const GUID refguid = {0x0c539790, 0x12e4, 0x11cf,
+                        0xb6, 0x61, 0x00, 0xaa, 0x00, 0x4c, 0xd6, 0xd8};
+  ScopedComPtr<ISimpleDOMNode> document_isimpledomnode;
+  hr = static_cast<IServiceProvider *>(service_provider)->QueryService(
+      refguid, IID_ISimpleDOMNode,
+      reinterpret_cast<void**>(document_isimpledomnode.Receive()));
+  ASSERT_EQ(S_OK, hr);
+
+  BSTR node_name;
+  short name_space_id;  // NOLINT
+  BSTR node_value;
+  unsigned int num_children;
+  unsigned int unique_id;
+  unsigned short node_type;  // NOLINT
+  hr = document_isimpledomnode->get_nodeInfo(
+      &node_name, &name_space_id, &node_value, &num_children, &unique_id,
+      &node_type);
+  ASSERT_EQ(S_OK, hr);
+  EXPECT_EQ(NODETYPE_DOCUMENT, node_type);
+  EXPECT_EQ(1, num_children);
+
+  ScopedComPtr<ISimpleDOMNode> body_isimpledomnode;
+  hr = document_isimpledomnode->get_firstChild(
+      body_isimpledomnode.Receive());
+  ASSERT_EQ(S_OK, hr);
+  hr = body_isimpledomnode->get_nodeInfo(
+      &node_name, &name_space_id, &node_value, &num_children, &unique_id,
+      &node_type);
+  ASSERT_EQ(S_OK, hr);
+  EXPECT_STREQ(L"body", wstring(node_name, SysStringLen(node_name)).c_str());
+  EXPECT_EQ(NODETYPE_ELEMENT, node_type);
+  EXPECT_EQ(1, num_children);
+
+  ScopedComPtr<ISimpleDOMNode> checkbox_isimpledomnode;
+  hr = body_isimpledomnode->get_firstChild(
+      checkbox_isimpledomnode.Receive());
+  ASSERT_EQ(S_OK, hr);
+  hr = checkbox_isimpledomnode->get_nodeInfo(
+      &node_name, &name_space_id, &node_value, &num_children, &unique_id,
+      &node_type);
+  ASSERT_EQ(S_OK, hr);
+  EXPECT_STREQ(L"input", wstring(node_name, SysStringLen(node_name)).c_str());
+  EXPECT_EQ(NODETYPE_ELEMENT, node_type);
+  EXPECT_EQ(0, num_children);
 }
 }  // namespace.

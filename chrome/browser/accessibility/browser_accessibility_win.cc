@@ -12,6 +12,15 @@
 
 using webkit_glue::WebAccessibility;
 
+// The GUID for the ISimpleDOM service is not defined in the IDL files.
+// This is taken directly from the Mozilla sources
+// (accessible/src/msaa/nsAccessNodeWrap.cpp) and it's also documented at:
+// http://developer.mozilla.org/en/Accessibility/AT-APIs/ImplementationFeatures/MSAA
+
+const GUID GUID_ISimpleDOM = {
+    0x0c539790, 0x12e4, 0x11cf,
+    0xb6, 0x61, 0x00, 0xaa, 0x00, 0x4c, 0xd6, 0xd8};
+
 // static
 BrowserAccessibility* BrowserAccessibility::Create() {
   CComObject<BrowserAccessibilityWin>* instance;
@@ -1070,7 +1079,8 @@ STDMETHODIMP BrowserAccessibilityWin::QueryService(
       guidService == IID_IAccessibleText ||
       guidService == IID_ISimpleDOMDocument ||
       guidService == IID_ISimpleDOMNode ||
-      guidService == IID_ISimpleDOMText) {
+      guidService == IID_ISimpleDOMText ||
+      guidService == GUID_ISimpleDOM) {
     return QueryInterface(riid, object);
   }
 
