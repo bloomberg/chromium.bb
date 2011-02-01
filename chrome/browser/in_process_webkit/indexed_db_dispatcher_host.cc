@@ -840,8 +840,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnUpdate(
 
   *ec = 0;
   idb_cursor->update(
-      value,
-      new IndexedDBCallbacks<WebSerializedScriptValue>(parent_, response_id), *ec);
+      value, new IndexedDBCallbacks<WebIDBKey>(parent_, response_id), *ec);
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
