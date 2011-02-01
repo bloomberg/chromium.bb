@@ -22,6 +22,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/field_types.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/automation_constants.h"
@@ -76,9 +77,11 @@ namespace gfx {
 class Point;
 }
 
-class AutomationProvider : public base::RefCounted<AutomationProvider>,
-                           public IPC::Channel::Listener,
-                           public IPC::Message::Sender {
+class AutomationProvider
+    : public IPC::Channel::Listener,
+      public IPC::Message::Sender,
+      public base::RefCountedThreadSafe<AutomationProvider,
+                                        BrowserThread::DeleteOnUIThread> {
  public:
   explicit AutomationProvider(Profile* profile);
 
@@ -173,7 +176,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   DictionaryValue* GetDictionaryFromDownloadItem(const DownloadItem* download);
 
  protected:
-  friend class base::RefCounted<AutomationProvider>;
+  friend class BrowserThread;
+  friend class DeleteTask<AutomationProvider>;
   virtual ~AutomationProvider();
 
   // Helper function to find the browser window that contains a given

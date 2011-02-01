@@ -113,6 +113,8 @@ AutomationProvider::AutomationProvider(Profile* profile)
       initial_loads_complete_(false) {
   TRACE_EVENT_BEGIN("AutomationProvider::AutomationProvider", 0, "");
 
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   browser_tracker_.reset(new AutomationBrowserTracker(this));
   extension_tracker_.reset(new AutomationExtensionTracker(this));
   tab_tracker_.reset(new AutomationTabTracker(this));

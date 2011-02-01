@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/automation/chrome_frame_automation_provider.h"
 #include "ipc/ipc_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,6 +21,9 @@ class MockChromeFrameAutomationProvider
 };
 
 TEST(AutomationProviderTest, TestInvalidChromeFrameMessage) {
+  MessageLoop message_loop;
+  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+
   IPC::Message bad_msg(1, -1, IPC::Message::PRIORITY_NORMAL);
 
   scoped_refptr<MockChromeFrameAutomationProvider>
