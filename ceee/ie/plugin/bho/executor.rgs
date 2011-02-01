@@ -1,9 +1,0 @@
-HKCR {
-  NoRemove CLSID {
-    ForceRemove '%CLSID%' = s '%NAME%' {
-      InprocServer32 = s '%MODULE%' {
-        val ThreadingModel = s '%THREADING_MODEL%'
-      }
-    }
-  }
-}

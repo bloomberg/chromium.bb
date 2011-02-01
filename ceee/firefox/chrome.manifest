@@ -1,6 +1,0 @@
-content	ceee	content/
-resource modules	modules/
-locale	ceee	en-US	locale/en-US/
-skin	ceee	classic/1.0	skin/
-overlay	chrome://browser/content/browser.xul	chrome://ceee/content/overlay.xul
-style	chrome://global/content/customizeToolbar.xul	chrome://ceee/skin/overlay.css

@@ -1,8 +1,0 @@
-CEEE is an acronym for Chrome Extensions Execution Environment. It s
-an optional feature of Chrome Frame that acts as an adapter layer for
-a subset of the Chrome Extension APIs. This enables extensions that
-stick to the supported subset of APIs to work in the context of Chrome
-Frame with minimal or sometimes no changes.
-
-A design document is available at
-http://www.chromium.org/developers/design-documents/ceee

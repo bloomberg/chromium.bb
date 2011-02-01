@@ -1,9 +1,0 @@
-HKCR {
-  NoRemove CLSID {
-    ForceRemove '%CLSID%' = s '%NAME%' {
-      ForceRemove 'Programmable'
-      LocalServer32 = s '%MODULE%'
-      'TypeLib' = s '%LIBID%'
-    }
-  }
-}
