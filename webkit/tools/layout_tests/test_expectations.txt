@@ -4,3 +4,7 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
+
+// Registering the fonts for this test causes other processes (Adium, Firefox)
+// to spin and become unresponsive or crash.
+BUGWK50709 MAC : fast/css/font-weight-1.html = IMAGE+TEXT
