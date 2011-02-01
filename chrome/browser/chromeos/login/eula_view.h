@@ -110,9 +110,6 @@ class EulaView
                                       unsigned changed_flags);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
-  // Returns corresponding native window.
-  gfx::NativeWindow GetNativeWindow() const;
-
   // Loads specified URL to the specified DOMView and updates specified
   // label with its title.
   void LoadEulaView(DOMView* eula_view,

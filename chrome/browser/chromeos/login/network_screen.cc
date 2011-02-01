@@ -8,7 +8,9 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/network_selection_view.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "grit/chromium_strings.h"
@@ -100,8 +102,10 @@ NetworkSelectionView* NetworkScreen::AllocateView() {
 
 void NetworkScreen::OnHelpLinkActivated() {
   ClearErrors();
-  if (!help_app_.get())
-    help_app_.reset(new HelpAppLauncher(view()->GetNativeWindow()));
+  if (!help_app_.get()) {
+    help_app_.reset(new HelpAppLauncher(
+        LoginUtils::Get()->GetBackgroundView()->GetNativeWindow()));
+  }
   help_app_->ShowHelpTopic(HelpAppLauncher::HELP_CONNECTIVITY);
 }
 

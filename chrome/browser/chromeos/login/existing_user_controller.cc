@@ -471,8 +471,7 @@ void ExistingUserController::Delete() {
 }
 
 gfx::NativeWindow ExistingUserController::GetNativeWindow() const {
-  return GTK_WINDOW(
-      static_cast<views::WidgetGtk*>(background_window_)->GetNativeView());
+  return background_view_->GetNativeWindow();
 }
 
 void ExistingUserController::SetStatusAreaEnabled(bool enable) {

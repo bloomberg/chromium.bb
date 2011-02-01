@@ -17,8 +17,10 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -465,15 +467,18 @@ void EulaView::ButtonPressed(views::Button* sender, const views::Event& event) {
 // views::LinkController implementation:
 
 void EulaView::LinkActivated(views::Link* source, int event_flags) {
+  gfx::NativeWindow parent_window =
+      LoginUtils::Get()->GetBackgroundView()->GetNativeWindow();
   if (source == learn_more_link_) {
     if (!help_app_.get())
-      help_app_.reset(new HelpAppLauncher(GetNativeWindow()));
+      help_app_.reset(new HelpAppLauncher(parent_window));
     help_app_->ShowHelpTopic(HelpAppLauncher::HELP_STATS_USAGE);
   } else if (source == system_security_settings_link_) {
     TpmInfoView* view = new TpmInfoView(&tpm_password_);
     view->Init();
-    views::Window* window = browser::CreateViewsWindow(
-        GetNativeWindow(), gfx::Rect(), view);
+    views::Window* window = browser::CreateViewsWindow(parent_window,
+                                                       gfx::Rect(),
+                                                       view);
     window->SetIsAlwaysOnTop(true);
     window->Show();
   }
@@ -512,10 +517,6 @@ void EulaView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // EulaView, private:
-
-gfx::NativeWindow EulaView::GetNativeWindow() const {
-  return GTK_WINDOW(static_cast<WidgetGtk*>(GetWidget())->GetNativeView());
-}
 
 void EulaView::LoadEulaView(DOMView* eula_view,
                             views::Label* eula_label,

@@ -194,6 +194,11 @@ void BackgroundView::CreateModalPopup(views::WindowDelegate* view) {
   window->Show();
 }
 
+gfx::NativeWindow BackgroundView::GetNativeWindow() const {
+  return
+      GTK_WINDOW(static_cast<WidgetGtk*>(GetWidget())->GetNativeView());
+}
+
 void BackgroundView::SetStatusAreaVisible(bool visible) {
   status_area_->SetVisible(visible);
 }
@@ -298,11 +303,6 @@ void BackgroundView::Layout() {
 void BackgroundView::ChildPreferredSizeChanged(View* child) {
   Layout();
   SchedulePaint();
-}
-
-gfx::NativeWindow BackgroundView::GetNativeWindow() const {
-  return
-      GTK_WINDOW(static_cast<WidgetGtk*>(GetWidget())->GetNativeView());
 }
 
 bool BackgroundView::ShouldOpenButtonOptions(

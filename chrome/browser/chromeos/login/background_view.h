@@ -68,6 +68,9 @@ class BackgroundView : public views::View,
   // Create a modal popup view.
   void CreateModalPopup(views::WindowDelegate* view);
 
+  // Overridden from StatusAreaHost:
+  virtual gfx::NativeWindow GetNativeWindow() const;
+
   // Toggles status area visibility.
   void SetStatusAreaVisible(bool visible);
 
@@ -104,7 +107,6 @@ class BackgroundView : public views::View,
 
   // Overridden from StatusAreaHost:
   virtual Profile* GetProfile() const { return NULL; }
-  virtual gfx::NativeWindow GetNativeWindow() const;
   virtual void ExecuteBrowserCommand(int id) const {}
   virtual bool ShouldOpenButtonOptions(
       const views::View* button_view) const;
