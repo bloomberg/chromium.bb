@@ -164,8 +164,8 @@ FilePath GetWebKitRootDirFilePath() {
   if (file_util::PathExists(basePath.Append(FILE_PATH_LITERAL("chrome")))) {
     return basePath.Append(FILE_PATH_LITERAL("third_party/WebKit"));
   } else {
-    // WebKit/WebKit/chromium/ -> WebKit/
-    return basePath.Append(FILE_PATH_LITERAL("../.."));
+    // WebKit/Source/WebKit/chromium/ -> WebKit/
+    return basePath.Append(FILE_PATH_LITERAL("../../.."));
   }
 }
 
@@ -409,7 +409,8 @@ WebURL RewriteLayoutTestsURL(const std::string& utf8_url) {
 
   FilePath replacePath =
       GetWebKitRootDirFilePath().Append(FILE_PATH_LITERAL("LayoutTests/"));
-  CHECK(file_util::PathExists(replacePath));
+  CHECK(file_util::PathExists(replacePath)) << replacePath.value() <<
+      " (re-written from " << utf8_url << ") does not exit";
 #if defined(OS_WIN)
   std::string utf8_path = WideToUTF8(replacePath.value());
 #else
