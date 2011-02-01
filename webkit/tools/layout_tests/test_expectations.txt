@@ -4,11 +4,3 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
-
-// V8 specific error messages have changed. The chromium specific
-// baselines need to be updated for these.
-BUGAGER : fast/js/array-every.html = TEXT PASS
-BUGAGER : fast/js/instance-of-immediates.html = TEXT PASS
-BUGAGER : fast/js/property-getters-and-setters.html = TEXT PASS
-BUGAGER : storage/transaction-error-callback.html = TEXT PASS
-BUGAGER : svg/dom/svgpath-out-of-bounds-getPathSeg.html = TEXT PASS
