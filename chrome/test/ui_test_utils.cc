@@ -31,6 +31,9 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/find_bar/find_manager.h"
+#include "chrome/browser/ui/find_bar/find_notification_details.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_type.h"
@@ -223,13 +226,14 @@ class DownloadsCompleteObserver : public DownloadManager::Observer,
 
 class FindInPageNotificationObserver : public NotificationObserver {
  public:
-  explicit FindInPageNotificationObserver(TabContents* parent_tab)
+  explicit FindInPageNotificationObserver(TabContentsWrapper* parent_tab)
       : parent_tab_(parent_tab),
         active_match_ordinal_(-1),
         number_of_matches_(0) {
-    current_find_request_id_ = parent_tab->current_find_request_id();
+    current_find_request_id_ =
+        parent_tab->GetFindManager()->current_find_request_id();
     registrar_.Add(this, NotificationType::FIND_RESULT_AVAILABLE,
-                   Source<TabContents>(parent_tab_));
+                   Source<TabContents>(parent_tab_->tab_contents()));
     ui_test_utils::RunMessageLoop();
   }
 
@@ -260,7 +264,7 @@ class FindInPageNotificationObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  TabContents* parent_tab_;
+  TabContentsWrapper* parent_tab_;
   // We will at some point (before final update) be notified of the ordinal and
   // we need to preserve it so we can send it later.
   int active_match_ordinal_;
@@ -624,9 +628,10 @@ void WaitForFocusInBrowser(Browser* browser) {
                   Source<Browser>(browser));
 }
 
-int FindInPage(TabContents* tab_contents, const string16& search_string,
+int FindInPage(TabContentsWrapper* tab_contents, const string16& search_string,
                bool forward, bool match_case, int* ordinal) {
-  tab_contents->StartFinding(search_string, forward, match_case);
+  tab_contents->
+      GetFindManager()->StartFinding(search_string, forward, match_case);
   FindInPageNotificationObserver observer(tab_contents);
   if (ordinal)
     *ordinal = observer.active_match_ordinal();

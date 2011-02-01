@@ -78,9 +78,11 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
+#include "chrome/browser/ui/find_bar/find_manager.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
@@ -527,7 +529,10 @@ void AutomationProvider::SendFindRequest(
   if (!with_json) {
     find_in_page_observer_.reset(observer);
   }
-  tab_contents->set_current_find_request_id(request_id);
+  TabContentsWrapper** wrapper =
+      TabContentsWrapper::property_accessor()->GetProperty(
+          tab_contents->property_bag());
+  (*wrapper)->GetFindManager()->set_current_find_request_id(request_id);
   tab_contents->render_view_host()->StartFinding(
       FindInPageNotificationObserver::kFindInPageRequestId,
       search_string,

@@ -29,6 +29,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/find_bar/find_manager.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
@@ -1069,7 +1070,7 @@ private:
     newContents->tab_contents()->DidBecomeSelected();
     newContents->view()->RestoreFocus();
 
-    if (newContents->tab_contents()->find_ui_active())
+    if (newContents->GetFindManager()->find_ui_active())
       browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();
   }
 }

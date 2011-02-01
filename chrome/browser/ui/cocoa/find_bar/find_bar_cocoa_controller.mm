@@ -17,6 +17,8 @@
 #import "chrome/browser/ui/cocoa/focus_tracker.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
+#include "chrome/browser/ui/find_bar/find_manager.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 namespace {
@@ -81,17 +83,23 @@ const float kFindBarCloseDuration = 0.15;
 }
 
 - (IBAction)previousResult:(id)sender {
-  if (findBarBridge_)
-    findBarBridge_->GetFindBarController()->tab_contents()->StartFinding(
+  if (findBarBridge_) {
+    FindManager* find_manager = findBarBridge_->
+        GetFindBarController()->tab_contents()->GetFindManager();
+    find_manager->StartFinding(
         base::SysNSStringToUTF16([findText_ stringValue]),
         false, false);
+  }
 }
 
 - (IBAction)nextResult:(id)sender {
-  if (findBarBridge_)
-    findBarBridge_->GetFindBarController()->tab_contents()->StartFinding(
+  if (findBarBridge_) {
+    FindManager* find_manager = findBarBridge_->
+        GetFindBarController()->tab_contents()->GetFindManager();
+    find_manager->StartFinding(
         base::SysNSStringToUTF16([findText_ stringValue]),
         true, false);
+  }
 }
 
 - (void)findPboardUpdated:(NSNotification*)notification {
@@ -122,10 +130,11 @@ const float kFindBarCloseDuration = 0.15;
   if (!findBarBridge_)
     return;
 
-  TabContents* tab_contents =
+  TabContentsWrapper* tab_contents =
       findBarBridge_->GetFindBarController()->tab_contents();
   if (!tab_contents)
     return;
+  FindManager* find_manager = tab_contents->GetFindManager();
 
   NSString* findText = [findText_ stringValue];
   suppressPboardUpdateActions_ = YES;
@@ -133,11 +142,11 @@ const float kFindBarCloseDuration = 0.15;
   suppressPboardUpdateActions_ = NO;
 
   if ([findText length] > 0) {
-    tab_contents->StartFinding(base::SysNSStringToUTF16(findText), true, false);
+    find_manager->StartFinding(base::SysNSStringToUTF16(findText), true, false);
   } else {
     // The textbox is empty so we reset.
-    tab_contents->StopFinding(FindBarController::kClearSelection);
-    [self updateUIForFindResult:tab_contents->find_result()
+    find_manager->StopFinding(FindBarController::kClearSelection);
+    [self updateUIForFindResult:find_manager->find_result()
                        withText:string16()];
   }
 }
@@ -173,7 +182,7 @@ const float kFindBarCloseDuration = 0.15;
              command == @selector(scrollToEndOfDocument:) ||
              command == @selector(moveUp:) ||
              command == @selector(moveDown:)) {
-    TabContents* contents =
+    TabContentsWrapper* contents =
         findBarBridge_->GetFindBarController()->tab_contents();
     if (!contents)
       return NO;
@@ -238,7 +247,8 @@ const float kFindBarCloseDuration = 0.15;
   if (!(focusTracker_.get() &&
         [focusTracker_ restoreFocusInWindow:[findBarView_ window]])) {
     // Fall back to giving focus to the tab contents.
-    findBarBridge_->GetFindBarController()->tab_contents()->Focus();
+    findBarBridge_->
+        GetFindBarController()->tab_contents()->tab_contents()->Focus();
   }
   focusTracker_.reset(nil);
 }
@@ -367,11 +377,12 @@ const float kFindBarCloseDuration = 0.15;
   // End the find session, hide the "x of y" text and disable the
   // buttons, but do not close the find bar or raise the window here.
   if (stopSearch && findBarBridge_) {
-    TabContents* contents =
+    TabContentsWrapper* contents =
         findBarBridge_->GetFindBarController()->tab_contents();
     if (contents) {
-      contents->StopFinding(FindBarController::kClearSelection);
-      findBarBridge_->ClearResults(contents->find_result());
+      FindManager* find_manager = contents->GetFindManager();
+      find_manager->StopFinding(FindBarController::kClearSelection);
+      findBarBridge_->ClearResults(find_manager->find_result());
     }
   }
 

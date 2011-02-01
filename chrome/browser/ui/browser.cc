@@ -81,6 +81,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
+#include "chrome/browser/ui/find_bar/find_manager.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "chrome/browser/ui/status_bubble.h"
@@ -449,7 +450,7 @@ FindBarController* Browser::GetFindBarController() {
     FindBar* find_bar = BrowserWindow::CreateFindBar(this);
     find_bar_controller_.reset(new FindBarController(find_bar));
     find_bar->SetFindBarController(find_bar_controller_.get());
-    find_bar_controller_->ChangeTabContents(GetSelectedTabContents());
+    find_bar_controller_->ChangeTabContents(GetSelectedTabContentsWrapper());
     find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect(), true);
   }
   return find_bar_controller_.get();
@@ -2698,7 +2699,7 @@ void Browser::TabSelectedAt(TabContentsWrapper* old_contents,
   }
 
   if (HasFindBarController()) {
-    find_bar_controller_->ChangeTabContents(new_contents->tab_contents());
+    find_bar_controller_->ChangeTabContents(new_contents);
     find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect(), true);
   }
 
@@ -4114,9 +4115,10 @@ void Browser::FindInPage(bool find_next, bool forward_direction) {
     // We always want to search for the contents of the find pasteboard on OS X.
     find_text = GetFindPboardText();
 #endif
-    GetSelectedTabContents()->StartFinding(find_text,
-                                           forward_direction,
-                                           false);  // Not case sensitive.
+    GetSelectedTabContentsWrapper()->
+        GetFindManager()->StartFinding(find_text,
+                                       forward_direction,
+                                       false);  // Not case sensitive.
   }
 }
 

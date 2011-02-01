@@ -8,6 +8,7 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager_delegate_impl.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/find_bar/find_manager.h"
 
 static base::LazyInstance<PropertyAccessor<TabContentsWrapper*> >
     g_tab_contents_wrapper_property_accessor(base::LINKER_INITIALIZED);
@@ -55,6 +56,15 @@ PasswordManager* TabContentsWrapper::GetPasswordManager() {
     tab_contents()->AddObserver(password_manager_.get());
   }
   return password_manager_.get();
+}
+
+FindManager* TabContentsWrapper::GetFindManager() {
+  if (!find_manager_.get()) {
+    find_manager_.reset(new FindManager(this));
+    // Register the manager to receive navigation notifications.
+    tab_contents()->AddObserver(find_manager_.get());
+  }
+  return find_manager_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -34,6 +34,7 @@ class RenderViewHostDelegate;
 class SessionStorageNamespace;
 class SiteInstance;
 class SkBitmap;
+class TabContents;
 class ViewMsg_Navigate;
 struct ContentSettings;
 struct ContextMenuParams;

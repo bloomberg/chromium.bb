@@ -8,6 +8,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #include "views/widget/widget_win.h"
@@ -21,7 +22,8 @@ void FindBarHost::GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect) {
   ::GetWindowRect(
       static_cast<views::WidgetWin*>(host())->GetParent(), &frame_rect);
   ::GetWindowRect(
-      find_bar_controller_->tab_contents()->view()->GetNativeView(),
+      find_bar_controller_->
+          tab_contents()->tab_contents()->view()->GetNativeView(),
       &webcontents_rect);
   avoid_overlapping_rect->Offset(0, webcontents_rect.top - frame_rect.top);
 }
