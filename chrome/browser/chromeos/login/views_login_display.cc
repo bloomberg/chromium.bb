@@ -9,6 +9,7 @@
 #include "base/stl_util-inl.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
+#include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/ui/views/window.h"
@@ -211,6 +212,8 @@ void ViewsLoginDisplay::ShowError(int error_msg_id,
       UTF16ToWide(error_text),
       UTF16ToWide(help_link),
       this);
+  WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
+      UTF16ToUTF8(error_text).c_str(), false, false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

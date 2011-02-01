@@ -188,6 +188,8 @@ void UserImageView::Init() {
   snapshot_button_->SetImage(views::CustomButton::BS_DISABLED,
                              ResourceBundle::GetSharedInstance().GetBitmapNamed(
                                  IDR_USER_IMAGE_CAPTURE_DISABLED));
+  snapshot_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+      IDS_CHROMEOS_ACC_ACCOUNT_PICTURE));
 
   ok_button_ = new login::WideButton(
       this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK)));

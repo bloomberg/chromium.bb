@@ -49,6 +49,7 @@ class WizardAccessibilityHelper {
   // specifies whether this utterance will be queued or spoken immediately.
   // |interruptible| specified whether this utterance can be flushed by a
   // subsequent utterance.
+  // TODO (chaitanyag): Change API to use string16 instead of char*.
   void MaybeSpeak(const char* str, bool queue, bool interruptible);
 
   // Unregisters all accessibility notifications

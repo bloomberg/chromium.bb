@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/views_login_display.h"
+#include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
@@ -25,6 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "views/window/window.h"
 
 namespace chromeos {
@@ -203,6 +205,9 @@ void ExistingUserController::Login(const std::string& username,
     login_performer_.reset(new LoginPerformer(delegate));
   }
   login_performer_->Login(username, password);
+  WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
+      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN).c_str(),
+      false, true);
 }
 
 void ExistingUserController::LoginAsGuest() {
@@ -229,6 +234,9 @@ void ExistingUserController::LoginAsGuest() {
   login_performer_.reset(NULL);
   login_performer_.reset(new LoginPerformer(this));
   login_performer_->LoginOffTheRecord();
+  WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
+      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD).c_str(),
+      false, true);
 }
 
 void ExistingUserController::OnUserSelected(const std::string& username) {
