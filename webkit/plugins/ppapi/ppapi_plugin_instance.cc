@@ -327,8 +327,8 @@ PluginInstance::~PluginInstance() {
   // unregister themselves inside the delete call).
   PluginObjectSet plugin_object_copy;
   live_plugin_objects_.swap(plugin_object_copy);
-  for (PluginObjectSet::iterator i = live_plugin_objects_.begin();
-       i != live_plugin_objects_.end(); ++i)
+  for (PluginObjectSet::iterator i = plugin_object_copy.begin();
+       i != plugin_object_copy.end(); ++i)
     delete *i;
 
   delegate_->InstanceDeleted(this);

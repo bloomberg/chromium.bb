@@ -825,7 +825,8 @@ ObjectVar::ObjectVar(PluginInstance* instance, NPObject* np_object)
 }
 
 ObjectVar::~ObjectVar() {
-  instance_->RemoveNPObjectVar(this);
+  if (instance_)
+    instance_->RemoveNPObjectVar(this);
   WebBindings::releaseObject(np_object_);
 }
 
@@ -833,8 +834,14 @@ ObjectVar* ObjectVar::AsObjectVar() {
   return this;
 }
 
+void ObjectVar::InstanceDeleted() {
+  DCHECK(instance_);
+  instance_ = NULL;
+}
+
 // static
 PP_Var ObjectVar::NPObjectToPPVar(PluginInstance* instance, NPObject* object) {
+  DCHECK(object);
   scoped_refptr<ObjectVar> object_var(instance->ObjectVarForNPObject(object));
   if (!object_var)  // No object for this module yet, make a new one.
     object_var = new ObjectVar(instance, object);
@@ -842,7 +849,7 @@ PP_Var ObjectVar::NPObjectToPPVar(PluginInstance* instance, NPObject* object) {
   if (!object_var)
     return PP_MakeUndefined();
 
-  // Convert to a PP_Var, GetReference will AddRef for us.
+  // Convert to a PP_Var, GetID will AddRef for us.
   PP_Var result;
   result.type = PP_VARTYPE_OBJECT;
   result.value.as_id = object_var->GetID();

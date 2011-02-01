@@ -53,15 +53,6 @@ class ResourceTracker {
   bool AddRefResource(PP_Resource res);
   bool UnrefResource(PP_Resource res);
 
-  // Forces the plugin refcount of the given resource to 0. This is used when
-  // the instance is destroyed and we want to free all resources.
-  //
-  // Note that this may not necessarily delete the resource object since the
-  // regular refcount is maintained separately from the plugin refcount and
-  // random components in the Pepper implementation could still have
-  // references to it.
-  void ForceDeletePluginResourceRefs(PP_Resource res);
-
   // Returns the number of resources associated with this module.
   uint32 GetLiveObjectsForInstance(PP_Instance instance) const;
 
@@ -106,6 +97,24 @@ class ResourceTracker {
   friend class ResourceTrackerTest;
   friend class Var;
 
+  typedef std::set<PP_Resource> ResourceSet;
+
+  // Indexed by the var ID.
+  typedef std::set<int32> VarSet;
+
+  // Per-instance data we track.
+  struct InstanceData {
+    InstanceData() : instance(0) {}
+
+    // Non-owning pointer to the instance object. When a PluginInstance is
+    // destroyed, it will notify us and we'll delete all associated data.
+    PluginInstance* instance;
+
+    // Resources and object vars associated with the instance.
+    ResourceSet resources;
+    VarSet object_vars;
+  };
+
   // Prohibit creation other then by the Singleton class.
   ResourceTracker();
   ~ResourceTracker();
@@ -146,15 +155,8 @@ class ResourceTracker {
   typedef base::hash_map<int32, VarAndRefCount> VarMap;
   VarMap live_vars_;
 
-  // Tracks all resources associated with each instance. This is used to
-  // delete resources when the instance has been destroyed to avoid leaks.
-  typedef std::set<PP_Resource> ResourceSet;
-  typedef std::map<PP_Instance, ResourceSet> InstanceToResourceMap;
-  InstanceToResourceMap instance_to_resources_;
-
-  // Tracks all live instances. The pointers are non-owning, the PluginInstance
-  // destructor will notify us when the instance is deleted.
-  typedef std::map<PP_Instance, PluginInstance*> InstanceMap;
+  // Tracks all live instances and their associated data.
+  typedef std::map<PP_Instance, InstanceData> InstanceMap;
   InstanceMap instance_map_;
 
   // Tracks all live modules. The pointers are non-owning, the PluginModule

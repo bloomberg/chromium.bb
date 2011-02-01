@@ -100,6 +100,8 @@ void PpapiUnittest::SetUp() {
 }
 
 void PpapiUnittest::TearDown() {
+  instance_ = NULL;
+  module_ = NULL;
 }
 
 const void* PpapiUnittest::GetMockInterface(const char* interface_name) const {

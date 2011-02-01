@@ -179,6 +179,13 @@ class ObjectVar : public Var {
   // Guaranteed non-NULL.
   NPObject* np_object() const { return np_object_; }
 
+  // Notification that the instance was deleted, the internal pointer will be
+  // NULLed out.
+  void InstanceDeleted();
+
+  // Possibly NULL if the object has outlived its instance.
+  PluginInstance* instance() const { return instance_; }
+
   // Helper function to create a PP_Var of type object that contains the given
   // NPObject for use byt he given module. Calling this function multiple times
   // given the same module + NPObject results in the same PP_Var, assuming that
@@ -196,8 +203,6 @@ class ObjectVar : public Var {
   // if the PP_Var is not of object type or the object is invalid.
   static scoped_refptr<ObjectVar> FromPPVar(PP_Var var);
 
-  PluginInstance* instance() const { return instance_; }
-
  protected:
   // You should always use FromNPObject to create an ObjectVar. This function
   // guarantees that we maintain the 1:1 mapping between NPObject and
@@ -205,6 +210,7 @@ class ObjectVar : public Var {
   ObjectVar(PluginInstance* instance, NPObject* np_object);
 
  private:
+  // Possibly NULL if the object has outlived its instance.
   PluginInstance* instance_;
 
   // Guaranteed non-NULL, this is the underlying object used by WebKit. We

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_var.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource.h"
 #include "webkit/plugins/ppapi/var.h"
@@ -82,18 +83,31 @@ PP_Resource ResourceTracker::AddResource(Resource* resource) {
   // Add the resource with plugin use-count 1.
   PP_Resource new_id = MakeTypedId(++last_resource_id_, PP_ID_TYPE_RESOURCE);
   live_resources_.insert(std::make_pair(new_id, std::make_pair(resource, 1)));
-  instance_to_resources_[resource->instance()->pp_instance()].insert(new_id);
+
+  // Track associated with the instance.
+  PP_Instance pp_instance = resource->instance()->pp_instance();
+  DCHECK(instance_map_.find(pp_instance) != instance_map_.end());
+  instance_map_[pp_instance].resources.insert(new_id);
   return new_id;
 }
 
 int32 ResourceTracker::AddVar(Var* var) {
   // If the plugin manages to create 1B strings...
-  if (last_var_id_ == std::numeric_limits<int32>::max() >> kPPIdTypeBits) {
+  if (last_var_id_ == std::numeric_limits<int32>::max() >> kPPIdTypeBits)
     return 0;
-  }
+
   // Add the resource with plugin use-count 1.
   int32 new_id = MakeTypedId(++last_var_id_, PP_ID_TYPE_VAR);
   live_vars_.insert(std::make_pair(new_id, std::make_pair(var, 1)));
+
+  // Object vars must be associated with the instance.
+  ObjectVar* object_var = var->AsObjectVar();
+  if (object_var) {
+    PP_Instance instance = object_var->instance()->pp_instance();
+    DCHECK(instance_map_.find(instance) != instance_map_.end());
+    instance_map_[instance].object_vars.insert(new_id);
+  }
+
   return new_id;
 }
 
@@ -119,13 +133,12 @@ bool ResourceTracker::UnrefResource(PP_Resource res) {
   if (i != live_resources_.end()) {
     if (!--i->second.second) {
       Resource* to_release = i->second.first;
+      // LastPluginRefWasDeleted will clear the instance pointer, so save it
+      // first.
+      PP_Instance instance = to_release->instance()->pp_instance();
       to_release->LastPluginRefWasDeleted(false);
 
-      ResourceSet& instance_resource_set =
-          instance_to_resources_[to_release->instance()->pp_instance()];
-      DCHECK(instance_resource_set.find(res) != instance_resource_set.end());
-      instance_resource_set.erase(res);
-
+      instance_map_[instance].resources.erase(res);
       live_resources_.erase(i);
     }
     return true;
@@ -134,43 +147,21 @@ bool ResourceTracker::UnrefResource(PP_Resource res) {
   }
 }
 
-void ResourceTracker::ForceDeletePluginResourceRefs(PP_Resource res) {
-  DLOG_IF(ERROR, !CheckIdType(res, PP_ID_TYPE_RESOURCE))
-      << res << " is not a PP_Resource.";
-  ResourceMap::iterator i = live_resources_.find(res);
-  if (i == live_resources_.end())
-    return;  // Nothing to do.
-
-  i->second.second = 0;
-  Resource* resource = i->second.first;
-
-  // Must delete from the resource set first since the resource's instance
-  // pointer will get zeroed out in LastPluginRefWasDeleted.
-  ResourceSet& resource_set = instance_to_resources_[
-      resource->instance()->pp_instance()];
-  DCHECK(resource_set.find(res) != resource_set.end());
-  resource_set.erase(res);
-
-  resource->LastPluginRefWasDeleted(true);
-  live_resources_.erase(i);
-}
-
 uint32 ResourceTracker::GetLiveObjectsForInstance(
     PP_Instance instance) const {
-  InstanceToResourceMap::const_iterator found =
-      instance_to_resources_.find(instance);
-  if (found == instance_to_resources_.end())
+  InstanceMap::const_iterator found = instance_map_.find(instance);
+  if (found == instance_map_.end())
     return 0;
-  return static_cast<uint32>(found->second.size());
+  return static_cast<uint32>(found->second.resources.size() +
+                             found->second.object_vars.size());
 }
 
 scoped_refptr<Var> ResourceTracker::GetVar(int32 var_id) const {
   DLOG_IF(ERROR, !CheckIdType(var_id, PP_ID_TYPE_VAR))
       << var_id << " is not a PP_Var ID.";
   VarMap::const_iterator result = live_vars_.find(var_id);
-  if (result == live_vars_.end()) {
+  if (result == live_vars_.end())
     return scoped_refptr<Var>();
-  }
   return result->second.first;
 }
 
@@ -193,26 +184,24 @@ bool ResourceTracker::UnrefVar(int32 var_id) {
       << var_id << " is not a PP_Var ID.";
   VarMap::iterator i = live_vars_.find(var_id);
   if (i != live_vars_.end()) {
-    if (!--i->second.second)
+    if (!--i->second.second) {
+      ObjectVar* object_var = i->second.first->AsObjectVar();
+      if (object_var) {
+        instance_map_[object_var->instance()->pp_instance()].object_vars.erase(
+            var_id);
+      }
       live_vars_.erase(i);
+    }
     return true;
   }
   return false;
 }
 
 PP_Instance ResourceTracker::AddInstance(PluginInstance* instance) {
-#ifndef NDEBUG
-  // Make sure we're not adding one more than once.
-  for (InstanceMap::const_iterator i = instance_map_.begin();
-       i != instance_map_.end(); ++i)
-    DCHECK(i->second != instance);
-#endif
+  DCHECK(instance_map_.find(instance->pp_instance()) == instance_map_.end());
 
-  // Use a random 64-bit number for the instance ID. This helps prevent some
-  // mischeif where you could misallocate resources if you gave a different
-  // instance ID.
-  //
-  // See also AddModule below.
+  // Use a random number for the instance ID. This helps prevent some
+  // accidents. See also AddModule below.
   //
   // Need to make sure the random number isn't a duplicate or 0.
   PP_Instance new_instance;
@@ -221,32 +210,64 @@ PP_Instance ResourceTracker::AddInstance(PluginInstance* instance) {
                                PP_ID_TYPE_INSTANCE);
   } while (!new_instance ||
            instance_map_.find(new_instance) != instance_map_.end());
-  instance_map_[new_instance] = instance;
+
+  instance_map_[new_instance].instance = instance;
   return new_instance;
 }
 
 void ResourceTracker::InstanceDeleted(PP_Instance instance) {
   DLOG_IF(ERROR, !CheckIdType(instance, PP_ID_TYPE_INSTANCE))
       << instance << " is not a PP_Instance.";
-  // Force release all plugin references to resources associated with the
-  // deleted instance.
-  ResourceSet& resource_set = instance_to_resources_[instance];
-  ResourceSet::iterator i = resource_set.begin();
-  while (i != resource_set.end()) {
-    // Iterators to a set are stable so we can iterate the set while the items
-    // are being deleted as long as we're careful not to delete the item we're
-    // holding an iterator to.
-    ResourceSet::iterator current = i++;
-    ForceDeletePluginResourceRefs(*current);
-  }
-  DCHECK(resource_set.empty());
-  instance_to_resources_.erase(instance);
-
   InstanceMap::iterator found = instance_map_.find(instance);
   if (found == instance_map_.end()) {
     NOTREACHED();
     return;
   }
+  InstanceData& data = found->second;
+
+  // Force release all plugin references to resources associated with the
+  // deleted instance.
+  ResourceSet::iterator cur_res = data.resources.begin();
+  while (cur_res != data.resources.end()) {
+    ResourceMap::iterator found_resource = live_resources_.find(*cur_res);
+    if (found_resource == live_resources_.end()) {
+      NOTREACHED();
+    } else {
+      Resource* resource = found_resource->second.first;
+
+      // Must delete from the resource set first since the resource's instance
+      // pointer will get zeroed out in LastPluginRefWasDeleted.
+      resource->LastPluginRefWasDeleted(true);
+      live_resources_.erase(*cur_res);
+    }
+
+    // Iterators to a set are stable so we can iterate the set while the items
+    // are being deleted as long as we're careful not to delete the item we're
+    // holding an iterator to.
+    ResourceSet::iterator current = cur_res++;
+    data.resources.erase(current);
+  }
+  DCHECK(data.resources.empty());
+
+  // Force delete all var references.
+  VarSet::iterator cur_var = data.object_vars.begin();
+  while (cur_var != data.object_vars.end()) {
+    VarSet::iterator current = cur_var++;
+
+    // Tell the corresponding ObjectVar that the instance is gone.
+    PP_Var object_pp_var;
+    object_pp_var.type = PP_VARTYPE_OBJECT;
+    object_pp_var.value.as_id = *current;
+    scoped_refptr<ObjectVar> object_var(ObjectVar::FromPPVar(object_pp_var));
+    if (object_var.get())
+      object_var->InstanceDeleted();
+
+    // Clear the object from the var mapping and the live instance object list.
+    live_vars_.erase(*current);
+    data.object_vars.erase(*current);
+  }
+  DCHECK(data.object_vars.empty());
+
   instance_map_.erase(found);
 }
 
@@ -256,7 +277,7 @@ PluginInstance* ResourceTracker::GetInstance(PP_Instance instance) {
   InstanceMap::iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
     return NULL;
-  return found->second;
+  return found->second.instance;
 }
 
 PP_Module ResourceTracker::AddModule(PluginModule* module) {

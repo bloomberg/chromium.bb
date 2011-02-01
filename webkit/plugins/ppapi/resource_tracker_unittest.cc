@@ -1,19 +1,25 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/plugins/ppapi/ppapi_unittest.h"
 
+#include "base/scoped_ptr.h"
+#include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
+#include "third_party/npapi/bindings/npruntime.h"
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
 #include "webkit/plugins/ppapi/mock_resource.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
+#include "webkit/plugins/ppapi/var.h"
 
 namespace webkit {
 namespace ppapi {
 
 namespace {
+
+// Tracked Resources -----------------------------------------------------------
 
 class TrackedMockResource : public MockResource {
  public:
@@ -29,7 +35,42 @@ class TrackedMockResource : public MockResource {
 
 int TrackedMockResource::tracked_objects_alive = 0;
 
+// Tracked NPObjects -----------------------------------------------------------
+
+int g_npobjects_alive = 0;
+
+void TrackedClassDeallocate(NPObject* npobject) {
+  g_npobjects_alive--;
+}
+
+NPClass g_tracked_npclass = {
+  NP_CLASS_STRUCT_VERSION,
+  NULL,
+  &TrackedClassDeallocate,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+};
+
+// Returns a new tracked NPObject with a refcount of 1.
+NPObject* NewTrackedNPObject() {
+  NPObject* object = new NPObject;
+  object->_class = &g_tracked_npclass;
+  object->referenceCount = 1;
+
+  g_npobjects_alive++;
+  return object;
+}
+
 }  // namespace
+
+// ResourceTrackerTest ---------------------------------------------------------
 
 class ResourceTrackerTest : public PpapiUnittest {
  public:
@@ -37,12 +78,16 @@ class ResourceTrackerTest : public PpapiUnittest {
   }
 
   virtual void SetUp() {
-    PpapiUnittest::SetUp();
+    // The singleton override must be installed before the generic setup because
+    // that creates an instance, etc. which uses the tracker.
     ResourceTracker::SetSingletonOverride(&tracker_);
+    PpapiUnittest::SetUp();
   }
   virtual void TearDown() {
-    ResourceTracker::ClearSingletonOverride();
+    // Must do normal tear down before clearing the override for the same rason
+    // as the SetUp.
     PpapiUnittest::TearDown();
+    ResourceTracker::ClearSingletonOverride();
   }
 
   ResourceTracker& tracker() { return tracker_; }
@@ -93,7 +138,7 @@ TEST_F(ResourceTrackerTest, Ref) {
   ASSERT_EQ(0, TrackedMockResource::tracked_objects_alive);
 }
 
-TEST_F(ResourceTrackerTest, ForceDeleteWithInstance) {
+TEST_F(ResourceTrackerTest, DeleteResourceWithInstance) {
   // Make a second instance (the test harness already creates & manages one).
   scoped_refptr<PluginInstance> instance2(
       new PluginInstance(delegate(), module(),
@@ -126,6 +171,59 @@ TEST_F(ResourceTrackerTest, ForceDeleteWithInstance) {
   ASSERT_EQ(1, TrackedMockResource::tracked_objects_alive);
   resource1 = NULL;
   ASSERT_EQ(0, TrackedMockResource::tracked_objects_alive);
+}
+
+TEST_F(ResourceTrackerTest, DeleteObjectVarWithInstance) {
+  // Make a second instance (the test harness already creates & manages one).
+  scoped_refptr<PluginInstance> instance2(
+      new PluginInstance(delegate(), module(),
+                         static_cast<const PPP_Instance*>(
+                             GetMockInterface(PPP_INSTANCE_INTERFACE))));
+  PP_Instance pp_instance2 = instance2->pp_instance();
+
+  // Make an object var.
+  scoped_ptr<NPObject> npobject(NewTrackedNPObject());
+  PP_Var pp_object = ObjectVar::NPObjectToPPVar(instance2.get(),
+                                                npobject.get());
+
+  EXPECT_EQ(1, g_npobjects_alive);
+  EXPECT_EQ(1u, tracker().GetLiveObjectsForInstance(pp_instance2));
+
+  // Free the instance, this should release the ObjectVar.
+  instance2 = NULL;
+  EXPECT_EQ(0u, tracker().GetLiveObjectsForInstance(pp_instance2));
+}
+
+// Make sure that using the same NPObject should give the same PP_Var
+// each time.
+TEST_F(ResourceTrackerTest, ReuseVar) {
+  scoped_ptr<NPObject> npobject(NewTrackedNPObject());
+
+  PP_Var pp_object1 = ObjectVar::NPObjectToPPVar(instance(), npobject.get());
+  PP_Var pp_object2 = ObjectVar::NPObjectToPPVar(instance(), npobject.get());
+
+  // The two results should be the same.
+  EXPECT_EQ(pp_object1.value.as_id, pp_object2.value.as_id);
+
+  // The objects should be able to get us back to the associated NPObject.
+  // This ObjectVar must be released before we do NPObjectToPPVar again
+  // below so it gets freed and we get a new identifier.
+  {
+    scoped_refptr<ObjectVar> check_object(ObjectVar::FromPPVar(pp_object1));
+    ASSERT_TRUE(check_object.get());
+    EXPECT_EQ(instance(), check_object->instance());
+    EXPECT_EQ(npobject.get(), check_object->np_object());
+  }
+
+  // Remove both of the refs we made above.
+  tracker().UnrefVar(static_cast<int32_t>(pp_object2.value.as_id));
+  tracker().UnrefVar(static_cast<int32_t>(pp_object1.value.as_id));
+
+  // Releasing the resource should free the internal ref, and so making a new
+  // one now should generate a new ID.
+  PP_Var pp_object3 = ObjectVar::NPObjectToPPVar(instance(), npobject.get());
+  EXPECT_NE(pp_object1.value.as_id, pp_object3.value.as_id);
+  tracker().UnrefVar(static_cast<int32_t>(pp_object3.value.as_id));
 }
 
 }  // namespace ppapi
