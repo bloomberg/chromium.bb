@@ -1587,7 +1587,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
       sdch_supported_domain = "never_enabled_sdch_for_any_domain";
   }
 
-  SdchManager sdch_manager;  // Singleton database.
+  net::SdchManager sdch_manager;  // Singleton database.
   sdch_manager.set_sdch_fetcher(new SdchDictionaryFetcher);
   sdch_manager.EnableSdchSupport(sdch_supported_domain);
 

@@ -20,19 +20,19 @@
 #include "net/base/sdch_manager.h"
 
 class SdchDictionaryFetcher : public URLFetcher::Delegate,
-                              public SdchFetcher {
+                              public net::SdchFetcher {
  public:
   SdchDictionaryFetcher();
   virtual ~SdchDictionaryFetcher();
+
+  // Stop fetching dictionaries, and abandon any current URLFetcheer operations
+  // so that the IO thread can be stopped.
+  static void Shutdown();
 
   // Implementation of SdchFetcher class.
   // This method gets the requested dictionary, and then calls back into the
   // SdchManager class with the dictionary's text.
   virtual void Schedule(const GURL& dictionary_url);
-
-  // Stop fetching dictionaries, and abandon any current URLFetcheer operations
-  // so that the IO thread can be stopped.
-  static void Shutdown() { SdchManager::Shutdown(); }
 
  private:
   // Delay in ms between Schedule and actual download.
