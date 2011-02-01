@@ -27,6 +27,9 @@
   'CONTINUOUS': {
     'all': [
       'autofill',
+      # Not part of the continous build.
+      # Used for testing Autofill crowdsourcing.
+      '-autofill.AutoFillTest.testAutofillCrowdSourcing',
       'bookmark_bar',
       'bookmarks',
       'browser',

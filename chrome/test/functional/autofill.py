@@ -93,6 +93,37 @@ class AutoFillTest(pyauto.PyUITest):
     self.assertEqual([expected_credit_card],
                      self.GetAutoFillProfile()['credit_cards'])
 
+  def testAutofillCrowdSourcing(self):
+    """Test able to send POST request of web form to crowd source server.
+    Require a loop of 1000 submits as the source server only collects 1% of
+    the data posted."""
+    # HTML file needs to be run from a specific http:// url to be able to verify
+    # the results a few days later by visiting the same url.
+    url = 'http://www.corp.google.com/~dyu/autofill/crowdsourcing-test.html'
+    # Adding crowdsourcing Autofill profile.
+    file_path = os.path.join(self.DataDir(), 'autofill',
+                             'crowdsource_autofill.txt')
+    profiles = self.EvalDataFrom(file_path)
+    self.FillAutoFillProfile(profiles=profiles)
+    for i in range(1000):
+      fname = self.GetAutoFillProfile()['profiles'][0]['NAME_FIRST']
+      lname = self.GetAutoFillProfile()['profiles'][0]['NAME_LAST']
+      email = self.GetAutoFillProfile()['profiles'][0]['EMAIL_ADDRESS']
+      # Submit form to collect crowdsourcing data for Autofill.
+      self.NavigateToURL(url, 0, 0)
+      fname_field = 'document.getElementById("fn").value = "%s"; ' \
+                    'window.domAutomationController.send("done")' % fname
+      lname_field = 'document.getElementById("ln").value = "%s"; ' \
+                    'window.domAutomationController.send("done")' % lname
+      email_field = 'document.getElementById("em").value = "%s"; ' \
+                    'window.domAutomationController.send("done")' % email
+      self.ExecuteJavascript(fname_field, 0, 0);
+      self.ExecuteJavascript(lname_field, 0, 0);
+      self.ExecuteJavascript(email_field, 0, 0);
+      self.ExecuteJavascript('document.getElementById("frmsubmit").submit();'
+                             'window.domAutomationController.send("done")',
+                             0, 0)
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
