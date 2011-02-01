@@ -117,3 +117,7 @@ DOMStorageTest.RootLayoutTests
 
 # Hangs, see http://crbug.com/63514
 ErrorPageTest.Page404_GoBack
+
+# Hangs, see http://crbug.com/66414
+# > connect /var/tmp/ChromeTestingInterface: Connection refused
+NamedInterfaceTest.BasicNamedInterface
