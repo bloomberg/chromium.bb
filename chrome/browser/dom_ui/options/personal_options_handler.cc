@@ -36,6 +36,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/dom_ui/dom_ui_util.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #endif  // defined(OS_CHROMEOS)
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
@@ -151,6 +153,13 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_APPS));
   localized_strings->SetString("syncsessions",
       l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_SESSIONS));
+
+#if defined(OS_CHROMEOS)
+  localized_strings->SetString("account",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_PERSONAL_ACCOUNT_GROUP_NAME));
+  localized_strings->SetString("enableScreenlock",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX));
+#endif
 }
 
 void PersonalOptionsHandler::RegisterMessages() {
@@ -171,6 +180,11 @@ void PersonalOptionsHandler::RegisterMessages() {
 #endif
   dom_ui_->RegisterMessageCallback("updatePreferredDataTypes",
       NewCallback(this, &PersonalOptionsHandler::OnPreferredDataTypesUpdated));
+#if defined(OS_CHROMEOS)
+  dom_ui_->RegisterMessageCallback(
+      "loadAccountPicture",
+      NewCallback(this, &PersonalOptionsHandler::LoadAccountPicture));
+#endif
 }
 
 void PersonalOptionsHandler::Observe(NotificationType type,
@@ -354,3 +368,16 @@ void PersonalOptionsHandler::OnPreferredDataTypesUpdated(
       Source<Profile>(dom_ui_->GetProfile()),
       NotificationService::NoDetails());
 }
+
+#if defined(OS_CHROMEOS)
+void PersonalOptionsHandler::LoadAccountPicture(const ListValue* args) {
+  const SkBitmap& account_picture =
+      chromeos::UserManager::Get()->logged_in_user().image();
+
+  if (!account_picture.isNull()) {
+    StringValue data_url(dom_ui_util::GetImageDataUrl(account_picture));
+    dom_ui_->CallJavascriptFunction(L"PersonalOptions.setAccountPicture",
+        data_url);
+  }
+}
+#endif
