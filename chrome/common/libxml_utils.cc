@@ -5,8 +5,10 @@
 #include "chrome/common/libxml_utils.h"
 
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 
 #include "libxml/xmlreader.h"
 
@@ -49,11 +51,19 @@ bool XmlReader::Load(const std::string& input) {
   return reader_ != NULL;
 }
 
-bool XmlReader::LoadFile(const std::string& file_path) {
-
+bool XmlReader::LoadFile(const FilePath& file_path) {
   const int kParseOptions = XML_PARSE_RECOVER |  // recover on errors
                             XML_PARSE_NONET;     // forbid network access
-  reader_ = xmlReaderForFile(file_path.c_str(), NULL, kParseOptions);
+  reader_ = xmlReaderForFile(
+#if defined(OS_WIN)
+      // libxml takes UTF-8 paths on Windows; search the source for
+      // xmlWrapOpenUtf8 to see it converting UTF-8 back to wide
+      // characters.
+      WideToUTF8(file_path.value()).c_str(),
+#else
+      file_path.value().c_str(),
+#endif
+      NULL, kParseOptions);
   return reader_ != NULL;
 }
 

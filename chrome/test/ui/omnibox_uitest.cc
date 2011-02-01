@@ -148,7 +148,7 @@ TEST_F(OmniboxTest, Measure) {
   omnibox_tests_path = omnibox_tests_path.AppendASCII("omnibox_tests.xml");
 
   XmlReader reader;
-  ASSERT_TRUE(reader.LoadFile(WideToASCII(omnibox_tests_path.ToWStringHack())));
+  ASSERT_TRUE(reader.LoadFile(omnibox_tests_path));
   while (reader.SkipToElement()) {
     ASSERT_EQ("omnibox_tests", reader.NodeName());
     reader.Read();

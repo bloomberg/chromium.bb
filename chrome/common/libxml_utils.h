@@ -11,6 +11,8 @@
 #include "libxml/xmlreader.h"
 #include "libxml/xmlwriter.h"
 
+class FilePath;
+
 // Converts a libxml xmlChar* into a UTF-8 std::string.
 // NULL inputs produce an empty string.
 std::string XmlStringToStdString(const xmlChar* xmlstring);
@@ -47,7 +49,7 @@ class XmlReader {
   bool Load(const std::string& input);
 
   // Load a document into the reader from a file.  Returns false on error.
-  bool LoadFile(const std::string& file_path);
+  bool LoadFile(const FilePath& file_path);
 
   // Wrappers around libxml functions -----------------------------------------
 
