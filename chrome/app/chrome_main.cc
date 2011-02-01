@@ -372,6 +372,17 @@ void CommonSubprocessInit() {
   MSG msg;
   PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
 #endif
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  // Various things break when you're using a locale where the decimal
+  // separator isn't a period.  See e.g. bugs 22782 and 39964.  For
+  // all processes except the browser process (where we call system
+  // APIs that may rely on the correct locale for formatting numbers
+  // when presenting them to the user), reset the locale for numeric
+  // formatting.
+  // Note that this is not correct for plugin processes -- they can
+  // surface UI -- but it's likely they get this wrong too so why not.
+  setlocale(LC_NUMERIC, "C");
+#endif
 }
 
 // Returns true if this subprocess type needs the ResourceBundle initialized

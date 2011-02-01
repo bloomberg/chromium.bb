@@ -589,14 +589,6 @@ static void PreSandboxInit() {
 
   base::SysInfo::MaxSharedMemorySize();
 
-  // To make wcstombs/mbstowcs work in a renderer, setlocale() has to be
-  // called before the sandbox is triggered. It's possible to avoid calling
-  // setlocale() by pulling out the conversion between FilePath and
-  // WebCore String out of the renderer and using string16 in place of
-  // FilePath for IPC.
-  const char* locale = setlocale(LC_ALL, "");
-  LOG_IF(WARNING, locale == NULL) << "setlocale failed.";
-
   // ICU DateFormat class (used in base/time_format.cc) needs to get the
   // Olson timezone ID by accessing the zoneinfo files on disk. After
   // TimeZone::createDefault is called once here, the timezone ID is
