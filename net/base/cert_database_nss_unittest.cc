@@ -10,11 +10,11 @@
 #include "base/crypto/scoped_nss_types.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/nss_util.h"
 #include "base/nss_util_internal.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
-#include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/cert_database.h"
@@ -105,9 +105,13 @@ bool ReadCertIntoList(const std::string& name, CertificateList* certs) {
 class CertDatabaseNSSTest : public testing::Test {
  public:
   virtual void SetUp() {
-    ASSERT_TRUE(temp_db_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(
-        base::OpenTestNSSDB(temp_db_dir_.path(), "CertDatabaseNSSTest db"));
+    if (!temp_db_initialized_) {
+      ASSERT_TRUE(temp_db_dir_.Get().CreateUniqueTempDir());
+      ASSERT_TRUE(
+          base::OpenTestNSSDB(temp_db_dir_.Get().path(),
+                              "CertDatabaseNSSTest db"));
+      temp_db_initialized_ = true;
+    }
     slot_ = cert_db_.GetDefaultModule();
 
     // Test db should be empty at start of test.
@@ -126,8 +130,14 @@ class CertDatabaseNSSTest : public testing::Test {
   CertDatabase cert_db_;
 
  private:
-  ScopedTempDir temp_db_dir_;
+  static base::LazyInstance<ScopedTempDir> temp_db_dir_;
+  static bool temp_db_initialized_;
 };
+
+// static
+base::LazyInstance<ScopedTempDir> CertDatabaseNSSTest::temp_db_dir_(
+    base::LINKER_INITIALIZED);
+bool CertDatabaseNSSTest::temp_db_initialized_ = false;
 
 TEST_F(CertDatabaseNSSTest, ListCerts) {
   // This test isn't terribly useful, though it will at least let valgrind test
