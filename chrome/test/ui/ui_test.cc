@@ -129,7 +129,8 @@ void UITestBase::SetUp() {
 }
 
 void UITestBase::TearDown() {
-  launcher_->TerminateConnection();
+  if (launcher_.get())
+    launcher_->TerminateConnection();
 
   // Make sure that we didn't encounter any assertion failures
   logging::AssertionList assertions;
