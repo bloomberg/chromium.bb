@@ -109,13 +109,9 @@ ExistingUserController::ExistingUserController(
 
 void ExistingUserController::Init() {
   if (!background_window_) {
-    std::string url_string =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kScreenSaverUrl);
-
     background_window_ = BackgroundView::CreateWindowContainingView(
         background_bounds_,
-        GURL(url_string),
+        GURL(),
         &background_view_);
     background_view_->EnableShutdownButton(true);
 
