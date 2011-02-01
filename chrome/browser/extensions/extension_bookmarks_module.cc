@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
-#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -803,15 +802,21 @@ bool ImportBookmarksFunction::RunImpl() {
 void ImportBookmarksFunction::FileSelected(const FilePath& path,
                                            int index,
                                            void* params) {
-  ImporterHost* host = new ImporterHost();
+  source_path_ = path;
+  importer_host_ = new ImporterHost(this);
+  // SourceProfilesLoaded() will be called once the Importer has loaded the list
+  // of source profiles.
+}
+
+void ImportBookmarksFunction::SourceProfilesLoaded() {
   importer::ProfileInfo profile_info;
   profile_info.browser_type = importer::BOOKMARKS_HTML;
-  profile_info.source_path = path;
-  host->StartImportSettings(profile_info,
-                            profile(),
-                            importer::FAVORITES,
-                            new ProfileWriter(profile()),
-                            true);
+  profile_info.source_path = source_path_;
+  importer_host_->StartImportSettings(profile_info,
+                                      profile(),
+                                      importer::FAVORITES,
+                                      new ProfileWriter(profile()),
+                                      true);
   Release();  // Balanced in BookmarksIOFunction::SelectFile()
 }
 

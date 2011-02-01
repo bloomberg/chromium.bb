@@ -10,9 +10,12 @@
 #include <set>
 #include <string>
 
+#include "base/ref_counted.h"
 #include "base/singleton.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -188,13 +191,23 @@ class BookmarksIOFunction : public BookmarksFunction,
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 };
 
-class ImportBookmarksFunction : public BookmarksIOFunction {
+class ImportBookmarksFunction : public BookmarksIOFunction,
+                                public ImporterList::Observer {
  public:
-  // Override BookmarkManagerIOFunction.
+  // BookmarkManagerIOFunction implementation.
   virtual bool RunImpl();
   virtual void FileSelected(const FilePath& path, int index, void* params);
 
+  // ImporterList::Observer implementation.
+  virtual void SourceProfilesLoaded();
+
  private:
+  // The selected file path used to import bookmarks from.
+  FilePath source_path_;
+
+  // The ImporterHost used to import the bookmarks.
+  scoped_refptr<ImporterHost> importer_host_;
+
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.import");
 };
 
