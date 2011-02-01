@@ -148,20 +148,6 @@ class View {
   // an indirect descendant. Will return true if child is also this View.
   bool Contains(View* child);
 
-  // Returns the visible View that most closely contains the specified point.
-  // |point| is in this View's coordinates.
-  // This function is used by the event processing system in the Widget to
-  // locate views for event targeting. Override this function if you wish to
-  // specify a view other than the one most closely enclosing |point| to receive
-  // notifications for events within it.
-  // TODO(beng): This is [ab]used primarily for event handling. Should be
-  //             renamed to something like GetViewForEvent().
-  virtual View* GetViewForPoint(const gfx::Point& point) const;
-
-  // Returns true if the specified point is contained within this View or its
-  // hit test mask. |point| is in this View's coordinates.
-  bool HitTest(const gfx::Point& point) const;
-
   int id() const { return id_; }
   void set_id(int id) { id_ = id; }
   int group() const { return group_; }
@@ -175,13 +161,19 @@ class View {
   // match the specified group id.
   void GetViewsWithGroup(int group, ViewVector* vec) const;
 
-  // Called on every view in the hierarchy when a view is added or removed.
-  virtual void OnViewAdded(View* parent, View* child);
-  virtual void OnViewRemoved(View* parent, View* child);
+  // Painting ------------------------------------------------------------------
 
-  // Called on a View when it is added or removed from a Widget.
-  virtual void OnViewAddedToWidget();
-  virtual void OnViewRemovedFromWidget();
+  // Add all or part of a View's bounds to the enclosing Widget's invalid
+  // rectangle. This will result in those areas being re-painted on the next
+  // update.
+  void Invalidate();
+  virtual void InvalidateRect(const gfx::Rect& invalid_rect);
+
+  // Input ---------------------------------------------------------------------
+
+  // Returns true if the specified point is contained within this View or its
+  // hit test mask. |point| is in this View's coordinates.
+  bool HitTest(const gfx::Point& point) const;
 
   // Accelerators --------------------------------------------------------------
 
@@ -189,8 +181,6 @@ class View {
   void AddAccelerator(const Accelerator& accelerator);
   void RemoveAccelerator(const Accelerator& accelerator);
   void RemoveAllAccelerators();
-
-  virtual bool OnAcceleratorPressed(const Accelerator& accelerator);
 
   // Focus ---------------------------------------------------------------------
 
@@ -203,17 +193,55 @@ class View {
   View* GetPreviousFocusableView() const;
 
   // Attributes.
-  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& event) const;
   void set_focusable(bool focusable) { focusable_ = focusable; }
   bool IsFocusable() const;
 
   bool HasFocus() const;
   void RequestFocus();
 
+  // Context menus -------------------------------------------------------------
+
+  void set_context_menu_controller(
+      ContextMenuController* context_menu_controller) {
+    context_menu_controller_ = context_menu_controller;
+  }
+
+  // Resources -----------------------------------------------------------------
+
+  ThemeProvider* GetThemeProvider() const;
+
+ protected:
+  // Tree operations -----------------------------------------------------------
+
+  // Called on every view in the hierarchy when a view is added or removed.
+  virtual void OnViewAdded(View* parent, View* child);
+  virtual void OnViewRemoved(View* parent, View* child);
+
+  // Called on a View when it is added or removed from a Widget.
+  virtual void OnViewAddedToWidget();
+  virtual void OnViewRemovedFromWidget();
+
+  // Accelerators --------------------------------------------------------------
+
+  virtual bool OnAcceleratorPressed(const Accelerator& accelerator);
+
+  // Focus ---------------------------------------------------------------------
+  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& event) const;
+
   virtual void OnFocus(/* const FocusEvent& event */);
   virtual void OnBlur();
 
   // Input ---------------------------------------------------------------------
+
+  // Returns the visible View that would like to handle events occurring at the
+  // specified |point|, in this View's coordinates.
+  // This function is used by the event processing system in the Widget to
+  // locate views for event targeting. Override this function if you wish to
+  // specify a view other than the one most closely enclosing |point| to receive
+  // notifications for events within it.
+  virtual View* GetEventHandlerForPoint(const gfx::Point& point) const;
+
+  virtual gfx::NativeCursor GetCursorForPoint(const gfx::Point& point);
 
   virtual bool OnKeyPressed(const KeyEvent& event);
   virtual bool OnKeyReleased(const KeyEvent& event);
@@ -228,22 +256,7 @@ class View {
   virtual void OnMouseEntered(const MouseEvent& event);
   virtual void OnMouseExited(const MouseEvent& event);
 
-  virtual gfx::NativeCursor GetCursorForPoint(const gfx::Point& point);
-
   // Painting ------------------------------------------------------------------
-
-  // Add all or part of a View's bounds to the enclosing Widget's invalid
-  // rectangle. This will result in those areas being re-painted on the next
-  // update.
-  void Invalidate();
-  virtual void InvalidateRect(const gfx::Rect& invalid_rect);
-
-  // Called by the framework to paint a View. Performs translation and clipping
-  // for View coordinates and language direction as required, allows the View
-  // to paint itself via the various OnPaint*() event handlers and then paints
-  // the hierarchy beneath it.
-  // TODO(beng): Make private?
-  void Paint(gfx::Canvas* canvas);
 
   // Responsible for calling Paint() on child Views. Override to control the
   // order child Views are painted.
@@ -265,17 +278,6 @@ class View {
   // Override to paint a focus border (usually a dotted rectangle) around
   // relevant contents.
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
-
-  // Context menus -------------------------------------------------------------
-
-  void set_context_menu_controller(
-      ContextMenuController* context_menu_controller) {
-    context_menu_controller_ = context_menu_controller;
-  }
-
-  // Resources -----------------------------------------------------------------
-
-  ThemeProvider* GetThemeProvider() const;
 
  private:
   friend internal::RootView;
@@ -299,6 +301,14 @@ class View {
     gfx::Point press_point;
   };
 
+  // Painting ------------------------------------------------------------------
+
+  // Called by the framework to paint a View. Performs translation and clipping
+  // for View coordinates and language direction as required, allows the View
+  // to paint itself via the various OnPaint*() event handlers and then paints
+  // the hierarchy beneath it.
+  void Paint(gfx::Canvas* canvas);
+
   // Drag & Drop ---------------------------------------------------------------
   int GetDragOperations(const gfx::Point& point);
   void WriteDragData(const gfx::Point& point, OSExchangeData* data);
@@ -316,7 +326,7 @@ class View {
   void NotifyHierarchyChanged(View* parent, View* child, bool is_add);
   void NotifyHierarchyChangedUp(View* parent, View* child, bool is_add);
   void NotifyHierarchyChangedDown(View* parent, View* child, bool is_add,
-                                   bool has_widget);
+                                  bool has_widget);
   void CallViewNotification(View* target,
                             View* parent,
                             View* child,

@@ -49,7 +49,7 @@ bool RootView::OnMousePressed(const MouseEvent& event) {
 
   // Find the most View most tightly enclosing the event location that wants to
   // handle events.
-  mouse_pressed_handler_ = GetViewForPoint(event.location());
+  mouse_pressed_handler_ = GetEventHandlerForPoint(event.location());
 
   // Walk up the tree from that View until we find one that handles it.
   while (mouse_pressed_handler_ && mouse_pressed_handler_ != this) {
@@ -100,7 +100,7 @@ void RootView::OnMouseCaptureLost() {
 
 void RootView::OnMouseMoved(const MouseEvent& event) {
   // TODO(beng): Update cursor.
-  View* v = GetViewForPoint(event.location());
+  View* v = GetEventHandlerForPoint(event.location());
   while (v && !v->enabled() && (v != mouse_move_handler_))
     v = v->parent();
   if (v && v != this) {

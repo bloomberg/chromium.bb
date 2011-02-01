@@ -273,27 +273,6 @@ bool View::Contains(View* child) {
   return false;
 }
 
-View* View::GetViewForPoint(const gfx::Point& point) const {
-  ViewVector::const_reverse_iterator it = children_.rbegin();
-  for (; it != children_.rend(); ++it) {
-    View* child = *it;
-    if (!child->visible())
-      continue;
-
-    gfx::Point point_in_child_coords(point);
-    View::ConvertPointToView(const_cast<View*>(this), child,
-                             &point_in_child_coords);
-    if (child->HitTest(point_in_child_coords))
-      return child->GetViewForPoint(point_in_child_coords);
-  }
-  return const_cast<View*>(this);
-}
-
-bool View::HitTest(const gfx::Point& point) const {
-  // TODO(beng): Hit test mask support.
-  return gfx::Rect(0, 0, width(), height()).Contains(point);
-}
-
 View* View::GetViewById(int id) const {
   if (id_ == id)
     return const_cast<View*>(this);
@@ -314,16 +293,28 @@ void View::GetViewsWithGroup(int group, ViewVector* vec) const {
     (*it)->GetViewsWithGroup(group, vec);
 }
 
-void View::OnViewAdded(View* parent, View* child) {
+// Painting --------------------------------------------------------------------
+
+void View::Invalidate() {
+  InvalidateRect(gfx::Rect(0, 0, width(), height()));
 }
 
-void View::OnViewRemoved(View* parent, View* child) {
+void View::InvalidateRect(const gfx::Rect& invalid_rect) {
+  if (!visible_)
+    return;
+
+  if (parent_) {
+    gfx::Rect r = invalid_rect;
+    r.Offset(bounds_.origin());
+    parent_->InvalidateRect(r);
+  }
 }
 
-void View::OnViewAddedToWidget() {
-}
+// Input -----------------------------------------------------------------------
 
-void View::OnViewRemovedFromWidget() {
+bool View::HitTest(const gfx::Point& point) const {
+  // TODO(beng): Hit test mask support.
+  return gfx::Rect(0, 0, width(), height()).Contains(point);
 }
 
 // Accelerators ----------------------------------------------------------------
@@ -335,10 +326,6 @@ void View::RemoveAccelerator(const Accelerator& accelerator) {
 }
 
 void View::RemoveAllAccelerators() {
-}
-
-bool View::OnAcceleratorPressed(const Accelerator& accelerator) {
-  return false;
 }
 
 // Focus -----------------------------------------------------------------------
@@ -359,10 +346,6 @@ View* View::GetPreviousFocusableView() const {
   return NULL;
 }
 
-bool View::SkipDefaultKeyEventProcessing(const KeyEvent& event) const {
-  return false;
-}
-
 bool View::IsFocusable() const {
   return false;
 }
@@ -374,6 +357,42 @@ bool View::HasFocus() const {
 void View::RequestFocus() {
 }
 
+// Resources -------------------------------------------------------------------
+
+ThemeProvider* View::GetThemeProvider() const {
+  Widget* widget = GetWidget();
+  return widget ? widget->GetThemeProvider() : NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// View, protected:
+
+// Tree operations -------------------------------------------------------------
+
+void View::OnViewAdded(View* parent, View* child) {
+}
+
+void View::OnViewRemoved(View* parent, View* child) {
+}
+
+void View::OnViewAddedToWidget() {
+}
+
+void View::OnViewRemovedFromWidget() {
+}
+
+// Accelerators ----------------------------------------------------------------
+
+bool View::OnAcceleratorPressed(const Accelerator& accelerator) {
+  return false;
+}
+
+// Focus -----------------------------------------------------------------------
+
+bool View::SkipDefaultKeyEventProcessing(const KeyEvent& event) const {
+  return false;
+}
+
 void View::OnFocus(/* const FocusEvent& event */) {
 }
 
@@ -381,6 +400,26 @@ void View::OnBlur() {
 }
 
 // Input -----------------------------------------------------------------------
+
+View* View::GetEventHandlerForPoint(const gfx::Point& point) const {
+  ViewVector::const_reverse_iterator it = children_.rbegin();
+  for (; it != children_.rend(); ++it) {
+    View* child = *it;
+    if (!child->visible())
+      continue;
+
+    gfx::Point point_in_child_coords(point);
+    View::ConvertPointToView(const_cast<View*>(this), child,
+                             &point_in_child_coords);
+    if (child->HitTest(point_in_child_coords))
+      return child->GetEventHandlerForPoint(point_in_child_coords);
+  }
+  return const_cast<View*>(this);
+}
+
+gfx::NativeCursor View::GetCursorForPoint(const gfx::Point& point) {
+  return NULL;
+}
 
 bool View::OnKeyPressed(const KeyEvent& event) {
   return true;
@@ -422,41 +461,7 @@ void View::OnMouseExited(const MouseEvent& event) {
 
 }
 
-gfx::NativeCursor View::GetCursorForPoint(const gfx::Point& point) {
-  return NULL;
-}
-
 // Painting --------------------------------------------------------------------
-
-void View::Invalidate() {
-  InvalidateRect(gfx::Rect(0, 0, width(), height()));
-}
-
-void View::InvalidateRect(const gfx::Rect& invalid_rect) {
-  if (!visible_)
-    return;
-
-  if (parent_) {
-    gfx::Rect r = invalid_rect;
-    r.Offset(bounds_.origin());
-    parent_->InvalidateRect(r);
-  }
-}
-
-void View::Paint(gfx::Canvas* canvas) {
-  // Invisible views are not painted.
-  if (!visible_)
-    return;
-
-  ScopedCanvasState canvas_state(canvas);
-  if (canvas->ClipRectInt(x(), y(), width(), height())) {
-    canvas->TranslateInt(x(), y());
-    // TODO(beng): RTL
-    ScopedCanvasState canvas_state(canvas);
-    OnPaint(canvas);
-    PaintChildren(canvas);
-  }
-}
 
 void View::PaintChildren(gfx::Canvas* canvas) {
   // TODO(beng): use for_each.
@@ -485,13 +490,6 @@ void View::OnPaintBorder(gfx::Canvas* canvas) {
 void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
 }
 
-// Resources -------------------------------------------------------------------
-
-ThemeProvider* View::GetThemeProvider() const {
-  Widget* widget = GetWidget();
-  return widget ? widget->GetThemeProvider() : NULL;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // View, private:
 
@@ -503,6 +501,23 @@ void View::DragInfo::Reset() {
 void View::DragInfo::PossibleDrag(const gfx::Point& point) {
   possible_drag = true;
   press_point = point;
+}
+
+// Painting --------------------------------------------------------------------
+
+void View::Paint(gfx::Canvas* canvas) {
+  // Invisible views are not painted.
+  if (!visible_)
+    return;
+
+  ScopedCanvasState canvas_state(canvas);
+  if (canvas->ClipRectInt(x(), y(), width(), height())) {
+    canvas->TranslateInt(x(), y());
+    // TODO(beng): RTL
+    ScopedCanvasState canvas_state(canvas);
+    OnPaint(canvas);
+    PaintChildren(canvas);
+  }
 }
 
 // Drag & Drop -----------------------------------------------------------------

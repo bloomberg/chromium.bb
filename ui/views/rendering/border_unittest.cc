@@ -37,9 +37,22 @@ class TestBorder : public Border {
   DISALLOW_COPY_AND_ASSIGN(TestBorder);
 };
 
+class PaintableView : public View {
+ public:
+  PaintableView() {}
+  virtual ~PaintableView() {}
+
+  void CallOnPaintWithNULLCanvas() {
+    OnPaint(NULL);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaintableView);
+};
+
 TEST_F(BorderTest, Basic) {
   const int kViewSize = 100;
-  View v;
+  PaintableView v;
   v.SetBounds(10, 10, kViewSize, kViewSize);
 
   // With no border, the content size is the view size.
@@ -56,7 +69,7 @@ TEST_F(BorderTest, Basic) {
 
   TestBorder* border = new TestBorder;
   v.SetBorder(border);
-  v.OnPaint(NULL);
+  v.CallOnPaintWithNULLCanvas();
   EXPECT_TRUE(border->painted());
 }
 
