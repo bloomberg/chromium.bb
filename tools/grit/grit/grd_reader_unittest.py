@@ -139,11 +139,11 @@ class GrdReaderUnittest(unittest.TestCase):
     root = grd_reader.Parse(pseudo_file, '.')
     root.AssignFirstIds("../../test.grd", "grit/test/data/resource_ids")
     messages_node = root.children[0].children[0]
-    self.failUnless(isinstance(messages_node, empty.MessagesNode))
-    self.failUnless(messages_node.attrs["first_id"] == 100)
+    self.assertTrue(isinstance(messages_node, empty.MessagesNode))
+    self.assertEqual('100', messages_node.attrs["first_id"])
     messages_node = root.children[0].children[1]
-    self.failUnless(isinstance(messages_node, empty.MessagesNode))
-    self.failUnless(messages_node.attrs["first_id"] == 10000)
+    self.assertTrue(isinstance(messages_node, empty.MessagesNode))
+    self.assertEqual('10000', messages_node.attrs["first_id"])
 
   def testUseNameForIdAndPpIfdef(self):
     input = u'''<?xml version="1.0" encoding="UTF-8"?>

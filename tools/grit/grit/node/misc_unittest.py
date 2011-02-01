@@ -91,6 +91,9 @@ class IfNodeUnittest(unittest.TestCase):
             <output filename="doc.html" type="document" />
           </if>
           <output filename="uncond2.adm" type="adm" />
+          <output filename="iftest.h" type="rc_header">
+            <emit emit_type='prepend'></emit>
+          </output>
         </outputs>
       </grit>'''), dir='.')
 
@@ -111,27 +114,28 @@ class IfNodeUnittest(unittest.TestCase):
     self.assertEquals(
         outputs,
         ['uncond1.rc', 'only_fr.adm', 'only_fr.plist', 'doc.html',
-         'uncond2.adm'])
+         'uncond2.adm', 'iftest.h'])
 
     grd.SetOutputContext('ru', {'bingo': '2'})
     outputs = [output.GetFilename() for output in grd.GetOutputFiles()]
     self.assertEquals(
         outputs,
-        ['uncond1.rc', 'doc.html', 'uncond2.adm'])
+        ['uncond1.rc', 'doc.html', 'uncond2.adm', 'iftest.h'])
 
     grd.SetOutputContext('fr', {'hello': '1'})
     outputs = [output.GetFilename() for output in grd.GetOutputFiles()]
     self.assertEquals(
         outputs,
-        ['uncond1.rc', 'only_fr.adm', 'only_fr.plist', 'uncond2.adm'])
+        ['uncond1.rc', 'only_fr.adm', 'only_fr.plist', 'uncond2.adm',
+         'iftest.h'])
 
     grd.SetOutputContext('en', {'bingo': '1'})
     outputs = [output.GetFilename() for output in grd.GetOutputFiles()]
-    self.assertEquals(outputs, ['uncond1.rc', 'uncond2.adm'])
+    self.assertEquals(outputs, ['uncond1.rc', 'uncond2.adm', 'iftest.h'])
 
     grd.SetOutputContext('fr', {'bingo': '1'})
     outputs = [output.GetFilename() for output in grd.GetOutputFiles()]
-    self.assertNotEquals(outputs, ['uncond1.rc', 'uncond2.adm'])
+    self.assertNotEquals(outputs, ['uncond1.rc', 'uncond2.adm', 'iftest.h'])
 
 class ReleaseNodeUnittest(unittest.TestCase):
   def testPseudoControl(self):

@@ -37,7 +37,7 @@ class FileNode(base.Node):
     return ['path', 'lang']
 
   def RunGatherers(self, recursive=False, debug=False):
-    if not self.should_load_:
+    if not self.should_load_ or not self.SatisfiesOutputCondition():
       return
 
     root = self.GetRoot()

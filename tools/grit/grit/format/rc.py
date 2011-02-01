@@ -286,25 +286,23 @@ class TopLevel(interface.ItemFormatter):
       # it.
       resource_header = 'resource.h'  # fall back to this
       language_directive = ''
-      for child in item.GetRoot().children:
-        if child.name == 'outputs':
-          for output in child.children:
-            if output.attrs['type'] == 'rc_header':
-              resource_header = os.path.abspath(output.GetOutputFilename())
-              resource_header = _MakeRelativePath(output_dir, resource_header)
-            if output.attrs['lang'] != lang:
-              continue
-            if output.attrs['language_section'] == '':
-              # If no language_section is requested, no directive is added
-              # (Used when the generated rc will be included from another rc
-              # file that will have the appropriate language directive)
-              language_directive = ''
-            elif output.attrs['language_section'] == 'neutral':
-              # If a neutral language section is requested (default), add a
-              # neutral language directive
-              language_directive = 'LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL'
-            elif output.attrs['language_section'] == 'lang':
-              language_directive = 'LANGUAGE %s' % GetLangDirectivePair(lang)
+      for output in item.GetRoot().GetOutputFiles():
+        if output.attrs['type'] == 'rc_header':
+          resource_header = os.path.abspath(output.GetOutputFilename())
+          resource_header = _MakeRelativePath(output_dir, resource_header)
+        if output.attrs['lang'] != lang:
+          continue
+        if output.attrs['language_section'] == '':
+          # If no language_section is requested, no directive is added
+          # (Used when the generated rc will be included from another rc
+          # file that will have the appropriate language directive)
+          language_directive = ''
+        elif output.attrs['language_section'] == 'neutral':
+          # If a neutral language section is requested (default), add a
+          # neutral language directive
+          language_directive = 'LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL'
+        elif output.attrs['language_section'] == 'lang':
+          language_directive = 'LANGUAGE %s' % GetLangDirectivePair(lang)
       resource_header = resource_header.replace('\\', '\\\\')
       return '''// Copyright (c) Google Inc. %d
 // All rights reserved.

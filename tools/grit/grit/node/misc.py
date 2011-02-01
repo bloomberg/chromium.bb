@@ -39,6 +39,9 @@ class IfNode(base.Node):
     elif isinstance(self.parent, empty.OutputsNode):
       from grit.node import io
       return isinstance(child, io.OutputNode)
+    elif isinstance(self.parent, empty.TranslationsNode):
+      from grit.node import io
+      return isinstance(child, io.FileNode)
     else:
       return False
 

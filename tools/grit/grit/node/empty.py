@@ -56,7 +56,7 @@ class StructuresNode(GroupingNode):
 class TranslationsNode(base.Node):
   '''The <translations> element.'''
   def _IsValidChild(self, child):
-    return isinstance(child, io.FileNode)
+    return isinstance(child, (io.FileNode, misc.IfNode))
 
 
 class OutputsNode(base.Node):

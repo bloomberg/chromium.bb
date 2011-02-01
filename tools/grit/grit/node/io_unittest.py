@@ -57,6 +57,28 @@ class FileNodeUnittest(unittest.TestCase):
     grd.RunGatherers(recursive=True)
     self.failUnless(True)
 
+  def testIffyness(self):
+    grd = grd_reader.Parse(StringIO.StringIO('''<?xml version="1.0" encoding="UTF-8"?>
+      <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
+        <translations>
+          <if expr="lang == 'fr'">
+            <file path="fr.xtb" lang="fr" />
+          </if>
+        </translations>
+        <release seq="3">
+          <messages>
+            <message name="ID_HELLO">Hello!</message>
+            <message name="ID_HELLO_USER">Hello <ph name="USERNAME">%s<ex>Joi</ex></ph></message>
+          </messages>
+        </release>
+      </grit>'''), util.PathFromRoot('grit/test/data'))
+    grd.SetOutputContext('en', {})
+    grd.RunGatherers(recursive=True)
+
+    grd.SetOutputContext('fr', {})
+    grd.RunGatherers(recursive=True)
+
+
 
 if __name__ == '__main__':
   unittest.main()
