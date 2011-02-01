@@ -125,8 +125,11 @@ NewUserView::NewUserView(Delegate* delegate,
       need_create_account_(false),
       languages_menubutton_order_(-1),
       sign_in_button_order_(-1) {
-  if (need_guest_link && UserCrosSettingsProvider::cached_allow_guest())
-    need_guest_link_ = true;
+  if (UserCrosSettingsProvider::cached_allow_guest()) {
+    need_create_account_ = true;
+    if (need_guest_link)
+      need_guest_link_ = true;
+  }
 }
 
 NewUserView::~NewUserView() {
@@ -417,9 +420,10 @@ void NewUserView::Layout() {
   splitter_down1_->SetBounds(0, y, this->width(), kSplitterHeight);
   splitter_down2_->SetBounds(0, y + 1, this->width(), kSplitterHeight);
 
+  y += kBottomPad;
   if (need_guest_link_) {
-    y -= setViewBounds(guest_link_,
-                       x, y + kBottomPad, max_width, false) + kRowPad;
+    y += setViewBounds(guest_link_,
+                       x, y, max_width, false) + kRowPad;
   }
   if (need_create_account_) {
     y += setViewBounds(create_account_link_, x, y, max_width, false);

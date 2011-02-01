@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
 #include "gfx/rect.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace chromeos {
@@ -155,10 +156,14 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Cached list of users to display at login screen.
   std::vector<UserManager::User> users_;
 
+  // URL to append to start Guest mode with.
+  GURL guest_mode_url_;
+
   // Factory of callbacks.
   ScopedRunnableMethodFactory<ExistingUserController> method_factory_;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, NewUserLogin);
+  FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, CreateAccount);
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserController);
 };

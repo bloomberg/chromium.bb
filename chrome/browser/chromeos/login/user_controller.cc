@@ -473,6 +473,9 @@ void UserController::OnLogin(const std::string& username,
 }
 
 void UserController::OnCreateAccount() {
+  user_input_->EnableInputControls(false);
+  StartThrobber();
+
   delegate_->CreateAccount();
 }
 

@@ -41,7 +41,7 @@ const char kUserImages[] = "UserImages";
 
 // Incognito user is represented by an empty string (since some code already
 // depends on that and it's hard to figure out what).
-const char kIncognitoUser[] = "";
+const char kGuestUser[] = "";
 
 // Special pathes to default user images.
 const char* kDefaultImageNames[] = {
@@ -231,12 +231,12 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
 void UserManager::OffTheRecordUserLoggedIn() {
   user_is_logged_in_ = true;
   logged_in_user_ = User();
-  logged_in_user_.set_email(kIncognitoUser);
+  logged_in_user_.set_email(kGuestUser);
   NotifyOnLogin();
 }
 
 void UserManager::UserLoggedIn(const std::string& email) {
-  if (email == kIncognitoUser) {
+  if (email == kGuestUser) {
     OffTheRecordUserLoggedIn();
     return;
   }
@@ -401,6 +401,10 @@ void UserManager::OnImageLoaded(const std::string& username,
       NotificationType::LOGIN_USER_IMAGE_CHANGED,
       Source<UserManager>(this),
       Details<const User>(&user));
+}
+
+bool UserManager::IsLoggedInAsGuest() const {
+  return logged_in_user().email() == kGuestUser;
 }
 
 // Private constructor and destructor. Do nothing.

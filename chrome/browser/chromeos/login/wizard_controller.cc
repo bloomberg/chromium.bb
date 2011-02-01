@@ -622,7 +622,7 @@ void WizardController::OnUserImageSkipped() {
 
 void WizardController::OnRegistrationSuccess() {
   MarkDeviceRegistered();
-  if (chromeos::UserManager::Get()->logged_in_user().email().empty()) {
+  if (chromeos::UserManager::Get()->IsLoggedInAsGuest()) {
     chromeos::LoginUtils::Get()->CompleteOffTheRecordLogin(start_url_);
   } else {
     ShowUserImageScreen();

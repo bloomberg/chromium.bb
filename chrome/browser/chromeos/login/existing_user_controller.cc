@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_switches.h"
@@ -34,11 +35,15 @@ namespace chromeos {
 namespace {
 
 // Url for setting up sync authentication.
-const char kSettingsSyncLoginUrl[] = "chrome://settings/personal";
+const char kSettingsSyncLoginURL[] = "chrome://settings/personal";
 
 // URL that will be opened on when user logs in first time on the device.
 const char kGetStartedURL[] =
     "chrome-extension://nbaambmfhicobichobkkokacjbaoinda/index.html";
+
+// URL for account creation.
+const char kCreateAccountURL[] =
+    "https://www.google.com/accounts/NewAccount?service=mail";
 
 // Path to extracted version of Get Started app.
 const char kGetStartedPath[] = "/usr/share/chromeos-assets/getstarted";
@@ -175,7 +180,9 @@ void ExistingUserController::ProcessWmMessage(const WmIpc::Message& message,
 //
 
 void ExistingUserController::CreateAccount() {
-  ActivateWizard(WizardController::kAccountScreenName);
+  guest_mode_url_ =
+      google_util::AppendGoogleLocaleParam(GURL(kCreateAccountURL));
+  LoginAsGuest();
 }
 
 void ExistingUserController::Login(const std::string& username,
@@ -277,6 +284,7 @@ void ExistingUserController::RemoveUser(const std::string& username) {
 //
 
 void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
+  guest_mode_url_ = GURL::EmptyGURL();
   std::string error = failure.GetErrorString();
 
   // Check networking after trying to login in case user is
@@ -349,7 +357,7 @@ void ExistingUserController::OnLoginSuccess(
       // If we have a two factor error and and this is a new user,
       // load the personal settings page.
       // TODO(stevenjb): direct the user to a lightweight sync login page.
-      CommandLine::ForCurrentProcess()->AppendArg(kSettingsSyncLoginUrl);
+      CommandLine::ForCurrentProcess()->AppendArg(kSettingsSyncLoginURL);
     }
 
     // For new user login don't launch browser until we pass image screen.
@@ -378,7 +386,7 @@ void ExistingUserController::OnLoginSuccess(
 
 void ExistingUserController::OnOffTheRecordLoginSuccess() {
   if (WizardController::IsDeviceRegistered()) {
-    LoginUtils::Get()->CompleteOffTheRecordLogin(GURL());
+    LoginUtils::Get()->CompleteOffTheRecordLogin(guest_mode_url_);
   } else {
     // Postpone CompleteOffTheRecordLogin until registration completion.
     ActivateWizard(WizardController::kRegistrationScreenName);
@@ -455,6 +463,8 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
   background_window_ = NULL;
 
   controller->Init(screen_name, background_bounds_);
+  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
+    controller->set_start_url(guest_mode_url_);
 
   delete_timer_.Start(base::TimeDelta::FromSeconds(1), this,
                       &ExistingUserController::Delete);

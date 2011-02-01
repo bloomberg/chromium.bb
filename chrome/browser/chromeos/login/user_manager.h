@@ -110,6 +110,9 @@ class UserManager : public UserImageLoader::Delegate,
 
   bool user_is_logged_in() const { return user_is_logged_in_; }
 
+  // Returns true if we're logged in as a Guest.
+  bool IsLoggedInAsGuest() const;
+
  protected:
   UserManager();
   virtual ~UserManager();
