@@ -150,7 +150,7 @@ installer::InstallStatus RenameChromeExecutables(
 
   install_list->AddCopyTreeWorkItem(chrome_new_exe.value(),
                                     chrome_exe.value(),
-                                    temp_path.ToWStringHack(),
+                                    temp_path.value(),
                                     WorkItem::IF_DIFFERENT,
                                     std::wstring());
   install_list->AddDeleteTreeWorkItem(chrome_new_exe);
@@ -642,7 +642,7 @@ installer::InstallStatus InstallProducts(
   // this, if we fail to delete the temp folders, then schedule them for
   // deletion at next reboot.
   if (!cleanup_success) {
-    ScheduleDirectoryForDeletion(temp_path.ToWStringHack().c_str());
+    ScheduleDirectoryForDeletion(temp_path.value().c_str());
     if (cmd_line.HasSwitch(installer::switches::kInstallerData)) {
       std::wstring prefs_path = cmd_line.GetSwitchValueNative(
           installer::switches::kInstallerData);
@@ -740,7 +740,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
           installer::switches::kUpdateSetupExe);
       VLOG(1) << "Opening archive " << setup_patch;
       std::wstring uncompressed_patch;
-      if (LzmaUtil::UnPackArchive(setup_patch, temp_path.ToWStringHack(),
+      if (LzmaUtil::UnPackArchive(setup_patch, temp_path.value(),
                                   &uncompressed_patch) == NO_ERROR) {
         FilePath old_setup_exe = cmd_line.GetProgram();
         FilePath new_setup_exe = cmd_line.GetSwitchValuePath(
@@ -988,7 +988,7 @@ google_breakpad::ExceptionHandler* InitializeCrashReporting(
 
   google_breakpad::ExceptionHandler* breakpad =
       new google_breakpad::ExceptionHandler(
-          temp_directory.ToWStringHack(), NULL, NULL, NULL,
+          temp_directory.value(), NULL, NULL, NULL,
           google_breakpad::ExceptionHandler::HANDLER_ALL, kLargerDumpType,
           pipe_name.c_str(), GetCustomInfo(exe_path));
   return breakpad;
