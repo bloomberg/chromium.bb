@@ -2035,6 +2035,7 @@ nacl_env.Append(
     'tests/syscall_return_sandboxing/nacl.scons',
     'tests/threads/nacl.scons',
     'tests/time/nacl.scons',
+    'tests/tls/nacl.scons',
     'tests/toolchain/nacl.scons',
     'tests/unittests/shared/imc/nacl.scons',
     'tests/unittests/shared/srpc/nacl.scons',

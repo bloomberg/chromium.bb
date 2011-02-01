@@ -1,0 +1,32 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+# Large TLS aligns don't work for newlib.
+if not env.Bit('nacl_glibc'):
+  Return()
+
+defines_map = {
+    'tdata1' : ['WITH_PTHREAD'],
+    'tdata2' : ['MORE_TDATA', 'WITH_PTHREAD'],
+    'tbss1' : ['WITH_TBSS', 'WITH_PTHREAD'],
+    'tbss2' : ['WITH_TBSS', 'MORE_TBSS', 'WITH_PTHREAD'],
+    'tbss3' : ['WITH_TBSS', 'MORE_TDATA', 'WITH_PTHREAD'],
+    'largealign' : ['TDATA_LARGE_ALIGN', 'TBSS_LARGE_ALIGN', 'WITH_PTHREAD'],
+    'nopthread' : ['WITH_TBSS', 'TDATA_LARGE_ALIGN', 'TBSS_LARGE_ALIGN']}
+for case_name, defines in sorted(defines_map.iteritems()):
+  full_name = 'tls_test_' + case_name
+  if 'WITH_PTHREAD' in defines:
+    libs = ['pthread']
+  else:
+    libs = []
+  env_test = env.Clone()
+  env_test.Append(CPPDEFINES=[[define, ''] for define in defines])
+  obj = env_test.ComponentObject(full_name + '.o', 'tls.c')
+  prog = env_test.ComponentProgram(full_name + '.nexe', obj, EXTRA_LIBS=libs)
+  node = env_test.CommandSelLdrTestNacl(full_name + '.out', command=[prog],
+                                        size='small')
+  env_test.AddNodeToTestSuite(node, ['small_tests'], 'run_' + full_name)
