@@ -39,7 +39,7 @@ class ImportDataHandler : public OptionsPageUIHandler,
   scoped_refptr<ImporterList> importer_list_;
 
   // If non-null it means importing is in progress. ImporterHost takes care
-  // of deleting itself when done import.
+  // of deleting itself when import is complete.
   ImporterHost* importer_host_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(ImportDataHandler);

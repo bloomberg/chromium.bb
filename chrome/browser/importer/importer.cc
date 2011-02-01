@@ -108,8 +108,11 @@ ImporterHost::ImporterHost(ImporterList::Observer* observer)
 }
 
 ImporterHost::~ImporterHost() {
+  importer_list_->SetObserver(NULL);
+
   if (NULL != importer_)
     importer_->Release();
+
   if (installed_bookmark_observer_) {
     DCHECK(profile_);  // Only way for waiting_for_bookmarkbar_model_ to be true
                        // is if we have a profile.

@@ -164,6 +164,10 @@ void ImporterList::DetectSourceProfiles(Observer* observer) {
       NewRunnableMethod(this, &ImporterList::DetectSourceProfilesWorker));
 }
 
+void ImporterList::SetObserver(Observer* observer) {
+  observer_ = observer;
+}
+
 void ImporterList::DetectSourceProfilesHack() {
   DetectSourceProfilesWorker();
 }
@@ -258,7 +262,10 @@ void ImporterList::SourceProfilesLoaded(
 
   source_profiles_->assign(profiles.begin(), profiles.end());
   source_profiles_loaded_ = true;
-  observer_->SourceProfilesLoaded();
-  observer_ = NULL;
   source_thread_id_ = BrowserThread::UI;
+
+  if (observer_) {
+    observer_->SourceProfilesLoaded();
+    observer_ = NULL;
+  }
 }

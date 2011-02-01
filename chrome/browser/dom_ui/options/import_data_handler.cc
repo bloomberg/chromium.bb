@@ -25,6 +25,9 @@ ImportDataHandler::ImportDataHandler() : importer_host_(NULL) {
 }
 
 ImportDataHandler::~ImportDataHandler() {
+  if (importer_list_)
+    importer_list_->SetObserver(NULL);
+
   if (importer_host_)
     importer_host_->SetObserver(NULL);
 }
