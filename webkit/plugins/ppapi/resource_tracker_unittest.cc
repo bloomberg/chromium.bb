@@ -183,8 +183,7 @@ TEST_F(ResourceTrackerTest, DeleteObjectVarWithInstance) {
 
   // Make an object var.
   scoped_ptr<NPObject> npobject(NewTrackedNPObject());
-  PP_Var pp_object = ObjectVar::NPObjectToPPVar(instance2.get(),
-                                                npobject.get());
+  ObjectVar::NPObjectToPPVar(instance2.get(), npobject.get());
 
   EXPECT_EQ(1, g_npobjects_alive);
   EXPECT_EQ(1u, tracker().GetLiveObjectsForInstance(pp_instance2));
