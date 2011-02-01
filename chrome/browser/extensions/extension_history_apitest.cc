@@ -6,11 +6,32 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "net/base/mock_host_resolver.h"
 
-// Disabled, http://crbug.com/26296.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_History) {
-  host_resolver()->AddRule("www.a.com", "127.0.0.1");
-  host_resolver()->AddRule("www.b.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+class ExtensionHistoryApiTest : public ExtensionApiTest {
+ public:
+  virtual void SetUpInProcessBrowserTestFixture() {
+    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
-  ASSERT_TRUE(RunExtensionTest("history")) << message_;
+    host_resolver()->AddRule("www.a.com", "127.0.0.1");
+    host_resolver()->AddRule("www.b.com", "127.0.0.1");
+
+    ASSERT_TRUE(StartTestServer());
+  }
+};
+
+// Flaky, http://crbug.com/26296.
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_MiscSearch) {
+  ASSERT_TRUE(RunExtensionSubtest("history", "misc_search.html")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, TimedSearch) {
+  ASSERT_TRUE(RunExtensionSubtest("history", "timed_search.html")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, Delete) {
+  ASSERT_TRUE(RunExtensionSubtest("history", "delete.html")) << message_;
+}
+
+// Flaky, http://crbug.com/26296.
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_GetVisits) {
+  ASSERT_TRUE(RunExtensionSubtest("history", "get_visits.html")) << message_;
 }

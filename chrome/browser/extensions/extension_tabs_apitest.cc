@@ -24,7 +24,7 @@
 #endif
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
 
   // The test creates a tab and checks that the URL of the new tab
   // is that of the new tab page.  Make sure the pref that controls
@@ -36,22 +36,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabPinned) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "pinned.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabMove) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "move.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabEvents) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "events.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabRelativeURLs) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "relative_urls.html"))
       << message_;
 }
