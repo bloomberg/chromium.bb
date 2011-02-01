@@ -5811,6 +5811,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED" desc="Heading of the error page when the network connection failed.">
         Unable to connect to the Internet
       </message>
+      <message name="IDS_ERRORPAGES_HEADING_CACHE_MISS" desc="Heading in the error page when we couldn't find a resource in the cache, and cannot fall back to the network.">
+        Cache miss
+      </message>
       <message name="IDS_ERRORPAGES_HEADING_CACHE_READ_FAILURE" desc="Heading in the error page when we encountered an error reading from the cache.  Generally this happens when the disk cache is corrupted from improper shutdown.">
         Cache read error
       </message>
@@ -5822,6 +5825,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ERRORPAGES_HEADING_TOO_MANY_REDIRECTS" desc="Heading in the error page when there are too many URL redirects.">
         This webpage has a redirect loop
+      </message>
+      <message name="IDS_ERRORPAGES_HEADING_EMPTY_RESPONSE" desc="Heading in the error page when no data is received.">
+        No data received
       </message>
       <message name="IDS_ERRORPAGES_HEADING_WEAK_SERVER_EPHEMERAL_DH_KEY" desc="Heading of the error page when the server has a weak Diffie-Hellman public key. Diffie-Hellman is a technical term and the conjuction of two names so may be best left untranslated. 'key' here is used as the technical name for a large number with certain mathematical properties that allow it to be used to encrypt and decrypt data. 'weak' here means that the number is too small to resist an exhaustive attempt to find certain mathematical structures in it, the secrecy of which is critical.">
         Server has a weak ephemeral Diffie-Hellman public key
@@ -5902,6 +5908,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <message name="IDS_ERRORPAGES_SUMMARY_CACHE_MISS" desc="Summary in the error page when we couldn't find a resource in the cache, and cannot fall back to the network.">
+        The webpage was not found in the cache.  Certain resources
+        can only be safely loaded from the cache, such as pages generated
+        from submitted data.
+        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+        This error can also be caused by cache corruption due to
+        an improper shutdown.
+        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+        If the problem persists, try clearing the cache.
+      </message>
       <message name="IDS_ERRORPAGES_SUMMARY_CACHE_READ_FAILURE" desc="Summary in the error page when we encountered an error reading from the cache.  Generally this happens when the disk cache is corrupted from improper shutdown.">
         To speed up webpages,
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
@@ -5928,6 +5944,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         too many redirects.  Clearing your cookies for this site or allowing third-party cookies may fix the problem.  If
         not, it is possibly a server configuration issue and not a problem with your
         computer.
+      </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_EMPTY_RESPONSE" desc="Summary in the error page when no data is received.">
+        Unable to load the webpage because the server sent no data.
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_WEAK_SERVER_EPHEMERAL_DH_KEY" desc="Summary in the error page when the server has a weak Diffie-Hellman public key">
         This error can occur when connecting to a secure (HTTPS) server. It
@@ -5967,7 +5986,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_DETAILS_TIMED_OUT" desc="The error message displayed when a page takes too long to load.">
         The operation timed out.
       </message>
-      <message name="IDS_ERRORPAGES_DETAILS_CONNECT_FAILED" desc="The error message displayed when we can not reach the web site.">
+      <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_CLOSED" desc="The error message displayed when the server unexpectedly closes a connection.">
+        The server unexpectedly closed the connection.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_RESET" desc="The error message displayed when a connection was reset.">
+        The connection was reset.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_REFUSED" desc="The error message displayed a connection attempt is refused.">
+        The server refused the connection.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_FAILED" desc="The error message displayed when we can not reach the web site.">
         The attempt to connect to the server failed.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED" desc="The error message displayed when a dns look up fails.">
@@ -5988,6 +6016,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_DETAILS_CACHE_READ_FAILURE" desc="The error message displayed when we encountered an error reading from the cache.  Generally this happens when the disk cache is corrupted from improper shutdown.">
         Error reading data from cache.
       </message>
+      <message name="IDS_ERRORPAGES_DETAILS_CACHE_MISS" desc="The error message displayed when we couldn't find a resource in the cache, and cannot fall back to the network.">
+        The requested entry was not found in the cache.
+      </message>
       <message name="IDS_ERRORPAGES_DETAILS_NETWORK_IO_SUSPENDED" desc="The error message displayed when a page load failed due to the computer entering sleep/suspend mode.">
         Network IO suspended.
       </message>
@@ -5996,6 +6027,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_TOO_MANY_REDIRECTS" desc="The error message displayed when there are too many redirects.">
         There were too many redirects.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_EMPTY_RESPONSE" desc="The error message displayed when no data is received.">
+        The server closed the connection without sending any data.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_UNKNOWN" desc="The default error message displayed if we don't have a more specific error message.">
         Unknown error.
