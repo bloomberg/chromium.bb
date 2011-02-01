@@ -11,7 +11,8 @@
 
 namespace content_settings {
 
-class MockContentSettingsProvider : public DefaultProviderInterface {
+class MockContentSettingsProvider : public DefaultProviderInterface,
+                                    public ProviderInterface {
  public:
   // Create a content settings provider that provides a given setting for a
   // given type.
@@ -21,7 +22,7 @@ class MockContentSettingsProvider : public DefaultProviderInterface {
                               bool can_override);
   virtual ~MockContentSettingsProvider();
 
-  // ContentSettingsProviderInterface implementation.
+  // DefaultProviderInterface implementation.
   virtual bool CanProvideDefaultSetting(ContentSettingsType content_type) const;
   virtual ContentSetting ProvideDefaultSetting(
       ContentSettingsType content_type) const;
@@ -29,6 +30,29 @@ class MockContentSettingsProvider : public DefaultProviderInterface {
                                     ContentSetting setting);
   virtual void ResetToDefaults();
   virtual bool DefaultSettingIsManaged(ContentSettingsType content_type) const;
+
+  // ProviderInterface implementation
+  virtual ContentSetting GetContentSetting(
+      const GURL& requesting_url,
+      const GURL& embedding_url,
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier) const {
+    return CONTENT_SETTING_DEFAULT;
+  }
+
+  virtual void SetContentSetting(
+      const ContentSettingsPattern& requesting_url_pattern,
+      const ContentSettingsPattern& embedding_url_pattern,
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      ContentSetting content_setting) {}
+
+  virtual void GetAllContentSettingsRules(
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      Rules* content_setting_rules) const {}
+
+  virtual void ClearAllContentSettingsRules() {}
 
  private:
   ContentSettingsType content_type_;
