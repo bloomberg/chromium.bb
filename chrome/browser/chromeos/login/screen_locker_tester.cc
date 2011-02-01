@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,18 +32,28 @@ bool ScreenLockerTester::IsLocked() {
 }
 
 void ScreenLockerTester::InjectMockAuthenticator(
-    const char* user, const char* password) {
+    const std::string& user, const std::string& password) {
   DCHECK(ScreenLocker::screen_locker_);
   ScreenLocker::screen_locker_->SetAuthenticator(
       new MockAuthenticator(ScreenLocker::screen_locker_, user, password));
 }
 
-void ScreenLockerTester::EnterPassword(const char* password) {
+void ScreenLockerTester::SetPassword(const std::string& password) {
   DCHECK(ScreenLocker::screen_locker_);
   views::Textfield* pass = GetPasswordField();
-  pass->SetText(ASCIIToUTF16(password));
-  GdkEvent* event = gdk_event_new(GDK_KEY_PRESS);
+  pass->SetText(ASCIIToUTF16(password.c_str()));
+}
 
+std::string ScreenLockerTester::GetPassword() const {
+  DCHECK(ScreenLocker::screen_locker_);
+  views::Textfield* pass = GetPasswordField();
+  return UTF16ToUTF8(pass->text());
+}
+
+void ScreenLockerTester::EnterPassword(const std::string& password) {
+  SetPassword(password);
+  views::Textfield* pass = GetPasswordField();
+  GdkEvent* event = gdk_event_new(GDK_KEY_PRESS);
   event->key.keyval = GDK_Return;
   views::KeyEvent key_event(&event->key);
   ScreenLocker::screen_locker_->screen_lock_view_->HandleKeyEvent(
@@ -56,17 +66,17 @@ void ScreenLockerTester::EmulateWindowManagerReady() {
   ScreenLocker::screen_locker_->OnWindowManagerReady();
 }
 
-views::Textfield* ScreenLockerTester::GetPasswordField() {
+views::Textfield* ScreenLockerTester::GetPasswordField() const {
   DCHECK(ScreenLocker::screen_locker_);
   return ScreenLocker::screen_locker_->screen_lock_view_->password_field_;
 }
 
-views::Widget* ScreenLockerTester::GetWidget() {
+views::Widget* ScreenLockerTester::GetWidget() const {
   DCHECK(ScreenLocker::screen_locker_);
   return ScreenLocker::screen_locker_->lock_window_;
 }
 
-views::Widget* ScreenLockerTester::GetChildWidget() {
+views::Widget* ScreenLockerTester::GetChildWidget() const {
   DCHECK(ScreenLocker::screen_locker_);
   return ScreenLocker::screen_locker_->lock_widget_;
 }

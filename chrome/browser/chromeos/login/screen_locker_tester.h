@@ -1,10 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREEN_LOCKER_TESTER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREEN_LOCKER_TESTER_H_
 #pragma once
+
+#include <string>
 
 #include "base/basictypes.h"
 
@@ -28,25 +30,32 @@ class ScreenLockerTester {
   bool IsLocked();
 
   // Injects MockAuthenticate that uses given |user| and |password|.
-  void InjectMockAuthenticator(const char* user, const char* password);
+  void InjectMockAuthenticator(const std::string& user,
+                               const std::string& password);
+
+  // Sets the password text.
+  void SetPassword(const std::string& password);
+
+  // Gets the password text.
+  std::string GetPassword() const;
 
   // Emulates entring a password.
-  void EnterPassword(const char* password);
+  void EnterPassword(const std::string& password);
 
   // Emulates the ready message from window manager.
   void EmulateWindowManagerReady();
 
   // Returns the widget for screen locker window.
-  views::Widget* GetWidget();
+  views::Widget* GetWidget() const;
 
-  views::Widget* GetChildWidget();
+  views::Widget* GetChildWidget() const;
 
  private:
   friend class chromeos::ScreenLocker;
 
   ScreenLockerTester() {}
 
-  views::Textfield* GetPasswordField();
+  views::Textfield* GetPasswordField() const;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerTester);
 };

@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/textfield_with_margin.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -110,7 +111,7 @@ void PasswordChangedView::Init() {
   delta_sync_radio_->set_listener(this);
   delta_sync_radio_->SetMultiLine(true);
 
-  old_password_field_ = new Textfield(Textfield::STYLE_PASSWORD);
+  old_password_field_ = new TextfieldWithMargin(Textfield::STYLE_PASSWORD);
   old_password_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_PREVIOUS_PASSWORD));
   old_password_field_->set_default_width_in_chars(kPasswordFieldWidthChars);

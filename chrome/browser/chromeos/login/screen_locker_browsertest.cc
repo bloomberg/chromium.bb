@@ -135,6 +135,18 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     EXPECT_FALSE(tester->IsLocked());
   }
 
+  void LockScreenWithUser(test::ScreenLockerTester* tester,
+                          const std::string& user) {
+    UserManager::Get()->UserLoggedIn(user);
+    ScreenLocker::Show();
+    tester->EmulateWindowManagerReady();
+    if (!tester->IsLocked()) {
+      ui_test_utils::WaitForNotification(
+          NotificationType::SCREEN_LOCK_STATE_CHANGED);
+    }
+    EXPECT_TRUE(tester->IsLocked());
+  }
+
  private:
   virtual void SetUpInProcessBrowserTestFixture() {
     cros_mock_->InitStatusAreaMocks();
@@ -267,19 +279,33 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
   EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
       .Times(2)
       .RetiresOnSaturation();
-
-  UserManager::Get()->UserLoggedIn("user");
-  ScreenLocker::Show();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
-  tester->EmulateWindowManagerReady();
-  if (!chromeos::ScreenLocker::GetTester()->IsLocked())
-    ui_test_utils::WaitForNotification(
-        NotificationType::SCREEN_LOCK_STATE_CHANGED);
-  EXPECT_TRUE(tester->IsLocked());
+  LockScreenWithUser(tester.get(), "user");
 
   // Calling Show again simply send LockCompleted signal.
   ScreenLocker::Show();
   EXPECT_TRUE(tester->IsLocked());
+
+  // Close the locker to match expectations.
+  ScreenLocker::Hide();
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(tester->IsLocked());
+}
+
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestEscape) {
+  EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
+      .Times(1)
+      .RetiresOnSaturation();
+  scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
+  LockScreenWithUser(tester.get(), "user");
+
+  tester->SetPassword("password");
+  EXPECT_EQ("password", tester->GetPassword());
+  // Escape clears the password.
+  ui_controls::SendKeyPress(GTK_WINDOW(tester->GetWidget()->GetNativeView()),
+                            ui::VKEY_ESCAPE, false, false, false, false);
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_EQ("", tester->GetPassword());
 
   // Close the locker to match expectations.
   ScreenLocker::Hide();
