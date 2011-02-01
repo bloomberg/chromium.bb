@@ -536,7 +536,7 @@ const char kEnableMemoryInfo[]              = "enable-memory-info";
 const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 
 // Runs the Native Client inside the renderer process and enables GPU plugin
-// (internally adds kInternalNaCl and lEnableGpuPlugin to the command line).
+// (internally adds lEnableGpuPlugin to the command line).
 const char kEnableNaCl[]                    = "enable-nacl";
 
 // Enables debugging via RSP over a socket.
@@ -766,9 +766,6 @@ const char kIncognito[]                     = "incognito";
 // URL to use for instant. If specified this overrides the url from the
 // TemplateURL.
 const char kInstantURL[]                    = "instant-url";
-
-// Runs the Native Client inside the renderer process.
-const char kInternalNaCl[]                  = "internal-nacl";
 
 // Runs a trusted Pepper plugin inside the renderer process.
 const char kInternalPepper[]                = "internal-pepper";

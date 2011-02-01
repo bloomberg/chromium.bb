@@ -677,7 +677,6 @@ int ChromeMain(int argc, char** argv) {
   if (command_line.HasSwitch(switches::kEnableNaCl)) {
     // NaCl currently requires two flags to run
     CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
-    singleton_command_line->AppendSwitch(switches::kInternalNaCl);
     singleton_command_line->AppendSwitch(switches::kEnableGPUPlugin);
   }
 

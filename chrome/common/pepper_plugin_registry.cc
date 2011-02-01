@@ -151,14 +151,9 @@ void PepperPluginRegistry::GetExtraPlugins(
     }
   }
 
-  // Verify that we enable nacl on the command line.  The name of the
-  // switch varies between the browser and renderer process.
-  bool enable_nacl =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInternalNaCl);
-
   static bool skip_nacl_file_check = false;
-  if (enable_nacl && PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl)
+      && PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
     if (skip_nacl_file_check || file_util::PathExists(path)) {
       PepperPluginInfo nacl;
       nacl.path = path;

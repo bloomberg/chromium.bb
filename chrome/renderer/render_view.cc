@@ -3950,35 +3950,6 @@ webkit::npapi::WebPluginDelegate* RenderView::CreatePluginDelegate(
     }
   }
 
-  // Check for Native Client modules.
-  if (mime_type == "application/x-nacl-srpc" &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInternalNaCl)) {
-    // NaCl is only permitted when we're in an extension/application with the
-    // appropriate permission, or when explicitly enabled on the command line.
-
-    GURL main_frame_url(webview()->mainFrame()->url());
-    const Extension* extension =
-        render_thread_->GetExtensions()->GetByURL(main_frame_url);
-    bool in_ext = extension != NULL;
-    bool explicit_enable =
-        CommandLine::ForCurrentProcess()->HasSwitch(switches::kInternalNaCl);
-
-    if (in_ext) {
-      // TODO(cbiffle): NaCl is back to experimental for M7.
-      if (ExtensionProcessBindings::HasPermission(extension->id(),
-              Extension::kExperimentalPermission)) {
-        in_process_plugin = true;
-        use_pepper_host = true;
-      } else {
-        // Disable NaCl for apps lacking the permission, even with the flag.
-        return NULL;
-      }
-    } else if (explicit_enable) {
-      in_process_plugin = true;
-      use_pepper_host = true;
-    }
-  }
-
   if (in_process_plugin) {
     if (use_pepper_host) {
       WebPluginDelegatePepper* pepper_plugin =

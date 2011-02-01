@@ -47,18 +47,3 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FavIconPermission) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlwaysAllowed) {
   ASSERT_TRUE(RunExtensionTest("permissions/always_allowed")) << message_;
 }
-
-// TODO(gregoryd): run the NaCl test on all systems once
-// http://code.google.com/p/chromium/issues/detail?id=51335 is fixed.
-// Meanwhile we run it on Mac OSX only, since we can be sure that an x86-32 NaCl
-// module will work there.
-// Mark as Flaky.  http://crbug.com/51861
-//
-// FLAKY --> DISABLED since it takes 10sec to timeout a dialog.  Need
-// faster timeout.
-#if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_NaClPermissionEnabled) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kInternalNaCl);
-  ASSERT_TRUE(RunExtensionTest("permissions/nacl_enabled")) << message_;
-}
-#endif
