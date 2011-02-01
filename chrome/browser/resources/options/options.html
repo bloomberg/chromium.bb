@@ -186,10 +186,6 @@
            <button class="raw-button close-subpage"></button>
            <if expr="pp_ifdef('chromeos')">
              <include src="about_page.html">
-             <include src="chromeos_language_chewing_options.html">
-             <include src="chromeos_language_hangul_options.html">
-             <include src="chromeos_language_mozc_options.html">
-             <include src="chromeos_language_pinyin_options.html">
              <include src="chromeos_proxy.html">
            </if>
            <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
@@ -207,6 +203,12 @@
            class="subpage-sheet-container hidden">
          <div id="subpage-sheet-2" class="subpage-sheet">
            <button class="raw-button close-subpage"></button>
+           <if expr="pp_ifdef('chromeos')">
+             <include src="chromeos_language_chewing_options.html">
+             <include src="chromeos_language_hangul_options.html">
+             <include src="chromeos_language_mozc_options.html">
+             <include src="chromeos_language_pinyin_options.html">
+           </if>
            <include src="cookies_view.html">
            <include src="content_settings_exceptions_area.html">
          </div>
