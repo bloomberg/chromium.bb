@@ -198,10 +198,9 @@ void ViewsLoginDisplay::ShowError(int error_msg_id,
   }
 
   string16 help_link;
-  if (error_msg_id == IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED) {
+  if (error_msg_id == IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED ||
+      login_attempts > 1) {
     help_link = l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-  } else if (login_attempts > 1) {
-    help_link = l10n_util::GetStringUTF16(IDS_CANT_ACCESS_ACCOUNT_BUTTON);
   }
 
   bubble_ = MessageBubble::Show(
