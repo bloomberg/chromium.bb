@@ -1144,18 +1144,20 @@ LoginManagerObserver::LoginManagerObserver(
     : automation_(automation),
       reply_message_(reply_message) {
 
-  registrar_.Add(this, NotificationType::LOGIN_AUTHENTICATION,
+  registrar_.Add(this, NotificationType::LOGIN_USER_CHANGED,
                  NotificationService::AllSources());
 }
 
 void LoginManagerObserver::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
-  DCHECK(type == NotificationType::LOGIN_AUTHENTICATION);
+  DCHECK(type == NotificationType::LOGIN_USER_CHANGED);
+  AutomationJSONReply reply(automation_, reply_message_);
   Details<AuthenticationNotificationDetails> auth_details(details);
-  AutomationMsg_LoginWithUserAndPass::WriteReplyParams(reply_message_,
-      auth_details->success());
-  automation_->Send(reply_message_);
+  if (auth_details->success())
+    reply.SendSuccess(NULL);
+  else
+    reply.SendError("Login failure.");
   delete this;
 }
 #endif

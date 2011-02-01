@@ -1099,6 +1099,12 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
       int expected_tab_count = 1;
       if (command_line.HasSwitch(switches::kNoStartupWindow)) {
         expected_tab_count = 0;
+#if defined(OS_CHROMEOS)
+      // kLoginManager will cause Chrome to start up with the ChromeOS login
+      // screen instead of a browser window, so it won't load any tabs.
+      } else if (command_line.HasSwitch(switches::kLoginManager)) {
+        expected_tab_count = 0;
+#endif
       } else if (command_line.HasSwitch(switches::kRestoreLastSession)) {
         std::string restore_session_value(
             command_line.GetSwitchValueASCII(switches::kRestoreLastSession));

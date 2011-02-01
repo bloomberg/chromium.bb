@@ -213,6 +213,10 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Resets to the default theme. Returns true on success.
   bool ResetToDefaultTheme();
 
+  // Generic pattern for sending automation requests.
+  bool SendJSONRequest(const std::string& request,
+                       std::string* response) WARN_UNUSED_RESULT;
+
 #if defined(OS_CHROMEOS)
   // Logs in through the Chrome OS login wizard with given |username|
   // and |password|.  Returns true on success.

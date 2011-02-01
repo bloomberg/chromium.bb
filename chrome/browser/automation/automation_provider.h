@@ -325,14 +325,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void StopAsync(int tab_handle);
   void SaveAsAsync(int tab_handle);
 
-#if defined(OS_CHROMEOS)
-  // Logs in through the Chrome OS Login Wizard with given |username| and
-  // password.  Returns true via |reply_message| on success.
-  void LoginWithUserAndPass(const std::string& username,
-                            const std::string& password,
-                            IPC::Message* reply_message);
-#endif
-
   // Returns the extension for the given handle. Returns NULL if there is
   // no extension for the handle.
   const Extension* GetExtension(int extension_handle);

@@ -221,7 +221,7 @@ class BrowserProxy : public AutomationResourceProxy {
   bool StartTrackingPopupMenus() WARN_UNUSED_RESULT;
   bool WaitForPopupMenuToOpen() WARN_UNUSED_RESULT;
 
-  // Experimental generic pattern.
+  // Generic pattern for sending automation requests.
   bool SendJSONRequest(const std::string& request,
                        std::string* response) WARN_UNUSED_RESULT;
 

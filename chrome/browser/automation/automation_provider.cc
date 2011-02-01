@@ -424,10 +424,6 @@ bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                                     OnRunUnloadHandlers)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetZoomLevel, OnSetZoomLevel)
 #endif  // defined(OS_WIN)
-#if defined(OS_CHROMEOS)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_LoginWithUserAndPass,
-                                    LoginWithUserAndPass)
-#endif  // defined(OS_CHROMEOS)
     IPC_MESSAGE_UNHANDLED(handled = false;OnUnhandledMessage())
   IPC_END_MESSAGE_MAP()
   return handled;

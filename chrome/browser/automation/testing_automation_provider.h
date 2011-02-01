@@ -372,7 +372,12 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Method ptr for json handlers.
   // Uses the JSON interface for input/output.
-  typedef void (TestingAutomationProvider::*JsonHandler)(
+  typedef void (TestingAutomationProvider::*JsonHandler)(DictionaryValue*,
+                                                         IPC::Message*);
+
+  // Method ptr for json handlers that take a browser argument.
+  // Uses the JSON interface for input/output.
+  typedef void (TestingAutomationProvider::*BrowserJsonHandler)(
       Browser* browser,
       DictionaryValue*,
       IPC::Message*);
@@ -756,6 +761,18 @@ class TestingAutomationProvider : public AutomationProvider,
   void SendKeyEventToActiveTab(Browser* browser,
                                DictionaryValue* args,
                                IPC::Message* reply_message);
+
+#if defined(OS_CHROMEOS)
+  void LoginAsGuest(DictionaryValue* args, IPC::Message* reply_message);
+
+  void Login(DictionaryValue* args, IPC::Message* reply_message);
+
+  void Logout(DictionaryValue* args, IPC::Message* reply_message);
+
+  void ScreenLock(DictionaryValue* args, IPC::Message* reply_message);
+
+  void ScreenUnlock(DictionaryValue* args, IPC::Message* reply_message);
+#endif  // defined(OS_CHROMEOS)
 
   void WaitForTabCountToBecome(int browser_handle,
                                int target_tab_count,

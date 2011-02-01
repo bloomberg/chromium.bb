@@ -551,3 +551,12 @@ bool AutomationProxy::LoginWithUserAndPass(const std::string& username,
 bool AutomationProxy::ResetToDefaultTheme() {
   return Send(new AutomationMsg_ResetToDefaultTheme());
 }
+
+bool AutomationProxy::SendJSONRequest(const std::string& request,
+                                      std::string* response) {
+  bool result = false;
+  return Send(new AutomationMsg_SendJSONRequest(
+      -1, request, response, &result));
+  return result;
+}
+
