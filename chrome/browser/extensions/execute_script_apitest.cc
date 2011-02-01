@@ -38,3 +38,11 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFileAfterClose) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/file_after_close")) << message_;
 }
+
+// Crashy, http://crbug.com/67774.
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
+                       DISABLED_ExecuteScriptFragmentNavigation) {
+  ASSERT_TRUE(StartTestServer());
+  const char* extension_name = "executescript/fragment";
+  ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
+}

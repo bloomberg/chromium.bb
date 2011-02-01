@@ -2273,10 +2273,8 @@ bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
   }
 
   // If a script is specified, use its matches.
-  if (script) {
-    if (script->MatchesUrl(page_url))
-      return true;
-  }
+  if (script)
+    return script->MatchesUrl(page_url);
 
   // Otherwise, see if this extension has permission to execute script
   // programmatically on pages.
