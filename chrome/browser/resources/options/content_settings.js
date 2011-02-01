@@ -78,8 +78,10 @@ cr.define('options', function() {
                                              group + ']');
       for (var i = 0, len = radios.length; i < len; i++) {
         radios[i].disabled = dict[group]['managed'];
+        radios[i].managed = dict[group]['managed'];
       }
     }
+    OptionsPage.updateManagedBannerVisibility();
   };
 
   /**

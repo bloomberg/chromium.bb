@@ -195,7 +195,9 @@ cr.define('options', function() {
    * Updates managed banner visibility state based on the topmost page.
    */
   OptionsPage.updateManagedBannerVisibility = function() {
-    var topPage = this.getTopmostVisiblePage();
+    var topPage = this.getVisibleOverlay_();
+    if (topPage == null)
+      topPage = this.getTopmostVisiblePage();
     if (topPage)
       topPage.updateManagedBannerVisibility();
   };
@@ -508,15 +510,31 @@ cr.define('options', function() {
     },
 
     /**
-     * Updates managed banner visibility state.
+     * Updates managed banner visibility state. This function iterates over
+     * all input fields of a window and if any of these is marked as managed
+     * it triggers the managed banner to be visible. The banner can be enforced
+     * being on through the managed flag of this class but it can not be forced
+     * being off if managed items exist.
      */
     updateManagedBannerVisibility: function() {
-      if (this.managed) {
-        $('managed-prefs-banner').classList.remove('hidden');
+      var bannerDiv = $('managed-prefs-banner');
+
+      var hasManaged = this.managed;
+      if (!hasManaged) {
+        var inputElements = this.pageDiv.querySelectorAll('input');
+        for (var i = 0, len = inputElements.length; i < len; i++) {
+          if (inputElements[i].managed) {
+            hasManaged = true;
+            break;
+          }
+        }
+      }
+      if (hasManaged) {
+        bannerDiv.classList.remove('hidden');
         var height = window.getComputedStyle($('managed-prefs-banner')).height;
         $('subpage-backdrop').style.top = height;
       } else {
-        $('managed-prefs-banner').classList.add('hidden');
+        bannerDiv.classList.add('hidden');
         $('subpage-backdrop').style.top = '0';
       }
     },
@@ -550,15 +568,11 @@ cr.define('options', function() {
               $('subpage-backdrop').classList.remove('hidden');
           }
 
-          // The managed prefs banner is global, so after any visibility change
-          // update it based on the topmost page, not necessarily this page.
-          // (e.g., if an ancestor is made visible after a child).
-          OptionsPage.updateManagedBannerVisibility();
-
           // Recent webkit change no longer allows url change from "chrome://".
           window.history.pushState({pageName: this.name}, this.title,
                                    '/' + this.name);
         }
+
         if (this.tab) {
           this.tab.classList.add('navbar-item-selected');
         }
@@ -574,13 +588,17 @@ cr.define('options', function() {
             if (nestingLevel == 1)
               $('subpage-backdrop').classList.add('hidden');
           }
-
-          OptionsPage.updateManagedBannerVisibility();
         }
+
         if (this.tab) {
           this.tab.classList.remove('navbar-item-selected');
         }
       }
+
+      // The managed prefs banner is global, so after any visibility change
+      // update it based on the topmost page, not necessarily this page
+      // (e.g., if an ancestor is made visible after a child).
+      OptionsPage.updateManagedBannerVisibility();
 
       cr.dispatchPropertyChange(this, 'visible', visible, !visible);
     },
