@@ -55,7 +55,6 @@ using sessions::ConflictProgress;
 
 Syncer::Syncer()
     : early_exit_requested_(false),
-      max_commit_batch_size_(kDefaultMaxCommitBatchSize),
       pre_conflict_resolution_closure_(NULL) {
 }
 
@@ -183,7 +182,8 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         sessions::ScopedSetSessionWriteTransaction set_trans(session, &trans);
 
         VLOG(1) << "Getting the Commit IDs";
-        GetCommitIdsCommand get_commit_ids_command(max_commit_batch_size_);
+        GetCommitIdsCommand get_commit_ids_command(
+            session->context()->max_commit_batch_size());
         get_commit_ids_command.Execute(session);
 
         if (!session->status_controller()->commit_ids().empty()) {
@@ -289,8 +289,10 @@ void Syncer::ProcessClientCommand(sessions::SyncSession* session) {
   const ClientCommand& command = response.client_command();
 
   // The server limits the number of items a client can commit in one batch.
-  if (command.has_max_commit_batch_size())
-    max_commit_batch_size_ = command.max_commit_batch_size();
+  if (command.has_max_commit_batch_size()) {
+    session->context()->set_max_commit_batch_size(
+        command.max_commit_batch_size());
+  }
   if (command.has_set_sync_long_poll_interval()) {
     session->delegate()->OnReceivedLongPollIntervalUpdate(
         TimeDelta::FromSeconds(command.set_sync_long_poll_interval()));

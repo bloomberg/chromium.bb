@@ -36,6 +36,9 @@ class ExtensionsActivityMonitor;
 class ModelSafeWorkerRegistrar;
 class ServerConnectionManager;
 
+// Default number of items a client can commit in a single message.
+static const int kDefaultMaxCommitBatchSize = 25;
+
 namespace sessions {
 class ScopedSessionContextConflictResolver;
 struct SyncSessionSnapshot;
@@ -75,6 +78,11 @@ class SyncSessionContext {
     account_name_ = name;
   }
   const std::string& account_name() { return account_name_; }
+
+  void set_max_commit_batch_size(int batch_size) {
+    max_commit_batch_size_ = batch_size;
+  }
+  int32 max_commit_batch_size() const { return max_commit_batch_size_; }
 
   const ModelSafeRoutingInfo& previous_session_routing_info() const {
     return previous_session_routing_info_;
@@ -125,6 +133,9 @@ class SyncSessionContext {
 
   // The name of the account being synced.
   std::string account_name_;
+
+  // The server limits the number of items a client can commit in one batch.
+  int max_commit_batch_size_;
 
   // Some routing info history to help us clean up types that get disabled
   // by the user.

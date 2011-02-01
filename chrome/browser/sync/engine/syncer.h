@@ -41,8 +41,6 @@ class SyncProcessState;
 class URLFactory;
 struct HttpResponse;
 
-static const int kDefaultMaxCommitBatchSize = 25;
-
 enum SyncerStep {
   SYNCER_BEGIN,
   CLEANUP_DISABLED_TYPES,
@@ -91,12 +89,7 @@ class Syncer {
   // operation and honor server mandated throttles.
   virtual void SyncShare(sessions::SyncSession* session);
 
-  // Limit the batch size of commit operations to a specified number of items.
-  void set_max_commit_batch_size(int x) { max_commit_batch_size_ = x; }
-
  private:
-  void RequestNudge(int milliseconds);
-
   // Implements the PROCESS_CLIENT_COMMAND syncer step.
   void ProcessClientCommand(sessions::SyncSession *session);
 
@@ -110,8 +103,6 @@ class Syncer {
 
   bool early_exit_requested_;
   base::Lock early_exit_requested_lock_;
-
-  int32 max_commit_batch_size_;
 
   ConflictResolver resolver_;
 

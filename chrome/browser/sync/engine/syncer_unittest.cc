@@ -26,6 +26,7 @@
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
+#include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -718,7 +719,7 @@ TEST_F(SyncerTest, TestCommitListOrderingThreeItemsTall) {
 }
 
 TEST_F(SyncerTest, TestCommitListOrderingThreeItemsTallLimitedSize) {
-  syncer_->set_max_commit_batch_size(2);
+  context_->set_max_commit_batch_size(2);
   CommitOrderingTest items[] = {
     {1, ids_.FromNumber(-2001), ids_.FromNumber(-2000)},
     {0, ids_.FromNumber(-2000), ids_.FromNumber(0)},
@@ -771,7 +772,7 @@ TEST_F(SyncerTest, TestCommitListOrderingTwoLongDeletedItemWithUnroll) {
 }
 
 TEST_F(SyncerTest, TestCommitListOrdering3LongDeletedItemsWithSizeLimit) {
-  syncer_->set_max_commit_batch_size(2);
+  context_->set_max_commit_batch_size(2);
   CommitOrderingTest items[] = {
     {0, ids_.FromNumber(1000), ids_.FromNumber(0), {DELETED, OLD_MTIME}},
     {1, ids_.FromNumber(1001), ids_.FromNumber(0), {DELETED, OLD_MTIME}},

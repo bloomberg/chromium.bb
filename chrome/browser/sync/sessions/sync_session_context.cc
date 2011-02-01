@@ -21,7 +21,8 @@ SyncSessionContext::SyncSessionContext(
       directory_manager_(directory_manager),
       registrar_(model_safe_worker_registrar),
       extensions_activity_monitor_(new ExtensionsActivityMonitor()),
-      notifications_enabled_(false) {
+      notifications_enabled_(false),
+      max_commit_batch_size_(kDefaultMaxCommitBatchSize) {
   std::vector<SyncEngineEventListener*>::const_iterator it;
   for (it = listeners.begin(); it != listeners.end(); ++it)
     listeners_.AddObserver(*it);
