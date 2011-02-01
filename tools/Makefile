@@ -843,28 +843,6 @@ nacl_libraries: ALWAYS
 	    targetplatform=x86-64 --verbose ) ;
 	chmod a-x "$(DESTDIR)$(SDKROOT)/"{nacl,"$(CROSSARCH)"}/lib/*.a
 	rm -f "$(DESTDIR)$(SDKROOT)/"{nacl,"$(CROSSARCH)"}/lib/*.la
-	if ! grep -q '#include <nacl/npapi.h>' "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npapi_extensions.h" ; then \
-	  printf -- "--- $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npapi_extensions.h\n\
-	+++ $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npapi_extensions.h\n\
-	@@ -9,3 +9 @@\n\
-	-// Use the shorter include path here so that this file can be used in non-\n\
-	-// Chromium projects, such as the Native Client SDK.\n\
-	-#include \"npapi.h\"\n\
-	+#include <nacl/npapi.h>\n\
-	--- $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npruntime.h\n\
-	+++ $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npruntime.h\n\
-	@@ -73 +73 @@\n\
-	-#include \"npapi.h\"\n\
-	+#include <nacl/npapi.h>\n\
-	--- $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/pgl/pgl.h\n\
-	+++ $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/pgl/pgl.h\n\
-	@@ -8,2 +8,2 @@\n\
-	-#include <npapi.h>\n\
-	-#include <npapi_extensions.h>\n\
-	+#include <nacl/npapi.h>\n\
-	+#include <nacl/npapi_extensions.h>\n" |\
-	  patch -p0;\
-	fi
 
 sdk_minimal_test: ALWAYS
 	cd .. && \
