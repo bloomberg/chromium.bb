@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_EXTENSION_INFOBAR_H_
 #pragma once
 
-#include "chrome/browser/ui/views/infobars/infobars.h"
+#include "chrome/browser/ui/views/infobars/infobar_view.h"
 
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -22,7 +22,7 @@ namespace views {
 }
 
 // This class implements InfoBars for Extensions.
-class ExtensionInfoBar : public InfoBar,
+class ExtensionInfoBar : public InfoBarView,
                          public ExtensionView::Container,
                          public ImageLoadingTracker::Observer,
                          public ExtensionInfoBarDelegate::DelegateObserver,

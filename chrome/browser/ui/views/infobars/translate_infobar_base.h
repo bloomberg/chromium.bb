@@ -7,7 +7,8 @@
 #pragma once
 
 #include "chrome/browser/translate/translate_infobar_view.h"
-#include "chrome/browser/ui/views/infobars/infobars.h"
+#include "chrome/browser/ui/views/infobars/infobar_background.h"
+#include "chrome/browser/ui/views/infobars/infobar_view.h"
 
 class TranslateInfoBarDelegate;
 
@@ -19,7 +20,7 @@ class ViewMenuDelegate;
 // This class contains some of the base functionality that translate infobars
 // use.
 class TranslateInfoBarBase : public TranslateInfoBarView,
-                             public InfoBar {
+                             public InfoBarView {
  public:
   explicit TranslateInfoBarBase(TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBarBase();

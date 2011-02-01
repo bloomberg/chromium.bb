@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBARS_H_
-#define CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBARS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_VIEW_H_
 #pragma once
 
 #include "base/task.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "views/controls/button/button.h"
-#include "views/controls/link.h"
 #include "views/focus/focus_manager.h"
 
 class InfoBarContainer;
-class InfoBarTextButton;
+class InfoBarDelegate;
 
 namespace ui {
 class SlideAnimation;
@@ -27,30 +25,28 @@ class ImageView;
 class Label;
 }
 
-// This file contains implementations for some general purpose InfoBars. See
-// chrome/browser/tab_contents/infobar_delegate.h for the delegate interface(s)
-// that you must implement to use these.
-
-class InfoBarBackground : public views::Background {
+// TODO(pkasting): infobar_delegate.h forward declares "class InfoBar" but the
+// definitions are (right now) completely port-specific.  This stub class will
+// be turned into the cross-platform base class for InfoBar views (in the MVC
+// sense).  Right now it's just here so the various InfoBarDelegates can
+// continue to return an InfoBar*, it doesn't do anything.
+class InfoBar {
  public:
-  explicit InfoBarBackground(InfoBarDelegate::Type infobar_type);
-
-  // Overridden from views::Background:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const;
+  explicit InfoBar(InfoBarDelegate* delegate) {}
+  virtual ~InfoBar() {}
 
  private:
-  scoped_ptr<views::Background> gradient_background_;
-
-  DISALLOW_COPY_AND_ASSIGN(InfoBarBackground);
+  DISALLOW_COPY_AND_ASSIGN(InfoBar);
 };
 
-class InfoBar : public views::View,
-                public views::ButtonListener,
-                public views::FocusChangeListener,
-                public ui::AnimationDelegate {
+class InfoBarView : public InfoBar,
+                    public views::View,
+                    public views::ButtonListener,
+                    public views::FocusChangeListener,
+                    public ui::AnimationDelegate {
  public:
-  explicit InfoBar(InfoBarDelegate* delegate);
-  virtual ~InfoBar();
+  explicit InfoBarView(InfoBarDelegate* delegate);
+  virtual ~InfoBarView();
 
   InfoBarDelegate* delegate() const { return delegate_; }
 
@@ -161,93 +157,12 @@ class InfoBar : public views::View,
   scoped_ptr<views::ExternalFocusTracker> focus_tracker_;
 
   // Used to delete this object after a return to the message loop.
-  ScopedRunnableMethodFactory<InfoBar> delete_factory_;
+  ScopedRunnableMethodFactory<InfoBarView> delete_factory_;
 
   // The target height for the InfoBar.
   double target_height_;
 
-  DISALLOW_COPY_AND_ASSIGN(InfoBar);
+  DISALLOW_COPY_AND_ASSIGN(InfoBarView);
 };
 
-class AlertInfoBar : public InfoBar {
- public:
-  explicit AlertInfoBar(ConfirmInfoBarDelegate* delegate);
-  virtual ~AlertInfoBar();
-
-  // Overridden from views::View:
-  virtual void Layout();
-
- protected:
-  views::Label* label() const { return label_; }
-  views::ImageView* icon() const { return icon_; }
-
- private:
-  views::Label* label_;
-  views::ImageView* icon_;
-
-  DISALLOW_COPY_AND_ASSIGN(AlertInfoBar);
-};
-
-class LinkInfoBar : public InfoBar,
-                    public views::LinkController {
- public:
-  explicit LinkInfoBar(LinkInfoBarDelegate* delegate);
-  virtual ~LinkInfoBar();
-
-  // Overridden from views::LinkController:
-  virtual void LinkActivated(views::Link* source, int event_flags);
-
-  // Overridden from views::View:
-  virtual void Layout();
-
- private:
-  LinkInfoBarDelegate* GetDelegate();
-
-  views::ImageView* icon_;
-  views::Label* label_1_;
-  views::Label* label_2_;
-  views::Link* link_;
-
-  DISALLOW_COPY_AND_ASSIGN(LinkInfoBar);
-};
-
-class ConfirmInfoBar : public AlertInfoBar,
-                       public views::LinkController  {
- public:
-  explicit ConfirmInfoBar(ConfirmInfoBarDelegate* delegate);
-  virtual ~ConfirmInfoBar();
-
-  // Overridden from views::LinkController:
-  virtual void LinkActivated(views::Link* source, int event_flags);
-
-  // Overridden from views::View:
-  virtual void Layout();
-
- protected:
-  // Overridden from views::View:
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child);
-
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-
-  // Overridden from InfoBar:
-  virtual int GetAvailableWidth() const;
-
- private:
-  void Init();
-
-  ConfirmInfoBarDelegate* GetDelegate();
-
-  InfoBarTextButton* ok_button_;
-  InfoBarTextButton* cancel_button_;
-  views::Link* link_;
-
-  bool initialized_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBar);
-};
-
-
-#endif  // CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBARS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_VIEW_H_

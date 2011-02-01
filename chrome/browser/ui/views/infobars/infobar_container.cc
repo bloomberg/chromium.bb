@@ -8,7 +8,7 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/infobars/infobars.h"
+#include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "grit/generated_resources.h"
@@ -35,7 +35,7 @@ InfoBarContainer::~InfoBarContainer() {
 void InfoBarContainer::ChangeTabContents(TabContents* contents) {
   registrar_.RemoveAll();
   // No need to delete the child views here, their removal from the view
-  // hierarchy does this automatically (see InfoBar::InfoBarRemoved).
+  // hierarchy does this automatically (see InfoBarView::InfoBarRemoved).
   RemoveAllChildViews(false);
   tab_contents_ = contents;
   if (tab_contents_) {
@@ -120,7 +120,7 @@ void InfoBarContainer::Observe(NotificationType type,
 void InfoBarContainer::UpdateInfoBars() {
   for (int i = 0; i < tab_contents_->infobar_delegate_count(); ++i) {
     InfoBarDelegate* delegate = tab_contents_->GetInfoBarDelegateAt(i);
-    InfoBar* infobar = delegate->CreateInfoBar();
+    InfoBarView* infobar = static_cast<InfoBarView*>(delegate->CreateInfoBar());
     infobar->set_container(this);
     AddChildView(infobar);
     infobar->Open();
@@ -129,7 +129,7 @@ void InfoBarContainer::UpdateInfoBars() {
 
 void InfoBarContainer::AddInfoBar(InfoBarDelegate* delegate,
                                   bool use_animation) {
-  InfoBar* infobar = delegate->CreateInfoBar();
+  InfoBarView* infobar = static_cast<InfoBarView*>(delegate->CreateInfoBar());
   infobar->set_container(this);
   AddChildView(infobar);
 
@@ -147,7 +147,7 @@ void InfoBarContainer::RemoveInfoBar(InfoBarDelegate* delegate,
   // different number of infobars in container and infobar delegates in tab
   // contents.
   for (int i = 0; i < GetChildViewCount(); ++i) {
-    InfoBar* infobar = static_cast<InfoBar*>(GetChildViewAt(i));
+    InfoBarView* infobar = static_cast<InfoBarView*>(GetChildViewAt(i));
     if (infobar->delegate() == delegate) {
       if (use_animation) {
         // The View will be removed once the Close animation completes.

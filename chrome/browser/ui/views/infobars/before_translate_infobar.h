@@ -9,7 +9,6 @@
 #include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_view.h"
-#include "chrome/browser/ui/views/infobars/infobars.h"
 #include "chrome/browser/ui/views/infobars/translate_infobar_base.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
@@ -23,9 +22,8 @@ class Menu2;
 class MenuButton;
 }
 
-class BeforeTranslateInfoBar
-    : public TranslateInfoBarBase,
-      public views::ViewMenuDelegate {
+class BeforeTranslateInfoBar : public TranslateInfoBarBase,
+                               public views::ViewMenuDelegate {
  public:
   explicit BeforeTranslateInfoBar(TranslateInfoBarDelegate* delegate);
   virtual ~BeforeTranslateInfoBar();

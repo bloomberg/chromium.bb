@@ -19,7 +19,7 @@
 
 TranslateInfoBarBase::TranslateInfoBarBase(
     TranslateInfoBarDelegate* delegate)
-    : InfoBar(delegate),
+    : InfoBarView(delegate),
       normal_background_(InfoBarDelegate::PAGE_ACTION_TYPE),
       error_background_(InfoBarDelegate::WARNING_TYPE) {
   icon_ = new views::ImageView;
@@ -51,12 +51,12 @@ TranslateInfoBarBase::~TranslateInfoBarBase() {
 // Overridden from views::View:
 void TranslateInfoBarBase::Layout() {
   // Layout the close button.
-  InfoBar::Layout();
+  InfoBarView::Layout();
 
   // Layout the icon on left of bar.
   gfx::Size icon_ps = icon_->GetPreferredSize();
-  icon_->SetBounds(InfoBar::kHorizontalPadding, InfoBar::OffsetY(this, icon_ps),
-      icon_ps.width(), icon_ps.height());
+  icon_->SetBounds(InfoBarView::kHorizontalPadding,
+      InfoBarView::OffsetY(this, icon_ps), icon_ps.width(), icon_ps.height());
 }
 
 views::Label* TranslateInfoBarBase::CreateLabel(const string16& text) {
@@ -85,7 +85,7 @@ void TranslateInfoBarBase::AnimationProgressed(const ui::Animation* animation) {
   if (background_color_animation_.get() == animation)
     SchedulePaint();  // That'll trigger a PaintBackgroud.
   else
-    InfoBar::AnimationProgressed(animation);
+    InfoBarView::AnimationProgressed(animation);
 }
 
 views::MenuButton* TranslateInfoBarBase::CreateMenuButton(

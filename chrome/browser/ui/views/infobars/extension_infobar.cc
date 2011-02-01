@@ -31,7 +31,7 @@ static const int kFarRightMargin = 30;
 static const int kDropArrowLeftMargin = 3;
 
 ExtensionInfoBar::ExtensionInfoBar(ExtensionInfoBarDelegate* delegate)
-    : InfoBar(delegate),
+    : InfoBarView(delegate),
       delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
   delegate_->set_observer(this);
@@ -80,7 +80,7 @@ void ExtensionInfoBar::OnExtensionPreferredSizeChanged(ExtensionView* view) {
 
   gfx::Size sz = view->GetPreferredSize();
   // Clamp height to a min and a max size of between 1 and 2 InfoBars.
-  int default_height = static_cast<int>(InfoBar::kDefaultTargetHeight);
+  int default_height = static_cast<int>(InfoBarView::kDefaultTargetHeight);
   sz.set_height(std::max(default_height, sz.height()));
   sz.set_height(std::min(2 * default_height, sz.height()));
 
@@ -92,7 +92,7 @@ void ExtensionInfoBar::OnExtensionPreferredSizeChanged(ExtensionView* view) {
 
 void ExtensionInfoBar::Layout() {
   // Layout the close button and the background.
-  InfoBar::Layout();
+  InfoBarView::Layout();
 
   // Layout the extension icon + drop down menu.
   int x = 0;
