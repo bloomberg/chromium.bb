@@ -145,6 +145,8 @@
           'common/process_watcher_win.cc',
           'common/property_bag.cc',
           'common/property_bag.h',
+          'common/profiling.cc',
+          'common/profiling.h',
           'common/ref_counted_util.h',
           'common/resource_response.cc',
           'common/resource_response.h',

@@ -30,6 +30,7 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profiling.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -184,6 +185,11 @@ void ToolsMenuModel::Build(Browser* browser) {
     AddItemWithStringId(IDC_DEV_TOOLS, IDS_DEV_TOOLS);
     AddItemWithStringId(IDC_DEV_TOOLS_CONSOLE, IDS_DEV_TOOLS_CONSOLE);
   }
+
+#if defined(ENABLE_PROFILING) && !defined(NO_TCMALLOC)
+  AddSeparator();
+  AddCheckItemWithStringId(IDC_PROFILING_ENABLED, IDS_PROFILING_ENABLED);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -258,6 +264,8 @@ void WrenchMenuModel::ExecuteCommand(int command_id) {
 bool WrenchMenuModel::IsCommandIdChecked(int command_id) const {
   if (command_id == IDC_SHOW_BOOKMARK_BAR) {
     return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+  } else if (command_id == IDC_PROFILING_ENABLED) {
+    return Profiling::BeingProfiled();
   }
 
   return false;

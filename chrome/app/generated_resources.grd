@@ -949,6 +949,9 @@ each locale. -->
         <message name="IDS_SHOW_BOOKMARK_BAR" desc="The toggle to show the bookmark bar">
           &amp;Always show bookmarks bar
         </message>
+        <message name="IDS_PROFILING_ENABLED" desc="The toggle to turn profiling on / off">
+          &amp;Profiling enabled
+        </message>
         <message name="IDS_FULLSCREEN" desc="Switches into fullscreen mode">
           &amp;Full screen
         </message>
@@ -995,6 +998,9 @@ each locale. -->
         </message>
         <message name="IDS_SHOW_BOOKMARK_BAR" desc="In Title Case: The toggle to show the bookmark bar">
           &amp;Always Show Bookmarks Bar
+        </message>
+        <message name="IDS_PROFILING_ENABLED" desc="In Title Case: The toggle to turn profiling on / off">
+          &amp;Profiling Enabled
         </message>
         <message name="IDS_FULLSCREEN" desc="In Title Case: Switches into fullscreen mode">
           &amp;Full Screen

@@ -85,6 +85,7 @@
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profiling.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "gfx/gfx_module.h"
@@ -506,6 +507,7 @@ void BrowserMainParts::MainMessageLoopStart() {
   InitializeMainThread();
 
   PostMainMessageLoopStart();
+  Profiling::MainMessageLoopStarted();
 }
 
 void BrowserMainParts::InitializeMainThread() {

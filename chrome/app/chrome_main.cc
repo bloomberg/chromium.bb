@@ -31,6 +31,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
+#include "chrome/common/profiling.h"
 #include "chrome/common/sandbox_init_wrapper.h"
 #include "chrome/common/set_process_title.h"
 #include "chrome/common/url_constants.h"
@@ -645,6 +646,8 @@ int ChromeMain(int argc, char** argv) {
 #endif
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  Profiling::ProcessStarted();
 
 #if defined(OS_POSIX)
   if (HandleVersionSwitches(command_line))

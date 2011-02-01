@@ -964,6 +964,26 @@ const char kProductVersion[]                = "product-version";
 // Causes the process to run as a profile import subprocess.
 const char kProfileImportProcess[]          = "profile-import";
 
+// Starts the sampling based profiler for the browser process at
+// startup. This will only work if chrome has been built with
+// the gyp variable profiling=1. The output will go to the value
+// of kProfilingFile.
+const char kProfilingAtStart[]              = "profiling-at-start";
+
+// Specifies a location for profiling output. This will only work if chrome
+// has been built with the gyp variable profiling=1.
+//   {pid} if present will be replaced by the pid of the process.
+//   {count} if present will be incremented each time a profile is generated
+//           for this process.
+// The default is chrome-profile-{pid}.
+const char kProfilingFile[]                 = "profiling-file";
+
+// Controls whether profile data is periodically flushed to a file.
+// Normally the data gets written on exit but cases exist where chrome
+// doesn't exit cleanly (especially when using single-process).
+// A time in seconds can be specified.
+const char kProfilingFlush[]                = "profiling-flush";
+
 // Force proxy auto-detection.
 const char kProxyAutoDetect[]               = "proxy-auto-detect";
 

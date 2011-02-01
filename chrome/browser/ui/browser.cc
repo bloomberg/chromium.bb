@@ -98,6 +98,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profiling.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
 #include "grit/chromium_strings.h"
@@ -1157,6 +1158,9 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_TOGGLE_VERTICAL_TABS, show_main_ui);
+#if defined (ENABLE_PROFILING) && !defined(NO_TCMALLOC)
+  command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2261,6 +2265,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_FEEDBACK:              OpenBugReportDialog();            break;
 
     case IDC_SHOW_BOOKMARK_BAR:     ToggleBookmarkBar();              break;
+    case IDC_PROFILING_ENABLED:     Profiling::Toggle();              break;
 
     case IDC_SHOW_BOOKMARK_MANAGER: OpenBookmarkManager();            break;
     case IDC_SHOW_APP_MENU:         ShowAppMenu();                    break;
