@@ -309,7 +309,8 @@ TEST_F(WorkerTest, WorkerLocation) {
   RunWorkerFastLayoutTest("worker-location.html");
 }
 
-TEST_F(WorkerTest, WorkerMapGc) {
+// Flaky, http://crbug.com/71518.
+TEST_F(WorkerTest, FLAKY_WorkerMapGc) {
   RunWorkerFastLayoutTest("wrapper-map-gc.html");
 }
 
