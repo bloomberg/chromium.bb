@@ -195,7 +195,9 @@ void Firefox2Importer::ImportBookmarksFile(
     //                keywords yet.
     is_bookmark = ParseBookmarkFromLine(line, charset, &title,
                                         &url, &favicon, &shortcut, &add_date,
-                                        &post_data);
+                                        &post_data) ||
+        ParseMinimumBookmarkFromLine(line, charset, &title, &url);
+
     if (is_bookmark)
       last_folder_is_empty = false;
 
@@ -243,7 +245,7 @@ void Firefox2Importer::ImportBookmarksFile(
     }
 
     // Bookmarks in sub-folder are encapsulated with <DL> tag.
-    if (StartsWithASCII(line, "<DL>", true)) {
+    if (StartsWithASCII(line, "<DL>", false)) {
       path.push_back(last_folder);
       last_folder.clear();
       if (last_folder_on_toolbar && !toolbar_folder)
@@ -251,7 +253,7 @@ void Firefox2Importer::ImportBookmarksFile(
 
       // Mark next folder empty as initial state.
       last_folder_is_empty = true;
-    } else if (StartsWithASCII(line, "</DL>", true)) {
+    } else if (StartsWithASCII(line, "</DL>", false)) {
       if (path.empty())
         break;  // Mismatch <DL>.
 
@@ -400,8 +402,9 @@ void Firefox2Importer::GetSearchEnginesXMLFiles(
 bool Firefox2Importer::ParseCharsetFromLine(const std::string& line,
                                             std::string* charset) {
   const char kCharset[] = "charset=";
-  if (StartsWithASCII(line, "<META", true) &&
-      line.find("CONTENT=\"") != std::string::npos) {
+  if (StartsWithASCII(line, "<META", false) &&
+      (line.find("CONTENT=\"") != std::string::npos ||
+          line.find("content=\"") != std::string::npos)) {
     size_t begin = line.find(kCharset);
     if (begin == std::string::npos)
       return false;
@@ -544,6 +547,58 @@ bool Firefox2Importer::ParseBookmarkFromLine(const std::string& line,
     base::CodepageToWide(value, charset.c_str(),
                          base::OnStringConversionError::SKIP, post_data);
     HTMLUnescape(post_data);
+  }
+
+  return true;
+}
+
+// static
+bool Firefox2Importer::ParseMinimumBookmarkFromLine(const std::string& line,
+                                                    const std::string& charset,
+                                                    std::wstring* title,
+                                                    GURL* url) {
+  const char kItemOpen[] = "<DT><A";
+  const char kItemClose[] = "</";
+  const char kHrefAttributeUpper[] = "HREF";
+  const char kHrefAttributeLower[] = "href";
+
+  title->clear();
+  *url = GURL();
+
+  // Case-insensitive check of open tag.
+  if (!StartsWithASCII(line, kItemOpen, false))
+    return false;
+
+  // Find any close tag.
+  size_t end = line.find(kItemClose);
+  size_t tag_end = line.rfind('>', end) + 1;
+  if (end == std::string::npos || tag_end < arraysize(kItemOpen))
+    return false;  // No end tag or start tag is broken.
+
+  std::string attribute_list = line.substr(arraysize(kItemOpen),
+      tag_end - arraysize(kItemOpen) - 1);
+
+  // Title
+  base::CodepageToWide(line.substr(tag_end, end - tag_end), charset.c_str(),
+                       base::OnStringConversionError::SKIP, title);
+  HTMLUnescape(title);
+
+  // URL
+  std::string value;
+  if (GetAttribute(attribute_list, kHrefAttributeUpper, &value) ||
+      GetAttribute(attribute_list, kHrefAttributeLower, &value)) {
+    if (charset.length() != 0) {
+      std::wstring w_url;
+      base::CodepageToWide(value, charset.c_str(),
+                           base::OnStringConversionError::SKIP, &w_url);
+      HTMLUnescape(&w_url);
+
+      string16 url16 = WideToUTF16Hack(w_url);
+
+      *url = GURL(url16);
+    } else {
+      *url = GURL(value);
+    }
   }
 
   return true;
