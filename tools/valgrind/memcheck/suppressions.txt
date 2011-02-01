@@ -3698,11 +3698,6 @@
    bug_71152
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN71_GLOBAL__N_chrome_browser_sessions_session_restore.cc*
-   fun:_ZN71_GLOBAL__N_chrome_browser_sessions_session_restore.cc*
-   fun:_ZN71_GLOBAL__N_chrome_browser_sessions_session_restore.cc*
-   fun:_Z16DispatchToMethodIN71_GLOBAL__N_chrome_browser_sessions_session_restore.cc*
-   fun:_ZN12CallbackImplIN71_GLOBAL__N_chrome_browser_sessions_session_restore.cc*
    fun:_ZN14SessionService20OnGotSessionCommandsEi13scoped_refptrIN18BaseSessionService26InternalGetCommandsRequestEE
    fun:_Z16DispatchToMethodI14SessionServiceMS0_Fvi13scoped_refptrIN18BaseSessionService26InternalGetCommandsRequestEEEiS4_EvPT_T0_RK6Tuple2IT1_T2_E
    fun:_ZN12CallbackImplI14SessionServiceMS0_Fvi13scoped_refptrIN18BaseSessionService26InternalGetCommandsRequestEEE6Tuple2IiS4_EE13RunWithParamsERKS8_

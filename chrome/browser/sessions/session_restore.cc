@@ -151,7 +151,8 @@ TabLoader::TabLoader(base::TimeTicks restore_started)
 }
 
 TabLoader::~TabLoader() {
-  DCHECK(tabs_to_load_.empty() && tabs_loading_.empty() && got_first_paint_);
+  DCHECK((got_first_paint_ || render_widget_hosts_to_paint_.empty()) &&
+          tabs_loading_.empty() && tabs_to_load_.empty());
 }
 
 void TabLoader::ScheduleLoad(NavigationController* controller) {
@@ -321,7 +322,8 @@ void TabLoader::Observe(NotificationType type,
       NOTREACHED() << "Unknown notification received:" << type.value;
   }
   // Delete ourselves when we're not waiting for any more notifications.
-  if (got_first_paint_&& tabs_loading_.empty() && tabs_to_load_.empty())
+  if ((got_first_paint_ || render_widget_hosts_to_paint_.empty()) &&
+      tabs_loading_.empty() && tabs_to_load_.empty())
     delete this;
 }
 
