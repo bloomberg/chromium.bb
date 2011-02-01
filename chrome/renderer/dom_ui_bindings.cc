@@ -21,7 +21,7 @@ Value* CreateValueFromCppVariant(const CppVariant& value) {
   if (value.isBool())
     return Value::CreateBooleanValue(value.ToBoolean());
   if (value.isDouble())
-    return Value::CreateRealValue(value.ToDouble());
+    return Value::CreateDoubleValue(value.ToDouble());
   if (value.isInt32())
     return Value::CreateIntegerValue(value.ToInt32());
   if (value.isString())

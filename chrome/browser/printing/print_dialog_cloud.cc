@@ -106,10 +106,10 @@
 
 namespace internal_cloud_print_helpers {
 
-bool GetRealOrInt(const DictionaryValue& dictionary,
-                  const std::string& path,
-                  double* out_value) {
-  if (!dictionary.GetReal(path, out_value)) {
+bool GetDoubleOrInt(const DictionaryValue& dictionary,
+                    const std::string& path,
+                    double* out_value) {
+  if (!dictionary.GetDouble(path, out_value)) {
     int int_value = 0;
     if (!dictionary.GetInteger(path, &int_value))
       return false;
@@ -131,9 +131,9 @@ bool GetPageSetupParameters(const std::string& json,
 
   bool result = true;
   DictionaryValue* params = static_cast<DictionaryValue*>(parsed_value.get());
-  result &= GetRealOrInt(*params, "dpi", &parameters.dpi);
-  result &= GetRealOrInt(*params, "min_shrink", &parameters.min_shrink);
-  result &= GetRealOrInt(*params, "max_shrink", &parameters.max_shrink);
+  result &= GetDoubleOrInt(*params, "dpi", &parameters.dpi);
+  result &= GetDoubleOrInt(*params, "min_shrink", &parameters.min_shrink);
+  result &= GetDoubleOrInt(*params, "max_shrink", &parameters.max_shrink);
   result &= params->GetBoolean("selection_only", &parameters.selection_only);
   return result;
 }

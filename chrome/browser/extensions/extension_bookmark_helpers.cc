@@ -33,15 +33,15 @@ DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
     // seconds.
     base::Time t = node->date_group_modified();
     if (!t.is_null())
-      dict->SetReal(keys::kDateGroupModifiedKey, floor(t.ToDoubleT() * 1000));
+      dict->SetDouble(keys::kDateGroupModifiedKey, floor(t.ToDoubleT() * 1000));
   }
 
   dict->SetString(keys::kTitleKey, node->GetTitle());
   if (!node->date_added().is_null()) {
     // Javascript Date wants milliseconds since the epoch, ToDoubleT is
     // seconds.
-    dict->SetReal(keys::kDateAddedKey,
-                  floor(node->date_added().ToDoubleT() * 1000));
+    dict->SetDouble(keys::kDateAddedKey,
+                    floor(node->date_added().ToDoubleT() * 1000));
   }
 
   if (recurse && node->is_folder()) {

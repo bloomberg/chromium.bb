@@ -132,8 +132,8 @@ void CoreOptionsHandler::RegisterMessages() {
       NewCallback(this, &CoreOptionsHandler::HandleSetBooleanPref));
   dom_ui_->RegisterMessageCallback("setIntegerPref",
       NewCallback(this, &CoreOptionsHandler::HandleSetIntegerPref));
-  dom_ui_->RegisterMessageCallback("setRealPref",
-      NewCallback(this, &CoreOptionsHandler::HandleSetRealPref));
+  dom_ui_->RegisterMessageCallback("setDoublePref",
+      NewCallback(this, &CoreOptionsHandler::HandleSetDoublePref));
   dom_ui_->RegisterMessageCallback("setStringPref",
       NewCallback(this, &CoreOptionsHandler::HandleSetStringPref));
   dom_ui_->RegisterMessageCallback("setObjectPref",
@@ -188,10 +188,10 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
 
       break;
 
-    case Value::TYPE_REAL:
+    case Value::TYPE_DOUBLE:
       double double_value;
       CHECK(base::StringToDouble(value_string, &double_value));
-      pref_service->SetReal(pref_name.c_str(), double_value);
+      pref_service->SetDouble(pref_name.c_str(), double_value);
 
       break;
 
@@ -309,8 +309,8 @@ void CoreOptionsHandler::HandleSetIntegerPref(const ListValue* args) {
   HandleSetPref(args, Value::TYPE_INTEGER);
 }
 
-void CoreOptionsHandler::HandleSetRealPref(const ListValue* args) {
-  HandleSetPref(args, Value::TYPE_REAL);
+void CoreOptionsHandler::HandleSetDoublePref(const ListValue* args) {
+  HandleSetPref(args, Value::TYPE_DOUBLE);
 }
 
 void CoreOptionsHandler::HandleSetStringPref(const ListValue* args) {

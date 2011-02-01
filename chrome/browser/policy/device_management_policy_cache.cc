@@ -185,7 +185,7 @@ Value* DeviceManagementPolicyCache::DecodeValue(const em::GenericValue& value) {
       return NULL;
     case em::GenericValue::VALUE_TYPE_DOUBLE:
       if (value.has_double_value())
-        return Value::CreateRealValue(value.double_value());
+        return Value::CreateDoubleValue(value.double_value());
       return NULL;
     case em::GenericValue::VALUE_TYPE_BYTES:
       if (value.has_bytes_value()) {
@@ -224,7 +224,7 @@ Value* DeviceManagementPolicyCache::DecodeValue(const em::GenericValue& value) {
       RepeatedField<double>::const_iterator i;
       for (i = value.double_array().begin();
            i != value.double_array().end(); ++i)
-        list->Append(Value::CreateRealValue(*i));
+        list->Append(Value::CreateDoubleValue(*i));
       return list;
     }
     default:

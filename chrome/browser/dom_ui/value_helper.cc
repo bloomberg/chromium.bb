@@ -20,7 +20,7 @@ bool ValueHelper::TabToValue(
   NewTabUI::SetURLTitleAndDirection(dictionary, current_navigation.title(),
                                     current_navigation.virtual_url());
   dictionary->SetString("type", "tab");
-  dictionary->SetReal("timestamp", tab.timestamp.ToDoubleT());
+  dictionary->SetDouble("timestamp", tab.timestamp.ToDoubleT());
   return true;
 }
 
@@ -40,7 +40,7 @@ bool ValueHelper::WindowToValue(
   if (tab_values->GetSize() == 0)
     return false;
   dictionary->SetString("type", "window");
-  dictionary->SetReal("timestamp", window.timestamp.ToDoubleT());
+  dictionary->SetDouble("timestamp", window.timestamp.ToDoubleT());
   dictionary->Set("tabs", tab_values.release());
   return true;
 }

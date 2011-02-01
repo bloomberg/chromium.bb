@@ -27,8 +27,8 @@ bool ReadNumberByKey(DictionaryValue* dict,
     if (!dict->GetInteger(key, &int_value))
       return false;
     *ret_value = int_value;
-  } else if (value->IsType(Value::TYPE_REAL)) {
-    if (!dict->GetReal(key, ret_value))
+  } else if (value->IsType(Value::TYPE_DOUBLE)) {
+    if (!dict->GetDouble(key, ret_value))
       return false;
   } else {
     return false;

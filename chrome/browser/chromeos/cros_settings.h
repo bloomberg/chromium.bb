@@ -50,7 +50,7 @@ class CrosSettings : public base::NonThreadSafe {
   // value at that path, even if it has a different type.
   void SetBoolean(const std::string& path, bool in_value);
   void SetInteger(const std::string& path, int in_value);
-  void SetReal(const std::string& path, double in_value);
+  void SetDouble(const std::string& path, double in_value);
   void SetString(const std::string& path, const std::string& in_value);
 
   // These are convenience forms of Get().  The value will be retrieved
@@ -58,7 +58,7 @@ class CrosSettings : public base::NonThreadSafe {
   // the end of the path can be returned in the form specified.
   bool GetBoolean(const std::string& path, bool* out_value) const;
   bool GetInteger(const std::string& path, int* out_value) const;
-  bool GetReal(const std::string& path, double* out_value) const;
+  bool GetDouble(const std::string& path, double* out_value) const;
   bool GetString(const std::string& path, std::string* out_value) const;
 
   // adding/removing of providers

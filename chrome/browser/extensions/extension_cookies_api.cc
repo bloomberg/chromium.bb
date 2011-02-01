@@ -312,7 +312,7 @@ bool SetCookieFunction::RunImpl() {
       expiration_date = static_cast<double>(expiration_date_int);
     } else {
       EXTENSION_FUNCTION_VALIDATE(
-          expiration_date_value->GetAsReal(&expiration_date));
+          expiration_date_value->GetAsDouble(&expiration_date));
     }
     // Time::FromDoubleT converts double time 0 to empty Time object. So we need
     // to do special handling here.

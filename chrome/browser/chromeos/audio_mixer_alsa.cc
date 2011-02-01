@@ -168,7 +168,7 @@ AudioMixer::State AudioMixerAlsa::GetState() const {
 // static
 void AudioMixerAlsa::RegisterPrefs(PrefService* local_state) {
   if (!local_state->FindPreference(prefs::kAudioVolume))
-    local_state->RegisterRealPref(prefs::kAudioVolume, kPrefVolumeInvalid);
+    local_state->RegisterDoublePref(prefs::kAudioVolume, kPrefVolumeInvalid);
   if (!local_state->FindPreference(prefs::kAudioMute))
     local_state->RegisterIntegerPref(prefs::kAudioMute, kPrefMuteInvalid);
 }

@@ -178,17 +178,17 @@ class IntegerPrefMember : public PrefMember<int> {
   DISALLOW_COPY_AND_ASSIGN(IntegerPrefMember);
 };
 
-class RealPrefMember : public PrefMember<double> {
+class DoublePrefMember : public PrefMember<double> {
  public:
-  RealPrefMember();
-  virtual ~RealPrefMember();
+  DoublePrefMember();
+  virtual ~DoublePrefMember();
 
  protected:
   virtual void UpdateValueFromPref() const;
   virtual void UpdatePref(const double& value);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RealPrefMember);
+  DISALLOW_COPY_AND_ASSIGN(DoublePrefMember);
 };
 
 class StringPrefMember : public PrefMember<std::string> {

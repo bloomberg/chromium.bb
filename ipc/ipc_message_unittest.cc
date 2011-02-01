@@ -13,7 +13,7 @@
 
 TEST(IPCMessageTest, ListValue) {
   ListValue input;
-  input.Set(0, Value::CreateRealValue(42.42));
+  input.Set(0, Value::CreateDoubleValue(42.42));
   input.Set(1, Value::CreateStringValue("forty"));
   input.Set(2, Value::CreateNullValue());
 
@@ -44,7 +44,7 @@ TEST(IPCMessageTest, DictionaryValue) {
   subdict->Set("bool", Value::CreateBooleanValue(false));
 
   scoped_ptr<ListValue> sublist(new ListValue());
-  sublist->Set(0, Value::CreateRealValue(42.42));
+  sublist->Set(0, Value::CreateDoubleValue(42.42));
   sublist->Set(1, Value::CreateStringValue("forty"));
   sublist->Set(2, Value::CreateStringValue("two"));
   subdict->Set("list", sublist.release());

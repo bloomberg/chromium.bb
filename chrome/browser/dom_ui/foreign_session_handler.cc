@@ -210,8 +210,8 @@ bool ForeignSessionHandler::SessionTabToValue(
   NewTabUI::SetURLTitleAndDirection(dictionary, current_navigation.title(),
                                     current_navigation.virtual_url());
   dictionary->SetString("type", "tab");
-  dictionary->SetReal("timestamp",
-                      static_cast<double>(tab.timestamp.ToInternalValue()));
+  dictionary->SetDouble("timestamp",
+                        static_cast<double>(tab.timestamp.ToInternalValue()));
   dictionary->SetInteger("sessionId", tab.tab_id.id());
   return true;
 }
@@ -232,8 +232,8 @@ bool ForeignSessionHandler::SessionWindowToValue(
   if (tab_values->GetSize() == 0)
     return false;
   dictionary->SetString("type", "window");
-  dictionary->SetReal("timestamp",
-                      static_cast<double>(window.timestamp.ToInternalValue()));
+  dictionary->SetDouble("timestamp",
+      static_cast<double>(window.timestamp.ToInternalValue()));
   dictionary->SetInteger("sessionId", window.window_id.id());
   dictionary->Set("tabs", tab_values.release());
   return true;

@@ -628,11 +628,11 @@ bool BrowserProxy::GetInitialLoadTimes(float* min_start_time,
     tab_dict = static_cast<DictionaryValue*>(tab_value);
 
     double temp;
-    if (!tab_dict->GetReal("load_start_ms", &temp))
+    if (!tab_dict->GetDouble("load_start_ms", &temp))
       return false;
     start_ms = static_cast<float>(temp);
     // load_stop_ms can only be null if WaitForInitialLoads did not run.
-    if (!tab_dict->GetReal("load_stop_ms", &temp))
+    if (!tab_dict->GetDouble("load_stop_ms", &temp))
       return false;
     stop_ms = static_cast<float>(temp);
 

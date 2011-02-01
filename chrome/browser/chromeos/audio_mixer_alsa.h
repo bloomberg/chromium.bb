@@ -97,7 +97,7 @@ class AudioMixerAlsa : public AudioMixer {
   _snd_mixer_elem* elem_pcm_;
 
   IntegerPrefMember mute_pref_;
-  RealPrefMember volume_pref_;
+  DoublePrefMember volume_pref_;
 
   scoped_ptr<base::Thread> thread_;
 

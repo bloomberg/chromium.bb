@@ -45,8 +45,8 @@ TEST(WebNavigationEventsFunnelTest, OnBeforeNavigate) {
   args.SetString(keys::kUrlKey, url);
   args.SetInteger(keys::kFrameIdKey, frame_id);
   args.SetInteger(keys::kRequestIdKey, request_id);
-  args.SetReal(keys::kTimeStampKey,
-               base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
+  args.SetDouble(keys::kTimeStampKey,
+                 base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
 
   EXPECT_CALL(webnavigation_events_funnel,
               SendEvent(StrEq(keys::kOnBeforeNavigate), ValuesEqual(&args)))
@@ -68,8 +68,8 @@ TEST(WebNavigationEventsFunnelTest, OnBeforeRetarget) {
   args.SetInteger(keys::kSourceTabIdKey, source_tab_handle);
   args.SetString(keys::kSourceUrlKey, source_url);
   args.SetString(keys::kTargetUrlKey, target_url);
-  args.SetReal(keys::kTimeStampKey,
-               base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
+  args.SetDouble(keys::kTimeStampKey,
+                 base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
 
   EXPECT_CALL(webnavigation_events_funnel,
               SendEvent(StrEq(keys::kOnBeforeRetarget), ValuesEqual(&args)))
@@ -95,8 +95,8 @@ TEST(WebNavigationEventsFunnelTest, OnCommitted) {
   args.SetInteger(keys::kFrameIdKey, frame_id);
   args.SetString(keys::kTransitionTypeKey, transition_type);
   args.SetString(keys::kTransitionQualifiersKey, transition_qualifiers);
-  args.SetReal(keys::kTimeStampKey,
-               base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
+  args.SetDouble(keys::kTimeStampKey,
+                 base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
 
   EXPECT_CALL(webnavigation_events_funnel,
               SendEvent(StrEq(keys::kOnCommitted), ValuesEqual(&args)))
@@ -119,8 +119,8 @@ TEST(WebNavigationEventsFunnelTest, OnCompleted) {
   args.SetInteger(keys::kTabIdKey, tab_handle);
   args.SetString(keys::kUrlKey, url);
   args.SetInteger(keys::kFrameIdKey, frame_id);
-  args.SetReal(keys::kTimeStampKey,
-               base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
+  args.SetDouble(keys::kTimeStampKey,
+                 base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
 
   EXPECT_CALL(webnavigation_events_funnel,
               SendEvent(StrEq(keys::kOnCompleted), ValuesEqual(&args)))
@@ -142,8 +142,8 @@ TEST(WebNavigationEventsFunnelTest, OnDOMContentLoaded) {
   args.SetInteger(keys::kTabIdKey, tab_handle);
   args.SetString(keys::kUrlKey, url);
   args.SetInteger(keys::kFrameIdKey, frame_id);
-  args.SetReal(keys::kTimeStampKey,
-               base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
+  args.SetDouble(keys::kTimeStampKey,
+                 base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
 
   EXPECT_CALL(webnavigation_events_funnel,
               SendEvent(StrEq(keys::kOnDOMContentLoaded), ValuesEqual(&args)))
@@ -167,8 +167,8 @@ TEST(WebNavigationEventsFunnelTest, OnErrorOccurred) {
   args.SetString(keys::kUrlKey, url);
   args.SetInteger(keys::kFrameIdKey, frame_id);
   args.SetString(keys::kErrorKey, error);
-  args.SetReal(keys::kTimeStampKey,
-               base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
+  args.SetDouble(keys::kTimeStampKey,
+                 base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
 
   EXPECT_CALL(webnavigation_events_funnel,
               SendEvent(StrEq(keys::kOnErrorOccurred), ValuesEqual(&args)))

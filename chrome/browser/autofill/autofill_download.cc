@@ -54,9 +54,9 @@ AutoFillDownloadManager::AutoFillDownloadManager(Profile* profile)
   if (profile_) {
     PrefService* preferences = profile_->GetPrefs();
     positive_upload_rate_ =
-        preferences->GetReal(prefs::kAutoFillPositiveUploadRate);
+        preferences->GetDouble(prefs::kAutoFillPositiveUploadRate);
     negative_upload_rate_ =
-        preferences->GetReal(prefs::kAutoFillNegativeUploadRate);
+        preferences->GetDouble(prefs::kAutoFillNegativeUploadRate);
   }
 }
 
@@ -165,7 +165,7 @@ void AutoFillDownloadManager::SetPositiveUploadRate(double rate) {
   DCHECK_LE(rate, 1.0);
   DCHECK(profile_);
   PrefService* preferences = profile_->GetPrefs();
-  preferences->SetReal(prefs::kAutoFillPositiveUploadRate, rate);
+  preferences->SetDouble(prefs::kAutoFillPositiveUploadRate, rate);
 }
 
 void AutoFillDownloadManager::SetNegativeUploadRate(double rate) {
@@ -176,7 +176,7 @@ void AutoFillDownloadManager::SetNegativeUploadRate(double rate) {
   DCHECK_LE(rate, 1.0);
   DCHECK(profile_);
   PrefService* preferences = profile_->GetPrefs();
-  preferences->SetReal(prefs::kAutoFillNegativeUploadRate, rate);
+  preferences->SetDouble(prefs::kAutoFillNegativeUploadRate, rate);
 }
 
 bool AutoFillDownloadManager::StartRequest(

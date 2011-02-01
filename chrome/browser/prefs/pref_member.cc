@@ -96,18 +96,18 @@ void IntegerPrefMember::UpdatePref(const int& value) {
   prefs()->SetInteger(pref_name().c_str(), value);
 }
 
-RealPrefMember::RealPrefMember() : PrefMember<double>() {
+DoublePrefMember::DoublePrefMember() : PrefMember<double>() {
 }
 
-RealPrefMember::~RealPrefMember() {
+DoublePrefMember::~DoublePrefMember() {
 }
 
-void RealPrefMember::UpdateValueFromPref() const {
-  value_ = prefs()->GetReal(pref_name().c_str());
+void DoublePrefMember::UpdateValueFromPref() const {
+  value_ = prefs()->GetDouble(pref_name().c_str());
 }
 
-void RealPrefMember::UpdatePref(const double& value) {
-  prefs()->SetReal(pref_name().c_str(), value);
+void DoublePrefMember::UpdatePref(const double& value) {
+  prefs()->SetDouble(pref_name().c_str(), value);
 }
 
 StringPrefMember::StringPrefMember() : PrefMember<std::string>() {

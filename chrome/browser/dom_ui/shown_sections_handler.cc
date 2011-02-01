@@ -92,7 +92,7 @@ void ShownSectionsHandler::HandleGetShownSections(const ListValue* args) {
 
 void ShownSectionsHandler::HandleSetShownSections(const ListValue* args) {
   double mode_double;
-  CHECK(args->GetReal(0, &mode_double));
+  CHECK(args->GetDouble(0, &mode_double));
   int mode = static_cast<int>(mode_double);
   int old_mode = pref_service_->GetInteger(prefs::kNTPShownSections);
 

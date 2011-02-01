@@ -124,7 +124,7 @@ void Referrer::Deserialize(const Value& value) {
     if (!subresource_list->GetString(index++, &url_spec))
       return;
     double rate;
-    if (!subresource_list->GetReal(index++, &rate))
+    if (!subresource_list->GetDouble(index++, &rate))
       return;
 
     GURL url(url_spec);

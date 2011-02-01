@@ -91,7 +91,7 @@ bool ParseServerResponse(const std::string& response_body,
 
     // It is not an error if the 'confidence' field is missing.
     double confidence = 0.0;
-    hypothesis_value->GetReal(kConfidenceString, &confidence);
+    hypothesis_value->GetDouble(kConfidenceString, &confidence);
 
     result->push_back(speech_input::SpeechInputResultItem(utterance,
                                                           confidence));

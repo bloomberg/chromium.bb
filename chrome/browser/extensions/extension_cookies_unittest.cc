@@ -130,7 +130,7 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   EXPECT_TRUE(cookie_value1->GetBoolean(keys::kSessionKey, &boolean_value));
   EXPECT_TRUE(boolean_value);
   EXPECT_FALSE(
-      cookie_value1->GetReal(keys::kExpirationDateKey, &double_value));
+      cookie_value1->GetDouble(keys::kExpirationDateKey, &double_value));
   EXPECT_TRUE(cookie_value1->GetString(keys::kStoreIdKey, &string_value));
   EXPECT_EQ("some cookie store", string_value);
 
@@ -144,7 +144,8 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   EXPECT_FALSE(boolean_value);
   EXPECT_TRUE(cookie_value2->GetBoolean(keys::kSessionKey, &boolean_value));
   EXPECT_FALSE(boolean_value);
-  EXPECT_TRUE(cookie_value2->GetReal(keys::kExpirationDateKey, &double_value));
+  EXPECT_TRUE(
+      cookie_value2->GetDouble(keys::kExpirationDateKey, &double_value));
   EXPECT_EQ(10000, double_value);
 
   TestingProfile profile;

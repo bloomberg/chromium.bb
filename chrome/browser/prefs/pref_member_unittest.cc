@@ -14,13 +14,13 @@ namespace {
 
 static const char kBoolPref[] = "bool";
 static const char kIntPref[] = "int";
-static const char kRealPref[] = "real";
+static const char kDoublePref[] = "double";
 static const char kStringPref[] = "string";
 
 void RegisterTestPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(kBoolPref, false);
   prefs->RegisterIntegerPref(kIntPref, 0);
-  prefs->RegisterRealPref(kRealPref, 0.0);
+  prefs->RegisterDoublePref(kDoublePref, 0.0);
   prefs->RegisterStringPref(kStringPref, "default");
 }
 
@@ -98,26 +98,26 @@ TEST(PrefMemberTest, BasicGetAndSet) {
   EXPECT_EQ(2, integer.GetValue());
   EXPECT_EQ(2, *integer);
 
-  // Test real (double)
-  RealPrefMember real;
-  real.Init(kRealPref, &prefs, NULL);
+  // Test double
+  DoublePrefMember double_member;
+  double_member.Init(kDoublePref, &prefs, NULL);
 
   // Check the defaults
-  EXPECT_EQ(0.0, prefs.GetReal(kRealPref));
-  EXPECT_EQ(0.0, real.GetValue());
-  EXPECT_EQ(0.0, *real);
+  EXPECT_EQ(0.0, prefs.GetDouble(kDoublePref));
+  EXPECT_EQ(0.0, double_member.GetValue());
+  EXPECT_EQ(0.0, *double_member);
 
   // Try changing through the member variable.
-  real.SetValue(1.0);
-  EXPECT_EQ(1.0, real.GetValue());
-  EXPECT_EQ(1.0, prefs.GetReal(kRealPref));
-  EXPECT_EQ(1.0, *real);
+  double_member.SetValue(1.0);
+  EXPECT_EQ(1.0, double_member.GetValue());
+  EXPECT_EQ(1.0, prefs.GetDouble(kDoublePref));
+  EXPECT_EQ(1.0, *double_member);
 
   // Try changing back through the pref.
-  prefs.SetReal(kRealPref, 3.0);
-  EXPECT_EQ(3.0, prefs.GetReal(kRealPref));
-  EXPECT_EQ(3.0, real.GetValue());
-  EXPECT_EQ(3.0, *real);
+  prefs.SetDouble(kDoublePref, 3.0);
+  EXPECT_EQ(3.0, prefs.GetDouble(kDoublePref));
+  EXPECT_EQ(3.0, double_member.GetValue());
+  EXPECT_EQ(3.0, *double_member);
 
   // Test string
   StringPrefMember string;
@@ -142,14 +142,14 @@ TEST(PrefMemberTest, BasicGetAndSet) {
 }
 
 TEST(PrefMemberTest, TwoPrefs) {
-  // Make sure two RealPrefMembers stay in sync.
+  // Make sure two DoublePrefMembers stay in sync.
   TestingPrefService prefs;
   RegisterTestPrefs(&prefs);
 
-  RealPrefMember pref1;
-  pref1.Init(kRealPref, &prefs, NULL);
-  RealPrefMember pref2;
-  pref2.Init(kRealPref, &prefs, NULL);
+  DoublePrefMember pref1;
+  pref1.Init(kDoublePref, &prefs, NULL);
+  DoublePrefMember pref2;
+  pref2.Init(kDoublePref, &prefs, NULL);
 
   pref1.SetValue(2.3);
   EXPECT_EQ(2.3, *pref2);
@@ -157,7 +157,7 @@ TEST(PrefMemberTest, TwoPrefs) {
   pref2.SetValue(3.5);
   EXPECT_EQ(3.5, *pref1);
 
-  prefs.SetReal(kRealPref, 4.2);
+  prefs.SetDouble(kDoublePref, 4.2);
   EXPECT_EQ(4.2, *pref1);
   EXPECT_EQ(4.2, *pref2);
 }

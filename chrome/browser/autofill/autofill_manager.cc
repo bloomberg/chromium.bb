@@ -165,10 +165,10 @@ void AutoFillManager::RegisterUserPrefs(PrefService* prefs) {
 #else
   prefs->RegisterBooleanPref(prefs::kAutoFillAuxiliaryProfilesEnabled, false);
 #endif
-  prefs->RegisterRealPref(prefs::kAutoFillPositiveUploadRate,
-                          kAutoFillPositiveUploadRateDefaultValue);
-  prefs->RegisterRealPref(prefs::kAutoFillNegativeUploadRate,
-                          kAutoFillNegativeUploadRateDefaultValue);
+  prefs->RegisterDoublePref(prefs::kAutoFillPositiveUploadRate,
+                            kAutoFillPositiveUploadRateDefaultValue);
+  prefs->RegisterDoublePref(prefs::kAutoFillNegativeUploadRate,
+                            kAutoFillNegativeUploadRateDefaultValue);
 }
 
 void AutoFillManager::DidNavigateMainFramePostCommit(

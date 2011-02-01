@@ -16,7 +16,7 @@ namespace {
 
 double GetNumberValue(Value* value) {
   double result = 0;
-  if (value->GetAsReal(&result))
+  if (value->GetAsDouble(&result))
     return result;
 
   int int_result = 0;
@@ -30,7 +30,7 @@ double GetNumberValue(Value* value) {
 
 bool GetNumberFromDictionary(DictionaryValue* value, const std::string& key,
                              double* number) {
-  if (value->GetReal(key, number))
+  if (value->GetDouble(key, number))
     return true;
 
   int int_value = 0;
@@ -97,9 +97,9 @@ std::string JSONSchemaValidator::GetJSONSchemaType(Value* value) {
       return "boolean";
     case Value::TYPE_INTEGER:
       return "integer";
-    case Value::TYPE_REAL: {
+    case Value::TYPE_DOUBLE: {
       double double_value = 0;
-      value->GetAsReal(&double_value);
+      value->GetAsDouble(&double_value);
       if (std::abs(double_value) <= std::pow(2.0, DBL_MANT_DIG) &&
           double_value == floor(double_value)) {
         return "integer";
@@ -269,9 +269,9 @@ void JSONSchemaValidator::ValidateEnum(Value* instance,
         break;
 
       case Value::TYPE_INTEGER:
-      case Value::TYPE_REAL:
+      case Value::TYPE_DOUBLE:
         if (instance->IsType(Value::TYPE_INTEGER) ||
-            instance->IsType(Value::TYPE_REAL)) {
+            instance->IsType(Value::TYPE_DOUBLE)) {
           if (GetNumberValue(choice) == GetNumberValue(instance))
             return;
         }

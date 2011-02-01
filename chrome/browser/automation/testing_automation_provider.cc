@@ -2502,7 +2502,7 @@ void TestingAutomationProvider::AddHistoryItem(Browser* browser,
   double dt;
   if (item->GetInteger("time", &it))
     time = base::Time::FromTimeT(it);
-  else if (item->GetReal("time", &dt))
+  else if (item->GetDouble("time", &dt))
     time = base::Time::FromDoubleT(dt);
 
   // Ideas for "dummy" values (e.g. id_scope) came from
@@ -3157,7 +3157,7 @@ webkit_glue::PasswordForm GetPasswordFormFromDict(
   double dt;
   if (password_dict.GetInteger("time", &it))
     time = base::Time::FromTimeT(it);
-  else if (password_dict.GetReal("time", &dt))
+  else if (password_dict.GetDouble("time", &dt))
     time = base::Time::FromDoubleT(dt);
 
   std::string signon_realm;

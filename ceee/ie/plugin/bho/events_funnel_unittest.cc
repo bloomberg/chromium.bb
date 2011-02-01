@@ -35,7 +35,7 @@ TEST(EventsFunnelTest, SendEvent) {
   event_args.SetInteger("Answer to the Ultimate Question of Life,"
                         "the Universe, and Everything", 42);
   event_args.SetString("AYBABTU", "All your base are belong to us");
-  event_args.SetReal("www.unrealtournament.com", 3.0);
+  event_args.SetDouble("www.unrealtournament.com", 3.0);
 
   ListValue args_list;
   args_list.Append(event_args.DeepCopy());

@@ -433,7 +433,7 @@ TEST(TabApi, GetSpecifiedOrCurrentFrameWindow) {
   testing::LogDisabler no_dchecks;
 
   StrictMock<testing::MockWindowUtils> window_utils;
-  scoped_ptr<Value> bad_args(Value::CreateRealValue(4.7));
+  scoped_ptr<Value> bad_args(Value::CreateDoubleValue(4.7));
   DictionaryValue bad_dict_args;  // no window ID key.
   DictionaryValue good_dict_args;
   int window1_id = 77;

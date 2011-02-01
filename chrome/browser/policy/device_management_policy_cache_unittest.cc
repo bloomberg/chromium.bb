@@ -257,7 +257,7 @@ TEST_F(DeviceManagementPolicyCacheDecodeTest, String) {
 TEST_F(DeviceManagementPolicyCacheDecodeTest, Double) {
   value_.set_value_type(em::GenericValue::VALUE_TYPE_DOUBLE);
   value_.set_double_value(0.42L);
-  DecodeAndCheck(Value::CreateRealValue(0.42L));
+  DecodeAndCheck(Value::CreateDoubleValue(0.42L));
 }
 
 TEST_F(DeviceManagementPolicyCacheDecodeTest, Bytes) {
@@ -303,8 +303,8 @@ TEST_F(DeviceManagementPolicyCacheDecodeTest, DoubleArray) {
   value_.add_double_array(0.42L);
   value_.add_double_array(0.17L);
   ListValue* list = new ListValue;
-  list->Append(Value::CreateRealValue(0.42L));
-  list->Append(Value::CreateRealValue(0.17L));
+  list->Append(Value::CreateDoubleValue(0.42L));
+  list->Append(Value::CreateDoubleValue(0.17L));
   DecodeAndCheck(list);
 }
 

@@ -35,10 +35,10 @@ DictionaryValue* CreateProcessValue(int process_id,
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(keys::kIdKey, process_id);
   result->SetString(keys::kTypeKey, type);
-  result->SetReal(keys::kCpuKey, cpu);
-  result->SetReal(keys::kNetworkKey, static_cast<double>(net));
-  result->SetReal(keys::kPrivateMemoryKey, static_cast<double>(pr_mem));
-  result->SetReal(keys::kSharedMemoryKey, static_cast<double>(sh_mem));
+  result->SetDouble(keys::kCpuKey, cpu);
+  result->SetDouble(keys::kNetworkKey, static_cast<double>(net));
+  result->SetDouble(keys::kPrivateMemoryKey, static_cast<double>(pr_mem));
+  result->SetDouble(keys::kSharedMemoryKey, static_cast<double>(sh_mem));
   return result;
 }
 

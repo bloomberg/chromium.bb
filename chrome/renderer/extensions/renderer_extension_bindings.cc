@@ -269,9 +269,9 @@ static std::vector< v8::Handle<v8::Value> > ListValueToV8(
         v8_values.push_back(v8::Integer::New(val));
         break;
       }
-      case Value::TYPE_REAL: {
+      case Value::TYPE_DOUBLE: {
         double val;
-        elem->GetAsReal(&val);
+        elem->GetAsDouble(&val);
         v8_values.push_back(v8::Number::New(val));
         break;
       }

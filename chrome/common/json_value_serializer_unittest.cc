@@ -17,7 +17,7 @@
 
 TEST(JSONValueSerializerTest, Roundtrip) {
   const std::string original_serialization =
-    "{\"bool\":true,\"int\":42,\"list\":[1,2],\"null\":null,\"real\":3.14}";
+    "{\"bool\":true,\"int\":42,\"list\":[1,2],\"null\":null,\"double\":3.14}";
   JSONStringValueSerializer serializer(original_serialization);
   scoped_ptr<Value> root(serializer.Deserialize(NULL, NULL));
   ASSERT_TRUE(root.get());
@@ -38,9 +38,9 @@ TEST(JSONValueSerializerTest, Roundtrip) {
   ASSERT_TRUE(root_dict->GetInteger("int", &int_value));
   ASSERT_EQ(42, int_value);
 
-  double real_value = 0.0;
-  ASSERT_TRUE(root_dict->GetReal("real", &real_value));
-  ASSERT_DOUBLE_EQ(3.14, real_value);
+  double double_value = 0.0;
+  ASSERT_TRUE(root_dict->GetDouble("double", &double_value));
+  ASSERT_DOUBLE_EQ(3.14, double_value);
 
   // We shouldn't be able to write using this serializer, since it was
   // initialized with a const string.
@@ -66,7 +66,7 @@ TEST(JSONValueSerializerTest, Roundtrip) {
     "   \"int\": 42," JSON_NEWLINE
     "   \"list\": [ 1, 2 ]," JSON_NEWLINE
     "   \"null\": null," JSON_NEWLINE
-    "   \"real\": 3.14" JSON_NEWLINE
+    "   \"double\": 3.14" JSON_NEWLINE
     "}" JSON_NEWLINE;
 #undef JSON_NEWLINE
   ASSERT_EQ(pretty_serialization, test_serialization);

@@ -30,7 +30,7 @@ HostZoomMap::HostZoomMap(Profile* profile)
       updating_preferences_(false) {
   Load();
   default_zoom_level_ =
-      profile_->GetPrefs()->GetReal(prefs::kDefaultZoomLevel);
+      profile_->GetPrefs()->GetDouble(prefs::kDefaultZoomLevel);
   registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                  Source<Profile>(profile));
   // Don't observe pref changes (e.g. from sync) in Incognito; once we create
@@ -62,7 +62,7 @@ void HostZoomMap::Load() {
       const std::string& host(*i);
       double zoom_level = 0;
 
-      bool success = host_zoom_dictionary->GetRealWithoutPathExpansion(
+      bool success = host_zoom_dictionary->GetDoubleWithoutPathExpansion(
           host, &zoom_level);
       if (!success) {
         // The data used to be stored as ints, so try that.
@@ -133,7 +133,7 @@ void HostZoomMap::SetZoomLevel(const GURL& url, double level) {
       host_zoom_dictionary->RemoveWithoutPathExpansion(host, NULL);
     } else {
       host_zoom_dictionary->SetWithoutPathExpansion(
-          host, Value::CreateRealValue(level));
+          host, Value::CreateDoubleValue(level));
     }
   }
   updating_preferences_ = false;
@@ -245,7 +245,7 @@ void HostZoomMap::Observe(
           Load();
         else if (prefs::kDefaultZoomLevel == *name) {
           default_zoom_level_ =
-              profile_->GetPrefs()->GetReal(prefs::kDefaultZoomLevel);
+              profile_->GetPrefs()->GetDouble(prefs::kDefaultZoomLevel);
         }
       }
       break;

@@ -56,10 +56,10 @@ Value* CreateLocaleDefaultValue(Value::ValueType type, int message_id) {
       return Value::CreateIntegerValue(val);
     }
 
-    case Value::TYPE_REAL: {
+    case Value::TYPE_DOUBLE: {
       double val;
       base::StringToDouble(resource_string, &val);
-      return Value::CreateRealValue(val);
+      return Value::CreateDoubleValue(val);
     }
 
     case Value::TYPE_STRING: {
@@ -227,8 +227,8 @@ void PrefService::RegisterIntegerPref(const char* path, int default_value) {
   RegisterPreference(path, Value::CreateIntegerValue(default_value));
 }
 
-void PrefService::RegisterRealPref(const char* path, double default_value) {
-  RegisterPreference(path, Value::CreateRealValue(default_value));
+void PrefService::RegisterDoublePref(const char* path, double default_value) {
+  RegisterPreference(path, Value::CreateDoubleValue(default_value));
 }
 
 void PrefService::RegisterStringPref(const char* path,
@@ -263,11 +263,11 @@ void PrefService::RegisterLocalizedIntegerPref(const char* path,
       CreateLocaleDefaultValue(Value::TYPE_INTEGER, locale_default_message_id));
 }
 
-void PrefService::RegisterLocalizedRealPref(const char* path,
-                                            int locale_default_message_id) {
+void PrefService::RegisterLocalizedDoublePref(const char* path,
+                                              int locale_default_message_id) {
   RegisterPreference(
       path,
-      CreateLocaleDefaultValue(Value::TYPE_REAL, locale_default_message_id));
+      CreateLocaleDefaultValue(Value::TYPE_DOUBLE, locale_default_message_id));
 }
 
 void PrefService::RegisterLocalizedStringPref(const char* path,
@@ -307,7 +307,7 @@ int PrefService::GetInteger(const char* path) const {
   return result;
 }
 
-double PrefService::GetReal(const char* path) const {
+double PrefService::GetDouble(const char* path) const {
   DCHECK(CalledOnValidThread());
 
   double result = 0.0;
@@ -317,7 +317,7 @@ double PrefService::GetReal(const char* path) const {
     NOTREACHED() << "Trying to read an unregistered pref: " << path;
     return result;
   }
-  bool rv = pref->GetValue()->GetAsReal(&result);
+  bool rv = pref->GetValue()->GetAsDouble(&result);
   DCHECK(rv);
   return result;
 }
@@ -494,8 +494,8 @@ void PrefService::SetInteger(const char* path, int value) {
   SetUserPrefValue(path, Value::CreateIntegerValue(value));
 }
 
-void PrefService::SetReal(const char* path, double value) {
-  SetUserPrefValue(path, Value::CreateRealValue(value));
+void PrefService::SetDouble(const char* path, double value) {
+  SetUserPrefValue(path, Value::CreateDoubleValue(value));
 }
 
 void PrefService::SetString(const char* path, const std::string& value) {

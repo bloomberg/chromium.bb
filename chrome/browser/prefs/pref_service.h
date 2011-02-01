@@ -38,7 +38,7 @@ class PrefService : public base::NonThreadSafe {
    public:
 
     // The type of the preference is determined by the type with which it is
-    // registered. This type needs to be a boolean, integer, real, string,
+    // registered. This type needs to be a boolean, integer, double, string,
     // dictionary (a branch), or list.  You shouldn't need to construct this on
     // your own; use the PrefService::Register*Pref methods instead.
     Preference(const PrefService* service,
@@ -142,7 +142,7 @@ class PrefService : public base::NonThreadSafe {
   // Make the PrefService aware of a pref.
   void RegisterBooleanPref(const char* path, bool default_value);
   void RegisterIntegerPref(const char* path, int default_value);
-  void RegisterRealPref(const char* path, double default_value);
+  void RegisterDoublePref(const char* path, double default_value);
   void RegisterStringPref(const char* path, const std::string& default_value);
   void RegisterFilePathPref(const char* path, const FilePath& default_value);
   void RegisterListPref(const char* path);
@@ -153,8 +153,8 @@ class PrefService : public base::NonThreadSafe {
                                     int locale_default_message_id);
   void RegisterLocalizedIntegerPref(const char* path,
                                     int locale_default_message_id);
-  void RegisterLocalizedRealPref(const char* path,
-                                 int locale_default_message_id);
+  void RegisterLocalizedDoublePref(const char* path,
+                                   int locale_default_message_id);
   void RegisterLocalizedStringPref(const char* path,
                                    int locale_default_message_id);
 
@@ -163,7 +163,7 @@ class PrefService : public base::NonThreadSafe {
   // value (set when the pref was registered) will be returned.
   bool GetBoolean(const char* path) const;
   int GetInteger(const char* path) const;
-  double GetReal(const char* path) const;
+  double GetDouble(const char* path) const;
   std::string GetString(const char* path) const;
   FilePath GetFilePath(const char* path) const;
 
@@ -182,7 +182,7 @@ class PrefService : public base::NonThreadSafe {
   void Set(const char* path, const Value& value);
   void SetBoolean(const char* path, bool value);
   void SetInteger(const char* path, int value);
-  void SetReal(const char* path, double value);
+  void SetDouble(const char* path, double value);
   void SetString(const char* path, const std::string& value);
   void SetFilePath(const char* path, const FilePath& value);
 

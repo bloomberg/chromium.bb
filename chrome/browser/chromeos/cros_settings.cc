@@ -63,9 +63,9 @@ void CrosSettings::SetInteger(const std::string& path, int in_value) {
   Set(path, Value::CreateIntegerValue(in_value));
 }
 
-void CrosSettings::SetReal(const std::string& path, double in_value) {
+void CrosSettings::SetDouble(const std::string& path, double in_value) {
   DCHECK(CalledOnValidThread());
-  Set(path, Value::CreateRealValue(in_value));
+  Set(path, Value::CreateDoubleValue(in_value));
 }
 
 void CrosSettings::SetString(const std::string& path,
@@ -181,14 +181,14 @@ bool CrosSettings::GetInteger(const std::string& path,
   return value->GetAsInteger(out_value);
 }
 
-bool CrosSettings::GetReal(const std::string& path,
-                           double* out_value) const {
+bool CrosSettings::GetDouble(const std::string& path,
+                             double* out_value) const {
   DCHECK(CalledOnValidThread());
   Value* value;
   if (!Get(path, &value))
     return false;
 
-  return value->GetAsReal(out_value);
+  return value->GetAsDouble(out_value);
 }
 
 bool CrosSettings::GetString(const std::string& path,

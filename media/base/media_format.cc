@@ -92,7 +92,7 @@ void MediaFormat::SetAsInteger(const std::string& key, int in_value) {
 
 void MediaFormat::SetAsReal(const std::string& key, double in_value) {
   ReleaseValue(key);
-  value_map_[key] = Value::CreateRealValue(in_value);
+  value_map_[key] = Value::CreateDoubleValue(in_value);
 }
 
 void MediaFormat::SetAsString(const std::string& key,
@@ -113,7 +113,7 @@ bool MediaFormat::GetAsInteger(const std::string& key, int* out_value) const {
 
 bool MediaFormat::GetAsReal(const std::string& key, double* out_value) const {
   Value* value = GetValue(key);
-  return value != NULL && value->GetAsReal(out_value);
+  return value != NULL && value->GetAsDouble(out_value);
 }
 
 bool MediaFormat::GetAsString(const std::string& key,

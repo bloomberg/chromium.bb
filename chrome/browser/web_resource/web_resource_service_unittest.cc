@@ -57,10 +57,10 @@ TEST_F(WebResourceServiceTest, UnpackLogoSignal) {
   ASSERT_TRUE(prefs != NULL);
 
   double logo_start =
-      prefs->GetReal(prefs::kNTPCustomLogoStart);
+      prefs->GetDouble(prefs::kNTPCustomLogoStart);
   EXPECT_EQ(logo_start, 1264899600);  // unix epoch for Jan 31 2010 0100 GMT.
   double logo_end =
-      prefs->GetReal(prefs::kNTPCustomLogoEnd);
+      prefs->GetDouble(prefs::kNTPCustomLogoEnd);
   EXPECT_EQ(logo_end, 1327971600);  // unix epoch for Jan 31 2012 0100 GMT.
 
   // Change the start only and recheck.
@@ -85,7 +85,7 @@ TEST_F(WebResourceServiceTest, UnpackLogoSignal) {
   // Check that prefs are set correctly.
   web_resource_service->UnpackLogoSignal(*(test_json.get()));
 
-  logo_start = prefs->GetReal(prefs::kNTPCustomLogoStart);
+  logo_start = prefs->GetDouble(prefs::kNTPCustomLogoStart);
   EXPECT_EQ(logo_start, 1267365600);  // date changes to Feb 28 2010 1400 GMT.
 
   // If no date is included in the prefs, reset custom logo dates to 0.
@@ -103,9 +103,9 @@ TEST_F(WebResourceServiceTest, UnpackLogoSignal) {
 
   // Check that prefs are set correctly.
   web_resource_service->UnpackLogoSignal(*(test_json.get()));
-  logo_start = prefs->GetReal(prefs::kNTPCustomLogoStart);
+  logo_start = prefs->GetDouble(prefs::kNTPCustomLogoStart);
   EXPECT_EQ(logo_start, 0);  // date value reset to 0;
-  logo_end = prefs->GetReal(prefs::kNTPCustomLogoEnd);
+  logo_end = prefs->GetDouble(prefs::kNTPCustomLogoEnd);
   EXPECT_EQ(logo_end, 0);  // date value reset to 0;
 }
 
@@ -160,13 +160,13 @@ TEST_F(WebResourceServiceTest, UnpackPromoSignal) {
   EXPECT_EQ(promo_time_slice, 2);
 
   double promo_start =
-      prefs->GetReal(prefs::kNTPPromoStart);
+      prefs->GetDouble(prefs::kNTPPromoStart);
   int64 actual_start = 1264899600 +  // unix epoch for Jan 31 2010 0100 GMT.
       promo_group * 2 * 60 * 60;
   EXPECT_EQ(promo_start, actual_start);
 
   double promo_end =
-      prefs->GetReal(prefs::kNTPPromoEnd);
+      prefs->GetDouble(prefs::kNTPPromoEnd);
   EXPECT_EQ(promo_end, 1327971600);  // unix epoch for Jan 31 2012 0100 GMT.
 }
 

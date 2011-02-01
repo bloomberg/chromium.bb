@@ -31,7 +31,7 @@ HRESULT WebNavigationEventsFunnel::OnBeforeNavigate(
   args.SetString(keys::kUrlKey, url);
   args.SetInteger(keys::kFrameIdKey, frame_id);
   args.SetInteger(keys::kRequestIdKey, request_id);
-  args.SetReal(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
+  args.SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
 
   return SendEvent(keys::kOnBeforeNavigate, args);
 }
@@ -45,7 +45,7 @@ HRESULT WebNavigationEventsFunnel::OnBeforeRetarget(
   args.SetInteger(keys::kSourceTabIdKey, static_cast<int>(source_tab_handle));
   args.SetString(keys::kSourceUrlKey, source_url);
   args.SetString(keys::kTargetUrlKey, target_url);
-  args.SetReal(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
+  args.SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
 
   return SendEvent(keys::kOnBeforeRetarget, args);
 }
@@ -63,7 +63,7 @@ HRESULT WebNavigationEventsFunnel::OnCommitted(
   args.SetInteger(keys::kFrameIdKey, frame_id);
   args.SetString(keys::kTransitionTypeKey, transition_type);
   args.SetString(keys::kTransitionQualifiersKey, transition_qualifiers);
-  args.SetReal(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
+  args.SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
 
   return SendEvent(keys::kOnCommitted, args);
 }
@@ -77,7 +77,7 @@ HRESULT WebNavigationEventsFunnel::OnCompleted(
   args.SetInteger(keys::kTabIdKey, static_cast<int>(tab_handle));
   args.SetString(keys::kUrlKey, url);
   args.SetInteger(keys::kFrameIdKey, frame_id);
-  args.SetReal(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
+  args.SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
 
   return SendEvent(keys::kOnCompleted, args);
 }
@@ -91,7 +91,7 @@ HRESULT WebNavigationEventsFunnel::OnDOMContentLoaded(
   args.SetInteger(keys::kTabIdKey, static_cast<int>(tab_handle));
   args.SetString(keys::kUrlKey, url);
   args.SetInteger(keys::kFrameIdKey, frame_id);
-  args.SetReal(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
+  args.SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
 
   return SendEvent(keys::kOnDOMContentLoaded, args);
 }
@@ -107,7 +107,7 @@ HRESULT WebNavigationEventsFunnel::OnErrorOccurred(
   args.SetString(keys::kUrlKey, url);
   args.SetInteger(keys::kFrameIdKey, frame_id);
   args.SetString(keys::kErrorKey, error);
-  args.SetReal(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
+  args.SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
 
   return SendEvent(keys::kOnErrorOccurred, args);
 }

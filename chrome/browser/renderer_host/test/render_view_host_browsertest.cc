@@ -117,9 +117,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest,
   {
     ExecuteNotificationObserver observer;
     ExecuteJavascriptAndGetValue("42.2;", &observer);
-    EXPECT_EQ(Value::TYPE_REAL, observer.value()->GetType());
+    EXPECT_EQ(Value::TYPE_DOUBLE, observer.value()->GetType());
     double double_value;
-    EXPECT_TRUE(observer.value()->GetAsReal(&double_value));
+    EXPECT_TRUE(observer.value()->GetAsDouble(&double_value));
     EXPECT_EQ(42.2, double_value);
   }
 
@@ -149,9 +149,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest,
   {
     ExecuteNotificationObserver observer;
     ExecuteJavascriptAndGetValue("new Date(1);", &observer);
-    EXPECT_EQ(Value::TYPE_REAL, observer.value()->GetType());
+    EXPECT_EQ(Value::TYPE_DOUBLE, observer.value()->GetType());
     double date_seconds;
-    EXPECT_TRUE(observer.value()->GetAsReal(&date_seconds));
+    EXPECT_TRUE(observer.value()->GetAsDouble(&date_seconds));
 
     base::Time time = base::Time::FromDoubleT(date_seconds);
 
@@ -170,9 +170,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest,
     ExecuteNotificationObserver observer;
     ExecuteJavascriptAndGetValue("new Date(Date.UTC(2006, 7, 16, 12, 0, 15));",
                                  &observer);
-    EXPECT_EQ(Value::TYPE_REAL, observer.value()->GetType());
+    EXPECT_EQ(Value::TYPE_DOUBLE, observer.value()->GetType());
     double date_seconds;
-    EXPECT_TRUE(observer.value()->GetAsReal(&date_seconds));
+    EXPECT_TRUE(observer.value()->GetAsDouble(&date_seconds));
 
     base::Time time = base::Time::FromDoubleT(date_seconds);
 

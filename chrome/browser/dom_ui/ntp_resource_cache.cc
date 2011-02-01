@@ -368,8 +368,8 @@ void NTPResourceCache::CreateNewTabHTML() {
   if (profile_->GetPrefs()->FindPreference(prefs::kNTPCustomLogoStart) &&
       profile_->GetPrefs()->FindPreference(prefs::kNTPCustomLogoEnd)) {
     localized_strings.SetString("customlogo",
-        InDateRange(profile_->GetPrefs()->GetReal(prefs::kNTPCustomLogoStart),
-                    profile_->GetPrefs()->GetReal(prefs::kNTPCustomLogoEnd)) ?
+        InDateRange(profile_->GetPrefs()->GetDouble(prefs::kNTPCustomLogoStart),
+                    profile_->GetPrefs()->GetDouble(prefs::kNTPCustomLogoEnd)) ?
         "true" : "false");
   } else {
     localized_strings.SetString("customlogo", "false");
@@ -382,8 +382,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       profile_->GetPrefs()->FindPreference(prefs::kNTPPromoLine) &&
       WebResourceServiceUtil::CanShowPromo(profile_)) {
     localized_strings.SetString("serverpromo",
-        InDateRange(profile_->GetPrefs()->GetReal(prefs::kNTPPromoStart),
-                    profile_->GetPrefs()->GetReal(prefs::kNTPPromoEnd)) ?
+        InDateRange(profile_->GetPrefs()->GetDouble(prefs::kNTPPromoStart),
+                    profile_->GetPrefs()->GetDouble(prefs::kNTPPromoEnd)) ?
                     profile_->GetPrefs()->GetString(prefs::kNTPPromoLine) :
                                                     std::string());
   }

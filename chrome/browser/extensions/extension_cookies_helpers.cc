@@ -59,8 +59,10 @@ DictionaryValue* CreateCookieValue(
   result->SetBoolean(keys::kSecureKey, cookie.IsSecure());
   result->SetBoolean(keys::kHttpOnlyKey, cookie.IsHttpOnly());
   result->SetBoolean(keys::kSessionKey, !cookie.DoesExpire());
-  if (cookie.DoesExpire())
-    result->SetReal(keys::kExpirationDateKey, cookie.ExpiryDate().ToDoubleT());
+  if (cookie.DoesExpire()) {
+    result->SetDouble(keys::kExpirationDateKey,
+                      cookie.ExpiryDate().ToDoubleT());
+  }
   result->SetString(keys::kStoreIdKey, store_id);
 
   return result;

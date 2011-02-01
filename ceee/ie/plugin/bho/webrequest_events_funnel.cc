@@ -30,7 +30,7 @@ HRESULT WebRequestEventsFunnel::OnBeforeRedirect(int request_id,
   args.SetString(keys::kUrlKey, url);
   args.SetInteger(keys::kStatusCodeKey, status_code);
   args.SetString(keys::kRedirectUrlKey, redirect_url);
-  args.SetReal(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
+  args.SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
 
   return SendEvent(keys::kOnBeforeRedirect, args);
 }
@@ -47,7 +47,7 @@ HRESULT WebRequestEventsFunnel::OnBeforeRequest(int request_id,
   args.SetString(keys::kMethodKey, method);
   args.SetInteger(keys::kTabIdKey, static_cast<int>(tab_handle));
   args.SetString(keys::kTypeKey, type);
-  args.SetReal(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
+  args.SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
 
   return SendEvent(keys::kOnBeforeRequest, args);
 }
@@ -60,7 +60,7 @@ HRESULT WebRequestEventsFunnel::OnCompleted(int request_id,
   args.SetInteger(keys::kRequestIdKey, request_id);
   args.SetString(keys::kUrlKey, url);
   args.SetInteger(keys::kStatusCodeKey, status_code);
-  args.SetReal(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
+  args.SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
 
   return SendEvent(keys::kOnCompleted, args);
 }
@@ -73,7 +73,7 @@ HRESULT WebRequestEventsFunnel::OnErrorOccurred(int request_id,
   args.SetInteger(keys::kRequestIdKey, request_id);
   args.SetString(keys::kUrlKey, url);
   args.SetString(keys::kErrorKey, error);
-  args.SetReal(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
+  args.SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
 
   return SendEvent(keys::kOnErrorOccurred, args);
 }
@@ -87,7 +87,7 @@ HRESULT WebRequestEventsFunnel::OnHeadersReceived(
   args.SetInteger(keys::kRequestIdKey, request_id);
   args.SetString(keys::kUrlKey, url);
   args.SetInteger(keys::kStatusCodeKey, status_code);
-  args.SetReal(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
+  args.SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
 
   return SendEvent(keys::kOnHeadersReceived, args);
 }
@@ -100,7 +100,7 @@ HRESULT WebRequestEventsFunnel::OnRequestSent(int request_id,
   args.SetInteger(keys::kRequestIdKey, request_id);
   args.SetString(keys::kUrlKey, url);
   args.SetString(keys::kIpKey, ip);
-  args.SetReal(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
+  args.SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(time_stamp));
 
   return SendEvent(keys::kOnRequestSent, args);
 }

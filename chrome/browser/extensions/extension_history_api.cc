@@ -31,7 +31,8 @@ void GetHistoryItemDictionary(const history::URLRow& row,
   value->SetString(keys::kIdKey, base::Int64ToString(row.id()));
   value->SetString(keys::kUrlKey, row.url().spec());
   value->SetString(keys::kTitleKey, row.title());
-  value->SetReal(keys::kLastVisitdKey, MilliSecondsFromTime(row.last_visit()));
+  value->SetDouble(keys::kLastVisitdKey,
+                   MilliSecondsFromTime(row.last_visit()));
   value->SetInteger(keys::kTypedCountKey, row.typed_count());
   value->SetInteger(keys::kVisitCountKey, row.visit_count());
 }
@@ -46,7 +47,7 @@ void GetVisitInfoDictionary(const history::VisitRow& row,
                             DictionaryValue* value) {
   value->SetString(keys::kIdKey, base::Int64ToString(row.url_id));
   value->SetString(keys::kVisitId, base::Int64ToString(row.visit_id));
-  value->SetReal(keys::kVisitTime, MilliSecondsFromTime(row.visit_time));
+  value->SetDouble(keys::kVisitTime, MilliSecondsFromTime(row.visit_time));
   value->SetString(keys::kReferringVisitId,
                    base::Int64ToString(row.referring_visit));
 
@@ -175,7 +176,7 @@ bool HistoryFunction::GetUrlFromValue(Value* value, GURL* url) {
 
 bool HistoryFunction::GetTimeFromValue(Value* value, base::Time* time) {
   double ms_from_epoch = 0.0;
-  if (!value->GetAsReal(&ms_from_epoch)) {
+  if (!value->GetAsDouble(&ms_from_epoch)) {
     int ms_from_epoch_as_int = 0;
     if (!value->GetAsInteger(&ms_from_epoch_as_int))
       return false;

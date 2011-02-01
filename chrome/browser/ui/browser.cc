@@ -2061,7 +2061,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kCloudPrintEmail, std::string());
   prefs->RegisterBooleanPref(prefs::kDevToolsDisabled, false);
   prefs->RegisterBooleanPref(prefs::kIncognitoEnabled, true);
-  prefs->RegisterRealPref(prefs::kDefaultZoomLevel, 0.0);
+  prefs->RegisterDoublePref(prefs::kDefaultZoomLevel, 0.0);
   prefs->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
   // We need to register the type of this preference in order to query
   // it even though it's only typically controlled via policy.

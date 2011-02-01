@@ -49,9 +49,9 @@ static void WriteValue(Message* m, const Value* value, int recursion) {
       WriteParam(m, val);
       break;
     }
-    case Value::TYPE_REAL: {
+    case Value::TYPE_DOUBLE: {
       double val;
-      value->GetAsReal(&val);
+      value->GetAsDouble(&val);
       WriteParam(m, val);
       break;
     }
@@ -166,11 +166,11 @@ static bool ReadValue(const Message* m, void** iter, Value** value,
       *value = Value::CreateIntegerValue(val);
       break;
     }
-    case Value::TYPE_REAL: {
+    case Value::TYPE_DOUBLE: {
       double val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = Value::CreateRealValue(val);
+      *value = Value::CreateDoubleValue(val);
       break;
     }
     case Value::TYPE_STRING: {

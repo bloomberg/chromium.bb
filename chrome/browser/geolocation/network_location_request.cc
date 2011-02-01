@@ -282,7 +282,7 @@ bool GetAsDouble(const DictionaryValue& object,
     *out = value_as_int;
     return true;
   }
-  return value->GetAsReal(out);
+  return value->GetAsDouble(out);
 }
 
 bool ParseServerResponse(const std::string& response_body,

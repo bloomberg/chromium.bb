@@ -43,8 +43,8 @@ TEST(WebRequestEventsFunnelTest, OnBeforeRedirect) {
   args.SetString(keys::kUrlKey, url);
   args.SetInteger(keys::kStatusCodeKey, status_code);
   args.SetString(keys::kRedirectUrlKey, redirect_url);
-  args.SetReal(keys::kTimeStampKey,
-               base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
+  args.SetDouble(keys::kTimeStampKey,
+                 base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
 
   EXPECT_CALL(webrequest_events_funnel,
               SendEvent(StrEq(keys::kOnBeforeRedirect), ValuesEqual(&args)))
@@ -69,8 +69,8 @@ TEST(WebRequestEventsFunnelTest, OnBeforeRequest) {
   args.SetString(keys::kMethodKey, method);
   args.SetInteger(keys::kTabIdKey, tab_handle);
   args.SetString(keys::kTypeKey, type);
-  args.SetReal(keys::kTimeStampKey,
-               base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
+  args.SetDouble(keys::kTimeStampKey,
+                 base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
 
   EXPECT_CALL(webrequest_events_funnel,
               SendEvent(StrEq(keys::kOnBeforeRequest), ValuesEqual(&args)))
@@ -92,8 +92,8 @@ TEST(WebRequestEventsFunnelTest, OnCompleted) {
   args.SetInteger(keys::kRequestIdKey, request_id);
   args.SetString(keys::kUrlKey, url);
   args.SetInteger(keys::kStatusCodeKey, status_code);
-  args.SetReal(keys::kTimeStampKey,
-               base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
+  args.SetDouble(keys::kTimeStampKey,
+                 base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
 
   EXPECT_CALL(webrequest_events_funnel,
               SendEvent(StrEq(keys::kOnCompleted), ValuesEqual(&args)))
@@ -114,8 +114,8 @@ TEST(WebRequestEventsFunnelTest, OnErrorOccurred) {
   args.SetInteger(keys::kRequestIdKey, request_id);
   args.SetString(keys::kUrlKey, url);
   args.SetString(keys::kErrorKey, error);
-  args.SetReal(keys::kTimeStampKey,
-               base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
+  args.SetDouble(keys::kTimeStampKey,
+                 base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
 
   EXPECT_CALL(webrequest_events_funnel,
               SendEvent(StrEq(keys::kOnErrorOccurred), ValuesEqual(&args)))
@@ -136,8 +136,8 @@ TEST(WebRequestEventsFunnelTest, OnHeadersReceived) {
   args.SetInteger(keys::kRequestIdKey, request_id);
   args.SetString(keys::kUrlKey, url);
   args.SetInteger(keys::kStatusCodeKey, status_code);
-  args.SetReal(keys::kTimeStampKey,
-               base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
+  args.SetDouble(keys::kTimeStampKey,
+                 base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
 
   EXPECT_CALL(webrequest_events_funnel,
               SendEvent(StrEq(keys::kOnHeadersReceived), ValuesEqual(&args)))
@@ -158,8 +158,8 @@ TEST(WebRequestEventsFunnelTest, OnRequestSent) {
   args.SetInteger(keys::kRequestIdKey, request_id);
   args.SetString(keys::kUrlKey, url);
   args.SetString(keys::kIpKey, ip);
-  args.SetReal(keys::kTimeStampKey,
-               base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
+  args.SetDouble(keys::kTimeStampKey,
+                 base::Time::kMillisecondsPerSecond * time_stamp.ToDoubleT());
 
   EXPECT_CALL(webrequest_events_funnel,
               SendEvent(StrEq(keys::kOnRequestSent), ValuesEqual(&args)))

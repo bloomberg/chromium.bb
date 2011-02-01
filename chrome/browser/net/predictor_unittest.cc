@@ -339,7 +339,7 @@ static bool GetDataFromSerialization(const GURL& motivation,
   for (size_t i = 0; i < subresource_list->GetSize();) {
     std::string url_spec;
     EXPECT_TRUE(subresource_list->GetString(i++, &url_spec));
-    EXPECT_TRUE(subresource_list->GetReal(i++, use_rate));
+    EXPECT_TRUE(subresource_list->GetDouble(i++, use_rate));
     if (subresource == GURL(url_spec)) {
       return true;
     }

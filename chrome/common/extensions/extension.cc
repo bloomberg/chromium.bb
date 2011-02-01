@@ -1493,7 +1493,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
             ((color_list->GetSize() != 3) &&
              ((color_list->GetSize() != 4) ||
               // For RGBA, the fourth item must be a real or int alpha value
-              (!color_list->GetReal(3, &alpha) &&
+              (!color_list->GetDouble(3, &alpha) &&
                !color_list->GetInteger(3, &alpha_int)))) ||
             // For both RGB and RGBA, the first three items must be ints (R,G,B)
             !color_list->GetInteger(0, &color) ||
@@ -1516,9 +1516,9 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
         int vi;
         if (!tints_value->GetListWithoutPathExpansion(*iter, &tint_list) ||
             tint_list->GetSize() != 3 ||
-            !(tint_list->GetReal(0, &v) || tint_list->GetInteger(0, &vi)) ||
-            !(tint_list->GetReal(1, &v) || tint_list->GetInteger(1, &vi)) ||
-            !(tint_list->GetReal(2, &v) || tint_list->GetInteger(2, &vi))) {
+            !(tint_list->GetDouble(0, &v) || tint_list->GetInteger(0, &vi)) ||
+            !(tint_list->GetDouble(1, &v) || tint_list->GetInteger(1, &vi)) ||
+            !(tint_list->GetDouble(2, &v) || tint_list->GetInteger(2, &vi))) {
           *error = errors::kInvalidThemeTints;
           return false;
         }

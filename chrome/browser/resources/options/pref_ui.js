@@ -411,7 +411,7 @@ cr.define('options', function() {
                     self.options[self.selectedIndex].value, self.metric);
                 break;
               case 'real':
-                Preferences.setRealPref(self.pref,
+                Preferences.setDoublePref(self.pref,
                     self.options[self.selectedIndex].value, self.metric);
                 break;
               case 'boolean':

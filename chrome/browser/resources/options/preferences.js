@@ -69,10 +69,10 @@ cr.define('options', function() {
    * @param {number} value New preference value.
    * @param {string} metric User metrics identifier.
    */
-  Preferences.setRealPref = function(name, value, metric) {
+  Preferences.setDoublePref = function(name, value, metric) {
     var argumentList = [name, String(value)];
     if (metric != undefined) argumentList.push(metric);
-    chrome.send('setRealPref', argumentList);
+    chrome.send('setDoublePref', argumentList);
   };
 
   /**

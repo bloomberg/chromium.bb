@@ -130,12 +130,12 @@ DictionaryValue* InitialLoadObserver::GetTimingInformation() const {
     DictionaryValue* item = new DictionaryValue;
     base::TimeDelta delta_start = it->second.start_time() - init_time_;
 
-    item->SetReal("load_start_ms", delta_start.InMillisecondsF());
+    item->SetDouble("load_start_ms", delta_start.InMillisecondsF());
     if (it->second.stop_time().is_null()) {
       item->Set("load_stop_ms", Value::CreateNullValue());
     } else {
       base::TimeDelta delta_stop = it->second.stop_time() - init_time_;
-      item->SetReal("load_stop_ms", delta_stop.InMillisecondsF());
+      item->SetDouble("load_stop_ms", delta_stop.InMillisecondsF());
     }
     items->Append(item);
   }
@@ -1250,8 +1250,8 @@ void AutomationProviderHistoryObserver::HistoryQueryComplete(
     history::URLResult const &page = (*results)[i];
     page_value->SetString("title", page.title());
     page_value->SetString("url", page.url().spec());
-    page_value->SetReal("time",
-                        static_cast<double>(page.visit_time().ToDoubleT()));
+    page_value->SetDouble("time",
+                          static_cast<double>(page.visit_time().ToDoubleT()));
     page_value->SetString("snippet", page.snippet().text());
     page_value->SetBoolean(
         "starred",
@@ -1284,7 +1284,7 @@ void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
     password_val->SetString("username_value", password_form->username_value);
     password_val->SetString("password_value", password_form->password_value);
     password_val->SetString("signon_realm", password_form->signon_realm);
-    password_val->SetReal(
+    password_val->SetDouble(
         "time", static_cast<double>(password_form->date_created.ToDoubleT()));
     password_val->SetString("origin_url", password_form->origin.spec());
     password_val->SetString("username_element",

@@ -83,7 +83,7 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   //  item 2 - name of the metric identifier (optional).
   void HandleSetBooleanPref(const ListValue* args);
   void HandleSetIntegerPref(const ListValue* args);
-  void HandleSetRealPref(const ListValue* args);
+  void HandleSetDoublePref(const ListValue* args);
   void HandleSetStringPref(const ListValue* args);
   void HandleSetObjectPref(const ListValue* args);
 

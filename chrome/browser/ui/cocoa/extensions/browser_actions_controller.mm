@@ -360,7 +360,7 @@ class ExtensionServiceObserverBridge : public NotificationObserver,
     // Migration code to the new VisibleIconCount pref.
     // TODO(mpcomplete): remove this at some point.
     double predefinedWidth =
-        profile_->GetPrefs()->GetReal(prefs::kBrowserActionContainerWidth);
+        profile_->GetPrefs()->GetDouble(prefs::kBrowserActionContainerWidth);
     if (predefinedWidth != 0) {
       int iconWidth = kBrowserActionWidth + kBrowserActionButtonPadding;
       int extraWidth = kChevronWidth;
@@ -419,7 +419,7 @@ class ExtensionServiceObserverBridge : public NotificationObserver,
 }
 
 + (void)registerUserPrefs:(PrefService*)prefs {
-  prefs->RegisterRealPref(prefs::kBrowserActionContainerWidth, 0);
+  prefs->RegisterDoublePref(prefs::kBrowserActionContainerWidth, 0);
 }
 
 #pragma mark -

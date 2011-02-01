@@ -441,18 +441,18 @@ void JSONSchemaValidatorTestBase::TestNumber() {
               scoped_ptr<Value>(Value::CreateIntegerValue(100)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateRealValue(88.88)).get(),
+              scoped_ptr<Value>(Value::CreateDoubleValue(88.88)).get(),
               schema.get(), NULL);
 
   ExpectNotValid(
       TEST_SOURCE,
-      scoped_ptr<Value>(Value::CreateRealValue(0.5)).get(),
+      scoped_ptr<Value>(Value::CreateDoubleValue(0.5)).get(),
       schema.get(), NULL, "",
       JSONSchemaValidator::FormatErrorMessage(
           JSONSchemaValidator::kNumberMinimum, "1"));
   ExpectNotValid(
       TEST_SOURCE,
-      scoped_ptr<Value>(Value::CreateRealValue(100.1)).get(),
+      scoped_ptr<Value>(Value::CreateDoubleValue(100.1)).get(),
       schema.get(), NULL, "",
       JSONSchemaValidator::FormatErrorMessage(
           JSONSchemaValidator::kNumberMaximum, "100"));
@@ -472,23 +472,23 @@ void JSONSchemaValidatorTestBase::TestTypeClassifier() {
   EXPECT_EQ("integer", JSONSchemaValidator::GetJSONSchemaType(
       scoped_ptr<Value>(Value::CreateIntegerValue(0)).get()));
   EXPECT_EQ("integer", JSONSchemaValidator::GetJSONSchemaType(
-      scoped_ptr<Value>(Value::CreateRealValue(42)).get()));
+      scoped_ptr<Value>(Value::CreateDoubleValue(42)).get()));
   EXPECT_EQ("integer", JSONSchemaValidator::GetJSONSchemaType(
       scoped_ptr<Value>(
-          Value::CreateRealValue(pow(2.0, DBL_MANT_DIG))).get()));
+          Value::CreateDoubleValue(pow(2.0, DBL_MANT_DIG))).get()));
   EXPECT_EQ("integer", JSONSchemaValidator::GetJSONSchemaType(
       scoped_ptr<Value>(
-          Value::CreateRealValue(pow(-2.0, DBL_MANT_DIG))).get()));
+          Value::CreateDoubleValue(pow(-2.0, DBL_MANT_DIG))).get()));
 
   // "number" is only used for non-integral numbers, or numbers beyond what
   // double can accurately represent.
   EXPECT_EQ("number", JSONSchemaValidator::GetJSONSchemaType(
-      scoped_ptr<Value>(Value::CreateRealValue(88.8)).get()));
+      scoped_ptr<Value>(Value::CreateDoubleValue(88.8)).get()));
   EXPECT_EQ("number", JSONSchemaValidator::GetJSONSchemaType(
-      scoped_ptr<Value>(Value::CreateRealValue(
+      scoped_ptr<Value>(Value::CreateDoubleValue(
           pow(2.0, DBL_MANT_DIG) * 2)).get()));
   EXPECT_EQ("number", JSONSchemaValidator::GetJSONSchemaType(
-      scoped_ptr<Value>(Value::CreateRealValue(
+      scoped_ptr<Value>(Value::CreateDoubleValue(
           pow(-2.0, DBL_MANT_DIG) * 2)).get()));
 
   EXPECT_EQ("string", JSONSchemaValidator::GetJSONSchemaType(
@@ -520,10 +520,10 @@ void JSONSchemaValidatorTestBase::TestTypes() {
 
   schema->SetString("type", "number");
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateRealValue(88.8)).get(),
+              scoped_ptr<Value>(Value::CreateDoubleValue(88.8)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateRealValue(42)).get(),
+              scoped_ptr<Value>(Value::CreateDoubleValue(42)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
               scoped_ptr<Value>(Value::CreateIntegerValue(42)).get(),
@@ -537,18 +537,18 @@ void JSONSchemaValidatorTestBase::TestTypes() {
               scoped_ptr<Value>(Value::CreateIntegerValue(42)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateRealValue(42)).get(),
+              scoped_ptr<Value>(Value::CreateDoubleValue(42)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
               scoped_ptr<Value>(Value::CreateIntegerValue(0)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
               scoped_ptr<Value>(
-                  Value::CreateRealValue(pow(2.0, DBL_MANT_DIG))).get(),
+                  Value::CreateDoubleValue(pow(2.0, DBL_MANT_DIG))).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
               scoped_ptr<Value>(
-                  Value::CreateRealValue(pow(-2.0, DBL_MANT_DIG))).get(),
+                  Value::CreateDoubleValue(pow(-2.0, DBL_MANT_DIG))).get(),
               schema.get(), NULL);
 
   schema->SetString("type", "boolean");
@@ -600,14 +600,14 @@ void JSONSchemaValidatorTestBase::TestTypes() {
 
   schema->SetString("type", "integer");
   ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<Value>(Value::CreateRealValue(88.8)).get(),
+                 scoped_ptr<Value>(Value::CreateDoubleValue(88.8)).get(),
                  schema.get(), NULL, "",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType, "integer", "number"));
 
   schema->SetString("type", "integer");
   ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<Value>(Value::CreateRealValue(88.8)).get(),
+                 scoped_ptr<Value>(Value::CreateDoubleValue(88.8)).get(),
                  schema.get(), NULL, "",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType, "integer", "number"));

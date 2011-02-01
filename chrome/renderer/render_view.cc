@@ -484,8 +484,8 @@ static bool WebAccessibilityNotificationToViewHostMsg(
 
 // Conversion for the incoming value.  The map isn't perfect; v8 has Uint32,
 // and int64 which don't fit as Value::TYPE_INTEGER, so we let them fall into
-// being TYPE_REALs.  Dates are converted to a string (which can then be parsed
-// into a base::Time), as are regexps.  Arrays are converted into lists,
+// being TYPE_DOUBLEs.  Dates are converted to a string (which can then be
+// parsed into a base::Time), as are regexps.  Arrays are converted into lists,
 // recursively.  We don't deal with binary objects or functions - they become
 // null values.
 static Value* ConvertV8Value(const v8::Handle<v8::Value>& v8value) {
@@ -494,12 +494,12 @@ static Value* ConvertV8Value(const v8::Handle<v8::Value>& v8value) {
   } else if (v8value->IsInt32()) {
     return Value::CreateIntegerValue(v8value->Int32Value());
   } else if (v8value->IsNumber()) {
-    return Value::CreateRealValue(v8value->NumberValue());
+    return Value::CreateDoubleValue(v8value->NumberValue());
   } else if (v8value->IsString()) {
     return Value::CreateStringValue(*v8::String::Utf8Value(v8value));
   } else if (v8value->IsDate()) {
     v8::Date* date = v8::Date::Cast(*v8value);
-    return Value::CreateRealValue(date->NumberValue() / 1000.0);
+    return Value::CreateDoubleValue(date->NumberValue() / 1000.0);
   } else if (v8value->IsRegExp()) {
     return Value::CreateStringValue(
         *v8::String::Utf8Value(v8value->ToString()));

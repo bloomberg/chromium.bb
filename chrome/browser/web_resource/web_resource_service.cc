@@ -242,10 +242,10 @@ void WebResourceService::Init() {
   resource_dispatcher_host_ = g_browser_process->resource_dispatcher_host();
   web_resource_fetcher_.reset(new WebResourceFetcher(this));
   prefs_->RegisterStringPref(prefs::kNTPWebResourceCacheUpdate, "0");
-  prefs_->RegisterRealPref(prefs::kNTPCustomLogoStart, 0);
-  prefs_->RegisterRealPref(prefs::kNTPCustomLogoEnd, 0);
-  prefs_->RegisterRealPref(prefs::kNTPPromoStart, 0);
-  prefs_->RegisterRealPref(prefs::kNTPPromoEnd, 0);
+  prefs_->RegisterDoublePref(prefs::kNTPCustomLogoStart, 0);
+  prefs_->RegisterDoublePref(prefs::kNTPCustomLogoEnd, 0);
+  prefs_->RegisterDoublePref(prefs::kNTPPromoStart, 0);
+  prefs_->RegisterDoublePref(prefs::kNTPPromoEnd, 0);
   prefs_->RegisterStringPref(prefs::kNTPPromoLine, std::string());
   prefs_->RegisterBooleanPref(prefs::kNTPPromoClosed, false);
   prefs_->RegisterIntegerPref(prefs::kNTPPromoGroup, -1);
@@ -255,8 +255,8 @@ void WebResourceService::Init() {
 
   // If the promo start is in the future, set a notification task to invalidate
   // the NTP cache at the time of the promo start.
-  double promo_start = prefs_->GetReal(prefs::kNTPPromoStart);
-  double promo_end = prefs_->GetReal(prefs::kNTPPromoEnd);
+  double promo_start = prefs_->GetDouble(prefs::kNTPPromoStart);
+  double promo_end = prefs_->GetDouble(prefs::kNTPPromoEnd);
   ScheduleNotification(promo_start, promo_end);
 }
 
@@ -391,8 +391,8 @@ void WebResourceService::UnpackPromoSignal(const DictionaryValue& parsed_json) {
   // Check for preexisting start and end values.
   if (prefs_->HasPrefPath(prefs::kNTPPromoStart) &&
       prefs_->HasPrefPath(prefs::kNTPPromoEnd)) {
-    old_promo_start = prefs_->GetReal(prefs::kNTPPromoStart);
-    old_promo_end = prefs_->GetReal(prefs::kNTPPromoEnd);
+    old_promo_start = prefs_->GetDouble(prefs::kNTPPromoStart);
+    old_promo_end = prefs_->GetDouble(prefs::kNTPPromoEnd);
   }
 
   // Check for newly received start and end values.
@@ -473,8 +473,8 @@ void WebResourceService::UnpackPromoSignal(const DictionaryValue& parsed_json) {
   // Also reset the promo closed preference, to signal a new promo.
   if (!(old_promo_start == promo_start) ||
       !(old_promo_end == promo_end)) {
-    prefs_->SetReal(prefs::kNTPPromoStart, promo_start);
-    prefs_->SetReal(prefs::kNTPPromoEnd, promo_end);
+    prefs_->SetDouble(prefs::kNTPPromoStart, promo_start);
+    prefs_->SetDouble(prefs::kNTPPromoEnd, promo_end);
     prefs_->SetBoolean(prefs::kNTPPromoClosed, false);
     ScheduleNotification(promo_start, promo_end);
   }
@@ -491,8 +491,8 @@ void WebResourceService::UnpackLogoSignal(const DictionaryValue& parsed_json) {
   // Check for preexisting start and end values.
   if (prefs_->HasPrefPath(prefs::kNTPCustomLogoStart) &&
       prefs_->HasPrefPath(prefs::kNTPCustomLogoEnd)) {
-    old_logo_start = prefs_->GetReal(prefs::kNTPCustomLogoStart);
-    old_logo_end = prefs_->GetReal(prefs::kNTPCustomLogoEnd);
+    old_logo_start = prefs_->GetDouble(prefs::kNTPCustomLogoStart);
+    old_logo_end = prefs_->GetDouble(prefs::kNTPCustomLogoEnd);
   }
 
   // Check for newly received start and end values.
@@ -538,8 +538,8 @@ void WebResourceService::UnpackLogoSignal(const DictionaryValue& parsed_json) {
   // dates counts as a triggering change if there were dates before.
   if (!(old_logo_start == logo_start) ||
       !(old_logo_end == logo_end)) {
-    prefs_->SetReal(prefs::kNTPCustomLogoStart, logo_start);
-    prefs_->SetReal(prefs::kNTPCustomLogoEnd, logo_end);
+    prefs_->SetDouble(prefs::kNTPCustomLogoStart, logo_start);
+    prefs_->SetDouble(prefs::kNTPCustomLogoEnd, logo_end);
     NotificationService* service = NotificationService::current();
     service->Notify(NotificationType::WEB_RESOURCE_STATE_CHANGED,
                     Source<WebResourceService>(this),

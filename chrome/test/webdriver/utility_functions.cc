@@ -35,8 +35,8 @@ std::wstring print_valuetype(Value::ValueType e) {
       return L"BOOL";
     case Value::TYPE_INTEGER:
       return L"INT";
-    case Value::TYPE_REAL:
-      return L"REAL";
+    case Value::TYPE_DOUBLE:
+      return L"DOUBLE";
     case Value::TYPE_STRING:
       return L"STRING";
     case Value::TYPE_BINARY:

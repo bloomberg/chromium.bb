@@ -196,7 +196,7 @@ void ExtensionWebNavigationEventRouter::FrameProvisionalLoadStart(
   dict->SetString(keys::kUrlKey, details->url().spec());
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(details));
   dict->SetInteger(keys::kRequestIdKey, 0);
-  dict->SetReal(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
   std::string json_args;
@@ -221,7 +221,7 @@ void ExtensionWebNavigationEventRouter::FrameProvisionalLoadCommitted(
   dict->SetString(keys::kTransitionQualifiersKey,
                   PageTransition::QualifierString(
                       details->transition_type()));
-  dict->SetReal(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
   std::string json_args;
@@ -241,7 +241,7 @@ void ExtensionWebNavigationEventRouter::FrameDomContentLoaded(
   dict->SetString(keys::kUrlKey, navigation_state_.GetUrl(frame_id).spec());
   dict->SetInteger(keys::kFrameIdKey,
       navigation_state_.IsMainFrame(frame_id) ? 0 : static_cast<int>(frame_id));
-  dict->SetReal(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
   std::string json_args;
@@ -261,7 +261,7 @@ void ExtensionWebNavigationEventRouter::FrameDidFinishLoad(
   dict->SetString(keys::kUrlKey, navigation_state_.GetUrl(frame_id).spec());
   dict->SetInteger(keys::kFrameIdKey,
       navigation_state_.IsMainFrame(frame_id) ? 0 : static_cast<int>(frame_id));
-  dict->SetReal(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
   std::string json_args;
@@ -282,7 +282,7 @@ void ExtensionWebNavigationEventRouter::FailProvisionalLoadWithError(
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(details));
   dict->SetString(keys::kErrorKey,
                   std::string(net::ErrorToString(details->error_code())));
-  dict->SetReal(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
   std::string json_args;
@@ -301,7 +301,7 @@ void ExtensionWebNavigationEventRouter::CreatingNewWindow(
   dict->SetString(keys::kSourceUrlKey, details->opener_url.spec());
   dict->SetString(keys::kTargetUrlKey,
                   details->target_url.possibly_invalid_spec());
-  dict->SetReal(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
   std::string json_args;

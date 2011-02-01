@@ -55,7 +55,7 @@ bool CookieApiResult::CreateCookieValue(const CookieInfo& cookie_info) {
   cookie->SetBoolean(keys::kHttpOnlyKey, cookie_info.http_only == TRUE);
   cookie->SetBoolean(keys::kSessionKey, cookie_info.session == TRUE);
   if (cookie_info.session == FALSE)
-    cookie->SetReal(keys::kExpirationDateKey, cookie_info.expiration_date);
+    cookie->SetDouble(keys::kExpirationDateKey, cookie_info.expiration_date);
   cookie->SetString(keys::kStoreIdKey, com::ToString(cookie_info.store_id));
   DCHECK(value() == NULL);
   set_value(cookie.release());
