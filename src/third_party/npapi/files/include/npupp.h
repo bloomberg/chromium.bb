@@ -54,18 +54,10 @@
 #endif
 
 #ifndef _NPAPI_H_
-#ifdef __native_client__
-#include <nacl/npapi.h>
-#else
 #include "third_party/npapi/bindings/npapi.h"
 #endif
-#endif
 
-#ifdef __native_client__
-#include <nacl/npruntime.h>
-#else
 #include "third_party/npapi/bindings/npruntime.h"
-#endif
 
 /******************************************************************************************
    plug-in function table macros

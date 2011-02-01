@@ -23,8 +23,7 @@ env.Replace(
 # Check that all the libraries were installed, a simple test builds and links.
 env.ComponentProgram('libs_present_test.nexe',
                      ['libs_present_test.cc',
-                      'libs_present_stub.cc',
-                      'npp_gate.c'],
+                      'libs_present_stub.cc'],
                      # This list should include all the libraries published
                      # into the SDK.
                      LIBS=['c',
@@ -34,7 +33,6 @@ env.ComponentProgram('libs_present_test.nexe',
                            'pthread',
                            'srpc',
                            'google_nacl_imc',
-                           'google_nacl_npruntime',
                            'nosys'])
 
 # Check that GDB can print backtrace.

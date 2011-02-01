@@ -44,10 +44,7 @@
 #include <iostream>
 #include <nacl/nacl_av.h>
 #include <nacl/nacl_imc.h>
-#include <nacl/nacl_npapi.h>
 #include <nacl/nacl_srpc.h>
-#include <nacl/npruntime.h>
-#include <nacl/npupp.h>
 
 
 // Dummy variables used to hold return values.
@@ -56,13 +53,6 @@ double double_value;
 pthread_t pthread_t_value;
 const char* char_ptr_value;
 char char_array_value[128];
-
-extern "C" {
-  // For npruntime support.
-NPClass *GetNPSimpleClass() {
-  return NULL;
-}
-}
 
 static void TestLibsPresent() {
   // This code should invoke one method from each exported library to
@@ -79,11 +69,6 @@ static void TestLibsPresent() {
   // Test that libgoogle_nacl_imc is present.
   if (run_tests)
     nacl::Close(nacl::kInvalidHandle);
-
-  // Test that libgoogle_nacl_npruntime is present.
-  if (run_tests) {
-    NPN_SetException(NULL, "This exception should never be raised.");
-  }
 
   // Test that libpthread is present.
   if (run_tests)
@@ -110,9 +95,4 @@ int main(int argc, char **argv) {
   // printf tests that libc is present.
   printf("PASS\n");
   return 0;
-}
-
-extern "C" NPError NP_Initialize(NPNetscapeFuncs* browser_funcs,
-                                 NPPluginFuncs* plugin_funcs) {
-  return NPERR_NO_ERROR;
 }

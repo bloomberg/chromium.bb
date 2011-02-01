@@ -706,50 +706,6 @@ void TestOverlappingLaunch() {
   DestroyPluginInstance(plugin_instance, false);
 }
 
-// This tests for a memory and thread leak.  See:
-// http://code.google.com/p/nativeclient/issues/detail?id=792
-// The leak is detected by valgrind, using "--leak-check=full", but
-// not by this test on its own.
-void TestNPModuleLeak() {
-  printf("Test running multiple NPAPI-over-SRPC processes...\n");
-  const char* nexe_url = "http://localhost/npapi_hw.nexe";
-
-  NPMIMEType mime_type = const_cast<char*>("application/x-nacl-srpc");
-  NPP plugin_instance = new NPP_t;
-  CheckRetval(plugin_funcs.newp(mime_type, plugin_instance, NP_EMBED,
-                                0, NULL, NULL, NULL));
-
-  NPObject* plugin_obj;
-  CheckRetval(plugin_funcs.getvalue(plugin_instance,
-                                    NPPVpluginScriptableNPObject, &plugin_obj));
-  NPVariant url;
-  STRINGZ_TO_NPVARIANT(nexe_url, url);
-  // In order to expose the leak, we have to assign to the "src"
-  // attribute twice without allowing the first executable download to
-  // finish inbetween.
-  CHECK(fb_NPN_SetProperty(plugin_instance, plugin_obj,
-                           fb_NPN_GetStringIdentifier("src"), &url));
-  CHECK(fb_NPN_SetProperty(plugin_instance, plugin_obj,
-                           fb_NPN_GetStringIdentifier("src"), &url));
-  fb_NPN_ReleaseObject(plugin_obj);
-  // Now allow the download to complete.
-  RunQueuedCallbacks(plugin_instance);
-
-  // Test invoking an NPAPI method, to check that the second launched
-  // process works as expected.
-  NPVariant result;
-  CHECK(fb_NPN_Invoke(plugin_instance, plugin_obj,
-                      fb_NPN_GetStringIdentifier("helloworld"), NULL, 0,
-                      &result));
-  CHECK(NPVARIANT_IS_STRING(result));
-  std::string actual(result.value.stringValue.UTF8Characters,
-                     result.value.stringValue.UTF8Length);
-  AssertStringsEqual(actual, "hello, world.");
-  fb_NPN_ReleaseVariantValue(&result);
-
-  DestroyPluginInstance(plugin_instance, false);
-}
-
 void TestAsyncMessages() {
   printf("Test asynchronous messages...\n");
   const char* nexe_url = "http://localhost/async_message_test.nexe";
@@ -970,13 +926,9 @@ int main(int argc, char** argv) {
   printf("Test running srpc_hw...\n");
   TestHelloWorldMethod("http://localhost/srpc_hw.nexe", true);
 
-  printf("Test running npapi_hw...\n");
-  TestHelloWorldMethod("http://localhost/npapi_hw.nexe", true);
-
   TestMissingSrpcInit();
 
   TestOverlappingLaunch();
-  TestNPModuleLeak();
 
   TestAsyncMessages();
 
