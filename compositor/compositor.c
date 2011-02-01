@@ -772,6 +772,7 @@ notify_button(struct wl_input_device *device,
 		(struct wlsc_compositor *) device->compositor;
 
 	surface = (struct wlsc_surface *) device->pointer_focus;
+	uint32_t edges = 0;
 
 	if (state && surface && device->grab == NULL) {
 		wlsc_surface_raise(surface);
@@ -794,11 +795,22 @@ notify_button(struct wl_input_device *device,
 			   (struct wl_shell *) &compositor->shell,
 			   &surface->surface, device, time);
 	else if (state && surface && button == BTN_MIDDLE &&
-		 (wd->modifier_state & MODIFIER_SUPER))
+		 (wd->modifier_state & MODIFIER_SUPER)) {
+
+		if ((device->grab_x - surface->x) < surface->width / 2)
+			edges |= WL_SHELL_RESIZE_LEFT;
+		else
+			edges |= WL_SHELL_RESIZE_RIGHT;
+
+		if ((device->grab_y - surface->y) < surface->height / 2)
+			edges |= WL_SHELL_RESIZE_TOP;
+		else
+			edges |= WL_SHELL_RESIZE_BOTTOM;
+
 		shell_resize(NULL,
 			     (struct wl_shell *) &compositor->shell,
-			     &surface->surface, device, time,
-			     WL_SHELL_RESIZE_BOTTOM_RIGHT);
+			     &surface->surface, device, time, edges);
+	}
 
 	if (device->grab)
 		device->grab->interface->button(device->grab, time,
