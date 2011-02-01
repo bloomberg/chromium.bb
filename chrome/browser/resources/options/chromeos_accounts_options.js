@@ -33,7 +33,6 @@ cr.define('options', function() {
 
       // Set up accounts page.
       var userList = $('userList');
-      options.accounts.UserList.decorate(userList);
 
       var userNameEdit = $('userNameEdit');
       options.accounts.UserNameEdit.decorate(userNameEdit);
@@ -41,8 +40,11 @@ cr.define('options', function() {
 
       userList.disabled =
       userNameEdit.disabled = !AccountsOptions.currentUserIsOwner();
-      // If the current user is not the owner, show some warning.
-      if (!AccountsOptions.currentUserIsOwner()) {
+      // If the current user is not the owner, show some warning,
+      // and do not show the user list.
+      if (AccountsOptions.currentUserIsOwner()) {
+        options.accounts.UserList.decorate(userList);
+      } else {
         $('ownerOnlyWarning').classList.remove('hidden');
       }
 
