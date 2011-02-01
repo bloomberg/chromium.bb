@@ -245,6 +245,11 @@ display_create_drm_surface(struct display *display,
 	image_attribs[3] = rectangle->height;
 	data->image = eglCreateDRMImageMESA(dpy, image_attribs);
 
+	if (data->image == EGL_NO_IMAGE_KHR) {
+		free(data);
+		return NULL;
+	}
+
 	cairo_device_acquire(display->device);
 	glGenTextures(1, &data->texture);
 	glBindTexture(GL_TEXTURE_2D, data->texture);
@@ -313,6 +318,11 @@ display_create_drm_surface_from_file(struct display *display,
 	}
 
 	surface = display_create_drm_surface(display, rect);
+	if (surface == NULL) {
+		g_object_unref(pixbuf);
+		return NULL;
+	}
+
 	data = cairo_surface_get_user_data(surface, &surface_data_key);
 
 	cairo_device_acquire(display->device);
@@ -442,6 +452,11 @@ display_create_shm_surface_from_file(struct display *display,
 	pixels = gdk_pixbuf_get_pixels(pixbuf);
 
 	surface = display_create_shm_surface(display, rect);
+	if (surface == NULL) {
+		g_object_unref(pixbuf);
+		return NULL;
+	}
+
 	dest_data = cairo_image_surface_get_data (surface);
 	dest_stride = cairo_image_surface_get_stride (surface);
 
@@ -467,10 +482,23 @@ display_create_shm_surface_from_file(struct display *display,
 	return surface;
 }
 
+static int
+check_size(struct rectangle *rect)
+{
+	if (rect->width && rect->height)
+		return 0;
+
+	fprintf(stderr, "tried to create surface of "
+		"width: %d, height: %d\n", rect->width, rect->height);
+	return -1;
+}
+
 cairo_surface_t *
 display_create_surface(struct display *display,
 		       struct rectangle *rectangle)
 {
+	if (check_size(rectangle) < 0)
+		return NULL;
 #ifdef HAVE_CAIRO_EGL
 	if (display->drm) {
 		return display_create_drm_surface(display, rectangle);
@@ -484,6 +512,8 @@ display_create_surface_from_file(struct display *display,
 				 const char *filename,
 				 struct rectangle *rectangle)
 {
+	if (check_size(rectangle) < 0)
+		return NULL;
 #ifdef HAVE_CAIRO_EGL
 	if (display->drm) {
 		return display_create_drm_surface_from_file(display, filename, rectangle);
