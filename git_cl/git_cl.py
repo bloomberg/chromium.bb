@@ -12,6 +12,7 @@ import sys
 import tempfile
 import textwrap
 import upload
+import urlparse
 import urllib2
 
 try:
@@ -1177,7 +1178,8 @@ def GetTreeStatusReason():
       print >> sys.stderr, 'Please install simplejson'
       sys.exit(1)
 
-  json_url = 'http://chromium-status.appspot.com/current?format=json'
+  url = settings.GetTreeStatusUrl()
+  json_url = urlparse.urljoin(url, '/current?format=json')
   connection = urllib2.urlopen(json_url)
   status = json.loads(connection.read())
   connection.close()
