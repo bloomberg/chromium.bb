@@ -188,7 +188,7 @@ void DevToolsHttpProtocolHandler::OnHttpRequestUI(
       "    if (!attached) {"
       "        var a = document.createElement('a');"
       "        a.textContent = url;"
-      "        a.href = frontendUrl + '?remotehost=' + window.location.host +"
+      "        a.href = frontendUrl + '?host=' + window.location.host +"
       "            '&page=' + id;"
       "        document.body.appendChild(a);"
       "    } else {"
