@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
-#include "chrome/browser/ui/gtk/infobar_arrow_model.h"
+#include "chrome/browser/ui/gtk/infobars/infobar_arrow_model.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #include "chrome/common/notification_observer.h"

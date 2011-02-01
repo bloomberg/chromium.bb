@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/infobar_arrow_model.h"
+#include "chrome/browser/ui/gtk/infobars/infobar_arrow_model.h"
 
 #include "chrome/browser/ui/gtk/infobar_gtk.h"
 #include "gfx/canvas_skia_paint.h"

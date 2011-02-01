@@ -16,7 +16,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/ui/gtk/infobar_arrow_model.h"
+#include "chrome/browser/ui/gtk/infobars/infobar_arrow_model.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/rect.h"
 #include "ui/base/gtk/gtk_signal.h"
