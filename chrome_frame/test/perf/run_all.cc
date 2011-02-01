@@ -28,7 +28,8 @@ int main(int argc, char **argv) {
 
   // Use ctor/raii to register the local Chrome Frame dll.
   scoped_ptr<ScopedChromeFrameRegistrar> registrar(
-      new ScopedChromeFrameRegistrar);
+      new ScopedChromeFrameRegistrar(
+          ScopedChromeFrameRegistrar::SYSTEM_LEVEL));
   int ret = perf_suite.Run();
 
   DeleteConfigValue(kChromeFrameHeadlessMode);

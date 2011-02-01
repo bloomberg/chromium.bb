@@ -33,7 +33,8 @@ int main(int argc, char **argv) {
 
     // Run() must be called within the scope of the ScopedChromeFrameRegistrar
     // to ensure that the correct DLL remains registered during the tests.
-    ScopedChromeFrameRegistrar scoped_chrome_frame_registrar(dll_path);
+    ScopedChromeFrameRegistrar scoped_chrome_frame_registrar(
+        dll_path, ScopedChromeFrameRegistrar::SYSTEM_LEVEL);
     result = test_suite.Run();
   } else {
     result = test_suite.Run();

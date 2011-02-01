@@ -672,4 +672,12 @@ bool KillProcesses(const std::wstring& executable_name, int exit_code,
   return result;
 }
 
+ScopedChromeFrameRegistrar::RegistrationType GetTestBedType() {
+  if (GetConfigBool(false, L"PerUserTestBed")) {
+    return ScopedChromeFrameRegistrar::PER_USER;
+  } else {
+    return ScopedChromeFrameRegistrar::SYSTEM_LEVEL;
+  }
+}
+
 }  // namespace chrome_frame_test

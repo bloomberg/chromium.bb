@@ -38,6 +38,7 @@
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/net/test_automation_resource_message_filter.h"
 #include "chrome_frame/test/simulate_input.h"
+#include "chrome_frame/test_utils.h"
 #include "chrome_frame/test/win_event_receiver.h"
 #include "chrome_frame/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -501,6 +502,9 @@ int main(int argc, char** argv) {
     LOG(INFO) << "Not running ChromeFrame net tests on IE9";
     return 0;
   }
+
+  ScopedChromeFrameRegistrar registrar(chrome_frame_test::GetTestBedType());
+
   WindowWatchdog watchdog;
   // See url_request_unittest.cc for these credentials.
   SupplyProxyCredentials credentials("user", "secret");

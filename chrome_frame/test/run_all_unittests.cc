@@ -81,12 +81,12 @@ int main(int argc, char **argv) {
     // AtExitManager.
     // TODO(robertshield): Make these tests restore the original registration
     // once done.
-    ScopedChromeFrameRegistrar registrar;
+    ScopedChromeFrameRegistrar registrar(chrome_frame_test::GetTestBedType());
 
     // Register IAccessible2 proxy stub DLL, needed for some tests.
     ScopedChromeFrameRegistrar ia2_registrar(
-        chrome_frame_test::GetIAccessible2ProxyStubPath().value());
-
+        chrome_frame_test::GetIAccessible2ProxyStubPath().value(),
+        ScopedChromeFrameRegistrar::SYSTEM_LEVEL);
     ret = test_suite.Run();
   }
 

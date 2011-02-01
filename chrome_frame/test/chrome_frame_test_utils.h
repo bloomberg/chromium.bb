@@ -328,6 +328,9 @@ class ScopedVirtualizeHklmAndHkcu {
 bool KillProcesses(const std::wstring& executable_name, int exit_code,
                    bool wait);
 
+// Returns the type of test bed, PER_USER or SYSTEM_LEVEL.
+ScopedChromeFrameRegistrar::RegistrationType GetTestBedType();
+
 }  // namespace chrome_frame_test
 
 // TODO(tommi): This is a temporary workaround while we're getting our

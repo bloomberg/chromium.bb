@@ -25,8 +25,14 @@ extern const wchar_t kChromeLauncherExeName[];
 // registered chrome frame DLL (e.g. by looking in HKCR) on destruction.
 class ScopedChromeFrameRegistrar {
  public:
-  ScopedChromeFrameRegistrar();
-  explicit ScopedChromeFrameRegistrar(const std::wstring& path);
+  enum RegistrationType {
+    PER_USER,
+    SYSTEM_LEVEL,
+  };
+
+  explicit ScopedChromeFrameRegistrar(RegistrationType registration_type);
+  ScopedChromeFrameRegistrar(const std::wstring& path,
+                             RegistrationType registration_type);
   virtual ~ScopedChromeFrameRegistrar();
 
   void RegisterChromeFrameAtPath(const std::wstring& path);
@@ -36,8 +42,10 @@ class ScopedChromeFrameRegistrar {
   std::wstring GetChromeFrameDllPath() const;
 
   static FilePath GetChromeFrameBuildPath();
-  static void RegisterAtPath(const std::wstring& path);
-  static void UnregisterAtPath(const std::wstring& path);
+  static void RegisterAtPath(const std::wstring& path,
+                             RegistrationType registration_type);
+  static void UnregisterAtPath(const std::wstring& path,
+                               RegistrationType registration_type);
   static void RegisterDefaults();
   static FilePath GetReferenceChromeFrameDllPath();
 
@@ -47,6 +55,9 @@ class ScopedChromeFrameRegistrar {
 
   // Contains the path of the Chrome Frame DLL to be registered at destruction.
   std::wstring original_dll_path_;
+
+  // Indicates whether per user or per machine registration is needed.
+  RegistrationType registration_type_;
 };
 
 // Callback description for onload, onloaderror, onmessage

@@ -389,7 +389,8 @@ class ChromeFrameStartupTestActiveX : public ChromeFrameStartupTest {
  public:
   virtual void SetUp() {
     // Register the Chrome Frame DLL in the build directory.
-    chrome_frame_registrar_.reset(new ScopedChromeFrameRegistrar);
+    chrome_frame_registrar_.reset(new ScopedChromeFrameRegistrar(
+        ScopedChromeFrameRegistrar::SYSTEM_LEVEL));
 
     ChromeFrameStartupTest::SetUp();
   }
@@ -457,7 +458,8 @@ class ChromeFrameStartupTestActiveXReference
   // override the browser directory to use the reference build instead.
   virtual void SetUp() {
     // Register the reference build Chrome Frame DLL.
-    chrome_frame_registrar_.reset(new ScopedChromeFrameRegistrar);
+    chrome_frame_registrar_.reset(new ScopedChromeFrameRegistrar(
+        ScopedChromeFrameRegistrar::SYSTEM_LEVEL));
     chrome_frame_registrar_->RegisterReferenceChromeFrameBuild();
 
     ChromeFrameStartupTest::SetUp();
@@ -567,7 +569,8 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
 
   virtual void SetUp() {
     // Register the Chrome Frame DLL in the build directory.
-    chrome_frame_registrar_.reset(new ScopedChromeFrameRegistrar);
+    chrome_frame_registrar_.reset(new ScopedChromeFrameRegistrar(
+        ScopedChromeFrameRegistrar::SYSTEM_LEVEL));
   }
 
   void RunTest(const char* test_name, char* urls[], int total_urls) {
@@ -748,7 +751,8 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
 class ChromeFrameMemoryTestReference : public ChromeFrameMemoryTest {
  public:
   virtual void SetUp() {
-    chrome_frame_registrar_.reset(new ScopedChromeFrameRegistrar);
+    chrome_frame_registrar_.reset(new ScopedChromeFrameRegistrar(
+        ScopedChromeFrameRegistrar::SYSTEM_LEVEL));
     chrome_frame_registrar_->RegisterReferenceChromeFrameBuild();
   }
 
@@ -872,7 +876,8 @@ class ChromeFrameCreationTestReference : public ChromeFrameCreationTest {
  public:
   // override the browser directory to use the reference build instead.
   virtual void SetUp() {
-    chrome_frame_registrar_.reset(new ScopedChromeFrameRegistrar);
+    chrome_frame_registrar_.reset(new ScopedChromeFrameRegistrar(
+        ScopedChromeFrameRegistrar::SYSTEM_LEVEL));
     chrome_frame_registrar_->RegisterReferenceChromeFrameBuild();
     ChromeFrameStartupTest::SetUp();
   }

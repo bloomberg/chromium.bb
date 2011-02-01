@@ -464,6 +464,8 @@
         'test/net/test_automation_resource_message_filter.cc',
         'test/net/test_automation_resource_message_filter.h',
         'chrome_tab.h',
+        'test_utils.cc',
+        'test_utils.h',
       ],
       'conditions': [
         ['OS=="win"', {

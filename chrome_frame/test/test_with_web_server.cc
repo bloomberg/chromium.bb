@@ -929,14 +929,16 @@ const wchar_t kInstallFlowTestUrl[] =
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_InstallFlowTest) {
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     ScopedChromeFrameRegistrar::UnregisterAtPath(
-        ScopedChromeFrameRegistrar::GetChromeFrameBuildPath().value());
+        ScopedChromeFrameRegistrar::GetChromeFrameBuildPath().value(),
+        chrome_frame_test::GetTestBedType());
 
     ASSERT_TRUE(LaunchBrowser(IE, kInstallFlowTestUrl));
 
     loop_.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
     ScopedChromeFrameRegistrar::RegisterAtPath(
-        ScopedChromeFrameRegistrar::GetChromeFrameBuildPath().value());
+        ScopedChromeFrameRegistrar::GetChromeFrameBuildPath().value(),
+        chrome_frame_test::GetTestBedType());
 
     server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
                                              kPostedResultSubstring);
