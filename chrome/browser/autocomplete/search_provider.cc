@@ -170,6 +170,9 @@ void SearchProvider::Start(const AutocompleteInput& input,
       default_provider_suggest_text_.clear();
     else
       Stop();
+  } else if (minimal_changes &&
+             (input_.original_text() != input.original_text())) {
+    default_provider_suggest_text_.clear();
   }
 
   providers_.Set(default_provider, keyword_provider);

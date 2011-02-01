@@ -61,7 +61,8 @@ class SearchProviderTest : public testing::Test,
 
   // Invokes Start on provider_, then runs all pending tasks.
   void QueryForInput(const string16& text,
-                     bool prevent_inline_autocomplete);
+                     bool prevent_inline_autocomplete,
+                     bool minimal_changes);
 
   // Notifies the URLFetcher for the suggest query corresponding to the default
   // search provider that it's done.
@@ -171,11 +172,12 @@ void SearchProviderTest::RunTillProviderDone() {
 }
 
 void SearchProviderTest::QueryForInput(const string16& text,
-                                       bool prevent_inline_autocomplete) {
+                                       bool prevent_inline_autocomplete,
+                                       bool minimal_changes) {
   // Start a query.
   AutocompleteInput input(text, string16(), prevent_inline_autocomplete,
                           false, true, false);
-  provider_->Start(input, false);
+  provider_->Start(input, minimal_changes);
 
   // RunAllPending so that the task scheduled by SearchProvider to create the
   // URLFetchers runs.
@@ -218,7 +220,7 @@ void SearchProviderTest::FinishDefaultSuggestQuery() {
 // created for the default provider suggest results.
 TEST_F(SearchProviderTest, QueryDefaultProvider) {
   string16 term = term1_.substr(0, term1_.size() - 1);
-  QueryForInput(term, false);
+  QueryForInput(term, false, false);
 
   // Make sure the default providers suggest service was queried.
   TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
@@ -259,7 +261,7 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
 
 TEST_F(SearchProviderTest, HonorPreventInlineAutocomplete) {
   string16 term = term1_.substr(0, term1_.size() - 1);
-  QueryForInput(term, true);
+  QueryForInput(term, true, false);
 
   ASSERT_FALSE(provider_->matches().empty());
   ASSERT_EQ(AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
@@ -270,8 +272,8 @@ TEST_F(SearchProviderTest, HonorPreventInlineAutocomplete) {
 // is queried as well as URLFetchers getting created.
 TEST_F(SearchProviderTest, QueryKeywordProvider) {
   string16 term = keyword_term_.substr(0, keyword_term_.size() - 1);
-  QueryForInput(keyword_t_url_->keyword() +
-                UTF8ToUTF16(" ") + term, false);
+  QueryForInput(keyword_t_url_->keyword() + UTF8ToUTF16(" ") + term, false,
+                false);
 
   // Make sure the default providers suggest service was queried.
   TestURLFetcher* default_fetcher = test_factory_.GetFetcherByID(
@@ -334,7 +336,7 @@ TEST_F(SearchProviderTest, DontSendPrivateDataToSuggest) {
   };
 
   for (size_t i = 0; i < arraysize(inputs); ++i) {
-    QueryForInput(ASCIIToUTF16(inputs[i]), false);
+    QueryForInput(ASCIIToUTF16(inputs[i]), false, false);
     // Make sure the default providers suggest service was not queried.
     ASSERT_TRUE(test_factory_.GetFetcherByID(
         SearchProvider::kDefaultProviderURLFetcherID) == NULL);
@@ -348,7 +350,7 @@ TEST_F(SearchProviderTest, FinalizeInstantQuery) {
   PrefService* service = profile_.GetPrefs();
   service->SetBoolean(prefs::kInstantEnabled, true);
 
-  QueryForInput(ASCIIToUTF16("foo"), false);
+  QueryForInput(ASCIIToUTF16("foo"), false, false);
 
   // Wait until history and the suggest query complete.
   profile_.BlockUntilHistoryProcessesPendingRequests();
@@ -393,7 +395,7 @@ TEST_F(SearchProviderTest, RememberInstantQuery) {
   PrefService* service = profile_.GetPrefs();
   service->SetBoolean(prefs::kInstantEnabled, true);
 
-  QueryForInput(ASCIIToUTF16("foo"), false);
+  QueryForInput(ASCIIToUTF16("foo"), false, false);
 
   // Finalize the instant query immediately.
   provider_->FinalizeInstantQuery(ASCIIToUTF16("foo"), ASCIIToUTF16("bar"));
@@ -421,4 +423,31 @@ TEST_F(SearchProviderTest, RememberInstantQuery) {
 
   // And the 'foobar' match should have a description.
   EXPECT_FALSE(instant_match.description.empty());
+}
+
+// Make sure that if trailing whitespace is added to the text supplied to
+// AutocompleteInput the default suggest text is cleared.
+TEST_F(SearchProviderTest, DifferingText) {
+  PrefService* service = profile_.GetPrefs();
+  service->SetBoolean(prefs::kInstantEnabled, true);
+
+  QueryForInput(ASCIIToUTF16("foo"), false, false);
+
+  // Wait until history and the suggest query complete.
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+  ASSERT_NO_FATAL_FAILURE(FinishDefaultSuggestQuery());
+
+  // Finalize the instant query immediately.
+  provider_->FinalizeInstantQuery(ASCIIToUTF16("foo"), ASCIIToUTF16("bar"));
+
+  // Query with input that ends up getting trimmed to be the same as was
+  // originally supplied.
+  QueryForInput(ASCIIToUTF16("foo "), false, true);
+
+  // There should only one match, for what you typed.
+  EXPECT_EQ(1u, provider_->matches().size());
+  GURL instant_url = GURL(default_t_url_->url()->ReplaceSearchTerms(
+      *default_t_url_, ASCIIToUTF16("foo"), 0, string16()));
+  AutocompleteMatch instant_match = FindMatchWithDestination(instant_url);
+  EXPECT_FALSE(instant_match.destination_url.is_empty());
 }
