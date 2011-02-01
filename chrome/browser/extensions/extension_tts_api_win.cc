@@ -107,8 +107,12 @@ bool ExtensionTtsPlatformImplWin::IsSpeaking() {
   if (speech_synthesizer_ && !paused_) {
     SPVOICESTATUS status;
     HRESULT result = speech_synthesizer_->GetStatus(&status, NULL);
-    if (result == S_OK && status.dwRunningState == SPRS_IS_SPEAKING)
-      return true;
+    if (result == S_OK) {
+      if (status.dwRunningState == 0 ||  // 0 == waiting to speak
+          status.dwRunningState == SPRS_IS_SPEAKING) {
+        return true;
+      }
+    }
   }
   return false;
 }
