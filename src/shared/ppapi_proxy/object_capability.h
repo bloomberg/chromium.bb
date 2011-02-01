@@ -39,16 +39,6 @@ class ObjectCapability {
     object_id_ = object_id;
   }
 
-  // Copies the specified capability value to this capability.
-  ObjectCapability& CopyFrom(const ObjectCapability& capability) {
-    pid_ = capability.pid_;
-    object_id_ = capability.object_id_;
-    return *this;
-  }
-
-  char* char_addr() { return reinterpret_cast<char*>(this); }
-  uint32_t size() { return static_cast<uint32_t>(sizeof(*this)); }
-
  private:
   uint64_t object_id_;  // The object_id from a PP_Var in the owner process.
   int64_t pid_;         // The process ID that has the object.
