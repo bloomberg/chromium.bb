@@ -1,0 +1,44 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ui/views/events/event.h"
+
+#include "ui/views/view.h"
+
+namespace ui {
+
+////////////////////////////////////////////////////////////////////////////////
+// Event, protected:
+
+Event::Event(EventType type, int flags)
+    : type_(type),
+      flags_(flags) {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LocatedEvent, protected:
+
+LocatedEvent::LocatedEvent(EventType type,
+                           const gfx::Point& location,
+                           int flags)
+    : Event(type, flags),
+      location_(location) {
+}
+
+LocatedEvent::LocatedEvent(const LocatedEvent& other,
+                           View* source,
+                           View* target)
+    : Event(other.type(), other.flags()) {
+  location_ = other.location();
+  View::ConvertPointToView(source, target, &location_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// MouseEvent, public:
+
+MouseEvent::MouseEvent(const MouseEvent& other, View* source, View* target)
+    : LocatedEvent(other, source, target) {
+}
+
+}  // namespace views
