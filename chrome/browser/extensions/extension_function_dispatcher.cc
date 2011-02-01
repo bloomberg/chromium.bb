@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
-#include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
+#include "chrome/browser/dom_ui/web_ui_favicon_source.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
@@ -386,10 +386,10 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
                                 render_view_host->process()->id());
 
   // If the extension has permission to load chrome://favicon/ resources we need
-  // to make sure that the DOMUIFavIconSource is registered with the
+  // to make sure that the WebUIFavIconSource is registered with the
   // ChromeURLDataManager.
   if (extension->HasHostPermission(GURL(chrome::kChromeUIFavIconURL))) {
-    DOMUIFavIconSource* favicon_source = new DOMUIFavIconSource(profile_);
+    WebUIFavIconSource* favicon_source = new WebUIFavIconSource(profile_);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(ChromeURLDataManager::GetInstance(),

@@ -20,8 +20,8 @@
 #include "base/weak_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
+#include "chrome/browser/dom_ui/web_ui_favicon_source.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
@@ -427,7 +427,7 @@ DOMMessageHandler* FilebrowseHandler::Attach(DOMUI* dom_ui) {
       NewRunnableMethod(
           ChromeURLDataManager::GetInstance(),
           &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(new DOMUIFavIconSource(dom_ui->GetProfile()))));
+          make_scoped_refptr(new WebUIFavIconSource(dom_ui->GetProfile()))));
   profile_ = dom_ui->GetProfile();
   tab_contents_ = dom_ui->tab_contents();
   return DOMMessageHandler::Attach(dom_ui);

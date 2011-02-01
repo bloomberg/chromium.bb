@@ -194,7 +194,7 @@ ChromeURLDataManager* ChromeURLDataManager::GetInstance() {
 
 void ChromeURLDataManager::AddDataSource(scoped_refptr<DataSource> source) {
   // Some |DataSource|-derived classes, notably |FileIconSource| and
-  // |DOMUIFavIconSource|, have members that will DCHECK if they are not
+  // |WebUIFavIconSource|, have members that will DCHECK if they are not
   // destructed in the same thread as they are constructed (the UI thread).
   //
   // If |AddDataSource| is called more than once, it will destruct the object

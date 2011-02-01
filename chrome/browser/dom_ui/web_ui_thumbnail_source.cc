@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/dom_ui_thumbnail_source.h"
+#include "chrome/browser/dom_ui/web_ui_thumbnail_source.h"
 
 #include "base/callback.h"
 #include "chrome/browser/profiles/profile.h"
@@ -12,17 +12,17 @@
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
-DOMUIThumbnailSource::DOMUIThumbnailSource(Profile* profile)
+WebUIThumbnailSource::WebUIThumbnailSource(Profile* profile)
     : DataSource(chrome::kChromeUIThumbnailPath, MessageLoop::current()),
       profile_(profile) {
   // Set TopSites now as Profile isn't thread safe.
   top_sites_ = profile_->GetTopSites();
 }
 
-DOMUIThumbnailSource::~DOMUIThumbnailSource() {
+WebUIThumbnailSource::~WebUIThumbnailSource() {
 }
 
-void DOMUIThumbnailSource::StartDataRequest(const std::string& path,
+void WebUIThumbnailSource::StartDataRequest(const std::string& path,
                                             bool is_off_the_record,
                                             int request_id) {
   scoped_refptr<RefCountedBytes> data;
@@ -34,19 +34,19 @@ void DOMUIThumbnailSource::StartDataRequest(const std::string& path,
   }
 }
 
-std::string DOMUIThumbnailSource::GetMimeType(const std::string&) const {
+std::string WebUIThumbnailSource::GetMimeType(const std::string&) const {
   // We need to explicitly return a mime type, otherwise if the user tries to
   // drag the image they get no extension.
   return "image/png";
 }
 
-MessageLoop* DOMUIThumbnailSource::MessageLoopForRequestPath(
+MessageLoop* WebUIThumbnailSource::MessageLoopForRequestPath(
     const std::string& path) const {
   // TopSites can be accessed from the IO thread.
   return top_sites_.get() ? NULL : DataSource::MessageLoopForRequestPath(path);
 }
 
-void DOMUIThumbnailSource::SendDefaultThumbnail(int request_id) {
+void WebUIThumbnailSource::SendDefaultThumbnail(int request_id) {
   // Use placeholder thumbnail.
   if (!default_thumbnail_.get()) {
     default_thumbnail_ =

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,9 +18,9 @@
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
-#include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
-#include "chrome/browser/dom_ui/dom_ui_thumbnail_source.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
+#include "chrome/browser/dom_ui/web_ui_favicon_source.h"
+#include "chrome/browser/dom_ui/web_ui_thumbnail_source.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -69,16 +69,16 @@ DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
   pinned_urls_ = dom_ui->GetProfile()->GetPrefs()->
       GetMutableDictionary(prefs::kNTPMostVisitedPinnedURLs);
   // Set up our sources for thumbnail and favicon data.
-  DOMUIThumbnailSource* thumbnail_src =
-      new DOMUIThumbnailSource(dom_ui->GetProfile());
+  WebUIThumbnailSource* thumbnail_src =
+      new WebUIThumbnailSource(dom_ui->GetProfile());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(ChromeURLDataManager::GetInstance(),
                         &ChromeURLDataManager::AddDataSource,
                         make_scoped_refptr(thumbnail_src)));
 
-  DOMUIFavIconSource* favicon_src =
-      new DOMUIFavIconSource(dom_ui->GetProfile());
+  WebUIFavIconSource* favicon_src =
+      new WebUIFavIconSource(dom_ui->GetProfile());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(ChromeURLDataManager::GetInstance(),

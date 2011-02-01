@@ -13,9 +13,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
-#include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/dom_ui/options/dom_options_util.h"
 #include "chrome/browser/dom_ui/options/options_managed_banner_handler.h"
+#include "chrome/browser/dom_ui/web_ui_favicon_source.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -131,7 +131,7 @@ void BrowserOptionsHandler::Initialize() {
       NewRunnableMethod(
           ChromeURLDataManager::GetInstance(),
           &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(new DOMUIFavIconSource(profile))));
+          make_scoped_refptr(new WebUIFavIconSource(profile))));
 
   homepage_.Init(prefs::kHomePage, profile->GetPrefs(), NULL);
   default_browser_policy_.Init(prefs::kDefaultBrowserSettingEnabled,

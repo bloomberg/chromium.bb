@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOM_UI_DOM_UI_FAVICON_SOURCE_H_
-#define CHROME_BROWSER_DOM_UI_DOM_UI_FAVICON_SOURCE_H_
+#ifndef CHROME_BROWSER_DOM_UI_WEB_UI_FAVICON_SOURCE_H_
+#define CHROME_BROWSER_DOM_UI_WEB_UI_FAVICON_SOURCE_H_
 #pragma once
 
 #include <string>
@@ -18,9 +18,9 @@ class Profile;
 
 // FavIconSource is the gateway between network-level chrome:
 // requests for favicons and the history backend that serves these.
-class DOMUIFavIconSource : public ChromeURLDataManager::DataSource {
+class WebUIFavIconSource : public ChromeURLDataManager::DataSource {
  public:
-  explicit DOMUIFavIconSource(Profile* profile);
+  explicit WebUIFavIconSource(Profile* profile);
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -41,7 +41,7 @@ class DOMUIFavIconSource : public ChromeURLDataManager::DataSource {
   // Sends the default favicon.
   void SendDefaultResponse(int request_id);
 
-  virtual ~DOMUIFavIconSource();
+  virtual ~WebUIFavIconSource();
 
   Profile* profile_;
   CancelableRequestConsumerT<int, 0> cancelable_consumer_;
@@ -50,7 +50,7 @@ class DOMUIFavIconSource : public ChromeURLDataManager::DataSource {
   // database doesn't have a favicon for a webpage.
   scoped_refptr<RefCountedMemory> default_favicon_;
 
-  DISALLOW_COPY_AND_ASSIGN(DOMUIFavIconSource);
+  DISALLOW_COPY_AND_ASSIGN(WebUIFavIconSource);
 };
 
-#endif  // CHROME_BROWSER_DOM_UI_DOM_UI_FAVICON_SOURCE_H_
+#endif  // CHROME_BROWSER_DOM_UI_WEB_UI_FAVICON_SOURCE_H_

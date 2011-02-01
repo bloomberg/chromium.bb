@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@
 #include "base/weak_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
+#include "chrome/browser/dom_ui/web_ui_favicon_source.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/history_types.h"
@@ -214,7 +214,7 @@ DOMMessageHandler* MediaplayerHandler::Attach(DOMUI* dom_ui) {
       NewRunnableMethod(
           ChromeURLDataManager::GetInstance(),
           &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(new DOMUIFavIconSource(dom_ui->GetProfile()))));
+          make_scoped_refptr(new WebUIFavIconSource(dom_ui->GetProfile()))));
 
   return DOMMessageHandler::Attach(dom_ui);
 }
