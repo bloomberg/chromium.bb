@@ -36,8 +36,11 @@
 namespace {
 
 enum GPUProcessLifetimeEvent {
-  LAUNCED,
-  CRASHED,
+  LAUNCHED,
+  DIED_FIRST_TIME,
+  DIED_SECOND_TIME,
+  DIED_THIRD_TIME,
+  DIED_FOURTH_TIME,
   GPU_PROCESS_LIFETIME_EVENT_MAX
   };
 
@@ -424,9 +427,10 @@ bool GpuProcessHost::CanShutdown() {
 void GpuProcessHost::OnChildDied() {
   SendOutstandingReplies();
   // Located in OnChildDied because OnProcessCrashed suffers from a race
-  // condition on Linux. The GPU process will only die if it crashes.
+  // condition on Linux.
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
-                            CRASHED, GPU_PROCESS_LIFETIME_EVENT_MAX);
+                            DIED_FIRST_TIME + g_gpu_crash_count,
+                            GPU_PROCESS_LIFETIME_EVENT_MAX);
   BrowserChildProcessHost::OnChildDied();
 }
 
@@ -444,6 +448,9 @@ bool GpuProcessHost::CanLaunchGpuProcess() const {
 }
 
 bool GpuProcessHost::LaunchGpuProcess() {
+  if (g_gpu_crash_count >= kGpuMaxCrashCount)
+    return false;
+
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
 
   // If the single-process switch is present, just launch the GPU service in a
@@ -508,7 +515,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
       cmd_line);
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
-                            LAUNCED, GPU_PROCESS_LIFETIME_EVENT_MAX);
+                            LAUNCHED, GPU_PROCESS_LIFETIME_EVENT_MAX);
   return true;
 }
 
