@@ -23,11 +23,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_MiscSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "misc_search.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, TimedSearch) {
+// Flaky, http://crbug.com/26296.
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_TimedSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "timed_search.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, Delete) {
+// Flaky, http://crbug.com/26296.
+IN_PROC_BROWSER_TEST_F(ExtensionHistoryApiTest, FLAKY_Delete) {
   ASSERT_TRUE(RunExtensionSubtest("history", "delete.html")) << message_;
 }
 
