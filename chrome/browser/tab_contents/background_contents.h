@@ -19,6 +19,7 @@
 
 class TabContents;
 struct WebPreferences;
+class DesktopNotificationHandler;
 
 namespace gfx {
 class Rect;
@@ -78,6 +79,7 @@ class BackgroundContents : public RenderViewHostDelegate,
   virtual void RenderViewGone(RenderViewHost* rvh,
                               base::TerminationStatus status,
                               int error_code);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // RenderViewHostDelegate::View
   virtual void CreateNewWindow(
@@ -163,6 +165,9 @@ class BackgroundContents : public RenderViewHostDelegate,
   GURL url_;
 
   NotificationRegistrar registrar_;
+
+  // Handles desktop notification IPCs.
+  scoped_ptr<DesktopNotificationHandler> desktop_notification_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundContents);
 };

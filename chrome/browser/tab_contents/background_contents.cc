@@ -6,6 +6,7 @@
 
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/browsing_instance.h"
+#include "chrome/browser/desktop_notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
@@ -39,6 +40,8 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
   // APP_TERMINATING before non-OTR profiles are destroyed).
   registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                  Source<Profile>(profile));
+  desktop_notification_handler_.reset(
+      new DesktopNotificationHandler(NULL, site_instance->GetProcess()));
 }
 
 // Exposed to allow creating mocks.
@@ -183,6 +186,12 @@ void BackgroundContents::RenderViewGone(RenderViewHost* rvh,
   // around the system, blocking future instances from being created
   // (http://crbug.com/65189).
   delete this;
+}
+
+bool BackgroundContents::OnMessageReceived(const IPC::Message& message) {
+  // Forward desktop notification IPCs if any to the
+  // DesktopNotificationHandler.
+  return desktop_notification_handler_->OnMessageReceived(message);
 }
 
 RendererPreferences BackgroundContents::GetRendererPrefs(
