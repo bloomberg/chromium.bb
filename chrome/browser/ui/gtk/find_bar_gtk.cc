@@ -20,6 +20,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
+#include "chrome/browser/ui/find_bar/find_manager.h"
+#include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
@@ -31,6 +33,7 @@
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -449,7 +452,7 @@ void FindBarGtk::RestoreSavedFocus() {
   if (focus_store_.widget())
     gtk_widget_grab_focus(focus_store_.widget());
   else
-    find_bar_controller_->tab_contents()->Focus();
+    find_bar_controller_->tab_contents()->tab_contents()->Focus();
 }
 
 FindBarTesting* FindBarGtk::GetFindBarTesting() {
@@ -574,20 +577,20 @@ string16 FindBarGtk::GetMatchCountText() {
 }
 
 void FindBarGtk::FindEntryTextInContents(bool forward_search) {
-  TabContents* tab_contents = find_bar_controller_->tab_contents();
+  TabContentsWrapper* tab_contents = find_bar_controller_->tab_contents();
   if (!tab_contents)
     return;
+  FindManager* find_manager = tab_contents->GetFindManager();
 
   std::string new_contents(gtk_entry_get_text(GTK_ENTRY(text_entry_)));
 
   if (new_contents.length() > 0) {
-    tab_contents->StartFinding(UTF8ToUTF16(new_contents), forward_search,
+    find_manager->StartFinding(UTF8ToUTF16(new_contents), forward_search,
                                false);  // Not case sensitive.
   } else {
     // The textbox is empty so we reset.
-    tab_contents->StopFinding(FindBarController::kClearSelection);
-    UpdateUIForFindResult(find_bar_controller_->tab_contents()->find_result(),
-                          string16());
+    find_manager->StopFinding(FindBarController::kClearSelection);
+    UpdateUIForFindResult(find_manager->find_result(), string16());
 
     // Clearing the text box should also clear the prepopulate state so that
     // when we close and reopen the Find box it doesn't show the search we
@@ -657,7 +660,7 @@ bool FindBarGtk::MaybeForwardKeyEventToRenderer(GdkEventKey* event) {
       return false;
   }
 
-  TabContents* contents = find_bar_controller_->tab_contents();
+  TabContentsWrapper* contents = find_bar_controller_->tab_contents();
   if (!contents)
     return false;
 

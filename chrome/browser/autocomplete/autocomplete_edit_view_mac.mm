@@ -18,6 +18,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
