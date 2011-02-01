@@ -71,21 +71,12 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               int width,
                               int source_dx);
 
-void FastConvertRGB32ToYUVRow(const uint8* rgb_buf_1,
-                              const uint8* rgb_buf_2,
-                              uint8* y_buf_1,
-                              uint8* y_buf_2,
-                              uint8* u_buf,
-                              uint8* v_buf,
-                              int width);
-
 #if defined(_MSC_VER)
 #define SIMD_ALIGNED(var) __declspec(align(16)) var
 #else
 #define SIMD_ALIGNED(var) var __attribute__((aligned(16)))
 #endif
 extern SIMD_ALIGNED(int16 kCoefficientsRgbY[768][4]);
-extern SIMD_ALIGNED(int16 kCoefficientsYuvR[768][4]);
 
 // Method to force C version.
 //#define USE_MMX 0
