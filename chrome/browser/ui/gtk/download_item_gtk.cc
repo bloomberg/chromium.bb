@@ -799,6 +799,7 @@ void DownloadItemGtk::OnClick(GtkWidget* widget) {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.open_download",
                            base::Time::Now() - creation_time_);
   get_download()->OpenDownload();
+  parent_shelf_->ItemOpened();
 }
 
 gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,

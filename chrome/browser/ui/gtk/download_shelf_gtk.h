@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
@@ -26,9 +27,14 @@ class DownloadItemGtk;
 class GtkThemeProvider;
 class SlideAnimatorGtk;
 
+namespace gfx {
+class Point;
+}
+
 class DownloadShelfGtk : public DownloadShelf,
                          public NotificationObserver,
-                         public SlideAnimatorGtk::Delegate {
+                         public SlideAnimatorGtk::Delegate,
+                         public MessageLoopForUI::Observer {
  public:
   explicit DownloadShelfGtk(Browser* browser, gfx::NativeView view);
 
@@ -53,6 +59,10 @@ class DownloadShelfGtk : public DownloadShelf,
   // Returns the current height of the shelf.
   int GetHeight() const;
 
+  // MessageLoop::Observer implementation:
+  virtual void WillProcessEvent(GdkEvent* event);
+  virtual void DidProcessEvent(GdkEvent* event);
+
  private:
   // Remove |download_item| from the download shelf and delete it.
   void RemoveDownloadItem(DownloadItemGtk* download_item);
@@ -64,6 +74,29 @@ class DownloadShelfGtk : public DownloadShelf,
   // It's called when a download item is removed from the shelf or an item's
   // size is changed.
   void MaybeShowMoreDownloadItems();
+
+  // Checks that all download items have been opened, and sets the auto-close
+  // state of the shelf if so.
+  void AutoCloseIfPossible();
+
+  // Cancels the auto-close state set by AutoCloseIfPossible, including any
+  // pending close tasks that have already been posted.
+  void CancelAutoClose();
+
+  // A download item has been opened. It might be possible to automatically
+  // close now.
+  void ItemOpened();
+
+  // Sets whether the shelf should automatically close.
+  void SetCloseOnMouseOut(bool close);
+
+  // Returns whether the given point is within the "zone" of the shelf, which is
+  // the shelf and a band of 40 pixels on the top of it.
+  bool IsCursorInShelfZone(const gfx::Point& cursor_screen_coords);
+
+  // Synthesized enter-notify and leave-notify events for the shelf's "zone".
+  void MouseLeftShelf();
+  void MouseEnteredShelf();
 
   CHROMEGTK_CALLBACK_0(DownloadShelfGtk, void, OnButtonClick);
 
@@ -102,6 +135,15 @@ class DownloadShelfGtk : public DownloadShelf,
   GtkThemeProvider* theme_provider_;
 
   NotificationRegistrar registrar_;
+
+  // True if the shelf will automatically close when the user mouses out.
+  bool close_on_mouse_out_;
+
+  // True if the mouse is within the shelf's bounds, as of the last mouse event
+  // we received.
+  bool mouse_in_shelf_;
+
+  ScopedRunnableMethodFactory<DownloadShelfGtk> auto_close_factory_;
 
   friend class DownloadItemGtk;
 };

@@ -472,7 +472,7 @@ gfx::Point GetWidgetScreenPosition(GtkWidget* widget) {
   gint x, y;
   gdk_window_get_origin(widget->window, &x, &y);
 
-  if (!GTK_IS_WINDOW(widget)) {
+  if (GTK_WIDGET_NO_WINDOW(widget)) {
     x += widget->allocation.x;
     y += widget->allocation.y;
   }

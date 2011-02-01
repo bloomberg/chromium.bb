@@ -19,6 +19,9 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/gtk_util.h"
+#include "gfx/insets.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -45,12 +48,22 @@ const int kRightPadding = 10;
 // Speed of the shelf show/hide animation.
 const int kShelfAnimationDurationMs = 120;
 
+// The time between when the user mouses out of the download shelf zone and
+// when the shelf closes (when auto-close is enabled).
+const int kAutoCloseDelayMs = 300;
+
+// The area to the top of the shelf that is considered part of its "zone".
+const int kShelfAuraSize = 40;
+
 }  // namespace
 
 DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
     : browser_(browser),
       is_showing_(false),
-      theme_provider_(GtkThemeProvider::GetFrom(browser->profile())) {
+      theme_provider_(GtkThemeProvider::GetFrom(browser->profile())),
+      close_on_mouse_out_(false),
+      mouse_in_shelf_(false),
+      auto_close_factory_(this) {
   // Logically, the shelf is a vbox that contains two children: a one pixel
   // tall event box, which serves as the top border, and an hbox, which holds
   // the download items and other shelf widgets (close button, show-all-
@@ -149,6 +162,9 @@ DownloadShelfGtk::~DownloadShelfGtk() {
 
   shelf_.Destroy();
   items_hbox_.Destroy();
+
+  // Make sure we're no longer an observer of the message loop.
+  SetCloseOnMouseOut(false);
 }
 
 void DownloadShelfGtk::AddDownload(BaseDownloadItemModel* download_model_) {
@@ -167,6 +183,7 @@ bool DownloadShelfGtk::IsClosing() const {
 void DownloadShelfGtk::Show() {
   slide_widget_->Open();
   browser_->UpdateDownloadShelfVisibility(true);
+  CancelAutoClose();
 }
 
 void DownloadShelfGtk::Close() {
@@ -175,6 +192,7 @@ void DownloadShelfGtk::Close() {
   gdk_window_raise(shelf_.get()->window);
   slide_widget_->Close();
   browser_->UpdateDownloadShelfVisibility(false);
+  SetCloseOnMouseOut(false);
 }
 
 Browser* DownloadShelfGtk::browser() const {
@@ -192,6 +210,9 @@ void DownloadShelfGtk::Closed() {
         download->safety_state() != DownloadItem::DANGEROUS) {
       RemoveDownloadItem(download_items_[i]);
     } else {
+      // We set all remaining items as "opened", so that the shelf will auto-
+      // close in the future without the user clicking on them.
+      download->set_opened(true);
       ++i;
     }
   }
@@ -246,6 +267,8 @@ void DownloadShelfGtk::RemoveDownloadItem(DownloadItemGtk* download_item) {
   if (download_items_.empty()) {
     slide_widget_->CloseWithoutAnimation();
     browser_->UpdateDownloadShelfVisibility(false);
+  } else {
+    AutoCloseIfPossible();
   }
 }
 
@@ -266,4 +289,90 @@ void DownloadShelfGtk::OnButtonClick(GtkWidget* button) {
     // The link button was clicked.
     browser_->ShowDownloadsTab();
   }
+}
+
+void DownloadShelfGtk::AutoCloseIfPossible() {
+  for (std::vector<DownloadItemGtk*>::iterator iter = download_items_.begin();
+       iter != download_items_.end(); ++iter) {
+    if (!(*iter)->get_download()->opened())
+      return;
+  }
+
+  SetCloseOnMouseOut(true);
+}
+
+void DownloadShelfGtk::CancelAutoClose() {
+  SetCloseOnMouseOut(false);
+  auto_close_factory_.RevokeAll();
+}
+
+void DownloadShelfGtk::ItemOpened() {
+  AutoCloseIfPossible();
+}
+
+void DownloadShelfGtk::SetCloseOnMouseOut(bool close) {
+  if (close_on_mouse_out_ == close)
+    return;
+
+  close_on_mouse_out_ = close;
+  mouse_in_shelf_ = close;
+  if (close)
+    MessageLoopForUI::current()->AddObserver(this);
+  else
+    MessageLoopForUI::current()->RemoveObserver(this);
+}
+
+void DownloadShelfGtk::WillProcessEvent(GdkEvent* event) {
+}
+
+void DownloadShelfGtk::DidProcessEvent(GdkEvent* event) {
+  gfx::Point cursor_screen_coords;
+
+  switch (event->type) {
+    case GDK_MOTION_NOTIFY:
+      cursor_screen_coords =
+          gfx::Point(event->motion.x_root, event->motion.y_root);
+      break;
+    case GDK_LEAVE_NOTIFY:
+      cursor_screen_coords =
+          gfx::Point(event->crossing.x_root, event->crossing.y_root);
+      break;
+    default:
+      return;
+  }
+
+  bool mouse_in_shelf = IsCursorInShelfZone(cursor_screen_coords);
+  if (mouse_in_shelf == mouse_in_shelf_)
+    return;
+  mouse_in_shelf_ = mouse_in_shelf;
+
+  if (mouse_in_shelf)
+    MouseEnteredShelf();
+  else
+    MouseLeftShelf();
+}
+
+bool DownloadShelfGtk::IsCursorInShelfZone(
+    const gfx::Point& cursor_screen_coords) {
+  gfx::Rect bounds(gtk_util::GetWidgetScreenPosition(shelf_.get()),
+                   gfx::Size(shelf_.get()->allocation.width,
+                             shelf_.get()->allocation.height));
+
+  // Negative insets expand the rectangle. We only expand the top.
+  bounds.Inset(gfx::Insets(-kShelfAuraSize, 0, 0, 0));
+
+  return bounds.Contains(cursor_screen_coords);
+}
+
+void DownloadShelfGtk::MouseLeftShelf() {
+  DCHECK(close_on_mouse_out_);
+
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      auto_close_factory_.NewRunnableMethod(&DownloadShelfGtk::Close),
+      kAutoCloseDelayMs);
+}
+
+void DownloadShelfGtk::MouseEnteredShelf() {
+  auto_close_factory_.RevokeAll();
 }

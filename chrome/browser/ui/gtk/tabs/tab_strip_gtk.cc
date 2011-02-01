@@ -1228,6 +1228,9 @@ void TabStripGtk::DidProcessEvent(GdkEvent* event) {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// TabStripGtk, NotificationObserver implementation:
+
 void TabStripGtk::Observe(NotificationType type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
