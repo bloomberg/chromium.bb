@@ -224,27 +224,6 @@ bool WrenchMenuModel::IsItemForCommandIdDynamic(int command_id) const {
          command_id == IDC_VIEW_BACKGROUND_PAGES;
 }
 
-bool WrenchMenuModel::GetIconForCommandId(int command_id,
-                                          SkBitmap* bitmap) const {
-  switch (command_id) {
-    case IDC_VIEW_BACKGROUND_PAGES: {
-      int num_pages = BackgroundPageTracker::GetInstance()->
-          GetUnacknowledgedBackgroundPageCount();
-      if (num_pages > 0) {
-        *bitmap = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-            IDR_BACKGROUND_MENU);
-        return true;
-      } else {
-        // No icon.
-        return false;
-      }
-    }
-    default:
-      // No icon for other dynamic menu items.
-      return false;
-  }
-}
-
 string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
   switch (command_id) {
     case IDC_SYNC_BOOKMARKS:

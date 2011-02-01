@@ -25,7 +25,6 @@
       <include name="IDR_APP_DEFAULT_ICON" file="app_default_icon.png" type="BINDATA" />
       <include name="IDR_APP_DROPARROW" file="app_droparrow.png" type="BINDATA" />
       <include name="IDR_BACKGROUND_BADGE" file="background_badge.png" type="BINDATA" />
-      <include name="IDR_BACKGROUND_MENU" file="background_menu.png" type="BINDATA" />
       <include name="IDR_BACK" file="back.png" type="BINDATA" />
       <include name="IDR_BACK_D" file="back_d.png" type="BINDATA" />
       <include name="IDR_BACK_H" file="back_h.png" type="BINDATA" />
