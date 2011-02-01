@@ -54,13 +54,13 @@ TEST(AuthenticatorTest, EmailAddressDifferentOnesRejected) {
 }
 
 TEST(AuthenticatorTest, EmailAddressIgnorePlusSuffix) {
-  EXPECT_EQ(Authenticator::Canonicalize("user+cc@what.com"),
-            Authenticator::Canonicalize("user@what.com"));
+  const char with_plus[] = "user+cc@what.com";
+  EXPECT_EQ(with_plus, Authenticator::Canonicalize(with_plus));
 }
 
 TEST(AuthenticatorTest, EmailAddressIgnoreMultiPlusSuffix) {
-  EXPECT_EQ(Authenticator::Canonicalize("user+cc+bcc@what.com"),
-            Authenticator::Canonicalize("user@what.com"));
+  const char multi_plus[] = "user+cc+bcc@what.com";
+  EXPECT_EQ(multi_plus, Authenticator::Canonicalize(multi_plus));
 }
 
 }  // namespace chromeos
