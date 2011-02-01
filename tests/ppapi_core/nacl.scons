@@ -1,0 +1,51 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+# This is a C PPAPI
+#
+# ppapi_core.html - test driver that loads the nexe and scripts it
+# ppapi_core.nmf - manifest file for servier platform specific nexe binary.
+#
+# ppapi_core.c - implementation of PPP interface and PPP_Instance
+# scriptable_object.c - implementation of the scripting interface
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+nexe = 'ppapi_core_%s.nexe' % env.get('TARGET_FULLARCH')
+
+env.Alias('ppapi_core.nexe', ['$STAGING_DIR/%s' % nexe])
+
+ppapi_core_nexe = env.ComponentProgram(nexe,
+                                       ['ppapi_core.c',
+                                        'scriptable_object.c'],
+                                       EXTRA_LIBS=['ppruntime',
+                                                   'google_nacl_imc',
+                                                   'google_nacl_platform',
+                                                   'gio',
+                                                   'pthread',
+                                                   'srpc'])
+
+# Note that the html is required to run this program.
+dest_copy = env.Replicate('$STAGING_DIR',
+                          ['ppapi_core.html',
+                           'ppapi_core.nmf',
+                           env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js')]
+                          )
+env.Depends(nexe, dest_copy)
+
+node = env.BrowserTester('ppapi_core_browser_test.out',
+                         url='ppapi_core.html',
+                         files=[ppapi_core_nexe,
+                                env.File('ppapi_core.html'),
+                                env.File('ppapi_core.nmf'),
+                                env.File(
+                                    '${SCONSTRUCT_DIR}/tests/nacl_js_lib.js')]
+                         )
+env.AddNodeToTestSuite(node,
+                       ['pepper_browser_tests'],
+                       'run_ppapi_core_browser_test',
+                       )

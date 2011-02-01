@@ -98,7 +98,6 @@ void CallOnMainThread(int32_t delay_in_milliseconds,
     return;
   }
 
-  NACL_UNTESTED();
   int32_t callback_id =
       ppapi_proxy::CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)
