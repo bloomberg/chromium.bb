@@ -375,7 +375,7 @@ void PersonalOptionsHandler::LoadAccountPicture(const ListValue* args) {
       chromeos::UserManager::Get()->logged_in_user().image();
 
   if (!account_picture.isNull()) {
-    StringValue data_url(dom_ui_util::GetImageDataUrl(account_picture));
+    StringValue data_url(web_ui_util::GetImageDataUrl(account_picture));
     dom_ui_->CallJavascriptFunction(L"PersonalOptions.setAccountPicture",
         data_url);
   }
