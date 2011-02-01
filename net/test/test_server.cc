@@ -348,6 +348,10 @@ bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
                                  certificates_dir_.AppendASCII("ok_cert.pem"));
   command_line->AppendSwitchPath("policy-cert-chain", GetRootCertificatePath());
 
+  if (logging::GetMinLogLevel() == logging::LOG_VERBOSE) {
+    command_line->AppendArg("--log-to-console");
+  }
+
   if (type_ == TYPE_FTP) {
     command_line->AppendArg("-f");
   } else if (type_ == TYPE_SYNC) {
