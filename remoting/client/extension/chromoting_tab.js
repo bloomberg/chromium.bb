@@ -20,7 +20,7 @@ function submitLogin() {
   var password = document.getElementById("password").value;
 
   // Make the login panel invisible and submit login info.
-  document.getElementById("login_panel").className = "login_panel";
+  document.getElementById("login_panel").style.display = "none";
   chromoting.plugin.submitLoginInfo(username, password);
 }
 
