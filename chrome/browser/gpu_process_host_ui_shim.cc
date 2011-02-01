@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_process_host.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/child_process_logging.h"
@@ -122,17 +123,18 @@ void GpuProcessHostUIShim::OnDestroyCommandBuffer(
   GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
   manager->ReleasePermanentXID(window);
 #elif defined(OS_MACOSX) || defined(OS_WIN)
-  RenderViewHost* host = RenderViewHost::FromID(renderer_id,
-                                                render_view_id);
+  RenderProcessHost* process = RenderProcessHost::FromID(renderer_id);
+  RenderWidgetHost* host = NULL;
+  if (process) {
+    host = static_cast<RenderWidgetHost*>(
+        process->GetListenerByID(render_view_id));
+  }
   if (!host)
     return;
-  RenderWidgetHostView* view = host->view();
-  if (!view)
-    return;
 #if defined(OS_MACOSX)
-  view->DestroyFakePluginWindowHandle(window);
+  host->view()->DestroyFakePluginWindowHandle(window);
 #elif defined(OS_WIN)
-  view->ShowCompositorHostWindow(false);
+  host->view()->ShowCompositorHostWindow(false);
 #endif
 
 #endif  // defined(OS_MACOSX) || defined(OS_WIN)
