@@ -103,7 +103,7 @@ def _CheckSubversionConfig(input_api, output_api):
       return [
           output_api.PresubmitError(
               'It looks like you have not configured your subversion config '
-              'file.\n' + error_msg)
+              'file or it is not up-to-date.\n' + error_msg)
       ]
   except (OSError, IOError):
     return [
