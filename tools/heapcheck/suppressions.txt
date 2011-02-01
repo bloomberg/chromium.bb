@@ -1215,8 +1215,6 @@
    fun:SyncSetupWizard
    fun:ProfileSyncService
    fun:ProfileSyncServiceMock
-   fun:NiceMock
-   fun:SyncUIUtilTest_ConstructAboutInformationWithUnrecoverableErrorTest_Test::TestBody
 }
 {
    bug_71582
