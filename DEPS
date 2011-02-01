@@ -39,8 +39,12 @@ deps = {
   "src/third_party/angle":
     (Var("googlecode_url") % "angleproject") + "/trunk@551",
 
+  # Note that this is *not* where we check out WebKit -- this just
+  # puts some extra files into place for the real WebKit checkout to
+  # happen.  See lines mentioning "webkit_revision" for the real
+  # WebKit checkout.
   "src/third_party/WebKit":
-    "/trunk/deps/third_party/WebKit@71605",
+    "/trunk/deps/third_party/WebKit@73335",
 
   "src/third_party/icu":
     "/trunk/deps/third_party/icu42@69864",
