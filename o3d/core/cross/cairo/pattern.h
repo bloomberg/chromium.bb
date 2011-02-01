@@ -49,7 +49,14 @@ class Pattern : public ObjectBase {
  public:
   typedef SmartPointer<Pattern> Ref;
 
-  enum Filter {
+  enum ExtendType {
+    NONE,
+    REPEAT,
+    REFLECT,
+    PAD
+  };
+
+  enum FilterType {
     FAST,
     GOOD,
     BEST,
@@ -87,7 +94,9 @@ class Pattern : public ObjectBase {
                           double x0,
                           double y0);
 
-  void set_filter(Filter filter);
+  void set_extend(ExtendType extend);
+
+  void set_filter(FilterType filter);
 
  private:
   Pattern(ServiceLocator* service_locator, cairo_pattern_t* pattern);

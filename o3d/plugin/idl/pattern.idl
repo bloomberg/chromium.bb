@@ -38,9 +38,26 @@ namespace o2d {
 %]
 [nocpp, include="core/cross/cairo/pattern.h"] class Pattern : ObjectBase {
   %[
+    Available extend methods.
+
+    \var ExtendType,
+    \li NONE,  Pixels outside of the source pattern are fully transparent
+    \li REPEAT,  The pattern is tiled by repeating
+    \li REFLECT,  The pattern is tiled by reflecting at the edges
+    \li PAD,  Pixels outside of the pattern copy the closest pixel from the
+              source
+  %]
+  enum ExtendType {
+    NONE,
+    REPEAT,
+    REFLECT,
+    PAD
+  };
+
+  %[
     Available resizing filters.
 
-    \var Filter,
+    \var FilterType,
     \li FAST,  A high-performance filter, with quality similar to NEAREST
     \li GOOD,  A reasonable-performance filter, with quality similar to BILINEAR
     \li BEST,  The highest-quality available, performance may not be suitable
@@ -48,7 +65,7 @@ namespace o2d {
     \li NEAREST,  Nearest-neighbor filtering
     \li BILINEAR,  Linear interpolation in two dimensions
   %]
-  enum Filter {
+  enum FilterType {
     FAST,
     GOOD,
     BEST,
@@ -114,9 +131,14 @@ namespace o2d {
                           double y0);
 
   %[
+    The extend method to use to fill in areas outside of this Pattern.
+  %]
+  [setter] ExtendType extend;
+
+  %[
     The filter to use when resizing this Pattern.
   %]
-  [setter] Filter filter;
+  [setter] FilterType filter;
 };  // Pattern
 
 }  // namespace o2d

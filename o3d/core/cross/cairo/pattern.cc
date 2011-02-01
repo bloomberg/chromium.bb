@@ -84,7 +84,29 @@ void Pattern::SetAffineTransform(double xx,
   cairo_pattern_set_matrix(pattern_, &matrix);
 }
 
-void Pattern::set_filter(Filter filter) {
+void Pattern::set_extend(ExtendType extend) {
+  cairo_extend_t cairo_extend;
+  switch (extend) {
+    case NONE:
+      cairo_extend = CAIRO_EXTEND_NONE;
+      break;
+    case REPEAT:
+      cairo_extend = CAIRO_EXTEND_REPEAT;
+      break;
+    case REFLECT:
+      cairo_extend = CAIRO_EXTEND_REFLECT;
+      break;
+    case PAD:
+      cairo_extend = CAIRO_EXTEND_PAD;
+      break;
+    default:
+      DCHECK(false);
+      return;
+  }
+  cairo_pattern_set_extend(pattern_, cairo_extend);
+}
+
+void Pattern::set_filter(FilterType filter) {
   cairo_filter_t cairo_filter;
   switch (filter) {
     case FAST:
