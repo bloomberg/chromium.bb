@@ -46,15 +46,13 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
       !extensions_service->is_ready())
     return NULL;
 
+  // Only hosted apps have web extents, so this ensures that only hosted apps
+  // can create BackgroundContents. We don't have to check for background
+  // permission as that is checked in RenderMessageFilter when the CreateWindow
+  // message is processed.
   const Extension* extension =
-      extensions_service->GetExtensionByURL(opener_url);
+      extensions_service->GetExtensionByWebExtent(opener_url);
   if (!extension)
-    extension = extensions_service->GetExtensionByWebExtent(opener_url);
-  // Only hosted apps with background permission are allowed to create a
-  // BackgroundContents.
-  if (!extension ||
-      !extension->HasApiPermission(Extension::kBackgroundPermission) ||
-      extension->GetType() != Extension::TYPE_HOSTED_APP)
     return NULL;
 
   // Only allow a single background contents per app.

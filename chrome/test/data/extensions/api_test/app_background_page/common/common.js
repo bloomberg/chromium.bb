@@ -40,6 +40,11 @@ function notifyBackgroundPageLoaded() {
   pageToScriptTunnel.dispatchEvent(scriptMessageEvent);
 }
 
+function notifyBackgroundPagePermissionDenied() {
+  pageToScriptTunnel.innerText = JSON.stringify(messageData(arguments));
+  pageToScriptTunnel.dispatchEvent(scriptMessageEvent);
+}
+
 function notifyCounterError() {
   pageToScriptTunnel.innerText = JSON.stringify(messageData(arguments));
   pageToScriptTunnel.dispatchEvent(scriptMessageEvent);

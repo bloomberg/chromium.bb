@@ -443,6 +443,18 @@ void RenderMessageFilter::OnReceiveContextMenuMsg(const IPC::Message& msg) {
 void RenderMessageFilter::OnMsgCreateWindow(
     const ViewHostMsg_CreateWindow_Params& params,
     int* route_id, int64* cloned_session_storage_namespace_id) {
+  // If the opener is trying to create a background window but doesn't have
+  // the appropriate permission, fail the attempt.
+  if (params.window_container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
+    ChromeURLRequestContext* context =
+        GetRequestContextForURL(params.opener_url);
+    if (!context->extension_info_map()->CheckURLAccessToExtensionPermission(
+            params.opener_url, Extension::kBackgroundPermission)) {
+      *route_id = MSG_ROUTING_NONE;
+      return;
+    }
+  }
+
   *cloned_session_storage_namespace_id =
       webkit_context_->dom_storage_context()->CloneSessionStorage(
           params.session_storage_namespace_id);

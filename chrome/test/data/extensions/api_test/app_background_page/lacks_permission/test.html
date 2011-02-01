@@ -5,12 +5,18 @@
 var pagePrefix =
     'http://a.com:PORT/files/extensions/api_test/app_background_page/common';
 
-// The open(..., 'background') was ignored and a popup window resulted.
-chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-  if (tab.url.match("bg\.html$")) {
-    chrome.test.notifyPass();
-  }
+// Dispatch "tunneled" functions from the live web pages to this testing page.
+chrome.extension.onRequest.addListener(function(request) {
+  window[request.name](request.args);
 });
+
+function onBackgroundPageLoaded() {
+  chrome.test.notifyFail("BackgroundContents loaded without permission");
+}
+
+function onBackgroundPagePermissionDenied() {
+  chrome.test.notifyPass();
+}
 
 // Start the test by opening the first page in the app.
 window.onload = function() {
