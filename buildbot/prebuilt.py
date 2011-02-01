@@ -12,6 +12,10 @@ import sys
 import tempfile
 import time
 
+if __name__ == '__main__':
+  import constants
+  sys.path.append(constants.SOURCE_ROOT)
+
 from chromite.lib import cros_build_lib
 from chromite.lib.binpkg import (GrabLocalPackageIndex, GrabRemotePackageIndex,
                                  PackageIndex)
@@ -135,7 +139,7 @@ def RevGitPushWithRetry(retries=5):
     Raises:
       GitPushFailed if push was unsuccessful after retries
   """
-  for retry in range(1, retries+1):
+  for retry in range(1, retries + 1):
     try:
       cros_build_lib.RunCommand('repo sync .', shell=True)
       cros_build_lib.RunCommand('git push', shell=True)
@@ -143,7 +147,7 @@ def RevGitPushWithRetry(retries=5):
     except cros_build_lib.RunCommandError:
       if retry < retries:
         print 'Error pushing changes trying again (%s/%s)' % (retry, retries)
-        time.sleep(5*retry)
+        time.sleep(5 * retry)
   else:
     raise GitPushFailed('Failed to push change after %s retries' % retries)
 
@@ -297,7 +301,7 @@ def RemoteUpload(files, pool=10):
   result = pool.map_async(_GsUpload, workers, chunksize=1)
   while True:
     try:
-      return set(result.get(60*60))
+      return set(result.get(60 * 60))
     except multiprocessing.TimeoutError:
       pass
 
@@ -332,7 +336,7 @@ def GetBoardPathFromCrosOverlayList(build_path, target):
    Returns:
      The last line from cros_overlay_list as a string
   """
-  script_dir = os.path.join(build_path, 'src/scripts/bin')
+  script_dir = os.path.join(build_path, 'src/platform/dev/host')
   cmd = ['./cros_overlay_list']
   if re.match('.*?_.*', target):
     (board, variant) = target.split('_')
@@ -364,7 +368,7 @@ def DeterminePrebuiltConfFile(build_path, target):
     # Without more examples of hosts this is a kludge for now.
     # TODO(Scottz): as new host targets come online expand this to
     # work more like boards.
-    make_path =  _PREBUILT_MAKE_CONF[target]
+    make_path = _PREBUILT_MAKE_CONF[target]
   else:
     # We are a board
     board = GetBoardPathFromCrosOverlayList(build_path, target)

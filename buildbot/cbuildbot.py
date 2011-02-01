@@ -14,12 +14,14 @@ import os
 import shutil
 import sys
 
+if __name__ == '__main__':
+  import constants
+  sys.path.append(constants.SOURCE_ROOT)
+
 import cbuildbot_comm
 from cbuildbot_config import config
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
-from cros_build_lib import (Die, Info, ReinterpretPathForChroot, RunCommand,
-                            Warning)
+from chromite.lib.cros_build_lib import (Die, Info, ReinterpretPathForChroot,
+                                         OldRunCommand, Warning)
 
 _DEFAULT_RETRIES = 3
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
@@ -74,8 +76,8 @@ def RepoSync(buildroot, retries=_DEFAULT_RETRIES):
       # The --trace option ensures that repo shows the output from git. This
       # is needed so that the buildbot can kill us if git is not making
       # progress.
-      RunCommand(['repo', '--trace', 'sync'], cwd=buildroot)
-      RunCommand(['repo', 'forall', '-c', 'git', 'config',
+      OldRunCommand(['repo', '--trace', 'sync'], cwd=buildroot)
+      OldRunCommand(['repo', 'forall', '-c', 'git', 'config',
                   'url.ssh://git@gitrw.chromium.org:9222.insteadof',
                   'http://git.chromium.org/git'], cwd=buildroot)
       retries = 0
@@ -87,7 +89,7 @@ def RepoSync(buildroot, retries=_DEFAULT_RETRIES):
         Warning('CBUILDBOT -- Retries exhausted')
         raise
 
-  RunCommand(['repo', 'manifest', '-r', '-o', '/dev/stderr'], cwd=buildroot)
+  OldRunCommand(['repo', 'manifest', '-r', '-o', '/dev/stderr'], cwd=buildroot)
 
 # =========================== Command Helpers =================================
 
@@ -96,12 +98,12 @@ def _GetAllGitRepos(buildroot, debug=False):
   manifest_tuples = []
   # Gets all the git repos from a full repo manifest.
   repo_cmd = "repo manifest -o -".split()
-  output = RunCommand(repo_cmd, cwd=buildroot, redirect_stdout=True,
+  output = OldRunCommand(repo_cmd, cwd=buildroot, redirect_stdout=True,
                       redirect_stderr=True, print_cmd=debug)
 
   # Extract all lines containg a project.
   extract_cmd = ['grep', 'project name=']
-  output = RunCommand(extract_cmd, cwd=buildroot, input=output,
+  output = OldRunCommand(extract_cmd, cwd=buildroot, input=output,
                       redirect_stdout=True, print_cmd=debug)
   # Parse line using re to get tuple.
   result_array = re.findall('.+name=\"([\w-]+)\".+path=\"(\S+)".+', output)
@@ -121,12 +123,12 @@ def _GetCrosWorkOnSrcPath(buildroot, board, package, debug=False):
   """Returns ${CROS_WORKON_SRC_PATH} for given package."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   equery_cmd = ('equery-%s which %s' % (board, package)).split()
-  ebuild_path = RunCommand(equery_cmd, cwd=cwd, redirect_stdout=True,
+  ebuild_path = OldRunCommand(equery_cmd, cwd=cwd, redirect_stdout=True,
                              redirect_stderr=True, enter_chroot=True,
                              error_ok=True, print_cmd=debug)
   if ebuild_path:
     ebuild_cmd = ('ebuild-%s %s info' % (board, ebuild_path)).split()
-    cros_workon_output = RunCommand(ebuild_cmd, cwd=cwd,
+    cros_workon_output = OldRunCommand(ebuild_cmd, cwd=cwd,
                                     redirect_stdout=True, redirect_stderr=True,
                                     enter_chroot=True, print_cmd=debug)
 
@@ -145,7 +147,7 @@ def _CreateRepoDictionary(buildroot, board, debug=False):
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
   get_all_workon_pkgs_cmd = './cros_workon list --all'.split()
-  packages = RunCommand(get_all_workon_pkgs_cmd, cwd=cwd,
+  packages = OldRunCommand(get_all_workon_pkgs_cmd, cwd=cwd,
                         redirect_stdout=True, redirect_stderr=True,
                         enter_chroot=True, print_cmd=debug)
   for package in packages.split():
@@ -209,7 +211,7 @@ def _UprevFromRevisionList(buildroot, tracking_branch, revision_list, board,
   chroot_overlays = [ReinterpretPathForChroot(path) for path in overlays]
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  RunCommand(['./cros_mark_as_stable',
+  OldRunCommand(['../../chromite/buildbot/cros_mark_as_stable',
               '--board=%s' % board,
               '--tracking_branch=%s' % tracking_branch,
               '--overlays=%s' % ':'.join(chroot_overlays),
@@ -223,10 +225,11 @@ def _UprevFromRevisionList(buildroot, tracking_branch, revision_list, board,
 def _MarkChromeAsStable(buildroot, tracking_branch, chrome_rev, board):
   """Returns the portage atom for the revved chrome ebuild - see man emerge."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  portage_atom_string = RunCommand(['bin/cros_mark_chrome_as_stable',
-                                    '--tracking_branch=%s' % tracking_branch,
-                                    chrome_rev], cwd=cwd, redirect_stdout=True,
-                                    enter_chroot=True).rstrip()
+  portage_atom_string = OldRunCommand(
+      ['../../chromite/buildbot/cros_mark_chrome_as_stable',
+       '--tracking_branch=%s' % tracking_branch,
+       chrome_rev],
+      cwd=cwd, redirect_stdout=True, enter_chroot=True).rstrip()
   if not portage_atom_string:
     Info('Found nothing to rev.')
     return None
@@ -234,9 +237,9 @@ def _MarkChromeAsStable(buildroot, tracking_branch, chrome_rev, board):
     chrome_atom = portage_atom_string.split('=')[1]
     keywords_file = CHROME_KEYWORDS_FILE % {'board': board}
     # TODO(sosa): Workaround to build unstable chrome ebuild we uprevved.
-    RunCommand(['sudo', 'mkdir', '-p', os.path.dirname(keywords_file)],
+    OldRunCommand(['sudo', 'mkdir', '-p', os.path.dirname(keywords_file)],
                enter_chroot=True, cwd=cwd)
-    RunCommand(['sudo', 'tee', keywords_file], input='=%s\n' % chrome_atom,
+    OldRunCommand(['sudo', 'tee', keywords_file], input='=%s\n' % chrome_atom,
                enter_chroot=True, cwd=cwd)
     return chrome_atom
 
@@ -245,7 +248,7 @@ def _UprevAllPackages(buildroot, tracking_branch, board, overlays):
   """Uprevs all packages that have been updated since last uprev."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   chroot_overlays = [ReinterpretPathForChroot(path) for path in overlays]
-  RunCommand(['./cros_mark_as_stable', '--all',
+  OldRunCommand(['../../chromite/buildbot/cros_mark_as_stable', '--all',
               '--board=%s' % board,
               '--overlays=%s' % ':'.join(chroot_overlays),
               '--tracking_branch=%s' % tracking_branch,
@@ -259,10 +262,10 @@ def _GetVMConstants(buildroot):
   """Returns minimum (vdisk_size, statefulfs_size) recommended for VM's."""
   cwd = os.path.join(buildroot, 'src', 'scripts', 'lib')
   source_cmd = 'source %s/cros_vm_constants.sh' % cwd
-  vdisk_size = RunCommand([
+  vdisk_size = OldRunCommand([
       '/bin/bash', '-c', '%s && echo $MIN_VDISK_SIZE_FULL' % source_cmd],
        redirect_stdout=True)
-  statefulfs_size = RunCommand([
+  statefulfs_size = OldRunCommand([
       '/bin/bash', '-c', '%s && echo $MIN_STATEFUL_FS_SIZE_FULL' % source_cmd],
        redirect_stdout=True)
   return (vdisk_size.strip(), statefulfs_size.strip())
@@ -272,27 +275,29 @@ def _GitCleanup(buildroot, board, tracking_branch, overlays):
   """Clean up git branch after previous uprev attempt."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   if os.path.exists(cwd):
-    RunCommand(['./cros_mark_as_stable', '--srcroot=..',
-                '--board=%s' % board,
-                '--overlays=%s' % ':'.join(overlays),
-                '--tracking_branch=%s' % tracking_branch, 'clean'],
-               cwd=cwd, error_ok=True)
+    OldRunCommand(
+        ['../../chromite/buildbot/cros_mark_as_stable', '--srcroot=..',
+         '--board=%s' % board,
+         '--overlays=%s' % ':'.join(overlays),
+         '--tracking_branch=%s' % tracking_branch, 'clean'],
+        cwd=cwd, error_ok=True)
 
 
 def _CleanUpMountPoints(buildroot):
   """Cleans up any stale mount points from previous runs."""
-  mount_output = RunCommand(['mount'], redirect_stdout=True)
-  mount_pts_in_buildroot = RunCommand(['grep', buildroot], input=mount_output,
-                                      redirect_stdout=True, error_ok=True)
+  mount_output = OldRunCommand(['mount'], redirect_stdout=True)
+  mount_pts_in_buildroot = OldRunCommand(['grep', buildroot],
+                                         input=mount_output,
+                                         redirect_stdout=True, error_ok=True)
 
   for mount_pt_str in mount_pts_in_buildroot.splitlines():
     mount_pt = mount_pt_str.rpartition(' type ')[0].partition(' on ')[2]
-    RunCommand(['sudo', 'umount', '-l', mount_pt], error_ok=True)
+    OldRunCommand(['sudo', 'umount', '-l', mount_pt], error_ok=True)
 
 
 def _WipeOldOutput(buildroot):
   """Wipes out build output directories."""
-  RunCommand(['rm', '-rf', 'src/build/images'], cwd=buildroot)
+  OldRunCommand(['rm', '-rf', 'src/build/images'], cwd=buildroot)
 
 
 # =========================== Main Commands ===================================
@@ -302,17 +307,17 @@ def _PreFlightRinse(buildroot, board, tracking_branch, overlays):
   """Cleans up any leftover state from previous runs."""
   _GitCleanup(buildroot, board, tracking_branch, overlays)
   _CleanUpMountPoints(buildroot)
-  RunCommand(['sudo', 'killall', 'kvm'], error_ok=True)
+  OldRunCommand(['sudo', 'killall', 'kvm'], error_ok=True)
 
 
 def _FullCheckout(buildroot, tracking_branch,
                   retries=_DEFAULT_RETRIES,
                   url='http://git.chromium.org/git/manifest'):
   """Performs a full checkout and clobbers any previous checkouts."""
-  RunCommand(['sudo', 'rm', '-rf', buildroot])
+  OldRunCommand(['sudo', 'rm', '-rf', buildroot])
   MakeDir(buildroot, parents=True)
   branch = tracking_branch.split('/');
-  RunCommand(['repo', 'init', '-u',
+  OldRunCommand(['repo', 'init', '-u',
              url, '-b',
              '%s' % branch[-1]], cwd=buildroot, input='\n\ny\n')
   RepoSync(buildroot, retries)
@@ -332,7 +337,7 @@ def _MakeChroot(buildroot, replace=False):
   if replace:
     cmd.append('--replace')
 
-  RunCommand(cmd, cwd=cwd)
+  OldRunCommand(cmd, cwd=cwd)
 
 
 def _GetPortageEnvVar(buildroot, board, envvar):
@@ -352,7 +357,7 @@ def _GetPortageEnvVar(buildroot, board, envvar):
   portageq = 'portageq'
   if board:
     portageq += '-%s' % board
-  binhost = RunCommand([portageq, 'envvar', envvar], cwd=cwd,
+  binhost = OldRunCommand([portageq, 'envvar', envvar], cwd=cwd,
                        redirect_stdout=True, enter_chroot=True, error_ok=True)
   return binhost.rstrip('\n')
 
@@ -360,7 +365,7 @@ def _GetPortageEnvVar(buildroot, board, envvar):
 def _SetupBoard(buildroot, board='x86-generic'):
   """Wrapper around setup_board."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  RunCommand(['./setup_board', '--fast', '--default', '--board=%s' % board],
+  OldRunCommand(['./setup_board', '--fast', '--default', '--board=%s' % board],
              cwd=cwd, enter_chroot=True)
 
 
@@ -378,13 +383,13 @@ def _Build(buildroot, emptytree, build_autotest=True, usepkg=True):
   if not usepkg:
     cmd.append('--nousepkg')
 
-  RunCommand(cmd, cwd=cwd, enter_chroot=True)
+  OldRunCommand(cmd, cwd=cwd, enter_chroot=True)
 
 
 def _EnableLocalAccount(buildroot):
   cwd = os.path.join(buildroot, 'src', 'scripts')
   # Set local account for test images.
-  RunCommand(['./enable_localaccount.sh',
+  OldRunCommand(['./enable_localaccount.sh',
              'chronos'],
              print_cmd=False, cwd=cwd)
 
@@ -393,13 +398,13 @@ def _BuildImage(buildroot):
   _WipeOldOutput(buildroot)
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  RunCommand(['./build_image', '--replace'], cwd=cwd, enter_chroot=True)
+  OldRunCommand(['./build_image', '--replace'], cwd=cwd, enter_chroot=True)
 
 
 def _BuildVMImageForTesting(buildroot):
   (vdisk_size, statefulfs_size) = _GetVMConstants(buildroot)
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  RunCommand(['./image_to_vm.sh',
+  OldRunCommand(['./image_to_vm.sh',
               '--test_image',
               '--full',
               '--vdisk_size=%s' % vdisk_size,
@@ -409,7 +414,7 @@ def _BuildVMImageForTesting(buildroot):
 
 def _RunUnitTests(buildroot):
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  RunCommand(['./cros_run_unit_tests',
+  OldRunCommand(['./cros_run_unit_tests',
               '--package_file=%s' % ReinterpretPathForChroot(_PACKAGE_FILE %
                   {'buildroot': buildroot}),
              ], cwd=cwd, enter_chroot=True)
@@ -422,7 +427,7 @@ def _RunSmokeSuite(buildroot, results_dir):
     shutil.rmtree(results_dir_in_chroot)
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  RunCommand(['bin/cros_run_vm_test',
+  OldRunCommand(['bin/cros_run_vm_test',
               '--no_graphics',
               '--results_dir_root=%s' % results_dir,
               'suite_Smoke',
@@ -434,7 +439,7 @@ def _RunAUTest(buildroot, board):
   cwd = os.path.join(buildroot, 'src', 'scripts')
   image_path = os.path.join(buildroot, 'src', 'build', 'images', board,
                             'latest', 'chromiumos_test_image.bin')
-  RunCommand(['bin/cros_au_test_harness',
+  OldRunCommand(['bin/cros_au_test_harness',
               '--no_graphics',
               '--no_delta',
               '--board=%s' % board,
@@ -484,7 +489,7 @@ def _UprevPackages(buildroot, tracking_branch, revisionfile, board, overlays):
 def _UprevPush(buildroot, tracking_branch, board, overlays, dryrun):
   """Pushes uprev changes to the main line."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  cmd = ['./cros_mark_as_stable',
+  cmd = ['../../chromite/buildbot/cros_mark_as_stable',
          '--srcroot=%s' % os.path.join(buildroot, 'src'),
          '--board=%s' % board,
          '--overlays=%s' % ':'.join(overlays),
@@ -494,7 +499,7 @@ def _UprevPush(buildroot, tracking_branch, board, overlays, dryrun):
     cmd.append('--dryrun')
 
   cmd.append('push')
-  RunCommand(cmd, cwd=cwd)
+  OldRunCommand(cmd, cwd=cwd)
 
 
 def _LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
@@ -533,7 +538,7 @@ def _LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
   if debug:
     Warning('***** ***** LegacyArchiveBuild CMD: ' + ' '.join(cmd))
   else:
-    RunCommand(cmd, cwd=cwd)
+    OldRunCommand(cmd, cwd=cwd)
 
 def _ArchiveTestResults(buildroot, board, test_results_dir,
                         gsutil, archive_dir, acl):
@@ -554,18 +559,18 @@ def _ArchiveTestResults(buildroot, board, test_results_dir,
   num_gsutil_retries = 5
   test_results_dir = test_results_dir.lstrip('/')
   results_path = os.path.join(buildroot, 'chroot', test_results_dir)
-  RunCommand(['sudo', 'chmod', '-R', '+r', results_path])
+  OldRunCommand(['sudo', 'chmod', '-R', '+r', results_path])
   try:
     # gsutil has the ability to resume an upload when the command is retried
-    RunCommand([gsutil, 'cp', '-R', results_path, archive_dir],
+    OldRunCommand([gsutil, 'cp', '-R', results_path, archive_dir],
                num_retries=num_gsutil_retries)
-    RunCommand([gsutil, 'setacl', acl, archive_dir])
+    OldRunCommand([gsutil, 'setacl', acl, archive_dir])
 
     image_name = 'chromiumos_qemu_image.bin'
     image_path = os.path.join(buildroot, 'src', 'build', 'images', board,
                               'latest', image_name)
-    RunCommand(['gzip', '-f', '--fast', image_path])
-    RunCommand([gsutil, 'cp', image_path + '.gz', archive_dir],
+    OldRunCommand(['gzip', '-f', '--fast', image_path])
+    OldRunCommand([gsutil, 'cp', image_path + '.gz', archive_dir],
                num_retries=num_gsutil_retries)
   except Exception, e:
     Warning('Could not archive test results (error=%s)' % str(e))
@@ -624,9 +629,8 @@ def _UploadPrebuilts(buildroot, board, overlay_config, binhosts):
     binhosts: The URLs of the current binhosts. Binaries that are already
               present will not be uploaded twice. Empty URLs will be ignored.
   """
-
-  cwd = os.path.join(buildroot, 'src', 'scripts')
-  cmd = [os.path.join(cwd, 'prebuilt.py'),
+  cwd = os.path.dirname(__file__)
+  cmd = ['./prebuilt.py',
          '--sync-binhost-conf',
          '--build-path', buildroot,
          '--board', board,
@@ -642,7 +646,7 @@ def _UploadPrebuilts(buildroot, board, overlay_config, binhosts):
     cmd.extend(['--upload', 'chromeos-images:/var/www/prebuilt/',
                 '--binhost-base-url', 'http://chromeos-prebuilt'])
 
-  RunCommand(cmd, cwd=cwd)
+  OldRunCommand(cmd, cwd=cwd)
 
 
 def main():

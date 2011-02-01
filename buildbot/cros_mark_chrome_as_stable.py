@@ -22,10 +22,7 @@ import re
 import sys
 import urllib
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import cros_mark_as_stable
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 from cros_build_lib import RunCommand, Info, Warning
 
 BASE_CHROME_SVN_URL = 'http://src.chromium.org/svn'

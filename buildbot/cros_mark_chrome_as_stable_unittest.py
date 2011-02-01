@@ -6,7 +6,6 @@
 
 """Unit tests for cros_mark_chrome_as_stable.py."""
 
-import cros_mark_chrome_as_stable
 import mox
 import os
 import shutil
@@ -15,8 +14,10 @@ import tempfile
 import unittest
 import urllib
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import constants
+sys.path.append(constants.CROSUTILS_LIB_DIR)
 import cros_mark_as_stable
+import cros_mark_chrome_as_stable
 
 unstable_data = 'KEYWORDS=~x86 ~arm'
 stable_data = 'KEYWORDS=x86 arm'

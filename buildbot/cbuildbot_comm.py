@@ -11,8 +11,7 @@ import socket
 import sys
 import time
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
-from cros_build_lib import Info, Warning, RunCommand
+from chromite.lib.cros_build_lib import Info, Warning
 
 # Communication port for master to slave communication.
 _COMM_PORT = 32890

@@ -9,15 +9,13 @@
 import __builtin__
 import mox
 import os
-import posix
-import shutil
-import tempfile
+import sys
 import unittest
 
-# Fixes circular dependency error.
-import cbuildbot_comm
+import constants
+sys.path.append(constants.SOURCE_ROOT)
 import cbuildbot
-from cros_build_lib import ReinterpretPathForChroot
+from chromite.lib.cros_build_lib import ReinterpretPathForChroot
 
 
 class CBuildBotTest(mox.MoxTestBase):
@@ -25,26 +23,24 @@ class CBuildBotTest(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     # Always stub RunCommmand out as we use it in every method.
-    self.mox.StubOutWithMock(cbuildbot, 'RunCommand')
+    self.mox.StubOutWithMock(cbuildbot, 'OldRunCommand')
     self.tracking_branch = 'cros/master'
     self._test_repos = [['kernel', 'third_party/kernel/files'],
                         ['login_manager', 'platform/login_manager']
                        ]
-    self._test_cros_workon_packages = \
-      'chromeos-base/kernel\nchromeos-base/chromeos-login\n'
+    self._test_cros_workon_packages = (
+        'chromeos-base/kernel\nchromeos-base/chromeos-login\n')
     self._test_board = 'test-board'
     self._buildroot = '.'
-    self._test_dict = {'kernel' : ['chromos-base/kernel', 'dev-util/perf'],
-                       'cros' : ['chromos-base/libcros']
+    self._test_dict = {'kernel': ['chromos-base/kernel', 'dev-util/perf'],
+                       'cros': ['chromos-base/libcros']
                       }
-    self._test_string = "kernel.git@12345test cros.git@12333test"
-    self._test_string += " crosutils.git@blahblah"
+    self._test_string = 'kernel.git@12345test cros.git@12333test'
+    self._test_string += ' crosutils.git@blahblah'
     self._revision_file = 'test-revisions.pfq'
-    self._test_parsed_string_array = [
-                                      ['chromeos-base/kernel', '12345test'],
+    self._test_parsed_string_array = [['chromeos-base/kernel', '12345test'],
                                       ['dev-util/perf', '12345test'],
-                                      ['chromos-base/libcros', '12345test']
-                                     ]
+                                      ['chromos-base/libcros', '12345test']]
     self._overlays = ['%s/src/third_party/chromiumos-overlay' % self._buildroot]
     self._chroot_overlays = [
         ReinterpretPathForChroot(p) for p in self._overlays
@@ -55,30 +51,28 @@ class CBuildBotTest(mox.MoxTestBase):
     return_array = cbuildbot._ParseRevisionString(self._test_string,
                                                   self._test_dict)
     self.assertEqual(len(return_array), 3)
-    self.assertTrue(
-      'chromeos-base/kernel', '12345test' in return_array)
-    self.assertTrue(
-      'dev-util/perf', '12345test' in return_array)
-    self.assertTrue(
-      'chromos-base/libcros', '12345test' in return_array)
+    self.assertTrue('chromeos-base/kernel', '12345test' in return_array)
+    self.assertTrue('dev-util/perf', '12345test' in return_array)
+    self.assertTrue('chromos-base/libcros', '12345test' in return_array)
 
   def testCreateDictionary(self):
     self.mox.StubOutWithMock(cbuildbot, '_GetAllGitRepos')
     self.mox.StubOutWithMock(cbuildbot, '_GetCrosWorkOnSrcPath')
     cbuildbot._GetAllGitRepos(mox.IgnoreArg()).AndReturn(self._test_repos)
-    cbuildbot.RunCommand(mox.IgnoreArg(),
-                         cwd='%s/src/scripts' % self._buildroot,
-                         redirect_stdout=True,
-                         redirect_stderr=True,
-                         enter_chroot=True,
-                         print_cmd=False).AndReturn(
-                             self._test_cros_workon_packages)
-    cbuildbot._GetCrosWorkOnSrcPath(self._buildroot, self._test_board,
-                                    'chromeos-base/kernel').AndReturn(
-        '/home/test/third_party/kernel/files')
-    cbuildbot._GetCrosWorkOnSrcPath(self._buildroot, self._test_board,
-                                    'chromeos-base/chromeos-login').AndReturn(
-        '/home/test/platform/login_manager')
+    cbuildbot.OldRunCommand(mox.IgnoreArg(),
+                            cwd='%s/src/scripts' % self._buildroot,
+                            redirect_stdout=True,
+                            redirect_stderr=True,
+                            enter_chroot=True,
+                            print_cmd=False).AndReturn(
+                                self._test_cros_workon_packages)
+    cbuildbot._GetCrosWorkOnSrcPath(
+        self._buildroot, self._test_board, 'chromeos-base/kernel').AndReturn(
+            '/home/test/third_party/kernel/files')
+    cbuildbot._GetCrosWorkOnSrcPath(
+        self._buildroot, self._test_board,
+        'chromeos-base/chromeos-login').AndReturn(
+            '/home/test/platform/login_manager')
     self.mox.ReplayAll()
     repo_dict = cbuildbot._CreateRepoDictionary(self._buildroot,
                                                 self._test_board)
@@ -102,7 +96,8 @@ class CBuildBotTest(mox.MoxTestBase):
   #  m_file.close()
 
   #  cbuildbot._CreateRepoDictionary(self._buildroot,
-  #                                  self._test_board).AndReturn(self._test_dict)
+  #                                  self._test_board).AndReturn(
+  #                                      self._test_dict)
   #  cbuildbot._ParseRevisionString(self._test_string,
   #                                 self._test_dict).AndReturn(
   #                                     self._test_parsed_string_array)
@@ -129,13 +124,13 @@ class CBuildBotTest(mox.MoxTestBase):
     path_to_image = os.path.join(buildroot, 'src', 'build', 'images', board,
                                  'latest', 'chromiumos_qemu_image.bin')
 
-    cbuildbot.RunCommand(['sudo', 'chmod', '-R', '+r', path_to_results])
-    cbuildbot.RunCommand([gsutil_path, 'cp', '-R', path_to_results,
-                          archive_dir], num_retries=num_retries)
-    cbuildbot.RunCommand([gsutil_path, 'setacl', acl, archive_dir])
-    cbuildbot.RunCommand(['gzip', '-f', '--fast', path_to_image])
-    cbuildbot.RunCommand([gsutil_path, 'cp', path_to_image + '.gz',
-                          archive_dir], num_retries=num_retries)
+    cbuildbot.OldRunCommand(['sudo', 'chmod', '-R', '+r', path_to_results])
+    cbuildbot.OldRunCommand([gsutil_path, 'cp', '-R', path_to_results,
+                             archive_dir], num_retries=num_retries)
+    cbuildbot.OldRunCommand([gsutil_path, 'setacl', acl, archive_dir])
+    cbuildbot.OldRunCommand(['gzip', '-f', '--fast', path_to_image])
+    cbuildbot.OldRunCommand([gsutil_path, 'cp', path_to_image + '.gz',
+                             archive_dir], num_retries=num_retries)
 
     self.mox.ReplayAll()
     cbuildbot._ArchiveTestResults(buildroot, board, test_results_dir,
@@ -154,14 +149,15 @@ class CBuildBotTest(mox.MoxTestBase):
     m_file.close()
 
     drop_file = cbuildbot._PACKAGE_FILE % {'buildroot': self._buildroot}
-    cbuildbot.RunCommand(['./cros_mark_as_stable', '--all',
-                     '--board=%s' % self._test_board,
-                     '--overlays=%s' % ':'.join(self._chroot_overlays),
-                     '--tracking_branch=cros/master',
-                     '--drop_file=%s' % ReinterpretPathForChroot(drop_file),
-                     'commit'],
-                     cwd='%s/src/scripts' % self._buildroot,
-                     enter_chroot=True)
+    cbuildbot.OldRunCommand(
+        ['../../chromite/buildbot/cros_mark_as_stable', '--all',
+         '--board=%s' % self._test_board,
+         '--overlays=%s' % ':'.join(self._chroot_overlays),
+         '--tracking_branch=cros/master',
+         '--drop_file=%s' % ReinterpretPathForChroot(drop_file),
+         'commit'],
+        cwd='%s/src/scripts' % self._buildroot,
+        enter_chroot=True)
 
     self.mox.ReplayAll()
     cbuildbot._UprevPackages(self._buildroot, self.tracking_branch,
@@ -180,14 +176,15 @@ class CBuildBotTest(mox.MoxTestBase):
     m_file.close()
 
     drop_file = cbuildbot._PACKAGE_FILE % {'buildroot': self._buildroot}
-    cbuildbot.RunCommand(['./cros_mark_as_stable', '--all',
-                         '--board=%s' % self._test_board,
-                         '--overlays=%s' % ':'.join(self._chroot_overlays),
-                         '--tracking_branch=cros/master',
-                         '--drop_file=%s' % ReinterpretPathForChroot(drop_file),
-                         'commit'],
-                         cwd='%s/src/scripts' % self._buildroot,
-                         enter_chroot=True)
+    cbuildbot.OldRunCommand(
+        ['../../chromite/buildbot/cros_mark_as_stable', '--all',
+         '--board=%s' % self._test_board,
+         '--overlays=%s' % ':'.join(self._chroot_overlays),
+         '--tracking_branch=cros/master',
+         '--drop_file=%s' % ReinterpretPathForChroot(drop_file),
+         'commit'],
+        cwd='%s/src/scripts' % self._buildroot,
+        enter_chroot=True)
 
     self.mox.ReplayAll()
     cbuildbot._UprevPackages(self._buildroot, self.tracking_branch,
@@ -198,10 +195,10 @@ class CBuildBotTest(mox.MoxTestBase):
   def testGetPortageEnvVar(self):
     """Basic test case for _GetPortageEnvVar function."""
     envvar = 'EXAMPLE'
-    cbuildbot.RunCommand(mox.And(mox.IsA(list), mox.In(envvar)),
-                         cwd='%s/src/scripts' % self._buildroot,
-                         redirect_stdout=True, enter_chroot=True,
-                         error_ok=True).AndReturn('RESULT\n')
+    cbuildbot.OldRunCommand(mox.And(mox.IsA(list), mox.In(envvar)),
+                            cwd='%s/src/scripts' % self._buildroot,
+                            redirect_stdout=True, enter_chroot=True,
+                            error_ok=True).AndReturn('RESULT\n')
     self.mox.ReplayAll()
     result = cbuildbot._GetPortageEnvVar(self._buildroot, self._test_board,
                                          envvar)
@@ -214,7 +211,7 @@ class CBuildBotTest(mox.MoxTestBase):
     binhosts = [binhost, None]
     check = mox.And(mox.IsA(list), mox.In(binhost), mox.Not(mox.In(None)),
                     mox.In('gs://chromeos-prebuilt'))
-    cbuildbot.RunCommand(check, cwd='%s/src/scripts' % self._buildroot)
+    cbuildbot.OldRunCommand(check, cwd=os.path.dirname(cbuildbot.__file__))
     self.mox.ReplayAll()
     cbuildbot._UploadPrebuilts(self._buildroot, self._test_board, 'public',
                                binhosts)
@@ -226,7 +223,7 @@ class CBuildBotTest(mox.MoxTestBase):
     binhosts = [binhost, None]
     check = mox.And(mox.IsA(list), mox.In(binhost), mox.Not(mox.In(None)),
                     mox.In('chromeos-images:/var/www/prebuilt/'))
-    cbuildbot.RunCommand(check, cwd='%s/src/scripts' % self._buildroot)
+    cbuildbot.OldRunCommand(check, cwd=os.path.dirname(cbuildbot.__file__))
     self.mox.ReplayAll()
     cbuildbot._UploadPrebuilts(self._buildroot, self._test_board, 'private',
                                binhosts)

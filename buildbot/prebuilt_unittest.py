@@ -6,11 +6,15 @@
 import copy
 import mox
 import os
-import prebuilt
 import shutil
+import sys
 import tempfile
 import unittest
 import urllib
+
+import constants
+sys.path.append(constants.SOURCE_ROOT)
+import prebuilt
 from chromite.lib import cros_build_lib
 from chromite.lib.binpkg import PackageIndex
 
@@ -111,7 +115,7 @@ class TestPrebuiltFilters(unittest.TestCase):
     self.private_structure_base = 'chromeos-overlay/chromeos-base'
     self.private_pkgs = ['test-package/salt-flavor-0.1.r3.ebuild',
                          'easy/alpha_beta-0.1.41.r3.ebuild',
-                         'dev/j-t-r-0.1.r3.ebuild',]
+                         'dev/j-t-r-0.1.r3.ebuild', ]
     self.expected_filters = set(['salt-flavor', 'alpha_beta', 'j-t-r'])
 
   def tearDown(self):
@@ -204,7 +208,7 @@ class TestPrebuilt(unittest.TestCase):
   def testDeterminePrebuiltConf(self):
     """Test the different known variants of boards for proper path discovery."""
     fake_path = '/b/cbuild'
-    script_path = os.path.join(fake_path, 'src/scripts/bin')
+    script_path = os.path.join(fake_path, 'src/platform/dev/host')
     public_overlay_path = os.path.join(fake_path, 'src/overlays')
     private_overlay_path = os.path.join(fake_path,
                                         prebuilt._PRIVATE_OVERLAY_DIR)
@@ -250,7 +254,7 @@ class TestPrebuilt(unittest.TestCase):
       prebuilt.cros_build_lib.RunCommand(
         expected_results['cmd'].split(), redirect_stdout=True,
         cwd=script_path).AndReturn(cmd_result_obj)
-      
+
     self.mox.ReplayAll()
     for target, expected_results in targets.iteritems():
       self.assertEqual(

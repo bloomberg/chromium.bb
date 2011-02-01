@@ -15,8 +15,12 @@ import shutil
 import subprocess
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), 'lib'))
+if __name__ == '__main__':
+  import constants
+  sys.path.append(constants.CROSUTILS_LIB_DIR)
+
 from cros_build_lib import Info, RunCommand, Warning, Die
+
 
 gflags.DEFINE_boolean('all', False,
                       'Mark all packages as stable.')
