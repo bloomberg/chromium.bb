@@ -41,6 +41,11 @@ class EmptyMenuMenuItem : public MenuItemView {
     SetEnabled(false);
   }
 
+  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
+    // Empty menu items shouldn't have a tooltip.
+    return false;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(EmptyMenuMenuItem);
 };
