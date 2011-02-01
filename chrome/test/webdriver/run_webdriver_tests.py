@@ -12,70 +12,14 @@ import types
 import unittest
 
 from chromedriver_launcher import ChromeDriverLauncher
+import chromedriver_paths
+from gtest_text_test_runner import GTestTextTestRunner
 
-def _AddWebDriverBindingsToPythonPath():
-  py_path = os.path.join(os.path.dirname(__file__),
-                         os.pardir, os.pardir, os.pardir,
-                         'third_party', 'webdriver', 'python')
-  sys.path = [os.path.abspath(py_path)] + sys.path
-
-_AddWebDriverBindingsToPythonPath()
+# Add the PYTHON_BINDINGS first so that our 'test' module is found instead of
+# Python's.
+sys.path = [chromedriver_paths.PYTHON_BINDINGS] + sys.path
 
 from selenium.webdriver.remote.webdriver import WebDriver
-
-
-class _GTestTextTestResult(unittest._TextTestResult):
-  """A test result class that can print formatted text results to a stream.
-
-  Results printed in conformance with gtest output format, like:
-  [ RUN        ] autofill.AutoFillTest.testAutofillInvalid: "test desc."
-  [         OK ] autofill.AutoFillTest.testAutofillInvalid
-  [ RUN        ] autofill.AutoFillTest.testFillProfile: "test desc."
-  [         OK ] autofill.AutoFillTest.testFillProfile
-  [ RUN        ] autofill.AutoFillTest.testFillProfileCrazyCharacters: "Test."
-  [         OK ] autofill.AutoFillTest.testFillProfileCrazyCharacters
-  """
-  def __init__(self, stream, descriptions, verbosity):
-    unittest._TextTestResult.__init__(self, stream, descriptions, verbosity)
-
-  def _GetTestURI(self, test):
-    if sys.version_info[:2] <= (2, 4):
-      return '%s.%s' % (unittest._strclass(test.__class__),
-                        test._TestCase__testMethodName)
-    return '%s.%s' % (unittest._strclass(test.__class__), test._testMethodName)
-
-  def getDescription(self, test):
-    return '%s: "%s"' % (self._GetTestURI(test), test.shortDescription())
-
-  def startTest(self, test):
-    unittest.TestResult.startTest(self, test)
-    self.stream.writeln('[ RUN        ] %s' % self.getDescription(test))
-
-  def addSuccess(self, test):
-    unittest.TestResult.addSuccess(self, test)
-    self.stream.writeln('[         OK ] %s' % self._GetTestURI(test))
-
-  def addError(self, test, err):
-    unittest.TestResult.addError(self, test, err)
-    self.stream.writeln('[      ERROR ] %s' % self._GetTestURI(test))
-
-  def addFailure(self, test, err):
-    unittest.TestResult.addFailure(self, test, err)
-    self.stream.writeln('[     FAILED ] %s' % self._GetTestURI(test))
-
-
-class WebDriverTextTestRuner(unittest.TextTestRunner):
-  """Test Runner for WebDriver tests that displays results in textual format.
-
-  Results are displayed in conformance with gtest output.
-  """
-  def __init__(self, verbosity=1):
-    unittest.TextTestRunner.__init__(self,
-                                     stream=sys.stderr,
-                                     verbosity=verbosity)
-
-  def _makeResult(self):
-    return _GTestTextTestResult(self.stream, self.descriptions, self.verbosity)
 
 
 # Implementation inspired from unittest.main()
@@ -305,9 +249,8 @@ class Main(object):
 
     # The tests expect to run with preset 'driver' and 'webserver' class
     # properties.
-    import pdb
-    pdb.set_trace()
-    launcher = ChromeDriverLauncher(self._options.driver_exe)
+    launcher = ChromeDriverLauncher(self._options.driver_exe,
+                                    chromedriver_paths.WEBDRIVER_TEST_DATA)
     driver = WebDriver(launcher.GetURL(), 'chrome', 'any')
     # The tests expect a webserver. Since ChromeDriver also operates as one,
     # just pass this dummy class with the right info.
@@ -327,7 +270,7 @@ class Main(object):
     verbosity = 1
     if self._options.verbose:
       verbosity = 2
-    result = WebDriverTextTestRuner(verbosity=verbosity).run(test_suite)
+    result = GTestTextTestRunner(verbosity=verbosity).run(test_suite)
     sys.exit(not result.wasSuccessful())
 
 
