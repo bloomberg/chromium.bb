@@ -1551,8 +1551,11 @@ function addPage() {
   var sm = list.selectionModel;
   sm.anchorIndex = sm.leadIndex = sm.selectedIndex = length;
   list.scrollIndexIntoView(length);
-  var li = list.getListItemByIndex(length);
-  li.editing = true;
+  // onscroll is now dispatched asynchronously so we have to postpone the rest.
+  setTimeout(function() {
+    var li = list.getListItemByIndex(length);
+    li.editing = true;
+  });
 }
 
 /**
