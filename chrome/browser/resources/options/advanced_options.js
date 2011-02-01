@@ -30,7 +30,7 @@ var OptionsPage = options.OptionsPage;
 
       // Set up click handlers for buttons.
       $('privacyContentSettingsButton').onclick = function(event) {
-        OptionsPage.showPageByName('content');
+        OptionsPage.navigateToPage('content');
         OptionsPage.showTab($('cookies-nav-tab'));
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ContentSettings']);
@@ -56,7 +56,7 @@ var OptionsPage = options.OptionsPage;
       }
 
       $('fontSettingsCustomizeFontsButton').onclick = function(event) {
-        OptionsPage.showPageByName('fontSettings');
+        OptionsPage.navigateToPage('fontSettings');
         chrome.send('coreOptionsUserMetricsAction', ['Options_FontSettings']);
       };
       $('defaultFontSize').onchange = function(event) {
@@ -64,7 +64,7 @@ var OptionsPage = options.OptionsPage;
             [String(event.target.options[event.target.selectedIndex].value)]);
       };
       $('language-button').onclick = function(event) {
-        OptionsPage.showPageByName('language');
+        OptionsPage.navigateToPage('language');
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_LanuageAndSpellCheckSettings']);
       };
@@ -75,7 +75,7 @@ var OptionsPage = options.OptionsPage;
         };
       } else {
         $('certificatesManageButton').onclick = function(event) {
-          OptionsPage.showPageByName('certificateManager');
+          OptionsPage.navigateToPage('certificateManager');
           OptionsPage.showTab($('personal-certs-nav-tab'));
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_ManageSSLCertificates']);
@@ -98,7 +98,7 @@ var OptionsPage = options.OptionsPage;
                 'downloadLocationChangeButton');
       } else {
         $('proxiesConfigureButton').onclick = function(event) {
-          OptionsPage.showPageByName('proxy');
+          OptionsPage.navigateToPage('proxy');
           chrome.send('coreOptionsUserMetricsAction',
               ['Options_ShowProxySettings']);
         };
@@ -253,7 +253,8 @@ var OptionsPage = options.OptionsPage;
   AdvancedOptions.RemoveCloudPrintProxySection = function() {
     if (!cr.isChromeOS) {
       var proxySectionElm = $('cloud-print-proxy-section');
-      proxySectionElm.parentNode.removeChild(proxySectionElm);
+      if (proxySectionElm)
+        proxySectionElm.parentNode.removeChild(proxySectionElm);
     }
   };
 

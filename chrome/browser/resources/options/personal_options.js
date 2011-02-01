@@ -47,13 +47,13 @@ cr.define('options', function() {
         chrome.send('openPrivacyDashboardTabAndActivate');
       };
       $('manage-passwords').onclick = function(event) {
-        OptionsPage.showPageByName('passwordManager');
+        OptionsPage.navigateToPage('passwordManager');
         OptionsPage.showTab($('passwords-nav-tab'));
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowPasswordManager']);
       };
       $('autofill-settings').onclick = function(event) {
-        OptionsPage.showPageByName('autoFillOptions');
+        OptionsPage.navigateToPage('autoFillOptions');
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowAutoFillSettings']);
       };

@@ -173,7 +173,7 @@ cr.define('options', function() {
         // as checkbox click.
         e.preventDefault();
         chrome.send('inputMethodOptionsOpen', [inputMethodId]);
-        OptionsPage.showPageByName(pageName);
+        OptionsPage.navigateToPage(pageName);
       }
       return button;
     },

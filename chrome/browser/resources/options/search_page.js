@@ -220,7 +220,7 @@ cr.define('options', function() {
       // Toggle the search page if necessary.
       if (text.length) {
         if (!this.searchActive_)
-          OptionsPage.showPageByName(this.name);
+          OptionsPage.navigateToPage(this.name);
       } else {
         if (this.searchActive_)
           OptionsPage.showDefaultPage();

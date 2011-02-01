@@ -48,7 +48,7 @@ cr.define('options', function() {
         OptionsPage.showOverlay('addStartupPageOverlay');
       };
       $('defaultSearchManageEnginesButton').onclick = function(event) {
-        OptionsPage.showPageByName('searchEngines');
+        OptionsPage.navigateToPage('searchEngines');
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ManageSearchEngines']);
       };

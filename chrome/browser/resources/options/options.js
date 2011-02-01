@@ -150,7 +150,7 @@ function load() {
 
   if (path.length > 1) {
     var pageName = path.slice(1);
-    OptionsPage.showPageByName(pageName);
+    OptionsPage.navigateToPage(pageName);
     if (hash.length > 1)
       OptionsPage.handleHashForPage(pageName, hash.slice(1));
   } else {
@@ -180,7 +180,7 @@ function load() {
 
   // Clicking on the Settings title brings up the 'Basics' page.
   $('settings-title').onclick = function() {
-    OptionsPage.showPageByName(BrowserOptions.getInstance().name);
+    OptionsPage.navigateToPage(BrowserOptions.getInstance().name);
   };
 }
 

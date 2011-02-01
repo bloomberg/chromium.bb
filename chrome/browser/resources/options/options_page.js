@@ -46,15 +46,35 @@ cr.define('options', function() {
    * Shows the default page.
    */
   OptionsPage.showDefaultPage = function() {
-    // TODO(csilv): Persist the current page.
-    this.showPageByName(BrowserOptions.getInstance().name);
+    var page = BrowserOptions.getInstance();
+    this.showPageByName_(page.name);
+
+    // We show the default page on load. Use replaceState instead of pushState
+    // so that we don't get a superfluous chrome://settings entry in addition
+    // to the desired chrome://settings/browser entry.
+    window.history.replaceState({pageName: page.name}, page.title,
+                                '/' + page.name);
+  };
+
+  /**
+   * "Navigates" to a page, meaning that the page will be shown and the
+   * appropriate entry is placed in the history.
+   * @param {string} pageName Page name.
+   */
+  OptionsPage.navigateToPage = function(pageName) {
+    var visiblePage = this.getTopmostVisiblePage();
+    this.showPageByName_(pageName);
+
+    if (visiblePage.name != pageName)
+      this.pushHistoryState_();
   };
 
   /**
    * Shows a registered page. This handles both top-level pages and sub-pages.
    * @param {string} pageName Page name.
+   * @private
    */
-  OptionsPage.showPageByName = function(pageName) {
+  OptionsPage.showPageByName_ = function(pageName) {
     var targetPage = this.registeredPages[pageName];
 
     // Determine if the root page is 'sticky', meaning that it
@@ -100,6 +120,17 @@ cr.define('options', function() {
           page.isAncestorOfPage(targetPage)))
         page.didShowPage();
     }
+  };
+
+  /**
+   * Pushes the currently showing page onto the history stack.
+   * @private
+   */
+  OptionsPage.pushHistoryState_ = function() {
+    var page = this.getTopmostVisiblePage();
+    window.history.pushState({pageName: page.name}, page.title,
+                             '/' + page.name);
+
   };
 
   /**
@@ -177,6 +208,8 @@ cr.define('options', function() {
     var topPage = this.getTopmostVisiblePage();
     if (topPage && topPage.parentPage)
       topPage.visible = false;
+
+    this.pushHistoryState_();
   };
 
   /**
@@ -189,6 +222,8 @@ cr.define('options', function() {
       topPage.visible = false;
       topPage = topPage.parentPage;
     }
+
+    this.pushHistoryState_();
   };
 
   /**
@@ -241,12 +276,12 @@ cr.define('options', function() {
     pageNav.textContent = page.title;
     pageNav.tabIndex = 0;
     pageNav.onclick = function(event) {
-      OptionsPage.showPageByName(this.getAttribute('pageName'));
+      OptionsPage.navigateToPage(this.getAttribute('pageName'));
     };
     pageNav.onkeypress = function(event) {
       // Enter or space
       if (event.keyCode == 13 || event.keyCode == 32) {
-        OptionsPage.showPageByName(this.getAttribute('pageName'));
+        OptionsPage.navigateToPage(this.getAttribute('pageName'));
       }
     };
     var navbar = $('navbar');
@@ -320,7 +355,7 @@ cr.define('options', function() {
    */
   OptionsPage.setState = function(data) {
     if (data && data.pageName) {
-      this.showPageByName(data.pageName);
+      this.showPageByName_(data.pageName);
     }
   };
 
@@ -422,6 +457,10 @@ cr.define('options', function() {
     if (!(topPage && topPage.parentPage))
       return;
 
+    // Don't interfere with navbar clicks.
+    if ($('navbar').contains(event.target))
+      return;
+
     // If an overlay is currently visible, do nothing.
     if (this.isOverlayVisible_())
       return;
@@ -436,12 +475,8 @@ cr.define('options', function() {
     if (event.type == 'click')
       this.closeSubPagesToLevel(0);
 
-    // Events should not fall through to the main view,
-    // but they can fall through for the sidebar.
-    if ($('mainview-content').contains(event.target)) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
+    event.stopPropagation();
+    event.preventDefault();
   };
 
   /**
@@ -567,10 +602,6 @@ cr.define('options', function() {
             if (nestingLevel == 1)
               $('subpage-backdrop').classList.remove('hidden');
           }
-
-          // Recent webkit change no longer allows url change from "chrome://".
-          window.history.pushState({pageName: this.name}, this.title,
-                                   '/' + this.name);
         }
 
         if (this.tab) {

@@ -35,7 +35,7 @@ cr.define('options', function() {
         exceptionsButtons[i].onclick = function(event) {
           ContentSettingsExceptionsArea.getInstance().showList(
               event.target.getAttribute('contentType'));
-          OptionsPage.showPageByName('contentExceptions');
+          OptionsPage.navigateToPage('contentExceptions');
         };
       }
 
@@ -47,7 +47,7 @@ cr.define('options', function() {
 
       $('show-cookies-button').onclick = function(event) {
         chrome.send('coreOptionsUserMetricsAction', ['Options_ShowCookies']);
-        OptionsPage.showPageByName('cookiesView');
+        OptionsPage.navigateToPage('cookiesView');
       };
 
       if (!templateData.enable_click_to_play)
@@ -61,7 +61,7 @@ cr.define('options', function() {
      */
     handleHash: function(hash) {
       ContentSettingsExceptionsArea.getInstance().showList(hash);
-      OptionsPage.showPageByName('contentExceptions');
+      OptionsPage.navigateToPage('contentExceptions');
     },
   };
 
