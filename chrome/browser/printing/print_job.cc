@@ -44,7 +44,8 @@ PrintJob::~PrintJob() {
 }
 
 void PrintJob::Initialize(PrintJobWorkerOwner* job,
-                          PrintedPagesSource* source) {
+                          PrintedPagesSource* source,
+                          int page_count) {
   DCHECK(!source_);
   DCHECK(!worker_.get());
   DCHECK(!is_job_pending_);
@@ -55,7 +56,10 @@ void PrintJob::Initialize(PrintJobWorkerOwner* job,
   worker_.reset(job->DetachWorker(this));
   settings_ = job->settings();
 
-  UpdatePrintedDocument(new PrintedDocument(settings_, source_, job->cookie()));
+  PrintedDocument* new_doc =
+      new PrintedDocument(settings_, source_, job->cookie());
+  new_doc->set_page_count(page_count);
+  UpdatePrintedDocument(new_doc);
 
   // Don't forget to register to our own messages.
   registrar_.Add(this, NotificationType::PRINT_JOB_EVENT,

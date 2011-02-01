@@ -42,8 +42,9 @@ class PrintJob : public PrintJobWorkerOwner,
   PrintJob();
 
   // Grabs the ownership of the PrintJobWorker from another job, which is
-  // usually a PrinterQuery.
-  void Initialize(PrintJobWorkerOwner* job, PrintedPagesSource* source);
+  // usually a PrinterQuery. Set the expected page count of the print job.
+  void Initialize(PrintJobWorkerOwner* job, PrintedPagesSource* source,
+                  int page_count);
 
   // NotificationObserver
   virtual void Observe(NotificationType type,

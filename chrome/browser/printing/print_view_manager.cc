@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,8 @@ using base::TimeDelta;
 namespace printing {
 
 PrintViewManager::PrintViewManager(TabContents& owner)
-    : waiting_to_print_(false),
+    : number_pages_(0),
+      waiting_to_print_(false),
       printing_succeeded_(false),
       inside_inner_message_loop_(false),
       owner_(owner) {
@@ -76,6 +77,8 @@ GURL PrintViewManager::RenderSourceUrl() {
 
 void PrintViewManager::OnDidGetPrintedPagesCount(int cookie, int number_pages) {
   DCHECK_GT(cookie, 0);
+  DCHECK_GT(number_pages, 0);
+  number_pages_ = number_pages;
   if (!OpportunisticallyCreatePrintJob(cookie))
     return;
 
@@ -84,11 +87,6 @@ void PrintViewManager::OnDidGetPrintedPagesCount(int cookie, int number_pages) {
     // Out of sync. It may happens since we are completely asynchronous. Old
     // spurious message can happen if one of the processes is overloaded.
     return;
-  }
-
-  // Time to inform our print job. Make sure it is for the right document.
-  if (!document->page_count()) {
-    document->set_page_count(number_pages);
   }
 }
 
@@ -290,7 +288,7 @@ bool PrintViewManager::CreateNewPrintJob(PrintJobWorkerOwner* job) {
     return false;
 
   print_job_ = new PrintJob();
-  print_job_->Initialize(job, this);
+  print_job_->Initialize(job, this, number_pages_);
   registrar_.Add(this, NotificationType::PRINT_JOB_EVENT,
                  Source<PrintJob>(print_job_.get()));
   printing_succeeded_ = false;

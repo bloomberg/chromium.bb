@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,6 +107,9 @@ class PrintViewManager : public NotificationObserver,
 
   // Manages the low-level talk to the printer.
   scoped_refptr<PrintJob> print_job_;
+
+  // Number of pages to print in the print job.
+  int number_pages_;
 
   // Waiting for print_job_ initialization to be completed to start printing.
   // Specifically the DEFAULT_INIT_DONE notification. Set when PrintNow() is
