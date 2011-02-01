@@ -10,7 +10,7 @@
 
 namespace ppapi_proxy {
 
-// Implements the plugin (i.e., .nexe) side of the PPB_FileIO_Dev interface.
+// Implements the untrusted side of the PPB_FileIO_Dev interface.
 class PluginFileIO {
  public:
   static const PPB_FileIO_Dev* GetInterface();

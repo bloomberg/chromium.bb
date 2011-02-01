@@ -1,10 +1,8 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright 2010 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can
+// be found in the LICENSE file.
 
-#include "native_client/src/shared/ppapi_proxy/plugin_core.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_core.h"
 #include <stdio.h>
 #include <map>
 #include "native_client/src/include/nacl_macros.h"

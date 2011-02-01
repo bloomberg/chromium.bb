@@ -1,10 +1,8 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright 2010 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can
+// be found in the LICENSE file.
 
-#include "native_client/src/shared/ppapi_proxy/plugin_buffer.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_buffer.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -46,14 +44,14 @@ void Unmap(PP_Resource resource) {
 }  // namespace
 
 const PPB_Buffer_Dev* PluginBuffer::GetInterface() {
-  static const PPB_Buffer_Dev intf = {
+  static const PPB_Buffer_Dev buffer_interface = {
     Create,
     IsBuffer,
     Describe,
     Map,
     Unmap,
   };
-  return &intf;
+  return &buffer_interface;
 }
 
 }  // namespace ppapi_proxy

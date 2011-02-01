@@ -1,10 +1,8 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright 2010 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can
+// be found in the LICENSE file.
 
-#include "native_client/src/shared/ppapi_proxy/plugin_file_ref.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_ref.h"
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
@@ -92,7 +90,7 @@ int32_t Rename(PP_Resource file_ref,
 }  // namespace
 
 const PPB_FileRef_Dev* PluginFileRef::GetInterface() {
-  static const PPB_FileRef_Dev intf = {
+  static const PPB_FileRef_Dev file_ref_interface = {
     Create,
     IsFileRef,
     GetFileSystemType,
@@ -105,6 +103,6 @@ const PPB_FileRef_Dev* PluginFileRef::GetInterface() {
     Delete,
     Rename
   };
-  return &intf;
+  return &file_ref_interface;
 }
 }  // namespace ppapi_proxy

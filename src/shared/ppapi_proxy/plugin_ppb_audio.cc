@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "native_client/src/shared/ppapi_proxy/plugin_audio.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_audio.h"
 
 #include <pthread.h>
 #include <stdio.h>
@@ -299,14 +299,14 @@ PP_Bool StopPlayback(PP_Resource audioResource) {
 
 const PPB_Audio* PluginAudio::GetInterface() {
   DebugPrintf("PluginAudio::GetInterface\n");
-  static const PPB_Audio intf = {
+  static const PPB_Audio audio_interface = {
     Create,
     IsAudio,
     GetCurrentConfig,
     StartPlayback,
     StopPlayback,
   };
-  return &intf;
+  return &audio_interface;
 }
 }  // namespace ppapi_proxy
 

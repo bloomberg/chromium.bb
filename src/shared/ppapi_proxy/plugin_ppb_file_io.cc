@@ -1,8 +1,6 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright 2010 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can
+// be found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_io.h"
 
@@ -15,6 +13,7 @@
 namespace ppapi_proxy {
 
 namespace {
+
 PP_Resource Create(PP_Module module) {
   UNREFERENCED_PARAMETER(module);
   return kInvalidResourceId;
@@ -107,10 +106,11 @@ int32_t Flush(PP_Resource file_io,
 void Close(PP_Resource file_io) {
   UNREFERENCED_PARAMETER(file_io);
 }
+
 }  // namespace
 
 const PPB_FileIO_Dev* PluginFileIO::GetInterface() {
-  static const PPB_FileIO_Dev intf = {
+  static const PPB_FileIO_Dev file_io_interface = {
     Create,
     IsFileIO,
     Open,
@@ -122,7 +122,7 @@ const PPB_FileIO_Dev* PluginFileIO::GetInterface() {
     Flush,
     Close
   };
-  return &intf;
+  return &file_io_interface;
 }
 
 

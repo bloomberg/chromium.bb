@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can
 // be found in the LICENSE file.
 
-#include "native_client/src/shared/ppapi_proxy/plugin_audio_config.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_audio_config.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -45,7 +45,7 @@ uint32_t GetSampleFrameCount(PP_Resource config) {
 }
 
 uint32_t RecommendSampleFrameCount(
-    PP_AudioSampleRate sample_rate, 
+    PP_AudioSampleRate sample_rate,
     uint32_t request_sample_frame_count) {
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   int32_t out_sample_frame_count;
@@ -95,13 +95,13 @@ PP_Resource CreateStereo16Bit(PP_Instance instance,
 }  // namespace
 
 const PPB_AudioConfig* PluginAudioConfig::GetInterface() {
-  static const PPB_AudioConfig intf = {
+  static const PPB_AudioConfig audio_config_interface = {
     CreateStereo16Bit,
     RecommendSampleFrameCount,
     IsAudioConfig,
     GetSampleRate,
     GetSampleFrameCount,
   };
-  return &intf;
+  return &audio_config_interface;
 }
 }  // namespace ppapi_proxy

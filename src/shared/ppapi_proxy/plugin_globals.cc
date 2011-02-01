@@ -4,8 +4,8 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_core.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_var.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_core.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
 #include "native_client/src/shared/ppapi_proxy/ppruntime.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"

@@ -1,10 +1,8 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright 2010 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can
+// be found in the LICENSE file.
 
-#include "native_client/src/shared/ppapi_proxy/plugin_image_data.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_image_data.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -125,7 +123,7 @@ void DoUnmap(PP_Resource resource) {
 }  // namespace
 
 const PPB_ImageData* PluginImageData::GetInterface() {
-  static const PPB_ImageData intf = {
+  static const PPB_ImageData image_data_interface = {
     &GetNativeImageDataFormat,
     &IsImageDataFormatSupported,
     &Create,
@@ -134,7 +132,7 @@ const PPB_ImageData* PluginImageData::GetInterface() {
     &DoMap,
     &DoUnmap,
   };
-  return &intf;
+  return &image_data_interface;
 }
 
 PluginImageData::PluginImageData()

@@ -11,7 +11,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_var.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
 #include "native_client/tests/fake_browser_ppapi/fake_core.h"
 #include "native_client/tests/fake_browser_ppapi/fake_host.h"
 #include "native_client/tests/fake_browser_ppapi/fake_instance.h"

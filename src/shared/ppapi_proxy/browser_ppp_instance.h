@@ -1,8 +1,6 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright 2010 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can
+// be found in the LICENSE file.
 
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_INSTANCE_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_INSTANCE_H_
@@ -15,7 +13,7 @@
 
 namespace ppapi_proxy {
 
-// Implements the browser end of a proxy pattern for the PPP_Instance interface.
+// Implements the trusted side of the PPP_Instance interface.
 class BrowserInstance {
  public:
   static const PPP_Instance* GetInterface();

@@ -1,10 +1,8 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright 2010 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can
+// be found in the LICENSE file.
 
-#include "native_client/src/shared/ppapi_proxy/plugin_var.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
 
 #include <map>
 #include <string>
@@ -337,7 +335,7 @@ PP_Var CreateObjectWithModuleDeprecated(
 }  // namespace
 
 const PPB_Var_Deprecated* PluginVar::GetInterface() {
-  static const PPB_Var_Deprecated intf = {
+  static const PPB_Var_Deprecated var_interface = {
     AddRef,
     Release,
     VarFromUtf8,
@@ -354,7 +352,7 @@ const PPB_Var_Deprecated* PluginVar::GetInterface() {
     CreateObject,
     CreateObjectWithModuleDeprecated
   };
-  return &intf;
+  return &var_interface;
 }
 
 std::string PluginVar::DebugString(PP_Var var) {

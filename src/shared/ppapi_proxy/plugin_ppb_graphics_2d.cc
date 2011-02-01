@@ -1,10 +1,8 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright 2010 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can
+// be found in the LICENSE file.
 
-#include "native_client/src/shared/ppapi_proxy/plugin_graphics_2d.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_2d.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -158,7 +156,7 @@ int32_t Flush(PP_Resource graphics_2d,
 }  // namespace
 
 const PPB_Graphics2D* PluginGraphics2D::GetInterface() {
-  static const PPB_Graphics2D intf = {
+  static const PPB_Graphics2D graphics_2d_interface = {
     Create,
     IsGraphics2D,
     Describe,
@@ -167,7 +165,7 @@ const PPB_Graphics2D* PluginGraphics2D::GetInterface() {
     ReplaceContents,
     Flush,
   };
-  return &intf;
+  return &graphics_2d_interface;
 }
 
 }  // namespace ppapi_proxy

@@ -1,6 +1,8 @@
 // Copyright (c) 2010 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// SRPC-abstraction wrappers around PPB_ImageData functions.
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
@@ -16,9 +18,6 @@
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "srpcgen/ppb_rpc.h"
 
-//
-// The following methods are the SRPC dispatchers for ppapi/c/ppb_image_data.h.
-//
 
 using ppapi_proxy::DebugPrintf;
 

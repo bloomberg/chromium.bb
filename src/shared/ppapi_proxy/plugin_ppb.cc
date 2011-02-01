@@ -1,30 +1,28 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2010 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Implements the untrusted side of the PPB_GetInterface method.
 
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include <stdlib.h>
 #include <string.h>
-#include "native_client/src/shared/ppapi_proxy/plugin_audio.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_audio_config.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_buffer.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_core.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_graphics_2d.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_graphics_3d.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_image_data.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_audio.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_audio_config.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_buffer.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_core.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_2d.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_3d.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_image_data.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_instance.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_loader.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_request_info.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_response_info.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_var.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "srpcgen/ppb_rpc.h"
 
 namespace ppapi_proxy {
-
-// SRPC-abstraction wrapper for PPB_GetInterface method.
 
 namespace {
 
