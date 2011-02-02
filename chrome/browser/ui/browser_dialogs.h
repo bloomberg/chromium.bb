@@ -6,7 +6,11 @@
 #define CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 #pragma once
 
+#include "gfx/native_widget_types.h"
 #include "ipc/ipc_message.h"
+
+class HtmlDialogUIDelegate;
+class Profile;
 
 namespace browser {
 
@@ -18,6 +22,15 @@ namespace browser {
 void ShowAboutIPCDialog();
 
 #endif  // IPC_MESSAGE_LOG_ENABLED
+
+// Creates and shows an HTML dialog with the given delegate and profile.
+// The window is automatically destroyed when it is closed.
+// Returns the created window.
+//
+// Make sure to use the returned window only when you know it is safe
+// to do so, i.e. before OnDialogClosed() is called on the delegate.
+gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent, Profile* profile,
+                                 HtmlDialogUIDelegate* delegate);
 
 } // namespace browser
 

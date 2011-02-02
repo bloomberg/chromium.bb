@@ -19,7 +19,7 @@
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
@@ -315,9 +315,9 @@ void SelectFileDialogImpl::OnDialogClosed(FileBrowseDelegate* delegate,
 void SelectFileDialogImpl::OpenHtmlDialog(
     gfx::NativeWindow owning_window,
     FileBrowseDelegate* file_browse_delegate) {
-  browser::ShowHtmlDialogView(owning_window,
-                              ProfileManager::GetDefaultProfile(),
-                              file_browse_delegate);
+  browser::ShowHtmlDialog(owning_window,
+                          ProfileManager::GetDefaultProfile(),
+                          file_browse_delegate);
 }
 
 SelectFileDialogImpl::FileBrowseDelegate::FileBrowseDelegate(

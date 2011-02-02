@@ -19,16 +19,13 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/font.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_font_util.h"
-
-#if defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/html_dialog_window_controller_cppsafe.h"
-#endif
 
 // XPath expression for finding specific iframes.
 static const wchar_t* kLoginIFrameXPath = L"//iframe[@id='login']";
@@ -714,9 +711,8 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
   // function that is not tied to a browser instance.  Note that if we do
   // that, we'll have to fix sync_setup_wizard_unittest.cc as it relies on
   // being able to intercept ShowHtmlDialog() calls.
-  flow->html_dialog_window_ =
-      html_dialog_window_controller::ShowHtmlDialog(
-          flow, service->profile());
+  flow->html_dialog_window_ = browser::ShowHtmlDialog(NULL, service->profile(),
+                                                      flow);
 #else
   Browser* b = BrowserList::GetLastActive();
   if (b) {

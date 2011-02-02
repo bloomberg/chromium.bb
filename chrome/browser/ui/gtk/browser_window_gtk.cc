@@ -36,6 +36,7 @@
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_manager.h"
 #include "chrome/browser/ui/gtk/about_chrome_dialog.h"
@@ -55,7 +56,6 @@
 #include "chrome/browser/ui/gtk/gtk_floating_container.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/html_dialog_gtk.h"
 #include "chrome/browser/ui/gtk/import_dialog_gtk.h"
 #include "chrome/browser/ui/gtk/info_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
@@ -951,7 +951,7 @@ void BrowserWindowGtk::ShowThemeInstallBubble() {
 
 void BrowserWindowGtk::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
                                       gfx::NativeWindow parent_window) {
-  HtmlDialogGtk::ShowHtmlDialogGtk(browser_.get(), delegate, parent_window);
+  browser::ShowHtmlDialog(parent_window, browser_->profile(), delegate);
 }
 
 void BrowserWindowGtk::UserChangedTheme() {

@@ -38,6 +38,7 @@
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
@@ -1181,7 +1182,7 @@ void BrowserView::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
   parent = GetNormalBrowserWindowForBrowser(browser(), NULL);
 #endif  // defined(OS_CHROMEOS)
 
-  browser::ShowHtmlDialogView(parent, browser_.get()->profile(), delegate);
+  browser::ShowHtmlDialog(parent, browser_.get()->profile(), delegate);
 }
 
 void BrowserView::ShowCreateWebAppShortcutsDialog(TabContents* tab_contents) {

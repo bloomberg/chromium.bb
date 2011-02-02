@@ -11,6 +11,7 @@
 #include "chrome/browser/dom_ui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #include "chrome/common/native_web_keyboard_event.h"
@@ -73,10 +74,11 @@ private:
 
 @end
 
-namespace html_dialog_window_controller {
+namespace browser {
 
-gfx::NativeWindow ShowHtmlDialog(
-    HtmlDialogUIDelegate* delegate, Profile* profile) {
+gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent, Profile* profile,
+                                 HtmlDialogUIDelegate* delegate) {
+  // NOTE: Use the parent parameter once we implement modal dialogs.
   return [HtmlDialogWindowController showHtmlDialog:delegate profile:profile];
 }
 

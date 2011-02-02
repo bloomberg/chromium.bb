@@ -25,7 +25,6 @@ class Extension;
 class FilePath;
 class FindBar;
 class GURL;
-class HtmlDialogUIDelegate;
 class InfoBubbleDelegate;
 class Profile;
 class TabContents;
@@ -72,10 +71,6 @@ void ShowBookmarkManagerView(Profile* profile);
 // Shows the about dialog. See AboutChromeView.
 views::Window* ShowAboutChromeView(gfx::NativeWindow parent,
                                    Profile* profile);
-
-// Shows an HTML dialog. See HtmlDialogView.
-void ShowHtmlDialogView(gfx::NativeWindow parent, Profile* profile,
-                        HtmlDialogUIDelegate* delegate);
 
 // Creates and returns a find bar for the given browser window. See FindBarWin.
 FindBar* CreateFindBar(BrowserView* browser_view);

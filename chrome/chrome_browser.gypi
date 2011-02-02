@@ -2624,7 +2624,6 @@
         'browser/ui/cocoa/hover_image_button.mm',
         'browser/ui/cocoa/html_dialog_window_controller.h',
         'browser/ui/cocoa/html_dialog_window_controller.mm',
-        'browser/ui/cocoa/html_dialog_window_controller_cppsafe.h',
         'browser/ui/cocoa/hung_renderer_controller.h',
         'browser/ui/cocoa/hung_renderer_controller.mm',
         'browser/ui/cocoa/hyperlink_button_cell.h',

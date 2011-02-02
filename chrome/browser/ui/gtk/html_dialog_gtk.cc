@@ -11,19 +11,22 @@
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "ipc/ipc_message.h"
 
-// static
-void HtmlDialogGtk::ShowHtmlDialogGtk(Browser* browser,
-                                      HtmlDialogUIDelegate* delegate,
-                                      gfx::NativeWindow parent_window) {
+namespace browser {
+
+gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent, Profile* profile,
+                                 HtmlDialogUIDelegate* delegate) {
   HtmlDialogGtk* html_dialog =
-      new HtmlDialogGtk(browser->profile(), delegate, parent_window);
-  html_dialog->InitDialog();
+      new HtmlDialogGtk(profile, delegate, parent);
+  return html_dialog->InitDialog();
 }
+
+} // namespace browser
 
 ////////////////////////////////////////////////////////////////////////////////
 // HtmlDialogGtk, public:
@@ -126,7 +129,7 @@ void HtmlDialogGtk::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 ////////////////////////////////////////////////////////////////////////////////
 // HtmlDialogGtk:
 
-void HtmlDialogGtk::InitDialog() {
+gfx::NativeWindow HtmlDialogGtk::InitDialog() {
   tab_contents_.reset(
       new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL));
   tab_contents_->set_delegate(this);
@@ -164,6 +167,8 @@ void HtmlDialogGtk::InitDialog() {
                               dialog_size.height());
 
   gtk_widget_show_all(dialog_);
+
+  return GTK_WINDOW(dialog_);
 }
 
 void HtmlDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {

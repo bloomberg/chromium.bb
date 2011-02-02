@@ -22,12 +22,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/html_dialog_gtk.h"
-#endif  // defined(TOOLKIT_GTK)
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/browser_dialogs.h"
-#endif  // defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -573,13 +568,7 @@ PrintDialogCloud::PrintDialogCloud(const FilePath& path_to_pdf,
     DCHECK(browser_);
     browser_->BrowserShowHtmlDialog(dialog_delegate, NULL);
   } else {
-#if defined(TOOLKIT_VIEWS)
-    browser::ShowHtmlDialogView(NULL, profile, dialog_delegate);
-#elif defined(TOOLKIT_GTK)
-    HtmlDialogGtk* html_dialog =
-        new HtmlDialogGtk(profile, dialog_delegate, NULL);
-    html_dialog->InitDialog();
-#endif  // defined(TOOLKIT_VIEWS)
+    browser::ShowHtmlDialog(NULL, profile, dialog_delegate);
   }
 }
 

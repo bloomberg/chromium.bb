@@ -30,11 +30,8 @@ class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
                 gfx::NativeWindow parent_window);
   virtual ~HtmlDialogGtk();
 
-  static void ShowHtmlDialogGtk(Browser* browser,
-                                HtmlDialogUIDelegate* delegate,
-                                gfx::NativeWindow parent_window);
   // Initializes the contents of the dialog (the DOMView and the callbacks).
-  void InitDialog();
+  gfx::NativeWindow InitDialog();
 
   // Overridden from HtmlDialogUI::Delegate:
   virtual bool IsDialogModal() const;

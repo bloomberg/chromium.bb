@@ -25,6 +25,7 @@
 #include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -35,14 +36,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_font_util.h"
-
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/html_dialog_gtk.h"
-#endif  // defined(TOOLKIT_GTK)
-
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/browser_dialogs.h"
-#endif  // defined(TOOLKIT_GTK)
 
 static const wchar_t kGaiaLoginIFrameXPath[] = L"//iframe[@id='gaialogin']";
 static const wchar_t kDoneIframeXPath[] = L"//iframe[@id='setupdone']";
@@ -74,19 +67,13 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
   // invoked in the context of a "token expired" notfication. If we don't have
   // a brower, use the underlying dialog system to show the dialog without
   // using a browser.
-  Browser* browser = BrowserList::GetLastActive();
-  if (browser) {
-    browser->BrowserShowHtmlDialog(flow, parent_window);
-  } else {
-#if defined(TOOLKIT_VIEWS)
-    browser::ShowHtmlDialogView(parent_window, profile, flow);
-#elif defined(TOOLKIT_GTK)
-    HtmlDialogGtk* html_dialog =
-        new HtmlDialogGtk(profile, flow, parent_window);
-    html_dialog->InitDialog();
-#endif  // defined(TOOLKIT_VIEWS)
-  // TODO(sanjeevr): Implement the "no browser" scenario for the Mac.
+  if (!parent_window) {
+    Browser* browser = BrowserList::GetLastActive();
+    if (browser && browser->window())
+      parent_window = browser->window()->GetNativeHandle();
   }
+  DCHECK(profile);
+  browser::ShowHtmlDialog(parent_window, profile, flow);
   return flow;
 }
 
