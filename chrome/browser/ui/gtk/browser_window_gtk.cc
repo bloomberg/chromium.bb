@@ -1274,8 +1274,8 @@ void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
   } else if (should_hide) {
     // Store split offset when hiding devtools window only.
     gint divider_offset = gtk_paned_get_position(GTK_PANED(contents_split_));
-    g_browser_process->local_state()->SetInteger(
-        prefs::kDevToolsSplitLocation, divider_offset);
+    browser_->profile()->GetPrefs()->
+        SetInteger(prefs::kDevToolsSplitLocation, divider_offset);
     gtk_widget_hide(devtools_container_->widget());
   }
 }
@@ -1598,8 +1598,8 @@ void BrowserWindowGtk::InitWidgets() {
                   FALSE, TRUE);
   gtk_box_pack_end(GTK_BOX(render_area_vbox_), contents_split_, TRUE, TRUE, 0);
   // Restore split offset.
-  int split_offset = g_browser_process->local_state()->GetInteger(
-      prefs::kDevToolsSplitLocation);
+  int split_offset = browser_->profile()->GetPrefs()->
+      GetInteger(prefs::kDevToolsSplitLocation);
   if (split_offset != -1) {
     if (split_offset < kMinDevToolsHeight)
       split_offset = kMinDevToolsHeight;
@@ -1759,13 +1759,13 @@ void BrowserWindowGtk::SaveWindowPosition() {
   // We also need to save the placement for startup.
   // This is a web of calls between views and delegates on Windows, but the
   // crux of the logic follows.  See also cocoa/browser_window_controller.mm.
-  if (!g_browser_process->local_state())
+  if (!browser_->profile()->GetPrefs())
     return;
 
   std::string window_name = browser_->GetWindowPlacementKey();
   DictionaryValue* window_preferences =
-      g_browser_process->local_state()->GetMutableDictionary(
-          window_name.c_str());
+      browser_->profile()->GetPrefs()->
+          GetMutableDictionary(window_name.c_str());
   // Note that we store left/top for consistency with Windows, but that we
   // *don't* obey them; we only use them for computing width/height.  See
   // comments in SetGeometryHints().

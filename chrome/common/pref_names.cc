@@ -275,11 +275,13 @@ const char kInstantPromo[] = "instant.promo";
 
 // Used to migrate preferences from local state to user preferences to
 // enable multiple profiles.
-// Holds possible values:
-// 0: no preferences migrated yet.
-// 1: dns prefetching preferences stored in user preferences.
+// BITMASK with possible values (see browser_prefs.cc for enum):
+// 0: No preferences migrated.
+// 1: DNS preferences migrated: kDnsPrefetchingStartupList and HostReferralList
+// 2: Browser window preferences migrated: kDevToolsSplitLocation and
+//    kBrowserWindowPlacement
 const char kMultipleProfilePrefMigration[] =
-    "profile.multiple_profile_prefs_version";
+    "local_state.multiple_profile_prefs_version";
 
 #if defined(USE_NSS) || defined(USE_OPENSSL)
 // Prefs for SSLConfigServicePref.  Currently, these are only present on

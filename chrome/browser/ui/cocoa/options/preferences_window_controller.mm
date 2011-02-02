@@ -776,7 +776,7 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
   if (g_browser_process && g_browser_process->local_state()) {
     sizeSaver_.reset([[WindowSizeAutosaver alloc]
        initWithWindow:[self window]
-          prefService:g_browser_process->local_state()
+          prefService:profile_->GetPrefs()
                  path:prefs::kPreferencesWindowPlacement]);
   }
 

@@ -91,9 +91,7 @@ TEST_F(BrowserWindowControllerTest, TestSaveWindowPosition) {
   EXPECT_TRUE(browser_window_placement->empty());
 
   // Ask the window to save its position, then check that a preference
-  // exists.  We're technically passing in a pointer to the user prefs
-  // and not the local state prefs, but a PrefService* is a
-  // PrefService*, and this is a unittest.
+  // exists.
   [controller_ saveWindowPositionToPrefs:prefs];
   browser_window_placement =
       prefs->GetDictionary(prefs::kBrowserWindowPlacement);

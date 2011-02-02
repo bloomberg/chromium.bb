@@ -557,7 +557,7 @@ TabContents* Browser::OpenApplicationWindow(
   else
     app_name = web_app::GenerateApplicationNameFromURL(url);
 
-  RegisterAppPrefs(app_name);
+  RegisterAppPrefs(app_name, profile);
 
   bool as_panel = extension && (container == extension_misc::LAUNCH_PANEL);
 
@@ -775,7 +775,7 @@ gfx::Rect Browser::GetSavedWindowBounds() const {
 
   gfx::Rect restored_bounds = override_bounds_;
   bool maximized;
-  WindowSizer::GetBrowserWindowBounds(app_name_, restored_bounds, NULL,
+  WindowSizer::GetBrowserWindowBounds(app_name_, restored_bounds, this,
                                       &restored_bounds, &maximized);
   return restored_bounds;
 }
@@ -794,7 +794,7 @@ bool Browser::GetSavedMaximizedState() const {
   // An explicit maximized state was not set. Query the window sizer.
   gfx::Rect restored_bounds;
   bool maximized = false;
-  WindowSizer::GetBrowserWindowBounds(app_name_, restored_bounds, NULL,
+  WindowSizer::GetBrowserWindowBounds(app_name_, restored_bounds, this,
                                       &restored_bounds, &maximized);
   return maximized;
 }
@@ -2015,11 +2015,10 @@ void Browser::SetNewHomePagePrefs(PrefService* prefs) {
 
 // static
 void Browser::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kBrowserWindowPlacement);
   prefs->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
-  prefs->RegisterIntegerPref(prefs::kDevToolsSplitLocation, -1);
   prefs->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement);
   prefs->RegisterIntegerPref(prefs::kExtensionSidebarWidth, -1);
+  prefs->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
   // Educated guess: Chrome has a bundled Flash version supporting
   // clearing LSO data, Chromium hasn't.
 #if defined(GOOGLE_CHROME_BUILD)
@@ -2068,7 +2067,8 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kDevToolsDisabled, false);
   prefs->RegisterBooleanPref(prefs::kIncognitoEnabled, true);
   prefs->RegisterDoublePref(prefs::kDefaultZoomLevel, 0.0);
-  prefs->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
+  prefs->RegisterIntegerPref(prefs::kDevToolsSplitLocation, -1);
+  prefs->RegisterDictionaryPref(prefs::kBrowserWindowPlacement);
   // We need to register the type of this preference in order to query
   // it even though it's only typically controlled via policy.
   prefs->RegisterBooleanPref(prefs::kDisable3DAPIs, false);
@@ -3011,7 +3011,7 @@ bool Browser::IsApplication() const {
 void Browser::ConvertContentsToApplication(TabContents* contents) {
   const GURL& url = contents->controller().GetActiveEntry()->url();
   std::string app_name = web_app::GenerateApplicationNameFromURL(url);
-  RegisterAppPrefs(app_name);
+  RegisterAppPrefs(app_name, contents->profile());
 
   DetachContents(contents);
   Browser* app_browser = Browser::CreateForApp(
@@ -4167,7 +4167,7 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
 }
 
 // static
-void Browser::RegisterAppPrefs(const std::string& app_name) {
+void Browser::RegisterAppPrefs(const std::string& app_name, Profile* profile) {
   // A set of apps that we've already started.
   static std::set<std::string>* g_app_names = NULL;
 
@@ -4183,10 +4183,7 @@ void Browser::RegisterAppPrefs(const std::string& app_name) {
   std::string window_pref(prefs::kBrowserWindowPlacement);
   window_pref.append("_");
   window_pref.append(app_name);
-  PrefService* prefs = g_browser_process->local_state();
-  DCHECK(prefs);
-
-  prefs->RegisterDictionaryPref(window_pref.c_str());
+  profile->GetPrefs()->RegisterDictionaryPref(window_pref.c_str());
 }
 
 void Browser::TabRestoreServiceChanged(TabRestoreService* service) {

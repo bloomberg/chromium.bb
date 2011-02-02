@@ -20,6 +20,7 @@
 #include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/net/url_info.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -394,16 +395,15 @@ static void InitNetworkPredictor(TimeDelta max_dns_queue_delay,
           prefs::kDnsPrefetchingHostReferralList)->DeepCopy());
 
   // Remove obsolete preferences from local state if necessary.
-  int dns_prefs_version =
-      user_prefs->GetInteger(prefs::kMultipleProfilePrefMigration);
-  if (dns_prefs_version < 1) {
-    // These prefs only need to be registered if they need to be cleared from
-    // local state.
+  int current_version =
+      local_state->GetInteger(prefs::kMultipleProfilePrefMigration);
+  if ((current_version & browser::DNS_PREFS) == 0) {
     local_state->RegisterListPref(prefs::kDnsStartupPrefetchList);
     local_state->RegisterListPref(prefs::kDnsHostReferralList);
     local_state->ClearPref(prefs::kDnsStartupPrefetchList);
     local_state->ClearPref(prefs::kDnsHostReferralList);
-    user_prefs->SetInteger(prefs::kMultipleProfilePrefMigration, 1);
+    local_state->SetInteger(prefs::kMultipleProfilePrefMigration,
+        current_version | browser::DNS_PREFS);
   }
 
   g_browser_process->io_thread()->InitNetworkPredictor(

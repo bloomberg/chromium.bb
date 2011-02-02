@@ -479,7 +479,8 @@
 }
 
 - (void)updateDevToolsForContents:(TabContents*)contents {
-  [devToolsController_ updateDevToolsForTabContents:contents];
+  [devToolsController_ updateDevToolsForTabContents:contents
+                                        withProfile:browser_->profile()];
   [devToolsController_ ensureContentsVisible];
 }
 
@@ -1428,7 +1429,8 @@
   windowShim_->UpdateTitleBar();
 
   [sidebarController_ updateSidebarForTabContents:contents];
-  [devToolsController_ updateDevToolsForTabContents:contents];
+  [devToolsController_ updateDevToolsForTabContents:contents
+                                        withProfile:browser_->profile()];
 
   // Update the bookmark bar.
   // Must do it after sidebar and devtools update, otherwise bookmark bar might
