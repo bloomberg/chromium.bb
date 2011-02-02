@@ -48,6 +48,7 @@
         '../third_party/skia/gpu/include/GrDrawTarget.h',
         '../third_party/skia/gpu/include/GrFontScaler.h',
         '../third_party/skia/gpu/include/GrGLConfig.h',
+        '../third_party/skia/gpu/include/GrGLConfig_chrome.h',
         '../third_party/skia/gpu/include/GrGLIndexBuffer.h',
         '../third_party/skia/gpu/include/GrGLTexture.h',
         '../third_party/skia/gpu/include/GrGLVertexBuffer.h',
