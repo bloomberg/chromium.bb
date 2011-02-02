@@ -102,7 +102,10 @@ TEST(InputMethodUtilTest, GetLanguageCodeFromInputMethodId) {
 }
 
 TEST(InputMethodUtilTest, GetInputMethodDisplayNameFromId) {
-  EXPECT_EQ("Pinyin", GetInputMethodDisplayNameFromId("pinyin"));
+  EXPECT_EQ("Pinyin input method", GetInputMethodDisplayNameFromId("pinyin"));
+  EXPECT_EQ("English (United States)",
+            GetInputMethodDisplayNameFromId("xkb:us::eng"));
+  EXPECT_EQ("", GetInputMethodDisplayNameFromId("nonexistent"));
 }
 
 TEST(InputMethodUtilTest, GetInputMethodDescriptorFromId) {

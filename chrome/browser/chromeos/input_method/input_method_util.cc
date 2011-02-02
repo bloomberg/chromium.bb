@@ -468,11 +468,10 @@ std::string GetKeyboardLayoutName(const std::string& input_method_id) {
 
 std::string GetInputMethodDisplayNameFromId(
     const std::string& input_method_id) {
-  static const char kDefaultDisplayName[] = "USA";
   InputMethodIdToDescriptorMap::const_iterator iter
       = IdMaps::GetInstance()->id_to_descriptor->find(input_method_id);
   return (iter == IdMaps::GetInstance()->id_to_descriptor->end()) ?
-      kDefaultDisplayName : iter->second.display_name;
+      "" : GetStringUTF8(iter->second.display_name);
 }
 
 const chromeos::InputMethodDescriptor* GetInputMethodDescriptorFromId(

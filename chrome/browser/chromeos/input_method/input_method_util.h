@@ -95,7 +95,7 @@ std::string GetLanguageCodeFromInputMethodId(
     const std::string& input_method_id);
 
 // Converts an input method ID to a display name of the IME. Returns
-// "USA" (US keyboard) when |input_method_id| is unknown.
+// an empty strng when |input_method_id| is unknown.
 // Examples: "pinyin" => "Pinyin"
 //           "m17n:ar:kbd" => "kbd (m17n)"
 std::string GetInputMethodDisplayNameFromId(const std::string& input_method_id);
