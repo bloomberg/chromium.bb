@@ -15,10 +15,8 @@ class KeyboardLibraryImpl : public KeyboardLibrary {
   virtual ~KeyboardLibraryImpl() {}
 
   std::string GetHardwareKeyboardLayoutName() const {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
-      return chromeos::GetHardwareKeyboardLayoutName();
-    }
-    return "";
+    // TODO(satorux): Rework this function. crosbug.com/11528.
+    return "xkb:us::eng";
   }
 
   std::string GetCurrentKeyboardLayoutName() const {

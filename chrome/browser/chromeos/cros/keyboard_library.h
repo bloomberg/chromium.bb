@@ -18,14 +18,21 @@ class KeyboardLibrary {
  public:
   virtual ~KeyboardLibrary() {}
 
-  // Returns the hardware layout name like "xkb:us::eng". On error, returns "".
+  // Returns the input method ID of the hardware layout like
+  // "xkb:us::eng". On error, returns "". TODO(satorux): Rename this
+  // function and rework the implementation.  crosbug.com/11528.
   virtual std::string GetHardwareKeyboardLayoutName() const = 0;
 
-  // Returns the current layout name like "us". On error, returns "".
+  // Returns the current layout name as XKB layout like "us" and
+  // "us(dvorak)". On error, returns "". This function is very expensive
+  // as it calls a libcros function that gets the layout information from
+  // the X server. You should instead use
+  // InputMethodLibrary::current_input_method() for most cases.
   virtual std::string GetCurrentKeyboardLayoutName() const = 0;
 
   // Sets the current keyboard layout to |layout_name|.  Returns true on
-  // success.
+  // success. |layout_name| should look like XKB layout like "us" and
+  // "us(dvorak)".
   virtual bool SetCurrentKeyboardLayoutByName(
       const std::string& layout_name) = 0;
 
