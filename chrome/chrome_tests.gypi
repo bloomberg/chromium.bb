@@ -1279,7 +1279,6 @@
         'browser/metrics/metrics_service_unittest.cc',
         'browser/mock_plugin_exceptions_table_model.cc',
         'browser/mock_plugin_exceptions_table_model.h',
-        'browser/multi_process_notification_unittest.cc',
         'browser/net/connection_tester_unittest.cc',
         'browser/net/gaia/token_service_unittest.cc',
         'browser/net/gaia/token_service_unittest.h',
