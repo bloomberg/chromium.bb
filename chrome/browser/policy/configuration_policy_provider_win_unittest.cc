@@ -454,6 +454,9 @@ INSTANTIATE_TEST_CASE_P(
             kPolicyPolicyRefreshRate,
             key::kPolicyRefreshRate),
         PolicyTestParams::ForBooleanPolicy(
+            kPolicyInstantEnabled,
+            key::kInstantEnabled),
+        PolicyTestParams::ForBooleanPolicy(
             kPolicyIncognitoEnabled,
             key::kIncognitoEnabled)));
 

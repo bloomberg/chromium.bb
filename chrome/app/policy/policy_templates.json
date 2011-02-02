@@ -1100,6 +1100,21 @@
 
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph>.''',
     },
+    {
+      'name': 'InstantEnabled',
+      'type': 'main',
+      'supported_on': ['chrome.*:11-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
+      'caption': '''Enable Instant''',
+      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Instant feature and prevents users from changing this setting.
+
+      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Instant is enabled.
+
+      If you disable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Instant is disabled.
+
+      If you enable or disable this setting, users cannot change or override this setting.''',
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.

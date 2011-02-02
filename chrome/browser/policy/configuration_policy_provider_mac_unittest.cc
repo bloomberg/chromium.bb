@@ -295,6 +295,9 @@ INSTANTIATE_TEST_CASE_P(
         PolicyTestParams::ForBooleanPolicy(
             kPolicyPrintingEnabled,
             key::kPrintingEnabled),
+        PolicyTestParams::ForBooleanPolicy(
+            kPolicyInstantEnabled,
+            key::kInstantEnabled),
         PolicyTestParams::ForIntegerPolicy(
             kPolicyPolicyRefreshRate,
             key::kPolicyRefreshRate)));

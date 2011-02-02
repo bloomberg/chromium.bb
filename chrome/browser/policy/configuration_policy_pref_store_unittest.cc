@@ -186,6 +186,8 @@ INSTANTIATE_TEST_CASE_P(
                     prefs::kDisableAuthNegotiateCnameLookup),
         TypeAndName(kPolicyEnableAuthNegotiatePort,
                     prefs::kEnableAuthNegotiatePort),
+        TypeAndName(kPolicyInstantEnabled,
+                    prefs::kInstantEnabled),
         TypeAndName(kPolicyDisable3DAPIs,
                     prefs::kDisable3DAPIs)));
 

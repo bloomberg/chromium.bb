@@ -227,6 +227,7 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kDisable3DAPIs },
   { Value::TYPE_INTEGER, kPolicyPolicyRefreshRate,
     prefs::kPolicyRefreshRate },
+  { Value::TYPE_BOOLEAN, kPolicyInstantEnabled, prefs::kInstantEnabled },
   { Value::TYPE_BOOLEAN, kPolicyDefaultBrowserSettingEnabled,
     prefs::kDefaultBrowserSettingEnabled },
 
@@ -843,6 +844,7 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kDisable3DAPIs },
     { kPolicyPolicyRefreshRate, Value::TYPE_INTEGER,
       key::kPolicyRefreshRate },
+    { kPolicyInstantEnabled, Value::TYPE_BOOLEAN, key::kInstantEnabled },
     { kPolicyDefaultBrowserSettingEnabled, Value::TYPE_BOOLEAN,
       key::kDefaultBrowserSettingEnabled },
 

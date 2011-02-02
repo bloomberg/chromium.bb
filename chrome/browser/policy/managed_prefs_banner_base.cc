@@ -67,6 +67,7 @@ void ManagedPrefsBannerBase::Init(PrefService* local_state,
       AddUserPref(prefs::kDefaultSearchProviderSuggestURL);
       AddUserPref(prefs::kDefaultSearchProviderIconURL);
       AddUserPref(prefs::kDefaultSearchProviderEncodings);
+      AddUserPref(prefs::kInstantEnabled);
       AddLocalStatePref(prefs::kDefaultBrowserSettingEnabled);
       break;
     case OPTIONS_PAGE_CONTENT:
