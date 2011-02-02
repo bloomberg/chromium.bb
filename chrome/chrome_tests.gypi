@@ -667,10 +667,6 @@
               ],
             }],
           ],
-          'sources!': [
-            # TODO(port): http://crbug.com/30700
-            'test/ui/npapi_uitest.cc',
-          ],
         }],
         ['chromeos==1', {
           'sources!': [

@@ -82,8 +82,12 @@ bool ExecuteJavascriptPopupWindowTargetPluginTest::CheckWindow(
 
   if (xwindow) {
     Window root, parent;
+    Window* wins = NULL;
+    unsigned int num_child;
     Status status = XQueryTree(extra->display, xwindow, &root, &parent,
-                               NULL, NULL);  // NULL children info.
+                               &wins, &num_child);
+    if (wins)
+      XFree(wins);
     DCHECK(status != 0);
     if (!parent || parent == root)
       SetError("Windowed plugin instantiated with NULL parent");

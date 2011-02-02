@@ -208,6 +208,11 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
   if (instance == NULL)
     return NPERR_INVALID_INSTANCE_ERROR;
 
+  if (variable == NPPVpluginNeedsXEmbed) {
+    *static_cast<NPBool*>(value) = 1;
+    return NPERR_NO_ERROR;
+  }
+
   // XXXMB - do work here.
   return NPERR_GENERIC_ERROR;
 }
