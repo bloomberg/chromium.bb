@@ -89,3 +89,4 @@ IN_PROC_BROWSER_TEST_F(SettingsDOMUITest, TestSetBooleanPrefTriggers) {
   ASSERT_TRUE(RunDOMUITest(
       FILE_PATH_LITERAL("settings_set_boolean_pref_triggers.js")));
 }
+
