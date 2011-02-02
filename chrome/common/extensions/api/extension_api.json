@@ -494,7 +494,6 @@
   },
   {
     "namespace": "experimental.tts",
-    "nodoc": true,
     "functions": [
       {
         "name": "speak",
@@ -504,13 +503,13 @@
           {
             "type": "string",
             "name": "utterance",
-            "description": "The text to speak."
+            "description": "The text to speak. May include SSML markup."
           },
           {
             "type": "object",
             "name": "options",
             "optional": true,
-            "description": "The speak options. This parameter is currently ignored.",
+            "description": "The speech options.",
             "properties": {
               "enqueue": {
 	        "type": "boolean",
@@ -520,12 +519,12 @@
 	      "voiceName": {
                 "type": "string",
                 "optional": true,
-                "description": "The name of the voice to use for synthesis."
+                "description": "The name of the voice to use for synthesis. If empty, uses any available voice."
               },
 	      "locale": {
                 "type": "string",
                 "optional": true,
-                "description": "The language and region code that specify the language and dialect to be used for synthesis, in the form <language>-<region>, e.g. en-US, en-GB, fr-CA, zh-CN, etc."
+                "description": "The language and optional region code that specify the language and dialect to be used for synthesis, in the form &lt;language&gt;-&lt;region&gt;. Examples: 'en', 'en-US', 'en-GB', 'zh-CN', etc."
               },
               "gender": {
                 "type": "string",
@@ -538,21 +537,21 @@
                 "optional": true,
                 "minimum": 0,
                 "maximum": 1,
-                "description": "Speaking speed between 0 and 1 inclusive, with 0 being slowest and 1 being fastest."
+                "description": "Speaking speed between 0 and 1 inclusive, with 0 being slowest and 1 being fastest, with a default of 0.5."
               },
               "pitch": {
                 "type": "number",
                 "optional": true,
                 "minimum": 0,
                 "maximum": 1,
-                "description": "Speaking pitch between 0 and 1 inclusive, with 0 being lowest and 1 being highest."
+                "description": "Speaking pitch between 0 and 1 inclusive, with 0 being lowest and 1 being highest, with a default of 0.5."
               },
               "volume": {
                 "type": "number",
                 "optional": true,
                 "minimum": 0,
                 "maximum": 1,
-                "description": "Speaking volume between 0 and 1 inclusive, with 0 being lowest and 1 being highest."
+                "description": "Speaking volume between 0 and 1 inclusive, with 0 being lowest and 1 being highest, with a default of 1.0."
               }
             }
           },
@@ -617,7 +616,7 @@
           {
             "type": "string",
             "name": "utterance",
-            "description": "The text to speak."
+            "description": "The text to speak. This may include SSML, so if your engine does not support SSML, you should strip out all XML markup and synthesize only the underlying text content."
           },
           {
             "type": "object",
@@ -681,7 +680,7 @@
       {
         "name": "onStop",
         "type": "function",
-        "description": "Fired when a call is made to tts.stop and this extension may be in the middle of speaking."
+        "description": "Fired when a call is made to tts.stop and this extension may be in the middle of speaking. If an extension receives a call to onStop and speech is already stopped, it should do nothing (not raise an error)."
       }
     ]
   },

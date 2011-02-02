@@ -52,6 +52,12 @@
     "chrome.experimental.sidebar.setIcon": "experimental.sidebar.html#method-setIcon", 
     "chrome.experimental.sidebar.setTitle": "experimental.sidebar.html#method-setTitle", 
     "chrome.experimental.sidebar.show": "experimental.sidebar.html#method-show", 
+    "chrome.experimental.tts.isSpeaking": "experimental.tts.html#method-isSpeaking", 
+    "chrome.experimental.tts.onSpeak": "experimental.tts.html#event-onSpeak", 
+    "chrome.experimental.tts.onStop": "experimental.tts.html#event-onStop", 
+    "chrome.experimental.tts.speak": "experimental.tts.html#method-speak", 
+    "chrome.experimental.tts.speakCompleted": "experimental.tts.html#method-speakCompleted", 
+    "chrome.experimental.tts.stop": "experimental.tts.html#method-stop", 
     "chrome.experimental.webNavigation.onBeforeNavigate": "experimental.webNavigation.html#event-onBeforeNavigate", 
     "chrome.experimental.webNavigation.onBeforeRetarget": "experimental.webNavigation.html#event-onBeforeRetarget", 
     "chrome.experimental.webNavigation.onCommitted": "experimental.webNavigation.html#event-onCommitted", 
@@ -941,7 +947,7 @@
         "info.html", 
         "manifest.json"
       ], 
-      "source_hash": "c746d9114348f4b414c1ec05e988e2807feb963a", 
+      "source_hash": "672f49ed8edbe0829c7ba5a1d890b4440b157991", 
       "zip_path": "examples/extensions/imageinfo.zip"
     }, 
     {

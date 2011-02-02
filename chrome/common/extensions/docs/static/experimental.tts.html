@@ -1,0 +1,146 @@
+<p id="classSummary">
+Use the <code>chrome.experimental.tts</code> module to play synthesized
+text-to-speech (TTS) from your extension or packaged app, or to register
+as a speech provider for other extensions and packaged apps that want to speak.
+</p>
+
+<p class="note"><b>Give us feedback:</b> If you have suggestions,
+especially changes that should be made before stabilizing the first
+version of this API, please send your ideas to the
+<a href="http://groups.google.com/a/chromium.org/group/chromium-extensions">chromium-extensions</a>
+group.</p>
+
+<h2 id="overview">Overview</h2>
+
+<p>To enable this experimental API, visit
+<b>chrome://flags</b> and enable <b>Experimental Extension APIs</b>.
+
+<p>Chrome provides native support for speech on Windows (using SAPI
+5), Mac OS X, and Chrome OS, using speech synthesis capabilities
+provided by the operating system. On all platforms, the user can
+install extensions that register themselves as alternative speech
+synthesis providers.</p>
+
+<h2 id="generating_speech">Generating speech</h2>
+
+<p>Call <code>speak()</code> from your extension or
+packaged app to speak. For example:</p>
+
+<pre>chrome.experimental.tts.speak('Hello, world.');</pre>
+
+<p>You can provide options that control various properties of the speech,
+such as its rate, pitch, and more. For example:</p>
+
+<pre>chrome.experimental.tts.speak('Hello, world.', {'rate': 0.8});</pre>
+
+<p>It's also a good idea to specify the locale so that a synthesizer
+supporting that language (and regional dialect, if applicable) is chosen.</p>
+
+<pre>chrome.experimental.tts.speak(
+    'Hello, world.',
+    {
+      'locale': 'en-US',
+      'rate': 0.8
+    });</pre>
+
+<p>Not all speech engines will support all options.</p>
+
+<p>You can also pass a callback function that will be called when the
+speech has finished. For example, suppose we have an image on our page
+displaying a picture of a face with a closed mouth. We could open the mouth
+while speaking, and close it when done.</p>
+
+<pre>faceImage.src = 'open_mouth.png';
+chrome.experimental.tts.speak(
+    'Hello, world.', null, function() {
+      faceImage.src = 'closed_mouth.png';
+    });
+</pre>
+
+<p>To stop speaking immediately, just call <code>stop()</code>. Call
+<code>isSpeaking()</code> to find out if a TTS engine is currently speaking.</p>
+
+<p>You can check to see if an error occurred by checking
+<code>chrome.extension.lastError</code> inside the callback function.</p>
+
+<h2 id="ssml">SSML markup</h2>
+
+<p>Utterances used in this API may include markup using the
+<a href="http://www.w3.org/TR/speech-synthesis">Speech Synthesis Markup
+Language (SSML)</a>. For example:
+
+<pre>chrome.experimental.tts.speak('The &lt;emphasis&gt;second&lt;/emphasis&gt; word of this sentence was emphasized.');</pre>
+
+<p>Not all speech engines will support all SSML tags, and some may not support
+SSML at all, but all engines are expected to ignore any SSML they don't
+support and still speak the underlying text.</p>
+
+<h2 id="provider">Implementing a speech provider</h2>
+
+<p>An extension can register itself as a speech provider. By doing so, it
+can intercept some or all calls to functions such as
+<code>speak()</code> and <code>stop()</code> and provide an alternate
+implementation. Extensions are free to use any available web technology
+to provide speech, including streaming audio from a server, HTML5 audio,
+Native Client, or Flash. An extension could even do something different
+with the utterances, like display closed captions in a pop-up window or
+send them as log messages to a remote server.</p>
+
+<p>To provide TTS, an extension must first declare all voices it provides
+in the extension manifest, like this:</p>
+
+<pre>{
+  "name": "My TTS Provider",
+  "version": "1.0",
+  <b>"permissions": ["experimental"]
+  "tts": {
+    "voices": [
+      {
+        "voiceName": "Alice",
+        "locale": "en-US",
+        "gender": "female"
+      },
+      {
+        "voiceName": "Pat",
+        "locale": "en-US"
+      }
+    ]
+  },</b>
+  "background_page": "background.html",
+}</pre>
+
+<p>An extension can specify any number of voices. The three
+parameters&mdash;<code>voiceName</code>, <code>locale</code>,
+and <code>gender</code>&mdash;are all optional. If they are all unspecified,
+the extension will handle all speech from all clients. If any of them
+are specified, they can be used to filter speech requests. For
+example, if a voice only supports French, it should set the locale to
+'fr' (or something more specific like 'fr-FR') so that only utterances
+in that locale are routed to that extension.</p>
+
+<p>To handle speech calls, the extension should register listeners
+for <code>onSpeak</code> and <code>onStop</code>, like this:</p>
+
+<pre>var speakListener = function(utterance, options, callback) {
+  ...
+  callback();
+};
+var stopListener = function() {
+  ...
+};
+chrome.experimental.tts.onSpeak.addListener(speakListener);
+chrome.experimental.tts.onStop.addListener(stopListener);</pre>
+
+<p class="warning"><b>Important:</b> Don't forget to call the callback
+function from your speak listener!</p>
+
+<p>If an extension does not register listeners for both
+<code>onSpeak</code> and <code>onStop</code>, it will not intercept any
+speech calls, regardless of what is in the manifest.
+
+<p>The decision of whether or not to send a given speech request to an
+extension is based solely on whether the extension supports the given voice
+parameters in its manifest and has registered listeners
+for <code>onSpeak</code> and <code>onStop</code>. In other words,
+there's no way for an extension to receive a speech request and
+dynamically decide whether to handle it or not.</p>
