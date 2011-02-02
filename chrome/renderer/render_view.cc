@@ -88,6 +88,7 @@
 #include "chrome/renderer/searchbox_extension.h"
 #include "chrome/renderer/speech_input_dispatcher.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
+#include "chrome/renderer/translate_helper.h"
 #include "chrome/renderer/user_script_idle_scheduler.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "chrome/renderer/visitedlink_slave.h"
@@ -565,7 +566,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(page_info_method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(accessibility_method_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(translate_helper_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       devtools_client_(NULL),
       geolocation_dispatcher_(NULL),
@@ -651,6 +651,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   // notification and can stop the propagation.
   page_click_tracker->AddListener(password_autofill_manager);
   page_click_tracker->AddListener(autofill_agent);
+  new TranslateHelper(this);
 }
 
 RenderView::~RenderView() {
@@ -1087,8 +1088,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnExecuteCode)
     IPC_MESSAGE_HANDLER(ViewMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
-    IPC_MESSAGE_HANDLER(ViewMsg_TranslatePage, OnTranslatePage)
-    IPC_MESSAGE_HANDLER(ViewMsg_RevertTranslation, OnRevertTranslation)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableAccessibility, OnEnableAccessibility)
     IPC_MESSAGE_HANDLER(ViewMsg_SetAccessibilityFocus, OnSetAccessibilityFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityDoDefaultAction,
@@ -2659,10 +2658,6 @@ void RenderView::show(WebNavigationPolicy policy) {
 }
 
 void RenderView::closeWidgetSoon() {
-  // Cancel pending translations so that the translate_helper_ does not attempt
-  // to access the WebView.
-  translate_helper_.CancelPendingTranslation();
-
   // Same for the phishing classifier.
   if (phishing_delegate_.get())
     phishing_delegate_->CancelPendingClassification();
@@ -3390,9 +3385,6 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
 
     // We bump our Page ID to correspond with the new session history entry.
     page_id_ = next_page_id_++;
-
-    // Any pending translation is now obsolete.
-    translate_helper_.CancelPendingTranslation();
 
     // Let the phishing classifier decide whether to cancel classification.
     if (phishing_delegate_.get())
@@ -4694,18 +4686,6 @@ void RenderView::OnCustomContextMenuAction(
     pepper_delegate_.OnCustomContextMenuAction(custom_context, action);
   else
     webview()->performCustomContextMenuAction(action);
-}
-
-void RenderView::OnTranslatePage(int page_id,
-                                 const std::string& translate_script,
-                                 const std::string& source_lang,
-                                 const std::string& target_lang) {
-  translate_helper_.TranslatePage(page_id, source_lang, target_lang,
-                                  translate_script);
-}
-
-void RenderView::OnRevertTranslation(int page_id) {
-  translate_helper_.RevertTranslation(page_id);
 }
 
 void RenderView::OnInstallMissingPlugin() {

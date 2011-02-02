@@ -10,6 +10,7 @@
 
 #include "base/task.h"
 #include "chrome/common/translate_errors.h"
+#include "chrome/renderer/render_view_observer.h"
 
 class RenderView;
 namespace WebKit {
@@ -20,25 +21,10 @@ class WebFrame;
 // This class deals with page translation.
 // There is one TranslateHelper per RenderView.
 
-class TranslateHelper {
+class TranslateHelper : public RenderViewObserver {
  public:
   explicit TranslateHelper(RenderView* render_view);
   virtual ~TranslateHelper();
-
-  // Translates the page contents from |source_lang| to |target_lang|.
-  // Does nothing if |page_id| is not the current page id.
-  // If the library is not ready, it will post a task to try again after 50ms.
-  void TranslatePage(int page_id,
-                     const std::string& source_lang,
-                     const std::string& target_lang,
-                     const std::string& translate_script);
-
-  // Reverts the page's text to its original contents.
-  void RevertTranslation(int page_id);
-
-  // Cancels any translation that is currently being performed.  This does not
-  // revert existing translations.
-  void CancelPendingTranslation();
 
   // Returns whether the page associated with |document| is a candidate for
   // translation.  Some pages can explictly specify (via a meta-tag) that they
@@ -55,6 +41,11 @@ class TranslateHelper {
  protected:
   // The following methods are protected so they can be overridden in
   // unit-tests.
+  void OnTranslatePage(int page_id,
+                       const std::string& translate_script,
+                       const std::string& source_lang,
+                       const std::string& target_lang);
+  void OnRevertTranslation(int page_id);
 
   // Returns true if the translate library is available, meaning the JavaScript
   // has already been injected in that page.
@@ -85,6 +76,13 @@ class TranslateHelper {
   virtual bool DontDelayTasks();
 
  private:
+  // RenderViewObserver implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
+  // Cancels any translation that is currently being performed.  This does not
+  // revert existing translations.
+  void CancelPendingTranslation();
+
   // Checks if the current running page translation is finished or errored and
   // notifies the browser accordingly.  If the translation has not terminated,
   // posts a task to check again later.

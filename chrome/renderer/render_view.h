@@ -35,7 +35,6 @@
 #include "chrome/renderer/render_widget.h"
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
 #include "chrome/renderer/searchbox.h"
-#include "chrome/renderer/translate_helper.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
@@ -916,7 +915,6 @@ class RenderView : public RenderWidget,
   void OnReplace(const string16& text);
   void OnReservePageIDRange(int size_of_range);
   void OnResetPageEncodingToDefault();
-  void OnRevertTranslation(int page_id);
   void OnScriptEvalRequest(const string16& frame_xpath,
                            const string16& jscript,
                            int id,
@@ -947,10 +945,6 @@ class RenderView : public RenderWidget,
   void OnThemeChanged();
   void OnToggleSpellCheck();
   void OnToggleSpellPanel(bool is_currently_visible);
-  void OnTranslatePage(int page_id,
-                       const std::string& translate_script,
-                       const std::string& source_lang,
-                       const std::string& target_lang);
   void OnUndo();
   void OnUpdateBrowserWindowId(int window_id);
   void OnUpdateTargetURLAck();
@@ -1103,11 +1097,6 @@ class RenderView : public RenderWidget,
 
   // Returns the PrintWebViewHelper for this class, creating if necessary.
   PrintWebViewHelper* GetPrintWebViewHelper();
-
-  // Returns whether the page associated with |document| is a candidate for
-  // translation.  Some pages can explictly specify (via a meta-tag) that they
-  // should not be translated.
-  bool IsPageTranslatable(WebKit::WebDocument* document);
 
   // Starts nav_state_sync_timer_ if it isn't already running.
   void StartNavStateSyncTimerIfNecessary();
@@ -1346,9 +1335,6 @@ class RenderView : public RenderWidget,
   ScopedRunnableMethodFactory<RenderView> page_info_method_factory_;
   ScopedRunnableMethodFactory<RenderView> accessibility_method_factory_;
 
-  // Responsible for translating the page contents to other languages.
-  TranslateHelper translate_helper_;
-
   RendererWebCookieJarImpl cookie_jar_;
 
   // The next group of objects all implement RenderViewObserver, so are deleted
@@ -1407,10 +1393,6 @@ class RenderView : public RenderWidget,
   // still waiting to be run (in order).
   struct PendingFileChooser;
   std::deque< linked_ptr<PendingFileChooser> > file_chooser_completions_;
-
-  // Resource message queue. Used to queue up resource IPCs if we need
-  // to wait for an ACK from the browser before proceeding.
-  std::queue<IPC::Message*> queued_resource_messages_;
 
   std::queue<linked_ptr<ViewMsg_ExecuteCode_Params> >
       pending_code_execution_queue_;

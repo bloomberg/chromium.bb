@@ -19,6 +19,13 @@ class TestTranslateHelper : public TranslateHelper {
 
   virtual bool DontDelayTasks() { return true; }
 
+  void TranslatePage(int page_id,
+                     const std::string& source_lang,
+                     const std::string& target_lang,
+                     const std::string& translate_script) {
+    OnTranslatePage(page_id, translate_script, source_lang, target_lang);
+  }
+
   MOCK_METHOD0(IsTranslateLibAvailable, bool());
   MOCK_METHOD0(IsTranslateLibReady, bool());
   MOCK_METHOD0(HasTranslationFinished, bool());
@@ -32,12 +39,12 @@ class TestTranslateHelper : public TranslateHelper {
 
 class TranslateHelperTest : public RenderViewTest {
  public:
-  TranslateHelperTest() {}
+  TranslateHelperTest() : translate_helper_(NULL) {}
 
  protected:
   virtual void SetUp() {
     RenderViewTest::SetUp();
-    translate_helper_.reset(new TestTranslateHelper(view_));
+    translate_helper_ = new TestTranslateHelper(view_);
   }
 
   bool GetPageTranslatedMessage(int* page_id,
@@ -62,7 +69,7 @@ class TranslateHelperTest : public RenderViewTest {
     return true;
   }
 
-  scoped_ptr<TestTranslateHelper> translate_helper_;
+  TestTranslateHelper* translate_helper_;
 };
 
 // Tests that the browser gets notified of the translation failure if the

@@ -41,67 +41,13 @@ static const char* const kAutoDetectionLanguage = "auto";
 // TranslateHelper, public:
 //
 TranslateHelper::TranslateHelper(RenderView* render_view)
-    : render_view_(render_view),
+    : RenderViewObserver(render_view),
       translation_pending_(false),
       page_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
 TranslateHelper::~TranslateHelper() {
-}
-
-void TranslateHelper::TranslatePage(int page_id,
-                                    const std::string& source_lang,
-                                    const std::string& target_lang,
-                                    const std::string& translate_script) {
-  if (render_view_->page_id() != page_id)
-    return;  // We navigated away, nothing to do.
-
-  if (translation_pending_ && page_id == page_id_ &&
-      target_lang_ == target_lang) {
-    // A similar translation is already under way, nothing to do.
-    return;
-  }
-
-  // Any pending translation is now irrelevant.
-  CancelPendingTranslation();
-
-  // Set our states.
-  translation_pending_ = true;
-  page_id_ = page_id;
-  // If the source language is undetermined, we'll let the translate element
-  // detect it.
-  source_lang_ = (source_lang != chrome::kUnknownLanguageCode) ?
-                  source_lang : kAutoDetectionLanguage;
-  target_lang_ = target_lang;
-
-  if (!IsTranslateLibAvailable()) {
-    // Evaluate the script to add the translation related method to the global
-    // context of the page.
-    ExecuteScript(translate_script);
-    DCHECK(IsTranslateLibAvailable());
-  }
-
-  TranslatePageImpl(0);
-}
-
-void TranslateHelper::RevertTranslation(int page_id) {
-  if (render_view_->page_id() != page_id)
-    return;  // We navigated away, nothing to do.
-
-  if (!IsTranslateLibAvailable()) {
-    NOTREACHED();
-    return;
-  }
-
-  WebFrame* main_frame = GetMainFrame();
-  if (!main_frame)
-    return;
-
-  CancelPendingTranslation();
-
-  main_frame->executeScript(
-      WebScriptSource(ASCIIToUTF16("cr.googleTranslate.revert()")));
 }
 
 void TranslateHelper::CancelPendingTranslation() {
@@ -236,9 +182,76 @@ bool TranslateHelper::DontDelayTasks() {
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, private:
 //
+
+bool TranslateHelper::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(TranslateHelper, message)
+    IPC_MESSAGE_HANDLER(ViewMsg_TranslatePage, OnTranslatePage)
+    IPC_MESSAGE_HANDLER(ViewMsg_RevertTranslation, OnRevertTranslation)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void TranslateHelper::OnTranslatePage(int page_id,
+                                      const std::string& translate_script,
+                                      const std::string& source_lang,
+                                      const std::string& target_lang) {
+  if (render_view()->page_id() != page_id)
+    return;  // We navigated away, nothing to do.
+
+  if (translation_pending_ && page_id == page_id_ &&
+      target_lang_ == target_lang) {
+    // A similar translation is already under way, nothing to do.
+    return;
+  }
+
+  // Any pending translation is now irrelevant.
+  CancelPendingTranslation();
+
+  // Set our states.
+  translation_pending_ = true;
+  page_id_ = page_id;
+  // If the source language is undetermined, we'll let the translate element
+  // detect it.
+  source_lang_ = (source_lang != chrome::kUnknownLanguageCode) ?
+                  source_lang : kAutoDetectionLanguage;
+  target_lang_ = target_lang;
+
+  if (!IsTranslateLibAvailable()) {
+    // Evaluate the script to add the translation related method to the global
+    // context of the page.
+    ExecuteScript(translate_script);
+    DCHECK(IsTranslateLibAvailable());
+  }
+
+  TranslatePageImpl(0);
+}
+
+void TranslateHelper::OnRevertTranslation(int page_id) {
+  if (render_view()->page_id() != page_id)
+    return;  // We navigated away, nothing to do.
+
+  if (!IsTranslateLibAvailable()) {
+    NOTREACHED();
+    return;
+  }
+
+  WebFrame* main_frame = GetMainFrame();
+  if (!main_frame)
+    return;
+
+  CancelPendingTranslation();
+
+  main_frame->executeScript(
+      WebScriptSource(ASCIIToUTF16("cr.googleTranslate.revert()")));
+}
+
 void TranslateHelper::CheckTranslateStatus() {
-  if (page_id_ != render_view_->page_id())
-    return;  // This is not the same page, the translation has been canceled.
+  // If this is not the same page, the translation has been canceled.  If the
+  // view is gone, the page is closing.
+  if (page_id_ != render_view()->page_id() || !render_view()->webview())
+    return;
 
   // First check if there was an error.
   if (HasTranslationFailed()) {
@@ -271,11 +284,11 @@ void TranslateHelper::CheckTranslateStatus() {
     translation_pending_ = false;
 
     // Notify the renderer we are done.
-    render_view_->OnPageTranslated();
+    render_view()->OnPageTranslated();
 
     // Notify the browser we are done.
-    render_view_->Send(new ViewHostMsg_PageTranslated(
-        render_view_->routing_id(), render_view_->page_id(),
+    render_view()->Send(new ViewHostMsg_PageTranslated(
+        render_view()->routing_id(), render_view()->page_id(),
         actual_source_lang, target_lang_, TranslateErrors::NONE));
     return;
   }
@@ -332,7 +345,7 @@ bool TranslateHelper::ExecuteScriptAndGetStringResult(const std::string& script,
 
 void TranslateHelper::TranslatePageImpl(int count) {
   DCHECK_LT(count, kMaxTranslateInitCheckAttempts);
-  if (page_id_ != render_view_->page_id())
+  if (page_id_ != render_view()->page_id() || !render_view()->webview())
     return;
 
   if (!IsTranslateLibReady()) {
@@ -363,12 +376,12 @@ void TranslateHelper::NotifyBrowserTranslationFailed(
     TranslateErrors::Type error) {
   translation_pending_ = false;
   // Notify the browser there was an error.
-  render_view_->Send(new ViewHostMsg_PageTranslated(
-      render_view_->routing_id(), page_id_, source_lang_, target_lang_, error));
+  render_view()->Send(new ViewHostMsg_PageTranslated(
+      render_view()->routing_id(), page_id_, source_lang_, target_lang_, error));
 }
 
 WebFrame* TranslateHelper::GetMainFrame() {
-  WebView* web_view = render_view_->webview();
+  WebView* web_view = render_view()->webview();
   if (!web_view) {
     // When the WebView is going away, the render view should have called
     // CancelPendingTranslation() which should have stopped any pending work, so
