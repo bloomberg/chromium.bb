@@ -2472,7 +2472,7 @@ void BrowserView::UpdateAcceleratorMetrics(
         UserMetrics::RecordAction(UserMetricsAction("Accel_Forward_Backspace"));
       else if (key_code == ui::VKEY_F2)
         UserMetrics::RecordAction(UserMetricsAction("Accel_Forward_F2"));
-      else if (key_code == ui::VKEY_LEFT)
+      else if (key_code == ui::VKEY_RIGHT)
         UserMetrics::RecordAction(UserMetricsAction("Accel_Forward_Right"));
       break;
     case IDC_RELOAD:
