@@ -33,15 +33,11 @@ TEST_F(PolicyDefaultProviderTest, DefaultValues) {
 
   // By default, policies should be off.
   ASSERT_FALSE(
-      provider.CanProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
-  ASSERT_FALSE(
       provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_COOKIES));
 
   // Set managed-default-content-setting through the coresponding preferences.
   prefs->SetManagedPref(prefs::kManagedDefaultCookiesSetting,
                         Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
-  ASSERT_TRUE(
-      provider.CanProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_TRUE(
       provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_EQ(CONTENT_SETTING_BLOCK,
@@ -49,8 +45,6 @@ TEST_F(PolicyDefaultProviderTest, DefaultValues) {
 
   // Remove managed-default-content-settings-preferences.
   prefs->RemoveManagedPref(prefs::kManagedDefaultCookiesSetting);
-  ASSERT_FALSE(
-      provider.CanProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_FALSE(
       provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_COOKIES));
 }

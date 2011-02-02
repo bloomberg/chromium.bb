@@ -29,7 +29,6 @@ class PolicyDefaultProvider : public DefaultProviderInterface,
   virtual ~PolicyDefaultProvider();
 
   // DefaultContentSettingsProvider implementation.
-  virtual bool CanProvideDefaultSetting(ContentSettingsType content_type) const;
   virtual ContentSetting ProvideDefaultSetting(
       ContentSettingsType content_type) const;
   virtual void UpdateDefaultSetting(ContentSettingsType content_type,

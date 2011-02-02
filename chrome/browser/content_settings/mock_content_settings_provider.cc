@@ -20,11 +20,6 @@ MockContentSettingsProvider::MockContentSettingsProvider(
 MockContentSettingsProvider::~MockContentSettingsProvider() {
 }
 
-bool MockContentSettingsProvider::CanProvideDefaultSetting(
-    ContentSettingsType content_type) const {
-  return content_type == content_type_;
-}
-
 ContentSetting MockContentSettingsProvider::ProvideDefaultSetting(
     ContentSettingsType content_type) const {
   return content_type == content_type_ ? setting_ : CONTENT_SETTING_DEFAULT;

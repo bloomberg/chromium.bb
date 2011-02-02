@@ -13,8 +13,6 @@ TEST(ContentSettingsProviderTest, Mock) {
                                        CONTENT_SETTING_ALLOW,
                                        false,
                                        true);
-  EXPECT_TRUE(provider.CanProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
-  EXPECT_FALSE(provider.CanProvideDefaultSetting(CONTENT_SETTINGS_TYPE_POPUPS));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,

@@ -71,17 +71,6 @@ PolicyDefaultProvider::~PolicyDefaultProvider() {
   UnregisterObservers();
 }
 
-bool PolicyDefaultProvider::CanProvideDefaultSetting(
-    ContentSettingsType content_type) const {
-  base::AutoLock lock(lock_);
-  if (managed_default_content_settings_.settings[content_type] !=
-      CONTENT_SETTING_DEFAULT) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
 ContentSetting PolicyDefaultProvider::ProvideDefaultSetting(
     ContentSettingsType content_type) const {
   base::AutoLock auto_lock(lock_);

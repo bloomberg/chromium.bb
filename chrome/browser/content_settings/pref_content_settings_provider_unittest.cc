@@ -30,8 +30,6 @@ TEST_F(PrefDefaultProviderTest, DefaultValues) {
   TestingProfile profile;
   content_settings::PrefDefaultProvider provider(&profile);
 
-  ASSERT_TRUE(
-      provider.CanProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_FALSE(
       provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_COOKIES));
 

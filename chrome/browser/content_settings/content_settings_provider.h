@@ -22,10 +22,6 @@ class DefaultProviderInterface {
  public:
   virtual ~DefaultProviderInterface() {}
 
-  // True if this provider can provide a default setting for the |content_type|.
-  virtual bool CanProvideDefaultSetting(
-      ContentSettingsType content_type) const = 0;
-
   // Returns the default content setting this provider has for the given
   // |content_type|, or CONTENT_SETTING_DEFAULT if nothing be provided for this
   // type.

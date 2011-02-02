@@ -23,7 +23,6 @@ class MockContentSettingsProvider : public DefaultProviderInterface,
   virtual ~MockContentSettingsProvider();
 
   // DefaultProviderInterface implementation.
-  virtual bool CanProvideDefaultSetting(ContentSettingsType content_type) const;
   virtual ContentSetting ProvideDefaultSetting(
       ContentSettingsType content_type) const;
   virtual void UpdateDefaultSetting(ContentSettingsType content_type,

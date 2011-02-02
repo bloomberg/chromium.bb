@@ -82,11 +82,6 @@ PrefDefaultProvider::~PrefDefaultProvider() {
   UnregisterObservers();
 }
 
-bool PrefDefaultProvider::CanProvideDefaultSetting(
-    ContentSettingsType content_type) const {
-  return true;
-}
-
 ContentSetting PrefDefaultProvider::ProvideDefaultSetting(
     ContentSettingsType content_type) const {
   base::AutoLock lock(lock_);

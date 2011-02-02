@@ -29,7 +29,6 @@ class PrefDefaultProvider : public DefaultProviderInterface,
   virtual ~PrefDefaultProvider();
 
   // DefaultContentSettingsProvider implementation.
-  virtual bool CanProvideDefaultSetting(ContentSettingsType content_type) const;
   virtual ContentSetting ProvideDefaultSetting(
       ContentSettingsType content_type) const;
   virtual void UpdateDefaultSetting(ContentSettingsType content_type,

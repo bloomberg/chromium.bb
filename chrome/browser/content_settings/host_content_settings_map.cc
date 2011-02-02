@@ -183,8 +183,6 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
   for (const_provider_iterator provider =
            default_content_settings_providers_.begin();
        provider != default_content_settings_providers_.end(); ++provider) {
-    if (!(*provider)->CanProvideDefaultSetting(content_type))
-      continue;
     ContentSetting provided_setting =
         (*provider)->ProvideDefaultSetting(content_type);
     if (provided_setting != CONTENT_SETTING_DEFAULT)
