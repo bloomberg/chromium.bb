@@ -620,10 +620,12 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhileDownloadPending) {
   // Should now be RESTARTING.
   EXPECT_EQ(DataTypeManager::RESTARTING, dtm.state());
 
-  // Run the task, and this should finish the restart and eventually
-  // get us configured.
+  // Running the task will queue a restart task to the message loop, and
+  // eventually get us configured.
   task->Run();
   delete task;
+  EXPECT_EQ(DataTypeManager::RESTARTING, dtm.state());
+  MessageLoop::current()->RunAllPending();
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
 
   dtm.Stop();

@@ -6,6 +6,7 @@
 #include <functional>
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/task.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
@@ -198,8 +199,11 @@ void DataTypeManagerImpl::DownloadReady() {
   DCHECK(state_ == DOWNLOAD_PENDING || state_ == RESTARTING);
 
   // If we had a restart while waiting for downloads, just restart.
+  // Note: Restart() can cause DownloadReady to be directly invoked, so we post
+  // a task to avoid re-entrancy issues.
   if (state_ == RESTARTING) {
-    Restart();
+    MessageLoop::current()->PostTask(FROM_HERE,
+        method_factory_.NewRunnableMethod(&DataTypeManagerImpl::Restart));
     return;
   }
 
