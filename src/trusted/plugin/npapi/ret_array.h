@@ -9,7 +9,8 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_RET_ARRAY_H_
 
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/shared/npruntime/nacl_npapi.h"
+#include "third_party/npapi/bindings/npapi.h"
+#include "third_party/npapi/bindings/npruntime.h"
 
 namespace plugin {
 

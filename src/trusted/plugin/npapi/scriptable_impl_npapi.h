@@ -18,10 +18,11 @@
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/plugin/api_defines.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/utility.h"
+#include "third_party/npapi/bindings/npapi.h"
+#include "third_party/npapi/bindings/npruntime.h"
 
 namespace plugin {
 

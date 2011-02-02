@@ -16,7 +16,6 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/plugin/api_defines.h"
 
 namespace nacl {

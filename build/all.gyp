@@ -11,7 +11,6 @@
 #        '../../ppapi/ppapi.gyp:*',
         '../src/shared/gio/gio.gyp:*',
         '../src/shared/imc/imc.gyp:*',
-        '../src/shared/npruntime/npruntime.gyp:*',
         '../src/shared/platform/platform.gyp:*',
         '../src/shared/ppapi/ppapi.gyp:*',
         '../src/shared/ppapi_proxy/ppapi_proxy.gyp:*',

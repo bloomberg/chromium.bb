@@ -127,9 +127,7 @@ if plugin_env.Bit('windows'):
 ###############################################################################
 
 # The NPAPI plugin build is for use as an out-of-process plugin on Chrome
-# and for browsers other than Chrome.  It relies on code in the npapi
-# subdirectory and the google_nacl_npruntime library, which performs NPAPI
-# proxying between the plugin and NaCl NPAPI modules.
+# and for browsers other than Chrome.
 npapi_inputs = [
     # NPAPI specific code
     plugin_env.ComponentObject(
@@ -167,7 +165,7 @@ npGoogleNaClPlugin = 'npGoogleNaClPlugin'
 # Because of the libraries difference, the NPAPI plugin needs a distinct
 # environment.
 npapi_env = plugin_env.Clone()
-npapi_libs = common_libs + [ 'google_nacl_npruntime', ]
+npapi_libs = common_libs
 if npapi_env['SHARED_LIBS_SPECIAL']:
   npapi_env.Append(LIBS=[l + '_shared' for l in npapi_libs] + os_libs)
 else:

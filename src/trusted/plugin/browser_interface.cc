@@ -16,7 +16,6 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/include/portability_io.h"
-#include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/origin.h"
 
@@ -33,7 +32,8 @@ bool ElfHeaderLooksValid(const char* e_ident_bytes,
   }
   if (strncmp(e_ident_bytes, EI_MAG0123, strlen(EI_MAG0123)) != 0) {
     // This can happen if we read a 404 error page, for example.
-    *error = "NaCl module load failed: not an ELF executable: bad magic number.";
+    *error = "NaCl module load failed: not an ELF executable: "
+             "bad magic number.";
     return false;
   }
   if (e_ident_bytes[EI_ABIVERSION] != EF_NACL_ABIVERSION) {

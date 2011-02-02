@@ -30,15 +30,13 @@
 
 #include "native_client/src/include/elf.h"
 #include "native_client/src/include/nacl_elf.h"
-#include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #if NACL_OSX
 #include "native_client/src/trusted/plugin/osx/open_mac_file.h"
 #endif  // NACL_OSX
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
-
-using nacl::DebugPrintf;
+#include "native_client/src/trusted/plugin/utility.h"
 
 #define EXPAND(x) x
 #define ENQUOTE(x) #x
@@ -63,7 +61,7 @@ char* NPP_GetMIMEDescription() {
 
 // Invoked from NP_Initialize()
 NPError NPP_Initialize() {
-  DebugPrintf("NPP_Initialize\n");
+  PLUGIN_PRINTF(("NPP_Initialize\n"));
   NaClNrdAllModulesInit();
   return NPERR_NO_ERROR;
 }
@@ -71,7 +69,7 @@ NPError NPP_Initialize() {
 // Invoked from NP_Shutdown()
 void NPP_Shutdown() {
   NaClNrdAllModulesFini();
-  DebugPrintf("NPP_Shutdown\n");
+  PLUGIN_PRINTF(("NPP_Shutdown\n"));
 }
 
 NPError NPP_New(NPMIMEType plugin_type,
@@ -83,10 +81,10 @@ NPError NPP_New(NPMIMEType plugin_type,
                 NPSavedData* saved) {
   UNREFERENCED_PARAMETER(mode);
   UNREFERENCED_PARAMETER(saved);
-  DebugPrintf("NPP_New '%s'\n", plugin_type);
+  PLUGIN_PRINTF(("NPP_New '%s'\n", plugin_type));
 
   for (int i = 0; i < argc; ++i) {
-    DebugPrintf("args %u: '%s' '%s'\n", i, argn[i], argv[i]);
+    PLUGIN_PRINTF(("args %u: '%s' '%s'\n", i, argn[i], argv[i]));
   }
 
   if (npp == NULL) {
@@ -112,7 +110,7 @@ NPError NPP_New(NPMIMEType plugin_type,
 NPError NPP_Destroy(NPP npp, NPSavedData** save) {
   NPError nperr = NPERR_NO_ERROR;
 
-  DebugPrintf("NPP_Destroy\n");
+  PLUGIN_PRINTF(("NPP_Destroy\n"));
   if (npp == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
@@ -125,7 +123,7 @@ NPError NPP_Destroy(NPP npp, NPSavedData** save) {
 }
 
 NPError NPP_SetWindow(NPP npp, NPWindow* window) {
-  DebugPrintf("NPP_SetWindow\n");
+  PLUGIN_PRINTF(("NPP_SetWindow\n"));
   if (npp == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
@@ -140,7 +138,7 @@ NPError NPP_SetWindow(NPP npp, NPWindow* window) {
 }
 
 NPError NPP_GetValue(NPP npp, NPPVariable variable, void *value) {
-  DebugPrintf("NPP_GetValue\n");
+  PLUGIN_PRINTF(("NPP_GetValue\n"));
   if (variable == NPPVpluginNameString) {
     *static_cast<const char**>(value) = kPluginName;
     return NPERR_NO_ERROR;
@@ -160,7 +158,7 @@ NPError NPP_GetValue(NPP npp, NPPVariable variable, void *value) {
 }
 
 int16_t NPP_HandleEvent(NPP npp, void* event) {
-  DebugPrintf("NPP_HandleEvent\n");
+  PLUGIN_PRINTF(("NPP_HandleEvent\n"));
   if (npp == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
@@ -174,7 +172,7 @@ int16_t NPP_HandleEvent(NPP npp, void* event) {
 NPError NPP_NewStream(NPP npp, NPMIMEType type,
                       NPStream* stream, NPBool seekable,
                       uint16_t* stype) {
-  DebugPrintf("NPP_NewStream\n");
+  PLUGIN_PRINTF(("NPP_NewStream\n"));
   if (npp == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
@@ -186,7 +184,7 @@ NPError NPP_NewStream(NPP npp, NPMIMEType type,
 }
 
 int32_t NPP_WriteReady(NPP npp, NPStream* stream) {
-  DebugPrintf("NPP_WriteReady \n");
+  PLUGIN_PRINTF(("NPP_WriteReady \n"));
   if ((NULL == npp) || (NULL == npp->pdata)) {
     return 0;
   }
@@ -196,7 +194,7 @@ int32_t NPP_WriteReady(NPP npp, NPStream* stream) {
 
 int32_t NPP_Write(NPP npp, NPStream* stream, int32_t offset, int32_t len,
                   void* buffer) {
-  DebugPrintf("NPP_Write: offset %d, len %d\n", offset, len);
+  PLUGIN_PRINTF(("NPP_Write: offset %d, len %d\n", offset, len));
   if ((NULL == npp) || (NULL == npp->pdata)) {
     return -1;
   }
@@ -205,7 +203,7 @@ int32_t NPP_Write(NPP npp, NPStream* stream, int32_t offset, int32_t len,
 }
 
 void NPP_StreamAsFile(NPP npp, NPStream* stream, const char* filename) {
-  DebugPrintf("NPP_StreamAsFile: %s\n", filename);
+  PLUGIN_PRINTF(("NPP_StreamAsFile: %s\n", filename));
   if (npp == NULL) {
     return;
   }
@@ -222,7 +220,7 @@ void NPP_StreamAsFile(NPP npp, NPStream* stream, const char* filename) {
 // Note Safari running on OS X removes the loaded file at this point.
 // To keep the file, it must be opened in NPP_StreamAsFile().
 NPError NPP_DestroyStream(NPP npp, NPStream *stream, NPError reason) {
-  DebugPrintf("NPP_DestroyStream %d\n", reason);
+  PLUGIN_PRINTF(("NPP_DestroyStream %d\n", reason));
   if (npp == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
@@ -235,7 +233,7 @@ NPError NPP_DestroyStream(NPP npp, NPStream *stream, NPError reason) {
 
 void NPP_URLNotify(NPP npp, const char* url, NPReason reason,
                    void* notify_data) {
-  DebugPrintf("NPP_URLNotify(%s)\n", url);
+  PLUGIN_PRINTF(("NPP_URLNotify(%s)\n", url));
   if (npp == NULL) {
     return;
   }

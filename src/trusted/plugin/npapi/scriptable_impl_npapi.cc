@@ -447,8 +447,6 @@ bool Invoke(NPObject* obj,
   plugin::ScriptableImplNpapi* scriptable_handle =
       static_cast<plugin::ScriptableImplNpapi*>(obj);
   plugin::PortableHandle* handle = scriptable_handle->handle();
-  plugin::PluginNpapi* plugin =
-      static_cast<plugin::PluginNpapi*>(handle->plugin());
   plugin::BrowserInterface* browser_interface = handle->browser_interface();
 
   PLUGIN_PRINTF(("Invoke(%p, %s, %d)\n",
@@ -457,40 +455,12 @@ bool Invoke(NPObject* obj,
                      reinterpret_cast<uintptr_t>(name)).c_str(),
                  arg_count));
 
-  if (NULL == plugin->nacl_instance()) {
-    return GenericInvoke(scriptable_handle,
-                         name,
-                         plugin::METHOD_CALL,
-                         args,
-                         arg_count,
-                         result);
-  } else {
-    NPObject* proxy = plugin->nacl_instance();
-    bool retval = proxy->_class->invoke(proxy, name, args, arg_count, result);
-    return retval;
-  }
-}
-
-bool InvokeDefault(NPObject* obj,
-                   const NPVariant* args,
-                   uint32_t arg_count,
-                   NPVariant* result) {
-  plugin::ScriptableImplNpapi* scriptable_handle =
-      static_cast<plugin::ScriptableImplNpapi*>(obj);
-  plugin::PortableHandle* handle = scriptable_handle->handle();
-  plugin::PluginNpapi* plugin =
-      static_cast<plugin::PluginNpapi*>(handle->plugin());
-
-  PLUGIN_PRINTF(("InvokeDefault(%p, %d)\n",
-                 static_cast<void*>(obj),
-                 arg_count));
-
-  if (NULL == plugin->nacl_instance()) {
-    return false;
-  } else {
-    NPObject* proxy = plugin->nacl_instance();
-    return proxy->_class->invokeDefault(proxy, args, arg_count, result);
-  }
+  return GenericInvoke(scriptable_handle,
+                       name,
+                       plugin::METHOD_CALL,
+                       args,
+                       arg_count,
+                       result);
 }
 
 // Property accessors/mutators.
@@ -498,8 +468,6 @@ bool HasProperty(NPObject* obj, NPIdentifier name) {
   plugin::ScriptableImplNpapi* scriptable_handle =
       static_cast<plugin::ScriptableImplNpapi*>(obj);
   plugin::PortableHandle* handle = scriptable_handle->handle();
-  plugin::PluginNpapi* plugin =
-      static_cast<plugin::PluginNpapi*>(handle->plugin());
   plugin::BrowserInterface* browser_interface = handle->browser_interface();
 
   PLUGIN_PRINTF(("HasProperty(%p, %s)\n",
@@ -507,16 +475,11 @@ bool HasProperty(NPObject* obj, NPIdentifier name) {
                  browser_interface->IdentifierToString(
                      reinterpret_cast<uintptr_t>(name)).c_str()));
 
-  if (NULL == plugin->nacl_instance()) {
-    // If the property is supported,
-    // the interface should include both set and get methods.
-    return scriptable_handle->handle()->HasMethod(
-        reinterpret_cast<uintptr_t>(name),
-        plugin::PROPERTY_GET);
-  } else {
-    NPObject* proxy = plugin->nacl_instance();
-    return proxy->_class->hasProperty(proxy, name);
-  }
+  // If the property is supported, the interface should include both set and
+  // get methods.
+  return scriptable_handle->handle()->HasMethod(
+      reinterpret_cast<uintptr_t>(name),
+      plugin::PROPERTY_GET);
 }
 
 bool GetProperty(NPObject* obj,
@@ -525,8 +488,6 @@ bool GetProperty(NPObject* obj,
   plugin::ScriptableImplNpapi* scriptable_handle =
       static_cast<plugin::ScriptableImplNpapi*>(obj);
   plugin::PortableHandle* handle = scriptable_handle->handle();
-  plugin::PluginNpapi* plugin =
-      static_cast<plugin::PluginNpapi*>(handle->plugin());
   plugin::BrowserInterface* browser_interface = handle->browser_interface();
 
   PLUGIN_PRINTF(("GetProperty(%p, %s)\n",
@@ -534,17 +495,12 @@ bool GetProperty(NPObject* obj,
                  browser_interface->IdentifierToString(
                      reinterpret_cast<uintptr_t>(name)).c_str()));
 
-  if (NULL == plugin->nacl_instance()) {
-    return GenericInvoke(scriptable_handle,
-                         name,
-                         plugin::PROPERTY_GET,
-                         NULL,
-                         0,
-                         variant);
-  } else {
-    NPObject* proxy = plugin->nacl_instance();
-    return proxy->_class->getProperty(proxy, name, variant);
-  }
+  return GenericInvoke(scriptable_handle,
+                       name,
+                       plugin::PROPERTY_GET,
+                       NULL,
+                       0,
+                       variant);
 }
 
 bool SetProperty(NPObject* obj,
@@ -553,8 +509,6 @@ bool SetProperty(NPObject* obj,
   plugin::ScriptableImplNpapi* scriptable_handle =
       static_cast<plugin::ScriptableImplNpapi*>(obj);
   plugin::PortableHandle* handle = scriptable_handle->handle();
-  plugin::PluginNpapi* plugin =
-      static_cast<plugin::PluginNpapi*>(handle->plugin());
   plugin::BrowserInterface* browser_interface = handle->browser_interface();
 
   PLUGIN_PRINTF(("SetProperty(%p, %s, %p)\n",
@@ -563,17 +517,12 @@ bool SetProperty(NPObject* obj,
                      reinterpret_cast<uintptr_t>(name)).c_str(),
                  static_cast<void*>(const_cast<NPVariant*>(variant))));
 
-  if (NULL == plugin->nacl_instance()) {
-    return GenericInvoke(scriptable_handle,
-                         name,
-                         plugin::PROPERTY_SET,
-                         variant,
-                         1,
-                         NULL);
-  } else {
-    NPObject* proxy = plugin->nacl_instance();
-    return proxy->_class->setProperty(proxy, name, variant);
-  }
+  return GenericInvoke(scriptable_handle,
+                       name,
+                       plugin::PROPERTY_SET,
+                       variant,
+                       1,
+                       NULL);
 }
 
 void Invalidate(NPObject* obj) {
@@ -598,8 +547,6 @@ bool HasMethod(NPObject* obj, NPIdentifier name) {
   plugin::ScriptableImplNpapi* scriptable_handle =
       static_cast<plugin::ScriptableImplNpapi*>(obj);
   plugin::PortableHandle* handle = scriptable_handle->handle();
-  plugin::PluginNpapi* plugin =
-      static_cast<plugin::PluginNpapi*>(handle->plugin());
   plugin::BrowserInterface* browser_interface = handle->browser_interface();
 
   PLUGIN_PRINTF(("HasMethod(%p, %s)\n",
@@ -607,67 +554,9 @@ bool HasMethod(NPObject* obj, NPIdentifier name) {
                  browser_interface->IdentifierToString(
                      reinterpret_cast<uintptr_t>(name)).c_str()));
 
-  if (NULL == plugin->nacl_instance()) {
-    return scriptable_handle->handle()->HasMethod(
-        reinterpret_cast<uintptr_t>(name),
-        plugin::METHOD_CALL);
-  } else {
-    NPObject* proxy = plugin->nacl_instance();
-    return proxy->_class->hasMethod(proxy, name);
-  }
-}
-
-bool RemoveProperty(NPObject* obj,
-                    NPIdentifier name) {
-  plugin::ScriptableImplNpapi* scriptable_handle =
-      static_cast<plugin::ScriptableImplNpapi*>(obj);
-  plugin::PortableHandle* handle = scriptable_handle->handle();
-  plugin::PluginNpapi* plugin =
-      static_cast<plugin::PluginNpapi*>(handle->plugin());
-  plugin::BrowserInterface* browser_interface = handle->browser_interface();
-
-  PLUGIN_PRINTF(("RemoveProperty(%p, %s)\n",
-                 static_cast<void*>(obj),
-                 browser_interface->IdentifierToString(
-                     reinterpret_cast<uintptr_t>(name)).c_str()));
-
-  if (NULL == plugin->nacl_instance()) {
-    // TODO(sehr): Need to proxy this across to NPAPI modules.
-    return false;
-  } else {
-    NPObject* proxy = plugin->nacl_instance();
-    return proxy->_class->removeProperty(proxy, name);
-  }
-}
-
-bool Enumerate(NPObject* obj,
-               NPIdentifier** names,
-               uint32_t* name_count) {
-  PLUGIN_PRINTF(("Enumerate(%p)\n", static_cast<void*>(obj)));
-
-  UNREFERENCED_PARAMETER(obj);
-  UNREFERENCED_PARAMETER(names);
-  UNREFERENCED_PARAMETER(name_count);
-
-  // TODO(sehr): Enumerate is implemented in the object proxy in npruntime.
-  // Connect this call to proxying of the object Enumerate method.
-  return false;
-}
-
-bool Construct(NPObject* obj,
-               const NPVariant* args,
-               uint32_t arg_count,
-               NPVariant* result) {
-  PLUGIN_PRINTF(("Construct(%p)\n", static_cast<void*>(obj)));
-
-  UNREFERENCED_PARAMETER(obj);
-  UNREFERENCED_PARAMETER(args);
-  UNREFERENCED_PARAMETER(arg_count);
-  UNREFERENCED_PARAMETER(result);
-
-  // TODO(sehr): Construct is implemented in the object proxy in npruntime.
-  // Connect this call to proxying of the object Construct method.
-  return false;
+  return scriptable_handle->handle()->HasMethod(
+      reinterpret_cast<uintptr_t>(name),
+      plugin::METHOD_CALL);
 }
 
 }  // namespace
@@ -703,13 +592,13 @@ ScriptableImplNpapi* ScriptableImplNpapi::New(PortableHandle* handle) {
     Invalidate,
     HasMethod,
     Invoke,
-    InvokeDefault,
+    NULL,  // InvokeDefault is not implemented
     HasProperty,
     GetProperty,
     SetProperty,
-    RemoveProperty,
-    Enumerate,
-    Construct
+    NULL,  // RemoveProperty is not implemented
+    NULL,  // Enumerate is not implemented
+    NULL  // Construct is not implemented
   };
 
   PLUGIN_PRINTF(("ScriptableImplNpapi::New (handle=%p)\n",

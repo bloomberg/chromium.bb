@@ -19,10 +19,11 @@
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability_io.h"
-#include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/scriptable_impl_npapi.h"
 #include "native_client/src/trusted/plugin/utility.h"
+#include "third_party/npapi/bindings/npapi.h"
+#include "third_party/npapi/bindings/npruntime.h"
 
 using nacl::assert_cast;
 

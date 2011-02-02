@@ -8,7 +8,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
-#include "native_client/src/shared/npruntime/nacl_npapi.h"
+#include "third_party/npapi/bindings/npapi.h"
+#include "third_party/npapi/bindings/npruntime.h"
 
 #include <stdarg.h>
 #include <stdio.h>

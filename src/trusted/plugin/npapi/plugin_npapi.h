@@ -65,11 +65,12 @@ class PluginNpapi : public nacl::NPInstance, public Plugin {
                                           ServiceRuntime* service_runtime);
   void ShutdownMultimedia();
 
-  // Support for the NaCl NPAPI proxy.
-  nacl::NPModule* module() const { return module_; }
-  void set_module(nacl::NPModule* module);
-  NPObject* nacl_instance() const { return nacl_instance_; }
-  void StartProxiedExecution(NaClSrpcChannel* srpc_channel);
+  // Legacy stub for proxy.
+  void StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
+    // There is no npruntime proxy, and the NPAPI plugin does not support
+    // PPAPI proxying.
+    UNREFERENCED_PARAMETER(srpc_channel);
+  }
 
   static bool SetAsyncCallback(void* obj, SrpcParams* params);
 
@@ -77,8 +78,6 @@ class PluginNpapi : public nacl::NPInstance, public Plugin {
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginNpapi);
   PluginNpapi();
   ~PluginNpapi();
-  nacl::NPModule* module_;
-  NPObject* nacl_instance_;
   VideoMap* video_;
   MultimediaSocket* multimedia_channel_;
 };

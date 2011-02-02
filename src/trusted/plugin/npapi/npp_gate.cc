@@ -6,7 +6,8 @@
 
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/npruntime/nacl_npapi.h"
+#include "third_party/npapi/bindings/npapi.h"
+#include "third_party/npapi/bindings/npruntime.h"
 
 void NPP_Print(NPP instance, NPPrint* print_info) {
   UNREFERENCED_PARAMETER(instance);

@@ -1493,7 +1493,6 @@ base_env.Append(
     # KEEP THIS SORTED PLEASE
     'src/shared/gio/build.scons',
     'src/shared/imc/build.scons',
-    'src/shared/npruntime/build.scons',
     'src/shared/platform/build.scons',
     'src/shared/ppapi/build.scons',
     'src/shared/ppapi_proxy/build.scons',

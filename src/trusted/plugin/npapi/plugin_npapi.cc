@@ -18,8 +18,6 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 
-#include "native_client/src/shared/npruntime/npmodule.h"
-
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 
@@ -129,9 +127,7 @@ PluginNpapi* PluginNpapi::New(NPP npp,
 }
 
 PluginNpapi::PluginNpapi()
-  : module_(NULL),
-    nacl_instance_(NULL),
-    video_(NULL),
+  : video_(NULL),
     multimedia_channel_(NULL) {
   NaClSrpcModuleInit();
 }
@@ -144,10 +140,6 @@ PluginNpapi::~PluginNpapi() {
 
   PLUGIN_PRINTF(("PluginNpapi::~PluginNpapi (this=%p)\n",
                  static_cast<void* >(this)));
-  // Delete the NPModule for this plugin.
-  if (NULL != module_) {
-    delete module_;
-  }
   /* SCOPE */ {
     VideoScopedGlobalLock video_lock;
     PLUGIN_PRINTF(("Plugin::~Plugin deleting video_\n"));
@@ -163,12 +155,6 @@ NPError PluginNpapi::Destroy(NPSavedData** save) {
                  static_cast<void*>(this), static_cast<void*>(save)));
 
   ShutDownSubprocess();
-
-  // This should be done after terminating the sel_ldr subprocess so
-  // that we can be sure we will not block forever when waiting for
-  // the upcall thread to exit.
-  delete module_;
-  module_ = NULL;
 
   // This has the indirect effect of doing "delete this".
   PLUGIN_PRINTF(("PluginNpapi::Destroy (this=%p, scriptable_handle=%p)\n",
@@ -202,16 +188,10 @@ NPError PluginNpapi::SetWindow(NPWindow* window) {
     }
   }
 #endif
-  if (NULL == module_) {
-    if (video() && video()->SetWindow(window)) {
-        ret = NPERR_NO_ERROR;
-    }
-    return ret;
-  } else {
-    // Send NPP_SetWindow to NPModule.
-    NPP npp = InstanceIdentifierToNPP(instance_id());
-    return module_->SetWindow(npp, window);
+  if (video() && video()->SetWindow(window)) {
+      ret = NPERR_NO_ERROR;
   }
+  return ret;
 }
 
 NPError PluginNpapi::GetValue(NPPVariable variable, void* value) {
@@ -264,15 +244,10 @@ int16_t PluginNpapi::HandleEvent(void* param) {
   int16_t ret;
   PLUGIN_PRINTF(("PluginNpapi::HandleEvent(%p, %p)\n", static_cast<void*>(this),
                  static_cast<void*>(param)));
-  if (NULL == module_) {
-    if (video()) {
-      ret = video()->HandleEvent(param);
-    } else {
-      ret = 0;
-    }
+  if (video()) {
+    ret = video()->HandleEvent(param);
   } else {
-    NPP npp = InstanceIdentifierToNPP(instance_id());
-    return module_->HandleEvent(npp, param);
+    ret = 0;
   }
   return ret;
 }
@@ -462,39 +437,6 @@ void PluginNpapi::URLNotify(const char* url,
   }
 }
 
-void PluginNpapi::set_module(nacl::NPModule* module) {
-  PLUGIN_PRINTF(("PluginNpapi::set_module(%p, %p)\n",
-                 static_cast<void*>(this),
-                 static_cast<void*>(module)));
-  delete module_;
-  module_ = module;
-  if (NULL != module_) {
-    // Set the origins.
-    module_->set_nacl_module_origin(nacl_module_origin());
-    module_->set_origin(origin());
-    // Initialize the NaCl module's NPAPI interface.
-    // This should only be done for the first instance in a given group.
-    module_->Initialize();
-    // Create a new instance of that group.
-    const char mime_type[] = "application/nacl-npapi-over-srpc";
-    NPP npp = InstanceIdentifierToNPP(instance_id());
-    NPError err = module->New(const_cast<char*>(mime_type),
-                              npp,
-                              argc(),
-                              argn(),
-                              argv());
-    // Remember the scriptable version of the NaCl instance.
-    err = module_->GetValue(npp,
-                            NPPVpluginScriptableNPObject,
-                            reinterpret_cast<void*>(&nacl_instance_));
-    // Send an initial NPP_SetWindow to the plugin.
-    NPWindow window;
-    window.height = height();
-    window.width = width();
-    module->SetWindow(npp, &window);
-  }
-}
-
 bool PluginNpapi::InitializeModuleMultimedia(ScriptableHandle* raw_channel,
                                              ServiceRuntime* service_runtime) {
   PLUGIN_PRINTF(("PluginNpapi::InitializeModuleMultimedia\n"));
@@ -524,19 +466,6 @@ void PluginNpapi::ShutdownMultimedia() {
                  static_cast<void*>(this)));
   delete multimedia_channel_;
   multimedia_channel_ = NULL;
-}
-
-void PluginNpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
-  // Check that the .nexe exports the NPAPI initialization method.
-  NaClSrpcService* client_service = srpc_channel->client;
-  if (NaClSrpcServiceMethodIndex(client_service, "NP_Initialize:ih:i") ==
-      kNaClSrpcInvalidMethodIndex) {
-    return;
-  }
-  nacl::NPModule* npmodule = new(std::nothrow) nacl::NPModule(srpc_channel);
-  if (NULL != npmodule) {
-    set_module(npmodule);
-  }
 }
 
 bool PluginNpapi::RequestNaClModule(const nacl::string& url) {

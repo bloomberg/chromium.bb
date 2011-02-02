@@ -13,7 +13,6 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
-#include "native_client/src/shared/npruntime/npmodule.h"
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 
@@ -82,25 +81,6 @@ class UrlAsNaClDescNotify : public Closure {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(UrlAsNaClDescNotify);
   NPObject* np_callback_;
-};
-
-class NpGetUrlClosure : public Closure {
- public:
-  NpGetUrlClosure(NPP npp,
-                  nacl::NPModule* module,
-                  nacl::string url,
-                  int32_t notify_data,
-                  bool call_url_notify);
-  virtual ~NpGetUrlClosure();
-  virtual void RunFromFile(NPStream* stream, const nacl::string& fname);
-  virtual void RunFromBuffer(const nacl::string& url, StreamShmBuffer* shmbufp);
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(NpGetUrlClosure);
-  nacl::NPModule* module_;
-  NPP npp_;
-  int32_t notify_data_;
-  bool call_url_notify_;
 };
 
 }  // namespace plugin

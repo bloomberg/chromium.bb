@@ -10,7 +10,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_NPINSTANCE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_NPINSTANCE_H_
 
-#include "native_client/src/shared/npruntime/nacl_npapi.h"
+#include "third_party/npapi/bindings/npapi.h"
+#include "third_party/npapi/bindings/npruntime.h"
 
 namespace nacl {
 
