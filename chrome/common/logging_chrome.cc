@@ -59,6 +59,9 @@ static bool dialogs_are_suppressed_ = false;
 // InitChromeLogging() and the beginning of CleanupChromeLogging().
 static bool chrome_logging_initialized_ = false;
 
+// Set if we caled InitChromeLogging() but failed to initialize.
+static bool chrome_logging_failed_ = false;
+
 // This should be true for exactly the period between the end of
 // InitChromeLogging() and the beginning of CleanupChromeLogging().
 static bool chrome_logging_redirected_ = false;
@@ -288,11 +291,13 @@ void InitChromeLogging(const CommandLine& command_line,
     PLOG(ERROR) << "Unable to initialize logging to " << log_path.value()
                 << " (which should be a link to " << target_path.value() << ")";
     RemoveSymlinkAndLog(log_path, target_path);
+    chrome_logging_failed_ = true;
     return;
   }
 #else
   if (!success) {
     PLOG(ERROR) << "Unable to initialize logging to " << log_path.value();
+    chrome_logging_failed_ = true;
     return;
   }
 #endif
@@ -342,6 +347,9 @@ void InitChromeLogging(const CommandLine& command_line,
 // This is a no-op, but we'll keep it around in case
 // we need to do more cleanup in the future.
 void CleanupChromeLogging() {
+  if (chrome_logging_failed_)
+    return;  // We failed to initiailize logging, no cleanup.
+
   DCHECK(chrome_logging_initialized_) <<
     "Attempted to clean up logging when it wasn't initialized.";
 
