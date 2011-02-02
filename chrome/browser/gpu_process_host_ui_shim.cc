@@ -129,14 +129,17 @@ void GpuProcessHostUIShim::OnDestroyCommandBuffer(
     host = static_cast<RenderWidgetHost*>(
         process->GetListenerByID(render_view_id));
   }
-  if (!host)
-    return;
-#if defined(OS_MACOSX)
-  host->view()->DestroyFakePluginWindowHandle(window);
-#elif defined(OS_WIN)
-  host->view()->ShowCompositorHostWindow(false);
-#endif
+  RenderWidgetHostView* view = NULL;
+  if (host)
+    view = host->view();
 
+  if (view) {
+#if defined(OS_MACOSX)
+    view->DestroyFakePluginWindowHandle(window);
+#elif defined(OS_WIN)
+    view->ShowCompositorHostWindow(false);
+#endif
+  }
 #endif  // defined(OS_MACOSX) || defined(OS_WIN)
 }
 

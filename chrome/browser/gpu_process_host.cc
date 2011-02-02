@@ -264,25 +264,31 @@ void CVCBThreadHopping::GetViewWindow(
     host = static_cast<RenderWidgetHost*>(
         process->GetListenerByID(render_view_id));
   }
-#if defined(OS_LINUX)
-  gfx::NativeViewId view = NULL;
-  if (host)
-    view = gfx::IdFromNativeView(host->view()->GetNativeView());
 
-  // Lock the window that we will draw into.
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  if (!manager->GetPermanentXIDForId(&window, view)) {
-    DLOG(ERROR) << "Can't find XID for view id " << view;
-  }
+  RenderWidgetHostView* view = NULL;
+  if (host)
+    view = host->view();
+
+  if (view) {
+#if defined(OS_LINUX)
+    gfx::NativeViewId view_id = NULL;
+    view_id = gfx::IdFromNativeView(view->GetNativeView());
+
+    // Lock the window that we will draw into.
+    GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
+    if (!manager->GetPermanentXIDForId(&window, view_id)) {
+      DLOG(ERROR) << "Can't find XID for view id " << view_id;
+    }
 #elif defined(OS_MACOSX)
-  // On Mac OS X we currently pass a (fake) PluginWindowHandle for the
-  // window that we draw to.
-  window = host->view()->AllocateFakePluginWindowHandle(
-      /*opaque=*/true, /*root=*/true);
+    // On Mac OS X we currently pass a (fake) PluginWindowHandle for the
+    // window that we draw to.
+    window = view->AllocateFakePluginWindowHandle(
+        /*opaque=*/true, /*root=*/true);
 #elif defined(OS_WIN)
-  // Create a window that we will overlay.
-  window = host->view()->GetCompositorHostWindow();
+    // Create a window that we will overlay.
+    window = view->GetCompositorHostWindow();
 #endif
+  }
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableFunction(
       &CVCBThreadHopping::DispatchIPCAndQueueReply,
