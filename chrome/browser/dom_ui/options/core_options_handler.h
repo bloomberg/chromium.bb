@@ -41,10 +41,9 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   // Observes a pref of given |pref_name|.
   virtual void ObservePref(const std::string& pref_name);
 
-  // Sets a pref value |value_string| of |pref_type| to given |pref_name|.
+  // Sets a pref |value| to given |pref_name|.
   virtual void SetPref(const std::string& pref_name,
-                       Value::ValueType pref_type,
-                       const std::string& value_string,
+                       const Value* value,
                        const std::string& metric);
 
   // Clears pref value for given |pref_name|.
@@ -54,8 +53,7 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   virtual void StopObservingPref(const std::string& path);
 
   // Records a user metric action for the given value.
-  void ProcessUserMetric(Value::ValueType pref_type,
-                         const std::string& value_string,
+  void ProcessUserMetric(const Value* value,
                          const std::string& metric);
 
   typedef std::multimap<std::string, std::wstring> PreferenceCallbackMap;

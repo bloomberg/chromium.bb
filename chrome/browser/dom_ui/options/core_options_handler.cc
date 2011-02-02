@@ -4,6 +4,7 @@
 
 #include "chrome/browser/dom_ui/options/core_options_handler.h"
 
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -171,33 +172,38 @@ void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
 }
 
 void CoreOptionsHandler::SetPref(const std::string& pref_name,
-                                 Value::ValueType pref_type,
-                                 const std::string& value_string,
+                                 const Value* value,
                                  const std::string& metric) {
   PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
 
-  switch (pref_type) {
-    case Value::TYPE_BOOLEAN:
-      pref_service->SetBoolean(pref_name.c_str(), value_string == "true");
+  switch (value->GetType()) {
+    case Value::TYPE_BOOLEAN: {
+      bool bool_value;
+      CHECK(value->GetAsBoolean(&bool_value));
+      pref_service->SetBoolean(pref_name.c_str(), bool_value);
       break;
+    }
 
-    case Value::TYPE_INTEGER:
+    case Value::TYPE_INTEGER: {
       int int_value;
-      CHECK(base::StringToInt(value_string, &int_value));
+      CHECK(value->GetAsInteger(&int_value));
       pref_service->SetInteger(pref_name.c_str(), int_value);
-
       break;
+    }
 
-    case Value::TYPE_DOUBLE:
+    case Value::TYPE_DOUBLE: {
       double double_value;
-      CHECK(base::StringToDouble(value_string, &double_value));
+      CHECK(value->GetAsDouble(&double_value));
       pref_service->SetDouble(pref_name.c_str(), double_value);
-
       break;
+    }
 
-    case Value::TYPE_STRING:
-      pref_service->SetString(pref_name.c_str(), value_string);
+    case Value::TYPE_STRING: {
+      std::string string_value;
+      CHECK(value->GetAsString(&string_value));
+      pref_service->SetString(pref_name.c_str(), string_value);
       break;
+    }
 
     default:
       NOTREACHED();
@@ -205,7 +211,7 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
   }
 
   pref_service->ScheduleSavePersistentPrefs();
-  ProcessUserMetric(pref_type, value_string, metric);
+  ProcessUserMetric(value, metric);
 }
 
 void CoreOptionsHandler::ClearPref(const std::string& pref_name,
@@ -218,15 +224,17 @@ void CoreOptionsHandler::ClearPref(const std::string& pref_name,
     UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
 }
 
-void CoreOptionsHandler::ProcessUserMetric(Value::ValueType pref_type,
-                                           const std::string& value_string,
+void CoreOptionsHandler::ProcessUserMetric(const Value* value,
                                            const std::string& metric) {
   if (metric.empty())
     return;
 
   std::string metric_string = metric;
-  if (pref_type == Value::TYPE_BOOLEAN)
-    metric_string += (value_string == "true" ? "_Enable" : "_Disable");
+  if (value->IsType(Value::TYPE_BOOLEAN)) {
+    bool bool_value;
+    CHECK(value->GetAsBoolean(&bool_value));
+    metric_string += bool_value ? "_Enable" : "_Disable";
+  }
 
   UserMetricsRecordAction(UserMetricsAction(metric_string.c_str()));
 }
@@ -329,15 +337,26 @@ void CoreOptionsHandler::HandleSetPref(const ListValue* args,
   if (!args->GetString(0, &pref_name))
     return;
 
-  std::string value_string;
-  if (!args->GetString(1, &value_string))
+  Value* value;
+  if (!args->Get(1, &value))
     return;
+
+  // In JS all numbers are double.
+  scoped_ptr<FundamentalValue> int_value;
+  if (type == Value::TYPE_INTEGER) {
+    double double_value;
+    CHECK(value->GetAsDouble(&double_value));
+    int_value.reset(Value::CreateIntegerValue(static_cast<int>(double_value)));
+    value = int_value.get();
+  }
+
+  CHECK_EQ(type, value->GetType());
 
   std::string metric;
   if (args->GetSize() > 2)
     args->GetString(2, &metric);
 
-  SetPref(pref_name, type, value_string, metric);
+  SetPref(pref_name, value, metric);
 }
 
 void CoreOptionsHandler::HandleClearPref(const ListValue* args) {

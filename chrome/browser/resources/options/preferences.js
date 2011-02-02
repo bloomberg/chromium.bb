@@ -44,7 +44,7 @@ cr.define('options', function() {
    * @param {string} metric User metrics identifier.
    */
   Preferences.setBooleanPref = function (name, value, metric) {
-    var argumentList = [name, value ? 'true' : 'false'];
+    var argumentList = [name, Boolean(value)];
     if (metric != undefined) argumentList.push(metric);
     chrome.send('setBooleanPref', argumentList);
   };
@@ -57,20 +57,20 @@ cr.define('options', function() {
    * @param {string} metric User metrics identifier.
    */
   Preferences.setIntegerPref = function(name, value, metric) {
-    var argumentList = [name, String(value)];
+    var argumentList = [name, Number(value)];
     if (metric != undefined) argumentList.push(metric);
     chrome.send('setIntegerPref', argumentList);
   };
 
   /**
-   * Sets value of a real-valued preference.
+   * Sets value of a double-valued preference.
    * and signals its changed value.
    * @param {string} name Preference name.
    * @param {number} value New preference value.
    * @param {string} metric User metrics identifier.
    */
   Preferences.setDoublePref = function(name, value, metric) {
-    var argumentList = [name, String(value)];
+    var argumentList = [name, Number(value)];
     if (metric != undefined) argumentList.push(metric);
     chrome.send('setDoublePref', argumentList);
   };
@@ -83,7 +83,7 @@ cr.define('options', function() {
    * @param {string} metric User metrics identifier.
    */
   Preferences.setStringPref = function(name, value, metric) {
-    var argumentList = [name, value];
+    var argumentList = [name, String(value)];
     if (metric != undefined) argumentList.push(metric);
     chrome.send('setStringPref', argumentList);
   };
@@ -92,7 +92,7 @@ cr.define('options', function() {
    * Sets value of a JSON preference.
    * and signals its changed value.
    * @param {string} name Preference name.
-   * @param {string} value New preference value.
+   * @param {*} value New preference value.
    * @param {string} metric User metrics identifier.
    */
   Preferences.setObjectPref = function(name, value, metric) {
@@ -190,4 +190,3 @@ cr.define('options', function() {
   };
 
 });
-
