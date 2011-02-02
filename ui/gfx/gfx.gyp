@@ -5,10 +5,10 @@
 {
   'variables': {
     'chromium_code': 1,
-    'grit_info_cmd': ['python', '../tools/grit/grit_info.py',
+    'grit_info_cmd': ['python', '../../tools/grit/grit_info.py',
                       '<@(grit_defines)'],
-    'grit_cmd': ['python', '../tools/grit/grit.py'],
-    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/gfx',
+    'grit_cmd': ['python', '../../tools/grit/grit.py'],
+    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx',
   },
   'targets': [
     {
@@ -18,9 +18,9 @@
       'dependencies': [
         'gfx',
         'gfx_resources',
-        '../base/base.gyp:test_support_base',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
+        '../../base/base.gyp:test_support_base',
+        '../../skia/skia.gyp:skia',
+        '../../testing/gtest.gyp:gtest',
       ],
       'sources': [
         'blit_unittest.cc',
@@ -35,10 +35,10 @@
         'skbitmap_operations_unittest.cc',
         'test_suite.cc',
         'test_suite.h',
-        '<(SHARED_INTERMEDIATE_DIR)/gfx/gfx_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
       ],
       'include_dirs': [
-        '..',
+        '../..',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -49,7 +49,7 @@
             'native_theme_win_unittest.cc',
           ],
           'include_dirs': [
-            '..',
+            '../..',
             '<(DEPTH)/third_party/wtl/include',
           ],
           'msvs_settings': {
@@ -67,7 +67,7 @@
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
-            '../build/linux/system.gyp:gtk',
+            '../../build/linux/system.gyp:gtk',
           ],
         }],
       ],
@@ -77,13 +77,13 @@
       'type': '<(library)',
       'msvs_guid': '13A8D36C-0467-4B4E-BAA3-FD69C45F076A',
       'dependencies': [
-        '../base/base.gyp:base',
-        '../base/base.gyp:base_i18n',
-        '../skia/skia.gyp:skia',
-        '../third_party/icu/icu.gyp:icui18n',
-        '../third_party/icu/icu.gyp:icuuc',
-        '../third_party/libpng/libpng.gyp:libpng',
-        '../third_party/zlib/zlib.gyp:zlib',
+        '../../base/base.gyp:base',
+        '../../base/base.gyp:base_i18n',
+        '../../skia/skia.gyp:skia',
+        '../../third_party/icu/icu.gyp:icui18n',
+        '../../third_party/icu/icu.gyp:icuuc',
+        '../../third_party/libpng/libpng.gyp:libpng',
+        '../../third_party/zlib/zlib.gyp:zlib',
         'gfx_resources',
         '<(libjpeg_gyp_path):libjpeg',
       ],
@@ -158,7 +158,7 @@
             'win_util.h',
           ],
           'include_dirs': [
-            '..',
+            '../..',
             '<(DEPTH)/third_party/wtl/include',
           ],
         }],
@@ -166,8 +166,8 @@
           'dependencies': [
             # font_gtk.cc uses fontconfig.
             # TODO(evanm): I think this is wrong; it should just use GTK.
-            '../build/linux/system.gyp:fontconfig',
-            '../build/linux/system.gyp:gtk',
+            '../../build/linux/system.gyp:fontconfig',
+            '../../build/linux/system.gyp:gtk',
           ],
           'sources': [
             'gtk_native_view_id_manager.cc',
@@ -216,7 +216,7 @@
       },
       'conditions': [
         ['OS=="win"', {
-          'dependencies': ['../build/win/system.gyp:cygwin'],
+          'dependencies': ['../../build/win/system.gyp:cygwin'],
         }],
       ],
     },

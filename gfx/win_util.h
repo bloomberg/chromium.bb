@@ -6,15 +6,8 @@
 #define GFX_WIN_UTIL_H_
 #pragma once
 
-namespace gfx {
-
-// Returns true if Direct2d is available, false otherwise.
-bool Direct2dIsAvailable();
-
-// Returns true if DirectWrite is available, false otherwise.
-bool DirectWriteIsAvailable();
-
-}  // namespace gfx;
+#include "ui/gfx/win_util.h"
+// TODO(sail): remove this file once all includes have been updated.
 
 #endif  // GFX_WIN_UTIL_H_
 

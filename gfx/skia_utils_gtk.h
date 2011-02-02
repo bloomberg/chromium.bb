@@ -6,18 +6,7 @@
 #define APP_GFX_SKIA_UTILS_GTK_H_
 #pragma once
 
-#include "third_party/skia/include/core/SkColor.h"
-
-typedef struct _GdkColor GdkColor;
-
-namespace gfx {
-
-// Converts GdkColors to the ARGB layout Skia expects.
-SkColor GdkColorToSkColor(GdkColor color);
-
-// Converts ARGB to GdkColor.
-GdkColor SkColorToGdkColor(SkColor color);
-
-}  // namespace gfx
+#include "ui/gfx/skia_utils_gtk.h"
+// TODO(sail): remove this file once all includes have been updated.
 
 #endif  // APP_GFX_SKIA_UTILS_GTK_H_

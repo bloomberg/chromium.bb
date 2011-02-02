@@ -6,16 +6,7 @@
 #define GFX_CANVAS_SKIA_PAINT_H_
 #pragma once
 
-#include "gfx/canvas_skia.h"
-#include "skia/ext/canvas_paint.h"
-
-// Define a gfx::CanvasSkiaPaint type that wraps our gfx::Canvas like the
-// skia::PlatformCanvasPaint wraps PlatformCanvas.
-
-namespace gfx {
-
-typedef skia::CanvasPaintT<CanvasSkia> CanvasSkiaPaint;
-
-}  // namespace gfx
+#include "ui/gfx/canvas_skia_paint.h"
+// TODO(sail): remove this file once all includes have been updated.
 
 #endif  // GFX_CANVAS_SKIA_PAINT_H_

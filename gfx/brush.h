@@ -6,19 +6,7 @@
 #define GFX_BRUSH_H_
 #pragma once
 
-namespace gfx {
-
-// An object that encapsulates a platform native brush.
-// Subclasses handle memory management of the underlying native brush.
-class Brush {
- public:
-  Brush() {}
-  virtual ~Brush() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Brush);
-};
-
-}  // namespace gfx
+#include "ui/gfx/brush.h"
+// TODO(sail): remove this file once all includes have been updated.
 
 #endif  // GFX_BRUSH_H_

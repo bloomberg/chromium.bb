@@ -113,7 +113,7 @@
       'target_name': 'chromoting_base',
       'type': '<(library)',
       'dependencies': [
-        '../gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx',
         '../media/media.gyp:media',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/libvpx/libvpx.gyp:libvpx_include',
@@ -445,7 +445,7 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
-        '../gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
       ],

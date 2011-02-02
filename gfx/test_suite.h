@@ -6,19 +6,7 @@
 #define GFX_TEST_SUITE_H_
 #pragma once
 
-#include <string>
-
-#include "base/test/test_suite.h"
-#include "build/build_config.h"
-
-class GfxTestSuite : public base::TestSuite {
- public:
-  GfxTestSuite(int argc, char** argv);
-
- protected:
-  // Overridden from base::TestSuite:
-  virtual void Initialize();
-  virtual void Shutdown();
-};
+#include "ui/gfx/test_suite.h"
+// TODO(sail): remove this file once all includes have been updated.
 
 #endif  // GFX_TEST_SUITE_H_

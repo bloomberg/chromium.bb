@@ -9,7 +9,7 @@ The decoding can be done with or without hardware acceleration.
 If decoding is done without hardware acceleration, then the YV12 frames are 
 converted into RGB using ConvertYUVToRGB32() provided in  
 media/base/yuv_convert.h. They are then drawn to a window using StretchDIBits()
-provided in gfx/gdi_util.h.
+provided in ui/gfx/gdi_util.h.
 
 If decoding is done with hardware acceleration, then the frames are obtained
 from a D3D surface (IDirect3DSurface9). It is then drawn through calling 

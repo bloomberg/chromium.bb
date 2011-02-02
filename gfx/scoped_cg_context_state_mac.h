@@ -5,26 +5,7 @@
 #ifndef GFX_SCOPED_CG_CONTEXT_STATE_MAC_H_
 #define GFX_SCOPED_CG_CONTEXT_STATE_MAC_H_
 
-#import <QuartzCore/QuartzCore.h>
-
-namespace gfx {
-
-class ScopedCGContextSaveGState {
- public:
-  explicit ScopedCGContextSaveGState(CGContextRef context) : context_(context) {
-    CGContextSaveGState(context_);
-  }
-
-  ~ScopedCGContextSaveGState() {
-    CGContextRestoreGState(context_);
-  }
-
- private:
-  CGContextRef context_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedCGContextSaveGState);
-};
-
-}  // namespace gfx
+#include "ui/gfx/scoped_cg_context_state_mac.h"
+// TODO(sail): remove this file once all includes have been updated.
 
 #endif  // GFX_SCOPED_CG_CONTEXT_STATE_MAC_H_

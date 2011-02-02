@@ -151,7 +151,7 @@
         'command_buffer_common',
         '../app/app.gyp:app_base',
         '../base/base.gyp:base',
-        '../gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx',
         '../third_party/angle/src/build_angle.gyp:translator_glsl',
       ],
       'sources': [

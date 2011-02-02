@@ -65,7 +65,7 @@
         'app_strings',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
-        '../gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
