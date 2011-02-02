@@ -100,8 +100,14 @@ be available for now. -->
     <output filename="chromium_strings_id.pak" type="data_package" lang="id" />
     <output filename="chromium_strings_it.pak" type="data_package" lang="it" />
     <output filename="chromium_strings_ja.pak" type="data_package" lang="ja" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="chromium_strings_ka.pak" type="data_package" lang="ka" />
+    </if>
     <output filename="chromium_strings_kn.pak" type="data_package" lang="kn" />
     <output filename="chromium_strings_ko.pak" type="data_package" lang="ko" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="chromium_strings_ku.pak" type="data_package" lang="ku" />
+    </if>
     <output filename="chromium_strings_lt.pak" type="data_package" lang="lt" />
     <output filename="chromium_strings_lv.pak" type="data_package" lang="lv" />
     <output filename="chromium_strings_ml.pak" type="data_package" lang="ml" />
@@ -123,7 +129,9 @@ be available for now. -->
     <output filename="chromium_strings_te.pak" type="data_package" lang="te" />
     <output filename="chromium_strings_th.pak" type="data_package" lang="th" />
     <output filename="chromium_strings_tr.pak" type="data_package" lang="tr" />
-    <output filename="chromium_strings_ug.pak" type="data_package" lang="ug" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="chromium_strings_ug.pak" type="data_package" lang="ug" />
+    </if>
     <output filename="chromium_strings_uk.pak" type="data_package" lang="uk" />
     <output filename="chromium_strings_vi.pak" type="data_package" lang="vi" />
     <output filename="chromium_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
@@ -131,25 +139,29 @@ be available for now. -->
   </outputs>
   <translations>
     <if expr="pp_ifdef('use_third_party_translations')">
-      <file path="../third_party/launchpad_translations/chromium_strings_ast.xtb" lang="ast" />
-      <file path="../third_party/launchpad_translations/chromium_strings_ca.xtb" lang="ca" />
-      <file path="../third_party/launchpad_translations/chromium_strings_cs.xtb" lang="cs" />
-      <file path="../third_party/launchpad_translations/chromium_strings_da.xtb" lang="da" />
-      <file path="../third_party/launchpad_translations/chromium_strings_de.xtb" lang="de" />
-      <file path="../third_party/launchpad_translations/chromium_strings_es.xtb" lang="es" />
-      <file path="../third_party/launchpad_translations/chromium_strings_eu.xtb" lang="eu" />
-      <file path="../third_party/launchpad_translations/chromium_strings_fi.xtb" lang="fi" />
-      <file path="../third_party/launchpad_translations/chromium_strings_fr.xtb" lang="fr" />
-      <file path="../third_party/launchpad_translations/chromium_strings_gl.xtb" lang="gl" />
-      <file path="../third_party/launchpad_translations/chromium_strings_he.xtb" lang="he" />
-      <file path="../third_party/launchpad_translations/chromium_strings_id.xtb" lang="id" />
-      <file path="../third_party/launchpad_translations/chromium_strings_lt.xtb" lang="lt" />
-      <file path="../third_party/launchpad_translations/chromium_strings_nl.xtb" lang="nl" />
-      <file path="../third_party/launchpad_translations/chromium_strings_no.xtb" lang="no" />
-      <file path="../third_party/launchpad_translations/chromium_strings_pt-BR.xtb" lang="pt-BR" />
-      <file path="../third_party/launchpad_translations/chromium_strings_ru.xtb" lang="ru" />
-      <file path="../third_party/launchpad_translations/chromium_strings_sl.xtb" lang="sl" />
-      <file path="../third_party/launchpad_translations/chromium_strings_zh-CN.xtb" lang="zh-CN" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_ast.xtb" lang="ast" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_ca.xtb" lang="ca" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_cs.xtb" lang="cs" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_da.xtb" lang="da" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_de.xtb" lang="de" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_es.xtb" lang="es" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_eu.xtb" lang="eu" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_fi.xtb" lang="fi" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_fr.xtb" lang="fr" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_gl.xtb" lang="gl" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_he.xtb" lang="he" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_id.xtb" lang="id" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_ka.xtb" lang="ka" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_ku.xtb" lang="ku" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_lt.xtb" lang="lt" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_nl.xtb" lang="nl" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_no.xtb" lang="no" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_pt-BR.xtb" lang="pt-BR" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_ru.xtb" lang="ru" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_sl.xtb" lang="sl" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_sv.xtb" lang="sv" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_ug.xtb" lang="ug" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_zh-CN.xtb" lang="zh-CN" />
     </if>
   </translations>
   <release seq="1" allow_pseudo="false">

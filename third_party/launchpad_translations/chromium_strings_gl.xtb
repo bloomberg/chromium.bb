@@ -27,7 +27,7 @@
 <translation id="2843244238218937196">Renderizador de Chromium</translation>
 <translation id="2966088006374919794">Chromium precisa iniciar un aplicativo externo que manexe as ligazóns <ph name="SCHEME"/>. A ligazón da petición é <ph name="PROTOLINK"/>.</translation>
 <translation id="3014684866565908571">Utilidade de Chromium</translation>
-<translation id="3069161343438701711">Traballador de Chromium</translation>
+<translation id="3069161343438701711">Operador de Chromium</translation>
 <translation id="309634601461115233">Peche a sesión de Chromium OS e inicie unha nova para que este cambio sexa aplicado.</translation>
 <translation id="3103660991484857065">Produciuse un fallo no instalador ao descomprimir o arquivo. Descargue Chromium de novo.</translation>
 <translation id="3289786827957973841">Cambiar o idioma que se emprega nos menús de Chromium,n as caixas de diálogo e nas axudas.</translation>
@@ -105,4 +105,10 @@
 <translation id="9191268552238695869">Un administrador instalou Chromium neste sitema e está dispoñíbel para todos os usuarios. Agora, a versión de Chromium a nivel de sistema substituirá a súa instalación a nivel de usuario.</translation>
 <translation id="980185455267101462">Este equipo xa ten unha versión máis recente de Chromium Frame. Se o software non está funcionando, desinstale Chromium Frame e descárgueo de novo.</translation>
 <translation id="985602178874221306">Os autores de Chromium</translation>
+<translation id="1293235220023151515">Atopouse un conflito na instalación de Chromium no seu sistema. Desinstáleo e tenteo de novo.</translation>
+<translation id="2927042866129133279">Argumentos incorrectos. Chromium Frame non pode ser instalado en modo dispoñíbel se non se instala tamén Chromium.</translation>
+<translation id="3096463977885168586">Copyright © 2006-2011 Os autores de Chromium. Reservados todos os dereitos.</translation>
+<translation id="4330297532943865716">Atopouse no sistema unha instalación de Chromium ou de Chromium Frame en conflito. Desinstale e volva a tentalo.</translation>
+<translation id="4649468518813464896">http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=161796</translation>
+<translation id="8046283042877435986">Este sitio recomenda Chromium Frame (xa instalado).</translation>
 </translationbundle>

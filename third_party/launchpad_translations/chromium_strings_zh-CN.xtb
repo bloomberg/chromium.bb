@@ -105,4 +105,10 @@
 <translation id="9191268552238695869">系统管理员已经在此系统中安装了 Chromium，所有的用户均可使用。现在系统级 Chromium 将代替您的用户级安装。</translation>
 <translation id="980185455267101462">计算机中已有更新版本的 Chromium Frame。如果它不工作，请卸载 Chromium Frame 并重新下载它。</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
+<translation id="1293235220023151515">系统中发现安装有冲突的 Chromium 版本。请卸载后再试。</translation>
+<translation id="2927042866129133279">无效参数。无法在未安装 Chromium 的情况下以就绪模式安装 Chromium Frame。</translation>
+<translation id="3096463977885168586">版权所有 © 2006-2011 Chromium 作者。保留所有权利。</translation>
+<translation id="4330297532943865716">系统中发现已安装有冲突的 Chromium 或 Chromium Frame 版本。请先卸载该版本后再试。</translation>
+<translation id="4649468518813464896">http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=161796</translation>
+<translation id="8046283042877435986">该站点推荐使用 Chromium Frame (已安装)。</translation>
 </translationbundle>

@@ -45,4 +45,26 @@
 <translation id="9013262824292842194">Chromium vaatii Windows Vistan, Windows XP:n SP2:lla tai uudemman.</translation>
 <translation id="911206726377975832">Poistetaanko myös selailutiedot?</translation>
 <translation id="9191268552238695869">Ylläpitäjä on asentanut järjestelmään Chromiumin ja se on kaikkien käyttäjien käytettävissä. Järjestelmälaajuinen Chromium korvaa henkilökohtaisen Chromium-asennuksesi.</translation>
+<translation id="1293235220023151515">Järjestelmästä löytyi ristiriidan aiheuttava Chromium-asennus. Poista se ensin ja yritä sitten uudelleen.</translation>
+<translation id="3096463977885168586">Tekijänoikeus © 2006-2011 Chromium-kehittäjät. Kaikki oikeudet pidätetään.</translation>
+<translation id="3103660991484857065">Asennusohjelma epäonnistui arkiston purkamisessa. Lataa Chromium uudelleen.</translation>
+<translation id="3289786827957973841">Vaihda Chromiumin valikoissa, ikkunnoissa ja työkaluvihjeissä käytettävää kieltä.</translation>
+<translation id="3911984803452407990">Chromium ei vastaa. Käynnistetäänkö Chromium uudelleen?</translation>
+<translation id="4124681358536363708">Chromiumin asennuspolku vaikuttaa olevan käytössä. Käynnistä kone uudelleen ja yritä uudelleen.</translation>
+<translation id="4179848566211676653">Poistu Chromiumista</translation>
+<translation id="4285930937574705105">Asennus epäonnistui tuntemattoman virheen vuoksi. Jos Chromium on parhaillaan käytössä, sulje se ja yritä uudelleen.</translation>
+<translation id="4330585738697551178">Tämä moduuli aiheuttaa ristiriidan Chromiumin kanssa.</translation>
+<translation id="4387544446954190892">Chromium on verkkoselain, jolla nettisivut ja sovellukset toimivat salamannopeasti. Se on nopea, vakaa ja helppo käyttää. Selaa verkkosivuja turvallisemmin Chromiumin sisäänrakennetun haittaohjelmaeston avulla.</translation>
+<translation id="4736009297872521264">Chromium oikuttelee</translation>
+<translation id="5381655543170064624">Sulje kaikki Chromiumin ikkunat ja käynnistä Chromium uudelleen saattaaksesi muutoksen voimaan.</translation>
+<translation id="5498103559159810756">Chromium käyttää asettamaasi oletushakukonetta. Tällä hetkellä oletuksena on <ph name="PAGE_TITLE"/>. Haluatko säilyttää kyseisen hakukoneen oletuksena?</translation>
+<translation id="5559945513746540383">Chromiumia ei ole asennettu tai asennuspolkua ei löytynyt. Lataa Chromium uudelleen.</translation>
+<translation id="6209318267439329">Chromium saattaa käyttää verkkopalveluja selauskokemuksen parantamiseksi. Voit halutessasi poistaa kyseiset palvelut käytöstä.</translation>
+<translation id="6550687541571590855">Chromium ei voi lukea saati kirjoittaa tietoja sen datapolkuun:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="6893813176749746474">Chromium on päivitetty, mutta et ole käyttänyt sitä ainakaan kuukauteen.</translation>
+<translation id="6944967875980567883">Chromiumiin ladatut moduulit</translation>
+<translation id="6953661834318318668">Chromium-työkalupalkki</translation>
+<translation id="7138853919861947730">Chromium saattaa käyttää verkkopalveluja selauskokemuksen parantamiseksi.</translation>
+<translation id="7223968959479464213">Tehtävien hallinta - Chromium</translation>
+<translation id="985602178874221306">Chromium-kehittäjät</translation>
 </translationbundle>

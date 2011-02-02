@@ -96,4 +96,14 @@
 <translation id="9191268552238695869">Ein Administrator hat Chromium auf diesem System installiert, und es ist von allen Benutzern ausführbar. Die systemweite Version von Chromium wird ihre benutzereigene Version nun ersetzen.</translation>
 <translation id="980185455267101462">Auf diesem Rechner wird bereits eine aktuellere Version von Chromium Frame verwendet. Wenn das Programm nicht funktioniert, deinstallieren Sie es bitte und laden Chromium Frame erneut herunter.</translation>
 <translation id="985602178874221306">Die Autoren von Chromium</translation>
+<translation id="1293235220023151515">Auf dem System wurde eine Installation von Chromium vorgefunden, die einen Konflikt mit dieser Version verursacht. Bitte deinstallieren Sie die bestehende Version und versuchen es dann erneut.</translation>
+<translation id="2927042866129133279">Ungültige Argumente. Chromium Frame kann nicht im Bereitschaftsmodus installiert werden, ohne auch Chromium zu installieren.</translation>
+<translation id="3096463977885168586">Copyright © 2006-2011 Die Chromium-Autoren. Alle Rechte vorbehalten.</translation>
+<translation id="4222661289444749267">Chromium Frame Update.</translation>
+<translation id="4330297532943865716">Auf dem System wurde eine Installation von Chromium oder Chromium Frame vorgefunden, die einen Konflikt mit dieser Version verursacht. Bitte deinstallieren Sie die bestehende Version und versuchen es dann erneut.</translation>
+<translation id="4649468518813464896">http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=161796</translation>
+<translation id="5236552923972642185">Chromium Frame ist aktualisiert. Bitte starten sie den Browser neu. Chrome Version: <ph name="TODO_0001"/>, Chromium Frame Version: <ph name="TODO_0002"/></translation>
+<translation id="7503101070699687603">Chromium Erweiterungs Host</translation>
+<translation id="8046283042877435986">Diese Seite setzt Chromium Frame(bereits installiert) voraus.</translation>
+<translation id="8974095189086268230">Chromium OS wird ermöglicht durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS"/>quelloffene Software<ph name="END_LINK_CROS_OSS"/>.</translation>
 </translationbundle>

@@ -105,4 +105,10 @@
 <translation id="9191268552238695869">Skrbnik je namestil Chromium na ta sistem in je na voljo za vse uporabnike. Chromium sistemske ravni bo zamenjal vašo namestitev na ravni uporabnika.</translation>
 <translation id="980185455267101462">Ta računalnik že vsebuje novejšo različico okvirja Chromium. Če program ne deluje, izbrišite Chromium okvir in ga znova namestite.</translation>
 <translation id="985602178874221306">Chromium avtorji</translation>
+<translation id="1293235220023151515">Na vašem sistemu je bila najdena namestitev Chromiuma, ki je v sporu s trenutno. Odstranite jo in poskusite znova.</translation>
+<translation id="2927042866129133279">Neveljavni argumenti. Chromium Frame ni mogoče namestiti v načinu pripravljenosti brez namestitve Chromiuma.</translation>
+<translation id="3096463977885168586">Avtorske pravice © 2006-2011 Avtorji Chromium. Vse pravice pridržane.</translation>
+<translation id="4330297532943865716">Na sistemu je bila najdena namestitev Chromium ali Chromium Frame v sporu. Odstranite jo in poskusite znova.</translation>
+<translation id="4649468518813464896">http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=161796</translation>
+<translation id="8046283042877435986">To spletišče priporoča Chromium Frame (že nameščen).</translation>
 </translationbundle>

@@ -87,4 +87,22 @@
 <translation id="9191268552238695869">Een beheerder heeft Chromium op dit systeem geïnstalleerd en het is beschikbaar voor alle gebruikers. De versie die op het hele systeem is geïnstalleerd zal uw gebruikers-niveau installatie nu vervangen.</translation>
 <translation id="980185455267101462">Deze computer heeft al een modernere versie van Chrmium frame. Als de software niet werkt kunt u Chromium frame verwijderen en opnieuw downloaden.</translation>
 <translation id="985602178874221306">De Chromium-auteurs</translation>
+<translation id="4890456338028740446">U probeert naar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te gaan, maar de server heeft een certificaat dat niet door uw computer vertrouwd wordt. Dit kan betekenen dat de server haar eigen certificaat heeft aangemaakt, die Chromium niet kan controleren, of dat een aanvaller probeert uw communicatie te onderscheppen. U moet niet verdergaan, &lt;strong&gt;zeker&lt;/strong&gt; niet als u deze waarschuwing nooit eerder op deze site hebt gezien.</translation>
+<translation id="4931128279570440880">In dit geval komt het adres in het certificaat niet overeen met het adres waar uw browser mee probeert te verbinden. Een mogelijke verklaring hiervoor is dat uw communicatie door een aanvaller onderschept wordt, en dat deze aanvaller het certificaat van een andere website gebruikt. Een andere verklaring kan zijn dat de server zo is ingesteld dat het hetzelfde certificaat voor verschillende websites teruggeeft, zelfs als dit certificaat niet geldig is voor die websites. Chromium is er zeker van dat u nu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; bezoekt, maar kan niet weten of dat dezelfde site als &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; is, die u probeerde te bezoeken. Als u doorgaat zal Chromium niet meer controleren of het adres van de website en het certificaat overeen komen. Het is beter dat u niet verder gaat.</translation>
+<translation id="5236552923972642185">Chromium frame is bijgewerkt. U moet uw browser herstarten. Chrome versie: <ph name="TODO_0001"/>, Chromium frame versie: <ph name="TODO_0002"/></translation>
+<translation id="5381655543170064624">Sluit alle Chromium vensters en start Chromium opnieuw om de wijzigingen toe te passen.</translation>
+<translation id="5498103559159810756">Chromium gebruikt uw standaard zoekmachine, dit is momenteel <ph name="PAGE_TITLE"/>. Wilt u uw standaard zoekmachine behouden?</translation>
+<translation id="5559945513746540383">Chromium is niet geïnstalleerd of kan de installatiemap niet vinden. Probeer Chromium opnieuw te downloaden.</translation>
+<translation id="5947389362804196214">Uw voorkeuren kunnen niet gelezen worden.\n\nSommige opties kunnen onbeschikbaar zijn en aanpassingen aan de voorkeuren kunnen niet opgeslagen worden.</translation>
+<translation id="6089587093203430357">Onmiddellijk</translation>
+<translation id="6389904555427754410">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bezoeken, maar het certificaat van deze website bevat fouten. Chromium kan geen certificaten met fouten verwerken en kan dus ook niet de identiteit van deze website bevestigen. Uw verbinding met deze website is niet veilig en u moet niet verder gaan.</translation>
+<translation id="6676384891291319759">Verken het Internet</translation>
+<translation id="7337881442233988129">Chromium</translation>
+<translation id="786596160034915371">Deze computer heeft al een recentere versie van Chromium. Als de software niet werkt kunt u Chromium verwijderen en opnieuw downloaden.</translation>
+<translation id="8191012240651979172">Chromium is al voor deze gebruiker geïnstalleerd. Als de software niet werkt kunt u Chromium verwijderen en opnieuw downloaden.</translation>
+<translation id="8422904359318093226">Chromium misdraagt zich</translation>
+<translation id="8453117565092476964">Het installatiearchief is beschadigd of ongeldig. Probeer Chromium opnieuw te downloaden.</translation>
+<translation id="8621669128220841554">De installatie is door een niet nader omschreven fout mislukt. Probeer Chromium opnieuw te downloaden.</translation>
+<translation id="8770560772173120024">Chromium importeert nu uw Favorieten/Bladwijzers.</translation>
+<translation id="8860251088736138354">Oeps! Chromium is gecrasht. Wilt u Chromium herstarten?</translation>
 </translationbundle>

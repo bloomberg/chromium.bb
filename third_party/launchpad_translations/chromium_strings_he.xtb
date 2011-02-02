@@ -104,4 +104,6 @@
 <translation id="9191268552238695869">מנהל מערכת התקין Chromium במערכת זו והוא זמין לכל המשתמשים. גרסת ה־Chromium שהותקנה ברמת המערכת תחליף את ההתקנה שבוצעה ברמת המשתמש שלך.</translation>
 <translation id="980185455267101462">במחשב זה כבר ישנה גרסה עדכנית יותר של מסגרת Chromium. אם התכנה אינה עובדת יש להסיר את מסגרת Chromium ולהתקין שוב.</translation>
 <translation id="985602178874221306">יוצרי Chromium</translation>
+<translation id="4330297532943865716">התקנה הגורמת להתנגשות של Chromium או מסגרת Chromium נמצאה במערכת. נא להסיר אותה ולנסות שוב.</translation>
+<translation id="8974095189086268230">Chromium OS זמינה בזכות <ph name="BEGIN_LINK_CROS_OSS"/>תכנה בקוד פתוח<ph name="END_LINK_CROS_OSS"/> נוספת.</translation>
 </translationbundle>

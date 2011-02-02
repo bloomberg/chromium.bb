@@ -85,4 +85,21 @@
 <translation id="8974095189086268230">Chromium dapat Anda nikmati karena adanya tambahan <ph name="BEGIN_LINK_CROS_OSS"/>perangkat lunak sumber terbuka<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="9013262824292842194">Chromium memerlukan Windows Vista atau Windows XP SP2 atau lebih baru.</translation>
 <translation id="9191268552238695869">Administrator telah menginstal Chromium pada sistem ini, sehingga tersedia untuk semua pengguna. Sekarang Chromium tingkat-sistem akan menggantikan instalasi tingkat-pengguna Anda.</translation>
+<translation id="4330297532943865716">Konflik terhadap instalasi Chromium atau Chromium Frame terdahulu pada sistem. Hapus dan ulangi proses instalasi.</translation>
+<translation id="5498103559159810756">Chromium menggunakan mesin penelusur default Anda, yaitu <ph name="PAGE_TITLE"/>. Apakah tetap ingin menggunakan penelusur yang sama?</translation>
+<translation id="6287463253129672858">Tidak dapat menginstal Chromium Frame yang sama dengan yang sedang berjalan. Keluar dulu dari Chromium Frame dan coba kembali.</translation>
+<translation id="7483335560992089831">Tidak dapat menginstal versi Chromium yang sama dengan yang sedang berjalan. Keluar dulu dari Chromium dan coba kembali.</translation>
+<translation id="7526756929942730853">Jika opsi Chromium di reset, maka perubahan yang telah Anda lakukan akan dikembalikan ke seting default. Apakah Anda ingin mereset opsi Chromium?</translation>
+<translation id="7641113255207688324">Chromium bukan merupakan browser default Anda.</translation>
+<translation id="7747138024166251722">Penginstal tidak dapat membuat direktori temporer. Periksa sisa ruang media penyimpan dan hak untuk menginstal perangkat lunak.</translation>
+<translation id="786596160034915371">Versi Chromium yang lebih baru telah terinstal pada komputer ini. Jika perangkat lunak tersebut tidak berfungsi, hapus Chromium yang ada dan unduh ulang.</translation>
+<translation id="8191012240651979172">Chromium telah terinstal untuk pengguna ini. Jika perangkat lunak tersebut tidak berfungsi, hapus Chromium yang ada dan unduh ulang.</translation>
+<translation id="8422904359318093226">Chromium tidak berfungsi dengan benar.</translation>
+<translation id="8453117565092476964">Arsip penginstal korup atau tidak valid. Unduh ulang Chromium.</translation>
+<translation id="8621669128220841554">Instalasi gagal kerena kesalahan tertentu. Unduh ulang Chromium.</translation>
+<translation id="8770560772173120024">Chromium sedang mengimpor Favorit/Bookmark.</translation>
+<translation id="8865765905101981392">Browser Internet</translation>
+<translation id="911206726377975832">Hapus juga data hasil menjelajah web?</translation>
+<translation id="980185455267101462">Versi Chromium Frame yang lebih baru telah terinstal pada komputer ini. Jika perangkat lunak tersebut tidak berfungsi, hapus Chromium Frame yang ada dan unduh ulang.</translation>
+<translation id="985602178874221306">Jajaran Pembuat Chromium</translation>
 </translationbundle>
