@@ -55,12 +55,6 @@ void OnDialogResponse(GtkDialog* dialog, int response_id) {
   gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
-void FixLabelWrappingCallback(GtkWidget *label,
-                              GtkAllocation *allocation,
-                              gpointer data) {
-  gtk_widget_set_size_request(label, allocation->width, -1);
-}
-
 GtkWidget* MakeMarkupLabel(const char* format, const std::string& str) {
   GtkWidget* label = gtk_label_new(NULL);
   char* markup = g_markup_printf_escaped(format, str.c_str());
