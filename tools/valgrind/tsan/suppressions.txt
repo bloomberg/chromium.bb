@@ -103,6 +103,14 @@
   fun:UserScriptMaster::ScriptReloader::RunScan*
 }
 
+{
+  bug_71634
+  ThreadSanitizer:Race
+  fun:gdk_x_error
+  ...
+  fun:ui::GetWindowGeometry*
+}
+
 ############################
 # Benign races
 {
