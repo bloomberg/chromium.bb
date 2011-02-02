@@ -375,6 +375,13 @@ void ProfileImpl::InitExtensions() {
 
 void ProfileImpl::RegisterComponentExtensions() {
   // Register the component extensions.
+  //
+  // Component extension manifest must contain a 'key' property with a unique
+  // public key, serialized in base64. You can create a suitable value with the
+  // following commands on a unixy system:
+  //
+  //   ssh-keygen -t rsa -b 1024 -N '' -f /tmp/key.pem
+  //   rsa -pubout -outform DER < /tmp/key.pem 2>/dev/null | base64 -w 0
   typedef std::list<std::pair<FilePath::StringType, int> >
       ComponentExtensionList;
   ComponentExtensionList component_extensions;
