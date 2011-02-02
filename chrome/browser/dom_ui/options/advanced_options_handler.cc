@@ -243,6 +243,7 @@ DOMMessageHandler* AdvancedOptionsHandler::Attach(DOMUI* dom_ui) {
   enable_metrics_recording_.Init(prefs::kMetricsReportingEnabled,
                                  g_browser_process->local_state(), this);
   cloud_print_proxy_email_.Init(prefs::kCloudPrintEmail, prefs, this);
+  cloud_print_proxy_enabled_.Init(prefs::kCloudPrintProxyEnabled, prefs, this);
 #endif
   default_download_location_.Init(prefs::kDownloadDefaultDirectory,
                                   prefs, this);
@@ -327,7 +328,8 @@ void AdvancedOptionsHandler::Observe(NotificationType type,
       SetupAutoOpenFileTypesDisabledAttribute();
     } else if (proxy_prefs_->IsObserved(*pref_name)) {
       SetupProxySettingsSection();
-    } else if (*pref_name == prefs::kCloudPrintEmail) {
+    } else if ((*pref_name == prefs::kCloudPrintEmail) ||
+               (*pref_name == prefs::kCloudPrintProxyEnabled)) {
 #if !defined(OS_CHROMEOS)
       if (cloud_print_proxy_ui_enabled_)
         SetupCloudPrintProxySection();
@@ -485,10 +487,17 @@ void AdvancedOptionsHandler::SetupCloudPrintProxySection() {
     return;
   }
 
+  bool cloud_print_proxy_allowed =
+      !cloud_print_proxy_enabled_.IsManaged() ||
+      cloud_print_proxy_enabled_.GetValue();
+  FundamentalValue allowed(cloud_print_proxy_allowed);
+
   std::string email;
-  if (dom_ui_->GetProfile()->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail))
+  if (dom_ui_->GetProfile()->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail) &&
+      cloud_print_proxy_allowed) {
     email = dom_ui_->GetProfile()->GetPrefs()->GetString(
         prefs::kCloudPrintEmail);
+  }
   FundamentalValue disabled(email.empty());
 
   string16 label_str;
@@ -503,7 +512,7 @@ void AdvancedOptionsHandler::SetupCloudPrintProxySection() {
 
   dom_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetupCloudPrintProxySection",
-      disabled, label);
+      disabled, label, allowed);
 }
 
 void AdvancedOptionsHandler::RemoveCloudPrintProxySection() {

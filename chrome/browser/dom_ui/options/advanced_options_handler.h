@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,6 +151,7 @@ class AdvancedOptionsHandler
 #if !defined(OS_CHROMEOS)
   BooleanPrefMember enable_metrics_recording_;
   StringPrefMember cloud_print_proxy_email_;
+  BooleanPrefMember cloud_print_proxy_enabled_;
   bool cloud_print_proxy_ui_enabled_;
 #endif
 

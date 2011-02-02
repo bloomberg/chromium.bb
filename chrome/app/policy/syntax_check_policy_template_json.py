@@ -90,7 +90,7 @@ class PolicyTemplateChecker(object):
     for key in policy:
       if key not in ('name', 'type', 'caption', 'desc', 'supported_on',
                      'label', 'policies', 'items', 'example_value', 'features',
-                     'deprecated'):
+                     'deprecated', 'future'):
         self.warning_count += 1
         print ('In policy %s: Warning: Unknown key: %s' %
                (policy.get('name'), key))
@@ -117,6 +117,9 @@ class PolicyTemplateChecker(object):
 
     # If 'deprecated' is present, it must be a bool.
     self._CheckContains(policy, 'deprecated', bool, True)
+
+    # If 'future' is present, it must be a bool.
+    self._CheckContains(policy, 'future', bool, True)
 
     if policy_type == 'group':
 

@@ -458,6 +458,9 @@ INSTANTIATE_TEST_CASE_P(
             key::kInstantEnabled),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyIncognitoEnabled,
-            key::kIncognitoEnabled)));
+            key::kIncognitoEnabled),
+        PolicyTestParams::ForBooleanPolicy(
+            kPolicyCloudPrintProxyEnabled,
+            key::kCloudPrintProxyEnabled)));
 
 }  // namespace policy

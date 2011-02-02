@@ -261,6 +261,20 @@
       If this setting is disabled, users cannot print from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Printing is disabled in the wrench menu, extensions, JavaScript applications, etc. It is still possible to print from plugins that bypass <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> while printing. For example certain Flash applications has the print option in their context menu, and that will not be disabled.''',
     },
     {
+      'name': 'CloudPrintProxyEnabled',
+      'type': 'main',
+      'supported_on': [],
+      'features': {'dynamic_refresh': 1},
+      'future': True,
+      'example_value': True,
+      'caption': '''Enable <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> proxy''',
+      'desc': '''      Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to act as a proxy between <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> and legacy printers connected to the machine.
+
+      If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google account.
+
+      If this setting is disabled, users cannot enable the proxy, and the machine will not be allowed to share it's printers with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>.''',
+    },
+    {
       'name': 'SafeBrowsingEnabled',
       'type': 'main',
       'supported_on': ['chrome.*:8-'],

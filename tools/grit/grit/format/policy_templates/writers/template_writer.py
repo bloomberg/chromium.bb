@@ -44,6 +44,18 @@ class TemplateWriter(object):
     '''
     return False
 
+  def IsFuturePolicySupported(self, policy):
+    '''Checks if the given future policy is supported by the writer.
+
+    Args:
+      policy: The dictionary of the policy.
+
+    Returns:
+      True if the writer chooses to include the deprecated 'policy' in its
+      output.
+    '''
+    return False
+
   def IsPolicySupported(self, policy):
     '''Checks if the given policy is supported by the writer.
     In other words, the set of platforms supported by the writer
@@ -58,6 +70,10 @@ class TemplateWriter(object):
     '''
     if ('deprecated' in policy and policy['deprecated'] is True and
         not self.IsDeprecatedPolicySupported(policy)):
+      return False
+
+    if ('future' in policy and policy['future'] is True and
+        not self.IsFuturePolicySupported(policy)):
       return False
 
     if '*' in self.platforms:
@@ -231,6 +247,3 @@ class TemplateWriter(object):
       str_key = policy['name']
     # Groups come before regular policies.
     return (not is_group, str_key)
-
-
-

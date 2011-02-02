@@ -230,6 +230,8 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
   { Value::TYPE_BOOLEAN, kPolicyInstantEnabled, prefs::kInstantEnabled },
   { Value::TYPE_BOOLEAN, kPolicyDefaultBrowserSettingEnabled,
     prefs::kDefaultBrowserSettingEnabled },
+  { Value::TYPE_BOOLEAN, kPolicyCloudPrintProxyEnabled,
+    prefs::kCloudPrintProxyEnabled },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
@@ -847,6 +849,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
     { kPolicyInstantEnabled, Value::TYPE_BOOLEAN, key::kInstantEnabled },
     { kPolicyDefaultBrowserSettingEnabled, Value::TYPE_BOOLEAN,
       key::kDefaultBrowserSettingEnabled },
+    { kPolicyCloudPrintProxyEnabled, Value::TYPE_BOOLEAN,
+      key::kCloudPrintProxyEnabled },
 
 #if defined(OS_CHROMEOS)
     { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,

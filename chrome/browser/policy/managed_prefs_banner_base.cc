@@ -91,6 +91,7 @@ void ManagedPrefsBannerBase::Init(PrefService* local_state,
       AddUserPref(prefs::kProxyServer);
       AddUserPref(prefs::kProxyPacUrl);
       AddUserPref(prefs::kProxyBypassList);
+      AddUserPref(prefs::kCloudPrintProxyEnabled);
       break;
     default:
       NOTREACHED();

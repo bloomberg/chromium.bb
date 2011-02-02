@@ -1338,6 +1338,7 @@ class CloudPrintProxySection : public AdvancedSection,
 
   // Preferences we tie things to.
   StringPrefMember cloud_print_proxy_email_;
+  BooleanPrefMember cloud_print_proxy_enabled_;
 
   base::ScopedCallbackFactory<CloudPrintProxySection> factory_;
 
@@ -1430,6 +1431,8 @@ void CloudPrintProxySection::InitControlLayout() {
   // Attach the preferences so we can flip things appropriately.
   cloud_print_proxy_email_.Init(prefs::kCloudPrintEmail,
                                 profile()->GetPrefs(), this);
+  cloud_print_proxy_enabled_.Init(prefs::kCloudPrintProxyEnabled,
+                                  profile()->GetPrefs(), this);
 
   // Start the UI off in the state we think it should be in.
   std::string pref_string(prefs::kCloudPrintEmail);
@@ -1444,8 +1447,13 @@ void CloudPrintProxySection::NotifyPrefChanged(const std::string* pref_name) {
   if (pref_name == NULL)
     return;
 
-  if (*pref_name == prefs::kCloudPrintEmail) {
-    if (Enabled()) {
+  if (*pref_name == prefs::kCloudPrintEmail ||
+      *pref_name == prefs::kCloudPrintProxyEnabled) {
+    bool cloud_print_proxy_allowed =
+        !cloud_print_proxy_enabled_.IsManaged() ||
+        cloud_print_proxy_enabled_.GetValue();
+
+    if (Enabled() && cloud_print_proxy_allowed) {
       std::string email;
       if (profile()->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail))
         email = profile()->GetPrefs()->GetString(prefs::kCloudPrintEmail);
@@ -1457,6 +1465,7 @@ void CloudPrintProxySection::NotifyPrefChanged(const std::string* pref_name) {
       enable_disable_button_->SetLabel(UTF16ToWide(l10n_util::GetStringUTF16(
           IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_BUTTON)));
       enable_disable_button_->InvalidateLayout();
+      enable_disable_button_->SetEnabled(true);
       manage_printer_button_->SetVisible(true);
       manage_printer_button_->InvalidateLayout();
     } else {
@@ -1465,6 +1474,7 @@ void CloudPrintProxySection::NotifyPrefChanged(const std::string* pref_name) {
       enable_disable_button_->SetLabel(UTF16ToWide(l10n_util::GetStringUTF16(
           IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_BUTTON)));
       enable_disable_button_->InvalidateLayout();
+      enable_disable_button_->SetEnabled(cloud_print_proxy_allowed);
       manage_printer_button_->SetVisible(false);
     }
 

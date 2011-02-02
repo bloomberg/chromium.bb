@@ -234,10 +234,11 @@ var OptionsPage = options.OptionsPage;
   };
 
   // Set the Cloud Print proxy UI to enabled, disabled, or processing.
-  AdvancedOptions.SetupCloudPrintProxySection = function(disabled, label) {
+  AdvancedOptions.SetupCloudPrintProxySection = function(
+        disabled, label, allowed) {
     if (!cr.isChromeOS) {
       $('cloudPrintProxyLabel').textContent = label;
-      if (disabled) {
+      if (disabled || !allowed) {
         $('cloudPrintProxySetupButton').textContent =
           localStrings.getString('cloudPrintProxyDisabledButton');
         $('cloudPrintProxyManageButton').style.display = 'none';
@@ -246,7 +247,7 @@ var OptionsPage = options.OptionsPage;
           localStrings.getString('cloudPrintProxyEnabledButton');
         $('cloudPrintProxyManageButton').style.display = 'inline';
       }
-      $('cloudPrintProxySetupButton').disabled = false;
+      $('cloudPrintProxySetupButton').disabled = !allowed;
     }
   };
 

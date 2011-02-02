@@ -2064,6 +2064,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kEnableTranslate, true);
   prefs->RegisterBooleanPref(prefs::kRemotingHasSetupCompleted, false);
   prefs->RegisterStringPref(prefs::kCloudPrintEmail, std::string());
+  prefs->RegisterBooleanPref(prefs::kCloudPrintProxyEnabled, true);
   prefs->RegisterBooleanPref(prefs::kDevToolsDisabled, false);
   prefs->RegisterBooleanPref(prefs::kIncognitoEnabled, true);
   prefs->RegisterDoublePref(prefs::kDefaultZoomLevel, 0.0);
