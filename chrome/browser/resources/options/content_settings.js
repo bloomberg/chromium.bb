@@ -33,9 +33,15 @@ cr.define('options', function() {
           this.pageDiv.querySelectorAll('.exceptions-list-button');
       for (var i = 0; i < exceptionsButtons.length; i++) {
         exceptionsButtons[i].onclick = function(event) {
-          ContentSettingsExceptionsArea.getInstance().showList(
+          var page = ContentSettingsExceptionsArea.getInstance();
+          page.showList(
               event.target.getAttribute('contentType'));
           OptionsPage.navigateToPage('contentExceptions');
+          // Add on the proper hash for the content type, and store that in the
+          // history so back/forward and tab restore works.
+          var hash = event.target.getAttribute('contentType');
+          window.history.replaceState({pageName: page.name}, page.title,
+                                      '/' + page.name + "#" + hash);
         };
       }
 
@@ -52,16 +58,6 @@ cr.define('options', function() {
 
       if (!templateData.enable_click_to_play)
         $('click_to_play').style.display = 'none';
-    },
-
-    /**
-     * Handles a hash value in the URL (such as bar in
-     * chrome://options/foo#bar).
-     * @param {string} hash The hash value.
-     */
-    handleHash: function(hash) {
-      ContentSettingsExceptionsArea.getInstance().showList(hash);
-      OptionsPage.navigateToPage('contentExceptions');
     },
   };
 

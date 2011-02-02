@@ -586,6 +586,26 @@ cr.define('options.contentSettings', function() {
           divs[i].classList.add('hidden');
       }
     },
+
+   /**
+     * Handles a hash value in the URL (such as bar in
+     * chrome://options/foo#bar).
+     * @param {string} hash The hash value.
+     */
+    handleHash: function(hash) {
+      if (hash)
+        this.showList(hash);
+    },
+
+    /**
+     * Called after the page has been shown. Show the content type for the
+     * location's hash.
+     */
+    didShowPage: function() {
+      var hash = location.hash;
+      if (hash)
+        this.handleHash(hash.slice(1));
+    },
   };
 
   /**
