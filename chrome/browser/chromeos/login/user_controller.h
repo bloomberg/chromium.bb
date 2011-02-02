@@ -73,6 +73,7 @@ class UserController : public views::WidgetDelegate,
   int user_index() const { return user_index_; }
   bool is_new_user() const { return is_new_user_; }
   bool is_guest() const { return is_guest_; }
+  bool is_owner() const { return is_owner_; }
 
   const UserManager::User& user() const { return user_; }
 

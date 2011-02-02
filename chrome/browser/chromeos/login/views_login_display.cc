@@ -94,10 +94,16 @@ void ViewsLoginDisplay::Init(const std::vector<UserManager::User>& users,
       static_cast<int>(show_guest) - static_cast<int>(show_new_user));
   for (size_t i = 0; i < users.size(); ++i) {
     UserController* user_controller = new UserController(this, users[i]);
-    if (controllers_.size() < visible_users_count)
+    if (controllers_.size() < visible_users_count) {
       controllers_.push_back(user_controller);
-    else
+    } else if (user_controller->is_owner()) {
+      // Make sure that owner of the device is always visible on login screen.
+      invisible_controllers_.insert(invisible_controllers_.begin(),
+                                    controllers_.back());
+      controllers_.back() = user_controller;
+    } else {
       invisible_controllers_.push_back(user_controller);
+    }
   }
   if (show_guest)
     controllers_.push_back(new UserController(this, true));
