@@ -163,6 +163,7 @@ class WebPluginImpl : public WebPlugin,
   // corresponding error codes otherwise.
   RoutingStatus RouteToFrame(const char* url,
                              bool is_javascript_url,
+                             bool popups_allowed,
                              const char* method,
                              const char* target,
                              const char* buf,
