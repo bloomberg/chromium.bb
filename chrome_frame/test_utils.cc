@@ -48,7 +48,7 @@ FilePath ScopedChromeFrameRegistrar::GetChromeFrameBuildPath() {
 
 void ScopedChromeFrameRegistrar::RegisterDefaults() {
   FilePath dll_path = GetChromeFrameBuildPath();
-  RegisterAtPath(dll_path.value(), SYSTEM_LEVEL);
+  RegisterAtPath(dll_path.value(), chrome_frame_test::GetTestBedType());
 }
 
 void ScopedChromeFrameRegistrar::RegisterAtPath(
