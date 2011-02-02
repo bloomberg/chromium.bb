@@ -167,8 +167,9 @@ class PrefService : public base::NonThreadSafe {
   std::string GetString(const char* path) const;
   FilePath GetFilePath(const char* path) const;
 
-  // Returns the branch if it exists.  If it's not a branch or the branch does
-  // not exist, returns NULL.
+  // Returns the branch if it exists, or the registered default value otherwise.
+  // Note that |path| must point to a registered preference. In that case, these
+  // functions will never return NULL.
   const DictionaryValue* GetDictionary(const char* path) const;
   const ListValue* GetList(const char* path) const;
 
@@ -274,8 +275,10 @@ class PrefService : public base::NonThreadSafe {
   virtual void AddPrefObserver(const char* path, NotificationObserver* obs);
   virtual void RemovePrefObserver(const char* path, NotificationObserver* obs);
 
-  // Add a preference to the PreferenceMap.  If the pref already exists, return
-  // false.  This method takes ownership of |default_value|.
+  // Registers a new preference at |path|. The |default_value| must not be
+  // NULL as it determines the preference value's type.
+  // RegisterPreference must not be called twice for the same path.
+  // This method takes ownership of |default_value|.
   void RegisterPreference(const char* path, Value* default_value);
 
   // Sets the value for this pref path in the user pref store and informs the

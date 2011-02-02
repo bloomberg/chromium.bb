@@ -409,8 +409,10 @@ const DictionaryValue* PrefService::GetDictionary(const char* path) const {
     return NULL;
   }
   const Value* value = pref->GetValue();
-  if (value->GetType() == Value::TYPE_NULL)
+  if (value->GetType() != Value::TYPE_DICTIONARY) {
+    NOTREACHED();
     return NULL;
+  }
   return static_cast<const DictionaryValue*>(value);
 }
 
@@ -423,8 +425,10 @@ const ListValue* PrefService::GetList(const char* path) const {
     return NULL;
   }
   const Value* value = pref->GetValue();
-  if (value->GetType() == Value::TYPE_NULL)
+  if (value->GetType() != Value::TYPE_LIST) {
+    NOTREACHED();
     return NULL;
+  }
   return static_cast<const ListValue*>(value);
 }
 
