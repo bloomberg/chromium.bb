@@ -161,10 +161,6 @@ class BrowserList {
   // Returns true if at least one off the record session is active.
   static bool IsOffTheRecordSessionActive();
 
-  // Send out notifications.
-  // For ChromeOS, also request session manager to end the session.
-  static void NotifyAndTerminate(bool fast_path);
-
   // Called once there are no more browsers open and the application is exiting.
   static void AllBrowsersClosedAndAppExiting();
 
@@ -172,10 +168,10 @@ class BrowserList {
   // Helper method to remove a browser instance from a list of browsers
   static void RemoveBrowserFrom(Browser* browser, BrowserVector* browser_list);
   static void MarkAsCleanShutdown();
+  static void NotifyAndTerminate();
 #if defined(OS_CHROMEOS)
   static bool NeedBeforeUnloadFired();
   static bool PendingDownloads();
-  static void NotifyWindowManagerAboutSignout();
 #endif
 
   static BrowserVector browsers_;
@@ -185,6 +181,11 @@ class BrowserList {
   // Counter of calls to StartKeepAlive(). If non-zero, the application will
   // continue running after the last browser has exited.
   static int keep_alive_count_;
+
+#if defined(OS_CHROMEOS)
+  // Have we already notified the window manager that we're signing out?
+  static bool notified_window_manager_about_signout_;
+#endif
 };
 
 class TabContents;
