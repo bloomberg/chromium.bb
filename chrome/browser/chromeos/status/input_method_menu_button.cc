@@ -80,17 +80,6 @@ InputMethodMenuButton::InputMethodMenuButton(StatusAreaHost* host)
   SetDisabledColor(0x00FFFFFF);  // White with 00% Alpha (invisible)
   SetShowMultipleIconStates(false);
   set_alignment(TextButton::ALIGN_CENTER);
-
-  chromeos::KeyboardLibrary* keyboard_library =
-      chromeos::CrosLibrary::Get()->GetKeyboardLibrary();
-  const std::string hardware_keyboard_id =  // e.g. "xkb:us::eng"
-      keyboard_library->GetHardwareKeyboardLayoutName();
-
-  // Draw the default indicator "US". The default indicator "US" is used when
-  // |pref_service| is not available (for example, unit tests) or |pref_service|
-  // is available, but Chrome preferences are not available (for example,
-  // initial OS boot).
-  UpdateUI(hardware_keyboard_id, L"US", L"", 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
