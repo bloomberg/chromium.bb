@@ -67,9 +67,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
 }
 
 void PrintWebViewHelper::CreatePreviewDocument(
-    const ViewMsg_PrintPages_Params& params,
-    WebFrame* frame,
-    ViewHostMsg_DidPreviewDocument_Params* preview_params) {
+    const ViewMsg_PrintPages_Params& params, WebFrame* frame) {
   ViewMsg_Print_Params printParams = params.params;
   UpdatePrintableSizeInPrintParameters(frame, NULL, &printParams);
 
@@ -104,14 +102,18 @@ void PrintWebViewHelper::CreatePreviewDocument(
     }
   }
   metafile.Close();
+
+  ViewHostMsg_DidPreviewDocument_Params preview_params;
+  preview_params.data_size = metafile.GetDataSize();
+  preview_params.document_cookie = params.params.document_cookie;
+
   // Ask the browser to create the shared memory for us.
   if (!CopyMetafileDataToSharedMem(&metafile,
-          &(preview_params->metafile_data_handle))) {
+          &(preview_params.metafile_data_handle))) {
+    preview_params.data_size = 0;
     NOTREACHED();
-    return;
   }
-  preview_params->document_cookie = params.params.document_cookie;
-  preview_params->data_size = metafile.GetDataSize();
+  Send(new ViewHostMsg_PagesReadyForPreview(routing_id(), preview_params));
 }
 
 void PrintWebViewHelper::RenderPage(

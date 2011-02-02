@@ -176,11 +176,10 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
   void RenderPagesForPreview(WebKit::WebFrame* frame);
 
   // Renders all the pages listed in |params| for preview.
-  // On Success, |preview_params| will have a valid handle to metafile data,
-  // data buffer size and document cookie.
+  // On Success, Send ViewHostMsg_PagesReadyForPreview message with a
+  // valid metafile data handle.
   void CreatePreviewDocument(const ViewMsg_PrintPages_Params& params,
-      WebKit::WebFrame* frame,
-      ViewHostMsg_DidPreviewDocument_Params* preview_params);
+      WebKit::WebFrame* frame);
 #if defined(OS_MACOSX)
   void RenderPage(const gfx::Size& page_size, const gfx::Point& content_origin,
                   const float& scale_factor, int page_number,

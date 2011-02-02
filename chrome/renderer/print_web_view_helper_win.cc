@@ -116,8 +116,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
 }
 
 void PrintWebViewHelper::CreatePreviewDocument(
-    const ViewMsg_PrintPages_Params& params, WebFrame* frame,
-    ViewHostMsg_DidPreviewDocument_Params* preview_params) {
+    const ViewMsg_PrintPages_Params& params, WebFrame* frame) {
   int page_count = 0;
   ViewMsg_Print_Params print_params = params.params;
   UpdatePrintableSizeInPrintParameters(frame, NULL, &print_params);
@@ -166,21 +165,23 @@ void PrintWebViewHelper::CreatePreviewDocument(
   uint32 buf_size = metafile->GetDataSize();
   DCHECK_GT(buf_size, 128u);
 
-  preview_params->document_cookie = params.params.document_cookie;
-  preview_params->data_size = 0;
-  preview_params->metafile_data_handle = NULL;
+  ViewHostMsg_DidPreviewDocument_Params preview_params;
+  preview_params.document_cookie = params.params.document_cookie;
+  preview_params.data_size = 0;
+  preview_params.metafile_data_handle = NULL;
 
   if (CopyMetafileDataToSharedMem(metafile.get(),
-          &(preview_params->metafile_data_handle))) {
-    preview_params->data_size = buf_size;
+          &(preview_params.metafile_data_handle))) {
+    preview_params.data_size = buf_size;
   }
   metafile->CloseEmf();
   if (!Send(new ViewHostMsg_DuplicateSection(
           routing_id(),
-          preview_params->metafile_data_handle,
-          &preview_params->metafile_data_handle))) {
+          preview_params.metafile_data_handle,
+          &preview_params.metafile_data_handle))) {
     NOTREACHED() << "Send message failed.";
   }
+  Send(new ViewHostMsg_PagesReadyForPreview(routing_id(), preview_params));
 }
 
 void PrintWebViewHelper::RenderPage(
