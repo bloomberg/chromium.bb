@@ -134,6 +134,7 @@
       'msvs_guid': '5E80032F-7033-4661-9016-D98268244783',
       'dependencies': [
         '../chrome/chrome.gyp:chrome_version_header',
+        'chrome_frame.gyp:chrome_tab_idl',
       ],
       'resource_include_dirs': [
         '<(INTERMEDIATE_DIR)',
@@ -141,8 +142,7 @@
       ],
       'include_dirs': [
         # To allow including "chrome_tab.h"
-        '<(INTERMEDIATE_DIR)',
-        '<(INTERMEDIATE_DIR)/../chrome_frame',
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'sources': [
         'bho_loader.cc',
@@ -152,8 +152,7 @@
         'chrome_frame_helper_util.cc',
         'chrome_frame_helper_util.h',
         'chrome_frame_helper_version.rc',
-        'chrome_tab.h',
-        'chrome_tab.idl',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome_tab.h',
         'event_hooker.cc',
         'event_hooker.h',
         'iids.cc',
