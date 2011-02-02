@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/app_launcher_handler.h"
-#include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 #include "chrome/browser/dom_ui/foreign_session_handler.h"
 #include "chrome/browser/dom_ui/most_visited_handler.h"
 #include "chrome/browser/dom_ui/new_tab_page_sync_handler.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/dom_ui/shown_sections_handler.h"
 #include "chrome/browser/dom_ui/tips_handler.h"
 #include "chrome/browser/dom_ui/value_helper.h"
+#include "chrome/browser/dom_ui/web_ui_theme_source.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -422,7 +422,7 @@ void NewTabUI::Observe(NotificationType type,
 }
 
 void NewTabUI::InitializeCSSCaches() {
-  DOMUIThemeSource* theme = new DOMUIThemeSource(GetProfile());
+  WebUIThemeSource* theme = new WebUIThemeSource(GetProfile());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(

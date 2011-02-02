@@ -1,10 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/ref_counted_memory.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/dom_ui/dom_ui_theme_source.h"
+#include "chrome/browser/dom_ui/web_ui_theme_source.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/common/url_constants.h"
@@ -13,10 +13,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 // A mock ThemeSource (so we can override SendResponse to get at its data).
-class MockThemeSource : public DOMUIThemeSource {
+class MockThemeSource : public WebUIThemeSource {
  public:
   explicit MockThemeSource(Profile* profile)
-      : DOMUIThemeSource(profile),
+      : WebUIThemeSource(profile),
         result_request_id_(-1),
         result_data_size_(0) {
   }

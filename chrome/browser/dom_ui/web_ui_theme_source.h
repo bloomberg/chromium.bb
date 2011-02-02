@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOM_UI_DOM_UI_THEME_SOURCE_H_
-#define CHROME_BROWSER_DOM_UI_DOM_UI_THEME_SOURCE_H_
+#ifndef CHROME_BROWSER_DOM_UI_WEB_UI_THEME_SOURCE_H_
+#define CHROME_BROWSER_DOM_UI_WEB_UI_THEME_SOURCE_H_
 #pragma once
 
 #include <string>
@@ -13,9 +13,9 @@
 class Profile;
 class RefCountedBytes;
 
-class DOMUIThemeSource : public ChromeURLDataManager::DataSource {
+class WebUIThemeSource : public ChromeURLDataManager::DataSource {
  public:
-  explicit DOMUIThemeSource(Profile* profile);
+  explicit WebUIThemeSource(Profile* profile);
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -28,7 +28,7 @@ class DOMUIThemeSource : public ChromeURLDataManager::DataSource {
   virtual MessageLoop* MessageLoopForRequestPath(const std::string& path) const;
 
  protected:
-  virtual ~DOMUIThemeSource();
+  virtual ~WebUIThemeSource();
 
  private:
   // Fetch and send the theme bitmap.
@@ -40,7 +40,7 @@ class DOMUIThemeSource : public ChromeURLDataManager::DataSource {
   // We grab the CSS early so we don't have to go back to the UI thread later.
   scoped_refptr<RefCountedBytes> css_bytes_;
 
-  DISALLOW_COPY_AND_ASSIGN(DOMUIThemeSource);
+  DISALLOW_COPY_AND_ASSIGN(WebUIThemeSource);
 };
 
-#endif  // CHROME_BROWSER_DOM_UI_DOM_UI_THEME_SOURCE_H_
+#endif  // CHROME_BROWSER_DOM_UI_WEB_UI_THEME_SOURCE_H_

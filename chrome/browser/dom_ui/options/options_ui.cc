@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 #include "chrome/browser/dom_ui/options/about_page_handler.h"
 #include "chrome/browser/dom_ui/options/add_startup_page_handler.h"
 #include "chrome/browser/dom_ui/options/advanced_options_handler.h"
@@ -35,6 +34,7 @@
 #include "chrome/browser/dom_ui/options/personal_options_handler.h"
 #include "chrome/browser/dom_ui/options/search_engine_manager_handler.h"
 #include "chrome/browser/dom_ui/options/stop_syncing_handler.h"
+#include "chrome/browser/dom_ui/web_ui_theme_source.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/profiles/profile.h"
@@ -195,7 +195,7 @@ OptionsUI::OptionsUI(TabContents* contents)
           make_scoped_refptr(html_source)));
 
   // Set up the chrome://theme/ source.
-  DOMUIThemeSource* theme = new DOMUIThemeSource(GetProfile());
+  WebUIThemeSource* theme = new WebUIThemeSource(GetProfile());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
