@@ -6,10 +6,13 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/sha1.h"
 #include "base/singleton.h"
 #include "base/string16.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
@@ -36,29 +39,6 @@ std::string GetServiceProcessSharedMemName() {
   return GetServiceProcessScopedName("_service_shmem");
 }
 
-// Reads the named shared memory to get the shared data. Returns false if no
-// matching shared memory was found.
-bool GetServiceProcessSharedData(std::string* version, base::ProcessId* pid) {
-  scoped_ptr<base::SharedMemory> shared_mem_service_data;
-  shared_mem_service_data.reset(new base::SharedMemory());
-  ServiceProcessSharedData* service_data = NULL;
-  if (shared_mem_service_data.get() &&
-      shared_mem_service_data->Open(GetServiceProcessSharedMemName(), true) &&
-      shared_mem_service_data->Map(sizeof(ServiceProcessSharedData))) {
-    service_data = reinterpret_cast<ServiceProcessSharedData*>(
-        shared_mem_service_data->memory());
-    // Make sure the version in shared memory is null-terminated. If it is not,
-    // treat it as invalid.
-    if (version && memchr(service_data->service_process_version, '\0',
-                          sizeof(service_data->service_process_version)))
-      *version = service_data->service_process_version;
-    if (pid)
-      *pid = service_data->service_process_pid;
-    return true;
-  }
-  return false;
-}
-
 enum ServiceProcessRunningState {
   SERVICE_NOT_RUNNING,
   SERVICE_OLDER_VERSION_RUNNING,
@@ -67,11 +47,19 @@ enum ServiceProcessRunningState {
 };
 
 ServiceProcessRunningState GetServiceProcessRunningState(
-    std::string* service_version_out) {
+    std::string* service_version_out, base::ProcessId* pid_out) {
   std::string version;
-  GetServiceProcessSharedData(&version, NULL);
-  if (version.empty())
+  if (!GetServiceProcessSharedData(&version, pid_out))
     return SERVICE_NOT_RUNNING;
+
+#if defined(OS_POSIX)
+  // We only need to check for service running on POSIX because Windows cleans
+  // up shared memory files when an app crashes, so there isn't a chance of
+  // us reading bogus data from shared memory for an app that has died.
+  if (!CheckServiceProcessReady()) {
+    return SERVICE_NOT_RUNNING;
+  }
+#endif  // defined(OS_POSIX)
 
   // At this time we have a version string. Set the out param if it exists.
   if (service_version_out)
@@ -107,23 +95,22 @@ ServiceProcessRunningState GetServiceProcessRunningState(
   return SERVICE_SAME_VERSION_RUNNING;
 }
 
-
 }  // namespace
 
 // Return a name that is scoped to this instance of the service process. We
-// use the user-data-dir as a scoping prefix.
+// use the hash of the user-data-dir as a scoping prefix. We can't use
+// the user-data-dir itself as we have limits on the size of the lock names.
 std::string GetServiceProcessScopedName(const std::string& append_str) {
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
 #if defined(OS_WIN)
-  std::string scoped_name = WideToUTF8(user_data_dir.value());
+  std::string user_data_dir_path = WideToUTF8(user_data_dir.value());
 #elif defined(OS_POSIX)
-  std::string scoped_name = user_data_dir.value();
+  std::string user_data_dir_path = user_data_dir.value();
 #endif  // defined(OS_WIN)
-  std::replace(scoped_name.begin(), scoped_name.end(), '\\', '!');
-  std::replace(scoped_name.begin(), scoped_name.end(), '/', '!');
-  scoped_name.append(append_str);
-  return scoped_name;
+  std::string hash = base::SHA1HashString(user_data_dir_path);
+  std::string hex_hash = base::HexEncode(hash.c_str(), hash.length());
+  return hex_hash + "." + append_str;
 }
 
 // Return a name that is scoped to this instance of the service process. We
@@ -143,16 +130,40 @@ std::string GetServiceProcessChannelName() {
   return GetServiceProcessScopedVersionedName("_service_ipc");
 }
 
-base::ProcessId GetServiceProcessPid() {
-  base::ProcessId pid = 0;
-  GetServiceProcessSharedData(NULL, &pid);
-  return pid;
+// Reads the named shared memory to get the shared data. Returns false if no
+// matching shared memory was found.
+bool GetServiceProcessSharedData(std::string* version, base::ProcessId* pid) {
+  scoped_ptr<base::SharedMemory> shared_mem_service_data;
+  shared_mem_service_data.reset(new base::SharedMemory());
+  ServiceProcessSharedData* service_data = NULL;
+  if (shared_mem_service_data.get() &&
+      shared_mem_service_data->Open(GetServiceProcessSharedMemName(), true) &&
+      shared_mem_service_data->Map(sizeof(ServiceProcessSharedData))) {
+    service_data = reinterpret_cast<ServiceProcessSharedData*>(
+        shared_mem_service_data->memory());
+    // Make sure the version in shared memory is null-terminated. If it is not,
+    // treat it as invalid.
+    if (version && memchr(service_data->service_process_version, '\0',
+                          sizeof(service_data->service_process_version)))
+      *version = service_data->service_process_version;
+    if (pid)
+      *pid = service_data->service_process_pid;
+    return true;
+  }
+  return false;
 }
 
 ServiceProcessState::ServiceProcessState() : state_(NULL) {
 }
 
 ServiceProcessState::~ServiceProcessState() {
+  if (shared_mem_service_data_.get()) {
+    // Delete needs a pool wrapped around it because it calls some Obj-C on Mac,
+    // and since ServiceProcessState is a singleton, it gets destructed after
+    // the standard NSAutoreleasePools have already been cleaned up.
+    base::mac::ScopedNSAutoreleasePool pool;
+    shared_mem_service_data_->Delete(GetServiceProcessSharedMemName());
+  }
   TearDownState();
 }
 
@@ -167,30 +178,26 @@ bool ServiceProcessState::Initialize() {
   }
   // Now that we have the singleton, take care of killing an older version, if
   // it exists.
-  if (ShouldHandleOtherVersion() && !HandleOtherVersion())
+  if (!HandleOtherVersion())
     return false;
 
-  // TODO(sanjeevr): We can probably use the shared mem as the sole singleton
-  // mechanism. For that the shared mem class needs to return whether it created
-  // new instance or opened an existing one. Also shared memory on Linux uses
-  // a file on disk which is not deleted when the process exits.
-
-  // Now that we have the singleton, let is also write the version we are using
-  // to shared memory. This can be used by a newer service to signal us to exit.
+  // Write the version we are using to shared memory. This can be used by a
+  // newer service to signal us to exit.
   return CreateSharedData();
 }
 
 bool ServiceProcessState::HandleOtherVersion() {
   std::string running_version;
+  base::ProcessId process_id;
   ServiceProcessRunningState state =
-      GetServiceProcessRunningState(&running_version);
+      GetServiceProcessRunningState(&running_version, &process_id);
   switch (state) {
     case SERVICE_SAME_VERSION_RUNNING:
     case SERVICE_NEWER_VERSION_RUNNING:
       return false;
     case SERVICE_OLDER_VERSION_RUNNING:
       // If an older version is running, kill it.
-      ForceServiceProcessShutdown(running_version);
+      ForceServiceProcessShutdown(running_version, process_id);
       break;
     case SERVICE_NOT_RUNNING:
       break;
@@ -211,8 +218,8 @@ bool ServiceProcessState::CreateSharedData() {
     return false;
   }
 
-  scoped_ptr<base::SharedMemory> shared_mem_service_data;
-  shared_mem_service_data.reset(new base::SharedMemory());
+  scoped_ptr<base::SharedMemory> shared_mem_service_data(
+      new base::SharedMemory());
   if (!shared_mem_service_data.get())
     return false;
 
@@ -235,7 +242,11 @@ bool ServiceProcessState::CreateSharedData() {
   return true;
 }
 
-
 std::string ServiceProcessState::GetAutoRunKey() {
   return GetServiceProcessScopedName("_service_run");
+}
+
+void ServiceProcessState::SignalStopped() {
+  TearDownState();
+  shared_mem_service_data_.reset();
 }

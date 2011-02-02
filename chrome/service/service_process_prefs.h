@@ -41,7 +41,7 @@ class ServiceProcessPrefs {
   void GetDictionary(const std::string& key, DictionaryValue** result);
 
  private:
-  JsonPrefStore prefs_;
+  scoped_refptr<JsonPrefStore> prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcessPrefs);
 };

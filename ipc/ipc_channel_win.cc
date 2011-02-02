@@ -103,7 +103,7 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle &channel_handle,
       ALLOW_THIS_IN_INITIALIZER_LIST(output_state_(this)),
       pipe_(INVALID_HANDLE_VALUE),
       listener_(listener),
-      waiting_connect_(mode == MODE_SERVER),
+      waiting_connect_(mode == MODE_SERVER || mode == MODE_NAMED_SERVER),
       processing_incoming_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(factory_(this)) {
   switch(mode) {

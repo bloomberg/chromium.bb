@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string16.h"
+#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_handle.h"
@@ -54,7 +55,8 @@ class ServiceProcessShutdownMonitor
 
 }  // namespace
 
-bool ForceServiceProcessShutdown(const std::string& version) {
+bool ForceServiceProcessShutdown(const std::string& version,
+                                 base::ProcessId process_id) {
   base::win::ScopedHandle shutdown_event;
   std::string versioned_name = version;
   versioned_name.append("_service_shutdown_evt");
@@ -99,20 +101,19 @@ bool ServiceProcessState::TakeSingletonLock() {
   return true;
 }
 
-void ServiceProcessState::SignalReady(Task* shutdown_task) {
+bool ServiceProcessState::SignalReady(MessageLoop *message_loop,
+                                      Task* shutdown_task) {
   DCHECK(state_);
   DCHECK(state_->ready_event.IsValid());
-  SetEvent(state_->ready_event.Get());
+  if (!SetEvent(state_->ready_event.Get())) {
+    return false;
+  }
   if (shutdown_task) {
     state_->shutdown_monitor.reset(
         new ServiceProcessShutdownMonitor(shutdown_task));
     state_->shutdown_monitor->Start();
   }
-}
-
-void ServiceProcessState::SignalStopped() {
-  TearDownState();
-  shared_mem_service_data_.reset();
+  return true;
 }
 
 bool ServiceProcessState::AddToAutoRun() {
@@ -139,8 +140,4 @@ bool ServiceProcessState::RemoveFromAutoRun() {
 void ServiceProcessState::TearDownState() {
   delete state_;
   state_ = NULL;
-}
-
-bool ServiceProcessState::ShouldHandleOtherVersion() {
-  return true;
 }

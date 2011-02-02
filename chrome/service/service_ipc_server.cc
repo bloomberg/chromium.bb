@@ -25,7 +25,7 @@ bool ServiceIPCServer::Init() {
 
 void ServiceIPCServer::CreateChannel() {
   channel_.reset(new IPC::SyncChannel(channel_name_,
-      IPC::Channel::MODE_SERVER, this,
+      IPC::Channel::MODE_NAMED_SERVER, this,
       g_service_process->io_thread()->message_loop(), true,
       g_service_process->shutdown_event()));
   DCHECK(sync_message_filter_.get());

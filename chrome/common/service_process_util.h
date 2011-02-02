@@ -10,7 +10,9 @@
 #include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
-#include "base/task.h"
+
+class Task;
+class MessageLoop;
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -33,16 +35,17 @@ std::string GetServiceProcessScopedVersionedName(const std::string& append_str);
 // IPC commands.
 bool CheckServiceProcessReady();
 
-// Returns the process id of the currently running service process. Returns 0
-// if no service process is running.
+// Returns the process id and version of the currently running service process.
 // Note: DO NOT use this check whether the service process is ready because
-// a non-zero return value only means that the process is running and not that
-// it is ready to receive IPC commands. This method is only exposed for testing.
-base::ProcessId GetServiceProcessPid();
+// a true return value only means that some process shared data was available,
+// and not that the process is ready to receive IPC commands, or even running.
+// This method is only exposed for testing.
+bool GetServiceProcessSharedData(std::string* version, base::ProcessId* pid);
 // --------------------------------------------------------------------------
 
 // Forces a service process matching the specified version to shut down.
-bool ForceServiceProcessShutdown(const std::string& version);
+bool ForceServiceProcessShutdown(const std::string& version,
+                                 base::ProcessId process_id);
 
 // This is a class that is used by the service process to signal events and
 // share data with external clients. This class lives in this file because the
@@ -61,7 +64,9 @@ class ServiceProcessState {
   // This method is called when the service process is running and initialized.
   // |shutdown_task| is invoked when we get a shutdown request from another
   // process (in the same thread that called SignalReady). It can be NULL.
-  void SignalReady(Task* shutdown_task);
+  // |message_loop| must be of type IO and is the loop that POSIX uses
+  // to monitor the service process.
+  bool SignalReady(MessageLoop *message_loop, Task* shutdown_task);
 
   // Signal that the service process is stopped.
   void SignalStopped();
@@ -93,8 +98,6 @@ class ServiceProcessState {
   // Tear down the platform specific state.
   void TearDownState();
 
-  // Allows each platform to specify whether it supports killing older versions.
-  bool ShouldHandleOtherVersion();
   // An opaque object that maintains state. The actual definition of this is
   // platform dependent.
   struct StateData;

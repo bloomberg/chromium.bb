@@ -469,7 +469,7 @@ bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle& channel_handle,
 
 bool Channel::ChannelImpl::Connect() {
   if (server_listen_pipe_ == -1 && pipe_ == -1) {
-    NOTREACHED() << "Must call create on a channel before calling connect";
+    DLOG(INFO) << "Must call create on a channel before calling connect";
     return false;
   }
 
