@@ -254,14 +254,14 @@ TEST_F(RenderViewHostManagerTest, DOMUI) {
   EXPECT_TRUE(host == manager.current_host());
   EXPECT_FALSE(manager.pending_render_view_host());
 
-  // It's important that the site instance get set on the DOM UI page as soon
+  // It's important that the site instance get set on the Web UI page as soon
   // as the navigation starts, rather than lazily after it commits, so we don't
   // try to re-use the SiteInstance/process for non DOM-UI things that may
   // get loaded in between.
   EXPECT_TRUE(host->site_instance()->has_site());
   EXPECT_EQ(url, host->site_instance()->site());
 
-  // The DOM UI is committed immediately because the RenderViewHost has not been
+  // The Web UI is committed immediately because the RenderViewHost has not been
   // used yet. UpdateRendererStateForNavigate() took the short cut path.
   EXPECT_FALSE(manager.pending_dom_ui());
   EXPECT_TRUE(manager.dom_ui());
@@ -270,8 +270,8 @@ TEST_F(RenderViewHostManagerTest, DOMUI) {
   manager.DidNavigateMainFrame(host);
 }
 
-// Tests that chrome: URLs that are not DOM UI pages do not get grouped into
-// DOM UI renderers, even if --process-per-tab is enabled.  In that mode, we
+// Tests that chrome: URLs that are not Web UI pages do not get grouped into
+// Web UI renderers, even if --process-per-tab is enabled.  In that mode, we
 // still swap processes if ShouldSwapProcessesForNavigation is true.
 // Regression test for bug 46290.
 TEST_F(RenderViewHostManagerTest, NonDOMUIChromeURLs) {
@@ -280,13 +280,13 @@ TEST_F(RenderViewHostManagerTest, NonDOMUIChromeURLs) {
   RenderViewHostManager manager(&tab_contents, &tab_contents);
   manager.Init(profile_.get(), instance, MSG_ROUTING_NONE);
 
-  // NTP is a DOM UI page.
+  // NTP is a Web UI page.
   GURL ntp_url(chrome::kChromeUINewTabURL);
   NavigationEntry ntp_entry(NULL /* instance */, -1 /* page_id */, ntp_url,
                             GURL() /* referrer */, string16() /* title */,
                             PageTransition::TYPED);
 
-  // about: URLs are not DOM UI pages.
+  // about: URLs are not Web UI pages.
   GURL about_url(chrome::kAboutMemoryURL);
   // Rewrite so it looks like chrome://about/memory
   bool reverse_on_redirect = false;

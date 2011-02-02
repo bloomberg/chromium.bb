@@ -31,7 +31,7 @@ class Browser;
 // 1. Showing the setup dialog.
 // 2. Providing the URL for the content of the dialog.
 // 3. Providing a data source to provide the content HTML files.
-// 4. Providing a message handler to handle user actions in the DOM UI.
+// 4. Providing a message handler to handle user actions in the Web UI.
 // 5. Responding to actions received in the message handler.
 //
 // The architecture for DOMUI is designed such that only the message handler
@@ -110,7 +110,7 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   void ExecuteJavascriptInIFrame(const std::wstring& iframe_xpath,
                                  const std::wstring& js);
 
-  // Pointer to the DOM UI. This is provided by CloudPrintSetupMessageHandler
+  // Pointer to the Web UI. This is provided by CloudPrintSetupMessageHandler
   // when attached.
   DOMUI* dom_ui_;
 

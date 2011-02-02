@@ -127,11 +127,11 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
       url.SchemeIs(chrome::kChromeInternalScheme))
     return &NewDOMUI<NewTabUI>;
 
-  // Give about:about a generic DOM UI so it can navigate to pages with DOM UIs.
+  // Give about:about a generic Web UI so it can navigate to pages with Web UIs.
   if (url.spec() == chrome::kChromeUIAboutAboutURL)
     return &NewDOMUI<DOMUI>;
 
-  // We must compare hosts only since some of the DOM UIs append extra stuff
+  // We must compare hosts only since some of the Web UIs append extra stuff
   // after the host name.
   if (url.host() == chrome::kChromeUIBookmarksHost)
     return &NewDOMUI<BookmarksUI>;
@@ -246,9 +246,9 @@ bool WebUIFactory::UseWebUIForURL(Profile* profile, const GURL& url) {
 // static
 bool WebUIFactory::IsURLAcceptableForWebUI(Profile* profile, const GURL& url) {
   return UseWebUIForURL(profile, url) ||
-      // javacsript: URLs are allowed to run in DOM UI pages
+      // javacsript: URLs are allowed to run in Web UI pages
       url.SchemeIs(chrome::kJavaScriptScheme) ||
-      // It's possible to load about:blank in a DOM UI renderer.
+      // It's possible to load about:blank in a Web UI renderer.
       // See http://crbug.com/42547
       url.spec() == chrome::kAboutBlankURL ||
       // about:crash, about:kill, about:hang, and about:shorthang are allowed.

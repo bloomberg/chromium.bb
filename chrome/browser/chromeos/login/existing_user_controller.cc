@@ -488,7 +488,7 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
 
 LoginDisplay* ExistingUserController::CreateLoginDisplay(
     LoginDisplay::Delegate* delegate, const gfx::Rect& background_bounds) {
-  // TODO(rharrison): Create DOM UI implementation too. http://crosbug.com/6398.
+  // TODO(rharrison): Create Web UI implementation too. http://crosbug.com/6398.
   return new ViewsLoginDisplay(delegate, background_bounds);
 }
 

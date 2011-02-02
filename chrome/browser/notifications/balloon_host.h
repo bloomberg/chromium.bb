@@ -112,7 +112,7 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual void UpdatePreferredSize(const gfx::Size& pref_size);
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
 
-  // Enable DOM UI. This has to be called before renderer is created.
+  // Enable Web UI. This has to be called before renderer is created.
   void EnableDOMUI();
 
   virtual void UpdateInspectorSetting(const std::string& key,
@@ -154,7 +154,7 @@ class BalloonHost : public RenderViewHostDelegate,
   // rendering a page from an extension.
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
 
-  // A flag to enable DOM UI.
+  // A flag to enable Web UI.
   bool enable_dom_ui_;
 
   NotificationRegistrar registrar_;

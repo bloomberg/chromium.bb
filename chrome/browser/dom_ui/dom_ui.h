@@ -82,13 +82,13 @@ class DOMUI {
     return focus_location_bar_by_default_;
   }
 
-  // Returns true if the page's URL should be hidden. Some DOM UI pages
+  // Returns true if the page's URL should be hidden. Some Web UI pages
   // like the new tab page will want to hide it.
   bool should_hide_url() const {
     return should_hide_url_;
   }
 
-  // Gets a custom tab title provided by the DOM UI. If there is no title
+  // Gets a custom tab title provided by the Web UI. If there is no title
   // override, the string will be empty which should trigger the default title
   // behavior for the tab.
   const string16& overridden_title() const {
@@ -96,7 +96,7 @@ class DOMUI {
   }
 
   // Returns the transition type that should be used for link clicks on this
-  // DOM UI. This will default to LINK but may be overridden.
+  // Web UI. This will default to LINK but may be overridden.
   PageTransition::Type link_transition_type() const {
     return link_transition_type_;
   }
@@ -145,7 +145,7 @@ class DOMUI {
   // testing purposes.
   virtual void ExecuteJavascript(const std::wstring& javascript);
 
-  // Options that may be overridden by individual DOM UI implementations. The
+  // Options that may be overridden by individual Web UI implementations. The
   // bool options default to false. See the public getters for more information.
   bool hide_favicon_;
   bool force_bookmark_bar_visible_;

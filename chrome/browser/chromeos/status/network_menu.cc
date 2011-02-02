@@ -217,7 +217,7 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
       }
       if (!connected) {
         if (!MenuUI::IsEnabled()) {
-          // Show the wifi dialog on a failed attempt for non DOM UI menus.
+          // Show the wifi dialog on a failed attempt for non Web UI menus.
           ShowNetworkConfigView(new NetworkConfigView(wifi));
           return true;
         } else {

@@ -618,7 +618,7 @@ const string16& TabContents::GetTitle() const {
     // Don't override the title in view source mode.
     entry = controller_.GetActiveEntry();
     if (!(entry && entry->IsViewSourceMode())) {
-      // Give the DOM UI the chance to override our title.
+      // Give the Web UI the chance to override our title.
       const string16& title = our_dom_ui->overridden_title();
       if (!title.empty())
         return title;
@@ -1205,13 +1205,13 @@ bool TabContents::ShouldShowBookmarkBar() {
   // similar, but for non-first loads, we want to use the committed entry. This
   // is so the bookmarks bar disappears at the same time the page does.
   if (controller_.GetLastCommittedEntry()) {
-    // Not the first load, always use the committed DOM UI.
+    // Not the first load, always use the committed Web UI.
     return (render_manager_.dom_ui() == NULL) ?
         false : render_manager_.dom_ui()->force_bookmark_bar_visible();
   }
 
   // When it's the first load, we know either the pending one or the committed
-  // one will have the DOM UI in it (see GetDOMUIForCurrentState), and only one
+  // one will have the Web UI in it (see GetDOMUIForCurrentState), and only one
   // of them will be valid, so we can just check both.
   if (render_manager_.pending_dom_ui())
     return render_manager_.pending_dom_ui()->force_bookmark_bar_visible();
@@ -1727,29 +1727,29 @@ DOMUI* TabContents::GetDOMUIForCurrentState() {
   // initial load in a tab as a side effect of the way the RenderViewHostManager
   // works.
   //
-  //  - For the very first tab the load looks "normal". The new tab DOM UI is
+  //  - For the very first tab the load looks "normal". The new tab Web UI is
   //    the pending one, and we want it to apply here.
   //
   //  - For subsequent new tabs, they'll get a new SiteInstance which will then
   //    get switched to the one previously associated with the new tab pages.
   //    This switching will cause the manager to commit the RVH/DOMUI. So we'll
-  //    have a committed DOM UI in this case.
+  //    have a committed Web UI in this case.
   //
   // This condition handles all of these cases:
   //
   //  - First load in first tab: no committed nav entry + pending nav entry +
   //    pending dom ui:
-  //    -> Use pending DOM UI if any.
+  //    -> Use pending Web UI if any.
   //
   //  - First load in second tab: no committed nav entry + pending nav entry +
-  //    no pending DOM UI:
-  //    -> Use the committed DOM UI if any.
+  //    no pending Web UI:
+  //    -> Use the committed Web UI if any.
   //
   //  - Second navigation in any tab: committed nav entry + pending nav entry:
-  //    -> Use pending DOM UI if any.
+  //    -> Use pending Web UI if any.
   //
   //  - Normal state with no load: committed nav entry + no pending nav entry:
-  //    -> Use committed DOM UI.
+  //    -> Use committed Web UI.
   if (controller_.pending_entry() &&
       (controller_.GetLastCommittedEntry() ||
        render_manager_.pending_dom_ui()))
@@ -2258,7 +2258,7 @@ void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
     return;
 
   // When we're creating views, we're still doing initial setup, so we always
-  // use the pending DOM UI rather than any possibly existing committed one.
+  // use the pending Web UI rather than any possibly existing committed one.
   if (render_manager_.pending_dom_ui()) {
     render_manager_.pending_dom_ui()->RenderViewCreated(render_view_host);
   }
@@ -2584,11 +2584,11 @@ void TabContents::DocumentOnLoadCompletedInMainFrame(
 void TabContents::RequestOpenURL(const GURL& url, const GURL& referrer,
                                  WindowOpenDisposition disposition) {
   if (render_manager_.dom_ui()) {
-    // When we're a DOM UI, it will provide a page transition type for us (this
+    // When we're a Web UI, it will provide a page transition type for us (this
     // is so the new tab page can specify AUTO_BOOKMARK for automatically
     // generated suggestions).
     //
-    // Note also that we hide the referrer for DOM UI pages. We don't really
+    // Note also that we hide the referrer for Web UI pages. We don't really
     // want web sites to see a referrer of "chrome://blah" (and some
     // chrome: URLs might have search terms or other stuff we don't want to
     // send to the site), so we send no referrer.

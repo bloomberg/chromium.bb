@@ -84,7 +84,7 @@ class ChildProcessSecurityPolicy {
   // scheme.
   void GrantScheme(int child_id, const std::string& scheme);
 
-  // Grant the child process the ability to use DOM UI Bindings.
+  // Grant the child process the ability to use Web UI Bindings.
   void GrantDOMUIBindings(int child_id);
 
   // Grant the child process the ability to use extension Bindings.

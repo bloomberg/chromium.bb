@@ -312,8 +312,8 @@ class NetInternalsMessageHandler::IOThreadImpl
   // Helper that runs the suite of connection tests.
   scoped_ptr<ConnectionTester> connection_tester_;
 
-  // True if the DOM UI has been deleted.  This is used to prevent calling
-  // Javascript functions after the DOM UI is destroyed.  On refresh, the
+  // True if the Web UI has been deleted.  This is used to prevent calling
+  // Javascript functions after the Web UI is destroyed.  On refresh, the
   // messages can end up being sent to the refreshed page, causing duplicate
   // or partial entries.
   //

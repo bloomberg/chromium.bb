@@ -608,7 +608,7 @@ DictionaryValue* MenuUI::CreateMenuItem(const ui::MenuModel* model,
                                         const char* type,
                                         int* max_icon_width,
                                         bool* has_accel) const {
-  // Note: DOM UI uses '&' as mnemonic.
+  // Note: Web UI uses '&' as mnemonic.
   string16 label16 = model->GetLabelAt(index);
   DictionaryValue* item = new DictionaryValue();
 

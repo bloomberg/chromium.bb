@@ -188,7 +188,7 @@ class NetworkMenu : public views::ViewMenuDelegate,
   // Called by RunMenu to initialize our list of menu items.
   void InitMenuItems();
 
-  // Shows network details in DOM UI options window.
+  // Shows network details in Web UI options window.
   void ShowTabbedNetworkSettings(const Network* network) const;
 
   // Show a NetworkConfigView modal dialog instance.

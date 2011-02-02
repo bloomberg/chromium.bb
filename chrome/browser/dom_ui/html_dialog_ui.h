@@ -73,7 +73,7 @@ class HtmlDialogUIDelegate {
 // Before loading a URL corresponding to this DOMUI, the caller should set its
 // delegate as a property on the TabContents. This DOMUI will pick it up from
 // there and call it back. This is a bit of a hack to allow the dialog to pass
-// its delegate to the DOM UI without having nasty accessors on the TabContents.
+// its delegate to the Web UI without having nasty accessors on the TabContents.
 // The correct design using RVH directly would avoid all of this.
 class HtmlDialogUI : public DOMUI {
  public:

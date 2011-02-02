@@ -1443,8 +1443,8 @@ class RenderView : public RenderWidget,
   // DOM automation bindings are enabled.
   scoped_ptr<DomAutomationController> dom_automation_controller_;
 
-  // Allows DOM UI pages (new tab page, etc.) to talk to the browser. The JS
-  // object is only exposed when DOM UI bindings are enabled.
+  // Allows Web UI pages (new tab page, etc.) to talk to the browser. The JS
+  // object is only exposed when Web UI bindings are enabled.
   scoped_ptr<DOMUIBindings> dom_ui_bindings_;
 
   // External host exposed through automation controller.

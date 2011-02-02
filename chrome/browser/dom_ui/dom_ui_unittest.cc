@@ -16,7 +16,7 @@ class DOMUITest : public RenderViewHostTestHarness {
  public:
   DOMUITest() : ui_thread_(BrowserThread::UI, MessageLoop::current()) {}
 
-  // Tests navigating with a DOM UI from a fresh (nothing pending or committed)
+  // Tests navigating with a Web UI from a fresh (nothing pending or committed)
   // state, through pending, committed, then another navigation. The first page
   // ID that we should use is passed as a parameter. We'll use the next two
   // values. This must be increasing for the life of the tests.
@@ -31,7 +31,7 @@ class DOMUITest : public RenderViewHostTestHarness {
     ASSERT_TRUE(controller->pending_entry());
     ASSERT_FALSE(controller->GetLastCommittedEntry());
 
-    // Check the things the pending DOM UI should have set.
+    // Check the things the pending Web UI should have set.
     EXPECT_FALSE(contents->ShouldDisplayURL());
     EXPECT_FALSE(contents->ShouldDisplayFavIcon());
     EXPECT_TRUE(contents->ShouldShowBookmarkBar());
@@ -86,7 +86,7 @@ class DOMUITest : public RenderViewHostTestHarness {
 };
 
 // Tests that the New Tab Page flags are correctly set and propogated by
-// TabContents when we first navigate to a DOM UI page, then to a standard
+// TabContents when we first navigate to a Web UI page, then to a standard
 // non-DOM-UI page.
 TEST_F(DOMUITest, DOMUIToStandard) {
   DoNavigationTest(contents(), 1);
@@ -144,7 +144,7 @@ TEST_F(DOMUITest, StandardToDOMUI) {
   EXPECT_FALSE(contents()->ShouldShowBookmarkBar());
   EXPECT_TRUE(contents()->FocusLocationBarByDefault());
 
-  // Committing DOM UI is tested above.
+  // Committing Web UI is tested above.
 }
 
 class TabContentsForFocusTest : public TestTabContents {

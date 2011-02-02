@@ -199,7 +199,7 @@ class SetupFlow : public DOMMessageHandler,
   void StartCurrentStep();
   void OnStepDone();
 
-  // Pointer to the DOM UI. This is provided by RemotingSetupMessageHandler
+  // Pointer to the Web UI. This is provided by RemotingSetupMessageHandler
   // when attached.
   DOMUI* dom_ui_;
 

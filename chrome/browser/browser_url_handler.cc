@@ -59,7 +59,7 @@ static bool ReverseViewSource(GURL* url, Profile* profile) {
   return true;
 }
 
-// Handles rewriting DOM UI URLs.
+// Handles rewriting Web UI URLs.
 static bool HandleDOMUI(GURL* url, Profile* profile) {
   if (!WebUIFactory::UseWebUIForURL(profile, *url))
     return false;

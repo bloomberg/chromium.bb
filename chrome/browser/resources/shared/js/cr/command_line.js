@@ -7,7 +7,7 @@
  * command line string.
  *
  * This file depends on chrome.commandLineString, which is only set if your
- * DOM UI explicitly sets it.  The DOM UI based options dialog does this from
+ * Web UI explicitly sets it.  The Web UI based options dialog does this from
  * OptionsUI::RenderViewCreated, in options_ui.cc.
  */
 

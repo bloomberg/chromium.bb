@@ -285,7 +285,7 @@ class MobileSetupHandler
 
   // Performs activation state cellular device evaluation.
   // Returns false if device activation failed. In this case |error|
-  // will contain error message to be reported to DOM UI.
+  // will contain error message to be reported to Web UI.
   static bool EvaluateCellularDeviceState(bool* report_status,
                                           std::string* state,
                                           std::string* error);

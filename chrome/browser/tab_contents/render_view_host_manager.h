@@ -108,10 +108,10 @@ class RenderViewHostManager
     return pending_render_view_host_;
   }
 
-  // Returns the current committed DOM UI or NULL if none applies.
+  // Returns the current committed Web UI or NULL if none applies.
   DOMUI* dom_ui() const { return dom_ui_.get(); }
 
-  // Returns the DOM UI for the pending navigation, or NULL of none applies.
+  // Returns the Web UI for the pending navigation, or NULL of none applies.
   DOMUI* pending_dom_ui() const { return pending_dom_ui_.get(); }
 
   // Called when we want to instruct the renderer to navigate to the given
@@ -190,7 +190,7 @@ class RenderViewHostManager
   bool ShouldTransitionCrossSite();
 
   // Returns true if the two navigation entries are incompatible in some way
-  // other than site instances. Cases where this can happen include DOM UI
+  // other than site instances. Cases where this can happen include Web UI
   // to regular web pages. It will cause us to swap RenderViewHosts (and hence
   // RenderProcessHosts) even if the site instance would otherwise be the same.
   // As part of this, we'll also force new SiteInstances and BrowsingInstances.
@@ -217,7 +217,7 @@ class RenderViewHostManager
 
   // Sets the pending RenderViewHost/DOMUI to be the active one. Note that this
   // doesn't require the pending render_view_host_ pointer to be non-NULL, since
-  // there could be DOM UI switching as well. Call this for every commit.
+  // there could be Web UI switching as well. Call this for every commit.
   void CommitPending();
 
   // Helper method to terminate the pending RenderViewHost.
@@ -237,7 +237,7 @@ class RenderViewHostManager
   // the RenderViewHosts that we create.
   RenderViewHostDelegate* render_view_delegate_;
 
-  // Our RenderView host and its associated DOM UI (if any, will be NULL for
+  // Our RenderView host and its associated Web UI (if any, will be NULL for
   // non-DOM-UI pages). This object is responsible for all communication with
   // a child RenderView instance.
   RenderViewHost* render_view_host_;
@@ -245,13 +245,13 @@ class RenderViewHostManager
 
   // A RenderViewHost used to load a cross-site page. This remains hidden
   // while a cross-site request is pending until it calls DidNavigate. It may
-  // have an associated DOM UI, in which case the DOM UI pointer will be non-
+  // have an associated Web UI, in which case the Web UI pointer will be non-
   // NULL.
   //
   // The pending_dom_ui may be non-NULL even when the pending_render_view_host_
-  // is. This will happen when we're transitioning between two DOM UI pages:
+  // is. This will happen when we're transitioning between two Web UI pages:
   // the RVH won't be swapped, so the pending pointer will be unused, but there
-  // will be a pending DOM UI associated with the navigation.
+  // will be a pending Web UI associated with the navigation.
   RenderViewHost* pending_render_view_host_;
   scoped_ptr<DOMUI> pending_dom_ui_;
 

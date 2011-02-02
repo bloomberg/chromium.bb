@@ -230,7 +230,7 @@ void CloudPrintSetupFlow::OnUserClickedPrintTestPage() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Helper methods for showing contents of the DOM UI
+// Helper methods for showing contents of the Web UI
 void CloudPrintSetupFlow::ShowGaiaLogin(const DictionaryValue& args) {
   if (dom_ui_)
     dom_ui_->CallJavascriptFunction(L"cloudprint.showSetupLogin");

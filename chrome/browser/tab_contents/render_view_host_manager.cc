@@ -178,7 +178,7 @@ void RenderViewHostManager::DidNavigateMainFrame(
     // We should only hear this from our current renderer.
     DCHECK(render_view_host == render_view_host_);
 
-    // Even when there is no pending RVH, there may be a pending DOM UI.
+    // Even when there is no pending RVH, there may be a pending Web UI.
     if (pending_dom_ui_.get())
       CommitPending();
     return;
@@ -302,7 +302,7 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
       render_view_host_->site_instance()->site();
   Profile* profile = delegate_->GetControllerForRenderManager().profile();
   if (WebUIFactory::UseWebUIForURL(profile, current_url)) {
-    // Force swap if it's not an acceptable URL for DOM UI.
+    // Force swap if it's not an acceptable URL for Web UI.
     if (!WebUIFactory::IsURLAcceptableForWebUI(profile, new_entry->url()))
       return true;
   } else {
@@ -367,7 +367,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   // If we haven't used our SiteInstance (and thus RVH) yet, then we can use it
   // for this entry.  We won't commit the SiteInstance to this site until the
   // navigation commits (in DidNavigate), unless the navigation entry was
-  // restored or it's a DOM UI as described below.
+  // restored or it's a Web UI as described below.
   if (!curr_instance->has_site()) {
     // If we've already created a SiteInstance for our destination, we don't
     // want to use this unused SiteInstance; use the existing one.  (We don't
@@ -501,14 +501,14 @@ void RenderViewHostManager::CommitPending() {
   // this triggers won't be able to figure out what's going on.
   bool will_focus_location_bar = delegate_->FocusLocationBarByDefault();
 
-  // Next commit the DOM UI, if any.
+  // Next commit the Web UI, if any.
   dom_ui_.swap(pending_dom_ui_);
   if (dom_ui_.get() && pending_dom_ui_.get() && !pending_render_view_host_)
     dom_ui_->DidBecomeActiveForReusedRenderView();
   pending_dom_ui_.reset();
 
   // It's possible for the pending_render_view_host_ to be NULL when we aren't
-  // crossing process boundaries. If so, we just needed to handle the DOM UI
+  // crossing process boundaries. If so, we just needed to handle the Web UI
   // committing above and we're done.
   if (!pending_render_view_host_) {
     if (will_focus_location_bar)
@@ -573,7 +573,7 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
     cross_navigation_pending_ = false;
   }
 
-  // This will possibly create (set to NULL) a DOM UI object for the pending
+  // This will possibly create (set to NULL) a Web UI object for the pending
   // page. We'll use this later to give the page special access. This must
   // happen before the new renderer is created below so it will get bindings.
   // It must also happen after the above conditional call to CancelPending(),

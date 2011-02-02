@@ -47,7 +47,7 @@ void DragDownload(const DownloadItem* download,
   NSImage* dragImage = gfx::SkBitmapToNSImage(*icon);
 
   // Synthesize a drag event, since we don't have access to the actual event
-  // that initiated a drag (possibly consumed by the DOM UI, for example).
+  // that initiated a drag (possibly consumed by the Web UI, for example).
   NSPoint position = [[view window] mouseLocationOutsideOfEventStream];
   NSTimeInterval eventTime = [[NSApp currentEvent] timestamp];
   NSEvent* dragEvent = [NSEvent mouseEventWithType:NSLeftMouseDragged

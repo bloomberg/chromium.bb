@@ -102,7 +102,7 @@ class AppLauncherHandler
   // when necessary.
   NotificationRegistrar registrar_;
 
-  // Monitor extension preference changes so that the DOM UI can be notified.
+  // Monitor extension preference changes so that the Web UI can be notified.
   PrefChangeRegistrar pref_change_registrar_;
 
   // Used to show confirmation UI for uninstalling/enabling extensions in

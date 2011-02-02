@@ -358,7 +358,7 @@ class RenderViewHost : public RenderWidgetHost {
     is_extension_process_ = is_extension_process;
   }
 
-  // Sets a property with the given name and value on the DOM UI binding object.
+  // Sets a property with the given name and value on the Web UI binding object.
   // Must call AllowDOMUIBindings() on this renderer first.
   void SetDOMUIProperty(const std::string& name, const std::string& value);
 
