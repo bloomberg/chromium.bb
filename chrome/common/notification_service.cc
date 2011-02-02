@@ -133,7 +133,7 @@ NotificationService::~NotificationService() {
       // This may not be completely fixable -- see
       // http://code.google.com/p/chromium/issues/detail?id=11010 .
       VLOG(1) << observer_counts_[i] << " notification observer(s) leaked "
-                 " of notification type " << i;
+                 "of notification type " << i;
     }
   }
 #endif
