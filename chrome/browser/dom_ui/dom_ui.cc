@@ -126,12 +126,7 @@ ui::ThemeProvider* DOMUI::GetThemeProvider() const {
 
 void DOMUI::RegisterMessageCallback(const std::string &message,
                                     MessageCallback *callback) {
-  std::pair<MessageCallbackMap::iterator, bool> result =
-      message_callbacks_.insert(std::make_pair(message, callback));
-
-  // Overwrite preexisting message callback mappings.
-  if (register_callback_overwrites() && !result.second)
-    result.first->second = callback;
+  message_callbacks_.insert(std::make_pair(message, callback));
 }
 
 Profile* DOMUI::GetProfile() const {
