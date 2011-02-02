@@ -531,9 +531,6 @@
               'msvs_cygwin_shell': 0,
               'inputs': [
                 '<(PRODUCT_DIR)/ncdecode_tablegen<(EXECUTABLE_SUFFIX)',
-                # TODO(bradnelson): make gyp support two separate actions using
-                # identical inputs.
-                'ncdecode_tablegen.c',
               ],
               'outputs': [
                 '<(validate_gen_out)/nc_opcode_table64.h',
