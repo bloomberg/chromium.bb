@@ -31,10 +31,6 @@
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/options/options_window_view.h"
-#endif  // defined(OS_CHROMEOS)
-
 namespace {
 
 // Background color for the status label when it's showing an error.
@@ -70,10 +66,8 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
     : OptionsPageBase(profile),
       sync_status_label_background_(NULL),
       sync_status_label_(NULL),
-#if !defined(OS_CHROMEOS)
       sync_action_link_background_(NULL),
       sync_action_link_(NULL),
-#endif
       sync_start_stop_button_(NULL),
       sync_customize_button_(NULL),
       privacy_dashboard_link_(NULL),
@@ -341,7 +335,6 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
   gtk_container_add(GTK_CONTAINER(sync_status_label_background_),
                     sync_status_label_);
 
-#if !defined(OS_CHROMEOS)
   // Sync action link.
   GtkWidget* link_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   sync_action_link_background_ = gtk_event_box_new();
@@ -354,7 +347,6 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
   gtk_container_add(GTK_CONTAINER(sync_action_link_background_),
                     sync_action_link_);
   gtk_widget_hide(sync_action_link_background_);
-#endif
 
   // Add the sync button into its own horizontal box so it does not
   // depend on the spacing above.
@@ -404,34 +396,22 @@ void ContentPageGtk::UpdateSyncControls() {
     l10n_util::GetStringUTF8(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL);
 
   std::string start_stop_button_label;
-  bool is_start_stop_button_visible = false;
   bool is_start_stop_button_sensitive = false;
   if (sync_setup_completed) {
     start_stop_button_label =
         l10n_util::GetStringUTF8(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
-#if defined(OS_CHROMEOS)
-    is_start_stop_button_visible = false;
-#else
-    is_start_stop_button_visible = true;
-#endif
     is_start_stop_button_sensitive = !managed;
   } else if (sync_service_->SetupInProgress()) {
     start_stop_button_label =
         l10n_util::GetStringUTF8(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
-    is_start_stop_button_visible = true;
     is_start_stop_button_sensitive = false;
   } else {
     start_stop_button_label =
         l10n_util::GetStringUTF8(IDS_SYNC_START_SYNC_BUTTON_LABEL);
-    is_start_stop_button_visible = true;
     is_start_stop_button_sensitive = !managed;
   }
-  gtk_widget_set_no_show_all(sync_start_stop_button_,
-                             !is_start_stop_button_visible);
-  if (is_start_stop_button_visible)
-    gtk_widget_show(sync_start_stop_button_);
-  else
-    gtk_widget_hide(sync_start_stop_button_);
+  gtk_widget_set_no_show_all(sync_start_stop_button_, FALSE);
+  gtk_widget_show(sync_start_stop_button_);
   gtk_widget_set_sensitive(sync_start_stop_button_,
                            is_start_stop_button_sensitive);
   gtk_button_set_label(GTK_BUTTON(sync_start_stop_button_),
@@ -445,7 +425,6 @@ void ContentPageGtk::UpdateSyncControls() {
   gtk_button_set_label(GTK_BUTTON(sync_customize_button_),
                        customize_button_label.c_str());
   gtk_widget_set_sensitive(sync_customize_button_, !managed);
-#if !defined(OS_CHROMEOS)
   gtk_chrome_link_button_set_label(GTK_CHROME_LINK_BUTTON(sync_action_link_),
                                    UTF16ToUTF8(link_label).c_str());
   if (link_label.empty()) {
@@ -456,19 +435,14 @@ void ContentPageGtk::UpdateSyncControls() {
     gtk_widget_show(sync_action_link_background_);
   }
   gtk_widget_set_sensitive(sync_action_link_, !managed);
-#endif
   if (status_has_error) {
     gtk_widget_modify_bg(sync_status_label_background_, GTK_STATE_NORMAL,
                          &kSyncLabelErrorBgColor);
-#if !defined(OS_CHROMEOS)
     gtk_widget_modify_bg(sync_action_link_background_, GTK_STATE_NORMAL,
                          &kSyncLabelErrorBgColor);
-#endif
   } else {
     gtk_widget_modify_bg(sync_status_label_background_, GTK_STATE_NORMAL, NULL);
-#if !defined(OS_CHROMEOS)
     gtk_widget_modify_bg(sync_action_link_background_, GTK_STATE_NORMAL, NULL);
-#endif
   }
 }
 
@@ -497,12 +471,6 @@ void ContentPageGtk::OnResetDefaultThemeButtonClicked(GtkWidget* widget) {
 void ContentPageGtk::OnGetThemesButtonClicked(GtkWidget* widget) {
   UserMetricsRecordAction(UserMetricsAction("Options_ThemesGallery"),
                           profile()->GetPrefs());
-#if defined(OS_CHROMEOS)
-  // Close options dialog for ChromeOS becuase it is always stacked on top
-  // of browser window and blocks user's view.
-  chromeos::CloseOptionsWindow();
-#endif  // defined(OS_CHROMEOS)
-
   BrowserList::GetLastActive()->OpenThemeGalleryTabAndActivate();
 }
 

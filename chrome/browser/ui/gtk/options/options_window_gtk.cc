@@ -25,11 +25,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/options/internet_page_view.h"
-#include "chrome/browser/chromeos/options/system_page_view.h"
-#endif
-
 ///////////////////////////////////////////////////////////////////////////////
 // OptionsWindowGtk
 //
@@ -119,20 +114,6 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
                       gtk_util::kContentAreaSpacing);
 
   notebook_ = gtk_notebook_new();
-
-#if defined(OS_CHROMEOS)
-  gtk_notebook_append_page(
-      GTK_NOTEBOOK(notebook_),
-      (new chromeos::SystemPageView(profile_))->WrapInGtkWidget(),
-      gtk_label_new(
-          l10n_util::GetStringUTF8(IDS_OPTIONS_SYSTEM_TAB_LABEL).c_str()));
-
-  gtk_notebook_append_page(
-      GTK_NOTEBOOK(notebook_),
-      (new chromeos::InternetPageView(profile_))->WrapInGtkWidget(),
-      gtk_label_new(
-          l10n_util::GetStringUTF8(IDS_OPTIONS_INTERNET_TAB_LABEL).c_str()));
-#endif
 
   gtk_notebook_append_page(
       GTK_NOTEBOOK(notebook_),
@@ -240,9 +221,6 @@ void OptionsWindowGtk::OnWindowDestroy(GtkWidget* widget,
 ///////////////////////////////////////////////////////////////////////////////
 // Factory/finder method:
 
-#if !defined(OS_CHROMEOS)
-// ShowOptionsWindow for non ChromeOS build. For ChromeOS build, see
-// chrome/browser/chromeos/options/options_window_view.h
 void ShowOptionsWindow(OptionsPage page,
                        OptionsGroup highlight_group,
                        Profile* profile) {
@@ -264,4 +242,3 @@ void ShowOptionsWindow(OptionsPage page,
   }
   options_window->ShowOptionsPage(page, highlight_group);
 }
-#endif  // !defined(OS_CHROMEOS)
