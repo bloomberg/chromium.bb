@@ -39,6 +39,8 @@ const char kPostContentType[] = "application/protobuf";
 const char kServiceTokenAuthHeader[] = "Authorization: GoogleLogin auth=";
 const char kDMTokenAuthHeader[] = "Authorization: GoogleDMToken token=";
 
+}  // namespace
+
 // Helper class for URL query parameter encoding/decoding.
 class URLQueryParameters {
  public:
@@ -76,8 +78,6 @@ std::string URLQueryParameters::Encode() {
   }
   return result;
 }
-
-}  // namespace
 
 // A base class containing the common code for the jobs created by the backend
 // implementation. Subclasses provide custom code for handling actual register,
