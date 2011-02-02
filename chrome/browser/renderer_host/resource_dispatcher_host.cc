@@ -31,7 +31,6 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/plugin_service.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_resource_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/async_resource_handler.h"
@@ -128,11 +127,9 @@ bool ShouldServiceRequest(ChildProcessInfo::ProcessType process_type,
   if (process_type == ChildProcessInfo::PLUGIN_PROCESS)
     return true;
 
-  if (request_data.resource_type == ResourceType::PREFETCH) {
-    PrerenderManager::RecordPrefetchTagObserved();
-    if (!ResourceDispatcherHost::is_prefetch_enabled())
-      return false;
-  }
+  if (request_data.resource_type == ResourceType::PREFETCH &&
+      !ResourceDispatcherHost::is_prefetch_enabled())
+    return false;
 
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();

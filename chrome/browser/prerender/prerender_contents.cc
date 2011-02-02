@@ -74,9 +74,6 @@ void PrerenderContents::StartPrerendering() {
                  Source<Profile>(profile_));
   render_view_host_->CreateRenderView(string16());
 
-  DCHECK(load_start_time_.is_null());
-  load_start_time_ = base::TimeTicks::Now();
-
   ViewMsg_Navigate_Params params;
   params.url = prerender_url_;
   params.transition = PageTransition::LINK;
