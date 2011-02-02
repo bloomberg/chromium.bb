@@ -19,6 +19,8 @@ struct PepperPluginInfo {
   ~PepperPluginInfo();
 
   // Indicates internal plugins for which there's not actually a library.
+  // These plugins are implemented in the Chrome binary using a separate set
+  // of entry points (see internal_entry_points below).
   // Defaults to false.
   bool is_internal;
 
@@ -31,6 +33,10 @@ struct PepperPluginInfo {
   std::string description;
   std::string file_extensions;
   std::string type_descriptions;
+
+  // When is_internal is set, this contains the function pointers to the
+  // entry points for the internal plugins.
+  webkit::ppapi::PluginModule::EntryPoints internal_entry_points;
 };
 
 // This class holds references to all of the known pepper plugin modules.
@@ -44,35 +50,32 @@ class PepperPluginRegistry
   ~PepperPluginRegistry();
 
   static const char* kPDFPluginName;
-  static const char* kPDFPluginMimeType;
-  static const char* kPDFPluginExtension;
-  static const char* kPDFPluginDescription;
-
-  static const char* kNaClPluginName;
-  static const char* kNaClPluginMimeType;
-  static const char* kNaClPluginExtension;
-  static const char* kNaClPluginDescription;
 
   static PepperPluginRegistry* GetInstance();
 
-  // Returns the list of known pepper plugins.  This method is static so that
-  // it can be used by the browser process, which has no need to load the
-  // pepper plugin modules.
-  static void GetList(std::vector<PepperPluginInfo>* plugins);
+  // Computes the list of known pepper plugins.
+  //
+  // This method is static so that it can be used by the browser process, which
+  // has no need to load the pepper plugin modules. It will re-compute the
+  // plugin list every time it is called. Generally, code in the registry should
+  // be using the cached plugin_list_ instead.
+  static void ComputeList(std::vector<PepperPluginInfo>* plugins);
 
   // Loads the (native) libraries but does not initialize them (i.e., does not
   // call PPP_InitializeModule). This is needed by the zygote on Linux to get
   // access to the plugins before entering the sandbox.
   static void PreloadModules();
 
-  // Returns true if the given plugin is a pepper plugin that should be run
-  // out of process.
-  bool RunOutOfProcessForPlugin(const FilePath& path) const;
+  // Retrieves the information associated with the given plugin path. The
+  // return value will be NULL if there is no such plugin.
+  //
+  // The returned pointer is owned by the PluginRegistry.
+  const PepperPluginInfo* GetInfoForPlugin(const FilePath& path) const;
 
   // Returns an existing loaded module for the given path. It will search for
   // both preloaded in-process or currently active out-of-process plugins
   // matching the given name. Returns NULL if the plugin hasn't been loaded.
-  webkit::ppapi::PluginModule* GetModule(const FilePath& path);
+  webkit::ppapi::PluginModule* GetLiveModule(const FilePath& path);
 
   // Notifies the registry that a new non-preloaded module has been created.
   // This is normally called for out-of-process plugins. Once this is called,
@@ -85,18 +88,13 @@ class PepperPluginRegistry
       webkit::ppapi::PluginModule* destroyed_module);
 
  private:
-  static void GetPluginInfoFromSwitch(std::vector<PepperPluginInfo>* plugins);
-  static void GetExtraPlugins(std::vector<PepperPluginInfo>* plugins);
-
-  struct InternalPluginInfo : public PepperPluginInfo {
-    InternalPluginInfo();  // Sets |is_internal|.
-    webkit::ppapi::PluginModule::EntryPoints entry_points;
-  };
-  typedef std::vector<InternalPluginInfo> InternalPluginInfoList;
-  static void GetInternalPluginInfo(InternalPluginInfoList* plugin_info);
-
   PepperPluginRegistry();
 
+  // All known pepper plugins.
+  std::vector<PepperPluginInfo> plugin_list_;
+
+  // Plugins that have been preloaded so they can be executed in-process in
+  // the renderer (the sandbox prevents on-demand loading).
   typedef std::map<FilePath, scoped_refptr<webkit::ppapi::PluginModule> >
       OwningModuleMap;
   OwningModuleMap preloaded_modules_;
