@@ -481,6 +481,7 @@
         '../third_party/skia/src/utils/mac/SkCreateCGImageRef.cpp',
 
         '../third_party/skia/include/core/Sk64.h',
+        '../third_party/skia/include/core/SkAdvancedTypefaceMetrics.h',
         '../third_party/skia/include/core/SkAutoKern.h',
         '../third_party/skia/include/core/SkBitmap.h',
         '../third_party/skia/include/core/SkBlitRow.h',
@@ -524,7 +525,6 @@
         '../third_party/skia/include/core/SkPath.h',
         '../third_party/skia/include/core/SkPathEffect.h',
         '../third_party/skia/include/core/SkPathMeasure.h',
-        '../third_party/skia/include/core/SkPDFTypefaceInfo.h',
         '../third_party/skia/include/core/SkPerspIter.h',
         '../third_party/skia/include/core/SkPicture.h',
         '../third_party/skia/include/core/SkPixelRef.h',
