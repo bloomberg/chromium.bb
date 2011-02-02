@@ -208,7 +208,10 @@ class FakeReposBase(object):
   populateSvn() and populateGit() need to be implemented by the subclass.
   """
 
-  # Should leak the repositories.
+  # When SHOULD_LEAK is set to True, temporary directories created while the
+  # tests are running aren't deleted at the end of the tests. Expect failures
+  # when running more than one test due to inter-test side-effects. Helps with
+  # debugging.
   SHOULD_LEAK = False
   # Override if unhappy.
   TRIAL_DIR = None
@@ -725,8 +728,8 @@ def main(argv):
   return 0
 
 
-# Kind of hack.
 if '-l' in sys.argv:
+  # See SHOULD_LEAK definition in FakeReposBase for its purpose.
   FakeReposBase.SHOULD_LEAK = True
   print 'Leaking!'
   sys.argv.remove('-l')
