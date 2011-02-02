@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -19,6 +18,8 @@
 #include "chrome/browser/chromeos/login/password_changed_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -35,23 +36,23 @@ class UserCrosSettingsProvider;
 // ExistingUserController maintains it's own life cycle and deletes itself when
 // the user logs in (or chooses to see other settings).
 class ExistingUserController : public LoginDisplay::Delegate,
+                               public NotificationObserver,
                                public WmMessageListener::Observer,
                                public LoginPerformer::Delegate,
                                public CaptchaView::Delegate,
                                public PasswordChangedView::Delegate {
  public:
-  // Initializes views for known users. |background_bounds| determines the
-  // bounds of background view.
-  ExistingUserController(const std::vector<UserManager::User>& users,
-                         const gfx::Rect& background_bounds);
+  // All UI initialization is deferred till Init() call.
+  // |background_bounds| determines the bounds of background view.
+  explicit ExistingUserController(const gfx::Rect& background_bounds);
 
   // Returns the current existing user controller if it has been created.
   static ExistingUserController* current_controller() {
     return current_controller_;
   }
 
-  // Creates and shows the appropriate set of windows.
-  void Init();
+  // Creates and shows login UI for known users.
+  void Init(const UserVector& users);
 
   // Takes ownership of the specified background widget and view.
   void OwnBackground(views::Widget* background_widget,
@@ -64,6 +65,11 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void LoginAsGuest();
   virtual void OnUserSelected(const std::string& username);
   virtual void RemoveUser(const std::string& username);
+
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
   friend class DeleteTask<ExistingUserController>;
@@ -153,11 +159,11 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Triggers prefetching of user settings.
   scoped_ptr<UserCrosSettingsProvider> user_settings_;
 
-  // Cached list of users to display at login screen.
-  std::vector<UserManager::User> users_;
-
   // URL to append to start Guest mode with.
   GURL guest_mode_url_;
+
+  // Used for user image changed notifications.
+  NotificationRegistrar registrar_;
 
   // Factory of callbacks.
   ScopedRunnableMethodFactory<ExistingUserController> method_factory_;

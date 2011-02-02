@@ -38,6 +38,7 @@ class ViewsLoginDisplay : public LoginDisplay,
                     bool show_guest,
                     bool show_new_user);
   virtual void OnBeforeUserRemoved(const std::string& username);
+  virtual void OnUserImageChanged(UserManager::User* user);
   virtual void OnUserRemoved(const std::string& username);
   virtual void SetUIEnabled(bool is_enabled);
   virtual void ShowError(int error_msg_id,
@@ -61,6 +62,10 @@ class ViewsLoginDisplay : public LoginDisplay,
   virtual void OnHelpLinkActivated();
 
  private:
+  // Returns existing UserController instance by |email|.
+  // NULL is returned if relevant instance is not found.
+  UserController* GetUserControllerByEmail(const std::string& email);
+
   // Pointer to shown message bubble. We don't need to delete it because
   // it will be deleted on bubble closing.
   MessageBubble* bubble_;

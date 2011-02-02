@@ -421,9 +421,9 @@ chromeos::ExistingUserController* WizardController::ShowLoginScreen() {
   gfx::Rect screen_bounds;
   background_widget_->GetBounds(&screen_bounds, true);
   chromeos::ExistingUserController* controller =
-      new chromeos::ExistingUserController(users, screen_bounds);
+      new chromeos::ExistingUserController(screen_bounds);
   controller->OwnBackground(background_widget_, background_view_);
-  controller->Init();
+  controller->Init(users);
   background_widget_ = NULL;
   background_view_ = NULL;
 
@@ -976,7 +976,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
     }
 
     // ExistingUserController deletes itself.
-    (new chromeos::ExistingUserController(users, screen_bounds))->Init();
+    (new chromeos::ExistingUserController(screen_bounds))->Init(users);
 
     // Initiate services customization.
     chromeos::ApplyServicesCustomization::StartIfNeeded();

@@ -26,6 +26,8 @@
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/window/window.h"
@@ -82,7 +84,6 @@ ExistingUserController*
 // ExistingUserController, public:
 
 ExistingUserController::ExistingUserController(
-    const std::vector<UserManager::User>& users,
     const gfx::Rect& background_bounds)
     : background_bounds_(background_bounds),
       background_window_(NULL),
@@ -96,18 +97,12 @@ ExistingUserController::ExistingUserController(
 
   login_display_.reset(CreateLoginDisplay(this, background_bounds));
 
-  if (UserCrosSettingsProvider::cached_show_users_on_signin()) {
-    for (size_t i = 0; i < users.size(); ++i)
-      // TODO(xiyuan): Clean user profile whose email is not in whitelist.
-      if (UserCrosSettingsProvider::cached_allow_new_user() ||
-          UserCrosSettingsProvider::IsEmailInCachedWhitelist(
-              users[i].email())) {
-        users_.push_back(users[i]);
-      }
-  }
+  registrar_.Add(this,
+                 NotificationType::LOGIN_USER_IMAGE_CHANGED,
+                 NotificationService::AllSources());
 }
 
-void ExistingUserController::Init() {
+void ExistingUserController::Init(const UserVector& users) {
   if (!background_window_) {
     background_window_ = BackgroundView::CreateWindowContainingView(
         background_bounds_,
@@ -123,13 +118,24 @@ void ExistingUserController::Init() {
     background_window_->Show();
   }
 
+  UserVector filtered_users;
+  if (UserCrosSettingsProvider::cached_show_users_on_signin()) {
+    for (size_t i = 0; i < users.size(); ++i)
+      // TODO(xiyuan): Clean user profile whose email is not in whitelist.
+      if (UserCrosSettingsProvider::cached_allow_new_user() ||
+          UserCrosSettingsProvider::IsEmailInCachedWhitelist(
+              users[i].email())) {
+        filtered_users.push_back(users[i]);
+      }
+  }
+
   // If no user pods are visible, fallback to single new user pod which will
   // have guest session link.
   bool show_guest = UserCrosSettingsProvider::cached_allow_guest() &&
-                    !users_.empty();
+                    !filtered_users.empty();
   bool show_new_user = true;
   login_display_->set_parent_window(GetNativeWindow());
-  login_display_->Init(users_, show_guest, show_new_user);
+  login_display_->Init(filtered_users, show_guest, show_new_user);
 
   WmMessageListener::GetInstance()->AddObserver(this);
 
@@ -144,6 +150,20 @@ void ExistingUserController::OwnBackground(
   DCHECK(!background_window_);
   background_window_ = background_widget;
   background_view_ = background_view;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ExistingUserController, NotificationObserver implementation:
+//
+
+void ExistingUserController::Observe(NotificationType type,
+                                     const NotificationSource& source,
+                                     const NotificationDetails& details) {
+  if (type != NotificationType::LOGIN_USER_IMAGE_CHANGED)
+    return;
+
+  UserManager::User* user = Details<UserManager::User>(details).ptr();
+  login_display_->OnUserImageChanged(user);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

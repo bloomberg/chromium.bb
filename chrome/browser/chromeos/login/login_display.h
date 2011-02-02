@@ -57,6 +57,10 @@ class LoginDisplay {
   // Called right before actual user removal process is initiated.
   virtual void OnBeforeUserRemoved(const std::string& username) = 0;
 
+  // Called when user image has been changed.
+  // |user| contains updated user.
+  virtual void OnUserImageChanged(UserManager::User* user) = 0;
+
   // Called right after user removal process has been initiated.
   virtual void OnUserRemoved(const std::string& username) = 0;
 

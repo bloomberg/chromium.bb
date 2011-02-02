@@ -66,9 +66,8 @@ class ExistingUserControllerTest : public WizardInProcessBrowserTest {
     gfx::Rect background_bounds(login::kWizardScreenWidth,
                                 login::kWizardScreenHeight);
     ExistingUserController* controller =
-        new ExistingUserController(std::vector<UserManager::User>(),
-                                   background_bounds);
-    controller->Init();
+        new ExistingUserController(background_bounds);
+    controller->Init(UserVector());
   }
 
   ExistingUserController* existing_user_controller() {

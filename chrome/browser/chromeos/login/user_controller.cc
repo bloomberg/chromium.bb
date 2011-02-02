@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/chromeos/login/existing_user_view.h"
@@ -17,8 +16,6 @@
 #include "chrome/browser/chromeos/login/user_view.h"
 #include "chrome/browser/chromeos/login/username_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
@@ -101,6 +98,9 @@ const int UserController::kPadding = 30;
 const int UserController::kUnselectedSize = 100;
 const int UserController::kNewUserUnselectedSize = 42;
 
+////////////////////////////////////////////////////////////////////////////////
+// UserController, public:
+
 UserController::UserController(Delegate* delegate, bool is_guest)
     : user_index_(-1),
       is_user_selected_(false),
@@ -118,12 +118,7 @@ UserController::UserController(Delegate* delegate, bool is_guest)
       label_view_(NULL),
       unselected_label_view_(NULL),
       user_input_(NULL),
-      throbber_host_(NULL),
-      method_factory_(this) {
-  registrar_.Add(
-      this,
-      NotificationType::LOGIN_USER_IMAGE_CHANGED,
-      NotificationService::AllSources());
+      throbber_host_(NULL) {
 }
 
 UserController::UserController(Delegate* delegate,
@@ -147,13 +142,8 @@ UserController::UserController(Delegate* delegate,
       label_view_(NULL),
       unselected_label_view_(NULL),
       user_input_(NULL),
-      throbber_host_(NULL),
-      method_factory_(this) {
+      throbber_host_(NULL) {
   DCHECK(!user.email().empty());
-  registrar_.Add(
-      this,
-      NotificationType::LOGIN_USER_IMAGE_CHANGED,
-      NotificationService::AllSources());
 }
 
 UserController::~UserController() {
@@ -182,36 +172,6 @@ void UserController::Init(int index,
       CreateLabelWindow(index, WM_IPC_WINDOW_LOGIN_UNSELECTED_LABEL);
 }
 
-void UserController::StartThrobber() {
-  throbber_host_->StartThrobber();
-}
-
-void UserController::StopThrobber() {
-  throbber_host_->StopThrobber();
-}
-
-std::wstring UserController::GetNameTooltip() const {
-  if (is_new_user_)
-    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_ADD_USER));
-  if (is_guest_)
-    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_GO_INCOGNITO_BUTTON));
-
-  // Tooltip contains user's display name and his email domain to distinguish
-  // this user from the other one with the same display name.
-  const std::string& email = user_.email();
-  size_t at_pos = email.rfind('@');
-  if (at_pos == std::string::npos) {
-    NOTREACHED();
-    return std::wstring();
-  }
-  size_t domain_start = at_pos + 1;
-  std::string domain = email.substr(domain_start,
-                                    email.length() - domain_start);
-  return UTF8ToWide(base::StringPrintf("%s (%s)",
-                                       user_.GetDisplayName().c_str(),
-                                       domain.c_str()));
-}
-
 void UserController::ClearAndEnableFields() {
   user_input_->ClearAndFocusControls();
   user_input_->EnableInputControls(true);
@@ -222,10 +182,6 @@ void UserController::ClearAndEnablePassword() {
   user_input_->ClearAndFocusPassword();
   user_input_->EnableInputControls(true);
   StopThrobber();
-}
-
-gfx::Rect UserController::GetMainInputScreenBounds() const {
-  return user_input_->GetMainInputScreenBounds();
 }
 
 void UserController::EnableNameTooltip(bool enable) {
@@ -241,22 +197,48 @@ void UserController::EnableNameTooltip(bool enable) {
     unselected_label_view_->SetTooltipText(tooltip_text);
 }
 
-void UserController::Observe(
-    NotificationType type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
-  if (type != NotificationType::LOGIN_USER_IMAGE_CHANGED ||
-      !user_view_)
-    return;
-
-  UserManager::User* user = Details<UserManager::User>(details).ptr();
-  if (user_.email() != user->email())
-    return;
-
-  user_.set_image(user->image());
-  user_view_->SetImage(user_.image(), user_.image());
+gfx::Rect UserController::GetMainInputScreenBounds() const {
+  return user_input_->GetMainInputScreenBounds();
 }
 
+void UserController::OnUserImageChanged(UserManager::User* user) {
+  if (user_.email() != user->email())
+    return;
+  user_.set_image(user->image());
+  // Controller might exist without windows,
+  // i.e. if user pod doesn't fit on the screen.
+  if (user_view_)
+    user_view_->SetImage(user_.image(), user_.image());
+}
+
+void UserController::SelectUserRelative(int shift) {
+  delegate_->SelectUser(user_index() + shift);
+}
+
+void UserController::StartThrobber() {
+  throbber_host_->StartThrobber();
+}
+
+void UserController::StopThrobber() {
+  throbber_host_->StopThrobber();
+}
+
+void UserController::UpdateUserCount(int index, int total_user_count) {
+  user_index_ = index;
+  std::vector<int> params;
+  params.push_back(index);
+  params.push_back(total_user_count);
+  params.push_back(is_new_user_ ? kNewUserUnselectedSize : kUnselectedSize);
+  params.push_back(kPadding);
+  WmIpc::instance()->SetWindowType(
+      border_window_->GetNativeView(),
+      WM_IPC_WINDOW_LOGIN_BORDER,
+      &params);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// UserController, WidgetDelegate implementation:
+//
 void UserController::IsActiveChanged(bool active) {
   is_user_selected_ = active;
   if (active) {
@@ -269,6 +251,52 @@ void UserController::IsActiveChanged(bool active) {
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// UserController, NewUserView::Delegate implementation:
+//
+void UserController::OnLogin(const std::string& username,
+                             const std::string& password) {
+  if (is_new_user_)
+    user_.set_email(username);
+
+  user_input_->EnableInputControls(false);
+  StartThrobber();
+
+  delegate_->Login(this, UTF8ToUTF16(password));
+}
+
+void UserController::OnCreateAccount() {
+  user_input_->EnableInputControls(false);
+  StartThrobber();
+
+  delegate_->CreateAccount();
+}
+
+void UserController::OnLoginAsGuest() {
+  user_input_->EnableInputControls(false);
+  StartThrobber();
+
+  delegate_->LoginAsGuest();
+}
+
+void UserController::ClearErrors() {
+  delegate_->ClearErrors();
+}
+
+void UserController::NavigateAway() {
+  SelectUserRelative(-1);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// UserController, UserView::Delegate implementation:
+//
+void UserController::OnRemoveUser() {
+  delegate_->RemoveUser(this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// UserController, private:
+//
 void UserController::ConfigureLoginWindow(WidgetGtk* window,
                                           int index,
                                           const gfx::Rect& bounds,
@@ -391,19 +419,6 @@ void UserController::CreateBorderWindow(int index,
   border_window_->Show();
 }
 
-void UserController::UpdateUserCount(int index, int total_user_count) {
-  user_index_ = index;
-  std::vector<int> params;
-  params.push_back(index);
-  params.push_back(total_user_count);
-  params.push_back(is_new_user_ ? kNewUserUnselectedSize : kUnselectedSize);
-  params.push_back(kPadding);
-  WmIpc::instance()->SetWindowType(
-      border_window_->GetNativeView(),
-      WM_IPC_WINDOW_LOGIN_BORDER,
-      &params);
-}
-
 WidgetGtk* UserController::CreateLabelWindow(int index,
                                              WmIpcWindowType type) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -461,45 +476,13 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
   return window;
 }
 
-void UserController::OnLogin(const std::string& username,
-                             const std::string& password) {
+std::wstring UserController::GetNameTooltip() const {
   if (is_new_user_)
-    user_.set_email(username);
-
-  user_input_->EnableInputControls(false);
-  StartThrobber();
-
-  delegate_->Login(this, UTF8ToUTF16(password));
-}
-
-void UserController::OnCreateAccount() {
-  user_input_->EnableInputControls(false);
-  StartThrobber();
-
-  delegate_->CreateAccount();
-}
-
-void UserController::OnLoginAsGuest() {
-  user_input_->EnableInputControls(false);
-  StartThrobber();
-
-  delegate_->LoginAsGuest();
-}
-
-void UserController::ClearErrors() {
-  delegate_->ClearErrors();
-}
-
-void UserController::NavigateAway() {
-  SelectUserRelative(-1);
-}
-
-void UserController::OnRemoveUser() {
-  delegate_->RemoveUser(this);
-}
-
-void UserController::SelectUserRelative(int shift) {
-  delegate_->SelectUser(user_index() + shift);
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_ADD_USER));
+  else if (is_guest_)
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_GO_INCOGNITO_BUTTON));
+  else
+    return UTF8ToWide(user_.GetNameTooltip());
 }
 
 }  // namespace chromeos

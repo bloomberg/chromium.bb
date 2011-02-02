@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/nss_util.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -165,6 +166,21 @@ std::string UserManager::User::GetDisplayName() const {
     return email_;
   }
   return email_.substr(0, i);
+}
+
+std::string UserManager::User::GetNameTooltip() const {
+  const std::string& user_email = email();
+  size_t at_pos = user_email.rfind('@');
+  if (at_pos == std::string::npos) {
+    NOTREACHED();
+    return std::string();
+  }
+  size_t domain_start = at_pos + 1;
+  std::string domain = user_email.substr(domain_start,
+                                         user_email.length() - domain_start);
+  return base::StringPrintf("%s (%s)",
+                            GetDisplayName().c_str(),
+                            domain.c_str());
 }
 
 // static

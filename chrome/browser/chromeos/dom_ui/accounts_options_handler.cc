@@ -88,8 +88,8 @@ void AccountsOptionsHandler::UnwhitelistUser(const ListValue* args) {
 void AccountsOptionsHandler::FetchUserPictures(const ListValue* args) {
   DictionaryValue user_pictures;
 
-  std::vector<UserManager::User> users = UserManager::Get()->GetUsers();
-  for (std::vector<UserManager::User>::const_iterator it = users.begin();
+  UserVector users = UserManager::Get()->GetUsers();
+  for (UserVector::const_iterator it = users.begin();
        it < users.end(); ++it) {
     if (!it->image().isNull()) {
       StringValue* picture = new StringValue(
@@ -106,8 +106,8 @@ void AccountsOptionsHandler::FetchUserPictures(const ListValue* args) {
 void AccountsOptionsHandler::WhitelistExistingUsers(const ListValue* args) {
   ListValue whitelist_users;
 
-  std::vector<UserManager::User> users = UserManager::Get()->GetUsers();
-  for (std::vector<UserManager::User>::const_iterator it = users.begin();
+  UserVector users = UserManager::Get()->GetUsers();
+  for (UserVector::const_iterator it = users.begin();
        it < users.end(); ++it) {
     const std::string& email = it->email();
     if (!UserCrosSettingsProvider::IsEmailInCachedWhitelist(email)) {

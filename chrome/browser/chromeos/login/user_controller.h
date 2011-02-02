@@ -14,8 +14,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_view.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
@@ -33,7 +31,6 @@ class ThrobberManager;
 // the nececessary set of UserControllers.
 class UserController : public views::WidgetDelegate,
                        public NewUserView::Delegate,
-                       public NotificationObserver,
                        public UserView::Delegate {
  public:
   class Delegate {
@@ -66,10 +63,6 @@ class UserController : public views::WidgetDelegate,
   // number of users.
   void Init(int index, int total_user_count, bool need_browse_without_signin);
 
-  // Update border window parameters to notify window manager about new numbers.
-  // |index| of this user and |total_user_count| of users.
-  void UpdateUserCount(int index, int total_user_count);
-
   int user_index() const { return user_index_; }
   bool is_new_user() const { return is_new_user_; }
   bool is_guest() const { return is_guest_; }
@@ -77,8 +70,10 @@ class UserController : public views::WidgetDelegate,
 
   const UserManager::User& user() const { return user_; }
 
-  // Enables or disables tooltip with user's email.
-  void EnableNameTooltip(bool enable);
+  // Get widget that contains all controls.
+  views::WidgetGtk* controls_window() {
+    return controls_window_;
+  }
 
   // Called when user view is activated (OnUserSelected).
   void ClearAndEnableFields();
@@ -86,26 +81,29 @@ class UserController : public views::WidgetDelegate,
   // Called when user view is activated (OnUserSelected).
   void ClearAndEnablePassword();
 
-  // Get widget that contains all controls.
-  views::WidgetGtk* controls_window() {
-    return controls_window_;
-  }
+  // Enables or disables tooltip with user's email.
+  void EnableNameTooltip(bool enable);
+
+  // Called when user image has been changed.
+  void OnUserImageChanged(UserManager::User* user);
 
   // Returns bounds of the main input field in the screen coordinates (e.g.
   // these bounds could be used to choose positions for the error bubble).
   gfx::Rect GetMainInputScreenBounds() const;
 
+  // Selects user relative to the current user.
+  void SelectUserRelative(int shift);
+
   // Starts/Stops throbber.
   void StartThrobber();
   void StopThrobber();
 
-  // views::WidgetDelegate:
-  virtual void IsActiveChanged(bool active);
+  // Update border window parameters to notify window manager about new numbers.
+  // |index| of this user and |total_user_count| of users.
+  void UpdateUserCount(int index, int total_user_count);
 
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+  // views::WidgetDelegate implementation:
+  virtual void IsActiveChanged(bool active);
 
   // NewUserView::Delegate implementation:
   virtual void OnLogin(const std::string& username,
@@ -118,9 +116,6 @@ class UserController : public views::WidgetDelegate,
   // UserView::Delegate implementation:
   virtual void OnRemoveUser();
   virtual bool IsUserSelected() const { return is_user_selected_; }
-
-  // Selects user relative to the current user.
-  void SelectUserRelative(int shift);
 
   // Padding between the user windows.
   static const int kPadding;
@@ -193,10 +188,6 @@ class UserController : public views::WidgetDelegate,
 
   // Throbber host that can show a throbber.
   ThrobberHostView* throbber_host_;
-
-  NotificationRegistrar registrar_;
-
-  ScopedRunnableMethodFactory<UserController> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserController);
 };

@@ -133,6 +133,12 @@ void ViewsLoginDisplay::OnBeforeUserRemoved(const std::string& username) {
     controllers_[i]->UpdateUserCount(i, new_size);
 }
 
+void ViewsLoginDisplay::OnUserImageChanged(UserManager::User* user) {
+  UserController* controller = GetUserControllerByEmail(user->email());
+  if (controller)
+    controller->OnUserImageChanged(user);
+}
+
 void ViewsLoginDisplay::OnUserRemoved(const std::string& username) {
   // We need to unmap entry windows, the windows will be unmapped in destructor.
   delete controller_for_removal_;
@@ -282,6 +288,25 @@ void ViewsLoginDisplay::OnHelpLinkActivated() {
   if (!help_app_.get())
     help_app_.reset(new HelpAppLauncher(parent_window()));
   help_app_->ShowHelpTopic(help_topic_id_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ViewsLoginDisplay, private:
+//
+
+UserController* ViewsLoginDisplay::GetUserControllerByEmail(
+    const std::string& email) {
+  std::vector<UserController*>::iterator i;
+  for (i = controllers_.begin(); i != controllers_.end(); ++i) {
+    if ((*i)->user().email() == email)
+      return *i;
+  }
+  for (i = invisible_controllers_.begin();
+       i != invisible_controllers_.end(); ++i) {
+    if ((*i)->user().email() == email)
+      return *i;
+  }
+  return NULL;
 }
 
 }  // namespace chromeos
