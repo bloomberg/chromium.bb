@@ -60,6 +60,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   // Set a callback that will be invoked when the SwapBuffers call has been
   // issued.
   void SetSwapBuffersCallback(Callback0::Type* callback);
+  void SetChannelErrorCallback(Callback0::Type* callback);
 
   // Asynchronously resizes an offscreen frame buffer.
   void ResizeOffscreenFrameBuffer(const gfx::Size& size);
@@ -117,6 +118,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   scoped_ptr<Task> notify_repaint_task_;
 
   scoped_ptr<Callback0::Type> swap_buffers_callback_;
+  scoped_ptr<Callback0::Type> channel_error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxy);
 };

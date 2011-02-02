@@ -27,6 +27,10 @@
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
     : context_(NULL),
       web_view_(NULL),
+#if defined(OS_MACOSX)
+      plugin_handle_(NULL),
+#endif  // defined(OS_MACOSX)
+      context_lost_callback_(0),
       cached_width_(0),
       cached_height_(0),
       bound_fbo_(0) {
@@ -126,6 +130,12 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   }
   if (!context_)
     return false;
+
+  ggl::SetContextLostCallback(
+      context_,
+      NewCallback(this,
+                  &WebGraphicsContext3DCommandBufferImpl::OnContextLost));
+
   // TODO(gman): Remove this.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDisableGLSLTranslator)) {
@@ -996,6 +1006,18 @@ void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffers() {
       web_view_ ? RenderView::FromWebView(web_view_) : NULL;
   if (renderview)
     renderview->DidFlushPaint();
+}
+
+void WebGraphicsContext3DCommandBufferImpl::setContextLostCallback(
+    WebGraphicsContext3D::WebGraphicsContextLostCallback* cb)
+{
+  context_lost_callback_ = cb;
+}
+
+void WebGraphicsContext3DCommandBufferImpl::OnContextLost() {
+  if (context_lost_callback_) {
+    context_lost_callback_->onContextLost();
+  }
 }
 
 #endif  // defined(ENABLE_GPU)

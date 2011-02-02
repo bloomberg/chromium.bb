@@ -421,14 +421,23 @@ class WebGraphicsContext3DCommandBufferImpl
 
   ggl::Context* context() { return context_; }
 
+  virtual void setContextLostCallback(
+      WebGraphicsContext3D::WebGraphicsContextLostCallback* callback);
+
  private:
   // SwapBuffers callback;
   void OnSwapBuffers();
+  virtual void OnContextLost();
 
   // The GGL context we use for OpenGL rendering.
   ggl::Context* context_;
   // If rendering directly to WebView, weak pointer to it.
   WebKit::WebView* web_view_;
+#if defined(OS_MACOSX)
+  // "Fake" plugin window handle in browser process for the compositor's output.
+  gfx::PluginWindowHandle plugin_handle_;
+#endif
+  WebGraphicsContext3D::WebGraphicsContextLostCallback* context_lost_callback_;
 
   WebKit::WebGraphicsContext3D::Attributes attributes_;
   int cached_width_, cached_height_;

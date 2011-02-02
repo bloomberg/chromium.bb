@@ -397,6 +397,9 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
   virtual void deleteShader(WebGLId);
   virtual void deleteTexture(WebGLId);
 
+  virtual void setContextLostCallback(
+      WebGraphicsContext3D::WebGraphicsContextLostCallback* callback) {}
+
  private:
   // ANGLE related.
   struct ShaderSourceEntry;

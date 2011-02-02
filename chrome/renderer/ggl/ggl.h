@@ -128,6 +128,8 @@ void DeleteParentTexture(Context* context, uint32 texture);
 // service side.
 void SetSwapBuffersCallback(Context* context, Callback0::Type* callback);
 
+void SetContextLostCallback(Context* context, Callback0::Type* callback);
+
 // Set the current GGL context for the calling thread.
 bool MakeCurrent(Context* context);
 

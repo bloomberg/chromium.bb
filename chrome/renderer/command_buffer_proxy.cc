@@ -54,6 +54,13 @@ void CommandBufferProxy::OnChannelError() {
   // When the client sees that the context is lost, they should delete this
   // CommandBufferProxy and create a new one.
   last_state_.error = gpu::error::kLostContext;
+
+  if (channel_error_callback_.get())
+    channel_error_callback_->Run();
+}
+
+void CommandBufferProxy::SetChannelErrorCallback(Callback0::Type* callback) {
+  channel_error_callback_.reset(callback);
 }
 
 bool CommandBufferProxy::Initialize(int32 size) {

@@ -82,6 +82,10 @@ class Context : public base::SupportsWeakPtr<Context> {
     swap_buffers_callback_.reset(callback);
   }
 
+  void SetContextLostCallback(Callback0::Type* callback) {
+    context_lost_callback_.reset(callback);
+  }
+
   // For an offscreen frame buffer context, return the frame buffer ID with
   // respect to the parent.
   uint32 parent_texture_id() const {
@@ -130,10 +134,12 @@ class Context : public base::SupportsWeakPtr<Context> {
 
  private:
   void OnSwapBuffers();
+  void OnContextLost();
 
   scoped_refptr<GpuChannelHost> channel_;
   base::WeakPtr<Context> parent_;
   scoped_ptr<Callback0::Type> swap_buffers_callback_;
+  scoped_ptr<Callback0::Type> context_lost_callback_;
   uint32 parent_texture_id_;
   CommandBufferProxy* command_buffer_;
   gpu::gles2::GLES2CmdHelper* gles2_helper_;
@@ -238,8 +244,11 @@ bool Context::Initialize(bool onscreen,
     return false;
   }
 
-  command_buffer_->SetSwapBuffersCallback(NewCallback(this,
-                                                      &Context::OnSwapBuffers));
+  command_buffer_->SetSwapBuffersCallback(
+      NewCallback(this, &Context::OnSwapBuffers));
+
+  command_buffer_->SetChannelErrorCallback(
+      NewCallback(this, &Context::OnContextLost));
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_ = new gpu::gles2::GLES2CmdHelper(command_buffer_);
@@ -435,6 +444,11 @@ void Context::OnSwapBuffers() {
     swap_buffers_callback_->Run();
 }
 
+void Context::OnContextLost() {
+  if (context_lost_callback_.get())
+    context_lost_callback_->Run();
+}
+
 #endif  // ENABLE_GPU
 
 Context* CreateViewContext(GpuChannelHost* channel,
@@ -509,6 +523,13 @@ void SetSwapBuffersCallback(Context* context,
                             Callback0::Type* callback) {
 #if defined(ENABLE_GPU)
   context->SetSwapBuffersCallback(callback);
+#endif
+}
+
+void SetContextLostCallback(Context* context,
+                            Callback0::Type* callback) {
+#if defined(ENABLE_GPU)
+  context->SetContextLostCallback(callback);
 #endif
 }
 
