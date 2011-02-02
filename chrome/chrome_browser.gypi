@@ -2326,6 +2326,7 @@
         'browser/tab_contents/tab_contents.h',
         'browser/tab_contents/tab_contents_delegate.cc',
         'browser/tab_contents/tab_contents_delegate.h',
+        'browser/tab_contents/tab_contents_observer.cc',
         'browser/tab_contents/tab_contents_observer.h',
         'browser/tab_contents/tab_contents_ssl_helper.cc',
         'browser/tab_contents/tab_contents_ssl_helper.h',

@@ -56,6 +56,16 @@ static const int kBackoffRandomizationFactor = 2;
 
 const int SyncerThread::kMaxBackoffSeconds = 60 * 60 * 4;  // 4 hours.
 
+SyncerThread::ProtectedFields::ProtectedFields()
+        : stop_syncer_thread_(false),
+          pause_requested_(false),
+          paused_(false),
+          syncer_(NULL),
+          connected_(false),
+          pending_nudge_source_(kUnknown) {}
+
+SyncerThread::ProtectedFields::~ProtectedFields() {}
+
 void SyncerThread::NudgeSyncerWithPayloads(
     int milliseconds_from_now,
     NudgeSource source,

@@ -20,6 +20,15 @@ using WebKit::WebURLLoader;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 
+struct WebURLLoaderMockFactory::ResponseInfo {
+  WebKit::WebURLResponse response;
+  FilePath file_path;
+};
+
+WebURLLoaderMockFactory::WebURLLoaderMockFactory() {}
+
+WebURLLoaderMockFactory::~WebURLLoaderMockFactory() {}
+
 void WebURLLoaderMockFactory::RegisterURL(const WebURL& url,
                                           const WebURLResponse& response,
                                           const WebString& file_path) {

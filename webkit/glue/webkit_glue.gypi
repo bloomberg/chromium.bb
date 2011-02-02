@@ -453,6 +453,7 @@
         'webkitclient_impl.h',
         'webmediaplayer_impl.h',
         'webmediaplayer_impl.cc',
+        'webmenuitem.cc',
         'webmenuitem.h',
         'webmenurunner_mac.h',
         'webmenurunner_mac.mm',

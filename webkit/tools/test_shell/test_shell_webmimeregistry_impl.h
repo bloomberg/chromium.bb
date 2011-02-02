@@ -15,6 +15,7 @@ class TestShellWebMimeRegistryImpl
     : public webkit_glue::SimpleWebMimeRegistryImpl {
  public:
   TestShellWebMimeRegistryImpl();
+  virtual ~TestShellWebMimeRegistryImpl();
 
   // Override to force that we only support ogg, vorbis and theora.
   //

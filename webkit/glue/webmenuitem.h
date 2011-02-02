@@ -21,23 +21,17 @@ struct WebMenuItem {
     SUBMENU  // This is currently only used by Pepper, not by WebKit.
   };
 
+  WebMenuItem();
+  WebMenuItem(const WebKit::WebMenuItemInfo& item);
+  WebMenuItem(const WebMenuItem& item);
+  ~WebMenuItem();
+
   string16 label;
   Type type;
   unsigned action;
   bool enabled;
   bool checked;
   std::vector<WebMenuItem> submenu;
-
-  WebMenuItem() : type(OPTION), action(0), enabled(false), checked(false) {
-  }
-
-  WebMenuItem(const WebKit::WebMenuItemInfo& item)
-      : label(item.label),
-        type(static_cast<Type>(item.type)),
-        action(item.action),
-        enabled(item.enabled),
-        checked(item.checked) {
-  }
 };
 
 #endif  // WEBMENUITEM_H_

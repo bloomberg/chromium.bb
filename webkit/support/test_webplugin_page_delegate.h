@@ -19,12 +19,7 @@ class TestWebPluginPageDelegate : public webkit::npapi::WebPluginPageDelegate {
 
   virtual webkit::npapi::WebPluginDelegate* CreatePluginDelegate(
       const FilePath& file_path,
-      const std::string& mime_type) {
-    // We don't need a valid native window handle in layout tests.
-    // So just passing 0.
-    return webkit::npapi::WebPluginDelegateImpl::Create(
-        file_path, mime_type, 0);
-  }
+      const std::string& mime_type);
   virtual void CreatedPluginWindow(gfx::PluginWindowHandle handle) {}
   virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle) {}
   virtual void DidMovePlugin(const webkit::npapi::WebPluginGeometry& move) {}
@@ -35,9 +30,7 @@ class TestWebPluginPageDelegate : public webkit::npapi::WebPluginPageDelegate {
       const gfx::Size& size,
       const std::string& json_arguments,
       std::string* json_retval) {}
-  virtual WebKit::WebCookieJar* GetCookieJar() {
-    return WebKit::webKitClient()->cookieJar();
-  }
+  virtual WebKit::WebCookieJar* GetCookieJar();
 };
 
 }  // namespace webkit_support

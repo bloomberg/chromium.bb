@@ -17,6 +17,8 @@ JsArgList::JsArgList(const ListValue& args)
 JsArgList::JsArgList(const std::vector<const Value*>& args)
     : args_(new SharedListValue(args)) {}
 
+JsArgList::~JsArgList() {}
+
 const ListValue& JsArgList::Get() const {
   return args_->Get();
 }

@@ -19,7 +19,7 @@ class X11InputHandler : public InputHandler {
                   ChromotingView* view);
   virtual ~X11InputHandler();
 
-  void Initialize();
+  virtual void Initialize();
 
  private:
 

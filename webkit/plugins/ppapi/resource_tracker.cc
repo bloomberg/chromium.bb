@@ -46,6 +46,18 @@ namespace ppapi {
 static base::LazyInstance<ResourceTracker> g_resource_tracker(
     base::LINKER_INITIALIZED);
 
+struct ResourceTracker::InstanceData {
+  InstanceData() : instance(0) {}
+
+  // Non-owning pointer to the instance object. When a PluginInstance is
+  // destroyed, it will notify us and we'll delete all associated data.
+  PluginInstance* instance;
+
+  // Resources and object vars associated with the instance.
+  ResourceSet resources;
+  VarSet object_vars;
+};
+
 scoped_refptr<Resource> ResourceTracker::GetResource(PP_Resource res) const {
   DLOG_IF(ERROR, !CheckIdType(res, PP_ID_TYPE_RESOURCE))
       << res << " is not a PP_Resource.";

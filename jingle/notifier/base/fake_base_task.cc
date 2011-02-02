@@ -43,6 +43,8 @@ FakeBaseTask::FakeBaseTask() {
   base_task_ = weak_xmpp_client->AsWeakPtr();
 }
 
+FakeBaseTask::~FakeBaseTask() {}
+
 base::WeakPtr<talk_base::Task> FakeBaseTask::AsWeakPtr() {
   return base_task_;
 }

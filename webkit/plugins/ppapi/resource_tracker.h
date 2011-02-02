@@ -103,17 +103,7 @@ class ResourceTracker {
   typedef std::set<int32> VarSet;
 
   // Per-instance data we track.
-  struct InstanceData {
-    InstanceData() : instance(0) {}
-
-    // Non-owning pointer to the instance object. When a PluginInstance is
-    // destroyed, it will notify us and we'll delete all associated data.
-    PluginInstance* instance;
-
-    // Resources and object vars associated with the instance.
-    ResourceSet resources;
-    VarSet object_vars;
-  };
+  struct InstanceData;
 
   // Prohibit creation other then by the Singleton class.
   ResourceTracker();

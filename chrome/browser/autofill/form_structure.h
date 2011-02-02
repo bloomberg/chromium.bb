@@ -102,9 +102,7 @@ class FormStructure {
 
   const GURL& source_url() const { return source_url_; }
 
-  virtual std::string server_experiment_id() const {
-    return server_experiment_id_;
-  }
+  virtual std::string server_experiment_id() const;
 
   bool operator==(const webkit_glue::FormData& form) const;
   bool operator!=(const webkit_glue::FormData& form) const;

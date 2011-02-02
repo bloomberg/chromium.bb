@@ -27,7 +27,7 @@ class TabContentsObserver : public IPC::Channel::Listener {
   virtual void DidStopLoading() { }
 
   // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) { return false; }
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
 #if 0
   // For unifying with delegate...

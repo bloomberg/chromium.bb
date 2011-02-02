@@ -37,6 +37,8 @@ TestShellWebMimeRegistryImpl::TestShellWebMimeRegistryImpl() {
   codecs_map_.insert("1");  // PCM for WAV.
 }
 
+TestShellWebMimeRegistryImpl::~TestShellWebMimeRegistryImpl() {}
+
 WebMimeRegistry::SupportsType
 TestShellWebMimeRegistryImpl::supportsMediaMIMEType(
     const WebString& mime_type, const WebString& codecs) {

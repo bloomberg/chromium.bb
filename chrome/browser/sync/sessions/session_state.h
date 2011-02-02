@@ -60,6 +60,7 @@ struct SyncSourceInfo {
   SyncSourceInfo(
       const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& u,
       const TypePayloadMap& t);
+  ~SyncSourceInfo();
 
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source;
   TypePayloadMap types;

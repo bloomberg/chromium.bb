@@ -331,6 +331,10 @@ size_t FormStructure::field_count() const {
   return (field_size == 0) ? 0 : field_size - 1;
 }
 
+std::string FormStructure::server_experiment_id() const {
+  return server_experiment_id_;
+}
+
 bool FormStructure::operator==(const FormData& form) const {
   // TODO(jhawkins): Is this enough to differentiate a form?
   if (form_name_ == form.name &&

@@ -25,6 +25,19 @@ enum {
   MAX_FRAGMENT_UNIFORM_VECTORS = 0x8DFD
 };
 
+struct WebGraphicsContext3DInProcessImpl::ShaderSourceEntry {
+  explicit ShaderSourceEntry(WGC3Denum shader_type)
+      : type(shader_type),
+        is_valid(false) {
+  }
+
+  WGC3Denum type;
+  scoped_array<char> source;
+  scoped_array<char> log;
+  scoped_array<char> translated_source;
+  bool is_valid;
+};
+
 WebGraphicsContext3DInProcessImpl::WebGraphicsContext3DInProcessImpl()
     : initialized_(false),
       render_directly_to_web_view_(false),

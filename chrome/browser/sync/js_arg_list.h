@@ -23,6 +23,7 @@ class JsArgList {
   JsArgList();
   explicit JsArgList(const ListValue& args);
   explicit JsArgList(const std::vector<const Value*>& args);
+  ~JsArgList();
 
   const ListValue& Get() const;
 

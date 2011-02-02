@@ -181,6 +181,9 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   // Fields that are modified / accessed by multiple threads go in this struct
   // for clarity and explicitness.
   struct ProtectedFields {
+    ProtectedFields();
+    ~ProtectedFields();
+
     // False when we want to stop the thread.
     bool stop_syncer_thread_;
 
@@ -217,14 +220,6 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
     // really need to access mutually exclusively as the data races that exist
     // are intrinsic, but do so anyway and avoid using 'volatile'.
     WaitInterval current_wait_interval_;
-
-    ProtectedFields()
-        : stop_syncer_thread_(false),
-          pause_requested_(false),
-          paused_(false),
-          syncer_(NULL),
-          connected_(false),
-          pending_nudge_source_(kUnknown) {}
   } vault_;
 
   // Gets signaled whenever a thread outside of the syncer thread changes a

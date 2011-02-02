@@ -28,8 +28,8 @@ class WebURLLoaderMock;
 // ServeAsynchronousRequest.
 class WebURLLoaderMockFactory {
  public:
-  WebURLLoaderMockFactory() {}
-  virtual ~WebURLLoaderMockFactory() {}
+  WebURLLoaderMockFactory();
+  virtual ~WebURLLoaderMockFactory();
 
   // Called by TestWebKitClient to create a WebURLLoader.
   // Non-mocked request are forwarded to |default_loader| which should not be
@@ -67,10 +67,7 @@ class WebURLLoaderMockFactory {
   void CancelLoad(WebURLLoaderMock* loader);
 
  private:
-  struct ResponseInfo {
-    WebKit::WebURLResponse response;
-    FilePath file_path;
-  };
+  struct ResponseInfo;
 
   // Loads the specified request and populates the response, error and data
   // accordingly.

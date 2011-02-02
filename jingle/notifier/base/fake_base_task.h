@@ -22,6 +22,7 @@ namespace notifier {
 class FakeBaseTask {
  public:
   FakeBaseTask();
+  ~FakeBaseTask();
 
   base::WeakPtr<talk_base::Task> AsWeakPtr();
 

@@ -40,6 +40,7 @@
         'platform_support_win.cc',
         'test_webkit_client.cc',
         'test_webkit_client.h',
+        'test_webplugin_page_delegate.cc',
         'test_webplugin_page_delegate.h',
         'webkit_support.cc',
         'webkit_support.h',

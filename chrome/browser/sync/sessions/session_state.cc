@@ -61,6 +61,8 @@ SyncSourceInfo::SyncSourceInfo(
     const TypePayloadMap& t)
     : updates_source(u), types(t) {}
 
+SyncSourceInfo::~SyncSourceInfo() {}
+
 SyncerStatus::SyncerStatus()
     : invalid_store(false),
       syncer_stuck(false),

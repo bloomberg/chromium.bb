@@ -399,18 +399,7 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
 
  private:
   // ANGLE related.
-  struct ShaderSourceEntry {
-    explicit ShaderSourceEntry(WGC3Denum shader_type)
-        : type(shader_type),
-          is_valid(false) {
-    }
-
-    WGC3Denum type;
-    scoped_array<char> source;
-    scoped_array<char> log;
-    scoped_array<char> translated_source;
-    bool is_valid;
-  };
+  struct ShaderSourceEntry;
 
   typedef base::hash_map<WebGLId, ShaderSourceEntry*> ShaderSourceMap;
 
