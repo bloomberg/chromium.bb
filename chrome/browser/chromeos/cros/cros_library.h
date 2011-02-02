@@ -23,6 +23,7 @@ class BurnLibrary;
 class CryptohomeLibrary;
 class InputMethodLibrary;
 class KeyboardLibrary;
+class LibCrosServiceLibrary;
 class LibraryLoader;
 class LoginLibrary;
 class MountLibrary;
@@ -62,6 +63,7 @@ class CrosLibrary {
     void SetCryptohomeLibrary(CryptohomeLibrary* library, bool own);
     void SetKeyboardLibrary(KeyboardLibrary* library, bool own);
     void SetInputMethodLibrary(InputMethodLibrary* library, bool own);
+    void SetLibCrosServiceLibrary(LibCrosServiceLibrary* library, bool own);
     void SetLoginLibrary(LoginLibrary* library, bool own);
     void SetMountLibrary(MountLibrary* library, bool own);
     void SetNetworkLibrary(NetworkLibrary* library, bool own);
@@ -86,6 +88,7 @@ class CrosLibrary {
   BurnLibrary* GetBurnLibrary();
   CryptohomeLibrary* GetCryptohomeLibrary();
   InputMethodLibrary* GetInputMethodLibrary();
+  LibCrosServiceLibrary* GetLibCrosServiceLibrary();
   KeyboardLibrary* GetKeyboardLibrary();
   LoginLibrary* GetLoginLibrary();
   MountLibrary* GetMountLibrary();
@@ -163,6 +166,7 @@ class CrosLibrary {
   Library<CryptohomeLibrary> crypto_lib_;
   Library<KeyboardLibrary> keyboard_lib_;
   Library<InputMethodLibrary> input_method_lib_;
+  Library<LibCrosServiceLibrary> libcros_service_lib_;
   Library<LoginLibrary> login_lib_;
   Library<MountLibrary> mount_lib_;
   Library<NetworkLibrary> network_lib_;

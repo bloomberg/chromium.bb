@@ -51,6 +51,7 @@ const struct {
   std::string description;
 
   bool is_valid;
+  bool test_read_write_access;
 
   Input input;
 
@@ -61,7 +62,9 @@ const struct {
 } tests[] = {
   {
     TEST_DESC("No proxying"),
+
     true,  // is_valid
+    true,  // test_read_write_access
 
     { // Input.
       MK_MODE(DIRECT),  // mode
@@ -75,7 +78,9 @@ const struct {
 
   {
     TEST_DESC("Auto detect"),
+
     true,  // is_valid
+    true,  // test_read_write_access
 
     { // Input.
       MK_MODE(AUTO_DETECT),  // mode
@@ -89,7 +94,9 @@ const struct {
 
   {
     TEST_DESC("Valid PAC URL"),
+
     true,  // is_valid
+    true,  // test_read_write_access
 
     { // Input.
       MK_MODE(PAC_SCRIPT),     // mode
@@ -104,7 +111,9 @@ const struct {
 
   {
     TEST_DESC("Invalid PAC URL"),
+
     false,  // is_valid
+    false,  // test_read_write_access
 
     { // Input.
       MK_MODE(PAC_SCRIPT),  // mode
@@ -119,7 +128,9 @@ const struct {
 
   {
     TEST_DESC("Single-host in proxy list"),
+
     true,  // is_valid
+    true,  // test_read_write_access
 
     { // Input.
       MK_MODE(SINGLE_PROXY),  // mode
@@ -137,7 +148,9 @@ const struct {
 
   {
     TEST_DESC("Single-host, different port"),
-    true,  // is_valid
+
+    true,   // is_valid
+    false,  // test_read_write_access
 
     { // Input.
       MK_MODE(SINGLE_PROXY),  // mode
@@ -155,7 +168,9 @@ const struct {
 
   {
     TEST_DESC("Tolerate a scheme"),
-    true,  // is_valid
+
+    true,   // is_valid
+    false,  // test_read_write_access
 
     { // Input.
       MK_MODE(SINGLE_PROXY),       // mode
@@ -173,7 +188,9 @@ const struct {
 
   {
     TEST_DESC("Per-scheme proxy rules"),
+
     true,  // is_valid
+    true,  // test_read_write_access
 
     { // Input.
       MK_MODE(PROXY_PER_SCHEME),  // mode
@@ -198,7 +215,9 @@ const struct {
 
   {
     TEST_DESC("Bypass rules"),
+
     true,  // is_valid
+    true,  // test_read_write_access
 
     { // Input.
       MK_MODE(SINGLE_PROXY),      // mode
@@ -264,9 +283,8 @@ class ProxyConfigServiceImplTest : public PlatformTest {
   }
 
   void InitConfigWithTestInput(
-      const Input& input,
+      const Input& input, ProxyConfigServiceImpl::ProxyConfig::Source source,
       ProxyConfigServiceImpl::ProxyConfig* init_config) {
-    ProxyConfigServiceImpl::ProxyConfig::Source source = MK_SRC(OWNER);
     switch (input.mode) {
       case MK_MODE(DIRECT):
       case MK_MODE(AUTO_DETECT):
@@ -295,6 +313,90 @@ class ProxyConfigServiceImplTest : public PlatformTest {
     }
   }
 
+  void TestReadWriteAccessForMode(const Input& input,
+      ProxyConfigServiceImpl::ProxyConfig::Source source) {
+    // Init config from |source|.
+    ProxyConfigServiceImpl::ProxyConfig init_config;
+    InitConfigWithTestInput(input, source, &init_config);
+    CreateConfigService(init_config);
+
+    ProxyConfigServiceImpl::ProxyConfig config;
+    config_service()->UIGetProxyConfig(&config);
+
+    // For owner, write access to config should be equal CanBeWrittenByOwner().
+    // For non-owner, config is never writeable.
+    bool expected_writeable_by_owner = CanBeWrittenByOwner(source);
+    if (config.mode == MK_MODE(PROXY_PER_SCHEME)) {
+      if (input.http_uri) {
+        EXPECT_EQ(expected_writeable_by_owner,
+                  config.CanBeWrittenByUser(true, "http"));
+        EXPECT_FALSE(config.CanBeWrittenByUser(false, "http"));
+      }
+      if (input.https_uri) {
+        EXPECT_EQ(expected_writeable_by_owner,
+                  config.CanBeWrittenByUser(true, "http"));
+        EXPECT_FALSE(config.CanBeWrittenByUser(false, "https"));
+      }
+      if (input.ftp_uri) {
+        EXPECT_EQ(expected_writeable_by_owner,
+                  config.CanBeWrittenByUser(true, "http"));
+        EXPECT_FALSE(config.CanBeWrittenByUser(false, "ftp"));
+      }
+      if (input.socks_uri) {
+        EXPECT_EQ(expected_writeable_by_owner,
+                  config.CanBeWrittenByUser(true, "http"));
+        EXPECT_FALSE(config.CanBeWrittenByUser(false, "socks"));
+      }
+    } else {
+      EXPECT_EQ(expected_writeable_by_owner,
+                config.CanBeWrittenByUser(true, std::string()));
+      EXPECT_FALSE(config.CanBeWrittenByUser(false, std::string()));
+    }
+  }
+
+  void TestReadWriteAccessForScheme(
+      ProxyConfigServiceImpl::ProxyConfig::Source source,
+      const char* server_uri,
+      const std::string& scheme) {
+    // Init with manual |scheme| proxy.
+    ProxyConfigServiceImpl::ProxyConfig init_config;
+    ProxyConfigServiceImpl::ProxyConfig::ManualProxy* proxy =
+        init_config.MapSchemeToProxy(scheme);
+    net::ProxyServer::Scheme net_scheme;
+    if (scheme == "http" || scheme == "ftp")
+      net_scheme = MK_SCHM(HTTP);
+    else if (scheme == "https")
+      net_scheme = MK_SCHM(HTTPS);
+    else if (scheme == "socks")
+      net_scheme = MK_SCHM(SOCKS4);
+    SetManualProxy(MK_MODE(PROXY_PER_SCHEME), source, server_uri, net_scheme,
+                   &init_config, proxy);
+    CreateConfigService(init_config);
+
+    ProxyConfigServiceImpl::ProxyConfig config;
+    config_service()->UIGetProxyConfig(&config);
+
+    // For owner, write access to config should be equal CanBeWrittenByOwner().
+    // For non-owner, config is never writeable.
+    bool expected_writeable_by_owner = CanBeWrittenByOwner(source);
+    EXPECT_EQ(expected_writeable_by_owner,
+              config.CanBeWrittenByUser(true, scheme));
+    EXPECT_FALSE(config.CanBeWrittenByUser(false, scheme));
+
+    const char* all_schemes[] = {
+      "http", "https", "ftp", "socks",
+    };
+
+    // Rest of protos should be writeable by owner, but not writeable by
+    // non-owner.
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(all_schemes); ++i) {
+      if (scheme == all_schemes[i])
+        continue;
+      EXPECT_TRUE(config.CanBeWrittenByUser(true, all_schemes[i]));
+      EXPECT_FALSE(config.CanBeWrittenByUser(false, all_schemes[i]));
+    }
+  }
+
   // Synchronously gets the latest proxy config.
   bool SyncGetLatestProxyConfig(net::ProxyConfig* config) {
     // Let message loop process all messages.
@@ -309,6 +411,11 @@ class ProxyConfigServiceImplTest : public PlatformTest {
   }
 
  private:
+  bool CanBeWrittenByOwner(
+    ProxyConfigServiceImpl::ProxyConfig::Source source) const {
+    return source == MK_SRC(POLICY) ? false : true;
+  }
+
   ScopedStubCrosEnabler stub_cros_enabler_;
   MessageLoop message_loop_;
   BrowserThread ui_thread_;
@@ -319,11 +426,11 @@ class ProxyConfigServiceImplTest : public PlatformTest {
 
 TEST_F(ProxyConfigServiceImplTest, ChromeosProxyConfigToNetProxyConfig) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "] %s", i,
-                                    tests[i].description.c_str()));
+    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "] %s", i,
+                              tests[i].description.c_str()));
 
     ProxyConfigServiceImpl::ProxyConfig init_config;
-    InitConfigWithTestInput(tests[i].input, &init_config);
+    InitConfigWithTestInput(tests[i].input, MK_SRC(OWNER), &init_config);
     CreateConfigService(init_config);
 
     net::ProxyConfig config;
@@ -335,46 +442,10 @@ TEST_F(ProxyConfigServiceImplTest, ChromeosProxyConfigToNetProxyConfig) {
   }
 }
 
-TEST_F(ProxyConfigServiceImplTest, ReadWriteAccess) {
-  static const char* pac_url = "http://wpad.dat";
-
-  { // Init with pac script from policy.
-    ProxyConfigServiceImpl::ProxyConfig init_config;
-    SetAutomaticProxy(MK_MODE(PAC_SCRIPT), MK_SRC(POLICY), pac_url,
-                      &init_config, &init_config.automatic_proxy);
-    CreateConfigService(init_config);
-
-    ProxyConfigServiceImpl::ProxyConfig config;
-    config_service()->UIGetProxyConfig(&config);
-
-    EXPECT_EQ(MK_SRC(POLICY), config.automatic_proxy.source);
-    // Setting should be not be writeable by owner.
-    EXPECT_FALSE(config.automatic_proxy.CanBeWrittenByUser(true));
-    // Setting should be not be writeable by non-owner.
-    EXPECT_FALSE(config.automatic_proxy.CanBeWrittenByUser(false));
-  }
-
-  { // Init with pac script from owner.
-    ProxyConfigServiceImpl::ProxyConfig init_config;
-    SetAutomaticProxy(MK_MODE(PAC_SCRIPT), MK_SRC(OWNER), pac_url,
-                      &init_config, &init_config.automatic_proxy);
-    CreateConfigService(init_config);
-
-    ProxyConfigServiceImpl::ProxyConfig config;
-    config_service()->UIGetProxyConfig(&config);
-
-    EXPECT_EQ(MK_SRC(OWNER), config.automatic_proxy.source);
-    // Setting should be writeable by owner.
-    EXPECT_TRUE(config.automatic_proxy.CanBeWrittenByUser(true));
-    // Setting should not be writeable by non-owner.
-    EXPECT_FALSE(config.automatic_proxy.CanBeWrittenByUser(false));
-  }
-}
-
 TEST_F(ProxyConfigServiceImplTest, ModifyFromUI) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "] %s", i,
-                                    tests[i].description.c_str()));
+    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "] %s", i,
+                              tests[i].description.c_str()));
 
     // Init with direct.
     ProxyConfigServiceImpl::ProxyConfig init_config;
@@ -512,11 +583,12 @@ TEST_F(ProxyConfigServiceImplTest, SerializeAndDeserialize) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
     if (!tests[i].is_valid)
       continue;
+
     SCOPED_TRACE(StringPrintf("Test[%" PRIuS "] %s", i,
                               tests[i].description.c_str()));
 
     ProxyConfigServiceImpl::ProxyConfig source_config;
-    InitConfigWithTestInput(tests[i].input, &source_config);
+    InitConfigWithTestInput(tests[i].input, MK_SRC(OWNER), &source_config);
 
     // Serialize source_config into std::string.
     std::string serialized_value;
@@ -544,6 +616,45 @@ TEST_F(ProxyConfigServiceImplTest, SerializeAndDeserialize) {
 #endif  // !defined(NDEBUG)
     EXPECT_TRUE(net_src_cfg.Equals(net_tgt_cfg));
   }
+}
+
+TEST_F(ProxyConfigServiceImplTest, ReadWriteAccessForPolicySource) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    if (!tests[i].test_read_write_access)
+      continue;
+    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "] %s", i,
+                              tests[i].description.c_str()));
+    TestReadWriteAccessForMode(tests[i].input, MK_SRC(POLICY));
+  }
+}
+
+TEST_F(ProxyConfigServiceImplTest, ReadWriteAccessForOwnerSource) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    if (!tests[i].test_read_write_access)
+      continue;
+    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "] %s", i,
+                              tests[i].description.c_str()));
+    TestReadWriteAccessForMode(tests[i].input, MK_SRC(OWNER));
+  }
+}
+
+TEST_F(ProxyConfigServiceImplTest, ReadWriteAccessForMixedSchemes) {
+  const char* http_uri = "www.google.com:80";
+  const char* https_uri = "www.foo.com:110";
+  const char* ftp_uri = "ftp.foo.com:121";
+  const char* socks_uri = "socks.com:888";
+
+  // Init with policy source.
+  TestReadWriteAccessForScheme(MK_SRC(POLICY), http_uri, "http");
+  TestReadWriteAccessForScheme(MK_SRC(POLICY), https_uri, "https");
+  TestReadWriteAccessForScheme(MK_SRC(POLICY), ftp_uri, "ftp");
+  TestReadWriteAccessForScheme(MK_SRC(POLICY), socks_uri, "socks");
+
+  // Init with owner source.
+  TestReadWriteAccessForScheme(MK_SRC(OWNER), http_uri, "http");
+  TestReadWriteAccessForScheme(MK_SRC(OWNER), https_uri, "https");
+  TestReadWriteAccessForScheme(MK_SRC(OWNER), ftp_uri, "ftp");
+  TestReadWriteAccessForScheme(MK_SRC(OWNER), socks_uri, "socks");
 }
 
 }  // namespace chromeos

@@ -43,6 +43,8 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/libcros_service_library.h"
 #include "chrome/browser/chromeos/proxy_config_service.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -122,19 +124,29 @@ net::ProxyService* CreateProxyService(
     }
   }
 
+  net::ProxyService* proxy_service;
   if (use_v8) {
-    return net::ProxyService::CreateUsingV8ProxyResolver(
+    proxy_service = net::ProxyService::CreateUsingV8ProxyResolver(
         proxy_config_service,
         num_pac_threads,
         new net::ProxyScriptFetcherImpl(context),
         context->host_resolver(),
         net_log);
+  } else {
+    proxy_service = net::ProxyService::CreateUsingSystemProxyResolver(
+        proxy_config_service,
+        num_pac_threads,
+        net_log);
   }
 
-  return net::ProxyService::CreateUsingSystemProxyResolver(
-      proxy_config_service,
-      num_pac_threads,
-      net_log);
+#if defined(OS_CHROMEOS)
+  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
+    chromeos::CrosLibrary::Get()->GetLibCrosServiceLibrary()->
+        RegisterNetworkProxyHandler(proxy_service);
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  return proxy_service;
 }
 
 // ----------------------------------------------------------------------------

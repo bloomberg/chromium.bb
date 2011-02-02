@@ -217,6 +217,48 @@ void ProxyConfigServiceImpl::ProxyConfig::ToNetProxyConfig(
   }
 }
 
+bool ProxyConfigServiceImpl::ProxyConfig::CanBeWrittenByUser(
+    bool user_is_owner, const std::string& scheme) {
+  // Setting can only be written by user if user is owner and setting is not
+  // from policy.
+  Setting* setting = NULL;
+  switch (mode) {
+    case MODE_DIRECT:
+    case MODE_AUTO_DETECT:
+    case MODE_PAC_SCRIPT:
+      setting = &automatic_proxy;
+      break;
+    case MODE_SINGLE_PROXY:
+      setting = &single_proxy;
+      break;
+    case MODE_PROXY_PER_SCHEME:
+      setting = MapSchemeToProxy(scheme);
+      break;
+    default:
+      break;
+  }
+  if (!setting) {
+    NOTREACHED() << "Unrecognized proxy config mode";
+    return false;
+  }
+  return setting->CanBeWrittenByUser(user_is_owner);
+}
+
+ProxyConfigServiceImpl::ProxyConfig::ManualProxy*
+    ProxyConfigServiceImpl::ProxyConfig::MapSchemeToProxy(
+        const std::string& scheme) {
+  if (scheme == "http")
+    return &http_proxy;
+  if (scheme == "https")
+    return &https_proxy;
+  if (scheme == "ftp")
+    return &ftp_proxy;
+  if (scheme == "socks")
+    return &socks_proxy;
+  NOTREACHED() << "Invalid scheme: " << scheme;
+  return NULL;
+}
+
 bool ProxyConfigServiceImpl::ProxyConfig::Serialize(std::string* output) {
   scoped_ptr<DictionaryValue> dict(new DictionaryValue);
   dict->SetInteger(kMode, mode);
@@ -428,15 +470,7 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToProxyPerScheme(
     const std::string& scheme, const net::ProxyServer& server) {
   // Should be called from UI thread.
   CheckCurrentlyOnUIThread();
-  ProxyConfig::ManualProxy* proxy = NULL;
-  if (scheme == "http")
-    proxy = &reference_config_.http_proxy;
-  else if (scheme == "https")
-    proxy = &reference_config_.https_proxy;
-  else if (scheme == "ftp")
-    proxy = &reference_config_.ftp_proxy;
-  else if (scheme == "socks")
-    proxy = &reference_config_.socks_proxy;
+  ProxyConfig::ManualProxy* proxy = reference_config_.MapSchemeToProxy(scheme);
   if (!proxy) {
     NOTREACHED() << "Cannot set proxy: invalid scheme [" << scheme << "]";
     return false;

@@ -421,6 +421,8 @@
         'browser/chromeos/cros/input_method_library.h',
         'browser/chromeos/cros/keyboard_library.cc',
         'browser/chromeos/cros/keyboard_library.h',
+        'browser/chromeos/cros/libcros_service_library.cc',
+        'browser/chromeos/cros/libcros_servicey_library.h',
         'browser/chromeos/cros/login_library.cc',
         'browser/chromeos/cros/login_library.h',
         'browser/chromeos/cros/mount_library.cc',

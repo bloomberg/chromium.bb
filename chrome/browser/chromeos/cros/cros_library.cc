@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
+#include "chrome/browser/chromeos/cros/libcros_service_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -62,6 +63,7 @@ DEFINE_GET_LIBRARY_METHOD(Burn, burn);
 DEFINE_GET_LIBRARY_METHOD(Cryptohome, crypto);
 DEFINE_GET_LIBRARY_METHOD(Keyboard, keyboard);
 DEFINE_GET_LIBRARY_METHOD(InputMethod, input_method);
+DEFINE_GET_LIBRARY_METHOD(LibCrosService, libcros_service);
 DEFINE_GET_LIBRARY_METHOD(Login, login);
 DEFINE_GET_LIBRARY_METHOD(Mount, mount);
 DEFINE_GET_LIBRARY_METHOD(Network, network);
@@ -120,6 +122,7 @@ DEFINE_SET_LIBRARY_METHOD(Burn, burn);
 DEFINE_SET_LIBRARY_METHOD(Cryptohome, crypto);
 DEFINE_SET_LIBRARY_METHOD(Keyboard, keyboard);
 DEFINE_SET_LIBRARY_METHOD(InputMethod, input_method);
+DEFINE_SET_LIBRARY_METHOD(LibCrosService, libcros_service);
 DEFINE_SET_LIBRARY_METHOD(Login, login);
 DEFINE_SET_LIBRARY_METHOD(Mount, mount);
 DEFINE_SET_LIBRARY_METHOD(Network, network);
