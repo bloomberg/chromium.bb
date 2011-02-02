@@ -45,8 +45,8 @@ const wchar_t kUntaggedInstallerPattern[] = L"ChromeStandaloneSetup_";
 const wchar_t kWinFolder[] = L"win";
 
 
-const wchar_t kDevChannelBuild[] = L"3.0.";
-const wchar_t kStableChannelBuild[] = L"2.0.";
+const wchar_t kDevChannelBuild[] = L"10.0.";
+const wchar_t kStableChannelBuild[] = L"8.0.";
 const wchar_t kFullInstall[] = L"Full";
 
 
