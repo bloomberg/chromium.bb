@@ -132,8 +132,10 @@ void ScreenRecorder::DoStart() {
 void ScreenRecorder::DoStop(Task* done_task) {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
+  // We might have not started when we receive a stop command, simply run the
+  // task and then return.
   if (!is_recording_) {
-    NOTREACHED() << "Record session not started.";
+    DoCompleteStop(done_task);
     return;
   }
 

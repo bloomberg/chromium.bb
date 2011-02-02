@@ -194,7 +194,9 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
   message_loop_.Run();
 }
 
-// TODO(hclam): Add test for double buffering.
-// TODO(hclam): Add test for multiple captures.
+TEST_F(ScreenRecorderTest, StopWithoutStart) {
+  record_->Stop(NewRunnableFunction(&QuitMessageLoop, &message_loop_));
+  message_loop_.Run();
+}
 
 }  // namespace remoting
