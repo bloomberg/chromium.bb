@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/tools/flip_server/create_listener.h"
+
 #include <arpa/inet.h>   // for inet_ntop
 #include <errno.h>       // for strerror
 #include <netdb.h>       // for getaddrinfo and getnameinfo
@@ -13,8 +15,6 @@
 #include <fcntl.h>
 #include <unistd.h>      // for exit()
 #include <ostream>
-
-#include "net/tools/flip_server/create_listener.h"
 
 #include "base/logging.h"
 
