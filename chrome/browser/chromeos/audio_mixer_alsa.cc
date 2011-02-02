@@ -47,7 +47,8 @@ AudioMixerAlsa::AudioMixerAlsa()
       mixer_state_(UNINITIALIZED),
       alsa_mixer_(NULL),
       elem_master_(NULL),
-      elem_pcm_(NULL) {
+      elem_pcm_(NULL),
+      prefs_(NULL) {
 }
 
 AudioMixerAlsa::~AudioMixerAlsa() {
@@ -112,7 +113,7 @@ void AudioMixerAlsa::SetVolumeDb(double vol_db) {
   if (vol_db < kSilenceDb)
     vol_db = kSilenceDb;
   DoSetVolumeDb_Locked(vol_db);
-  volume_pref_.SetValue(vol_db);
+  prefs_->SetDouble(prefs::kAudioVolume, vol_db);
 }
 
 bool AudioMixerAlsa::IsMute() const {
@@ -154,7 +155,7 @@ void AudioMixerAlsa::SetMute(bool mute) {
   SetElementMuted_Locked(elem_master_, mute);
   if (elem_pcm_)
     SetElementMuted_Locked(elem_pcm_, mute);
-  mute_pref_.SetValue(mute ? kPrefMuteOn : kPrefMuteOff);
+  prefs_->SetInteger(prefs::kAudioMute, mute ? kPrefMuteOn : kPrefMuteOff);
 }
 
 AudioMixer::State AudioMixerAlsa::GetState() const {
@@ -210,10 +211,7 @@ bool AudioMixerAlsa::InitThread() {
 }
 
 void AudioMixerAlsa::InitPrefs() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PrefService* prefs = g_browser_process->local_state();
-  volume_pref_.Init(prefs::kAudioVolume, prefs, NULL);
-  mute_pref_.Init(prefs::kAudioMute, prefs, NULL);
+  prefs_ = g_browser_process->local_state();
 }
 
 bool AudioMixerAlsa::InitializeAlsaMixer() {
@@ -322,9 +320,10 @@ void AudioMixerAlsa::DoSetVolumeMute(double pref_volume, int pref_mute) {
 void AudioMixerAlsa::RestoreVolumeMuteOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // This happens during init, so set the volume off the UI thread.
+  int mute = prefs_->GetInteger(prefs::kAudioMute);
+  double volume = prefs_->GetDouble(prefs::kAudioVolume);
   thread_->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &AudioMixerAlsa::DoSetVolumeMute,
-                        volume_pref_.GetValue(), mute_pref_.GetValue()));
+      NewRunnableMethod(this, &AudioMixerAlsa::DoSetVolumeMute, volume, mute));
 }
 
 double AudioMixerAlsa::DoGetVolumeDb_Locked() const {

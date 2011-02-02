@@ -12,7 +12,8 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/audio_mixer.h"
-#include "chrome/browser/prefs/pref_member.h"
+
+class PrefService;
 
 struct _snd_mixer_elem;
 struct _snd_mixer;
@@ -96,8 +97,7 @@ class AudioMixerAlsa : public AudioMixer {
   _snd_mixer_elem* elem_master_;
   _snd_mixer_elem* elem_pcm_;
 
-  IntegerPrefMember mute_pref_;
-  DoublePrefMember volume_pref_;
+  PrefService* prefs_;
 
   scoped_ptr<base::Thread> thread_;
 
@@ -109,4 +109,3 @@ class AudioMixerAlsa : public AudioMixer {
 DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::AudioMixerAlsa);
 
 #endif  // CHROME_BROWSER_CHROMEOS_AUDIO_MIXER_ALSA_H_
-
