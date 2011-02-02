@@ -65,6 +65,7 @@
       'passwords',
       'pdf',
       'plugins',
+      '-plugins.PluginsTest.testBlockPluginException',  # crbug.com/71617
       'popups',
       '-popups',  # Flaky. crbug.com/70659
       'prefs',
