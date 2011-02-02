@@ -265,11 +265,12 @@ class RequestHandler(object):
 
     # Respond only if the client requested policy for the cros/device scope,
     # since that's where chrome policy is supposed to live in.
-    if msg.policy_scope == 'chromeos/device':
+    if msg.policy_scope in self._server.policy:
+      policy = self._server.policy[msg.policy_scope]['mandatory']
       setting = response.policy_response.setting.add()
       setting.policy_key = 'chrome-policy'
       policy_value = dm.GenericSetting()
-      for (key, value) in self._server.policy.iteritems():
+      for (key, value) in policy.iteritems():
         entry = policy_value.named_value.add()
         entry.name = key
         entry_value = dm.GenericValue()
