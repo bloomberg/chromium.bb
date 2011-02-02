@@ -21,7 +21,7 @@ namespace net {
 class FlipAcceptor;
 class MemoryCache;
 class SMConnection;
-class SSLState;
+struct SSLState;
 
 // TODO(mbelshe):  Get rid of this class; we don't need a lock just to set
 //    a bool cross threads - especially one which only is set once...

@@ -22,7 +22,7 @@ namespace net {
 
 class FlipAcceptor;
 class MemoryCache;
-class SSLState;
+struct SSLState;
 
 // A frame of data to be sent.
 class DataFrame {
