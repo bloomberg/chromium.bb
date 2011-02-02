@@ -271,6 +271,7 @@ TEST_F(NPAPITesterBase, PrivateDisabled) {
                 kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
 
+#if !defined(OS_LINUX)
 TEST_F(NPAPITesterBase, ScheduleTimer) {
   const FilePath test_case(FILE_PATH_LITERAL("schedule_timer.html"));
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
@@ -286,6 +287,7 @@ TEST_F(NPAPITesterBase, PluginThreadAsyncCall) {
   WaitForFinish("plugin_thread_async_call", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
+#endif
 
 // Test checking the privacy mode is on.
 TEST_F(NPAPIIncognitoTester, PrivateEnabled) {
