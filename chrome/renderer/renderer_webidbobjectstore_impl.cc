@@ -83,14 +83,14 @@ void RendererWebIDBObjectStoreImpl::get(
 void RendererWebIDBObjectStoreImpl::put(
     const WebSerializedScriptValue& value,
     const WebIDBKey& key,
-    bool add_only,
+    PutMode put_mode,
     WebIDBCallbacks* callbacks,
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBObjectStorePut(
-      SerializedScriptValue(value), IndexedDBKey(key), add_only, callbacks,
+      SerializedScriptValue(value), IndexedDBKey(key), put_mode, callbacks,
       idb_object_store_id_, transaction, &ec);
 }
 

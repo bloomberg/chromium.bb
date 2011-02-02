@@ -239,7 +239,7 @@ void IndexedDBDispatcher::RequestIDBObjectStoreGet(
 void IndexedDBDispatcher::RequestIDBObjectStorePut(
     const SerializedScriptValue& value,
     const IndexedDBKey& key,
-    bool add_only,
+    WebKit::WebIDBObjectStore::PutMode put_mode,
     WebIDBCallbacks* callbacks_ptr,
     int32 idb_object_store_id,
     const WebIDBTransaction& transaction,
@@ -250,7 +250,7 @@ void IndexedDBDispatcher::RequestIDBObjectStorePut(
   params.response_id = pending_callbacks_.Add(callbacks.release());
   params.serialized_value = value;
   params.key = key;
-  params.add_only = add_only;
+  params.put_mode = put_mode;
   params.transaction_id = TransactionId(transaction);
   RenderThread::current()->Send(new IndexedDBHostMsg_ObjectStorePut(
       params, ec));

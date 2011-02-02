@@ -46,7 +46,7 @@ IndexedDBHostMsg_ObjectStorePut_Params::
     IndexedDBHostMsg_ObjectStorePut_Params()
     : idb_object_store_id(0),
       response_id(0),
-      add_only(false),
+      put_mode(),
       transaction_id(0) {
 }
 
@@ -213,7 +213,7 @@ void ParamTraits<IndexedDBHostMsg_ObjectStorePut_Params>::Write(
   WriteParam(m, p.response_id);
   WriteParam(m, p.serialized_value);
   WriteParam(m, p.key);
-  WriteParam(m, p.add_only);
+  WriteParam(m, p.put_mode);
   WriteParam(m, p.transaction_id);
 }
 
@@ -226,7 +226,7 @@ bool ParamTraits<IndexedDBHostMsg_ObjectStorePut_Params>::Read(
       ReadParam(m, iter, &p->response_id) &&
       ReadParam(m, iter, &p->serialized_value) &&
       ReadParam(m, iter, &p->key) &&
-      ReadParam(m, iter, &p->add_only) &&
+      ReadParam(m, iter, &p->put_mode) &&
       ReadParam(m, iter, &p->transaction_id);
 }
 
@@ -242,7 +242,7 @@ void ParamTraits<IndexedDBHostMsg_ObjectStorePut_Params>::Log(
   l->append(", ");
   LogParam(p.key, l);
   l->append(", ");
-  LogParam(p.add_only, l);
+  LogParam(p.put_mode, l);
   l->append(", ");
   LogParam(p.transaction_id, l);
   l->append(")");
@@ -334,6 +334,30 @@ void ParamTraits<IndexedDBHostMsg_ObjectStoreOpenCursor_Params>::Log(
   l->append(",");
   LogParam(p.transaction_id, l);
   l->append(")");
+}
+
+void ParamTraits<WebKit::WebIDBObjectStore::PutMode>::Write(
+    Message* m,
+    const param_type& p) {
+  WriteParam(m, static_cast<int>(p));
+}
+
+bool ParamTraits<WebKit::WebIDBObjectStore::PutMode>::Read(
+    const Message* m,
+    void** iter,
+    param_type* p) {
+  int i;
+  bool ok = ReadParam(m, iter, &i);
+  if (!ok)
+    i = 0;
+  *p = static_cast<param_type>(i);
+  return ok;
+}
+
+void ParamTraits<WebKit::WebIDBObjectStore::PutMode>::Log(
+    const param_type& p,
+    std::string* l) {
+  LogParam(static_cast<int>(p), l);
 }
 
 }  // namespace IPC

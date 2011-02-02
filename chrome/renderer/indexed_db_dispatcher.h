@@ -12,6 +12,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBObjectStore.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
 
 class IndexedDBKey;
@@ -98,7 +99,7 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
 
   void RequestIDBObjectStorePut(const SerializedScriptValue& value,
                                 const IndexedDBKey& key,
-                                bool add_only,
+                                WebKit::WebIDBObjectStore::PutMode putMode,
                                 WebKit::WebIDBCallbacks* callbacks,
                                 int32 idb_object_store_id,
                                 const WebKit::WebIDBTransaction& transaction,

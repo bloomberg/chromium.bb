@@ -12,6 +12,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBObjectStore.h"
 
 #define IPC_MESSAGE_START IndexedDBMsgStart
 
@@ -104,8 +105,8 @@ struct IndexedDBHostMsg_ObjectStorePut_Params {
   // The key to set it on (may not be "valid"/set in some cases).
   IndexedDBKey key;
 
-  // If it already exists, don't update (just return an error).
-  bool add_only;
+  // Whether this is an add or a put.
+  WebKit::WebIDBObjectStore::PutMode put_mode;
 
   // The transaction it's associated with.
   int transaction_id;
@@ -206,6 +207,14 @@ struct ParamTraits<IndexedDBHostMsg_ObjectStoreCreateIndex_Params> {
 template <>
 struct ParamTraits<IndexedDBHostMsg_ObjectStoreOpenCursor_Params> {
   typedef IndexedDBHostMsg_ObjectStoreOpenCursor_Params param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<WebKit::WebIDBObjectStore::PutMode> {
+  typedef WebKit::WebIDBObjectStore::PutMode param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

@@ -658,7 +658,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnPut(
   *ec = 0;
   scoped_ptr<WebIDBCallbacks> callbacks(
       new IndexedDBCallbacks<WebIDBKey>(parent_, params.response_id));
-  idb_object_store->put(params.serialized_value, params.key, params.add_only,
+  idb_object_store->put(params.serialized_value, params.key, params.put_mode,
                         callbacks.release(), *idb_transaction, *ec);
 }
 
