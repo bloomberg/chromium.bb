@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,8 +23,18 @@ class TabStripModel;
 // This protocol exists to make mocking easier in unittests.
 @protocol InfoBarContainer
 - (void)removeDelegate:(InfoBarDelegate*)delegate;
+- (void)willRemoveController:(InfoBarController*)controller;
 - (void)removeController:(InfoBarController*)controller;
 @end
+
+
+namespace infobars {
+
+// How tall the tip is on a normal infobar.
+const CGFloat kAntiSpoofHeight = 9.0;
+
+};  // namespace infobars
+
 
 // Controller for the infobar container view, which is the superview
 // of all the infobar views.  This class owns zero or more
@@ -43,6 +53,9 @@ class TabStripModel;
   // Holds the InfoBarControllers currently owned by this container.
   scoped_nsobject<NSMutableArray> infobarControllers_;
 
+  // Holds InfoBarControllers when they are in the process of animating out.
+  scoped_nsobject<NSMutableSet> closingInfoBars_;
+
   // Lets us registers for INFOBAR_ADDED/INFOBAR_REMOVED
   // notifications.  The actual notifications are sent to the
   // InfoBarNotificationObserver object, which proxies them back to us.
@@ -58,6 +71,11 @@ class TabStripModel;
 // INFOBAR_REMOVED notification.  Does not notify |delegate| that the
 // infobar was closed.
 - (void)removeDelegate:(InfoBarDelegate*)delegate;
+
+// Informs the container that the |controller| is going to close. It adds the
+// controller to |closingInfoBars_|. Once the animation is complete, the
+// controller calls |-removeController:| to finalize cleanup.
+- (void)willRemoveController:(InfoBarController*)controller;
 
 // Removes |controller| from the list of controllers in this container and
 // removes its view from the view hierarchy.  This method is safe to call while
@@ -76,6 +94,14 @@ class TabStripModel;
 // Forwarded by BWC. Removes all infobars and deregisters for any notifications
 // if |contents| is the current tab contents.
 - (void)tabDetachedWithContents:(TabContents*)contents;
+
+// Returns the number of active infobars. This is
+// |infobarControllers_ - closingInfoBars_|.
+- (NSUInteger)infobarCount;
+
+// Returns the amount of additional height the container view needs to draw the
+// anti-spoofing bulge. This will return 0 if |-infobarCount| is 0.
+- (CGFloat)antiSpoofHeight;
 
 @end
 

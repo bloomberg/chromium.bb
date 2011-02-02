@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
+#import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 #include "chrome/browser/ui/cocoa/translate/after_translate_infobar_controller.h"
@@ -61,11 +62,17 @@ bool VerifyControlOrderAndSpacing(id before, id after) {
 }
 
 // Vertically center |toMove| in its container.
-void VerticallyCenterView(NSView *toMove) {
+void VerticallyCenterView(NSView* toMove) {
   NSRect superViewFrame = [[toMove superview] frame];
   NSRect viewFrame = [toMove frame];
+  // If the superview is the infobar view, then subtract out the anti-spoof
+  // height so that the content is centered in the content area of the infobar,
+  // rather than in the total height (which includes the bulge).
+  CGFloat superHeight = NSHeight(superViewFrame);
+  if ([[toMove superview] isKindOfClass:[InfoBarGradientView class]])
+    superHeight -= infobars::kAntiSpoofHeight;
   viewFrame.origin.y =
-      floor((NSHeight(superViewFrame) - NSHeight(viewFrame))/2.0);
+      floor((superHeight - NSHeight(viewFrame)) / 2.0);
   [toMove setFrame:viewFrame];
 }
 

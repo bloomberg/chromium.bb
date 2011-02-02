@@ -34,11 +34,12 @@
 // infobar completely when finished.  For unittesting purposes, we create a mock
 // container which calls close: immediately, rather than kicking off an
 // animation.
-@interface InfoBarContainerTest : NSObject <InfoBarContainer> {
+@interface InfoBarContainerTest : NSObject<InfoBarContainer> {
   InfoBarController* controller_;
 }
 - (id)initWithController:(InfoBarController*)controller;
 - (void)removeDelegate:(InfoBarDelegate*)delegate;
+- (void)willRemoveController:(InfoBarController*)controller;
 - (void)removeController:(InfoBarController*)controller;
 @end
 
@@ -52,6 +53,9 @@
 
 - (void)removeDelegate:(InfoBarDelegate*)delegate {
   [controller_ close];
+}
+
+- (void)willRemoveController:(InfoBarController*)controller {
 }
 
 - (void)removeController:(InfoBarController*)controller {
