@@ -362,7 +362,7 @@ class ProxyConfigServiceImplTest : public PlatformTest {
     ProxyConfigServiceImpl::ProxyConfig init_config;
     ProxyConfigServiceImpl::ProxyConfig::ManualProxy* proxy =
         init_config.MapSchemeToProxy(scheme);
-    net::ProxyServer::Scheme net_scheme;
+    net::ProxyServer::Scheme net_scheme = MK_SCHM(HTTP);
     if (scheme == "http" || scheme == "ftp")
       net_scheme = MK_SCHM(HTTP);
     else if (scheme == "https")
