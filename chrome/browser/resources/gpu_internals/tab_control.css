@@ -1,0 +1,67 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+.tab-control {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: start;
+
+  padding: 0;
+  margin: 0;
+}
+
+.tab-control > .tab-strip {
+  font-family: sans-serif;
+  background: #aaa;
+  border-bottom: 1px solid #555;
+
+  -webkit-user-select: none;
+
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: start;
+}
+
+.tab-control > .tabs {
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: stretch;
+  overflow: auto;
+}
+
+.tab-control > .tabs > :not([selected]) {
+  display: none;
+}
+
+.tab-control .tab-button {
+  -webkit-margin-start: 5px;
+  text-decoration: none;
+  text-align: center;
+  display: inline-block;
+  margin-top: 4px;
+  padding: 5px 10px 3px 10px;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
+  background-clip: border-box;
+  background: #ccc;
+}
+
+.tab-control .tab-button:hover {
+  background: #eee;
+}
+
+
+.tab-control .tab-button:visited,
+.tab-control .tab-button {
+  color: blue;
+}
+
+.tab-control .tab-button[selected] {
+  position: relative;
+  top: 1px;
+  color: black;
+  background: white;
+}

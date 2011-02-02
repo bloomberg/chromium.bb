@@ -15,21 +15,24 @@ cr.define('gpu', function() {
   /**
    * Provides information on the GPU process and underlying graphics hardware.
    * @constructor
+   * @extends {Tab}
    */
-  function InfoView(mainBoxId) {
-    DivView.call(this, mainBoxId);
-
-    this.beginRequestClientInfo();
-    this.beginRequestGpuInfo();
-
-    this.logMessages_ = [];
-    this.beginRequestLogMessages();
-
-    this.refresh();
-  }
+  var InfoView = cr.ui.define(gpu.Tab);
 
   InfoView.prototype = {
-    __proto__: DivView.prototype,
+    __proto__: gpu.Tab.prototype,
+
+    decorate : function() {
+      gpu.Tab.prototype.decorate.apply(this);
+
+      this.beginRequestClientInfo();
+      this.beginRequestGpuInfo();
+
+      this.logMessages_ = [];
+      this.beginRequestLogMessages();
+
+      this.refresh();
+    },
 
     /**
      * This function begins a request for the ClientInfo. If it comes back

@@ -7,26 +7,35 @@ found in the LICENSE file.
 -->
 <head i18n-values="dir:textdirection;">
 <link rel="stylesheet" href="dom_ui.css">
-<link rel="stylesheet" href="net_internals/tabswitcherview.css">
 <style>
 * {
   box-sizing: border-box;
 }
+
+html, body, #main-tabs {
+  height: 100%;
+}
+
 body {
+  cursor: default;
   font-family: sans-serif;
+  padding: 0;
+  margin: 0;
 }
 </style>
+<link rel="stylesheet" href="gpu_internals/tab_control.css">
 <link rel="stylesheet" href="gpu_internals/info_view.css">
 <script src="chrome://resources/js/cr.js"></script>
-<script src="net_internals/util.js"></script>
-<script src="net_internals/view.js"></script>
-<script src="net_internals/tabswitcherview.js"></script>
+<script src="chrome://resources/js/cr/event_target.js"></script>
+<script src="chrome://resources/js/cr/ui.js"></script>
+<script src="chrome://resources/js/util.js"></script>
+<script src="gpu_internals/tab_control.js"></script>
 <script src="gpu_internals/browser_bridge.js"></script>
 <script src="gpu_internals/info_view.js"></script>
 
 
 <script>
-var browser = null;
+var browser;
 
 /**
  * Main entry point. called once the page has loaded.
@@ -34,41 +43,30 @@ var browser = null;
 function onLoad() {
   browserBridge = new gpu.BrowserBridge();
 
-  // Create a view which will display general information
-  // about the gpu.
-  var infoView = new gpu.InfoView('info-view');
+  // Create the views.
+  cr.ui.decorate('#info-view', gpu.InfoView);
 
-  // Create a view which lets you tab between the different sub-views.
-  var categoryTabSwitcher =
-      new TabSwitcherView('category-tab-handles');
+  // Create the main tab control
+  var tabs = $('main-tabs');
+  cr.ui.decorate(tabs, gpu.TabControl);
 
-  // Populate the main tabs.
-  categoryTabSwitcher.addTab('info-tab', infoView, false);
-
-  // Build a map from the anchor name of each tab handle to its 'tab ID'.
-  // We will consider navigations to the #hash as a switch tab request.
-  var anchorMap = {};
-  var tabIds = categoryTabSwitcher.getAllTabIds();
-  for (var i = 0; i < tabIds.length; i++) {
-    var aNode = document.getElementById(tabIds[i]);
-    anchorMap[aNode.hash] = tabIds[i];
-  }
-  // Default the empty hash to the info tab.
-  anchorMap['#'] = anchorMap[''] = 'info-tab';
-
+  // Sync the main-tabs selectedTabs in-sync with the location.
+  tabs.addEventListener('selectedTabChanged', function() {
+    if (tabs.selectedTab.id) {
+      history.pushState('', '', '#' + tabs.selectedTab.id);
+    }
+  });
   window.onhashchange = function() {
-    var tabId = anchorMap[window.location.hash];
-    if (tabId)
-      categoryTabSwitcher.switchToTab(tabId);
+    var cur = window.location.hash;
+    if (cur == '#' || cur == '') {
+      if (tabs.tabs.length)
+        tabs.selectedTab = tabs.tabs[0];
+    } else {
+      var tab = $(window.location.hash.substr(1));
+      if (tab)
+        tabs.selectedTab = tab;
+    }
   };
-
-  // Make this category tab widget the primary view, that fills the whole page.
-  var windowView = new WindowView(categoryTabSwitcher);
-
-  // Trigger initial layout.
-  windowView.resetGeometry();
-
-  // Select the initial view based on the current URL.
   window.onhashchange();
 }
 
@@ -77,15 +75,9 @@ document.addEventListener('DOMContentLoaded', onLoad);
 </script>
 </head>
 <body>
-
-  <!-- Tab switcher for main categories. -->
-  <div id=category-tab-handles>
-    <ul>
-      <li><a href="#info" id="info-tab">GPU Info</a></li>
-    </ul>
-  </div>
-
   <!-- Tabs -->
-  <include src="gpu_internals/info_view.html">
+  <div id="main-tabs">
+    <include src="gpu_internals/info_view.html">
+  </div>
 </body>
 </html>

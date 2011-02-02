@@ -24,7 +24,7 @@ found in the LICENSE file.
   -webkit-margin-start: 5px;
 }
 
-xhtml[dir=rtl] .tab-switcher-view li {
+html[dir=rtl] .tab-switcher-view li {
   float: right;
 }
 

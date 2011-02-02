@@ -16,6 +16,7 @@ found in the LICENSE file.
 }
 
 #info-view table {
+  cursor: text;
   border-collapse: collapse;
 }
 
