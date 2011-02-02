@@ -773,6 +773,7 @@ notify_button(struct wl_input_device *device,
 
 	surface = (struct wlsc_surface *) device->pointer_focus;
 	uint32_t edges = 0;
+	int32_t x, y;
 
 	if (state && surface && device->grab == NULL) {
 		wlsc_surface_raise(surface);
@@ -797,13 +798,20 @@ notify_button(struct wl_input_device *device,
 	else if (state && surface && button == BTN_MIDDLE &&
 		 (wd->modifier_state & MODIFIER_SUPER)) {
 
-		if ((device->grab_x - surface->x) < surface->width / 2)
+		x = device->grab_x - surface->x;
+		y = device->grab_y - surface->y;
+
+		if (x < surface->width / 3)
 			edges |= WL_SHELL_RESIZE_LEFT;
+		else if (x < 2 * surface->width / 3)
+			edges |= 0;
 		else
 			edges |= WL_SHELL_RESIZE_RIGHT;
 
-		if ((device->grab_y - surface->y) < surface->height / 2)
+		if (y < surface->height / 3)
 			edges |= WL_SHELL_RESIZE_TOP;
+		else if (y < 2 * surface->height / 3)
+			edges |= 0;
 		else
 			edges |= WL_SHELL_RESIZE_BOTTOM;
 
