@@ -1859,6 +1859,9 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
 #if defined(TOUCH_UI)
            page != chrome::kChromeUIKeyboardHost &&
 #endif
+#if defined(OS_CHROMEOS)
+           page != chrome::kChromeUIActivationMessageHost &&
+#endif
            page != chrome::kChromeUIBookmarksHost &&
            page != chrome::kChromeUIHistoryHost) ||
           !overrides->GetStringWithoutPathExpansion(*iter, &val)) {

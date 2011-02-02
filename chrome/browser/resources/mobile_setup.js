@@ -25,7 +25,7 @@ cr.define('mobile', function() {
   MobileSetup.PLAN_ACTIVATION_ERROR                   = 0xFF;
 
   MobileSetup.ACTIVATION_PAGE_URL =
-    'file:///usr/share/chromeos-assets/mobile/activation.html';
+    'chrome-extension://iadeocfgjdjdmpenejdbfeaocpbikmab/activation.html';
 
   MobileSetup.localStrings_ = new LocalStrings();
 

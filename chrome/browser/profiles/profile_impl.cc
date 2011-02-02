@@ -403,6 +403,9 @@ void ProfileImpl::RegisterComponentExtensions() {
         FILE_PATH_LITERAL("/usr/share/chromeos-assets/helpapp"),
         IDR_HELP_MANIFEST));
   }
+  component_extensions.push_back(std::make_pair(
+      FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile"),
+      IDR_MOBILE_MANIFEST));
 #endif
 
   // Web Store.
