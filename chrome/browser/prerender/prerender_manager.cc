@@ -16,6 +16,9 @@
 #include "chrome/common/render_messages.h"
 
 // static
+base::TimeTicks PrerenderManager::last_prefetch_seen_time_;
+
+// static
 PrerenderManager::PrerenderManagerMode PrerenderManager::mode_ =
     PRERENDER_MODE_ENABLED;
 
