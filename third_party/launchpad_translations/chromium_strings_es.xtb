@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
-<translation id="1018817853520605763"><!--Usamos /n aquí para separar líneas manualmente porque NativeCheckboxGtk no soporta multilínea actualmente. -->
+<translation id="1018817853520605763"><!--Usamos /n aquí para separar líneas manualmente porque NativeCheckboxGtk no permite multilínea actualmente. -->
         Opcional: Ayude a mejorar Chromium al enviar estadísticas de uso automáticamente e informes de\nerrores a Google</translation>
 <translation id="1065751875103714394">Crear accesos directos de Chromium en estos lugares:</translation>
 <translation id="1068718416870990145">Chromium realizará estas tareas:</translation>
@@ -37,7 +37,7 @@
 <translation id="3575003045397338641">Si cancela ahora, no se importarán todos los elementos. Puede importarlos después desde el menú de Chromium.</translation>
 <translation id="3838208658251026018">Chromium está importando los siguientes elementos desde <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
-<translation id="3849925841547750267">Lamentablemente, sus preferencias de Mozilla Firefox no estarán disponibles mientras que ese navegador se esté ejecutando. Para importar esas preferencias a Chromium, guarde su trabajo y cierre todas las ventanas de Firefox. Después, pulse en «Continuar».</translation>
+<translation id="3849925841547750267">Lamentablemente, su configuración de Mozilla Firefox no estará disponible mientras que ese navegador se esté ejecutando. Para importar esa configuración a Chromium, guarde su trabajo y cierre todas las ventanas de Firefox. Después, pulse en «Continuar».</translation>
 <translation id="3911984803452407990">Chromium no responde. ¿Reiniciar ahora?</translation>
 <translation id="4025332521918829306">Chromium está listo para completar la instalación.</translation>
 <translation id="4124681358536363708">El directorio de instalación de Chromium parece estar en uso. Reinicie su equipo e inténtelo de nuevo.</translation>

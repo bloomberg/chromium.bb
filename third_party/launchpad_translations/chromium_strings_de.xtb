@@ -106,4 +106,5 @@
 <translation id="7503101070699687603">Chromium Erweiterungs Host</translation>
 <translation id="8046283042877435986">Diese Seite setzt Chromium Frame(bereits installiert) voraus.</translation>
 <translation id="8974095189086268230">Chromium OS wird ermöglicht durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS"/>quelloffene Software<ph name="END_LINK_CROS_OSS"/>.</translation>
+<translation id="6389904555427754410">Sie haben versucht, &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zu erreichen, aber das vom Server angezeigte Zertifikat enthält Fehler. Chromium kann ein Zertifikat mit Fehlern nicht verwenden und die Identität der Seite, mit der Sie sich verbinden wollten nicht bestätigen. Ihre Verbindung ist nicht sicher und Sie sollten nicht fortfahren.</translation>
 </translationbundle>
