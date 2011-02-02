@@ -503,6 +503,8 @@ int main(int argc, char** argv) {
     return 0;
   }
 
+    // Register paths needed by the ScopedChromeFrameRegistrar.
+  chrome::RegisterPathProvider();
   ScopedChromeFrameRegistrar registrar(chrome_frame_test::GetTestBedType());
 
   WindowWatchdog watchdog;
