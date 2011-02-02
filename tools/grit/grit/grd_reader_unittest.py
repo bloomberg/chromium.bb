@@ -111,7 +111,11 @@ class GrdReaderUnittest(unittest.TestCase):
 </grit>'''
     pseudo_file = StringIO.StringIO(input)
     root = grd_reader.Parse(pseudo_file, '.')
-    root.AssignFirstIds("../../chrome/app/generated_resources.grd", None)
+    grit_root_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                                 '..')
+    root.AssignFirstIds(
+        os.path.join(grit_root_dir, "../../chrome/app/generated_resources.grd"),
+        None)
     messages_node = root.children[0].children[0]
     self.failUnless(isinstance(messages_node, empty.MessagesNode))
     self.failUnless(messages_node.attrs["first_id"] !=
@@ -137,7 +141,11 @@ class GrdReaderUnittest(unittest.TestCase):
 </grit>'''
     pseudo_file = StringIO.StringIO(input)
     root = grd_reader.Parse(pseudo_file, '.')
-    root.AssignFirstIds("../../test.grd", "grit/test/data/resource_ids")
+    grit_root_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                                 '..')
+    root.AssignFirstIds(
+        os.path.join(grit_root_dir, "../../test.grd"),
+        os.path.join(grit_root_dir, "grit/test/data/resource_ids"))
     messages_node = root.children[0].children[0]
     self.assertTrue(isinstance(messages_node, empty.MessagesNode))
     self.assertEqual('100', messages_node.attrs["first_id"])

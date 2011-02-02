@@ -77,8 +77,8 @@ END'''.strip())
 
     buf = StringIO.StringIO()
     build.RcBuilder.ProcessNode(root, DummyOutput('rc_all', 'en'), buf)
-    output = buf.getvalue()
-    self.failUnless(output.strip() == u'''
+    output = buf.getvalue().strip()
+    expected = u'''
 IDC_KLONKMENU MENU
 BEGIN
     POPUP "&File"
@@ -140,8 +140,9 @@ BEGIN
     BEGIN
         VALUE "Translation", 0x409, 1200
     END
-END'''.strip())
-
+END'''.strip()
+    for expected_line, output_line in zip(expected.split(), output.split()):
+        self.assertEqual(expected_line, output_line)
 
   def testRcIncludeStructure(self):
     root = grd_reader.Parse(StringIO.StringIO('''

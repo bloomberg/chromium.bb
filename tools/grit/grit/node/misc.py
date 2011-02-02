@@ -277,17 +277,17 @@ class GritNode(base.Node):
 
     # By default, we use the the file resources_ids next to grit.py
     # to determine what ids to assign to resources.
+    grit_root_dir = os.path.abspath(os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), '..', '..'))
     if not first_id_filename:
-      first_id_filename = os.path.join(os.path.dirname(
-          os.path.abspath(sys.argv[0])), 'resource_ids')
+      first_id_filename = os.path.join(grit_root_dir, 'resource_ids')
 
     first_ids = None
     from grit.node import empty
     for node in self.inorder():
       if isinstance(node, empty.GroupingNode):
         # The checkout base directory is 2 directories up from grit.py.
-        src_root_dir = os.path.dirname(os.path.dirname(
-            os.path.dirname(os.path.abspath(sys.argv[0]))))
+        src_root_dir = os.path.dirname(os.path.dirname(grit_root_dir))
 
         filename = os.path.abspath(filename_or_stream)[
             len(src_root_dir) + 1:]
