@@ -47,7 +47,8 @@ Widget::Widget(View* contents_view)
           root_view_(new internal::RootView(this, contents_view))),
       is_mouse_button_pressed_(false),
       last_mouse_event_was_move_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
+      delete_on_destroy_(true) {
 }
 
 Widget::~Widget() {

@@ -41,7 +41,7 @@ class Widget : public internal::NativeWidgetListener {
   explicit Widget(View* contents_view);
   virtual ~Widget();
 
-  bool set_delete_on_destroy(bool delete_on_destroy) {
+  void set_delete_on_destroy(bool delete_on_destroy) {
     delete_on_destroy_ = delete_on_destroy;
   }
 

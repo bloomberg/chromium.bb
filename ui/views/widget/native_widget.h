@@ -32,6 +32,18 @@ class NativeWidget {
   static NativeWidget* CreateNativeWidget(
       internal::NativeWidgetListener* listener);
 
+  // Retrieves the NativeWidget implementation associated with the given
+  // NativeView or Window, or NULL if the supplied handle has no associated
+  // NativeView.
+  static NativeWidget* GetNativeWidgetForNativeView(
+      gfx::NativeView native_view);
+  static NativeWidget* GetNativeWidgetForNativeWindow(
+      gfx::NativeWindow native_window);
+
+  // Retrieves the top NativeWidget in the hierarchy containing the given
+  // NativeView, or NULL if there is no NativeWidget that contains it.
+  static NativeWidget* GetTopLevelNativeWidget(gfx::NativeView native_view);
+
   // See Widget for documentation and notes.
   virtual void InitWithNativeViewParent(gfx::NativeView parent,
                                         const gfx::Rect& bounds) = 0;

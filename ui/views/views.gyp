@@ -56,6 +56,8 @@
         'events/event.cc',
         'events/event.h',
         'events/event_win.cc',
+        'focus/accelerator_handler.h',
+        'focus/accelerator_handler_win.cc',
         'layout/fill_layout.cc',
         'layout/fill_layout.h',
         'layout/layout_manager.cc',
@@ -120,6 +122,7 @@
         'rendering/border_unittest.cc',
         'run_all_unittests.cc',
         'view_unittest.cc',
+        'widget/native_widget_win_unittest.cc',
         'widget/widget_unittest.cc',
       ],
       'include_dirs': [

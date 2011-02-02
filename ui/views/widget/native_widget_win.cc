@@ -10,6 +10,7 @@
 #include "gfx/native_theme_win.h"
 #include "ui/base/system_monitor/system_monitor.h"
 #include "ui/base/view_prop.h"
+#include "ui/base/win/hwnd_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_listener.h"
 #include "ui/views/widget/widget.h"
@@ -265,6 +266,7 @@ void NativeWidgetWin::OnCommand(UINT notification_code, int command_id,
 }
 
 LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
+  SetNativeWindowProperty(kNativeWidgetKey, this);
   MessageLoopForUI::current()->AddObserver(this);
   return 0;
 }
@@ -621,6 +623,47 @@ bool NativeWidgetWin::IsLayeredWindow() const {
 NativeWidget* NativeWidget::CreateNativeWidget(
     internal::NativeWidgetListener* listener) {
   return new internal::NativeWidgetWin(listener);
+}
+
+// static
+NativeWidget* NativeWidget::GetNativeWidgetForNativeView(
+    gfx::NativeView native_view) {
+  if (!WindowImpl::IsWindowImpl(native_view))
+    return NULL;
+  return reinterpret_cast<internal::NativeWidgetWin*>(
+      ViewProp::GetValue(native_view, internal::kNativeWidgetKey));
+}
+
+// static
+NativeWidget* NativeWidget::GetNativeWidgetForNativeWindow(
+    gfx::NativeWindow native_window) {
+  return GetNativeWidgetForNativeView(native_window);
+}
+
+// static
+NativeWidget* NativeWidget::GetTopLevelNativeWidget(
+    gfx::NativeView native_view) {
+  // First, check if the top-level window is a Widget.
+  HWND root = ::GetAncestor(native_view, GA_ROOT);
+  if (!root)
+    return NULL;
+
+  NativeWidget* widget = GetNativeWidgetForNativeView(root);
+  if (widget)
+    return widget;
+
+  // Second, try to locate the last Widget window in the parent hierarchy.
+  HWND parent_hwnd = native_view;
+  NativeWidget* parent_widget;
+  do {
+    parent_widget = GetNativeWidgetForNativeView(parent_hwnd);
+    if (parent_widget) {
+      widget = parent_widget;
+      parent_hwnd = ::GetAncestor(parent_hwnd, GA_PARENT);
+    }
+  } while (parent_hwnd != NULL && parent_widget != NULL);
+
+  return widget;
 }
 
 }  // namespace ui
