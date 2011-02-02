@@ -3716,6 +3716,7 @@
    bug_71582
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN12SiteInstance10GetProcessEv
    ...
    fun:_ZN14RenderViewHostC1EP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
