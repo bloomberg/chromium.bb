@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/translate/translate_infobar_view.h"
-#include "chrome/browser/ui/gtk/infobar_gtk.h"
+#include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #include "ui/base/animation/animation_delegate.h"
 
 class MenuGtk;

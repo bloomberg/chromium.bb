@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/gtk/infobars/infobar_arrow_model.h"
 
-#include "chrome/browser/ui/gtk/infobar_gtk.h"
+#include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #include "gfx/canvas_skia_paint.h"
 #include "gfx/color_utils.h"
 #include "gfx/point.h"
