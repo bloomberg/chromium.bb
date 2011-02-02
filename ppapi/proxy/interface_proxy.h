@@ -45,7 +45,7 @@ class InterfaceProxy : public IPC::Channel::Listener,
   // This will be NULL when this proxy is a source proxy.
   const void* target_interface() const { return target_interface_; }
 
-  Dispatcher* dispatcher() { return dispatcher_; }
+  Dispatcher* dispatcher() const { return dispatcher_; }
 
   // IPC::Message::Sender implementation.
   virtual bool Send(IPC::Message* msg);

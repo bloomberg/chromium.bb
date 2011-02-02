@@ -90,6 +90,21 @@ bool PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
   return Dispatcher::OnMessageReceived(msg);
 }
 
+void PluginDispatcher::DidCreateInstance(PP_Instance instance) {
+  instance_map_[instance] = InstanceData();
+}
+
+void PluginDispatcher::DidDestroyInstance(PP_Instance instance) {
+  InstanceDataMap::iterator it = instance_map_.find(instance);
+  if (it != instance_map_.end())
+    instance_map_.erase(it);
+}
+
+InstanceData* PluginDispatcher::GetInstanceData(PP_Instance instance) {
+  InstanceDataMap::iterator it = instance_map_.find(instance);
+  return (it == instance_map_.end()) ? NULL : &it->second;
+}
+
 void PluginDispatcher::OnMsgInitializeModule(PP_Module pp_module,
                                              bool* result) {
   set_pp_module(pp_module);

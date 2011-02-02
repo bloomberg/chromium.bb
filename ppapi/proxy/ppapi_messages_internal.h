@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/ppb_var.h"
@@ -55,6 +57,11 @@ IPC_MESSAGE_ROUTED5(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
 // PPB_Graphics2D.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,
                     pp::proxy::HostResource /* graphics_2d */,
+                    int32_t /* pp_error */)
+
+// PPB_Surface3D.
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPBSurface3D_SwapBuffersACK,
+                    pp::proxy::HostResource /* surface_3d */,
                     int32_t /* pp_error */)
 
 // PPP_Class.
@@ -117,7 +124,9 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiMsg_PPPInstance_DidCreate,
                            PP_Bool /* result */)
 IPC_MESSAGE_ROUTED1(PpapiMsg_PPPInstance_DidDestroy,
                     PP_Instance /* instance */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPPInstance_DidChangeView,
+// TODO(piman): DidChangeView should be async, but doing so causes an issue with
+// webkit and accelerated compositing. Turn back to async once this is fixed.
+IPC_SYNC_MESSAGE_ROUTED3_0(PpapiMsg_PPPInstance_DidChangeView,
                     PP_Instance /* instance */,
                     PP_Rect /* position */,
                     PP_Rect /* clip */)
@@ -179,6 +188,52 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBBuffer_Create,
                            uint32_t /* size */,
                            pp::proxy::HostResource /* result_resource */,
                            int32_t /* result_shm_handle */)
+
+// PPB_Context3D.
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBContext3D_Create,
+                           PP_Instance /* instance */,
+                           int32_t /* config */,
+                           std::vector<int32_t> /* attrib_list */,
+                           pp::proxy::HostResource /* result */)
+
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBContext3D_BindSurfaces,
+                           pp::proxy::HostResource /* context */,
+                           pp::proxy::HostResource /* draw */,
+                           pp::proxy::HostResource /* read */,
+                           int32_t /* result */)
+
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBContext3D_Initialize,
+                           pp::proxy::HostResource /* context */,
+                           int32 /* size */,
+                           base::SharedMemoryHandle /* ring_buffer */)
+
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBContext3D_GetState,
+                           pp::proxy::HostResource /* context */,
+                           gpu::CommandBuffer::State /* state */)
+
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBContext3D_Flush,
+                           pp::proxy::HostResource /* context */,
+                           int32 /* put_offset */,
+                           gpu::CommandBuffer::State /* state */)
+
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBContext3D_AsyncFlush,
+                    pp::proxy::HostResource /* context */,
+                    int32 /* put_offset */)
+
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBContext3D_CreateTransferBuffer,
+                           pp::proxy::HostResource /* context */,
+                           int32 /* size */,
+                           int32 /* id */)
+
+IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBContext3D_DestroyTransferBuffer,
+                           pp::proxy::HostResource /* context */,
+                           int32 /* id */)
+
+IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBContext3D_GetTransferBuffer,
+                           pp::proxy::HostResource /* context */,
+                           int32 /* id */,
+                           base::SharedMemoryHandle /* transfer_buffer */,
+                           uint32 /* size */)
 
 // PPB_Core.
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_AddRefResource,
@@ -381,6 +436,15 @@ IPC_SYNC_MESSAGE_ROUTED2_1(
     pp::proxy::HostResource /* font_file */,
     uint32_t /* table */,
     std::string /* result */)
+
+// PPB_Surface3D.
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBSurface3D_Create,
+                           PP_Instance /* instance */,
+                           int32_t /* config */,
+                           std::vector<int32_t> /* attrib_list */,
+                           pp::proxy::HostResource /* result */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBSurface3D_SwapBuffers,
+                    pp::proxy::HostResource /* surface_3d */)
 
 // PPB_Testing.
 IPC_SYNC_MESSAGE_ROUTED3_1(

@@ -347,6 +347,21 @@
         'pgl/pgl.h',
       ],
     },
+    {
+      'target_name': 'gpu_ipc',
+      'type': 'static_library',
+      'dependencies': [
+        'command_buffer_client',
+        'gles2_c_lib',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'ipc/gpu_command_buffer_traits.cc',
+        'ipc/gpu_command_buffer_traits.h',
+      ],
+    },
   ],
   'conditions': [
     ['OS == "win"',

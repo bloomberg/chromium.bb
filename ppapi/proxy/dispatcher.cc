@@ -15,11 +15,13 @@
 #include "ipc/ipc_test_sink.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
+#include "ppapi/c/dev/ppb_context_3d_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
-#include "ppapi/c/dev/ppb_cursor_control_dev.h"
+#include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
-#include "ppapi/c/dev/ppb_fullscreen_dev.h"
+#include "ppapi/c/dev/ppb_opengles_dev.h"
+#include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_errors.h"
@@ -41,15 +43,19 @@
 #include "ppapi/proxy/ppb_audio_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_char_set_proxy.h"
+#include "ppapi/proxy/ppb_context_3d_proxy.h"
 #include "ppapi/proxy/ppb_core_proxy.h"
 #include "ppapi/proxy/ppb_cursor_control_proxy.h"
 #include "ppapi/proxy/ppb_flash_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_fullscreen_proxy.h"
+#include "ppapi/proxy/ppb_gles_chromium_texture_mapping_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/ppb_instance_proxy.h"
+#include "ppapi/proxy/ppb_opengles2_proxy.h"
 #include "ppapi/proxy/ppb_pdf_proxy.h"
+#include "ppapi/proxy/ppb_surface_3d_proxy.h"
 #include "ppapi/proxy/ppb_testing_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_url_request_info_proxy.h"
@@ -159,7 +165,9 @@ const void* Dispatcher::GetProxiedInterface(const std::string& interface) {
 
   // Save our proxy.
   proxies_[interface] = proxy;
-  id_to_proxy_[proxy->GetInterfaceId()] = proxy.get();
+  InterfaceID id = proxy->GetInterfaceId();
+  if (id != INTERFACE_ID_NONE)
+    id_to_proxy_[id] = proxy.get();
   return proxy->GetSourceInterface();
 }
 
@@ -246,6 +254,8 @@ InterfaceProxy* Dispatcher::CreateProxyForInterface(
     return new PPB_Buffer_Proxy(this, interface_functions);
   if (interface_name == PPB_CHAR_SET_DEV_INTERFACE)
     return new PPB_CharSet_Proxy(this, interface_functions);
+  if (interface_name == PPB_CONTEXT_3D_DEV_INTERFACE)
+    return new PPB_Context3D_Proxy(this, interface_functions);
   if (interface_name == PPB_CORE_INTERFACE)
     return new PPB_Core_Proxy(this, interface_functions);
   if (interface_name == PPB_CURSOR_CONTROL_DEV_INTERFACE)
@@ -254,12 +264,18 @@ InterfaceProxy* Dispatcher::CreateProxyForInterface(
     return new PPB_Font_Proxy(this, interface_functions);
   if (interface_name == PPB_FULLSCREEN_DEV_INTERFACE)
     return new PPB_Fullscreen_Proxy(this, interface_functions);
+  if (interface_name == PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE)
+    return new PPB_GLESChromiumTextureMapping_Proxy(this, interface_functions);
   if (interface_name == PPB_GRAPHICS_2D_INTERFACE)
     return new PPB_Graphics2D_Proxy(this, interface_functions);
   if (interface_name == PPB_IMAGEDATA_INTERFACE)
     return new PPB_ImageData_Proxy(this, interface_functions);
   if (interface_name == PPB_INSTANCE_INTERFACE)
     return new PPB_Instance_Proxy(this, interface_functions);
+  if (interface_name == PPB_OPENGLES2_DEV_INTERFACE)
+    return new PPB_OpenGLES2_Proxy(this, interface_functions);
+  if (interface_name == PPB_SURFACE_3D_DEV_INTERFACE)
+    return new PPB_Surface3D_Proxy(this, interface_functions);
   if (interface_name == PPB_TESTING_DEV_INTERFACE)
     return new PPB_Testing_Proxy(this, interface_functions);
   if (interface_name == PPB_URLLOADER_INTERFACE)

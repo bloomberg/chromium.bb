@@ -16,11 +16,13 @@
   F(Audio) \
   F(AudioConfig) \
   F(Buffer) \
+  F(Context3D) \
   F(Font) \
   F(Graphics2D) \
   F(ImageData) \
   F(MockResource) \
   F(PrivateFontFile) \
+  F(Surface3D) \
   F(URLLoader) \
   F(URLRequestInfo)\
   F(URLResponseInfo)

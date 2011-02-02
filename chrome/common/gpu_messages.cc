@@ -253,36 +253,6 @@ void ParamTraits<DxDiagNode> ::Log(const param_type& p, std::string* l) {
   l->append("<DxDiagNode>");
 }
 
-void ParamTraits<gpu::CommandBuffer::State> ::Write(Message* m,
-                                                    const param_type& p) {
-  WriteParam(m, p.num_entries);
-  WriteParam(m, p.get_offset);
-  WriteParam(m, p.put_offset);
-  WriteParam(m, p.token);
-  WriteParam(m, static_cast<int32>(p.error));
-}
-
-bool ParamTraits<gpu::CommandBuffer::State> ::Read(const Message* m,
-                                                   void** iter,
-                                                   param_type* p) {
-  int32 temp;
-  if (ReadParam(m, iter, &p->num_entries) &&
-      ReadParam(m, iter, &p->get_offset) &&
-      ReadParam(m, iter, &p->put_offset) &&
-      ReadParam(m, iter, &p->token) &&
-      ReadParam(m, iter, &temp)) {
-    p->error = static_cast<gpu::error::Error>(temp);
-    return true;
-  } else {
-    return false;
-  }
-}
-
-void ParamTraits<gpu::CommandBuffer::State> ::Log(const param_type& p,
-                                                  std::string* l) {
-  l->append("<CommandBuffer::State>");
-}
-
 void ParamTraits<GPUCreateCommandBufferConfig> ::Write(
     Message* m, const param_type& p) {
   WriteParam(m, p.allowed_extensions);

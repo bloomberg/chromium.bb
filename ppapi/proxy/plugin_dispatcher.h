@@ -7,8 +7,10 @@
 
 #include <string>
 
+#include "base/hash_tables.h"
 #include "base/process.h"
 #include "base/scoped_ptr.h"
+#include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/dispatcher.h"
 
@@ -20,6 +22,11 @@ class WaitableEvent;
 
 namespace pp {
 namespace proxy {
+
+// Used to keep track of per-instance data.
+struct InstanceData {
+  PP_Rect position;
+};
 
 class PluginDispatcher : public Dispatcher {
  public:
@@ -58,6 +65,15 @@ class PluginDispatcher : public Dispatcher {
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
+  // Keep track of all active instances to associate data with it, like the
+  // current size.
+  void DidCreateInstance(PP_Instance instance);
+  void DidDestroyInstance(PP_Instance instance);
+
+  // Gets the data for an existing instance, or NULL if the instance id doesn't
+  // correspond to  a known instance.
+  InstanceData* GetInstanceData(PP_Instance instance);
+
  private:
   // IPC message handlers.
   void OnMsgInitializeModule(PP_Module pp_module, bool* result);
@@ -65,6 +81,9 @@ class PluginDispatcher : public Dispatcher {
 
   InitModuleFunc init_module_;
   ShutdownModuleFunc shutdown_module_;
+
+  typedef base::hash_map<PP_Instance, InstanceData> InstanceDataMap;
+  InstanceDataMap instance_map_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginDispatcher);
 };

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,7 +16,7 @@ _SIZE_OF_UINT32 = 4
 _SIZE_OF_COMMAND_HEADER = 4
 _FIRST_SPECIFIC_COMMAND_ID = 256
 
-_LICENSE = """// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+_LICENSE = """// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -5356,6 +5356,84 @@ const PPB_OpenGLES2_Dev* PPB_OpenGLES_Impl::GetInterface() {
 
     file.Close()
 
+  def WritePepperGLES2ProxyImplementation(self, filename):
+    """Writes the Pepper OpenGLES interface implementation."""
+
+    file = CWriter(filename)
+    file.Write(_LICENSE)
+    file.Write("// This file is auto-generated. DO NOT EDIT!\n\n")
+
+    file.Write("#include \"ppapi/proxy/ppb_opengles2_proxy.h\"\n\n")
+
+    file.Write("#include \"gpu/command_buffer/client/gles2_implementation.h\"\n")
+    file.Write("#include \"ppapi/c/pp_errors.h\"\n")
+    file.Write("#include \"ppapi/c/pp_resource.h\"\n")
+    file.Write("#include \"ppapi/c/dev/ppb_opengles_dev.h\"\n")
+    file.Write("#include \"ppapi/proxy/plugin_dispatcher.h\"\n")
+    file.Write("#include \"ppapi/proxy/plugin_resource.h\"\n")
+    file.Write("#include \"ppapi/proxy/ppb_context_3d_proxy.h\"\n\n")
+
+    file.Write("namespace pp {\n")
+    file.Write("namespace proxy {\n\n")
+    file.Write("namespace {\n\n")
+
+
+    for func in self.original_functions:
+      if not func.IsCoreGLFunction():
+        continue
+
+      original_arg = func.MakeTypedOriginalArgString("")
+      context_arg = "PP_Resource context_id"
+      if len(original_arg):
+        arg = context_arg + ", " + original_arg
+      else:
+        arg = context_arg
+      file.Write("%s %s(%s) {\n" % (func.return_type, func.name, arg))
+
+      file.Write("""  Context3D* context = PluginResource::GetAs<Context3D>(context_id);\n""")
+
+      return_str = "" if func.return_type == "void" else "return "
+      file.Write("  %scontext->gles2_impl()->%s(%s);\n" %
+                 (return_str, func.original_name,
+                  func.MakeOriginalArgString("")))
+      file.Write("}\n\n")
+
+    file.Write("const struct PPB_OpenGLES2_Dev ppb_opengles2 = {\n")
+    file.Write("  &")
+    file.Write(",\n  &".join(
+      f.name for f in self.original_functions if f.IsCoreGLFunction()))
+    file.Write("\n")
+    file.Write("};\n\n")
+
+    file.Write("}  // namespace\n")
+
+    file.Write("""
+PPB_OpenGLES2_Proxy::PPB_OpenGLES2_Proxy(Dispatcher* dispatcher,
+                                         const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface) {
+}
+
+PPB_OpenGLES2_Proxy::~PPB_OpenGLES2_Proxy() {
+}
+
+const void* PPB_OpenGLES2_Proxy::GetSourceInterface() const {
+  return &ppb_opengles2;
+}
+
+InterfaceID PPB_OpenGLES2_Proxy::GetInterfaceId() const {
+  return INTERFACE_ID_NONE;
+}
+
+bool PPB_OpenGLES2_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  return false;
+}
+
+""")
+    file.Write("}  // namespace proxy\n")
+    file.Write("}  // namespace pp\n")
+
+    file.Close()
+
   def WriteGLES2ToPPAPIBridge(self, filename):
     """Connects GLES2 helper library to PPB_OpenGLES2 interface"""
 
@@ -5399,9 +5477,11 @@ def main(argv):
       help="generate a docs friendly version of the command formats.")
   parser.add_option(
       "--alternate-mode", type="choice",
-      choices=("ppapi", "chrome_ppapi"),
+      choices=("ppapi", "chrome_ppapi", "chrome_ppapi_proxy"),
       help="generate files for other projects. \"ppapi\" will generate ppapi "
-      "bindings. \"chrome_ppapi\" generate chrome implementation for ppapi.")
+      "bindings. \"chrome_ppapi\" generate chrome implementation for ppapi. "
+      "\"chrome_ppapi_proxy\" will generate the glue for the chrome IPC ppapi"
+      "proxy.")
   parser.add_option(
       "--output-dir",
       help="base directory for resulting files, under chrome/src. default is "
@@ -5432,6 +5512,10 @@ def main(argv):
     # To trigger this action, do "make ppapi_gles_implementation"
     gen.WritePepperGLES2Implementation(
         "webkit/plugins/ppapi/ppb_opengles_impl.cc")
+
+  elif options.alternate_mode == "chrome_ppapi_proxy":
+    gen.WritePepperGLES2ProxyImplementation(
+        "ppapi/proxy/ppb_opengles2_proxy.cc")
 
   else:
     os.chdir("gpu/command_buffer")

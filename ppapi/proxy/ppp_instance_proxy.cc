@@ -9,6 +9,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/proxy/host_dispatcher.h"
+#include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 
@@ -142,6 +143,11 @@ void PPP_Instance_Proxy::OnMsgDidCreate(
   if (argn.size() != argv.size())
     return;
 
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return;
+  dispatcher->DidCreateInstance(instance);
+
   // Make sure the arrays always have at least one element so we can take the
   // address below.
   std::vector<const char*> argn_array(
@@ -162,11 +168,23 @@ void PPP_Instance_Proxy::OnMsgDidCreate(
 
 void PPP_Instance_Proxy::OnMsgDidDestroy(PP_Instance instance) {
   ppp_instance_target()->DidDestroy(instance);
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return;
+
+  dispatcher->DidDestroyInstance(instance);
 }
 
 void PPP_Instance_Proxy::OnMsgDidChangeView(PP_Instance instance,
                                             const PP_Rect& position,
                                             const PP_Rect& clip) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return;
+  InstanceData* data = dispatcher->GetInstanceData(instance);
+  if (!data)
+    return;
+  data->position = position;
   ppp_instance_target()->DidChangeView(instance, &position, &clip);
 }
 
