@@ -246,6 +246,12 @@ class FakeReposBase(object):
     self.svnserve = None
     self.gitdaemon = None
     self.common_init = False
+    self.repos_dir = None
+    self.git_root = None
+    self.svn_checkout = None
+    self.svn_repo = None
+    self.git_dirty = False
+    self.svn_dirty = False
 
   def trial_dir(self):
     if not self.TRIAL_DIR:
@@ -256,16 +262,42 @@ class FakeReposBase(object):
   def setUp(self):
     """All late initialization comes here.
 
-    Note that it deletes all trial_dir() and not only repos_dir."""
+    Note that it deletes all trial_dir() and not only repos_dir.
+    """
+    self.cleanup_dirt()
     if not self.common_init:
       self.common_init = True
       self.repos_dir = os.path.join(self.trial_dir(), 'repos')
       self.git_root = join(self.repos_dir, 'git')
-      self.svn_root = join(self.repos_dir, 'svn_checkout')
+      self.svn_checkout = join(self.repos_dir, 'svn_checkout')
+      self.svn_repo = join(self.repos_dir, 'svn')
       addKill()
       rmtree(self.trial_dir())
       os.makedirs(self.repos_dir)
       atexit.register(self.tearDown)
+
+  def cleanup_dirt(self):
+    """For each dirty repository, regenerate it."""
+    if self.svnserve and self.svn_dirty:
+      logging.debug('Killing svnserve pid %s' % self.svnserve.pid)
+      self.svnserve.kill()
+      self.svnserve = None
+      if not self.SHOULD_LEAK:
+        logging.debug('Removing dirty %s' % self.svn_repo)
+        rmtree(self.svn_repo)
+        logging.debug('Removing dirty %s' % self.svn_checkout)
+        rmtree(self.svn_checkout)
+      else:
+        logging.warning('Using both leaking checkout and dirty checkout')
+    if self.gitdaemon and self.git_dirty:
+      logging.debug('Killing git-daemon pid %s' % self.gitdaemon.pid)
+      self.gitdaemon.kill()
+      self.gitdaemon = None
+      if not self.SHOULD_LEAK:
+        logging.debug('Removing dirty %s' % self.git_root)
+        rmtree(self.git_root)
+      else:
+        logging.warning('Using both leaking checkout and dirty checkout')
 
   def tearDown(self):
     if self.svnserve:
@@ -299,36 +331,36 @@ class FakeReposBase(object):
 
   def setUpSVN(self):
     """Creates subversion repositories and start the servers."""
+    self.setUp()
     if self.svnserve:
       return True
-    self.setUp()
-    root = join(self.repos_dir, 'svn')
     try:
-      check_call(['svnadmin', 'create', root])
+      check_call(['svnadmin', 'create', self.svn_repo])
     except OSError:
       return False
-    write(join(root, 'conf', 'svnserve.conf'),
+    write(join(self.svn_repo, 'conf', 'svnserve.conf'),
         '[general]\n'
         'anon-access = read\n'
         'auth-access = write\n'
         'password-db = passwd\n')
     text = '[users]\n'
     text += ''.join('%s = %s\n' % (usr, pwd) for usr, pwd in self.USERS)
-    write(join(root, 'conf', 'passwd'), text)
+    write(join(self.svn_repo, 'conf', 'passwd'), text)
 
     # Start the daemon.
     cmd = ['svnserve', '-d', '--foreground', '-r', self.repos_dir]
     if self.HOST == '127.0.0.1':
       cmd.append('--listen-host=127.0.0.1')
-    self.svnserve = Popen(cmd, cwd=root)
+    self.svnserve = Popen(cmd, cwd=self.svn_repo)
     self.populateSvn()
+    self.svn_dirty = False
     return True
 
   def setUpGIT(self):
     """Creates git repositories and start the servers."""
+    self.setUp()
     if self.gitdaemon:
       return True
-    self.setUp()
     if sys.platform == 'win32':
       return False
     for repo in ['repo_%d' % r for r in range(1, self.NB_GIT_REPOS + 1)]:
@@ -341,11 +373,12 @@ class FakeReposBase(object):
       cmd.append('--listen=127.0.0.1')
     logging.debug(cmd)
     self.gitdaemon = Popen(cmd, cwd=self.repos_dir)
+    self.git_dirty = False
     return True
 
   def _commit_svn(self, tree):
-    self._genTree(self.svn_root, tree)
-    commit_svn(self.svn_root, self.USERS[0][0], self.USERS[0][1])
+    self._genTree(self.svn_checkout, tree)
+    commit_svn(self.svn_checkout, self.USERS[0][0], self.USERS[0][1])
     if self.svn_revs and self.svn_revs[-1]:
       new_tree = self.svn_revs[-1].copy()
       new_tree.update(tree)
@@ -378,10 +411,10 @@ class FakeRepos(FakeReposBase):
   def populateSvn(self):
     """Creates a few revisions of changes including DEPS files."""
     # Repos
-    check_call(['svn', 'checkout', 'svn://127.0.0.1/svn', self.svn_root, '-q',
-                '--non-interactive', '--no-auth-cache',
+    check_call(['svn', 'checkout', 'svn://127.0.0.1/svn', self.svn_checkout,
+                '-q', '--non-interactive', '--no-auth-cache',
                 '--username', self.USERS[0][0], '--password', self.USERS[0][1]])
-    assert os.path.isdir(join(self.svn_root, '.svn'))
+    assert os.path.isdir(join(self.svn_checkout, '.svn'))
     def file_system(rev, DEPS):
       fs = {
         'origin': 'svn@%(rev)d\n',
@@ -694,7 +727,8 @@ def main(argv):
 
 # Kind of hack.
 if '-l' in sys.argv:
-  FakeRepos.SHOULD_LEAK = True
+  FakeReposBase.SHOULD_LEAK = True
+  print 'Leaking!'
   sys.argv.remove('-l')
 
 
