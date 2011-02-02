@@ -11,13 +11,15 @@ import os
 import re
 import unittest
 
+import chromite.lib.cros_build_lib as cros_lib
 from chromite.lib import text_menu
 from chromite.shell import main
+from chromite.shell import utils
 import mox
 
 
 class _DeathException(Exception):
-  """A bogus exception used by the mock out of Die."""
+  """A bogus exception used by the mock out of cros_lib.Die."""
   pass
 
 
@@ -30,8 +32,8 @@ class TestFindCommand(unittest.TestCase):
     """Test initialization."""
     # Create our mox and stub out function calls used by _FindCommand()...
     self.mox = mox.Mox()
-    self.mox.StubOutWithMock(main, 'Die')
-    self.mox.StubOutWithMock(main, 'Info')
+    self.mox.StubOutWithMock(cros_lib, 'Die')
+    self.mox.StubOutWithMock(cros_lib, 'Info')
     self.mox.StubOutWithMock(text_menu, 'TextMenu')
 
   def tearDown(self):
@@ -40,9 +42,9 @@ class TestFindCommand(unittest.TestCase):
     self.mox.UnsetStubs()
 
   def testInvalidCommand(self):
-    """Test that _FindCommand('implode') causes Die()."""
-    # Should be a call to Die.  We'll have it fake a _DeathException...
-    main.Die(mox.IsA(basestring)).AndRaise(_DeathException)
+    """Test that _FindCommand('implode') causes cros_lib.Die()."""
+    # Should be a call to cros_lib.Die.  We'll have it fake a _DeathException...
+    cros_lib.Die(mox.IsA(basestring)).AndRaise(_DeathException)
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
@@ -61,7 +63,7 @@ class TestFindCommand(unittest.TestCase):
                        menu_width=0).AndReturn(None)
 
     # Should die in response to the quit.
-    main.Die(mox.IsA(basestring)).AndRaise(_DeathException)
+    cros_lib.Die(mox.IsA(basestring)).AndRaise(_DeathException)
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
@@ -129,7 +131,7 @@ class TestFindCommand(unittest.TestCase):
        shell.
     """
     # _FindCommand should give us a message that it has interpreted sh as shell.
-    main.Info(mox.IsA(basestring))
+    cros_lib.Info(mox.IsA(basestring))
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
@@ -141,7 +143,7 @@ class TestFindCommand(unittest.TestCase):
 
 
 class TestFindSpec(unittest.TestCase):
-  """Test main._FindSpec."""
+  """Test utils.FindSpec."""
 
   def setUp(self):
     """Test initialization."""
@@ -149,8 +151,8 @@ class TestFindSpec(unittest.TestCase):
     self.mox = mox.Mox()
     self.mox.StubOutWithMock(os, 'listdir')
     self.mox.StubOutWithMock(os.path, 'isfile')
-    self.mox.StubOutWithMock(main, 'Die')
-    self.mox.StubOutWithMock(main, 'Info')
+    self.mox.StubOutWithMock(cros_lib, 'Die')
+    self.mox.StubOutWithMock(cros_lib, 'Info')
     self.mox.StubOutWithMock(text_menu, 'TextMenu')
 
   def tearDown(self):
@@ -159,7 +161,7 @@ class TestFindSpec(unittest.TestCase):
     self.mox.UnsetStubs()
 
   def testInvalidSpec(self):
-    """Test that _FindSpec('bogusSpec') causes Die()."""
+    """Test that _FindSpec('bogusSpec') causes cros_lib.Die()."""
     # Pass this spec name...
     spec_name = 'bogusSpec'
 
@@ -177,12 +179,12 @@ class TestFindSpec(unittest.TestCase):
     # Give the fake directory listing...
     os.listdir(mox.IsA(basestring)).MultipleTimes().AndReturn(dir_list)
 
-    # Should be a call to Die.  We'll have it fake a _DeathException...
-    main.Die(mox.IsA(basestring)).AndRaise(_DeathException)
+    # Should be a call to cros_lib.Die.  We'll have it fake a _DeathException...
+    cros_lib.Die(mox.IsA(basestring)).AndRaise(_DeathException)
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
-    self.assertRaises(_DeathException, main._FindSpec, 'bogusSpec')
+    self.assertRaises(_DeathException, utils.FindSpec, 'bogusSpec')
     self.mox.VerifyAll()
 
   def testFullPath(self):
@@ -200,7 +202,7 @@ class TestFindSpec(unittest.TestCase):
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
-    path = main._FindSpec(spec_name)
+    path = utils.FindSpec(spec_name)
     self.mox.VerifyAll()
 
     self.assertEqual(path, spec_name,
@@ -221,7 +223,7 @@ class TestFindSpec(unittest.TestCase):
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
-    spec_path = main._FindSpec(spec_name)
+    spec_path = utils.FindSpec(spec_name)
     self.mox.VerifyAll()
 
     self.assertTrue(re.search('^/.*%s.spec$' % spec_name, spec_path),
@@ -259,7 +261,7 @@ class TestFindSpec(unittest.TestCase):
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
-    spec_path = main._FindSpec(spec_name)
+    spec_path = utils.FindSpec(spec_name)
     self.mox.VerifyAll()
 
     self.assertTrue(re.search('^/.*%s$' % expected_result, spec_path),
@@ -312,14 +314,14 @@ class TestFindSpec(unittest.TestCase):
 
     # Should die in response to the quit if directed to quit.
     if menu_return is None:
-      main.Die(mox.IsA(basestring)).AndRaise(_DeathException)
+      cros_lib.Die(mox.IsA(basestring)).AndRaise(_DeathException)
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
     if menu_return is None:
-      self.assertRaises(_DeathException, main._FindSpec, spec_name)
+      self.assertRaises(_DeathException, utils.FindSpec, spec_name)
     else:
-      spec_path = main._FindSpec(spec_name)
+      spec_path = utils.FindSpec(spec_name)
     self.mox.VerifyAll()
 
     if menu_return is not None:
@@ -375,7 +377,7 @@ class TestFindSpec(unittest.TestCase):
 
     # Run the command and verify proper mocks were called...
     self.mox.ReplayAll()
-    spec_path = main._FindSpec(spec_name)
+    spec_path = utils.FindSpec(spec_name)
     self.mox.VerifyAll()
 
     self.assertTrue(re.search('^/.*%s$' % expected_result, spec_path),
