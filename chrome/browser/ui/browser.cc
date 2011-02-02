@@ -2678,9 +2678,10 @@ void Browser::TabSelectedAt(TabContentsWrapper* old_contents,
   if (user_gesture && new_contents->tab_contents()->crashed_status() ==
         base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
     const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-    if (parsed_command_line.HasSwitch(switches::kReloadKilledTabs))
+    if (parsed_command_line.HasSwitch(switches::kReloadKilledTabs)) {
       Reload(CURRENT_TAB);
-    return;
+      return;
+    }
   }
 
   // If we have any update pending, do it now.
