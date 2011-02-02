@@ -45,6 +45,7 @@
 #    Option 2: Build by copying the sources from Git repositories:
 #      git clone http://git.chromium.org/git/nacl-toolchain.git SRC
 #      make fetch-glibc-sources-readonly
+#      make prepare-git-src
 #    Option 3: Committer access:
 #      make fetch-git-rw-sources
 #    Perform the actual build:
