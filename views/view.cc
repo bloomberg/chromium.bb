@@ -748,7 +748,15 @@ void View::ViewHierarchyChangedImpl(bool register_accelerators,
 void View::PropagateVisibilityNotifications(View* start, bool is_visible) {
   for (int i = 0, count = GetChildViewCount(); i < count; ++i)
     GetChildViewAt(i)->PropagateVisibilityNotifications(start, is_visible);
-  VisibilityChanged(start, is_visible);
+  VisibilityChangedImpl(start, is_visible);
+}
+
+void View::VisibilityChangedImpl(View* starting_from, bool is_visible) {
+  if (is_visible)
+    RegisterPendingAccelerators();
+  else
+    UnregisterAccelerators(true);
+  VisibilityChanged(starting_from, is_visible);
 }
 
 void View::VisibilityChanged(View* starting_from, bool is_visible) {
@@ -1113,6 +1121,9 @@ void View::RegisterPendingAccelerators() {
 #endif
     return;
   }
+  // Only register accelerators if we are visible.
+  if (!IsVisibleInRootView())
+    return;
   std::vector<Accelerator>::const_iterator iter;
   for (iter = accelerators_->begin() + registered_accelerator_count_;
        iter != accelerators_->end(); ++iter) {

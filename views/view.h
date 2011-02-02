@@ -1221,6 +1221,10 @@ class View : public AcceleratorTarget {
                                 View* parent,
                                 View* child);
 
+  // Registers/unregisters accelerators as necessary and calls
+  // VisibilityChanged().
+  void VisibilityChangedImpl(View* starting_from, bool is_visible);
+
   // This is the actual implementation for ConvertPointToView()
   // Attempts a parent -> child conversion and then a
   // child -> parent conversion if try_other_direction is true

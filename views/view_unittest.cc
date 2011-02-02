@@ -1028,6 +1028,37 @@ TEST_F(ViewTest, ActivateAccelerator) {
 #endif
 
 #if defined(OS_WIN)
+TEST_F(ViewTest, HiddenViewWithAccelerator) {
+  views::Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
+  TestView* view = new TestView();
+  view->Reset();
+  view->AddAccelerator(return_accelerator);
+  EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
+
+  WidgetWin window;
+  window.Init(NULL, gfx::Rect(0, 0, 100, 100));
+  window.set_delete_on_destroy(false);
+  window.set_window_style(WS_OVERLAPPEDWINDOW);
+  RootView* root = window.GetRootView();
+  root->AddChildView(view);
+
+  views::FocusManager* focus_manager =
+      views::FocusManager::GetFocusManagerForNativeView(window.GetNativeView());
+  ASSERT_TRUE(focus_manager);
+
+  view->SetVisible(false);
+  EXPECT_EQ(NULL,
+            focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
+
+  view->SetVisible(true);
+  EXPECT_EQ(view,
+            focus_manager->GetCurrentTargetForAccelerator(return_accelerator));
+
+  window.CloseNow();
+}
+#endif
+
+#if defined(OS_WIN)
 ////////////////////////////////////////////////////////////////////////////////
 // Mouse-wheel message rerouting
 ////////////////////////////////////////////////////////////////////////////////
