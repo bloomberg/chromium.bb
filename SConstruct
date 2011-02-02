@@ -1029,6 +1029,40 @@ def BrowserTester(env,
 
 pre_base_env.AddMethod(BrowserTester)
 
+
+pre_base_env['CHROME_DOWNLOAD_DIR'] = pre_base_env.Dir('#chromebinaries')
+
+def ChromeBinaryArch(env):
+  arch = env['BUILD_FULLARCH']
+  if env.Bit('host_windows') and arch == 'x86-64':
+    # Currently there are no 64-bit Chrome binaries for windows.
+    arch = 'x86-32'
+  return arch
+
+pre_base_env.AddMethod(ChromeBinaryArch)
+
+
+def DownloadedChromeBinary(env):
+  if env.Bit('host_linux'):
+    os_name = 'linux'
+    binary = 'chrome'
+  elif env.Bit('host_windows'):
+    os_name = 'windows'
+    binary = 'chrome.exe'
+  elif env.Bit('host_mac'):
+    os_name = 'mac'
+    binary = 'Chromium.app/Contents/MacOS/Chromium'
+  else:
+    raise Exception('Unsupported OS')
+
+  arch = env.ChromeBinaryArch()
+  path = os.path.join('${CHROME_DOWNLOAD_DIR}', '%s_%s' % (os_name, arch),
+                      binary)
+  return path
+
+pre_base_env.AddMethod(DownloadedChromeBinary)
+
+
 # ----------------------------------------------------------
 def DemoSelLdrNacl(env,
                    target,
@@ -1997,6 +2031,7 @@ nacl_env.Append(
     'tests/math/nacl.scons',
     'tests/memcheck_test/nacl.scons',
     'tests/mmap/nacl.scons',
+    'tests/nacl.scons',
     'tests/nacl_log/nacl.scons',
     'tests/nanosleep/nacl.scons',
     'tests/native_worker/nacl.scons',

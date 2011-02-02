@@ -1,0 +1,15 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+# This command is placed in its own nacl.cons file because:
+#   1) It gives it access to the same environment as the tests
+#   2) Sicking it in an arbitrary test's .scons file would be cryptic
+node = env.Command(env.DownloadedChromeBinary(), ['#DEPS'],
+                   '${PYTHON} build/download_chrome.py '
+                   '--arch=%s --dst=${CHROME_DOWNLOAD_DIR}' %
+                   env.ChromeBinaryArch())
+env.Alias('download_chrome', node)

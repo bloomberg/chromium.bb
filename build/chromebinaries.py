@@ -10,7 +10,16 @@ import os.path
 import urllib
 
 # /continuous is "greener" than /snapshots, but contains fewer files.
-base_url = 'http://build.chromium.org/f/chromium/continuous'
+BASE_URL = 'http://build.chromium.org/f/chromium/continuous'
+
+# (os, arch) -> (base_directory, archive_name)
+# Used from constructing the full URL for a snapshot
+SNAPSHOT_MAP = {
+           ('windows', 'x86-32'): ('win', 'chrome-win32.zip'),
+           ('mac', 'x86-32'): ('mac', 'chrome-mac.zip'),
+           ('linux', 'x86-32'): ('linux', 'chrome-linux.zip'),
+           ('linux', 'x86-64'): ('linux64', 'chrome-linux.zip'),
+           }
 
 
 # Download the index file.  An example of the format is as follows:
@@ -22,10 +31,10 @@ base_url = 'http://build.chromium.org/f/chromium/continuous'
 # NOTE the date cannot be inferred from the revision number. This in turn means
 # that the URL cannot be determined without checking the index.
 # NOTE The entries are not sorted.
-def GetIndexData(verbose, url=None):
-  if url is None:
-    url = base_url
-  path = url + '/all_builds.txt'
+def GetIndexData(verbose, base_url=None):
+  if base_url is None:
+    base_url = BASE_URL
+  path = base_url + '/all_builds.txt'
   if verbose:
     print 'Getting', path
   index = urllib.urlopen(path)
@@ -52,8 +61,8 @@ def ParseIndex(data, min_rev, max_rev):
   return directories
 
 
-def GetIndex(min_rev, max_rev, verbose, url=None):
-  data = GetIndexData(verbose, url=url)
+def GetIndex(min_rev, max_rev, verbose, base_url=None):
+  data = GetIndexData(verbose, base_url=base_url)
   return ParseIndex(data, min_rev, max_rev)
 
 
@@ -70,9 +79,26 @@ def FindCommon(directories):
   return common
 
 
-def GetCommonRevisions(min_rev, max_rev, verbose, url=None):
-  directories = GetIndex(min_rev, max_rev, verbose, url=url)
+def GetCommonRevisions(min_rev, max_rev, verbose, base_url=None):
+  directories = GetIndex(min_rev, max_rev, verbose, base_url=base_url)
   return FindCommon(directories)
+
+
+# Construct the URL for a binary, given platform and revision.
+# Unfortunately, this requires downloading the index file to map rev -> url.
+# This is because the continuous builder sticks revisions in directories based
+# on the day they were built, which is impossible to infer from the revision.
+def GetURL(base_url, os, arch, revision):
+  key = (os, arch)
+  if key not in SNAPSHOT_MAP:
+    raise Exception('%s/%s is not supported.  Update SNAPSHOT_MAP if this '
+                    'binary exists.' % key)
+  base_dir, archive_name = SNAPSHOT_MAP[key]
+  revision = int(revision)
+
+  directories = GetIndex(None, None, False, base_url=base_url)
+  directory = directories[base_dir][revision]
+  return '/'.join([base_url, directory, archive_name])
 
 
 def EvalDepsFile(path):
