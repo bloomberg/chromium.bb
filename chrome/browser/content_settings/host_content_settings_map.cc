@@ -403,20 +403,6 @@ void HostContentSettingsMap::GetSettingsForOneType(
 void HostContentSettingsMap::SetDefaultContentSetting(
     ContentSettingsType content_type,
     ContentSetting setting) {
-  DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(content_type != CONTENT_SETTINGS_TYPE_PLUGINS ||
-         setting != CONTENT_SETTING_ASK ||
-         CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableClickToPlay));
-
-  // The default settings may not be directly modified for OTR sessions.
-  // Instead, they are synced to the main profile's setting.
-  if (is_off_the_record_) {
-    NOTREACHED();
-    return;
-  }
-
   for (provider_iterator provider =
            default_content_settings_providers_.begin();
        provider != default_content_settings_providers_.end(); ++provider) {
