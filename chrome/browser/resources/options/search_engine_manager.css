@@ -40,12 +40,6 @@
   -webkit-box-flex: 1;
 }
 
-.search-engine-list input {
-  box-sizing: border-box;
-  margin: 0;
-  width: 100%;
-}
-
 /* For temporary Make Default button */
 .search-engine-list .url-column {
   display: -webkit-box;

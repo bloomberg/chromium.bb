@@ -160,7 +160,7 @@ cr.define('options', function() {
         var textEl = this.ownerDocument.createElement('div');
         textEl.className = 'static-text';
         textEl.textContent = text;
-        textEl.setAttribute('editmode', false);
+        textEl.setAttribute('displaymode', 'static');
         container.appendChild(textEl);
       }
 
@@ -168,7 +168,7 @@ cr.define('options', function() {
       inputEl.type = 'text';
       inputEl.value = text;
       if (!opt_alwaysEditable) {
-        inputEl.setAttribute('editmode', true);
+        inputEl.setAttribute('displaymode', 'edit');
         inputEl.staticVersion = textEl;
       }
       container.appendChild(inputEl);
@@ -252,6 +252,7 @@ cr.define('options', function() {
     /** @inheritDoc */
     decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
+      this.setAttribute('inlineeditable', '');
       this.addEventListener('blur', this.handleBlur_.bind(this), true);
     },
 

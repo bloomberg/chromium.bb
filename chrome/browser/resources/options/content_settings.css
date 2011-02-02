@@ -8,10 +8,6 @@ found in the LICENSE file.
   -webkit-box-flex: 1;
   -webkit-margin-end: 10px;
   -webkit-margin-start: 14px;
-  display: -webkit-box;
-  margin-right: 4px;
-  overflow: hidden;
-  white-space: nowrap;
 }
 
 .exception-setting {

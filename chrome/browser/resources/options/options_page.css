@@ -516,11 +516,17 @@ list .static-text {
   white-space: nowrap;
 }
 
-list > :not([editing]) [editmode=true] {
+list[inlineeditable] input {
+  box-sizing: border-box;
+  margin: 0;
+  width: 100%;
+}
+
+list > :not([editing]) [displaymode="edit"] {
   display: none;
 }
 
-list > [editing] [editmode=false] {
+list > [editing] [displaymode="static"] {
   display: none;
 }
 
