@@ -92,9 +92,6 @@ void RendererCairo::Paint() {
   // TODO(tschmelcher): Only sort when changes are made.
   layer_list_.sort(LayerZValueLessThan);
 
-  // Paint the background.
-  PaintBackground(current_drawing);
-
   // Core process of painting.
   for (LayerList::iterator i = layer_list_.begin();
        i != layer_list_.end(); i++) {
@@ -106,13 +103,15 @@ void RendererCairo::Paint() {
     // Save the current drawing state.
     cairo_save(current_drawing);
 
-    // Clip the region outside the current Layer.
-    cairo_rectangle(current_drawing,
-                    cur->x(),
-                    cur->y(),
-                    cur->width(),
-                    cur->height());
-    cairo_clip(current_drawing);
+    if (!cur->everywhere()) {
+      // Clip the region outside the current Layer.
+      cairo_rectangle(current_drawing,
+                      cur->x(),
+                      cur->y(),
+                      cur->width(),
+                      cur->height());
+      cairo_clip(current_drawing);
+    }
 
     // Clip the regions within other Layers that will obscure this one.
     LayerList::iterator start_mask_it = i;
@@ -174,28 +173,20 @@ void RendererCairo::Paint() {
   cairo_destroy(current_drawing);
 }
 
-void RendererCairo::PaintBackground(cairo_t* cr) {
-  cairo_save(cr);
-  ClipArea(cr, layer_list_.begin());
-
-  cairo_rectangle(cr, 0, 0, display_width(), display_height());
-  cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
-  cairo_fill(cr);
-  cairo_restore(cr);
-}
-
 void RendererCairo::ClipArea(cairo_t* cr,  LayerList::iterator it) {
   for (LayerList::iterator i = it; i != layer_list_.end(); i++) {
     // Preparing and updating the Layer.
     Layer* cur = *i;
     if (!cur->ShouldClip()) continue;
 
-    cairo_rectangle(cr, 0, 0, display_width(), display_height());
-    cairo_rectangle(cr,
-                    cur->x(),
-                    cur->y(),
-                    cur->width(),
-                    cur->height());
+    if (!cur->everywhere()) {
+      cairo_rectangle(cr, 0, 0, display_width(), display_height());
+      cairo_rectangle(cr,
+                      cur->x(),
+                      cur->y(),
+                      cur->width(),
+                      cur->height());
+    }
     cairo_clip(cr);
   }
 }

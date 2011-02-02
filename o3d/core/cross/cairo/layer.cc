@@ -51,6 +51,7 @@ Layer::~Layer() {
 Layer::Layer(ServiceLocator* service_locator)
     : ObjectBase(service_locator),
       visible_(true),
+      everywhere_(false),
       alpha_(0.0),
       x_(0),
       y_(0),

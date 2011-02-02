@@ -77,6 +77,14 @@ class Layer : public ObjectBase {
     visible_ = visible;
   }
 
+  bool everywhere() const {
+    return everywhere_;
+  }
+
+  void set_everywhere(bool everywhere) {
+    everywhere_ = everywhere;
+  }
+
   double alpha() const {
     return alpha_;
   }
@@ -176,6 +184,10 @@ class Layer : public ObjectBase {
 
   // Whether this layer should be visible or not.
   bool visible_;
+
+  // Paint everywhere rather than just within the region defined by the x, y,
+  // width, and height.
+  bool everywhere_;
 
   // The transparency for the BLEND_WITH_TRANSPARENCY operator or the fading for
   // the COPY_WITH_FADING operator.

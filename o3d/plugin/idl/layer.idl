@@ -71,6 +71,12 @@ namespace o2d {
   [getter, setter] bool visible;
 
   %[
+    Paint everywhere rather than just within the region defined by the x, y,
+    width, and height.
+  %]
+  [getter, setter] bool everywhere;
+
+  %[
     The transparency for the BLEND_WITH_TRANSPARENCY operator or the fading for
     the COPY_WITH_FADING operator.
   %]

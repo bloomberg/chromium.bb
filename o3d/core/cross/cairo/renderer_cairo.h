@@ -221,10 +221,6 @@ class RendererCairo : public Renderer {
   // Clip the area of the current layer that will collide with other images.
   void ClipArea(cairo_t* cr, LayerList::iterator it);
 
-  // Paint the background with black color.
-  // TODO(fransiskusx): Support changing the background color.
-  void PaintBackground(cairo_t* cr);
-
   // Linux Client Display
   Display* display_;
   // Linux Client Window
@@ -232,9 +228,6 @@ class RendererCairo : public Renderer {
 
   // Main surface to render cairo
   cairo_surface_t* main_surface_;
-
-  // Draw the background
-  cairo_t* bg_drawing_;
 
   // Array of Layer
   LayerList layer_list_;
