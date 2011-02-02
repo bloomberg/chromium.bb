@@ -72,12 +72,14 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     if (CrosLibrary::Get()->EnsureLoaded()) {
       current_input_method_id_ = chromeos::GetHardwareKeyboardLayoutName();
     }
-    // Observe APP_EXITING to stop input method daemon gracefully.
+    // Observe APP_TERMINATING to stop input method daemon gracefully.
+    // We should not use APP_EXITING here since logout might be canceled by
+    // JavaScript after APP_EXITING is sent (crosbug.com/11055).
     // Note that even if we fail to stop input method daemon from
     // Chrome in case of a sudden crash, we have a way to do it from an
     // upstart script. See crosbug.com/6515 and crosbug.com/6995 for
     // details.
-    notification_registrar_.Add(this, NotificationType::APP_EXITING,
+    notification_registrar_.Add(this, NotificationType::APP_TERMINATING,
                                 NotificationService::AllSources());
   }
 
@@ -655,7 +657,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
                const NotificationSource& source,
                const NotificationDetails& details) {
     // Stop the input method daemon on browser shutdown.
-    if (type.value == NotificationType::APP_EXITING) {
+    if (type.value == NotificationType::APP_TERMINATING) {
+      notification_registrar_.RemoveAll();
       StopInputMethodDaemon();
     }
   }
