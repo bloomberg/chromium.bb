@@ -785,23 +785,22 @@ def main():
                               archive_dir=archive_full_path,
                               acl=options.acl)
 
-    if buildconfig['uprev']:
-      # Don't push changes for developers.
-      if buildconfig['master']:
-        # Master bot needs to check if the other slaves completed.
-        if cbuildbot_comm.HaveSlavesCompleted(config):
-          if not options.debug and options.prebuilts:
-            _UploadPrebuilts(buildroot, board, buildconfig['rev_overlays'],
-                             [new_binhost])
-          _UprevPush(buildroot, tracking_branch, buildconfig['board'],
-                     push_overlays, options.debug)
-        else:
-          Die('CBUILDBOT - One of the slaves has failed!!!')
-
+    # Don't push changes for developers.
+    if buildconfig['master']:
+      # Master bot needs to check if the other slaves completed.
+      if cbuildbot_comm.HaveSlavesCompleted(config):
+        if not options.debug and options.prebuilts:
+          _UploadPrebuilts(buildroot, board, buildconfig['rev_overlays'],
+                           [new_binhost])
+        _UprevPush(buildroot, tracking_branch, buildconfig['board'],
+                   push_overlays, options.debug)
       else:
-        # Publish my status to the master if its expecting it.
-        if buildconfig['important'] and not options.debug:
-          cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_COMPLETE)
+        Die('CBUILDBOT - One of the slaves has failed!!!')
+
+    else:
+      # Publish my status to the master if its expecting it.
+      if buildconfig['important'] and not options.debug:
+        cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_COMPLETE)
 
     if buildconfig['archive_build']:
       _LegacyArchiveBuild(buildroot,
