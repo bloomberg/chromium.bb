@@ -205,7 +205,6 @@ void FirstRunBubble::InitializeLabels(int width_resource) {
     // |content_| unsized so that it'll expand as needed to hold the other
     // widgets -- the buttons may be wider than |width| on high-DPI displays.
     gtk_util::SetLabelWidth(labels_[i], width);
-    gtk_misc_set_alignment(GTK_MISC(labels_[i]), 0, 0.5);
   }
 }
 

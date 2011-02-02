@@ -79,7 +79,6 @@ const int kWrapWidth = 475;
 GtkWidget* CreateWrappedLabel(int string_id) {
   GtkWidget* label = gtk_label_new(
       l10n_util::GetStringUTF8(string_id).c_str());
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_util::SetLabelWidth(label, kWrapWidth);
   return label;
 }

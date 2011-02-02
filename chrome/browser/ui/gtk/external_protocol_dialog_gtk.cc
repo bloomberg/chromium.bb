@@ -86,8 +86,7 @@ ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(const GURL& url)
 
   // Add the message text.
   GtkWidget* label = gtk_label_new(message_text.c_str());
-  gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
-  gtk_widget_set_size_request(label, kMessageWidth, -1);
+  gtk_util::SetLabelWidth(label, kMessageWidth);
   gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
 
   // Add the checkbox.

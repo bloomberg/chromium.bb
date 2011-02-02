@@ -40,8 +40,7 @@ UpdateRecommendedDialog::UpdateRecommendedDialog(GtkWindow* parent) {
       l10n_util::GetStringFUTF8(IDS_UPDATE_RECOMMENDED,
                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   GtkWidget* label = gtk_label_new(text.c_str());
-  gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
-  gtk_widget_set_size_request(label, kMessageWidth, -1);
+  gtk_util::SetLabelWidth(label, kMessageWidth);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), label,
                      FALSE, FALSE, 0);
 

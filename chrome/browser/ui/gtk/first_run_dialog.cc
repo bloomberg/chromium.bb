@@ -209,7 +209,6 @@ void FirstRunDialog::ShowSearchEngineWindow() {
   GtkWidget* explanation = gtk_label_new(
       l10n_util::GetStringFUTF8(IDS_FR_SEARCH_TEXT,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str());
-  gtk_misc_set_alignment(GTK_MISC(explanation), 0, 0.5);
   gtk_util::SetLabelColor(explanation, &gtk_util::kGdkBlack);
   gtk_util::SetLabelWidth(explanation, kExplanationWidth);
   gtk_box_pack_start(GTK_BOX(bubble_area_box), explanation, FALSE, FALSE, 0);

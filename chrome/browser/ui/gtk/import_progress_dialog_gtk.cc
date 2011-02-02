@@ -146,8 +146,7 @@ ImportProgressDialogGtk::ImportProgressDialogGtk(const string16& source_profile,
   GtkWidget* import_info = gtk_label_new(
       l10n_util::GetStringFUTF8(IDS_IMPORT_PROGRESS_INFO,
                                 source_profile).c_str());
-  gtk_label_set_line_wrap(GTK_LABEL(import_info), TRUE);
-  gtk_widget_set_size_request(import_info, 350, -1);
+  gtk_util::SetLabelWidth(import_info, 400);
   gtk_box_pack_start(GTK_BOX(control_group), import_info, FALSE, FALSE, 0);
 
   GtkWidget* item_box = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);

@@ -109,7 +109,6 @@ void ShowInstallPromptDialog2(GtkWindow* parent, SkBitmap* skia_icon,
   if (show_permissions) {
     GtkWidget* warning_label = gtk_label_new(l10n_util::GetStringUTF8(
         IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO).c_str());
-    gtk_misc_set_alignment(GTK_MISC(warning_label), 0.0, 0.5);
     gtk_util::SetLabelWidth(warning_label, kRightColumnMinWidth);
 
     gtk_box_pack_start(GTK_BOX(right_column_area), warning_label,

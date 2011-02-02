@@ -1044,6 +1044,7 @@ void SetGtkFont(const std::string& font_name) {
 
 void SetLabelWidth(GtkWidget* label, int pixel_width) {
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+  gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
 
   // Do the simple thing in LTR because the bug only affects right-aligned
   // text. Also, when using the workaround, the label tries to maintain

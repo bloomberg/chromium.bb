@@ -118,16 +118,14 @@ void CreateApplicationShortcutsDialogGtk::CreateDialogBox(GtkWindow* parent) {
   // Set the size request on the label so it knows where to line wrap. The width
   // is the desired size of the dialog less the space reserved for padding and
   // the image.
-  int label_width, label_height;
+  int label_width;
   gtk_util::GetWidgetSizeFromResources(
       description_label,
       IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS, -1, &label_width, NULL);
   label_width -= gtk_util::kControlSpacing * 3 +
       gdk_pixbuf_get_width(favicon_pixbuf_);
-  gtk_util::GetWidgetSizeFromCharacters(
-      description_label, -1, kDescriptionLabelHeightLines, NULL, &label_height);
-  gtk_widget_set_size_request(description_label, label_width, label_height);
-  gtk_misc_set_alignment(GTK_MISC(description_label), 0, 0.5);
+  gtk_util::SetLabelWidth(description_label, label_width);
+
   std::string description(UTF16ToUTF8(shortcut_info_.description));
   std::string title(UTF16ToUTF8(shortcut_info_.title));
   gtk_label_set_text(GTK_LABEL(description_label),

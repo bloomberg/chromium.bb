@@ -232,23 +232,19 @@ GtkWidget* PageInfoBubbleGtk::CreateSection(
                            pango_attr_weight_new(PANGO_WEIGHT_BOLD));
     gtk_label_set_attributes(GTK_LABEL(label), attributes);
     pango_attr_list_unref(attributes);
-    gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+    gtk_util::SetLabelWidth(label, 400);
     // Allow linebreaking in the middle of words if necessary, so that extremely
     // long hostnames (longer than one line) will still be completely shown.
     gtk_label_set_line_wrap_mode(GTK_LABEL(label), PANGO_WRAP_WORD_CHAR);
-    gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
-    gtk_widget_set_size_request(label, 400, -1);
   }
   GtkWidget* label = gtk_label_new(UTF16ToUTF8(section.description).c_str());
   labels_.push_back(label);
-  gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-  gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+  gtk_util::SetLabelWidth(label, 400);
   // Allow linebreaking in the middle of words if necessary, so that extremely
   // long hostnames (longer than one line) will still be completely shown.
   gtk_label_set_line_wrap_mode(GTK_LABEL(label), PANGO_WRAP_WORD_CHAR);
   gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
-  gtk_widget_set_size_request(label, 400, -1);
 
   if (section.type == PageInfoModel::SECTION_INFO_IDENTITY && cert_id_ > 0) {
     GtkWidget* view_cert_link = gtk_chrome_link_button_new(
