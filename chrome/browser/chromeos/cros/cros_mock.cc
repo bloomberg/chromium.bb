@@ -45,7 +45,9 @@ CrosMock::CrosMock()
       mock_screen_lock_library_(NULL),
       mock_speech_synthesis_library_(NULL),
       mock_system_library_(NULL),
-      mock_touchpad_library_(NULL) {}
+      mock_touchpad_library_(NULL),
+      current_input_method_("", "", "", ""),
+      previous_input_method_("", "", "", "") {}
 
 CrosMock::~CrosMock() {
 }
@@ -239,6 +241,14 @@ void CrosMock::SetInputMethodLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_input_method_library_, GetSupportedInputMethods())
       .Times(AnyNumber())
       .WillRepeatedly(InvokeWithoutArgs(CreateFallbackInputMethodDescriptors))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_input_method_library_, current_input_method())
+      .Times(AnyNumber())
+      .WillRepeatedly((ReturnRef(current_input_method_)))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_input_method_library_, previous_input_method())
+      .Times(AnyNumber())
+      .WillRepeatedly((ReturnRef(previous_input_method_)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_input_method_library_, current_ime_properties())
       .Times(AnyNumber())
