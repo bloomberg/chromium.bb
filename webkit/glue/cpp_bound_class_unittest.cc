@@ -230,8 +230,7 @@ TEST_F(CppBoundClassTest, SetAndGetPropertiesWithCallbacks) {
   CheckJavaScriptSuccess(js);
 }
 
-// Disabled, http://crbug.com/68445.
-TEST_F(CppBoundClassTest, DISABLED_InvokeMethods) {
+TEST_F(CppBoundClassTest, InvokeMethods) {
   // The expression on the left is expected to return the value on the right.
   static const std::string tests[] = {
     "example.echoValue(true)", "true",
