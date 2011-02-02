@@ -29,7 +29,8 @@ class DownloadFile : public BaseFile {
 
   // Deletes its .crdownload intermediate file.
   // Marked virtual for testing.
-  virtual void DeleteCrDownload();
+  // Returns true if the file was deleted.
+  virtual bool DeleteCrDownload();
 
   // Cancels the download request associated with this file.
   void CancelDownloadRequest(ResourceDispatcherHost* rdh);

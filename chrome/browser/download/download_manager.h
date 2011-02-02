@@ -63,10 +63,6 @@ class DownloadManager
                                         BrowserThread::DeleteOnUIThread>,
       public DownloadStatusUpdaterDelegate,
       public SelectFileDialog::Listener {
-  // For testing.
-  friend class DownloadManagerTest;
-  friend class MockDownloadManager;
-
  public:
   explicit DownloadManager(DownloadStatusUpdater* status_updater);
 
@@ -226,6 +222,10 @@ class DownloadManager
   void DangerousDownloadValidated(DownloadItem* download);
 
  private:
+  // For testing.
+  friend class DownloadManagerTest;
+  friend class MockDownloadManager;
+
   // This class is used to let an incognito DownloadManager observe changes to
   // a normal DownloadManager, to propagate ModelChanged() calls from the parent
   // DownloadManager to the observers of the incognito DownloadManager.
