@@ -56,14 +56,12 @@ string16 KeyboardSwitchMenu::GetCurrentKeyboardName() const {
     if (IsItemCheckedAt(i))
       return GetLabelAt(i);
   }
-  VLOG(1) << "The input method menu is not ready yet.  Show a language name "
-             "that matches the hardware keyboard layout";
-  KeyboardLibrary *library = CrosLibrary::Get()->GetKeyboardLibrary();
-  const std::string keyboard_layout_id =
-      library->GetHardwareKeyboardLayoutName();
-  const std::string language_code =
-      input_method::GetLanguageCodeFromInputMethodId(keyboard_layout_id);
-  return input_method::GetLanguageDisplayNameFromCode(language_code);
+  VLOG(1) << "The input method menu is not ready yet. Show the display "
+          << "name of the current input method";
+  InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
+  return (input_method::GetStringUTF16(
+              input_method::GetInputMethodDisplayNameFromId(
+                  library->current_input_method().id)));
 }
 
 }  // namespace chromeos
