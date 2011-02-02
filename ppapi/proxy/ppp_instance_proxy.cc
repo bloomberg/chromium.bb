@@ -58,9 +58,15 @@ void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
 PP_Bool HandleInputEvent(PP_Instance instance,
                          const PP_InputEvent* event) {
   PP_Bool result = PP_FALSE;
-  HostDispatcher::GetForInstance(instance)->Send(
-      new PpapiMsg_PPPInstance_HandleInputEvent(INTERFACE_ID_PPP_INSTANCE,
-                                                instance, *event, &result));
+  IPC::Message* msg = new PpapiMsg_PPPInstance_HandleInputEvent(
+      INTERFACE_ID_PPP_INSTANCE, instance, *event, &result);
+  // Make this message not unblock, to avoid re-entrancy problems when the
+  // plugin does a synchronous call to the renderer. This will force any
+  // synchronous calls from the plugin to complete before processing this
+  // message. We avoid deadlock by never un-setting the unblock flag on messages
+  // from the plugin to the renderer.
+  msg->set_unblock(false);
+  HostDispatcher::GetForInstance(instance)->Send(msg);
   return result;
 }
 
