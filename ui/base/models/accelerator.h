@@ -52,6 +52,7 @@ class Accelerator {
     return !(*this == rhs);
   }
 
+  // TODO(beng): unix_hacker
   ui::KeyboardCode GetKeyCode() const {
     return key_code_;
   }

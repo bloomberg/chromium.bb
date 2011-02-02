@@ -57,6 +57,10 @@ class Event {
   bool IsCapsLockDown() const { return (flags_ & EF_CAPS_LOCK_DOWN) != 0; }
   bool IsAltDown() const { return (flags_ & EF_ALT_DOWN) != 0; }
 
+  // Return a mask of active modifier keycodes from
+  // ui/base/keycodes/keyboard_codes.h
+  int GetModifiers() const;
+
   // Returns true if the event is any kind of mouse event.
   bool IsMouseEvent() const {
     return type_ == ET_MOUSE_PRESSED ||

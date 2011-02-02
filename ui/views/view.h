@@ -161,6 +161,9 @@ class View {
   // match the specified group id.
   void GetViewsWithGroup(int group, ViewVector* vec) const;
 
+  // TODO(beng): implementme
+  virtual View* GetSelectedViewForGroup(int group_id);
+
   // Painting ------------------------------------------------------------------
 
   // Add all or part of a View's bounds to the enclosing Widget's invalid
@@ -227,6 +230,11 @@ class View {
 
   // Focus ---------------------------------------------------------------------
   virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& event) const;
+  virtual bool IsGroupFocusTraversable() const;
+  // TODO(beng): kill these, move to focus manager.
+  virtual bool IsFocusableInRootView() const;
+  virtual bool IsAccessibilityFocusableInRootView() const;
+  virtual FocusTraversable* GetPaneFocusTraversable() const;
 
   virtual void OnFocus(/* const FocusEvent& event */);
   virtual void OnBlur();
@@ -281,6 +289,8 @@ class View {
 
  private:
   friend internal::RootView;
+  friend class FocusManager;
+  friend class FocusSearch;
 
   // State collected during a MousePressed event to detect possible drag
   // operations.

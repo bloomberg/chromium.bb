@@ -293,6 +293,11 @@ void View::GetViewsWithGroup(int group, ViewVector* vec) const {
     (*it)->GetViewsWithGroup(group, vec);
 }
 
+View* View::GetSelectedViewForGroup(int group_id) {
+  // TODO(beng): implementme
+  return NULL;
+}
+
 // Painting --------------------------------------------------------------------
 
 void View::Invalidate() {
@@ -391,6 +396,25 @@ bool View::OnAcceleratorPressed(const Accelerator& accelerator) {
 
 bool View::SkipDefaultKeyEventProcessing(const KeyEvent& event) const {
   return false;
+}
+
+bool View::IsGroupFocusTraversable() const {
+  return true;
+}
+
+bool View::IsFocusableInRootView() const {
+  // TODO(beng): kill this, replace with direct check in focus manager.
+  return IsFocusable();
+}
+
+bool View::IsAccessibilityFocusableInRootView() const {
+  // TODO(beng): kill this, replace with direct check in focus manager.
+  return false;
+}
+
+FocusTraversable* View::GetPaneFocusTraversable() const {
+  // TODO(beng): figure out what to do about this.
+  return NULL;
 }
 
 void View::OnFocus(/* const FocusEvent& event */) {

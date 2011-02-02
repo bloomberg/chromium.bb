@@ -16,6 +16,19 @@ Event::Event(EventType type, int flags)
       flags_(flags) {
 }
 
+int Event::GetModifiers() const {
+  int modifiers = 0;
+  if (IsShiftDown())
+    modifiers |= VKEY_SHIFT;
+  if (IsControlDown())
+    modifiers |= VKEY_CONTROL;
+  if (IsAltDown())
+    modifiers |= VKEY_MENU;
+  if (IsCapsLockDown())
+    modifiers |= VKEY_CAPITAL;
+  return modifiers;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // LocatedEvent, protected:
 
