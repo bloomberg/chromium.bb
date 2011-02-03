@@ -17,6 +17,7 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/timer.h"
 #include "base/values.h"
 #include "base/weak_ptr.h"
@@ -345,8 +346,13 @@ bool CellularConfigDocument::LoadFromFile(const FilePath& config_path) {
   error_map_.clear();
 
   std::string config;
-  if (!file_util::ReadFileToString(config_path, &config))
-    return false;
+  {
+    // Reading config file causes us to do blocking IO on UI thread.
+    // Temporarily allow it until we fix http://crosbug.com/11535
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    if (!file_util::ReadFileToString(config_path, &config))
+      return false;
+  }
 
   scoped_ptr<Value> root(base::JSONReader::Read(config, true));
   DCHECK(root.get() != NULL);
@@ -1262,7 +1268,14 @@ void MobileSetupHandler::LoadCellularConfig() {
   config_loaded = true;
   // Load partner customization startup manifest if it is available.
   FilePath config_path(kCellularConfigPath);
-  if (file_util::PathExists(config_path)) {
+  bool config_exists = false;
+  {
+    // Reading config file causes us to do blocking IO on UI thread.
+    // Temporarily allow it until we fix http://crosbug.com/11535
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    config_exists = file_util::PathExists(config_path);
+  }
+  if (config_exists) {
     scoped_ptr<CellularConfigDocument> config(new CellularConfigDocument());
     bool config_loaded = config->LoadFromFile(config_path);
     if (config_loaded) {
