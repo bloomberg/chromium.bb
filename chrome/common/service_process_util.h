@@ -12,7 +12,10 @@
 #include "base/shared_memory.h"
 
 class Task;
-class MessageLoop;
+
+namespace base {
+  class MessageLoopProxy;
+}
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -64,9 +67,10 @@ class ServiceProcessState {
   // This method is called when the service process is running and initialized.
   // |shutdown_task| is invoked when we get a shutdown request from another
   // process (in the same thread that called SignalReady). It can be NULL.
-  // |message_loop| must be of type IO and is the loop that POSIX uses
+  // |message_loop_proxy| must be of type IO and is the loop that POSIX uses
   // to monitor the service process.
-  bool SignalReady(MessageLoop *message_loop, Task* shutdown_task);
+  bool SignalReady(
+      base::MessageLoopProxy* message_loop_proxy, Task* shutdown_task);
 
   // Signal that the service process is stopped.
   void SignalStopped();

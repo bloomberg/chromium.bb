@@ -41,8 +41,6 @@ int ServiceProcessMain(const MainFunctionParams& parameters) {
       parameters.sandbox_info_.BrokerServices();
   if (broker_services)
     sandbox::InitBrokerServices(broker_services);
-#elif defined(OS_MACOSX)
-  chrome_application_mac::RegisterCrApp();
 #endif  // defined(OS_WIN)
 
   ServiceProcess service_process;

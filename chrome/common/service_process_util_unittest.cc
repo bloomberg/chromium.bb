@@ -39,7 +39,9 @@ class ServiceProcessStateTest : public base::MultiProcessTest {
   ServiceProcessStateTest();
   ~ServiceProcessStateTest();
   virtual void SetUp();
-  MessageLoop* IOMessageLoop() { return io_thread_.message_loop(); }
+  base::MessageLoopProxy* IOMessageLoopProxy() {
+    return io_thread_.message_loop_proxy();
+  }
   void LaunchAndWait(const std::string& name);
 
  private:
@@ -78,7 +80,7 @@ TEST_F(ServiceProcessStateTest, ReadyState) {
   ASSERT_FALSE(CheckServiceProcessReady());
   ServiceProcessState* state = ServiceProcessState::GetInstance();
   ASSERT_TRUE(state->Initialize());
-  ASSERT_TRUE(state->SignalReady(IOMessageLoop(), NULL));
+  ASSERT_TRUE(state->SignalReady(IOMessageLoopProxy(), NULL));
   LaunchAndWait("ServiceProcessStateTestReadyTrue");
   state->SignalStopped();
   LaunchAndWait("ServiceProcessStateTestReadyFalse");
@@ -143,7 +145,7 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
   EXPECT_TRUE(io_thread_.StartWithOptions(options));
   ServiceProcessState* state = ServiceProcessState::GetInstance();
   EXPECT_TRUE(state->Initialize());
-  EXPECT_TRUE(state->SignalReady(io_thread_.message_loop(),
+  EXPECT_TRUE(state->SignalReady(io_thread_.message_loop_proxy(),
                                  NewRunnableFunction(&ShutdownTask,
                                                      MessageLoop::current())));
   message_loop.PostDelayedTask(FROM_HERE,

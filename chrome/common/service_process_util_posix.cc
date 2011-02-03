@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/message_pump_libevent.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
@@ -186,11 +187,10 @@ bool ServiceProcessState::TakeSingletonLock() {
   return state_->initializing_lock_.get();
 }
 
-bool ServiceProcessState::SignalReady(MessageLoop* message_loop,
-                                      Task* shutdown_task) {
+bool ServiceProcessState::SignalReady(
+    base::MessageLoopProxy* message_loop_proxy, Task* shutdown_task) {
   CHECK(state_);
   CHECK_EQ(g_signal_socket, -1);
-  DCHECK_EQ(message_loop->type(), MessageLoop::TYPE_IO);
 
   state_->running_lock_.reset(TakeServiceRunningLock(true));
   if (state_->running_lock_.get() == NULL) {
@@ -202,7 +202,7 @@ bool ServiceProcessState::SignalReady(MessageLoop* message_loop,
     PLOG(ERROR) << "pipe";
     return false;
   }
-  message_loop->PostTask(FROM_HERE,
+  message_loop_proxy->PostTask(FROM_HERE,
       NewRunnableMethod(state_, &ServiceProcessState::StateData::SignalReady));
   return true;
 }
