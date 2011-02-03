@@ -217,6 +217,8 @@
         }],
         ['nacl_standalone==0 and OS=="win"', {
           'dependencies': [
+            '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:handle_lookup',
+            '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:browserhandle',
             '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle',
           ],
         }],
@@ -281,6 +283,8 @@
           'conditions': [
             ['nacl_standalone==0 and OS=="win"', {
               'dependencies': [
+                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:handle_lookup64',
+                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:browserhandle64',
                 '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle64',
               ],
             }],
