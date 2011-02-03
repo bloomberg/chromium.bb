@@ -216,7 +216,7 @@ bool BrowserDistribution::GetChromeChannel(std::wstring* channel) {
 }
 
 void BrowserDistribution::UpdateInstallStatus(bool system_install,
-    bool incremental_install, bool multi_install,
+    installer::ArchiveType archive_type,
     installer::InstallStatus install_status) {
 }
 

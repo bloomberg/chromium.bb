@@ -71,6 +71,13 @@ enum InstallStatus {
   READY_MODE_REQUIRES_CHROME,  // 40. Chrome Frame in ready-mode requires Chrome
 };
 
+// The type of an update archive.
+enum ArchiveType {
+  UNKNOWN_ARCHIVE_TYPE,     // Unknown or uninitialized.
+  FULL_ARCHIVE_TYPE,        // Full chrome.7z archive.
+  INCREMENTAL_ARCHIVE_TYPE  // Incremental or differential archive.
+};
+
 namespace switches {
 extern const char kCeee[];
 extern const char kChrome[];

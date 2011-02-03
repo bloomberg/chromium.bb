@@ -91,7 +91,7 @@ class BrowserDistribution {
   virtual bool GetChromeChannel(std::wstring* channel);
 
   virtual void UpdateInstallStatus(bool system_install,
-      bool incremental_install, bool multi_install,
+      installer::ArchiveType archive_type,
       installer::InstallStatus install_status);
 
   // After an install or upgrade the user might qualify to participate in an

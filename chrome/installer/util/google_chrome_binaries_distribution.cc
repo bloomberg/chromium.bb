@@ -48,9 +48,9 @@ std::wstring GoogleChromeBinariesDistribution::GetVersionKey() {
 }
 
 void GoogleChromeBinariesDistribution::UpdateInstallStatus(bool system_install,
-    bool incremental_install, bool multi_install,
+    installer::ArchiveType archive_type,
     installer::InstallStatus install_status) {
   GoogleUpdateSettings::UpdateInstallStatus(system_install,
-      incremental_install, multi_install,
-      InstallUtil::GetInstallReturnCode(install_status), kChromeBinariesGuid);
+      archive_type, InstallUtil::GetInstallReturnCode(install_status),
+      kChromeBinariesGuid);
 }

@@ -505,11 +505,11 @@ std::wstring GoogleChromeDistribution::GetVersionKey() {
 // string (if it is present) regardless of whether installer failed or not.
 // There is no fall-back for full installer :)
 void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
-    bool incremental_install, bool multi_install,
+    installer::ArchiveType archive_type,
     installer::InstallStatus install_status) {
   GoogleUpdateSettings::UpdateInstallStatus(system_install,
-      incremental_install, multi_install,
-      InstallUtil::GetInstallReturnCode(install_status), product_guid());
+      archive_type, InstallUtil::GetInstallReturnCode(install_status),
+      product_guid());
 }
 
 // The functions below are not used by the 64-bit Windows binary -

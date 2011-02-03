@@ -52,7 +52,7 @@ class ChromeFrameDistribution : public BrowserDistribution {
   virtual bool CanSetAsDefault();
 
   virtual void UpdateInstallStatus(bool system_install,
-      bool incremental_install, bool multi_install,
+      installer::ArchiveType archive_type,
       installer::InstallStatus install_status);
 
  protected:

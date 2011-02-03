@@ -106,11 +106,11 @@ bool ChromeFrameDistribution::CanSetAsDefault() {
 }
 
 void ChromeFrameDistribution::UpdateInstallStatus(bool system_install,
-    bool incremental_install, bool multi_install,
+    installer::ArchiveType archive_type,
     installer::InstallStatus install_status) {
 #if defined(GOOGLE_CHROME_BUILD)
   GoogleUpdateSettings::UpdateInstallStatus(system_install,
-      incremental_install, multi_install,
-      InstallUtil::GetInstallReturnCode(install_status), kChromeFrameGuid);
+      archive_type, InstallUtil::GetInstallReturnCode(install_status),
+      kChromeFrameGuid);
 #endif
 }
