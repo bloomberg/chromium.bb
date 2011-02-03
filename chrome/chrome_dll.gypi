@@ -69,6 +69,7 @@
           },
           'dependencies': [
             '<@(chromium_dependencies)',
+            'policy'
           ],
           'conditions': [
             ['OS=="win"', {
