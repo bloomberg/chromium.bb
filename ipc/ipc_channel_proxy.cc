@@ -307,7 +307,7 @@ void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
   // to be created immediately so that it can be accessed and passed
   // to other processes. Forcing it to be created immediately avoids
   // race conditions that may otherwise arise.
-  if (mode == Channel::MODE_SERVER || mode == Channel::MODE_NAMED_SERVER) {
+  if (mode & Channel::MODE_SERVER_FLAG) {
     create_pipe_now = true;
   }
 #endif  // defined(OS_POSIX)

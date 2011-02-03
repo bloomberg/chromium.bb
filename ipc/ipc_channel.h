@@ -62,17 +62,26 @@ class Channel : public Message::Sender {
 #endif  // OS_POSIX
   };
 
+  // Flags to test modes
+  enum ModeFlags {
+    MODE_NO_FLAG = 0x0,
+    MODE_SERVER_FLAG = 0x1,
+    MODE_CLIENT_FLAG = 0x2,
+    MODE_NAMED_FLAG = 0x4
+  };
+
+  // Some Standard Modes
   enum Mode {
-    MODE_NONE,
-    MODE_SERVER,
-    MODE_CLIENT,
+    MODE_NONE = MODE_NO_FLAG,
+    MODE_SERVER = MODE_SERVER_FLAG,
+    MODE_CLIENT = MODE_CLIENT_FLAG,
     // Channels on Windows are named by default and accessible from other
     // processes. On POSIX channels are anonymous by default and not accessible
     // from other processes. Named channels work via named unix domain sockets.
-    // On Windows MODE_NAMED_SERVER == MODE_SERVER and
-    // MODE_NAMED_CLIENT == MODE_CLIENT.
-    MODE_NAMED_SERVER,
-    MODE_NAMED_CLIENT,
+    // On Windows MODE_NAMED_SERVER is equivalent to MODE_SERVER and
+    // MODE_NAMED_CLIENT is equivalent to MODE_CLIENT.
+    MODE_NAMED_SERVER = MODE_SERVER_FLAG | MODE_NAMED_FLAG,
+    MODE_NAMED_CLIENT = MODE_CLIENT_FLAG | MODE_NAMED_FLAG,
   };
 
   enum {

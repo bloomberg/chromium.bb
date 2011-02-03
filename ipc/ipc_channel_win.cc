@@ -103,25 +103,9 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle &channel_handle,
       ALLOW_THIS_IN_INITIALIZER_LIST(output_state_(this)),
       pipe_(INVALID_HANDLE_VALUE),
       listener_(listener),
-      waiting_connect_(mode == MODE_SERVER || mode == MODE_NAMED_SERVER),
+      waiting_connect_(mode & MODE_SERVER_FLAG),
       processing_incoming_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(factory_(this)) {
-  switch(mode) {
-    case MODE_NONE:
-      LOG(FATAL) << "Bad mode for " << channel_handle.name;
-      break;
-    case MODE_SERVER:
-    case MODE_CLIENT:
-      break;
-    case MODE_NAMED_SERVER:
-      mode = MODE_SERVER;
-      break;
-    case MODE_NAMED_CLIENT:
-      mode = MODE_CLIENT;
-      break;
-    // Intentionally no default case here so that the compiler
-    // will check that we handle all the cases in the enum.
-  }
   if (!CreatePipe(channel_handle, mode)) {
     // The pipe may have been closed already.
     LOG(WARNING) << "Unable to create pipe named \"" << channel_handle.name <<
@@ -195,7 +179,7 @@ bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle &channel_handle,
                                       Mode mode) {
   DCHECK(pipe_ == INVALID_HANDLE_VALUE);
   const std::wstring pipe_name = PipeName(channel_handle.name);
-  if (mode == MODE_SERVER) {
+  if (mode & MODE_SERVER_FLAG) {
     SECURITY_ATTRIBUTES security_attributes = {0};
     security_attributes.bInheritHandle = FALSE;
     security_attributes.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -217,7 +201,7 @@ bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle &channel_handle,
                              5000,      // timeout in milliseconds (XXX tune)
                              &security_attributes);
     LocalFree(security_attributes.lpSecurityDescriptor);
-  } else {
+  } else if (mode & MODE_CLIENT_FLAG) {
     pipe_ = CreateFileW(pipe_name.c_str(),
                         GENERIC_READ | GENERIC_WRITE,
                         0,
@@ -226,6 +210,8 @@ bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle &channel_handle,
                         SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION |
                             FILE_FLAG_OVERLAPPED,
                         NULL);
+  } else {
+    NOTREACHED();
   }
   if (pipe_ == INVALID_HANDLE_VALUE) {
     // If this process is being closed, the pipe may be gone already.

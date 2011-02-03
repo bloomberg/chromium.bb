@@ -44,7 +44,7 @@ PluginChannelBase* PluginChannelBase::GetChannel(
 
   if (!channel->channel_valid()) {
     channel->channel_handle_ = channel_handle;
-    if (mode == IPC::Channel::MODE_SERVER) {
+    if (mode & IPC::Channel::MODE_SERVER_FLAG) {
       channel->channel_handle_.name.append(".");
       channel->channel_handle_.name.append(base::IntToString(next_pipe_id++));
     }

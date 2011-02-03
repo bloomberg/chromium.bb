@@ -56,9 +56,7 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   void ResetToAcceptingConnectionState();
 
  private:
-  bool CreatePipe(const IPC::ChannelHandle& channel_handle,
-                  bool uses_domain_sockets,
-                  bool listening_socket);
+  bool CreatePipe(const IPC::ChannelHandle& channel_handle);
 
   bool ProcessIncomingMessages();
   bool ProcessOutgoingMessages();

@@ -233,7 +233,7 @@ void RunTest(std::vector<Worker*> workers) {
   // First we create the workers that are channel servers, or else the other
   // workers' channel initialization might fail because the pipe isn't created..
   for (size_t i = 0; i < workers.size(); ++i) {
-    if (workers[i]->mode() == Channel::MODE_SERVER) {
+    if (workers[i]->mode() & Channel::MODE_SERVER_FLAG) {
       workers[i]->Start();
       workers[i]->WaitForChannelCreation();
     }
@@ -241,7 +241,7 @@ void RunTest(std::vector<Worker*> workers) {
 
   // now create the clients
   for (size_t i = 0; i < workers.size(); ++i) {
-    if (workers[i]->mode() == Channel::MODE_CLIENT)
+    if (workers[i]->mode() & Channel::MODE_CLIENT_FLAG)
       workers[i]->Start();
   }
 
