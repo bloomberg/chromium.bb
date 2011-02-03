@@ -169,7 +169,6 @@ PasswordForm* FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   bool date_ok = base::StringToInt64(string_attr_map["date_created"],
                                      &date_created);
   DCHECK(date_ok);
-  DCHECK_NE(date_created, 0);
   form->date_created = base::Time::FromTimeT(date_created);
   form->blacklisted_by_user = uint_attr_map["blacklisted_by_user"];
   form->scheme = static_cast<PasswordForm::Scheme>(uint_attr_map["scheme"]);
@@ -309,6 +308,11 @@ class GKRMethod {
 
 void GKRMethod::AddLogin(const PasswordForm& form) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  time_t date_created = form.date_created.ToTimeT();
+  // If we are asked to save a password with 0 date, use the current time.
+  // We don't want to actually save passwords as though on January 1, 1970.
+  if (!date_created)
+    date_created = time(NULL);
   gnome_keyring_store_password(
       &kGnomeSchema,
       NULL,  // Default keyring.
@@ -326,7 +330,7 @@ void GKRMethod::AddLogin(const PasswordForm& form) {
       "signon_realm", form.signon_realm.c_str(),
       "ssl_valid", form.ssl_valid,
       "preferred", form.preferred,
-      "date_created", base::Int64ToString(form.date_created.ToTimeT()).c_str(),
+      "date_created", base::Int64ToString(date_created).c_str(),
       "blacklisted_by_user", form.blacklisted_by_user,
       "scheme", form.scheme,
       "application", GNOME_KEYRING_APPLICATION_CHROME,
