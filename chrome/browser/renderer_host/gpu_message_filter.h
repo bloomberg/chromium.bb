@@ -6,14 +6,22 @@
 #define CHROME_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_
 #pragma once
 
+#include <queue>
+
 #include "chrome/browser/browser_message_filter.h"
 
 struct GPUCreateCommandBufferConfig;
+class GPUInfo;
+
+namespace IPC {
+struct ChannelHandle;
+}
 
 // A message filter for messages from the renderer to the GpuProcessHost
 // in the browser. Such messages are typically destined for the GPU process,
 // but need to be mediated by the browser.
-class GpuMessageFilter : public BrowserMessageFilter {
+class GpuMessageFilter : public BrowserMessageFilter,
+                         public base::SupportsWeakPtr<GpuMessageFilter> {
  public:
   explicit GpuMessageFilter(int render_process_id);
 

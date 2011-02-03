@@ -9,7 +9,8 @@
 #include <queue>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
+#include "base/callback.h"
+#include "base/linked_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/common/gpu_feature_flags.h"
@@ -18,7 +19,6 @@
 class GpuBlacklist;
 struct GPUCreateCommandBufferConfig;
 class GPUInfo;
-class GpuMessageFilter;
 
 namespace IPC {
 struct ChannelHandle;
@@ -36,15 +36,22 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
+  typedef Callback2<const IPC::ChannelHandle&, const GPUInfo&>::Type
+      EstablishChannelCallback;
+
   // Tells the GPU process to create a new channel for communication with a
-  // renderer. Will asynchronously send message to object with given routing id
-  // on completion.
-  void EstablishGpuChannel(int renderer_id,
-                           GpuMessageFilter* filter);
+  // renderer. Once the GPU process responds asynchronously with the IPC handle
+  // and GPUInfo, we call the callback.
+  void EstablishGpuChannel(
+      int renderer_id, EstablishChannelCallback* callback);
+
+  typedef Callback0::Type SynchronizeCallback;
 
   // Sends a reply message later when the next GpuHostMsg_SynchronizeReply comes
   // in.
-  void Synchronize(IPC::Message* reply, GpuMessageFilter* filter);
+  void Synchronize(SynchronizeCallback* callback);
+
+  typedef Callback1<int32>::Type CreateCommandBufferCallback;
 
   // Tells the GPU process to create a new command buffer that draws into the
   // window associated with the given renderer.
@@ -52,35 +59,13 @@ class GpuProcessHost : public BrowserChildProcessHost,
       int32 render_view_id,
       int32 renderer_id,
       const GPUCreateCommandBufferConfig& init_params,
-      IPC::Message* reply,
-      GpuMessageFilter* filter);
+      CreateCommandBufferCallback* callback);
 
   // We need to hop threads when creating the command buffer.
   // Let these tasks access our internals.
   friend class CVCBThreadHopping;
 
  private:
-  // Used to queue pending channel requests.
-  struct ChannelRequest {
-    explicit ChannelRequest(GpuMessageFilter* filter);
-    ~ChannelRequest();
-
-    // Used to send the reply message back to the renderer.
-    scoped_refptr<GpuMessageFilter> filter;
-  };
-
-  struct DelayedReply {
-    DelayedReply(IPC::Message* reply, GpuMessageFilter* filter);
-    ~DelayedReply();
-
-    // The delayed reply message which needs to be sent to the
-    // renderer.
-    IPC::Message* reply;
-
-    // Used to send the reply message back to the renderer.
-    scoped_refptr<GpuMessageFilter> filter;
-  };
-
   GpuProcessHost();
   virtual ~GpuProcessHost();
 
@@ -94,11 +79,6 @@ class GpuProcessHost : public BrowserChildProcessHost,
                             const GPUInfo& gpu_info);
   void OnSynchronizeReply();
   void OnCommandBufferCreated(const int32 route_id);
-
-  // Sends the response for establish channel request to the renderer.
-  void SendEstablishChannelReply(const IPC::ChannelHandle& channel,
-                                 const GPUInfo& gpu_info,
-                                 GpuMessageFilter* filter);
 
   // Sends outstanding replies to renderer processes. This is only called
   // in error situations like the GPU process crashing -- but is necessary
@@ -123,13 +103,14 @@ class GpuProcessHost : public BrowserChildProcessHost,
 
   // These are the channel requests that we have already sent to
   // the GPU process, but haven't heard back about yet.
-  std::queue<ChannelRequest> sent_requests_;
+  std::queue<linked_ptr<EstablishChannelCallback> > channel_requests_;
 
   // The pending synchronization requests we need to reply to.
-  std::queue<DelayedReply> queued_synchronization_replies_;
+  std::queue<linked_ptr<SynchronizeCallback> > synchronize_requests_;
 
   // The pending create command buffer requests we need to reply to.
-  std::queue<DelayedReply> create_command_buffer_replies_;
+  std::queue<linked_ptr<CreateCommandBufferCallback> >
+      create_command_buffer_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

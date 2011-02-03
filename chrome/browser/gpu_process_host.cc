@@ -7,12 +7,12 @@
 #include "app/app_switches.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/ref_counted.h"
 #include "base/string_piece.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
-#include "chrome/browser/renderer_host/gpu_message_filter.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
@@ -80,10 +80,6 @@ bool SendDelayedMsg(IPC::Message* reply_msg) {
   return GpuProcessHost::Get()->Send(reply_msg);
 }
 
-bool SendDelayedMsg(IPC::Message* reply, GpuMessageFilter* filter) {
-  return filter->Send(reply);
-}
-
 }  // anonymous namespace
 
 class GpuMainThread : public base::Thread {
@@ -124,10 +120,6 @@ GpuProcessHost::GpuProcessHost()
 }
 
 GpuProcessHost::~GpuProcessHost() {
-  while (!queued_synchronization_replies_.empty()) {
-    delete queued_synchronization_replies_.front().reply;
-    queued_synchronization_replies_.pop();
-  }
   DCHECK_EQ(sole_instance_, this);
   sole_instance_ = NULL;
 }
@@ -184,25 +176,76 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   return true;
 }
 
+// Post a Task to execute callbacks on a error conditions in order to
+// clear the call stacks (and aid debugging).
+namespace {
+
+void EstablishChannelCallbackDispatcher(
+    linked_ptr<GpuProcessHost::EstablishChannelCallback> callback,
+    const IPC::ChannelHandle& channel_handle,
+    const GPUInfo& gpu_info) {
+  callback->Run(channel_handle, gpu_info);
+}
+
+void EstablishChannelError(
+    linked_ptr<GpuProcessHost::EstablishChannelCallback> callback,
+    const IPC::ChannelHandle& channel_handle,
+    const GPUInfo& gpu_info) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(&EstablishChannelCallbackDispatcher,
+                          callback, channel_handle, gpu_info));
+}
+
+void SynchronizeCallbackDispatcher(
+    linked_ptr<GpuProcessHost::SynchronizeCallback> callback) {
+  callback->Run();
+}
+
+void SynchronizeError(
+    linked_ptr<GpuProcessHost::SynchronizeCallback> callback) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(&SynchronizeCallbackDispatcher, callback));
+}
+
+void CreateCommandBufferCallbackDispatcher(
+    linked_ptr<GpuProcessHost::CreateCommandBufferCallback> callback,
+    int32 route_id) {
+  callback->Run(route_id);
+}
+
+void CreateCommandBufferError(
+    linked_ptr<GpuProcessHost::CreateCommandBufferCallback> callback,
+    int32 route_id) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(&CreateCommandBufferCallbackDispatcher,
+                          callback, route_id));
+}
+
+}  // namespace
+
 void GpuProcessHost::EstablishGpuChannel(int renderer_id,
-                                         GpuMessageFilter* filter) {
+                                         EstablishChannelCallback *callback) {
   DCHECK(CalledOnValidThread());
+  linked_ptr<EstablishChannelCallback> wrapped_callback(callback);
 
   if (Send(new GpuMsg_EstablishChannel(renderer_id))) {
-    sent_requests_.push(ChannelRequest(filter));
+    channel_requests_.push(wrapped_callback);
   } else {
-    SendEstablishChannelReply(IPC::ChannelHandle(), GPUInfo(), filter);
+    EstablishChannelError(wrapped_callback, IPC::ChannelHandle(), GPUInfo());
   }
 }
 
-void GpuProcessHost::Synchronize(IPC::Message* reply,
-                                 GpuMessageFilter* filter) {
+void GpuProcessHost::Synchronize(SynchronizeCallback* callback) {
   DCHECK(CalledOnValidThread());
+  linked_ptr<SynchronizeCallback> wrapped_callback(callback);
 
   if (Send(new GpuMsg_Synchronize())) {
-    queued_synchronization_replies_.push(DelayedReply(reply, filter));
+    synchronize_requests_.push(wrapped_callback);
   } else {
-    SendDelayedMsg(reply, filter);
+    SynchronizeError(wrapped_callback);
   }
 }
 
@@ -215,16 +258,14 @@ class CVCBThreadHopping {
       int32 render_view_id,
       int32 renderer_id,
       const GPUCreateCommandBufferConfig& init_params,
-      IPC::Message* reply,
-      scoped_refptr<GpuMessageFilter> filter);
+      linked_ptr<GpuProcessHost::CreateCommandBufferCallback> callback);
 
   // Get a window for the command buffer that we're creating.
   static void GetViewWindow(
       int32 render_view_id,
       int32 renderer_id,
       const GPUCreateCommandBufferConfig& init_params,
-      IPC::Message* reply,
-      scoped_refptr<GpuMessageFilter> filter);
+      linked_ptr<GpuProcessHost::CreateCommandBufferCallback> callback);
 };
 
 void CVCBThreadHopping::DispatchIPCAndQueueReply(
@@ -232,21 +273,16 @@ void CVCBThreadHopping::DispatchIPCAndQueueReply(
     int32 render_view_id,
     int32 renderer_id,
     const GPUCreateCommandBufferConfig& init_params,
-    IPC::Message* reply,
-    scoped_refptr<GpuMessageFilter> filter) {
+    linked_ptr<GpuProcessHost::CreateCommandBufferCallback> callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   GpuProcessHost* host = GpuProcessHost::Get();
 
   if (view != gfx::kNullPluginWindow &&
       SendDelayedMsg(new GpuMsg_CreateViewCommandBuffer(
           view, render_view_id, renderer_id, init_params))) {
-    host->create_command_buffer_replies_.push(
-        GpuProcessHost::DelayedReply(reply, filter));
+    host->create_command_buffer_requests_.push(callback);
   } else {
-    int32 route_id = MSG_ROUTING_NONE;
-    GpuHostMsg_CreateViewCommandBuffer::WriteReplyParams(
-        reply, route_id);
-    SendDelayedMsg(reply, filter);
+    CreateCommandBufferError(callback, MSG_ROUTING_NONE);
   }
 }
 
@@ -254,8 +290,7 @@ void CVCBThreadHopping::GetViewWindow(
     int32 render_view_id,
     int32 renderer_id,
     const GPUCreateCommandBufferConfig& init_params,
-    IPC::Message* reply,
-    scoped_refptr<GpuMessageFilter> filter) {
+    linked_ptr<GpuProcessHost::CreateCommandBufferCallback> callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   gfx::PluginWindowHandle window = gfx::kNullPluginWindow;
   RenderProcessHost* process = RenderProcessHost::FromID(renderer_id);
@@ -292,39 +327,21 @@ void CVCBThreadHopping::GetViewWindow(
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableFunction(
       &CVCBThreadHopping::DispatchIPCAndQueueReply,
-      window, render_view_id, renderer_id, init_params, reply, filter));
+      window, render_view_id, renderer_id, init_params, callback));
 }
 
 void GpuProcessHost::CreateViewCommandBuffer(
     int32 render_view_id,
     int32 renderer_id,
     const GPUCreateCommandBufferConfig& init_params,
-    IPC::Message* reply,
-    GpuMessageFilter* filter) {
+    CreateCommandBufferCallback* callback) {
   DCHECK(CalledOnValidThread());
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableFunction(
       &CVCBThreadHopping::GetViewWindow,
-      render_view_id, renderer_id, init_params, reply,
-      static_cast<scoped_refptr<GpuMessageFilter> > (filter)));
+      render_view_id, renderer_id, init_params,
+      linked_ptr<CreateCommandBufferCallback>(callback)));
 }
-
-
-GpuProcessHost::ChannelRequest::ChannelRequest(
-    GpuMessageFilter* filter)
-    : filter(filter) {
-}
-
-GpuProcessHost::ChannelRequest::~ChannelRequest() {}
-
-GpuProcessHost::DelayedReply::DelayedReply(
-    IPC::Message* reply,
-    GpuMessageFilter* filter)
-    : reply(reply),
-      filter(filter) {
-}
-
-GpuProcessHost::DelayedReply::~DelayedReply() {}
 
 bool GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
@@ -366,63 +383,53 @@ void GpuProcessHost::OnChannelEstablished(
                                 0, max_entry_id + 1);
     }
   }
-  const ChannelRequest& request = sent_requests_.front();
-  // Currently if any of the GPU features are blacklised, we don't establish a
+  linked_ptr<EstablishChannelCallback> callback = channel_requests_.front();
+  channel_requests_.pop();
+
+  // Currently if any of the GPU features are blacklisted, we don't establish a
   // GPU channel.
   if (gpu_feature_flags_.flags() != 0) {
     Send(new GpuMsg_CloseChannel(channel_handle));
-    SendEstablishChannelReply(IPC::ChannelHandle(), gpu_info, request.filter);
+    EstablishChannelError(callback, IPC::ChannelHandle(), gpu_info);
   } else {
-    SendEstablishChannelReply(channel_handle, gpu_info, request.filter);
+    callback->Run(channel_handle, gpu_info);
   }
-  sent_requests_.pop();
 }
 
 void GpuProcessHost::OnSynchronizeReply() {
   // Guard against race conditions in abrupt GPU process termination.
-  if (queued_synchronization_replies_.size() > 0) {
-    const DelayedReply& request =
-        queued_synchronization_replies_.front();
-    SendDelayedMsg(request.reply, request.filter);
-    queued_synchronization_replies_.pop();
+  if (synchronize_requests_.size() > 0) {
+    linked_ptr<SynchronizeCallback> callback = synchronize_requests_.front();
+    synchronize_requests_.pop();
+    callback->Run();
   }
 }
 
 void GpuProcessHost::OnCommandBufferCreated(const int32 route_id) {
-  if (create_command_buffer_replies_.size() > 0) {
-    const DelayedReply& request =
-        create_command_buffer_replies_.front();
-    GpuHostMsg_CreateViewCommandBuffer::WriteReplyParams(
-        request.reply, route_id);
-    SendDelayedMsg(request.reply, request.filter);
-    create_command_buffer_replies_.pop();
+  if (create_command_buffer_requests_.size() > 0) {
+    linked_ptr<CreateCommandBufferCallback> callback =
+        create_command_buffer_requests_.front();
+    create_command_buffer_requests_.pop();
+    if (route_id == MSG_ROUTING_NONE)
+      CreateCommandBufferError(callback, route_id);
+    else
+      callback->Run(route_id);
   }
-}
-
-void GpuProcessHost::SendEstablishChannelReply(
-    const IPC::ChannelHandle& channel,
-    const GPUInfo& gpu_info,
-    GpuMessageFilter* filter) {
-  ViewMsg_GpuChannelEstablished* message =
-      new ViewMsg_GpuChannelEstablished(channel, gpu_info);
-  // If the renderer process is performing synchronous initialization,
-  // it needs to handle this message before receiving the reply for
-  // the synchronous GpuHostMsg_SynchronizeGpu message.
-  message->set_unblock(true);
-  filter->Send(message);
 }
 
 void GpuProcessHost::SendOutstandingReplies() {
   // First send empty channel handles for all EstablishChannel requests.
-  while (!sent_requests_.empty()) {
-    const ChannelRequest& request = sent_requests_.front();
-    SendEstablishChannelReply(IPC::ChannelHandle(), GPUInfo(), request.filter);
-    sent_requests_.pop();
+  while (!channel_requests_.empty()) {
+    linked_ptr<EstablishChannelCallback> callback = channel_requests_.front();
+    channel_requests_.pop();
+    EstablishChannelError(callback, IPC::ChannelHandle(), GPUInfo());
   }
 
   // Now unblock all renderers waiting for synchronization replies.
-  while (!queued_synchronization_replies_.empty()) {
-    OnSynchronizeReply();
+  while (!synchronize_requests_.empty()) {
+    linked_ptr<SynchronizeCallback> callback = synchronize_requests_.front();
+    synchronize_requests_.pop();
+    SynchronizeError(callback);
   }
 }
 
