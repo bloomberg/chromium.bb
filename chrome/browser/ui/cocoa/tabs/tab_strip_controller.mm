@@ -221,7 +221,7 @@ private:
 
 - (id)initWithTabStrip:(TabStripController*)strip
          tabController:(TabController*)controller {
-  if ((self == [super init])) {
+  if ((self = [super init])) {
     DCHECK(strip && controller);
     strip_ = strip;
     controller_ = controller;

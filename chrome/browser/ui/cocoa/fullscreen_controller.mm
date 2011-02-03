@@ -165,7 +165,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 @synthesize isFullscreen = isFullscreen_;
 
 - (id)initWithBrowserController:(BrowserWindowController*)controller {
-  if ((self == [super init])) {
+  if ((self = [super init])) {
     browserController_ = controller;
     currentFullscreenMode_ = base::mac::kFullScreenModeNormal;
   }
