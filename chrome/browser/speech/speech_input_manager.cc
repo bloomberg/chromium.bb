@@ -30,6 +30,8 @@
 #include "chrome/installer/util/wmi.h"
 #endif
 
+namespace speech_input {
+
 namespace {
 
 // Asynchronously fetches the PC and audio hardware/driver info if
@@ -90,10 +92,6 @@ class OptionalRequestInfo
 
   DISALLOW_COPY_AND_ASSIGN(OptionalRequestInfo);
 };
-
-}  // namespace
-
-namespace speech_input {
 
 class SpeechInputManagerImpl : public SpeechInputManager,
                                public SpeechInputBubbleControllerDelegate,
@@ -156,8 +154,10 @@ class SpeechInputManagerImpl : public SpeechInputManager,
   scoped_refptr<OptionalRequestInfo> optional_request_info_;
 };
 
-static ::base::LazyInstance<SpeechInputManagerImpl> g_speech_input_manager_impl(
+base::LazyInstance<SpeechInputManagerImpl> g_speech_input_manager_impl(
     base::LINKER_INITIALIZED);
+
+}  // namespace
 
 SpeechInputManager* SpeechInputManager::Get() {
   return g_speech_input_manager_impl.Pointer();
