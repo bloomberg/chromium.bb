@@ -37,6 +37,7 @@
                 'files': [
                   'binaries/win/gcswf32.dll',
                   'binaries/win/plugin.vch',
+                  'symbols/win/gcswf32.pdb',
                 ]
               }],
             ],
