@@ -56,6 +56,8 @@ View::View()
       id_(-1),
       group_(-1),
       focusable_(false),
+      next_focusable_view_(NULL),
+      prev_focusable_view_(NULL),
       context_menu_controller_(NULL),
       drag_controller_(NULL) {
 }
@@ -222,6 +224,9 @@ void View::AddChildViewAt(View* view, size_t index) {
   // Remove the child from its current parent if any.
   if (view->parent())
     view->parent()->RemoveChildView(view);
+
+  // TODO(beng): Move focus initialization to FocusManager.
+  InitFocusSiblings(view, index);
 
   children_.insert(children_.begin() + index, view);
   view->parent_ = this;
@@ -530,6 +535,50 @@ void View::DragInfo::Reset() {
 void View::DragInfo::PossibleDrag(const gfx::Point& point) {
   possible_drag = true;
   press_point = point;
+}
+
+// Focus -----------------------------------------------------------------------
+
+// TODO(beng): Move to FocusManager.
+void View::InitFocusSiblings(View* view, size_t index) {
+  if (child_count() == 0) {
+    view->next_focusable_view_ = NULL;
+    view->prev_focusable_view_ = NULL;
+  } else {
+    if (index == child_count()) {
+      // We are inserting at the end, but the end of the child list may not be
+      // the last focusable element. Let's try to find an element with no next
+      // focusable element to link to.
+      View* last_focusable_view = NULL;
+      for (std::vector<View*>::iterator iter = children_.begin();
+           iter != children_.end(); ++iter) {
+          if (!(*iter)->next_focusable_view_) {
+            last_focusable_view = *iter;
+            break;
+          }
+      }
+      if (last_focusable_view == NULL) {
+        // Hum... there is a cycle in the focus list. Let's just insert ourself
+        // after the last child.
+        View* prev = children_[index - 1];
+        view->prev_focusable_view_ = prev;
+        view->next_focusable_view_ = prev->next_focusable_view_;
+        prev->next_focusable_view_->prev_focusable_view_ = view;
+        prev->next_focusable_view_ = view;
+      } else {
+        last_focusable_view->next_focusable_view_ = view;
+        view->next_focusable_view_ = NULL;
+        view->prev_focusable_view_ = last_focusable_view;
+      }
+    } else {
+      View* prev = children_[index]->GetPreviousFocusableView();
+      view->prev_focusable_view_ = prev;
+      view->next_focusable_view_ = children_[index];
+      if (prev)
+        prev->next_focusable_view_ = view;
+      children_[index]->prev_focusable_view_ = view;
+    }
+  }
 }
 
 // Painting --------------------------------------------------------------------

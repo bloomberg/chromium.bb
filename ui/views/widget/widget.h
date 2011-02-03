@@ -94,6 +94,8 @@ class Widget : public internal::NativeWidgetListener {
   // FocusManagers.
   FocusManager* GetFocusManager() const;
 
+  FocusTraversable* GetFocusTraversable() const;
+
   NativeWidget* native_widget() const { return native_widget_.get(); }
 
  private:

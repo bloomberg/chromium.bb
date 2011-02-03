@@ -34,7 +34,7 @@ void ViewStorage::StoreView(int storage_id, View* view) {
 
   if (iter != id_to_view_.end()) {
     NOTREACHED();
-    RemoveView(storage_id);
+    RemoveViewByID(storage_id);
   }
 
   id_to_view_[storage_id] = view;
@@ -58,14 +58,14 @@ View* ViewStorage::RetrieveView(int storage_id) {
   return iter->second;
 }
 
-void ViewStorage::RemoveView(int storage_id) {
+void ViewStorage::RemoveViewByID(int storage_id) {
   EraseView(storage_id, false);
 }
 
-void ViewStorage::ViewRemoved(View* parent, View* removed) {
+void ViewStorage::RemoveView(View* view) {
   // Let's first retrieve the ids for that view.
   std::map<View*, std::vector<int>*>::iterator ids_iter =
-      view_to_ids_.find(removed);
+      view_to_ids_.find(view);
 
   if (ids_iter == view_to_ids_.end()) {
     // That view is not in the view storage.

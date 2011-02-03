@@ -38,10 +38,10 @@ class ViewStorage {
   View* RetrieveView(int storage_id);
 
   // Removes the view associated with |storage_id| if any.
-  void RemoveView(int storage_id);
+  void RemoveViewByID(int storage_id);
 
-  // Notifies the ViewStorage that a view was removed from its parent somewhere.
-  void ViewRemoved(View* parent, View* removed);
+  // Removes the specified View.
+  void RemoveView(View* view);
 
 #ifdef UNIT_TEST
   size_t view_count() const { return view_to_ids_.size(); }

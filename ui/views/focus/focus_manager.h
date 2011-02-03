@@ -83,16 +83,16 @@ class FocusTraversable {
  public:
   // Return a FocusSearch object that implements the algorithm to find
   // the next or previous focusable view.
-  virtual FocusSearch* GetFocusSearch() = 0;
+  virtual const FocusSearch* GetFocusSearch() const = 0;
 
   // Should return the parent FocusTraversable.
   // The top RootView which is the top FocusTraversable returns NULL.
-  virtual FocusTraversable* GetFocusTraversableParent() = 0;
+  virtual FocusTraversable* GetFocusTraversableParent() const = 0;
 
   // This should return the View this FocusTraversable belongs to.
   // It is used when walking up the view hierarchy tree to find which view
   // should be used as the starting view for finding the next/previous view.
-  virtual View* GetFocusTraversableParentView() = 0;
+  virtual View* GetFocusTraversableParentView() const = 0;
 
  protected:
   virtual ~FocusTraversable() {}
@@ -188,7 +188,11 @@ class FocusManager {
 
   // Returns true is the specified is part of the hierarchy of the window
   // associated with this FocusManager.
-  bool ContainsView(View* view);
+  bool ContainsView(View* view) const;
+
+  // Stops tracking this View in the focus manager. If the View is focused,
+  // focus is cleared.
+  void RemoveView(View* view);
 
   // Advances the focus (backward if reverse is true).
   void AdvanceFocus(bool reverse);

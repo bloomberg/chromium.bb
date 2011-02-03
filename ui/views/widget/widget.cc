@@ -123,6 +123,10 @@ FocusManager* Widget::GetFocusManager() const {
   return GetTopLevelWidget()->focus_manager_.get();
 }
 
+FocusTraversable* Widget::GetFocusTraversable() const {
+  return root_view_.get();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, NativeWidgetListener implementation:
 

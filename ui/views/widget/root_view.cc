@@ -17,7 +17,10 @@ namespace internal {
 RootView::RootView(Widget* widget, View* contents_view)
     : widget_(widget),
       mouse_pressed_handler_(NULL),
-      mouse_move_handler_(NULL) {
+      mouse_move_handler_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(focus_search_(this, false, false)),
+      focus_traversable_parent_(NULL),
+      focus_traversable_parent_view_(NULL) {
   SetLayoutManager(new FillLayout);
   AddChildView(contents_view);
 }
@@ -32,10 +35,7 @@ void RootView::OnViewRemoved(View* parent, View* child) {
   if (child == mouse_pressed_handler_)
     mouse_pressed_handler_ = NULL;
 
-  // Clear focus if the removed child was focused.
-  FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager && focus_manager->focused_view() == child)
-    focus_manager->ClearFocus();
+  GetFocusManager()->RemoveView(child);
 }
 
 bool RootView::OnKeyPressed(const KeyEvent& event) {
@@ -143,6 +143,22 @@ void RootView::InvalidateRect(const gfx::Rect& invalid_rect) {
 Widget* RootView::GetWidget() const {
   return widget_;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// RootView, FocusTraversable implementation:
+
+const FocusSearch* RootView::GetFocusSearch() const {
+  return &focus_search_;
+}
+
+FocusTraversable* RootView::GetFocusTraversableParent() const {
+  return focus_traversable_parent_;
+}
+
+View* RootView::GetFocusTraversableParentView() const {
+  return focus_traversable_parent_view_;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, private:

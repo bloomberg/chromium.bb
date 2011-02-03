@@ -67,26 +67,26 @@ class FocusSearch {
                                       Direction direction,
                                       bool check_starting_view,
                                       FocusTraversable** focus_traversable,
-                                      View** focus_traversable_view);
+                                      View** focus_traversable_view) const;
 
  private:
   // Convenience method that returns true if a view is focusable and does not
   // belong to the specified group.
-  bool IsViewFocusableCandidate(View* v, int skip_group_id);
+  bool IsViewFocusableCandidate(View* v, int skip_group_id) const;
 
   // Convenience method; returns true if a view is not NULL and is focusable
   // (checking IsAccessibilityFocusableInRootView() if accessibility_mode_ is
   // true).
-  bool IsFocusable(View* v);
+  bool IsFocusable(View* v) const;
 
   // Returns the view selected for the group of the selected view. If the view
   // does not belong to a group or if no view is selected in the group, the
   // specified view is returned.
-  View* FindSelectedViewForGroup(View* view);
+  View* FindSelectedViewForGroup(View* view) const;
 
   // Get the parent, but stay within the root. Returns NULL if asked for
   // the parent of root_.
-  View* GetParent(View* view);
+  View* GetParent(View* view) const;
 
   // Returns the next focusable view or view containing a FocusTraversable
   // (NULL if none was found), starting at the starting_view.
@@ -99,7 +99,7 @@ class FocusSearch {
                                   bool can_go_down,
                                   int skip_group_id,
                                   FocusTraversable** focus_traversable,
-                                  View** focus_traversable_view);
+                                  View** focus_traversable_view) const;
 
   // Same as FindNextFocusableViewImpl but returns the previous focusable view.
   View* FindPreviousFocusableViewImpl(View* starting_view,
@@ -108,7 +108,7 @@ class FocusSearch {
                                       bool can_go_down,
                                       int skip_group_id,
                                       FocusTraversable** focus_traversable,
-                                      View** focus_traversable_view);
+                                      View** focus_traversable_view) const;
 
   View* root_;
   bool cycle_;

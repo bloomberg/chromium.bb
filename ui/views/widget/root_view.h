@@ -6,6 +6,8 @@
 #define UI_VIEWS_WIDGET_ROOT_VIEW_H_
 #pragma once
 
+#include "ui/views/focus/focus_manager.h"
+#include "ui/views/focus/focus_search.h"
 #include "ui/views/view.h"
 
 namespace ui {
@@ -17,7 +19,8 @@ namespace internal {
 //  A View subclass that owns a View hierarchy. Used by the Widget to perform
 //  View-specific event tracking.
 //
-class RootView : public View {
+class RootView : public View,
+                 public FocusTraversable {
  public:
   RootView(Widget* widget, View* contents_view);
   virtual ~RootView();
@@ -38,6 +41,11 @@ class RootView : public View {
   virtual Widget* GetWidget() const;
 
  private:
+  // Overridden from FocusTraversable:
+  virtual const FocusSearch* GetFocusSearch() const;
+  virtual FocusTraversable* GetFocusTraversableParent() const;
+  virtual View* GetFocusTraversableParentView() const;
+
   Widget* widget_;
 
   // The View that the mouse was pressed down on. Used to track drag operations
@@ -52,6 +60,12 @@ class RootView : public View {
   // State captured on mouse press that would be useful for a potential drag
   // operation.
   DragInfo drag_info_;
+
+  //
+  FocusSearch focus_search_;
+
+  FocusTraversable* focus_traversable_parent_;
+  View* focus_traversable_parent_view_;
 
   DISALLOW_COPY_AND_ASSIGN(RootView);
 };

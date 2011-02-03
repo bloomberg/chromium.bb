@@ -161,35 +161,26 @@ void FocusManager::ValidateFocusedView() {
   }
 }
 
-// Tests whether a view is valid, whether it still belongs to the window
-// hierarchy of the FocusManager.
-bool FocusManager::ContainsView(View* view) {
-  DCHECK(view);
+bool FocusManager::ContainsView(View* view) const {
   Widget* widget = view->GetWidget();
-  if (!widget)
-    return false;
+  return widget ? widget->GetFocusManager() == this : false;
+}
 
-  gfx::NativeView top_window = widget_->native_widget()->GetNativeView();
-  gfx::NativeView window = widget->native_widget()->GetNativeView();
-  while (window) {
-    if (window == top_window)
-      return true;
-#if defined(OS_WIN)
-    window = ::GetParent(window);
-#else
-    window = gtk_widget_get_parent(window);
-#endif
-  }
-  return false;
+void FocusManager::RemoveView(View* view) {
+  // Clear focus if the removed child was focused.
+  if (focused_view_ == view)
+    ClearFocus();
+
+  ViewStorage::GetInstance()->RemoveView(view);
 }
 
 void FocusManager::AdvanceFocus(bool reverse) {
   View* v = GetNextFocusableView(focused_view_, reverse, false);
   // Note: Do not skip this next block when v == focused_view_.  If the user
-  // tabs past the last focusable element in a webpage, we'll get here, and if
+  // tabs past the last focusable element in a web page, we'll get here, and if
   // the TabContentsContainerView is the only focusable view (possible in
-  // fullscreen mode), we need to run this block in order to cycle around to the
-  // first element on the page.
+  // full-screen mode), we need to run this block in order to cycle around to
+  // the first element on the page.
   if (v) {
     v->OnFocus(); // TODO(beng): AboutToRequestFocusFromTabTraversal(reverse);
     SetFocusedViewWithReason(v, kReasonFocusTraversal);
@@ -201,7 +192,7 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
                                          bool dont_loop) {
   FocusTraversable* focus_traversable = NULL;
 
-  // Let's revalidate the focused view.
+  // Let's re-validate the focused view.
   ValidateFocusedView();
 
   View* starting_view = NULL;
@@ -219,8 +210,6 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
       pane_search = pane_search->parent();
     }
 
-    /*
-    TODO(beng): figure out traversal
     if (!focus_traversable) {
       if (!reverse) {
         // If the starting view has a focus traversable, use it.
@@ -229,22 +218,20 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
 
         // Otherwise default to the root view.
         if (!focus_traversable) {
-          focus_traversable = original_starting_view->GetRootView();
+          focus_traversable =
+              original_starting_view->GetWidget()->GetFocusTraversable();
           starting_view = original_starting_view;
         }
       } else {
         // When you are going back, starting view's FocusTraversable
         // should not be used.
-        focus_traversable = original_starting_view->GetRootView();
+        focus_traversable =
+            original_starting_view->GetWidget()->GetFocusTraversable();
         starting_view = original_starting_view;
       }
     }
-    */
   } else {
-    /*
-    TODO(beng): figure out traversal
-    focus_traversable = widget_->GetRootView();
-    */
+    focus_traversable = widget_->GetFocusTraversable();
   }
 
   // Traverse the FocusTraversable tree down to find the focusable view.
@@ -339,7 +326,7 @@ void FocusManager::StoreFocusedView() {
   // TODO (jcampan): when a TabContents containing a popup is closed, the focus
   // is stored twice causing an assert. We should find a better alternative than
   // removing the view from the storage explicitly.
-  view_storage->RemoveView(stored_focused_view_storage_id_);
+  view_storage->RemoveViewByID(stored_focused_view_storage_id_);
 
   if (!focused_view_)
     return;
@@ -402,7 +389,7 @@ void FocusManager::ClearStoredFocusedView() {
     NOTREACHED();
     return;
   }
-  view_storage->RemoveView(stored_focused_view_storage_id_);
+  view_storage->RemoveViewByID(stored_focused_view_storage_id_);
 }
 
 // Find the next (previous if reverse is true) focusable view for the specified

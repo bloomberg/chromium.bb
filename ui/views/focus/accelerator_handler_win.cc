@@ -7,7 +7,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/views/events/event.h"
-//#include "ui/views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager.h"
 
 namespace ui {
 
@@ -18,7 +18,6 @@ bool AcceleratorHandler::Dispatch(const MSG& msg) {
   bool process_message = true;
 
   if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) {
-    /*
     FocusManager* focus_manager =
         FocusManager::GetFocusManagerForNativeView(msg.hwnd);
     if (focus_manager) {
@@ -46,7 +45,6 @@ bool AcceleratorHandler::Dispatch(const MSG& msg) {
         }
       }
     }
-    */
   }
 
   if (process_message) {

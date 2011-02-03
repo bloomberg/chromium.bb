@@ -311,6 +311,13 @@ class View {
     gfx::Point press_point;
   };
 
+  // Focus ---------------------------------------------------------------------
+
+  // Called when |child| is inserted into this View's children_ at |index|.
+  // Sets up next/previous focus views
+  // TODO(beng): Move this to FocusManager.
+  void InitFocusSiblings(View* child, size_t index);
+
   // Painting ------------------------------------------------------------------
 
   // Called by the framework to paint a View. Performs translation and clipping
@@ -342,6 +349,8 @@ class View {
                             View* child,
                             bool is_add,
                             bool has_widget);
+
+  // TODO(beng): sort this section.
 
   // The View's parent view. This is set and reset when the View is added and
   // removed from a hierarchy.
@@ -376,6 +385,10 @@ class View {
   // True if this View is focusable by the FocusManager.
   bool focusable_;
 
+  // Focus siblings for this View.
+  View* next_focusable_view_;
+  View* prev_focusable_view_;
+
   // An optional helper that handles layout for child views.
   scoped_ptr<LayoutManager> layout_manager_;
 
@@ -395,7 +408,6 @@ class View {
 /*
 
 TODO(beng):
-- focus
 - accessibility
 - scrolling
 - cursors
@@ -408,6 +420,5 @@ TODO(beng):
 - investigate why assorted notifications are necessary
 - native_widget_views
 - native_widget_gtk
-- pick a name
 
 */

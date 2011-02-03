@@ -20,7 +20,7 @@ View* FocusSearch::FindNextFocusableView(View* starting_view,
                                          Direction direction,
                                          bool check_starting_view,
                                          FocusTraversable** focus_traversable,
-                                         View** focus_traversable_view) {
+                                         View** focus_traversable_view) const {
   *focus_traversable = NULL;
   *focus_traversable_view = NULL;
 
@@ -94,20 +94,20 @@ View* FocusSearch::FindNextFocusableView(View* starting_view,
   return NULL;
 }
 
-bool FocusSearch::IsViewFocusableCandidate(View* v, int skip_group_id) {
+bool FocusSearch::IsViewFocusableCandidate(View* v, int skip_group_id) const {
   return IsFocusable(v) &&
       (v->IsGroupFocusTraversable() || skip_group_id == -1 ||
        v->group() != skip_group_id);
 }
 
-bool FocusSearch::IsFocusable(View* v) {
+bool FocusSearch::IsFocusable(View* v) const {
   if (accessibility_mode_)
     return v && v->IsAccessibilityFocusableInRootView();
 
   return v && v->IsFocusableInRootView();
 }
 
-View* FocusSearch::FindSelectedViewForGroup(View* view) {
+View* FocusSearch::FindSelectedViewForGroup(View* view) const {
   // No group for that view.
   if (view->IsGroupFocusTraversable() || view->group() == -1)
     return view;
@@ -120,7 +120,7 @@ View* FocusSearch::FindSelectedViewForGroup(View* view) {
   return view;
 }
 
-View* FocusSearch::GetParent(View* v) {
+View* FocusSearch::GetParent(View* v) const {
   return root_->Contains(v) ? v->parent() : NULL;
 }
 
@@ -139,7 +139,7 @@ View* FocusSearch::FindNextFocusableViewImpl(
     bool can_go_down,
     int skip_group_id,
     FocusTraversable** focus_traversable,
-    View** focus_traversable_view) {
+    View** focus_traversable_view) const {
   if (check_starting_view) {
     if (IsViewFocusableCandidate(starting_view, skip_group_id)) {
       View* v = FindSelectedViewForGroup(starting_view);
@@ -212,7 +212,7 @@ View* FocusSearch::FindPreviousFocusableViewImpl(
     bool can_go_down,
     int skip_group_id,
     FocusTraversable** focus_traversable,
-    View** focus_traversable_view) {
+    View** focus_traversable_view) const {
   // Let's go down and right as much as we can.
   if (can_go_down) {
     // Before we go into the direct children, we have to check if this view has
