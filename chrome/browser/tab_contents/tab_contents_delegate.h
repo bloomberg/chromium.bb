@@ -332,6 +332,9 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // changed.
   virtual void ContentRestrictionsChanged(TabContents* source);
 
+  // Returns true if the hung renderer dialog should be shown. Default is true.
+  virtual bool ShouldShowHungRendererDialog();
+
  protected:
   virtual ~TabContentsDelegate();
 };

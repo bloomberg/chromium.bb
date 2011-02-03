@@ -227,5 +227,9 @@ void TabContentsDelegate::OnInstantSupportDetermined(int32 page_id,
 void TabContentsDelegate::ContentRestrictionsChanged(TabContents* source) {
 }
 
+bool TabContentsDelegate::ShouldShowHungRendererDialog() {
+  return true;
+}
+
 TabContentsDelegate::~TabContentsDelegate() {
 }

@@ -72,13 +72,8 @@ HungPagesTableModel::~HungPagesTableModel() {
 }
 
 void HungPagesTableModel::InitForTabContents(TabContents* hung_contents) {
-  // TODO(sky): remove when figure out cause of 58853.
-  CHECK(hung_contents->render_view_host());
   tab_contentses_.clear();
   for (TabContentsIterator it; !it.done(); ++it) {
-    // TODO(sky): remove when figure out cause of 58853.
-    CHECK(it->render_view_host());
-    CHECK(hung_contents->render_view_host());
     if (it->GetRenderProcessHost() == hung_contents->GetRenderProcessHost())
       tab_contentses_.push_back(*it);
   }
@@ -194,9 +189,6 @@ class HungRendererDialogView : public views::View,
   // Whether or not we've created controls for ourself.
   bool initialized_;
 
-  // TODO(sky): remove when figure out cause of 58853.
-  bool preparing_to_show_;
-
   // An amusing icon image.
   static SkBitmap* frozen_icon_;
 
@@ -224,8 +216,7 @@ HungRendererDialogView::HungRendererDialogView()
       kill_button_(NULL),
       kill_button_container_(NULL),
       contents_(NULL),
-      initialized_(false),
-      preparing_to_show_(false) {
+      initialized_(false) {
   InitClass();
 }
 
@@ -235,8 +226,6 @@ HungRendererDialogView::~HungRendererDialogView() {
 
 void HungRendererDialogView::ShowForTabContents(TabContents* contents) {
   DCHECK(contents && window());
-  // TODO(sky): remove when figure out cause of 58853.
-  CHECK(contents->render_view_host());
   contents_ = contents;
 
   // Don't show the warning unless the foreground window is the frame, or this
@@ -250,17 +239,11 @@ void HungRendererDialogView::ShowForTabContents(TabContents* contents) {
   }
 
   if (!window()->IsActive()) {
-    // TODO(sky): remove when figure out cause of 58853.
-    CHECK(contents->render_view_host());
     volatile TabContents* passed_c = contents;
     volatile TabContents* this_contents = contents_;
-    preparing_to_show_ = true;
 
     gfx::Rect bounds = GetDisplayBounds(contents);
     window()->SetBounds(bounds, frame_hwnd);
-
-    preparing_to_show_ = false;
-    CHECK(contents->render_view_host());
 
     // We only do this if the window isn't active (i.e. hasn't been shown yet,
     // or is currently shown but deactivated for another TabContents). This is
@@ -277,8 +260,6 @@ void HungRendererDialogView::EndForTabContents(TabContents* contents) {
   DCHECK(contents);
   if (contents_ && contents_->GetRenderProcessHost() ==
       contents->GetRenderProcessHost()) {
-    // TODO(sky): remove when figure out cause of 58853.
-    CHECK(!preparing_to_show_);
     window()->Close();
     // Since we're closing, we no longer need this TabContents.
     contents_ = NULL;
@@ -471,8 +452,6 @@ static HungRendererDialogView* CreateHungRendererDialogView() {
 namespace hung_renderer_dialog {
 
 void ShowForTabContents(TabContents* contents) {
-  // TODO(sky): remove when figure out cause of 58853.
-  CHECK(contents->render_view_host());
   if (!logging::DialogsAreSuppressed()) {
     if (!g_instance)
       g_instance = CreateHungRendererDialogView();

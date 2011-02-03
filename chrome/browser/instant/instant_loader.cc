@@ -373,6 +373,13 @@ class InstantLoader::TabContentsDelegateImpl
       loader_->PageDoesntSupportInstant(user_typed_before_load_);
   }
 
+  virtual bool ShouldShowHungRendererDialog() {
+    // If we allow the hung renderer dialog to be shown it'll gain focus,
+    // stealing focus from the omnibox causing instant to be cancelled. Return
+    // false so that doesn't happen.
+    return false;
+  }
+
  private:
   typedef std::vector<scoped_refptr<history::HistoryAddPageArgs> >
       AddPageVector;

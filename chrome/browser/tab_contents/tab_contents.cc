@@ -2849,8 +2849,10 @@ void TabContents::RendererUnresponsive(RenderViewHost* rvh,
     return;
   }
 
-  if (render_view_host() && render_view_host()->IsRenderViewLive())
+  if (render_view_host() && render_view_host()->IsRenderViewLive() &&
+      (!delegate() || delegate()->ShouldShowHungRendererDialog())) {
     hung_renderer_dialog::ShowForTabContents(this);
+  }
 }
 
 void TabContents::RendererResponsive(RenderViewHost* render_view_host) {
