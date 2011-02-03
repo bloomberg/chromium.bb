@@ -1229,4 +1229,43 @@
    fun:SyncInternalsUITest
    fun:SyncInternalsUITest_*
 }
-
+{
+   bug_71728a
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_allocate_and_copy
+   fun:std::vector::reserve
+   fun:__gnu_cxx::hashtable::_M_initialize_buckets
+   fun:hashtable
+   fun:hash_map
+   fun:DownloadManager
+   fun:MockDownloadManager
+   fun:::DownloadFileTest::SetUp
+}
+{
+   bug_71728b
+   Heapcheck:Leak
+   fun:::DownloadFileTest::SetUp
+}
+{
+   bug_71728c
+   Heapcheck:Leak
+   fun:base::internal::WeakReferenceOwner::GetRef
+   fun:base::SupportsWeakPtr::AsWeakPtr
+   fun:DownloadManager
+   fun:MockDownloadManager
+   fun:::DownloadFileTest::SetUp
+}
+{
+   bug_71728d
+   Heapcheck:Leak
+   fun:RefCountedBase
+   fun:RefCounted
+   fun:Flag
+   fun:base::internal::WeakReferenceOwner::GetRef
+   fun:base::SupportsWeakPtr::AsWeakPtr
+   fun:DownloadManager
+   fun:MockDownloadManager
+   fun:::DownloadFileTest::SetUp
+}
