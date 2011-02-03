@@ -345,6 +345,7 @@
         'common/render_messages_internal.h',
         'common/render_messages_params.cc',
         'common/render_messages_params.h',
+        'common/render_view_commands.h',
         'common/renderer_preferences.cc',
         'common/renderer_preferences.h',
         'common/resource_dispatcher.cc',

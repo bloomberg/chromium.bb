@@ -1969,8 +1969,36 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       action == @selector(copy:) ||
       action == @selector(copyToFindPboard:) ||
       action == @selector(paste:) ||
-      action == @selector(pasteAsPlainText:)) {
+      action == @selector(pasteAsPlainText:) ||
+      action == @selector(checkSpelling:)) {
     return renderWidgetHostView_->render_widget_host_->IsRenderView();
+  }
+
+  if (action == @selector(toggleContinuousSpellChecking:)) {
+    RenderViewHost::CommandState state;
+    state.is_enabled = false;
+    state.checked_state = RENDER_VIEW_COMMAND_CHECKED_STATE_UNCHECKED;
+    if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
+      state = static_cast<RenderViewHost*>(
+          renderWidgetHostView_->render_widget_host_)->
+              GetStateForCommand(RENDER_VIEW_COMMAND_TOGGLE_SPELL_CHECK);
+    }
+    if ([(id)item respondsToSelector:@selector(setState:)]) {
+      NSCellStateValue checked_state;
+      switch (state.checked_state) {
+        case RENDER_VIEW_COMMAND_CHECKED_STATE_UNCHECKED:
+          checked_state = NSOffState;
+          break;
+        case RENDER_VIEW_COMMAND_CHECKED_STATE_CHECKED:
+          checked_state = NSOnState;
+          break;
+        case RENDER_VIEW_COMMAND_CHECKED_STATE_MIXED:
+          checked_state = NSMixedState;
+          break;
+      }
+      [(id)item setState:checked_state];
+    }
+    return state.is_enabled;
   }
 
   return editCommand_helper_->IsMenuItemEnabled(action, self);
@@ -2124,6 +2152,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 // other spelling panel methods. This is probably because Apple assumes that the
 // the spelling panel will be used with an NSText, which will automatically
 // catch this and advance to the next word for you. Thanks Apple.
+// This is also called from the Edit -> Spelling -> Check Spelling menu item.
 - (void)checkSpelling:(id)sender {
   RenderWidgetHostViewMac* thisHostView = [self renderWidgetHostViewMac];
   thisHostView->GetRenderWidgetHost()->AdvanceToNextMisspelling();
@@ -2144,6 +2173,13 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   RenderWidgetHostViewMac* thisHostView = [self renderWidgetHostViewMac];
   thisHostView->GetRenderWidgetHost()->ToggleSpellPanel(
       SpellCheckerPlatform::SpellingPanelVisible());
+}
+
+- (void)toggleContinuousSpellChecking:(id)sender {
+  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
+    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
+      ToggleSpellCheck();
+  }
 }
 
 // END Spellchecking methods

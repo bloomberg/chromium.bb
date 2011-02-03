@@ -2048,6 +2048,14 @@ IPC_MESSAGE_CONTROL2(ViewHostMsg_ExtensionRemoveListener,
                      std::string /* extension_id */,
                      std::string /* name */)
 
+// Message sent from renderer to the browser to update the state of a command.
+// The |command| parameter is a RenderViewCommand. The |checked_state| parameter
+// is a CommandCheckedState.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_CommandStateChanged,
+                    int /* command */,
+                    bool /* is_enabled */,
+                    int /* checked_state */)
+
 #if defined(OS_MACOSX)
 // On OSX, we cannot allocated shared memory from within the sandbox, so
 // this call exists for the renderer to ask the browser to allocate memory

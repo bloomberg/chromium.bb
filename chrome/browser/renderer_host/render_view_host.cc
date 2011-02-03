@@ -44,6 +44,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
+#include "chrome/common/render_view_commands.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/translate_errors.h"
@@ -338,6 +339,22 @@ void RenderViewHost::SetHasPendingCrossSiteRequest(bool has_pending_request,
 
 int RenderViewHost::GetPendingRequestId() {
   return pending_request_id_;
+}
+
+RenderViewHost::CommandState RenderViewHost::GetStateForCommand(
+    RenderViewCommand command) const {
+  if (command != RENDER_VIEW_COMMAND_TOGGLE_SPELL_CHECK)
+    LOG(DFATAL) << "Unknown command " << command;
+
+  std::map<RenderViewCommand, CommandState>::const_iterator it =
+      command_states_.find(command);
+  if (it == command_states_.end()) {
+    CommandState state;
+    state.is_enabled = false;
+    state.checked_state = RENDER_VIEW_COMMAND_CHECKED_STATE_UNCHECKED;
+    return state;
+  }
+  return it->second;
 }
 
 void RenderViewHost::Stop() {
@@ -806,6 +823,8 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_PagesReadyForPreview,
                         OnPagesReadyForPreview)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CommandStateChanged,
+                        OnCommandStateChanged)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
@@ -1737,4 +1756,26 @@ void RenderViewHost::OnPagesReadyForPreview(
 
   // Send the printingDone msg for now.
   Send(new ViewMsg_PrintingDone(routing_id(), params.document_cookie, true));
+}
+
+void RenderViewHost::OnCommandStateChanged(int command,
+                                           bool is_enabled,
+                                           int checked_state) {
+  if (command != RENDER_VIEW_COMMAND_TOGGLE_SPELL_CHECK) {
+    LOG(DFATAL) << "Unknown command " << command;
+    return;
+  }
+
+  if (checked_state != RENDER_VIEW_COMMAND_CHECKED_STATE_UNCHECKED &&
+      checked_state != RENDER_VIEW_COMMAND_CHECKED_STATE_CHECKED &&
+      checked_state != RENDER_VIEW_COMMAND_CHECKED_STATE_MIXED) {
+    LOG(DFATAL) << "Invalid checked state " << checked_state;
+    return;
+  }
+
+  CommandState state;
+  state.is_enabled = is_enabled;
+  state.checked_state =
+      static_cast<RenderViewCommandCheckedState>(checked_state);
+  command_states_[static_cast<RenderViewCommand>(command)] = state;
 }
