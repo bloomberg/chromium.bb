@@ -26,63 +26,65 @@ namespace ppapi_proxy {
 
 namespace {
 
-typedef const void* (*GetInterfacePtr)();
 struct InterfaceMapElement {
   const char* name;
-  GetInterfacePtr func;
+  const void* ppb_interface;
+  bool needs_browser_check;
 };
 
-const InterfaceMapElement interface_map[] = {
-  { PPB_AUDIO_INTERFACE,
-    reinterpret_cast<GetInterfacePtr>(PluginAudio::GetInterface) },
-  { PPB_AUDIO_CONFIG_INTERFACE,
-    reinterpret_cast<GetInterfacePtr>(PluginAudioConfig::GetInterface) },
-  { PPB_BUFFER_DEV_INTERFACE,
-    reinterpret_cast<GetInterfacePtr>(PluginBuffer::GetInterface) },
-  { PPB_CORE_INTERFACE,
-    reinterpret_cast<GetInterfacePtr>(PluginCore::GetInterface) },
-  { PPB_GRAPHICS_2D_INTERFACE,
-    reinterpret_cast<GetInterfacePtr>(PluginGraphics2D::GetInterface) },
-  { PPB_GRAPHICS_3D_DEV_INTERFACE,
-    reinterpret_cast<GetInterfacePtr>(PluginGraphics3D::GetInterface) },
-  { PPB_IMAGEDATA_INTERFACE,
-    reinterpret_cast<GetInterfacePtr>(PluginImageData::GetInterface) },
-  { PPB_INSTANCE_INTERFACE,
-    reinterpret_cast<GetInterfacePtr>(PluginInstance::GetInterface) },
-  { PPB_URLLOADER_INTERFACE,
-    reinterpret_cast<GetInterfacePtr>(PluginURLLoader::GetInterface) },
-  { PPB_URLREQUESTINFO_INTERFACE,
-    reinterpret_cast<GetInterfacePtr>(PluginURLRequestInfo::GetInterface) },
-  { PPB_URLRESPONSEINFO_INTERFACE,
-    reinterpret_cast<GetInterfacePtr>(PluginURLResponseInfo::GetInterface) },
-  { PPB_VAR_DEPRECATED_INTERFACE,
-    reinterpret_cast<GetInterfacePtr>(PluginVar::GetInterface) },
+// List of interfaces that have at least partial proxy support.
+InterfaceMapElement interface_map[] = {
+  { PPB_AUDIO_INTERFACE, PluginAudio::GetInterface(), true },
+  { PPB_AUDIO_CONFIG_INTERFACE, PluginAudioConfig::GetInterface(), true },
+  { PPB_CORE_INTERFACE, PluginCore::GetInterface(), true },
+  { PPB_GRAPHICS_2D_INTERFACE, PluginGraphics2D::GetInterface(), true },
+  { PPB_IMAGEDATA_INTERFACE, PluginImageData::GetInterface(), true },
+  { PPB_INSTANCE_INTERFACE, PluginInstance::GetInterface(), true },
+  { PPB_URLLOADER_INTERFACE, PluginURLLoader::GetInterface(), true },
+  { PPB_URLREQUESTINFO_INTERFACE, PluginURLRequestInfo::GetInterface(), true },
+  { PPB_URLRESPONSEINFO_INTERFACE, PluginURLResponseInfo::GetInterface(),
+    true },
+  { PPB_VAR_DEPRECATED_INTERFACE, PluginVar::GetInterface(), true },
 };
 
 }  // namespace
 
+// Returns the pointer to the interface proxy or NULL if not yet supported.
+// On the first invocation for a given interface that has proxy support,
+// also confirms over RPC that the browser indeed exports this interface.
+// Returns NULL otherwise.
 const void* GetBrowserInterface(const char* interface_name) {
   DebugPrintf("PPB_GetInterface('%s')\n", interface_name);
-  int32_t exports_interface_name;
-  NaClSrpcError srpc_result =
-      PpbRpcClient::PPB_GetInterface(GetMainSrpcChannel(),
-                                     const_cast<char*>(interface_name),
-                                     &exports_interface_name);
-  DebugPrintf("PPB_GetInterface('%s'): %s\n",
-              interface_name, NaClSrpcErrorString(srpc_result));
   const void* ppb_interface = NULL;
-  if (srpc_result == NACL_SRPC_RESULT_OK && exports_interface_name) {
-    // The key strings are macros that may not sort in an obvious order relative
-    // to the name.  Hence, although we would like to use bsearch, we search
-    // linearly.
-    for (size_t i = 0; i < NACL_ARRAY_SIZE(interface_map); ++i) {
-      if (strcmp(interface_name, interface_map[i].name) == 0) {
-        ppb_interface = interface_map[i].func();
-        break;
-      }
+  int index = -1;
+  // The interface map is so small that anything but a linear search would be an
+  // overkill, especially since the keys are macros and might not sort in any
+  // obvious order relative to the name.
+  for (size_t i = 0; i < NACL_ARRAY_SIZE(interface_map); ++i) {
+    if (strcmp(interface_name, interface_map[i].name) == 0) {
+      ppb_interface = interface_map[i].ppb_interface;
+      index = i;
+      break;
     }
   }
   DebugPrintf("PPB_GetInterface('%s'): %p\n", interface_name, ppb_interface);
+  if (index == -1 || ppb_interface == NULL)
+    return NULL;
+  if (!interface_map[index].needs_browser_check)
+    return ppb_interface;
+
+  int32_t browser_exports_interface;
+  NaClSrpcError srpc_result =
+      PpbRpcClient::PPB_GetInterface(GetMainSrpcChannel(),
+                                     const_cast<char*>(interface_name),
+                                     &browser_exports_interface);
+  DebugPrintf("PPB_GetInterface('%s'): %s\n",
+              interface_name, NaClSrpcErrorString(srpc_result));
+  if (srpc_result != NACL_SRPC_RESULT_OK || !browser_exports_interface) {
+    interface_map[index].ppb_interface = NULL;
+    ppb_interface = NULL;
+  }
+  interface_map[index].needs_browser_check = false;
   return ppb_interface;
 }
 
