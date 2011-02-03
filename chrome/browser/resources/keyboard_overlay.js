@@ -412,7 +412,12 @@ function init() {
  * Called after sending the 'getKeyboardOverlayId' message.
  */
 function initKeyboardOverlayId(overlayId) {
-  keyboardOverlayId = overlayId;
+  // Libcros returns an empty string when it cannot find the keyboard overlay ID
+  // corresponding to the current input method.
+  // In such a case, fallback to the default ID (en_US).
+  if (overlayId) {
+    keyboardOverlayId = overlayId;
+  }
   while(document.body.firstChild) {
     document.body.removeChild(document.body.firstChild);
   }
