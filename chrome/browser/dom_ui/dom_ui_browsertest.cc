@@ -10,7 +10,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
-#include "ui/base/resource/resource_bundle.h"
 
 static const FilePath::CharType* kDOMUILibraryJS =
     FILE_PATH_LITERAL("test_api.js");
@@ -20,20 +19,16 @@ static const FilePath::CharType* kDOMUITestFolder =
 bool DOMUITest::RunDOMUITest(const FilePath::CharType* src_path) {
   std::string content;
   BuildJavaScriptTest(FilePath(src_path), &content);
-  SetupHandlers();
-  return test_handler_->Execute(content);
+  handler_->Attach(
+      browser()->GetSelectedTabContents()->dom_ui());
+  return handler_->Execute(content);
 }
 
-DOMUITest::DOMUITest() : test_handler_(new DOMUITestHandler()) {}
+DOMUITest::DOMUITest() : handler_(new DOMUITestHandler()) {}
 
 void DOMUITest::SetUpInProcessBrowserTestFixture() {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_));
   test_data_directory_ = test_data_directory_.Append(kDOMUITestFolder);
-
-  // TODO(dtseng): should this be part of every BrowserTest or just DOMUI test.
-  FilePath resources_pack_path;
-  PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
-  ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
 }
 
 void DOMUITest::BuildJavaScriptTest(const FilePath& src_path,
@@ -49,17 +44,6 @@ void DOMUITest::BuildJavaScriptTest(const FilePath& src_path,
   content->append(library_content);
   content->append(";\n");
   content->append(src_content);
-}
-
-void DOMUITest::SetupHandlers() {
-  DOMUI* dom_ui_instance =
-      browser()->GetSelectedTabContents()->dom_ui();
-  ASSERT_TRUE(dom_ui_instance != NULL);
-  dom_ui_instance->register_callback_overwrites(true);
-  test_handler_->Attach(dom_ui_instance);
-
-  if (GetMockMessageHandler())
-    GetMockMessageHandler()->Attach(dom_ui_instance);
 }
 
 IN_PROC_BROWSER_TEST_F(DOMUITest, TestSamplePass) {
