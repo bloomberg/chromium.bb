@@ -489,7 +489,7 @@ STDAPI CustomRegistration(UINT reg_flags, BOOL reg, bool is_system) {
   UINT flags = reg_flags;
 
   if (reg && (flags & (ACTIVEDOC | ACTIVEX)))
-    flags |= (TYPELIB |GCF_PROTOCOL);
+    flags |= (TYPELIB | GCF_PROTOCOL);
 
   HRESULT hr = S_OK;
 
@@ -511,8 +511,14 @@ STDAPI CustomRegistration(UINT reg_flags, BOOL reg, bool is_system) {
     // _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_ACTIVEX, reg)
     // because there is specific OLEMISC replacement.
     hr = ChromeFrameActivex::UpdateRegistry(reg);
-    // TODO(amit): Move elevation policy registration from ActiveX rgs
-    // into a separate rgs.
+  }
+
+  // Register the elevation policy.  We do this only for developer convenience
+  // as the installer is really responsible for doing this.
+  // Because of that, we do not unregister this policy and just leave that up
+  // to the installer.
+  if (hr == S_OK && (flags & (ACTIVEDOC | ACTIVEX)) && reg) {
+    _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_ELEVATION, reg);
     RefreshElevationPolicy();
   }
 

@@ -29,6 +29,7 @@ for localizable strings
       <include name="IDR_BHO" file="../bho.rgs" type="REGISTRY" />
       <include name="IDR_CHROMEACTIVEDOCUMENT" file="../chrome_active_document.rgs" type="REGISTRY" />
       <include name="IDR_CHROMEFRAME_ACTIVEX" file="../chrome_frame_activex.rgs" type="REGISTRY" />
+      <include name="IDR_CHROMEFRAME_ELEVATION" file="../chrome_frame_elevation.rgs" type="REGISTRY" />
       <include name="IDR_CHROMEFRAME_NPAPI" file="../chrome_frame_npapi.rgs" type="REGISTRY" />
       <include name="IDR_CHROMEPROTOCOL" file="../chrome_protocol.rgs" type="REGISTRY" />
       <include name="IDR_CHROMETAB" file="../chrome_tab.rgs" type="REGISTRY" />

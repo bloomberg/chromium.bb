@@ -21,8 +21,7 @@
           ForceRemove 'Programmable'
           ForceRemove 'Insertable'
           ForceRemove 'ToolboxBitmap32' = s '%MODULE%, 1'
-          'MiscStatus' = s '0'
-          {
+          'MiscStatus' = s '0' {
             '1' = s '%OLEMISC%'
           }
           'TypeLib' = s '{6F2664E1-FF6E-488A-BCD1-F4CA6001DFCC}'
@@ -52,24 +51,6 @@
                   }
                 }
               }
-            }
-          }
-        }
-      }
-      NoRemove 'Internet Explorer' {
-        NoRemove 'Low Rights' {
-          NoRemove ElevationPolicy {
-            ForceRemove '{E0A900DF-9611-4446-86BD-4B1D47E7DB2A}' = s '' {
-              val Policy = d '3'
-              val AppName = s '%CHROME_LAUNCHER_APPNAME%'
-              val AppPath = s '%CHROME_LAUNCHER_APPPATH%'
-            }
-          }
-          NoRemove DragDrop {
-            ForceRemove '{E0A900DF-9611-4446-86BD-4B1D47E7DB2A}' = s '' {
-              val Policy = d '3'
-              val AppName = s '%CHROME_APPNAME%'
-              val AppPath = s '%CHROME_APPPATH%'
             }
           }
         }

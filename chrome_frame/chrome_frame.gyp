@@ -960,6 +960,7 @@
         '../chrome/chrome.gyp:utility',
       ],
       'sources': [
+        'chrome_frame_elevation.rgs',
         'chrome_frame_npapi.rgs',
         'chrome_frame_npapi_entrypoints.cc',
         'chrome_frame_npapi_entrypoints.h',
