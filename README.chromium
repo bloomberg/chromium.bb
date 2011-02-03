@@ -3,7 +3,8 @@ URL: http://sourceforge.net/projects/libjpeg-turbo/
 License File: LICENSE.txt
 
 This consists of three components:
-* A partial copy of libjpeg-turbo-1.0.1;
+* A partial copy of libjpeg-turbo-1.0.1 with one small additional fix - r324 from
+  https://libjpeg-turbo.svn.sourceforge.net/svnroot/libjpeg-turbo/branches/1.0.x
 * A build file (libjpeg.gyp), and;
 * Patched header files used by Chromium.
 
