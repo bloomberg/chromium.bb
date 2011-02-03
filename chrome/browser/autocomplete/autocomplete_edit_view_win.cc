@@ -12,7 +12,6 @@
 #include <textserv.h>
 
 #include "app/win/iat_patch_function.h"
-#include "app/win/win_util.h"
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
@@ -50,6 +49,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "views/controls/textfield/native_textfield_win.h"
 #include "views/drag_utils.h"
 #include "views/focus/focus_util_win.h"
 #include "views/widget/widget.h"
@@ -260,6 +260,16 @@ struct AutocompleteEditState {
   const AutocompleteEditModel::State model_state;
   const AutocompleteEditViewWin::State view_state;
 };
+
+// Returns true if the current point is far enough from the origin that it
+// would be considered a drag.
+bool IsDrag(const POINT& origin, const POINT& current) {
+  // The CXDRAG and CYDRAG system metrics describe the width and height of a
+  // rectangle around the origin position, inside of which motion is not
+  // considered a drag.
+  return (abs(current.x - origin.x) > (GetSystemMetrics(SM_CXDRAG) / 2)) ||
+         (abs(current.y - origin.y) > (GetSystemMetrics(SM_CYDRAG) / 2));
+}
 
 }  // namespace
 
@@ -963,7 +973,7 @@ bool AutocompleteEditViewWin::SkipDefaultKeyEventProcessing(
   // We don't process ALT + numpad digit as accelerators, they are used for
   // entering special characters.  We do translate alt-home.
   if (e.IsAltDown() && (key != ui::VKEY_HOME) &&
-      app::win::IsNumPadDigit(key, e.IsExtendedKey()))
+      views::NativeTextfieldWin::IsNumPadDigit(key, e.IsExtendedKey()))
     return true;
 
   // Skip accelerators for key combinations omnibox wants to crack. This list
@@ -1459,8 +1469,8 @@ void AutocompleteEditViewWin::OnLButtonDown(UINT keys, const CPoint& point) {
   // double_click_time_ from the current message's time even if the timer has
   // wrapped in between.
   const bool is_triple_click = tracking_double_click_ &&
-      app::win::IsDoubleClick(double_click_point_, point,
-                              GetCurrentMessage()->time - double_click_time_);
+      views::NativeTextfieldWin::IsDoubleClick(double_click_point_, point,
+          GetCurrentMessage()->time - double_click_time_);
   tracking_double_click_ = false;
 
   if (!gaining_focus_.get() && !is_triple_click)
@@ -1559,7 +1569,7 @@ void AutocompleteEditViewWin::OnMouseMove(UINT keys, const CPoint& point) {
     return;
   }
 
-  if (tracking_click_[kLeft] && !app::win::IsDrag(click_point_[kLeft], point))
+  if (tracking_click_[kLeft] && !IsDrag(click_point_[kLeft], point))
     return;
 
   tracking_click_[kLeft] = false;
@@ -2380,7 +2390,7 @@ ITextDocument* AutocompleteEditViewWin::GetTextObjectModel() const {
 }
 
 void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
-  if (initiated_drag_ || !app::win::IsDrag(click_point_[kLeft], point))
+  if (initiated_drag_ || !IsDrag(click_point_[kLeft], point))
     return;
 
   ui::OSExchangeData data;
@@ -2537,7 +2547,7 @@ void AutocompleteEditViewWin::SelectAllIfNecessary(MouseButton button,
                                                    const CPoint& point) {
   // When the user has clicked and released to give us focus, select all.
   if (tracking_click_[button] &&
-      !app::win::IsDrag(click_point_[button], point)) {
+      !IsDrag(click_point_[button], point)) {
     // Select all in the reverse direction so as not to scroll the caret
     // into view and shift the contents jarringly.
     SelectAll(true);

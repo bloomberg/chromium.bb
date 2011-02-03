@@ -10,11 +10,23 @@
 #include "views/window/window.h"
 
 namespace gfx {
+class Font;
 class Point;
 class Size;
 };
 
 namespace views {
+
+namespace internal {
+// This is exposed only for testing
+
+// Adjusts the value of |child_rect| if necessary to ensure that it is
+// completely visible within |parent_rect|.
+void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
+                               gfx::Rect* child_rect,
+                               int padding);
+
+}  // namespace internal
 
 class Client;
 class WindowDelegate;
@@ -44,10 +56,6 @@ class WindowWin : public WidgetWin,
 
   // Executes the specified SC_command.
   void ExecuteSystemMenuCommand(int command);
-
-  // Called when the frame type could possibly be changing (theme change or
-  // DWM composition change).
-  void FrameTypeChanged();
 
   // Accessors and setters for various properties.
   HWND owning_window() const { return owning_hwnd_; }
@@ -89,6 +97,10 @@ class WindowWin : public WidgetWin,
   virtual ClientView* GetClientView() const;
   virtual gfx::NativeWindow GetNativeWindow() const;
   virtual bool ShouldUseNativeFrame() const;
+  virtual void FrameTypeChanged();
+
+  // Returns the system set window title font.
+  static gfx::Font GetWindowTitleFont();
 
  protected:
   friend Window;

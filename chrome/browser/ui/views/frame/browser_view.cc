@@ -84,9 +84,9 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "app/win/win_util.h"
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"
+#include "ui/base/message_box_win.h"
 #include "ui/base/view_prop.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/ui/views/accelerator_table_gtk.h"
@@ -1143,8 +1143,8 @@ void BrowserView::ShowProfileErrorDialog(int message_id) {
 #if defined(OS_WIN)
   string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   string16 message = l10n_util::GetStringUTF16(message_id);
-  app::win::MessageBox(GetNativeHandle(), message, title,
-                       MB_OK | MB_ICONWARNING | MB_TOPMOST);
+  ui::MessageBox(GetNativeHandle(), message, title,
+                 MB_OK | MB_ICONWARNING | MB_TOPMOST);
 #elif defined(OS_LINUX)
   std::string title = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
   std::string message = l10n_util::GetStringUTF8(message_id);
@@ -1396,19 +1396,6 @@ void BrowserView::HideInstant(bool instant_is_active) {
 
 gfx::Rect BrowserView::GetInstantBounds() {
   return contents_->GetPreviewBounds();
-}
-
-gfx::Rect BrowserView::GrabWindowSnapshot(std::vector<unsigned char>*
-                                          png_representation) {
-  views::Window* window = GetWindow();
-
-#if defined(USE_X11)
-  ui::GrabWindowSnapshot(window->GetNativeWindow(), png_representation);
-#elif defined(OS_WIN)
-  app::win::GrabWindowSnapshot(window->GetNativeWindow(), png_representation);
-#endif
-
-  return window->GetBounds();
 }
 
 #if defined(OS_CHROMEOS)

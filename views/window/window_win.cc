@@ -7,14 +7,16 @@
 #include <dwmapi.h>
 #include <shellapi.h>
 
-#include "app/win/win_util.h"
 #include "base/i18n/rtl.h"
+#include "base/win/scoped_gdi_object.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "gfx/canvas_skia_paint.h"
 #include "gfx/font.h"
 #include "gfx/icon_util.h"
 #include "gfx/path.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
+#include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/win/hwnd_util.h"
 #include "views/accessibility/view_accessibility.h"
@@ -28,6 +30,9 @@
 namespace {
 
 static const int kDragFrameWindowAlpha = 200;
+
+// The thickness of an auto-hide taskbar in pixels.
+static const int kAutoHideTaskbarThicknessPx = 2;
 
 bool GetMonitorAndRects(const RECT& rect,
                         HMONITOR* monitor,
@@ -88,17 +93,71 @@ void SetChildBounds(HWND child_window, HWND parent_window,
   }
 
   gfx::Rect actual_bounds = bounds;
-  app::win::EnsureRectIsVisibleInRect(gfx::Rect(parent_rect), &actual_bounds,
-                                      padding);
+  views::internal::EnsureRectIsVisibleInRect(gfx::Rect(parent_rect),
+                                             &actual_bounds, padding);
 
   SetWindowPos(child_window, insert_after_window, actual_bounds.x(),
                actual_bounds.y(), actual_bounds.width(),
                actual_bounds.height(), flags);
 }
 
+// Returns true if edge |edge| (one of ABE_LEFT, TOP, RIGHT, or BOTTOM) of
+// monitor |monitor| has an auto-hiding taskbar that's always-on-top.
+bool EdgeHasTopmostAutoHideTaskbar(UINT edge, HMONITOR monitor) {
+  APPBARDATA taskbar_data = { 0 };
+  taskbar_data.cbSize = sizeof APPBARDATA;
+  taskbar_data.uEdge = edge;
+  HWND taskbar = reinterpret_cast<HWND>(SHAppBarMessage(ABM_GETAUTOHIDEBAR,
+                                                        &taskbar_data));
+  return ::IsWindow(taskbar) && (monitor != NULL) &&
+      (MonitorFromWindow(taskbar, MONITOR_DEFAULTTONULL) == monitor) &&
+      (GetWindowLong(taskbar, GWL_EXSTYLE) & WS_EX_TOPMOST);
+}
+
 }  // namespace
 
 namespace views {
+
+namespace internal {
+
+void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
+                               gfx::Rect* child_rect,
+                               int padding) {
+  DCHECK(child_rect);
+
+  // We use padding here because it allows some of the original web page to
+  // bleed through around the edges.
+  int twice_padding = padding * 2;
+
+  // FIRST, clamp width and height so we don't open child windows larger than
+  // the containing parent.
+  if (child_rect->width() > (parent_rect.width() + twice_padding))
+    child_rect->set_width(std::max(0, parent_rect.width() - twice_padding));
+  if (child_rect->height() > parent_rect.height() + twice_padding)
+    child_rect->set_height(std::max(0, parent_rect.height() - twice_padding));
+
+  // SECOND, clamp x,y position to padding,padding so we don't position child
+  // windows in hyperspace.
+  // TODO(mpcomplete): I don't see what the second check in each 'if' does that
+  // isn't handled by the LAST set of 'ifs'.  Maybe we can remove it.
+  if (child_rect->x() < parent_rect.x() ||
+      child_rect->x() > parent_rect.right()) {
+    child_rect->set_x(parent_rect.x() + padding);
+  }
+  if (child_rect->y() < parent_rect.y() ||
+      child_rect->y() > parent_rect.bottom()) {
+    child_rect->set_y(parent_rect.y() + padding);
+  }
+
+  // LAST, nudge the window back up into the client area if its x,y position is
+  // within the parent bounds but its width/height place it off-screen.
+  if (child_rect->bottom() > parent_rect.bottom())
+    child_rect->set_y(parent_rect.bottom() - child_rect->height() - padding);
+  if (child_rect->right() > parent_rect.right())
+    child_rect->set_x(parent_rect.right() - child_rect->width() - padding);
+}
+
+}  // namespace internal
 
 // A scoping class that prevents a window from being able to redraw in response
 // to invalidations that may occur within it for the lifetime of the object.
@@ -241,41 +300,6 @@ static BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
   return TRUE;
 }
 }  // namespace
-
-void WindowWin::FrameTypeChanged() {
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    // We need to toggle the rendering policy of the DWM/glass frame as we
-    // change from opaque to glass. "Non client rendering enabled" means that
-    // the DWM's glass non-client rendering is enabled, which is why
-    // DWMNCRP_ENABLED is used for the native frame case. _DISABLED means the
-    // DWM doesn't render glass, and so is used in the custom frame case.
-    DWMNCRENDERINGPOLICY policy =
-        non_client_view_->UseNativeFrame() ? DWMNCRP_ENABLED
-                                           : DWMNCRP_DISABLED;
-    DwmSetWindowAttribute(GetNativeView(), DWMWA_NCRENDERING_POLICY,
-                          &policy, sizeof(DWMNCRENDERINGPOLICY));
-  }
-
-  // Send a frame change notification, since the non-client metrics have
-  // changed.
-  SetWindowPos(NULL, 0, 0, 0, 0,
-               SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER |
-                   SWP_NOOWNERZORDER | SWP_NOACTIVATE);
-
-  // The frame type change results in the client rect changing size, but this
-  // does not explicitly send a WM_SIZE, so we need to force the root view to
-  // be resized now.
-  LayoutRootView();
-
-  // Update the non-client view with the correct frame view for the active frame
-  // type.
-  non_client_view_->UpdateFrame();
-
-  // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
-  // to notify our children too, since we can have MDI child windows who need to
-  // update their appearance.
-  EnumChildWindows(GetNativeView(), &SendDwmCompositionChanged, NULL);
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowWin, Window implementation:
@@ -542,6 +566,53 @@ bool WindowWin::ShouldUseNativeFrame() const {
   if (!tp)
     return WidgetWin::IsAeroGlassEnabled();
   return tp->ShouldUseNativeFrame();
+}
+
+void WindowWin::FrameTypeChanged() {
+  // Called when the frame type could possibly be changing (theme change or
+  // DWM composition change).
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    // We need to toggle the rendering policy of the DWM/glass frame as we
+    // change from opaque to glass. "Non client rendering enabled" means that
+    // the DWM's glass non-client rendering is enabled, which is why
+    // DWMNCRP_ENABLED is used for the native frame case. _DISABLED means the
+    // DWM doesn't render glass, and so is used in the custom frame case.
+    DWMNCRENDERINGPOLICY policy =
+        non_client_view_->UseNativeFrame() ? DWMNCRP_ENABLED
+                                           : DWMNCRP_DISABLED;
+    DwmSetWindowAttribute(GetNativeView(), DWMWA_NCRENDERING_POLICY,
+                          &policy, sizeof(DWMNCRENDERINGPOLICY));
+  }
+
+  // Send a frame change notification, since the non-client metrics have
+  // changed.
+  SetWindowPos(NULL, 0, 0, 0, 0,
+               SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER |
+                   SWP_NOOWNERZORDER | SWP_NOACTIVATE);
+
+  // The frame type change results in the client rect changing size, but this
+  // does not explicitly send a WM_SIZE, so we need to force the root view to
+  // be resized now.
+  LayoutRootView();
+
+  // Update the non-client view with the correct frame view for the active frame
+  // type.
+  non_client_view_->UpdateFrame();
+
+  // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
+  // to notify our children too, since we can have MDI child windows who need to
+  // update their appearance.
+  EnumChildWindows(GetNativeView(), &SendDwmCompositionChanged, NULL);
+}
+
+
+// static
+gfx::Font WindowWin::GetWindowTitleFont() {
+  NONCLIENTMETRICS ncm;
+  base::win::GetNonClientMetrics(&ncm);
+  l10n_util::AdjustUIFont(&(ncm.lfCaptionFont));
+  base::win::ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));
+  return gfx::Font(caption_font);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -843,9 +914,9 @@ LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
         return 0;
       }
     }
-    if (app::win::EdgeHasTopmostAutoHideTaskbar(ABE_LEFT, monitor))
-      client_rect->left += app::win::kAutoHideTaskbarThicknessPx;
-    if (app::win::EdgeHasTopmostAutoHideTaskbar(ABE_TOP, monitor)) {
+    if (EdgeHasTopmostAutoHideTaskbar(ABE_LEFT, monitor))
+      client_rect->left += kAutoHideTaskbarThicknessPx;
+    if (EdgeHasTopmostAutoHideTaskbar(ABE_TOP, monitor)) {
       if (GetNonClientView()->UseNativeFrame()) {
         // Tricky bit.  Due to a bug in DwmDefWindowProc()'s handling of
         // WM_NCHITTEST, having any nonclient area atop the window causes the
@@ -858,13 +929,13 @@ LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
         // be no better solution.
         --client_rect->bottom;
       } else {
-        client_rect->top += app::win::kAutoHideTaskbarThicknessPx;
+        client_rect->top += kAutoHideTaskbarThicknessPx;
       }
     }
-    if (app::win::EdgeHasTopmostAutoHideTaskbar(ABE_RIGHT, monitor))
-      client_rect->right -= app::win::kAutoHideTaskbarThicknessPx;
-    if (app::win::EdgeHasTopmostAutoHideTaskbar(ABE_BOTTOM, monitor))
-      client_rect->bottom -= app::win::kAutoHideTaskbarThicknessPx;
+    if (EdgeHasTopmostAutoHideTaskbar(ABE_RIGHT, monitor))
+      client_rect->right -= kAutoHideTaskbarThicknessPx;
+    if (EdgeHasTopmostAutoHideTaskbar(ABE_BOTTOM, monitor))
+      client_rect->bottom -= kAutoHideTaskbarThicknessPx;
 
     // We cannot return WVR_REDRAW when there is nonclient area, or Windows
     // exhibits bugs where client pixels and child HWNDs are mispositioned by

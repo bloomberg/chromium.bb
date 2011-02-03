@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "app/win/win_util.h"
+#include "chrome/common/section_util_win.h"
 #include "gfx/gdi_util.h"
 #endif
 
@@ -535,7 +535,7 @@ void WebPluginProxy::SetWindowlessBuffer(
           window_rect.width(),
           window_rect.height(),
           true,
-          app::win::GetSectionFromProcess(windowless_buffer,
+          chrome::GetSectionFromProcess(windowless_buffer,
               channel_->renderer_handle(), false))) {
     windowless_canvas_.reset();
     background_canvas_.reset();
@@ -548,7 +548,7 @@ void WebPluginProxy::SetWindowlessBuffer(
             window_rect.width(),
             window_rect.height(),
             true,
-            app::win::GetSectionFromProcess(background_buffer,
+            chrome::GetSectionFromProcess(background_buffer,
                 channel_->renderer_handle(), false))) {
       windowless_canvas_.reset();
       background_canvas_.reset();

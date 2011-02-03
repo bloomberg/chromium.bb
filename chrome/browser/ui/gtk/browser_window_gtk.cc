@@ -1120,12 +1120,6 @@ gfx::Rect BrowserWindowGtk::GetInstantBounds() {
   return gtk_util::GetWidgetScreenBounds(contents_container_->widget());
 }
 
-gfx::Rect BrowserWindowGtk::GrabWindowSnapshot(std::vector<unsigned char>*
-                                               png_representation) {
-  ui::GrabWindowSnapshot(window_, png_representation);
-  return bounds_;
-}
-
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
   new DownloadInProgressDialogGtk(browser());
 }

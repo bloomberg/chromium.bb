@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include <windowsx.h>
 #include <limits>
 
-#include "app/win/win_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -15,6 +14,7 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "views/screen.h"
 #include "views/view.h"
+#include "views/widget/monitor_win.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
@@ -228,7 +228,7 @@ bool TooltipManagerWin::SetTooltipPosition(int text_x, int text_y) {
   // doesn't, return false so that windows positions the tooltip at the
   // default location.
   gfx::Rect monitor_bounds =
-      app::win::GetMonitorBoundsForRect(gfx::Rect(bounds.left,bounds.right,
+      views::GetMonitorBoundsForRect(gfx::Rect(bounds.left,bounds.right,
                                                   0, 0));
   if (!monitor_bounds.Contains(gfx::Rect(bounds))) {
     return false;
@@ -356,7 +356,7 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
                       screen_point.y() + focused_bounds.height() +
                       line_count * tooltip_height_ };
   gfx::Rect monitor_bounds =
-      app::win::GetMonitorBoundsForRect(gfx::Rect(rect_bounds));
+      views::GetMonitorBoundsForRect(gfx::Rect(rect_bounds));
   rect_bounds = gfx::Rect(rect_bounds).AdjustToFit(monitor_bounds).ToRECT();
   ::SetWindowPos(keyboard_tooltip_hwnd_, NULL, rect_bounds.left,
                  rect_bounds.top, 0, 0,

@@ -9,7 +9,6 @@
 
 #include <set>
 
-#include "app/win/win_util.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/browser_list.h"
@@ -23,6 +22,7 @@
 #include "views/screen.h"
 #include "views/widget/widget_win.h"
 #include "views/window/window_delegate.h"
+#include "views/window/window_win.h"
 
 // static
 static const int kClientEdgeThickness = 3;
@@ -41,7 +41,8 @@ BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
 
 // static
 const gfx::Font& BrowserFrame::GetTitleFont() {
-  static gfx::Font* title_font = new gfx::Font(app::win::GetWindowTitleFont());
+  static gfx::Font* title_font =
+      new gfx::Font(views::WindowWin::GetWindowTitleFont());
   return *title_font;
 }
 

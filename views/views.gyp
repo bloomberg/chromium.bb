@@ -336,6 +336,8 @@
         'widget/tooltip_manager.h',
         'widget/tooltip_window_gtk.cc',
         'widget/tooltip_window_gtk.h',
+        'widget/monitor_win.cc',
+        'widget/monitor_win.h',
         'widget/widget.h',
         'widget/widget_gtk.cc',
         'widget/widget_gtk.h',
@@ -468,6 +470,7 @@
         'test/test_views_delegate.h',
         'view_unittest.cc',
         'widget/widget_win_unittest.cc',
+        'window/window_win_unittest.cc',
 
         '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
       ],

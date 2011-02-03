@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 
 #if defined(OS_WIN)
-#include "app/win/win_util.h"
+#include "ui/base/message_box_win.h"
 #endif
 
 ExtensionsStartupUtil::ExtensionsStartupUtil() : pack_job_succeeded_(false) {}
@@ -36,7 +36,7 @@ void ExtensionsStartupUtil::ShowPackExtensionMessage(
     const std::wstring& caption,
     const std::wstring& message) {
 #if defined(OS_WIN)
-  app::win::MessageBox(NULL, message, caption, MB_OK | MB_SETFOREGROUND);
+  ui::MessageBox(NULL, message, caption, MB_OK | MB_SETFOREGROUND);
 #else
   // Just send caption & text to stdout on mac & linux.
   std::string out_text = WideToASCII(caption);

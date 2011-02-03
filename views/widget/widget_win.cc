@@ -6,7 +6,6 @@
 
 #include <dwmapi.h>
 
-#include "app/win/win_util.h"
 #include "base/string_util.h"
 #include "base/win/windows_version.h"
 #include "gfx/canvas_skia.h"
@@ -34,6 +33,17 @@
 #pragma comment(lib, "dwmapi.lib")
 
 using ui::ViewProp;
+
+namespace {
+
+// Returns whether the specified window is the current active window.
+bool IsWindowActive(HWND hwnd) {
+  WINDOWINFO info;
+  return ::GetWindowInfo(hwnd, &info) &&
+         ((info.dwWindowStatus & WS_ACTIVECAPTION) != 0);
+}
+
+}  // namespace
 
 namespace views {
 
@@ -407,7 +417,7 @@ bool WidgetWin::IsVisible() const {
 }
 
 bool WidgetWin::IsActive() const {
-  return app::win::IsWindowActive(hwnd());
+  return IsWindowActive(hwnd());
 }
 
 bool WidgetWin::IsAccessibleWidget() const {

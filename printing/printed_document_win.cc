@@ -1,10 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "printing/printed_document.h"
 
-#include "app/win/win_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -32,6 +31,46 @@ void SimpleModifyWorldTransform(HDC context,
 
 void DrawRect(HDC context, gfx::Rect rect) {
   Rectangle(context, rect.x(), rect.y(), rect.right(), rect.bottom());
+}
+
+// Creates a string interpretation of the time of day represented by the given
+// SYSTEMTIME that's appropriate for the user's default locale.
+// Format can be an empty string (for the default format), or a "format picture"
+// as specified in the Windows documentation for GetTimeFormat().
+string16 FormatSystemTime(const SYSTEMTIME& time, const string16& format) {
+  // If the format string is empty, just use the default format.
+  LPCTSTR format_ptr = NULL;
+  if (!format.empty())
+    format_ptr = format.c_str();
+
+  int buffer_size = GetTimeFormat(LOCALE_USER_DEFAULT, NULL, &time, format_ptr,
+                                  NULL, 0);
+
+  string16 output;
+  GetTimeFormat(LOCALE_USER_DEFAULT, NULL, &time, format_ptr,
+                WriteInto(&output, buffer_size), buffer_size);
+
+  return output;
+}
+
+// Creates a string interpretation of the date represented by the given
+// SYSTEMTIME that's appropriate for the user's default locale.
+// Format can be an empty string (for the default format), or a "format picture"
+// as specified in the Windows documentation for GetDateFormat().
+string16 FormatSystemDate(const SYSTEMTIME& date, const string16& format) {
+  // If the format string is empty, just use the default format.
+  LPCTSTR format_ptr = NULL;
+  if (!format.empty())
+    format_ptr = format.c_str();
+
+  int buffer_size = GetDateFormat(LOCALE_USER_DEFAULT, NULL, &date, format_ptr,
+                                  NULL, 0);
+
+  string16 output;
+  GetDateFormat(LOCALE_USER_DEFAULT, NULL, &date, format_ptr,
+                WriteInto(&output, buffer_size), buffer_size);
+
+  return output;
 }
 
 }  // namespace
@@ -121,9 +160,9 @@ void PrintedDocument::Immutable::SetDocumentDate() {
   SYSTEMTIME systemtime;
   GetLocalTime(&systemtime);
   date_ =
-      WideToUTF16Hack(app::win::FormatSystemDate(systemtime, std::wstring()));
+      WideToUTF16Hack(FormatSystemDate(systemtime, std::wstring()));
   time_ =
-      WideToUTF16Hack(app::win::FormatSystemTime(systemtime, std::wstring()));
+      WideToUTF16Hack(FormatSystemTime(systemtime, std::wstring()));
 }
 
 void PrintedDocument::DrawHeaderFooter(gfx::NativeDrawingContext context,

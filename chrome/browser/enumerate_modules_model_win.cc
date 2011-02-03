@@ -7,7 +7,6 @@
 #include <Tlhelp32.h>
 #include <wintrust.h>
 
-#include "app/win/win_util.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_path.h"
@@ -75,7 +74,22 @@ struct FindModule {
   const ModuleEnumerator::Module& module;
 };
 
+// Returns the long path name given a short path name. A short path name is a
+// path that follows the 8.3 convention and has ~x in it. If the path is already
+// a long path name, the function returns the current path without modification.
+bool ConvertToLongPath(const string16& short_path, string16* long_path) {
+  wchar_t long_path_buf[MAX_PATH];
+  DWORD return_value = GetLongPathName(short_path.c_str(), long_path_buf,
+                                       MAX_PATH);
+  if (return_value != 0 && return_value < MAX_PATH) {
+    *long_path = long_path_buf;
+    return true;
+  }
+
+  return false;
 }
+
+}  // namespace
 
 // The browser process module blacklist. This lists modules that are known
 // to cause compatibility issues within the browser process. When adding to this
@@ -220,7 +234,7 @@ static void GenerateHash(const std::string& input, std::string* output) {
 // static
 void ModuleEnumerator::NormalizeModule(Module* module) {
   string16 path = module->location;
-  if (!app::win::ConvertToLongPath(path, &module->location))
+  if (!ConvertToLongPath(path, &module->location))
     module->location = path;
 
   module->location = l10n_util::ToLower(module->location);

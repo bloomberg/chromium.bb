@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/win/win_util.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -129,6 +128,37 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
 NativeTextfieldWin::~NativeTextfieldWin() {
   if (IsWindow())
     DestroyWindow();
+}
+
+// static
+bool NativeTextfieldWin::IsDoubleClick(const POINT& origin,
+                                       const POINT& current,
+                                       DWORD elapsed_time) {
+  // The CXDOUBLECLK and CYDOUBLECLK system metrics describe the width and
+  // height of a rectangle around the origin position, inside of which clicks
+  // within the double click time are considered double clicks.
+  return (elapsed_time <= GetDoubleClickTime()) &&
+      (abs(current.x - origin.x) <= (GetSystemMetrics(SM_CXDOUBLECLK) / 2)) &&
+      (abs(current.y - origin.y) <= (GetSystemMetrics(SM_CYDOUBLECLK) / 2));
+}
+
+// static
+bool NativeTextfieldWin::IsNumPadDigit(int key_code, bool extended_key) {
+  if (key_code >= VK_NUMPAD0 && key_code <= VK_NUMPAD9)
+    return true;
+
+  // Check for num pad keys without NumLock.
+  // Note: there is no easy way to know if a the key that was pressed comes from
+  //       the num pad or the rest of the keyboard.  Investigating how
+  //       TranslateMessage() generates the WM_KEYCHAR from an
+  //       ALT + <NumPad sequences> it appears it looks at the extended key flag
+  //       (which is on if the key pressed comes from one of the 3 clusters to
+  //       the left of the numeric keypad).  So we use it as well.
+  return !extended_key &&
+            ((key_code >= VK_PRIOR && key_code <= VK_DOWN) ||  // All keys but 5
+                                                               // and 0.
+            (key_code == VK_CLEAR) ||  // Key 5.
+            (key_code == VK_INSERT));  // Key 0.
 }
 
 void NativeTextfieldWin::AttachHack() {
@@ -678,8 +708,8 @@ void NativeTextfieldWin::OnLButtonDown(UINT keys, const CPoint& point) {
   // double_click_time_ from the current message's time even if the timer has
   // wrapped in between.
   const bool is_triple_click = tracking_double_click_ &&
-      app::win::IsDoubleClick(double_click_point_, point,
-                              GetCurrentMessage()->time - double_click_time_);
+      IsDoubleClick(double_click_point_, point,
+                    GetCurrentMessage()->time - double_click_time_);
   tracking_double_click_ = false;
 
   ScopedFreeze freeze(this, GetTextObjectModel());

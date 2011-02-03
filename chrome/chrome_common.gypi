@@ -159,6 +159,8 @@
           'common/sandbox_mac.mm',
           'common/sandbox_policy.cc',
           'common/sandbox_policy.h',
+          'common/section_util_win.cc',
+          'common/section_util_win.h',
           'common/serialized_script_value.cc',
           'common/serialized_script_value.h',
           'common/set_process_title.cc',

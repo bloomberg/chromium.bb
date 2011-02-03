@@ -328,8 +328,6 @@ class BrowserView : public BrowserBubbleHost,
   virtual void ShowInstant(TabContents* preview_contents);
   virtual void HideInstant(bool instant_is_active);
   virtual gfx::Rect GetInstantBounds();
-  virtual gfx::Rect GrabWindowSnapshot(std::vector<unsigned char>*
-                                       png_representation);
 
 #if defined(OS_CHROMEOS)
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window);

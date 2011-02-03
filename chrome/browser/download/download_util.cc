@@ -69,7 +69,6 @@
 #endif  // defined(TOOLKIT_USES_GTK)
 
 #if defined(OS_WIN)
-#include "app/win/win_util.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -116,6 +115,44 @@ bool IsShellIntegratedExtension(const string16& extension) {
   if (extension_lower.size() > 0 && extension_lower.at(0) == L'{' &&
       extension_lower.at(extension_lower.length() - 1) == L'}')
     return true;
+
+  return false;
+}
+
+// Returns whether the specified file name is a reserved name on windows.
+// This includes names like "com2.zip" (which correspond to devices) and
+// desktop.ini and thumbs.db which have special meaning to the windows shell.
+bool IsReservedName(const string16& filename) {
+  // This list is taken from the MSDN article "Naming a file"
+  // http://msdn2.microsoft.com/en-us/library/aa365247(VS.85).aspx
+  // I also added clock$ because GetSaveFileName seems to consider it as a
+  // reserved name too.
+  static const wchar_t* const known_devices[] = {
+    L"con", L"prn", L"aux", L"nul", L"com1", L"com2", L"com3", L"com4", L"com5",
+    L"com6", L"com7", L"com8", L"com9", L"lpt1", L"lpt2", L"lpt3", L"lpt4",
+    L"lpt5", L"lpt6", L"lpt7", L"lpt8", L"lpt9", L"clock$"
+  };
+  string16 filename_lower = StringToLowerASCII(filename);
+
+  for (int i = 0; i < arraysize(known_devices); ++i) {
+    // Exact match.
+    if (filename_lower == known_devices[i])
+      return true;
+    // Starts with "DEVICE.".
+    if (filename_lower.find(string16(known_devices[i]) + L".") == 0)
+      return true;
+  }
+
+  static const wchar_t* const magic_names[] = {
+    // These file names are used by the "Customize folder" feature of the shell.
+    L"desktop.ini",
+    L"thumbs.db",
+  };
+
+  for (int i = 0; i < arraysize(magic_names); ++i) {
+    if (filename_lower == magic_names[i])
+      return true;
+  }
 
   return false;
 }
@@ -251,7 +288,7 @@ void GenerateSafeFileName(const std::string& mime_type, FilePath* file_name) {
   // Prepend "_" to the file name if it's a reserved name
   FilePath::StringType leaf_name = file_name->BaseName().value();
   DCHECK(!leaf_name.empty());
-  if (app::win::IsReservedName(leaf_name)) {
+  if (IsReservedName(leaf_name)) {
     leaf_name = FilePath::StringType(FILE_PATH_LITERAL("_")) + leaf_name;
     *file_name = file_name->DirName();
     if (file_name->value() == FilePath::kCurrentDirectory) {

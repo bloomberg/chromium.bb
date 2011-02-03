@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_UI_BROWSER_WINDOW_H_
 #pragma once
 
-#include <vector>
-
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/content_settings_types.h"
 #include "gfx/native_widget_types.h"
@@ -343,10 +341,6 @@ class BrowserWindow {
 
   // Construct a FindBar implementation for the specified |browser|.
   static FindBar* CreateFindBar(Browser* browser_window);
-
-  // Grabs a snapshot of the current browser window and returns the bounds.
-  virtual gfx::Rect GrabWindowSnapshot(std::vector<unsigned char>*
-                                       png_representation) = 0;
 
  protected:
   friend class BrowserList;

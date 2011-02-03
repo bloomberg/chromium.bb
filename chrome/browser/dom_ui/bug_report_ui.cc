@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
@@ -35,18 +36,6 @@
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-
-#if defined(USE_X11)
-#include "ui/base/x/x11_util.h"
-#elif defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#elif defined(OS_WIN)
-#include "app/win/win_util.h"
-#endif
-
-#if defined(TOOLKIT_VIEWS)
-#include "views/window/window.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "base/file_util.h"
@@ -148,7 +137,8 @@ void RefreshLastScreenshot(Browser* browser) {
   else
     last_screenshot_png = new std::vector<unsigned char>;
 
-  screen_size = browser->window()->GrabWindowSnapshot(last_screenshot_png);
+  gfx::NativeWindow native_window = browser->window()->GetNativeHandle();
+  screen_size = browser::GrabWindowSnapshot(native_window, last_screenshot_png);
 }
 
 void ShowHtmlBugReportView(Browser* browser) {

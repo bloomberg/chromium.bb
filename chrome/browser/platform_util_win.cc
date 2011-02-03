@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 
 #include "app/win/scoped_co_mem.h"
 #include "app/win/shell.h"
-#include "app/win/win_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -25,6 +24,7 @@
 #include "chrome/installer/util/install_util.h"
 #include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/message_box_win.h"
 
 namespace platform_util {
 
@@ -162,13 +162,13 @@ bool IsVisible(gfx::NativeView view) {
 void SimpleErrorBox(gfx::NativeWindow parent,
                     const string16& title,
                     const string16& message) {
-  app::win::MessageBox(parent, message, title, MB_OK | MB_SETFOREGROUND);
+  ui::MessageBox(parent, message, title, MB_OK | MB_SETFOREGROUND);
 }
 
 bool SimpleYesNoBox(gfx::NativeWindow parent,
                     const string16& title,
                     const string16& message) {
-  return app::win::MessageBox(parent, message.c_str(), title.c_str(),
+  return ui::MessageBox(parent, message.c_str(), title.c_str(),
       MB_YESNO | MB_ICONWARNING | MB_SETFOREGROUND) == IDYES;
 }
 

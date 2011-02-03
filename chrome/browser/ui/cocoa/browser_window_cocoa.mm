@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -598,13 +597,6 @@ gfx::Rect BrowserWindowCocoa::GetInstantBounds() {
   gfx::Rect bounds(NSRectToCGRect(frame));
   bounds.set_y(NSHeight(monitorFrame) - bounds.y() - bounds.height());
   return bounds;
-}
-
-gfx::Rect BrowserWindowCocoa::GrabWindowSnapshot(std::vector<unsigned char>*
-                                                 png_representation) {
-  int width = 0, height = 0;
-  base::mac::GrabWindowSnapshot(window(), png_representation, &width, &height);
-  return gfx::Rect(width, height);
 }
 
 void BrowserWindowCocoa::Observe(NotificationType type,

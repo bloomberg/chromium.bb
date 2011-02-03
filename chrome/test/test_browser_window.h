@@ -6,8 +6,6 @@
 #define CHROME_TEST_TEST_BROWSER_WINDOW_H_
 #pragma once
 
-#include <vector>
-
 #include "chrome/browser/browser_window.h"
 #include "chrome/test/test_location_bar.h"
 
@@ -110,11 +108,6 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void ShowInstant(TabContents* preview_contents) {}
   virtual void HideInstant(bool instant_is_active) {}
   virtual gfx::Rect GetInstantBounds() { return gfx::Rect(); }
-
-  virtual gfx::Rect GrabWindowSnapshot(std::vector<unsigned char>*
-                                       png_representation) {
-    return gfx::Rect();
-  }
 
 #if defined(OS_CHROMEOS)
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) {}

@@ -1,5 +1,4 @@
 include_rules = [
-  "+app",  # win_util::FormatSystemTime/Date.
   "+base",
   "+gfx",
   "+skia/ext",

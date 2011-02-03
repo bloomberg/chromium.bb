@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "app/win/win_util.h"
+#include "views/window/window_win.h"
 #endif
 
 namespace views {
@@ -571,7 +571,7 @@ void CustomFrameView::InitClass() {
   static bool initialized = false;
   if (!initialized) {
 #if defined(OS_WIN)
-    title_font_ = new gfx::Font(app::win::GetWindowTitleFont());
+    title_font_ = new gfx::Font(WindowWin::GetWindowTitleFont());
 #elif defined(OS_LINUX)
     // TODO(ben): need to resolve what font this is.
     title_font_ = new gfx::Font();

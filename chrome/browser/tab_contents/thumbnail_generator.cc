@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_WIN)
-#include "app/win/win_util.h"
+#include "chrome/common/section_util_win.h"
 #endif
 
 // Overview
@@ -268,7 +268,7 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
   // Duplicate the handle to the DIB here because the renderer process does not
   // have permission. The duplicated handle is owned by the renderer process,
   // which is responsible for closing it.
-  TransportDIB::Handle renderer_dib_handle = app::win::GetSectionForProcess(
+  TransportDIB::Handle renderer_dib_handle = chrome::GetSectionForProcess(
       thumbnail_dib->handle(),
       renderer->process()->GetHandle(),
       false);

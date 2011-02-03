@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "app/win/win_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -33,6 +32,7 @@
 #include "views/window/non_client_view.h"
 #include "views/window/window_resources.h"
 #include "views/window/window_shape.h"
+#include "views/window/window_win.h"
 
 using base::TimeDelta;
 
@@ -545,7 +545,7 @@ void ConstrainedWindowFrameView::InitWindowResources() {
 void ConstrainedWindowFrameView::InitClass() {
   static bool initialized = false;
   if (!initialized) {
-    title_font_ = new gfx::Font(app::win::GetWindowTitleFont());
+    title_font_ = new gfx::Font(views::WindowWin::GetWindowTitleFont());
     initialized = true;
   }
 }

@@ -43,6 +43,18 @@ class NativeTextfieldWin
   explicit NativeTextfieldWin(Textfield* parent);
   ~NativeTextfieldWin();
 
+  // Returns true if the current point is close enough to the origin point in
+  // space and time that it would be considered a double click.
+  static bool IsDoubleClick(const POINT& origin,
+                            const POINT& current,
+                            DWORD elapsed_time);
+
+  // Returns true if the virtual key code is a digit coming from the numeric
+  // keypad (with or without NumLock on).  |extended_key| should be set to the
+  // extended key flag specified in the WM_KEYDOWN/UP where the |key_code|
+  // originated.
+  static bool IsNumPadDigit(int key_code, bool extended_key);
+
   // See the code in textfield.cc that calls this for why this is here.
   void AttachHack();
 
