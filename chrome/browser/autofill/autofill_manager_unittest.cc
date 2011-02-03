@@ -90,6 +90,16 @@ class TestPersonalDataManager : public PersonalDataManager {
     credit_cards_.reset();
   }
 
+  void CreateTestCreditCardsYearAndMonth(const char* year, const char* month) {
+    ClearCreditCards();
+    CreditCard* credit_card = new CreditCard;
+    autofill_test::SetCreditCardInfo(credit_card, "Miku", "Miku Hatsune",
+                                     "4234567890654321", // Visa
+                                     month, year);
+    credit_card->set_guid("00000000-0000-0000-0000-000000000007");
+    credit_cards_->push_back(credit_card);
+ }
+
  private:
   void CreateTestAutoFillProfiles(ScopedVector<AutoFillProfile>* profiles) {
     AutoFillProfile* profile = new AutoFillProfile;
@@ -184,12 +194,20 @@ void CreateTestAddressFormData(FormData* form) {
   autofill_test::CreateTestFormField(
       "Email", "email", "", "text", &field);
   form->fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Email", "email2", "", "email", &field);
+  form->fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Phone Number", "phonenumber2", "", "tel", &field);
+  form->fields.push_back(field);
 }
 
 // Populates |form| with data corresponding to a simple credit card form.
 // Note that this actually appends fields to the form data, which can be useful
 // for building up more complex test forms.
-void CreateTestCreditCardFormData(FormData* form, bool is_https) {
+void CreateTestCreditCardFormData(FormData* form,
+                                  bool is_https,
+                                  bool use_month_type) {
   form->name = ASCIIToUTF16("MyForm");
   form->method = ASCIIToUTF16("POST");
   if (is_https) {
@@ -208,12 +226,18 @@ void CreateTestCreditCardFormData(FormData* form, bool is_https) {
   autofill_test::CreateTestFormField(
       "Card Number", "cardnumber", "", "text", &field);
   form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Expiration Date", "ccmonth", "", "text", &field);
-  form->fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "", "ccyear", "", "text", &field);
-  form->fields.push_back(field);
+  if (use_month_type) {
+    autofill_test::CreateTestFormField(
+        "Expiration Date", "ccmonth", "", "month", &field);
+    form->fields.push_back(field);
+  } else {
+    autofill_test::CreateTestFormField(
+        "Expiration Date", "ccmonth", "", "text", &field);
+    form->fields.push_back(field);
+    autofill_test::CreateTestFormField(
+        "", "ccyear", "", "text", &field);
+    form->fields.push_back(field);
+  }
 }
 
 void ExpectSuggestions(int page_id,
@@ -244,7 +268,7 @@ void ExpectSuggestions(int page_id,
 // Verifies that the |filled_form| has been filled with the given data.
 // Verifies address fields if |has_address_fields| is true, and verifies
 // credit card fields if |has_credit_card_fields| is true. Verifies both if both
-// are true.
+// are true. |use_month_type| is used for credit card input month type.
 void ExpectFilledForm(int page_id,
                       const FormData& filled_form,
                       int expected_page_id,
@@ -265,10 +289,11 @@ void ExpectFilledForm(int page_id,
                       const char* expiration_month,
                       const char* expiration_year,
                       bool has_address_fields,
-                      bool has_credit_card_fields) {
+                      bool has_credit_card_fields,
+                      bool use_month_type) {
   // The number of fields in the address and credit card forms created above.
-  const size_t kAddressFormSize = 12;
-  const size_t kCreditCardFormSize = 4;
+  const size_t kAddressFormSize = 14;
+  const size_t kCreditCardFormSize = use_month_type ? 3 : 4;
 
   EXPECT_EQ(expected_page_id, page_id);
   EXPECT_EQ(ASCIIToUTF16("MyForm"), filled_form.name);
@@ -327,6 +352,12 @@ void ExpectFilledForm(int page_id,
     autofill_test::CreateTestFormField(
          "Email", "email", email, "text", &field);
     EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[11]));
+    autofill_test::CreateTestFormField(
+         "Email", "email2", email, "email", &field);
+    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[12]));
+    autofill_test::CreateTestFormField(
+        "Phone Number", "phonenumber2", phone, "tel", &field);
+    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[13]));
   }
 
   if (has_credit_card_fields) {
@@ -337,12 +368,23 @@ void ExpectFilledForm(int page_id,
     autofill_test::CreateTestFormField(
         "Card Number", "cardnumber", card_number, "text", &field);
     EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[offset + 1]));
-    autofill_test::CreateTestFormField(
-        "Expiration Date", "ccmonth", expiration_month, "text", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[offset + 2]));
-    autofill_test::CreateTestFormField(
-        "", "ccyear", expiration_year, "text", &field);
-    EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[offset + 3]));
+    if (use_month_type) {
+      std::string exp_year = expiration_year;
+      std::string exp_month = expiration_month;
+      std::string date;
+      if (!exp_year.empty() && !exp_month.empty())
+        date = exp_year + "-" + exp_month;
+      autofill_test::CreateTestFormField(
+          "Expiration Date", "ccmonth", date.c_str(), "month", &field);
+      EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[offset + 2]));
+    } else {
+      autofill_test::CreateTestFormField(
+          "Expiration Date", "ccmonth", expiration_month, "text", &field);
+      EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[offset + 2]));
+      autofill_test::CreateTestFormField(
+          "", "ccyear", expiration_year, "text", &field);
+      EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[offset + 3]));
+    }
   }
 }
 
@@ -354,7 +396,7 @@ void ExpectFilledAddressFormElvis(int page_id,
                    "Presley", "3734 Elvis Presley Blvd.", "Apt. 10", "Memphis",
                    "Tennessee", "38116", "USA", "12345678901", "",
                    "theking@gmail.com", "", "", "", "", true,
-                   has_credit_card_fields);
+                   has_credit_card_fields, false);
 }
 
 void ExpectFilledCreditCardFormElvis(int page_id,
@@ -364,7 +406,19 @@ void ExpectFilledCreditCardFormElvis(int page_id,
   ExpectFilledForm(page_id, filled_form, expected_page_id,
                    "", "", "", "", "", "", "", "", "", "", "", "",
                    "Elvis Presley", "4234567890123456", "04", "2012",
-                   has_address_fields, true);
+                   has_address_fields, true, false);
+}
+
+void ExpectFilledCreditCardYearMonthWithYearMonth(int page_id,
+                                              const FormData& filled_form,
+                                              int expected_page_id,
+                                              bool has_address_fields,
+                                              const char* year,
+                                              const char* month) {
+  ExpectFilledForm(page_id, filled_form, expected_page_id,
+                   "", "", "", "", "", "", "", "", "", "", "", "",
+                   "Miku Hatsune", "4234567890654321", month, year,
+                   has_address_fields, true, true);
 }
 
 class TestAutoFillManager : public AutoFillManager {
@@ -768,7 +822,7 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsMethodGet) {
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   // Set up our form data.
   FormData form;
-  CreateTestCreditCardFormData(&form, true);
+  CreateTestCreditCardFormData(&form, true, false);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
@@ -811,7 +865,7 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   // Set up our form data.
   FormData form;
-  CreateTestCreditCardFormData(&form, true);
+  CreateTestCreditCardFormData(&form, true, false);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
@@ -847,7 +901,7 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   // Set up our form data.
   FormData form;
-  CreateTestCreditCardFormData(&form, true);
+  CreateTestCreditCardFormData(&form, true, false);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
@@ -890,7 +944,7 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
   // Set up our form data.
   FormData form;
-  CreateTestCreditCardFormData(&form, false);
+  CreateTestCreditCardFormData(&form, false, false);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
@@ -955,7 +1009,7 @@ TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestions) {
   // Set up our form data.
   FormData form;
   CreateTestAddressFormData(&form);
-  CreateTestCreditCardFormData(&form, true);
+  CreateTestCreditCardFormData(&form, true, false);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
@@ -1029,7 +1083,7 @@ TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   // Set up our form data.
   FormData form;
   CreateTestAddressFormData(&form);
-  CreateTestCreditCardFormData(&form, false);
+  CreateTestCreditCardFormData(&form, false, false);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
@@ -1289,7 +1343,7 @@ TEST_F(AutoFillManagerTest, FillAddressForm) {
 TEST_F(AutoFillManagerTest, FillCreditCardForm) {
   // Set up our form data.
   FormData form;
-  CreateTestCreditCardFormData(&form, true);
+  CreateTestCreditCardFormData(&form, true, false);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
@@ -1304,12 +1358,110 @@ TEST_F(AutoFillManagerTest, FillCreditCardForm) {
   ExpectFilledCreditCardFormElvis(page_id, results, kDefaultPageID, false);
 }
 
+// Test that we correctly fill a credit card form with month input type.
+// 1. year empty, month empty
+TEST_F(AutoFillManagerTest, FillCreditCardFormNoYearNoMonth) {
+  // Same as the SetUp(), but generate 4 credit cards with year month
+  // combination.
+  test_personal_data_->CreateTestCreditCardsYearAndMonth("", "");
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, true);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  std::string guid = autofill_manager_->GetLabeledCreditCard("Miku")->guid();
+  FillAutoFillFormData(
+      kDefaultPageID, form, *form.fields.begin(),
+      autofill_manager_->PackGUIDs(guid, std::string()));
+
+  int page_id = 0;
+  FormData results;
+  EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
+  ExpectFilledCreditCardYearMonthWithYearMonth(page_id, results,
+      kDefaultPageID, false, "", "");
+}
+
+
+// Test that we correctly fill a credit card form with month input type.
+// 2. year empty, month non-empty
+TEST_F(AutoFillManagerTest, FillCreditCardFormNoYearMonth) {
+  // Same as the SetUp(), but generate 4 credit cards with year month
+  // combination.
+  test_personal_data_->CreateTestCreditCardsYearAndMonth("", "04");
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, true);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  std::string guid = autofill_manager_->GetLabeledCreditCard("Miku")->guid();
+  FillAutoFillFormData(
+      kDefaultPageID, form, *form.fields.begin(),
+      autofill_manager_->PackGUIDs(guid, std::string()));
+
+  int page_id = 0;
+  FormData results;
+  EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
+  ExpectFilledCreditCardYearMonthWithYearMonth(page_id, results,
+      kDefaultPageID, false, "", "04");
+}
+
+// Test that we correctly fill a credit card form with month input type.
+// 3. year non-empty, month empty
+TEST_F(AutoFillManagerTest, FillCreditCardFormYearNoMonth) {
+  // Same as the SetUp(), but generate 4 credit cards with year month
+  // combination.
+  test_personal_data_->CreateTestCreditCardsYearAndMonth("2012", "");
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, true);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  std::string guid = autofill_manager_->GetLabeledCreditCard("Miku")->guid();
+  FillAutoFillFormData(
+      kDefaultPageID, form, *form.fields.begin(),
+      autofill_manager_->PackGUIDs(guid, std::string()));
+
+  int page_id = 0;
+  FormData results;
+  EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
+  ExpectFilledCreditCardYearMonthWithYearMonth(page_id, results,
+      kDefaultPageID, false, "2012", "");
+}
+
+// Test that we correctly fill a credit card form with month input type.
+// 4. year non-empty, month empty
+TEST_F(AutoFillManagerTest, FillCreditCardFormYearMonth) {
+  // Same as the SetUp(), but generate 4 credit cards with year month
+  // combination.
+  test_personal_data_->ClearCreditCards();
+  test_personal_data_->CreateTestCreditCardsYearAndMonth("2012", "04");
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, true);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  std::string guid = autofill_manager_->GetLabeledCreditCard("Miku")->guid();
+  FillAutoFillFormData(
+      kDefaultPageID, form, *form.fields.begin(),
+      autofill_manager_->PackGUIDs(guid, std::string()));
+
+  int page_id = 0;
+  FormData results;
+  EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
+  ExpectFilledCreditCardYearMonthWithYearMonth(page_id, results,
+      kDefaultPageID, false, "2012", "04");
+}
+
 // Test that we correctly fill a combined address and credit card form.
 TEST_F(AutoFillManagerTest, FillAddressAndCreditCardForm) {
   // Set up our form data.
   FormData form;
   CreateTestAddressFormData(&form);
-  CreateTestCreditCardFormData(&form, true);
+  CreateTestCreditCardFormData(&form, true, false);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
@@ -1349,7 +1501,7 @@ TEST_F(AutoFillManagerTest, FillAutoFilledForm) {
   CreateTestAddressFormData(&form);
   // Mark one of the address fields as autofilled.
   form.fields[4].set_autofilled(true);
-  CreateTestCreditCardFormData(&form, true);
+  CreateTestCreditCardFormData(&form, true, false);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
@@ -1366,7 +1518,7 @@ TEST_F(AutoFillManagerTest, FillAutoFilledForm) {
     SCOPED_TRACE("Address");
     ExpectFilledForm(page_id, results, kDefaultPageID,
                      "Elvis", "", "", "", "", "", "", "", "", "", "", "",
-                     "", "", "", "", true, true);
+                     "", "", "", "", true, true, false);
   }
 
   // Now fill the credit card data.
@@ -1402,7 +1554,7 @@ TEST_F(AutoFillManagerTest, FillAutoFilledForm) {
     SCOPED_TRACE("Credit card 2");
     ExpectFilledForm(page_id, results, kPageID3,
                    "", "", "", "", "", "", "", "", "", "", "", "",
-                   "", "", "", "2012", true, true);
+                   "", "", "", "2012", true, true, false);
   }
 }
 

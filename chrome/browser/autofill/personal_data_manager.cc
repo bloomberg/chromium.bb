@@ -191,8 +191,13 @@ bool PersonalDataManager::ImportFormData(
         // If the user has a password set, we have no way of setting credit
         // card numbers.
         if (!HasPassword()) {
-          imported_credit_card_->SetInfo(AutoFillType(field_type.field_type()),
-                                         value);
+          if (LowerCaseEqualsASCII(field->form_control_type(), "month")) {
+            DCHECK_EQ(CREDIT_CARD_EXP_MONTH, field_type.field_type());
+            imported_credit_card_->SetInfoForMonthInputType(value);
+          } else {
+            imported_credit_card_->SetInfo(
+                AutoFillType(field_type.field_type()), value);
+          }
           ++importable_credit_card_fields;
         }
       } else {

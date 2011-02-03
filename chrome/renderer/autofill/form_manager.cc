@@ -52,10 +52,13 @@ const size_t kRequiredAutoFillFields = 3;
 // The maximum length allowed for form data.
 const size_t kMaxDataLength = 1024;
 
-// TODO(isherman): Replace calls to this with IsTextInput() once
-// http://codereview.chromium.org/6033010/ lands.
-bool IsTextElement(const WebFormControlElement& element) {
-  return element.formControlType() == WebString::fromUTF8("text");
+// In HTML5, all text fields except password are text input fields to
+// autocomplete.
+bool IsTextInput(const WebInputElement* element) {
+  if (!element)
+    return false;
+
+  return element->isTextField() && !element->isPasswordField();
 }
 
 bool IsSelectElement(const WebFormControlElement& element) {
@@ -335,7 +338,8 @@ void FormManager::WebFormControlElementToFormField(
   field->set_name(element.nameForAutofill());
   field->set_form_control_type(element.formControlType());
 
-  if (IsTextElement(element)) {
+  const WebInputElement* input_element = toWebInputElement(&element);
+  if (IsTextInput(input_element)) {
     const WebInputElement& input_element = element.toConst<WebInputElement>();
     field->set_max_length(input_element.maxLength());
     field->set_autofilled(input_element.isAutofilled());
@@ -350,10 +354,9 @@ void FormManager::WebFormControlElementToFormField(
     return;
 
   string16 value;
-  if (IsTextElement(element) ||
+  if (IsTextInput(input_element) ||
       element.formControlType() == WebString::fromUTF8("hidden")) {
-    const WebInputElement& input_element = element.toConst<WebInputElement>();
-    value = input_element.value();
+    value = input_element->value();
   } else if (IsSelectElement(element)) {
     const WebSelectElement select_element = element.toConst<WebSelectElement>();
     value = select_element.value();
@@ -444,12 +447,10 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
   for (size_t i = 0; i < control_elements.size(); ++i) {
     const WebFormControlElement& control_element = control_elements[i];
 
-    if (requirements & REQUIRE_AUTOCOMPLETE && IsTextElement(control_element)) {
-      const WebInputElement& input_element =
-          control_element.toConst<WebInputElement>();
-      if (!input_element.autoComplete())
-        continue;
-    }
+    const WebInputElement* input_element = toWebInputElement(&control_element);
+    if (requirements & REQUIRE_AUTOCOMPLETE && IsTextInput(input_element) &&
+        !input_element->autoComplete())
+      continue;
 
     if (requirements & REQUIRE_ENABLED && !control_element.isEnabled())
       continue;
@@ -654,21 +655,21 @@ bool FormManager::ClearFormWithNode(const WebNode& node) {
 
   for (size_t i = 0; i < form_element->control_elements.size(); ++i) {
     WebFormControlElement element = form_element->control_elements[i];
-    if (IsTextElement(element)) {
-      WebInputElement input_element = element.to<WebInputElement>();
+    WebInputElement* input_element = toWebInputElement(&element);
+    if (IsTextInput(input_element)) {
 
       // We don't modify the value of disabled fields.
-      if (!input_element.isEnabled())
+      if (!input_element->isEnabled())
         continue;
 
-      input_element.setValue(string16());
-      input_element.setAutofilled(false);
+      input_element->setValue(string16());
+      input_element->setAutofilled(false);
 
       // Clearing the value in the focused node (above) can cause selection
       // to be lost. We force selection range to restore the text cursor.
-      if (node == input_element) {
-        int length = input_element.value().length();
-        input_element.setSelectionRange(length, length);
+      if (node == *input_element) {
+        int length = input_element->value().length();
+        input_element->setSelectionRange(length, length);
       }
     } else if (IsSelectElement(element)) {
       WebSelectElement select_element = element.to<WebSelectElement>();
@@ -686,44 +687,43 @@ bool FormManager::ClearPreviewedFormWithNode(const WebNode& node,
     return false;
 
   for (size_t i = 0; i < form_element->control_elements.size(); ++i) {
-    WebFormControlElement* element = &form_element->control_elements[i];
-
+    WebInputElement* input_element =
+        toWebInputElement(&form_element->control_elements[i]);
     // Only text input elements can be previewed.
-    if (!IsTextElement(*element))
+    if (!IsTextInput(input_element))
       continue;
 
     // If the input element has not been auto-filled, FormManager has not
     // previewed this field, so we have nothing to reset.
-    WebInputElement input_element = element->to<WebInputElement>();
-    if (!input_element.isAutofilled())
+    if (!input_element->isAutofilled())
       continue;
 
     // There might be unrelated elements in this form which have already been
     // auto-filled. For example, the user might have already filled the address
     // part of a form and now be dealing with the credit card section. We only
     // want to reset the auto-filled status for fields that were previewed.
-    if (input_element.suggestedValue().isEmpty())
+    if (input_element->suggestedValue().isEmpty())
       continue;
 
     // Clear the suggested value. For the initiating node, also restore the
     // original value.
-    input_element.setSuggestedValue(WebString());
-    bool is_initiating_node = (node == input_element);
+    input_element->setSuggestedValue(WebString());
+    bool is_initiating_node = (node == *input_element);
     if (is_initiating_node) {
       // Call |setValue()| to force the renderer to update the field's displayed
       // value.
-      input_element.setValue(input_element.value());
-      input_element.setAutofilled(was_autofilled);
+      input_element->setValue(input_element->value());
+      input_element->setAutofilled(was_autofilled);
     } else {
-      input_element.setAutofilled(false);
+      input_element->setAutofilled(false);
     }
 
     // Clearing the suggested value in the focused node (above) can cause
     // selection to be lost. We force selection range to restore the text
     // cursor.
     if (is_initiating_node) {
-      int length = input_element.value().length();
-      input_element.setSelectionRange(length, length);
+      int length = input_element->value().length();
+      input_element->setSelectionRange(length, length);
     }
   }
 
@@ -750,12 +750,12 @@ bool FormManager::FormWithNodeIsAutoFilled(const WebNode& node) {
     return false;
 
   for (size_t i = 0; i < form_element->control_elements.size(); ++i) {
-    WebFormControlElement element = form_element->control_elements[i];
-    if (!IsTextElement(element))
+    WebInputElement* input_element =
+        toWebInputElement(&form_element->control_elements[i]);
+    if (!IsTextInput(input_element))
       continue;
 
-    const WebInputElement& input_element = element.to<WebInputElement>();
-    if (input_element.isAutofilled())
+    if (input_element->isAutofilled())
       return true;
   }
 
@@ -836,22 +836,21 @@ void FormManager::ForEachMatchingFormField(FormElement* form,
     // More than likely |requirements| will contain REQUIRE_AUTOCOMPLETE and/or
     // REQUIRE_EMPTY, which both require text form control elements, so special-
     // case this type of element.
-    if (IsTextElement(*element)) {
-      const WebInputElement& input_element =
-          element->toConst<WebInputElement>();
+    const WebInputElement* input_element = toWebInputElement(element);
+    if (IsTextInput(input_element)) {
 
       // TODO(jhawkins): WebKit currently doesn't handle the autocomplete
       // attribute for select control elements, but it probably should.
-      if (requirements & REQUIRE_AUTOCOMPLETE && !input_element.autoComplete())
+      if (requirements & REQUIRE_AUTOCOMPLETE && !input_element->autoComplete())
         continue;
 
-      is_initiating_node = (input_element == node);
+      is_initiating_node = (*input_element == node);
       // Don't require the node that initiated the auto-fill process to be
       // empty.  The user is typing in this field and we should complete the
       // value when the user selects a value to fill out.
       if (requirements & REQUIRE_EMPTY &&
           !is_initiating_node &&
-          !input_element.value().isEmpty())
+          !input_element->value().isEmpty())
         continue;
     }
 
@@ -874,16 +873,17 @@ void FormManager::FillFormField(WebFormControlElement* field,
   if (data->value().empty())
     return;
 
-  if (IsTextElement(*field)) {
-    WebInputElement input_element = field->to<WebInputElement>();
+  WebInputElement* input_element = toWebInputElement(field);
+  if (IsTextInput(input_element)) {
 
     // If the maxlength attribute contains a negative value, maxLength()
     // returns the default maxlength value.
-    input_element.setValue(data->value().substr(0, input_element.maxLength()));
-    input_element.setAutofilled(true);
+    input_element->setValue(
+        data->value().substr(0, input_element->maxLength()));
+    input_element->setAutofilled(true);
     if (is_initiating_node) {
-      int length = input_element.value().length();
-      input_element.setSelectionRange(length, length);
+      int length = input_element->value().length();
+      input_element->setSelectionRange(length, length);
     }
   } else if (IsSelectElement(*field)) {
     WebSelectElement select_element = field->to<WebSelectElement>();
@@ -899,18 +899,18 @@ void FormManager::PreviewFormField(WebFormControlElement* field,
     return;
 
   // Only preview input fields.
-  if (!IsTextElement(*field))
+  WebInputElement* input_element = toWebInputElement(field);
+  if (!IsTextInput(input_element))
     return;
-
-  WebInputElement input_element = field->to<WebInputElement>();
 
   // If the maxlength attribute contains a negative value, maxLength()
   // returns the default maxlength value.
-  input_element.setSuggestedValue(
-      data->value().substr(0, input_element.maxLength()));
-  input_element.setAutofilled(true);
+  input_element->setSuggestedValue(
+      data->value().substr(0, input_element->maxLength()));
+  input_element->setAutofilled(true);
   if (is_initiating_node)
-    input_element.setSelectionRange(0, input_element.suggestedValue().length());
+    input_element->setSelectionRange(0,
+                                     input_element->suggestedValue().length());
 }
 
 }  // namespace autofill

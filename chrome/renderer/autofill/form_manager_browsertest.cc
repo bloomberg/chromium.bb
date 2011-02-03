@@ -2846,6 +2846,8 @@ TEST_F(FormManagerTest, ClearPreviewedFormWithNode) {
            "  <INPUT type=\"text\" id=\"firstname\" value=\"Wyatt\"/>"
            "  <INPUT type=\"text\" id=\"lastname\"/>"
            "  <INPUT type=\"text\" id=\"email\"/>"
+           "  <INPUT type=\"email\" id=\"email2\"/>"
+           "  <INPUT type=\"tel\" id=\"phone\"/>"
            "  <INPUT type=\"submit\" value=\"Send\"/>"
            "</FORM>");
 
@@ -2870,10 +2872,18 @@ TEST_F(FormManagerTest, ClearPreviewedFormWithNode) {
   WebInputElement email =
       web_frame->document().getElementById("email").to<WebInputElement>();
   email.setAutofilled(true);
+  WebInputElement email2 =
+      web_frame->document().getElementById("email2").to<WebInputElement>();
+  email2.setAutofilled(true);
+  WebInputElement phone =
+      web_frame->document().getElementById("phone").to<WebInputElement>();
+  phone.setAutofilled(true);
 
   // Set the suggested values on two of the elements.
   lastname.setSuggestedValue(ASCIIToUTF16("Earp"));
   email.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
+  email2.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
+  phone.setSuggestedValue(ASCIIToUTF16("650-777-9999"));
 
   // Clear the previewed fields.
   EXPECT_TRUE(form_manager.ClearPreviewedFormWithNode(lastname, false));
@@ -2890,6 +2900,12 @@ TEST_F(FormManagerTest, ClearPreviewedFormWithNode) {
   EXPECT_TRUE(email.value().isEmpty());
   EXPECT_TRUE(email.suggestedValue().isEmpty());
   EXPECT_FALSE(email.isAutofilled());
+  EXPECT_TRUE(email2.value().isEmpty());
+  EXPECT_TRUE(email2.suggestedValue().isEmpty());
+  EXPECT_FALSE(email2.isAutofilled());
+  EXPECT_TRUE(phone.value().isEmpty());
+  EXPECT_TRUE(phone.suggestedValue().isEmpty());
+  EXPECT_FALSE(phone.isAutofilled());
 
   // Verify that the cursor position has been updated.
   EXPECT_EQ(0, lastname.selectionStart());
@@ -2901,6 +2917,8 @@ TEST_F(FormManagerTest, ClearPreviewedFormWithNonEmptyInitiatingNode) {
            "  <INPUT type=\"text\" id=\"firstname\" value=\"W\"/>"
            "  <INPUT type=\"text\" id=\"lastname\"/>"
            "  <INPUT type=\"text\" id=\"email\"/>"
+           "  <INPUT type=\"email\" id=\"email2\"/>"
+           "  <INPUT type=\"tel\" id=\"phone\"/>"
            "  <INPUT type=\"submit\" value=\"Send\"/>"
            "</FORM>");
 
@@ -2925,11 +2943,20 @@ TEST_F(FormManagerTest, ClearPreviewedFormWithNonEmptyInitiatingNode) {
   WebInputElement email =
       web_frame->document().getElementById("email").to<WebInputElement>();
   email.setAutofilled(true);
+  WebInputElement email2 =
+      web_frame->document().getElementById("email2").to<WebInputElement>();
+  email2.setAutofilled(true);
+  WebInputElement phone =
+      web_frame->document().getElementById("phone").to<WebInputElement>();
+  phone.setAutofilled(true);
+
 
   // Set the suggested values on all of the elements.
   firstname.setSuggestedValue(ASCIIToUTF16("Wyatt"));
   lastname.setSuggestedValue(ASCIIToUTF16("Earp"));
   email.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
+  email2.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
+  phone.setSuggestedValue(ASCIIToUTF16("650-777-9999"));
 
   // Clear the previewed fields.
   EXPECT_TRUE(form_manager.ClearPreviewedFormWithNode(firstname, false));
@@ -2948,6 +2975,12 @@ TEST_F(FormManagerTest, ClearPreviewedFormWithNonEmptyInitiatingNode) {
   EXPECT_TRUE(email.value().isEmpty());
   EXPECT_TRUE(email.suggestedValue().isEmpty());
   EXPECT_FALSE(email.isAutofilled());
+  EXPECT_TRUE(email2.value().isEmpty());
+  EXPECT_TRUE(email2.suggestedValue().isEmpty());
+  EXPECT_FALSE(email2.isAutofilled());
+  EXPECT_TRUE(phone.value().isEmpty());
+  EXPECT_TRUE(phone.suggestedValue().isEmpty());
+  EXPECT_FALSE(phone.isAutofilled());
 }
 
 TEST_F(FormManagerTest, ClearPreviewedFormWithAutofilledInitiatingNode) {
@@ -2955,6 +2988,8 @@ TEST_F(FormManagerTest, ClearPreviewedFormWithAutofilledInitiatingNode) {
            "  <INPUT type=\"text\" id=\"firstname\" value=\"W\"/>"
            "  <INPUT type=\"text\" id=\"lastname\"/>"
            "  <INPUT type=\"text\" id=\"email\"/>"
+           "  <INPUT type=\"email\" id=\"email2\"/>"
+           "  <INPUT type=\"tel\" id=\"phone\"/>"
            "  <INPUT type=\"submit\" value=\"Send\"/>"
            "</FORM>");
 
@@ -2979,11 +3014,19 @@ TEST_F(FormManagerTest, ClearPreviewedFormWithAutofilledInitiatingNode) {
   WebInputElement email =
       web_frame->document().getElementById("email").to<WebInputElement>();
   email.setAutofilled(true);
+  WebInputElement email2 =
+      web_frame->document().getElementById("email2").to<WebInputElement>();
+  email2.setAutofilled(true);
+  WebInputElement phone =
+      web_frame->document().getElementById("phone").to<WebInputElement>();
+  phone.setAutofilled(true);
 
   // Set the suggested values on all of the elements.
   firstname.setSuggestedValue(ASCIIToUTF16("Wyatt"));
   lastname.setSuggestedValue(ASCIIToUTF16("Earp"));
   email.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
+  email2.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
+  phone.setSuggestedValue(ASCIIToUTF16("650-777-9999"));
 
   // Clear the previewed fields.
   EXPECT_TRUE(form_manager.ClearPreviewedFormWithNode(firstname, true));
@@ -3002,6 +3045,12 @@ TEST_F(FormManagerTest, ClearPreviewedFormWithAutofilledInitiatingNode) {
   EXPECT_TRUE(email.value().isEmpty());
   EXPECT_TRUE(email.suggestedValue().isEmpty());
   EXPECT_FALSE(email.isAutofilled());
+  EXPECT_TRUE(email2.value().isEmpty());
+  EXPECT_TRUE(email2.suggestedValue().isEmpty());
+  EXPECT_FALSE(email2.isAutofilled());
+  EXPECT_TRUE(phone.value().isEmpty());
+  EXPECT_TRUE(phone.suggestedValue().isEmpty());
+  EXPECT_FALSE(phone.isAutofilled());
 }
 
 TEST_F(FormManagerTest, FormWithNodeIsAutoFilled) {
@@ -3009,6 +3058,8 @@ TEST_F(FormManagerTest, FormWithNodeIsAutoFilled) {
            "  <INPUT type=\"text\" id=\"firstname\" value=\"Wyatt\"/>"
            "  <INPUT type=\"text\" id=\"lastname\"/>"
            "  <INPUT type=\"text\" id=\"email\"/>"
+           "  <INPUT type=\"email\" id=\"email2\"/>"
+           "  <INPUT type=\"tel\" id=\"phone\"/>"
            "  <INPUT type=\"submit\" value=\"Send\"/>"
            "</FORM>");
 

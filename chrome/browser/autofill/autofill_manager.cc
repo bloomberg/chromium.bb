@@ -799,10 +799,22 @@ void AutoFillManager::FillCreditCardFormField(const CreditCard* credit_card,
   DCHECK(type.group() == AutoFillType::CREDIT_CARD);
   DCHECK(field);
 
-  if (field->form_control_type() == ASCIIToUTF16("select-one"))
+  if (field->form_control_type() == ASCIIToUTF16("select-one")) {
     autofill::FillSelectControl(credit_card, type, field);
-  else
+  } else if (field->form_control_type() == ASCIIToUTF16("month")) {
+    // HTML5 input="month" consists of year-month.
+    string16 year = credit_card->GetFieldText(
+        AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+    string16 month = credit_card->GetFieldText(
+        AutoFillType(CREDIT_CARD_EXP_MONTH));
+    if (!year.empty() && !month.empty()) {
+      // Fill the value only if |credit_card| includes both year and month
+      // information.
+      field->set_value(year + ASCIIToUTF16("-") + month);
+    }
+  } else {
     field->set_value(credit_card->GetFieldText(type));
+  }
 }
 
 void AutoFillManager::FillFormField(const AutoFillProfile* profile,

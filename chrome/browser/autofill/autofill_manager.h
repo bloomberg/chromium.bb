@@ -224,6 +224,11 @@ class AutoFillManager : public TabContentsObserver,
   friend class AutoFillManagerTest;
   friend class FormStructureBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardForm);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest,
+                           FillCreditCardFormNoYearNoMonth);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardFormYearNoMonth);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardFormNoYearMonth);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardFormYearMonth);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAddressForm);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAddressAndCreditCardForm);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAutoFilledForm);

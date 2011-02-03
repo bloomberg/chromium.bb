@@ -34,6 +34,9 @@ class CreditCard : public FormGroup {
   virtual void SetInfo(const AutoFillType& type, const string16& value);
   virtual const string16 Label() const;
 
+  // Special method to set value for HTML5 month input type.
+  void SetInfoForMonthInputType(const string16& value);
+
   // The number altered for display, for example: ******1234
   string16 ObfuscatedNumber() const;
   // Credit card preview summary, for example: ******1234, Exp: 01/2020

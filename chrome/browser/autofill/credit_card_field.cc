@@ -118,35 +118,40 @@ CreditCardField* CreditCardField::Parse(
         &credit_card_field->number_))
       continue;
 
-    // "Expiration date" is the most common label here, but some pages have
-    // "Expires", "exp. date" or "exp. month" and "exp. year".  We also look for
-    // the field names ccmonth and ccyear, which appear on at least 4 of our
-    // test pages.
-    //
-    // -> On at least one page (The China Shop2.html) we find only the labels
-    // "month" and "year".  So for now we match these words directly; we'll
-    // see if this turns out to be too general.
-    //
-    // Toolbar Bug 51451: indeed, simply matching "month" is too general for
-    //   https://rps.fidelity.com/ftgw/rps/RtlCust/CreatePIN/Init.
-    // Instead, we match only words beginning with "month".
-    if (is_ecml)
-      pattern = GetEcmlPattern(kEcmlCardExpireMonth);
-    else
-      pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_MONTH_RE);
-
-    if ((!credit_card_field->expiration_month_ ||
-        credit_card_field->expiration_month_->IsEmpty()) &&
-        ParseText(&q, pattern, &credit_card_field->expiration_month_)) {
+    if ((*q) && LowerCaseEqualsASCII((*q)->form_control_type(), "month")) {
+      credit_card_field->expiration_month_ = *q++;
+    } else {
+      // "Expiration date" is the most common label here, but some pages have
+      // "Expires", "exp. date" or "exp. month" and "exp. year".  We also look
+      // for the field names ccmonth and ccyear, which appear on at least 4 of
+      // our test pages.
+      //
+      // -> On at least one page (The China Shop2.html) we find only the labels
+      // "month" and "year".  So for now we match these words directly; we'll
+      // see if this turns out to be too general.
+      //
+      // Toolbar Bug 51451: indeed, simply matching "month" is too general for
+      //   https://rps.fidelity.com/ftgw/rps/RtlCust/CreatePIN/Init.
+      // Instead, we match only words beginning with "month".
       if (is_ecml)
-        pattern = GetEcmlPattern(kEcmlCardExpireYear);
+        pattern = GetEcmlPattern(kEcmlCardExpireMonth);
       else
-        pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_DATE_RE);
+        pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_MONTH_RE);
 
-      if (!ParseText(&q, pattern, &credit_card_field->expiration_year_))
-        return NULL;
+      if ((!credit_card_field->expiration_month_ ||
+          credit_card_field->expiration_month_->IsEmpty()) &&
+        ParseText(&q, pattern, &credit_card_field->expiration_month_)) {
 
-      continue;
+        if (is_ecml)
+          pattern = GetEcmlPattern(kEcmlCardExpireYear);
+        else
+          pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_DATE_RE);
+
+        if (!ParseText(&q, pattern, &credit_card_field->expiration_year_)) {
+          return NULL;
+        }
+        continue;
+      }
     }
 
     if (ParseText(&q, GetEcmlPattern(kEcmlCardExpireDay)))
@@ -180,7 +185,10 @@ CreditCardField* CreditCardField::Parse(
   // the cvc and date were found independently they are returned.
   if ((credit_card_field->number_ || credit_card_field->verification_) &&
       credit_card_field->expiration_month_ &&
-      credit_card_field->expiration_year_) {
+      (credit_card_field->expiration_year_ ||
+      (LowerCaseEqualsASCII(
+           credit_card_field->expiration_month_->form_control_type(),
+           "month")))) {
       *iter = q;
       return credit_card_field.release();
   }
