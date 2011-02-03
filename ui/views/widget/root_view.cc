@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/root_view.h"
 
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -30,6 +31,11 @@ RootView::~RootView() {
 void RootView::OnViewRemoved(View* parent, View* child) {
   if (child == mouse_pressed_handler_)
     mouse_pressed_handler_ = NULL;
+
+  // Clear focus if the removed child was focused.
+  FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager && focus_manager->focused_view() == child)
+    focus_manager->ClearFocus();
 }
 
 bool RootView::OnKeyPressed(const KeyEvent& event) {

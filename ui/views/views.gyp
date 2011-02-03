@@ -132,6 +132,7 @@
         'run_all_unittests.cc',
         'view_unittest.cc',
         'widget/native_widget_win_unittest.cc',
+        'widget/root_view_unittest.cc',
         'widget/widget_test_util.cc',
         'widget/widget_test_util.h',
         'widget/widget_unittest.cc',

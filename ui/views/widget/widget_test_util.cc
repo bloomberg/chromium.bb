@@ -11,7 +11,11 @@ namespace ui {
 namespace internal {
 
 Widget* CreateWidget() {
-  Widget* widget = new Widget(new View);
+  return CreateWidgetWithContents(new View);
+}
+
+Widget* CreateWidgetWithContents(View* contents_view) {
+  Widget* widget = new Widget(contents_view);
   widget->set_delete_on_destroy(false);
   widget->InitWithNativeViewParent(NULL, gfx::Rect(10, 10, 200, 200));
   return widget;

@@ -7,11 +7,13 @@
 #pragma once
 
 namespace ui {
+class View;
 class Widget;
 namespace internal {
 
 // Create dummy Widgets for use in testing.
 Widget* CreateWidget();
+Widget* CreateWidgetWithContents(View* contents_view);
 Widget* CreateWidgetWithParent(Widget* parent);
 
 }  // namespace internal

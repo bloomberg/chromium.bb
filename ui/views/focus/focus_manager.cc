@@ -520,11 +520,6 @@ FocusManager* FocusManager::GetFocusManagerForNativeWindow(
   return native_widget ? native_widget->GetWidget()->GetFocusManager() : NULL;
 }
 
-void FocusManager::ViewRemoved(View* parent, View* removed) {
-  if (focused_view_ && focused_view_ == removed)
-    ClearFocus();
-}
-
 void FocusManager::AddFocusChangeListener(FocusChangeListener* listener) {
   DCHECK(std::find(focus_change_listeners_.begin(),
                    focus_change_listeners_.end(), listener) ==
