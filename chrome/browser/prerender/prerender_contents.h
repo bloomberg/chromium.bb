@@ -36,7 +36,8 @@ class PrerenderContents : public RenderViewHostDelegate,
                           public NotificationObserver,
                           public JavaScriptAppModalDialogDelegate {
  public:
-  // FinalStatus indicates how |this| ended up being used.
+  // FinalStatus indicates whether |this| was used, or why it was cancelled.
+  // NOTE: New values need to be appended, since they are used in histograms.
   enum FinalStatus {
     FINAL_STATUS_USED,
     FINAL_STATUS_TIMED_OUT,
