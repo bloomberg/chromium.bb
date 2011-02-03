@@ -80,6 +80,8 @@ InputMethodMenuButton::InputMethodMenuButton(StatusAreaHost* host)
   SetDisabledColor(0x00FFFFFF);  // White with 00% Alpha (invisible)
   SetShowMultipleIconStates(false);
   set_alignment(TextButton::ALIGN_CENTER);
+
+  UpdateUIFromCurrentInputMethod();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -95,23 +97,7 @@ gfx::Size InputMethodMenuButton::GetPreferredSize() {
 
 void InputMethodMenuButton::OnLocaleChanged() {
   input_method::OnLocaleChanged();
-
-  chromeos::InputMethodLibrary* input_method_library =
-      chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
-  const InputMethodDescriptor& input_method =
-      input_method_library->current_input_method();
-  const std::wstring name = InputMethodMenu::GetTextForIndicator(input_method);
-  const std::wstring tooltip = InputMethodMenu::GetTextForMenu(input_method);
-
-  // In general, we should not call an input method API in the input method
-  // button classes (status/input_menu_button*.cc) for performance reasons (see
-  // http://crosbug.com/8284). However, since OnLocaleChanged is called only in
-  // OOBE/Login screen which does not have two or more Chrome windows, it's okay
-  // to call GetNumActiveInputMethods here.
-  const size_t num_active_input_methods =
-      input_method_library->GetNumActiveInputMethods();
-  UpdateUI(input_method.id, name, tooltip, num_active_input_methods);
-
+  UpdateUIFromCurrentInputMethod();
   Layout();
   SchedulePaint();
 }
@@ -153,6 +139,18 @@ void InputMethodMenuButton::OpenConfigUI() {
 
 bool InputMethodMenuButton::ShouldSupportConfigUI() {
   return host_->ShouldOpenButtonOptions(this);
+}
+
+void InputMethodMenuButton::UpdateUIFromCurrentInputMethod() {
+  chromeos::InputMethodLibrary* input_method_library =
+      chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
+  const InputMethodDescriptor& input_method =
+      input_method_library->current_input_method();
+  const std::wstring name = InputMethodMenu::GetTextForIndicator(input_method);
+  const std::wstring tooltip = InputMethodMenu::GetTextForMenu(input_method);
+  const size_t num_active_input_methods =
+      input_method_library->GetNumActiveInputMethods();
+  UpdateUI(input_method.id, name, tooltip, num_active_input_methods);
 }
 
 }  // namespace chromeos

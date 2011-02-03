@@ -39,6 +39,9 @@ class InputMethodMenuButton : public StatusAreaButton,
   virtual bool ShouldSupportConfigUI();
   virtual void OpenConfigUI();
 
+  // Updates the UI from the current input method.
+  void UpdateUIFromCurrentInputMethod();
+
  private:
   scoped_ptr<InputMethodMenu> menu_;
   StatusAreaHost* host_;

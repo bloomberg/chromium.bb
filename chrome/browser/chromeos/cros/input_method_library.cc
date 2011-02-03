@@ -734,6 +734,7 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
         current_input_method_("", "", "", ""),
         keyboard_overlay_map_(
             CreateRealisticKeyboardOverlayMap()) {
+    current_input_method_ = GetFallbackInputMethodDescriptor();
   }
 
   ~InputMethodLibraryStubImpl() {}
