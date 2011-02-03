@@ -131,7 +131,7 @@ Session* SessionManager::Create() {
     base::AutoLock lock(map_lock_);
     if (map_.find(id) != map_.end()) {
       LOG(ERROR) << "Failed to generate a unique session ID";
-      return false;
+      return NULL;
     }
   }
 
