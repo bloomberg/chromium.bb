@@ -65,6 +65,14 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     WizardInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
   }
 
+  void ExpectUpdateStatusCheck() {
+    // browser_list::NotifyAndTerminate calls status().
+    UpdateLibrary::Status status;
+    EXPECT_CALL(*mock_update_library_, status())
+        .Times(AtLeast(1))
+        .WillRepeatedly(ReturnRef(status));
+  }
+
   MockLoginLibrary* mock_login_library_;
   MockUpdateLibrary* mock_update_library_;
   MockNetworkLibrary* mock_network_library_;
@@ -82,6 +90,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestBasic) {
   ASSERT_EQ(controller()->current_screen(), update_screen);
   UpdateView* update_view = update_screen->view();
   ASSERT_TRUE(update_view != NULL);
+  ExpectUpdateStatusCheck();
   controller()->set_observer(NULL);
 }
 
@@ -193,6 +202,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {
       .Times(1);
   update_screen->StartUpdate();
 
+  ExpectUpdateStatusCheck();
   controller()->set_observer(NULL);
 }
 

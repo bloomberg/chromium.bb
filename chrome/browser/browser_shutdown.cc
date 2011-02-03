@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_shutdown.h"
 
+#include <map>
 #include <string>
 
 #include "base/command_line.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/service/service_process_control_manager.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -251,9 +253,7 @@ void Shutdown() {
   UnregisterURLRequestChromeJob();
 
 #if defined(OS_CHROMEOS)
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
-    chromeos::CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
-  }
+  BrowserList::NotifyAndTerminate(false);
 #endif
 
   // Clean up data sources before the UI thread is removed.
