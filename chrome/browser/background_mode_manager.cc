@@ -132,6 +132,14 @@ void BackgroundModeManager::Observe(NotificationType type,
     case NotificationType::EXTENSION_UNLOADED:
       if (BackgroundApplicationListModel::IsBackgroundApp(
               *Details<UnloadedExtensionInfo>(details)->extension)) {
+        Details<UnloadedExtensionInfo> info =
+            Details<UnloadedExtensionInfo>(details);
+        // If we already got an unload notification when it was disabled, ignore
+        // this one.
+        // TODO(atwilson): Change BackgroundModeManager to use
+        // BackgroundApplicationListModel instead of tracking the count here.
+        if (info->already_disabled)
+          return;
         OnBackgroundAppUnloaded();
         OnBackgroundAppUninstalled();
       }
