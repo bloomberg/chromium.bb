@@ -193,6 +193,8 @@ void NativeMenuGtk::Rebuild() {
       AddMenuItemAt(i, NULL, accel_group);
     }
   }
+  if (!menu_hidden_)
+    gtk_menu_reposition(GTK_MENU(menu_));
 }
 
 void NativeMenuGtk::UpdateStates() {

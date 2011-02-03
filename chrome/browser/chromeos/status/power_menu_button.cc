@@ -96,7 +96,6 @@ string16 PowerMenuButton::GetLabelAt(int index) const {
 
 void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   power_menu_.Rebuild();
-  power_menu_.UpdateStates();
   power_menu_.RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
 
@@ -186,6 +185,7 @@ void PowerMenuButton::UpdateIconAndLabelInfo() {
 
   SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(icon_id_));
   SetTooltipText(UTF16ToWide(GetLabelAt(0)));
+  power_menu_.Rebuild();
   SchedulePaint();
 }
 
