@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,10 +12,14 @@
 
 #include <cstddef>
 
+namespace net {
+
 // Returns the file descriptor if successful.  Otherwise, returns -1.
 int InitializeNetlinkSocket();
 
 // Returns true if a network change has been detected, otherwise returns false.
 bool HandleNetlinkMessage(char* buf, size_t len);
+
+}  // namespace net
 
 #endif  // NET_BASE_NETWORK_CHANGE_NOTIFIER_NETLINK_LINUX_H_

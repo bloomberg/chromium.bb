@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,6 +56,8 @@ bool IsDuplicateIPv6AddressUpdate(
 }
 
 }  // namespace
+
+namespace net {
 
 int InitializeNetlinkSocket() {
   int sock = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
@@ -127,3 +129,5 @@ bool HandleNetlinkMessage(char* buf, size_t len) {
 
   return false;
 }
+
+}  // namespace net
