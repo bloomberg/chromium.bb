@@ -8,6 +8,3 @@
 // Registering the fonts for this test causes other processes (Adium, Firefox)
 // to spin and become unresponsive or crash.
 BUGWK50709 MAC : fast/css/font-weight-1.html = IMAGE+TEXT
-
-// Is failing since r77459. Temporary disabled until rebaseline.
-BUG_LOISLO : scrollbars/custom-scrollbar-with-incomplete-style.html = IMAGE
