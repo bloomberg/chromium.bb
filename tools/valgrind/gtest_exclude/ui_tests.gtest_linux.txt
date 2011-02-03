@@ -14,3 +14,6 @@ LayoutPluginTester.UnloadNoCrash
 MediaTest.VideoBear*
 # http://crbug.com/53937 Fails on CrOS valgrind
 UILayoutTest.MediaUILayoutTest
+# These tests fail due to timeouts, see http://crbug.com/64619
+OptionsUITest.CommandAgainGoesBackToOptionsTab
+OptionsUITest.TwoCommandsOneTab
