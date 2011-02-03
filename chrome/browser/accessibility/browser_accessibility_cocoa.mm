@@ -133,9 +133,16 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 
 // Returns a string indicating the role of this object.
 - (NSString*)role {
-  NSString* role = NSAccessibilityUnknownRole;
   WebAccessibility::Role value =
       static_cast<WebAccessibility::Role>( browserAccessibility_->role());
+
+  // Roles that we only determine at runtime.
+  if (value == WebAccessibility::ROLE_TEXT_FIELD &&
+      GetState(browserAccessibility_, WebAccessibility::STATE_PROTECTED)) {
+    return @"AXSecureTextField";
+  }
+
+  NSString* role = NSAccessibilityUnknownRole;
   const size_t numRoles = sizeof(roles) / sizeof(roles[0]);
   for (size_t i = 0; i < numRoles; ++i) {
     if (roles[i].value == value) {
@@ -143,6 +150,7 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
       break;
     }
   }
+
   return role;
 }
 
