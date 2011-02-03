@@ -55,7 +55,6 @@ signal_handler(int sig_num) {
 }
 
 namespace webdriver {
-
 template <typename CommandType>
 void SetCallback(struct mg_context* ctx, const char* pattern) {
   mg_set_uri_callback(ctx, pattern, &Dispatch<CommandType>, NULL);
@@ -116,6 +115,7 @@ int main(int argc, char *argv[]) {
     port = cmd_line.GetSwitchValueASCII(std::string("port"));
   }
 
+  VLOG(1) << "Using port: " << port;
   webdriver::SessionManager* session = webdriver::SessionManager::GetInstance();
   session->SetIPAddress(port);
 
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
 
   webdriver::InitCallbacks(ctx);
 
-  std::cout << "Started: port=" << port << std::endl;
+  std::cout << "Starting server on port: " << port << std::endl;
   // The default behavior is to run this service forever.
   while (true)
     base::PlatformThread::Sleep(3600);
@@ -138,3 +138,4 @@ int main(int argc, char *argv[]) {
   mg_stop(ctx);
   return (EXIT_SUCCESS);
 }
+

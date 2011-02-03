@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/test/webdriver/error_codes.h"

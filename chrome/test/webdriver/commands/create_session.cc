@@ -10,16 +10,27 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/test/webdriver/session.h"
+#include "chrome/test/webdriver/session_manager.h"
 
 namespace webdriver {
 
 void CreateSession::ExecutePost(Response* const response) {
   SessionManager* session_manager = SessionManager::GetInstance();
-  std::string session_id;
+  Session* session = session_manager->Create();
+  if (!session) {
+    SET_WEBDRIVER_ERROR(response,
+                        "Failed to create session",
+                        kInternalServerError);
+    return;
+  }
 
-  if (!session_manager->Create(&session_id)) {
-    response->set_status(kUnknownError);
-    response->set_value(Value::CreateStringValue("Failed to create session"));
+  std::string session_id = session->id();
+  if (!session->Init()) {
+    session_manager->Delete(session_id);
+    SET_WEBDRIVER_ERROR(response,
+                        "Failed to initialize session",
+                        kInternalServerError);
     return;
   }
 

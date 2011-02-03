@@ -4,21 +4,19 @@
 
 #include <string>
 
-#include "base/utf_string_conversions.h"
 #include "chrome/test/webdriver/commands/title_command.h"
 
 namespace webdriver {
 
 void TitleCommand::ExecuteGet(Response* const response) {
-  std::wstring title;
-  if (!tab_->GetTabTitle(&title)) {
+  std::string title;
+  if (!session_->GetTabTitle(&title)) {
     SET_WEBDRIVER_ERROR(response, "GetTabTitle failed", kInternalServerError);
     return;
   }
 
-  response->set_value(new StringValue(WideToUTF16(title)));
+  response->set_value(new StringValue(title));
   response->set_status(kSuccess);
 }
 
 }  // namespace webdriver
-

@@ -8,12 +8,7 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
-
-#include "chrome/test/automation/automation_proxy.h"
-#include "chrome/test/automation/browser_proxy.h"
-#include "chrome/test/automation/tab_proxy.h"
-#include "chrome/test/automation/window_proxy.h"
-#include "chrome/test/ui/ui_test.h"
+#include "chrome/test/webdriver/automation.h"
 #include "chrome/test/webdriver/error_codes.h"
 
 namespace webdriver {
@@ -23,28 +18,16 @@ namespace webdriver {
 // state necessary to control the chrome browser created.
 // TODO(phajdan.jr):  Abstract UITestBase classes, see:
 // http://code.google.com/p/chromium/issues/detail?id=56865
-class Session : private UITestBase {
+class Session {
  public:
-#if defined(OS_POSIX)
-  typedef char ProfileDir[L_tmpnam + 1];  // +1 for \0
-#elif defined(OS_WIN)
-  typedef char ProfileDir[MAX_PATH + 1];  // +1 for \0
-#endif
-
   explicit Session(const std::string& id);
 
+  // Creates a browser.
   bool Init();
 
   // Terminates this session and disconnects its automation proxy. After
   // invoking this method, the Session can safely be deleted.
   void Terminate();
-
-  // Finds the active tab that webdriver commands should go to.
-  scoped_refptr<TabProxy> ActiveTab();
-
-  void SetBrowserAndTab(const int window_num,
-                        const scoped_refptr<BrowserProxy>& browser,
-                        const scoped_refptr<TabProxy>& tab);
 
   // Executes the given |script| in the context of the frame that is currently
   // the focus of this session. The |script| should be in the form of a
@@ -54,6 +37,19 @@ class Session : private UITestBase {
   ErrorCode ExecuteScript(const std::wstring& script,
                           const ListValue* const args,
                           Value** value);
+
+
+  bool NavigateToURL(const std::string& url);
+  bool GoForward();
+  bool GoBack();
+  bool Reload();
+  bool GetURL(std::string* url);
+  bool GetTabTitle(std::string* tab_title);
+  void RunSessionTask(Task* task);
+  void RunSessionTaskOnSessionThread(
+      Task* task,
+      base::WaitableEvent* done_event);
+
 
   inline const std::string& id() const { return id_; }
 
@@ -68,10 +64,6 @@ class Session : private UITestBase {
     speed_ = speed;
   }
 
-  inline const char* tmp_profile_dir() {
-    return tmp_profile_dir_;
-  };
-
   inline const std::wstring& current_frame_xpath() const {
     return current_frame_xpath_;
   }
@@ -81,19 +73,15 @@ class Session : private UITestBase {
   }
 
  private:
-  bool CreateTemporaryProfileDirectory();
-  bool LoadProxies();
-  void SetupCommandLine();
+  scoped_ptr<Automation> automation_;
+  base::Thread thread_;
 
   const std::string id_;
 
   int window_num_;
-  scoped_refptr<BrowserProxy> browser_;
-  scoped_refptr<TabProxy> tab_;
 
   int implicit_wait_;
   Speed speed_;
-  ProfileDir tmp_profile_dir_;
 
   // The XPath to the frame within this session's active tab which all
   // commands should be directed to. XPath strings can represent a frame deep
@@ -108,5 +96,6 @@ class Session : private UITestBase {
 
 }  // namespace webdriver
 
-#endif  // CHROME_TEST_WEBDRIVER_SESSION_H_
+DISABLE_RUNNABLE_METHOD_REFCOUNT(webdriver::Session);
 
+#endif  // CHROME_TEST_WEBDRIVER_SESSION_H_

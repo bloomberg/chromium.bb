@@ -4,178 +4,55 @@
 
 #include "chrome/test/webdriver/session_manager.h"
 
-#ifdef OS_POSIX
-#include <dirent.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#endif
-#ifdef OS_WIN
-#include <windows.h>
-#include <shellapi.h>
-#endif
-
-#include <stdlib.h>
-#ifdef OS_POSIX
-#include <algorithm>
-#endif
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/message_loop_proxy.h"
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "base/test/test_timeouts.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
-
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/webdriver/utility_functions.h"
-
 #include "third_party/webdriver/atoms.h"
 
 namespace webdriver {
 
-#ifdef OS_WIN
-namespace {
-std::string GetTempPath() {
-  DWORD result = ::GetTempPath(0, L"");
-  if (result == 0)
-    LOG(ERROR) << "Could not get system temp path";
-
-  std::vector<TCHAR> tempPath(result + 1);
-  result = ::GetTempPath(static_cast<DWORD>(tempPath.size()), &tempPath[0]);
-  if ((result == 0) || (result >= tempPath.size())) {
-    LOG(ERROR) << "Could not get system temp path";
-    NOTREACHED();
-  }
-  return std::string(tempPath.begin(),
-                     tempPath.begin() + static_cast<std::size_t>(result));
-}
-}  // namespace
-#endif
-
 Session::Session(const std::string& id)
-    : UITestBase(), id_(id), window_num_(0), implicit_wait_(0),
+    : thread_(id.c_str()),
+      id_(id),
+      window_num_(0),
+      implicit_wait_(0),
       current_frame_xpath_(L"") {
 }
 
 bool Session::Init() {
-  // Create a temp directory for the new profile.
-  if (!CreateTemporaryProfileDirectory()) {
-    LOG(ERROR) << "Could not make a temp profile directory, "
-               << tmp_profile_dir()
-               << "\nNeed to quit, the issue must be fixed";
-    exit(-1);
-  }
-
-  SetupCommandLine();
-  LaunchBrowserAndServer();
-  return LoadProxies();
-}
-
-scoped_refptr<TabProxy> Session::ActiveTab() {
-  int tab_index;
-  if (!tab_->GetTabIndex(&tab_index) ||
-      !browser_->ActivateTab(tab_index)) {
-    LOG(ERROR) << "Failed to session tab";
-    return NULL;
-  }
-  return tab_;
-}
-
-bool Session::LoadProxies() {
-  AutomationProxy* proxy = automation();
-  scoped_refptr<BrowserProxy> browser = proxy->GetBrowserWindow(0);
-  if (!browser.get()) {
-    LOG(WARNING) << "Failed to get browser window.";
+  if (!thread_.Start()) {
+    LOG(ERROR) << "Cannot start session thread";
     return false;
   }
+  automation_.reset(new Automation());
 
-  scoped_refptr<TabProxy> tab = browser->GetActiveTab();
-  if (!tab.get()) {
-    LOG(ERROR) << "Could not load tab";
-    return false;
-  }
-
-  SetBrowserAndTab(0, browser, tab);
-  return true;
-}
-
-void Session::SetupCommandLine() {
-  test_launcher_utils::PrepareBrowserCommandLineForTests(&launch_arguments_);
-  launch_arguments_.AppendSwitch(switches::kDomAutomationController);
-  launch_arguments_.AppendSwitch(switches::kFullMemoryCrashReport);
-
-  launch_arguments_.AppendSwitchASCII(switches::kUserDataDir,
-                                      tmp_profile_dir());
-}
-
-void Session::SetBrowserAndTab(const int window_num,
-                               const scoped_refptr<BrowserProxy>& browser,
-                               const scoped_refptr<TabProxy>& tab) {
-  window_num_ = window_num;
-  browser_ = browser;
-  tab_ = tab;
-  current_frame_xpath_ = L"";
-
-  int tab_num;
-  LOG_IF(WARNING, !tab->GetTabIndex(&tab_num) || !browser->ActivateTab(tab_num))
-      << "Failed to activate tab";
-}
-
-bool Session::CreateTemporaryProfileDirectory() {
-  memset(tmp_profile_dir_, 0, sizeof tmp_profile_dir_);
-#ifdef OS_POSIX
-  strncat(tmp_profile_dir_, "/tmp/webdriverXXXXXX", sizeof tmp_profile_dir_);
-  if (mkdtemp(tmp_profile_dir_) == NULL) {
-    LOG(ERROR) << "mkdtemp failed";
-    return false;
-  }
-#elif OS_WIN
-  DWORD ret;
-  ProfileDir temp_dir;
-
-  ret = GetTempPathA(sizeof temp_dir, temp_dir);
-  if (ret == 0 || ret > sizeof temp_dir) {
-    LOG(ERROR) << "Could not find the temp directory";
-    return false;
-  }
-
-  ret = GetTempFileNameA(temp_dir,        // Directory for tmp files.
-                         "webdriver",     // Temp file name prefix.
-                         static_cast<int>(time(NULL)) % 65535 + 1,
-                         tmp_profile_dir_);  // Buffer for name.
-
-  if (ret ==0) {
-    LOG(ERROR) << "Could not generate temp directory name";
-    return false;
-  }
-
-  if (!CreateDirectoryA(tmp_profile_dir_, NULL)) {
-    DWORD dw = GetLastError();
-    LOG(ERROR) << "Error code: " << dw;
-    return false;
-  }
-#endif
-  VLOG(1) << "Using temporary profile directory: " << tmp_profile_dir_;
-  return true;
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::Init,
+      &success));
+  return success;
 }
 
 void Session::Terminate() {
-  QuitBrowser();
-#ifdef OS_POSIX
-  FilePath del_dir = FilePath(tmp_profile_dir());
-#elif OS_WIN
-  FilePath del_dir = FilePath(ASCIIToWide(tmp_profile_dir()));
-#endif
-  if (file_util::PathExists(del_dir) && !file_util::Delete(del_dir, true))
-    LOG(ERROR) << "Could not clean up temp directory: " << tmp_profile_dir();
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::Terminate));
 }
 
 ErrorCode Session::ExecuteScript(const std::wstring& script,
@@ -199,12 +76,21 @@ ErrorCode Session::ExecuteScript(const std::wstring& script,
   VLOG(1) << "Executing script in frame: " << current_frame_xpath_;
 
   std::wstring result;
-  scoped_refptr<TabProxy> tab = ActiveTab();
-  if (!tab->ExecuteAndExtractString(current_frame_xpath_, jscript, &result)) {
+  bool success;
+  std::string result_utf8;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::ExecuteScript,
+      WideToUTF8(current_frame_xpath_),
+      WideToUTF8(jscript),
+      &result_utf8,
+      &success));
+  if (!success) {
     *value = Value::CreateStringValue(
         "Unknown internal script execution failure");
     return kUnknownError;
   }
+  result = UTF8ToWide(result_utf8);
 
   VLOG(1) << "...script result: " << result;
   std::string temp = WideToASCII(result);
@@ -241,6 +127,80 @@ ErrorCode Session::ExecuteScript(const std::wstring& script,
     NOTREACHED() << "...script did not return a status flag.";
   }
   return static_cast<ErrorCode>(status);
+}
+
+bool Session::NavigateToURL(const std::string& url) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::NavigateToURL,
+      url,
+      &success));
+  return success;
+}
+
+bool Session::GoForward() {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::GoForward,
+      &success));
+  return success;
+}
+
+bool Session::GoBack() {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::GoBack,
+      &success));
+  return success;
+}
+
+bool Session::Reload() {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::Reload,
+      &success));
+  return success;
+}
+
+bool Session::GetURL(std::string* url) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::GetURL,
+      url,
+      &success));
+  return success;
+}
+
+bool Session::GetTabTitle(std::string* tab_title) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::GetTabTitle,
+      tab_title,
+      &success));
+  return success;
+}
+
+void Session::RunSessionTask(Task* task) {
+  base::WaitableEvent done_event(false, false);
+  thread_.message_loop_proxy()->PostTask(FROM_HERE, NewRunnableMethod(
+      this,
+      &Session::RunSessionTaskOnSessionThread,
+      task,
+      &done_event));
+  done_event.Wait();
+}
+
+void Session::RunSessionTaskOnSessionThread(Task* task,
+                                            base::WaitableEvent* done_event) {
+  task->Run();
+  delete task;
+  done_event->Signal();
 }
 
 }  // namespace webdriver

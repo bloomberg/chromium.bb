@@ -10,7 +10,7 @@
 #include "base/process_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/test/test_timeouts.h"
+#include "base/threading/thread.h"
 #include "chrome/common/chrome_constants.h"
 
 #if defined(OS_POSIX)
@@ -120,59 +120,55 @@ std::string SessionManager::GenerateSessionID() {
 #else
     id += text[rand() % (sizeof text - 1)];
 #endif
-    id += count_;  // Append the global count to generate a unique id.
   }
   session_generation_.Release();
   return id;
 }
 
-bool SessionManager::Create(std::string* id) {
-  MessageLoop loop;
-  TestTimeouts::Initialize();
-
-  *id = GenerateSessionID();
-  if (map_.find(*id) != map_.end()) {
-    LOG(ERROR) << "Failed to generate a unique session ID";
-    return false;
+Session* SessionManager::Create() {
+  std::string id = GenerateSessionID();
+  {
+    base::AutoLock lock(map_lock_);
+    if (map_.find(id) != map_.end()) {
+      LOG(ERROR) << "Failed to generate a unique session ID";
+      return false;
+    }
   }
 
-  // Start chrome, if it doesn't startup quit.
-  const int ap_timeout = TestTimeouts::command_execution_timeout_ms();
-  VLOG(1) << "Waiting for a max of " << ap_timeout << " ms to start the chrome "
-             "browser";
-
-  scoped_ptr<Session> session(new Session(*id));
-
-  if (!session->Init()) {
-    LOG(ERROR) << "Could not establish a valid connection to the browser";
-    return false;
-  }
-
-  map_[*id] = session.release();
-  return true;
+  Session* session = new Session(id);
+  base::AutoLock lock(map_lock_);
+  map_[id] = session;
+  return session;
 }
 
 bool SessionManager::Has(const std::string& id) const {
+  base::AutoLock lock(map_lock_);
   return map_.find(id) != map_.end();
 }
 
 bool SessionManager::Delete(const std::string& id) {
   std::map<std::string, Session*>::iterator it;
 
-  VLOG(1) << "Deleting session with ID " << id;
-  it = map_.find(id);
-  if (it == map_.end()) {
-    VLOG(1) << "No such session with ID " << id;
-    return false;
+  Session* session;
+  {
+    base::AutoLock lock(map_lock_);
+    it = map_.find(id);
+    if (it == map_.end()) {
+      VLOG(1) << "No such session with ID " << id;
+      return false;
+    }
+    session = it->second;
+    map_.erase(it);
   }
 
-  it->second->Terminate();
-  map_.erase(it);
+  VLOG(1) << "Deleting session with ID " << id;
+  delete session;
   return true;
 }
 
 Session* SessionManager::GetSession(const std::string& id) const {
   std::map<std::string, Session*>::const_iterator it;
+  base::AutoLock lock(map_lock_);
   it = map_.find(id);
   if (it == map_.end()) {
     VLOG(1) << "No such session with ID " << id;

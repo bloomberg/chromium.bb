@@ -59,17 +59,6 @@ bool WebDriverCommand::Init(Response* const response) {
   }
 
   response->SetField("sessionId", Value::CreateStringValue(session_id));
-  return !RequiresValidTab() || VerifyTabIsValid(response);
-}
-
-bool WebDriverCommand::VerifyTabIsValid(Response* response) {
-  tab_ = session_->ActiveTab();
-  if (!tab_.get()) {
-    response->set_value(Value::CreateStringValue(
-        "Lost session window handle; did you close the window?"));
-    response->set_status(kNoSuchWindow);
-    return false;
-  }
   return true;
 }
 

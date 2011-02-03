@@ -10,7 +10,7 @@
 
 namespace webdriver {
 
-bool WebElementCommand::Init(Response* response) {
+bool WebElementCommand::Init(Response* const response) {
   if (WebDriverCommand::Init(response)) {
     SET_WEBDRIVER_ERROR(response, "Failure on Init for web element command",
                         kInternalServerError);
@@ -83,4 +83,3 @@ bool WebElementCommand::GetElementSize(int* width, int* height) {
 }
 
 }  // namespace webdriver
-

@@ -5,18 +5,17 @@
 #include <string>
 
 #include "chrome/test/webdriver/commands/url_command.h"
-#include "googleurl/src/gurl.h"
 
 namespace webdriver {
 
 void URLCommand::ExecuteGet(Response* const response) {
-  GURL url;
-  if (!tab_->GetCurrentURL(&url)) {
+  std::string url;
+  if (!session_->GetURL(&url)) {
     SET_WEBDRIVER_ERROR(response, "GetCurrentURL failed", kInternalServerError);
     return;
   }
 
-  response->set_value(new StringValue(url.spec()));
+  response->set_value(new StringValue(url));
   response->set_status(kSuccess);
 }
 
@@ -28,8 +27,7 @@ void URLCommand::ExecutePost(Response* const response) {
     return;
   }
   // TODO(jmikhail): sniff for meta-redirects.
-  GURL rgurl(url);
-  if (!tab_->NavigateToURL(rgurl)) {
+  if (!session_->NavigateToURL(url)) {
     SET_WEBDRIVER_ERROR(response, "NavigateToURL failed",
                         kInternalServerError);
     return;
@@ -41,4 +39,3 @@ void URLCommand::ExecutePost(Response* const response) {
 }
 
 }  // namespace webdriver
-

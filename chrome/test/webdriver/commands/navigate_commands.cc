@@ -7,7 +7,7 @@
 namespace webdriver {
 
 void ForwardCommand::ExecutePost(Response* const response) {
-  if (!tab_->GoForward()) {
+  if (!session_->GoForward()) {
     SET_WEBDRIVER_ERROR(response, "GoForward failed", kInternalServerError);
     return;
   }
@@ -17,7 +17,7 @@ void ForwardCommand::ExecutePost(Response* const response) {
 }
 
 void BackCommand::ExecutePost(Response* const response) {
-  if (!tab_->GoBack()) {
+  if (!session_->GoBack()) {
     SET_WEBDRIVER_ERROR(response, "GoBack failed", kInternalServerError);
     return;
   }
@@ -27,7 +27,7 @@ void BackCommand::ExecutePost(Response* const response) {
 }
 
 void RefreshCommand::ExecutePost(Response* const response) {
-  if (!tab_->Reload()) {
+  if (!session_->Reload()) {
     SET_WEBDRIVER_ERROR(response, "Reload failed", kInternalServerError);
     return;
   }
@@ -37,4 +37,3 @@ void RefreshCommand::ExecutePost(Response* const response) {
 }
 
 }  // namespace webdriver
-

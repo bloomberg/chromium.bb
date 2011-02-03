@@ -22,7 +22,7 @@ class WebElementCommand : public WebDriverCommand {
                          path_segments_(path_segments) {}
   virtual ~WebElementCommand() {}
 
-  virtual bool Init(Response* response);
+  virtual bool Init(Response* const response);
 
  protected:
   bool GetElementLocation(bool in_view, int* x, int* y);
@@ -40,4 +40,3 @@ class WebElementCommand : public WebDriverCommand {
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_WEBELEMENT_COMMAND_H_
-

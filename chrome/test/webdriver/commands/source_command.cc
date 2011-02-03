@@ -18,11 +18,10 @@ const wchar_t* const kSource[] = {
 
 void SourceCommand::ExecuteGet(Response* const response) {
   const std::wstring jscript = build_atom(kSource, sizeof kSource);
-  // Get the source code for the current frame only.
-  std::wstring xpath = session_->current_frame_xpath();
-  std::wstring result = L"";
+  Value* result = NULL;
 
-  if (!tab_->ExecuteAndExtractString(xpath, jscript, &result)) {
+  scoped_ptr<ListValue> list(new ListValue());
+  if (!session_->ExecuteScript(jscript, list.get(), &result)) {
     LOG(ERROR) << "Could not execute JavaScript to find source. JavaScript"
                << " used was:\n" << kSource;
     LOG(ERROR) << "ExecuteAndExtractString's results was: "
@@ -31,10 +30,8 @@ void SourceCommand::ExecuteGet(Response* const response) {
                         kInternalServerError);
     return;
   }
-
-  response->set_value(new StringValue(WideToUTF16(result)));
+  response->set_value(result);
   response->set_status(kSuccess);
 }
 
 }  // namespace webdriver
-

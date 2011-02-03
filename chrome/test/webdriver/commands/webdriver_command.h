@@ -43,17 +43,7 @@ class WebDriverCommand : public Command {
   // failure.
   DictionaryValue* GetElementIdAsDictionaryValue(const std::string& element_id);
 
-  // Returns whether this command requires a valid TabProxy upon
-  // initialization.
-  virtual bool RequiresValidTab() { return true; }
-
-  // Returns whether this command has a valid TabProxy. Returns true on
-  // success. Otherwise, returns false and populates the |resposne| with the
-  // necessary information to return to the client.
-  bool VerifyTabIsValid(Response* response);
-
   Session* session_;
-  scoped_refptr<TabProxy> tab_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDriverCommand);
 };
@@ -61,4 +51,3 @@ class WebDriverCommand : public Command {
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_WEBDRIVER_COMMAND_H_
-

@@ -710,6 +710,8 @@
         '../third_party/mongoose/mongoose.h',
         '../third_party/mongoose/mongoose.c',
         '../third_party/webdriver/atoms.h',
+        'test/webdriver/automation.h',
+        'test/webdriver/automation.cc',
         'test/webdriver/dispatch.h',
         'test/webdriver/dispatch.cc',
         'test/webdriver/error_codes.h',
@@ -747,6 +749,8 @@
         'test/webdriver/commands/url_command.cc',
         'test/webdriver/commands/webdriver_command.h',
         'test/webdriver/commands/webdriver_command.cc',
+        'test/webdriver/commands/webelement_command.h',
+        'test/webdriver/commands/webelement_command.cc',
       ],
       'conditions': [
         ['OS=="linux"', {

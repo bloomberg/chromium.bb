@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/singleton.h"
-
+#include "base/synchronization/lock.h"
 #include "chrome/test/webdriver/session.h"
 
 namespace webdriver {
@@ -27,7 +27,7 @@ class SessionManager {
   std::string GetIPAddress();
   bool SetIPAddress(const std::string& port);
 
-  bool Create(std::string* id);
+  Session* Create();
   bool Delete(const std::string& id);
   bool Has(const std::string& id) const;
 
@@ -40,6 +40,7 @@ class SessionManager {
   std::string IPLookup(const std::string& nic);
 
   std::map<std::string, Session*> map_;
+  mutable base::Lock map_lock_;
   base::Lock session_generation_;
   // Record the address and port for the HTTP 303 See other redirect.
   // We save the IP and Port of the machine chromedriver is running on since
@@ -55,4 +56,3 @@ class SessionManager {
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_SESSION_MANAGER_H_
-

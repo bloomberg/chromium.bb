@@ -12,10 +12,15 @@ For ChromeDriver documentation, refer to:
 import logging
 import os
 import platform
-import signal
 import subprocess
 import sys
-import threading
+
+if sys.version_info < (2,6):
+  # Subprocess.Popen.kill is not available prior to 2.6.
+  if platform.system() == 'Windows':
+    import win32api
+  else:
+    import signal
 
 
 class ChromeDriverLauncher:
@@ -34,10 +39,6 @@ class ChromeDriverLauncher:
     self._port = port
     if self._exe_path is None:
       self._exe_path = ChromeDriverLauncher.LocateExe()
-      if self._exe_path is None:
-        raise RuntimeError('ChromeDriver exe could not be found in its default '
-                           'location. Searched in following directories: ' +
-                           ', '.join(self.DefaultExeLocations()))
     if self._root_path is None:
       self._root_path = '.'
     if self._port is None:
@@ -47,33 +48,7 @@ class ChromeDriverLauncher:
 
     if not os.path.exists(self._exe_path):
       raise RuntimeError('ChromeDriver exe not found at: ' + self._exe_path)
-
-    os.environ['PATH'] = os.path.dirname(self._exe_path) + os.environ['PATH']
     self.Start()
-
-  @staticmethod
-  def DefaultExeLocations():
-    """Returns the paths that are used to find the ChromeDriver executable.
-
-    Returns:
-      a list of directories that would be searched for the executable
-    """
-    script_dir = os.path.dirname(__file__)
-    chrome_src = os.path.abspath(os.path.join(
-        script_dir, os.pardir, os.pardir, os.pardir))
-    bin_dirs = {
-      'linux2': [ os.path.join(chrome_src, 'out', 'Debug'),
-                  os.path.join(chrome_src, 'sconsbuild', 'Debug'),
-                  os.path.join(chrome_src, 'out', 'Release'),
-                  os.path.join(chrome_src, 'sconsbuild', 'Release')],
-      'darwin': [ os.path.join(chrome_src, 'xcodebuild', 'Debug'),
-                  os.path.join(chrome_src, 'xcodebuild', 'Release')],
-      'win32':  [ os.path.join(chrome_src, 'chrome', 'Debug'),
-                  os.path.join(chrome_src, 'build', 'Debug'),
-                  os.path.join(chrome_src, 'chrome', 'Release'),
-                  os.path.join(chrome_src, 'build', 'Release')],
-    }
-    return [os.getcwd()] + bin_dirs.get(sys.platform, [])
 
   @staticmethod
   def LocateExe():
@@ -88,8 +63,24 @@ class ChromeDriverLauncher:
     exe_name = 'chromedriver'
     if platform.system() == 'Windows':
       exe_name += '.exe'
+    if os.path.exists(exe_name):
+      return os.path.abspath(exe_name)
 
-    for dir in ChromeDriverLauncher.DefaultExeLocations():
+    script_dir = os.path.dirname(__file__)
+    chrome_src = os.path.join(script_dir, os.pardir, os.pardir, os.pardir)
+    bin_dirs = {
+      'linux2': [ os.path.join(chrome_src, 'out', 'Debug'),
+                  os.path.join(chrome_src, 'sconsbuild', 'Debug'),
+                  os.path.join(chrome_src, 'out', 'Release'),
+                  os.path.join(chrome_src, 'sconsbuild', 'Release')],
+      'darwin': [ os.path.join(chrome_src, 'xcodebuild', 'Debug'),
+                  os.path.join(chrome_src, 'xcodebuild', 'Release')],
+      'win32':  [ os.path.join(chrome_src, 'chrome', 'Debug'),
+                  os.path.join(chrome_src, 'build', 'Debug'),
+                  os.path.join(chrome_src, 'chrome', 'Release'),
+                  os.path.join(chrome_src, 'build', 'Release')],
+    }
+    for dir in bin_dirs.get(sys.platform, []):
       path = os.path.join(dir, exe_name)
       if os.path.exists(path):
         return os.path.abspath(path)
@@ -99,64 +90,33 @@ class ChromeDriverLauncher:
     """Starts a new ChromeDriver process.
 
     Kills a previous one if it is still running.
-
-    Raises:
-      RuntimeError if ChromeDriver does not start
     """
-    def _WaitForLaunchResult(stdout, started_event, launch_result):
-      """Reads from the stdout of ChromeDriver and parses the launch result.
-
-      Args:
-        stdout:        handle to ChromeDriver's standard output
-        started_event: condition variable to notify when the launch result
-                       has been parsed
-        launch_result: dictionary to add the result of this launch to
-      """
-      status_line = stdout.readline()
-      started_event.acquire()
-      launch_result['success'] = status_line.startswith('Started')
-      launch_result['status_line'] = status_line
-      started_event.notify()
-      started_event.release()
-
     if self._process is not None:
       self.Kill()
-
     proc = subprocess.Popen([self._exe_path,
                              '--port=%d' % self._port,
-                             '--root=%s' % self._root_path],
-                            stdout=subprocess.PIPE)
+                             '--root="%s"' % self._root_path])
     if proc is None:
       raise RuntimeError('ChromeDriver cannot be started')
+    logging.info('Started chromedriver at port %s' % self._port)
     self._process = proc
-
-    # Wait for ChromeDriver to be initialized before returning.
-    launch_result = {}
-    started_event = threading.Condition()
-    started_event.acquire()
-    spawn_thread = threading.Thread(
-        target=_WaitForLaunchResult,
-        args=(proc.stdout, started_event, launch_result))
-    spawn_thread.start()
-    started_event.wait(20)
-    timed_out = 'success' not in launch_result
-    started_event.release()
-    if timed_out:
-      raise RuntimeError('ChromeDriver did not respond')
-    elif not launch_result['success']:
-      raise RuntimeError('ChromeDriver failed to launch: ' +
-                         launch_result['status_line'])
-    logging.info('ChromeDriver running on port %s' % self._port)
 
   def Kill(self):
     """Kills a currently running ChromeDriver process, if it is running."""
     if self._process is None:
       return
-    pid = self._process.pid
-    if platform.system() == 'Windows':
-      subprocess.call(['taskkill.exe', '/T', '/F', '/PID', str(pid)])
+    if sys.version_info < (2,6):
+      # From http://stackoverflow.com/questions/1064335
+      if platform.system() == 'Windows':
+        PROCESS_TERMINATE = 1
+        handle = win32api.OpenProcess(PROCESS_TERMINATE, False,
+                                      self._process.pid)
+        win32api.TerminateProcess(handle, -1)
+        win32api.CloseHandle(handle)
+      else:
+        os.kill(self._process.pid, signal.SIGKILL)
     else:
-      os.kill(pid, signal.SIGTERM)
+      self._process.kill()
     self._process = None
 
   def __del__(self):

@@ -1,15 +1,26 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/test/webdriver/dispatch.h"
 
 #include <sstream>
 #include <string>
+#include <vector>
 
-#include "base/json/json_writer.h"
+#include "base/logging.h"
+#include "base/message_loop_proxy.h"
+#include "base/string_split.h"
+#include "base/string_util.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "chrome/test/webdriver/commands/command.h"
+#include "chrome/test/webdriver/session_manager.h"
+#include "chrome/test/webdriver/utility_functions.h"
 
 namespace webdriver {
+
+namespace {
 
 // The standard HTTP Status codes are implemented below.  Chrome uses
 // OK, See Other, Not Found, Method Not Allowed, and Internal Error.
@@ -126,34 +137,26 @@ void SendHttpInternalError(struct mg_connection* const connection,
   mg_printf(connection, "%s", out.str().c_str());
 }
 
-// For every HTTP request from the mongoode server DispatchCommand will
-// inspect the HTTP method call requested and execute the proper function
-// mapped from the class Command.
-void DispatchCommand(Command* const command, const std::string& method,
+void DispatchCommand(Command* const command,
+                     const std::string& method,
                      Response* response) {
-  if (command->DoesPost() && method == "POST") {
-    if (command->Init(response))
-      command->ExecutePost(response);
-  } else if (command->DoesGet() && method == "GET") {
-    if (command->Init(response))
-      command->ExecuteGet(response);
-  } else if (command->DoesDelete() && method == "DELETE") {
-    if (command->Init(response))
-      command->ExecuteDelete(response);
+  if (!command->Init(response))
+    return;
+
+  if (method == "POST") {
+    command->ExecutePost(response);
+  } else if (method == "GET") {
+    command->ExecuteGet(response);
+  } else if (method == "DELETE") {
+    command->ExecuteDelete(response);
   } else {
-    ListValue* methods = new ListValue;
-    if (command->DoesPost())
-      methods->Append(Value::CreateStringValue("POST"));
-    if (command->DoesGet()) {
-      methods->Append(Value::CreateStringValue("GET"));
-      methods->Append(Value::CreateStringValue("HEAD"));
-    }
-    if (command->DoesDelete())
-      methods->Append(Value::CreateStringValue("DELETE"));
-    response->set_status(kMethodNotAllowed);
-    response->set_value(methods);  // Assumes ownership.
+    NOTREACHED();
   }
 }
+
+}  // namespace
+
+namespace internal {
 
 void SendResponse(struct mg_connection* const connection,
                   const struct mg_request_info* const request_info,
@@ -188,5 +191,62 @@ void SendResponse(struct mg_connection* const connection,
   }
 }
 
-}  // namespace webdriver
+bool ParseRequestInfo(const struct mg_request_info* const request_info,
+                      std::string* method,
+                      std::vector<std::string>* path_segments,
+                      DictionaryValue** parameters,
+                      Response* const response) {
+  *method = request_info->request_method;
+  if (*method == "HEAD")
+    *method = "GET";
+  else if (*method == "PUT")
+    *method = "POST";
 
+  std::string uri(request_info->uri);
+  base::SplitString(uri, '/', path_segments);
+
+  if (*method == "POST" && request_info->post_data_len > 0) {
+    VLOG(1) << "...parsing request body";
+    std::string json(request_info->post_data, request_info->post_data_len);
+    std::string error;
+    if (!ParseJSONDictionary(json, parameters, &error)) {
+      response->set_value(Value::CreateStringValue(
+          "Failed to parse command data: " + error + "\n  Data: " + json));
+      response->set_status(kBadRequest);
+      return false;
+    }
+  }
+  VLOG(1) << "Parsed " << method << " " << uri
+        << std::string(request_info->post_data, request_info->post_data_len);
+  return true;
+}
+
+void DispatchHelper(Command* command_ptr,
+                    const std::string& method,
+                    Response* response) {
+  CHECK(method == "GET" || method == "POST" || method == "DELETE");
+  scoped_ptr<Command> command(command_ptr);
+
+  if ((method == "GET" && !command->DoesGet()) ||
+      (method == "POST" && !command->DoesPost()) ||
+      (method == "DELETE" && !command->DoesDelete())) {
+    ListValue* methods = new ListValue;
+    if (command->DoesPost())
+      methods->Append(Value::CreateStringValue("POST"));
+    if (command->DoesGet()) {
+      methods->Append(Value::CreateStringValue("GET"));
+      methods->Append(Value::CreateStringValue("HEAD"));
+    }
+    if (command->DoesDelete())
+      methods->Append(Value::CreateStringValue("DELETE"));
+    response->set_status(kMethodNotAllowed);
+    response->set_value(methods);
+    return;
+  }
+
+  DispatchCommand(command.get(), method, response);
+}
+
+}  // namespace internal
+
+}  // namespace webdriver
