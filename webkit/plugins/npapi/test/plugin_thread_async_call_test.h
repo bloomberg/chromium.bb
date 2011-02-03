@@ -5,11 +5,10 @@
 #ifndef WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H_
 #define WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H_
 
-#include "base/scoped_ptr.h"
 #include "webkit/plugins/npapi/test/plugin_test.h"
 
 namespace base {
-class AtExitManager;
+class ShadowingAtExitManager;
 }
 
 namespace NPAPIClient {
@@ -19,6 +18,7 @@ namespace NPAPIClient {
 class PluginThreadAsyncCallTest : public PluginTest {
  public:
   PluginThreadAsyncCallTest(NPP id, NPNetscapeFuncs *host_functions);
+  ~PluginThreadAsyncCallTest();
 
   virtual NPError New(uint16 mode, int16 argc, const char* argn[],
                       const char* argv[], NPSavedData* saved);
@@ -31,7 +31,9 @@ class PluginThreadAsyncCallTest : public PluginTest {
 
  private:
   // base::Thread needs one of these.
-  scoped_ptr<base::AtExitManager> at_exit_manager_;
+  base::ShadowingAtExitManager* at_exit_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(PluginThreadAsyncCallTest);
 };
 
 }  // namespace NPAPIClient

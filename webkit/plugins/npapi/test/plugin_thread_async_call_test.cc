@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#define UNIT_TEST  // To get the ShadowingAtExitManager.
+#include "base/at_exit.h"
+
 #include "webkit/plugins/npapi/test/plugin_thread_async_call_test.h"
 
-#include "base/at_exit.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "webkit/plugins/npapi/test/plugin_client.h"
@@ -47,7 +49,11 @@ void OnCallCompletedHelper(void* data) {
 
 PluginThreadAsyncCallTest::PluginThreadAsyncCallTest(
     NPP id, NPNetscapeFuncs *host_functions)
-    : PluginTest(id, host_functions) {
+    : PluginTest(id, host_functions), at_exit_manager_(NULL) {
+}
+
+PluginThreadAsyncCallTest::~PluginThreadAsyncCallTest() {
+  delete at_exit_manager_;
 }
 
 NPError PluginThreadAsyncCallTest::New(
@@ -71,7 +77,10 @@ NPError PluginThreadAsyncCallTest::New(
   // Schedule an async call that will succeed.  Make sure to call that API from
   // a different thread to fully test it.
   if (this == g_short_lived_instance) {
-    at_exit_manager_.reset(new base::AtExitManager());
+    // This is slightly complicated thanks to the Linux shared library build,
+    // which shares more compilation units between the NPAPI plug-in and
+    // the base code.
+    at_exit_manager_ = new base::ShadowingAtExitManager();
     base::Thread random_thread("random_thread");
     random_thread.Start();
     random_thread.message_loop()->PostTask(FROM_HERE, new AsyncCallTask(this));
