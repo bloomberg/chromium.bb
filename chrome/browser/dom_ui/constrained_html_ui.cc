@@ -23,12 +23,15 @@ ConstrainedHtmlUI::~ConstrainedHtmlUI() {
 
 void ConstrainedHtmlUI::RenderViewCreated(
     RenderViewHost* render_view_host) {
-  HtmlDialogUIDelegate* delegate =
-      GetConstrainedDelegate()->GetHtmlDialogUIDelegate();
+  ConstrainedHtmlUIDelegate* delegate = GetConstrainedDelegate();
+  if (!delegate)
+    return;
+
+  HtmlDialogUIDelegate* dialog_delegate = delegate->GetHtmlDialogUIDelegate();
   std::vector<DOMMessageHandler*> handlers;
-  delegate->GetDOMMessageHandlers(&handlers);
+  dialog_delegate->GetDOMMessageHandlers(&handlers);
   render_view_host->SetDOMUIProperty("dialogArguments",
-                                     delegate->GetDialogArgs());
+                                     dialog_delegate->GetDialogArgs());
   for (std::vector<DOMMessageHandler*>::iterator it = handlers.begin();
        it != handlers.end(); ++it) {
     (*it)->Attach(this);
@@ -41,14 +44,20 @@ void ConstrainedHtmlUI::RenderViewCreated(
 }
 
 void ConstrainedHtmlUI::OnDialogClose(const ListValue* args) {
-  GetConstrainedDelegate()->GetHtmlDialogUIDelegate()->OnDialogClosed(
+  ConstrainedHtmlUIDelegate* delegate = GetConstrainedDelegate();
+  if (!delegate)
+    return;
+
+  delegate->GetHtmlDialogUIDelegate()->OnDialogClosed(
       web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
-  GetConstrainedDelegate()->OnDialogClose();
+  delegate->OnDialogClose();
 }
 
 ConstrainedHtmlUIDelegate*
     ConstrainedHtmlUI::GetConstrainedDelegate() {
-  return *GetPropertyAccessor().GetProperty(tab_contents()->property_bag());
+  ConstrainedHtmlUIDelegate** property =
+      GetPropertyAccessor().GetProperty(tab_contents()->property_bag());
+  return property ? *property : NULL;
 }
 
 // static

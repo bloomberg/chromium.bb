@@ -51,6 +51,8 @@ class ConstrainedHtmlUI : public DOMUI {
       GetPropertyAccessor();
 
  private:
+  // Returns the TabContents' PropertyBag's ConstrainedHtmlUIDelegate.
+  // Returns NULL if that property is not set.
   ConstrainedHtmlUIDelegate* GetConstrainedDelegate();
 
   // JS Message Handler
