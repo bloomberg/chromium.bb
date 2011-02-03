@@ -69,7 +69,8 @@ FocusManager::WidgetFocusManager::GetInstance() {
   return Singleton<WidgetFocusManager>::get();
 }
 
-// FocusManager -----------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+// FocusManager, public:
 
 FocusManager::FocusManager(Widget* widget)
     : widget_(widget),
@@ -154,13 +155,6 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
   return true;
 }
 
-void FocusManager::ValidateFocusedView() {
-  if (focused_view_) {
-    if (!ContainsView(focused_view_))
-      ClearFocus();
-  }
-}
-
 bool FocusManager::ContainsView(View* view) const {
   Widget* widget = view->GetWidget();
   return widget ? widget->GetFocusManager() == this : false;
@@ -186,6 +180,227 @@ void FocusManager::AdvanceFocus(bool reverse) {
     SetFocusedViewWithReason(v, kReasonFocusTraversal);
   }
 }
+
+void FocusManager::SetFocusedViewWithReason(
+    View* view, FocusChangeReason reason) {
+  focus_change_reason_ = reason;
+
+  if (focused_view_ == view)
+    return;
+
+  View* prev_focused_view = focused_view_;
+  if (focused_view_)
+    focused_view_->OnBlur();
+
+  // Notified listeners that the focus changed.
+  FocusChangeListenerList::const_iterator iter;
+  for (iter = focus_change_listeners_.begin();
+       iter != focus_change_listeners_.end(); ++iter) {
+    (*iter)->FocusWillChange(prev_focused_view, view);
+  }
+
+  focused_view_ = view;
+
+  if (prev_focused_view)
+    prev_focused_view->Invalidate();  // Remove focus artifacts.
+
+  if (view) {
+    view->Invalidate();
+    view->OnFocus();
+    // The view might be deleted now.
+  }
+}
+
+void FocusManager::ClearFocus() {
+  SetFocusedView(NULL);
+  widget_->native_widget()->FocusNativeView(NULL);
+}
+
+void FocusManager::ValidateFocusedView() {
+  if (focused_view_) {
+    if (!ContainsView(focused_view_))
+      ClearFocus();
+  }
+}
+
+void FocusManager::StoreFocusedView() {
+  ViewStorage* view_storage = ViewStorage::GetInstance();
+  if (!view_storage) {
+    // This should never happen but bug 981648 seems to indicate it could.
+    NOTREACHED();
+    return;
+  }
+
+  // TODO (jcampan): when a TabContents containing a popup is closed, the focus
+  // is stored twice causing an assert. We should find a better alternative than
+  // removing the view from the storage explicitly.
+  view_storage->RemoveViewByID(stored_focused_view_storage_id_);
+
+  if (!focused_view_)
+    return;
+
+  view_storage->StoreView(stored_focused_view_storage_id_, focused_view_);
+
+  View* v = focused_view_;
+
+  {
+    // Temporarily disable notification.  ClearFocus() will set the focus to the
+    // main browser window.  This extra focus bounce which happens during
+    // deactivation can confuse registered WidgetFocusListeners, as the focus
+    // is not changing due to a user-initiated event.
+    AutoNativeNotificationDisabler local_notification_disabler;
+    ClearFocus();
+  }
+
+  if (v)
+    v->Invalidate();  // Remove focus border.
+}
+
+void FocusManager::RestoreFocusedView() {
+  ViewStorage* view_storage = ViewStorage::GetInstance();
+  if (!view_storage) {
+    // This should never happen but bug 981648 seems to indicate it could.
+    NOTREACHED();
+    return;
+  }
+
+  View* view = view_storage->RetrieveView(stored_focused_view_storage_id_);
+  if (view) {
+    if (ContainsView(view)) {
+      if (!view->IsFocusableInRootView() &&
+          view->IsAccessibilityFocusableInRootView()) {
+        // RequestFocus would fail, but we want to restore focus to controls
+        // that had focus in accessibility mode.
+        SetFocusedViewWithReason(view, kReasonFocusRestore);
+      } else {
+        // This usually just sets the focus if this view is focusable, but
+        // let the view override RequestFocus if necessary.
+        view->RequestFocus();
+
+        // If it succeeded, the reason would be incorrect; set it to
+        // focus restore.
+        if (focused_view_ == view)
+          focus_change_reason_ = kReasonFocusRestore;
+      }
+    }
+  } else {
+    // Clearing the focus will focus the root window, so we still get key
+    // events.
+    ClearFocus();
+  }
+}
+
+void FocusManager::ClearStoredFocusedView() {
+  ViewStorage* view_storage = ViewStorage::GetInstance();
+  if (!view_storage) {
+    // This should never happen but bug 981648 seems to indicate it could.
+    NOTREACHED();
+    return;
+  }
+  view_storage->RemoveViewByID(stored_focused_view_storage_id_);
+}
+
+void FocusManager::RegisterAccelerator(
+    const Accelerator& accelerator,
+    AcceleratorTarget* target) {
+  AcceleratorTargetList& targets = accelerators_[accelerator];
+  DCHECK(std::find(targets.begin(), targets.end(), target) == targets.end())
+      << "Registering the same target multiple times";
+  targets.push_front(target);
+}
+
+void FocusManager::UnregisterAccelerator(const Accelerator& accelerator,
+                                         AcceleratorTarget* target) {
+  AcceleratorMap::iterator map_iter = accelerators_.find(accelerator);
+  if (map_iter == accelerators_.end()) {
+    NOTREACHED() << "Unregistering non-existing accelerator";
+    return;
+  }
+
+  AcceleratorTargetList* targets = &map_iter->second;
+  AcceleratorTargetList::iterator target_iter =
+      std::find(targets->begin(), targets->end(), target);
+  if (target_iter == targets->end()) {
+    NOTREACHED() << "Unregistering accelerator for wrong target";
+    return;
+  }
+
+  targets->erase(target_iter);
+}
+
+void FocusManager::UnregisterAccelerators(AcceleratorTarget* target) {
+  for (AcceleratorMap::iterator map_iter = accelerators_.begin();
+       map_iter != accelerators_.end(); ++map_iter) {
+    AcceleratorTargetList* targets = &map_iter->second;
+    targets->remove(target);
+  }
+}
+
+bool FocusManager::ProcessAccelerator(const Accelerator& accelerator) {
+  AcceleratorMap::iterator map_iter = accelerators_.find(accelerator);
+  if (map_iter != accelerators_.end()) {
+    // We have to copy the target list here, because an AcceleratorPressed
+    // event handler may modify the list.
+    AcceleratorTargetList targets(map_iter->second);
+    for (AcceleratorTargetList::iterator iter = targets.begin();
+         iter != targets.end(); ++iter) {
+      if ((*iter)->AcceleratorPressed(accelerator))
+        return true;
+    }
+  }
+  return false;
+}
+
+void FocusManager::AddFocusChangeListener(FocusChangeListener* listener) {
+  DCHECK(std::find(focus_change_listeners_.begin(),
+                   focus_change_listeners_.end(), listener) ==
+      focus_change_listeners_.end()) << "Adding a listener twice.";
+  focus_change_listeners_.push_back(listener);
+}
+
+void FocusManager::RemoveFocusChangeListener(FocusChangeListener* listener) {
+  FocusChangeListenerList::iterator place =
+      std::find(focus_change_listeners_.begin(), focus_change_listeners_.end(),
+                listener);
+  if (place == focus_change_listeners_.end()) {
+    NOTREACHED() << "Removing a listener that isn't registered.";
+    return;
+  }
+  focus_change_listeners_.erase(place);
+}
+
+AcceleratorTarget* FocusManager::GetCurrentTargetForAccelerator(
+    const Accelerator& accelerator) const {
+  AcceleratorMap::const_iterator map_iter = accelerators_.find(accelerator);
+  if (map_iter == accelerators_.end() || map_iter->second.empty())
+    return NULL;
+  return map_iter->second.front();
+}
+
+// static
+bool FocusManager::IsTabTraversalKeyEvent(const KeyEvent& key_event) {
+  return key_event.key_code() == ui::VKEY_TAB &&
+         !key_event.IsControlDown();
+}
+
+// static
+FocusManager* FocusManager::GetFocusManagerForNativeView(
+    gfx::NativeView native_view) {
+  NativeWidget* native_widget =
+      NativeWidget::GetNativeWidgetForNativeView(native_view);
+  return native_widget ? native_widget->GetWidget()->GetFocusManager() : NULL;
+}
+
+// static
+FocusManager* FocusManager::GetFocusManagerForNativeWindow(
+    gfx::NativeWindow native_window) {
+  NativeWidget* native_widget =
+      NativeWidget::GetNativeWidgetForNativeWindow(native_window);
+  return native_widget ? native_widget->GetWidget()->GetFocusManager() : NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// FocusManager, private:
 
 View* FocusManager::GetNextFocusableView(View* original_starting_view,
                                          bool reverse,
@@ -280,118 +495,6 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
   return NULL;
 }
 
-void FocusManager::SetFocusedViewWithReason(
-    View* view, FocusChangeReason reason) {
-  focus_change_reason_ = reason;
-
-  if (focused_view_ == view)
-    return;
-
-  View* prev_focused_view = focused_view_;
-  if (focused_view_)
-    focused_view_->OnBlur();
-
-  // Notified listeners that the focus changed.
-  FocusChangeListenerList::const_iterator iter;
-  for (iter = focus_change_listeners_.begin();
-       iter != focus_change_listeners_.end(); ++iter) {
-    (*iter)->FocusWillChange(prev_focused_view, view);
-  }
-
-  focused_view_ = view;
-
-  if (prev_focused_view)
-    prev_focused_view->Invalidate();  // Remove focus artifacts.
-
-  if (view) {
-    view->Invalidate();
-    view->OnFocus();
-    // The view might be deleted now.
-  }
-}
-
-void FocusManager::ClearFocus() {
-  SetFocusedView(NULL);
-  widget_->native_widget()->FocusNativeView(NULL);
-}
-
-void FocusManager::StoreFocusedView() {
-  ViewStorage* view_storage = ViewStorage::GetInstance();
-  if (!view_storage) {
-    // This should never happen but bug 981648 seems to indicate it could.
-    NOTREACHED();
-    return;
-  }
-
-  // TODO (jcampan): when a TabContents containing a popup is closed, the focus
-  // is stored twice causing an assert. We should find a better alternative than
-  // removing the view from the storage explicitly.
-  view_storage->RemoveViewByID(stored_focused_view_storage_id_);
-
-  if (!focused_view_)
-    return;
-
-  view_storage->StoreView(stored_focused_view_storage_id_, focused_view_);
-
-  View* v = focused_view_;
-
-  {
-    // Temporarily disable notification.  ClearFocus() will set the focus to the
-    // main browser window.  This extra focus bounce which happens during
-    // deactivation can confuse registered WidgetFocusListeners, as the focus
-    // is not changing due to a user-initiated event.
-    AutoNativeNotificationDisabler local_notification_disabler;
-    ClearFocus();
-  }
-
-  if (v)
-    v->Invalidate();  // Remove focus border.
-}
-
-void FocusManager::RestoreFocusedView() {
-  ViewStorage* view_storage = ViewStorage::GetInstance();
-  if (!view_storage) {
-    // This should never happen but bug 981648 seems to indicate it could.
-    NOTREACHED();
-    return;
-  }
-
-  View* view = view_storage->RetrieveView(stored_focused_view_storage_id_);
-  if (view) {
-    if (ContainsView(view)) {
-      if (!view->IsFocusableInRootView() &&
-          view->IsAccessibilityFocusableInRootView()) {
-        // RequestFocus would fail, but we want to restore focus to controls
-        // that had focus in accessibility mode.
-        SetFocusedViewWithReason(view, kReasonFocusRestore);
-      } else {
-        // This usually just sets the focus if this view is focusable, but
-        // let the view override RequestFocus if necessary.
-        view->RequestFocus();
-
-        // If it succeeded, the reason would be incorrect; set it to
-        // focus restore.
-        if (focused_view_ == view)
-          focus_change_reason_ = kReasonFocusRestore;
-      }
-    }
-  } else {
-    // Clearing the focus will focus the root window, so we still get key
-    // events.
-    ClearFocus();
-  }
-}
-
-void FocusManager::ClearStoredFocusedView() {
-  ViewStorage* view_storage = ViewStorage::GetInstance();
-  if (!view_storage) {
-    // This should never happen but bug 981648 seems to indicate it could.
-    NOTREACHED();
-    return;
-  }
-  view_storage->RemoveViewByID(stored_focused_view_storage_id_);
-}
-
 // Find the next (previous if reverse is true) focusable view for the specified
 // FocusTraversable, starting at the specified view, traversing down the
 // FocusTraversable hierarchy.
@@ -424,105 +527,6 @@ View* FocusManager::FindFocusableView(FocusTraversable* focus_traversable,
         &new_starting_view);
   }
   return v;
-}
-
-void FocusManager::RegisterAccelerator(
-    const Accelerator& accelerator,
-    AcceleratorTarget* target) {
-  AcceleratorTargetList& targets = accelerators_[accelerator];
-  DCHECK(std::find(targets.begin(), targets.end(), target) == targets.end())
-      << "Registering the same target multiple times";
-  targets.push_front(target);
-}
-
-void FocusManager::UnregisterAccelerator(const Accelerator& accelerator,
-                                         AcceleratorTarget* target) {
-  AcceleratorMap::iterator map_iter = accelerators_.find(accelerator);
-  if (map_iter == accelerators_.end()) {
-    NOTREACHED() << "Unregistering non-existing accelerator";
-    return;
-  }
-
-  AcceleratorTargetList* targets = &map_iter->second;
-  AcceleratorTargetList::iterator target_iter =
-      std::find(targets->begin(), targets->end(), target);
-  if (target_iter == targets->end()) {
-    NOTREACHED() << "Unregistering accelerator for wrong target";
-    return;
-  }
-
-  targets->erase(target_iter);
-}
-
-void FocusManager::UnregisterAccelerators(AcceleratorTarget* target) {
-  for (AcceleratorMap::iterator map_iter = accelerators_.begin();
-       map_iter != accelerators_.end(); ++map_iter) {
-    AcceleratorTargetList* targets = &map_iter->second;
-    targets->remove(target);
-  }
-}
-
-bool FocusManager::ProcessAccelerator(const Accelerator& accelerator) {
-  AcceleratorMap::iterator map_iter = accelerators_.find(accelerator);
-  if (map_iter != accelerators_.end()) {
-    // We have to copy the target list here, because an AcceleratorPressed
-    // event handler may modify the list.
-    AcceleratorTargetList targets(map_iter->second);
-    for (AcceleratorTargetList::iterator iter = targets.begin();
-         iter != targets.end(); ++iter) {
-      if ((*iter)->AcceleratorPressed(accelerator))
-        return true;
-    }
-  }
-  return false;
-}
-
-AcceleratorTarget* FocusManager::GetCurrentTargetForAccelerator(
-    const Accelerator& accelerator) const {
-  AcceleratorMap::const_iterator map_iter = accelerators_.find(accelerator);
-  if (map_iter == accelerators_.end() || map_iter->second.empty())
-    return NULL;
-  return map_iter->second.front();
-}
-
-// static
-bool FocusManager::IsTabTraversalKeyEvent(const KeyEvent& key_event) {
-  return key_event.key_code() == ui::VKEY_TAB &&
-         !key_event.IsControlDown();
-}
-
-// static
-FocusManager* FocusManager::GetFocusManagerForNativeView(
-    gfx::NativeView native_view) {
-  NativeWidget* native_widget =
-      NativeWidget::GetNativeWidgetForNativeView(native_view);
-  return native_widget ? native_widget->GetWidget()->GetFocusManager() : NULL;
-}
-
-// static
-FocusManager* FocusManager::GetFocusManagerForNativeWindow(
-    gfx::NativeWindow native_window) {
-  NativeWidget* native_widget =
-      NativeWidget::GetNativeWidgetForNativeWindow(native_window);
-  return native_widget ? native_widget->GetWidget()->GetFocusManager() : NULL;
-}
-
-void FocusManager::AddFocusChangeListener(FocusChangeListener* listener) {
-  DCHECK(std::find(focus_change_listeners_.begin(),
-                   focus_change_listeners_.end(), listener) ==
-      focus_change_listeners_.end()) << "Adding a listener twice.";
-  focus_change_listeners_.push_back(listener);
-}
-
-void FocusManager::RemoveFocusChangeListener(FocusChangeListener* listener) {
-  FocusChangeListenerList::iterator place =
-      std::find(focus_change_listeners_.begin(), focus_change_listeners_.end(),
-                listener);
-  if (place == focus_change_listeners_.end()) {
-    NOTREACHED() << "Removing a listener that isn't registered.";
-    return;
-  }
-  focus_change_listeners_.erase(place);
 }
 
 }  // namespace ui

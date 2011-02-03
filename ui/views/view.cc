@@ -49,12 +49,12 @@ bool ExceededDragThreshold(const gfx::Point& press_point,
 // View, public:
 
 View::View()
-    : parent_(NULL),
-      parent_owned_(true),
+    : parent_owned_(true),
       visible_(true),
       enabled_(true),
       id_(-1),
       group_(-1),
+      parent_(NULL),
       focusable_(false),
       next_focusable_view_(NULL),
       prev_focusable_view_(NULL),
@@ -161,6 +161,33 @@ void View::SetEnabled(bool enabled) {
     enabled_ = enabled;
     Invalidate();
   }
+}
+
+// Attributes ------------------------------------------------------------------
+
+View* View::GetViewById(int id) const {
+  if (id_ == id)
+    return const_cast<View*>(this);
+  ViewVector::const_iterator it = children_.begin();
+  for (; it != children_.end(); ++it) {
+    View* view = (*it)->GetViewById(id);
+    if (view)
+      return view;
+  }
+  return NULL;
+}
+
+void View::GetViewsWithGroup(int group, ViewVector* vec) const {
+  if (group_ == group)
+    vec->push_back(const_cast<View*>(this));
+  ViewVector::const_iterator it = children_.begin();
+  for (; it != children_.end(); ++it)
+    (*it)->GetViewsWithGroup(group, vec);
+}
+
+View* View::GetSelectedViewForGroup(int group_id) {
+  // TODO(beng): implementme
+  return NULL;
 }
 
 // Coordinate conversion -------------------------------------------------------
@@ -278,31 +305,6 @@ bool View::Contains(View* child) {
   return false;
 }
 
-View* View::GetViewById(int id) const {
-  if (id_ == id)
-    return const_cast<View*>(this);
-  ViewVector::const_iterator it = children_.begin();
-  for (; it != children_.end(); ++it) {
-    View* view = (*it)->GetViewById(id);
-    if (view)
-      return view;
-  }
-  return NULL;
-}
-
-void View::GetViewsWithGroup(int group, ViewVector* vec) const {
-  if (group_ == group)
-    vec->push_back(const_cast<View*>(this));
-  ViewVector::const_iterator it = children_.begin();
-  for (; it != children_.end(); ++it)
-    (*it)->GetViewsWithGroup(group, vec);
-}
-
-View* View::GetSelectedViewForGroup(int group_id) {
-  // TODO(beng): implementme
-  return NULL;
-}
-
 // Painting --------------------------------------------------------------------
 
 void View::Invalidate() {
@@ -396,41 +398,33 @@ void View::OnViewAddedToWidget() {
 void View::OnViewRemovedFromWidget() {
 }
 
-// Accelerators ----------------------------------------------------------------
+// Painting --------------------------------------------------------------------
 
-bool View::OnAcceleratorPressed(const Accelerator& accelerator) {
-  return false;
+void View::PaintChildren(gfx::Canvas* canvas) {
+  // TODO(beng): use for_each.
+  // std::for_each(children_.begin(), children_.end(),
+  //              std::bind2nd(std::mem_fun_ref(&View::Paint), canvas));
+  ViewVector::iterator it = children_.begin();
+  for (; it != children_.end(); ++it)
+    (*it)->Paint(canvas);
 }
 
-// Focus -----------------------------------------------------------------------
-
-bool View::SkipDefaultKeyEventProcessing(const KeyEvent& event) const {
-  return false;
+void View::OnPaint(gfx::Canvas* canvas) {
+  // TODO(beng): investigate moving these function calls to Paint().
+  OnPaintBackground(canvas);
+  OnPaintFocusBorder(canvas);
+  OnPaintBorder(canvas);
 }
 
-bool View::IsGroupFocusTraversable() const {
-  return true;
+void View::OnPaintBackground(gfx::Canvas* canvas) {
 }
 
-bool View::IsFocusableInRootView() const {
-  // TODO(beng): kill this, replace with direct check in focus manager.
-  return IsFocusable();
+void View::OnPaintBorder(gfx::Canvas* canvas) {
+  if (border_.get())
+    border_->Paint(const_cast<const View*>(this), canvas);
 }
 
-bool View::IsAccessibilityFocusableInRootView() const {
-  // TODO(beng): kill this, replace with direct check in focus manager.
-  return false;
-}
-
-FocusTraversable* View::GetPaneFocusTraversable() const {
-  // TODO(beng): figure out what to do about this.
-  return NULL;
-}
-
-void View::OnFocus(/* const FocusEvent& event */) {
-}
-
-void View::OnBlur() {
+void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
 }
 
 // Input -----------------------------------------------------------------------
@@ -495,33 +489,41 @@ void View::OnMouseExited(const MouseEvent& event) {
 
 }
 
-// Painting --------------------------------------------------------------------
+// Accelerators ----------------------------------------------------------------
 
-void View::PaintChildren(gfx::Canvas* canvas) {
-  // TODO(beng): use for_each.
-  // std::for_each(children_.begin(), children_.end(),
-  //              std::bind2nd(std::mem_fun_ref(&View::Paint), canvas));
-  ViewVector::iterator it = children_.begin();
-  for (; it != children_.end(); ++it)
-    (*it)->Paint(canvas);
+bool View::OnAcceleratorPressed(const Accelerator& accelerator) {
+  return false;
 }
 
-void View::OnPaint(gfx::Canvas* canvas) {
-  // TODO(beng): investigate moving these function calls to Paint().
-  OnPaintBackground(canvas);
-  OnPaintFocusBorder(canvas);
-  OnPaintBorder(canvas);
+// Focus -----------------------------------------------------------------------
+
+bool View::SkipDefaultKeyEventProcessing(const KeyEvent& event) const {
+  return false;
 }
 
-void View::OnPaintBackground(gfx::Canvas* canvas) {
+bool View::IsGroupFocusTraversable() const {
+  return true;
 }
 
-void View::OnPaintBorder(gfx::Canvas* canvas) {
-  if (border_.get())
-    border_->Paint(const_cast<const View*>(this), canvas);
+bool View::IsFocusableInRootView() const {
+  // TODO(beng): kill this, replace with direct check in focus manager.
+  return IsFocusable();
 }
 
-void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
+bool View::IsAccessibilityFocusableInRootView() const {
+  // TODO(beng): kill this, replace with direct check in focus manager.
+  return false;
+}
+
+FocusTraversable* View::GetPaneFocusTraversable() const {
+  // TODO(beng): figure out what to do about this.
+  return NULL;
+}
+
+void View::OnFocus(/* const FocusEvent& event */) {
+}
+
+void View::OnBlur() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -535,132 +537,6 @@ void View::DragInfo::Reset() {
 void View::DragInfo::PossibleDrag(const gfx::Point& point) {
   possible_drag = true;
   press_point = point;
-}
-
-// Focus -----------------------------------------------------------------------
-
-// TODO(beng): Move to FocusManager.
-void View::InitFocusSiblings(View* view, size_t index) {
-  if (child_count() == 0) {
-    view->next_focusable_view_ = NULL;
-    view->prev_focusable_view_ = NULL;
-  } else {
-    if (index == child_count()) {
-      // We are inserting at the end, but the end of the child list may not be
-      // the last focusable element. Let's try to find an element with no next
-      // focusable element to link to.
-      View* last_focusable_view = NULL;
-      for (std::vector<View*>::iterator iter = children_.begin();
-           iter != children_.end(); ++iter) {
-          if (!(*iter)->next_focusable_view_) {
-            last_focusable_view = *iter;
-            break;
-          }
-      }
-      if (last_focusable_view == NULL) {
-        // Hum... there is a cycle in the focus list. Let's just insert ourself
-        // after the last child.
-        View* prev = children_[index - 1];
-        view->prev_focusable_view_ = prev;
-        view->next_focusable_view_ = prev->next_focusable_view_;
-        prev->next_focusable_view_->prev_focusable_view_ = view;
-        prev->next_focusable_view_ = view;
-      } else {
-        last_focusable_view->next_focusable_view_ = view;
-        view->next_focusable_view_ = NULL;
-        view->prev_focusable_view_ = last_focusable_view;
-      }
-    } else {
-      View* prev = children_[index]->GetPreviousFocusableView();
-      view->prev_focusable_view_ = prev;
-      view->next_focusable_view_ = children_[index];
-      if (prev)
-        prev->next_focusable_view_ = view;
-      children_[index]->prev_focusable_view_ = view;
-    }
-  }
-}
-
-// Painting --------------------------------------------------------------------
-
-void View::Paint(gfx::Canvas* canvas) {
-  // Invisible views are not painted.
-  if (!visible_)
-    return;
-
-  ScopedCanvasState canvas_state(canvas);
-  if (canvas->ClipRectInt(x(), y(), width(), height())) {
-    canvas->TranslateInt(x(), y());
-    // TODO(beng): RTL
-    ScopedCanvasState canvas_state(canvas);
-    OnPaint(canvas);
-    PaintChildren(canvas);
-  }
-}
-
-// Drag & Drop -----------------------------------------------------------------
-
-int View::GetDragOperations(const gfx::Point& point) {
-  return drag_controller_ ?
-      drag_controller_->GetDragOperations(const_cast<View*>(this), point) :
-      DragDropTypes::DRAG_NONE;
-}
-
-void View::WriteDragData(const gfx::Point& point, OSExchangeData* data) {
-  drag_controller_->WriteDragData(this, point, data);
-}
-
-void View::StartShellDrag(const MouseEvent& event,
-                          const gfx::Point& press_point) {
-  // TODO(beng): system stuff.
-}
-
-// RootView API ----------------------------------------------------------------
-
-bool View::MousePressed(const MouseEvent& event, DragInfo* drag_info) {
-  bool handled = OnMousePressed(event);
-  // TODO(beng): deal with view deletion, see ProcessMousePressed() in old code.
-  if (!enabled_)
-    return handled;
-
-  int drag_operations =
-      enabled_ && event.IsOnlyLeftMouseButton() && HitTest(event.location()) ?
-      GetDragOperations(event.location()) : DragDropTypes::DRAG_NONE;
-  if (drag_operations != DragDropTypes::DRAG_NONE) {
-    drag_info->PossibleDrag(event.location());
-    return true;
-  }
-  bool has_context_menu = event.IsRightMouseButton() ?
-      !!context_menu_controller_ : NULL;
-  return has_context_menu || handled;
-}
-
-bool View::MouseDragged(const MouseEvent& event, DragInfo* drag_info) {
-  if (drag_info->possible_drag &&
-      ExceededDragThreshold(drag_info->press_point, event.location())) {
-    if (!drag_controller_ ||
-        drag_controller_->CanStartDrag(this, drag_info->press_point,
-                                       event.location())) {
-      StartShellDrag(event, drag_info->press_point);
-    }
-  } else {
-    if (OnMouseDragged(event))
-      return true;
-  }
-  // TODO(beng): Handle view deletion from OnMouseDragged().
-  return !!context_menu_controller_ || drag_info->possible_drag;
-}
-
-void View::MouseReleased(const MouseEvent& event) {
-  OnMouseReleased(event);
-  // TODO(beng): Handle view deletion from OnMouseReleased().
-  if (context_menu_controller_ && event.IsOnlyRightMouseButton()) {
-    gfx::Point location(event.location());
-    if (HitTest(location)) {
-      ConvertPointToScreen(this, &location);
-      context_menu_controller_->ShowContextMenu(this, location, true);
-    }
-  }
 }
 
 // Tree operations -------------------------------------------------------------
@@ -717,6 +593,132 @@ void View::CallViewNotification(View* target,
     if (has_widget)
       target->OnViewRemovedFromWidget();
   }
+}
+
+// Painting --------------------------------------------------------------------
+
+void View::Paint(gfx::Canvas* canvas) {
+  // Invisible views are not painted.
+  if (!visible_)
+    return;
+
+  ScopedCanvasState canvas_state(canvas);
+  if (canvas->ClipRectInt(x(), y(), width(), height())) {
+    canvas->TranslateInt(x(), y());
+    // TODO(beng): RTL
+    ScopedCanvasState canvas_state(canvas);
+    OnPaint(canvas);
+    PaintChildren(canvas);
+  }
+}
+
+// Input -----------------------------------------------------------------------
+
+bool View::MousePressed(const MouseEvent& event, DragInfo* drag_info) {
+  bool handled = OnMousePressed(event);
+  // TODO(beng): deal with view deletion, see ProcessMousePressed() in old code.
+  if (!enabled_)
+    return handled;
+
+  int drag_operations =
+      enabled_ && event.IsOnlyLeftMouseButton() && HitTest(event.location()) ?
+      GetDragOperations(event.location()) : DragDropTypes::DRAG_NONE;
+  if (drag_operations != DragDropTypes::DRAG_NONE) {
+    drag_info->PossibleDrag(event.location());
+    return true;
+  }
+  bool has_context_menu = event.IsRightMouseButton() ?
+      !!context_menu_controller_ : NULL;
+  return has_context_menu || handled;
+}
+
+bool View::MouseDragged(const MouseEvent& event, DragInfo* drag_info) {
+  if (drag_info->possible_drag &&
+      ExceededDragThreshold(drag_info->press_point, event.location())) {
+    if (!drag_controller_ ||
+        drag_controller_->CanStartDrag(this, drag_info->press_point,
+                                       event.location())) {
+      StartShellDrag(event, drag_info->press_point);
+    }
+  } else {
+    if (OnMouseDragged(event))
+      return true;
+  }
+  // TODO(beng): Handle view deletion from OnMouseDragged().
+  return !!context_menu_controller_ || drag_info->possible_drag;
+}
+
+void View::MouseReleased(const MouseEvent& event) {
+  OnMouseReleased(event);
+  // TODO(beng): Handle view deletion from OnMouseReleased().
+  if (context_menu_controller_ && event.IsOnlyRightMouseButton()) {
+    gfx::Point location(event.location());
+    if (HitTest(location)) {
+      ConvertPointToScreen(this, &location);
+      context_menu_controller_->ShowContextMenu(this, location, true);
+    }
+  }
+}
+
+// Focus -----------------------------------------------------------------------
+
+// TODO(beng): Move to FocusManager.
+void View::InitFocusSiblings(View* view, size_t index) {
+  if (child_count() == 0) {
+    view->next_focusable_view_ = NULL;
+    view->prev_focusable_view_ = NULL;
+  } else {
+    if (index == child_count()) {
+      // We are inserting at the end, but the end of the child list may not be
+      // the last focusable element. Let's try to find an element with no next
+      // focusable element to link to.
+      View* last_focusable_view = NULL;
+      for (std::vector<View*>::iterator iter = children_.begin();
+           iter != children_.end(); ++iter) {
+          if (!(*iter)->next_focusable_view_) {
+            last_focusable_view = *iter;
+            break;
+          }
+      }
+      if (last_focusable_view == NULL) {
+        // Hum... there is a cycle in the focus list. Let's just insert ourself
+        // after the last child.
+        View* prev = children_[index - 1];
+        view->prev_focusable_view_ = prev;
+        view->next_focusable_view_ = prev->next_focusable_view_;
+        prev->next_focusable_view_->prev_focusable_view_ = view;
+        prev->next_focusable_view_ = view;
+      } else {
+        last_focusable_view->next_focusable_view_ = view;
+        view->next_focusable_view_ = NULL;
+        view->prev_focusable_view_ = last_focusable_view;
+      }
+    } else {
+      View* prev = children_[index]->GetPreviousFocusableView();
+      view->prev_focusable_view_ = prev;
+      view->next_focusable_view_ = children_[index];
+      if (prev)
+        prev->next_focusable_view_ = view;
+      children_[index]->prev_focusable_view_ = view;
+    }
+  }
+}
+
+// Drag & Drop -----------------------------------------------------------------
+
+int View::GetDragOperations(const gfx::Point& point) {
+  return drag_controller_ ?
+      drag_controller_->GetDragOperations(const_cast<View*>(this), point) :
+      DragDropTypes::DRAG_NONE;
+}
+
+void View::WriteDragData(const gfx::Point& point, OSExchangeData* data) {
+  drag_controller_->WriteDragData(this, point, data);
+}
+
+void View::StartShellDrag(const MouseEvent& event,
+                          const gfx::Point& press_point) {
+  // TODO(beng): system stuff.
 }
 
 }  // namespace ui

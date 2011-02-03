@@ -104,6 +104,24 @@ class View {
   bool enabled() const { return enabled_; }
   void SetEnabled(bool enabled);
 
+  // Attributes ----------------------------------------------------------------
+
+  int id() const { return id_; }
+  void set_id(int id) { id_ = id; }
+  int group() const { return group_; }
+  void set_group(int group) { group_ = group; }
+
+  // Returns the View within this View's hierarchy whose id matches that
+  // specified.
+  View* GetViewById(int id) const;
+
+  // Populates a ViewVector with the Views within this View's hierarchy that
+  // match the specified group id.
+  void GetViewsWithGroup(int group, ViewVector* vec) const;
+
+  // TODO(beng): implementme
+  virtual View* GetSelectedViewForGroup(int group_id);
+
   // Coordinate conversion -----------------------------------------------------
 
   // Converts a point from the coordinate system of |source| to |target|.
@@ -147,22 +165,6 @@ class View {
   // Returns true if |child| is contained within this View's hierarchy, even as
   // an indirect descendant. Will return true if child is also this View.
   bool Contains(View* child);
-
-  int id() const { return id_; }
-  void set_id(int id) { id_ = id; }
-  int group() const { return group_; }
-  void set_group(int group) { group_ = group; }
-
-  // Returns the View within this View's hierarchy whose id matches that
-  // specified.
-  View* GetViewById(int id) const;
-
-  // Populates a ViewVector with the Views within this View's hierarchy that
-  // match the specified group id.
-  void GetViewsWithGroup(int group, ViewVector* vec) const;
-
-  // TODO(beng): implementme
-  virtual View* GetSelectedViewForGroup(int group_id);
 
   // Painting ------------------------------------------------------------------
 
@@ -224,20 +226,28 @@ class View {
   virtual void OnViewAddedToWidget();
   virtual void OnViewRemovedFromWidget();
 
-  // Accelerators --------------------------------------------------------------
+  // Painting ------------------------------------------------------------------
 
-  virtual bool OnAcceleratorPressed(const Accelerator& accelerator);
+  // Responsible for calling Paint() on child Views. Override to control the
+  // order child Views are painted.
+  virtual void PaintChildren(gfx::Canvas* canvas);
 
-  // Focus ---------------------------------------------------------------------
-  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& event) const;
-  virtual bool IsGroupFocusTraversable() const;
-  // TODO(beng): kill these, move to focus manager.
-  virtual bool IsFocusableInRootView() const;
-  virtual bool IsAccessibilityFocusableInRootView() const;
-  virtual FocusTraversable* GetPaneFocusTraversable() const;
+  // Override to provide rendering in any part of the View's bounds. Typically
+  // this is the "contents" of the view. If you override this method you will
+  // have to call the subsequent OnPaint*() methods manually.
+  virtual void OnPaint(gfx::Canvas* canvas);
 
-  virtual void OnFocus(/* const FocusEvent& event */);
-  virtual void OnBlur();
+  // Override to paint a background before any content is drawn. Typically this
+  // is done if you are satisfied with a default OnPaint handler but wish to
+  // supply a different background.
+  virtual void OnPaintBackground(gfx::Canvas* canvas);
+
+  // Override to paint a border not specified by SetBorder().
+  virtual void OnPaintBorder(gfx::Canvas* canvas);
+
+  // Override to paint a focus border (usually a dotted rectangle) around
+  // relevant contents.
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
 
   // Input ---------------------------------------------------------------------
 
@@ -264,28 +274,21 @@ class View {
   virtual void OnMouseEntered(const MouseEvent& event);
   virtual void OnMouseExited(const MouseEvent& event);
 
-  // Painting ------------------------------------------------------------------
+  // Accelerators --------------------------------------------------------------
 
-  // Responsible for calling Paint() on child Views. Override to control the
-  // order child Views are painted.
-  virtual void PaintChildren(gfx::Canvas* canvas);
+  virtual bool OnAcceleratorPressed(const Accelerator& accelerator);
 
-  // Override to provide rendering in any part of the View's bounds. Typically
-  // this is the "contents" of the view. If you override this method you will
-  // have to call the subsequent OnPaint*() methods manually.
-  virtual void OnPaint(gfx::Canvas* canvas);
+  // Focus ---------------------------------------------------------------------
 
-  // Override to paint a background before any content is drawn. Typically this
-  // is done if you are satisfied with a default OnPaint handler but wish to
-  // supply a different background.
-  virtual void OnPaintBackground(gfx::Canvas* canvas);
+  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& event) const;
+  virtual bool IsGroupFocusTraversable() const;
+  // TODO(beng): kill these, move to focus manager.
+  virtual bool IsFocusableInRootView() const;
+  virtual bool IsAccessibilityFocusableInRootView() const;
+  virtual FocusTraversable* GetPaneFocusTraversable() const;
 
-  // Override to paint a border not specified by SetBorder().
-  virtual void OnPaintBorder(gfx::Canvas* canvas);
-
-  // Override to paint a focus border (usually a dotted rectangle) around
-  // relevant contents.
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
+  virtual void OnFocus(/* const FocusEvent& event */);
+  virtual void OnBlur();
 
  private:
   friend internal::RootView;
@@ -311,34 +314,6 @@ class View {
     gfx::Point press_point;
   };
 
-  // Focus ---------------------------------------------------------------------
-
-  // Called when |child| is inserted into this View's children_ at |index|.
-  // Sets up next/previous focus views
-  // TODO(beng): Move this to FocusManager.
-  void InitFocusSiblings(View* child, size_t index);
-
-  // Painting ------------------------------------------------------------------
-
-  // Called by the framework to paint a View. Performs translation and clipping
-  // for View coordinates and language direction as required, allows the View
-  // to paint itself via the various OnPaint*() event handlers and then paints
-  // the hierarchy beneath it.
-  void Paint(gfx::Canvas* canvas);
-
-  // Drag & Drop ---------------------------------------------------------------
-  int GetDragOperations(const gfx::Point& point);
-  void WriteDragData(const gfx::Point& point, OSExchangeData* data);
-  void StartShellDrag(const MouseEvent& event, const gfx::Point& press_point);
-
-  // RootView API --------------------------------------------------------------
-  //  These methods are designed to be called by the RootView. The RootView
-  //  should limit its interaction with the View to these methods and the public
-  //  API.
-  bool MousePressed(const MouseEvent& event, DragInfo* drag_info);
-  bool MouseDragged(const MouseEvent& event, DragInfo* drag_info);
-  void MouseReleased(const MouseEvent& event);
-
   // Tree operations -----------------------------------------------------------
   void NotifyHierarchyChanged(View* parent, View* child, bool is_add);
   void NotifyHierarchyChangedUp(View* parent, View* child, bool is_add);
@@ -350,18 +325,43 @@ class View {
                             bool is_add,
                             bool has_widget);
 
-  // TODO(beng): sort this section.
+  // Painting ------------------------------------------------------------------
 
-  // The View's parent view. This is set and reset when the View is added and
-  // removed from a hierarchy.
-  View* parent_;
+  // Called by the framework to paint a View. Performs translation and clipping
+  // for View coordinates and language direction as required, allows the View
+  // to paint itself via the various OnPaint*() event handlers and then paints
+  // the hierarchy beneath it.
+  void Paint(gfx::Canvas* canvas);
 
-  // The View's children.
-  ViewVector children_;
+  // Input --------------------------------------------------------------
+  //  These methods are designed to be called by the RootView. The RootView
+  //  should limit its interaction with the View to these methods and the public
+  //  API.
+  bool MousePressed(const MouseEvent& event, DragInfo* drag_info);
+  bool MouseDragged(const MouseEvent& event, DragInfo* drag_info);
+  void MouseReleased(const MouseEvent& event);
+
+  // Focus ---------------------------------------------------------------------
+
+  // Called when |child| is inserted into this View's children_ at |index|.
+  // Sets up next/previous focus views
+  // TODO(beng): Move this to FocusManager.
+  void InitFocusSiblings(View* child, size_t index);
+
+  // Drag & Drop ---------------------------------------------------------------
+  int GetDragOperations(const gfx::Point& point);
+  void WriteDragData(const gfx::Point& point, OSExchangeData* data);
+  void StartShellDrag(const MouseEvent& event, const gfx::Point& press_point);
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  // Creation and lifetime -----------------------------------------------------
 
   // True if the hierarchy (i.e. the parent View) is responsible for deleting
   // this View. Default is true.
   bool parent_owned_;
+
+  // Size and disposition ------------------------------------------------------
 
   // The bounds of the View, in its parent's coordinates.
   gfx::Rect bounds_;
@@ -376,11 +376,27 @@ class View {
   // not propagate un-handled events beyond the View in the hierarchy.
   bool enabled_;
 
+  // An optional helper that handles layout for child views.
+  scoped_ptr<LayoutManager> layout_manager_;
+
+  // Attributes ----------------------------------------------------------------
+
   // An identifier for this View. Caller must guarantee uniqueness.
   int id_;
 
   // An identifier for a group of potentially related Views.
   int group_;
+
+  // Tree operations -----------------------------------------------------------
+
+  // The View's parent view. This is set and reset when the View is added and
+  // removed from a hierarchy.
+  View* parent_;
+
+  // The View's children.
+  ViewVector children_;
+
+  // Focus ---------------------------------------------------------------------
 
   // True if this View is focusable by the FocusManager.
   bool focusable_;
@@ -389,11 +405,12 @@ class View {
   View* next_focusable_view_;
   View* prev_focusable_view_;
 
-  // An optional helper that handles layout for child views.
-  scoped_ptr<LayoutManager> layout_manager_;
+  // Context menus -------------------------------------------------------------
 
   // Shows the context menu.
   ContextMenuController* context_menu_controller_;
+
+  // Drag & drop ---------------------------------------------------------------
 
   // Delegate for drag and drop related functionality.
   DragController* drag_controller_;
