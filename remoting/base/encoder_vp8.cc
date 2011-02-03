@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "media/base/callback.h"
+#include "media/base/yuv_convert.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/proto/video.pb.h"
 
@@ -70,13 +71,27 @@ bool EncoderVp8::Init(int width, int height) {
   return true;
 }
 
-static int clip_byte(int x) {
-  if (x > 255)
-    return 255;
-  else if (x < 0)
-    return 0;
-  else
-    return x;
+static int RoundToTwosMultiple(int x) {
+  return x & (~1);
+}
+
+// Align the sides of the rectange to multiples of 2.
+static gfx::Rect AlignRect(const gfx::Rect& rect, int width, int height) {
+  CHECK(rect.width() > 0 && rect.height() > 0);
+  int x = RoundToTwosMultiple(rect.x());
+  int y = RoundToTwosMultiple(rect.y());
+  int right = std::min(RoundToTwosMultiple(rect.right() + 1),
+                       RoundToTwosMultiple(width));
+  int bottom = std::min(RoundToTwosMultiple(rect.bottom() + 1),
+                        RoundToTwosMultiple(height));
+
+  // Do the final check to make sure the width and height are not negative.
+  gfx::Rect r(x, y, right - x, bottom - y);
+  if (r.width() <= 0 || r.height() <= 0) {
+    r.set_width(0);
+    r.set_height(0);
+  }
+  return r;
 }
 
 bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data) {
@@ -108,38 +123,36 @@ bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data) {
     image_->stride[2] = image_->w / 2;
   }
 
-  // And then do RGB->YUV conversion.
-  // Currently we just produce the Y channel as the average of RGB. This will
-  // giv ae gray scale image after conversion.
-  // TODO(sergeyu): Move this code to a separate routine.
-  // TODO(sergeyu): Optimize this code.
-  DCHECK(capture_data->pixel_format() == media::VideoFrame::RGB32)
-      << "Only RGB32 is supported";
-  uint8* in = capture_data->data_planes().data[0];
+  // Perform RGB->YUV conversion.
+  if (capture_data->pixel_format() != media::VideoFrame::RGB32) {
+    LOG(ERROR) << "Only RGB32 is supported";
+    return false;
+  }
+
+  const InvalidRects& rects = capture_data->dirty_rects();
+  const uint8* in = capture_data->data_planes().data[0];
   const int in_stride = capture_data->data_planes().strides[0];
   uint8* y_out = yuv_image_.get();
   uint8* u_out = yuv_image_.get() + plane_size;
   uint8* v_out = yuv_image_.get() + plane_size + plane_size / 4;
-  const int out_stride = image_->stride[0];
-  for (int i = 0; i < capture_data->height(); ++i) {
-    for (int j = 0; j < capture_data->width(); ++j) {
-      // Since the input pixel format is RGB32, there are 4 bytes per pixel.
-      uint8* pixel = in + 4 * j;
-      y_out[j] = clip_byte(((pixel[2] * 66 + pixel[1] * 129 +
-                             pixel[0] * 25 + 128) >> 8) + 16);
-      if (i % 2 == 0 && j % 2 == 0) {
-        u_out[j / 2] = clip_byte(((pixel[2] * -38 + pixel[1] * -74 +
-                                   pixel[0] * 112 + 128) >> 8) + 128);
-        v_out[j / 2] = clip_byte(((pixel[2] * 112 + pixel[1] * -94 +
-                                   pixel[1] * -18 + 128) >> 8) + 128);
-      }
-    }
-    in += in_stride;
-    y_out += out_stride;
-    if (i % 2 == 0) {
-      u_out += out_stride / 2;
-      v_out += out_stride / 2;
-    }
+  const int y_stride = image_->stride[0];
+  const int uv_stride = image_->stride[1];
+
+  for (InvalidRects::const_iterator r = rects.begin(); r != rects.end(); ++r) {
+    gfx::Rect rect = AlignRect(*r, image_->w, image_->h);
+    int in_offset = in_stride * rect.y() + 4 * rect.x();
+    int y_offset = y_stride * rect.y() + rect.x();
+    int uv_offset = (uv_stride * rect.y() + rect.x()) / 2;
+
+    media::ConvertRGB32ToYUV(in + in_offset,
+                             y_out + y_offset,
+                             u_out + uv_offset,
+                             v_out + uv_offset,
+                             rect.width(),
+                             rect.height(),
+                             in_stride,
+                             y_stride,
+                             uv_stride);
   }
   return true;
 }
