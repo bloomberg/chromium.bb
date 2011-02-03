@@ -11,6 +11,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPermissionCallback.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 
 using WebKit::WebNotification;
@@ -18,6 +19,7 @@ using WebKit::WebNotificationPresenter;
 using WebKit::WebNotificationPermissionCallback;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
+using WebKit::WebTextDirectionRightToLeft;
 using WebKit::WebURL;
 
 namespace {
@@ -50,7 +52,8 @@ bool TestNotificationPresenter::show(const WebNotification& notification) {
            notification.url().spec().data());
   } else {
     printf("DESKTOP NOTIFICATION:%s icon %s, title %s, text %s\n",
-           notification.dir() == "rtl" ? "(RTL)" : "",
+           notification.direction() == WebTextDirectionRightToLeft ? "(RTL)" :
+               "",
            notification.iconURL().isEmpty() ? "" :
                notification.iconURL().spec().data(),
            notification.title().isEmpty() ? "" :
