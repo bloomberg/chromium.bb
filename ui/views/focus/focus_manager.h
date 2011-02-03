@@ -14,6 +14,7 @@
 #include "base/singleton.h"
 #include "gfx/native_widget_types.h"
 #include "ui/views/events/accelerator.h"
+#include "ui/views/events/focus_event.h"
 
 // The FocusManager class is used to handle focus traversal, store/restore
 // focused views and handle keyboard accelerators.
@@ -161,20 +162,6 @@ class FocusManager {
     DISALLOW_COPY_AND_ASSIGN(WidgetFocusManager);
   };
 
-  // The reason why the focus changed.
-  enum FocusChangeReason {
-    // The focus changed because the user traversed focusable views using
-    // keys like Tab or Shift+Tab.
-    kReasonFocusTraversal,
-
-    // The focus changed due to restoring the focus.
-    kReasonFocusRestore,
-
-    // The focus changed due to a click or a shortcut to jump directly to
-    // a particular view.
-    kReasonDirectFocusChange
-  };
-
   explicit FocusManager(Widget* widget);
   virtual ~FocusManager();
 
@@ -195,22 +182,21 @@ class FocusManager {
   void RemoveView(View* view);
 
   // Advances the focus (backward if reverse is true).
-  void AdvanceFocus(bool reverse);
+  void AdvanceFocus(FocusEvent::TraversalDirection direction);
 
   // The FocusManager keeps track of the focused view within a RootView.
   View* focused_view() const { return focused_view_; }
 
-  // Low-level methods to force the focus to change (and optionally provide
-  // a reason). If the focus change should only happen if the view is
-  // currently focusable, enabled, and visible, call view->RequestFocus().
-  void SetFocusedViewWithReason(View* view, FocusChangeReason reason);
+  // Low-level methods to force the focus to change. If the focus change should
+  // only happen if the view is currently focusable, enabled, and visible, call
+  // view->RequestFocus().
+  void SetFocusedViewWithReasonAndDirection(
+      View* view,
+      FocusEvent::Reason reason,
+      FocusEvent::TraversalDirection direction);
   void SetFocusedView(View* view) {
-    SetFocusedViewWithReason(view, kReasonDirectFocusChange);
-  }
-
-  // Get the reason why the focus most recently changed.
-  FocusChangeReason focus_change_reason() const {
-    return focus_change_reason_;
+    SetFocusedViewWithReasonAndDirection(view, FocusEvent::REASON_DIRECT,
+                                         FocusEvent::DIRECTION_NONE);
   }
 
   // Clears the focused view. The window associated with the top root view gets
@@ -220,14 +206,6 @@ class FocusManager {
   // Validates the focused view, clearing it if the window it belongs too is not
   // attached to the window hierarchy anymore.
   void ValidateFocusedView();
-
-  // Stores and restores the focused view. Used when the window becomes
-  // active/inactive.
-  void StoreFocusedView();
-  void RestoreFocusedView();
-
-  // Clears the stored focused view.
-  void ClearStoredFocusedView();
 
   // Register a keyboard accelerator for the specified target. If multiple
   // targets are registered for an accelerator, a target registered later has
@@ -282,7 +260,9 @@ class FocusManager {
 
  private:
   // Returns the next focusable view.
-  View* GetNextFocusableView(View* starting_view, bool reverse, bool dont_loop);
+  View* GetNextFocusableView(View* starting_view,
+                             FocusEvent::TraversalDirection direction,
+                             bool dont_loop);
 
   // Returns the focusable view found in the FocusTraversable specified starting
   // at the specified view. This traverses down along the FocusTraversable
@@ -290,20 +270,13 @@ class FocusManager {
   // Returns NULL if no focusable view were found.
   View* FindFocusableView(FocusTraversable* focus_traversable,
                           View* starting_view,
-                          bool reverse);
+                          FocusEvent::TraversalDirection direction);
 
   // The top-level Widget this FocusManager is associated with.
   Widget* widget_;
 
   // The view that currently is focused.
   View* focused_view_;
-
-  // The storage id used in the ViewStorage to store/restore the view that last
-  // had focus.
-  int stored_focused_view_storage_id_;
-
-  // The reason why the focus most recently changed.
-  FocusChangeReason focus_change_reason_;
 
   // The accelerators and associated targets.
   typedef std::list<AcceleratorTarget*> AcceleratorTargetList;

@@ -54,4 +54,4 @@ MouseEvent::MouseEvent(const MouseEvent& other, View* source, View* target)
     : LocatedEvent(other, source, target) {
 }
 
-}  // namespace views
+}  // namespace ui

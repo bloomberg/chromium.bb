@@ -14,14 +14,46 @@
 
 #include "base/logging.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/views/events/event.h"
 #include "ui/views/focus/focus_search.h"
-#include "ui/views/focus/view_storage.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/widget.h"
 
 namespace ui {
+
+namespace {
+
+FocusEvent::TraversalDirection DirectionFromBool(bool forward) {
+  return forward ? FocusEvent::DIRECTION_FORWARD
+                 : FocusEvent::DIRECTION_REVERSE;
+}
+
+FocusEvent::TraversalDirection DirectionFromKeyEvent(const KeyEvent& event) {
+  return DirectionFromBool(!event.IsShiftDown());
+}
+
+bool IsTraverseForward(FocusEvent::TraversalDirection direction) {
+  return direction == FocusEvent::DIRECTION_FORWARD;
+}
+
+#if defined(OS_WIN)
+// Don't allow focus traversal if the root window is not part of the active
+// window hierarchy as this would mean we have no focused view and would focus
+// the first focusable view.
+bool CanTraverseFocus(Widget* widget) {
+  HWND top_window = widget->native_widget()->GetNativeView();
+  HWND active_window = ::GetActiveWindow();
+  return active_window == top_window || ::IsChild(active_window, top_window);
+}
+#else
+bool CanTraverseFocus(Widget* widget) {
+  return true;
+}
+#endif
+
+}
 
 // FocusManager::WidgetFocusManager ---------------------------------
 
@@ -74,11 +106,8 @@ FocusManager::WidgetFocusManager::GetInstance() {
 
 FocusManager::FocusManager(Widget* widget)
     : widget_(widget),
-      focused_view_(NULL),
-      focus_change_reason_(kReasonDirectFocusChange) {
+      focused_view_(NULL) {
   DCHECK(widget_);
-  stored_focused_view_storage_id_ =
-      ViewStorage::GetInstance()->CreateStorageID();
 }
 
 FocusManager::~FocusManager() {
@@ -93,34 +122,21 @@ FocusManager::WidgetFocusManager* FocusManager::GetWidgetFocusManager() {
 }
 
 bool FocusManager::OnKeyEvent(const KeyEvent& event) {
-#if defined(OS_WIN)
   // If the focused view wants to process the key event as is, let it be.
   // On Linux we always dispatch key events to the focused view first, so
   // we should not do this check here. See also WidgetGtk::OnKeyEvent().
   if (focused_view_ && focused_view_->SkipDefaultKeyEventProcessing(event))
     return true;
-#endif
 
   // Intercept Tab related messages for focus traversal.
-  // Note that we don't do focus traversal if the root window is not part of the
-  // active window hierarchy as this would mean we have no focused view and
-  // would focus the first focusable view.
-#if defined(OS_WIN)
-  HWND top_window = widget_->native_widget()->GetNativeView();
-  HWND active_window = ::GetActiveWindow();
-  if ((active_window == top_window || ::IsChild(active_window, top_window)) &&
-       IsTabTraversalKeyEvent(event)) {
-    AdvanceFocus(event.IsShiftDown());
+  if (CanTraverseFocus(widget_) && IsTabTraversalKeyEvent(event)) {
+    AdvanceFocus(DirectionFromKeyEvent(event));
     return false;
   }
-#else
-  if (IsTabTraversalKeyEvent(event)) {
-    AdvanceFocus(event.IsShiftDown());
-    return false;
-  }
-#endif
 
   // Intercept arrow key messages to switch between grouped views.
+  // TODO(beng): Perhaps make this a FocusTraversable that is created for
+  //             Views that have a group set?
   ui::KeyboardCode key_code = event.key_code();
   if (focused_view_ && focused_view_->group() != -1 &&
       (key_code == ui::VKEY_UP || key_code == ui::VKEY_DOWN ||
@@ -139,7 +155,9 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
     } else if (index >= static_cast<int>(views.size())) {
       index = 0;
     }
-    SetFocusedViewWithReason(views[index], kReasonFocusTraversal);
+    SetFocusedViewWithReasonAndDirection(views[index],
+                                         FocusEvent::REASON_TRAVERSAL,
+                                         DirectionFromBool(next));
     return false;
   }
 
@@ -164,33 +182,34 @@ void FocusManager::RemoveView(View* view) {
   // Clear focus if the removed child was focused.
   if (focused_view_ == view)
     ClearFocus();
-
-  ViewStorage::GetInstance()->RemoveView(view);
 }
 
-void FocusManager::AdvanceFocus(bool reverse) {
-  View* v = GetNextFocusableView(focused_view_, reverse, false);
+void FocusManager::AdvanceFocus(FocusEvent::TraversalDirection direction) {
+  View* view = GetNextFocusableView(focused_view_, direction, false);
   // Note: Do not skip this next block when v == focused_view_.  If the user
   // tabs past the last focusable element in a web page, we'll get here, and if
   // the TabContentsContainerView is the only focusable view (possible in
   // full-screen mode), we need to run this block in order to cycle around to
   // the first element on the page.
-  if (v) {
-    v->OnFocus(); // TODO(beng): AboutToRequestFocusFromTabTraversal(reverse);
-    SetFocusedViewWithReason(v, kReasonFocusTraversal);
+  if (view) {
+    SetFocusedViewWithReasonAndDirection(view, FocusEvent::REASON_TRAVERSAL,
+                                         direction);
   }
 }
 
-void FocusManager::SetFocusedViewWithReason(
-    View* view, FocusChangeReason reason) {
-  focus_change_reason_ = reason;
-
+void FocusManager::SetFocusedViewWithReasonAndDirection(
+    View* view,
+    FocusEvent::Reason reason,
+    FocusEvent::TraversalDirection direction) {
   if (focused_view_ == view)
     return;
 
   View* prev_focused_view = focused_view_;
-  if (focused_view_)
-    focused_view_->OnBlur();
+  if (focused_view_) {
+    focused_view_->OnBlur(
+        FocusEvent(FocusEvent::TYPE_FOCUS_OUT, reason, direction));
+    focused_view_->Invalidate();
+  }
 
   // Notified listeners that the focus changed.
   FocusChangeListenerList::const_iterator iter;
@@ -201,12 +220,9 @@ void FocusManager::SetFocusedViewWithReason(
 
   focused_view_ = view;
 
-  if (prev_focused_view)
-    prev_focused_view->Invalidate();  // Remove focus artifacts.
-
   if (view) {
     view->Invalidate();
-    view->OnFocus();
+    view->OnFocus(FocusEvent(FocusEvent::TYPE_FOCUS_IN, reason, direction));
     // The view might be deleted now.
   }
 }
@@ -221,83 +237,6 @@ void FocusManager::ValidateFocusedView() {
     if (!ContainsView(focused_view_))
       ClearFocus();
   }
-}
-
-void FocusManager::StoreFocusedView() {
-  ViewStorage* view_storage = ViewStorage::GetInstance();
-  if (!view_storage) {
-    // This should never happen but bug 981648 seems to indicate it could.
-    NOTREACHED();
-    return;
-  }
-
-  // TODO (jcampan): when a TabContents containing a popup is closed, the focus
-  // is stored twice causing an assert. We should find a better alternative than
-  // removing the view from the storage explicitly.
-  view_storage->RemoveViewByID(stored_focused_view_storage_id_);
-
-  if (!focused_view_)
-    return;
-
-  view_storage->StoreView(stored_focused_view_storage_id_, focused_view_);
-
-  View* v = focused_view_;
-
-  {
-    // Temporarily disable notification.  ClearFocus() will set the focus to the
-    // main browser window.  This extra focus bounce which happens during
-    // deactivation can confuse registered WidgetFocusListeners, as the focus
-    // is not changing due to a user-initiated event.
-    AutoNativeNotificationDisabler local_notification_disabler;
-    ClearFocus();
-  }
-
-  if (v)
-    v->Invalidate();  // Remove focus border.
-}
-
-void FocusManager::RestoreFocusedView() {
-  ViewStorage* view_storage = ViewStorage::GetInstance();
-  if (!view_storage) {
-    // This should never happen but bug 981648 seems to indicate it could.
-    NOTREACHED();
-    return;
-  }
-
-  View* view = view_storage->RetrieveView(stored_focused_view_storage_id_);
-  if (view) {
-    if (ContainsView(view)) {
-      if (!view->IsFocusableInRootView() &&
-          view->IsAccessibilityFocusableInRootView()) {
-        // RequestFocus would fail, but we want to restore focus to controls
-        // that had focus in accessibility mode.
-        SetFocusedViewWithReason(view, kReasonFocusRestore);
-      } else {
-        // This usually just sets the focus if this view is focusable, but
-        // let the view override RequestFocus if necessary.
-        view->RequestFocus();
-
-        // If it succeeded, the reason would be incorrect; set it to
-        // focus restore.
-        if (focused_view_ == view)
-          focus_change_reason_ = kReasonFocusRestore;
-      }
-    }
-  } else {
-    // Clearing the focus will focus the root window, so we still get key
-    // events.
-    ClearFocus();
-  }
-}
-
-void FocusManager::ClearStoredFocusedView() {
-  ViewStorage* view_storage = ViewStorage::GetInstance();
-  if (!view_storage) {
-    // This should never happen but bug 981648 seems to indicate it could.
-    NOTREACHED();
-    return;
-  }
-  view_storage->RemoveViewByID(stored_focused_view_storage_id_);
 }
 
 void FocusManager::RegisterAccelerator(
@@ -402,9 +341,10 @@ FocusManager* FocusManager::GetFocusManagerForNativeWindow(
 ////////////////////////////////////////////////////////////////////////////////
 // FocusManager, private:
 
-View* FocusManager::GetNextFocusableView(View* original_starting_view,
-                                         bool reverse,
-                                         bool dont_loop) {
+View* FocusManager::GetNextFocusableView(
+    View* original_starting_view,
+    FocusEvent::TraversalDirection direction,
+    bool dont_loop) {
   FocusTraversable* focus_traversable = NULL;
 
   // Let's re-validate the focused view.
@@ -426,7 +366,7 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
     }
 
     if (!focus_traversable) {
-      if (!reverse) {
+      if (IsTraverseForward(direction)) {
         // If the starting view has a focus traversable, use it.
         // This is the case with WidgetWins for example.
         focus_traversable = original_starting_view->GetFocusTraversable();
@@ -450,7 +390,7 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
   }
 
   // Traverse the FocusTraversable tree down to find the focusable view.
-  View* v = FindFocusableView(focus_traversable, starting_view, reverse);
+  View* v = FindFocusableView(focus_traversable, starting_view, direction);
   if (v) {
     return v;
   } else {
@@ -462,16 +402,16 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
       FocusTraversable* new_focus_traversable = NULL;
       View* new_starting_view = NULL;
       // When we are going backward, the parent view might gain the next focus.
-      bool check_starting_view = reverse;
+      bool check_starting_view = !IsTraverseForward(direction);
       v = parent_focus_traversable->GetFocusSearch()->FindNextFocusableView(
-          starting_view, reverse, FocusSearch::UP,
+          starting_view, !IsTraverseForward(direction), FocusSearch::UP,
           check_starting_view, &new_focus_traversable, &new_starting_view);
 
       if (new_focus_traversable) {
         DCHECK(!v);
 
         // There is a FocusTraversable, traverse it down.
-        v = FindFocusableView(new_focus_traversable, NULL, reverse);
+        v = FindFocusableView(new_focus_traversable, NULL, direction);
       }
 
       if (v)
@@ -489,23 +429,24 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
       // Easy, just clear the selection and press tab again.
       // By calling with NULL as the starting view, we'll start from the
       // top_root_view.
-      return GetNextFocusableView(NULL, reverse, true);
+      return GetNextFocusableView(NULL, direction, true);
     }
   }
   return NULL;
 }
 
-// Find the next (previous if reverse is true) focusable view for the specified
-// FocusTraversable, starting at the specified view, traversing down the
-// FocusTraversable hierarchy.
-View* FocusManager::FindFocusableView(FocusTraversable* focus_traversable,
-                                      View* starting_view,
-                                      bool reverse) {
+// Find the next focusable view for the specified FocusTraversable, starting at
+// the specified view, traversing down the FocusTraversable hierarchy in
+// |direction|.
+View* FocusManager::FindFocusableView(
+    FocusTraversable* focus_traversable,
+    View* starting_view,
+    FocusEvent::TraversalDirection direction) {
   FocusTraversable* new_focus_traversable = NULL;
   View* new_starting_view = NULL;
   View* v = focus_traversable->GetFocusSearch()->FindNextFocusableView(
       starting_view,
-      reverse,
+      !IsTraverseForward(direction),
       FocusSearch::DOWN,
       false,
       &new_focus_traversable,
@@ -520,7 +461,7 @@ View* FocusManager::FindFocusableView(FocusTraversable* focus_traversable,
     starting_view = NULL;
     v = focus_traversable->GetFocusSearch()->FindNextFocusableView(
         starting_view,
-        reverse,
+        !IsTraverseForward(direction),
         FocusSearch::DOWN,
         false,
         &new_focus_traversable,

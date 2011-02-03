@@ -30,7 +30,8 @@ class Event {
                    ET_KEY_PRESSED,
                    ET_KEY_RELEASED,
                    ET_MOUSEWHEEL,
-                   ET_DROP_TARGET_EVENT };
+                   ET_DROP_TARGET_EVENT,
+                   ET_FOCUS_CHANGE };
 
   // Event flags currently supported.  Although this is a "views"
   // file, this header is used on non-views platforms (e.g. OSX).  For

@@ -520,10 +520,10 @@ FocusTraversable* View::GetPaneFocusTraversable() const {
   return NULL;
 }
 
-void View::OnFocus(/* const FocusEvent& event */) {
+void View::OnFocus(const FocusEvent& event) {
 }
 
-void View::OnBlur() {
+void View::OnBlur(const FocusEvent& event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

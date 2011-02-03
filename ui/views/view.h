@@ -9,8 +9,8 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
-#include "ui/views/events/event.h"
 
 namespace gfx {
 class Canvas;
@@ -27,9 +27,14 @@ class Accelerator;
 class Border;
 class ContextMenuController;
 class DragController;
+class FocusEvent;
 class FocusManager;
 class FocusTraversable;
+class KeyEvent;
 class LayoutManager;
+class MouseEvent;
+class MouseWheelEvent;
+class OSExchangeData;
 class ThemeProvider;
 class Widget;
 
@@ -287,8 +292,8 @@ class View {
   virtual bool IsAccessibilityFocusableInRootView() const;
   virtual FocusTraversable* GetPaneFocusTraversable() const;
 
-  virtual void OnFocus(/* const FocusEvent& event */);
-  virtual void OnBlur();
+  virtual void OnFocus(const FocusEvent& event);
+  virtual void OnBlur(const FocusEvent& event);
 
  private:
   friend internal::RootView;
