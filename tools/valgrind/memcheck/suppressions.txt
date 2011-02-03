@@ -3588,8 +3588,6 @@
    fun:_NPN_CreateObject
    fun:_ZN6WebKit11WebBindings12createObjectEP4_NPPP7NPClass
    fun:_ZN13NPObjectProxy6CreateEP17PluginChannelBaseiiRK4GURL
-   fun:_ZN14WebPluginProxy23GetWindowScriptNPObjectEv
-   fun:NPN_GetValue
 }
 {
    Bug_69934_b
