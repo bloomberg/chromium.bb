@@ -142,6 +142,3 @@ PREFIX : webcore::renderstyle::create___webcore::cssstyleselector::styleforeleme
 
 # 70031
 SUBSTRING : webcore::shadowdata::`scalar deleting destructor___webcore::shadowdata::`scalar deleting destructor'___webcore::shadowdata::`scalar deleting destructor'___webcore::shadowdata::`scalar deleting destructor'
-
-# 70631
-SUBSTRING : v8::internal::invoke___v8::internal::execution::call
