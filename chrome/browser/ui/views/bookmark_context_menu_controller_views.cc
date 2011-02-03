@@ -231,10 +231,12 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
        selection_[0]->GetParent() == model_->root_node());
   switch (id) {
     case IDC_BOOKMARK_BAR_OPEN_INCOGNITO:
-      return !profile_->IsOffTheRecord();
+      return !profile_->IsOffTheRecord() &&
+             profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled);
 
     case IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO:
-      return HasURLs() && !profile_->IsOffTheRecord();
+      return HasURLs() && !profile_->IsOffTheRecord() &&
+             profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled);
 
     case IDC_BOOKMARK_BAR_OPEN_ALL:
     case IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW:

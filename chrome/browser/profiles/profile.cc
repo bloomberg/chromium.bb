@@ -150,6 +150,8 @@ class OffTheRecordProfileImpl : public Profile,
 
     background_contents_service_.reset(
         new BackgroundContentsService(this, CommandLine::ForCurrentProcess()));
+
+    DCHECK(real_profile->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled));
   }
 
   virtual ~OffTheRecordProfileImpl() {

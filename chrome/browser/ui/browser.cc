@@ -3397,6 +3397,8 @@ void Browser::Observe(NotificationType type,
         UpdateCommandsForDevTools();
         if (dev_tools_disabled_.GetValue())
           g_browser_process->devtools_manager()->CloseAllClientHosts();
+      } else if (pref_name == prefs::kIncognitoEnabled) {
+        break;  // No further action is required.
       } else {
         NOTREACHED();
       }
