@@ -14,10 +14,13 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+#include "native_client/src/shared/platform/nacl_sync.h"
+
 struct NaClHostDir {
-  DIR           *dirp;
-  struct dirent *dp;
-  int           off;
+  struct NaClMutex  mu;
+  DIR               *dirp;
+  struct dirent     *dp;
+  int               off;
 };
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_OSX_NACL_HOST_DIR_TYPES_H_ */

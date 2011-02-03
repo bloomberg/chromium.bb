@@ -14,8 +14,21 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+#include "native_client/src/include/nacl_base.h"
+#include "native_client/src/shared/platform/nacl_sync.h"
+
+#define NACL_DIRENT_BUF_BYTES 4096
+
+EXTERN_C_BEGIN
+
 struct NaClHostDir {
-  int fd;
+  struct NaClMutex  mu;
+  int               fd;
+  size_t            cur_byte;
+  size_t            nbytes;
+  char              dirent_buf[NACL_DIRENT_BUF_BYTES];
 };
+
+EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_LINUX_NACL_HOST_DIR_TYPES_H_ */

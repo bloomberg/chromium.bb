@@ -197,11 +197,19 @@ int NaClHostDescUnmap(void    *start_addr,
           ? -NaClXlateErrno(errno) : retval);
 }
 
+int NaClHostDescCtor(struct NaClHostDesc  *d,
+                     int                  fd) {
+  d->d = fd;
+  NaClLog(3, "NaClHostDescCtor: success.\n");
+  return 0;
+}
+
 int NaClHostDescOpen(struct NaClHostDesc  *d,
                      char const           *path,
                      int                  flags,
                      int                  mode) {
-  int host_desc;
+  int         host_desc;
+  struct stat stbuf;
 
   NaClLog(3, "NaClHostDescOpen(0x%08"NACL_PRIxPTR", %s, 0x%x, 0x%x)\n",
           (uintptr_t) d, path, flags, mode);
@@ -240,9 +248,20 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
             "NaClHostDescOpen: open returned -1, errno %d\n", errno);
     return -NaClXlateErrno(errno);
   }
-  d->d = host_desc;
-  NaClLog(3, "NaClHostDescOpen: success.\n");
-  return 0;
+  if (-1 == fstat(host_desc, &stbuf)) {
+    NaClLog(LOG_ERROR,
+            "NaClHostDescOpen: fstat failed?!?  errno %d\n", errno);
+    (void) close(host_desc);
+    return -NaClXlateErrno(errno);
+  }
+  if (!S_ISREG(stbuf.st_mode)) {
+    NaClLog(LOG_INFO,
+            "NaClHostDescOpen: file type 0x%x, not regular\n", stbuf.st_mode);
+    (void) close(host_desc);
+    /* cannot access anything other than a real file */
+    return -NACL_ABI_EPERM;
+  }
+  return NaClHostDescCtor(d, host_desc);
 }
 
 int NaClHostDescPosixDup(struct NaClHostDesc  *d,

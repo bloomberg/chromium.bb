@@ -4,6 +4,10 @@
 # be found in the LICENSE file.
 
 
+import atexit
+import os
+import tempfile
+import shutil
 import sys
 
 Import('env')
@@ -110,5 +114,39 @@ node = env.CommandTest('nacl_semaphore_test.out',
                        command=[nacl_semaphore_test_exe])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_semaphore_test');
 
+
+nacl_host_dir_test_exe = env.ComponentProgram('nacl_host_dir_test',
+                                              ['nacl_host_dir_test.c'],
+                                              EXTRA_LIBS=['platform',
+                                                          'gio',
+                                                          'nrd_xfer',
+                                                          ])
+
+# For -d, env.Dir does not work.  bradnelson@ says SCons's underlay
+# works for Files, but possibly not for Dir -- and apparently it does
+# not, since the path that results is OBJ_DIR relative.
+
+# We need a temporary directory, since it is impossible to check a
+# file the name of which is exactly 255 characters into subversion.
+# (Actually, it has to be 255-9=246 characters or less, since svn
+# wants to create a file the name of which is the original with
+# '.svn-base' appended.
+
+tmpdir = tempfile.mkdtemp()
+
+def CleanupBinder(dirname):
+  def Cleanup():
+    shutil.rmtree(dirname, True)
+  return Cleanup
+
+atexit.register(CleanupBinder(tmpdir))
+
+node = env.CommandTest('nacl_host_dir_test.out',
+                       [nacl_host_dir_test_exe,
+                        '-f',
+                        env.File('testdata/sample_dir1_expected.txt'),
+                        '-d',
+                        tmpdir])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_host_dir_test')
 
 env.EnsureRequiredBuildWarnings()

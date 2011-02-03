@@ -28,12 +28,19 @@
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_host_dir.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/dirent.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
+
+
+#ifndef SSIZE_T_MAX
+# define SSIZE_T_MAX ((ssize_t) ((~(size_t) 0) >> 1))
+#endif
 
 
 int NaClHostDirOpen(struct NaClHostDir  *d,
@@ -43,6 +50,12 @@ int NaClHostDirOpen(struct NaClHostDir  *d,
   NaClLog(3, "NaClHostDirOpen(0x%08"NACL_PRIxPTR", %s)\n", (uintptr_t) d, path);
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDirOpen: 'this' is NULL\n");
+  }
+
+  if (!NaClMutexCtor(&d->mu)) {
+    NaClLog(LOG_ERROR,
+            "NaClHostDirOpen: could not initialize mutex\n");
+    return -NACL_ABI_ENOMEM;
   }
 
   NaClLog(3, "NaClHostDirOpen: invoking POSIX opendir(%s)\n", path);
@@ -66,7 +79,7 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
                             size_t              len) {
   struct nacl_abi_dirent *p;
   int                    rec_length;
-  size_t                 i;
+  ssize_t                i;
 
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDirGetdents: 'this' is NULL\n");
@@ -74,10 +87,21 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
   NaClLog(3, "NaClHostDirGetdents(0x%08"NACL_PRIxPTR", %"NACL_PRIuS"):\n",
           (uintptr_t) buf, len);
 
+  NaClXMutexLock(&d->mu);
+
   i = 0;
-  while (i < len) {
-    if ((NULL == d->dp) || (i + d->dp->d_reclen > len)) {
-      return i;
+  while ((size_t) i < len) {
+    if (NULL == d->dp) {
+      goto done;
+    }
+    if (i > SSIZE_T_MAX - d->dp->d_reclen) {
+      NaClLog(LOG_FATAL, "NaClHostDirGetdents: buffer impossibly large\n");
+    }
+    if ((size_t) i + d->dp->d_reclen > len) {
+      if (0 == i) {
+        i = (size_t) -NACL_ABI_EINVAL;
+      }
+      goto done;
     }
     p = (struct nacl_abi_dirent *) (((char *) buf) + i);
     p->nacl_abi_d_ino = 0x6c43614e;
@@ -90,7 +114,7 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
      * Round reclen to the next multiple of four.
      */
     rec_length = (offsetof(struct nacl_abi_dirent, nacl_abi_d_name) +
-                  (d->dp->d_namlen + 4)) & ~3;
+                  (d->dp->d_namlen + 1 + 3)) & ~3;
     /*
      * We cast to a volatile pointer so that the compiler won't ever
      * pick up the rec_length value from that user-accessible memory
@@ -98,11 +122,15 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
      * in the local frame.
      */
     ((volatile struct nacl_abi_dirent *) p)->nacl_abi_d_reclen = rec_length;
+    if ((size_t) i > SIZE_T_MAX - rec_length) {
+      NaClLog(LOG_FATAL, "NaClHostDirGetdents: buffer offset overflow\n");
+    }
     i += rec_length;
     d->dp = readdir(d->dirp);
   }
-
-  return i;
+ done:
+  NaClXMutexUnlock(&d->mu);
+  return (ssize_t) i;
 }
 
 int NaClHostDirClose(struct NaClHostDir *d) {
@@ -116,5 +144,6 @@ int NaClHostDirClose(struct NaClHostDir *d) {
   if (-1 != retval) {
     d->dirp = NULL;
   }
+  NaClMutexDtor(&d->mu);
   return (-1 == retval) ? -NaClXlateErrno(errno) : retval;
 }

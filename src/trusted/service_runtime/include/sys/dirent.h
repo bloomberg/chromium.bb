@@ -13,15 +13,22 @@
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 #endif
 
-/*
- * We need a way to define the maximum size of a name.
- */
-#ifndef MAXNAMLEN
-# ifdef NAME_MAX
-#  define MAXNAMLEN NAME_MAX
+#if  __native_client__
+/* check the compiler toolchain */
+# ifdef NACL_ABI_MAXNAMLEN
+#  if NACL_ABI_MAXNAMLEN != 255
+#   error "MAXNAMLEN inconsistent"
+#  endif
+#  ifdef NAME_MAX
+#   if NAME_MAX != 255
+#    error "NAME_MAX inconsistent"
+#   endif
+#  endif
 # else
-#  define MAXNAMLEN 255
+#  define NACL_ABI_MAXNAMLEN 255
 # endif
+#else /* __native_client__ */
+# define NACL_ABI_MAXNAMLEN 255
 #endif
 
 /*
@@ -43,7 +50,7 @@ struct nacl_abi_dirent {
   nacl_abi_ino_t nacl_abi_d_ino;
   nacl_abi_off_t nacl_abi_d_off;
   uint16_t       nacl_abi_d_reclen;
-  char           nacl_abi_d_name[MAXNAMLEN + 1];
+  char           nacl_abi_d_name[NACL_ABI_MAXNAMLEN + 1];
 };
 
 /*

@@ -16,9 +16,12 @@
 #include <share.h>
 
 #include "native_client/src/include/nacl_platform.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_host_dir.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/win/xlate_system_error.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -31,10 +34,14 @@
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 
+#define SSIZE_T_MAX ((ssize_t) ((~(size_t) 0) >> 1))
+
+
 int NaClHostDirOpen(struct NaClHostDir  *d,
                     char                *path) {
-  wchar_t    pattern[NACL_CONFIG_PATH_MAX + 1];
-  int err;
+  wchar_t pattern[NACL_CONFIG_PATH_MAX + 1];
+  int     err;
+  int     retval;
 
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDirOpen: 'this' is NULL\n");
@@ -56,39 +63,60 @@ int NaClHostDirOpen(struct NaClHostDir  *d,
   if (err < 0) {
     return -NACL_ABI_EOVERFLOW;
   }
+  if (!NaClMutexCtor(&d->mu)) {
+    return -NACL_ABI_ENOMEM;
+  }
   d->handle = FindFirstFile(pattern, &d->find_data);
   d->off = 0;
   d->done = 0;
 
-  if (INVALID_HANDLE_VALUE == d->handle) {
-    int retval = GetLastError();
-    NaClLog(LOG_ERROR, "NaClHostDirOpen: failed\n");
-    if (retval == ERROR_NO_MORE_FILES) {
+  if (INVALID_HANDLE_VALUE != d->handle) {
+    retval = 0;
+  } else {
+    int win_error = GetLastError();
+    NaClLog(LOG_ERROR, "NaClHostDirOpen: failed: %d\n", win_error);
+    if (ERROR_NO_MORE_FILES == win_error) {
       d->done = 1;
-      return 0;
+      retval = 0;
+    } else if (ERROR_PATH_NOT_FOUND == win_error) {
+      retval = -NACL_ABI_ENOTDIR;
     } else {
       /* TODO(sehr): fix the errno handling */
-      return -NaClXlateSystemError(retval);
+      retval = -NaClXlateSystemError(win_error);
     }
   }
 
-  return 0;
+  if (0 != retval) {
+    NaClMutexDtor(&d->mu);
+  }
+  return retval;
 }
 
 ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
                             void                *buf,
                             size_t               len) {
-  struct nacl_abi_dirent *p;
-  size_t                 i;
+  struct nacl_abi_dirent volatile *p;
+  size_t                          i;
+  ssize_t                         retval;
 
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDirGetdents: 'this' is NULL\n");
   }
   NaClLog(3, "NaClHostDirGetdents(0x%08x, %u):\n", buf, len);
+  if (len > SSIZE_T_MAX) {
+    NaClLog(3, "Clamping to len SSIZE_T_MAX\n");
+    len = SSIZE_T_MAX;
+  }
+
+  NaClXMutexLock(&d->mu);
 
   p = (struct nacl_abi_dirent *) buf;
   i = 0;
-  d->off = 1;
+
+  /*
+   * d->off is currently the record number, assuming that FindNextFile
+   * output order is deterministic and consistent.
+   */
   while (1) {
     /**
      * The FIND_DATA structure contains the filename as a UTF-16
@@ -106,12 +134,18 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
     uint16_t nacl_abi_rec_length;
     int err;
 
+    if (d->done) {
+      retval = 0;
+      goto done;
+    }
+
     err = _snprintf_s(name_utf8,
                       _countof(name_utf8),
                       _TRUNCATE,
                       "%ws", d->find_data.cFileName);
     if (err < 0) {
-      return -NACL_ABI_EOVERFLOW;
+      retval = -NACL_ABI_EOVERFLOW;
+      goto done;
     }
     name_length = strlen(name_utf8) + 1;
     rec_length = (offsetof(struct nacl_abi_dirent, nacl_abi_d_name)
@@ -119,39 +153,66 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
                   & ~3;
 
     /* Check for overflow in record length */
-    nacl_abi_rec_length = (uint16_t)rec_length;
-    if (rec_length > (size_t)nacl_abi_rec_length) {
-      return -NACL_ABI_EOVERFLOW;
+    nacl_abi_rec_length = (uint16_t) rec_length;
+    if (rec_length > (size_t) nacl_abi_rec_length) {
+      /*
+       * Can there be file names that are longer than 64K?  Windows
+       * API docs say that 1023 is the maximum file name length, so
+       * with a 4x expansion we should only get 4092 + 1 or 4093
+       * bytes.  But this may be filesystem dependent....
+       */
+      retval = -NACL_ABI_EOVERFLOW;
+      goto done;
     }
 
-    if (d->done || (i + rec_length >= len)) {
-      return i;
+    CHECK(rec_length <= SSIZE_T_MAX - i);
+    /*
+     * Should never happen, since len is clamped to SSIZE_T_MAX.
+     */
+
+    if (i + rec_length >= len) {
+      /*
+       * Insufficent buffer space!  Check if any entries have been
+       * copied...
+       */
+      if (0 == i) {
+        retval = (ssize_t) -NACL_ABI_EINVAL;
+      } else {
+        retval = (ssize_t) i;
+      }
+      goto done;
     }
 
-    p = (struct nacl_abi_dirent *) (((char *) buf) + i);
-    p->nacl_abi_d_ino = 0x6c43614e;
+    p = (struct nacl_abi_dirent volatile *) (((char *) buf) + i);
+    p->nacl_abi_d_ino = NACL_FAKE_INODE_NUM;  /* windows doesn't do inodes */
     p->nacl_abi_d_off = d->off;
     p->nacl_abi_d_reclen = nacl_abi_rec_length;
-    memcpy(p->nacl_abi_d_name, name_utf8, name_length);
-    i += p->nacl_abi_d_reclen;
+    memcpy((char *) p->nacl_abi_d_name, name_utf8, name_length);
+    i += nacl_abi_rec_length;
     ++d->off;
 
     if (!FindNextFile(d->handle, &d->find_data)) {
-      int retval = GetLastError();
-      if (retval == ERROR_NO_MORE_FILES) {
+      int win_err = GetLastError();
+      if (win_err == ERROR_NO_MORE_FILES) {
         d->done = 1;
-        return i;
+        retval = (ssize_t) i;
+        goto done;
       } else {
-        return -NaClXlateSystemError(retval);
+        retval = -NaClXlateSystemError(win_err);
+        goto done;
       }
     }
   }
+done:
+  NaClXMutexUnlock(&d->mu);
+  return retval;
 }
 
 int NaClHostDirClose(struct NaClHostDir *d) {
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDirClose: 'this' is NULL\n");
   }
+  NaClMutexDtor(&d->mu);
   if (!FindClose(d->handle)) {
     return -NaClXlateSystemError(GetLastError());
   }

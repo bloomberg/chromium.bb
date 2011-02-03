@@ -37,12 +37,14 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_PORTABILITY_IO_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_PORTABILITY_IO_H_ 1
 
+#include <fcntl.h>
+
 #if NACL_WINDOWS
 /* disable warnings for deprecated _snprintf */
 #pragma warning(disable : 4996)
 
-#include "io.h"
-#include "fcntl.h"
+#include <io.h>
+#include <direct.h>
 
 #define DUP  _dup
 #define DUP2 _dup2
@@ -51,6 +53,9 @@
 #define FDOPEN _fdopen
 #define PORTABLE_DEV_NULL "nul"
 #define SNPRINTF _snprintf
+#define UNLINK _unlink
+#define MKDIR(p, m) _mkdir(p)  /* BEWARE MODE BITS ARE DROPPED! */
+#define RMDIR _rmdir
 
 /* Seek method constants */
 #define SEEK_CUR    1
@@ -65,7 +70,6 @@
 #else
 
 #include <stdlib.h>
-#include <fcntl.h>
 #include <unistd.h>
 
 #define OPEN open
@@ -75,6 +79,9 @@
 #define FDOPEN fdopen
 #define PORTABLE_DEV_NULL  "/dev/null"
 #define SNPRINTF snprintf
+#define UNLINK unlink
+#define MKDIR(p, m) mkdir(p, m)
+#define RMDIR rmdir
 #define _O_BINARY 0
 #endif
 

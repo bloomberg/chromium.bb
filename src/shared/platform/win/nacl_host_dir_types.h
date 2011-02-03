@@ -13,23 +13,28 @@
 
 #include <windows.h>
 
+#include "native_client/src/shared/platform/nacl_sync.h"
+
 struct NaClHostDir {
+  struct NaClMutex  mu;
   /*
    * Windows HANDLEs are used by FindFirst/FindNext/FindClose
    */
-  HANDLE          handle;
+  HANDLE            handle;
   /*
    * The data found from the previous call is in this slot.
    */
-  WIN32_FIND_DATA find_data;
+  WIN32_FIND_DATA   find_data;
   /*
    * Monotonic count returned in dirents.
    */
-  int             off;
+  int               off;
   /*
-   * Set when no more files can be found.
+   * Set when no more files can be found, i.e., FindNextFile has
+   * already returned ERROR_NO_MORE_FILES, so find_data is no longer
+   * valid.
    */
-  int             done;
+  int               done;
 };
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_WIN_NACL_HOST_DIR_TYPES_H_ */
