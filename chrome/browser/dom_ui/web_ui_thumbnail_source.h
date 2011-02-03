@@ -41,8 +41,6 @@ class WebUIThumbnailSource : public ChromeURLDataManager::DataSource {
   // Send the default thumbnail when we are missing a real one.
   void SendDefaultThumbnail(int request_id);
 
-  Profile* profile_;
-
   // Raw PNG representation of the thumbnail to show when the thumbnail
   // database doesn't have a thumbnail for a webpage.
   scoped_refptr<RefCountedMemory> default_thumbnail_;

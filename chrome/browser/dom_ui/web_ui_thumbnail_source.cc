@@ -14,9 +14,8 @@
 
 WebUIThumbnailSource::WebUIThumbnailSource(Profile* profile)
     : DataSource(chrome::kChromeUIThumbnailPath, MessageLoop::current()),
-      profile_(profile) {
-  // Set TopSites now as Profile isn't thread safe.
-  top_sites_ = profile_->GetTopSites();
+      // Set TopSites now as Profile isn't thread safe.
+      top_sites_(profile->GetTopSites()) {
 }
 
 WebUIThumbnailSource::~WebUIThumbnailSource() {
