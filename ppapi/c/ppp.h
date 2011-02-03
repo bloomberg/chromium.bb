@@ -17,7 +17,8 @@
 
 /**
  * @file
- * Defines the API ...
+ * This file defines three functions that your module must
+ * implement to interact with the browser.
  *
  * {PENDING: undefine PP_EXPORT?}
  */
@@ -35,12 +36,16 @@ extern "C" {
  */
 
 /**
- * Entrypoint for the module.
+ * PPP_InitializeModule() is the entry point for a Native Client module and is
+ * called by the browser when your module loads. Your code must implement this
+ * function.
  *
- * Returns PP_OK on success, any other value on failure. Failure indicates to
- * the browser that this plugin can not be used. In this case, the plugin will
- * be unloaded and ShutdownModule will NOT be called.
+ * Failure indicates to the browser that this plugin can not be used. In this
+ * case, the plugin will be unloaded and ShutdownModule will NOT be called.
  *
+ * @param[in] module A handle to one Native Client module.
+ * @param[in] get_browser_interface An interface pointer.
+ * @return PP_OK on success. Any other value on failure.
 */
 PP_EXPORT int32_t PPP_InitializeModule(PP_Module module,
                                        PPB_GetInterface get_browser_interface);
@@ -53,7 +58,9 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module module,
  * @{
  */
 
-/** Called before the plugin module is unloaded. */
+/** PPP_ShutdownModule() is called before the Native Client module is unloaded.
+ * Your code must implement this function.
+ */
 PP_EXPORT void PPP_ShutdownModule();
 /**
  * @}
@@ -65,8 +72,19 @@ PP_EXPORT void PPP_ShutdownModule();
  */
 
 /**
- * Returns an interface pointer for the interface of the given name, or NULL
- * if the interface is not supported. Interface names should be ASCII.
+ * PPP_GetInterface() is called by the browser to determine the PPP_Instance
+ * functions that the Native Client module implements. PPP_Instance is
+ * an interface (struct) that contains pointers to several functions your
+ * module must implement in some form (all functions can be empty, but
+ * must be implemented). If you care about things such as keyboard events
+ * or your module gaining or losing focus on a page, these functions must
+ * have code to handle those events. Refer to PPP_Instance interface for
+ * more information on these functions.
+ *
+ * @param[in] interface_name A pointer to an interface name. Interface names
+ * should be ASCII.
+ * @return An interface pointer for the interface or NULL if the interface is
+ * not supported.
  */
 PP_EXPORT const void* PPP_GetInterface(const char* interface_name);
 /**
