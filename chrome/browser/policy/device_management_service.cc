@@ -5,6 +5,10 @@
 #include "chrome/browser/policy/device_management_service.h"
 
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/io_thread.h"
+#include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/policy/device_management_backend_impl.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
@@ -14,10 +18,6 @@
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
-#include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/chrome_net_log.h"
-#include "chrome/browser/policy/device_management_backend_impl.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace policy {
@@ -134,6 +134,7 @@ void DeviceManagementService::Shutdown() {
     delete job->first;
     queued_jobs_.push_back(job->second);
   }
+  pending_jobs_.clear();
 }
 
 DeviceManagementService::DeviceManagementService(
@@ -155,9 +156,14 @@ void DeviceManagementService::RemoveJob(DeviceManagementJob* job) {
     if (entry->second == job) {
       delete entry->first;
       pending_jobs_.erase(entry);
-      break;
+      return;
     }
   }
+
+  const JobQueue::iterator elem =
+      std::find(queued_jobs_.begin(), queued_jobs_.end(), job);
+  if (elem != queued_jobs_.end())
+    queued_jobs_.erase(elem);
 }
 
 void DeviceManagementService::StartJob(DeviceManagementJob* job) {
