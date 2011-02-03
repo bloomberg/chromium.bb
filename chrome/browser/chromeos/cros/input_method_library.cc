@@ -69,9 +69,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     scoped_ptr<InputMethodDescriptors> input_method_descriptors(
         CreateFallbackInputMethodDescriptors());
     current_input_method_ = input_method_descriptors->at(0);
-    if (CrosLibrary::Get()->EnsureLoaded()) {
-      current_input_method_id_ = chromeos::GetHardwareKeyboardLayoutName();
-    }
     // Observe APP_TERMINATING to stop input method daemon gracefully.
     // We should not use APP_EXITING here since logout might be canceled by
     // JavaScript after APP_EXITING is sent (crosbug.com/11055).
@@ -137,7 +134,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   }
 
   void ChangeInputMethod(const std::string& input_method_id) {
-    current_input_method_id_ = input_method_id;
     if (EnsureLoadedAndStarted()) {
       // If the input method daemon is not running and the specified input
       // method is a keyboard layout, switch the keyboard directly.
@@ -150,7 +146,12 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         // Otherwise, start the input method daemon, and change the input
         // method via the damon.
         StartInputMethodDaemon();
-        ChangeInputMethodInternal(input_method_id);
+        // ChangeInputMethodInternal() fails if the IBus daemon is not
+        // ready yet. In this case, we'll defer the input method change
+        // until the daemon is ready.
+        if (!ChangeInputMethodInternal(input_method_id)) {
+          pending_input_method_id_ = input_method_id;
+        }
       }
     }
   }
@@ -320,7 +321,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       return true;
     }
 
-    // Not reached.
+    // ChangeInputMethod() fails if the IBus daemon is not yet ready.
     LOG(ERROR) << "Can't switch input method to " << input_method_id_to_switch;
     return false;
   }
@@ -358,8 +359,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         // Calls to ChangeInputMethod() will fail if the input method has not
         // yet been added to preload_engines.  As such, the call is deferred
         // until after all config values have been sent to the IME process.
-        if (should_change_input_method_) {
-          ChangeInputMethodInternal(current_input_method_id_);
+        if (should_change_input_method_ && !pending_input_method_id_.empty()) {
+          ChangeInputMethodInternal(pending_input_method_id_);
+          pending_input_method_id_ = "";
           should_change_input_method_ = false;
           active_input_methods_are_changed = true;
         }
@@ -706,10 +708,13 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // True if we should stop input method daemon when there are no input
   // methods other than one for the hardware keyboard.
   bool enable_auto_ime_shutdown_;
-  // The ID of the current input method (ex. "mozc").
-  std::string current_input_method_id_;
-  // True if we should change the input method once the queue of the
-  // pending config requests becomes empty.
+  // The ID of the pending input method (ex. "mozc"). When we change the
+  // current input method via the IBus daemon, we use this variable to
+  // defer the operation until the IBus daemon becomes ready, as needed.
+  std::string pending_input_method_id_;
+  // True if we should change the current input method to
+  // |pending_input_method_id_| once the queue of the pending config
+  // requests becomes empty.
   bool should_change_input_method_;
 
   // The process id of the IBus daemon. 0 if it's not running. The process
