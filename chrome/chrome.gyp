@@ -498,7 +498,7 @@
       'dependencies': [
         'chrome_resources',
         'chrome_strings',
-        '../net/net.gyp:http_listen_socket',
+        '../net/net.gyp:http_server',
         'theme_resources',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',

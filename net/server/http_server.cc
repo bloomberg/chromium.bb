@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+
 #ifdef _WIN32
 #include <winsock2.h>
 #else
 #include <arpa/inet.h>
 #endif
-
-#include <map>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -16,50 +16,23 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "net/server/http_listen_socket.h"
+#include "net/server/http_server.h"
 #include "net/server/http_server_request_info.h"
 
-// must run in the IO thread
-HttpListenSocket::HttpListenSocket(SOCKET s,
-                                   HttpListenSocket::Delegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ListenSocket(s, this)),
-      delegate_(delegate),
-      is_web_socket_(false) {
+int HttpServer::Connection::lastId_ = 0;
+HttpServer::HttpServer(const std::string& host,
+                       int port,
+                       HttpServer::Delegate* del)
+    : delegate_(del) {
+  server_ = ListenSocket::Listen(host, port, this);
 }
 
-// must run in the IO thread
-HttpListenSocket::~HttpListenSocket() {
-}
+HttpServer::~HttpServer() {
+  IdToConnectionMap copy = id_to_connection_;
+  for (IdToConnectionMap::iterator it = copy.begin(); it != copy.end(); ++it)
+    delete it->second;
 
-void HttpListenSocket::Accept() {
-  SOCKET conn = ListenSocket::Accept(socket_);
-  DCHECK_NE(conn, ListenSocket::kInvalidSocket);
-  if (conn == ListenSocket::kInvalidSocket) {
-    // TODO
-  } else {
-    scoped_refptr<HttpListenSocket> sock(
-        new HttpListenSocket(conn, delegate_));
-#if defined(OS_POSIX)
-      sock->WatchSocket(WAITING_READ);
-#endif
-    // it's up to the delegate to AddRef if it wants to keep it around
-    DidAccept(this, sock);
-  }
-}
-
-HttpListenSocket* HttpListenSocket::Listen(
-    const std::string& ip,
-    int port,
-    HttpListenSocket::Delegate* delegate) {
-  SOCKET s = ListenSocket::Listen(ip, port);
-  if (s == ListenSocket::kInvalidSocket) {
-    // TODO (ibrar): error handling
-  } else {
-    HttpListenSocket *serv = new HttpListenSocket(s, delegate);
-    serv->Listen();
-    return serv;
-  }
-  return NULL;
+  server_ = NULL;
 }
 
 std::string GetHeaderValue(
@@ -91,7 +64,13 @@ uint32 WebSocketKeyFingerprint(const std::string& str) {
   return htonl(static_cast<uint32>(number / spaces));
 }
 
-void HttpListenSocket::AcceptWebSocket(const HttpServerRequestInfo& request) {
+void HttpServer::AcceptWebSocket(
+    int connection_id,
+    const HttpServerRequestInfo& request) {
+  Connection* connection = FindConnection(connection_id);
+  if (connection == NULL)
+    return;
+
   std::string key1 = GetHeaderValue(request, "Sec-WebSocket-Key1");
   std::string key2 = GetHeaderValue(request, "Sec-WebSocket-Key2");
 
@@ -109,52 +88,113 @@ void HttpListenSocket::AcceptWebSocket(const HttpServerRequestInfo& request) {
   std::string origin = GetHeaderValue(request, "Origin");
   std::string host = GetHeaderValue(request, "Host");
   std::string location = "ws://" + host + request.path;
-  is_web_socket_ = true;
-  Send(base::StringPrintf("HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
-                          "Upgrade: WebSocket\r\n"
-                          "Connection: Upgrade\r\n"
-                          "Sec-WebSocket-Origin: %s\r\n"
-                          "Sec-WebSocket-Location: %s\r\n"
-                          "\r\n",
-                          origin.c_str(),
-                          location.c_str()));
-  Send(reinterpret_cast<char*>(digest.a), 16);
+  connection->is_web_socket_ = true;
+  connection->socket_->Send(base::StringPrintf(
+      "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Connection: Upgrade\r\n"
+      "Sec-WebSocket-Origin: %s\r\n"
+      "Sec-WebSocket-Location: %s\r\n"
+      "\r\n",
+      origin.c_str(),
+      location.c_str()));
+  connection->socket_->Send(reinterpret_cast<char*>(digest.a), 16);
 }
 
-void HttpListenSocket::SendOverWebSocket(const std::string& data) {
-  DCHECK(is_web_socket_);
+void HttpServer::SendOverWebSocket(int connection_id,
+                                   const std::string& data) {
+  Connection* connection = FindConnection(connection_id);
+  if (connection == NULL)
+    return;
+
+  DCHECK(connection->is_web_socket_);
   char message_start = 0;
   char message_end = -1;
-  Send(&message_start, 1);
-  Send(data);
-  Send(&message_end, 1);
+  connection->socket_->Send(&message_start, 1);
+  connection->socket_->Send(data);
+  connection->socket_->Send(&message_end, 1);
 }
 
-void HttpListenSocket::Send200(const std::string& data,
-                               const std::string& content_type) {
-  Send(base::StringPrintf("HTTP/1.1 200 OK\r\n"
-                          "Content-Type:%s\r\n"
-                          "Content-Length:%d\r\n"
-                          "\r\n",
-                          content_type.c_str(),
-                          static_cast<int>(data.length())));
-  Send(data);
+void HttpServer::Send(int connection_id, const std::string& data) {
+  Connection* connection = FindConnection(connection_id);
+  if (connection == NULL)
+    return;
+
+  connection->socket_->Send(data);
 }
 
-void HttpListenSocket::Send404() {
-  Send("HTTP/1.1 404 Not Found\r\n"
-       "Content-Length: 0\r\n"
-       "\r\n");
+void HttpServer::Send(int connection_id, const char* bytes, int len) {
+  Connection* connection = FindConnection(connection_id);
+  if (connection == NULL)
+    return;
+
+  connection->socket_->Send(bytes, len);
 }
 
-void HttpListenSocket::Send500(const std::string& message) {
-  Send(base::StringPrintf("HTTP/1.1 500 Internal Error\r\n"
-                          "Content-Type:text/html\r\n"
-                          "Content-Length:%d\r\n"
-                          "\r\n"
-                          "%s",
-                          static_cast<int>(message.length()),
-                          message.c_str()));
+void HttpServer::Send200(int connection_id,
+                         const std::string& data,
+                         const std::string& content_type) {
+  Connection* connection = FindConnection(connection_id);
+  if (connection == NULL)
+    return;
+
+  connection->socket_->Send(base::StringPrintf(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type:%s\r\n"
+      "Content-Length:%d\r\n"
+      "\r\n",
+      content_type.c_str(),
+      static_cast<int>(data.length())));
+  connection->socket_->Send(data);
+}
+
+void HttpServer::Send404(int connection_id) {
+  Connection* connection = FindConnection(connection_id);
+  if (connection == NULL)
+    return;
+
+  connection->socket_->Send(
+      "HTTP/1.1 404 Not Found\r\n"
+      "Content-Length: 0\r\n"
+      "\r\n");
+}
+
+void HttpServer::Send500(int connection_id, const std::string& message) {
+  Connection* connection = FindConnection(connection_id);
+  if (connection == NULL)
+    return;
+
+  connection->socket_->Send(base::StringPrintf(
+      "HTTP/1.1 500 Internal Error\r\n"
+      "Content-Type:text/html\r\n"
+      "Content-Length:%d\r\n"
+      "\r\n"
+      "%s",
+      static_cast<int>(message.length()),
+      message.c_str()));
+}
+
+void HttpServer::Close(int connection_id)
+{
+  Connection* connection = FindConnection(connection_id);
+  if (connection == NULL)
+    return;
+
+  connection->DetachSocket();
+}
+
+HttpServer::Connection::Connection(ListenSocket* sock)
+    : socket_(sock),
+      is_web_socket_(false) {
+  id_ = lastId_++;
+}
+
+HttpServer::Connection::~Connection() {
+  DetachSocket();
+}
+
+void HttpServer::Connection::DetachSocket() {
+  socket_ = NULL;
 }
 
 //
@@ -231,15 +271,16 @@ int charToInput(char ch) {
   return INPUT_DEFAULT;
 }
 
-bool HttpListenSocket::ParseHeaders(HttpServerRequestInfo* info) {
+bool HttpServer::ParseHeaders(Connection* connection,
+                              HttpServerRequestInfo* info) {
   int pos = 0;
-  int data_len = recv_data_.length();
-  int state = is_web_socket_ ? ST_WS_READY : ST_METHOD;
+  int data_len = connection->recv_data_.length();
+  int state = connection->is_web_socket_ ? ST_WS_READY : ST_METHOD;
   std::string buffer;
   std::string header_name;
   std::string header_value;
   while (pos < data_len) {
-    char ch = recv_data_[pos++];
+    char ch = connection->recv_data_[pos++];
     int input = charToInput(ch);
     int next_state = parser_state[state][input];
 
@@ -275,7 +316,7 @@ bool HttpListenSocket::ParseHeaders(HttpServerRequestInfo* info) {
           buffer.append(&ch, 1);
           break;
         case ST_WS_FRAME:
-          recv_data_ = recv_data_.substr(pos);
+          connection->recv_data_ = connection->recv_data_.substr(pos);
           info->data = buffer;
           buffer.clear();
           return true;
@@ -294,12 +335,12 @@ bool HttpListenSocket::ParseHeaders(HttpServerRequestInfo* info) {
           buffer.append(&ch, 1);
           break;
         case ST_DONE:
-          recv_data_ = recv_data_.substr(pos);
-          info->data = recv_data_;
-          recv_data_.clear();
+          connection->recv_data_ = connection->recv_data_.substr(pos);
+          info->data = connection->recv_data_;
+          connection->recv_data_.clear();
           return true;
         case ST_WS_CLOSE:
-          is_web_socket_ = false;
+          connection->is_web_socket_ = false;
           return false;
         case ST_ERR:
           return false;
@@ -310,48 +351,66 @@ bool HttpListenSocket::ParseHeaders(HttpServerRequestInfo* info) {
   return false;
 }
 
-void HttpListenSocket::Close() {
-  ListenSocket::Close();
+void HttpServer::DidAccept(ListenSocket* server,
+                           ListenSocket* socket) {
+  Connection* connection = new Connection(socket);
+  id_to_connection_[connection->id_] = connection;
+  socket_to_connection_[socket] = connection;
 }
 
-void HttpListenSocket::Listen() {
-  ListenSocket::Listen();
-}
+void HttpServer::DidRead(ListenSocket* socket,
+                         const char* data,
+                         int len) {
+  Connection* connection = FindConnection(socket);
+  DCHECK(connection != NULL);
+  if (connection == NULL)
+    return;
 
-void HttpListenSocket::DidAccept(ListenSocket* server,
-                                 ListenSocket* connection) {
-  connection->AddRef();
-}
-
-void HttpListenSocket::DidRead(ListenSocket*,
-                               const char* data,
-                               int len) {
-  recv_data_.append(data, len);
-  while (recv_data_.length()) {
+  connection->recv_data_.append(data, len);
+  while (connection->recv_data_.length()) {
     HttpServerRequestInfo request;
-    if (!ParseHeaders(&request))
+    if (!ParseHeaders(connection, &request))
       break;
 
-    if (is_web_socket_) {
-      delegate_->OnWebSocketMessage(this, request.data);
+    if (connection->is_web_socket_) {
+      delegate_->OnWebSocketMessage(connection->id_, request.data);
       continue;
     }
 
-    std::string connection = GetHeaderValue(request, "Connection");
-    if (connection == "Upgrade") {
+    std::string connection_header = GetHeaderValue(request, "Connection");
+    if (connection_header == "Upgrade") {
       // Is this WebSocket and if yes, upgrade the connection.
       std::string key1 = GetHeaderValue(request, "Sec-WebSocket-Key1");
       std::string key2 = GetHeaderValue(request, "Sec-WebSocket-Key2");
       if (!key1.empty() && !key2.empty()) {
-        delegate_->OnWebSocketRequest(this, request);
+        delegate_->OnWebSocketRequest(connection->id_, request);
         continue;
       }
     }
-    delegate_->OnHttpRequest(this, request);
+    delegate_->OnHttpRequest(connection->id_, request);
   }
+
 }
 
-void HttpListenSocket::DidClose(ListenSocket* sock) {
-  delegate_->OnClose(this);
-  sock->Release();
+void HttpServer::DidClose(ListenSocket* socket) {
+  Connection* connection = FindConnection(socket);
+  DCHECK(connection != NULL);
+  delegate_->OnClose(connection->id_);
+  id_to_connection_.erase(connection->id_);
+  socket_to_connection_.erase(connection->socket_);
+  delete connection;
+}
+
+HttpServer::Connection* HttpServer::FindConnection(int connection_id) {
+  IdToConnectionMap::iterator it = id_to_connection_.find(connection_id);
+  if (it == id_to_connection_.end())
+    return NULL;
+  return it->second;
+}
+
+HttpServer::Connection* HttpServer::FindConnection(ListenSocket* socket) {
+  SocketToConnectionMap::iterator it = socket_to_connection_.find(socket);
+  if (it == socket_to_connection_.end())
+    return NULL;
+  return it->second;
 }
