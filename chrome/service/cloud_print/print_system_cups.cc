@@ -545,19 +545,21 @@ bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
   cups_job_t* jobs = NULL;
   int num_jobs = GetJobs(&jobs, server_info->url,
                          short_printer_name.c_str(), 1, -1);
-
+  bool error = (num_jobs == 0) && (cupsLastError() > IPP_OK_EVENTS_COMPLETE);
+  if (error) {
+    VLOG(1) << "CP_CUPS: Error getting jobs from CUPS server. Printer:"
+            << printer_name
+            << " Error: "
+            << static_cast<int>(cupsLastError());
+    return false;
+  }
 
   // Check if the request is for dummy dry run job.
   // We check this after calling GetJobs API to see if this printer is actually
   // accessible through CUPS.
   if (job_id == kDryRunJobId) {
-    if (num_jobs >= 0) {
-      job_details->status = PRINT_JOB_STATUS_COMPLETED;
-      VLOG(1) << "CP_CUPS: Dry run job succeeded for: " << printer_name;
-    } else {
-      job_details->status = PRINT_JOB_STATUS_ERROR;
-      VLOG(1) << "CP_CUPS: Dry run job faield for: " << printer_name;
-    }
+    job_details->status = PRINT_JOB_STATUS_COMPLETED;
+    VLOG(1) << "CP_CUPS: Dry run job succeeded for: " << printer_name;
     return true;
   }
 
