@@ -1332,3 +1332,18 @@
    fun:_ZN12_GLOBAL__N_131MenuButtonTest_OpenOnClick_Test8TestBodyEv
    fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
+{
+   bug_71753
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK15DictionaryValue8DeepCopyEv
+   fun:_ZN7browser19MigrateBrowserPrefsEP11PrefServiceS1_
+   fun:_ZN11ProfileImpl8GetPrefsEv
+   fun:_ZN11ProfileImplC2ERK8FilePath
+   fun:_ZN11ProfileImplC1ERK8FilePath
+   fun:_ZN7Profile13CreateProfileERK8FilePath
+   fun:_ZN14ProfileManager13CreateProfileERK8FilePath
+   fun:_ZN14ProfileManager10GetProfileERK8FilePathb
+   fun:_ZN14ProfileManager10GetProfileERK8FilePath
+   fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
+}
