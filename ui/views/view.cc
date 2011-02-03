@@ -336,7 +336,8 @@ void View::RemoveAllAccelerators() {
 // Focus -----------------------------------------------------------------------
 
 FocusManager* View::GetFocusManager() const {
-  return NULL;
+  Widget* widget = GetWidget();
+  return widget ? widget->GetFocusManager() : NULL;
 }
 
 FocusTraversable* View::GetFocusTraversable() const {
@@ -352,14 +353,18 @@ View* View::GetPreviousFocusableView() const {
 }
 
 bool View::IsFocusable() const {
-  return false;
+  return focusable_ && enabled_ && visible_;
 }
 
 bool View::HasFocus() const {
-  return false;
+  FocusManager* focus_manager = GetFocusManager();
+  return focus_manager ? focus_manager->focused_view() == this : false;
 }
 
 void View::RequestFocus() {
+  FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager && focus_manager->focused_view() != this)
+    focus_manager->SetFocusedView(this);
 }
 
 // Resources -------------------------------------------------------------------

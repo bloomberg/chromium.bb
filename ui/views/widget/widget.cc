@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/root_view.h"
@@ -67,6 +68,12 @@ void Widget::InitWithViewParent(View* parent, const gfx::Rect& bounds) {
   native_widget_->InitWithViewParent(parent, bounds);
 }
 
+Widget* Widget::GetTopLevelWidget() const {
+  NativeWidget* native_widget =
+      NativeWidget::GetTopLevelNativeWidget(native_widget_->GetNativeView());
+  return native_widget->GetWidget();
+}
+
 gfx::Rect Widget::GetWindowScreenBounds() const {
   return native_widget_->GetWindowScreenBounds();
 }
@@ -110,6 +117,10 @@ void Widget::InvalidateRect(const gfx::Rect& invalid_rect) {
 
 ThemeProvider* Widget::GetThemeProvider() const {
   return NULL;
+}
+
+FocusManager* Widget::GetFocusManager() const {
+  return GetTopLevelWidget()->focus_manager_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -195,6 +206,8 @@ bool Widget::OnMouseWheelEvent(const MouseWheelEvent& event) {
 }
 
 void Widget::OnNativeWidgetCreated() {
+  if (GetTopLevelWidget() == this)
+    focus_manager_.reset(new FocusManager(this));
 }
 
 void Widget::OnPaint(gfx::Canvas* canvas) {
@@ -205,8 +218,22 @@ void Widget::OnSizeChanged(const gfx::Size& size) {
   root_view_->SetSize(size);
 }
 
+void Widget::OnNativeFocus(gfx::NativeView focused_view) {
+  GetFocusManager()->GetWidgetFocusManager()->OnWidgetFocusEvent(
+      focused_view, native_widget_->GetNativeView());
+}
+
+void Widget::OnNativeBlur(gfx::NativeView focused_view) {
+  GetFocusManager()->GetWidgetFocusManager()->OnWidgetFocusEvent(
+      native_widget_->GetNativeView(), focused_view);
+}
+
 void Widget::OnWorkAreaChanged() {
 
+}
+
+Widget* Widget::GetWidget() const {
+  return const_cast<Widget*>(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

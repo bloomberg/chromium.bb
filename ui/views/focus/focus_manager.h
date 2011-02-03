@@ -194,7 +194,7 @@ class FocusManager {
   void AdvanceFocus(bool reverse);
 
   // The FocusManager keeps track of the focused view within a RootView.
-  View* GetFocusedView() const { return focused_view_; }
+  View* focused_view() const { return focused_view_; }
 
   // Low-level methods to force the focus to change (and optionally provide
   // a reason). If the focus change should only happen if the view is
@@ -272,12 +272,6 @@ class FocusManager {
   // trigger tab traversal (if it is a TAB key press with or without SHIFT
   // pressed).
   static bool IsTabTraversalKeyEvent(const KeyEvent& key_event);
-
-  // Sets the focus to the specified native view.
-  virtual void FocusNativeView(gfx::NativeView native_view);
-
-  // Clears the native view having the focus.
-  virtual void ClearNativeFocus();
 
   // Retrieves the FocusManager associated with the passed native view.
   static FocusManager* GetFocusManagerForNativeView(

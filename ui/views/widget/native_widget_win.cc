@@ -12,7 +12,6 @@
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/native_widget_listener.h"
 #include "ui/views/widget/widget.h"
 
 namespace ui {
@@ -217,6 +216,22 @@ void NativeWidgetWin::Paint() {
   }
 }
 
+void NativeWidgetWin::FocusNativeView(gfx::NativeView native_view) {
+  if (IsWindow(native_view)) {
+    if (GetFocus() != native_view)
+      SetFocus(native_view);
+  } else {
+    // NULL or invalid |native_view| passed, we consider this to be clearing
+    // focus. Keep the top level window focused so we continue to receive
+    // key events.
+    SetFocus(hwnd());
+  }
+}
+
+Widget* NativeWidgetWin::GetWidget() const {
+  return listener_->GetWidget();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidetWin, MessageLoopForUI::Observer implementation
 
@@ -267,6 +282,7 @@ void NativeWidgetWin::OnCommand(UINT notification_code, int command_id,
 
 LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   SetNativeWindowProperty(kNativeWidgetKey, this);
+  listener_->OnNativeWidgetCreated();
   MessageLoopForUI::current()->AddObserver(this);
   return 0;
 }
@@ -347,7 +363,7 @@ LRESULT NativeWidgetWin::OnKeyUp(UINT message, WPARAM w_param, LPARAM l_param) {
 }
 
 void NativeWidgetWin::OnKillFocus(HWND focused_window) {
-  // TODO(beng): focus
+  listener_->OnNativeBlur(focused_window);
   SetMsgHandled(FALSE);
 }
 
@@ -474,7 +490,7 @@ LRESULT NativeWidgetWin::OnReflectedMessage(UINT message, WPARAM w_param,
 }
 
 void NativeWidgetWin::OnSetFocus(HWND focused_window) {
-  // TODO(beng): focus
+  listener_->OnNativeFocus(focused_window);
   SetMsgHandled(FALSE);
 }
 

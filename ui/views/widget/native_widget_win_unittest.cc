@@ -7,6 +7,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_test_util.h"
 
 namespace ui {
 
@@ -14,13 +15,6 @@ class NativeWidgetTest : public testing::Test {
  public:
   NativeWidgetTest() {}
   virtual ~NativeWidgetTest() {}
-
-  Widget* CreateWidget() const {
-    Widget* widget = new Widget(new View);
-    widget->set_delete_on_destroy(false);
-    widget->InitWithNativeViewParent(NULL, gfx::Rect(10, 10, 200, 200));
-    return widget;
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetTest);
@@ -45,12 +39,12 @@ class TestWindowImpl : public WindowImpl {
 };
 
 TEST_F(NativeWidgetTest, CreateNativeWidget) {
-  scoped_ptr<Widget> widget(CreateWidget());
+  scoped_ptr<Widget> widget(internal::CreateWidget());
   EXPECT_TRUE(widget->native_widget()->GetNativeView() != NULL);
 }
 
 TEST_F(NativeWidgetTest, GetNativeWidgetForNativeView) {
-  scoped_ptr<Widget> widget(CreateWidget());
+  scoped_ptr<Widget> widget(internal::CreateWidget());
   NativeWidget* a = widget->native_widget();
   HWND nv = widget->native_widget()->GetNativeView();
   NativeWidget* b = NativeWidget::GetNativeWidgetForNativeView(nv);
@@ -59,7 +53,7 @@ TEST_F(NativeWidgetTest, GetNativeWidgetForNativeView) {
 
 // |widget| has the toplevel NativeWidget.
 TEST_F(NativeWidgetTest, GetTopLevelNativeWidget1) {
-  scoped_ptr<Widget> widget(CreateWidget());
+  scoped_ptr<Widget> widget(internal::CreateWidget());
   EXPECT_EQ(widget->native_widget(),
             NativeWidget::GetTopLevelNativeWidget(
                 widget->native_widget()->GetNativeView()));
@@ -67,8 +61,8 @@ TEST_F(NativeWidgetTest, GetTopLevelNativeWidget1) {
 
 // |toplevel_widget| has the toplevel NativeWidget.
 TEST_F(NativeWidgetTest, GetTopLevelNativeWidget2) {
-  scoped_ptr<Widget> child_widget(CreateWidget());
-  scoped_ptr<Widget> toplevel_widget(CreateWidget());
+  scoped_ptr<Widget> child_widget(internal::CreateWidget());
+  scoped_ptr<Widget> toplevel_widget(internal::CreateWidget());
   SetParent(child_widget->native_widget()->GetNativeView(),
             toplevel_widget->native_widget()->GetNativeView());
   EXPECT_EQ(toplevel_widget->native_widget(),
@@ -78,7 +72,7 @@ TEST_F(NativeWidgetTest, GetTopLevelNativeWidget2) {
 
 // |child_widget| has the toplevel NativeWidget.
 TEST_F(NativeWidgetTest, GetTopLevelNativeWidget3) {
-  scoped_ptr<Widget> child_widget(CreateWidget());
+  scoped_ptr<Widget> child_widget(internal::CreateWidget());
 
   TestWindowImpl toplevel;
   toplevel.Init(NULL, gfx::Rect(10, 10, 100, 100));

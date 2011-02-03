@@ -44,7 +44,13 @@ class NativeWidgetListener {
 
   virtual void OnPaint(gfx::Canvas* canvas) = 0;
   virtual void OnSizeChanged(const gfx::Size& size) = 0;
+
+  virtual void OnNativeFocus(gfx::NativeView focused_view) = 0;
+  virtual void OnNativeBlur(gfx::NativeView focused_view) = 0;
+
   virtual void OnWorkAreaChanged() = 0;
+
+  virtual Widget* GetWidget() const = 0;
 };
 
 }  // namespace internal

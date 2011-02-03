@@ -128,11 +128,12 @@
         'v2',
       ],
       'sources': [
-        # 'focus/focus_manager_unittest.cc',
         'rendering/border_unittest.cc',
         'run_all_unittests.cc',
         'view_unittest.cc',
         'widget/native_widget_win_unittest.cc',
+        'widget/widget_test_util.cc',
+        'widget/widget_test_util.h',
         'widget/widget_unittest.cc',
       ],
       'include_dirs': [

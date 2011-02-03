@@ -18,6 +18,8 @@ class CanvasSkia;
 
 namespace ui {
 class ViewProp;
+class Widget;
+
 namespace internal {
 
 // A Windows message reflected from other windows. This message is sent with the
@@ -38,8 +40,6 @@ const int kReflectedMessage = WM_APP + 3;
 // from happening.
 const int WM_NCUAHDRAWCAPTION = 0xAE;
 const int WM_NCUAHDRAWFRAME = 0xAF;
-
-class NativeWidgetListener;
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin class
@@ -74,15 +74,17 @@ class NativeWidgetWin : public NativeWidget,
   virtual void Close();
   virtual void MoveAbove(NativeWidget* other);
   virtual void SetAlwaysOnTop(bool always_on_top);
-  virtual void Invalidate();
-  virtual void InvalidateRect(const gfx::Rect& invalid_rect);
-  virtual void Paint();
   virtual bool IsVisible() const;
   virtual bool IsActive() const;
   virtual void SetMouseCapture();
   virtual void ReleaseMouseCapture();
   virtual bool HasMouseCapture() const;
   virtual bool ShouldReleaseCaptureOnMouseReleased() const;
+  virtual void Invalidate();
+  virtual void InvalidateRect(const gfx::Rect& invalid_rect);
+  virtual void Paint();
+  virtual void FocusNativeView(gfx::NativeView native_view);
+  virtual Widget* GetWidget() const;
 
   // Overridden from MessageLoop::Observer:
   void WillProcessMessage(const MSG& msg);

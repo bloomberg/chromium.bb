@@ -64,15 +64,15 @@ class NativeWidget {
   virtual void SetAlwaysOnTop(bool always_on_top) = 0;
   virtual bool IsVisible() const = 0;
   virtual bool IsActive() const = 0;
-
   virtual void SetMouseCapture() = 0;
   virtual void ReleaseMouseCapture() = 0;
   virtual bool HasMouseCapture() const = 0;
   virtual bool ShouldReleaseCaptureOnMouseReleased() const = 0;
-
   virtual void Invalidate() = 0;
   virtual void InvalidateRect(const gfx::Rect& invalid_rect) = 0;
   virtual void Paint() = 0;
+  virtual void FocusNativeView(gfx::NativeView native_view) = 0;
+  virtual Widget* GetWidget() const = 0;
 };
 
 }  // namespace ui

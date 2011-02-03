@@ -10,17 +10,24 @@
 #include "base/task.h"
 #include "gfx/point.h"
 #include "ui/views/native_types.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/native_widget_listener.h"
 
 namespace gfx {
+class Canvas;
 class Path;
 class Rect;
+class Size;
 }
 
 namespace ui {
 namespace internal {
 class RootView;
 }
+class FocusManager;
+class KeyEvent;
+class MouseEvent;
+class MouseWheelEvent;
 class NativeWidget;
 class ThemeProvider;
 class View;
@@ -51,6 +58,9 @@ class Widget : public internal::NativeWidgetListener {
   void InitWithWidgetParent(Widget* parent, const gfx::Rect& bounds);
   void InitWithViewParent(View* parent, const gfx::Rect& bounds);
 
+  // Returns the topmost Widget in a hierarchy.
+  Widget* GetTopLevelWidget() const;
+
   // Returns the bounding rect of the Widget in screen coordinates.
   gfx::Rect GetWindowScreenBounds() const;
 
@@ -80,10 +90,14 @@ class Widget : public internal::NativeWidgetListener {
   // rendering Views associated with this Widget.
   ThemeProvider* GetThemeProvider() const;
 
+  // Returns the FocusManager for this Widget. Only top-level Widgets have
+  // FocusManagers.
+  FocusManager* GetFocusManager() const;
+
   NativeWidget* native_widget() const { return native_widget_.get(); }
 
  private:
-  // NativeWidgetListener implementation:
+  // Overridden from internal::NativeWidgetListener:
   virtual void OnClose();
   virtual void OnDestroy();
   virtual void OnDisplayChanged();
@@ -94,7 +108,10 @@ class Widget : public internal::NativeWidgetListener {
   virtual void OnNativeWidgetCreated();
   virtual void OnPaint(gfx::Canvas* canvas);
   virtual void OnSizeChanged(const gfx::Size& size);
+  virtual void OnNativeFocus(gfx::NativeView focused_view);
+  virtual void OnNativeBlur(gfx::NativeView focused_view);
   virtual void OnWorkAreaChanged();
+  virtual Widget* GetWidget() const;
 
   // Causes the Widget to be destroyed immediately.
   void CloseNow();
@@ -121,6 +138,8 @@ class Widget : public internal::NativeWidgetListener {
 
   // True if the Widget should be automatically deleted when it is destroyed.
   bool delete_on_destroy_;
+
+  scoped_ptr<FocusManager> focus_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };
