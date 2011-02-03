@@ -38,6 +38,7 @@ const std::string kFrameData = "files/find_in_page/framedata_general.html";
 const std::string kUserSelectPage = "files/find_in_page/user-select.html";
 const std::string kCrashPage = "files/find_in_page/crash_1341577.html";
 const std::string kTooFewMatchesPage = "files/find_in_page/bug_1155639.html";
+const std::string kLongTextareaPage = "files/find_in_page/large_textarea.html";
 const std::string kEndState = "files/find_in_page/end_state.html";
 const std::string kPrematureEnd = "files/find_in_page/premature_end.html";
 const std::string kMoveIfOver = "files/find_in_page/move_if_obscuring.html";
@@ -513,6 +514,25 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindRestarts_Issue1155639) {
                                L"008.xml",
                                kFwd, kIgnoreCase, &ordinal));
   EXPECT_EQ(1, ordinal);
+}
+
+// Make sure we don't get into an infinite loop when text box contains very
+// large amount of text.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindRestarts_Issue70505) {
+  ASSERT_TRUE(test_server()->Start());
+
+  // First we navigate to our page.
+  GURL url = test_server()->GetURL(kLongTextareaPage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // If this test hangs on the FindInPage call, then it might be a regression
+  // such as the one found in issue http://crbug.com/70505.
+  int ordinal = 0;
+  FindInPageWchar(browser()->GetSelectedTabContents(),
+                  L"a", kFwd, kIgnoreCase, &ordinal);
+  EXPECT_EQ(1, ordinal);
+  // TODO(finnur): We cannot reliably get the matchcount for this Find call
+  // until we fix issue http://crbug.com/71176.
 }
 
 // This tests bug 11761: FindInPage terminates search prematurely.
