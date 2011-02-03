@@ -27,7 +27,9 @@ const char* kNaClPluginMimeType = "application/x-nacl";
 const char* kNaClPluginExtension = "nexe";
 const char* kNaClPluginDescription = "Native Client Executable";
 
+#if defined(ENABLE_REMOTING)
 const char* kRemotingPluginMimeType = "pepper-application/x-chromoting";
+#endif
 
 // Appends the known built-in plugins to the given vector. Some built-in
 // plugins are "internal" which means they are compiled into the Chrome binary,
