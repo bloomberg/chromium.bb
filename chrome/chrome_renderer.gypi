@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -104,8 +104,6 @@
         'renderer/devtools_agent_filter.h',
         'renderer/devtools_client.cc',
         'renderer/devtools_client.h',
-        'renderer/dom_ui_bindings.cc',
-        'renderer/dom_ui_bindings.h',
         'renderer/extension_groups.h',
         'renderer/external_host_bindings.cc',
         'renderer/external_host_bindings.h',
@@ -243,6 +241,8 @@
         'renderer/user_script_slave.h',
         'renderer/visitedlink_slave.cc',
         'renderer/visitedlink_slave.h',
+        'renderer/web_ui_bindings.cc',
+        'renderer/web_ui_bindings.h',
         'renderer/webgraphicscontext3d_command_buffer_impl.cc',
         'renderer/webgraphicscontext3d_command_buffer_impl.h',
         'renderer/webplugin_delegate_proxy.cc',

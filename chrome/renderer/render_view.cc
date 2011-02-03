@@ -56,7 +56,6 @@
 #include "chrome/renderer/device_orientation_dispatcher.h"
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/devtools_client.h"
-#include "chrome/renderer/dom_ui_bindings.h"
 #include "chrome/renderer/extension_groups.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
@@ -92,6 +91,7 @@
 #include "chrome/renderer/user_script_idle_scheduler.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "chrome/renderer/visitedlink_slave.h"
+#include "chrome/renderer/web_ui_bindings.h"
 #include "chrome/renderer/webgraphicscontext3d_command_buffer_impl.h"
 #include "chrome/renderer/webplugin_delegate_pepper.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
@@ -3449,9 +3449,9 @@ void RenderView::didClearWindowObject(WebFrame* frame) {
       (frame_url.SchemeIs(chrome::kChromeUIScheme) ||
       frame_url.SchemeIs(chrome::kGearsScheme) ||
       frame_url.SchemeIs(chrome::kDataScheme))) {
-    GetDOMUIBindings()->set_message_sender(this);
-    GetDOMUIBindings()->set_routing_id(routing_id_);
-    GetDOMUIBindings()->BindToJavascript(frame, "chrome");
+    GetWebUIBindings()->set_message_sender(this);
+    GetWebUIBindings()->set_routing_id(routing_id_);
+    GetWebUIBindings()->BindToJavascript(frame, "chrome");
   }
   if (BindingsPolicy::is_external_host_enabled(enabled_bindings_)) {
     GetExternalHostBindings()->set_message_sender(this);
@@ -4166,11 +4166,11 @@ GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
   return url;
 }
 
-DOMUIBindings* RenderView::GetDOMUIBindings() {
-  if (!dom_ui_bindings_.get()) {
-    dom_ui_bindings_.reset(new DOMUIBindings());
+WebUIBindings* RenderView::GetWebUIBindings() {
+  if (!web_ui_bindings_.get()) {
+    web_ui_bindings_.reset(new WebUIBindings());
   }
-  return dom_ui_bindings_.get();
+  return web_ui_bindings_.get();
 }
 
 ExternalHostBindings* RenderView::GetExternalHostBindings() {
@@ -4614,7 +4614,7 @@ void RenderView::OnAllowBindings(int enabled_bindings_flags) {
 void RenderView::OnSetDOMUIProperty(const std::string& name,
                                     const std::string& value) {
   DCHECK(BindingsPolicy::is_dom_ui_enabled(enabled_bindings_));
-  GetDOMUIBindings()->SetProperty(name, value);
+  GetWebUIBindings()->SetProperty(name, value);
 }
 
 void RenderView::OnReservePageIDRange(int size_of_range) {

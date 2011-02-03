@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -442,7 +442,7 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
   // Create some DOMUI instances and make sure they share a process.
   scoped_refptr<SiteInstance> dom1_instance(
       CreateSiteInstance(&rph_factory, GURL("chrome://newtab")));
-  policy->GrantDOMUIBindings(dom1_instance->GetProcess()->id());
+  policy->GrantWebUIBindings(dom1_instance->GetProcess()->id());
 
   scoped_refptr<SiteInstance> dom2_instance(
       CreateSiteInstance(&rph_factory, GURL("chrome://history")));

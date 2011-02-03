@@ -359,7 +359,7 @@ class RenderViewHost : public RenderWidgetHost {
   }
 
   // Sets a property with the given name and value on the Web UI binding object.
-  // Must call AllowDOMUIBindings() on this renderer first.
+  // Must call AllowWebUIBindings() on this renderer first.
   void SetDOMUIProperty(const std::string& name, const std::string& value);
 
   // Tells the renderer view to focus the first (last if reverse is true) node.

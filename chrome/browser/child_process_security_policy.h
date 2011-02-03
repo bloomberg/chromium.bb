@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,7 +85,7 @@ class ChildProcessSecurityPolicy {
   void GrantScheme(int child_id, const std::string& scheme);
 
   // Grant the child process the ability to use Web UI Bindings.
-  void GrantDOMUIBindings(int child_id);
+  void GrantWebUIBindings(int child_id);
 
   // Grant the child process the ability to use extension Bindings.
   void GrantExtensionBindings(int child_id);
@@ -112,12 +112,12 @@ class ChildProcessSecurityPolicy {
                              const FilePath& file,
                              int permissions);
 
-  // Returns true if the specified child_id has been granted DOMUIBindings.
+  // Returns true if the specified child_id has been granted WebUIBindings.
   // The browser should check this property before assuming the child process is
-  // allowed to use DOMUIBindings.
-  bool HasDOMUIBindings(int child_id);
+  // allowed to use WebUIBindings.
+  bool HasWebUIBindings(int child_id);
 
-  // Returns true if the specified child_id has been granted DOMUIBindings.
+  // Returns true if the specified child_id has been granted WebUIBindings.
   // The browser should check this property before assuming the child process is
   // allowed to use extension bindings.
   bool HasExtensionBindings(int child_id);

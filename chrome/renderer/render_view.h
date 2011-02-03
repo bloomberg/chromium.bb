@@ -61,7 +61,7 @@ class DeviceOrientationDispatcher;
 class DevToolsAgent;
 class DevToolsClient;
 class DomAutomationController;
-class DOMUIBindings;
+class WebUIBindings;
 class ExternalHostBindings;
 class FilePath;
 class GeolocationDispatcher;
@@ -1057,7 +1057,7 @@ class RenderView : public RenderWidget,
   // Locates a sub frame with given xpath
   WebKit::WebFrame* GetChildFrame(const std::wstring& frame_xpath) const;
 
-  DOMUIBindings* GetDOMUIBindings();
+  WebUIBindings* GetWebUIBindings();
 
   ExternalHostBindings* GetExternalHostBindings();
 
@@ -1445,7 +1445,7 @@ class RenderView : public RenderWidget,
 
   // Allows Web UI pages (new tab page, etc.) to talk to the browser. The JS
   // object is only exposed when Web UI bindings are enabled.
-  scoped_ptr<DOMUIBindings> dom_ui_bindings_;
+  scoped_ptr<WebUIBindings> web_ui_bindings_;
 
   // External host exposed through automation controller.
   scoped_ptr<ExternalHostBindings> external_host_bindings_;

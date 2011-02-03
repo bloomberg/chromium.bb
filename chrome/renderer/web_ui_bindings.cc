@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/dom_ui_bindings.h"
+#include "chrome/renderer/web_ui_bindings.h"
 
 #include "base/json/json_writer.h"
 #include "base/scoped_ptr.h"
@@ -52,13 +52,13 @@ DOMBoundBrowserObject::~DOMBoundBrowserObject() {
   STLDeleteContainerPointers(properties_.begin(), properties_.end());
 }
 
-DOMUIBindings::DOMUIBindings() {
-  BindMethod("send", &DOMUIBindings::send);
+WebUIBindings::WebUIBindings() {
+  BindMethod("send", &WebUIBindings::send);
 }
 
-DOMUIBindings::~DOMUIBindings() {}
+WebUIBindings::~WebUIBindings() {}
 
-void DOMUIBindings::send(const CppArgumentList& args, CppVariant* result) {
+void WebUIBindings::send(const CppArgumentList& args, CppVariant* result) {
   // We expect at least a string message identifier, and optionally take
   // an object parameter.  If we get anything else we bail.
   if (args.size() < 1 || args.size() > 2)

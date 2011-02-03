@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_DOM_UI_BINDINGS_H_
-#define CHROME_RENDERER_DOM_UI_BINDINGS_H_
+#ifndef CHROME_RENDERER_WEB_UI_BINDINGS_H_
+#define CHROME_RENDERER_WEB_UI_BINDINGS_H_
 #pragma once
 
 #include "ipc/ipc_message.h"
@@ -47,22 +47,22 @@ class DOMBoundBrowserObject : public CppBoundClass {
   DISALLOW_COPY_AND_ASSIGN(DOMBoundBrowserObject);
 };
 
-// DOMUIBindings is the class backing the "chrome" object accessible
+// WebUIBindings is the class backing the "chrome" object accessible
 // from Javascript from privileged pages.
 //
 // We expose one function, for sending a message to the browser:
 //   send(String name, Object argument);
 // It's plumbed through to the OnDOMUIMessage callback on RenderViewHost
 // delegate.
-class DOMUIBindings : public DOMBoundBrowserObject {
+class WebUIBindings : public DOMBoundBrowserObject {
  public:
-  DOMUIBindings();
-  virtual ~DOMUIBindings();
+  WebUIBindings();
+  virtual ~WebUIBindings();
 
   // The send() function provided to Javascript.
   void send(const CppArgumentList& args, CppVariant* result);
  private:
-  DISALLOW_COPY_AND_ASSIGN(DOMUIBindings);
+  DISALLOW_COPY_AND_ASSIGN(WebUIBindings);
 };
 
-#endif  // CHROME_RENDERER_DOM_UI_BINDINGS_H_
+#endif  // CHROME_RENDERER_WEB_UI_BINDINGS_H_

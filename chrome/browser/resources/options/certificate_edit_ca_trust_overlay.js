@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ cr.define('options', function() {
      */
     finishEdit_: function() {
       // TODO(mattm): Send checked values as booleans.  For now send them as
-      // strings, since DOMUIBindings::send does not support any other types :(
+      // strings, since WebUIBindings::send does not support any other types :(
       chrome.send('editCaCertificateTrust',
                   [this.certId,
                    $('certificateCaTrustSSLCheckbox').checked.toString(),
@@ -74,7 +74,7 @@ cr.define('options', function() {
      */
     finishImport_: function() {
       // TODO(mattm): Send checked values as booleans.  For now send them as
-      // strings, since DOMUIBindings::send does not support any other types :(
+      // strings, since WebUIBindings::send does not support any other types :(
       chrome.send('importCaCertificateTrustSelected',
                   [$('certificateCaTrustSSLCheckbox').checked.toString(),
                    $('certificateCaTrustEmailCheckbox').checked.toString(),

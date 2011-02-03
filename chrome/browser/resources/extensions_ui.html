@@ -535,7 +535,7 @@ function returnExtensionsData(extensionsData){
  * Tell the C++ ExtensionDOMHandler to inspect the page detailed in |viewData|.
  */
 function sendInspectMessage(viewData) {
-  // TODO(aa): This is ghetto, but DOMUIBindings doesn't support sending
+  // TODO(aa): This is ghetto, but WebUIBindings doesn't support sending
   // anything other than arrays of strings, and this is all going to get
   // replaced with V8 extensions soon anyway.
   chrome.send('inspect', [

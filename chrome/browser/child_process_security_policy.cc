@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -273,7 +273,7 @@ void ChildProcessSecurityPolicy::GrantScheme(int child_id,
   state->second->GrantScheme(scheme);
 }
 
-void ChildProcessSecurityPolicy::GrantDOMUIBindings(int child_id) {
+void ChildProcessSecurityPolicy::GrantWebUIBindings(int child_id) {
   base::AutoLock lock(lock_);
 
   SecurityStateMap::iterator state = security_state_.find(child_id);
@@ -382,7 +382,7 @@ bool ChildProcessSecurityPolicy::HasPermissionsForFile(
   return state->second->HasPermissionsForFile(file, permissions);
 }
 
-bool ChildProcessSecurityPolicy::HasDOMUIBindings(int child_id) {
+bool ChildProcessSecurityPolicy::HasWebUIBindings(int child_id) {
   base::AutoLock lock(lock_);
 
   SecurityStateMap::iterator state = security_state_.find(child_id);

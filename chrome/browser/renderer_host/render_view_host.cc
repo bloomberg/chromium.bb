@@ -143,7 +143,7 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   DCHECK(process()->profile());
 
   if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_)) {
-    ChildProcessSecurityPolicy::GetInstance()->GrantDOMUIBindings(
+    ChildProcessSecurityPolicy::GetInstance()->GrantWebUIBindings(
         process()->id());
   }
 
@@ -1126,8 +1126,8 @@ void RenderViewHost::OnMsgDOMUISend(
     const GURL& source_url, const std::string& message,
     const std::string& content) {
   if (!ChildProcessSecurityPolicy::GetInstance()->
-          HasDOMUIBindings(process()->id())) {
-    NOTREACHED() << "Blocked unauthorized use of DOMUIBindings.";
+          HasWebUIBindings(process()->id())) {
+    NOTREACHED() << "Blocked unauthorized use of WebUIBindings.";
     return;
   }
 

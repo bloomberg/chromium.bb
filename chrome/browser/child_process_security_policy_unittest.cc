@@ -288,17 +288,17 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
   p->Remove(kRendererID);
 }
 
-TEST_F(ChildProcessSecurityPolicyTest, CanServiceDOMUIBindings) {
+TEST_F(ChildProcessSecurityPolicyTest, CanServiceWebUIBindings) {
   ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
 
   GURL url("chrome://thumb/http://www.google.com/");
 
   p->Add(kRendererID);
 
-  EXPECT_FALSE(p->HasDOMUIBindings(kRendererID));
+  EXPECT_FALSE(p->HasWebUIBindings(kRendererID));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, url));
-  p->GrantDOMUIBindings(kRendererID);
-  EXPECT_TRUE(p->HasDOMUIBindings(kRendererID));
+  p->GrantWebUIBindings(kRendererID);
+  EXPECT_TRUE(p->HasWebUIBindings(kRendererID));
   EXPECT_TRUE(p->CanRequestURL(kRendererID, url));
 
   p->Remove(kRendererID);
@@ -314,11 +314,11 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace) {
 
   p->GrantRequestURL(kRendererID, url);
   p->GrantReadFile(kRendererID, file);
-  p->GrantDOMUIBindings(kRendererID);
+  p->GrantWebUIBindings(kRendererID);
 
   EXPECT_TRUE(p->CanRequestURL(kRendererID, url));
   EXPECT_TRUE(p->CanReadFile(kRendererID, file));
-  EXPECT_TRUE(p->HasDOMUIBindings(kRendererID));
+  EXPECT_TRUE(p->HasWebUIBindings(kRendererID));
 
   p->Remove(kRendererID);
 
@@ -329,5 +329,5 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace) {
   // In this case, we default to secure behavior.
   EXPECT_FALSE(p->CanRequestURL(kRendererID, url));
   EXPECT_FALSE(p->CanReadFile(kRendererID, file));
-  EXPECT_FALSE(p->HasDOMUIBindings(kRendererID));
+  EXPECT_FALSE(p->HasWebUIBindings(kRendererID));
 }
