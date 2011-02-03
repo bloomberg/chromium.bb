@@ -16,6 +16,9 @@
 #include "chrome/common/render_messages.h"
 
 // static
+base::TimeTicks PrerenderManager::last_prefetch_seen_time_;
+
+// static
 PrerenderManager::PrerenderManagerMode PrerenderManager::mode_ =
     PRERENDER_MODE_ENABLED;
 
@@ -121,6 +124,8 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
   if (pc.get() == NULL)
     return false;
 
+  if (!pc->load_start_time().is_null())
+    RecordTimeUntilUsed(base::TimeTicks::Now() - pc->load_start_time());
   pc->set_final_status(PrerenderContents::FINAL_STATUS_USED);
 
   RenderViewHost* rvh = pc->render_view_host();
@@ -172,15 +177,31 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
 }
 
 void PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta pplt) {
+  bool record_windowed_pplt = ShouldRecordWindowedPPLT();
   switch (mode_) {
     case PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP:
       UMA_HISTOGRAM_TIMES("PLT.PerceivedPageLoadTime_PrerenderControl", pplt);
+      if (record_windowed_pplt) {
+        UMA_HISTOGRAM_TIMES(
+            "PLT.PerceivedPageLoadTime_WindowPrerenderControl", pplt);
+      }
       break;
     case PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP:
       UMA_HISTOGRAM_TIMES("PLT.PerceivedPageLoadTime_PrerenderTreatment", pplt);
+      if (record_windowed_pplt) {
+        UMA_HISTOGRAM_TIMES(
+            "PLT.PerceivedPageLoadTime_WindowPrerenderTreatment", pplt);
+      }
       break;
     default:
       break;
+  }
+}
+
+void PrerenderManager::RecordTimeUntilUsed(base::TimeDelta time_until_used) {
+  if (mode_ == PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP) {
+    UMA_HISTOGRAM_TIMES("PLT.TimeUntilUsed_PrerenderTreatment",
+                        time_until_used);
   }
 }
 
@@ -193,4 +214,37 @@ PrerenderContents* PrerenderManager::FindEntry(const GURL& url) {
   }
   // Entry not found.
   return NULL;
+}
+
+void PrerenderManager::RecordPrefetchTagObserved() {
+  // Ensure that we are in the UI thread, and post to the UI thread if
+  // necessary.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        NewRunnableFunction(
+            &PrerenderManager::RecordPrefetchTagObservedOnUIThread));
+  } else {
+    RecordPrefetchTagObservedOnUIThread();
+  }
+}
+
+void PrerenderManager::RecordPrefetchTagObservedOnUIThread() {
+  // Once we get here, we have to be on the UI thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // If we observe multiple tags within the 30 second window, we will still
+  // reset the window to begin at the most recent occurrence, so that we will
+  // always be in a window in the 30 seconds from each occurrence.
+  last_prefetch_seen_time_ = base::TimeTicks::Now();
+}
+
+bool PrerenderManager::ShouldRecordWindowedPPLT() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (last_prefetch_seen_time_.is_null())
+    return false;
+  base::TimeDelta elapsed_time =
+      base::TimeTicks::Now() - last_prefetch_seen_time_;
+  return elapsed_time <= base::TimeDelta::FromSeconds(kWindowedPPLTSeconds);
 }

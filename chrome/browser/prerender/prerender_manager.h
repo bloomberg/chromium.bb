@@ -55,7 +55,9 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // Returns NULL if the specified URL has not been prerendered.
   PrerenderContents* GetEntry(const GURL& url);
 
+  // The following two methods should only be called from the UI thread.
   void RecordPerceivedPageLoadTime(base::TimeDelta pplt);
+  void RecordTimeUntilUsed(base::TimeDelta time_until_used);
 
   base::TimeDelta max_prerender_age() const { return max_prerender_age_; }
   void set_max_prerender_age(base::TimeDelta td) { max_prerender_age_ = td; }
@@ -64,6 +66,10 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
 
   static PrerenderManagerMode GetMode();
   static void SetMode(PrerenderManagerMode mode);
+
+  // The following static method can be called from any thread, but will result
+  // in posting a task to the UI thread if we are not in the UI thread.
+  static void RecordPrefetchTagObserved();
 
  protected:
   virtual ~PrerenderManager();
@@ -90,6 +96,10 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // ownership of the PrerenderContents.
   PrerenderContents* FindEntry(const GURL& url);
 
+  bool ShouldRecordWindowedPPLT() const;
+
+  static void RecordPrefetchTagObservedOnUIThread();
+
   Profile* profile_;
 
   base::TimeDelta max_prerender_age_;
@@ -104,9 +114,19 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // Default maximum age a prerendered element may have, in seconds.
   static const int kDefaultMaxPrerenderAgeSeconds = 20;
 
+  // Time window for which we will record windowed PLT's from the last
+  // observed link rel=prefetch tag.
+  static const int kWindowedPPLTSeconds = 30;
+
   scoped_ptr<PrerenderContents::Factory> prerender_contents_factory_;
 
   static PrerenderManagerMode mode_;
+
+  // The time when we last saw a prefetch request coming from a renderer.
+  // This is used to record perceived PLT's for a certain amount of time
+  // from the point that we last saw a <link rel=prefetch> tag.
+  // This static variable should only be modified on the UI thread.
+  static base::TimeTicks last_prefetch_seen_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

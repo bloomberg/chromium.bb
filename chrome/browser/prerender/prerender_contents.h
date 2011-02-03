@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/time.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
@@ -89,6 +90,8 @@ class PrerenderContents : public RenderViewHostDelegate,
   // contents are destroyed.
   void set_final_status(FinalStatus final_status);
   FinalStatus final_status() const;
+
+  base::TimeTicks load_start_time() const { return load_start_time_; }
 
   // Indicates whether this prerendered page can be used for the provided
   // URL, i.e. whether there is a match.
@@ -236,6 +239,11 @@ class PrerenderContents : public RenderViewHostDelegate,
   bool has_stopped_loading_;
 
   FinalStatus final_status_;
+
+  // Time at which we started to load the URL.  This is used to compute
+  // the time elapsed from initiating a prerender until the time the
+  // (potentially only partially) prerendered page is shown to the user.
+  base::TimeTicks load_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };
