@@ -128,11 +128,6 @@ using base::TimeDelta;
 
 namespace {
 
-void CleanupRequestContext(ChromeURLRequestContextGetter* context) {
-  if (context)
-    context->CleanupOnUIThread();
-}
-
 // Delay, in milliseconds, before we explicitly create the SessionService.
 static const int kCreateSessionServiceDelayMS = 500;
 
@@ -248,9 +243,6 @@ ProfileImpl::ProfileImpl(const FilePath& path)
     : path_(path),
       visited_link_event_listener_(new VisitedLinkEventListener()),
       extension_devtools_manager_(NULL),
-      request_context_(NULL),
-      media_request_context_(NULL),
-      extensions_request_context_(NULL),
       host_content_settings_map_(NULL),
       host_zoom_map_(NULL),
       history_service_created_(false),
@@ -284,6 +276,26 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   // to PathService.
   chrome::GetUserCacheDirectory(path_, &base_cache_path_);
   file_util::CreateDirectory(base_cache_path_);
+
+  FilePath cookie_path = GetPath();
+  cookie_path = cookie_path.Append(chrome::kCookieFilename);
+  FilePath cache_path = base_cache_path_;
+  int cache_max_size;
+  GetCacheParameters(kNormalContext, &cache_path, &cache_max_size);
+  cache_path = GetCachePath(cache_path);
+
+  FilePath media_cache_path = base_cache_path_;
+  int media_cache_max_size;
+  GetCacheParameters(kMediaContext, &media_cache_path, &media_cache_max_size);
+  cache_path = GetMediaCachePath(cache_path);
+
+  FilePath extensions_cookie_path = GetPath();
+  extensions_cookie_path =
+      extensions_cookie_path.Append(chrome::kExtensionsCookieFilename);
+
+  io_data_.Init(cookie_path, cache_path, cache_max_size,
+                media_cache_path, media_cache_max_size, extensions_cookie_path,
+                this);
 
   // Listen for theme installations from our original profile.
   registrar_.Add(this, NotificationType::THEME_INSTALLED,
@@ -541,13 +553,10 @@ ProfileImpl::~ProfileImpl() {
   if (spellcheck_host_.get())
     spellcheck_host_->UnsetObserver();
 
-  if (default_request_context_ == request_context_)
+  if (io_data_.HasMainRequestContext() &&
+      default_request_context_ == GetRequestContext()) {
     default_request_context_ = NULL;
-
-
-  CleanupRequestContext(request_context_);
-  CleanupRequestContext(media_request_context_);
-  CleanupRequestContext(extensions_request_context_);
+  }
 
   // HistoryService may call into the BookmarkModel, as such we need to
   // delete HistoryService before the BookmarkModel. The destructor for
@@ -754,47 +763,26 @@ FilePath ProfileImpl::GetPrefFilePath() {
 }
 
 URLRequestContextGetter* ProfileImpl::GetRequestContext() {
-  if (!request_context_) {
-    FilePath cookie_path = GetPath();
-    cookie_path = cookie_path.Append(chrome::kCookieFilename);
-    FilePath cache_path = base_cache_path_;
-    int max_size;
-    GetCacheParameters(kNormalContext, &cache_path, &max_size);
-
-    cache_path = GetCachePath(cache_path);
-    request_context_ = ChromeURLRequestContextGetter::CreateOriginal(
-        this, cookie_path, cache_path, max_size);
-
-    // The first request context is always a normal (non-OTR) request context.
-    // Even when Chromium is started in OTR mode, a normal profile is always
-    // created first.
-    if (!default_request_context_) {
-      default_request_context_ = request_context_;
-      request_context_->set_is_main(true);
-      // TODO(eroman): this isn't terribly useful anymore now that the
-      // net::URLRequestContext is constructed by the IO thread...
-      NotificationService::current()->Notify(
-          NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
-          NotificationService::AllSources(), NotificationService::NoDetails());
-    }
+  URLRequestContextGetter* request_context =
+      io_data_.GetMainRequestContextGetter();
+  // The first request context is always a normal (non-OTR) request context.
+  // Even when Chromium is started in OTR mode, a normal profile is always
+  // created first.
+  if (!default_request_context_) {
+    default_request_context_ = request_context;
+    request_context->set_is_main(true);
+    // TODO(eroman): this isn't terribly useful anymore now that the
+    // net::URLRequestContext is constructed by the IO thread...
+    NotificationService::current()->Notify(
+        NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
+        NotificationService::AllSources(), NotificationService::NoDetails());
   }
 
-  return request_context_;
+  return request_context;
 }
 
 URLRequestContextGetter* ProfileImpl::GetRequestContextForMedia() {
-  if (!media_request_context_) {
-    FilePath cache_path = base_cache_path_;
-    int max_size;
-    GetCacheParameters(kMediaContext, &cache_path, &max_size);
-
-    cache_path = GetMediaCachePath(cache_path);
-    media_request_context_ =
-        ChromeURLRequestContextGetter::CreateOriginalForMedia(
-            this, cache_path, max_size);
-  }
-
-  return media_request_context_;
+  return io_data_.GetMediaRequestContextGetter();
 }
 
 FaviconService* ProfileImpl::GetFaviconService(ServiceAccessType sat) {
@@ -807,16 +795,7 @@ FaviconService* ProfileImpl::GetFaviconService(ServiceAccessType sat) {
 }
 
 URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
-  if (!extensions_request_context_) {
-    FilePath cookie_path = GetPath();
-    cookie_path = cookie_path.Append(chrome::kExtensionsCookieFilename);
-
-    extensions_request_context_ =
-        ChromeURLRequestContextGetter::CreateOriginalForExtensions(
-            this, cookie_path);
-  }
-
-  return extensions_request_context_;
+  return io_data_.GetExtensionsRequestContextGetter();
 }
 
 void ProfileImpl::RegisterExtensionWithRequestContexts(

@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/spellcheck_host_observer.h"
 #include "chrome/common/notification_observer.h"
@@ -213,11 +214,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<ProfileSyncService> sync_service_;
   scoped_refptr<CloudPrintProxyService> cloud_print_proxy_service_;
 
-  scoped_refptr<ChromeURLRequestContextGetter> request_context_;
-
-  scoped_refptr<ChromeURLRequestContextGetter> media_request_context_;
-
-  scoped_refptr<ChromeURLRequestContextGetter> extensions_request_context_;
+  ProfileIOData::Handle io_data_;
 
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 

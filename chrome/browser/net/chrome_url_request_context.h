@@ -33,6 +33,7 @@
 class CommandLine;
 class PrefService;
 class Profile;
+class ProfileIOData;
 
 namespace net {
 class DnsCertProvenanceChecker;
@@ -236,19 +237,18 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   // Create an instance for use with an 'original' (non-OTR) profile. This is
   // expected to get called on the UI thread.
   static ChromeURLRequestContextGetter* CreateOriginal(
-      Profile* profile, const FilePath& cookie_store_path,
-      const FilePath& disk_cache_path, int cache_size);
+      Profile* profile, const ProfileIOData* profile_io_data);
 
   // Create an instance for an original profile for media. This is expected to
   // get called on UI thread. This method takes a profile and reuses the
   // 'original' net::URLRequestContext for common files.
   static ChromeURLRequestContextGetter* CreateOriginalForMedia(
-      Profile* profile, const FilePath& disk_cache_path, int cache_size);
+      Profile* profile, const ProfileIOData* profile_io_data);
 
   // Create an instance for an original profile for extensions. This is expected
   // to get called on UI thread.
   static ChromeURLRequestContextGetter* CreateOriginalForExtensions(
-      Profile* profile, const FilePath& cookie_store_path);
+      Profile* profile, const ProfileIOData* profile_io_data);
 
   // Create an instance for use with an OTR profile. This is expected to get
   // called on the UI thread.
@@ -275,13 +275,6 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   // Registers an observer on |profile|'s preferences which will be used
   // to update the context when the default language and charset change.
   void RegisterPrefsObserver(Profile* profile);
-
-  // Creates a request context for media resources from a regular request
-  // context. This helper method is called from CreateOriginalForMedia and
-  // CreateOffTheRecordForMedia.
-  static ChromeURLRequestContextGetter* CreateRequestContextForMedia(
-      Profile* profile, const FilePath& disk_cache_path, int cache_size,
-      bool off_the_record);
 
   // These methods simply forward to the corresponding method on
   // ChromeURLRequestContext.
@@ -326,7 +319,7 @@ class ChromeURLRequestContextFactory {
   virtual ~ChromeURLRequestContextFactory();
 
   // Called to create a new instance (will only be called once).
-  virtual ChromeURLRequestContext* Create() = 0;
+  virtual scoped_refptr<ChromeURLRequestContext> Create() = 0;
 
  protected:
   IOThread* io_thread() { return io_thread_; }

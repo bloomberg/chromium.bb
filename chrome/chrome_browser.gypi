@@ -1883,6 +1883,8 @@
         'browser/profiles/profile.h',
         'browser/profiles/profile_impl.cc',
         'browser/profiles/profile_impl.h',
+        'browser/profiles/profile_io_data.cc',
+        'browser/profiles/profile_io_data.h',
         'browser/profiles/profile_manager.cc',
         'browser/profiles/profile_manager.h',
         'browser/remoting/directory_add_request.cc',
