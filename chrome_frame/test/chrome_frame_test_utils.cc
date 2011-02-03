@@ -50,6 +50,7 @@ const char kChromeImageName[] = "chrome.exe";
 const wchar_t kIEProfileName[] = L"iexplore";
 const wchar_t kChromeLauncher[] = L"chrome_launcher.exe";
 const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
+const int kChromeFrameVeryLongNavigationTimeoutInSeconds = 30;
 
 const wchar_t TempRegKeyOverride::kTempTestKeyPath[] =
     L"Software\\Chromium\\TempTestKeys";

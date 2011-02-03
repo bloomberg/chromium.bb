@@ -372,7 +372,7 @@ HRESULT IEEventSink::CloseWebBrowser() {
 }
 
 void IEEventSink::Refresh() {
-  base::win::ScopedVariant refresh_level(REFRESH_NORMAL);
+  base::win::ScopedVariant refresh_level(REFRESH_COMPLETELY);
   web_browser2_->Refresh2(refresh_level.AsInput());
 }
 

@@ -60,6 +60,7 @@ extern const wchar_t kSafariImageName[];
 extern const char kChromeImageName[];
 extern const wchar_t kChromeLauncher[];
 extern const int kChromeFrameLongNavigationTimeoutInSeconds;
+extern const int kChromeFrameVeryLongNavigationTimeoutInSeconds;
 
 // Temporarily impersonate the current thread to low integrity for the lifetime
 // of the object. Destructor will automatically revert integrity level.
