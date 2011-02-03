@@ -156,6 +156,13 @@ bool GetInputMethodIdsFromLanguageCode(
 void EnableInputMethods(const std::string& language_code, InputMethodType type,
                         const std::string& initial_input_method_id);
 
+// Returns the input method descriptor of the hardware keyboard.
+InputMethodDescriptor GetHardwareInputMethodDescriptor();
+
+// Returns the fallback input method descriptor (the very basic US
+// keyboard). This function is mostly used for testing, but may be used
+// as the fallback, when there is no other choice.
+InputMethodDescriptor GetFallbackInputMethodDescriptor();
 
 // DO NOT USE Functions below. These are only exported for unit tests.
 void SortInputMethodIdsByNamesInternal(

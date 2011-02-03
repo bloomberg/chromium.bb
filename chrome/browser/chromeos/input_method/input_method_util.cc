@@ -575,8 +575,9 @@ void EnableInputMethods(const std::string& language_code, InputMethodType type,
   std::vector<std::string> input_method_ids;
   GetInputMethodIdsFromLanguageCode(language_code, type, &input_method_ids);
 
-  std::string keyboard = CrosLibrary::Get()->GetKeyboardLibrary()->
-      GetHardwareKeyboardLayoutName();
+  // Add the hardware keyboard.
+  const std::string keyboard =
+      input_method::GetHardwareInputMethodDescriptor().id;
   if (std::count(input_method_ids.begin(), input_method_ids.end(),
                  keyboard) == 0) {
     input_method_ids.push_back(keyboard);
@@ -595,6 +596,15 @@ void EnableInputMethods(const std::string& language_code, InputMethodType type,
   if (!initial_input_method_id.empty()) {
     library->ChangeInputMethod(initial_input_method_id);
   }
+}
+
+InputMethodDescriptor GetHardwareInputMethodDescriptor() {
+  // TODO(satorux): Rework this function. crosbug.com/11528.
+  return GetFallbackInputMethodDescriptor();
+}
+
+InputMethodDescriptor GetFallbackInputMethodDescriptor() {
+  return InputMethodDescriptor("xkb:us::eng", "USA", "us", "eng");
 }
 
 void OnLocaleChanged() {

@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/cros/mock_speech_synthesis_library.h"
 #include "chrome/browser/chromeos/cros/mock_system_library.h"
 #include "chrome/browser/chromeos/cros/mock_touchpad_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -49,7 +50,7 @@ CrosMock::CrosMock()
       current_input_method_("", "", "", ""),
       previous_input_method_("", "", "", "") {
   current_input_method_ =
-      InputMethodLibrary::GetFallbackInputMethodDescriptor();
+      input_method::GetFallbackInputMethodDescriptor();
 }
 
 CrosMock::~CrosMock() {
@@ -199,10 +200,6 @@ void CrosMock::SetStatusAreaMocksExpectations() {
 }
 
 void CrosMock::SetKeyboardLibraryStatusAreaExpectations() {
-  EXPECT_CALL(*mock_keyboard_library_, GetHardwareKeyboardLayoutName())
-      .Times(AnyNumber())
-      .WillRepeatedly((Return("xkb:us::eng")))
-      .RetiresOnSaturation();
   EXPECT_CALL(*mock_keyboard_library_, GetCurrentKeyboardLayoutName())
       .Times(AnyNumber())
       .WillRepeatedly((Return("us")))
@@ -239,11 +236,11 @@ void CrosMock::SetInputMethodLibraryStatusAreaExpectations() {
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_input_method_library_, GetActiveInputMethods())
       .Times(AnyNumber())
-      .WillRepeatedly(InvokeWithoutArgs(CreateFallbackInputMethodDescriptors))
+      .WillRepeatedly(InvokeWithoutArgs(CreateInputMethodDescriptors))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_input_method_library_, GetSupportedInputMethods())
       .Times(AnyNumber())
-      .WillRepeatedly(InvokeWithoutArgs(CreateFallbackInputMethodDescriptors))
+      .WillRepeatedly(InvokeWithoutArgs(CreateInputMethodDescriptors))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_input_method_library_, current_input_method())
       .Times(AnyNumber())
@@ -461,6 +458,13 @@ void CrosMock::TearDownMocks() {
     test_api()->SetSystemLibrary(NULL, false);
   if (mock_touchpad_library_)
     test_api()->SetTouchpadLibrary(NULL, false);
+}
+
+InputMethodDescriptors* CrosMock::CreateInputMethodDescriptors() {
+  InputMethodDescriptors* descriptors = new InputMethodDescriptors;
+  descriptors->push_back(
+      input_method::GetFallbackInputMethodDescriptor());
+  return descriptors;
 }
 
 }  // namespace chromeos

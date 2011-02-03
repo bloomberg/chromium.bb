@@ -126,13 +126,6 @@ class InputMethodLibrary {
 
   virtual const ImePropertyList& current_ime_properties() const = 0;
 
-  // Returns the fallback input method descriptor (the very basic US
-  // keyboard). This function is mostly used for testing, but may be used
-  // as the fallback, when there is no other choice.
-  static InputMethodDescriptor GetFallbackInputMethodDescriptor() {
-    return InputMethodDescriptor("xkb:us::eng", "USA", "us", "eng");
-  }
-
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().
   static InputMethodLibrary* GetImpl(bool stub);

@@ -50,9 +50,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                             language_prefs::kHotkeyPreviousEngine);
   prefs->RegisterStringPref(prefs::kLanguagePreferredLanguages,
                             kFallbackInputMethodLocale);
-  KeyboardLibrary* keyboard_library = CrosLibrary::Get()->GetKeyboardLibrary();
-  prefs->RegisterStringPref(prefs::kLanguagePreloadEngines,
-                            keyboard_library->GetHardwareKeyboardLayoutName());
+  prefs->RegisterStringPref(
+      prefs::kLanguagePreloadEngines,
+      input_method::GetHardwareInputMethodDescriptor().id);
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(
         language_prefs::kChewingBooleanPrefs[i].pref_name,

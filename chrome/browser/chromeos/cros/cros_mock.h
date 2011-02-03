@@ -86,6 +86,10 @@ class CrosMock {
 
   void TearDownMocks();
 
+  // Creates input method descriptors. This is a helper function for
+  // SetInputMethodLibraryStatusAreaExpectations().
+  static InputMethodDescriptors* CreateInputMethodDescriptors();
+
   // TestApi gives access to CrosLibrary private members.
   chromeos::CrosLibrary::TestApi* test_api();
 

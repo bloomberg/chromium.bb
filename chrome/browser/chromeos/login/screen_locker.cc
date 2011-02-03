@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/background_view.h"
@@ -122,18 +123,16 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
         // The LockScreen function is also called when the OS is suspended, and
         // in that case |saved_active_input_method_list_| might be non-empty.
         saved_active_input_method_list_.empty()) {
-      chromeos::InputMethodLibrary* language =
+      chromeos::InputMethodLibrary* library =
           chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
-      chromeos::KeyboardLibrary* keyboard =
-          chromeos::CrosLibrary::Get()->GetKeyboardLibrary();
 
-      saved_previous_input_method_id_ = language->previous_input_method().id;
-      saved_current_input_method_id_ = language->current_input_method().id;
+      saved_previous_input_method_id_ = library->previous_input_method().id;
+      saved_current_input_method_id_ = library->current_input_method().id;
       scoped_ptr<chromeos::InputMethodDescriptors> active_input_method_list(
-          language->GetActiveInputMethods());
+          library->GetActiveInputMethods());
 
-      const std::string hardware_keyboard =
-          keyboard->GetHardwareKeyboardLayoutName();  // e.g. "xkb:us::eng"
+      const std::string hardware_keyboard_id =
+          chromeos::input_method::GetHardwareInputMethodDescriptor().id;
       // We'll add the hardware keyboard if it's not included in
       // |active_input_method_list| so that the user can always use the hardware
       // keyboard on the screen locker.
@@ -149,17 +148,17 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
         if (!StartsWithASCII(input_method_id, kValidInputMethodPrefix, true))
           continue;
         value.string_list_value.push_back(input_method_id);
-        if (input_method_id == hardware_keyboard) {
+        if (input_method_id == hardware_keyboard_id) {
           should_add_hardware_keyboard = false;
         }
       }
       if (should_add_hardware_keyboard) {
-        value.string_list_value.push_back(hardware_keyboard);
+        value.string_list_value.push_back(hardware_keyboard_id);
       }
       // We don't want to shut down the IME, even if the hardware layout is the
       // only IME left.
-      language->SetEnableAutoImeShutdown(false);
-      language->SetImeConfig(
+      library->SetEnableAutoImeShutdown(false);
+      library->SetImeConfig(
           chromeos::language_prefs::kGeneralSectionName,
           chromeos::language_prefs::kPreloadEnginesConfigName,
           value);
@@ -169,22 +168,22 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
   void RestoreInputMethods() {
     if (chromeos::CrosLibrary::Get()->EnsureLoaded() &&
         !saved_active_input_method_list_.empty()) {
-      chromeos::InputMethodLibrary* language =
+      chromeos::InputMethodLibrary* library =
           chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
 
       chromeos::ImeConfigValue value;
       value.type = chromeos::ImeConfigValue::kValueTypeStringList;
       value.string_list_value = saved_active_input_method_list_;
-      language->SetEnableAutoImeShutdown(true);
-      language->SetImeConfig(
+      library->SetEnableAutoImeShutdown(true);
+      library->SetImeConfig(
           chromeos::language_prefs::kGeneralSectionName,
           chromeos::language_prefs::kPreloadEnginesConfigName,
           value);
       // Send previous input method id first so Ctrl+space would work fine.
       if (!saved_previous_input_method_id_.empty())
-        language->ChangeInputMethod(saved_previous_input_method_id_);
+        library->ChangeInputMethod(saved_previous_input_method_id_);
       if (!saved_current_input_method_id_.empty())
-        language->ChangeInputMethod(saved_current_input_method_id_);
+        library->ChangeInputMethod(saved_current_input_method_id_);
 
       saved_previous_input_method_id_.clear();
       saved_current_input_method_id_.clear();

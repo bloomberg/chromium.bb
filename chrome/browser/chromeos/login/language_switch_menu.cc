@@ -103,10 +103,12 @@ void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
     CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
 
     // Enable the keyboard layouts that are necessary for the new locale.
+    // Change the current input method to the hardware keyboard layout
+    // since the input method currently in use may not be supported by the
+    // new locale.
     input_method::EnableInputMethods(
         locale, input_method::kKeyboardLayoutsOnly,
-        CrosLibrary::Get()->GetKeyboardLibrary()->
-            GetHardwareKeyboardLayoutName());
+        input_method::GetHardwareInputMethodDescriptor().id);
 
     // The following line does not seem to affect locale anyhow. Maybe in
     // future..

@@ -63,12 +63,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         should_change_input_method_(false),
         ibus_daemon_process_id_(0),
         candidate_window_controller_(NULL) {
-    // TODO(yusukes): Using both CreateFallbackInputMethodDescriptors and
-    // chromeos::GetHardwareKeyboardLayoutName doesn't look clean. Probably
-    // we should unify these APIs.
-    scoped_ptr<InputMethodDescriptors> input_method_descriptors(
-        CreateFallbackInputMethodDescriptors());
-    current_input_method_ = input_method_descriptors->at(0);
+    current_input_method_ =
+        input_method::GetHardwareInputMethodDescriptor();
+    active_input_method_ids_.push_back(current_input_method_.id);
     // Observe APP_TERMINATING to stop input method daemon gracefully.
     // We should not use APP_EXITING here since logout might be canceled by
     // JavaScript after APP_EXITING is sent (crosbug.com/11055).
@@ -109,8 +106,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       }
     }
     if (result->empty()) {
-      delete result;
-      result = CreateFallbackInputMethodDescriptors();
+      result->push_back(input_method::GetHardwareInputMethodDescriptor());
     }
     return result;
   }
@@ -128,7 +124,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
           input_method_status_connection_);
     }
     if (!result || result->empty()) {
-      result = CreateFallbackInputMethodDescriptors();
+      delete result;
+      result = new InputMethodDescriptors;
+      result->push_back(input_method::GetHardwareInputMethodDescriptor());
     }
     return result;
   }
@@ -739,7 +737,7 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
         current_input_method_("", "", "", ""),
         keyboard_overlay_map_(
             CreateRealisticKeyboardOverlayMap()) {
-    current_input_method_ = GetFallbackInputMethodDescriptor();
+    current_input_method_ = input_method::GetFallbackInputMethodDescriptor();
   }
 
   ~InputMethodLibraryStubImpl() {}
