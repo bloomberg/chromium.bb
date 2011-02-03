@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/dom_ui/menu_ui.h"
-#include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #include "chrome/browser/chromeos/views/menu_locator.h"
+#include "chrome/browser/chromeos/views/webui_menu_widget.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -31,7 +31,7 @@
 namespace {
 
 using chromeos::NativeMenuDOMUI;
-using chromeos::DOMUIMenuWidget;
+using chromeos::WebUIMenuWidget;
 
 // Returns true if the menu item type specified can be executed as a command.
 bool MenuTypeCanExecute(ui::MenuModel::ItemType type) {
@@ -41,7 +41,7 @@ bool MenuTypeCanExecute(ui::MenuModel::ItemType type) {
 }
 
 gboolean Destroy(GtkWidget* widget, gpointer data) {
-  DOMUIMenuWidget* menu_widget = static_cast<DOMUIMenuWidget*>(data);
+  WebUIMenuWidget* menu_widget = static_cast<WebUIMenuWidget*>(data);
   NativeMenuDOMUI* domui_menu = menu_widget->domui_menu();
   // domui_menu can be NULL if widget is destroyed by signal.
   if (domui_menu)
@@ -77,7 +77,7 @@ void NativeMenuDOMUI::SetMenuURL(views::Menu2* menu2, const GURL& url) {
 
   gfx::NativeView native = menu2->GetNativeMenu();
   DCHECK(native);
-  DOMUIMenuWidget* widget = DOMUIMenuWidget::FindDOMUIMenuWidget(native);
+  WebUIMenuWidget* widget = WebUIMenuWidget::FindWebUIMenuWidget(native);
   DCHECK(widget);
   widget->domui_menu()->set_menu_url(url);
 }
@@ -97,7 +97,7 @@ NativeMenuDOMUI::NativeMenuDOMUI(ui::MenuModel* menu_model, bool root)
       menu_url_(StringPrintf("chrome://%s", chrome::kChromeUIMenu)),
       on_menu_opened_called_(false),
       nested_dispatcher_(NULL) {
-  menu_widget_ = new DOMUIMenuWidget(this, root);
+  menu_widget_ = new WebUIMenuWidget(this, root);
   // Set the initial location off the screen not to show small
   // window with dropshadow.
   menu_widget_->Init(NULL, gfx::Rect(-10000, -10000, 1, 1));

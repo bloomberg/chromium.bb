@@ -10,8 +10,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
-#include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #include "chrome/browser/chromeos/views/native_menu_domui.h"
+#include "chrome/browser/chromeos/views/webui_menu_widget.h"
 #include "chrome/browser/dom_ui/web_ui_theme_source.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
@@ -76,8 +76,8 @@ void NetworkMenuHandler::HandleAction(const ListValue* values) {
         static_cast<chromeos::NetworkMenuUI*>(dom_ui_);
     bool close_menu = network_menu_ui->ModelAction(model, values);
     if (close_menu) {
-      chromeos::DOMUIMenuWidget* widget
-          = chromeos::DOMUIMenuWidget::FindDOMUIMenuWidget(
+      chromeos::WebUIMenuWidget* widget
+          = chromeos::WebUIMenuWidget::FindWebUIMenuWidget(
               dom_ui_->tab_contents()->GetNativeView());
       if (widget) {
         chromeos::NativeMenuDOMUI* domui_menu = widget->domui_menu();

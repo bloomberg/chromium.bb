@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ class MenuModel;
 
 namespace chromeos {
 
-class DOMUIMenuControl;
+class WebUIMenuControl;
 
 // MenuSourceDelegate class allows subclass to injects specific values
 // to menu javascript code.
@@ -27,7 +27,7 @@ class MenuSourceDelegate {
  public:
   virtual ~MenuSourceDelegate() {}
   // Subclass can add extra parameters or replaces default configuration.
-  virtual void AddCustomConfigValues(DictionaryValue* config) const {};
+  virtual void AddCustomConfigValues(DictionaryValue* config) const {}
 
   // Subclass can add their values to |localized_strings| and those values
   // are used by JS template builder and could be accessed via JS class
@@ -82,7 +82,7 @@ class MenuHandlerBase : public DOMMessageHandler {
 
   // Returns the menu control that is associated with the
   // MenuUI. This may return null when menu is being deleted.
-  DOMUIMenuControl* GetMenuControl();
+  WebUIMenuControl* GetMenuControl();
 
   // Returns the menu model for this menu ui.
   // This may return null when menu is being deleted.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 #include "base/weak_ptr.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #include "chrome/browser/chromeos/views/native_menu_domui.h"
+#include "chrome/browser/chromeos/views/webui_menu_widget.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/notification_registrar.h"
@@ -82,7 +82,7 @@ void WrenchMenuUI::Observe(NotificationType type,
 }
 
 void WrenchMenuUI::UpdateZoomControls() {
-  DOMUIMenuWidget* widget = DOMUIMenuWidget::FindDOMUIMenuWidget(
+  WebUIMenuWidget* widget = WebUIMenuWidget::FindWebUIMenuWidget(
       tab_contents()->GetNativeView());
   if (!widget || !widget->is_root())
     return;

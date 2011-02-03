@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/chromeos/dom_ui/domui_menu_control.h"
+#include "chrome/browser/chromeos/webui_menu_control.h"
 #include "googleurl/src/gurl.h"
 #include "views/controls/menu/menu_wrapper.h"
 
@@ -34,11 +34,11 @@ typedef union _XEvent XEvent;
 namespace chromeos {
 
 class MenuLocator;
-class DOMUIMenuWidget;
+class WebUIMenuWidget;
 
 // A DOMUI implementation of MenuWrapper.
 class NativeMenuDOMUI : public views::MenuWrapper,
-                        public DOMUIMenuControl,
+                        public WebUIMenuControl,
                         public MessageLoop::Dispatcher {
  public:
   NativeMenuDOMUI(ui::MenuModel* menu_model, bool root);
@@ -50,7 +50,7 @@ class NativeMenuDOMUI : public views::MenuWrapper,
   // Set parent menu.
   void set_parent(NativeMenuDOMUI* parent) { parent_ = parent; }
 
-  // Overridden from MenuWrapper:
+  // Overridden from views::MenuWrapper:
   virtual void RunMenuAt(const gfx::Point& point, int alignment);
   virtual void CancelMenu();
   virtual void Rebuild();
@@ -61,14 +61,14 @@ class NativeMenuDOMUI : public views::MenuWrapper,
   virtual void RemoveMenuListener(views::MenuListener* listener);
   virtual void SetMinimumWidth(int width);
 
-  // Overriden from MessageLoopForUI::Dispatcher:
+  // Overridden from MessageLoopForUI::Dispatcher:
   virtual bool Dispatch(GdkEvent* event);
 #if defined(TOUCH_UI)
   virtual base::MessagePumpGlibXDispatcher::DispatchStatus Dispatch(
       XEvent* xevent);
 #endif
 
-  // Overriden from DOMUIMenuControl;
+  // Overridden from WebUIMenuControl:
   virtual ui::MenuModel* GetMenuModel() { return model_; }
   virtual void Activate(ui::MenuModel* model,
                         int index,
@@ -123,7 +123,7 @@ class NativeMenuDOMUI : public views::MenuWrapper,
   ui::MenuModel* model_;
 
   // A window widget that draws the content of the menu.
-  DOMUIMenuWidget* menu_widget_;
+  WebUIMenuWidget* menu_widget_;
 
   // True if the menu is currently shown.
   // Used only in root.

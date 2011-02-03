@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_VIEWS_DOMUI_MENU_WIDGET_H_
-#define CHROME_BROWSER_CHROMEOS_VIEWS_DOMUI_MENU_WIDGET_H_
+#ifndef CHROME_BROWSER_CHROMEOS_VIEWS_WEBUI_MENU_WIDGET_H_
+#define CHROME_BROWSER_CHROMEOS_VIEWS_WEBUI_MENU_WIDGET_H_
 #pragma once
 
 #include <string>
@@ -18,13 +18,13 @@ namespace chromeos {
 class MenuLocator;
 class NativeMenuDOMUI;
 
-// DOMUIMenuWidget is a window widget for DOMUI based menu.
-class DOMUIMenuWidget : public views::WidgetGtk {
+// WebUIMenuWidget is a window widget for a Web UI based menu.
+class WebUIMenuWidget : public views::WidgetGtk {
  public:
   // Create a Window for the NativeMenuDMOUI. |root| specifies if
   // the menu is root menu.
-  DOMUIMenuWidget(NativeMenuDOMUI* domui_menu, bool root);
-  virtual ~DOMUIMenuWidget();
+  WebUIMenuWidget(NativeMenuDOMUI* domui_menu, bool root);
+  virtual ~WebUIMenuWidget();
 
   // WidgetGtk overrides:
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
@@ -72,9 +72,9 @@ class DOMUIMenuWidget : public views::WidgetGtk {
     return menu_locator_.get();
   }
 
-  // Returns DOMUIMenuWidget that contains given native. This returns
+  // Returns WebUIMenuWidget that contains given native. This returns
   // NULL if not found.
-  static DOMUIMenuWidget* FindDOMUIMenuWidget(gfx::NativeView native);
+  static WebUIMenuWidget* FindWebUIMenuWidget(gfx::NativeView native);
 
  private:
   // Capture the X pointer grab. This also enables input on the widget by
@@ -100,9 +100,9 @@ class DOMUIMenuWidget : public views::WidgetGtk {
   // submenu chain).
   bool is_root_;
 
-  DISALLOW_COPY_AND_ASSIGN(DOMUIMenuWidget);
+  DISALLOW_COPY_AND_ASSIGN(WebUIMenuWidget);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_VIEWS_DOMUI_MENU_WIDGET_H_
+#endif  // CHROME_BROWSER_CHROMEOS_VIEWS_WEBUI_MENU_WIDGET_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/views/domui_menu_widget.h"
+#include "chrome/browser/chromeos/views/webui_menu_widget.h"
 
 #include <algorithm>
 
@@ -104,27 +104,27 @@ class InsetsLayout : public views::LayoutManager {
 };
 
 // A gtk widget key used to test if a given WidgetGtk instance is
-// DOMUIMenuWidgetKey.
-const char* kDOMUIMenuWidgetKey = "__DOMUI_MENU_WIDGET__";
+// a WebUIMenuWidgetKey.
+const char* kWebUIMenuWidgetKey = "__WEBUI_MENU_WIDGET__";
 
 }  // namespace
 
 namespace chromeos {
 
 // static
-DOMUIMenuWidget* DOMUIMenuWidget::FindDOMUIMenuWidget(gfx::NativeView native) {
+WebUIMenuWidget* WebUIMenuWidget::FindWebUIMenuWidget(gfx::NativeView native) {
   DCHECK(native);
   native = gtk_widget_get_toplevel(native);
   if (!native)
     return NULL;
-  return static_cast<chromeos::DOMUIMenuWidget*>(
-      g_object_get_data(G_OBJECT(native), kDOMUIMenuWidgetKey));
+  return static_cast<chromeos::WebUIMenuWidget*>(
+      g_object_get_data(G_OBJECT(native), kWebUIMenuWidgetKey));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// DOMUIMenuWidget public:
+// WebUIMenuWidget public:
 
-DOMUIMenuWidget::DOMUIMenuWidget(chromeos::NativeMenuDOMUI* domui_menu,
+WebUIMenuWidget::WebUIMenuWidget(chromeos::NativeMenuDOMUI* domui_menu,
                                  bool root)
     : views::WidgetGtk(views::WidgetGtk::TYPE_POPUP),
       domui_menu_(domui_menu),
@@ -137,25 +137,25 @@ DOMUIMenuWidget::DOMUIMenuWidget(chromeos::NativeMenuDOMUI* domui_menu,
   // MakeTransparent();
 }
 
-DOMUIMenuWidget::~DOMUIMenuWidget() {
+WebUIMenuWidget::~WebUIMenuWidget() {
 }
 
-void DOMUIMenuWidget::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
+void WebUIMenuWidget::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   WidgetGtk::Init(parent, bounds);
   gtk_window_set_destroy_with_parent(GTK_WINDOW(GetNativeView()), TRUE);
   gtk_window_set_type_hint(GTK_WINDOW(GetNativeView()),
                            GDK_WINDOW_TYPE_HINT_MENU);
-  g_object_set_data(G_OBJECT(GetNativeView()), kDOMUIMenuWidgetKey, this);
+  g_object_set_data(G_OBJECT(GetNativeView()), kWebUIMenuWidgetKey, this);
 }
 
-void DOMUIMenuWidget::Hide() {
+void WebUIMenuWidget::Hide() {
   ReleaseGrab();
   WidgetGtk::Hide();
   // Clears the content.
   ExecuteJavascript(L"updateModel({'items':[]})");
 }
 
-void DOMUIMenuWidget::Close() {
+void WebUIMenuWidget::Close() {
   if (dom_view_ != NULL) {
     dom_view_->GetParent()->RemoveChildView(dom_view_);
     delete dom_view_;
@@ -167,7 +167,7 @@ void DOMUIMenuWidget::Close() {
   views::WidgetGtk::Close();
 }
 
-void DOMUIMenuWidget::ReleaseGrab() {
+void WebUIMenuWidget::ReleaseGrab() {
   WidgetGtk::ReleaseGrab();
   if (did_input_grab_) {
     did_input_grab_ = false;
@@ -178,14 +178,14 @@ void DOMUIMenuWidget::ReleaseGrab() {
   }
 }
 
-gboolean DOMUIMenuWidget::OnGrabBrokeEvent(GtkWidget* widget,
+gboolean WebUIMenuWidget::OnGrabBrokeEvent(GtkWidget* widget,
                                            GdkEvent* event) {
   did_input_grab_ = false;
   Hide();
   return WidgetGtk::OnGrabBrokeEvent(widget, event);
 }
 
-void DOMUIMenuWidget::OnSizeAllocate(GtkWidget* widget,
+void WebUIMenuWidget::OnSizeAllocate(GtkWidget* widget,
                                      GtkAllocation* allocation) {
   views::WidgetGtk::OnSizeAllocate(widget, allocation);
   // Adjust location when menu gets resized.
@@ -199,7 +199,7 @@ void DOMUIMenuWidget::OnSizeAllocate(GtkWidget* widget,
 }
 
 gboolean MapToFocus(GtkWidget* widget, GdkEvent* event, gpointer data) {
-  DOMUIMenuWidget* menu_widget = DOMUIMenuWidget::FindDOMUIMenuWidget(widget);
+  WebUIMenuWidget* menu_widget = WebUIMenuWidget::FindWebUIMenuWidget(widget);
   if (menu_widget) {
     // See EnableInput for the meaning of data.
     bool select_item = data != NULL;
@@ -208,12 +208,12 @@ gboolean MapToFocus(GtkWidget* widget, GdkEvent* event, gpointer data) {
   return true;
 }
 
-void DOMUIMenuWidget::EnableScroll(bool enable) {
+void WebUIMenuWidget::EnableScroll(bool enable) {
   ExecuteJavascript(StringPrintf(
       L"enableScroll(%ls)", enable ? L"true" : L"false"));
 }
 
-void DOMUIMenuWidget::EnableInput(bool select_item) {
+void WebUIMenuWidget::EnableInput(bool select_item) {
   if (!dom_view_)
     return;
   DCHECK(dom_view_->tab_contents()->render_view_host());
@@ -244,8 +244,8 @@ void DOMUIMenuWidget::EnableInput(bool select_item) {
   }
 }
 
-void DOMUIMenuWidget::ExecuteJavascript(const std::wstring& script) {
-  // Don't exeute there is no DOMView associated. This is fine because
+void WebUIMenuWidget::ExecuteJavascript(const std::wstring& script) {
+  // Don't execute if there is no DOMView associated. This is fine because
   // 1) selectItem make sense only when DOMView is associated.
   // 2) updateModel will be called again when a DOMView is created/assigned.
   if (!dom_view_)
@@ -256,7 +256,7 @@ void DOMUIMenuWidget::ExecuteJavascript(const std::wstring& script) {
       ExecuteJavascriptInWebFrame(std::wstring(), script);
 }
 
-void DOMUIMenuWidget::ShowAt(chromeos::MenuLocator* locator) {
+void WebUIMenuWidget::ShowAt(chromeos::MenuLocator* locator) {
   DCHECK(domui_menu_);
   menu_locator_.reset(locator);
   if (!dom_view_) {
@@ -286,7 +286,7 @@ void DOMUIMenuWidget::ShowAt(chromeos::MenuLocator* locator) {
   }
 }
 
-void DOMUIMenuWidget::SetSize(const gfx::Size& new_size) {
+void WebUIMenuWidget::SetSize(const gfx::Size& new_size) {
   DCHECK(domui_menu_);
   // Ignore the empty new_size request which is called when
   // menu.html is loaded.
@@ -305,9 +305,9 @@ void DOMUIMenuWidget::SetSize(const gfx::Size& new_size) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// DOMUIMenuWidget private:
+// WebUIMenuWidget private:
 
-void DOMUIMenuWidget::CaptureGrab() {
+void WebUIMenuWidget::CaptureGrab() {
   // Release the current grab.
   ClearGrabWidget();
 
@@ -331,7 +331,7 @@ void DOMUIMenuWidget::CaptureGrab() {
   EnableInput(false /* no selection */);
 }
 
-void DOMUIMenuWidget::ClearGrabWidget() {
+void WebUIMenuWidget::ClearGrabWidget() {
   GtkWidget* grab_widget;
   while ((grab_widget = gtk_grab_get_current()))
     gtk_grab_remove(grab_widget);

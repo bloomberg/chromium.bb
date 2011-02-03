@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@ class Size;
 
 namespace chromeos {
 
-class DOMUIMenuWidget;
+class WebUIMenuWidget;
 
 // MenuLocator class contorls where the menu will be placed and
 // which corners are rounded.
@@ -35,10 +35,10 @@ class MenuLocator {
   virtual SubmenuDirection GetSubmenuDirection() const = 0;
 
   // Move the widget to the right position.
-  virtual void Move(DOMUIMenuWidget* widget) = 0;
+  virtual void Move(WebUIMenuWidget* widget) = 0;
 
   // Resize and move the widget to the right position.
-  virtual void SetBounds(DOMUIMenuWidget* widget,
+  virtual void SetBounds(WebUIMenuWidget* widget,
                          const gfx::Size& size) = 0;
 
   // Returns the 8 length array of SkScalar that represents 4 corner
@@ -67,7 +67,7 @@ class MenuLocator {
   // direction given by |parent_direction|. 3 corners are
   // rounded except for the corner that is attached to the widget.
   static MenuLocator* CreateSubMenuLocator(
-      const DOMUIMenuWidget* widget,
+      const WebUIMenuWidget* widget,
       MenuLocator::SubmenuDirection parent_direction,
       int y);
 };

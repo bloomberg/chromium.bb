@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DOM_UI_DOMUI_MENU_CONTROL_H_
-#define CHROME_BROWSER_CHROMEOS_DOM_UI_DOMUI_MENU_CONTROL_H_
+#ifndef CHROME_BROWSER_CHROMEOS_WEBUI_MENU_CONTROL_H_
+#define CHROME_BROWSER_CHROMEOS_WEBUI_MENU_CONTROL_H_
 #pragma once
 
 namespace gfx {
@@ -16,17 +16,17 @@ class MenuModel;
 
 namespace chromeos {
 
-// DOMUIMenuControl class is used to control the UI counterpart of
-// a MenuModel. One instance of DOMUIMenuControl is created for each
+// WebUIMenuControl class is used to control the UI counterpart of
+// a MenuModel. One instance of WebUIMenuControl is created for each
 // MenuModel instance, that is, a submenu will have its own
-// DOMUIMenuControl.
-class DOMUIMenuControl {
+// WebUIMenuControl.
+class WebUIMenuControl {
  public:
   enum ActivationMode {
     ACTIVATE_NO_CLOSE,   // Activate the command without closing menu.
     CLOSE_AND_ACTIVATE,  // Close the menu and then activate the command.
   };
-  virtual ~DOMUIMenuControl() {}
+  virtual ~WebUIMenuControl() {}
 
   // Returns the MenuModel associated with this control.
   virtual ui::MenuModel* GetMenuModel() = 0;
@@ -63,4 +63,4 @@ class DOMUIMenuControl {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_DOM_UI_DOMUI_MENU_CONTROL_H_
+#endif  // CHROME_BROWSER_CHROMEOS_WEBUI_MENU_CONTROL_H_

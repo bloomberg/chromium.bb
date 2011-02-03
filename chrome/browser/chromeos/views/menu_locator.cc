@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/views/domui_menu_widget.h"
+#include "chrome/browser/chromeos/views/webui_menu_widget.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/insets.h"
@@ -15,7 +15,7 @@
 
 namespace {
 
-using chromeos::DOMUIMenuWidget;
+using chromeos::WebUIMenuWidget;
 
 // Menu's corner radious.
 const int kMenuCornerRadius = 0;  // crosbug.com/7718.
@@ -33,8 +33,8 @@ gfx::Rect GetScreenRectAt(int x, int y) {
 }
 
 // Returns adjusted height of the menu that fits to the screen's
-// hight, and enables scrolling if necessary.
-int AdjustHeight(DOMUIMenuWidget* widget,
+// height, and enables scrolling if necessary.
+int AdjustHeight(WebUIMenuWidget* widget,
                  int screen_height,
                  int height) {
   // TODO(oshima): Locator needs a preferred size so that
@@ -52,7 +52,7 @@ int AdjustHeight(DOMUIMenuWidget* widget,
 }
 
 // Updates the root menu's bounds to fit to the screen.
-void UpdateRootMenuBounds(DOMUIMenuWidget* widget,
+void UpdateRootMenuBounds(WebUIMenuWidget* widget,
                           const gfx::Point& origin,
                           const gfx::Size& size,
                           bool align_right) {
@@ -81,7 +81,7 @@ class DropDownMenuLocator : public chromeos::MenuLocator {
     return DEFAULT;
   }
 
-  virtual void Move(DOMUIMenuWidget* widget) {
+  virtual void Move(WebUIMenuWidget* widget) {
     // TODO(oshima):
     // Dropdown Menu has to be shown above the button, which is not currently
     // possible with Menu2. I'll update Menu2 and this code
@@ -91,7 +91,7 @@ class DropDownMenuLocator : public chromeos::MenuLocator {
     UpdateRootMenuBounds(widget, origin_, bounds.size(), !base::i18n::IsRTL());
   }
 
-  virtual void SetBounds(DOMUIMenuWidget* widget, const gfx::Size& size) {
+  virtual void SetBounds(WebUIMenuWidget* widget, const gfx::Size& size) {
     gfx::Size new_size(size);
     new_size.Enlarge(0, kMenuCornerRadius);
     UpdateRootMenuBounds(widget, origin_, size, !base::i18n::IsRTL());
@@ -128,13 +128,13 @@ class ContextMenuLocator : public chromeos::MenuLocator {
     return DEFAULT;
   }
 
-  virtual void Move(DOMUIMenuWidget* widget) {
+  virtual void Move(WebUIMenuWidget* widget) {
     gfx::Rect bounds;
     widget->GetBounds(&bounds, false);
     UpdateRootMenuBounds(widget, origin_, bounds.size(), base::i18n::IsRTL());
   }
 
-  virtual void SetBounds(DOMUIMenuWidget* widget, const gfx::Size& size) {
+  virtual void SetBounds(WebUIMenuWidget* widget, const gfx::Size& size) {
     gfx::Size new_size(size);
     new_size.Enlarge(0, kMenuCornerRadius * 2);
     UpdateRootMenuBounds(widget, origin_, new_size, base::i18n::IsRTL());
@@ -162,7 +162,7 @@ class ContextMenuLocator : public chromeos::MenuLocator {
 // MenuLocator for submenu.
 class SubMenuLocator : public chromeos::MenuLocator {
  public:
-  SubMenuLocator(const DOMUIMenuWidget* parent,
+  SubMenuLocator(const WebUIMenuWidget* parent,
                  MenuLocator::SubmenuDirection parent_direction,
                  int y)
       : parent_rect_(GetBoundsOf(parent)),
@@ -177,13 +177,13 @@ class SubMenuLocator : public chromeos::MenuLocator {
     return direction_;
   }
 
-  virtual void Move(DOMUIMenuWidget* widget) {
+  virtual void Move(WebUIMenuWidget* widget) {
     gfx::Rect bounds;
     widget->GetBounds(&bounds, false);
     UpdateBounds(widget, bounds.size());
   }
 
-  virtual void SetBounds(DOMUIMenuWidget* widget, const gfx::Size& size) {
+  virtual void SetBounds(WebUIMenuWidget* widget, const gfx::Size& size) {
     gfx::Size new_size(size);
     new_size.Enlarge(0, kMenuCornerRadius * 2);
     UpdateBounds(widget, new_size);
@@ -201,7 +201,7 @@ class SubMenuLocator : public chromeos::MenuLocator {
   static const SkScalar kRightCorners[];
   static const SkScalar kLeftCorners[];
 
-  void UpdateBounds(DOMUIMenuWidget* widget, const gfx::Size& size) {
+  void UpdateBounds(WebUIMenuWidget* widget, const gfx::Size& size) {
     gfx::Rect screen_rect = GetScreenRectAt(parent_rect_.x(), root_y_);
     int width = std::min(screen_rect.width(), size.width());
     int height = AdjustHeight(widget, size.height(), screen_rect.height());
@@ -309,7 +309,7 @@ MenuLocator* MenuLocator::CreateContextMenuLocator(const gfx::Point& p) {
 }
 
 MenuLocator* MenuLocator::CreateSubMenuLocator(
-    const DOMUIMenuWidget* parent,
+    const WebUIMenuWidget* parent,
     MenuLocator::SubmenuDirection parent_direction,
     int y) {
   return new SubMenuLocator(parent, parent_direction, y);

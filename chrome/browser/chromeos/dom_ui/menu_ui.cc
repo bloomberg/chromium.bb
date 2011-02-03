@@ -17,8 +17,8 @@
 #include "base/values.h"
 #include "base/weak_ptr.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #include "chrome/browser/chromeos/views/native_menu_domui.h"
+#include "chrome/browser/chromeos/views/webui_menu_widget.h"
 #include "chrome/browser/dom_ui/web_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
@@ -403,7 +403,7 @@ void MenuHandler::HandleActivate(const ListValue* values) {
   int index;
   success = base::StringToInt(index_str, &index);
   DCHECK(success);
-  chromeos::DOMUIMenuControl* control = GetMenuControl();
+  chromeos::WebUIMenuControl* control = GetMenuControl();
   if (control) {
     ui::MenuModel* model = GetMenuModel();
     DCHECK(model);
@@ -414,8 +414,8 @@ void MenuHandler::HandleActivate(const ListValue* values) {
       control->Activate(model,
                         index,
                         activation == "close_and_activate" ?
-                        chromeos::DOMUIMenuControl::CLOSE_AND_ACTIVATE :
-                        chromeos::DOMUIMenuControl::ACTIVATE_NO_CLOSE);
+                        chromeos::WebUIMenuControl::CLOSE_AND_ACTIVATE :
+                        chromeos::WebUIMenuControl::ACTIVATE_NO_CLOSE);
     }
   }
 }
@@ -434,31 +434,31 @@ void MenuHandler::HandleOpenSubmenu(const ListValue* values) {
   int y;
   success = base::StringToInt(y_str, &y);
   DCHECK(success);
-  chromeos::DOMUIMenuControl* control = GetMenuControl();
+  chromeos::WebUIMenuControl* control = GetMenuControl();
   if (control)
     control->OpenSubmenu(index, y);
 }
 
 void MenuHandler::HandleCloseSubmenu(const ListValue* values) {
-  chromeos::DOMUIMenuControl* control = GetMenuControl();
+  chromeos::WebUIMenuControl* control = GetMenuControl();
   if (control)
     control->CloseSubmenu();
 }
 
 void MenuHandler::HandleMoveInputToSubmenu(const ListValue* values) {
-  chromeos::DOMUIMenuControl* control = GetMenuControl();
+  chromeos::WebUIMenuControl* control = GetMenuControl();
   if (control)
     control->MoveInputToSubmenu();
 }
 
 void MenuHandler::HandleMoveInputToParent(const ListValue* values) {
-  chromeos::DOMUIMenuControl* control = GetMenuControl();
+  chromeos::WebUIMenuControl* control = GetMenuControl();
   if (control)
     control->MoveInputToParent();
 }
 
 void MenuHandler::HandleCloseAll(const ListValue* values) {
-  chromeos::DOMUIMenuControl* control = GetMenuControl();
+  chromeos::WebUIMenuControl* control = GetMenuControl();
   if (control)
     control->CloseAll();
 }
@@ -480,13 +480,13 @@ void MenuHandler::HandleLog(const ListValue* values) {
 void MenuHandler::UpdatePreferredSize(const gfx::Size& new_size) {
   if (!loaded_)
     return;
-  chromeos::DOMUIMenuControl* control = GetMenuControl();
+  chromeos::WebUIMenuControl* control = GetMenuControl();
   if (control)
     control->SetSize(new_size);
 }
 
 void MenuHandler::LoadingStateChanged(TabContents* contents) {
-  chromeos::DOMUIMenuControl* control = GetMenuControl();
+  chromeos::WebUIMenuControl* control = GetMenuControl();
   if (control && !contents->is_loading()) {
     loaded_ = true;
     control->OnLoad();
@@ -504,18 +504,18 @@ namespace chromeos {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-chromeos::DOMUIMenuControl* MenuHandlerBase::GetMenuControl() {
-  DOMUIMenuWidget* widget =
-      chromeos::DOMUIMenuWidget::FindDOMUIMenuWidget(
+chromeos::WebUIMenuControl* MenuHandlerBase::GetMenuControl() {
+  WebUIMenuWidget* widget =
+      chromeos::WebUIMenuWidget::FindWebUIMenuWidget(
           dom_ui_->tab_contents()->GetNativeView());
   if (widget)
-    return widget->domui_menu();  // NativeMenuDOMUI implements DOMUIMenuControl
+    return widget->domui_menu();  // NativeMenuDOMUI implements WebUIMenuControl
   else
     return NULL;
 }
 
 ui::MenuModel* MenuHandlerBase::GetMenuModel() {
-  DOMUIMenuControl* control = GetMenuControl();
+  WebUIMenuControl* control = GetMenuControl();
   if (control)
     return control->GetMenuModel();
   else
@@ -593,8 +593,8 @@ void MenuUI::ModelUpdated(const ui::MenuModel* model) {
     }
     items->Set(index, item);
   }
-  DOMUIMenuWidget* widget =
-      chromeos::DOMUIMenuWidget::FindDOMUIMenuWidget(
+  WebUIMenuWidget* widget =
+      chromeos::WebUIMenuWidget::FindWebUIMenuWidget(
           tab_contents()->GetNativeView());
   DCHECK(widget);
   json_model.SetInteger("maxIconWidth", max_icon_width);
