@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#include "base/test/mock_chrome_application_mac.h"
 #endif
 
 class AppTestSuite : public base::TestSuite {
@@ -29,14 +28,9 @@ class AppTestSuite : public base::TestSuite {
  protected:
 
   virtual void Initialize() {
-#if defined(OS_MACOSX)
-    // Some of the app unit tests try to open windows.
-    mock_cr_app::RegisterMockCrApp();
-#endif
-
     base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
-    TestSuite::Initialize();
+    base::TestSuite::Initialize();
 
     app::RegisterPathProvider();
     ui::RegisterPathProvider();
